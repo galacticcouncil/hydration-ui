@@ -1,9 +1,9 @@
-import { Link } from "components/Link";
+import { Link } from "components/Link/Link";
 import { FC, ReactNode } from "react";
-import { StyledButton } from "./styled";
+import { StyledButton } from "./Button.styled";
 
 export type ButtonProps = {
-  variant?: "primary";
+  variant?: "primary" | "secondary";
   disabled?: boolean;
   text?: string;
   to?: string;
@@ -16,7 +16,7 @@ export type ButtonProps = {
 
 export const Button: FC<ButtonProps> = ({
   type = "button",
-  variant = "primary",
+  variant = "secondary",
   size = "medium",
   ...props
 }) => {

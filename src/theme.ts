@@ -25,6 +25,7 @@ const breakpoints = {
 
 const colors = {
   white: "#ffffff",
+  black: "#000000",
   primarySuccess500: "#49E49F",
   primarySuccess450: "#4CF3A8",
   primarySuccess400: "#4FFFB0",
@@ -37,6 +38,13 @@ const colors = {
   backgroundGray700: "#44444A",
   backgroundGray600: "#51515F",
   backgroundGray500: "#686876",
+  neutralGray500: "#787E82",
+  neutralGray400: "#A2B0B8",
+  neutralGray300: "#9EA9B1",
+  neutralGray200: "#D1DEE8",
+  neutralGray100: "#E5ECF1",
+  darkGreen: "#1D2D26",
+  darkGray: "#1A171B",
 };
 
 const gradients = {
@@ -44,6 +52,7 @@ const gradients = {
     "linear-gradient(90deg, #4FFFB0 1.27%, #B3FF8F 48.96%, #FF984E 104.14%), linear-gradient(90deg, #4FFFB0 1.27%, #A2FF76 53.24%, #FF984E 104.14%), linear-gradient(90deg, #FFCE4F 1.27%, #4FFFB0 104.14%)",
   verticalGradient:
     "radial-gradient(89.2% 89.2% at 50.07% 87.94%, #008A69 0%, #262F31 88.52%), #2C3335;",
+  simplifiedGradient: "90deg, #4fffb0, #b3ff8f, #ff984e",
 };
 
 const zIndices = {};

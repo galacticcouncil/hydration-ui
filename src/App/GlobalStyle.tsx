@@ -55,6 +55,10 @@ export const GlobalStyle = createGlobalStyle`
   box-sizing: border-box;
   }
 
+  h1 {
+    margin: 0;
+  }
+  
   h2 {
     margin: 0;
   }
