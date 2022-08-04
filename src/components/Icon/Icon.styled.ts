@@ -3,6 +3,7 @@ import styled, { css } from "styled-components/macro";
 import { IconProps } from "./Icon";
 
 export const StyledIconWrapper = styled.span<IconProps>`
+  display: flex;
   ${size};
   ${margins};
   ${(p) =>

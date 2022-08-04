@@ -1,5 +1,5 @@
 import { Link } from "components/Link/Link";
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, SyntheticEvent } from "react";
 import { StyledButton } from "./Button.styled";
 
 export type ButtonProps = {
@@ -10,7 +10,7 @@ export type ButtonProps = {
   type?: "button" | "submit" | "reset";
   icon?: SVGElement;
   children?: ReactNode;
-  onClick?: () => void;
+  onClick?: (e: SyntheticEvent) => void;
   size?: "small" | "medium";
   fullWidth?: boolean;
 };

@@ -8,6 +8,7 @@ export const StyledButton = styled.button<ButtonProps>`
   border: none;
   cursor: pointer;
   font-size: 14px;
+  text-transform: uppercase;
 
   ${(p) =>
     p.variant === "primary"
@@ -37,6 +38,8 @@ export const StyledButton = styled.button<ButtonProps>`
     p.size === "small" &&
     css`
       padding: 12px 15px;
+      font-size: 12px;
+      line-height: 18px;
     `};
 
   ${(p) =>

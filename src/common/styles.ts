@@ -49,6 +49,7 @@ export type FlexProps = {
   stretch?: boolean;
   relative?: boolean;
   center?: boolean;
+  jcenter?: boolean;
 };
 
 export type FontProps = {
@@ -64,7 +65,7 @@ export const margins = css<MarginProps>`
   ${(p) => p.mr && `margin-right: ${autoOrPx(p.mr)}`};
   ${(p) => p.mb && `margin-bottom: ${autoOrPx(p.mb)}`};
   ${(p) => p.ml && `margin-left: ${autoOrPx(p.ml)}`};
-  ${(p) => p.m && `margin: ${typeof p.m === "string" ? p.m : `${p.m}`}px`};
+  ${(p) => p.m && `margin: ${typeof p.m === "string" ? p.m : `${p.m}px`}`};
 `;
 
 export const paddings = css<PaddingProps>`
@@ -107,6 +108,11 @@ export const flex = css<FlexProps>`
     p.acenter &&
     `
     align-items: center;
+  `};
+  ${(p) =>
+    p.jcenter &&
+    `
+    justify-content: center;
   `};
 
   ${(p) =>

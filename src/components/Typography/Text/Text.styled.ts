@@ -3,7 +3,6 @@ import styled from "styled-components/macro";
 import { TextProps } from "./Text";
 
 export const StyledText = styled.p<TextProps>`
-  ${colors};
   ${margins};
   ${fonts};
   ${colors};

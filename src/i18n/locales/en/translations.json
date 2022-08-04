@@ -5,5 +5,6 @@
   "farmsPoolsPage.header.valueFarms": "Total value in Farms",
   "farmsPoolsPage.poolCard.poolDetails.fee": "Trade Fee",
   "farmsPoolsPage.poolCard.poolDetails.valueLocked": "Total Value Locked",
-  "farmsPoolsPage.poolCard.poolDetails.24hours": " 24h Volume"
+  "farmsPoolsPage.poolCard.poolDetails.24hours": "24h Volume",
+  "farmsPoolsPage.poolCard.farmIncentives.title": "Farm Incentives"
 }

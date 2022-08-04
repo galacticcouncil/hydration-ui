@@ -6,7 +6,12 @@ export const FarmsPoolsPage = () => {
   return (
     <Page>
       <PageHeader />
-      <PoolCard />
+      <PoolCard hasJoinedFarms={true} />
+      <PoolCard hasJoinedFarms={false} />
+      <PoolCard hasJoinedFarms={true} />
+      <PoolCard hasJoinedFarms={true} />
+      <PoolCard hasJoinedFarms={false} />
+      <PoolCard hasJoinedFarms={true} />
     </Page>
   );
 };

@@ -1,3 +1,4 @@
+import { colors, margins, size } from "common/styles";
 import styled, { css } from "styled-components/macro";
 import { theme } from "theme";
 import { IconButtonProps } from "./IconButton";
@@ -16,9 +17,8 @@ export const StyledIconButton = styled.button<IconButtonProps>`
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 
-  svg {
-    width: 16px;
-    height: 16px;
-  }
+  ${colors};
+  ${margins};
 `;

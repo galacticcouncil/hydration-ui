@@ -19,8 +19,16 @@ export const PoolDetails: FC<PoolDetailsProps> = () => {
           <Text fs={14} lh={26} color="neutralGray400">
             {data.title}
           </Text>
-          <Box flex>
+          <Box flex acenter>
             <PoolsIcons />
+            <Box flex column gap={1}>
+              <Text fw={700} color="white">
+                LPT/LPT
+              </Text>
+              <Text fs={12} lh={14} color="neutralGray500">
+                Token/Token
+              </Text>
+            </Box>
           </Box>
         </Box>
         <Box flex column width={120} mt={5} align="start">
@@ -38,7 +46,7 @@ export const PoolDetails: FC<PoolDetailsProps> = () => {
           <Text fs={14} color="neutralGray400" lh={22}>
             {t("farmsPoolsPage.poolCard.poolDetails.valueLocked")}
           </Text>
-          <Text lh={22} color="white">
+          <Text lh={22} color="white" fs={18}>
             $100000000
           </Text>
         </Box>
@@ -46,7 +54,7 @@ export const PoolDetails: FC<PoolDetailsProps> = () => {
           <Text fs={14} color="neutralGray400" lh={22}>
             {t("farmsPoolsPage.poolCard.poolDetails.24hours")}
           </Text>
-          <Text lh={22} color="white">
+          <Text lh={22} color="white" fs={18}>
             $12300.45
           </Text>
         </Box>

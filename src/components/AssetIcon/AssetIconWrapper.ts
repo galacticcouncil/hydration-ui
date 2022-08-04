@@ -22,12 +22,12 @@ export const StyledIcon = styled(Icon)`
 export const StyledChainedIcon = styled(Icon)`
   position: absolute;
   left: 20px;
+  top: 0;
   width: 13px;
   height: 13px;
 
   > svg {
     width: 13px;
     height: 13px;
-    border: 1px solid ${theme.colors.black};
   }
 `;

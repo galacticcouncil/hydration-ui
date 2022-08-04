@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { ReactNode } from "react";
 import { Header } from "./Header/Header";
-import { StyledPage, PageInner } from "./Page.styled";
+import { StyledPage, PageInner, PageContent } from "./Page.styled";
 
 type PageProps = {
   children: ReactNode;
@@ -10,6 +10,8 @@ type PageProps = {
 export const Page: FC<PageProps> = ({ children }) => (
   <StyledPage>
     <Header />
-    <PageInner>{children}</PageInner>
+    <PageContent>
+      <PageInner>{children}</PageInner>
+    </PageContent>
   </StyledPage>
 );

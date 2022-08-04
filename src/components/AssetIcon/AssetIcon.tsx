@@ -9,11 +9,20 @@ import {
 type AssetIconProps = {
   icon?: ReactNode;
   chainedIcon?: ReactNode;
+  withChainedIcon?: boolean;
 };
 
-export const AssetIcon: FC<AssetIconProps> = ({ icon, chainedIcon }) => (
+export const AssetIcon: FC<AssetIconProps> = ({
+  icon,
+  chainedIcon,
+  withChainedIcon = true,
+}) => (
   <AssetIconWrapper>
     <StyledIcon>{icon || <PlaceHolderIcon />}</StyledIcon>
-    <StyledChainedIcon>{chainedIcon || <PlaceHolderIcon />}</StyledChainedIcon>
+    {withChainedIcon && (
+      <StyledChainedIcon>
+        {chainedIcon || <PlaceHolderIcon />}
+      </StyledChainedIcon>
+    )}
   </AssetIconWrapper>
 );

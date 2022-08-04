@@ -7,8 +7,7 @@ export type TextProps = {
   text?: string;
 } & ColorProps &
   MarginProps &
-  FontProps &
-  ColorProps;
+  FontProps;
 
 export const Text: FC<TextProps> = ({
   children,
