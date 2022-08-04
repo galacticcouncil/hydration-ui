@@ -1,36 +1,20 @@
 import { createGlobalStyle } from "styled-components/macro";
 import { normalize } from "styled-normalize";
-import Satoshi700 from "assets/fonts/Satoshi700.otf";
-import Satoshi400 from "assets/fonts/Satoshi400.otf";
-import Satoshi500 from "assets/fonts/Satoshi500.otf";
+import SatoshiVariable from "assets/fonts/SatoshiVariable.ttf";
+
 import { theme } from "theme";
 
 export const GlobalStyle = createGlobalStyle`
  
   @font-face {
-    font-family: 'Satoshi';
-    src: local("Satoshi400"),
-    url(${Satoshi400}) format("truetype");
+    font-family: 'SatoshiVariable';
+    src: local("SatoshiVariable"),
+    url(${SatoshiVariable}) format("truetype");
     font-display: swap;
-    font-weight: 400;
-  }
+    font-weight: 100 900;
+  };
 
 
-  @font-face {
-    font-family: 'Satoshi';
-    src: local("Satoshi500"),
-    url(${Satoshi500}) format("truetype");
-    font-display: swap;
-    font-weight: 500;
-  }
-
-  @font-face {
-    font-family: 'Satoshi';
-    src: local("Satoshi700"),
-    url(${Satoshi700}) format("truetype");
-    font-display: swap;
-    font-weight: 700;
-  }
  
   ${normalize};
   
@@ -42,7 +26,7 @@ export const GlobalStyle = createGlobalStyle`
     font-size: 16px;
     font-size: 1.6rem;
     margin: 0;
-    font-family: 'Satoshi500', sans-serif;
+    font-family: 'SatoshiVariable', sans-serif;
     background: ${theme.colors.backgroundGray1000};
   }
 
@@ -53,6 +37,9 @@ export const GlobalStyle = createGlobalStyle`
 
   * {
   box-sizing: border-box;
+  :focus-visible {
+    outline: 1px solid ${theme.colors.primarySuccess300};
+  }
   }
 
   h1 {
@@ -83,4 +70,5 @@ export const GlobalStyle = createGlobalStyle`
     text-decoration: none;
     color: unset;
   }
+   
 `;

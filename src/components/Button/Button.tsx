@@ -12,6 +12,7 @@ export type ButtonProps = {
   children?: ReactNode;
   onClick?: () => void;
   size?: "small" | "medium";
+  fullWidth?: boolean;
 };
 
 export const Button: FC<ButtonProps> = ({

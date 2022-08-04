@@ -6,3 +6,8 @@ export const StyledPage = styled.div`
   height: 100vh;
   overflow-y: auto;
 `;
+export const PageInner = styled.div`
+  padding: 44px 0;
+  max-width: 1109px;
+  margin: 0 auto;
+`;

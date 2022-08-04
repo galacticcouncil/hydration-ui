@@ -31,22 +31,27 @@ export const StyledButton = styled.button<ButtonProps>`
               transition: background 0.2s ease-in-out;
             }
           `
-      : {}}
+      : ``}
 
   ${(p) =>
     p.size === "small" &&
     css`
       padding: 12px 15px;
-    `}
-  
-    
-    ${(p) =>
+    `};
+
+  ${(p) =>
     p.size === "medium" &&
     css`
       padding: 16px 36px;
-    `}
+    `};
 
-    ${(p) =>
+  ${(p) =>
+    p.fullWidth &&
+    css`
+      width: 100%;
+    `};
+
+  ${(p) =>
     p.variant === "secondary"
       ? p.disabled
         ? css`
@@ -68,5 +73,5 @@ export const StyledButton = styled.button<ButtonProps>`
               transition: background 0.2s ease-in-out;
             }
           `
-      : {}}
+      : ``}
 `;

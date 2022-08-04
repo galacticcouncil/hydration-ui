@@ -5,16 +5,29 @@ import { theme } from "theme";
 export const StyledThumb = styled(SwitchThumb)<{
   checked: boolean;
   disabled?: boolean;
+  size?: "small" | "regular";
 }>`
-  width: 34px;
-  height: 34px;
   position: absolute;
   border-radius: 50%;
   top: 1px;
   left: 1px;
-  border: 2px solid ${theme.colors.darkGray};
+  border-color: ${theme.colors.darkGray};
   padding: 2px;
   background: ${theme.colors.neutralGray400};
+  border-style: solid;
+
+  ${(p) =>
+    p.size === "small"
+      ? css`
+          width: 20px;
+          height: 20px;
+          border-width: 1px;
+        `
+      : css`
+          width: 34px;
+          height: 34px;
+          border-width: 2px;
+        `}
 
   ${(p) =>
     p.checked &&
@@ -22,12 +35,8 @@ export const StyledThumb = styled(SwitchThumb)<{
       left: initial;
       right: 1px;
       background: ${theme.colors.primarySuccess500};
-      border: 2px solid ${theme.colors.darkGreen};
+      border-color: ${theme.colors.darkGreen};
     `}
-
-  :hover {
-    border: 2px solid ${theme.colors.primarySuccess300};
-  }
 
   ${(p) =>
     p.disabled &&
@@ -35,9 +44,8 @@ export const StyledThumb = styled(SwitchThumb)<{
       background: ${theme.colors.backgroundGray800};
     `}
 `;
-export const StyledSwitch = styled(Switch)`
-  width: 70px;
-  height: 38px;
+
+export const StyledSwitch = styled(Switch)<{ size?: "small" | "regular" }>`
   position: relative;
   border-radius: 45px;
   border: 1px solid ${theme.colors.backgroundGray700};
@@ -45,14 +53,31 @@ export const StyledSwitch = styled(Switch)`
   cursor: pointer;
 
   ${(p) =>
+    p.size === "small"
+      ? css`
+          width: 46px;
+          height: 24px;
+        `
+      : css`
+          width: 70px;
+          height: 38px;
+        `}
+
+  ${(p) =>
     p.checked &&
     css`
       background: ${theme.colors.darkGreen};
-      border: 1px solid ${theme.colors.darkGreen};
+      border: 1px solid ${theme.colors.primarySuccess300};
     `}
   ${(p) =>
     p.disabled &&
     css`
       pointer-events: none;
-    `}
+    `};
+
+  :hover {
+    > * {
+      border-color: ${theme.colors.primarySuccess300};
+    }
+  }
 `;

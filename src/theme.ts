@@ -53,6 +53,8 @@ const gradients = {
   verticalGradient:
     "radial-gradient(89.2% 89.2% at 50.07% 87.94%, #008A69 0%, #262F31 88.52%), #2C3335;",
   simplifiedGradient: "90deg, #4fffb0, #b3ff8f, #ff984e",
+  cardGradient:
+    "linear-gradient(180deg, #1C2527 0%, #14161A 80.73%, #121316 100%)",
 };
 
 const zIndices = {};

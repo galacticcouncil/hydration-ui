@@ -8,7 +8,7 @@ import {
   ColorProps,
 } from "common/styles";
 
-export type BoxTypes = {
+export type BoxProps = {
   children: ReactNode;
 } & MarginProps &
   PaddingProps &
@@ -16,6 +16,6 @@ export type BoxTypes = {
   SizeProps &
   ColorProps;
 
-export const Box: FC<BoxTypes> = ({ children, ...rest }) => (
+export const Box: FC<BoxProps> = ({ children, ...rest }) => (
   <StyledBox {...rest}>{children}</StyledBox>
 );

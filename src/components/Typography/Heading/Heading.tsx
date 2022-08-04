@@ -1,22 +1,24 @@
+import { ColorProps, FontProps, MarginProps } from "common/styles";
 import { FC } from "react";
 import { StyledH1 } from "./Heading.styled";
 
 type variant = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 export type HeadingProps = {
-  as: variant;
+  as?: variant;
   children?: string;
   text?: string;
-  weight?: number;
-  fs?: number;
-};
+} & FontProps &
+  MarginProps &
+  ColorProps;
 
 export const Heading: FC<HeadingProps> = ({
   children,
   text,
   as = "h1",
+  color = "neutralGray100",
   ...rest
 }) => (
-  <StyledH1 as={as} {...rest}>
+  <StyledH1 as={as} color={color} {...rest}>
     {text || children}
   </StyledH1>
 );

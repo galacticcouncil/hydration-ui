@@ -1,8 +1,8 @@
 import { colors, flex, margins, paddings, size } from "common/styles";
 import styled from "styled-components/macro";
-import { BoxTypes } from "./Box";
+import { BoxProps } from "./Box";
 
-export const StyledBox = styled.div<BoxTypes>`
+export const StyledBox = styled.div<BoxProps>`
   ${flex};
   ${margins};
   ${paddings};

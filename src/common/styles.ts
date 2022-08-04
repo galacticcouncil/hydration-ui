@@ -28,7 +28,7 @@ export type SizeProps = {
   height?: number;
 };
 
-type Color = keyof typeof theme.colors;
+export type Color = keyof typeof theme.colors;
 
 export type ColorProps = {
   color?: Color;
@@ -51,6 +51,13 @@ export type FlexProps = {
   center?: boolean;
 };
 
+export type FontProps = {
+  fs?: number;
+  fw?: number;
+  opacity?: number;
+  lh?: number;
+};
+
 export const margins = css<MarginProps>`
   ${(p) => p.mt && `margin-top: ${autoOrPx(p.mt)}`};
   ${(p) => p.mr && `margin-right: ${autoOrPx(p.mr)}`};
@@ -60,7 +67,7 @@ export const margins = css<MarginProps>`
 `;
 
 export const paddings = css<PaddingProps>`
-  ${(p) => p.p && `padding: ${p.p}px`};
+  ${(p) => p.p && `padding: ${typeof p.p === "string" ? p.p : `${p.p}`}px`};
   ${(p) => p.pt && `padding-top: ${p.pt}px`};
   ${(p) => p.pr && `padding-right: ${p.pr}px`};
   ${(p) => p.pb && `padding-bottom: ${p.pb}px`};
@@ -153,4 +160,11 @@ export const flex = css<FlexProps>`
 export const colors = css<ColorProps>`
   ${(p) => p.color && `color: ${theme.colors[p.color]}`}
   ${(p) => p.bg && `background: ${theme.colors[p.bg]}`}
+`;
+
+export const fonts = css<FontProps>`
+  ${(p) => p.opacity && `opacity: ${p.opacity}`};
+  ${(p) => p.fs && `font-size: ${p.fs}px`};
+  ${(p) => p.fw && `font-weight: ${p.fw}`};
+  ${(p) => p.lh && `line-height: ${p.fw}`};
 `;
