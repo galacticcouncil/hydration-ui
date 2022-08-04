@@ -1,5 +1,5 @@
 import { Switch, SwitchThumb } from "@radix-ui/react-switch";
-import styled, { css } from "styled-components";
+import styled, { css } from "styled-components/macro";
 import { theme } from "theme";
 
 export const StyledThumb = styled(SwitchThumb)<{

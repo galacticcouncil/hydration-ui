@@ -7,10 +7,18 @@ export type TextProps = {
   text?: string;
 } & ColorProps &
   MarginProps &
-  FontProps;
+  FontProps &
+  ColorProps;
 
-export const Text: FC<TextProps> = ({ children, text, fw = 500, ...rest }) => (
-  <StyledText {...rest} fw={fw}>
+export const Text: FC<TextProps> = ({
+  children,
+  text,
+  fw = 500,
+  fs = 16,
+  color = "neutralGray100",
+  ...rest
+}) => (
+  <StyledText {...rest} fw={fw} fs={fs} color={color}>
     {text || children}
   </StyledText>
 );

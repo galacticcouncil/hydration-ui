@@ -2,5 +2,8 @@
   "farmsPoolsPage.header.title": "Pools & Farms",
   "farmsPoolsPage.header.switch": "My Positions",
   "farmsPoolsPage.header.valueLocked": "Total value locked",
-  "farmsPoolsPage.header.valueFarms": "Total value in Farms"
+  "farmsPoolsPage.header.valueFarms": "Total value in Farms",
+  "farmsPoolsPage.poolCard.poolDetails.fee": "Trade Fee",
+  "farmsPoolsPage.poolCard.poolDetails.valueLocked": "Total Value Locked",
+  "farmsPoolsPage.poolCard.poolDetails.24hours": " 24h Volume"
 }

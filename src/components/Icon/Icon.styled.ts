@@ -10,5 +10,10 @@ export const StyledIconWrapper = styled.span<IconProps>`
     css`
       width: ${p.size}px;
       height: ${p.size}px;
+
+      svg {
+        width: ${p.size}px;
+        height: ${p.size}px;
+      }
     `}
 `;
