@@ -6,5 +6,8 @@
   "farmsPoolsPage.poolCard.poolDetails.fee": "Trade Fee",
   "farmsPoolsPage.poolCard.poolDetails.valueLocked": "Total Value Locked",
   "farmsPoolsPage.poolCard.poolDetails.24hours": "24h Volume",
-  "farmsPoolsPage.poolCard.farmIncentives.title": "Farm Incentives"
+  "farmsPoolsPage.poolCard.farmIncentives.title": "Farm Incentives",
+  "farmsPoolsPage.poolCard.actionButtons.addLiquidity": "add liquidity",
+  "farmsPoolsPage.poolCard.actionButtons.removeLiquidity": "remove liquidity",
+  "farmsPoolsPage.poolCard.actionButtons.joinfarm": "join farm"
 }

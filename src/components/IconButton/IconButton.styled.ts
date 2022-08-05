@@ -1,4 +1,4 @@
-import { colors, margins, size } from "common/styles";
+import { colors, margins } from "common/styles";
 import styled, { css } from "styled-components/macro";
 import { theme } from "theme";
 import { IconButtonProps } from "./IconButton";

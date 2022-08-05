@@ -32,7 +32,7 @@ export const ActionButtons: FC<ActionButtonProps> = ({
         >
           <Box flex acenter jcenter>
             <Icon icon={<PlusIcon />} mr={11} />
-            add liquidity
+            {t("farmsPoolsPage.poolCard.actionButtons.addLiquidity")}
           </Box>
         </Button>
         <Button
@@ -45,7 +45,7 @@ export const ActionButtons: FC<ActionButtonProps> = ({
         >
           <Box flex acenter jcenter>
             <Icon icon={<MinusIcon />} mr={11} />
-            REMOVE LIQUIDITY
+            {t("farmsPoolsPage.poolCard.actionButtons.removeLiquidity")}
           </Box>
         </Button>
         <Button
@@ -58,7 +58,7 @@ export const ActionButtons: FC<ActionButtonProps> = ({
         >
           <Box flex acenter jcenter>
             <Icon icon={<WindMillIcon />} mr={11} />
-            JOIN FARM
+            {t("farmsPoolsPage.poolCard.actionButtons.joinFarm")}
           </Box>
         </Button>
       </Box>

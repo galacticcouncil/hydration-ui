@@ -1,6 +1,5 @@
 import { Icon } from "components/Icon/Icon";
 import styled from "styled-components/macro";
-import { theme } from "theme";
 
 export const AssetIconWrapper = styled.div`
   position: relative;
