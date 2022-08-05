@@ -6,6 +6,7 @@ import { Text } from "components/Typography/Text/Text";
 import { useState } from "react";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { getFormattedNumber } from "utils/formatNumber";
 
 export const PageHeader: FC = () => {
   const { t } = useTranslation();
@@ -36,7 +37,7 @@ export const PageHeader: FC = () => {
           </Text>
           <Box flex align="baseline">
             <Heading as="h3" fs={42} fw={900}>
-              $1 100 000 000.
+              {"$" + getFormattedNumber(1100000000) + "."}
             </Heading>
             <Heading fs={28} opacity={0.4}>
               56
@@ -49,7 +50,7 @@ export const PageHeader: FC = () => {
           </Text>
           <Box flex align="baseline">
             <Heading as="h3" fs={42} fw={900}>
-              $1 100 000 000.
+              {"$" + getFormattedNumber(1100000000) + "."}
             </Heading>
             <Heading fs={28} opacity={0.4}>
               56
