@@ -9,5 +9,5 @@
   "farmsPoolsPage.poolCard.farmIncentives.title": "Farm Incentives",
   "farmsPoolsPage.poolCard.actionButtons.addLiquidity": "add liquidity",
   "farmsPoolsPage.poolCard.actionButtons.removeLiquidity": "remove liquidity",
-  "farmsPoolsPage.poolCard.actionButtons.joinfarm": "join farm"
+  "farmsPoolsPage.poolCard.actionButtons.joinFarm": "join farm"
 }

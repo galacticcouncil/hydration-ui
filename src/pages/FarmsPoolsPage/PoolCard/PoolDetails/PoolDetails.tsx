@@ -1,16 +1,17 @@
-import { Box } from "components/Box/Box";
-import { Separator } from "components/Separator/Separator";
-import { Text } from "components/Typography/Text/Text";
-import { FC } from "react";
-import { useTranslation } from "react-i18next";
-import { PoolsIcons } from "./PoolsIcons/PoolsIcons";
+import { BasiliskIcon } from "assets/icons/BasiliskIcon"
+import { Box } from "components/Box/Box"
+import { DualAssetIcons } from "components/DualAssetIcons/DualAssetIcons"
+import { Separator } from "components/Separator/Separator"
+import { Text } from "components/Typography/Text/Text"
+import { FC } from "react"
+import { useTranslation } from "react-i18next"
 
-type PoolDetailsProps = {};
+type PoolDetailsProps = {}
 
-const data = { title: "XYK Pool" };
+const data = { title: "XYK Pool" }
 
 export const PoolDetails: FC<PoolDetailsProps> = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   return (
     <Box flex column width={380}>
@@ -20,7 +21,14 @@ export const PoolDetails: FC<PoolDetailsProps> = () => {
             {data.title}
           </Text>
           <Box flex acenter>
-            <PoolsIcons />
+            <DualAssetIcons
+              firstIcon={{
+                icon: <BasiliskIcon />,
+                withChainedIcon: true,
+                chainedIcon: <BasiliskIcon />,
+              }}
+              secondIcon={{ icon: <BasiliskIcon />, withChainedIcon: true }}
+            />
             <Box flex column gap={1}>
               <Text fw={700} color="white">
                 LPT/LPT
@@ -60,5 +68,5 @@ export const PoolDetails: FC<PoolDetailsProps> = () => {
         </Box>
       </Box>
     </Box>
-  );
-};
+  )
+}

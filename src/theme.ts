@@ -1,27 +1,24 @@
-import { mapObj } from "utils/object";
+import { mapObj } from "utils/object"
 
 const hexToRgb = (hex: string) => {
   // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-  const tmp = hex.replace(
-    shorthandRegex,
-    (m, r, g, b) => r + r + g + g + b + b
-  );
+  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i
+  const tmp = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b)
 
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(tmp);
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(tmp)
   return [
     parseInt(result![1], 16),
     parseInt(result![2], 16),
     parseInt(result![3], 16),
-  ].join(",");
-};
+  ].join(",")
+}
 
 const breakpoints = {
   smallTablet: 640,
   tablet: 850,
   desktop: 1280,
   lgDesktop: 1440,
-};
+}
 
 const colors = {
   white: "#ffffff",
@@ -45,7 +42,7 @@ const colors = {
   neutralGray100: "#E5ECF1",
   darkGreen: "#1D2D26",
   darkGray: "#1A171B",
-};
+}
 
 const gradients = {
   primaryGradient:
@@ -55,9 +52,11 @@ const gradients = {
   simplifiedGradient: "90deg, #4fffb0, #b3ff8f, #ff984e",
   cardGradient:
     "linear-gradient(180deg, #1C2527 0%, #14161A 80.73%, #121316 100%)",
-};
+}
 
-const zIndices = {};
+const zIndices = {
+  chainedIcon: 1,
+}
 
 export const theme = {
   colors,
@@ -66,4 +65,4 @@ export const theme = {
   zIndices,
   breakpoints,
   mq: mapObj((x: number) => `@media (min-width: ${x}px)`, breakpoints),
-};
+}

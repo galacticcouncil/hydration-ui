@@ -1,16 +1,16 @@
-import { PlaceHolderIcon } from "assets/icons/PlaceholderIcon";
-import { FC, ReactNode } from "react";
+import { PlaceHolderIcon } from "assets/icons/PlaceholderIcon"
+import { FC, ReactNode } from "react"
 import {
   AssetIconWrapper,
   StyledChainedIcon,
   StyledIcon,
-} from "./AssetIconWrapper";
+} from "./AssetIcon.styled"
 
-type AssetIconProps = {
-  icon?: ReactNode;
-  chainedIcon?: ReactNode;
-  withChainedIcon?: boolean;
-};
+export type AssetIconProps = {
+  icon?: ReactNode
+  chainedIcon?: ReactNode
+  withChainedIcon?: boolean
+}
 
 export const AssetIcon: FC<AssetIconProps> = ({
   icon,
@@ -25,4 +25,4 @@ export const AssetIcon: FC<AssetIconProps> = ({
       </StyledChainedIcon>
     )}
   </AssetIconWrapper>
-);
+)
