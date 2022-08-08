@@ -12,5 +12,19 @@
   "farmsPoolsPage.poolCard.actionButtons.joinFarm": "join farm",
   "farmsPoolsPage.poolCard.footer.button.claimFarms": "claim all farms",
   "farmsPoolsPage.poolCard.footer.info": "Total locked ${{locked}} of which ${{available}} not farming.",
-  "farmsPoolsPage.poolCard.footer.claim": "$ {{count}} Claimable"
+  "farmsPoolsPage.poolCard.footer.claim": "$ {{count}} Claimable",
+  "farmsPoolsPage.poolCard.liquidity.title": "Your Liquidity Shares",
+  "farmsPoolsPage.poolCard.liquidity.unstakedShares": "Unstaked shares",
+  "farmsPoolsPage.poolCard.liquidity.value": "Current value",
+  "farmsPoolsPage.poolCard.liquidity.possibleAp": "Posible AP",
+  "farmsPoolsPage.poolCard.positions.title": "Your Farming Positions",
+  "farmsPoolsPage.poolCard.positions.farm.openFarm": "Open farms",
+  "farmsPoolsPage.poolCard.positions.farm.join": "Join",
+  "farmsPoolsPage.poolCard.positions.farm.joinedFarms": "Joined Farms",
+  "farmsPoolsPage.poolCard.positions.farm.details": "Details",
+  "farmsPoolsPage.poolCard.positions.positionTitle": "Position #{{position}}",
+  "farmsPoolsPage.poolCard.positions.positionValue": "Entered {{date}}",
+  "farmsPoolsPage.poolCard.positions.lockedTitle": "Locked",
+  "farmsPoolsPage.poolCard.positions.lockedValue": "{{count}} Shares",
+  "farmsPoolsPage.poolCard.positions.currValueTitle": "Current value"
 }
