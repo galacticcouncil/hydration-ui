@@ -28,12 +28,14 @@ export const ClaimFarmsFooter: FC<ClaimFarmsFooterProps> = () => {
           })}
         </Text>
       </Box>
-      <Button variant="gradient" size="small">
-        <Box flex acenter jcenter>
-          <Icon icon={<FlagIcon />} mr={14} ml={7} />
-          {t("farmsPoolsPage.poolCard.footer.button.claimFarms")}
-        </Box>
-      </Button>
+      <Box width={280} pl={30}>
+        <Button variant="gradient" size="small">
+          <Box flex acenter jcenter>
+            <Icon icon={<FlagIcon />} mr={14} ml={7} />
+            {t("farmsPoolsPage.poolCard.footer.button.claimFarms")}
+          </Box>
+        </Button>
+      </Box>
     </FooterWrapper>
   );
 };
