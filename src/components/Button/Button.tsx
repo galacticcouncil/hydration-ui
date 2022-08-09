@@ -1,9 +1,10 @@
+import { SizeProps } from "common/styles"
 import { Link } from "components/Link/Link"
 import { FC, ReactNode, SyntheticEvent } from "react"
 import { StyledButton } from "./Button.styled"
 
 export type ButtonProps = {
-  variant?: "primary" | "secondary"
+  variant?: "primary" | "secondary" | "gradient"
   disabled?: boolean
   text?: string
   to?: string
@@ -13,7 +14,7 @@ export type ButtonProps = {
   onClick?: (e: SyntheticEvent) => void
   size?: "small" | "medium"
   fullWidth?: boolean
-}
+} & SizeProps
 
 export const Button: FC<ButtonProps> = ({
   type = "button",

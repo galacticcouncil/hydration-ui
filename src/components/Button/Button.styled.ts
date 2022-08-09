@@ -1,3 +1,4 @@
+import { size } from "common/styles"
 import styled, { css } from "styled-components/macro"
 import { theme } from "theme"
 import { ButtonProps } from "./Button"
@@ -55,6 +56,32 @@ export const StyledButton = styled.button<ButtonProps>`
     `};
 
   ${p =>
+    p.variant === "gradient" &&
+    css`
+      background: ${theme.gradients.primaryGradient};
+      color: ${theme.colors.backgroundGray800};
+      position: relative;
+      overflow: hidden;
+
+      :hover {
+        &::after {
+          content: "";
+          width: 100%;
+          height: 100%;
+          position: absolute;
+          top: 0;
+          left: 0;
+          background: rgba(${theme.rgbColors.white}, 0.2);
+        }
+      }
+      :active {
+        &::after {
+          background: rgba(${theme.rgbColors.black}, 0.2);
+        }
+      }
+    `};
+
+  ${p =>
     p.variant === "secondary"
       ? p.disabled
         ? css`
@@ -76,5 +103,6 @@ export const StyledButton = styled.button<ButtonProps>`
               transition: background 0.2s ease-in-out;
             }
           `
-      : ``}
+      : ``};
+  ${size};
 `

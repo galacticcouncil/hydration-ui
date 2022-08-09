@@ -20,7 +20,7 @@ export const ActionButtons: FC<ActionButtonProps> = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <Box flex spread acenter m="26px 0 48px">
+    <Box flex spread acenter m="26px 0 48px" width={280}>
       <Box width={214} flex column gap={10} mr={hasJoinedFarms ? 33 : 67}>
         <Button
           fullWidth
