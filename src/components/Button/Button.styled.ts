@@ -1,7 +1,7 @@
-import { size } from "common/styles";
-import styled, { css } from "styled-components/macro";
-import { theme } from "theme";
-import { ButtonProps } from "./Button";
+import { size } from "common/styles"
+import styled, { css } from "styled-components/macro"
+import { theme } from "theme"
+import { ButtonProps } from "./Button"
 
 export const StyledButton = styled.button<ButtonProps>`
   border-radius: 61px;
@@ -11,7 +11,7 @@ export const StyledButton = styled.button<ButtonProps>`
   font-size: 14px;
   text-transform: uppercase;
 
-  ${(p) =>
+  ${p =>
     p.variant === "primary"
       ? p.disabled
         ? css`
@@ -35,7 +35,7 @@ export const StyledButton = styled.button<ButtonProps>`
           `
       : ``}
 
-  ${(p) =>
+  ${p =>
     p.size === "small" &&
     css`
       padding: 12px 15px;
@@ -43,19 +43,19 @@ export const StyledButton = styled.button<ButtonProps>`
       line-height: 18px;
     `};
 
-  ${(p) =>
+  ${p =>
     p.size === "medium" &&
     css`
       padding: 16px 36px;
     `};
 
-  ${(p) =>
+  ${p =>
     p.fullWidth &&
     css`
       width: 100%;
     `};
 
-  ${(p) =>
+  ${p =>
     p.variant === "gradient" &&
     css`
       background: ${theme.gradients.primaryGradient};
@@ -81,7 +81,7 @@ export const StyledButton = styled.button<ButtonProps>`
       }
     `};
 
-  ${(p) =>
+  ${p =>
     p.variant === "secondary"
       ? p.disabled
         ? css`
@@ -105,4 +105,4 @@ export const StyledButton = styled.button<ButtonProps>`
           `
       : ``};
   ${size};
-`;
+`
