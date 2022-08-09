@@ -1,5 +1,6 @@
 import { Icon } from "components/Icon/Icon";
 import styled from "styled-components/macro";
+import { theme } from "theme";
 
 export const AssetIconWrapper = styled.div`
   position: relative;
@@ -24,6 +25,7 @@ export const StyledChainedIcon = styled(Icon)`
   top: 0;
   width: 13px;
   height: 13px;
+  z-index: ${theme.zIndices.chainedIcon};
 
   > svg {
     width: 13px;

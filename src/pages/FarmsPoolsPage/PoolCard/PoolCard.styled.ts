@@ -8,4 +8,5 @@ export const CardWrapper = styled.div`
   width: 100%;
   height: auto;
   margin-bottom: 20px;
+  overflow: hidden;
 `;

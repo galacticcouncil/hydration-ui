@@ -5,12 +5,17 @@ import { CardWrapper } from "./PoolCard.styled";
 import { ClaimFarmsFooter } from "./ClaimFarmsFooter/ClaimFarmsFooter";
 import { Box } from "components/Box/Box";
 import { PoolDetails } from "./mainContent/PoolDetails/PoolDetails";
+import { LiquidityShares } from "./LiquidityShares/LiquidityShares";
 
 type PoolCardProps = {
   hasJoinedFarms: boolean;
+  hasLiquidity: boolean;
 };
 
-export const PoolCard: FC<PoolCardProps> = ({ hasJoinedFarms }) => {
+export const PoolCard: FC<PoolCardProps> = ({
+  hasJoinedFarms,
+  hasLiquidity,
+}) => {
   const [openCard, setOpenCard] = useState(false);
 
   return (
@@ -23,6 +28,7 @@ export const PoolCard: FC<PoolCardProps> = ({ hasJoinedFarms }) => {
           closeCard={() => setOpenCard(false)}
         />
       </Box>
+      {hasLiquidity && <LiquidityShares />}
       {hasJoinedFarms && <ClaimFarmsFooter />}
     </CardWrapper>
   );

@@ -57,7 +57,9 @@ const gradients = {
     "linear-gradient(180deg, #1C2527 0%, #14161A 80.73%, #121316 100%)",
 };
 
-const zIndices = {};
+const zIndices = {
+  chainedIcon: 1,
+};
 
 export const theme = {
   colors,

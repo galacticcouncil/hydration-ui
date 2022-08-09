@@ -69,7 +69,7 @@ export const margins = css<MarginProps>`
 `;
 
 export const paddings = css<PaddingProps>`
-  ${(p) => p.p && `padding: ${typeof p.p === "string" ? p.p : `${p.p}`}px`};
+  ${(p) => p.p && `padding: ${typeof p.p === "string" ? p.p : `${p.p}px`}`};
   ${(p) => p.pt && `padding-top: ${p.pt}px`};
   ${(p) => p.pr && `padding-right: ${p.pr}px`};
   ${(p) => p.pb && `padding-bottom: ${p.pb}px`};
@@ -165,8 +165,8 @@ export const flex = css<FlexProps>`
 `;
 
 export const colors = css<ColorProps>`
-  ${(p) => p.color && `color: ${theme.colors[p.color]}`}
-  ${(p) => p.bg && `background: ${theme.colors[p.bg]}`}
+  ${(p) => p.color && `color: ${theme.colors[p.color]}`};
+  ${(p) => p.bg && `background: ${theme.colors[p.bg]}`};
 `;
 
 export const fonts = css<FontProps>`
