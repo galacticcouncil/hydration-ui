@@ -3,6 +3,7 @@ import { Separator } from "components/Separator/Separator";
 import { Text } from "components/Typography/Text/Text";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { getFormattedNumber } from "utils/formatNumber";
 import { PoolsIcons } from "./PoolsIcons/PoolsIcons";
 
 type PoolDetailsProps = {};
@@ -47,7 +48,7 @@ export const PoolDetails: FC<PoolDetailsProps> = () => {
             {t("farmsPoolsPage.poolCard.poolDetails.valueLocked")}
           </Text>
           <Text lh={22} color="white" fs={18}>
-            $100000000
+            {"$" + getFormattedNumber(100000000)}
           </Text>
         </Box>
         <Box flex column width={120} align="start">
@@ -55,7 +56,7 @@ export const PoolDetails: FC<PoolDetailsProps> = () => {
             {t("farmsPoolsPage.poolCard.poolDetails.24hours")}
           </Text>
           <Text lh={22} color="white" fs={18}>
-            $12300.45
+            {"$" + getFormattedNumber(1234.45)}
           </Text>
         </Box>
       </Box>

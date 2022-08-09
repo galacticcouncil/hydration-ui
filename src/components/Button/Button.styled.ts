@@ -55,6 +55,13 @@ export const StyledButton = styled.button<ButtonProps>`
     `};
 
   ${(p) =>
+    p.variant === "gradient" &&
+    css`
+      background: ${theme.gradients.primaryGradient};
+      color: ${theme.colors.backgroundGray800};
+    `};
+
+  ${(p) =>
     p.variant === "secondary"
       ? p.disabled
         ? css`
@@ -76,5 +83,5 @@ export const StyledButton = styled.button<ButtonProps>`
               transition: background 0.2s ease-in-out;
             }
           `
-      : ``}
+      : ``};
 `;

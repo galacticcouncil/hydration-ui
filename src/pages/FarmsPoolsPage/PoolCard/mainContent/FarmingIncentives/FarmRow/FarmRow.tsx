@@ -11,7 +11,7 @@ type FarmRowProps = {
 
 export const FarmRow: FC<FarmRowProps> = ({ icon, name, value }) => (
   <Box flex acenter spread mb={13}>
-    <Icon icon={icon} mr={10} />
+    <Icon icon={icon} mr={10} size={28} />
     <Text color="white" fw={700}>
       {name}
     </Text>

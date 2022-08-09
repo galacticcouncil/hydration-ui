@@ -1,5 +1,5 @@
 import { Page } from "components/Page/Page";
-import { PageHeader } from "./PageHeader/PageHeader";
+import { PageHeader } from "./FarmsPoolsPageHeader/PageHeader";
 import { PoolCard } from "./PoolCard/PoolCard";
 
 export const FarmsPoolsPage = () => {
