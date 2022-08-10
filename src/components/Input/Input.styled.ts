@@ -1,7 +1,5 @@
-import { size } from "common/styles"
 import styled, { css } from "styled-components/macro"
 import { theme } from "theme"
-import { SizeProps } from "common/styles"
 
 export const InputWrapper = styled.div<{
   unit: string | undefined
@@ -25,9 +23,7 @@ export const InputWrapper = styled.div<{
     `};
 `
 
-export const StyledInput = styled.input<
-  { showError?: boolean; unit?: string } & SizeProps
->`
+export const StyledInput = styled.input<{ showError?: boolean; unit?: string }>`
   background: ${theme.colors.backgroundGray800};
   border-radius: 9px;
   border: 1px solid
@@ -36,8 +32,6 @@ export const StyledInput = styled.input<
   color: ${theme.colors.white};
   font-size: 14px;
   padding: 20px 18px;
-
-  ${size};
 
   ::placeholder {
     color: rgba(${theme.rgbColors.white}, 0.4);
