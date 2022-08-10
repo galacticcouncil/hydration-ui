@@ -1,17 +1,17 @@
-import { Box } from "components/Box/Box";
-import { Switch } from "components/Switch/Switch";
-import { GradientText } from "components/Typography/GradientText/GradientText";
-import { Heading } from "components/Typography/Heading/Heading";
-import { Text } from "components/Typography/Text/Text";
-import { useState } from "react";
-import { FC } from "react";
-import { useTranslation } from "react-i18next";
-import { getFormattedNumber } from "utils/formatNumber";
+import { Box } from "components/Box/Box"
+import { Switch } from "components/Switch/Switch"
+import { GradientText } from "components/Typography/GradientText/GradientText"
+import { Heading } from "components/Typography/Heading/Heading"
+import { Text } from "components/Typography/Text/Text"
+import { useState } from "react"
+import { FC } from "react"
+import { useTranslation } from "react-i18next"
+import { getFormattedNumber } from "utils/formatNumber"
 
 export const PageHeader: FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
-  const [showMyFarms, setShowMyFarms] = useState<boolean>(false);
+  const [showMyFarms, setShowMyFarms] = useState<boolean>(false)
 
   return (
     <>
@@ -19,16 +19,14 @@ export const PageHeader: FC = () => {
         <GradientText fs={30} fw={700}>
           {t("farmsPoolsPage.header.title")}
         </GradientText>
-        <Box flex acenter>
-          <Text fs={14} mr={10}>
-            {t("farmsPoolsPage.header.switch")}
-          </Text>
-          <Switch
-            value={showMyFarms}
-            onCheckedChange={setShowMyFarms}
-            size="small"
-          />
-        </Box>
+        <Switch
+          value={showMyFarms}
+          onCheckedChange={setShowMyFarms}
+          size="small"
+          name="my-positions"
+          label={t("farmsPoolsPage.header.switch")}
+          withLabel
+        />
       </Box>
       <Box flex even mb={40}>
         <Box>
@@ -59,5 +57,5 @@ export const PageHeader: FC = () => {
         </Box>
       </Box>
     </>
-  );
-};
+  )
+}

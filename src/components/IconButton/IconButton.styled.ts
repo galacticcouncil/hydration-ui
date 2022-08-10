@@ -1,10 +1,10 @@
-import { colors, margins } from "common/styles";
-import styled, { css } from "styled-components/macro";
-import { theme } from "theme";
-import { IconButtonProps } from "./IconButton";
+import { colors, margins } from "common/styles"
+import styled, { css } from "styled-components/macro"
+import { theme } from "theme"
+import { ColorProps } from "common/styles"
 
-export const StyledIconButton = styled.button<IconButtonProps>`
-  ${(p) =>
+export const StyledIconButton = styled.button<{ round?: boolean } & ColorProps>`
+  ${p =>
     p.round &&
     css`
       border-radius: 50%;
@@ -21,4 +21,4 @@ export const StyledIconButton = styled.button<IconButtonProps>`
 
   ${colors};
   ${margins};
-`;
+`

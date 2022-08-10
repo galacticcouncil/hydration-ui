@@ -26,5 +26,6 @@
   "farmsPoolsPage.poolCard.positions.positionValue": "Entered {{date}}",
   "farmsPoolsPage.poolCard.positions.lockedTitle": "Locked",
   "farmsPoolsPage.poolCard.positions.lockedValue": "{{count}} Shares",
-  "farmsPoolsPage.poolCard.positions.currValueTitle": "Current value"
+  "farmsPoolsPage.poolCard.positions.currValueTitle": "Current value",
+  "farmsPoolsPage.poolCard.actionButtons.chevron.name": "Open details button"
 }
