@@ -13,7 +13,6 @@ export type InputProps = {
   unit?: string
   type?: string
   placeholder?: string
-  showError?: boolean
   error?: string
   withLabel?: boolean
   //   TODO add optional tooltip once we have tooltip component
@@ -37,7 +36,6 @@ export const Input: FC<InputProps> = ({
         id={name}
         label={label}
         error={p.error}
-        showError={p.showError}
         withLabel={withLabel}
         width={p.width || 300}
         mb={5}
@@ -51,7 +49,7 @@ export const Input: FC<InputProps> = ({
             value={value ?? ""}
             id={name}
             type={type}
-            showError={p.showError}
+            error={p.error}
             unit={p.unit}
             placeholder={placeholder}
           />

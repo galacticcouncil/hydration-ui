@@ -23,11 +23,11 @@ export const InputWrapper = styled.div<{
     `};
 `
 
-export const StyledInput = styled.input<{ showError?: boolean; unit?: string }>`
+export const StyledInput = styled.input<{ error?: string; unit?: string }>`
   background: ${theme.colors.backgroundGray800};
   border-radius: 9px;
   border: 1px solid
-    ${p => (p.showError ? theme.colors.error : theme.colors.backgroundGray600)};
+    ${p => (p.error ? theme.colors.error : theme.colors.backgroundGray600)};
 
   color: ${theme.colors.white};
   font-size: 14px;

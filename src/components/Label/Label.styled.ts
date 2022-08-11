@@ -10,11 +10,10 @@ import {
   fonts,
 } from "common/styles"
 
-export const StyledLabel = styled(Label)<{ showError?: boolean } & FontProps>`
+export const StyledLabel = styled(Label)<{ error?: string } & FontProps>`
   font-size: 16px;
   line-height: 22px;
-  color: ${p =>
-    p.showError ? theme.colors.error : theme.colors.neutralGray100};
+  color: ${p => (p.error ? theme.colors.error : theme.colors.neutralGray100)};
   text-transform: capitalize;
   ${fonts};
 s
