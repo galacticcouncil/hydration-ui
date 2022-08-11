@@ -1,17 +1,17 @@
-import { BasiliskIcon } from "assets/icons/BasiliskIcon";
-import { Box } from "components/Box/Box";
-import { Button } from "components/Button/Button";
-import { Icon } from "components/Icon/Icon";
-import { GradientText } from "components/Typography/GradientText/GradientText";
-import { Text } from "components/Typography/Text/Text";
-import { FC } from "react";
-import { useTranslation } from "react-i18next";
-import { AvailableFarms, FarmsWrapper, JoinedFarms } from "./Farms.styled";
+import { BasiliskIcon } from "assets/icons/BasiliskIcon"
+import { Box } from "components/Box/Box"
+import { Button } from "components/Button/Button"
+import { Icon } from "components/Icon/Icon"
+import { GradientText } from "components/Typography/GradientText/GradientText"
+import { Text } from "components/Typography/Text/Text"
+import { FC } from "react"
+import { useTranslation } from "react-i18next"
+import { AvailableFarms, FarmsWrapper, JoinedFarms } from "./Farms.styled"
 
-type FarmProps = {};
+type FarmProps = {}
 
 export const Farms: FC<FarmProps> = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   return (
     <FarmsWrapper>
       <JoinedFarms>
@@ -23,7 +23,7 @@ export const Farms: FC<FarmProps> = () => {
           />
           <Icon icon={<BasiliskIcon />} size={26} />
           <Icon icon={<BasiliskIcon />} mr={5} size={26} />
-          <Text fs={14} color="primarySuccess200">
+          <Text fs={14} color="primary200">
             5-10% APR
           </Text>
         </Box>
@@ -41,7 +41,7 @@ export const Farms: FC<FarmProps> = () => {
             mr={10}
           />
           <Icon icon={<BasiliskIcon />} mr={5} size={26} />
-          <Text fs={14} color="primarySuccess200">
+          <Text fs={14} color="primary200">
             5-10% APR
           </Text>
         </Box>
@@ -53,5 +53,5 @@ export const Farms: FC<FarmProps> = () => {
         />
       </AvailableFarms>
     </FarmsWrapper>
-  );
-};
+  )
+}

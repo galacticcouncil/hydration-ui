@@ -1,20 +1,20 @@
-import { FlagIcon } from "assets/icons/FlagIcon";
-import { Box } from "components/Box/Box";
-import { Button } from "components/Button/Button";
-import { Icon } from "components/Icon/Icon";
-import { Text } from "components/Typography/Text/Text";
-import { FC } from "react";
-import { useTranslation } from "react-i18next";
-import { FooterWrapper } from "./ClaimFarmsFooter.styled";
+import { FlagIcon } from "assets/icons/FlagIcon"
+import { Box } from "components/Box/Box"
+import { Button } from "components/Button/Button"
+import { Icon } from "components/Icon/Icon"
+import { Text } from "components/Typography/Text/Text"
+import { FC } from "react"
+import { useTranslation } from "react-i18next"
+import { FooterWrapper } from "./ClaimFarmsFooter.styled"
 
-type ClaimFarmsFooterProps = {};
+type ClaimFarmsFooterProps = {}
 
 export const ClaimFarmsFooter: FC<ClaimFarmsFooterProps> = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   return (
     <FooterWrapper flex spread acenter>
       <Box width={380}>
-        <Text fw={600} color="primarySuccess100">
+        <Text fw={600} color="primary100">
           {t("farmsPoolsPage.poolCard.footer.info", {
             locked: 2000,
             available: 1000,
@@ -37,5 +37,5 @@ export const ClaimFarmsFooter: FC<ClaimFarmsFooterProps> = () => {
         </Button>
       </Box>
     </FooterWrapper>
-  );
-};
+  )
+}

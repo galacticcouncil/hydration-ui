@@ -35,7 +35,7 @@ export const StyledThumb = styled(SwitchThumb)<{
     css`
       left: initial;
       right: 1px;
-      background: ${theme.colors.primarySuccess500};
+      background: ${theme.colors.primary500};
       border-color: ${theme.colors.darkGreen};
     `}
 
@@ -70,7 +70,7 @@ export const StyledSwitch = styled(Switch)<
     p.checked &&
     css`
       background: ${theme.colors.darkGreen};
-      border: 1px solid ${theme.colors.primarySuccess300};
+      border: 1px solid ${theme.colors.primary300};
     `}
   ${p =>
     p.disabled &&
@@ -80,7 +80,7 @@ export const StyledSwitch = styled(Switch)<
 
   :hover {
     > * {
-      border-color: ${theme.colors.primarySuccess300};
+      border-color: ${theme.colors.primary300};
     }
   }
   ${margins};

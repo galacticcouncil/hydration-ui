@@ -1,8 +1,8 @@
-import { createGlobalStyle } from "styled-components/macro";
-import { normalize } from "styled-normalize";
-import SatoshiVariable from "assets/fonts/SatoshiVariable.ttf";
+import { createGlobalStyle } from "styled-components/macro"
+import { normalize } from "styled-normalize"
+import SatoshiVariable from "assets/fonts/SatoshiVariable.ttf"
 
-import { theme } from "theme";
+import { theme } from "theme"
 
 export const GlobalStyle = createGlobalStyle`
  
@@ -38,7 +38,7 @@ export const GlobalStyle = createGlobalStyle`
   * {
   box-sizing: border-box;
   :focus-visible {
-    outline: 1px solid ${theme.colors.primarySuccess300};
+    outline: 1px solid ${theme.colors.primary300};
   }
   }
 
@@ -71,4 +71,4 @@ export const GlobalStyle = createGlobalStyle`
     color: unset;
   }
    
-`;
+`

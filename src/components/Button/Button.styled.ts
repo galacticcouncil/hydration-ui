@@ -15,21 +15,21 @@ export const StyledButton = styled.button<ButtonProps>`
     p.variant === "primary"
       ? p.disabled
         ? css`
-            background: rgba(${theme.rgbColors.primarySuccess100}, 0.06);
+            background: rgba(${theme.rgbColors.primary100}, 0.06);
             color: rgba(${theme.rgbColors.white}, 0.6);
             pointer-events: none;
           `
         : css`
             color: ${theme.colors.backgroundGray800};
-            background: ${theme.colors.primarySuccess400};
+            background: ${theme.colors.primary400};
 
             :hover {
-              background: ${theme.colors.primarySuccess300};
+              background: ${theme.colors.primary300};
               transition: background 0.2s ease-in-out;
             }
 
             :active {
-              background: ${theme.colors.primarySuccess500};
+              background: ${theme.colors.primary500};
               transition: background 0.2s ease-in-out;
             }
           `
@@ -90,16 +90,16 @@ export const StyledButton = styled.button<ButtonProps>`
             pointer-events: none;
           `
         : css`
-            background: rgba(${theme.rgbColors.primarySuccess450}, 0.12);
-            color: ${theme.colors.primarySuccess400};
+            background: rgba(${theme.rgbColors.primary450}, 0.12);
+            color: ${theme.colors.primary400};
 
             :hover {
-              background: rgba(${theme.rgbColors.primarySuccess450}, 0.3);
+              background: rgba(${theme.rgbColors.primary450}, 0.3);
               transition: background 0.2s ease-in-out;
             }
 
             :active {
-              background: rgba(${theme.rgbColors.primarySuccess450}, 0.5);
+              background: rgba(${theme.rgbColors.primary450}, 0.5);
               transition: background 0.2s ease-in-out;
             }
           `

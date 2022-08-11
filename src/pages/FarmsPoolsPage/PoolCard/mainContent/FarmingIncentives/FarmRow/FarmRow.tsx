@@ -1,13 +1,13 @@
-import { Box } from "components/Box/Box";
-import { Icon } from "components/Icon/Icon";
-import { Text } from "components/Typography/Text/Text";
-import { FC, ReactNode } from "react";
+import { Box } from "components/Box/Box"
+import { Icon } from "components/Icon/Icon"
+import { Text } from "components/Typography/Text/Text"
+import { FC, ReactNode } from "react"
 
 type FarmRowProps = {
-  icon: ReactNode;
-  name: string;
-  value: string;
-};
+  icon: ReactNode
+  name: string
+  value: string
+}
 
 export const FarmRow: FC<FarmRowProps> = ({ icon, name, value }) => (
   <Box flex acenter spread mb={13}>
@@ -15,8 +15,8 @@ export const FarmRow: FC<FarmRowProps> = ({ icon, name, value }) => (
     <Text color="white" fw={700}>
       {name}
     </Text>
-    <Text ml={"auto"} fw={700} color="primarySuccess200">
+    <Text ml={"auto"} fw={700} color="primary200">
       {value + "% APR"}
     </Text>
   </Box>
-);
+)

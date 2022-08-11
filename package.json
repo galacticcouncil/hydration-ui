@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@radix-ui/react-label": "^1.0.0",
     "@radix-ui/react-dialog": "^1.0.0",
+    "@radix-ui/react-label": "^1.0.0",
     "@radix-ui/react-portal": "^1.0.0",
     "@radix-ui/react-separator": "^1.0.0",
     "@radix-ui/react-switch": "^1.0.0",
@@ -24,6 +24,7 @@
     "react-i18next": "^11.18.3",
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
+    "recharts": "^2.1.13",
     "styled-components": "^5.3.5",
     "styled-normalize": "^8.0.7",
     "typescript": "^4.7.4",

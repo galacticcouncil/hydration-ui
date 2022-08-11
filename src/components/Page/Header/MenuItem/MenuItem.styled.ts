@@ -1,11 +1,11 @@
-import styled, { css } from "styled-components/macro";
-import { theme } from "theme";
+import styled, { css } from "styled-components/macro"
+import { theme } from "theme"
 
 export const StyledMenuItem = styled.div<{ active?: boolean }>`
   color: ${theme.colors.neutralGray300};
-  ${(p) =>
+  ${p =>
     p.active &&
     css`
-      color: ${theme.colors.primarySuccess100};
+      color: ${theme.colors.primary100};
     `};
-`;
+`
