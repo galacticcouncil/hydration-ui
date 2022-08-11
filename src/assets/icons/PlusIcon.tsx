@@ -9,8 +9,8 @@ export const PlusIcon = () => (
     <path
       d="M7 1.5V7M7 12.5V7M7 7H1.5M7 7H12.5"
       stroke="#4FFFB0"
-      stroke-width="2"
-      stroke-linecap="round"
+      strokeWidth="2"
+      strokeLinecap="round"
     />
   </svg>
-);
+)

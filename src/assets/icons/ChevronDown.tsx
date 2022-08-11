@@ -9,9 +9,9 @@ export const ChevronDown = () => (
     <path
       d="M1.00977 1L5.00977 4L9.00977 1"
       stroke="#BDCCD4"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
-);
+)
