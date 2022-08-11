@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.0.0",
+    "@radix-ui/react-portal": "^1.0.0",
     "@radix-ui/react-separator": "^1.0.0",
     "@radix-ui/react-switch": "^1.0.0",
     "@testing-library/jest-dom": "^5.16.4",
