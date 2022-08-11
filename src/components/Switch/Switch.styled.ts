@@ -1,11 +1,12 @@
-import { Switch, SwitchThumb } from "@radix-ui/react-switch";
-import styled, { css } from "styled-components/macro";
-import { theme } from "theme";
+import { Switch, SwitchThumb } from "@radix-ui/react-switch"
+import { margins, MarginProps } from "common/styles"
+import styled, { css } from "styled-components/macro"
+import { theme } from "theme"
 
 export const StyledThumb = styled(SwitchThumb)<{
-  checked: boolean;
-  disabled?: boolean;
-  size?: "small" | "regular";
+  checked: boolean
+  disabled?: boolean
+  size?: "small" | "regular"
 }>`
   position: absolute;
   border-radius: 50%;
@@ -16,7 +17,7 @@ export const StyledThumb = styled(SwitchThumb)<{
   background: ${theme.colors.neutralGray400};
   border-style: solid;
 
-  ${(p) =>
+  ${p =>
     p.size === "small"
       ? css`
           width: 20px;
@@ -29,7 +30,7 @@ export const StyledThumb = styled(SwitchThumb)<{
           border-width: 2px;
         `}
 
-  ${(p) =>
+  ${p =>
     p.checked &&
     css`
       left: initial;
@@ -38,21 +39,23 @@ export const StyledThumb = styled(SwitchThumb)<{
       border-color: ${theme.colors.darkGreen};
     `}
 
-  ${(p) =>
+  ${p =>
     p.disabled &&
     css`
       background: ${theme.colors.backgroundGray800};
     `}
-`;
+`
 
-export const StyledSwitch = styled(Switch)<{ size?: "small" | "regular" }>`
+export const StyledSwitch = styled(Switch)<
+  { size?: "small" | "regular" } & MarginProps
+>`
   position: relative;
   border-radius: 45px;
   border: 1px solid ${theme.colors.backgroundGray700};
   background: ${theme.colors.darkGray};
   cursor: pointer;
 
-  ${(p) =>
+  ${p =>
     p.size === "small"
       ? css`
           width: 46px;
@@ -63,13 +66,13 @@ export const StyledSwitch = styled(Switch)<{ size?: "small" | "regular" }>`
           height: 38px;
         `}
 
-  ${(p) =>
+  ${p =>
     p.checked &&
     css`
       background: ${theme.colors.darkGreen};
       border: 1px solid ${theme.colors.primarySuccess300};
     `}
-  ${(p) =>
+  ${p =>
     p.disabled &&
     css`
       pointer-events: none;
@@ -80,4 +83,5 @@ export const StyledSwitch = styled(Switch)<{ size?: "small" | "regular" }>`
       border-color: ${theme.colors.primarySuccess300};
     }
   }
-`;
+  ${margins};
+`

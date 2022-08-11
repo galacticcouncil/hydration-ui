@@ -1,9 +1,9 @@
 import { colors, margins } from "common/styles"
 import styled, { css } from "styled-components/macro"
 import { theme } from "theme"
-import { IconButtonProps } from "./IconButton"
+import { ColorProps } from "common/styles"
 
-export const StyledIconButton = styled.button<IconButtonProps>`
+export const StyledIconButton = styled.button<{ round?: boolean } & ColorProps>`
   ${p =>
     p.round &&
     css`

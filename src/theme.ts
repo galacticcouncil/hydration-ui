@@ -32,7 +32,7 @@ const colors = {
   backgroundGray1000: "#1C1A1F",
   backgroundGray900: "#211F24",
   backgroundGray800: "#26282F",
-  backgroundGray700: "#44444A",
+  backgroundGray700: "#3E3E4B",
   backgroundGray600: "#51515F",
   backgroundGray500: "#686876",
   iconButtonGrey: "#3D3D3D",
@@ -43,6 +43,7 @@ const colors = {
   neutralGray100: "#E5ECF1",
   darkGreen: "#1D2D26",
   darkGray: "#1A171B",
+  error: "#FF8A8A",
 }
 
 const gradients = {

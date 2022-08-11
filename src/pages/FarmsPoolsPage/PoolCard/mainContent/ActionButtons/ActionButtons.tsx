@@ -68,7 +68,12 @@ export const ActionButtons: FC<ActionButtonProps> = ({
           </Button>
         </Box>
         {hasJoinedFarms && (
-          <IconButton icon={<ChevronDown />} width={6} height={3} />
+          <IconButton
+            icon={<ChevronDown />}
+            width={6}
+            height={3}
+            name={t("farmsPoolsPage.poolCard.actionButtons.chevron.name")}
+          />
         )}
       </Box>
       {/* Gonna be separate component for each modal flow */}
