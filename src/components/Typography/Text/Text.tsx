@@ -5,6 +5,7 @@ import { StyledText } from "./Text.styled"
 export type TextProps = {
   children?: string
   text?: string
+  className?: string
 } & ColorProps &
   MarginProps &
   FontProps

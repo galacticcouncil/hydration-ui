@@ -18,7 +18,7 @@ const breakpoints = {
   tablet: 850,
   desktop: 1280,
   lgDesktop: 1440,
-}
+} as const
 
 const colors = {
   white: "#ffffff",
@@ -73,7 +73,7 @@ const colors = {
   graphGradient0: "#4FFFB0",
   graphGradient50: "#B3FF8F",
   graphGradient100: "#FF984E",
-}
+} as const
 
 const gradients = {
   primaryGradient:
@@ -83,13 +83,13 @@ const gradients = {
   simplifiedGradient: "90deg, #4fffb0, #b3ff8f, #ff984e",
   cardGradient:
     "linear-gradient(180deg, #1C2527 0%, #14161A 80.73%, #121316 100%)",
-}
+} as const
 
 const zIndices = {
   chainedIcon: 1,
   backdrop: 2,
   modal: 3,
-}
+} as const
 
 export const theme = {
   colors,
