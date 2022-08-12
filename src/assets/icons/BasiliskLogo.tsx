@@ -209,4 +209,4 @@ export const BasiliskLogo = () => (
     <path d="M68.9878 21.591V20.2671H67.6824V21.591H68.9878Z" fill="#4FFFB0" />
     <path d="M67.6816 21.591V20.2671H66.3762V21.591H67.6816Z" fill="#4FFFB0" />
   </svg>
-);
+)

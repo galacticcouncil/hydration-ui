@@ -6,4 +6,4 @@ type BackdropProps = {
   children?: ReactNode
 }
 
-export const Backdrop: FC<BackdropProps> = p => <StyledBackdrop {...p} />
+export const Backdrop: FC<BackdropProps> = (p) => <StyledBackdrop {...p} />

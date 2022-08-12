@@ -13,4 +13,4 @@ export const BasiliskIcon = () => (
       />
     </svg>
   </>
-);
+)

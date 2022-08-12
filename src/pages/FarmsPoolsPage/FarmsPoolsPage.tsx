@@ -1,6 +1,6 @@
-import { Page } from "components/Page/Page";
-import { PageHeader } from "./FarmsPoolsPageHeader/PageHeader";
-import { PoolCard } from "./PoolCard/PoolCard";
+import { Page } from "components/Page/Page"
+import { PageHeader } from "./FarmsPoolsPageHeader/PageHeader"
+import { PoolCard } from "./PoolCard/PoolCard"
 
 export const FarmsPoolsPage = () => {
   return (
@@ -13,5 +13,5 @@ export const FarmsPoolsPage = () => {
       <PoolCard hasJoinedFarms={false} hasLiquidity={false} />
       <PoolCard hasJoinedFarms={true} hasLiquidity={false} />
     </Page>
-  );
-};
+  )
+}

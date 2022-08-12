@@ -1,14 +1,14 @@
-import { Box } from "components/Box/Box";
-import { GradientText } from "components/Typography/GradientText/GradientText";
-import { Text } from "components/Typography/Text/Text";
-import { FC } from "react";
-import { useTranslation } from "react-i18next";
-import { FarmingPositions } from "./FarmingPositions/FarmingPositions";
+import { Box } from "components/Box/Box"
+import { GradientText } from "components/Typography/GradientText/GradientText"
+import { Text } from "components/Typography/Text/Text"
+import { FC } from "react"
+import { useTranslation } from "react-i18next"
+import { FarmingPositions } from "./FarmingPositions/FarmingPositions"
 
-type LiquiditySharesProps = {};
+type LiquiditySharesProps = {}
 
 export const LiquidityShares: FC<LiquiditySharesProps> = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   return (
     <Box bg={"black"}>
       <Box p="22px 60px 34px 25px">
@@ -50,5 +50,5 @@ export const LiquidityShares: FC<LiquiditySharesProps> = () => {
         <FarmingPositions />
       </Box>
     </Box>
-  );
-};
+  )
+}

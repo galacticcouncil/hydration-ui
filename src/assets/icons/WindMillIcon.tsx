@@ -25,4 +25,4 @@ export const WindMillIcon = () => (
       fill="#4FFFB0"
     />
   </svg>
-);
+)

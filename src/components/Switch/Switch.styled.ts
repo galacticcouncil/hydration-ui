@@ -17,7 +17,7 @@ export const StyledThumb = styled(SwitchThumb)<{
   background: ${theme.colors.neutralGray400};
   border-style: solid;
 
-  ${p =>
+  ${(p) =>
     p.size === "small"
       ? css`
           width: 20px;
@@ -30,7 +30,7 @@ export const StyledThumb = styled(SwitchThumb)<{
           border-width: 2px;
         `}
 
-  ${p =>
+  ${(p) =>
     p.checked &&
     css`
       left: initial;
@@ -39,7 +39,7 @@ export const StyledThumb = styled(SwitchThumb)<{
       border-color: ${theme.colors.darkGreen};
     `}
 
-  ${p =>
+  ${(p) =>
     p.disabled &&
     css`
       background: ${theme.colors.backgroundGray800};
@@ -55,7 +55,7 @@ export const StyledSwitch = styled(Switch)<
   background: ${theme.colors.darkGray};
   cursor: pointer;
 
-  ${p =>
+  ${(p) =>
     p.size === "small"
       ? css`
           width: 46px;
@@ -66,13 +66,13 @@ export const StyledSwitch = styled(Switch)<
           height: 38px;
         `}
 
-  ${p =>
+  ${(p) =>
     p.checked &&
     css`
       background: ${theme.colors.darkGreen};
       border: 1px solid ${theme.colors.primary300};
     `}
-  ${p =>
+  ${(p) =>
     p.disabled &&
     css`
       pointer-events: none;

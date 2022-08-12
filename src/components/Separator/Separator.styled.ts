@@ -1,8 +1,8 @@
-import styled, { css } from "styled-components/macro";
-import * as RadixSeparator from "@radix-ui/react-separator";
-import { margins } from "common/styles";
-import { theme } from "theme";
-import { SeparatorProps } from "./Separator";
+import styled, { css } from "styled-components/macro"
+import * as RadixSeparator from "@radix-ui/react-separator"
+import { margins } from "common/styles"
+import { theme } from "theme"
+import { SeparatorProps } from "./Separator"
 
 export const StyledSeparator = styled(RadixSeparator.Root)<SeparatorProps>`
   background: ${(p) => p.color || theme.colors.backgroundGray700};
@@ -17,4 +17,4 @@ export const StyledSeparator = styled(RadixSeparator.Root)<SeparatorProps>`
       width: 1px;
     `}
   ${margins};
-`;
+`

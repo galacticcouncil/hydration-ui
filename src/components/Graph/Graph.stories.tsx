@@ -28,7 +28,7 @@ const StyledContainer = styled.div`
   font-family: "SatoshiVariable", sans-serif;
 `
 
-const Template: ComponentStory<typeof GraphComponent> = args => (
+const Template: ComponentStory<typeof GraphComponent> = (args) => (
   <StyledContainer>
     <GraphComponent {...args} />
   </StyledContainer>

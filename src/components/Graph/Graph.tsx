@@ -58,7 +58,7 @@ export const Graph: FC<Props> = ({ data, labelX, labelY }) => {
           tickLine={false}
           name={labelY}
           tick={tickProps}
-          tickFormatter={value => `${value}%`}
+          tickFormatter={(value) => `${value}%`}
           type="number"
           dataKey="y"
           label={{

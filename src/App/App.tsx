@@ -1,5 +1,5 @@
-import { FarmsPoolsPage } from "pages/FarmsPoolsPage/FarmsPoolsPage";
-import { GlobalStyle } from "./GlobalStyle";
+import { FarmsPoolsPage } from "pages/FarmsPoolsPage/FarmsPoolsPage"
+import { GlobalStyle } from "./GlobalStyle"
 
 export const App = () => {
   return (
@@ -7,5 +7,5 @@ export const App = () => {
       <GlobalStyle />
       <FarmsPoolsPage />
     </>
-  );
-};
+  )
+}

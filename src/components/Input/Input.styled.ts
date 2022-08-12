@@ -6,7 +6,7 @@ export const InputWrapper = styled.div<{
 }>`
   position: relative;
 
-  ${p =>
+  ${(p) =>
     p.unit &&
     css`
       &::after {
@@ -27,7 +27,7 @@ export const StyledInput = styled.input<{ error?: string; unit?: string }>`
   background: ${theme.colors.backgroundGray800};
   border-radius: 9px;
   border: 1px solid
-    ${p => (p.error ? theme.colors.error : theme.colors.backgroundGray600)};
+    ${(p) => (p.error ? theme.colors.error : theme.colors.backgroundGray600)};
 
   color: ${theme.colors.white};
   font-size: 14px;
@@ -42,7 +42,7 @@ export const StyledInput = styled.input<{ error?: string; unit?: string }>`
     background: ${theme.colors.backgroundGray700};
   }
 
-  ${p =>
+  ${(p) =>
     p.unit &&
     css`
       padding-right: 50px;

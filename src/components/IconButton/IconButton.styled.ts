@@ -4,7 +4,7 @@ import { theme } from "theme"
 import { ColorProps } from "common/styles"
 
 export const StyledIconButton = styled.button<{ round?: boolean } & ColorProps>`
-  ${p =>
+  ${(p) =>
     p.round &&
     css`
       border-radius: 50%;
@@ -12,7 +12,7 @@ export const StyledIconButton = styled.button<{ round?: boolean } & ColorProps>`
 
   width: 34px;
   height: 34px;
-  background: ${p => p.bg || theme.colors.iconButtonGrey};
+  background: ${(p) => p.bg || theme.colors.iconButtonGrey};
   border: none;
   display: flex;
   align-items: center;

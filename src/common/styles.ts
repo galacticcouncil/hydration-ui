@@ -1,64 +1,64 @@
-import { css } from "styled-components/macro";
-import { theme } from "theme";
+import { css } from "styled-components/macro"
+import { theme } from "theme"
 
-type NumOrAuto = number | "auto";
+type NumOrAuto = number | "auto"
 
 export type MarginProps = {
-  mt?: NumOrAuto;
-  mr?: NumOrAuto;
-  mb?: NumOrAuto;
-  ml?: NumOrAuto;
-  m?: number | string;
-};
+  mt?: NumOrAuto
+  mr?: NumOrAuto
+  mb?: NumOrAuto
+  ml?: NumOrAuto
+  m?: number | string
+}
 export type PaddingProps = {
-  pt?: number;
-  pr?: number;
-  pb?: number;
-  pl?: number;
-  p?: number | string;
-};
+  pt?: number
+  pr?: number
+  pb?: number
+  pl?: number
+  p?: number | string
+}
 
 const autoOrPx = (val: NumOrAuto) => {
-  if (val === "auto") return val;
-  return val + "px";
-};
+  if (val === "auto") return val
+  return val + "px"
+}
 
 export type SizeProps = {
-  width?: number;
-  height?: number;
-};
+  width?: number
+  height?: number
+}
 
-export type Color = keyof typeof theme.colors;
+export type Color = keyof typeof theme.colors
 
 export type ColorProps = {
-  color?: Color;
-  bg?: Color;
-};
+  color?: Color
+  bg?: Color
+}
 
 export type FlexProps = {
-  align?: string;
-  justify?: string;
-  flex?: boolean;
-  gap?: number;
-  acenter?: boolean;
-  spread?: boolean;
-  column?: boolean;
-  wrap?: boolean;
-  even?: boolean;
-  grow?: boolean;
-  stretch?: boolean;
-  relative?: boolean;
-  center?: boolean;
-  jcenter?: boolean;
-};
+  align?: string
+  justify?: string
+  flex?: boolean
+  gap?: number
+  acenter?: boolean
+  spread?: boolean
+  column?: boolean
+  wrap?: boolean
+  even?: boolean
+  grow?: boolean
+  stretch?: boolean
+  relative?: boolean
+  center?: boolean
+  jcenter?: boolean
+}
 
 export type FontProps = {
-  fs?: number;
-  fw?: number;
-  opacity?: number;
-  lh?: number;
-  tAlign?: "left" | "right" | "center";
-};
+  fs?: number
+  fw?: number
+  opacity?: number
+  lh?: number
+  tAlign?: "left" | "right" | "center"
+}
 
 export const margins = css<MarginProps>`
   ${(p) => p.mt && `margin-top: ${autoOrPx(p.mt)}`};
@@ -66,7 +66,7 @@ export const margins = css<MarginProps>`
   ${(p) => p.mb && `margin-bottom: ${autoOrPx(p.mb)}`};
   ${(p) => p.ml && `margin-left: ${autoOrPx(p.ml)}`};
   ${(p) => p.m && `margin: ${typeof p.m === "string" ? p.m : `${p.m}px`}`};
-`;
+`
 
 export const paddings = css<PaddingProps>`
   ${(p) => p.p && `padding: ${typeof p.p === "string" ? p.p : `${p.p}px`}`};
@@ -74,12 +74,12 @@ export const paddings = css<PaddingProps>`
   ${(p) => p.pr && `padding-right: ${p.pr}px`};
   ${(p) => p.pb && `padding-bottom: ${p.pb}px`};
   ${(p) => p.pl && `padding-left: ${p.pl}px`};
-`;
+`
 
 export const size = css<SizeProps>`
   ${(p) => p.width && `width: ${p.width}px`};
   ${(p) => p.height && `height: ${p.height}px`};
-`;
+`
 
 export const flex = css<FlexProps>`
   ${(p) =>
@@ -162,12 +162,12 @@ export const flex = css<FlexProps>`
       margin-left: auto;
       margin-right: auto;
     `}
-`;
+`
 
 export const colors = css<ColorProps>`
   ${(p) => p.color && `color: ${theme.colors[p.color]}`};
   ${(p) => p.bg && `background: ${theme.colors[p.bg]}`};
-`;
+`
 
 export const fonts = css<FontProps>`
   ${(p) => p.opacity && `opacity: ${p.opacity}`};
@@ -175,4 +175,4 @@ export const fonts = css<FontProps>`
   ${(p) => p.fw && `font-weight: ${p.fw}`};
   ${(p) => p.lh && `line-height: ${p.lh}px`};
   text-align: ${(p) => p.tAlign || "left"};
-`;
+`

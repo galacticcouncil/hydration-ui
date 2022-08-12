@@ -1,6 +1,6 @@
-import { colors, flex, margins, paddings, size } from "common/styles";
-import styled from "styled-components/macro";
-import { BoxProps } from "./Box";
+import { colors, flex, margins, paddings, size } from "common/styles"
+import styled from "styled-components/macro"
+import { BoxProps } from "./Box"
 
 export const StyledBox = styled.div<BoxProps>`
   ${flex};
@@ -8,4 +8,4 @@ export const StyledBox = styled.div<BoxProps>`
   ${paddings};
   ${size};
   ${colors};
-`;
+`

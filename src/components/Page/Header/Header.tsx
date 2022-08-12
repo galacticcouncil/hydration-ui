@@ -1,9 +1,9 @@
-import { BasiliskIcon } from "assets/icons/BasiliskIcon";
-import { BasiliskLogo } from "assets/icons/BasiliskLogo";
-import { Box } from "components/Box/Box";
-import { Icon } from "components/Icon/Icon";
-import { MenuList } from "./MenuList/MenuList";
-import { StyledHeader } from "./Header.styled";
+import { BasiliskIcon } from "assets/icons/BasiliskIcon"
+import { BasiliskLogo } from "assets/icons/BasiliskLogo"
+import { Box } from "components/Box/Box"
+import { Icon } from "components/Icon/Icon"
+import { MenuList } from "./MenuList/MenuList"
+import { StyledHeader } from "./Header.styled"
 
 const menuItems = [
   {
@@ -12,7 +12,7 @@ const menuItems = [
   },
   { text: "Pools & Farms", active: true },
   { text: "Wallet", active: false },
-];
+]
 
 export const Header = () => (
   <StyledHeader>
@@ -27,4 +27,4 @@ export const Header = () => (
       {/* TODO right section with icons and selects */}
     </Box>
   </StyledHeader>
-);
+)

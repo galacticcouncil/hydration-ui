@@ -167,4 +167,4 @@ export const PlaceHolderIcon = () => (
       </linearGradient>
     </defs>
   </svg>
-);
+)

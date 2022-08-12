@@ -1,15 +1,15 @@
-import { ColorProps, FontProps, MarginProps } from "common/styles";
-import { FC } from "react";
-import { StyledH1 } from "./Heading.styled";
+import { ColorProps, FontProps, MarginProps } from "common/styles"
+import { FC } from "react"
+import { StyledH1 } from "./Heading.styled"
 
-type variant = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+type variant = "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
 export type HeadingProps = {
-  as?: variant;
-  children?: string;
-  text?: string;
+  as?: variant
+  children?: string
+  text?: string
 } & FontProps &
   MarginProps &
-  ColorProps;
+  ColorProps
 
 export const Heading: FC<HeadingProps> = ({
   children,
@@ -21,4 +21,4 @@ export const Heading: FC<HeadingProps> = ({
   <StyledH1 as={as} color={color} {...rest}>
     {text || children}
   </StyledH1>
-);
+)

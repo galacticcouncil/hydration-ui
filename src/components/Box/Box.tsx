@@ -1,21 +1,21 @@
-import { FC, ReactNode } from "react";
-import { StyledBox } from "./Box.styled";
+import { FC, ReactNode } from "react"
+import { StyledBox } from "./Box.styled"
 import {
   MarginProps,
   PaddingProps,
   FlexProps,
   SizeProps,
   ColorProps,
-} from "common/styles";
+} from "common/styles"
 
 export type BoxProps = {
-  children: ReactNode;
+  children: ReactNode
 } & MarginProps &
   PaddingProps &
   FlexProps &
   SizeProps &
-  ColorProps;
+  ColorProps
 
 export const Box: FC<BoxProps> = ({ children, ...rest }) => (
   <StyledBox {...rest}>{children}</StyledBox>
-);
+)

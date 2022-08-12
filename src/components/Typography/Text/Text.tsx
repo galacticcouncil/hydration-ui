@@ -1,13 +1,13 @@
-import { ColorProps, FontProps, MarginProps } from "common/styles";
-import { FC } from "react";
-import { StyledText } from "./Text.styled";
+import { ColorProps, FontProps, MarginProps } from "common/styles"
+import { FC } from "react"
+import { StyledText } from "./Text.styled"
 
 export type TextProps = {
-  children?: string;
-  text?: string;
+  children?: string
+  text?: string
 } & ColorProps &
   MarginProps &
-  FontProps;
+  FontProps
 
 export const Text: FC<TextProps> = ({
   children,
@@ -20,4 +20,4 @@ export const Text: FC<TextProps> = ({
   <StyledText {...rest} fw={fw} fs={fs} color={color}>
     {text || children}
   </StyledText>
-);
+)

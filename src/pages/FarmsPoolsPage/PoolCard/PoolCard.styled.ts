@@ -1,5 +1,5 @@
-import styled from "styled-components/macro";
-import { theme } from "theme";
+import styled from "styled-components/macro"
+import { theme } from "theme"
 
 export const CardWrapper = styled.div`
   border: none;
@@ -9,4 +9,4 @@ export const CardWrapper = styled.div`
   height: auto;
   margin-bottom: 20px;
   overflow: hidden;
-`;
+`
