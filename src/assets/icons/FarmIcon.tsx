@@ -41,8 +41,8 @@ export const FarmIcon = () => (
         y2="-7.36582"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FFCE4F" />
-        <stop offset="1" stop-color="#4FFFB0" />
+        <stop stopColor="#FFCE4F" />
+        <stop offset="1" stopColor="#4FFFB0" />
       </linearGradient>
       <linearGradient
         id="paint1_linear_8449_24440"
@@ -52,9 +52,9 @@ export const FarmIcon = () => (
         y2="-7.36582"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#4FFFB0" />
-        <stop offset="0.505223" stop-color="#A2FF76" />
-        <stop offset="1" stop-color="#FF984E" />
+        <stop stopColor="#4FFFB0" />
+        <stop offset="0.505223" stopColor="#A2FF76" />
+        <stop offset="1" stopColor="#FF984E" />
       </linearGradient>
       <linearGradient
         id="paint2_linear_8449_24440"
@@ -64,9 +64,9 @@ export const FarmIcon = () => (
         y2="-7.36582"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#4FFFB0" />
-        <stop offset="0.463556" stop-color="#B3FF8F" />
-        <stop offset="1" stop-color="#FF984E" />
+        <stop stopColor="#4FFFB0" />
+        <stop offset="0.463556" stopColor="#B3FF8F" />
+        <stop offset="1" stopColor="#FF984E" />
       </linearGradient>
       <linearGradient
         id="paint3_linear_8449_24440"
@@ -76,8 +76,8 @@ export const FarmIcon = () => (
         y2="-3.17339"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FFCE4F" />
-        <stop offset="1" stop-color="#4FFFB0" />
+        <stop stopColor="#FFCE4F" />
+        <stop offset="1" stopColor="#4FFFB0" />
       </linearGradient>
       <linearGradient
         id="paint4_linear_8449_24440"
@@ -87,9 +87,9 @@ export const FarmIcon = () => (
         y2="-3.17339"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#4FFFB0" />
-        <stop offset="0.505223" stop-color="#A2FF76" />
-        <stop offset="1" stop-color="#FF984E" />
+        <stop stopColor="#4FFFB0" />
+        <stop offset="0.505223" stopColor="#A2FF76" />
+        <stop offset="1" stopColor="#FF984E" />
       </linearGradient>
       <linearGradient
         id="paint5_linear_8449_24440"
@@ -99,9 +99,9 @@ export const FarmIcon = () => (
         y2="-3.17339"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#4FFFB0" />
-        <stop offset="0.463556" stop-color="#B3FF8F" />
-        <stop offset="1" stop-color="#FF984E" />
+        <stop stopColor="#4FFFB0" />
+        <stop offset="0.463556" stopColor="#B3FF8F" />
+        <stop offset="1" stopColor="#FF984E" />
       </linearGradient>
     </defs>
   </svg>

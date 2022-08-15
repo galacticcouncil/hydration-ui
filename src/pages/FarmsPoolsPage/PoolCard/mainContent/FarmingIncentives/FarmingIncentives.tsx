@@ -2,7 +2,7 @@ import { BasiliskIcon } from "assets/icons/BasiliskIcon"
 import { Box } from "components/Box/Box"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
-import { FC } from "react"
+import { FC, Fragment } from "react"
 import { useTranslation } from "react-i18next"
 import { FarmRow } from "./FarmRow/FarmRow"
 
@@ -22,10 +22,10 @@ export const FarmingIncentives: FC<FarmingIncentiveProps> = () => {
         {t("farmsPoolsPage.poolCard.farmIncentives.title")}
       </Text>
       {mockRows.map((row, rowI) => (
-        <>
-          <FarmRow {...row} key={row.id} />
+        <Fragment key={rowI}>
+          <FarmRow {...row} />
           {rowI !== mockRows.length - 1 && <Separator mb={13} />}
-        </>
+        </Fragment>
       ))}
     </Box>
   )

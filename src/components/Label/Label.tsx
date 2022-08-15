@@ -22,7 +22,6 @@ export const Label: FC<LabelProps> = ({
   width,
   ...p
 }) => {
-  console.log("p label", id, p)
   return (
     <LabelWrapper {...p} $width={width}>
       {/* hidden prop hides label visibly, but keeps it available for screen readers */}
