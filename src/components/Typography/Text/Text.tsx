@@ -1,9 +1,9 @@
 import { ColorProps, FontProps, MarginProps } from "common/styles"
-import { FC } from "react"
+import { FC, ReactNode } from "react"
 import { StyledText } from "./Text.styled"
 
 export type TextProps = {
-  children?: string
+  children?: ReactNode
   text?: string
   className?: string
 } & ColorProps &

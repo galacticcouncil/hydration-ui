@@ -16,7 +16,6 @@ export const StyledLabel = styled(Label)<{ error?: string } & FontProps>`
   color: ${(p) => (p.error ? theme.colors.error : theme.colors.neutralGray100)};
   text-transform: capitalize;
   ${fonts};
-s
 `
 
 export const ErrorMessage = styled.p`
@@ -34,8 +33,9 @@ export const LabelWrapper = styled.div<
   font-size: 0;
 
   input {
-    width: ${(p) => (p.$width ? `${p.$width}px` : "300px")};
+    ${(p) => p.$width && `width: ${p.$width}px;`};
   }
+
   ${flex};
   ${margins};
 `

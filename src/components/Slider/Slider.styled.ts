@@ -5,7 +5,7 @@ import { theme } from "theme"
 export const StyledRoot = styled(Root)`
   position: relative;
   width: 100%;
-  height: 20px;
+  height: 24px;
 
   display: flex;
   align-items: center;
@@ -39,12 +39,12 @@ export const StyledTrack = styled(Track)`
 export const StyledThumb = styled(Thumb)`
   all: unset;
   display: block;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
 
   background: ${theme.gradients.primaryGradient};
   border-radius: 50%;
-  border: 6px solid ${theme.colors.backgroundGray1000};
+  border: 7px solid ${theme.colors.backgroundGray1000};
   box-shadow: 0 1px 9px rgba(${theme.rgbColors.primary300}, 0.5);
   transition: all 0.15s ease-in-out;
 

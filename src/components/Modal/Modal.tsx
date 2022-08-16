@@ -13,17 +13,17 @@ import { Dialog, DialogDescription, DialogPortal } from "@radix-ui/react-dialog"
 import { useTranslation } from "react-i18next"
 
 type ModalProps = {
-  children: ReactNode
-  close: () => void
+  open: boolean
+  onClose: () => void
   title: string
   secondaryIcon?: { icon: ReactNode; onClick: () => void; name: string }
   withoutClose?: boolean
-  open: boolean
+  children: ReactNode
 }
 
 export const Modal: FC<ModalProps> = ({
   children,
-  close,
+  onClose,
   title,
   secondaryIcon,
   withoutClose = false,
@@ -34,7 +34,7 @@ export const Modal: FC<ModalProps> = ({
     <Dialog open={open}>
       <DialogPortal>
         <Backdrop />
-        <ModalWindow onEscapeKeyDown={close}>
+        <ModalWindow onEscapeKeyDown={onClose}>
           <IconsWrapper>
             {!!secondaryIcon && (
               <IconButton
@@ -46,7 +46,7 @@ export const Modal: FC<ModalProps> = ({
             {withoutClose || (
               <CloseButton
                 icon={<CrossIcon />}
-                onClick={close}
+                onClick={onClose}
                 name={t("modal.closeButton.name")}
               />
             )}

@@ -10,6 +10,7 @@ import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { RemoveLiquidityModal } from "pages/FarmsPoolsPage/RemoveLiquidityModal/RemoveLiquidityModal"
 
 type ActionButtonProps = {
   hasJoinedFarms: boolean
@@ -23,6 +24,7 @@ export const ActionButtons: FC<ActionButtonProps> = ({
   const { t } = useTranslation()
 
   const [addLiquidityOpen, setAddLiquidityOpen] = useState(false)
+  const [removeLiquidityOpen, setRemoveLiquidityOpen] = useState(false)
 
   return (
     <>
@@ -45,7 +47,7 @@ export const ActionButtons: FC<ActionButtonProps> = ({
             fullWidth
             size="small"
             onClick={() => {
-              setAddLiquidityOpen(true)
+              setRemoveLiquidityOpen(true)
             }}
           >
             <Box flex acenter jcenter>
@@ -76,14 +78,17 @@ export const ActionButtons: FC<ActionButtonProps> = ({
           />
         )}
       </Box>
-      {/* Gonna be separate component for each modal flow */}
       <Modal
-        open={addLiquidityOpen}
         title="Modal title"
-        close={() => setAddLiquidityOpen(false)}
+        open={addLiquidityOpen}
+        onClose={() => setAddLiquidityOpen(false)}
       >
         <Text>Placeholder content</Text>
       </Modal>
+      <RemoveLiquidityModal
+        isOpen={removeLiquidityOpen}
+        onClose={() => setRemoveLiquidityOpen(false)}
+      />
     </>
   )
 }

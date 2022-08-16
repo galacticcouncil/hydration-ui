@@ -37,8 +37,7 @@ export const Input: FC<InputProps> = ({
         label={label}
         error={p.error}
         withLabel={withLabel}
-        width={p.width || 300}
-        mb={5}
+        width={p.width}
         {...p}
       >
         <InputWrapper unit={p.unit}>

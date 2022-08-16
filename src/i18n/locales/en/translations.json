@@ -28,5 +28,11 @@
   "farmsPoolsPage.poolCard.positions.lockedValue": "{{count}} Shares",
   "farmsPoolsPage.poolCard.positions.currValueTitle": "Current value",
   "farmsPoolsPage.poolCard.actionButtons.chevron.name": "Open details button",
+  "farmsPoolsPage.removeLiquidity.modal.title": "Remove Liquidity",
+  "farmsPoolsPage.removeLiquidity.modal.input.placeholder": "Custom",
+  "farmsPoolsPage.removeLiquidity.modal.receive": "You'll receive",
+  "farmsPoolsPage.removeLiquidity.modal.cost": "Transaction cost",
+  "farmsPoolsPage.removeLiquidity.modal.price": "Price",
+  "farmsPoolsPage.removeLiquidity.modal.confirm": "Confirm removal",
   "modal.closeButton.name": "Close modal button"
 }

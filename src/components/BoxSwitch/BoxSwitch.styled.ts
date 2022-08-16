@@ -7,6 +7,7 @@ export const StyledSwitch = styled.div`
   --btn-gap: 8px;
 
   position: relative;
+  z-index: ${theme.zIndices.boxSwitch};
   height: var(--btn-size);
 
   display: flex;
@@ -38,6 +39,8 @@ export const StyledText = styled(Text)`
 `
 
 export const StyledButtonBackground = styled.div<{ index: number }>`
+  ${({ index }) => index === -1 && "display: none;"};
+
   position: absolute;
   top: 0;
   left: calc(${({ index }) => index} * (var(--btn-size) + var(--btn-gap)));

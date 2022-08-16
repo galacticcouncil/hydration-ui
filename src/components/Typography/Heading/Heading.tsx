@@ -1,11 +1,11 @@
 import { ColorProps, FontProps, MarginProps } from "common/styles"
-import { FC } from "react"
+import { FC, ReactNode } from "react"
 import { StyledH1 } from "./Heading.styled"
 
 type variant = "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
 export type HeadingProps = {
   as?: variant
-  children?: string
+  children?: ReactNode
   text?: string
 } & FontProps &
   MarginProps &

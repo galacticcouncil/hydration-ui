@@ -6,6 +6,7 @@ export type SeparatorProps = {
   orientation?: "vertical" | "horizontal"
   color?: Color
   opacity?: number
+  size?: number
 } & MarginProps
 
 export const Separator: FC<SeparatorProps> = ({

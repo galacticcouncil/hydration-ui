@@ -24,6 +24,8 @@ export const InputWrapper = styled.div<{
 `
 
 export const StyledInput = styled.input<{ error?: string; unit?: string }>`
+  width: 100%;
+
   background: ${theme.colors.backgroundGray800};
   border-radius: 9px;
   border: 1px solid

@@ -10,10 +10,11 @@ export type ButtonProps = {
   to?: string
   type?: "button" | "submit" | "reset"
   icon?: SVGElement
-  children?: ReactNode
   onClick?: (e: SyntheticEvent) => void
   size?: "small" | "medium"
   fullWidth?: boolean
+  children?: ReactNode
+  className?: string
 } & SizeProps
 
 export const Button: FC<ButtonProps> = ({

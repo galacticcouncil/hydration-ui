@@ -4,12 +4,12 @@ import { theme } from "theme"
 import { ButtonProps } from "./Button"
 
 export const StyledButton = styled.button<ButtonProps>`
-  border-radius: 61px;
+  border-radius: 9999px;
   font-weight: 700;
   border: none;
   cursor: pointer;
-  font-size: 14px;
   text-transform: uppercase;
+  line-height: 18px;
 
   ${(p) =>
     p.variant === "primary"
@@ -40,13 +40,13 @@ export const StyledButton = styled.button<ButtonProps>`
     css`
       padding: 12px 15px;
       font-size: 12px;
-      line-height: 18px;
     `};
 
   ${(p) =>
     p.size === "medium" &&
     css`
       padding: 16px 36px;
+      font-size: 14px;
     `};
 
   ${(p) =>

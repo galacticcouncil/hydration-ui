@@ -87,6 +87,7 @@ const gradients = {
 
 const zIndices = {
   chainedIcon: 1,
+  boxSwitch: 1,
   backdrop: 2,
   modal: 3,
 } as const
