@@ -1,9 +1,9 @@
 import { FontProps, MarginProps } from "common/styles"
 import { FC } from "react"
-import { TextProps } from "../Text/Text"
+import { HeadingProps } from "../Heading/Heading"
 import { StyledGradientText } from "./GradientText.styled"
 
-export const GradientText: FC<TextProps & FontProps & MarginProps> = ({
+export const GradientText: FC<HeadingProps & FontProps & MarginProps> = ({
   text,
   children,
   ...props

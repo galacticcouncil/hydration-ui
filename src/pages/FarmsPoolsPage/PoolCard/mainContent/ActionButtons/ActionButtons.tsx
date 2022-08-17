@@ -6,10 +6,9 @@ import { Box } from "components/Box/Box"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { IconButton } from "components/IconButton/IconButton"
-import { Modal } from "components/Modal/Modal"
-import { Text } from "components/Typography/Text/Text"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { AddLiquidityModal } from "./AddLiquidityModal/AddLiquidityModal"
 import { RemoveLiquidityModal } from "pages/FarmsPoolsPage/RemoveLiquidityModal/RemoveLiquidityModal"
 
 type ActionButtonProps = {
@@ -78,13 +77,10 @@ export const ActionButtons: FC<ActionButtonProps> = ({
           />
         )}
       </Box>
-      <Modal
-        title="Modal title"
-        open={addLiquidityOpen}
+      <AddLiquidityModal
+        isOpen={addLiquidityOpen}
         onClose={() => setAddLiquidityOpen(false)}
-      >
-        <Text>Placeholder content</Text>
-      </Modal>
+      />
       <RemoveLiquidityModal
         isOpen={removeLiquidityOpen}
         onClose={() => setRemoveLiquidityOpen(false)}

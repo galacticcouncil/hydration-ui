@@ -1,4 +1,4 @@
-import { BasiliskIcon } from "assets/icons/BasiliskIcon"
+import { BasiliskIcon } from "assets/icons/tokens/BasiliskIcon"
 import { AssetIcon } from "components/AssetIcon/AssetIcon"
 import { Box } from "components/Box/Box"
 import { FC } from "react"

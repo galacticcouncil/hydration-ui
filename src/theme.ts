@@ -57,7 +57,7 @@ const colors = {
   red500: "#DA5D5D",
   backgroundGray1000: "#1C1A1F",
   backgroundGray900: "#211F24",
-  backgroundGray800: "#26282F",
+  backgroundGray800: "#29292D",
   backgroundGray700: "#3E3E4B",
   backgroundGray600: "#51515F",
   backgroundGray500: "#686876",

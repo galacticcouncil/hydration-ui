@@ -1,4 +1,4 @@
-import { BasiliskIcon } from "assets/icons/BasiliskIcon"
+import { BasiliskIcon } from "assets/icons/tokens/BasiliskIcon"
 import { BasiliskLogo } from "assets/icons/BasiliskLogo"
 import { Box } from "components/Box/Box"
 import { Icon } from "components/Icon/Icon"

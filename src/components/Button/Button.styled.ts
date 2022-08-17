@@ -1,4 +1,4 @@
-import { size } from "common/styles"
+import { margins, size } from "common/styles"
 import styled, { css } from "styled-components/macro"
 import { theme } from "theme"
 import { ButtonProps } from "./Button"
@@ -47,6 +47,13 @@ export const StyledButton = styled.button<ButtonProps>`
     css`
       padding: 16px 36px;
       font-size: 14px;
+    `};
+  ${(p) =>
+    p.size === "micro" &&
+    css`
+      padding: 2px 10px;
+      font-size: 12px;
+      line-height: 16px;
     `};
 
   ${(p) =>
@@ -104,5 +111,12 @@ export const StyledButton = styled.button<ButtonProps>`
             }
           `
       : ``};
+
+  ${(p) =>
+    p.capitalize &&
+    css`
+      text-transform: capitalize;
+    `}
   ${size};
+  ${margins};
 `

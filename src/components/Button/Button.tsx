@@ -1,4 +1,4 @@
-import { SizeProps } from "common/styles"
+import { MarginProps, SizeProps } from "common/styles"
 import { Link } from "components/Link/Link"
 import { FC, ReactNode, SyntheticEvent } from "react"
 import { StyledButton } from "./Button.styled"
@@ -11,11 +11,13 @@ export type ButtonProps = {
   type?: "button" | "submit" | "reset"
   icon?: SVGElement
   onClick?: (e: SyntheticEvent) => void
-  size?: "small" | "medium"
+  size?: "small" | "medium" | "micro"
   fullWidth?: boolean
+  capitalize?: boolean
   children?: ReactNode
   className?: string
-} & SizeProps
+} & SizeProps &
+  MarginProps
 
 export const Button: FC<ButtonProps> = ({
   type = "button",

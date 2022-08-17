@@ -1,6 +1,7 @@
-import { BasiliskIcon } from "assets/icons/BasiliskIcon"
+import { BasiliskIcon } from "assets/icons/tokens/BasiliskIcon"
 import { Box } from "components/Box/Box"
 import { Button } from "components/Button/Button"
+import { DualAssetIcons } from "components/DualAssetIcons/DualAssetIcons"
 import { Icon } from "components/Icon/Icon"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Text } from "components/Typography/Text/Text"
@@ -21,8 +22,13 @@ export const Farms: FC<FarmProps> = () => {
             mr={10}
             text={t("farmsPoolsPage.poolCard.positions.farm.joinedFarms")}
           />
-          <Icon icon={<BasiliskIcon />} size={26} />
-          <Icon icon={<BasiliskIcon />} mr={5} size={26} />
+          <DualAssetIcons
+            firstIcon={{
+              icon: <BasiliskIcon />,
+              withChainedIcon: false,
+            }}
+            secondIcon={{ icon: <BasiliskIcon />, withChainedIcon: false }}
+          />
           <Text fs={14} color="primary200">
             5-10% APR
           </Text>

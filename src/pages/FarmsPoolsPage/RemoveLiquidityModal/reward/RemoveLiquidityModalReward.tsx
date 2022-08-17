@@ -1,6 +1,6 @@
 import { FC } from "react"
 import { Box } from "components/Box/Box"
-import { KaruraIcon } from "assets/icons/KaruraIcon"
+import { KaruraIcon } from "assets/icons/tokens/KaruraIcon"
 import { Text } from "components/Typography/Text/Text"
 
 // TODO: add icon handling

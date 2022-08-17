@@ -4,7 +4,7 @@ import { StyledText } from "./Text.styled"
 
 export type TextProps = {
   children?: ReactNode
-  text?: string
+  text?: string | number
   className?: string
 } & ColorProps &
   MarginProps &
