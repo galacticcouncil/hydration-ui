@@ -1,10 +1,11 @@
 import { DialogContent } from "@radix-ui/react-dialog"
+import { SizeProps } from "common/styles"
 import { IconButton } from "components/IconButton/IconButton"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import styled from "styled-components/macro"
 import { theme } from "theme"
 
-export const ModalWindow = styled(DialogContent)`
+export const ModalWindow = styled(DialogContent)<Pick<SizeProps, "width">>`
   background: ${theme.colors.backgroundGray900};
   height: 100vh;
   border: 1px solid rgba(${theme.rgbColors.white}, 0.06);
@@ -15,7 +16,7 @@ export const ModalWindow = styled(DialogContent)`
   top: 0;
 
   ${theme.mq.smallTablet} {
-    max-width: 610px;
+    max-width: ${(props) => `${props.width ?? 610}px`};
     height: auto;
     border-radius: 16px;
     top: 50%;

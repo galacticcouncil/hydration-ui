@@ -11,6 +11,7 @@ import { IconButton } from "components/IconButton/IconButton"
 import { CrossIcon } from "assets/icons/CrossIcon"
 import { Dialog, DialogDescription, DialogPortal } from "@radix-ui/react-dialog"
 import { useTranslation } from "react-i18next"
+import { SizeProps } from "common/styles"
 
 type ModalProps = {
   open: boolean
@@ -19,7 +20,7 @@ type ModalProps = {
   secondaryIcon?: { icon: ReactNode; onClick: () => void; name: string }
   withoutClose?: boolean
   children: ReactNode
-}
+} & Pick<SizeProps, "width">
 
 export const Modal: FC<ModalProps> = ({
   children,
@@ -28,13 +29,14 @@ export const Modal: FC<ModalProps> = ({
   secondaryIcon,
   withoutClose = false,
   open,
+  width,
 }) => {
   const { t } = useTranslation()
   return (
     <Dialog open={open}>
       <DialogPortal>
         <Backdrop />
-        <ModalWindow onEscapeKeyDown={onClose}>
+        <ModalWindow width={width} onEscapeKeyDown={onClose}>
           <IconsWrapper>
             {!!secondaryIcon && (
               <IconButton
