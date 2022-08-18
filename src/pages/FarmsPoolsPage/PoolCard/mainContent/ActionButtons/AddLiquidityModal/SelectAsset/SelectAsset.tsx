@@ -6,7 +6,7 @@ import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { getFormattedNumber } from "utils/formatNumber"
+import { getFormattedNumber } from "utils/formatting"
 import {
   AssetWrapper,
   MaxButton,

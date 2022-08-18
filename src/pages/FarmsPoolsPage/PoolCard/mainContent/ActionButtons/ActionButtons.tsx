@@ -10,6 +10,7 @@ import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { AddLiquidityModal } from "./AddLiquidityModal/AddLiquidityModal"
 import { RemoveLiquidityModal } from "pages/FarmsPoolsPage/RemoveLiquidityModal/RemoveLiquidityModal"
+import { AllFarmsModal } from "pages/FarmsPoolsPage/AllFarmsModal/AllFarmsModal"
 
 type ActionButtonProps = {
   hasJoinedFarms: boolean
@@ -22,46 +23,29 @@ export const ActionButtons: FC<ActionButtonProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  const [addLiquidityOpen, setAddLiquidityOpen] = useState(false)
-  const [removeLiquidityOpen, setRemoveLiquidityOpen] = useState(false)
+  const [openAdd, setOpenAdd] = useState(false)
+  const [openRemove, setOpenRemove] = useState(false)
+  const [openFarms, setOpenFarms] = useState(false)
 
   return (
     <>
       <Box flex spread acenter m="26px 0 48px" width={280}>
         <Box width={214} flex column gap={10} mr={hasJoinedFarms ? 33 : 67}>
-          <Button
-            fullWidth
-            size="small"
-            onClick={() => {
-              setAddLiquidityOpen(true)
-            }}
-          >
+          <Button fullWidth size="small" onClick={() => setOpenAdd(true)}>
             <Box flex acenter jcenter>
               <Icon icon={<PlusIcon />} mr={11} />
               {t("farmsPoolsPage.poolCard.actionButtons.addLiquidity")}
             </Box>
           </Button>
 
-          <Button
-            fullWidth
-            size="small"
-            onClick={() => {
-              setRemoveLiquidityOpen(true)
-            }}
-          >
+          <Button fullWidth size="small" onClick={() => setOpenRemove(true)}>
             <Box flex acenter jcenter>
               <Icon icon={<MinusIcon />} mr={11} />
               {t("farmsPoolsPage.poolCard.actionButtons.removeLiquidity")}
             </Box>
           </Button>
 
-          <Button
-            fullWidth
-            size="small"
-            onClick={(e) => {
-              console.log("click")
-            }}
-          >
+          <Button fullWidth size="small" onClick={() => setOpenFarms(true)}>
             <Box flex acenter jcenter>
               <Icon icon={<WindMillIcon />} mr={11} />
               {t("farmsPoolsPage.poolCard.actionButtons.joinFarm")}
@@ -77,14 +61,12 @@ export const ActionButtons: FC<ActionButtonProps> = ({
           />
         )}
       </Box>
-      <AddLiquidityModal
-        isOpen={addLiquidityOpen}
-        onClose={() => setAddLiquidityOpen(false)}
-      />
+      <AddLiquidityModal isOpen={openAdd} onClose={() => setOpenAdd(false)} />
       <RemoveLiquidityModal
-        isOpen={removeLiquidityOpen}
-        onClose={() => setRemoveLiquidityOpen(false)}
+        isOpen={openRemove}
+        onClose={() => setOpenRemove(false)}
       />
+      <AllFarmsModal isOpen={openFarms} onClose={() => setOpenFarms(false)} />
     </>
   )
 }

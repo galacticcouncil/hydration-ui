@@ -3,7 +3,7 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { getFormattedNumber } from "utils/formatNumber"
+import { getFormattedNumber } from "utils/formatting"
 import { ConversionWrapper } from "./Conversion.styled"
 
 type ConversionProps = {

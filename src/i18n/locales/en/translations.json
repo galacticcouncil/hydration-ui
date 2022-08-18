@@ -46,5 +46,10 @@
   "farmsPoolsPage.removeLiquidity.modal.cost": "Transaction cost",
   "farmsPoolsPage.removeLiquidity.modal.price": "Price",
   "farmsPoolsPage.removeLiquidity.modal.confirm": "Confirm removal",
-  "farmsPoolsPage.removeLiquidity.modal.input.label": "Custom"
+  "farmsPoolsPage.removeLiquidity.modal.input.label": "Custom",
+  "farmsPoolsPage.allFarms.modal.title": "All {{ symbol1 }}/{{ symbol2 }} Farms",
+  "farmsPoolsPage.allFarms.modal.apr": "{{ from, num }} - {{ to, num }}% APR",
+  "farmsPoolsPage.allFarms.modal.distribution": "<0>{{ distributed, compact }}</0> <1>from</1> <0>{{ max, compact }} Distributed</0>",
+  "farmsPoolsPage.allFarms.modal.capacity": "{{ capacity, num }}% full",
+  "farmsPoolsPage.allFarms.modal.end": "Expected end {{ end, d.M.yyyy }}"
 }

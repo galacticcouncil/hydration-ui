@@ -6,7 +6,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { getFormattedNumber } from "utils/formatNumber"
+import { getFormattedNumber } from "utils/formatting"
 
 export const PageHeader: FC = () => {
   const { t } = useTranslation()
