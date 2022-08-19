@@ -1,57 +1,58 @@
-import { css } from "styled-components/macro"
-
-import { Text } from "components/Typography/Text/Text"
 import { Modal } from "components/Modal/Modal"
-import { Trans, useTranslation } from "react-i18next"
-import { Separator } from "components/Separator/Separator"
-import { ExternalLink } from "components/Link/ExternalLink"
-import { WalletButtonList } from "./WalletButtonList"
+import { useTranslation } from "react-i18next"
+import { useState } from "react"
+
+import { web3Enable } from "@polkadot/extension-dapp"
+import { useMutation } from "@tanstack/react-query"
+import { POLKADOT_APP_NAME } from "utils/network"
+import { WalletConfirmPendingSection } from "./WalletConfirmPendingSection"
+import { WalletProviderSelectSection } from "./WalletProviderSelectSection"
+import { WalletAccountSelectSection } from "./WalletAccountSelectSection/WalletAccountSelectSection"
 
 export function WalletConnectModal(props: {
   isOpen: boolean
   onClose: () => void
 }) {
   const { t } = useTranslation("translation")
+  const [selectedProvider, setSelectedProvider] =
+    useState<"talisman" | "polkadot-js" | null>(null)
+
+  const mutate = useMutation(["web3Enable"], () =>
+    web3Enable(POLKADOT_APP_NAME),
+  )
+
+  const modalProps = selectedProvider
+    ? mutate.isLoading
+      ? { title: "" }
+      : { title: t("walletConnectModal.account.title") }
+    : { title: t("walletConnectModal.provider.title") }
+
   return (
     <Modal
       width={460}
       open={props.isOpen}
-      onClose={props.onClose}
-      title={t("walletConnectModal.title")}
+      onClose={() => {
+        setSelectedProvider(null)
+        props.onClose()
+      }}
+      {...modalProps}
     >
-      <Text fw={400} mt={6} color="neutralGray200">
-        {t("walletConnectModal.description")}
-      </Text>
-
-      <WalletButtonList />
-
-      <Text
-        mt={20}
-        mb={30}
-        fs={14}
-        fw={400}
-        tAlign="center"
-        color="neutralGray400"
-      >
-        <Trans t={t} i18nKey="walletConnectModal.terms">
-          <ExternalLink href="/" color="orange100" />
-        </Trans>
-      </Text>
-
-      <Separator
-        ml={-30}
-        color="white"
-        opacity={0.06}
-        css={css`
-          width: calc(100% + 60px);
-        `}
-      />
-
-      <Text fw={400} mt={26} fs={14} tAlign="center" color="neutralGray400">
-        <Trans t={t} i18nKey="walletConnectModal.learn">
-          <ExternalLink href="/" color="primary450" />
-        </Trans>
-      </Text>
+      {selectedProvider ? (
+        mutate.isLoading ? (
+          <WalletConfirmPendingSection provider={selectedProvider} />
+        ) : (
+          <WalletAccountSelectSection provider={selectedProvider} />
+        )
+      ) : (
+        <WalletProviderSelectSection
+          onWalletSelect={(provider) => {
+            setSelectedProvider(provider)
+            if (mutate.status !== "success") {
+              mutate.mutate()
+            }
+          }}
+        />
+      )}
     </Modal>
   )
 }

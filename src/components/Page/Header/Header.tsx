@@ -5,7 +5,6 @@ import { Icon } from "components/Icon/Icon"
 import { MenuList } from "./MenuList/MenuList"
 import { StyledLoginButton, StyledHeader } from "./Header.styled"
 import { useState } from "react"
-import { Spinner } from "components/Spinner/Spinner.styled"
 
 import { WalletConnectModal } from "pages/WalletConnectModal/WalletConnectModal"
 import { useTranslation } from "react-i18next"
@@ -35,8 +34,7 @@ export const Header = () => {
         </Box>
 
         <Box>
-          <StyledLoginButton onClick={() => setOpen(true)}>
-            <Spinner />
+          <StyledLoginButton variant="gradient" onClick={() => setOpen(true)}>
             {t("header.walletConnect.button")}
           </StyledLoginButton>
 

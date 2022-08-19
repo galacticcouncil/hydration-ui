@@ -1,3 +1,4 @@
+import { size, SizeProps } from "common/styles"
 import styled, { keyframes } from "styled-components/macro"
 
 const spin = keyframes`
@@ -10,14 +11,13 @@ const spin = keyframes`
   }
 `
 
-export const Spinner = styled.span`
+export const Spinner = styled.span<SizeProps>`
   --spinner-width: 3px;
 
   display: block;
   position: relative;
 
-  width: 20px;
-  height: 20px;
+  ${size}
 
   border-radius: 9999px;
   mask: radial-gradient(

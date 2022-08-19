@@ -2,6 +2,11 @@ import i18n from "i18next"
 import { initReactI18next } from "react-i18next"
 import translationEN from "./locales/en/translations.json"
 import { formatDate, formatNum } from "utils/formatting"
+import BN from "bn.js"
+
+function isBNPrecision(value: any): value is { value: BN; precision?: number } {
+  return value != null && "value" in value && BN.isBN(value.value)
+}
 
 const resources = {
   en: {
@@ -17,6 +22,19 @@ i18n
     lng: "en",
     interpolation: {
       format(value, format, lng) {
+        if (format === "amount") {
+          if (isBNPrecision(value)) {
+            const precision = new BN(10).pow(new BN(value.precision ?? 12))
+            return value.value.div(precision).toString()
+          }
+
+          if (BN.isBN(value)) {
+            return value.toString()
+          }
+
+          return null
+        }
+
         if (format === "num") {
           return formatNum(value, undefined, lng)
         }

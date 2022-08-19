@@ -1,7 +1,7 @@
 import styled, { css } from "styled-components/macro"
 
 export const StyledWalletButton = styled.button<{
-  variant: "polkadot" | "talisman"
+  variant: "polkadot-js" | "talisman"
 }>`
   display: flex;
   align-items: center;
@@ -16,7 +16,7 @@ export const StyledWalletButton = styled.button<{
   cursor: pointer;
 
   ${({ variant }) => {
-    if (variant === "polkadot") {
+    if (variant === "polkadot-js") {
       return css`
         background: hsla(33, 100%, 50%, 0.05);
 

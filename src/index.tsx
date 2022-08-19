@@ -1,14 +1,19 @@
+import "./i18n/i18n"
 import React from "react"
-import ReactDOM from "react-dom"
+import { createRoot } from "react-dom/client"
 import { App } from "./App/App"
 import reportWebVitals from "./reportWebVitals"
-import "./i18n/i18n"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
-ReactDOM.render(
+const root = createRoot(document.getElementById("root")!)
+const client = new QueryClient()
+
+root.render(
   <React.StrictMode>
-    <App />
+    <QueryClientProvider client={client}>
+      <App />
+    </QueryClientProvider>
   </React.StrictMode>,
-  document.getElementById("root"),
 )
 
 // If you want to start measuring performance in your app, pass a function
