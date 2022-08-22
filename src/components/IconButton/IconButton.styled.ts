@@ -1,5 +1,5 @@
 import { colors, margins } from "common/styles"
-import styled, { css } from "styled-components/macro"
+import styled, { css } from "styled-components"
 import { theme } from "theme"
 import { ColorProps } from "common/styles"
 

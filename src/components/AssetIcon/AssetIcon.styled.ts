@@ -1,5 +1,5 @@
 import { Icon } from "components/Icon/Icon"
-import styled from "styled-components/macro"
+import styled from "styled-components"
 import { theme } from "theme"
 
 export const AssetIconWrapper = styled(Icon)`

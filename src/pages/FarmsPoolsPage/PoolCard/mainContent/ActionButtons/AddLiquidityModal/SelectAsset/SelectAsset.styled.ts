@@ -1,6 +1,6 @@
 import { margins } from "common/styles"
 import { Button } from "components/Button/Button"
-import styled from "styled-components/macro"
+import styled from "styled-components"
 import { theme } from "theme"
 
 export const AssetWrapper = styled.div`

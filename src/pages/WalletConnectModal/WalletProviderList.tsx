@@ -1,4 +1,4 @@
-import { css } from "styled-components/macro"
+import { css } from "styled-components"
 import { ReactComponent as PolkadotLogo } from "assets/icons/PolkadotLogo.svg"
 import { ReactComponent as TalismanLogo } from "assets/icons/TalismanLogo.svg"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"

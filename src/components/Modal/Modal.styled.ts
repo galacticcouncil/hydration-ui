@@ -2,7 +2,7 @@ import { DialogContent } from "@radix-ui/react-dialog"
 import { SizeProps } from "common/styles"
 import { IconButton } from "components/IconButton/IconButton"
 import { GradientText } from "components/Typography/GradientText/GradientText"
-import styled from "styled-components/macro"
+import styled from "styled-components"
 import { theme } from "theme"
 
 export const ModalWindow = styled(DialogContent)<Pick<SizeProps, "width">>`

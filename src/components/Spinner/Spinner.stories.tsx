@@ -1,5 +1,5 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react"
-import styled from "styled-components/macro"
+import styled from "styled-components"
 import { Spinner as SpinnerComponent } from "./Spinner.styled"
 
 export default {
@@ -15,7 +15,7 @@ const StyledContainer = styled.div`
 const Template: ComponentStory<typeof SpinnerComponent> = (args) => {
   return (
     <StyledContainer>
-      <SpinnerComponent />
+      <SpinnerComponent width={100} height={100} />
     </StyledContainer>
   )
 }

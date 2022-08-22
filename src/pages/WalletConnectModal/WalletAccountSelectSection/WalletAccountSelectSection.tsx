@@ -1,4 +1,4 @@
-import { css } from "styled-components/macro"
+import { css } from "styled-components"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { ProviderType } from "../WalletConnectModal.utils"

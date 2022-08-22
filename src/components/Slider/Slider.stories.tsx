@@ -1,7 +1,7 @@
 import { Slider as SliderComponent } from "components/Slider/Slider"
 import { ComponentMeta, ComponentStory } from "@storybook/react"
 import { useState } from "react"
-import styled from "styled-components/macro"
+import styled from "styled-components"
 
 export default {
   title: "components/Slider",

@@ -1,7 +1,7 @@
 import React from "react"
 import { ComponentMeta, ComponentStory } from "@storybook/react"
 import { Graph as GraphComponent } from "./Graph"
-import styled from "styled-components/macro"
+import styled from "styled-components"
 
 export default {
   title: "components/Graph",

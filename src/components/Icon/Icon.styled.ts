@@ -1,5 +1,5 @@
 import { margins, size } from "common/styles"
-import styled, { css } from "styled-components/macro"
+import styled, { css } from "styled-components"
 import { IconProps } from "./Icon"
 
 export const StyledIconWrapper = styled.span<IconProps>`

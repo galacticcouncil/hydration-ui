@@ -1,4 +1,4 @@
-import styled, { css } from "styled-components/macro"
+import styled, { css } from "styled-components"
 import * as RadixSeparator from "@radix-ui/react-separator"
 import { margins } from "common/styles"
 import { theme } from "theme"

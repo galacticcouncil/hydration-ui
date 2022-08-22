@@ -1,4 +1,4 @@
-import styled, { css } from "styled-components/macro"
+import styled, { css } from "styled-components"
 import { theme } from "theme"
 
 export const StyledMenuItem = styled.div<{ active?: boolean }>`

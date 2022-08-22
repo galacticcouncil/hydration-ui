@@ -1,5 +1,5 @@
 import { size, SizeProps } from "common/styles"
-import styled, { keyframes } from "styled-components/macro"
+import styled, { keyframes } from "styled-components"
 
 const spin = keyframes`
   0% {

@@ -1,4 +1,4 @@
-import styled from "styled-components/macro"
+import styled from "styled-components"
 import { colors } from "common/styles"
 
 export const StyledExternalLink = styled.a`
