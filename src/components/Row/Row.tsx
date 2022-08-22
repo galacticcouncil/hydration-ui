@@ -1,7 +1,7 @@
 import { Box } from "components/Box/Box"
 import { Text } from "components/Typography/Text/Text"
 import { FC, ReactNode } from "react"
-import { StyledRightSide } from "./Row.styled"
+import { SRightSide } from "./Row.styled"
 
 type RowProps = {
   left: string
@@ -13,8 +13,8 @@ export const Row: FC<RowProps> = ({ left, right }) => (
     <Text fs={14} lh={22} color="neutralGray300">
       {left}
     </Text>
-    <StyledRightSide flex acenter>
+    <SRightSide flex acenter>
       {right}
-    </StyledRightSide>
+    </SRightSide>
   </Box>
 )

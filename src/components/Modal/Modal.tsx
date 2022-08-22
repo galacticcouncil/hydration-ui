@@ -11,7 +11,7 @@ import { IconButton } from "components/IconButton/IconButton"
 import { CrossIcon } from "assets/icons/CrossIcon"
 import { Dialog, DialogDescription, DialogPortal } from "@radix-ui/react-dialog"
 import { useTranslation } from "react-i18next"
-import { SizeProps } from "common/styles"
+import { SizeProps } from "utils/styles"
 
 type ModalProps = {
   open: boolean

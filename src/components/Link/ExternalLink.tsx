@@ -1,24 +1,21 @@
 import { ReactNode } from "react"
-import { ColorProps } from "common/styles"
+import { ColorProps } from "utils/styles"
 import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
-import {
-  StyledExternalLink,
-  StyledExternalLinkAdornment,
-} from "./ExternalLink.styled"
+import { SExternalLink, SExternalLinkAdornment } from "./ExternalLink.styled"
 
 const ExternalLinkAdornment = () => (
-  <StyledExternalLinkAdornment>
+  <SExternalLinkAdornment>
     <LinkIcon />
     &nbsp; &nbsp;
-  </StyledExternalLinkAdornment>
+  </SExternalLinkAdornment>
 )
 
 export function ExternalLink(
   props: { href: string; children?: ReactNode } & ColorProps,
 ) {
   return (
-    <StyledExternalLink href={props.href} color={props.color} bg={props.bg}>
+    <SExternalLink href={props.href} color={props.color} bg={props.bg}>
       {props.children} <ExternalLinkAdornment />
-    </StyledExternalLink>
+    </SExternalLink>
   )
 }

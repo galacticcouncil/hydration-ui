@@ -2,7 +2,7 @@ import styled from "styled-components"
 import { Range, Root, Thumb, Track } from "@radix-ui/react-slider"
 import { theme } from "theme"
 
-export const StyledRoot = styled(Root)`
+export const SRoot = styled(Root)`
   position: relative;
   width: 100%;
   height: 24px;
@@ -18,7 +18,7 @@ export const StyledRoot = styled(Root)`
   }
 `
 
-export const StyledRange = styled(Range)`
+export const SRange = styled(Range)`
   position: absolute;
   height: 100%;
 
@@ -26,7 +26,7 @@ export const StyledRange = styled(Range)`
   border-radius: 9999px;
 `
 
-export const StyledTrack = styled(Track)`
+export const STrack = styled(Track)`
   position: relative;
   height: 4px;
 
@@ -36,7 +36,7 @@ export const StyledTrack = styled(Track)`
   border-radius: 9999px;
 `
 
-export const StyledThumb = styled(Thumb)`
+export const SThumb = styled(Thumb)`
   all: unset;
   display: block;
   width: 20px;
@@ -59,7 +59,7 @@ export const StyledThumb = styled(Thumb)`
   }
 `
 
-export const StyledDash = styled.div<{
+export const SDash = styled.div<{
   row: "top" | "bottom"
   offset: number
 }>`

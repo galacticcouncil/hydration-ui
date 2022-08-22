@@ -1,9 +1,9 @@
-import { margins, size } from "common/styles"
+import { margins, size } from "utils/styles"
 import styled, { css } from "styled-components"
 import { theme } from "theme"
 import { ButtonProps } from "./Button"
 
-export const StyledButton = styled.button<ButtonProps>`
+export const SButton = styled.button<ButtonProps>`
   border-radius: 9999px;
   font-weight: 700;
   border: none;

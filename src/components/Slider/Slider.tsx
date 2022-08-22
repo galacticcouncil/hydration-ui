@@ -1,10 +1,10 @@
 import { FC, Fragment, useLayoutEffect, useMemo, useRef, useState } from "react"
 import {
-  StyledDash,
-  StyledRange,
-  StyledRoot,
-  StyledThumb,
-  StyledTrack,
+  SDash,
+  SRange,
+  SRoot,
+  SThumb,
+  STrack,
 } from "components/Slider/Slider.styled"
 
 const dashCount = 20
@@ -33,12 +33,12 @@ export const Slider: FC<Props> = ({
     () =>
       Array.from({ length: dashCount + 1 }).map((_, i) => (
         <Fragment key={i}>
-          <StyledDash
+          <SDash
             key={`top-${i}`}
             offset={i * (rootWidth / dashCount)}
             row="top"
           />
-          <StyledDash
+          <SDash
             key={`bottom-${i}`}
             offset={i * (rootWidth / dashCount)}
             row="bottom"
@@ -53,7 +53,7 @@ export const Slider: FC<Props> = ({
   }, [])
 
   return (
-    <StyledRoot
+    <SRoot
       value={value}
       onValueChange={onChange}
       min={min}
@@ -63,10 +63,10 @@ export const Slider: FC<Props> = ({
       ref={rootRef}
     >
       {dashes}
-      <StyledTrack>
-        <StyledRange />
-      </StyledTrack>
-      <StyledThumb />
-    </StyledRoot>
+      <STrack>
+        <SRange />
+      </STrack>
+      <SThumb />
+    </SRoot>
   )
 }

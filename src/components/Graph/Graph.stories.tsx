@@ -13,15 +13,15 @@ const data = Array.from({ length: 80 }).map((_, i) => ({
   y: Math.log(i + 1) * 20,
 }))
 
-const StyledContainer = styled.div`
+const SContainer = styled.div`
   width: 500px;
   height: 300px;
 `
 
 const Template: ComponentStory<typeof GraphComponent> = (args) => (
-  <StyledContainer>
+  <SContainer>
     <GraphComponent {...args} />
-  </StyledContainer>
+  </SContainer>
 )
 
 export const Graph = Template.bind({})

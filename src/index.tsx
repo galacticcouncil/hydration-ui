@@ -1,9 +1,10 @@
 import "./i18n/i18n"
 import React from "react"
 import { createRoot } from "react-dom/client"
-import { App } from "./App/App"
+import { App } from "App"
 import reportWebVitals from "./reportWebVitals"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { GlobalStyle } from "components/GlobalStyle"
 
 const root = createRoot(document.getElementById("root")!)
 const client = new QueryClient()
@@ -11,6 +12,7 @@ const client = new QueryClient()
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={client}>
+      <GlobalStyle />
       <App />
     </QueryClientProvider>
   </React.StrictMode>,

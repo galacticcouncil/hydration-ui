@@ -1,6 +1,6 @@
-import { FlexProps, FontProps, MarginProps } from "common/styles"
+import { FlexProps, FontProps, MarginProps } from "utils/styles"
 import { FC, ReactNode } from "react"
-import { ErrorMessage, LabelWrapper, StyledLabel } from "./Label.styled"
+import { ErrorMessage, LabelWrapper, SLabel } from "./Label.styled"
 
 type LabelProps = {
   label: string
@@ -25,9 +25,9 @@ export const Label: FC<LabelProps> = ({
   return (
     <LabelWrapper {...p} $width={width}>
       {/* hidden prop hides label visibly, but keeps it available for screen readers */}
-      <StyledLabel error={error} htmlFor={id} hidden={!withLabel} fs={p.fs}>
+      <SLabel error={error} htmlFor={id} hidden={!withLabel} fs={p.fs}>
         {label}
-      </StyledLabel>
+      </SLabel>
 
       {children}
       {error && <ErrorMessage>{error}</ErrorMessage>}

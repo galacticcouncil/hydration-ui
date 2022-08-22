@@ -1,7 +1,7 @@
-import { MarginProps, SizeProps } from "common/styles"
+import { MarginProps, SizeProps } from "utils/styles"
 import { ReactNode } from "react"
 import { FC } from "react"
-import { StyledIconWrapper } from "./Icon.styled"
+import { SIconWrapper } from "./Icon.styled"
 
 export type IconProps = {
   children?: ReactNode
@@ -11,5 +11,5 @@ export type IconProps = {
   MarginProps
 
 export const Icon: FC<IconProps> = ({ children, icon, ...rest }) => {
-  return <StyledIconWrapper {...rest}>{icon || children}</StyledIconWrapper>
+  return <SIconWrapper {...rest}>{icon || children}</SIconWrapper>
 }

@@ -1,6 +1,6 @@
-import { ColorProps, FontProps, MarginProps } from "common/styles"
+import { ColorProps, FontProps, MarginProps } from "utils/styles"
 import { FC, ReactNode } from "react"
-import { StyledH1 } from "./Heading.styled"
+import { SH1 } from "./Heading.styled"
 
 type variant = "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
 export type HeadingProps = {
@@ -18,7 +18,7 @@ export const Heading: FC<HeadingProps> = ({
   color = "neutralGray100",
   ...rest
 }) => (
-  <StyledH1 as={as} color={color} {...rest}>
+  <SH1 as={as} color={color} {...rest}>
     {text || children}
-  </StyledH1>
+  </SH1>
 )

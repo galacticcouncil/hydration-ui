@@ -1,7 +1,7 @@
 import styled from "styled-components"
 import { theme } from "theme"
 
-export const StyledBar = styled.div`
+export const SBar = styled.div`
   display: flex;
   align-items: center;
 
@@ -14,7 +14,7 @@ export const StyledBar = styled.div`
   border-radius: 9999px;
 `
 
-export const StyledFill = styled.div<{ percentage: number }>`
+export const SFill = styled.div<{ percentage: number }>`
   width: ${({ percentage }) => percentage}%;
   height: 4px;
 

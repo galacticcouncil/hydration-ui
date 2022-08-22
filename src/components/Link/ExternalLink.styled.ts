@@ -1,13 +1,13 @@
 import styled from "styled-components"
-import { colors } from "common/styles"
+import { colors } from "utils/styles"
 
-export const StyledExternalLink = styled.a`
+export const SExternalLink = styled.a`
   text-decoration: underline;
   text-underline-offset: 3px;
   ${colors}
 `
 
-export const StyledExternalLinkAdornment = styled.span`
+export const SExternalLinkAdornment = styled.span`
   position: relative;
 
   svg {

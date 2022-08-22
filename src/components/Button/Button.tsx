@@ -1,7 +1,7 @@
-import { MarginProps, SizeProps } from "common/styles"
+import { MarginProps, SizeProps } from "utils/styles"
 import { Link } from "components/Link/Link"
 import { FC, ReactNode, SyntheticEvent } from "react"
-import { StyledButton } from "./Button.styled"
+import { SButton } from "./Button.styled"
 
 export type ButtonProps = {
   variant?: "primary" | "secondary" | "gradient"
@@ -26,9 +26,9 @@ export const Button: FC<ButtonProps> = ({
   ...props
 }) => {
   const element = (
-    <StyledButton {...props} type={type} variant={variant} size={size}>
+    <SButton {...props} type={type} variant={variant} size={size}>
       {props.text || props.children}
-    </StyledButton>
+    </SButton>
   )
   if (props.to) return <Link to={props.to}>{element}</Link>
   return element

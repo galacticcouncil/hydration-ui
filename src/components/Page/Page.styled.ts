@@ -1,7 +1,7 @@
 import styled from "styled-components"
 import { theme } from "theme"
 
-export const StyledPage = styled.div`
+export const SPage = styled.div`
   background: ${theme.gradients.verticalGradient};
   height: 100vh;
   // overflow-y: auto;

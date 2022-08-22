@@ -23,7 +23,7 @@ export const InputWrapper = styled.div<{
     `};
 `
 
-export const StyledInput = styled.input<{ error?: string; unit?: string }>`
+export const SInput = styled.input<{ error?: string; unit?: string }>`
   width: 100%;
 
   background: ${theme.colors.backgroundGray800};

@@ -1,7 +1,7 @@
 import styled from "styled-components"
 import { theme } from "theme"
 
-export const StyledBackdrop = styled.div`
+export const SBackdrop = styled.div`
   width: 100%;
   height: 100vh;
   position: fixed;

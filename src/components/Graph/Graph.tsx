@@ -6,7 +6,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { StyledChart } from "components/Graph/Graph.styled"
+import { SChart } from "components/Graph/Graph.styled"
 import { theme } from "theme"
 
 const tickProps = {
@@ -33,10 +33,7 @@ type Props = {
 export const Graph: FC<Props> = ({ data, labelX, labelY }) => {
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <StyledChart
-        data={data}
-        margin={{ top: 16, right: 16, bottom: 16, left: 16 }}
-      >
+      <SChart data={data} margin={{ top: 16, right: 16, bottom: 16, left: 16 }}>
         <CartesianGrid stroke={theme.colors.white} opacity={0.12} />
         <XAxis
           padding={{ left: 16, right: 16 }}
@@ -84,7 +81,7 @@ export const Graph: FC<Props> = ({ data, labelX, labelY }) => {
           strokeWidth={4}
           dot={false}
         />
-      </StyledChart>
+      </SChart>
     </ResponsiveContainer>
   )
 }

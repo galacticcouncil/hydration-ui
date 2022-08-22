@@ -1,5 +1,5 @@
 import { DialogContent } from "@radix-ui/react-dialog"
-import { SizeProps } from "common/styles"
+import { SizeProps } from "utils/styles"
 import { IconButton } from "components/IconButton/IconButton"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import styled from "styled-components"

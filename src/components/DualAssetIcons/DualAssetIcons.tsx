@@ -1,4 +1,4 @@
-import { MarginProps } from "common/styles"
+import { MarginProps } from "utils/styles"
 import { AssetIcon, AssetIconProps } from "components/AssetIcon/AssetIcon"
 import { FC } from "react"
 import { IconsWrapper } from "./DualAssetIcons.styled"

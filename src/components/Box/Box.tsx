@@ -1,12 +1,12 @@
 import { FC, ReactNode } from "react"
-import { StyledBox } from "./Box.styled"
+import { SBox } from "./Box.styled"
 import {
   MarginProps,
   PaddingProps,
   FlexProps,
   SizeProps,
   ColorProps,
-} from "common/styles"
+} from "utils/styles"
 
 export type BoxProps = {
   children: ReactNode
@@ -17,5 +17,5 @@ export type BoxProps = {
   ColorProps
 
 export const Box: FC<BoxProps> = ({ children, ...rest }) => (
-  <StyledBox {...rest}>{children}</StyledBox>
+  <SBox {...rest}>{children}</SBox>
 )

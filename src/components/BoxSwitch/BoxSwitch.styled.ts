@@ -2,7 +2,7 @@ import styled from "styled-components"
 import { theme } from "theme"
 import { Text } from "components/Typography/Text/Text"
 
-export const StyledSwitch = styled.div`
+export const SSwitch = styled.div`
   --btn-size: 56px;
   --btn-gap: 8px;
 
@@ -14,7 +14,7 @@ export const StyledSwitch = styled.div`
   gap: var(--btn-gap);
 `
 
-export const StyledButton = styled.button<{ isActive: boolean }>`
+export const SButton = styled.button<{ isActive: boolean }>`
   all: unset;
 
   width: var(--btn-size);
@@ -34,11 +34,11 @@ export const StyledButton = styled.button<{ isActive: boolean }>`
   }
 `
 
-export const StyledText = styled(Text)`
+export const SText = styled(Text)`
   transition: all 0.3s ease-in-out;
 `
 
-export const StyledButtonBackground = styled.div<{ index: number }>`
+export const SButtonBackground = styled.div<{ index: number }>`
   ${({ index }) => index === -1 && "display: none;"};
 
   position: absolute;

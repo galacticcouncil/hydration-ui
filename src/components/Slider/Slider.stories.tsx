@@ -8,7 +8,7 @@ export default {
   component: SliderComponent,
 } as ComponentMeta<typeof SliderComponent>
 
-const StyledContainer = styled.div`
+const SContainer = styled.div`
   width: 300px;
   height: 200px;
 `
@@ -21,9 +21,9 @@ const Template: ComponentStory<typeof SliderComponent> = (args) => {
   }
 
   return (
-    <StyledContainer>
+    <SContainer>
       <SliderComponent {...args} value={[value]} onChange={onChange} />
-    </StyledContainer>
+    </SContainer>
   )
 }
 

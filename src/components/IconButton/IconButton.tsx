@@ -1,8 +1,8 @@
-import { noop } from "common/helpers"
-import { ColorProps, MarginProps, SizeProps } from "common/styles"
+import { noop } from "utils/helpers"
+import { ColorProps, MarginProps, SizeProps } from "utils/styles"
 import { Icon } from "components/Icon/Icon"
 import { FC, ReactNode } from "react"
-import { StyledIconButton } from "./IconButton.styled"
+import { SIconButton } from "./IconButton.styled"
 
 export type IconButtonProps = {
   name: string
@@ -20,7 +20,7 @@ export const IconButton: FC<IconButtonProps> = ({
   name,
   ...rest
 }) => (
-  <StyledIconButton round={round} onClick={onClick} {...rest} aria-label={name}>
+  <SIconButton round={round} onClick={onClick} {...rest} aria-label={name}>
     <Icon icon={icon} />
-  </StyledIconButton>
+  </SIconButton>
 )

@@ -1,6 +1,6 @@
-import { Color, MarginProps } from "common/styles"
+import { Color, MarginProps } from "utils/styles"
 import { FC } from "react"
-import { StyledSeparator } from "./Separator.styled"
+import { SSeparator } from "./Separator.styled"
 
 export type SeparatorProps = {
   orientation?: "vertical" | "horizontal"
@@ -12,4 +12,4 @@ export type SeparatorProps = {
 export const Separator: FC<SeparatorProps> = ({
   orientation = "horizontal",
   ...props
-}) => <StyledSeparator orientation={orientation} {...props} />
+}) => <SSeparator orientation={orientation} {...props} />

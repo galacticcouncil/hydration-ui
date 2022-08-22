@@ -1,8 +1,8 @@
 import {
-  StyledButton,
-  StyledButtonBackground,
-  StyledSwitch,
-  StyledText,
+  SButton,
+  SButtonBackground,
+  SSwitch,
+  SText,
 } from "components/BoxSwitch/BoxSwitch.styled"
 
 type Props = {
@@ -19,22 +19,19 @@ export const BoxSwitch = ({ options, selected, onSelect }: Props) => {
   }
 
   return (
-    <StyledSwitch>
+    <SSwitch>
       {options.map((option, i) => (
-        <StyledButton
+        <SButton
           key={i}
           onClick={() => onSelect(option.value)}
           isActive={selected === option.value}
         >
-          <StyledText
-            fw={700}
-            color={selected === option.value ? "black" : "white"}
-          >
+          <SText fw={700} color={selected === option.value ? "black" : "white"}>
             {option.label}
-          </StyledText>
-        </StyledButton>
+          </SText>
+        </SButton>
       ))}
-      <StyledButtonBackground index={getActiveIndex()} />
-    </StyledSwitch>
+      <SButtonBackground index={getActiveIndex()} />
+    </SSwitch>
   )
 }

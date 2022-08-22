@@ -1,7 +1,7 @@
-import { MarginProps } from "common/styles"
+import { MarginProps } from "utils/styles"
 import { Label } from "components/Label/Label"
 import { FC } from "react"
-import { StyledSwitch, StyledThumb } from "./Switch.styled"
+import { SSwitch, SThumb } from "./Switch.styled"
 
 type SwitchProps = {
   value: boolean
@@ -24,7 +24,7 @@ export const Switch: FC<SwitchProps> = ({
 }) => {
   return (
     <Label id={name} label={label} withLabel={withLabel} flex acenter fs={14}>
-      <StyledSwitch
+      <SSwitch
         checked={value}
         onCheckedChange={onCheckedChange}
         disabled={disabled}
@@ -33,8 +33,8 @@ export const Switch: FC<SwitchProps> = ({
         id={name}
         ml={withLabel ? 10 : 0}
       >
-        <StyledThumb checked={value} disabled={disabled} size={size} />
-      </StyledSwitch>
+        <SThumb checked={value} disabled={disabled} size={size} />
+      </SSwitch>
     </Label>
   )
 }

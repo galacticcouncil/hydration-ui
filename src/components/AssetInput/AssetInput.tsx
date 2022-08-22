@@ -1,7 +1,7 @@
-import { MarginProps, SizeProps } from "common/styles"
+import { MarginProps, SizeProps } from "utils/styles"
 import { Label } from "components/Label/Label"
 import React, { FC } from "react"
-import { InputWrapper, StyledInput } from "./AssetInput.styled"
+import { InputWrapper, SInput } from "./AssetInput.styled"
 
 export type AssetInputProps = {
   value: string
@@ -37,7 +37,7 @@ export const AssetInput: FC<AssetInputProps> = ({
         {...p}
       >
         <InputWrapper dollars={p.dollars} unit={p.unit}>
-          <StyledInput
+          <SInput
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               onChange(e.target.value)
             }

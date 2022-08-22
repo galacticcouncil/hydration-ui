@@ -38,7 +38,7 @@ export const InputWrapper = styled.div<{
     `};
 `
 
-export const StyledInput = styled.input<{ error?: string }>`
+export const SInput = styled.input<{ error?: string }>`
   width: 100%;
 
   background: ${theme.colors.backgroundGray800};

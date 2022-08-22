@@ -6,7 +6,7 @@ export const AssetIconWrapper = styled(Icon)`
   position: relative;
 `
 
-export const StyledIcon = styled(Icon)`
+export const SIcon = styled(Icon)`
   width: 28px;
   height: 28px;
   background: ${theme.colors.black};
@@ -20,7 +20,7 @@ export const StyledIcon = styled(Icon)`
     height: 26px;
   }
 `
-export const StyledChainedIcon = styled(Icon)`
+export const SChainedIcon = styled(Icon)`
   position: absolute;
   left: 15px;
   top: 0;

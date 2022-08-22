@@ -1,10 +1,6 @@
 import { PlaceHolderIcon } from "assets/icons/PlaceholderIcon"
 import { FC, ReactNode } from "react"
-import {
-  AssetIconWrapper,
-  StyledChainedIcon,
-  StyledIcon,
-} from "./AssetIcon.styled"
+import { AssetIconWrapper, SChainedIcon, SIcon } from "./AssetIcon.styled"
 
 export type AssetIconProps = {
   icon?: ReactNode
@@ -18,11 +14,9 @@ export const AssetIcon: FC<AssetIconProps> = ({
   withChainedIcon = true,
 }) => (
   <AssetIconWrapper>
-    <StyledIcon>{icon || <PlaceHolderIcon />}</StyledIcon>
+    <SIcon>{icon || <PlaceHolderIcon />}</SIcon>
     {withChainedIcon && (
-      <StyledChainedIcon>
-        {chainedIcon || <PlaceHolderIcon />}
-      </StyledChainedIcon>
+      <SChainedIcon>{chainedIcon || <PlaceHolderIcon />}</SChainedIcon>
     )}
   </AssetIconWrapper>
 )

@@ -7,16 +7,16 @@ export default {
   component: SpinnerComponent,
 } as ComponentMeta<typeof SpinnerComponent>
 
-const StyledContainer = styled.div`
+const SContainer = styled.div`
   width: 300px;
   height: 200px;
 `
 
 const Template: ComponentStory<typeof SpinnerComponent> = (args) => {
   return (
-    <StyledContainer>
+    <SContainer>
       <SpinnerComponent width={100} height={100} />
-    </StyledContainer>
+    </SContainer>
   )
 }
 

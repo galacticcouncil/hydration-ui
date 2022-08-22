@@ -1,9 +1,9 @@
-import { colors, margins } from "common/styles"
+import { colors, margins } from "utils/styles"
 import styled, { css } from "styled-components"
 import { theme } from "theme"
-import { ColorProps } from "common/styles"
+import { ColorProps } from "utils/styles"
 
-export const StyledIconButton = styled.button<{ round?: boolean } & ColorProps>`
+export const SIconButton = styled.button<{ round?: boolean } & ColorProps>`
   ${(p) =>
     p.round &&
     css`
@@ -29,7 +29,7 @@ export const StyledIconButton = styled.button<{ round?: boolean } & ColorProps>`
       content: "";
       width: 100%;
       height: 100%;
-      background rgba(${theme.rgbColors.white},0.06);
+      background: rgba(${theme.rgbColors.white}, 0.06);
       position: absolute;
       top: 0;
       left: 0;
