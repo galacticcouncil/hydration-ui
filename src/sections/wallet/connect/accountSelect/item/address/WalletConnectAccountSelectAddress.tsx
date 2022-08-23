@@ -7,14 +7,16 @@ import { FC } from "react"
 type Props = {
   name: string
   address: string
+  onClick?: () => void
 }
 
 export const WalletConnectAccountSelectAddress: FC<Props> = ({
   name,
   address,
+  onClick,
 }) => {
   return (
-    <Box flex align="center" gap={10}>
+    <Box flex align="center" gap={10} pb={12} pt={12} onClick={onClick}>
       <Box
         flex
         align="center"
