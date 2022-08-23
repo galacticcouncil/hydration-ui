@@ -1,6 +1,6 @@
 import { Modal } from "components/Modal/Modal"
 import { useTranslation } from "react-i18next"
-import { useState } from "react"
+import { FC, useState } from "react"
 
 import { web3Enable } from "@polkadot/extension-dapp"
 import { useMutation } from "@tanstack/react-query"
@@ -9,10 +9,12 @@ import { WalletConnectConfirmPending } from "sections/wallet/connect/confirmPend
 import { WalletConnectProviderSelect } from "sections/wallet/connect/providerSelect/WalletConnectProviderSelect"
 import { WalletConnectAccountSelect } from "sections/wallet/connect/accountSelect/WalletConnectAccountSelect"
 
-export function WalletConnectModal(props: {
+type Props = {
   isOpen: boolean
   onClose: () => void
-}) {
+}
+
+export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
   const { t } = useTranslation("translation")
   const [selectedProvider, setSelectedProvider] =
     useState<"talisman" | "polkadot-js" | null>(null)
@@ -30,10 +32,10 @@ export function WalletConnectModal(props: {
   return (
     <Modal
       width={460}
-      open={props.isOpen}
+      open={isOpen}
       onClose={() => {
         setSelectedProvider(null)
-        props.onClose()
+        onClose()
       }}
       {...modalProps}
     >

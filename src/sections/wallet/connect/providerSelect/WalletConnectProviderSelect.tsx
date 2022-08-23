@@ -5,10 +5,13 @@ import { Separator } from "components/Separator/Separator"
 import { ExternalLink } from "components/Link/ExternalLink"
 import { WalletConnectProviders } from "sections/wallet/connect/providers/WalletConnectProviders"
 import { PROVIDER_DOWNLOAD_URLS } from "sections/wallet/connect/modal/WalletConnectModal.utils"
+import { FC } from "react"
 
-export function WalletConnectProviderSelect(props: {
+type Props = {
   onWalletSelect: (provider: "talisman" | "polkadot-js") => void
-}) {
+}
+
+export const WalletConnectProviderSelect: FC<Props> = ({ onWalletSelect }) => {
   const { t } = useTranslation("translation")
 
   return (
@@ -19,7 +22,7 @@ export function WalletConnectProviderSelect(props: {
 
       <WalletConnectProviders
         onConnect={(provider) => {
-          props.onWalletSelect(provider)
+          onWalletSelect(provider)
         }}
         onDownload={(provider) => {
           const url = PROVIDER_DOWNLOAD_URLS[provider]

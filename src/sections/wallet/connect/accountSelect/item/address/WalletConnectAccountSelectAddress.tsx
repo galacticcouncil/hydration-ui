@@ -2,11 +2,17 @@ import { css } from "styled-components"
 import { Text } from "components/Typography/Text/Text"
 import { Box } from "components/Box/Box"
 import Identicon from "@polkadot/react-identicon"
+import { FC } from "react"
 
-export function WalletConnectAccountSelectAddress(props: {
+type Props = {
   name: string
   address: string
-}) {
+}
+
+export const WalletConnectAccountSelectAddress: FC<Props> = ({
+  name,
+  address,
+}) => {
   return (
     <Box flex align="center" gap={10}>
       <Box
@@ -19,7 +25,7 @@ export function WalletConnectAccountSelectAddress(props: {
           border-radius: 9999px;
         `}
       >
-        <Identicon size={32} value={props.address} />
+        <Identicon size={32} value={address} />
       </Box>
 
       <Box
@@ -31,7 +37,7 @@ export function WalletConnectAccountSelectAddress(props: {
         `}
       >
         <Text fw={600} fs={12}>
-          {props.name}
+          {name}
         </Text>
         <Text
           fw={600}
@@ -43,7 +49,7 @@ export function WalletConnectAccountSelectAddress(props: {
             white-space: nowrap;
           `}
         >
-          {props.address}
+          {address}
         </Text>
       </Box>
     </Box>

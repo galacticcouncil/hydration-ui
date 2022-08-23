@@ -7,17 +7,19 @@ import { ReactComponent as PolkadotLogo } from "assets/icons/PolkadotLogo.svg"
 import { ReactComponent as TalismanLogo } from "assets/icons/TalismanLogo.svg"
 import { ProviderType } from "sections/wallet/connect/modal/WalletConnectModal.utils"
 import { useTranslation } from "react-i18next"
-import { ReactNode } from "react"
+import { FC, ReactNode } from "react"
 
-export function WalletConnectConfirmPending(props: { provider: ProviderType }) {
+type Props = { provider: ProviderType }
+
+export const WalletConnectConfirmPending: FC<Props> = ({ provider }) => {
   const { t } = useTranslation("translation")
 
   let name: string | null = null
   let logo: ReactNode | null = null
-  if (props.provider === "polkadot-js") {
+  if (provider === "polkadot-js") {
     name = "Polkadot"
     logo = <PolkadotLogo width={48} height={48} />
-  } else if (props.provider === "talisman") {
+  } else if (provider === "talisman") {
     name = "Talisman"
     logo = <TalismanLogo width={48} height={48} />
   }

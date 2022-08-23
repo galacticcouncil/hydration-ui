@@ -4,7 +4,7 @@ import { ReactComponent as BasiliskIcon } from "assets/icons/BasiliskIcon.svg"
 import { ReactComponent as BasiliskLogo } from "assets/icons/BasiliskLogo.svg"
 import { css } from "styled-components"
 
-export function LoadingPage() {
+export const LoadingPage = () => {
   return (
     <Box
       flex

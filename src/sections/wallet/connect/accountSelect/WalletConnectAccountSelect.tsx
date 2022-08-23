@@ -6,11 +6,14 @@ import { Box } from "components/Box/Box"
 import { web3Accounts } from "@polkadot/extension-dapp"
 import { useQuery } from "@tanstack/react-query"
 import { WalletConnectAccountSelectItem } from "sections/wallet/connect/accountSelect/item/WalletConnectAccountSelectItem"
+import { FC } from "react"
 
-export function WalletConnectAccountSelect(props: { provider: ProviderType }) {
+type Props = { provider: ProviderType }
+
+export const WalletConnectAccountSelect: FC<Props> = ({ provider }) => {
   const { t } = useTranslation("translation")
-  const accounts = useQuery(["web3Accounts", props.provider], () => {
-    return web3Accounts({ extensions: [props.provider] })
+  const accounts = useQuery(["web3Accounts", provider], () => {
+    return web3Accounts({ extensions: [provider] })
   })
 
   return (

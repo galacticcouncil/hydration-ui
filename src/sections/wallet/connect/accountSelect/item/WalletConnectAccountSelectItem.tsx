@@ -3,20 +3,26 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { Separator } from "components/Separator/Separator"
 import { Box } from "components/Box/Box"
-import { encodeAddress, decodeAddress } from "@polkadot/util-crypto"
+import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { BASILISK_ADDRESS_PREFIX } from "utils/network"
 import { useBalances } from "api/balances"
 import { WalletConnectAccountSelectAddress } from "sections/wallet/connect/accountSelect/item/address/WalletConnectAccountSelectAddress"
+import { FC } from "react"
 
-export function WalletConnectAccountSelectItem(props: {
+type Props = {
   address: string
   name: string
-}) {
+}
+
+export const WalletConnectAccountSelectItem: FC<Props> = ({
+  address,
+  name,
+}) => {
   const basiliskAddress = encodeAddress(
-    decodeAddress(props.address),
+    decodeAddress(address),
     BASILISK_ADDRESS_PREFIX,
   )
-  const kuramaAddress = props.address
+  const kuramaAddress = address
   const native = useBalances(kuramaAddress)
 
   const { t } = useTranslation()
@@ -33,7 +39,7 @@ export function WalletConnectAccountSelectItem(props: {
       `}
     >
       <Box flex align="center" justify="space-between">
-        <Text>{props.name}</Text>
+        <Text>{name}</Text>
         <Text>{t("value.bsx", { amount: native })}</Text>
       </Box>
 
