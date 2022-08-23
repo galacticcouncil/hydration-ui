@@ -45,12 +45,12 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
 
       <Box flex column gap={12}>
         <WalletConnectAccountSelectAddress
-          name={t("walletConnectModal.accountSelect.asset.network")}
+          name={t("walletConnect.accountSelect.asset.network")}
           address={basiliskAddress}
         />
         <Separator />
         <WalletConnectAccountSelectAddress
-          name={t("walletConnectModal.accountSelect.asset.parachain")}
+          name={t("walletConnect.accountSelect.asset.parachain")}
           address={kuramaAddress}
         />
       </Box>

@@ -56,7 +56,7 @@ export const PoolJoinFarm: FC<Props> = ({ isOpen, onClose }) => {
     <Modal
       open={isOpen}
       onClose={onClose}
-      title={t("farmsPoolsPage.allFarms.modal.title", {
+      title={t("pools.allFarms.modal.title", {
         symbol1: mock.symbol1,
         symbol2: mock.symbol2,
       })}
@@ -70,7 +70,7 @@ export const PoolJoinFarm: FC<Props> = ({ isOpen, onClose }) => {
                 <Text fw={700}>{farm.symbol}</Text>
               </Box>
               <Text fs={20} lh={28} fw={600} color="primary200">
-                {t("farmsPoolsPage.allFarms.modal.apr", {
+                {t("pools.allFarms.modal.apr", {
                   from: farm.apr.from * 100,
                   to: farm.apr.to * 100,
                 })}
@@ -87,7 +87,7 @@ export const PoolJoinFarm: FC<Props> = ({ isOpen, onClose }) => {
                 <Text>
                   <Trans
                     t={t}
-                    i18nKey="farmsPoolsPage.allFarms.modal.distribution"
+                    i18nKey="pools.allFarms.modal.distribution"
                     tOptions={{
                       distributed: farm.distribution.distributed,
                       max: farm.distribution.max,
@@ -101,13 +101,13 @@ export const PoolJoinFarm: FC<Props> = ({ isOpen, onClose }) => {
               <SFarmRow>
                 <FillBar percentage={farm.capacity * 100} />
                 <Text fs={14} color="neutralGray100">
-                  {t("farmsPoolsPage.allFarms.modal.capacity", {
+                  {t("pools.allFarms.modal.capacity", {
                     capacity: farm.capacity * 100,
                   })}
                 </Text>
               </SFarmRow>
               <Text fs={12} lh={16} fw={400} color="neutralGray500">
-                {t("farmsPoolsPage.allFarms.modal.end", { end: farm.end })}
+                {t("pools.allFarms.modal.end", { end: farm.end })}
               </Text>
             </Box>
             <SFarmIcon>

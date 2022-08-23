@@ -13,7 +13,7 @@ export const PoolClaim = () => {
     <FooterWrapper flex spread acenter>
       <Box width={380}>
         <Text fw={600} color="primary100">
-          {t("farmsPoolsPage.poolCard.footer.info", {
+          {t("pools.pool.claim.info", {
             locked: 2000,
             available: 1000,
           })}
@@ -21,7 +21,7 @@ export const PoolClaim = () => {
       </Box>
       <Box width={206}>
         <Text>
-          {t("farmsPoolsPage.poolCard.footer.claim", {
+          {t("pools.pool.claim.amount", {
             count: 15,
           })}
         </Text>
@@ -30,7 +30,7 @@ export const PoolClaim = () => {
         <Button variant="gradient" size="small">
           <Box flex acenter jcenter>
             <Icon icon={<FlagIcon />} mr={14} ml={7} />
-            {t("farmsPoolsPage.poolCard.footer.button.claimFarms")}
+            {t("pools.pool.claim.button")}
           </Box>
         </Button>
       </Box>

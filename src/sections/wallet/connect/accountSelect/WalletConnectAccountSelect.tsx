@@ -19,7 +19,7 @@ export const WalletConnectAccountSelect: FC<Props> = ({ provider }) => {
   return (
     <>
       <Text fw={400} mt={6} color="neutralGray200">
-        {t("walletConnectModal.accountSelect.description")}
+        {t("walletConnect.accountSelect.description")}
       </Text>
 
       <Box

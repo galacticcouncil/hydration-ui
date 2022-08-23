@@ -26,8 +26,8 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
   const modalProps = selectedProvider
     ? mutate.isLoading
       ? { title: "" }
-      : { title: t("walletConnectModal.accountSelect.title") }
-    : { title: t("walletConnectModal.provider.title") }
+      : { title: t("walletConnect.accountSelect.title") }
+    : { title: t("walletConnect.provider.title") }
 
   return (
     <Modal

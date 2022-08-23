@@ -17,7 +17,7 @@ export const WalletConnectProviderSelect: FC<Props> = ({ onWalletSelect }) => {
   return (
     <>
       <Text fw={400} mt={6} color="neutralGray200">
-        {t("walletConnectModal.provider.description")}
+        {t("walletConnect.provider.description")}
       </Text>
 
       <WalletConnectProviders
@@ -38,7 +38,7 @@ export const WalletConnectProviderSelect: FC<Props> = ({ onWalletSelect }) => {
         tAlign="center"
         color="neutralGray400"
       >
-        <Trans t={t} i18nKey="walletConnectModal.provider.terms">
+        <Trans t={t} i18nKey="walletConnect.provider.terms">
           <ExternalLink href="/" color="orange100" />
         </Trans>
       </Text>
@@ -53,7 +53,7 @@ export const WalletConnectProviderSelect: FC<Props> = ({ onWalletSelect }) => {
       />
 
       <Text fw={400} mt={26} fs={14} tAlign="center" color="neutralGray400">
-        <Trans t={t} i18nKey="walletConnectModal.provider.learn">
+        <Trans t={t} i18nKey="walletConnect.provider.learn">
           <ExternalLink href="/" color="primary450" />
         </Trans>
       </Text>

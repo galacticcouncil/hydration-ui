@@ -23,7 +23,7 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose }) => {
   return (
     <Modal
       open={isOpen}
-      title={t("farmsPoolsPage.addLiquidity.modal.title")}
+      title={t("pools.addLiquidity.modal.title")}
       onClose={onClose}
     >
       <PoolAddLiquidityAssetSelect
@@ -48,10 +48,10 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose }) => {
         onChange={setAsset2}
       />
 
-      <Row left={t("farmsPoolsPage.addLiquidity.modal.row.apr")} right="5%" />
+      <Row left={t("pools.addLiquidity.modal.row.apr")} right="5%" />
       <Separator />
       <Row
-        left={t("farmsPoolsPage.addLiquidity.modal.row.transactionCost")}
+        left={t("pools.addLiquidity.modal.row.transactionCost")}
         right={
           <>
             <Text mr={4}>≈ 12 BSX</Text>
@@ -60,18 +60,15 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose }) => {
         }
       />
       <Separator />
-      <Row
-        left={t("farmsPoolsPage.addLiquidity.modal.row.sharePool")}
-        right="5%"
-      />
+      <Row left={t("pools.addLiquidity.modal.row.sharePool")} right="5%" />
       <Separator />
       {/*TODO add tooltip component afterwards */}
       <Row
-        left={t("farmsPoolsPage.addLiquidity.modal.row.shareTokens")}
+        left={t("pools.addLiquidity.modal.row.shareTokens")}
         right={<Text color="primary400">3000</Text>}
       />
       <Button
-        text={t("farmsPoolsPage.addLiquidity.modal.confirmButton")}
+        text={t("pools.addLiquidity.modal.confirmButton")}
         variant="primary"
         fullWidth
         mt={30}

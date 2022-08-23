@@ -45,7 +45,7 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose }) => {
 
   return (
     <Modal
-      title={t("farmsPoolsPage.removeLiquidity.modal.title")}
+      title={t("pools.removeLiquidity.modal.title")}
       open={isOpen}
       onClose={onClose}
     >
@@ -74,7 +74,7 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose }) => {
 
       <STradingPairContainer>
         <Text color="neutralGray400">
-          {t("farmsPoolsPage.removeLiquidity.modal.receive")}
+          {t("pools.removeLiquidity.modal.receive")}
         </Text>
         <PoolRemoveLiquidityReward
           name="Basilisk"
@@ -91,7 +91,7 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose }) => {
       <Box mb={32} mt={16}>
         <Box flex acenter justify="space-between">
           <Text color="neutralGray500" fs={15}>
-            {t("farmsPoolsPage.removeLiquidity.modal.cost")}
+            {t("pools.removeLiquidity.modal.cost")}
           </Text>
           <Box flex acenter gap={4}>
             <Text fs={14}>≈ 12 BSX</Text>
@@ -103,14 +103,14 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose }) => {
         <Separator mt={8} mb={8} size={2} />
         <Box flex acenter justify="space-between">
           <Text fs={15} color="neutralGray500">
-            {t("farmsPoolsPage.removeLiquidity.modal.price")}
+            {t("pools.removeLiquidity.modal.price")}
           </Text>
           <Text fs={14}>1 BSX = 225 KAR</Text>
         </Box>
       </Box>
 
       <Button variant="primary" fullWidth>
-        {t("farmsPoolsPage.removeLiquidity.modal.confirm")}
+        {t("pools.removeLiquidity.modal.confirm")}
       </Button>
     </Modal>
   )

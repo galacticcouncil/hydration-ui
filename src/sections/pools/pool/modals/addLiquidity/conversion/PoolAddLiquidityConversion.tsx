@@ -21,7 +21,7 @@ export const PoolAddLiquidityConversion: FC<Props> = ({
       <Separator color="backgroundGray800" />
       <SContainer>
         <Text fs={11} lh={15}>
-          {t("farmsPoolsPage.addLiquidity.modal.conversion.price")}
+          {t("pools.addLiquidity.modal.conversion.price")}
         </Text>
         <Text fs={11} lh={15} color="primary300">
           {formatNum(firstValue.amount) + " " + firstValue.currency}

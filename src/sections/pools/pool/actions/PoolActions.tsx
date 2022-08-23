@@ -34,21 +34,21 @@ export const PoolActions: FC<ActionButtonProps> = ({
           <Button fullWidth size="small" onClick={() => setOpenAdd(true)}>
             <Box flex acenter jcenter>
               <Icon icon={<PlusIcon />} mr={11} />
-              {t("farmsPoolsPage.poolCard.actionButtons.addLiquidity")}
+              {t("pools.pool.actions.addLiquidity")}
             </Box>
           </Button>
 
           <Button fullWidth size="small" onClick={() => setOpenRemove(true)}>
             <Box flex acenter jcenter>
               <Icon icon={<MinusIcon />} mr={11} />
-              {t("farmsPoolsPage.poolCard.actionButtons.removeLiquidity")}
+              {t("pools.pool.actions.removeLiquidity")}
             </Box>
           </Button>
 
           <Button fullWidth size="small" onClick={() => setOpenFarms(true)}>
             <Box flex acenter jcenter>
               <Icon icon={<WindMillIcon />} mr={11} />
-              {t("farmsPoolsPage.poolCard.actionButtons.joinFarm")}
+              {t("pools.pool.actions.joinFarm")}
             </Box>
           </Button>
         </Box>
@@ -57,7 +57,7 @@ export const PoolActions: FC<ActionButtonProps> = ({
             icon={<ChevronDown />}
             width={6}
             height={3}
-            name={t("farmsPoolsPage.poolCard.actionButtons.chevron.name")}
+            name={t("pools.pool.actions.chevron.name")}
           />
         )}
       </Box>

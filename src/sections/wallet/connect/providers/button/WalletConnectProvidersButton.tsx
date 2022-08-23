@@ -52,12 +52,12 @@ export const WalletConnectProvidersButton: FC<Props> = ({
       >
         {isInjected ? (
           <>
-            {t("walletConnectModal.provider.continue")}
+            {t("walletConnect.provider.continue")}
             <ChevronRight />
           </>
         ) : (
           <>
-            {t("walletConnectModal.provider.download")}
+            {t("walletConnect.provider.download")}
             <DownloadIcon />
           </>
         )}

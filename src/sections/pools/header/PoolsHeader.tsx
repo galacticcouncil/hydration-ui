@@ -16,21 +16,21 @@ export const PoolsHeader = () => {
     <>
       <Box flex spread mb={43}>
         <GradientText fs={30} fw={700}>
-          {t("farmsPoolsPage.header.title")}
+          {t("pools.header.title")}
         </GradientText>
         <Switch
           value={showMyFarms}
           onCheckedChange={setShowMyFarms}
           size="small"
           name="my-positions"
-          label={t("farmsPoolsPage.header.switch")}
+          label={t("pools.header.switch")}
           withLabel
         />
       </Box>
       <Box flex even mb={40}>
         <Box>
           <Text color="neutralGray300" mb={14}>
-            {t("farmsPoolsPage.header.valueLocked")}
+            {t("pools.header.valueLocked")}
           </Text>
           <Box flex align="baseline">
             <Heading as="h3" fs={42} fw={900}>
@@ -43,7 +43,7 @@ export const PoolsHeader = () => {
         </Box>
         <Box>
           <Text color="neutralGray300" mb={14}>
-            {t("farmsPoolsPage.header.valueFarms")}
+            {t("pools.header.valueFarms")}
           </Text>
           <Box flex align="baseline">
             <Heading as="h3" fs={42} fw={900}>

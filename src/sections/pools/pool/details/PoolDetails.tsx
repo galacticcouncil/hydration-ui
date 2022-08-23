@@ -39,7 +39,7 @@ export const PoolDetails = () => {
         </Box>
         <Box flex column width={120} mt={5} align="start">
           <Text fs={14} color="neutralGray400" lh={22}>
-            {t("farmsPoolsPage.poolCard.poolDetails.fee")}
+            {t("pools.pool.poolDetails.fee")}
           </Text>
           <Text lh={22} color="white">
             0.3%
@@ -50,7 +50,7 @@ export const PoolDetails = () => {
       <Box flex spread ml={4} mb={36}>
         <Box>
           <Text fs={14} color="neutralGray400" lh={22}>
-            {t("farmsPoolsPage.poolCard.poolDetails.valueLocked")}
+            {t("pools.pool.poolDetails.valueLocked")}
           </Text>
           <Text lh={22} color="white" fs={18}>
             {"$" + formatNum(100000000)}
@@ -58,7 +58,7 @@ export const PoolDetails = () => {
         </Box>
         <Box flex column width={120} align="start">
           <Text fs={14} color="neutralGray400" lh={22}>
-            {t("farmsPoolsPage.poolCard.poolDetails.24hours")}
+            {t("pools.pool.poolDetails.24hours")}
           </Text>
           <Text lh={22} color="white" fs={18}>
             {"$" + formatNum(1234.45)}

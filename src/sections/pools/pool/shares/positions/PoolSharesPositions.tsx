@@ -14,35 +14,35 @@ export const PoolSharesPositions = () => {
     <PositionsWrapper>
       <Box flex>
         <Icon icon={<FarmIcon />} mr={8} />
-        <GradientText text={t("farmsPoolsPage.poolCard.positions.title")} />
+        <GradientText text={t("pools.pool.positions.title")} />
       </Box>
       <Box flex>
         <Box flex spread grow mt={10}>
           <Box>
             <Text fs={12} lh={14} color="neutralGray500" mb={6}>
-              {t("farmsPoolsPage.poolCard.positions.positionTitle", {
+              {t("pools.pool.positions.positionTitle", {
                 position: 1,
               })}
             </Text>
             <Text fs={14} lh={18} color="white" mb={2}>
-              {t("farmsPoolsPage.poolCard.positions.positionValue", {
+              {t("pools.pool.positions.positionValue", {
                 date: "2.2.2022",
               })}
             </Text>
           </Box>
           <Box>
             <Text fs={12} lh={14} color="neutralGray500" mb={6}>
-              {t("farmsPoolsPage.poolCard.positions.lockedTitle")}
+              {t("pools.pool.positions.lockedTitle")}
             </Text>
             <Text fs={14} lh={18} color="white" mb={2}>
-              {t("farmsPoolsPage.poolCard.positions.lockedValue", {
+              {t("pools.pool.positions.lockedValue", {
                 count: 150,
               })}
             </Text>
           </Box>
           <Box>
             <Text fs={12} lh={14} color="neutralGray500" mb={6}>
-              {t("farmsPoolsPage.poolCard.positions.currValueTitle")}
+              {t("pools.pool.positions.currValueTitle")}
             </Text>
             <Text fs={14} lh={18} color="white" mb={2}>
               152 BSX | 200 DAI

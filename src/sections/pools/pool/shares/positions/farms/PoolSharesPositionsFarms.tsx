@@ -21,7 +21,7 @@ export const PoolSharesPositionsFarms = () => {
           <Text
             fs={12}
             mr={10}
-            text={t("farmsPoolsPage.poolCard.positions.farm.joinedFarms")}
+            text={t("pools.pool.positions.farms.joinedFarms")}
           />
           <DualAssetIcons
             firstIcon={{
@@ -35,7 +35,7 @@ export const PoolSharesPositionsFarms = () => {
           </Text>
         </Box>
         <Button
-          text={t("farmsPoolsPage.poolCard.positions.farm.details")}
+          text={t("pools.pool.positions.farms.details")}
           width={120}
           size="small"
         />
@@ -43,7 +43,7 @@ export const PoolSharesPositionsFarms = () => {
       <AvailableFarms>
         <Box flex acenter>
           <GradientText
-            text={t("farmsPoolsPage.poolCard.positions.farm.openFarm")}
+            text={t("pools.pool.positions.farms.openFarm")}
             fs={12}
             mr={10}
           />
@@ -53,7 +53,7 @@ export const PoolSharesPositionsFarms = () => {
           </Text>
         </Box>
         <Button
-          text={t("farmsPoolsPage.poolCard.positions.farm.join")}
+          text={t("pools.pool.positions.farms.join")}
           width={120}
           variant="primary"
           size="small"

@@ -17,7 +17,7 @@ export const PoolIncentives = () => {
   return (
     <Box width={206}>
       <Text fs={14} lh={26} color="neutralGray400" mb={18}>
-        {t("farmsPoolsPage.poolCard.farmIncentives.title")}
+        {t("pools.pool.incentives.title")}
       </Text>
       {mockRows.map((row, rowI) => (
         <Fragment key={rowI}>

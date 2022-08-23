@@ -44,11 +44,11 @@ export const WalletConnectConfirmPending: FC<Props> = ({ provider }) => {
         {logo}
       </Box>
       <GradientText mt={20} fs={24} fw={600} tAlign="center">
-        {t("walletConnectModal.pending.title")}
+        {t("walletConnect.pending.title")}
       </GradientText>
       <Box pl={20} pr={20} mt={20} mb={40}>
         <Text tAlign="center" fs={16} color="neutralGray200" fw={400} lh={22}>
-          {t("walletConnectModal.pending.description", { name })}
+          {t("walletConnect.pending.description", { name })}
         </Text>
       </Box>
     </Box>
