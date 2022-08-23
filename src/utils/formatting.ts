@@ -1,9 +1,6 @@
 import { format, Locale } from "date-fns"
 import { enUS } from "date-fns/locale"
 
-export const getFormattedNumber = (num: number) =>
-  num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")
-
 export const formatNum = (
   number?: number | string,
   options?: Intl.NumberFormatOptions,

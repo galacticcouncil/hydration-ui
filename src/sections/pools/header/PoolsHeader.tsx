@@ -5,7 +5,7 @@ import { Heading } from "components/Typography/Heading/Heading"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { getFormattedNumber } from "utils/formatting"
+import { formatNum } from "utils/formatting"
 
 export const PoolsHeader = () => {
   const { t } = useTranslation()
@@ -34,7 +34,7 @@ export const PoolsHeader = () => {
           </Text>
           <Box flex align="baseline">
             <Heading as="h3" fs={42} fw={900}>
-              {"$" + getFormattedNumber(1100000000) + "."}
+              {"$" + formatNum(1100000000) + "."}
             </Heading>
             <Heading fs={28} opacity={0.4}>
               56
@@ -47,7 +47,7 @@ export const PoolsHeader = () => {
           </Text>
           <Box flex align="baseline">
             <Heading as="h3" fs={42} fw={900}>
-              {"$" + getFormattedNumber(1100000000) + "."}
+              {"$" + formatNum(1100000000) + "."}
             </Heading>
             <Heading fs={28} opacity={0.4}>
               56

@@ -3,15 +3,12 @@ import { Box } from "components/Box/Box"
 import { DualAssetIcons } from "components/DualAssetIcons/DualAssetIcons"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
-import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { getFormattedNumber } from "utils/formatting"
-
-type PoolDetailsProps = {}
+import { formatNum } from "utils/formatting"
 
 const data = { title: "XYK Pool" }
 
-export const PoolDetails: FC<PoolDetailsProps> = () => {
+export const PoolDetails = () => {
   const { t } = useTranslation()
 
   return (
@@ -56,7 +53,7 @@ export const PoolDetails: FC<PoolDetailsProps> = () => {
             {t("farmsPoolsPage.poolCard.poolDetails.valueLocked")}
           </Text>
           <Text lh={22} color="white" fs={18}>
-            {"$" + getFormattedNumber(100000000)}
+            {"$" + formatNum(100000000)}
           </Text>
         </Box>
         <Box flex column width={120} align="start">
@@ -64,7 +61,7 @@ export const PoolDetails: FC<PoolDetailsProps> = () => {
             {t("farmsPoolsPage.poolCard.poolDetails.24hours")}
           </Text>
           <Text lh={22} color="white" fs={18}>
-            {"$" + getFormattedNumber(1234.45)}
+            {"$" + formatNum(1234.45)}
           </Text>
         </Box>
       </Box>

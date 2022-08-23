@@ -1,7 +1,7 @@
 import styled from "styled-components"
 import { theme } from "theme"
 
-export const ConversionWrapper = styled.div`
+export const SContainer = styled.div`
   border-radius: 7px;
   background: ${theme.colors.backgroundGray800};
   position: absolute;

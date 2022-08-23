@@ -6,14 +6,14 @@ import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { getFormattedNumber } from "utils/formatting"
+import { formatNum } from "utils/formatting"
 import {
-  AssetWrapper,
-  MaxButton,
-  SelectAssetButton,
-} from "sections/pools/pool/modals/addLiquidity/assetSelect/PoolAddLiquidityAssetSelect.styled"
+  SContainer,
+  SMaxButton,
+  SSelectAssetButton,
+} from "./PoolAddLiquidityAssetSelect.styled"
 
-type SelectAssetProps = {
+type Props = {
   balance: number
   usd: number
   currency: { short: string; full: string }
@@ -22,7 +22,7 @@ type SelectAssetProps = {
   onChange: (v: string) => void
 } & MarginProps
 
-export const PoolAddLiquidityAssetSelect: FC<SelectAssetProps> = ({
+export const PoolAddLiquidityAssetSelect: FC<Props> = ({
   value,
   onChange,
   ...p
@@ -30,7 +30,7 @@ export const PoolAddLiquidityAssetSelect: FC<SelectAssetProps> = ({
   const { t } = useTranslation()
 
   return (
-    <AssetWrapper {...p}>
+    <SContainer {...p}>
       <Box flex acenter spread mb={11}>
         <Text fw={600} lh={22} color="primary200">
           {t("selectAsset.title")}
@@ -40,9 +40,9 @@ export const PoolAddLiquidityAssetSelect: FC<SelectAssetProps> = ({
             {t("selectAsset.balance")}
           </Text>
           <Text fs={12} lh={16} mr={5}>
-            {getFormattedNumber(p.balance)}
+            {formatNum(p.balance)}
           </Text>
-          <MaxButton
+          <SMaxButton
             size="micro"
             text={t("selectAsset.button.max")}
             capitalize
@@ -51,7 +51,7 @@ export const PoolAddLiquidityAssetSelect: FC<SelectAssetProps> = ({
         </Box>
       </Box>
       <Box flex spread acenter>
-        <SelectAssetButton size="small">
+        <SSelectAssetButton size="small">
           <Icon icon={p.assetIcon} mr={10} />
           <Box mr={6}>
             <Text fw={700} color="white">
@@ -62,7 +62,7 @@ export const PoolAddLiquidityAssetSelect: FC<SelectAssetProps> = ({
             </Text>
           </Box>
           <Icon icon={<ChevronDown />} />
-        </SelectAssetButton>
+        </SSelectAssetButton>
         <AssetInput
           value={value}
           name="amount"
@@ -73,6 +73,6 @@ export const PoolAddLiquidityAssetSelect: FC<SelectAssetProps> = ({
           unit={p.currency.short}
         />
       </Box>
-    </AssetWrapper>
+    </SContainer>
   )
 }
