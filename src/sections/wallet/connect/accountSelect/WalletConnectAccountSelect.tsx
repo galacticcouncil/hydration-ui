@@ -1,3 +1,4 @@
+import { FC } from "react"
 import { css } from "styled-components"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
@@ -6,8 +7,7 @@ import { Box } from "components/Box/Box"
 import { web3Accounts } from "@polkadot/extension-dapp"
 import { useQuery } from "@tanstack/react-query"
 import { WalletConnectAccountSelectItem } from "sections/wallet/connect/accountSelect/item/WalletConnectAccountSelectItem"
-import { FC } from "react"
-import { useStore } from "../../../../state/store"
+import { useStore } from "state/store"
 
 type Props = { provider: ProviderType; onSelect: () => void }
 
