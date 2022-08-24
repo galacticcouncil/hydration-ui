@@ -32,7 +32,8 @@
     "styled-components": "^5.3.5",
     "styled-normalize": "^8.0.7",
     "typescript": "^4.7.4",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "zustand": "^4.1.1"
   },
   "scripts": {
     "dev": "vite",

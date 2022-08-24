@@ -43,7 +43,10 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
         mutate.isLoading ? (
           <WalletConnectConfirmPending provider={selectedProvider} />
         ) : (
-          <WalletConnectAccountSelect provider={selectedProvider} />
+          <WalletConnectAccountSelect
+            provider={selectedProvider}
+            onSelect={onClose}
+          />
         )
       ) : (
         <WalletConnectProviderSelect

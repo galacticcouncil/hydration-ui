@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react"
+import { FC, InputHTMLAttributes, ReactNode } from "react"
 import { SBox } from "./Box.styled"
 import {
   MarginProps,
@@ -8,7 +8,7 @@ import {
   ColorProps,
 } from "utils/styles"
 
-export type BoxProps = {
+export type BoxProps = InputHTMLAttributes<HTMLDivElement> & {
   children: ReactNode
 } & MarginProps &
   PaddingProps &
