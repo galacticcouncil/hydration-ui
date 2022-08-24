@@ -1,8 +1,13 @@
 import create from "zustand"
 
+interface Account {
+  name: string
+  address: string
+}
+
 interface Store {
-  account?: string
-  setAccount: (account: string) => void
+  account?: Account
+  setAccount: (account: Account) => void
 }
 
 export const useStore = create<Store>((set) => ({

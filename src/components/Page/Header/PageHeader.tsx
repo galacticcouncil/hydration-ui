@@ -47,10 +47,10 @@ export const PageHeader = () => {
           >
             <Box flex column gap={4}>
               <Text color="neutralGray100" fs={14} fw={700}>
-                AccountName
+                {account.name}
               </Text>
               <Text color="neutralGray300" fs={12} fw={400}>
-                {shortenAccountAddress(account)}
+                {shortenAccountAddress(account.address)}
               </Text>
             </Box>
           </Box>

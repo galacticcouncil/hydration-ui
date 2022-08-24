@@ -38,17 +38,23 @@ export const WalletConnectAccountSelect: FC<Props> = ({
           max-height: 450px;
         `}
       >
-        {accounts.data?.map((account) => (
-          <WalletConnectAccountSelectItem
-            key={account.address}
-            name={account.meta.name ?? account.address}
-            address={account.address}
-            setAccount={() => {
-              setAccount(account.address)
-              onSelect()
-            }}
-          />
-        ))}
+        {accounts.data?.map((account) => {
+          const accountName = account.meta.name ?? account.address
+          return (
+            <WalletConnectAccountSelectItem
+              key={account.address}
+              name={accountName}
+              address={account.address}
+              setAccount={() => {
+                setAccount({
+                  name: accountName,
+                  address: account.address,
+                })
+                onSelect()
+              }}
+            />
+          )
+        })}
       </Box>
     </>
   )
