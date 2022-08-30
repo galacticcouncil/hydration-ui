@@ -13,15 +13,11 @@ import { PoolRemoveLiquidity } from "sections/pools/pool/modals/removeLiquidity/
 import { PoolJoinFarm } from "sections/pools/pool/modals/joinFarm/PoolJoinFarm"
 import { PoolReviewTransaction } from "../modals/reviewTransaction/PoolReviewTransaction"
 
-type ActionButtonProps = {
+type Props = {
   hasJoinedFarms: boolean
-  closeCard: (val: boolean) => void
 }
 
-export const PoolActions: FC<ActionButtonProps> = ({
-  hasJoinedFarms,
-  closeCard,
-}) => {
+export const PoolActions: FC<Props> = ({ hasJoinedFarms }) => {
   const { t } = useTranslation()
 
   const [openAdd, setOpenAdd] = useState(false)

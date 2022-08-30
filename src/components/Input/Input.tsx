@@ -1,7 +1,7 @@
 import { MarginProps, SizeProps } from "utils/styles"
 import { Label } from "components/Label/Label"
 import React, { FC } from "react"
-import { InputWrapper, SInput } from "./Input.styled"
+import { SWrapper, SInput } from "./Input.styled"
 
 // Error handling should be added once we implement forms and validation, for now the input accepts error props
 
@@ -40,7 +40,7 @@ export const Input: FC<InputProps> = ({
         width={p.width}
         {...p}
       >
-        <InputWrapper unit={p.unit}>
+        <SWrapper unit={p.unit}>
           <SInput
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               onChange(e.target.value)
@@ -52,7 +52,7 @@ export const Input: FC<InputProps> = ({
             unit={p.unit}
             placeholder={placeholder}
           />
-        </InputWrapper>
+        </SWrapper>
       </Label>
     </>
   )

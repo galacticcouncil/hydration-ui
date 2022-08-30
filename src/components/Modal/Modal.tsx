@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react"
+import { FC, PropsWithChildren, ReactNode } from "react"
 import {
   ModalWindow,
   ModalTitle,
@@ -13,16 +13,15 @@ import { Dialog, DialogDescription, DialogPortal } from "@radix-ui/react-dialog"
 import { useTranslation } from "react-i18next"
 import { SizeProps } from "utils/styles"
 
-type ModalProps = {
+type Props = {
   open: boolean
   onClose: () => void
   title: string
   secondaryIcon?: { icon: ReactNode; onClick: () => void; name: string }
   withoutClose?: boolean
-  children: ReactNode
 } & Pick<SizeProps, "width">
 
-export const Modal: FC<ModalProps> = ({
+export const Modal: FC<PropsWithChildren<Props>> = ({
   children,
   onClose,
   title,
@@ -45,7 +44,7 @@ export const Modal: FC<ModalProps> = ({
                 name={secondaryIcon.name}
               />
             )}
-            {withoutClose || (
+            {!withoutClose && (
               <CloseButton
                 icon={<CrossIcon />}
                 onClick={onClose}

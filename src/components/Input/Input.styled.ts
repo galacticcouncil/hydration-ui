@@ -1,7 +1,7 @@
 import styled, { css } from "styled-components"
 import { theme } from "theme"
 
-export const InputWrapper = styled.div<{
+export const SWrapper = styled.div<{
   unit: string | undefined
 }>`
   position: relative;
@@ -36,7 +36,7 @@ export const SInput = styled.input<{ error?: string; unit?: string }>`
   padding: 20px 18px;
 
   ::placeholder {
-    color: rgba(${theme.rgbColors.white}, 0.4);
+    color: rgba(${theme.colors.primary100}, 0.4);
   }
 
   :focus,

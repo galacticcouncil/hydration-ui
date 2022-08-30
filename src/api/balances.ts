@@ -1,7 +1,7 @@
 import { useApiPromise } from "utils/network"
 
 import { useEffect, useState } from "react"
-import BN from "bn.js"
+import BN from "bignumber.js"
 
 // TODO: determine, whether we want to
 // - use subscribe method for each query
@@ -16,14 +16,14 @@ export function useBalances(address: string) {
     let cancelled = false
     const callback = api.query.system.account(address, (res) => {
       if (!cancelled) {
-        const freeBalance = new BN(res.data.free)
-        const miscFrozenBalance = new BN(res.data.miscFrozen)
-        const feeFrozenBalance = new BN(res.data.feeFrozen)
+        const freeBalance = new BN(res.data.free.toHex())
+        const miscFrozenBalance = new BN(res.data.miscFrozen.toHex())
+        const feeFrozenBalance = new BN(res.data.feeFrozen.toHex())
         const maxFrozenBalance = miscFrozenBalance.gt(feeFrozenBalance)
           ? miscFrozenBalance
           : feeFrozenBalance
 
-        setValue(freeBalance.sub(maxFrozenBalance))
+        setValue(freeBalance.minus(maxFrozenBalance))
       }
     })
 

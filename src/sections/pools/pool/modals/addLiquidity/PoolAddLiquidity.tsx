@@ -17,8 +17,8 @@ type Props = {
 
 export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose }) => {
   const { t } = useTranslation()
-  const [asset1, setAsset1] = useState("4523")
-  const [asset2, setAsset2] = useState("1234")
+  const [assetA, setAsset1] = useState("4523")
+  const [assetB, setAsset2] = useState("1234")
 
   return (
     <Modal
@@ -32,7 +32,7 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose }) => {
         mt={16}
         currency={{ short: "SAK", full: "Sakura" }}
         assetIcon={<SakuraIcon />}
-        value={asset1}
+        value={assetA}
         onChange={setAsset1}
       />
       <PoolAddLiquidityConversion
@@ -44,7 +44,7 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose }) => {
         usd={2456}
         currency={{ short: "BSX", full: "Basilisk" }}
         assetIcon={<BasiliskIcon />}
-        value={asset2}
+        value={assetB}
         onChange={setAsset2}
       />
 

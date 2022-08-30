@@ -2,10 +2,10 @@ import i18n from "i18next"
 import { initReactI18next } from "react-i18next"
 import translationEN from "./locales/en/translations.json"
 import { formatDate, formatNum } from "utils/formatting"
-import BN from "bn.js"
+import BN from "bignumber.js"
 
 function isBNPrecision(value: any): value is { value: BN; precision?: number } {
-  return value != null && "value" in value && BN.isBN(value.value)
+  return value != null && "value" in value && BN.isBigNumber(value.value)
 }
 
 const resources = {
@@ -28,7 +28,7 @@ i18n
             return value.value.div(precision).toString()
           }
 
-          if (BN.isBN(value)) {
+          if (BN.isBigNumber(value)) {
             return value.toString()
           }
 

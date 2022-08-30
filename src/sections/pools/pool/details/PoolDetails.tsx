@@ -5,10 +5,22 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { formatNum } from "utils/formatting"
+import { FC } from "react"
+import BN from "bignumber.js"
 
-const data = { title: "XYK Pool" }
+type Props = {
+  assetAName: string
+  assetBName: string
+  totalLiquidity: string
+  tradingFee: BN
+}
 
-export const PoolDetails = () => {
+export const PoolDetails: FC<Props> = ({
+  assetAName,
+  assetBName,
+  totalLiquidity,
+  tradingFee,
+}) => {
   const { t } = useTranslation()
 
   return (
@@ -16,7 +28,7 @@ export const PoolDetails = () => {
       <Box flex spread mb={40} ml={4}>
         <Box>
           <Text fs={14} lh={26} color="neutralGray400">
-            {data.title}
+            {t("pools.pool.title")}
           </Text>
           <Box flex acenter>
             <DualAssetIcons
@@ -29,10 +41,10 @@ export const PoolDetails = () => {
             />
             <Box flex column gap={1}>
               <Text fw={700} color="white">
-                LPT/LPT
+                {assetAName}/{assetBName}
               </Text>
               <Text fs={12} lh={14} color="neutralGray500">
-                Token/Token
+                Token/Token {/*TODO*/}
               </Text>
             </Box>
           </Box>
@@ -42,7 +54,7 @@ export const PoolDetails = () => {
             {t("pools.pool.poolDetails.fee")}
           </Text>
           <Text lh={22} color="white">
-            0.3%
+            {tradingFee.times(100).toFixed()}%
           </Text>
         </Box>
       </Box>
@@ -53,7 +65,7 @@ export const PoolDetails = () => {
             {t("pools.pool.poolDetails.valueLocked")}
           </Text>
           <Text lh={22} color="white" fs={18}>
-            {"$" + formatNum(100000000)}
+            {formatNum(totalLiquidity, { style: "currency", currency: "USD" })}
           </Text>
         </Box>
         <Box flex column width={120} align="start">
