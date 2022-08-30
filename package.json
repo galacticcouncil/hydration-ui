@@ -27,6 +27,7 @@
     "react-dom": "^18.2.0",
     "react-i18next": "^11.18.3",
     "react-is": "^18.2.0",
+    "react-json-view": "^1.21.3",
     "react-router-dom": "^6.3.0",
     "recharts": "^2.1.13",
     "styled-components": "^5.3.5",

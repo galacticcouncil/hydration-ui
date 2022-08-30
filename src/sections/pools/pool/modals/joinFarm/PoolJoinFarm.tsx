@@ -46,10 +46,11 @@ const mock = {
 type Props = {
   isOpen: boolean
   onClose: () => void
+  onSelect: () => void
 }
 
 // TODO: handle crypto icons
-export const PoolJoinFarm: FC<Props> = ({ isOpen, onClose }) => {
+export const PoolJoinFarm: FC<Props> = ({ isOpen, onClose, onSelect }) => {
   const { t } = useTranslation()
 
   return (
@@ -63,7 +64,7 @@ export const PoolJoinFarm: FC<Props> = ({ isOpen, onClose }) => {
     >
       <Box flex column gap={8} mt={24}>
         {mock.farms.map((farm) => (
-          <SFarm key={farm.id}>
+          <SFarm key={farm.id} onClick={onSelect}>
             <Box flex column gap={8}>
               <Box flex acenter gap={8}>
                 <BasiliskIcon />
