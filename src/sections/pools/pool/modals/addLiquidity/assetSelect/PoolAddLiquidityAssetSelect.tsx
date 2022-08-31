@@ -11,11 +11,10 @@ import {
   SMaxButton,
   SSelectAssetButton,
 } from "./PoolAddLiquidityAssetSelect.styled"
-import BigNumber from "bignumber.js"
-import { getFullDisplayBalance } from "../../../../../../utils/balance"
 
 type Props = {
-  balance: BigNumber
+  asset: string
+  balance: string
   usd: number
   currency: { short: string; full: string }
   assetIcon: ReactNode
@@ -26,6 +25,8 @@ type Props = {
 export const PoolAddLiquidityAssetSelect: FC<Props> = ({
   value,
   onChange,
+  asset,
+  balance,
   ...p
 }) => {
   const { t } = useTranslation()
@@ -41,13 +42,13 @@ export const PoolAddLiquidityAssetSelect: FC<Props> = ({
             {t("selectAsset.balance")}
           </Text>
           <Text fs={12} lh={16} mr={5}>
-            {getFullDisplayBalance(p.balance)}
+            {balance}
           </Text>
           <SMaxButton
             size="micro"
             text={t("selectAsset.button.max")}
             capitalize
-            onClick={() => onChange(p.balance.toString())}
+            onClick={() => onChange(balance.toString())}
           />
         </Box>
       </Box>
@@ -69,7 +70,6 @@ export const PoolAddLiquidityAssetSelect: FC<Props> = ({
           name="amount"
           label={t("selectAsset.input.label")}
           onChange={onChange}
-          width={368}
           dollars="1234 USD"
           unit={p.currency.short}
         />

@@ -38,9 +38,11 @@ export const AssetInput: FC<AssetInputProps> = ({
       >
         <InputWrapper dollars={p.dollars} unit={p.unit}>
           <SInput
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              onChange(e.target.value)
-            }
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              if (e.target.validity.valid) {
+                onChange(e.target.value.replace(/,/g, "."))
+              }
+            }}
             value={value ?? ""}
             id={name}
             type={type}

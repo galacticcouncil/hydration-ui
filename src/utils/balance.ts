@@ -7,10 +7,16 @@ export const getBalanceAmount = (amount: BigNumber, decimals = 18) => {
 
 export const getFullDisplayBalance = (
   balance: BigNumber,
-  decimals = 18,
-  displayDecimals = 18,
+  decimals: string | number = 12,
+  displayDecimals: string | number = 12,
 ) => {
+  const parsedDecimals =
+    typeof decimals === "string" ? parseInt(decimals, 10) : decimals
+  const parsedDisplayDecimals =
+    typeof displayDecimals === "string"
+      ? parseInt(displayDecimals, 10)
+      : displayDecimals
   return balance.isNaN()
     ? "-"
-    : getBalanceAmount(balance, decimals).toFixed(displayDecimals)
+    : getBalanceAmount(balance, parsedDecimals).toFixed(parsedDisplayDecimals)
 }
