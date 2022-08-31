@@ -12,12 +12,9 @@ import { PoolAddLiquidity } from "sections/pools/pool/modals/addLiquidity/PoolAd
 import { PoolRemoveLiquidity } from "sections/pools/pool/modals/removeLiquidity/PoolRemoveLiquidity"
 import { PoolJoinFarm } from "sections/pools/pool/modals/joinFarm/PoolJoinFarm"
 import { PoolReviewTransaction } from "../modals/reviewTransaction/PoolReviewTransaction"
+import { PoolConfig } from "../Pool"
 
-type Props = {
-  hasJoinedFarms: boolean
-}
-
-export const PoolActions: FC<Props> = ({ hasJoinedFarms }) => {
+export const PoolActions: FC<PoolConfig> = ({ hasJoinedFarms, ...props }) => {
   const { t } = useTranslation()
 
   const [openAdd, setOpenAdd] = useState(false)
@@ -59,7 +56,11 @@ export const PoolActions: FC<Props> = ({ hasJoinedFarms }) => {
           />
         )}
       </Box>
-      <PoolAddLiquidity isOpen={openAdd} onClose={() => setOpenAdd(false)} />
+      <PoolAddLiquidity
+        isOpen={openAdd}
+        onClose={() => setOpenAdd(false)}
+        {...props}
+      />
       <PoolRemoveLiquidity
         isOpen={openRemove}
         onClose={() => setOpenRemove(false)}

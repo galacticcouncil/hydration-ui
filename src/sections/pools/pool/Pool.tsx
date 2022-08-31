@@ -10,7 +10,7 @@ import { usePoolData } from "sections/pools/pool/Pool.utils"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { TRADING_FEE } from "utils/constants"
 
-type Props = {
+export interface PoolConfig {
   id: string
   assetA: string
   assetB: string
@@ -18,14 +18,8 @@ type Props = {
   hasLiquidity?: boolean
 }
 
-export const Pool: FC<Props> = ({
-  id,
-  assetA,
-  assetB,
-  hasJoinedFarms,
-  hasLiquidity,
-}) => {
-  const { data, isLoading } = usePoolData({ id, assetA, assetB })
+export const Pool: FC<PoolConfig> = (props) => {
+  const { data, isLoading } = usePoolData(props)
 
   return isLoading ? (
     /*TODO: add skeleton loader*/
@@ -40,10 +34,10 @@ export const Pool: FC<Props> = ({
           tradingFee={data?.tradingFee ?? TRADING_FEE}
         />
         <PoolIncentives />
-        <PoolActions hasJoinedFarms={!!hasJoinedFarms} />
+        <PoolActions {...props} />
       </Box>
-      {hasLiquidity && <PoolShares />}
-      {hasJoinedFarms && <PoolClaim />}
+      {props.hasLiquidity && <PoolShares />}
+      {props.hasJoinedFarms && <PoolClaim />}
     </SContainer>
   )
 }

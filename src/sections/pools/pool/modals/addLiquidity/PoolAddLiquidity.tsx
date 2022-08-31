@@ -9,16 +9,24 @@ import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PoolAddLiquidityConversion } from "sections/pools/pool/modals/addLiquidity/conversion/PoolAddLiquidityConversion"
 import { PoolAddLiquidityAssetSelect } from "sections/pools/pool/modals/addLiquidity/assetSelect/PoolAddLiquidityAssetSelect"
+import { useTokensBalances } from "api/balances"
+import { PoolConfig } from "../../Pool"
 
-type Props = {
+type Props = PoolConfig & {
   isOpen: boolean
   onClose: () => void
 }
 
-export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose }) => {
+export const PoolAddLiquidity: FC<Props> = ({
+  isOpen,
+  onClose,
+  assetA,
+  assetB,
+}) => {
   const { t } = useTranslation()
-  const [assetA, setAsset1] = useState("4523")
-  const [assetB, setAsset2] = useState("1234")
+  const [assetABalance, assetBBalance] = useTokensBalances([assetA, assetB])
+  const [inputAssetA, setInputAssetA] = useState("4523")
+  const [inputAssetB, setInputAssetB] = useState("1234")
 
   return (
     <Modal
@@ -27,25 +35,25 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose }) => {
       onClose={onClose}
     >
       <PoolAddLiquidityAssetSelect
-        balance={123456789.124}
+        balance={assetABalance}
         usd={2456}
         mt={16}
         currency={{ short: "SAK", full: "Sakura" }}
         assetIcon={<SakuraIcon />}
-        value={assetA}
-        onChange={setAsset1}
+        value={inputAssetA}
+        onChange={setInputAssetA}
       />
       <PoolAddLiquidityConversion
         firstValue={{ amount: 1, currency: "SAK" }}
         secondValue={{ amount: 0.000123, currency: "BSX" }}
       />
       <PoolAddLiquidityAssetSelect
-        balance={123456789}
+        balance={assetBBalance}
         usd={2456}
         currency={{ short: "BSX", full: "Basilisk" }}
         assetIcon={<BasiliskIcon />}
-        value={assetB}
-        onChange={setAsset2}
+        value={inputAssetB}
+        onChange={setInputAssetB}
       />
 
       <Row left={t("pools.addLiquidity.modal.row.apr")} right="5%" />

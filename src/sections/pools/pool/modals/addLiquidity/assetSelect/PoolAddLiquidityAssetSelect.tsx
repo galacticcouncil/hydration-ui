@@ -6,15 +6,16 @@ import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { formatNum } from "utils/formatting"
 import {
   SContainer,
   SMaxButton,
   SSelectAssetButton,
 } from "./PoolAddLiquidityAssetSelect.styled"
+import BigNumber from "bignumber.js"
+import { getFullDisplayBalance } from "../../../../../../utils/balance"
 
 type Props = {
-  balance: number
+  balance: BigNumber
   usd: number
   currency: { short: string; full: string }
   assetIcon: ReactNode
@@ -40,7 +41,7 @@ export const PoolAddLiquidityAssetSelect: FC<Props> = ({
             {t("selectAsset.balance")}
           </Text>
           <Text fs={12} lh={16} mr={5}>
-            {formatNum(p.balance)}
+            {getFullDisplayBalance(p.balance)}
           </Text>
           <SMaxButton
             size="micro"
