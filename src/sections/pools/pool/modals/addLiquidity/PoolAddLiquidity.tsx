@@ -1,5 +1,3 @@
-import { BasiliskIcon } from "assets/icons/tokens/BasiliskIcon"
-import { SakuraIcon } from "assets/icons/tokens/SakuraIcon"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Row } from "components/Row/Row"
@@ -12,6 +10,7 @@ import { PoolAddLiquidityAssetSelect } from "sections/pools/pool/modals/addLiqui
 import { PoolConfig } from "../../Pool"
 import { useAddPoolAddLiquidity } from "./PoolAddLiquidity.utils"
 import { getFullDisplayBalance } from "../../../../../utils/balance"
+import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 
 type Props = PoolConfig & {
   isOpen: boolean
@@ -47,7 +46,7 @@ export const PoolAddLiquidity: FC<Props> = ({
         usd={2456}
         mt={16}
         currency={{ short: dataAssetA.asset?.name ?? "", full: "Sakura" }}
-        assetIcon={<SakuraIcon />}
+        assetIcon={getAssetLogo(dataAssetA.asset.symbol)}
         value={inputAssetA}
         onChange={setInputAssetA}
       />
@@ -67,7 +66,7 @@ export const PoolAddLiquidity: FC<Props> = ({
         )}
         usd={2456}
         currency={{ short: dataAssetB.asset?.name ?? "", full: "Basilisk" }}
-        assetIcon={<BasiliskIcon />}
+        assetIcon={getAssetLogo(dataAssetB.asset.symbol)}
         value={inputAssetB}
         onChange={setInputAssetB}
       />

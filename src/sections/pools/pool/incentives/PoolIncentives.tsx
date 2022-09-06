@@ -1,4 +1,5 @@
-import { BasiliskIcon } from "assets/icons/tokens/BasiliskIcon"
+import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+
 import { Box } from "components/Box/Box"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
@@ -7,9 +8,9 @@ import { useTranslation } from "react-i18next"
 import { PoolIncentivesRow } from "sections/pools/pool/incentives/row/PoolIncentivesRow"
 
 const mockRows = [
-  { id: 1, icon: <BasiliskIcon />, name: "KAR", value: "5-10" },
-  { id: 2, icon: <BasiliskIcon />, name: "KAR", value: "10-15" },
-  { id: 3, icon: <BasiliskIcon />, name: "KAR", value: "15-20" },
+  { id: 1, name: "KAR", value: "5-10" },
+  { id: 2, name: "KAR", value: "10-15" },
+  { id: 3, name: "KAR", value: "15-20" },
 ]
 
 export const PoolIncentives = () => {
@@ -21,7 +22,7 @@ export const PoolIncentives = () => {
       </Text>
       {mockRows.map((row, rowI) => (
         <Fragment key={rowI}>
-          <PoolIncentivesRow {...row} />
+          <PoolIncentivesRow icon={getAssetLogo(row.name)} {...row} />
           {rowI !== mockRows.length - 1 && <Separator mb={13} />}
         </Fragment>
       ))}

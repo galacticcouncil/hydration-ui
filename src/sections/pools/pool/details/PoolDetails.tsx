@@ -1,4 +1,3 @@
-import { BasiliskIcon } from "assets/icons/tokens/BasiliskIcon"
 import { Box } from "components/Box/Box"
 import { DualAssetIcons } from "components/DualAssetIcons/DualAssetIcons"
 import { Separator } from "components/Separator/Separator"
@@ -7,6 +6,7 @@ import { useTranslation } from "react-i18next"
 import { formatNum } from "utils/formatting"
 import { FC } from "react"
 import BN from "bignumber.js"
+import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 
 type Props = {
   assetAName: string
@@ -32,12 +32,8 @@ export const PoolDetails: FC<Props> = ({
           </Text>
           <Box flex acenter>
             <DualAssetIcons
-              firstIcon={{
-                icon: <BasiliskIcon />,
-                withChainedIcon: true,
-                chainedIcon: <BasiliskIcon />,
-              }}
-              secondIcon={{ icon: <BasiliskIcon />, withChainedIcon: true }}
+              firstIcon={{ icon: getAssetLogo(assetAName) }}
+              secondIcon={{ icon: getAssetLogo(assetBName) }}
             />
             <Box flex column gap={1}>
               <Text fw={700} color="white">
