@@ -3,13 +3,18 @@ import { useQuery } from "@tanstack/react-query"
 import { LoadingPage } from "sections/loading/LoadingPage"
 import { ApiPromiseContext } from "utils/network"
 import { PoolsPage } from "sections/pools/PoolsPage"
+import * as definitions from "./interfaces/voting/definitions"
 
 export const App = () => {
   const api = useQuery(
     ["provider", "wss://rpc-01.basilisk-rococo.hydradx.io"],
     async ({ queryKey: [_, api] }) => {
       const provider = new WsProvider(api)
-      return await ApiPromise.create({ provider })
+      const types = Object.values(definitions).reduce(
+        (res, { types }): object => ({ ...res, ...types }),
+        {},
+      )
+      return await ApiPromise.create({ provider, types })
     },
     { staleTime: Infinity },
   )

@@ -3,14 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@polkadot/api": "^9.1.1",
+    "@polkadot/api": "^9.3.2",
+    "@polkadot/types": "^9.3.2",
+    "@polkadot/typegen": "^9.3.2",
     "@polkadot/extension-dapp": "^0.44.5",
     "@polkadot/extension-inject": "^0.44.5",
-    "@polkadot/keyring": "^10.1.4",
     "@polkadot/react-identicon": "^2.9.5",
-    "@polkadot/types": "^9.2.2",
-    "@polkadot/util": "^10.1.4",
-    "@polkadot/util-crypto": "^10.1.4",
+    "@polkadot/util": "^10.1.7",
+    "@polkadot/keyring": "^10.1.7",
+    "@polkadot/util-crypto": "^10.1.7",
     "@radix-ui/react-dialog": "^1.0.0",
     "@radix-ui/react-label": "^1.0.0",
     "@radix-ui/react-portal": "^1.0.0",
@@ -44,11 +45,15 @@
     "storybook": "start-storybook -p 6006 ./src",
     "build-storybook": "build-storybook ./src",
     "lint": "run-p -lsc 'lint:*'",
+    "lint:ts": "tsc --noEmit -p tsconfig.json",
     "lint:eslint": "eslint src",
     "lint:prettier": "prettier -l \"src/**/*.{ts,tsx,json}\"",
     "fix": "run-p -lsc 'fix:*'",
     "fix:eslint": "eslint --fix src",
-    "fix:prettier": "prettier --write \"src/**/*.{ts,tsx,json}\""
+    "fix:prettier": "prettier --write \"src/**/*.{ts,tsx,json}\"",
+    "generate": "yarn generate:defs && yarn generate:meta",
+    "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package interfaces --input ./src/interfaces --endpoint wss://rpc-01.basilisk-rococo.hydradx.io",
+    "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package interfaces --endpoint wss://rpc-01.basilisk-rococo.hydradx.io --output ./src/interfaces"
   },
   "eslintConfig": {
     "extends": [
@@ -102,6 +107,7 @@
     "eslint-config-react-app": "^7.0.1",
     "npm-run-all": "^4.1.5",
     "prop-types": "^15.8.1",
+    "ts-node": "^10.9.1",
     "vite": "^3.0.7",
     "vite-plugin-svgr": "^2.2.1",
     "vite-tsconfig-paths": "^3.5.0"
