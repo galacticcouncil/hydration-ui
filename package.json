@@ -52,8 +52,8 @@
     "fix:eslint": "eslint --fix src",
     "fix:prettier": "prettier --write \"src/**/*.{ts,tsx,json}\"",
     "generate": "yarn generate:defs && yarn generate:meta && yarn fix:prettier",
-    "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package interfaces --input ./src/interfaces --endpoint wss://rpc-01.basilisk-rococo.hydradx.io",
-    "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package interfaces --endpoint wss://rpc-01.basilisk-rococo.hydradx.io --output ./src/interfaces"
+    "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package interfaces --input ./src/interfaces --endpoint wss://rpc01.hydration.dev",
+    "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package interfaces --endpoint wss://rpc01.hydration.dev --output ./src/interfaces"
   },
   "eslintConfig": {
     "extends": [

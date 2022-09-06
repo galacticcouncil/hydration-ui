@@ -7,7 +7,7 @@ import * as definitions from "./interfaces/voting/definitions"
 
 export const App = () => {
   const api = useQuery(
-    ["provider", "wss://rpc-01.basilisk-rococo.hydradx.io"],
+    ["provider", "wss://rpc01.hydration.dev"],
     async ({ queryKey: [_, api] }) => {
       const provider = new WsProvider(api)
       const types = Object.values(definitions).reduce(
