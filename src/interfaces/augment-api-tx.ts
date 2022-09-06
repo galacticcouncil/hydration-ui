@@ -33,10 +33,9 @@ import type {
   Call,
   H256,
   Perbill,
+  Perquintill,
 } from "@polkadot/types/interfaces/runtime"
 import type {
-  BasiliskRuntimeOpaqueSessionKeys,
-  BasiliskRuntimeOriginCaller,
   CommonRuntimeAssetLocation,
   CommonRuntimeProxyType,
   CumulusPrimitivesParachainInherentParachainInherentData,
@@ -50,10 +49,14 @@ import type {
   PalletIdentityIdentityInfo,
   PalletIdentityJudgement,
   PalletLbpWeightCurveType,
+  PalletLiquidityMiningLoyaltyCurve,
   PalletMultisigTimepoint,
+  PalletNftClassType,
   PalletUniquesDestroyWitness,
-  PrimitivesNftClassType,
+  PrimitivesAssetAssetPair,
   SpRuntimeHeader,
+  TestingBasiliskRuntimeOpaqueSessionKeys,
+  TestingBasiliskRuntimeOriginCaller,
   XcmV1MultiLocation,
   XcmV2WeightLimit,
   XcmVersionedMultiAsset,
@@ -1963,6 +1966,348 @@ declare module "@polkadot/api-base/types/submittable" {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>
     }
+    liquidityMining: {
+      /**
+       * Claim rewards from liq. mining for deposit represented by `nft_id`.
+       *
+       * This function calculate user rewards from liq. mining and transfer rewards to `origin`
+       * account. Claiming in the same period is allowed only once.
+       *
+       * Parameters:
+       * - `origin`: account owner of deposit(nft).
+       * - `deposit_id`: nft id representing deposit in the yield farm.
+       * - `yield_farm_id`: yield farm identifier to claim rewards from.
+       *
+       * Emits `RewardClaimed` event when successful.
+       **/
+      claimRewards: AugmentedSubmittable<
+        (
+          depositId: u128 | AnyNumber | Uint8Array,
+          yieldFarmId: u32 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u128, u32]
+      >
+      /**
+       * Create new liquidity mining program with provided parameters.
+       *
+       * `owner` account have to have at least `total_rewards` balance. This fund will be
+       * transferred from `owner` to farm account.
+       *
+       * The dispatch origin for this call must be `T::CreateOrigin`.
+       *
+       * Parameters:
+       * - `origin`: global farm's owner.
+       * - `total_rewards`: total rewards planned to distribute. This rewards will be
+       * distributed between all yield farms in the global farm.
+       * - `planned_yielding_periods`: planned number of periods to distribute `total_rewards`.
+       * WARN: THIS IS NOT HARD DEADLINE. Not all rewards have to be distributed in
+       * `planned_yielding_periods`. Rewards are distributed based on the situation in the yield
+       * farms and can be distributed in a longer time frame but never in the shorter time frame.
+       * - `blocks_per_period`:  number of blocks in a single period. Min. number of blocks per
+       * period is 1.
+       * - `incentivized_asset`: asset to be incentivized in AMM pools. All yield farms added into
+       * liq. mining program have to have `incentivized_asset` in their pair.
+       * - `reward_currency`: payoff currency of rewards.
+       * - `owner`: liq. mining program owner.
+       * - `yield_per_period`: percentage return on `reward_currency` of all farms p.a.
+       * - `min_deposit`: minimum amount which can be deposited to the farm
+       * - `price_adjustment`:
+       * Emits `GlobalFarmCreated` event when successful.
+       **/
+      createGlobalFarm: AugmentedSubmittable<
+        (
+          totalRewards: u128 | AnyNumber | Uint8Array,
+          plannedYieldingPeriods: u32 | AnyNumber | Uint8Array,
+          blocksPerPeriod: u32 | AnyNumber | Uint8Array,
+          incentivizedAsset: u32 | AnyNumber | Uint8Array,
+          rewardCurrency: u32 | AnyNumber | Uint8Array,
+          owner: AccountId32 | string | Uint8Array,
+          yieldPerPeriod: Perquintill | AnyNumber | Uint8Array,
+          minDeposit: u128 | AnyNumber | Uint8Array,
+          priceAdjustment: u128 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u128, u32, u32, u32, u32, AccountId32, Perquintill, u128, u128]
+      >
+      /**
+       * Add yield farm for given `asset_pair` amm.
+       *
+       * Only farm owner can perform this action.
+       *
+       * Only AMMs with `asset_pair` with `incentivized_asset` can be added into the farm. AMM
+       * for `asset_pair` has to exist to successfully create yield farm. Yield farm for same `asset_pair` can exist only once in the global farm.
+       *
+       * Parameters:
+       * - `origin`: global farm's owner.
+       * - `farm_id`: global farm id to which a yield farm will be added.
+       * - `asset_pair`: asset pair identifying yield farm. Liq. mining will be allowed for this
+       * `asset_pair` and one of the assets in the pair must be `incentivized_asset`.
+       * - `multiplier`: yield farm multiplier.
+       * - `loyalty_curve`: curve to calculate loyalty multiplier to distribute rewards to users
+       * with time incentive. `None` means no loyalty multiplier.
+       *
+       * Emits `YieldFarmCreated` event when successful.
+       **/
+      createYieldFarm: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          assetPair:
+            | PrimitivesAssetAssetPair
+            | { assetIn?: any; assetOut?: any }
+            | string
+            | Uint8Array,
+          multiplier: u128 | AnyNumber | Uint8Array,
+          loyaltyCurve:
+            | Option<PalletLiquidityMiningLoyaltyCurve>
+            | null
+            | Uint8Array
+            | PalletLiquidityMiningLoyaltyCurve
+            | { initialRewardPercentage?: any; scaleCoef?: any }
+            | string,
+        ) => SubmittableExtrinsic<ApiType>,
+        [
+          u32,
+          PrimitivesAssetAssetPair,
+          u128,
+          Option<PalletLiquidityMiningLoyaltyCurve>,
+        ]
+      >
+      /**
+       * Deposit LP shares to a liq. mining.
+       *
+       * This function transfer LP shares from `origin` to pallet's account and mint nft for
+       * `origin` account. Minted nft represent deposit in the liq. mining.
+       *
+       * Parameters:
+       * - `origin`: account depositing LP shares. This account have to have at least
+       * `shares_amount` of LP shares.
+       * - `global_farm_id`: id of global farm to which user want to deposit LP shares.
+       * - `yield_farm_id`: id of yield farm to deposit to.
+       * - `asset_pair`: asset pair identifying LP shares user want to deposit.
+       * - `shares_amount`: amount of LP shares user want to deposit.
+       *
+       * Emits `SharesDeposited` event when successful.
+       **/
+      depositShares: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          yieldFarmId: u32 | AnyNumber | Uint8Array,
+          assetPair:
+            | PrimitivesAssetAssetPair
+            | { assetIn?: any; assetOut?: any }
+            | string
+            | Uint8Array,
+          sharesAmount: u128 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u32, PrimitivesAssetAssetPair, u128]
+      >
+      /**
+       * Destroy existing liq. mining program.
+       *
+       * Only farm owner can perform this action.
+       *
+       * WARN: To successfully destroy a farm, farm have to be empty(all yield farms in he global farm must be destroyed).
+       *
+       * Parameters:
+       * - `origin`: global farm's owner.
+       * - `global_farm_id`: id of global farm to be destroyed.
+       *
+       * Emits `FarmDestroyed` event when successful.
+       **/
+      destroyGlobalFarm: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32]
+      >
+      /**
+       * Remove yield farm
+       *
+       * This function marks a yield farm ready for removed from storage when it's empty. Users will
+       * be able to only withdraw shares(without claiming rewards from yield farm). Unpaid rewards
+       * will be transferred back to global farm and will be used to distribute to other yield farms.
+       *
+       * Yield farm must be stopped before calling this function.
+       *
+       * Only global farm's owner can perform this action. Yield farm stays in the storage until it's
+       * empty(all farm entries are withdrawn). Last withdrawn from yield farm trigger removing from
+       * the storage.
+       *
+       * Parameters:
+       * - `origin`: global farm's owner.
+       * - `global_farm_id`: farm id from which yield farm should be destroyed.
+       * - `yield_farm_id`: id of yield farm to be destroyed.
+       * - `asset_pair`: asset pair identifying yield farm in the global farm.
+       *
+       * Emits `YieldFarmDestroyed` event when successful.
+       **/
+      destroyYieldFarm: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          yieldFarmId: u32 | AnyNumber | Uint8Array,
+          assetPair:
+            | PrimitivesAssetAssetPair
+            | { assetIn?: any; assetOut?: any }
+            | string
+            | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u32, PrimitivesAssetAssetPair]
+      >
+      /**
+       * This function create yield farm entry for existing deposit. LP shares are not transferred
+       * and amount of LP shares is based on existing deposit.
+       *
+       * This function DOESN'T create new deposit.
+       *
+       * Parameters:
+       * - `origin`: account depositing LP shares. This account have to have at least
+       * - `global_farm_id`: global farm identifier.
+       * - `yield_farm_id`: yield farm identifier redepositing to.
+       * - `asset_pair`: asset pair identifying LP shares user want to deposit.
+       * - `deposit_id`: identifier of the AMM pool.
+       *
+       * Emits `SharesRedeposited` event when successful.
+       **/
+      redepositLpShares: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          yieldFarmId: u32 | AnyNumber | Uint8Array,
+          assetPair:
+            | PrimitivesAssetAssetPair
+            | { assetIn?: any; assetOut?: any }
+            | string
+            | Uint8Array,
+          depositId: u128 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u32, PrimitivesAssetAssetPair, u128]
+      >
+      /**
+       * Resume yield farm for sopped yield farm.
+       *
+       * This function resume incentivization from `GlobalFarm` and restore full functionality
+       * for yield farm. Users will be able to deposit, claim and withdraw again.
+       *
+       * WARN: Yield farm is NOT rewarded for time it was stopped.
+       *
+       * Only farm owner can perform this action.
+       *
+       * Parameters:
+       * - `origin`: global farm's owner.
+       * - `global_farm_id`: global farm id in which yield farm will be resumed.
+       * - `yield_farm_id`: id of yield farm to be resumed.
+       * - `asset_pair`: asset pair identifying yield farm in global farm.
+       * - `multiplier`: yield farm multiplier in the farm.
+       *
+       * Emits `YieldFarmResumed` event when successful.
+       **/
+      resumeYieldFarm: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          yieldFarmId: u32 | AnyNumber | Uint8Array,
+          assetPair:
+            | PrimitivesAssetAssetPair
+            | { assetIn?: any; assetOut?: any }
+            | string
+            | Uint8Array,
+          multiplier: u128 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u32, PrimitivesAssetAssetPair, u128]
+      >
+      /**
+       * Stop liq. miming for specific yield farm.
+       *
+       * This function claims rewards from `GlobalFarm` last time and stops yield farm
+       * incentivization from a `GlobalFarm`. Users will be able to only withdraw
+       * shares(with claiming) after calling this function.
+       * `deposit_shares()` and `claim_rewards()` are not allowed on canceled yield farm.
+       *
+       * Only farm owner can perform this action.
+       *
+       * Parameters:
+       * - `origin`: global farm's owner.
+       * - `global_farm_id`: farm id in which yield farm will be canceled.
+       * - `asset_pair`: asset pair identifying yield farm in the farm.
+       *
+       * Emits `YieldFarmStopped` event when successful.
+       **/
+      stopYieldFarm: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          assetPair:
+            | PrimitivesAssetAssetPair
+            | { assetIn?: any; assetOut?: any }
+            | string
+            | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, PrimitivesAssetAssetPair]
+      >
+      /**
+       * Update yield farm multiplier.
+       *
+       * Only farm owner can perform this action.
+       *
+       * Parameters:
+       * - `origin`: global farm's owner.
+       * - `global_farm_id`: global farm id in which yield farm will be updated.
+       * - `asset_pair`: asset pair identifying yield farm in global farm.
+       * - `multiplier`: new yield farm multiplier.
+       *
+       * Emits `YieldFarmUpdated` event when successful.
+       **/
+      updateYieldFarm: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          assetPair:
+            | PrimitivesAssetAssetPair
+            | { assetIn?: any; assetOut?: any }
+            | string
+            | Uint8Array,
+          multiplier: u128 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, PrimitivesAssetAssetPair, u128]
+      >
+      /**
+       * Withdraw LP shares from liq. mining. with reward claiming if possible.
+       *
+       * Cases for transfer LP shares and claimed rewards:
+       *
+       * * yield farm is active(yield farm is not stopped) - claim and transfer rewards(if it
+       * wasn't claimed in this period) and transfer LP shares.
+       * * liq. mining is stopped - claim and transfer rewards(if it
+       * wasn't claimed in this period) and transfer LP shares.
+       * * yield farm was destroyed - only LP shares will be transferred.
+       * * farm was destroyed - only LP shares will be transferred.
+       * * SPECIAL CASE: AMM pool does not exist - claim may happen if yield farm is still active, LP
+       * shares will not be transferred.
+       *
+       * User's unclaimable rewards will be transferred back to global farm's account.
+       *
+       * Parameters:
+       * - `origin`: account owner of deposit(nft).
+       * - `deposit_id`: nft id representing deposit in the yield farm.
+       * - `yield_farm_id`: yield farm identifier to dithdraw shares from.
+       * - `asset_pair`: asset pair identifying yield farm in global farm.
+       *
+       * Emits:
+       * * `RewardClaimed` if claim happen
+       * * `SharesWithdrawn` event when successful
+       **/
+      withdrawShares: AugmentedSubmittable<
+        (
+          depositId: u128 | AnyNumber | Uint8Array,
+          yieldFarmId: u32 | AnyNumber | Uint8Array,
+          assetPair:
+            | PrimitivesAssetAssetPair
+            | { assetIn?: any; assetOut?: any }
+            | string
+            | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u128, u32, PrimitivesAssetAssetPair]
+      >
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>
+    }
     marketplace: {
       /**
        * Accept an offer and process the trade
@@ -2363,7 +2708,7 @@ declare module "@polkadot/api-base/types/submittable" {
         (
           classId: u128 | AnyNumber | Uint8Array,
           classType:
-            | PrimitivesNftClassType
+            | PalletNftClassType
             | "Marketplace"
             | "LiquidityMining"
             | "Redeemable"
@@ -2373,7 +2718,7 @@ declare module "@polkadot/api-base/types/submittable" {
             | Uint8Array,
           metadata: Bytes | string | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [u128, PrimitivesNftClassType, Bytes]
+        [u128, PalletNftClassType, Bytes]
       >
       /**
        * Removes a class from existence
@@ -2856,6 +3201,12 @@ declare module "@polkadot/api-base/types/submittable" {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>
     }
+    priceOracle: {
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>
+    }
     proxy: {
       /**
        * Register a proxy account for the sender that is able to make calls on its behalf.
@@ -3172,6 +3523,58 @@ declare module "@polkadot/api-base/types/submittable" {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>
     }
+    session: {
+      /**
+       * Removes any session key(s) of the function caller.
+       *
+       * This doesn't take effect until the next session.
+       *
+       * The dispatch origin of this function must be Signed and the account must be either be
+       * convertible to a validator ID using the chain's typical addressing system (this usually
+       * means being a controller account) or directly convertible into a validator ID (which
+       * usually means being a stash account).
+       *
+       * # <weight>
+       * - Complexity: `O(1)` in number of key types. Actual cost depends on the number of length
+       * of `T::Keys::key_ids()` which is fixed.
+       * - DbReads: `T::ValidatorIdOf`, `NextKeys`, `origin account`
+       * - DbWrites: `NextKeys`, `origin account`
+       * - DbWrites per key id: `KeyOwner`
+       * # </weight>
+       **/
+      purgeKeys: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>
+      /**
+       * Sets the session key(s) of the function caller to `keys`.
+       * Allows an account to set its session key prior to becoming a validator.
+       * This doesn't take effect until the next session.
+       *
+       * The dispatch origin of this function must be signed.
+       *
+       * # <weight>
+       * - Complexity: `O(1)`. Actual cost depends on the number of length of
+       * `T::Keys::key_ids()` which is fixed.
+       * - DbReads: `origin account`, `T::ValidatorIdOf`, `NextKeys`
+       * - DbWrites: `origin account`, `NextKeys`
+       * - DbReads per key id: `KeyOwner`
+       * - DbWrites per key id: `KeyOwner`
+       * # </weight>
+       **/
+      setKeys: AugmentedSubmittable<
+        (
+          keys:
+            | TestingBasiliskRuntimeOpaqueSessionKeys
+            | { aura?: any }
+            | string
+            | Uint8Array,
+          proof: Bytes | string | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [TestingBasiliskRuntimeOpaqueSessionKeys, Bytes]
+      >
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>
+    }
     scheduler: {
       /**
        * Cancel an anonymously scheduled task.
@@ -3305,52 +3708,81 @@ declare module "@polkadot/api-base/types/submittable" {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>
     }
-    session: {
+    sudo: {
       /**
-       * Removes any session key(s) of the function caller.
+       * Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
+       * key.
        *
-       * This doesn't take effect until the next session.
-       *
-       * The dispatch origin of this function must be Signed and the account must be either be
-       * convertible to a validator ID using the chain's typical addressing system (this usually
-       * means being a controller account) or directly convertible into a validator ID (which
-       * usually means being a stash account).
+       * The dispatch origin for this call must be _Signed_.
        *
        * # <weight>
-       * - Complexity: `O(1)` in number of key types. Actual cost depends on the number of length
-       * of `T::Keys::key_ids()` which is fixed.
-       * - DbReads: `T::ValidatorIdOf`, `NextKeys`, `origin account`
-       * - DbWrites: `NextKeys`, `origin account`
-       * - DbWrites per key id: `KeyOwner`
+       * - O(1).
+       * - Limited storage reads.
+       * - One DB change.
        * # </weight>
        **/
-      purgeKeys: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>
-      /**
-       * Sets the session key(s) of the function caller to `keys`.
-       * Allows an account to set its session key prior to becoming a validator.
-       * This doesn't take effect until the next session.
-       *
-       * The dispatch origin of this function must be signed.
-       *
-       * # <weight>
-       * - Complexity: `O(1)`. Actual cost depends on the number of length of
-       * `T::Keys::key_ids()` which is fixed.
-       * - DbReads: `origin account`, `T::ValidatorIdOf`, `NextKeys`
-       * - DbWrites: `origin account`, `NextKeys`
-       * - DbReads per key id: `KeyOwner`
-       * - DbWrites per key id: `KeyOwner`
-       * # </weight>
-       **/
-      setKeys: AugmentedSubmittable<
+      setKey: AugmentedSubmittable<
         (
-          keys:
-            | BasiliskRuntimeOpaqueSessionKeys
-            | { aura?: any }
-            | string
-            | Uint8Array,
-          proof: Bytes | string | Uint8Array,
+          updated: AccountId32 | string | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [BasiliskRuntimeOpaqueSessionKeys, Bytes]
+        [AccountId32]
+      >
+      /**
+       * Authenticates the sudo key and dispatches a function call with `Root` origin.
+       *
+       * The dispatch origin for this call must be _Signed_.
+       *
+       * # <weight>
+       * - O(1).
+       * - Limited storage reads.
+       * - One DB write (event).
+       * - Weight of derivative `call` execution + 10,000.
+       * # </weight>
+       **/
+      sudo: AugmentedSubmittable<
+        (
+          call: Call | IMethod | string | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [Call]
+      >
+      /**
+       * Authenticates the sudo key and dispatches a function call with `Signed` origin from
+       * a given account.
+       *
+       * The dispatch origin for this call must be _Signed_.
+       *
+       * # <weight>
+       * - O(1).
+       * - Limited storage reads.
+       * - One DB write (event).
+       * - Weight of derivative `call` execution + 10,000.
+       * # </weight>
+       **/
+      sudoAs: AugmentedSubmittable<
+        (
+          who: AccountId32 | string | Uint8Array,
+          call: Call | IMethod | string | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [AccountId32, Call]
+      >
+      /**
+       * Authenticates the sudo key and dispatches a function call with `Root` origin.
+       * This function does not check the weight of the call, and instead allows the
+       * Sudo user to specify the weight of the call.
+       *
+       * The dispatch origin for this call must be _Signed_.
+       *
+       * # <weight>
+       * - O(1).
+       * - The weight of this call is defined by the caller.
+       * # </weight>
+       **/
+      sudoUncheckedWeight: AugmentedSubmittable<
+        (
+          call: Call | IMethod | string | Uint8Array,
+          weight: u64 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [Call, u64]
       >
       /**
        * Generic tx
@@ -3964,26 +4396,6 @@ declare module "@polkadot/api-base/types/submittable" {
           amount: Compact<u128> | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
         [AccountId32, u32, Compact<u128>]
-      >
-      /**
-       * Generic tx
-       **/
-      [key: string]: SubmittableExtrinsicFunction<ApiType>
-    }
-    transactionPause: {
-      pauseTransaction: AugmentedSubmittable<
-        (
-          palletName: Bytes | string | Uint8Array,
-          functionName: Bytes | string | Uint8Array,
-        ) => SubmittableExtrinsic<ApiType>,
-        [Bytes, Bytes]
-      >
-      unpauseTransaction: AugmentedSubmittable<
-        (
-          palletName: Bytes | string | Uint8Array,
-          functionName: Bytes | string | Uint8Array,
-        ) => SubmittableExtrinsic<ApiType>,
-        [Bytes, Bytes]
       >
       /**
        * Generic tx
@@ -4674,7 +5086,7 @@ declare module "@polkadot/api-base/types/submittable" {
       dispatchAs: AugmentedSubmittable<
         (
           asOrigin:
-            | BasiliskRuntimeOriginCaller
+            | TestingBasiliskRuntimeOriginCaller
             | { system: any }
             | { Void: any }
             | { Council: any }
@@ -4685,7 +5097,7 @@ declare module "@polkadot/api-base/types/submittable" {
             | Uint8Array,
           call: Call | IMethod | string | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [BasiliskRuntimeOriginCaller, Call]
+        [TestingBasiliskRuntimeOriginCaller, Call]
       >
       /**
        * Generic tx

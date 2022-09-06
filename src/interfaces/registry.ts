@@ -6,9 +6,6 @@
 import "@polkadot/types/types/registry"
 
 import type {
-  BasiliskRuntimeOpaqueSessionKeys,
-  BasiliskRuntimeOriginCaller,
-  BasiliskRuntimeRuntime,
   CommonRuntimeAssetLocation,
   CommonRuntimeProxyType,
   CumulusPalletDmpQueueCall,
@@ -146,6 +143,15 @@ import type {
   PalletLbpEvent,
   PalletLbpPool,
   PalletLbpWeightCurveType,
+  PalletLiquidityMiningCall,
+  PalletLiquidityMiningDepositData,
+  PalletLiquidityMiningError,
+  PalletLiquidityMiningEvent,
+  PalletLiquidityMiningFarmState,
+  PalletLiquidityMiningGlobalFarmData,
+  PalletLiquidityMiningLoyaltyCurve,
+  PalletLiquidityMiningYieldFarmData,
+  PalletLiquidityMiningYieldFarmEntry,
   PalletMarketplaceCall,
   PalletMarketplaceError,
   PalletMarketplaceEvent,
@@ -158,6 +164,7 @@ import type {
   PalletMultisigTimepoint,
   PalletNftCall,
   PalletNftClassInfo,
+  PalletNftClassType,
   PalletNftError,
   PalletNftEvent,
   PalletNftInstanceInfo,
@@ -165,6 +172,12 @@ import type {
   PalletPreimageError,
   PalletPreimageEvent,
   PalletPreimageRequestStatus,
+  PalletPriceOracleBucketQueue,
+  PalletPriceOracleCall,
+  PalletPriceOracleError,
+  PalletPriceOracleEvent,
+  PalletPriceOraclePriceEntry,
+  PalletPriceOraclePriceInfo,
   PalletProxyAnnouncement,
   PalletProxyCall,
   PalletProxyError,
@@ -179,6 +192,9 @@ import type {
   PalletSessionCall,
   PalletSessionError,
   PalletSessionEvent,
+  PalletSudoCall,
+  PalletSudoError,
+  PalletSudoEvent,
   PalletTimestampCall,
   PalletTipsCall,
   PalletTipsError,
@@ -188,9 +204,6 @@ import type {
   PalletTransactionMultiPaymentCurrencyBalanceCheck,
   PalletTransactionMultiPaymentError,
   PalletTransactionMultiPaymentEvent,
-  PalletTransactionPauseCall,
-  PalletTransactionPauseError,
-  PalletTransactionPauseEvent,
   PalletTransactionPaymentChargeTransactionPayment,
   PalletTransactionPaymentReleases,
   PalletTreasuryCall,
@@ -228,7 +241,6 @@ import type {
   PrimitivesAssetAssetPair,
   PrimitivesExchangeIntention,
   PrimitivesIntentionType,
-  PrimitivesNftClassType,
   SpConsensusAuraSr25519AppSr25519Public,
   SpCoreCryptoKeyTypeId,
   SpCoreEcdsaSignature,
@@ -247,6 +259,9 @@ import type {
   SpRuntimeTokenError,
   SpTrieStorageProof,
   SpVersionRuntimeVersion,
+  TestingBasiliskRuntimeOpaqueSessionKeys,
+  TestingBasiliskRuntimeOriginCaller,
+  TestingBasiliskRuntimeRuntime,
   XcmDoubleEncoded,
   XcmV0Junction,
   XcmV0JunctionBodyId,
@@ -287,9 +302,6 @@ import type {
 
 declare module "@polkadot/types/types/registry" {
   interface InterfaceTypes {
-    BasiliskRuntimeOpaqueSessionKeys: BasiliskRuntimeOpaqueSessionKeys
-    BasiliskRuntimeOriginCaller: BasiliskRuntimeOriginCaller
-    BasiliskRuntimeRuntime: BasiliskRuntimeRuntime
     CommonRuntimeAssetLocation: CommonRuntimeAssetLocation
     CommonRuntimeProxyType: CommonRuntimeProxyType
     CumulusPalletDmpQueueCall: CumulusPalletDmpQueueCall
@@ -427,6 +439,15 @@ declare module "@polkadot/types/types/registry" {
     PalletLbpEvent: PalletLbpEvent
     PalletLbpPool: PalletLbpPool
     PalletLbpWeightCurveType: PalletLbpWeightCurveType
+    PalletLiquidityMiningCall: PalletLiquidityMiningCall
+    PalletLiquidityMiningDepositData: PalletLiquidityMiningDepositData
+    PalletLiquidityMiningError: PalletLiquidityMiningError
+    PalletLiquidityMiningEvent: PalletLiquidityMiningEvent
+    PalletLiquidityMiningFarmState: PalletLiquidityMiningFarmState
+    PalletLiquidityMiningGlobalFarmData: PalletLiquidityMiningGlobalFarmData
+    PalletLiquidityMiningLoyaltyCurve: PalletLiquidityMiningLoyaltyCurve
+    PalletLiquidityMiningYieldFarmData: PalletLiquidityMiningYieldFarmData
+    PalletLiquidityMiningYieldFarmEntry: PalletLiquidityMiningYieldFarmEntry
     PalletMarketplaceCall: PalletMarketplaceCall
     PalletMarketplaceError: PalletMarketplaceError
     PalletMarketplaceEvent: PalletMarketplaceEvent
@@ -439,6 +460,7 @@ declare module "@polkadot/types/types/registry" {
     PalletMultisigTimepoint: PalletMultisigTimepoint
     PalletNftCall: PalletNftCall
     PalletNftClassInfo: PalletNftClassInfo
+    PalletNftClassType: PalletNftClassType
     PalletNftError: PalletNftError
     PalletNftEvent: PalletNftEvent
     PalletNftInstanceInfo: PalletNftInstanceInfo
@@ -446,6 +468,12 @@ declare module "@polkadot/types/types/registry" {
     PalletPreimageError: PalletPreimageError
     PalletPreimageEvent: PalletPreimageEvent
     PalletPreimageRequestStatus: PalletPreimageRequestStatus
+    PalletPriceOracleBucketQueue: PalletPriceOracleBucketQueue
+    PalletPriceOracleCall: PalletPriceOracleCall
+    PalletPriceOracleError: PalletPriceOracleError
+    PalletPriceOracleEvent: PalletPriceOracleEvent
+    PalletPriceOraclePriceEntry: PalletPriceOraclePriceEntry
+    PalletPriceOraclePriceInfo: PalletPriceOraclePriceInfo
     PalletProxyAnnouncement: PalletProxyAnnouncement
     PalletProxyCall: PalletProxyCall
     PalletProxyError: PalletProxyError
@@ -460,6 +488,9 @@ declare module "@polkadot/types/types/registry" {
     PalletSessionCall: PalletSessionCall
     PalletSessionError: PalletSessionError
     PalletSessionEvent: PalletSessionEvent
+    PalletSudoCall: PalletSudoCall
+    PalletSudoError: PalletSudoError
+    PalletSudoEvent: PalletSudoEvent
     PalletTimestampCall: PalletTimestampCall
     PalletTipsCall: PalletTipsCall
     PalletTipsError: PalletTipsError
@@ -469,9 +500,6 @@ declare module "@polkadot/types/types/registry" {
     PalletTransactionMultiPaymentCurrencyBalanceCheck: PalletTransactionMultiPaymentCurrencyBalanceCheck
     PalletTransactionMultiPaymentError: PalletTransactionMultiPaymentError
     PalletTransactionMultiPaymentEvent: PalletTransactionMultiPaymentEvent
-    PalletTransactionPauseCall: PalletTransactionPauseCall
-    PalletTransactionPauseError: PalletTransactionPauseError
-    PalletTransactionPauseEvent: PalletTransactionPauseEvent
     PalletTransactionPaymentChargeTransactionPayment: PalletTransactionPaymentChargeTransactionPayment
     PalletTransactionPaymentReleases: PalletTransactionPaymentReleases
     PalletTreasuryCall: PalletTreasuryCall
@@ -509,7 +537,6 @@ declare module "@polkadot/types/types/registry" {
     PrimitivesAssetAssetPair: PrimitivesAssetAssetPair
     PrimitivesExchangeIntention: PrimitivesExchangeIntention
     PrimitivesIntentionType: PrimitivesIntentionType
-    PrimitivesNftClassType: PrimitivesNftClassType
     SpConsensusAuraSr25519AppSr25519Public: SpConsensusAuraSr25519AppSr25519Public
     SpCoreCryptoKeyTypeId: SpCoreCryptoKeyTypeId
     SpCoreEcdsaSignature: SpCoreEcdsaSignature
@@ -528,6 +555,9 @@ declare module "@polkadot/types/types/registry" {
     SpRuntimeTokenError: SpRuntimeTokenError
     SpTrieStorageProof: SpTrieStorageProof
     SpVersionRuntimeVersion: SpVersionRuntimeVersion
+    TestingBasiliskRuntimeOpaqueSessionKeys: TestingBasiliskRuntimeOpaqueSessionKeys
+    TestingBasiliskRuntimeOriginCaller: TestingBasiliskRuntimeOriginCaller
+    TestingBasiliskRuntimeRuntime: TestingBasiliskRuntimeRuntime
     XcmDoubleEncoded: XcmDoubleEncoded
     XcmV0Junction: XcmV0Junction
     XcmV0JunctionBodyId: XcmV0JunctionBodyId

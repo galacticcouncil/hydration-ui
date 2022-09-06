@@ -603,6 +603,34 @@ declare module "@polkadot/api-base/types/consts" {
        **/
       [key: string]: Codec
     }
+    warehouseLM: {
+      /**
+       * Maximum number of yield farms same LP shares can be re/deposited into. This value always
+       * MUST BE >= 1.
+       **/
+      maxFarmEntriesPerDeposit: u32 & AugmentedConst<ApiType>
+      /**
+       * Max number of yield farms can exist in global farm. This includes all farms in the
+       * storage(active, stopped, deleted).
+       **/
+      maxYieldFarmsPerGlobalFarm: u32 & AugmentedConst<ApiType>
+      /**
+       * Minimum number of periods to run liquidity mining program.
+       **/
+      minPlannedYieldingPeriods: u32 & AugmentedConst<ApiType>
+      /**
+       * Minimum total rewards to distribute from global farm during liquidity mining.
+       **/
+      minTotalFarmRewards: u128 & AugmentedConst<ApiType>
+      /**
+       * Pallet id.
+       **/
+      palletId: FrameSupportPalletId & AugmentedConst<ApiType>
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec
+    }
     xTokens: {
       /**
        * Base XCM weight.

@@ -668,6 +668,40 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
+    liquidityMining: {
+      /**
+       * AMM pool does not exist
+       **/
+      AmmPoolDoesNotExist: AugmentedError<ApiType>
+      /**
+       * Nft pallet didn't return an owner.
+       **/
+      CantFindDepositOwner: AugmentedError<ApiType>
+      /**
+       * AMM did not return assets for given `amm_pool_id`
+       **/
+      CantGetAmmAssets: AugmentedError<ApiType>
+      /**
+       * Deposit data not found
+       **/
+      DepositDataNotFound: AugmentedError<ApiType>
+      /**
+       * Account balance of amm pool shares is not sufficient.
+       **/
+      InsufficientAmmSharesBalance: AugmentedError<ApiType>
+      /**
+       * Account is not deposit owner.
+       **/
+      NotDepositOwner: AugmentedError<ApiType>
+      /**
+       * Yield farm can not be found
+       **/
+      YieldFarmNotFound: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
     marketplace: {
       /**
        * User has to be the token owner to accept an offer
@@ -1003,6 +1037,28 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
+    priceOracle: {
+      /**
+       * Asset has been already added
+       **/
+      AssetAlreadyAdded: AugmentedError<ApiType>
+      /**
+       * Calculation error occurred while calculating average price
+       **/
+      PriceComputationError: AugmentedError<ApiType>
+      /**
+       * Overflow
+       **/
+      TrackedAssetsOverflow: AugmentedError<ApiType>
+      /**
+       * An unexpected overflow occurred
+       **/
+      UpdateDataOverflow: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
     proxy: {
       /**
        * Account is already a proxy.
@@ -1047,6 +1103,32 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
+    session: {
+      /**
+       * Registered duplicate key.
+       **/
+      DuplicatedKey: AugmentedError<ApiType>
+      /**
+       * Invalid ownership proof.
+       **/
+      InvalidProof: AugmentedError<ApiType>
+      /**
+       * Key setting account is not live, so it's impossible to associate keys.
+       **/
+      NoAccount: AugmentedError<ApiType>
+      /**
+       * No associated validator ID for account.
+       **/
+      NoAssociatedValidatorId: AugmentedError<ApiType>
+      /**
+       * No keys are associated with this account.
+       **/
+      NoKeys: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
     scheduler: {
       /**
        * Failed to schedule a call
@@ -1069,27 +1151,11 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
-    session: {
+    sudo: {
       /**
-       * Registered duplicate key.
+       * Sender must be the Sudo account
        **/
-      DuplicatedKey: AugmentedError<ApiType>
-      /**
-       * Invalid ownership proof.
-       **/
-      InvalidProof: AugmentedError<ApiType>
-      /**
-       * Key setting account is not live, so it's impossible to associate keys.
-       **/
-      NoAccount: AugmentedError<ApiType>
-      /**
-       * No associated validator ID for account.
-       **/
-      NoAssociatedValidatorId: AugmentedError<ApiType>
-      /**
-       * No keys are associated with this account.
-       **/
-      NoKeys: AugmentedError<ApiType>
+      RequireSudo: AugmentedError<ApiType>
       /**
        * Generic error
        **/
@@ -1239,20 +1305,6 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
-    transactionPause: {
-      /**
-       * can not pause
-       **/
-      CannotPause: AugmentedError<ApiType>
-      /**
-       * invalid character encoding
-       **/
-      InvalidCharacter: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
     treasury: {
       /**
        * Proposer's balance is too low.
@@ -1370,6 +1422,117 @@ declare module "@polkadot/api-base/types/errors" {
        * Number of vests is zero
        **/
       ZeroVestingPeriodCount: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
+    warehouseLM: {
+      /**
+       * Deposit does not exist.
+       **/
+      DepositNotFound: AugmentedError<ApiType>
+      /**
+       * Multiple claims in the same period is not allowed.
+       **/
+      DoubleClaimInPeriod: AugmentedError<ApiType>
+      /**
+       * Trying to lock LP shares into already locked yield farm.
+       **/
+      DoubleLock: AugmentedError<ApiType>
+      /**
+       * Account is not allowed to perform action.
+       **/
+      Forbidden: AugmentedError<ApiType>
+      /**
+       * Max number of yield farms in global farm was reached. Global farm can't accept new
+       * yield farms until some yield farm is not removed from storage.
+       **/
+      GlobalFarmIsFull: AugmentedError<ApiType>
+      /**
+       * One or more yield farms exist in global farm.
+       **/
+      GlobalFarmIsNotEmpty: AugmentedError<ApiType>
+      /**
+       * Global farm does not exist.
+       **/
+      GlobalFarmNotFound: AugmentedError<ApiType>
+      /**
+       * Insufficient rewards on `Pot` account.
+       **/
+      InsufficientPotBalance: AugmentedError<ApiType>
+      /**
+       * Reward currency balance is not sufficient.
+       **/
+      InsufficientRewardCurrencyBalance: AugmentedError<ApiType>
+      /**
+       * Blocks per period can't be 0.
+       **/
+      InvalidBlocksPerPeriod: AugmentedError<ApiType>
+      /**
+       * LP shares amount is not valid.
+       **/
+      InvalidDepositAmount: AugmentedError<ApiType>
+      /**
+       * Provided farm id is not valid. Valid range is [1, u32::MAX)
+       **/
+      InvalidFarmId: AugmentedError<ApiType>
+      /**
+       * Loyalty curve's initial reward percentage is not valid. Valid range is: [0, 1).
+       **/
+      InvalidInitialRewardPercentage: AugmentedError<ApiType>
+      /**
+       * Invalid min. deposit was set for global farm.
+       **/
+      InvalidMinDeposit: AugmentedError<ApiType>
+      /**
+       * Yield farm multiplier can't be 0.
+       **/
+      InvalidMultiplier: AugmentedError<ApiType>
+      /**
+       * Planned yielding periods is less than `MinPlannedYieldingPeriods`.
+       **/
+      InvalidPlannedYieldingPeriods: AugmentedError<ApiType>
+      /**
+       * Price adjustment multiplier can't be 0.
+       **/
+      InvalidPriceAdjustment: AugmentedError<ApiType>
+      /**
+       * Total rewards is less than `MinTotalFarmRewards`.
+       **/
+      InvalidTotalRewards: AugmentedError<ApiType>
+      /**
+       * Yield per period can't be 0.
+       **/
+      InvalidYieldPerPeriod: AugmentedError<ApiType>
+      /**
+       * Liquidity mining is canceled.
+       **/
+      LiquidityMiningCanceled: AugmentedError<ApiType>
+      /**
+       * Liquidity mining is not canceled.
+       **/
+      LiquidityMiningIsActive: AugmentedError<ApiType>
+      /**
+       * Maximum number of locks reached for deposit.
+       **/
+      MaxEntriesPerDeposit: AugmentedError<ApiType>
+      /**
+       * Farm's `incentivized_asset` is missing in provided asset pair.
+       **/
+      MissingIncentivizedAsset: AugmentedError<ApiType>
+      /**
+       * Yield farm with given `amm_pool_id` already exists in global farm.
+       **/
+      YieldFarmAlreadyExists: AugmentedError<ApiType>
+      /**
+       * Yield farm entry doesn't exist for given deposit.
+       **/
+      YieldFarmEntryNotFound: AugmentedError<ApiType>
+      /**
+       * Yield farm does not exist.
+       **/
+      YieldFarmNotFound: AugmentedError<ApiType>
       /**
        * Generic error
        **/
