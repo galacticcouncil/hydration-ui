@@ -4,6 +4,7 @@ import { LoadingPage } from "sections/loading/LoadingPage"
 import { ApiPromiseContext } from "utils/network"
 import { PoolsPage } from "sections/pools/PoolsPage"
 import * as definitions from "./interfaces/voting/definitions"
+import { Transactions } from "./sections/transaction/Transactions"
 
 export const App = () => {
   const api = useQuery(
@@ -22,6 +23,7 @@ export const App = () => {
   return api.data ? (
     <ApiPromiseContext.Provider value={api.data}>
       <PoolsPage />
+      <Transactions />
     </ApiPromiseContext.Provider>
   ) : (
     <LoadingPage />

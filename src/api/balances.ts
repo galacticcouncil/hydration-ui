@@ -1,64 +1,59 @@
-import { useApiPromise } from "utils/network"
+import { NATIVE_ASSET_ID, useApiPromise } from "utils/network"
 
-import { useEffect, useState } from "react"
-import BN from "bignumber.js"
 import { useStore } from "../state/store"
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "../utils/queryKeys"
 
-// TODO: determine, whether we want to
-// - use subscribe method for each query
-// - use react-query and invalidate on each block globally
-export function useBalances(address: string) {
-  const api = useApiPromise()
-
-  const [value, setValue] = useState<BN | null>(null)
-
-  useEffect(() => {
-    let cancel: () => void | undefined
-    let cancelled = false
-    const callback = api.query.system.account(address, (res) => {
-      if (!cancelled) {
-        const freeBalance = new BN(res.data.free.toHex())
-        const miscFrozenBalance = new BN(res.data.miscFrozen.toHex())
-        const feeFrozenBalance = new BN(res.data.feeFrozen.toHex())
-        const maxFrozenBalance = miscFrozenBalance.gt(feeFrozenBalance)
-          ? miscFrozenBalance
-          : feeFrozenBalance
-
-        setValue(freeBalance.minus(maxFrozenBalance))
-      }
-    })
-
-    callback.then((res) => (cancel = res))
-    return () => {
-      cancelled = true
-      cancel?.()
-    }
-  }, [api, address])
-
-  return value
+function calculateFreeBalance(
+  free: BigNumber,
+  miscFrozen: BigNumber,
+  feeFrozen: BigNumber,
+) {
+  const maxFrozenBalance = miscFrozen.gt(feeFrozen) ? miscFrozen : feeFrozen
+  return free.minus(maxFrozenBalance)
 }
 
 export const getTokenBalance =
   (api: ApiPromise, account: string, id: string) => async () => {
-    const res = await api.query.tokens.accounts(account, id)
-    const data = res.toHuman() as
-      | { free: string; frozen: string; reserved: string }
-      | undefined
-    return new BigNumber(data?.free ?? NaN)
+    if (id === NATIVE_ASSET_ID) {
+      const res = await api.query.system.account(account)
+      const freeBalance = new BigNumber(res.data.free.toHex())
+      const miscFrozenBalance = new BigNumber(res.data.miscFrozen.toHex())
+      const feeFrozenBalance = new BigNumber(res.data.feeFrozen.toHex())
+
+      return new BigNumber(
+        calculateFreeBalance(
+          freeBalance,
+          miscFrozenBalance,
+          feeFrozenBalance,
+        ) ?? NaN,
+      )
+    }
+
+    const res = (await api.query.tokens.accounts(account, id)) as any
+
+    const freeBalance = new BigNumber(res.free.toHex())
+    const reservedBalance = new BigNumber(res.reserved.toHex())
+    const frozenBalance = new BigNumber(res.frozen.toHex())
+
+    return new BigNumber(
+      calculateFreeBalance(freeBalance, reservedBalance, frozenBalance) ?? NaN,
+    )
   }
 
-export const useTokenBalance = (id: string, accountAddress?: string) => {
+export const useTokenBalance = (id: string, address?: string) => {
   const api = useApiPromise()
   const { account } = useStore()
+
+  const finalAddress = address ?? account?.address ?? ""
+
   return useQuery(
-    QUERY_KEYS.tokenBalance(id),
-    getTokenBalance(api, accountAddress ?? account?.address ?? "", id),
+    QUERY_KEYS.tokenBalance(id, finalAddress),
+    getTokenBalance(api, finalAddress, id),
     {
-      enabled: !!account,
+      enabled: !!finalAddress,
     },
   )
 }
@@ -75,5 +70,5 @@ export function useTokensBalances(tokenIds: string[]) {
     })),
   })
 
-  return queries.map((balance) => balance.data ?? new BigNumber(NaN))
+  return queries.map((balance) => balance.data)
 }

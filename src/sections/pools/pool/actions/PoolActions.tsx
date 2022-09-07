@@ -11,7 +11,6 @@ import { useTranslation } from "react-i18next"
 import { PoolAddLiquidity } from "sections/pools/pool/modals/addLiquidity/PoolAddLiquidity"
 import { PoolRemoveLiquidity } from "sections/pools/pool/modals/removeLiquidity/PoolRemoveLiquidity"
 import { PoolJoinFarm } from "sections/pools/pool/modals/joinFarm/PoolJoinFarm"
-import { PoolReviewTransaction } from "../modals/reviewTransaction/PoolReviewTransaction"
 import { PoolConfig } from "../Pool"
 
 export const PoolActions: FC<PoolConfig> = ({ hasJoinedFarms, ...props }) => {
@@ -20,7 +19,6 @@ export const PoolActions: FC<PoolConfig> = ({ hasJoinedFarms, ...props }) => {
   const [openAdd, setOpenAdd] = useState(false)
   const [openRemove, setOpenRemove] = useState(false)
   const [openFarms, setOpenFarms] = useState(false)
-  const [reviewTransaction, setReviewTransaction] = useState(false)
 
   return (
     <>
@@ -70,13 +68,6 @@ export const PoolActions: FC<PoolConfig> = ({ hasJoinedFarms, ...props }) => {
         onClose={() => setOpenFarms(false)}
         onSelect={() => {
           setOpenFarms(false)
-          setReviewTransaction(true)
-        }}
-      />
-      <PoolReviewTransaction
-        isOpen={reviewTransaction}
-        onClose={() => {
-          setReviewTransaction(false)
         }}
       />
     </>

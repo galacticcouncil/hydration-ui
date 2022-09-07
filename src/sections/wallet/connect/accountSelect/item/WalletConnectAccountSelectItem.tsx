@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next"
 import { Separator } from "components/Separator/Separator"
 import { Box } from "components/Box/Box"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { BASILISK_ADDRESS_PREFIX } from "utils/network"
-import { useBalances } from "api/balances"
+import { BASILISK_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/network"
+import { useTokenBalance } from "api/balances"
 import { SSelectItem } from "./WalletConnectAccountSelectItem.styled"
 import { WalletConnectAccountSelectAddress } from "sections/wallet/connect/accountSelect/item/address/WalletConnectAccountSelectAddress"
 import { FC } from "react"
@@ -25,7 +25,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
     BASILISK_ADDRESS_PREFIX,
   )
   const kuramaAddress = address
-  const native = useBalances(kuramaAddress)
+  const { data } = useTokenBalance(NATIVE_ASSET_ID, kuramaAddress)
 
   const { t } = useTranslation()
 
@@ -33,7 +33,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
     <SSelectItem onClick={setAccount}>
       <Box flex align="center" justify="space-between">
         <Text>{name}</Text>
-        <Text>{t("value.bsx", { amount: native })}</Text>
+        <Text>{t("value.bsx", { amount: data })}</Text>
       </Box>
 
       <Box flex column>

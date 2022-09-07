@@ -3,62 +3,35 @@ import { Modal } from "components/Modal/Modal"
 import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
 import { Box } from "components/Box/Box"
-import { SDetailRow } from "./PoolReviewTransaction.styled"
+import { SDetailRow } from "./ReviewTransaction.styled"
 import { Button } from "components/Button/Button"
 import { TransactionCode } from "components/TransactionCode/TransactionCode"
+import { Transaction } from "../../state/store"
+import { getTransactionJSON } from "./ReviewTransaction.utils"
 
 type Props = {
-  isOpen: boolean
-  onClose: () => void
-}
+  onCancel: () => void
+  onBack?: () => void
+} & Transaction
 
-export const PoolReviewTransaction: React.FC<Props> = ({ isOpen, onClose }) => {
+export const ReviewTransaction: React.FC<Props> = ({ onCancel, tx, title }) => {
   const { t } = useTranslation()
+
+  const json = getTransactionJSON(tx)
 
   return (
     <Modal
-      open={isOpen}
-      onClose={onClose}
+      open={true}
+      onClose={onCancel}
       title={t("pools.reviewTransaction.modal.title")}
     >
-      <Text color="neutralGray400" fw={400} mt={6}>
-        {t("pools.reviewTransaction.modal.joining", {
-          name: "BSX",
-          amount: "2134",
-          symbol1: "BSX",
-          symbol2: "aUSD",
-        })}
-      </Text>
+      {title && (
+        <Text color="neutralGray400" fw={400} mt={6}>
+          {title}
+        </Text>
+      )}
       <Box mt={16}>
-        <TransactionCode
-          name="Method utility.batchAll(calls)"
-          src={{
-            calls: [
-              {
-                args: {
-                  asset_out: "0",
-                  asset_in: "1",
-                  amount: "10 000 000 000 000 000",
-                  max_limit: "33 000 000 000 000",
-                  discount: false,
-                },
-                method: "buy",
-                section: "xyk",
-              },
-              {
-                args: {
-                  asset_in: "1",
-                  asset_out: "0",
-                  amount: "10 000 000 000 000 000",
-                  max_limit: "33 000 000 000 000",
-                  discount: false,
-                },
-                method: "sell",
-                section: "xyk",
-              },
-            ],
-          }}
-        />
+        <TransactionCode name={`Method ${json.name}`} src={json.code} />
       </Box>
       <Box mt={10}>
         <SDetailRow>
@@ -93,7 +66,7 @@ export const PoolReviewTransaction: React.FC<Props> = ({ isOpen, onClose }) => {
       </Box>
       <Box mt={24} flex spread>
         <Button
-          onClick={onClose}
+          onClick={onCancel}
           text={t("pools.reviewTransaction.modal.cancel")}
           variant="secondary"
         />

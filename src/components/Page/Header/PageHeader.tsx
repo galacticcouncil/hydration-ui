@@ -4,16 +4,14 @@ import { BasiliskLogo } from "assets/icons/BasiliskLogo"
 import { Box } from "components/Box/Box"
 import { Icon } from "components/Icon/Icon"
 import { MenuList } from "./MenuList/MenuList"
-import { SLoginButton, SHeader } from "./Header.styled"
-import { useState } from "react"
-import { WalletConnectModal } from "sections/wallet/connect/modal/WalletConnectModal"
+import { SHeader } from "./Header.styled"
 import { useTranslation } from "react-i18next"
 import { useStore } from "state/store"
 import { Text } from "components/Typography/Text/Text"
 import { shortenAccountAddress } from "utils/account"
+import { WalletConnectButton } from "../../../sections/wallet/connect/modal/WalletConnectButton"
 
 export const PageHeader = () => {
-  const [open, setOpen] = useState(false)
   const { t } = useTranslation("translation")
   const { account } = useStore()
 
@@ -56,11 +54,7 @@ export const PageHeader = () => {
           </Box>
         ) : (
           <Box>
-            <SLoginButton variant="gradient" onClick={() => setOpen(true)}>
-              {t("header.walletConnect.button")}
-            </SLoginButton>
-
-            <WalletConnectModal isOpen={open} onClose={() => setOpen(false)} />
+            <WalletConnectButton />
           </Box>
         )}
       </Box>

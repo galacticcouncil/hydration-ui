@@ -3,9 +3,20 @@ import { initReactI18next } from "react-i18next"
 import translationEN from "./locales/en/translations.json"
 import { formatDate, formatNum } from "utils/formatting"
 import BN from "bignumber.js"
+import { getFullDisplayBalance } from "../utils/balance"
+import { BN_10 } from "../utils/constants"
+import BigNumber from "bignumber.js"
 
 function isBNPrecision(value: any): value is { value: BN; precision?: number } {
   return value != null && "value" in value && BN.isBigNumber(value.value)
+}
+
+function isBalanceWithSettings(value: any): value is {
+  value: BigNumber
+  decimals?: string | number
+  displayDecimals?: string | number
+} {
+  return value !== null && "value" in value
 }
 
 const resources = {
@@ -22,9 +33,25 @@ i18n
     lng: "en",
     interpolation: {
       format(value, format, lng) {
+        if (format === "balance") {
+          if (!value) {
+            return "-"
+          }
+
+          if (isBalanceWithSettings(value)) {
+            return getFullDisplayBalance(
+              value.value,
+              value.decimals,
+              value.displayDecimals,
+            )
+          }
+
+          return getFullDisplayBalance(value)
+        }
+
         if (format === "amount") {
           if (isBNPrecision(value)) {
-            const precision = new BN(10).pow(new BN(value.precision ?? 12))
+            const precision = BN_10.pow(new BN(value.precision ?? 12))
             return value.value.div(precision).toString()
           }
 

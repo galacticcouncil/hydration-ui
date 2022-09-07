@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Row } from "components/Row/Row"
@@ -9,8 +10,11 @@ import { PoolAddLiquidityConversion } from "sections/pools/pool/modals/addLiquid
 import { PoolAddLiquidityAssetSelect } from "sections/pools/pool/modals/addLiquidity/assetSelect/PoolAddLiquidityAssetSelect"
 import { PoolConfig } from "../../Pool"
 import { useAddPoolAddLiquidity } from "./PoolAddLiquidity.utils"
-import { getFullDisplayBalance } from "../../../../../utils/balance"
+import { getDecimalAmount, getFullDisplayBalance } from "utils/balance"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { useAddLiquidity } from "api/addLiquidity"
+import { WalletConnectButton } from "../../../../wallet/connect/modal/WalletConnectButton"
+import { useStore } from "state/store"
 
 type Props = PoolConfig & {
   isOpen: boolean
@@ -24,11 +28,39 @@ export const PoolAddLiquidity: FC<Props> = ({
   assetB,
 }) => {
   const { t } = useTranslation()
+
+  const { account } = useStore()
+
   const { data: dataAssetA } = useAddPoolAddLiquidity(assetA)
   const { data: dataAssetB } = useAddPoolAddLiquidity(assetB)
 
   const [inputAssetA, setInputAssetA] = useState("0")
   const [inputAssetB, setInputAssetB] = useState("0")
+
+  const { pendingTx, handleAddLiquidity } = useAddLiquidity()
+
+  async function handleSubmit() {
+    try {
+      handleAddLiquidity([
+        {
+          id: assetA,
+          amount: getDecimalAmount(
+            new BigNumber(inputAssetA),
+            dataAssetA.asset.decimals,
+          ),
+        },
+        {
+          id: assetB,
+          amount: getDecimalAmount(
+            new BigNumber(inputAssetB),
+            dataAssetB.asset.decimals,
+          ),
+        },
+      ])
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
   return (
     <Modal
@@ -90,12 +122,18 @@ export const PoolAddLiquidity: FC<Props> = ({
         left={t("pools.addLiquidity.modal.row.shareTokens")}
         right={<Text color="primary400">3000</Text>}
       />
-      <Button
-        text={t("pools.addLiquidity.modal.confirmButton")}
-        variant="primary"
-        fullWidth
-        mt={30}
-      />
+      {account ? (
+        <Button
+          text={t("pools.addLiquidity.modal.confirmButton")}
+          variant="primary"
+          fullWidth
+          mt={30}
+          disabled={pendingTx}
+          onClick={handleSubmit}
+        />
+      ) : (
+        <WalletConnectButton mt={30} fullWidth />
+      )}
     </Modal>
   )
 }
