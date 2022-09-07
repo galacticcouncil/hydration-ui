@@ -45,8 +45,8 @@ export const PoolDetails: FC<Props> = ({
             </Box>
           </Box>
         </Box>
-        <Box flex column width={120} mt={5} align="start">
-          <Text fs={14} color="neutralGray400" lh={22}>
+        <Box flex column width={120} align="start">
+          <Text fs={14} color="neutralGray400" lh={26}>
             {t("pools.pool.poolDetails.fee")}
           </Text>
           <Text lh={22} color="white">
@@ -69,7 +69,7 @@ export const PoolDetails: FC<Props> = ({
             {t("pools.pool.poolDetails.24hours")}
           </Text>
           <Text lh={22} color="white" fs={18}>
-            {"$" + formatNum(1234.45)}
+            - {/*TODO*/}
           </Text>
         </Box>
       </Box>

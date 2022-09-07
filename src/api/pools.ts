@@ -5,11 +5,9 @@ import { ApiPromise } from "@polkadot/api"
 
 export const getPools = (api: ApiPromise) => async () => {
   const res = await api.query.xyk.poolAssets.entries()
-  const pools = res.map((data) => {
-    const [storageKey, codec] = data
-
-    const id = (storageKey.toHuman() as string[])[0]
-    const [assetA, assetB] = codec.toHuman() as string[]
+  const pools = res.map(([storageKey, data]) => {
+    const [id] = storageKey.args
+    const [assetA, assetB] = data.unwrap()
 
     return { id, assetA, assetB }
   })

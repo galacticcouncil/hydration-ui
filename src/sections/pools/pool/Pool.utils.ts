@@ -4,9 +4,10 @@ import { useMemo } from "react"
 import { BN_0, BN_1, BN_10, BN_12, BN_2, DOLLAR_RATES } from "utils/constants"
 import { useTotalLiquidity } from "api/totalLiquidity"
 import { useExchangeFee } from "api/exchangeFee"
+import { AccountId32 } from "@polkadot/types/interfaces/runtime"
 
 type Props = {
-  id: string
+  id: AccountId32
   assetA: string
   assetB: string
 }

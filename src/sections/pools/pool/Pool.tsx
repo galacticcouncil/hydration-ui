@@ -7,11 +7,11 @@ import { Box } from "components/Box/Box"
 import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
 import { PoolShares } from "sections/pools/pool/shares/PoolShares"
 import { usePoolData } from "sections/pools/pool/Pool.utils"
-import { Spinner } from "components/Spinner/Spinner.styled"
 import { TRADING_FEE } from "utils/constants"
+import { AccountId32 } from "@polkadot/types/interfaces/runtime"
 
 export interface PoolConfig {
-  id: string
+  id: AccountId32
   assetA: string
   assetB: string
   hasJoinedFarms?: boolean
@@ -19,21 +19,18 @@ export interface PoolConfig {
 }
 
 export const Pool: FC<PoolConfig> = (props) => {
-  const { data, isLoading } = usePoolData(props)
+  const pool = usePoolData(props)
 
-  return isLoading ? (
-    /*TODO: add skeleton loader*/
-    <Spinner />
-  ) : (
+  return (
     <SContainer>
       <Box flex spread p="24px 24px 0" gap={10}>
         <PoolDetails
-          assetAName={data?.assetA.details?.name ?? ""}
-          assetBName={data?.assetB.details?.name ?? ""}
-          totalLiquidity={data?.totalLiquidity ?? "0"}
-          tradingFee={data?.tradingFee ?? TRADING_FEE}
+          assetAName={pool.data?.assetA.details?.name ?? ""}
+          assetBName={pool.data?.assetB.details?.name ?? ""}
+          totalLiquidity={pool.data?.totalLiquidity ?? "0"}
+          tradingFee={pool.data?.tradingFee ?? TRADING_FEE}
         />
-        <PoolIncentives />
+        <PoolIncentives id={props.id} />
         <PoolActions {...props} />
       </Box>
       {props.hasLiquidity && <PoolShares />}

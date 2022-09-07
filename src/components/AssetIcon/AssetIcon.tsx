@@ -1,4 +1,4 @@
-import { PlaceHolderIcon } from "assets/icons/PlaceholderIcon"
+import { PlaceHolderIcon } from "assets/icons/tokens/PlaceholderIcon"
 import { FC, ReactNode } from "react"
 import { AssetIconWrapper, SChainedIcon, SIcon } from "./AssetIcon.styled"
 
@@ -6,6 +6,7 @@ import { ReactComponent as AUSD } from "assets/icons/tokens/AUSD.svg"
 import { ReactComponent as BSX } from "assets/icons/tokens/BSX.svg"
 import { ReactComponent as KAR } from "assets/icons/tokens/KAR.svg"
 import { ReactComponent as KSM } from "assets/icons/tokens/KSM.svg"
+import { ReactComponent as PlaceholderIcon } from "assets/icons/tokens/PlaceholderIcon.svg"
 
 export type AssetIconProps = {
   icon?: ReactNode
@@ -27,12 +28,10 @@ export const AssetIcon: FC<AssetIconProps> = ({
 )
 
 export function getAssetLogo(assetName: string | null | undefined) {
-  if (assetName == null) return undefined
-
   if (assetName === "AUSD") return <AUSD />
   if (assetName === "BSX") return <BSX />
   if (assetName === "KAR") return <KAR />
   if (assetName === "KSM") return <KSM />
 
-  return undefined
+  return <PlaceholderIcon width={32} height={32} />
 }

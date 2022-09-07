@@ -18,6 +18,7 @@
   "pools.pool.poolDetails.valueLocked": "Total Value Locked",
   "pools.pool.poolDetails.24hours": "24h Volume",
   "pools.pool.incentives.title": "Farm Incentives",
+  "pools.pool.incentives.apr": "{{ percentage }}% APR",
   "pools.pool.actions.addLiquidity": "Add liquidity",
   "pools.pool.actions.removeLiquidity": "Remove liquidity",
   "pools.pool.actions.joinFarm": "Join farm",

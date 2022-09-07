@@ -1,5 +1,11 @@
 export const QUERY_KEYS = {
   pools: ["pools"],
+  globalFarms: (ids: string[]) => ["globalFarms", ...ids],
+  yieldFarms: (ids: Record<string, any>) => ["yieldFarms", ids],
+  activeYieldFarms: (poolId: string) => ["activeYieldFarms", poolId],
+  globalFarm: (id: string) => ["globalFarm", id],
+  yieldFarm: (id: string) => ["yieldFarm", id],
+  activeYieldFarm: (id: string) => ["activeYieldFarm", id],
   totalLiquidity: (id: string) => ["totalLiquidity", id],
   totalLiquidities: (ids: string[]) => ["totalLiquidities", ...ids],
   tokenBalance: (id: string, address?: string) => ["tokenBalance", id, address],

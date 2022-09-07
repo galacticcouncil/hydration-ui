@@ -1,31 +1,28 @@
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
-
 import { Box } from "components/Box/Box"
-import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
-import { Fragment } from "react"
 import { useTranslation } from "react-i18next"
 import { PoolIncentivesRow } from "sections/pools/pool/incentives/row/PoolIncentivesRow"
+import { useAPR } from "utils/apr"
+import { AccountId32 } from "@polkadot/types/interfaces/runtime"
 
-const mockRows = [
-  { id: 1, name: "KAR", value: "5-10" },
-  { id: 2, name: "KAR", value: "10-15" },
-  { id: 3, name: "KAR", value: "15-20" },
-]
+type Props = { id: AccountId32 }
 
-export const PoolIncentives = () => {
+export const PoolIncentives = ({ id }: Props) => {
   const { t } = useTranslation()
+
+  const apr = useAPR(id)
+
   return (
-    <Box width={206}>
+    <Box width={256}>
       <Text fs={14} lh={26} color="neutralGray400" mb={18}>
         {t("pools.pool.incentives.title")}
       </Text>
-      {mockRows.map((row, rowI) => (
-        <Fragment key={rowI}>
-          <PoolIncentivesRow icon={getAssetLogo(row.name)} {...row} />
-          {rowI !== mockRows.length - 1 && <Separator mb={13} />}
-        </Fragment>
-      ))}
+      {apr.data.map(
+        (row, i) =>
+          row && (
+            <PoolIncentivesRow key={i} assetId={row.assetId} apr={row.apr} />
+          ),
+      )}
     </Box>
   )
 }
