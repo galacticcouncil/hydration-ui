@@ -1289,6 +1289,10 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
+"@galacticcouncil/math@https://github.com/galacticcouncil/HydraDX-wasm":
+  version "0.0.0-beta-1"
+  resolved "https://github.com/galacticcouncil/HydraDX-wasm#86ddc028f3b37d5c4969c3f0fa5674cbf40cfb3a"
+
 "@gar/promisify@^1.0.1":
   version "1.1.3"
   resolved "https://registry.npmjs.org/@gar/promisify/-/promisify-1.1.3.tgz"
@@ -12686,6 +12690,11 @@ vite-plugin-svgr@^2.2.1:
   dependencies:
     "@rollup/pluginutils" "^4.2.1"
     "@svgr/core" "^6.3.1"
+
+vite-plugin-wasm@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/vite-plugin-wasm/-/vite-plugin-wasm-2.1.0.tgz#350dfa91f067a29d185d2085886ca0071a02503f"
+  integrity sha512-GmesubAJ6d3PIbvcn/HU2ZJTQobIbf+XwaimrcG3x2QpQX9s36vdqxUdkP7qsd51LCULSi6Z2K7JyxnT6zfmNw==
 
 vite-tsconfig-paths@^3.5.0:
   version "3.5.0"

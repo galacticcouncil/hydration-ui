@@ -13,7 +13,7 @@ import { useAddPoolAddLiquidity } from "./PoolAddLiquidity.utils"
 import { getDecimalAmount, getFullDisplayBalance } from "utils/balance"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { useAddLiquidity } from "api/addLiquidity"
-import { WalletConnectButton } from "../../../../wallet/connect/modal/WalletConnectButton"
+import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { useStore } from "state/store"
 
 type Props = PoolConfig & {
