@@ -10,14 +10,14 @@ type Props = { id: AccountId32 }
 export const PoolIncentives = ({ id }: Props) => {
   const { t } = useTranslation()
 
-  const apr = useAPR(id)
+  const { data } = useAPR(id)
 
   return (
     <Box width={256}>
       <Text fs={14} lh={26} color="neutralGray400" mb={18}>
         {t("pools.pool.incentives.title")}
       </Text>
-      {apr.data.map(
+      {data.map(
         (row, i) =>
           row && (
             <PoolIncentivesRow key={i} assetId={row.assetId} apr={row.apr} />

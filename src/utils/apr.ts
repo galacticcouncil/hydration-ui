@@ -3,7 +3,7 @@ import { secondsInYear } from "date-fns/constants"
 import { useActiveYieldFarms, useGlobalFarms, useYieldFarms } from "api/farms"
 import { useMemo } from "react"
 import { AccountId32 } from "@polkadot/types/interfaces/runtime"
-import { BN_QUINTILL } from "utils/constants"
+import { BLOCK_TIME, BN_QUINTILL } from "utils/constants"
 
 export const useAPR = (poolId: AccountId32) => {
   const activeYieldFarms = useActiveYieldFarms(poolId)
@@ -19,28 +19,24 @@ export const useAPR = (poolId: AccountId32) => {
     if (!globalFarms.data || !activeYieldFarms.data || !yieldFarms.data)
       return []
 
-    const aFarms = activeYieldFarms.data
-    const gFarms = globalFarms.data.filter((gf) =>
-      aFarms.some((af) => af.globalFarmId.eq(gf.id)),
-    )
-    const yFarms = yieldFarms.data.filter((yf) =>
-      aFarms.some((af) => af.yieldFarmId.eq(yf.id)),
-    )
+    const farms = activeYieldFarms.data.map((af) => ({
+      globalFarm: globalFarms.data.find((gf) => af.globalFarmId.eq(gf.id)),
+      yieldFarm: yieldFarms.data.find((yf) => af.yieldFarmId.eq(yf.id)),
+    }))
 
-    const data = aFarms.map((farm) => {
-      const gFarm = gFarms.find((gf) => gf.id.eq(farm.globalFarmId))
-      const yFarm = yFarms.find((yf) => yf.id.eq(farm.yieldFarmId))
+    const data = farms.map((farm) => {
+      const { globalFarm, yieldFarm } = farm
 
-      if (!gFarm || !yFarm) return undefined
+      if (!globalFarm || !yieldFarm) return undefined
 
-      const totalSharesZ = new BN(gFarm.totalSharesZ.toHex())
-      const yieldPerPeriod = new BN(gFarm.yieldPerPeriod.toHex()).div(
-        BN_QUINTILL,
-      )
-      const maxRewardPerPeriod = new BN(gFarm.maxRewardPerPeriod.toHex())
-      const blocksPerPeriod = new BN(gFarm.blocksPerPeriod.toHex())
-      const blockTime = new BN(6)
-      const multiplier = new BN(yFarm.multiplier.toHex())
+      const totalSharesZ = globalFarm.totalSharesZ.toBigNumber()
+      const yieldPerPeriod = globalFarm.yieldPerPeriod
+        .toBigNumber()
+        .div(BN_QUINTILL) // 18dp
+      const maxRewardPerPeriod = globalFarm.maxRewardPerPeriod.toBigNumber()
+      const blocksPerPeriod = globalFarm.blocksPerPeriod.toBigNumber()
+      const blockTime = BLOCK_TIME
+      const multiplier = yieldFarm.multiplier.toBigNumber().div(BN_QUINTILL) // 18dp
 
       const globalRewardPerPeriod = getGlobalRewardPerPeriod(
         totalSharesZ,
@@ -52,10 +48,9 @@ export const useAPR = (poolId: AccountId32) => {
         multiplier,
         totalSharesZ,
       )
-
       const apr = getAPR(poolYieldPerPeriod, blockTime, blocksPerPeriod)
 
-      return { apr, assetId: gFarm.rewardCurrency, ...farm }
+      return { apr, assetId: globalFarm.rewardCurrency, ...farm }
     })
 
     return data

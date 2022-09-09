@@ -24,7 +24,7 @@ export const PoolIncentivesRow: FC<Props> = ({ assetId, apr }) => {
         {asset.data.name}
       </Text>
       <Text ml={"auto"} fw={700} color="primary200">
-        {t("pools.pool.incentives.apr", { percentage: apr.toFixed(2) })}
+        {t("pools.pool.incentives.apr", { percentage: apr.toFixed() })}
       </Text>
     </Box>
   )
