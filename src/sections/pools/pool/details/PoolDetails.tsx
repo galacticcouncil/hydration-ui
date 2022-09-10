@@ -11,14 +11,14 @@ import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 type Props = {
   assetAName: string
   assetBName: string
-  totalLiquidity: string
+  totalValue: BN
   tradingFee: BN
 }
 
 export const PoolDetails: FC<Props> = ({
   assetAName,
   assetBName,
-  totalLiquidity,
+  totalValue,
   tradingFee,
 }) => {
   const { t } = useTranslation()
@@ -61,7 +61,7 @@ export const PoolDetails: FC<Props> = ({
             {t("pools.pool.poolDetails.valueLocked")}
           </Text>
           <Text lh={22} color="white" fs={18}>
-            {formatNum(totalLiquidity, { style: "currency", currency: "USD" })}
+            {t("value.usd", { amount: totalValue })}
           </Text>
         </Box>
         <Box flex column width={120} align="start">

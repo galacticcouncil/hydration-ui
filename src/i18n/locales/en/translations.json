@@ -9,6 +9,7 @@
   "header.wallet": "Wallet",
   "header.walletConnect.button": "Connect wallet",
   "value.bsx": "{{ amount, balance }} BSX",
+  "value.usd": "{{ amount, usd }}",
   "pools.header.title": "Pools & Farms",
   "pools.header.switch": "My Positions",
   "pools.header.valueLocked": "Total value locked",

@@ -52,9 +52,7 @@ export const useTokenBalance = (id: string, address?: string) => {
   return useQuery(
     QUERY_KEYS.tokenBalance(id, finalAddress),
     getTokenBalance(api, finalAddress, id),
-    {
-      enabled: !!finalAddress,
-    },
+    { enabled: !!finalAddress },
   )
 }
 

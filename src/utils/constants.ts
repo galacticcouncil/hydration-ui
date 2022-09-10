@@ -19,4 +19,6 @@ export const DOLLAR_RATES = new Map([
   ["Kusama", new BN(46.52)],
   ["AUSD", new BN(0.933333)],
   ["Acala USD", new BN(0.933333)],
+  ["PHA", new BN(0.099127)],
+  ["Phala", new BN(0.099127)],
 ])
