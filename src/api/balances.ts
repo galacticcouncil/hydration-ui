@@ -5,6 +5,7 @@ import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "../utils/queryKeys"
+import { u32 } from "@polkadot/types"
 
 function calculateFreeBalance(
   free: BigNumber,
@@ -43,15 +44,17 @@ export const getTokenBalance =
     )
   }
 
-export const useTokenBalance = (id: string, address?: string) => {
+export const useTokenBalance = (id: string | u32, address?: string) => {
   const api = useApiPromise()
   const { account } = useStore()
 
+  // TODO: replace later with native Polkadot types
+  const safeId = id.toString()
   const finalAddress = address ?? account?.address ?? ""
 
   return useQuery(
-    QUERY_KEYS.tokenBalance(id, finalAddress),
-    getTokenBalance(api, finalAddress, id),
+    QUERY_KEYS.tokenBalance(safeId, finalAddress),
+    getTokenBalance(api, finalAddress, safeId),
     { enabled: !!finalAddress },
   )
 }

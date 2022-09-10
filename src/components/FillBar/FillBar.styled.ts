@@ -15,7 +15,7 @@ export const SBar = styled.div`
 `
 
 export const SFill = styled.div<{ percentage: number }>`
-  width: ${({ percentage }) => percentage}%;
+  width: ${({ percentage }) => Math.max(0, Math.min(100, percentage))}%;
   height: 4px;
 
   background: ${theme.colors.primary500};

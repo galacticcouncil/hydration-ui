@@ -2,9 +2,10 @@ import { useApiPromise } from "../utils/network"
 import { useStore } from "../state/store"
 import { useCallback, useState } from "react"
 import BigNumber from "bignumber.js"
+import { u32 } from "@polkadot/types"
 
 interface AddLiquidityAsset {
-  id: string
+  id: u32
   amount: BigNumber
 }
 

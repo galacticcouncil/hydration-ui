@@ -14,8 +14,7 @@ type Props = {
 
 export const PoolIncentivesRow: FC<Props> = ({ assetId, apr }) => {
   const { t } = useTranslation()
-  // TODO: use u32
-  const asset = useAsset(assetId.toHuman())
+  const asset = useAsset(assetId)
 
   return (
     <Box flex acenter spread mb={13}>

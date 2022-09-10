@@ -5,13 +5,14 @@ import { BN_0, BN_1, DOLLAR_RATES } from "utils/constants"
 import { useTotalLiquidity } from "api/totalLiquidity"
 import { useExchangeFee } from "api/exchangeFee"
 import { AccountId32 } from "@polkadot/types/interfaces/runtime"
+import { u32 } from "@polkadot/types"
 import { useTokenBalance } from "api/balances"
 import { getBalanceAmount } from "utils/balance"
 
 type Props = {
   id: AccountId32
-  assetA: string
-  assetB: string
+  assetA: u32
+  assetB: u32
 }
 
 export const usePoolData = ({ id, assetA, assetB }: Props) => {
@@ -74,7 +75,16 @@ export const usePoolData = ({ id, assetA, assetB }: Props) => {
     const tradingFee = exchangeFee.data
 
     return { assetA, assetB, tradingFee, totalValue }
-  }, [isLoading])
+  }, [
+    assetABalance.data,
+    assetADetails.data,
+    assetAMeta.data,
+    assetBBalance.data,
+    assetBDetails.data,
+    assetBMeta.data,
+    exchangeFee.data,
+    isLoading,
+  ])
 
   return { data, isLoading }
 }

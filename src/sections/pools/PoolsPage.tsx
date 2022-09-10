@@ -13,10 +13,10 @@ export const PoolsPage = () => {
       <Box flex column gap={20}>
         {pools.data?.map((pool) => (
           <Pool
-            key={pool.id.toHuman()}
+            key={pool.id.toString()}
             id={pool.id}
-            assetA={pool.assetA.toHuman()}
-            assetB={pool.assetB.toHuman()}
+            assetA={pool.assetA}
+            assetB={pool.assetB}
             hasJoinedFarms={false}
             hasLiquidity={false}
           />

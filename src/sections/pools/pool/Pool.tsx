@@ -9,11 +9,12 @@ import { PoolShares } from "sections/pools/pool/shares/PoolShares"
 import { usePoolData } from "sections/pools/pool/Pool.utils"
 import { BN_0, TRADING_FEE } from "utils/constants"
 import { AccountId32 } from "@polkadot/types/interfaces/runtime"
+import { u32 } from "@polkadot/types"
 
 export interface PoolConfig {
   id: AccountId32
-  assetA: string
-  assetB: string
+  assetA: u32
+  assetB: u32
   hasJoinedFarms?: boolean
   hasLiquidity?: boolean
 }

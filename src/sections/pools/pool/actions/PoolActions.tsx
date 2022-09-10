@@ -64,6 +64,9 @@ export const PoolActions: FC<PoolConfig> = ({ hasJoinedFarms, ...props }) => {
         onClose={() => setOpenRemove(false)}
       />
       <PoolJoinFarm
+        ammId={props.id}
+        assetA={props.assetA}
+        assetB={props.assetB}
         isOpen={openFarms}
         onClose={() => setOpenFarms(false)}
         onSelect={() => {

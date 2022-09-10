@@ -1,5 +1,6 @@
 export const QUERY_KEYS = {
   pools: ["pools"],
+  bestNumber: ["bestNumber"],
   globalFarms: (ids: string[]) => ["globalFarms", ...ids],
   yieldFarms: (ids: Record<string, any>) => ["yieldFarms", ids],
   activeYieldFarms: (poolId: string) => ["activeYieldFarms", poolId],

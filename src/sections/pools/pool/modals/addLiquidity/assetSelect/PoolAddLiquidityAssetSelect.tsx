@@ -11,9 +11,10 @@ import {
   SMaxButton,
   SSelectAssetButton,
 } from "./PoolAddLiquidityAssetSelect.styled"
+import { u32 } from "@polkadot/types"
 
 type Props = {
-  asset: string
+  asset: u32
   balance: string
   usd: number
   currency: { short: string; full: string }
