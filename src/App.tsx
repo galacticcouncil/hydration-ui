@@ -5,6 +5,7 @@ import { ApiPromiseContext } from "utils/network"
 import { PoolsPage } from "sections/pools/PoolsPage"
 import * as definitions from "./interfaces/voting/definitions"
 import { Transactions } from "./sections/transaction/Transactions"
+import { InvalidateOnBlock } from "components/InvalidateOnBlock"
 
 export const App = () => {
   const api = useQuery(
@@ -22,8 +23,10 @@ export const App = () => {
 
   return api.data ? (
     <ApiPromiseContext.Provider value={api.data}>
-      <PoolsPage />
-      <Transactions />
+      <InvalidateOnBlock>
+        <PoolsPage />
+        <Transactions />
+      </InvalidateOnBlock>
     </ApiPromiseContext.Provider>
   ) : (
     <LoadingPage />

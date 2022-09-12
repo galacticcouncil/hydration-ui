@@ -15,18 +15,16 @@ export const useYieldFarms = (ids: FarmIds[]) => {
 export const useActiveYieldFarms = (poolId: AccountId32) => {
   const api = useApiPromise()
   return useQuery(
-    QUERY_KEYS.activeYieldFarms(poolId.toHuman()),
+    QUERY_KEYS.activeYieldFarms(poolId),
     getActiveYieldFarms(api, poolId),
   )
 }
 
 export const useGlobalFarms = (ids: u32[]) => {
   const api = useApiPromise()
-  return useQuery(
-    QUERY_KEYS.globalFarms(ids.map((id) => id.toHuman())),
-    getGlobalFarms(api, ids),
-    { enabled: !!ids.length },
-  )
+  return useQuery(QUERY_KEYS.globalFarms(ids), getGlobalFarms(api, ids), {
+    enabled: !!ids.length,
+  })
 }
 
 export const getYieldFarms = (api: ApiPromise, ids: FarmIds[]) => async () => {
