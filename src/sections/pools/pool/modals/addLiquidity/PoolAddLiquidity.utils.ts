@@ -14,7 +14,7 @@ export function useAddPoolAddLiquidity(assetId: u32) {
     isLoading,
     data: {
       asset: asset.data,
-      balance: balance.data ?? new BigNumber(NaN),
+      balance: balance.data?.balance ?? new BigNumber(NaN),
     },
   }
 }

@@ -6,11 +6,13 @@ import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { formatNum } from "utils/formatting"
+import { useTotalLiquidity } from "sections/pools/header/PoolsHeader.utils"
 
 export const PoolsHeader = () => {
   const { t } = useTranslation()
-
   const [showMyFarms, setShowMyFarms] = useState<boolean>(false)
+
+  const totalLiquidity = useTotalLiquidity()
 
   return (
     <>
@@ -34,10 +36,7 @@ export const PoolsHeader = () => {
           </Text>
           <Box flex align="baseline">
             <Heading as="h3" fs={42} fw={900}>
-              {"$" + formatNum(1100000000) + "."}
-            </Heading>
-            <Heading fs={28} opacity={0.4}>
-              56
+              {t("value.usd", { amount: totalLiquidity.data })}
             </Heading>
           </Box>
         </Box>
@@ -48,9 +47,6 @@ export const PoolsHeader = () => {
           <Box flex align="baseline">
             <Heading as="h3" fs={42} fw={900}>
               {"$" + formatNum(1100000000) + "."}
-            </Heading>
-            <Heading fs={28} opacity={0.4}>
-              56
             </Heading>
           </Box>
         </Box>

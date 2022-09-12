@@ -16,7 +16,7 @@ export const useAsset = (id: u32) => {
     isLoading,
     data: {
       ...detail.data,
-      ...meta.data,
+      ...meta.data?.data,
       icon,
     },
   }

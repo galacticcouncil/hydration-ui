@@ -46,14 +46,14 @@ export const PoolAddLiquidity: FC<Props> = ({
           id: assetA,
           amount: getDecimalAmount(
             new BigNumber(inputAssetA),
-            dataAssetA.asset.decimals,
+            dataAssetA.asset.decimals?.toNumber(),
           ),
         },
         {
           id: assetB,
           amount: getDecimalAmount(
             new BigNumber(inputAssetB),
-            dataAssetB.asset.decimals,
+            dataAssetB.asset.decimals?.toNumber(),
           ),
         },
       ])
@@ -72,13 +72,13 @@ export const PoolAddLiquidity: FC<Props> = ({
         asset={assetA}
         balance={getFullDisplayBalance(
           dataAssetA.balance,
-          dataAssetA.asset.decimals,
-          dataAssetA.asset?.decimals,
+          dataAssetA.asset.decimals?.toNumber(),
+          dataAssetA.asset?.decimals?.toNumber(),
         )}
         usd={2456}
         mt={16}
         currency={{ short: dataAssetA.asset?.name ?? "", full: "Sakura" }}
-        assetIcon={getAssetLogo(dataAssetA.asset.symbol)}
+        assetIcon={getAssetLogo(dataAssetA.asset.symbol?.toString())}
         value={inputAssetA}
         onChange={setInputAssetA}
       />
@@ -93,12 +93,12 @@ export const PoolAddLiquidity: FC<Props> = ({
         asset={assetB}
         balance={getFullDisplayBalance(
           dataAssetB.balance,
-          dataAssetB.asset?.decimals,
-          dataAssetB.asset?.decimals,
+          dataAssetB.asset?.decimals?.toNumber(),
+          dataAssetB.asset?.decimals?.toNumber(),
         )}
         usd={2456}
         currency={{ short: dataAssetB.asset?.name ?? "", full: "Basilisk" }}
-        assetIcon={getAssetLogo(dataAssetB.asset.symbol)}
+        assetIcon={getAssetLogo(dataAssetB.asset.symbol?.toString())}
         value={inputAssetB}
         onChange={setInputAssetB}
       />

@@ -45,23 +45,23 @@ export const usePoolData = ({ id, assetA, assetB }: Props) => {
     if (isLoading) return undefined
 
     const assetA = {
-      meta: assetAMeta.data,
+      meta: assetAMeta.data?.data,
       details: assetADetails.data,
-      balance: assetABalance.data,
+      balance: assetABalance.data?.balance,
     }
     const assetB = {
-      meta: assetBMeta.data,
+      meta: assetBMeta.data?.data,
       details: assetBDetails.data,
       balance: assetBBalance.data,
     }
 
     const balanceA = getBalanceAmount(
-      assetABalance.data ?? BN_0,
-      assetAMeta.data?.decimals,
+      assetABalance.data?.balance ?? BN_0,
+      assetAMeta.data?.data.decimals.toNumber(),
     )
     const balanceB = getBalanceAmount(
-      assetBBalance.data ?? BN_0,
-      assetBMeta.data?.decimals,
+      assetBBalance.data?.balance ?? BN_0,
+      assetBMeta.data?.data.decimals.toNumber(),
     )
 
     const rateA = DOLLAR_RATES.get(assetA.details?.name ?? "")

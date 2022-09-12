@@ -33,7 +33,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
     <SSelectItem onClick={setAccount}>
       <Box flex align="center" justify="space-between">
         <Text>{name}</Text>
-        <Text>{t("value.bsx", { amount: data })}</Text>
+        <Text>{t("value.bsx", { amount: data?.balance })}</Text>
       </Box>
 
       <Box flex column>
