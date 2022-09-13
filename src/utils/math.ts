@@ -3,9 +3,10 @@ import { QUERY_KEYS } from "./queryKeys"
 
 export const getMath = () => async () => {
   const [xyk, lbp] = await Promise.all([
-    import("@galacticcouncil/math/build/xyk/bundler"),
-    import("@galacticcouncil/math/build/lbp/bundler"),
+    import("@galacticcouncil/math-xyk"),
+    import("@galacticcouncil/math-lbp"),
   ])
+
   return {
     xyk,
     lbp,

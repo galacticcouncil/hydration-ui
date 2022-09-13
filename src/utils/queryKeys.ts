@@ -51,5 +51,13 @@ export const QUERY_KEYS = {
   assetMeta: (id: u32) => [QUERY_KEY_PREFIX, "assetMeta", id.toString()],
   exchangeFee: [QUERY_KEY_PREFIX, "exchangeFee"],
   calculateTotalLiqInPools: [QUERY_KEY_PREFIX, "totalLiqInPools"],
+  spotPrice: (assetA: string, assetB: string) => [
+    QUERY_KEY_PREFIX,
+    "spotPrice",
+    assetA,
+    assetB,
+  ],
+  provider: (url: string) => ["provider", url],
   math: ["@galacticcouncil/math"],
+  sdk: ["@galacticcouncil/sdk"],
 } as const
