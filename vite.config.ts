@@ -10,6 +10,9 @@ export default defineConfig({
     target: "esnext",
     outDir: "build",
   },
+  optimizeDeps: {
+    exclude: ["@galacticcouncil/sdk"],
+  },
   plugins: [
     tsconfigPaths(),
     react({
