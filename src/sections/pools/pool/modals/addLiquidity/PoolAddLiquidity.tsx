@@ -127,7 +127,7 @@ export const PoolAddLiquidity: FC<Props> = ({
         usd={2456}
         mt={16}
         currency={{ short: dataAssetA.asset?.name ?? "", full: "Sakura" }}
-        assetIcon={getAssetLogo(dataAssetA.asset?.symbol.toString())}
+        assetIcon={getAssetLogo(dataAssetA.asset?.symbol?.toString())}
         value={inputAssetA}
         onChange={setInputAssetA}
       />
@@ -147,7 +147,7 @@ export const PoolAddLiquidity: FC<Props> = ({
         )}
         usd={2456}
         currency={{ short: dataAssetB.asset?.name ?? "", full: "Basilisk" }}
-        assetIcon={getAssetLogo(dataAssetB.asset?.symbol.toString())}
+        assetIcon={getAssetLogo(dataAssetB.asset?.symbol?.toString())}
         value={inputAssetB}
         onChange={setInputAssetB}
       />
