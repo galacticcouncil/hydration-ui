@@ -14,9 +14,7 @@ export const PoolsPage = () => {
         {pools.data?.map((pool) => (
           <Pool
             key={pool.id.toString()}
-            id={pool.id}
-            assetA={pool.assetA}
-            assetB={pool.assetB}
+            {...pool}
             hasJoinedFarms={false}
             hasLiquidity={false}
           />

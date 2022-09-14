@@ -6,6 +6,8 @@ export const BN_2 = new BN(2)
 export const BN_10 = new BN(10)
 export const BN_12 = new BN(12)
 export const BN_QUINTILL = new BN(BN_10.pow(18))
+export const BN_NAN = new BN(NaN)
+export const BN_100 = new BN(100)
 
 export const TRADING_FEE = new BN(3).div(new BN(1000))
 

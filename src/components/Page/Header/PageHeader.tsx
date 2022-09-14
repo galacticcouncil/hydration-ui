@@ -48,7 +48,7 @@ export const PageHeader = () => {
                 {account.name}
               </Text>
               <Text color="neutralGray300" fs={12} fw={400}>
-                {shortenAccountAddress(account.address)}
+                {shortenAccountAddress(account.address.toString())}
               </Text>
             </Box>
           </Box>

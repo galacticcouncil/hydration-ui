@@ -3,13 +3,16 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { u32 } from "@polkadot/types"
+import { Maybe } from "utils/types"
+import { undefinedNoop } from "utils/helpers"
 
-export const useAssetDetails = (id: u32) => {
+export const useAssetDetails = (id: Maybe<u32>) => {
   const api = useApiPromise()
 
   return useQuery(
-    QUERY_KEYS.assetDetails(id.toString()),
-    getAssetDetails(api, id),
+    QUERY_KEYS.assetDetails(id?.toString()),
+    id != null ? getAssetDetails(api, id) : undefinedNoop,
+    { enabled: !!id },
   )
 }
 
@@ -21,6 +24,5 @@ export const getAssetDetails = (api: ApiPromise, id: u32) => async () => {
     existentialDeposit: any
     locked: boolean
   }
-
   return data
 }

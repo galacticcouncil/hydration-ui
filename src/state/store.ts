@@ -1,9 +1,10 @@
 import create from "zustand"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
+import { AccountId32 } from "@polkadot/types/interfaces"
 
 interface Account {
   name: string
-  address: string
+  address: AccountId32 | string
 }
 
 export interface Transaction {

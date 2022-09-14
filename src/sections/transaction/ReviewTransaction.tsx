@@ -8,6 +8,8 @@ import { Button } from "components/Button/Button"
 import { TransactionCode } from "components/TransactionCode/TransactionCode"
 import { Transaction } from "../../state/store"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
+import { usePaymentInfo } from "../../api/transaction"
+import BigNumber from "bignumber.js"
 
 type Props = {
   onCancel: () => void
@@ -16,6 +18,9 @@ type Props = {
 
 export const ReviewTransaction: React.FC<Props> = ({ onCancel, tx, title }) => {
   const { t } = useTranslation()
+
+  // TODO: add transaction
+  const { data: paymentInfoData } = usePaymentInfo(tx, "")
 
   const json = getTransactionJSON(tx)
 
@@ -39,10 +44,21 @@ export const ReviewTransaction: React.FC<Props> = ({ onCancel, tx, title }) => {
             {t("pools.reviewTransaction.modal.detail.cost")}
           </Text>
           <Box flex column align="end">
-            <Text color="white">~12 BSX</Text>
-            <Text color="primary400" fs={12}>
-              2%
-            </Text>
+            {paymentInfoData && (
+              <>
+                <Text color="white">
+                  {t("pools.addLiquidity.modal.row.transactionCostValue", {
+                    amount: {
+                      value: new BigNumber(paymentInfoData.partialFee.toHex()),
+                      displayDecimals: 2,
+                    },
+                  })}
+                </Text>
+                <Text color="primary400" fs={12}>
+                  2%
+                </Text>
+              </>
+            )}
           </Box>
         </SDetailRow>
         <SDetailRow>
