@@ -11,7 +11,9 @@ export default defineConfig({
     outDir: "build",
   },
   optimizeDeps: {
-    exclude: ["@galacticcouncil/sdk"],
+    esbuildOptions: {
+      target: "esnext",
+    },
   },
   plugins: [
     tsconfigPaths(),
