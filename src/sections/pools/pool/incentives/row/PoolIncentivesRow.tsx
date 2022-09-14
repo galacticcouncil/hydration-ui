@@ -18,9 +18,9 @@ export const PoolIncentivesRow: FC<Props> = ({ assetId, apr }) => {
 
   return (
     <Box flex acenter spread mb={13}>
-      <Icon icon={asset.data.icon} mr={10} size={28} />
+      <Icon icon={asset.data?.icon} mr={10} size={28} />
       <Text color="white" fw={700}>
-        {asset.data.name}
+        {asset.data?.name}
       </Text>
       <Text ml={"auto"} fw={700} color="primary200">
         {t("pools.pool.incentives.apr", { percentage: apr.toFixed() })}

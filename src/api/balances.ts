@@ -6,7 +6,9 @@ import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "../utils/queryKeys"
 import { u32 } from "@polkadot/types"
-import { AccountId32 } from "@polkadot/types/interfaces/runtime"
+import { AccountId32 } from "@polkadot/types/interfaces"
+import { Maybe } from "utils/types"
+import { undefinedNoop } from "utils/helpers"
 
 function calculateFreeBalance(
   free: BigNumber,
@@ -18,7 +20,7 @@ function calculateFreeBalance(
 }
 
 export const getTokenBalance =
-  (api: ApiPromise, account: string | AccountId32, id: string | u32) =>
+  (api: ApiPromise, account: AccountId32 | string, id: string | u32) =>
   async () => {
     if (id.toString() === NATIVE_ASSET_ID) {
       const res = await api.query.system.account(account)
@@ -48,17 +50,22 @@ export const getTokenBalance =
     return { accountId: account, assetId: id, balance }
   }
 
-export const useTokenBalance = (id: string | u32, address?: string) => {
+export const useTokenBalance = (
+  id: string | u32,
+  address: Maybe<AccountId32 | string>,
+) => {
   const api = useApiPromise()
   const { account } = useStore()
 
   // TODO: replace later with native Polkadot types
   const safeId = id.toString()
-  const finalAddress = address ?? account?.address ?? ""
+  const finalAddress = address ?? account?.address
 
   return useQuery(
     QUERY_KEYS.tokenBalance(safeId, finalAddress),
-    getTokenBalance(api, finalAddress, safeId),
+    finalAddress != null
+      ? getTokenBalance(api, finalAddress, safeId)
+      : undefinedNoop,
     { enabled: !!finalAddress },
   )
 }

@@ -15,6 +15,13 @@ import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { useAddLiquidity } from "api/addLiquidity"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { useStore } from "state/store"
+import { useMath } from "utils/math"
+import { useTokenBalance } from "api/balances"
+import { useTotalIssuance } from "api/totalIssuance"
+import { BN_100 } from "utils/constants"
+import { useAsset } from "api/asset"
+import { usePoolShareToken } from "api/pools"
+import { useExchangeFee } from "api/exchangeFee"
 
 type Props = PoolConfig & {
   isOpen: boolean
@@ -22,6 +29,7 @@ type Props = PoolConfig & {
 }
 
 export const PoolAddLiquidity: FC<Props> = ({
+  id,
   isOpen,
   onClose,
   assetA,
@@ -34,10 +42,51 @@ export const PoolAddLiquidity: FC<Props> = ({
   const { data: dataAssetA } = useAddPoolAddLiquidity(assetA)
   const { data: dataAssetB } = useAddPoolAddLiquidity(assetB)
 
+  const { data: shareTokenId } = usePoolShareToken(id)
+  const { data: dataShareToken } = useAsset(shareTokenId)
+
   const [inputAssetA, setInputAssetA] = useState("0")
   const [inputAssetB, setInputAssetB] = useState("0")
 
-  const { pendingTx, handleAddLiquidity } = useAddLiquidity()
+  const { pendingTx, handleAddLiquidity, paymentInfo } = useAddLiquidity(
+    assetA,
+    assetB,
+  )
+
+  const exchangeFee = useExchangeFee()
+
+  const shareIssuance = useTotalIssuance(shareTokenId)
+  const assetAReserve = useTokenBalance(assetA, id)
+
+  const { xyk } = useMath()
+
+  const calculatedShares =
+    xyk &&
+    assetAReserve.data &&
+    shareIssuance.data &&
+    dataShareToken &&
+    dataAssetA.asset &&
+    new BigNumber(
+      xyk.calculate_shares(
+        getDecimalAmount(
+          assetAReserve.data.balance,
+          dataAssetA.asset.decimals.toNumber(),
+        ).toFixed(),
+        getDecimalAmount(
+          new BigNumber(inputAssetA),
+          dataAssetA.asset.decimals.toNumber(),
+        ).toFixed(),
+        getDecimalAmount(
+          shareIssuance.data,
+          dataShareToken.decimals.toNumber(),
+        ).toFixed(),
+      ),
+    )
+
+  const calculatedRatio =
+    shareIssuance.data &&
+    calculatedShares &&
+    calculatedShares.pow(shareIssuance.data).multipliedBy(100)
 
   async function handleSubmit() {
     try {
@@ -46,14 +95,14 @@ export const PoolAddLiquidity: FC<Props> = ({
           id: assetA,
           amount: getDecimalAmount(
             new BigNumber(inputAssetA),
-            dataAssetA.asset.decimals?.toNumber(),
+            dataAssetA.asset?.decimals.toNumber(),
           ),
         },
         {
           id: assetB,
           amount: getDecimalAmount(
             new BigNumber(inputAssetB),
-            dataAssetB.asset.decimals?.toNumber(),
+            dataAssetB.asset?.decimals.toNumber(),
           ),
         },
       ])
@@ -72,21 +121,21 @@ export const PoolAddLiquidity: FC<Props> = ({
         asset={assetA}
         balance={getFullDisplayBalance(
           dataAssetA.balance,
-          dataAssetA.asset.decimals?.toNumber(),
+          dataAssetA.asset?.decimals?.toNumber(),
           dataAssetA.asset?.decimals?.toNumber(),
         )}
         usd={2456}
         mt={16}
         currency={{ short: dataAssetA.asset?.name ?? "", full: "Sakura" }}
-        assetIcon={getAssetLogo(dataAssetA.asset.symbol?.toString())}
+        assetIcon={getAssetLogo(dataAssetA.asset?.symbol?.toString())}
         value={inputAssetA}
         onChange={setInputAssetA}
       />
       <PoolAddLiquidityConversion
-        firstValue={{ amount: 1, currency: dataAssetA.asset.name ?? "" }}
+        firstValue={{ amount: 1, currency: dataAssetA.asset?.name ?? "" }}
         secondValue={{
           amount: 0.000123,
-          currency: dataAssetB.asset.name ?? "",
+          currency: dataAssetB.asset?.name ?? "",
         }}
       />
       <PoolAddLiquidityAssetSelect
@@ -98,29 +147,55 @@ export const PoolAddLiquidity: FC<Props> = ({
         )}
         usd={2456}
         currency={{ short: dataAssetB.asset?.name ?? "", full: "Basilisk" }}
-        assetIcon={getAssetLogo(dataAssetB.asset.symbol?.toString())}
+        assetIcon={getAssetLogo(dataAssetB.asset?.symbol?.toString())}
         value={inputAssetB}
         onChange={setInputAssetB}
       />
 
-      <Row left={t("pools.addLiquidity.modal.row.apr")} right="5%" />
+      <Row
+        left={t("pools.addLiquidity.modal.row.tradeFee")}
+        right={`${exchangeFee.data?.times(100).toFixed()}%`}
+      />
       <Separator />
       <Row
         left={t("pools.addLiquidity.modal.row.transactionCost")}
         right={
-          <>
-            <Text mr={4}>≈ 12 BSX</Text>
-            <Text color="primary400">(2%)</Text>
-          </>
+          paymentInfo && (
+            <>
+              <Text mr={4}>
+                {t("pools.addLiquidity.modal.row.transactionCostValue", {
+                  amount: {
+                    value: new BigNumber(paymentInfo.partialFee.toHex()),
+                    displayDecimals: 2,
+                  },
+                })}
+              </Text>
+              <Text color="primary400">(2%)</Text>
+            </>
+          )
         }
       />
       <Separator />
-      <Row left={t("pools.addLiquidity.modal.row.sharePool")} right="5%" />
+      <Row
+        left={t("pools.addLiquidity.modal.row.sharePool")}
+        right={`${(calculatedRatio && calculatedRatio.isFinite()
+          ? calculatedRatio
+          : BN_100
+        ).toFixed()}%`}
+      />
       <Separator />
       {/*TODO add tooltip component afterwards */}
       <Row
         left={t("pools.addLiquidity.modal.row.shareTokens")}
-        right={<Text color="primary400">3000</Text>}
+        right={
+          <Text color="primary400">
+            {getFullDisplayBalance(
+              calculatedShares ?? undefined,
+              dataShareToken?.decimals?.toNumber(),
+              5,
+            )}
+          </Text>
+        }
       />
       {account ? (
         <Button

@@ -35,8 +35,8 @@ const PoolJoinFarmItem = (props: { farm: AprFarm; onSelect: () => void }) => {
     <SFarm onClick={props.onSelect}>
       <Box flex column gap={8}>
         <Box flex acenter gap={8}>
-          {asset.data.icon}
-          <Text fw={700}>{asset.data.name}</Text>
+          {asset.data?.icon}
+          <Text fw={700}>{asset.data?.name}</Text>
         </Box>
         <Text fs={20} lh={28} fw={600} color="primary200">
           {t("pools.allFarms.modal.apr.single", {
@@ -110,8 +110,8 @@ export const PoolJoinFarm = (props: {
       open={props.isOpen}
       onClose={props.onClose}
       title={t("pools.allFarms.modal.title", {
-        symbol1: assetA.data.name,
-        symbol2: assetB.data.name,
+        symbol1: assetA.data?.name,
+        symbol2: assetB.data?.name,
       })}
     >
       <Box flex column gap={8} mt={24}>
