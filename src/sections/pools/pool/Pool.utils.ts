@@ -1,13 +1,14 @@
 import { useAssetMeta } from "api/assetMeta"
 import { useAssetDetails } from "api/assetDetails"
 import { useMemo } from "react"
-import { BN_0, BN_1, DOLLAR_RATES } from "utils/constants"
-import { useTotalLiquidity } from "api/totalLiquidity"
+import { AUSD_NAME, BN_0, BN_10, TRADING_FEE } from "utils/constants"
 import { useExchangeFee } from "api/exchangeFee"
 import { AccountId32 } from "@polkadot/types/interfaces/runtime"
 import { u32 } from "@polkadot/types"
 import { useTokenBalance } from "api/balances"
 import { getBalanceAmount } from "utils/balance"
+import { useSpotPrice } from "api/spotPrice"
+import { useAssets } from "api/asset"
 
 type Props = {
   id: AccountId32
@@ -16,6 +17,11 @@ type Props = {
 }
 
 export const usePoolData = ({ id, assetA, assetB }: Props) => {
+  const assets = useAssets()
+  const aUSD = assets.data?.find(
+    (a) => a.symbol.toLowerCase() === AUSD_NAME.toLowerCase(),
+  )?.token
+
   const assetAMeta = useAssetMeta(assetA)
   const assetBMeta = useAssetMeta(assetB)
 
@@ -25,11 +31,13 @@ export const usePoolData = ({ id, assetA, assetB }: Props) => {
   const assetABalance = useTokenBalance(assetA, id.toHuman())
   const assetBBalance = useTokenBalance(assetB, id.toHuman())
 
+  const spotAtoAUSD = useSpotPrice(assetA, aUSD)
+  const spotBtoAUSD = useSpotPrice(assetB, aUSD)
+
   const exchangeFee = useExchangeFee()
 
-  const total = useTotalLiquidity(id)
-
   const queries = [
+    assets,
     assetAMeta,
     assetBMeta,
     assetADetails,
@@ -37,7 +45,6 @@ export const usePoolData = ({ id, assetA, assetB }: Props) => {
     assetABalance,
     assetBBalance,
     exchangeFee,
-    total,
   ]
   const isLoading = queries.some((q) => q.isLoading)
 
@@ -64,15 +71,30 @@ export const usePoolData = ({ id, assetA, assetB }: Props) => {
       assetBMeta.data?.data.decimals.toNumber(),
     )
 
-    const rateA = DOLLAR_RATES.get(assetA.details?.name ?? "")
-    const rateB = DOLLAR_RATES.get(assetB.details?.name ?? "")
+    const tradingFee = exchangeFee.data ?? TRADING_FEE
 
-    const totalA = balanceA?.times(rateA ?? BN_1)
-    const totalB = balanceB?.times(rateB ?? BN_1)
+    const AtoAUSD = spotAtoAUSD.data?.amount.div(
+      BN_10.pow(spotAtoAUSD.data?.decimals),
+    )
+    const BtoAUSD = spotBtoAUSD.data?.amount.div(
+      BN_10.pow(spotBtoAUSD.data?.decimals),
+    )
 
-    const totalValue = totalA?.plus(totalB ?? BN_0)
+    const totalA = balanceA.times(AtoAUSD ?? BN_0)
+    const totalB = balanceB.times(BtoAUSD ?? BN_0)
+    const totalValue = totalA.plus(totalB)
 
-    const tradingFee = exchangeFee.data
+    // const a = assetA.details?.name
+    // const b = assetB.details?.name
+    // console.table([
+    //   [`Balance ${a}`, balanceA.toFixed()],
+    //   [`Balance ${b}`, balanceB.toFixed()],
+    //   [`Spot price: ${a} -> AUSD`, AtoAUSD?.toFixed()],
+    //   [`Spot price: ${b} -> AUSD`, BtoAUSD?.toFixed()],
+    //   [`Total ${a}`, totalA.toFixed()],
+    //   [`Total ${b}`, totalB.toFixed()],
+    //   [`Total`, totalValue.toFixed()],
+    // ])
 
     return { assetA, assetB, tradingFee, totalValue }
   }, [

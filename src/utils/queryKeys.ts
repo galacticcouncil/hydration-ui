@@ -50,6 +50,7 @@ export const QUERY_KEYS = {
     address,
     ...ids,
   ],
+  assets: [QUERY_KEY_PREFIX, "assets"],
   assetDetails: (id: Maybe<string>) => [QUERY_KEY_PREFIX, "assetDetails", id],
   assetMeta: (id: Maybe<u32>) => [
     QUERY_KEY_PREFIX,
@@ -64,13 +65,22 @@ export const QUERY_KEYS = {
     assetA,
     assetB,
   ],
-  provider: (url: string) => ["provider", url],
-  math: ["@galacticcouncil/math"],
   paymentInfo: (hash: CodecHash, account?: AccountId32 | string) => [
     QUERY_KEY_PREFIX,
     "paymentInfo",
     hash,
     account,
   ],
-  sdk: ["@galacticcouncil/sdk"],
+  bestBuy: (params: Record<string, any>) => [
+    QUERY_KEY_PREFIX,
+    "bestBuy",
+    params,
+  ],
+  bestSell: (params: Record<string, any>) => [
+    QUERY_KEY_PREFIX,
+    "bestSell",
+    params,
+  ],
+  provider: (url: string) => ["provider", url],
+  math: ["@galacticcouncil/math"],
 } as const

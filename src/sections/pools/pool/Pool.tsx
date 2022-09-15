@@ -7,7 +7,6 @@ import { Box } from "components/Box/Box"
 import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
 import { PoolShares } from "sections/pools/pool/shares/PoolShares"
 import { usePoolData } from "sections/pools/pool/Pool.utils"
-import { BN_0, TRADING_FEE } from "utils/constants"
 import { AccountId32 } from "@polkadot/types/interfaces/runtime"
 import { u32 } from "@polkadot/types"
 
@@ -20,17 +19,19 @@ export interface PoolConfig {
 }
 
 export const Pool: FC<PoolConfig> = (props) => {
-  const pool = usePoolData(props)
+  const { data } = usePoolData(props)
 
   return (
     <SContainer>
       <Box flex spread p="24px 24px 0" gap={10}>
-        <PoolDetails
-          assetAName={pool.data?.assetA.details?.name ?? "?"}
-          assetBName={pool.data?.assetB.details?.name ?? "?"}
-          totalValue={pool.data?.totalValue ?? BN_0}
-          tradingFee={pool.data?.tradingFee ?? TRADING_FEE}
-        />
+        {data && (
+          <PoolDetails
+            assetAName={data.assetA.details?.name ?? "?"}
+            assetBName={data.assetB.details?.name ?? "?"}
+            totalValue={data.totalValue}
+            tradingFee={data.tradingFee}
+          />
+        )}
         <PoolIncentives id={props.id} />
         <PoolActions {...props} />
       </Box>

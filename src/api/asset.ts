@@ -3,6 +3,10 @@ import { useAssetDetails } from "./assetDetails"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { u32 } from "@polkadot/types"
 import { Maybe } from "utils/types"
+import { useTradeRouter } from "utils/sdk"
+import { TradeRouter } from "@galacticcouncil/sdk"
+import { useQuery } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 export const useAsset = (id: Maybe<u32>) => {
   const detail = useAssetDetails(id)
@@ -25,3 +29,11 @@ export const useAsset = (id: Maybe<u32>) => {
     },
   }
 }
+
+export const useAssets = () => {
+  const tradeRouter = useTradeRouter()
+  return useQuery(QUERY_KEYS.assets, getAllAssets(tradeRouter))
+}
+
+export const getAllAssets = (tradeRouter: TradeRouter) => async () =>
+  tradeRouter.getAllAssets()

@@ -29,11 +29,13 @@ export const AssetIcon: FC<AssetIconProps> = ({
 )
 
 export function getAssetLogo(assetName: string | null | undefined) {
-  if (assetName === "AUSD") return <AUSD />
-  if (assetName === "BSX") return <BSX />
-  if (assetName === "KAR") return <KAR />
-  if (assetName === "KSM") return <KSM />
-  if (assetName === "PHA") return <PHA />
+  const name = assetName?.toUpperCase()
+
+  if (name === "AUSD") return <AUSD />
+  if (name === "BSX") return <BSX />
+  if (name === "KAR") return <KAR />
+  if (name === "KSM") return <KSM />
+  if (name === "PHA") return <PHA />
 
   return <PlaceholderIcon width={32} height={32} />
 }
