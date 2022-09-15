@@ -14,17 +14,4 @@ export const TRADING_FEE = new BN(3).div(new BN(1000))
 // block time in seconds
 export const BLOCK_TIME = new BN(12)
 
-// TODO: temporary values
-export const DOLLAR_RATES = new Map([
-  ["BSX", new BN(0.00015843)],
-  ["Basilisk", new BN(0.00015843)],
-  ["KSM", new BN(46.52)],
-  ["Kusama", new BN(46.52)],
-  ["AUSD", new BN(0.933333)],
-  ["aUSD", new BN(0.933333)],
-  ["Acala USD", new BN(0.933333)],
-  ["PHA", new BN(0.099127)],
-  ["Phala", new BN(0.099127)],
-])
-
 export const AUSD_NAME = "AUSD"

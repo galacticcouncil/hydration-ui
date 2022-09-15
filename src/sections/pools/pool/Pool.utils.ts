@@ -1,7 +1,7 @@
 import { useAssetMeta } from "api/assetMeta"
 import { useAssetDetails } from "api/assetDetails"
 import { useMemo } from "react"
-import { AUSD_NAME, BN_0, BN_10, TRADING_FEE } from "utils/constants"
+import { AUSD_NAME, BN_0, TRADING_FEE } from "utils/constants"
 import { useExchangeFee } from "api/exchangeFee"
 import { AccountId32 } from "@polkadot/types/interfaces/runtime"
 import { u32 } from "@polkadot/types"
@@ -28,8 +28,8 @@ export const usePoolData = ({ id, assetA, assetB }: Props) => {
   const assetADetails = useAssetDetails(assetA)
   const assetBDetails = useAssetDetails(assetB)
 
-  const assetABalance = useTokenBalance(assetA, id.toHuman())
-  const assetBBalance = useTokenBalance(assetB, id.toHuman())
+  const assetABalance = useTokenBalance(assetA, id)
+  const assetBBalance = useTokenBalance(assetB, id)
 
   const spotAtoAUSD = useSpotPrice(assetA, aUSD)
   const spotBtoAUSD = useSpotPrice(assetB, aUSD)
@@ -44,12 +44,14 @@ export const usePoolData = ({ id, assetA, assetB }: Props) => {
     assetBDetails,
     assetABalance,
     assetBBalance,
+    spotAtoAUSD,
+    spotBtoAUSD,
     exchangeFee,
   ]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (isLoading) return undefined
+    if (queries.some((q) => !q.data)) return undefined
 
     const assetA = {
       meta: assetAMeta.data?.data,
@@ -73,12 +75,8 @@ export const usePoolData = ({ id, assetA, assetB }: Props) => {
 
     const tradingFee = exchangeFee.data ?? TRADING_FEE
 
-    const AtoAUSD = spotAtoAUSD.data?.amount.div(
-      BN_10.pow(spotAtoAUSD.data?.decimals),
-    )
-    const BtoAUSD = spotBtoAUSD.data?.amount.div(
-      BN_10.pow(spotBtoAUSD.data?.decimals),
-    )
+    const AtoAUSD = spotAtoAUSD.data?.spotPrice
+    const BtoAUSD = spotBtoAUSD.data?.spotPrice
 
     const totalA = balanceA.times(AtoAUSD ?? BN_0)
     const totalB = balanceB.times(BtoAUSD ?? BN_0)
@@ -98,12 +96,14 @@ export const usePoolData = ({ id, assetA, assetB }: Props) => {
 
     return { assetA, assetB, tradingFee, totalValue }
   }, [
-    assetABalance.data,
-    assetADetails.data,
     assetAMeta.data,
-    assetBBalance.data,
-    assetBDetails.data,
     assetBMeta.data,
+    assetADetails.data,
+    assetBDetails.data,
+    assetABalance.data,
+    assetBBalance.data,
+    spotAtoAUSD.data,
+    spotBtoAUSD.data,
     exchangeFee.data,
     isLoading,
   ])
