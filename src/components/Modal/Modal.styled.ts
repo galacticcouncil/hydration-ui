@@ -2,8 +2,20 @@ import { DialogContent } from "@radix-ui/react-dialog"
 import { SizeProps } from "utils/styles"
 import { IconButton } from "components/IconButton/IconButton"
 import { GradientText } from "components/Typography/GradientText/GradientText"
-import styled from "styled-components"
+import styled, { keyframes } from "styled-components"
 import { theme } from "theme"
+
+const fadeInKeyframes = keyframes`
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+`
 
 export const ModalWindow = styled(DialogContent)<Pick<SizeProps, "width">>`
   background: ${theme.colors.backgroundGray900};
@@ -22,7 +34,9 @@ export const ModalWindow = styled(DialogContent)<Pick<SizeProps, "width">>`
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-  } ;
+  }
+
+  animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) ${fadeInKeyframes};
 `
 
 export const ModalTitle = styled(GradientText)`

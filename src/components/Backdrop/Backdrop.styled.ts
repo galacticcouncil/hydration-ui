@@ -11,6 +11,6 @@ export const SBackdrop = styled.div`
   align-items: center;
   justify-content: center;
   z-index: ${theme.zIndices.backdrop};
-  background: rgba(${theme.rgbColors.black}, 0.05);
+  background: rgba(${theme.rgbColors.black}, 0.2);
   backdrop-filter: blur(7px);
 `
