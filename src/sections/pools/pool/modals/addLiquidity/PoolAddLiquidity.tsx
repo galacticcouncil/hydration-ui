@@ -18,10 +18,11 @@ import { useStore } from "state/store"
 import { useMath } from "utils/math"
 import { useTokenBalance } from "api/balances"
 import { useTotalIssuance } from "api/totalIssuance"
-import { BN_100 } from "utils/constants"
+import { BN_1, BN_100 } from "utils/constants"
 import { useAsset } from "api/asset"
 import { usePoolShareToken } from "api/pools"
 import { useExchangeFee } from "api/exchangeFee"
+import { useSpotPrice } from "../../../../../api/spotPrice"
 
 type Props = PoolConfig & {
   isOpen: boolean
@@ -59,6 +60,7 @@ export const PoolAddLiquidity: FC<Props> = ({
   const assetAReserve = useTokenBalance(assetA, id)
 
   const { xyk } = useMath()
+  const { data: spotPriceData } = useSpotPrice(assetA, assetB)
 
   const calculatedShares =
     xyk &&
@@ -132,9 +134,9 @@ export const PoolAddLiquidity: FC<Props> = ({
         onChange={setInputAssetA}
       />
       <PoolAddLiquidityConversion
-        firstValue={{ amount: 1, currency: dataAssetA.asset?.name ?? "" }}
+        firstValue={{ amount: BN_1, currency: dataAssetA.asset?.name ?? "" }}
         secondValue={{
-          amount: 0.000123,
+          amount: spotPriceData?.spotPrice ?? BN_1,
           currency: dataAssetB.asset?.name ?? "",
         }}
       />

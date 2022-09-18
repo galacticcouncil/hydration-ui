@@ -3,12 +3,13 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { formatNum } from "utils/formatting"
 import { SContainer } from "./PoolAddLiquidityConversion.styled"
+import { getDecimalAmount } from "utils/balance"
+import BigNumber from "bignumber.js"
 
 type Props = {
-  firstValue: { amount: number; currency: string }
-  secondValue: { amount: number; currency: string }
+  firstValue: { amount: BigNumber; currency: string }
+  secondValue: { amount: BigNumber; currency: string }
 }
 
 export const PoolAddLiquidityConversion: FC<Props> = ({
@@ -24,11 +25,11 @@ export const PoolAddLiquidityConversion: FC<Props> = ({
           {t("pools.addLiquidity.modal.conversion.price")}
         </Text>
         <Text fs={11} lh={15} color="primary300">
-          {formatNum(firstValue.amount) + " " + firstValue.currency}
+          {getDecimalAmount(firstValue.amount, 0) + " " + firstValue.currency}
         </Text>
         <Text>=</Text>
         <Text fs={11} lh={15}>
-          {formatNum(secondValue.amount) + " " + secondValue.currency}
+          {getDecimalAmount(secondValue.amount, 0) + " " + secondValue.currency}
         </Text>
       </SContainer>
     </Box>
