@@ -14,6 +14,7 @@ import {
 import { u32 } from "@polkadot/types"
 
 type Props = {
+  name: string
   asset: u32
   balance: string
   usd: number
@@ -24,6 +25,7 @@ type Props = {
 } & MarginProps
 
 export const PoolAddLiquidityAssetSelect: FC<Props> = ({
+  name,
   value,
   onChange,
   asset,
@@ -68,7 +70,7 @@ export const PoolAddLiquidityAssetSelect: FC<Props> = ({
         </SSelectAssetButton>
         <AssetInput
           value={value}
-          name="amount"
+          name={name}
           label={t("selectAsset.input.label")}
           onChange={onChange}
           dollars="1234 USD"

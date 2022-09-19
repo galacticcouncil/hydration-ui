@@ -1,7 +1,12 @@
 import { MarginProps, SizeProps } from "utils/styles"
-import { Label } from "components/Label/Label"
 import React, { FC } from "react"
-import { InputWrapper, SInput } from "./AssetInput.styled"
+import {
+  SDollars,
+  SInput,
+  SInputWrapper,
+  SLabelWrapper,
+  SUnit,
+} from "./AssetInput.styled"
 
 export type AssetInputProps = {
   value: string
@@ -28,29 +33,23 @@ export const AssetInput: FC<AssetInputProps> = ({
   ...p
 }) => {
   return (
-    <>
-      <Label
-        id={name}
-        label={label}
-        error={p.error}
-        withLabel={withLabel}
-        {...p}
-      >
-        <InputWrapper dollars={p.dollars} unit={p.unit}>
-          <SInput
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              if (e.target.validity.valid) {
-                onChange(e.target.value.replace(/,/g, "."))
-              }
-            }}
-            value={value ?? ""}
-            id={name}
-            type={type}
-            error={p.error}
-            placeholder={placeholder}
-          />
-        </InputWrapper>
-      </Label>
-    </>
+    <SLabelWrapper htmlFor={name} error={p.error}>
+      <SInputWrapper>
+        <SInput
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            if (e.target.validity.valid) {
+              onChange(e.target.value.replace(/,/g, "."))
+            }
+          }}
+          value={value ?? ""}
+          id={name}
+          type={type}
+          placeholder={placeholder}
+        />
+
+        <SUnit>{p.unit}</SUnit>
+      </SInputWrapper>
+      <SDollars>{`≈  ${p.dollars}`}</SDollars>
+    </SLabelWrapper>
   )
 }

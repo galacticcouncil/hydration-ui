@@ -166,6 +166,7 @@ export const PoolAddLiquidity: FC<Props> = ({
       onClose={onClose}
     >
       <PoolAddLiquidityAssetSelect
+        name="assetA"
         asset={assetA}
         balance={getFullDisplayBalance(
           dataAssetA.balance,
@@ -187,6 +188,7 @@ export const PoolAddLiquidity: FC<Props> = ({
         }}
       />
       <PoolAddLiquidityAssetSelect
+        name="assetB"
         asset={assetB}
         balance={getFullDisplayBalance(
           dataAssetB.balance,
