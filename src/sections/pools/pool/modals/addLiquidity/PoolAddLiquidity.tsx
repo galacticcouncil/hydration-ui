@@ -58,9 +58,55 @@ export const PoolAddLiquidity: FC<Props> = ({
 
   const shareIssuance = useTotalIssuance(shareTokenId)
   const assetAReserve = useTokenBalance(assetA, id)
+  const assetBReserve = useTokenBalance(assetB, id)
 
   const { xyk } = useMath()
   const { data: spotPriceData } = useSpotPrice(assetA, assetB)
+
+  const handleChangeAssetAInput = (value: string) => {
+    if (assetAReserve.data && assetBReserve.data && xyk) {
+      const parsedValue = getDecimalAmount(
+        new BigNumber(value),
+        dataAssetA?.asset?.decimals?.toNumber(),
+      )
+      const calculatedAmount = xyk.calculate_liquidity_in(
+        assetAReserve.data.balance.toFixed(),
+        assetBReserve.data.balance.toFixed(),
+        parsedValue.toFixed(),
+      )
+      setInputAssetB(
+        getFullDisplayBalance(
+          new BigNumber(calculatedAmount),
+          dataAssetB.asset?.decimals?.toNumber(),
+          2,
+        ),
+      )
+    }
+    setInputAssetA(value)
+  }
+
+  const handleChangeAssetBInput = (value: string) => {
+    if (assetAReserve.data && assetBReserve.data && xyk) {
+      const parsedValue = getDecimalAmount(
+        new BigNumber(value),
+        dataAssetB?.asset?.decimals?.toNumber(),
+      )
+      const calculatedAmount = xyk.calculate_liquidity_in(
+        assetBReserve.data.balance.toFixed(),
+        assetAReserve.data.balance.toFixed(),
+        parsedValue.toFixed(),
+      )
+
+      setInputAssetA(
+        getFullDisplayBalance(
+          new BigNumber(calculatedAmount),
+          dataAssetA.asset?.decimals?.toNumber(),
+          2,
+        ),
+      )
+    }
+    setInputAssetB(value)
+  }
 
   const calculatedShares =
     xyk &&
@@ -131,7 +177,7 @@ export const PoolAddLiquidity: FC<Props> = ({
         currency={{ short: dataAssetA.asset?.name ?? "", full: "Sakura" }}
         assetIcon={getAssetLogo(dataAssetA.asset?.symbol?.toString())}
         value={inputAssetA}
-        onChange={setInputAssetA}
+        onChange={handleChangeAssetAInput}
       />
       <PoolAddLiquidityConversion
         firstValue={{ amount: BN_1, currency: dataAssetA.asset?.name ?? "" }}
@@ -151,7 +197,7 @@ export const PoolAddLiquidity: FC<Props> = ({
         currency={{ short: dataAssetB.asset?.name ?? "", full: "Basilisk" }}
         assetIcon={getAssetLogo(dataAssetB.asset?.symbol?.toString())}
         value={inputAssetB}
-        onChange={setInputAssetB}
+        onChange={handleChangeAssetBInput}
       />
 
       <Row
