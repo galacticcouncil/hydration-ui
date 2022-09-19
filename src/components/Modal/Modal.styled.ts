@@ -17,6 +17,15 @@ const fadeInKeyframes = keyframes`
   }
 `
 
+export const ModalContainer = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: ${theme.zIndices.backdrop};
+`
+
 export const ModalWindow = styled(DialogContent)<Pick<SizeProps, "width">>`
   background: ${theme.colors.backgroundGray900};
   height: 100vh;

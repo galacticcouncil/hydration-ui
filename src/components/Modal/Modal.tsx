@@ -5,6 +5,7 @@ import {
   ModalBody,
   IconsWrapper,
   CloseButton,
+  ModalContainer,
 } from "./Modal.styled"
 import { Backdrop } from "components/Backdrop/Backdrop"
 import { IconButton } from "components/IconButton/IconButton"
@@ -34,30 +35,32 @@ export const Modal: FC<PropsWithChildren<Props>> = ({
   return (
     <Dialog open={open}>
       <DialogPortal>
-        <Backdrop />
-        <ModalWindow width={width} onEscapeKeyDown={onClose}>
-          <IconsWrapper>
-            {!!secondaryIcon && (
-              <IconButton
-                icon={secondaryIcon.icon}
-                onClick={secondaryIcon.onClick}
-                name={secondaryIcon.name}
-              />
-            )}
-            {!withoutClose && (
-              <CloseButton
-                icon={<CrossIcon />}
-                onClick={onClose}
-                name={t("modal.closeButton.name")}
-              />
-            )}
-          </IconsWrapper>
-          <ModalBody>
-            <ModalTitle>{title}</ModalTitle>
-            {children}
-          </ModalBody>
-          <DialogDescription />
-        </ModalWindow>
+        <ModalContainer>
+          <Backdrop />
+          <ModalWindow width={width} onEscapeKeyDown={onClose}>
+            <IconsWrapper>
+              {!!secondaryIcon && (
+                <IconButton
+                  icon={secondaryIcon.icon}
+                  onClick={secondaryIcon.onClick}
+                  name={secondaryIcon.name}
+                />
+              )}
+              {!withoutClose && (
+                <CloseButton
+                  icon={<CrossIcon />}
+                  onClick={onClose}
+                  name={t("modal.closeButton.name")}
+                />
+              )}
+            </IconsWrapper>
+            <ModalBody>
+              <ModalTitle>{title}</ModalTitle>
+              {children}
+            </ModalBody>
+            <DialogDescription />
+          </ModalWindow>
+        </ModalContainer>
       </DialogPortal>
     </Dialog>
   )
