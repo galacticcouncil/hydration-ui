@@ -57,18 +57,27 @@ export const useAPR = (poolId: AccountId32) => {
         .dividedToIntegerBy(blocksPerPeriod)
       const blockTime = BLOCK_TIME
       const multiplier = yieldFarm.multiplier.toBigNumber().div(BN_QUINTILL)
+      const secondsPerYear = new BN(secondsInYear)
+      const periodsPerYear = secondsPerYear.div(
+        blockTime.times(blocksPerPeriod),
+      )
 
-      const globalRewardPerPeriod = getGlobalRewardPerPeriod(
-        totalSharesZ,
-        yieldPerPeriod,
-        maxRewardPerPeriod,
-      )
-      const poolYieldPerPeriod = getPoolYieldPerPeriod(
-        globalRewardPerPeriod,
-        multiplier,
-        totalSharesZ,
-      )
-      const apr = getAPR(poolYieldPerPeriod, blockTime, blocksPerPeriod)
+      let apr
+      if (totalSharesZ.isZero()) {
+        apr = yieldPerPeriod.times(multiplier).times(periodsPerYear)
+      } else {
+        const globalRewardPerPeriod = getGlobalRewardPerPeriod(
+          totalSharesZ,
+          yieldPerPeriod,
+          maxRewardPerPeriod,
+        )
+        const poolYieldPerPeriod = getPoolYieldPerPeriod(
+          globalRewardPerPeriod,
+          multiplier,
+          totalSharesZ,
+        )
+        apr = poolYieldPerPeriod.times(periodsPerYear)
+      }
 
       // max distribution of rewards
       // https://www.notion.so/Screen-elements-mapping-Farms-baee6acc456542ca8d2cccd1cc1548ae?p=4a2f16a9f2454095945dbd9ce0eb1b6b&pm=s
@@ -136,15 +145,4 @@ export const getPoolYieldPerPeriod = (
   totalSharesZ: BN,
 ) => {
   return globalRewardPerPeriod.times(multiplier).div(totalSharesZ)
-}
-
-export const getAPR = (
-  poolYieldPerPeriod: BN,
-  blockTime: BN,
-  blocksPerPeriod: BN,
-) => {
-  const secondsPerYear = new BN(secondsInYear)
-  const periodsPerYear = secondsPerYear.div(blockTime.times(blocksPerPeriod))
-
-  return poolYieldPerPeriod.times(periodsPerYear)
 }
