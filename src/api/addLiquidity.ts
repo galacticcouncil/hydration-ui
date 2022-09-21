@@ -17,7 +17,6 @@ export function useAddLiquidity(assetA: string, assetB: string) {
 
   const { data: paymentInfoData } = usePaymentInfo(
     api.tx.xyk.addLiquidity(assetA, assetB, "0", "0"),
-    account?.address,
   )
 
   const handleAddLiquidity = useCallback(

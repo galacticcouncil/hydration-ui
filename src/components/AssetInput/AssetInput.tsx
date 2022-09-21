@@ -19,6 +19,7 @@ export type AssetInputProps = {
   placeholder?: string
   error?: string
   withLabel?: boolean
+  className?: string
 } & SizeProps &
   MarginProps
 
@@ -30,10 +31,11 @@ export const AssetInput: FC<AssetInputProps> = ({
   placeholder,
   name,
   withLabel,
+  className,
   ...p
 }) => {
   return (
-    <SLabelWrapper htmlFor={name} error={p.error}>
+    <SLabelWrapper className={className} htmlFor={name} error={p.error}>
       <SInputWrapper>
         <SInput
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,9 +49,9 @@ export const AssetInput: FC<AssetInputProps> = ({
           placeholder={placeholder}
         />
 
-        <SUnit>{p.unit}</SUnit>
+        {p.unit && <SUnit>{p.unit}</SUnit>}
       </SInputWrapper>
-      <SDollars>{`≈  ${p.dollars}`}</SDollars>
+      {p.dollars && <SDollars>{`≈  ${p.dollars}`}</SDollars>}
     </SLabelWrapper>
   )
 }

@@ -2,6 +2,7 @@ import { margins, size } from "utils/styles"
 import styled, { css } from "styled-components"
 import { theme } from "theme"
 import { ButtonProps } from "./Button"
+import { Spinner } from "components/Spinner/Spinner.styled"
 
 export const SButton = styled.button<ButtonProps>`
   border-radius: 9999px;
@@ -113,10 +114,29 @@ export const SButton = styled.button<ButtonProps>`
       : ``};
 
   ${(p) =>
+    p.variant === "transparent"
+      ? css`
+          background: transparent;
+          color: ${theme.colors.primary450};
+        `
+      : ``}
+
+  ${(p) =>
     p.capitalize &&
     css`
       text-transform: capitalize;
     `}
   ${size};
   ${margins};
+`
+
+export const SContent = styled.span`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+`
+
+export const SSpinner = styled(Spinner)`
+  margin-left: -4px;
 `

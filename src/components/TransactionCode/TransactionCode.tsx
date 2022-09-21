@@ -32,6 +32,12 @@ export const TransactionCode = (props: ReactJsonViewProps) => (
     style={{
       fontFamily: "SatoshiVariable",
       fontSize: "12px",
+
+      padding: "20px 30px",
+      position: "relative",
+      left: -30,
+      right: -30,
+      width: "calc(100% + 30px * 2)",
     }}
   />
 )
