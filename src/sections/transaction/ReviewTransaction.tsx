@@ -10,6 +10,7 @@ import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionError } from "./ReviewTransactionError"
 import { ReviewTransactionForm } from "./ReviewTransactionForm"
+import { useApiPromise } from "utils/network"
 
 type Props = {
   onCancel: () => void
@@ -18,13 +19,25 @@ type Props = {
 
 export const ReviewTransaction: React.FC<Props> = (props) => {
   const { t } = useTranslation()
+  const api = useApiPromise()
 
   const sendTx = useMutation(async (sign: SubmittableExtrinsic<"promise">) => {
     return await new Promise((resolve, reject) => {
       sign.send((self) => {
         if (self.isCompleted) {
           if (self.dispatchError) {
-            reject(self.dispatchError)
+            let errorMessage = self.dispatchError.toString()
+
+            if (self.dispatchError.isModule) {
+              const decoded = api.registry.findMetaError(
+                self.dispatchError.asModule,
+              )
+              errorMessage = `${decoded.section}.${
+                decoded.method
+              }: ${decoded.docs.join(" ")}`
+            }
+
+            reject(new Error(errorMessage))
           } else {
             resolve(self.txHash)
           }
