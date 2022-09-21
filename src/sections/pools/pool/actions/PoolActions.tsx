@@ -11,9 +11,11 @@ import { useTranslation } from "react-i18next"
 import { PoolAddLiquidity } from "sections/pools/pool/modals/addLiquidity/PoolAddLiquidity"
 import { PoolRemoveLiquidity } from "sections/pools/pool/modals/removeLiquidity/PoolRemoveLiquidity"
 import { PoolJoinFarm } from "sections/pools/pool/modals/joinFarm/PoolJoinFarm"
-import { PoolConfig } from "../Pool"
+import { PoolBase } from "@galacticcouncil/sdk"
 
-export const PoolActions: FC<PoolConfig> = ({ hasJoinedFarms, ...props }) => {
+type Props = { pool: PoolBase; hasJoinedFarms?: boolean }
+
+export const PoolActions: FC<Props> = ({ pool, hasJoinedFarms }) => {
   const { t } = useTranslation()
 
   const [openAdd, setOpenAdd] = useState(false)
@@ -57,16 +59,16 @@ export const PoolActions: FC<PoolConfig> = ({ hasJoinedFarms, ...props }) => {
       <PoolAddLiquidity
         isOpen={openAdd}
         onClose={() => setOpenAdd(false)}
-        {...props}
+        pool={pool}
       />
       <PoolRemoveLiquidity
         isOpen={openRemove}
         onClose={() => setOpenRemove(false)}
       />
       <PoolJoinFarm
-        ammId={props.id}
-        assetA={props.assetA}
-        assetB={props.assetB}
+        poolId={pool.address}
+        assetA={pool.tokens[0]}
+        assetB={pool.tokens[1]}
         isOpen={openFarms}
         onClose={() => setOpenFarms(false)}
         onSelect={() => {

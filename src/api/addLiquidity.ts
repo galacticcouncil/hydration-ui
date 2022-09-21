@@ -6,11 +6,11 @@ import { u32 } from "@polkadot/types"
 import { usePaymentInfo } from "./transaction"
 
 interface AddLiquidityAsset {
-  id: u32
+  id: string
   amount: BigNumber
 }
 
-export function useAddLiquidity(assetA: u32, assetB: u32) {
+export function useAddLiquidity(assetA: string, assetB: string) {
   const api = useApiPromise()
   const { account, createTransaction } = useStore()
   const [pendingTx, setPendingTx] = useState(false)

@@ -17,6 +17,7 @@ import { addSeconds } from "date-fns"
 import BN from "bignumber.js"
 import { BLOCK_TIME } from "utils/constants"
 import { useBestNumber } from "api/chain"
+import { PoolToken } from "@galacticcouncil/sdk"
 
 const PoolJoinFarmItem = (props: { farm: AprFarm; onSelect: () => void }) => {
   const asset = useAsset(props.farm.assetId)
@@ -92,26 +93,23 @@ const PoolJoinFarmItem = (props: { farm: AprFarm; onSelect: () => void }) => {
 }
 
 export const PoolJoinFarm = (props: {
-  ammId: AccountId32
-  assetA: u32
-  assetB: u32
+  poolId: string
+  assetA: PoolToken
+  assetB: PoolToken
   isOpen: boolean
   onClose: () => void
   onSelect: () => void
 }) => {
   const { t } = useTranslation()
-  const apr = useAPR(props.ammId)
-
-  const assetA = useAsset(props.assetA)
-  const assetB = useAsset(props.assetB)
+  const apr = useAPR(props.poolId)
 
   return (
     <Modal
       open={props.isOpen}
       onClose={props.onClose}
       title={t("pools.allFarms.modal.title", {
-        symbol1: assetA.data?.name,
-        symbol2: assetB.data?.name,
+        symbol1: props.assetA.symbol,
+        symbol2: props.assetB.symbol,
       })}
     >
       <Box flex column gap={8} mt={24}>

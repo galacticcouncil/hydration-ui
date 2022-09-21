@@ -15,9 +15,8 @@ import { u32 } from "@polkadot/types"
 
 type Props = {
   name: string
-  asset: u32
+  asset: u32 | string
   balance: string
-  usd: number
   currency: { short: string; full: string }
   assetIcon: ReactNode
   value: string

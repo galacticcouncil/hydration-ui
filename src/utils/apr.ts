@@ -8,7 +8,7 @@ import { useBestNumber } from "api/chain"
 
 export type AprFarm = NonNullable<ReturnType<typeof useAPR>["data"][number]>
 
-export const useAPR = (poolId: AccountId32) => {
+export const useAPR = (poolId: AccountId32 | string) => {
   const bestNumber = useBestNumber()
   const activeYieldFarms = useActiveYieldFarms(poolId)
   const globalFarms = useGlobalFarms(

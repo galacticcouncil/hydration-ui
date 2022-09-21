@@ -1,4 +1,4 @@
-import { useSdkPools } from "api/pools"
+import { usePools } from "api/pools"
 import { getBalanceAmount } from "utils/balance"
 import { AUSD_NAME, BN_0 } from "utils/constants"
 import { useMemo } from "react"
@@ -7,7 +7,7 @@ import { useAssets } from "api/asset"
 import { useSpotPrices } from "api/spotPrice"
 
 export const useTotalLiquidity = () => {
-  const pools = useSdkPools()
+  const pools = usePools()
   const assets = useAssets()
   const aUSD = assets.data?.find(
     (asset) => asset.symbol.toLowerCase() === AUSD_NAME.toLowerCase(),

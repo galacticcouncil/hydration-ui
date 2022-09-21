@@ -52,10 +52,11 @@ function getBigNumberParams(
 }
 
 function convertBigNumberToString(
-  value: BN | BigNumber | number | null | undefined,
+  value: BN | BigNumber | number | string | null | undefined,
   options: Record<string, unknown> | undefined,
 ) {
   if (value == null) return null
+  if (typeof value === "string") return value
   if (typeof value === "number") return value.toString()
   let bn: BigNumber = BN.isBigNumber(value)
     ? new BigNumber(value.toString())

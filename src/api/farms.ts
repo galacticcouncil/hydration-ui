@@ -12,7 +12,7 @@ export const useYieldFarms = (ids: FarmIds[]) => {
   })
 }
 
-export const useActiveYieldFarms = (poolId: AccountId32) => {
+export const useActiveYieldFarms = (poolId: AccountId32 | string) => {
   const api = useApiPromise()
   return useQuery(
     QUERY_KEYS.activeYieldFarms(poolId),
@@ -38,7 +38,7 @@ export const getYieldFarms = (api: ApiPromise, ids: FarmIds[]) => async () => {
 }
 
 export const getActiveYieldFarms =
-  (api: ApiPromise, poolId: AccountId32) => async () => {
+  (api: ApiPromise, poolId: AccountId32 | string) => async () => {
     const res = await api.query.warehouseLM.activeYieldFarm.entries(poolId)
 
     const data = res.map(([storageKey, data]) => {

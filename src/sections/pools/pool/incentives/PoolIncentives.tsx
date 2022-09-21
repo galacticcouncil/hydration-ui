@@ -5,7 +5,7 @@ import { PoolIncentivesRow } from "sections/pools/pool/incentives/row/PoolIncent
 import { useAPR } from "utils/apr"
 import { AccountId32 } from "@polkadot/types/interfaces/runtime"
 
-type Props = { id: AccountId32 }
+type Props = { id: string }
 
 export const PoolIncentives = ({ id }: Props) => {
   const { t } = useTranslation()

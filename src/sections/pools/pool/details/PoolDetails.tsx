@@ -3,25 +3,16 @@ import { DualAssetIcons } from "components/DualAssetIcons/DualAssetIcons"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { formatNum } from "utils/formatting"
 import { FC } from "react"
-import BN from "bignumber.js"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { PoolBase } from "@galacticcouncil/sdk"
+import { usePoolTotalValue } from "sections/pools/pool/Pool.utils"
 
-type Props = {
-  assetAName: string
-  assetBName: string
-  totalValue: BN
-  tradingFee: BN
-}
+type Props = { pool: PoolBase }
 
-export const PoolDetails: FC<Props> = ({
-  assetAName,
-  assetBName,
-  totalValue,
-  tradingFee,
-}) => {
+export const PoolDetails: FC<Props> = ({ pool }) => {
   const { t } = useTranslation()
+  const { data } = usePoolTotalValue({ pool })
 
   return (
     <Box flex column width={380}>
@@ -32,12 +23,12 @@ export const PoolDetails: FC<Props> = ({
           </Text>
           <Box flex acenter>
             <DualAssetIcons
-              firstIcon={{ icon: getAssetLogo(assetAName) }}
-              secondIcon={{ icon: getAssetLogo(assetBName) }}
+              firstIcon={{ icon: getAssetLogo(pool.tokens[0].symbol) }}
+              secondIcon={{ icon: getAssetLogo(pool.tokens[1].symbol) }}
             />
             <Box flex column gap={1}>
               <Text fw={700} color="white">
-                {assetAName}/{assetBName}
+                {pool.tokens[0].symbol}/{pool.tokens[1].symbol}
               </Text>
               <Text fs={12} lh={14} color="neutralGray500">
                 Token/Token {/*TODO*/}
@@ -50,7 +41,7 @@ export const PoolDetails: FC<Props> = ({
             {t("pools.pool.poolDetails.fee")}
           </Text>
           <Text lh={22} color="white">
-            {tradingFee.times(100).toFixed()}%
+            {t("value.percentage", { percentage: pool.tradeFee })}
           </Text>
         </Box>
       </Box>
@@ -61,7 +52,7 @@ export const PoolDetails: FC<Props> = ({
             {t("pools.pool.poolDetails.valueLocked")}
           </Text>
           <Text lh={22} color="white" fs={18}>
-            {t("value.usd", { amount: totalValue })}
+            {t("value.usd", { amount: data })}
           </Text>
         </Box>
         <Box flex column width={120} align="start">

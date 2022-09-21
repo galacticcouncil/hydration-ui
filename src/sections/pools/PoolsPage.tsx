@@ -13,8 +13,8 @@ export const PoolsPage = () => {
       <Box flex column gap={20}>
         {pools.data?.map((pool) => (
           <Pool
-            key={pool.id.toString()}
-            {...pool}
+            key={pool.address}
+            pool={pool}
             hasJoinedFarms={false}
             hasLiquidity={false}
           />

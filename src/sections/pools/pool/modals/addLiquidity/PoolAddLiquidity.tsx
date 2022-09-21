@@ -8,8 +8,6 @@ import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PoolAddLiquidityConversion } from "sections/pools/pool/modals/addLiquidity/conversion/PoolAddLiquidityConversion"
 import { PoolAddLiquidityAssetSelect } from "sections/pools/pool/modals/addLiquidity/assetSelect/PoolAddLiquidityAssetSelect"
-import { PoolConfig } from "../../Pool"
-import { useAddPoolAddLiquidity } from "./PoolAddLiquidity.utils"
 import { getDecimalAmount, getFullDisplayBalance } from "utils/balance"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { useAddLiquidity } from "api/addLiquidity"
@@ -21,53 +19,46 @@ import { useTotalIssuance } from "api/totalIssuance"
 import { BN_1, BN_100 } from "utils/constants"
 import { useAsset } from "api/asset"
 import { usePoolShareToken } from "api/pools"
-import { useExchangeFee } from "api/exchangeFee"
-import { useSpotPrice } from "../../../../../api/spotPrice"
+import { useSpotPrice } from "api/spotPrice"
+import { PoolBase } from "@galacticcouncil/sdk"
 
-type Props = PoolConfig & {
+type Props = {
   isOpen: boolean
   onClose: () => void
+  pool: PoolBase
 }
 
-export const PoolAddLiquidity: FC<Props> = ({
-  id,
-  isOpen,
-  onClose,
-  assetA,
-  assetB,
-}) => {
+export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
   const { t } = useTranslation()
 
   const { account } = useStore()
 
-  const { data: dataAssetA } = useAddPoolAddLiquidity(assetA)
-  const { data: dataAssetB } = useAddPoolAddLiquidity(assetB)
-
-  const { data: shareTokenId } = usePoolShareToken(id)
+  const { data: shareTokenId } = usePoolShareToken(pool.address)
   const { data: dataShareToken } = useAsset(shareTokenId)
 
   const [inputAssetA, setInputAssetA] = useState("0")
   const [inputAssetB, setInputAssetB] = useState("0")
 
   const { pendingTx, handleAddLiquidity, paymentInfo } = useAddLiquidity(
-    assetA,
-    assetB,
+    pool.tokens[0].id,
+    pool.tokens[1].id,
   )
 
-  const exchangeFee = useExchangeFee()
-
   const shareIssuance = useTotalIssuance(shareTokenId)
-  const assetAReserve = useTokenBalance(assetA, id)
-  const assetBReserve = useTokenBalance(assetB, id)
+  const assetAReserve = useTokenBalance(pool.tokens[0].id, pool.address)
+  const assetBReserve = useTokenBalance(pool.tokens[1].id, pool.address)
 
   const { xyk } = useMath()
-  const { data: spotPriceData } = useSpotPrice(assetA, assetB)
+  const { data: spotPriceData } = useSpotPrice(
+    pool.tokens[0].id,
+    pool.tokens[1].id,
+  )
 
   const handleChangeAssetAInput = (value: string) => {
     if (assetAReserve.data && assetBReserve.data && xyk) {
       const parsedValue = getDecimalAmount(
         new BigNumber(value),
-        dataAssetA?.asset?.decimals?.toNumber(),
+        pool.tokens[0].decimals,
       )
       const calculatedAmount = xyk.calculate_liquidity_in(
         assetAReserve.data.balance.toFixed(),
@@ -77,7 +68,7 @@ export const PoolAddLiquidity: FC<Props> = ({
       setInputAssetB(
         getFullDisplayBalance(
           new BigNumber(calculatedAmount),
-          dataAssetB.asset?.decimals?.toNumber(),
+          pool.tokens[1].decimals,
           2,
         ),
       )
@@ -89,7 +80,7 @@ export const PoolAddLiquidity: FC<Props> = ({
     if (assetAReserve.data && assetBReserve.data && xyk) {
       const parsedValue = getDecimalAmount(
         new BigNumber(value),
-        dataAssetB?.asset?.decimals?.toNumber(),
+        pool.tokens[0].decimals,
       )
       const calculatedAmount = xyk.calculate_liquidity_in(
         assetBReserve.data.balance.toFixed(),
@@ -100,7 +91,7 @@ export const PoolAddLiquidity: FC<Props> = ({
       setInputAssetA(
         getFullDisplayBalance(
           new BigNumber(calculatedAmount),
-          dataAssetA.asset?.decimals?.toNumber(),
+          pool.tokens[1].decimals,
           2,
         ),
       )
@@ -113,16 +104,15 @@ export const PoolAddLiquidity: FC<Props> = ({
     assetAReserve.data &&
     shareIssuance.data &&
     dataShareToken &&
-    dataAssetA.asset &&
     new BigNumber(
       xyk.calculate_shares(
         getDecimalAmount(
           assetAReserve.data.balance,
-          dataAssetA.asset.decimals.toNumber(),
+          pool.tokens[0].decimals,
         ).toFixed(),
         getDecimalAmount(
           new BigNumber(inputAssetA),
-          dataAssetA.asset.decimals.toNumber(),
+          pool.tokens[0].decimals,
         ).toFixed(),
         getDecimalAmount(
           shareIssuance.data,
@@ -140,17 +130,17 @@ export const PoolAddLiquidity: FC<Props> = ({
     try {
       handleAddLiquidity([
         {
-          id: assetA,
+          id: pool.tokens[0].id,
           amount: getDecimalAmount(
             new BigNumber(inputAssetA),
-            dataAssetA.asset?.decimals.toNumber(),
+            pool.tokens[0].decimals,
           ),
         },
         {
-          id: assetB,
+          id: pool.tokens[1].id,
           amount: getDecimalAmount(
             new BigNumber(inputAssetB),
-            dataAssetB.asset?.decimals.toNumber(),
+            pool.tokens[1].decimals,
           ),
         },
       ])
@@ -167,44 +157,48 @@ export const PoolAddLiquidity: FC<Props> = ({
     >
       <PoolAddLiquidityAssetSelect
         name="assetA"
-        asset={assetA}
+        asset={pool.tokens[0].id}
         balance={getFullDisplayBalance(
-          dataAssetA.balance,
-          dataAssetA.asset?.decimals?.toNumber(),
-          dataAssetA.asset?.decimals?.toNumber(),
+          new BigNumber(pool.tokens[0].balance),
+          pool.tokens[0].decimals,
+          pool.tokens[0].decimals,
         )}
-        usd={2456}
         mt={16}
-        currency={{ short: dataAssetA.asset?.name ?? "", full: "Sakura" }}
-        assetIcon={getAssetLogo(dataAssetA.asset?.symbol?.toString())}
+        currency={{
+          short: pool.tokens[0].symbol,
+          full: pool.tokens[0].symbol,
+        }} /*TODO: full token name*/
+        assetIcon={getAssetLogo(pool.tokens[0].symbol)}
         value={inputAssetA}
         onChange={handleChangeAssetAInput}
       />
       <PoolAddLiquidityConversion
-        firstValue={{ amount: BN_1, currency: dataAssetA.asset?.name ?? "" }}
+        firstValue={{ amount: BN_1, currency: pool.tokens[0].symbol }}
         secondValue={{
           amount: spotPriceData?.spotPrice ?? BN_1,
-          currency: dataAssetB.asset?.name ?? "",
+          currency: pool.tokens[0].symbol,
         }}
       />
       <PoolAddLiquidityAssetSelect
         name="assetB"
-        asset={assetB}
+        asset={pool.tokens[1].id}
         balance={getFullDisplayBalance(
-          dataAssetB.balance,
-          dataAssetB.asset?.decimals?.toNumber(),
-          dataAssetB.asset?.decimals?.toNumber(),
+          new BigNumber(pool.tokens[1].balance),
+          pool.tokens[1].decimals,
+          pool.tokens[1].decimals,
         )}
-        usd={2456}
-        currency={{ short: dataAssetB.asset?.name ?? "", full: "Basilisk" }}
-        assetIcon={getAssetLogo(dataAssetB.asset?.symbol?.toString())}
+        currency={{
+          short: pool.tokens[1].symbol,
+          full: pool.tokens[1].symbol,
+        }} /*TODO: full token name*/
+        assetIcon={getAssetLogo(pool.tokens[1].symbol)}
         value={inputAssetB}
         onChange={handleChangeAssetBInput}
       />
 
       <Row
         left={t("pools.addLiquidity.modal.row.tradeFee")}
-        right={`${exchangeFee.data?.times(100).toFixed()}%`}
+        right={t("value.percentage", { percentage: pool.tradeFee })}
       />
       <Separator />
       <Row
@@ -215,12 +209,12 @@ export const PoolAddLiquidity: FC<Props> = ({
               <Text mr={4}>
                 {t("pools.addLiquidity.modal.row.transactionCostValue", {
                   amount: {
-                    value: new BigNumber(paymentInfo.partialFee.toHex()),
+                    value: paymentInfo.partialFee.toBigNumber(),
                     displayDecimals: 2,
                   },
                 })}
               </Text>
-              <Text color="primary400">(2%)</Text>
+              {/*<Text color="primary400">(2%)</Text>*/} {/*TODO*/}
             </>
           )
         }

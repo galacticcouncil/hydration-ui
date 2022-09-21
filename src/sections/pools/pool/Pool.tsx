@@ -6,37 +6,24 @@ import { PoolClaim } from "sections/pools/pool/claim/PoolClaim"
 import { Box } from "components/Box/Box"
 import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
 import { PoolShares } from "sections/pools/pool/shares/PoolShares"
-import { usePoolData } from "sections/pools/pool/Pool.utils"
-import { AccountId32 } from "@polkadot/types/interfaces/runtime"
-import { u32 } from "@polkadot/types"
+import { PoolBase } from "@galacticcouncil/sdk"
 
-export interface PoolConfig {
-  id: AccountId32
-  assetA: u32
-  assetB: u32
+type Props = {
+  pool: PoolBase
   hasJoinedFarms?: boolean
   hasLiquidity?: boolean
 }
 
-export const Pool: FC<PoolConfig> = (props) => {
-  const { data } = usePoolData(props)
-
+export const Pool: FC<Props> = ({ pool, hasJoinedFarms, hasLiquidity }) => {
   return (
     <SContainer>
       <Box flex spread p="24px 24px 0" gap={10}>
-        {data && (
-          <PoolDetails
-            assetAName={data.assetA.details?.name ?? "?"}
-            assetBName={data.assetB.details?.name ?? "?"}
-            totalValue={data.totalValue}
-            tradingFee={data.tradingFee}
-          />
-        )}
-        <PoolIncentives id={props.id} />
-        <PoolActions {...props} />
+        <PoolDetails pool={pool} />
+        <PoolIncentives id={pool.address} />
+        <PoolActions pool={pool} hasJoinedFarms={hasJoinedFarms} />
       </Box>
-      {props.hasLiquidity && <PoolShares />}
-      {props.hasJoinedFarms && <PoolClaim />}
+      {hasLiquidity && <PoolShares />}
+      {hasJoinedFarms && <PoolClaim />}
     </SContainer>
   )
 }
