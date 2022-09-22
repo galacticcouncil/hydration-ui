@@ -1,10 +1,12 @@
 import create from "zustand"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
+import type { ProviderType } from "sections/wallet/connect/modal/WalletConnectModal.utils"
 
-interface Account {
+export interface Account {
   name: string
   address: AccountId32 | string
+  provider: ProviderType
 }
 
 export interface Transaction {
@@ -15,7 +17,7 @@ export interface Transaction {
 
 interface Store {
   account?: Account
-  setAccount: (account: Account) => void
+  setAccount: (account: Account | undefined) => void
   transactions?: Transaction[]
   createTransaction: (transaction: Transaction) => void
   cancelTransaction: (hash: string) => void

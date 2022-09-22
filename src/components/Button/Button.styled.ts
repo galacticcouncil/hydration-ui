@@ -140,3 +140,19 @@ export const SContent = styled.span`
 export const SSpinner = styled(Spinner)`
   margin-left: -4px;
 `
+
+export const SButtonTransparent = styled.button`
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  &[disabled] {
+    cursor: unset;
+  }
+`

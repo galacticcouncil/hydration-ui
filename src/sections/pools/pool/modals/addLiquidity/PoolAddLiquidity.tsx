@@ -264,7 +264,7 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
           onClick={handleSubmit}
         />
       ) : (
-        <WalletConnectButton mt={30} fullWidth />
+        <WalletConnectButton css={{ marginTop: 30, width: "100%" }} />
       )}
     </Modal>
   )

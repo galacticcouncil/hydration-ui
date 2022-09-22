@@ -99,5 +99,7 @@
   "walletConnect.accountSelect.asset.parachain": "Kurama",
   "walletConnect.accountSelect.asset.network": "Basilisk",
   "walletConnect.pending.title": "Waiting for Authorization",
-  "walletConnect.pending.description": "Please sign into {{name}} to connect to Basilisk"
+  "walletConnect.pending.description": "Please sign into {{name}} to connect to Basilisk",
+  "walletConnect.logout": "Log Out",
+  "walletConnect.switch": "Switch"
 }

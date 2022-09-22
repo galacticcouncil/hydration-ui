@@ -3,6 +3,7 @@ import { ReactComponent as BasiliskIcon } from "./icons/BasiliskIcon.svg"
 
 import { ReactComponent as ChevronRight } from "./icons/ChevronRight.svg"
 import { ReactComponent as ChevronDown } from "./icons/ChevronDown.svg"
+import { ReactComponent as ChevronDownSmall } from "./icons/ChevronDownSmall.svg"
 
 import { ReactComponent as CrossIcon } from "./icons/CrossIcon.svg"
 
@@ -33,6 +34,7 @@ export const Icons = () => (
     <div>
       <ChevronRight />
       <ChevronDown />
+      <ChevronDownSmall />
       <CrossIcon />
       <DownloadIcon />
       <LinkIcon />

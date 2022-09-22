@@ -3,6 +3,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Box } from "components/Box/Box"
 import Identicon from "@polkadot/react-identicon"
 import { FC } from "react"
+import { shortenAccountAddress } from "utils/account"
 
 type Props = {
   name: string
@@ -16,7 +17,15 @@ export const WalletConnectAccountSelectAddress: FC<Props> = ({
   onClick,
 }) => {
   return (
-    <Box flex align="center" gap={10} pb={12} pt={12} onClick={onClick}>
+    <Box
+      flex
+      align="center"
+      gap={10}
+      onClick={onClick}
+      css={css`
+        position: relative;
+      `}
+    >
       <Box
         flex
         align="center"
@@ -44,14 +53,14 @@ export const WalletConnectAccountSelectAddress: FC<Props> = ({
         <Text
           fw={600}
           fs={14}
-          color="neutralGray300"
           css={css`
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            color: var(--secondary-color);
           `}
         >
-          {address}
+          {shortenAccountAddress(address, 12)}
         </Text>
       </Box>
     </Box>

@@ -3,26 +3,18 @@ import { Text } from "components/Typography/Text/Text"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Box } from "components/Box/Box"
 import { Spinner } from "components/Spinner/Spinner.styled"
-import { ReactComponent as PolkadotLogo } from "assets/icons/PolkadotLogo.svg"
-import { ReactComponent as TalismanLogo } from "assets/icons/TalismanLogo.svg"
-import { ProviderType } from "sections/wallet/connect/modal/WalletConnectModal.utils"
+import {
+  getProviderMeta,
+  ProviderType,
+} from "sections/wallet/connect/modal/WalletConnectModal.utils"
 import { useTranslation } from "react-i18next"
-import { FC, ReactNode } from "react"
+import { FC } from "react"
 
 type Props = { provider: ProviderType }
 
 export const WalletConnectConfirmPending: FC<Props> = ({ provider }) => {
   const { t } = useTranslation("translation")
-
-  let name: string | null = null
-  let logo: ReactNode | null = null
-  if (provider === "polkadot-js") {
-    name = "Polkadot"
-    logo = <PolkadotLogo width={48} height={48} />
-  } else if (provider === "talisman") {
-    name = "Talisman"
-    logo = <TalismanLogo width={48} height={48} />
-  }
+  const { name, logo } = getProviderMeta(provider, { size: 48 })
 
   return (
     <Box flex align="center" column>

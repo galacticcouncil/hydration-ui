@@ -1,7 +1,18 @@
 import { MarginProps, SizeProps } from "utils/styles"
 import { Link } from "components/Link/Link"
-import { FC, ReactNode, SyntheticEvent } from "react"
-import { SButton, SContent, SSpinner } from "./Button.styled"
+import {
+  ComponentProps,
+  FC,
+  forwardRef,
+  ReactNode,
+  SyntheticEvent,
+} from "react"
+import {
+  SButton,
+  SButtonTransparent,
+  SContent,
+  SSpinner,
+} from "./Button.styled"
 
 export type ButtonProps = {
   variant?: "primary" | "secondary" | "gradient" | "transparent"
@@ -44,3 +55,10 @@ export const Button: FC<ButtonProps> = ({
   if (props.to) return <Link to={props.to}>{element}</Link>
   return element
 }
+
+export const ButtonTransparent = forwardRef<
+  HTMLButtonElement,
+  ComponentProps<typeof SButtonTransparent>
+>((props, ref) => {
+  return <SButtonTransparent ref={ref} type="button" {...props} />
+})
