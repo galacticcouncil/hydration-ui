@@ -8,7 +8,7 @@ import {
 import { Box } from "components/Box/Box"
 import { Text } from "components/Typography/Text/Text"
 import { FillBar } from "components/FillBar/FillBar"
-import { ChevronDown } from "assets/icons/ChevronDown"
+import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
 import { AprFarm, useAPR } from "utils/apr"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { useAsset } from "api/asset"

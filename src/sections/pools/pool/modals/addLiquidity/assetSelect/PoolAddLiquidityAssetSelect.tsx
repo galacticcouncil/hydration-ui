@@ -1,4 +1,4 @@
-import { ChevronDown } from "assets/icons/ChevronDown"
+import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
 import { MarginProps } from "utils/styles"
 import { AssetInput } from "components/AssetInput/AssetInput"
 import { Box } from "components/Box/Box"

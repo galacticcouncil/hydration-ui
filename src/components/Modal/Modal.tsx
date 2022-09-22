@@ -9,7 +9,7 @@ import {
 } from "./Modal.styled"
 import { Backdrop } from "components/Backdrop/Backdrop"
 import { IconButton } from "components/IconButton/IconButton"
-import { CrossIcon } from "assets/icons/CrossIcon"
+import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
 import { Dialog, DialogDescription, DialogPortal } from "@radix-ui/react-dialog"
 import { useTranslation } from "react-i18next"
 import { SizeProps } from "utils/styles"

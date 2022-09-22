@@ -1,4 +1,4 @@
-import { FarmIcon } from "assets/icons/FarmIcon"
+import { ReactComponent as FarmIcon } from "assets/icons/FarmIcon.svg"
 import { Box } from "components/Box/Box"
 import { Icon } from "components/Icon/Icon"
 import { GradientText } from "components/Typography/GradientText/GradientText"

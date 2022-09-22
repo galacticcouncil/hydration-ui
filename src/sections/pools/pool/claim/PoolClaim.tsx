@@ -1,4 +1,4 @@
-import { FlagIcon } from "assets/icons/FlagIcon"
+import { ReactComponent as FlagIcon } from "assets/icons/FlagIcon.svg"
 import { Box } from "components/Box/Box"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"

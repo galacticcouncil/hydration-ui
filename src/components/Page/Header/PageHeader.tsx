@@ -1,6 +1,6 @@
 import { css } from "styled-components"
 import { BasiliskIcon } from "assets/icons/tokens/BasiliskIcon"
-import { BasiliskLogo } from "assets/icons/BasiliskLogo"
+import { ReactComponent as BasiliskLogo } from "assets/icons/BasiliskLogo.svg"
 import { Box } from "components/Box/Box"
 import { Icon } from "components/Icon/Icon"
 import { MenuList } from "./MenuList/MenuList"
