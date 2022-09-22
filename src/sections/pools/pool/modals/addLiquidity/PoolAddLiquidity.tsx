@@ -54,6 +54,16 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
     pool.tokens[1].id,
   )
 
+  const accountAssetABalance = useTokenBalance(
+    pool.tokens[0].id,
+    account?.address,
+  )
+
+  const accountAssetBBalance = useTokenBalance(
+    pool.tokens[1].id,
+    account?.address,
+  )
+
   const handleChangeAssetAInput = (value: string) => {
     if (assetAReserve.data && assetBReserve.data && xyk) {
       const parsedValue = getDecimalAmount(
@@ -138,10 +148,13 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
         },
         {
           id: pool.tokens[1].id,
+          // For some reason, when amount_b == amount_b_max_limit,
+          // the transaction fails with AssetAmountExceededLimit
+          // TODO: investiage, whether we're not doing something wrong
           amount: getDecimalAmount(
             new BigNumber(inputAssetB),
             pool.tokens[1].decimals,
-          ),
+          ).plus(1),
         },
       ])
     } catch (err) {
@@ -159,7 +172,7 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
         name="assetA"
         asset={pool.tokens[0].id}
         balance={getFullDisplayBalance(
-          new BigNumber(pool.tokens[0].balance),
+          accountAssetABalance.data?.balance,
           pool.tokens[0].decimals,
           pool.tokens[0].decimals,
         )}
@@ -183,7 +196,7 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
         name="assetB"
         asset={pool.tokens[1].id}
         balance={getFullDisplayBalance(
-          new BigNumber(pool.tokens[1].balance),
+          accountAssetBBalance.data?.balance,
           pool.tokens[1].decimals,
           pool.tokens[1].decimals,
         )}

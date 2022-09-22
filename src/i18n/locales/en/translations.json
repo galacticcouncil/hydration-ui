@@ -2,7 +2,7 @@
   "modal.closeButton.name": "Close modal button",
   "selectAsset.input.label": "Deposit amount",
   "selectAsset.title": "Select asset",
-  "selectAsset.balance": "Your balance:",
+  "selectAsset.balance": "<0>Your balance:</0> {{ balance }}",
   "selectAsset.button.max": "Max",
   "header.trade": "Trade",
   "header.pools": "Pools & Farms",

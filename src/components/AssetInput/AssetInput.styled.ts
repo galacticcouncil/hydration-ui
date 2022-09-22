@@ -6,8 +6,11 @@ export const SLabelWrapper = styled(Label)<{ error?: string }>`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  justify-content: center;
 
   padding: 7px 14px;
+
+  min-height: 54px;
 
   background: ${theme.colors.backgroundGray800};
   border-radius: 9px;
@@ -69,4 +72,12 @@ export const SInput = styled.input`
   :focus-visible {
     outline: none;
   }
+`
+
+export const SErrorMessage = styled.p`
+  color: ${theme.colors.error};
+  font-size: 12px;
+  line-height: 16px;
+  margin-top: 2px;
+  text-transform: capitalize;
 `
