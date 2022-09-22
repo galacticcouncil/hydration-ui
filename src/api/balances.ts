@@ -51,22 +51,22 @@ export const getTokenBalance =
   }
 
 export const useTokenBalance = (
-  id: string | u32,
+  id: Maybe<string | u32>,
   address: Maybe<AccountId32 | string>,
 ) => {
   const api = useApiPromise()
   const { account } = useStore()
 
   // TODO: replace later with native Polkadot types
-  const safeId = id.toString()
+  const safeId = id?.toString()
   const finalAddress = address ?? account?.address
 
   return useQuery(
     QUERY_KEYS.tokenBalance(safeId, finalAddress),
-    finalAddress != null
+    finalAddress != null && safeId != null
       ? getTokenBalance(api, finalAddress, safeId)
       : undefinedNoop,
-    { enabled: !!finalAddress },
+    { enabled: !!finalAddress && !!safeId },
   )
 }
 

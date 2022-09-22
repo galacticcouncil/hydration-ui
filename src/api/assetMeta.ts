@@ -6,7 +6,7 @@ import { u32 } from "@polkadot/types"
 import { Maybe } from "utils/types"
 import { undefinedNoop } from "utils/helpers"
 
-export const useAssetMeta = (id: Maybe<u32>) => {
+export const useAssetMeta = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
   return useQuery(
     QUERY_KEYS.assetMeta(id),
@@ -15,7 +15,7 @@ export const useAssetMeta = (id: Maybe<u32>) => {
   )
 }
 
-export const getAssetMeta = (api: ApiPromise, id: u32) => async () => {
+export const getAssetMeta = (api: ApiPromise, id: u32 | string) => async () => {
   const res = await api.query.assetRegistry.assetMetadataMap(id)
   const data = res.unwrap()
 

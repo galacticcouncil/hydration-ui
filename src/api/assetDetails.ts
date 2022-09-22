@@ -6,7 +6,7 @@ import { u32 } from "@polkadot/types"
 import { Maybe } from "utils/types"
 import { undefinedNoop } from "utils/helpers"
 
-export const useAssetDetails = (id: Maybe<u32>) => {
+export const useAssetDetails = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
 
   return useQuery(
@@ -16,13 +16,14 @@ export const useAssetDetails = (id: Maybe<u32>) => {
   )
 }
 
-export const getAssetDetails = (api: ApiPromise, id: u32) => async () => {
-  const res = await api.query.assetRegistry.assets(id)
-  const data = res.toHuman() as {
-    name: string
-    assetType: "Token" | { PoolShare: string[] }
-    existentialDeposit: any
-    locked: boolean
+export const getAssetDetails =
+  (api: ApiPromise, id: u32 | string) => async () => {
+    const res = await api.query.assetRegistry.assets(id)
+    const data = res.toHuman() as {
+      name: string
+      assetType: "Token" | { PoolShare: string[] }
+      existentialDeposit: any
+      locked: boolean
+    }
+    return data
   }
-  return data
-}

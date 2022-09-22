@@ -1,7 +1,8 @@
-import styled from "styled-components"
+import { Button } from "components/Button/Button"
+import styled, { css } from "styled-components"
 import { theme } from "theme"
 
-export const SFarm = styled.button`
+export const SFarm = styled.button<{ variant: "list" | "detail" }>`
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-column-gap: 32px;
@@ -14,7 +15,7 @@ export const SFarm = styled.button`
   background-color: ${theme.colors.backgroundGray1000};
 
   transition: all 0.15s ease-in-out;
-  cursor: pointer;
+
   outline: none;
   border: 1px solid transparent;
 
@@ -23,9 +24,22 @@ export const SFarm = styled.button`
     height: 20px;
   }
 
-  &:hover {
-    border-color: ${theme.colors.primary400};
-  }
+  ${(props) => {
+    if (props.variant === "detail") {
+      return css`
+        grid-template-columns: auto 1fr;
+      `
+    }
+
+    return css`
+      grid-template-columns: auto 1fr auto;
+      cursor: pointer;
+
+      &:hover {
+        border-color: ${theme.colors.primary400};
+      }
+    `
+  }}
 `
 
 export const SFarmRow = styled.div`
@@ -43,6 +57,7 @@ export const SFarmRow = styled.div`
 export const SFarmIcon = styled.div`
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 
   height: 100%;
 
@@ -52,5 +67,15 @@ export const SFarmIcon = styled.div`
 
     opacity: 0.5;
     transform: rotate(-90deg);
+  }
+`
+
+export const SMaxButton = styled(Button)`
+  background: rgba(${theme.rgbColors.white}, 0.06);
+  color: ${theme.colors.white};
+  font-weight: 600;
+
+  :hover {
+    background: rgba(${theme.rgbColors.white}, 0.15);
   }
 `

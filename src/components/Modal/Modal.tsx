@@ -13,6 +13,7 @@ import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
 import { Dialog, DialogDescription, DialogPortal } from "@radix-ui/react-dialog"
 import { useTranslation } from "react-i18next"
 import { SizeProps } from "utils/styles"
+import { theme } from "theme"
 
 type Props = {
   open: boolean
@@ -46,6 +47,7 @@ export const Modal: FC<PropsWithChildren<Props>> = ({
                   icon={secondaryIcon.icon}
                   onClick={secondaryIcon.onClick}
                   name={secondaryIcon.name}
+                  css={{ color: theme.colors.white }}
                 />
               )}
               {!withoutClose && (
@@ -53,6 +55,7 @@ export const Modal: FC<PropsWithChildren<Props>> = ({
                   icon={<CrossIcon />}
                   onClick={onClose}
                   name={t("modal.closeButton.name")}
+                  css={{ color: theme.colors.white }}
                 />
               )}
             </IconsWrapper>
