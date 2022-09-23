@@ -1,13 +1,13 @@
 import { FC } from "react"
 import { Box } from "components/Box/Box"
-import { KaruraIcon } from "assets/icons/tokens/KaruraIcon"
 import { Text } from "components/Typography/Text/Text"
+import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 
 // TODO: add icon handling
 type Props = {
   name: string
   symbol: string
-  amount: number
+  amount: string
 }
 
 export const PoolRemoveLiquidityReward: FC<Props> = ({
@@ -18,7 +18,7 @@ export const PoolRemoveLiquidityReward: FC<Props> = ({
   return (
     <Box flex justify="space-between" acenter>
       <Box flex acenter gap={8}>
-        <KaruraIcon />
+        {getAssetLogo(symbol)}
         <Box flex column>
           <Text fs={16}>{symbol}</Text>
           <Text fs={12} color="neutralGray500">

@@ -63,6 +63,8 @@
   "pools.removeLiquidity.modal.price": "Price",
   "pools.removeLiquidity.modal.confirm": "Confirm removal",
   "pools.removeLiquidity.modal.input.label": "Custom",
+  "pools.removeLiquidity.modal.row.transactionCostValue": "≈ {{ amount, balance }} BSX",
+  "pools.removeLiquidity.modal.row.spotPrice": "{{ firstAmount, balance }} {{ firstCurrency }} ≈ {{ secondAmount, balance }} {{ secondCurrency }}",
   "pools.allFarms.modal.title": "All {{ symbol1 }}/{{ symbol2 }} Farms",
   "pools.allFarms.detail.modal.title": "Farm Detail",
   "pools.allFarms.modal.apr": "{{ from, num }} - {{ to, num }}% APR",

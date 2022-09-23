@@ -18,7 +18,7 @@ function isBalanceWithSettings(value: any): value is {
 function isRecord<Key extends string, Value>(
   x: unknown,
 ): x is Record<Key, Value> {
-  return typeof x === "string"
+  return typeof x === "object" && x != null && !Array.isArray(x)
 }
 
 function getFormatParams<T>(
@@ -40,6 +40,10 @@ function getBigNumberParams(
   x: unknown,
 ): null | { precision: BigNumber | number } {
   if (!isRecord(x) || !("precision" in x)) return null
+
+  if (typeof x["precision"] === "string") {
+    return { precision: Number.parseInt(x["precision"]) }
+  }
 
   if (
     BigNumber.isBigNumber(x["precision"]) ||

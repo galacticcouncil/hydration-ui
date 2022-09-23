@@ -14,9 +14,13 @@ type Props = {
 export const BoxSwitch = ({ options, selected, onSelect }: Props) => {
   const getActiveIndex = () => {
     if (selected === undefined) return -1
-    const active = options.find((o) => o.value === selected)
-    return options.indexOf(active ?? options[0])
+    return options.reduce(
+      (memo, i, idx) => (selected >= i.value ? Math.max(memo, idx) : memo),
+      -1,
+    )
   }
+
+  const activeIndex = getActiveIndex()
 
   return (
     <SSwitch>
@@ -24,14 +28,15 @@ export const BoxSwitch = ({ options, selected, onSelect }: Props) => {
         <SButton
           key={i}
           onClick={() => onSelect(option.value)}
-          isActive={selected === option.value}
+          isActive={activeIndex === i}
+          type="button"
         >
-          <SText fw={700} color={selected === option.value ? "black" : "white"}>
+          <SText fw={700} color={activeIndex === i ? "black" : "white"}>
             {option.label}
           </SText>
         </SButton>
       ))}
-      <SButtonBackground index={getActiveIndex()} />
+      <SButtonBackground index={activeIndex} />
     </SSwitch>
   )
 }
