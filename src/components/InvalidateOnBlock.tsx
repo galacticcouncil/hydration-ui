@@ -18,8 +18,6 @@ export const InvalidateOnBlock = (props: { children: ReactNode }) => {
           ? hdr.number.unwrap()
           : hdr.number
 
-        console.log(blockNumber.toHuman())
-
         queryClient.setQueryData(QUERY_KEYS.bestNumber, blockNumber)
         queryClient.invalidateQueries([QUERY_KEY_PREFIX])
       })
