@@ -6,13 +6,13 @@ import { useTranslation } from "react-i18next"
 import { FC } from "react"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { PoolBase } from "@galacticcouncil/sdk"
-import { usePoolTotalValue } from "sections/pools/pool/Pool.utils"
+import { useTotalInPool } from "sections/pools/pool/Pool.utils"
 
 type Props = { pool: PoolBase }
 
 export const PoolDetails: FC<Props> = ({ pool }) => {
   const { t } = useTranslation()
-  const { data } = usePoolTotalValue({ pool })
+  const { data } = useTotalInPool({ pool })
 
   return (
     <Box flex column width={380}>

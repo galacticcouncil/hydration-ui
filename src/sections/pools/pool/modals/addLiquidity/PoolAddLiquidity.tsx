@@ -33,8 +33,8 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
 
   const { account } = useStore()
 
-  const { data: shareTokenId } = usePoolShareToken(pool.address)
-  const { data: dataShareToken } = useAsset(shareTokenId)
+  const { data: shareToken } = usePoolShareToken(pool.address)
+  const { data: dataShareToken } = useAsset(shareToken?.token)
 
   const [inputAssetA, setInputAssetA] = useState("0")
   const [inputAssetB, setInputAssetB] = useState("0")
@@ -44,7 +44,7 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
     pool.tokens[1].id,
   )
 
-  const shareIssuance = useTotalIssuance(shareTokenId)
+  const shareIssuance = useTotalIssuance(shareToken?.token)
   const assetAReserve = useTokenBalance(pool.tokens[0].id, pool.address)
   const assetBReserve = useTokenBalance(pool.tokens[1].id, pool.address)
 
@@ -125,7 +125,7 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
           pool.tokens[0].decimals,
         ).toFixed(),
         getDecimalAmount(
-          shareIssuance.data,
+          shareIssuance.data.total,
           dataShareToken.decimals.toNumber(),
         ).toFixed(),
       ),
@@ -134,7 +134,7 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
   const calculatedRatio =
     shareIssuance.data &&
     calculatedShares &&
-    calculatedShares.pow(shareIssuance.data).multipliedBy(100)
+    calculatedShares.pow(shareIssuance.data.total).multipliedBy(100)
 
   async function handleSubmit() {
     try {

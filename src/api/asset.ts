@@ -7,6 +7,8 @@ import { useTradeRouter } from "utils/sdk"
 import { TradeRouter } from "@galacticcouncil/sdk"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { AUSD_NAME } from "utils/constants"
+import { useMemo } from "react"
 
 export const useAsset = (id: Maybe<u32 | string>) => {
   const detail = useAssetDetails(id)
@@ -37,3 +39,17 @@ export const useAssets = () => {
 
 export const getAllAssets = (tradeRouter: TradeRouter) => async () =>
   tradeRouter.getAllAssets()
+
+export const useAUSD = () => {
+  const { data, isLoading } = useAssets()
+
+  const aUSD = useMemo(
+    () =>
+      data?.find(
+        (asset) => asset.symbol.toLowerCase() === AUSD_NAME.toLowerCase(),
+      ),
+    [data],
+  )
+
+  return { data: aUSD, isLoading }
+}

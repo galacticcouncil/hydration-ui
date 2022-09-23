@@ -32,7 +32,11 @@ export const QUERY_KEYS = {
   yieldFarm: (id: string) => [QUERY_KEY_PREFIX, "yieldFarm", id],
   activeYieldFarm: (id: string) => [QUERY_KEY_PREFIX, "activeYieldFarm", id],
   totalLiquidity: (id: string) => [QUERY_KEY_PREFIX, "totalLiquidity", id],
-  totalIssuance: (lpToken: Maybe<u32>) => ["totalIssuance", lpToken],
+  totalIssuance: (lpToken: Maybe<u32>) => [
+    QUERY_KEY_PREFIX,
+    "totalIssuance",
+    lpToken?.toString(),
+  ],
   totalLiquidities: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "totalLiquidities",

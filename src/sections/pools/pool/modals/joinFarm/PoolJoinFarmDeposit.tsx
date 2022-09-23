@@ -29,7 +29,10 @@ export const PoolJoinFarmDeposit = (props: {
   const shareToken = usePoolShareToken(props.poolId)
 
   const { account } = useStore()
-  const shareTokenBalance = useTokenBalance(shareToken.data, account?.address)
+  const shareTokenBalance = useTokenBalance(
+    shareToken.data?.token,
+    account?.address,
+  )
 
   const form = useForm<{ value: string }>({})
 
