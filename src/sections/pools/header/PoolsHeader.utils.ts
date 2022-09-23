@@ -41,7 +41,7 @@ export const useTotalInPools = () => {
     const total = totals?.reduce((acc, total) => acc.plus(total), BN_0)
 
     return total ?? BN_0
-  }, [isLoading])
+  }, [isLoading, pools.data, spotPrices])
 
   return { data, isLoading }
 }
@@ -133,7 +133,16 @@ export const useTotalInFarms = () => {
       .reduce((acc, t) => acc.plus(t), BN_0)
 
     return total
-  }, [isLoading])
+  }, [
+    farmIds,
+    globalFarms.data,
+    isLoading,
+    pools.data,
+    shareTokens,
+    spotPrices,
+    totalIssuances,
+    yieldFarms.data,
+  ])
 
   return { data, isLoading }
 }

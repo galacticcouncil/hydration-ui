@@ -3,7 +3,6 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { PoolIncentivesRow } from "sections/pools/pool/incentives/row/PoolIncentivesRow"
 import { useAPR } from "utils/apr"
-import { AccountId32 } from "@polkadot/types/interfaces/runtime"
 
 type Props = { id: string }
 

@@ -17,7 +17,5 @@ export const useAssetMeta = (id: Maybe<u32 | string>) => {
 
 export const getAssetMeta = (api: ApiPromise, id: u32 | string) => async () => {
   const res = await api.query.assetRegistry.assetMetadataMap(id)
-  const data = res.unwrap()
-
-  return { id, data }
+  return { id, data: res.unwrapOr(null) }
 }

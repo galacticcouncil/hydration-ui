@@ -31,7 +31,14 @@ export const useTotalInPool = ({ pool }: Props) => {
     const total = totalA.plus(totalB)
 
     return total
-  }, [aUSD.data, spotAtoAUSD.data, spotBtoAUSD.data])
+  }, [
+    aUSD.data,
+    assetA.balance,
+    assetA.decimals,
+    assetB.balance,
+    spotAtoAUSD.data,
+    spotBtoAUSD.data,
+  ])
 
   return { data, isLoading }
 }
