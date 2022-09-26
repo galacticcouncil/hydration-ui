@@ -56,10 +56,9 @@ export const ReviewTransactionForm = (
               <>
                 <Text color="white">
                   {t("pools.addLiquidity.modal.row.transactionCostValue", {
-                    amount: {
-                      value: paymentInfoData.partialFee.toBigNumber(),
-                      displayDecimals: 2,
-                    },
+                    amount: paymentInfoData.partialFee,
+                    fixedPointScale: 12,
+                    decimalPlaces: 2,
                   })}
                 </Text>
                 <Text color="primary400" fs={12}>

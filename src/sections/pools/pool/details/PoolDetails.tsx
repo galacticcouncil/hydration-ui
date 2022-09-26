@@ -41,7 +41,7 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
             {t("pools.pool.poolDetails.fee")}
           </Text>
           <Text lh={22} color="white">
-            {t("value.percentage", { percentage: pool.tradeFee })}
+            {t("value.percentage", { value: pool.tradeFee })}
           </Text>
         </Box>
       </Box>

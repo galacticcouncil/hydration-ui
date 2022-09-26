@@ -1,5 +1,5 @@
 import { usePools, usePoolShareTokens } from "api/pools"
-import { getBalanceAmount } from "utils/balance"
+import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_1 } from "utils/constants"
 import { useMemo } from "react"
 import BN from "bignumber.js"
@@ -152,7 +152,7 @@ const getPoolTotal = (
   spotPrices: (SpotPrice | undefined)[],
 ) => {
   const total = tokens.reduce((acc, token) => {
-    const amount = getBalanceAmount(new BN(token.balance), token.decimals)
+    const amount = getFloatingPointAmount(new BN(token.balance), token.decimals)
     const spotPrice = spotPrices.find((sp) => sp?.tokenIn === token.id)
     const total = amount.times(spotPrice?.spotPrice ?? BN_0)
 

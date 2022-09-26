@@ -20,11 +20,7 @@ export const PoolClaim = () => {
         </Text>
       </Box>
       <Box width={206}>
-        <Text>
-          {t("pools.pool.claim.amount", {
-            count: 15,
-          })}
-        </Text>
+        <Text>{t("pools.pool.claim.amount", { count: 15 })}</Text>
       </Box>
       <Box width={280} pl={30}>
         <Button variant="gradient" size="small">

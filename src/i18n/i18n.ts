@@ -1,80 +1,66 @@
 import i18n from "i18next"
 import { initReactI18next } from "react-i18next"
 import translationEN from "./locales/en/translations.json"
-import { formatDate, formatNum } from "utils/formatting"
-import BN from "bignumber.js"
-import { getFullDisplayBalance } from "../utils/balance"
-import BigNumber from "bignumber.js"
-import { BN_10 } from "utils/constants"
+import {
+  BigNumberFormatOptionsSchema,
+  formatBigNumber,
+  formatDate,
+  formatNum,
+} from "utils/formatting"
+import { normalizeBigNumber } from "../utils/balance"
+import { isRecord } from "utils/types"
 
-function isBalanceWithSettings(value: any): value is {
-  value: BigNumber
-  decimals?: string | number
-  displayDecimals?: string | number
-} {
-  return value !== null && "value" in value
-}
-
-function isRecord<Key extends string, Value>(
-  x: unknown,
-): x is Record<Key, Value> {
-  return typeof x === "object" && x != null && !Array.isArray(x)
-}
-
-function getFormatParams<T>(
-  typeParams: (value: unknown) => T | null,
+/**
+ * BigNumber.js formatting via i18n
+ */
+function getBigNumberFormatParams(
   options: Record<string, unknown> | undefined,
 ) {
   if (options == null) return null
+
+  let parsed = BigNumberFormatOptionsSchema.safeParse(options)
+  if (parsed.success) return parsed.data
+
   if (
     typeof options.interpolationkey === "string" &&
-    isRecord<string, unknown>(options.formatParams)
+    isRecord(options.formatParams)
   ) {
-    return typeParams(options.formatParams[options.interpolationkey])
+    parsed = BigNumberFormatOptionsSchema.safeParse(
+      options.formatParams[options.interpolationkey],
+    )
+    if (parsed.success) return parsed.data
   }
 
   return null
-}
-
-function getBigNumberParams(
-  x: unknown,
-): null | { precision: BigNumber | number } {
-  if (!isRecord(x) || !("precision" in x)) return null
-
-  if (typeof x["precision"] === "string") {
-    return { precision: Number.parseInt(x["precision"]) }
-  }
-
-  if (
-    BigNumber.isBigNumber(x["precision"]) ||
-    typeof x["precision"] === "number"
-  ) {
-    return { precision: x["precision"] }
-  }
-
-  return null
-}
-
-function convertBigNumberToString(
-  value: BN | BigNumber | number | string | null | undefined,
-  options: Record<string, unknown> | undefined,
-) {
-  if (value == null) return null
-  if (typeof value === "string") return value
-  if (typeof value === "number") return value.toString()
-  let bn: BigNumber = BN.isBigNumber(value)
-    ? new BigNumber(value.toString())
-    : value
-
-  const params = getFormatParams(getBigNumberParams, options)
-  if (params != null) {
-    bn = bn.div(BN_10.pow(params.precision))
-  }
-  return bn.toFixed()
 }
 
 const resources = {
   en: { translation: translationEN },
+}
+
+function parseFormatStr(formatStr: string | undefined) {
+  let formatName = formatStr
+  const formatOptions: Record<string, unknown> = {}
+
+  if (formatStr != null && formatStr.indexOf("(") > -1) {
+    const [name, args] = formatStr.split("(")
+    formatName = name
+
+    const optList = args
+      .substring(0, args.length - 1)
+      .split(";")
+      .filter((x) => !!x)
+
+    for (const item of optList) {
+      const [key, ...rest] = item.split(":")
+      formatOptions[key.trim()] = rest
+        .join(":")
+        .trim()
+        .replace(/^'+|'+$/g, "")
+    }
+  }
+
+  return { formatName: formatName?.toLowerCase().trim(), formatOptions }
 }
 
 i18n
@@ -84,48 +70,26 @@ i18n
     fallbackLng: "en",
     lng: "en",
     interpolation: {
-      format(value, format, lng, options) {
-        if (format === "balance") {
-          if (!value) {
-            return "-"
-          }
+      format(value, format, lng, tOptions) {
+        const { formatName, formatOptions } = parseFormatStr(format)
+        const options = { ...formatOptions, ...tOptions }
 
-          if (isBalanceWithSettings(value)) {
-            return getFullDisplayBalance(
-              value.value,
-              value.decimals,
-              value.displayDecimals,
-            )
-          }
-
-          return getFullDisplayBalance(value)
+        if (formatName === "bignumber") {
+          return formatBigNumber(value, getBigNumberFormatParams(options), lng)
         }
 
-        if (format === "num") {
-          const parsed = convertBigNumberToString(value, options)
-          if (parsed == null) return null
-          return formatNum(parsed, undefined, lng)
-        }
-
-        if (format === "compact") {
-          const parsed = convertBigNumberToString(value, options)
-          if (parsed == null) return null
-          return formatNum(parsed, { notation: "compact" }, lng)?.toLowerCase()
-        }
-
-        if (format === "usd") {
-          const n = BN.isBigNumber(value) ? value.toNumber() : value
-          return formatNum(n, {
-            style: "currency",
-            currency: "USD",
-          })
+        // Not ideal, but we don't have a way to format BigNumber to a compact form
+        if (formatName === "compact") {
+          const num = normalizeBigNumber(value)
+          if (num == null) return null
+          return formatNum(num.toFixed(), { notation: "compact" }, lng)
         }
 
         if (value instanceof Date) {
           return formatDate(value, format || "")
         }
 
-        return value
+        return value ?? null
       },
       escapeValue: false, // react already safes from xss
     },

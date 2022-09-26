@@ -8,7 +8,7 @@ import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PoolAddLiquidityConversion } from "sections/pools/pool/modals/addLiquidity/conversion/PoolAddLiquidityConversion"
 import { PoolAddLiquidityAssetSelect } from "sections/pools/pool/modals/addLiquidity/assetSelect/PoolAddLiquidityAssetSelect"
-import { getDecimalAmount, getFullDisplayBalance } from "utils/balance"
+import { getFixedPointAmount, getFloatingPointAmount } from "utils/balance"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { useAddLiquidity } from "api/addLiquidity"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
@@ -16,7 +16,7 @@ import { useStore } from "state/store"
 import { useMath } from "utils/math"
 import { useTokenBalance } from "api/balances"
 import { useTotalIssuance } from "api/totalIssuance"
-import { BN_1, BN_100 } from "utils/constants"
+import { BN_0, BN_1, BN_100 } from "utils/constants"
 import { useAsset } from "api/asset"
 import { usePoolShareToken } from "api/pools"
 import { useSpotPrice } from "api/spotPrice"
@@ -66,21 +66,18 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
 
   const handleChangeAssetAInput = (value: string) => {
     if (assetAReserve.data && assetBReserve.data && xyk) {
-      const parsedValue = getDecimalAmount(
-        new BigNumber(value),
-        pool.tokens[0].decimals,
-      )
+      const parsedValue = getFixedPointAmount(value, pool.tokens[0].decimals)
+
       const calculatedAmount = xyk.calculate_liquidity_in(
         assetAReserve.data.balance.toFixed(),
         assetBReserve.data.balance.toFixed(),
         parsedValue.toFixed(),
       )
       setInputAssetB(
-        getFullDisplayBalance(
-          new BigNumber(calculatedAmount),
-          pool.tokens[1].decimals,
-          2,
-        ),
+        getFloatingPointAmount(
+          calculatedAmount,
+          pool.tokens[0].decimals,
+        ).toFixed(4),
       )
     }
     setInputAssetA(value)
@@ -88,7 +85,7 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
 
   const handleChangeAssetBInput = (value: string) => {
     if (assetAReserve.data && assetBReserve.data && xyk) {
-      const parsedValue = getDecimalAmount(
+      const parsedValue = getFixedPointAmount(
         new BigNumber(value),
         pool.tokens[0].decimals,
       )
@@ -99,11 +96,10 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
       )
 
       setInputAssetA(
-        getFullDisplayBalance(
-          new BigNumber(calculatedAmount),
+        getFloatingPointAmount(
+          calculatedAmount,
           pool.tokens[1].decimals,
-          2,
-        ),
+        ).toFixed(4),
       )
     }
     setInputAssetB(value)
@@ -116,15 +112,15 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
     dataShareToken &&
     new BigNumber(
       xyk.calculate_shares(
-        getDecimalAmount(
+        getFixedPointAmount(
           assetAReserve.data.balance,
           pool.tokens[0].decimals,
         ).toFixed(),
-        getDecimalAmount(
+        getFixedPointAmount(
           new BigNumber(inputAssetA),
           pool.tokens[0].decimals,
         ).toFixed(),
-        getDecimalAmount(
+        getFixedPointAmount(
           shareIssuance.data.total,
           dataShareToken.decimals.toNumber(),
         ).toFixed(),
@@ -141,7 +137,7 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
       handleAddLiquidity([
         {
           id: pool.tokens[0].id,
-          amount: getDecimalAmount(
+          amount: getFixedPointAmount(
             new BigNumber(inputAssetA),
             pool.tokens[0].decimals,
           ),
@@ -151,7 +147,7 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
           // For some reason, when amount_b == amount_b_max_limit,
           // the transaction fails with AssetAmountExceededLimit
           // TODO: investiage, whether we're not doing something wrong
-          amount: getDecimalAmount(
+          amount: getFixedPointAmount(
             new BigNumber(inputAssetB),
             pool.tokens[1].decimals,
           ).plus(1),
@@ -171,11 +167,8 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
       <PoolAddLiquidityAssetSelect
         name="assetA"
         asset={pool.tokens[0].id}
-        balance={getFullDisplayBalance(
-          accountAssetABalance.data?.balance,
-          pool.tokens[0].decimals,
-          pool.tokens[0].decimals,
-        )}
+        balance={accountAssetABalance.data?.balance}
+        decimals={pool.tokens[0].decimals}
         mt={16}
         currency={{
           short: pool.tokens[0].symbol,
@@ -195,11 +188,8 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
       <PoolAddLiquidityAssetSelect
         name="assetB"
         asset={pool.tokens[1].id}
-        balance={getFullDisplayBalance(
-          accountAssetBBalance.data?.balance,
-          pool.tokens[1].decimals,
-          pool.tokens[1].decimals,
-        )}
+        balance={accountAssetBBalance.data?.balance}
+        decimals={pool.tokens[1].decimals}
         currency={{
           short: pool.tokens[1].symbol,
           full: pool.tokens[1].symbol,
@@ -211,7 +201,7 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
 
       <Row
         left={t("pools.addLiquidity.modal.row.tradeFee")}
-        right={t("value.percentage", { percentage: pool.tradeFee })}
+        right={t("value.percentage", { value: pool.tradeFee })}
       />
       <Separator />
       <Row
@@ -219,12 +209,11 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
         right={
           paymentInfo && (
             <>
-              <Text mr={4}>
+              <Text>
                 {t("pools.addLiquidity.modal.row.transactionCostValue", {
-                  amount: {
-                    value: paymentInfo.partialFee.toBigNumber(),
-                    displayDecimals: 2,
-                  },
+                  amount: paymentInfo.partialFee,
+                  fixedPointScale: 12,
+                  decimalPlaces: 2,
                 })}
               </Text>
               {/*<Text color="primary400">(2%)</Text>*/} {/*TODO*/}
@@ -246,11 +235,11 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
         left={t("pools.addLiquidity.modal.row.shareTokens")}
         right={
           <Text color="primary400">
-            {getFullDisplayBalance(
-              calculatedShares ?? undefined,
-              dataShareToken?.decimals?.toNumber(),
-              5,
-            )}
+            {t("value", {
+              value: calculatedShares ?? BN_0,
+              decimalPlaces: 4,
+              fixedPointScale: dataShareToken?.decimals,
+            })}
           </Text>
         }
       />

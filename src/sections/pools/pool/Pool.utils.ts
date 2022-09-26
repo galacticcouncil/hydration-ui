@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { getBalanceAmount } from "utils/balance"
+import { getFloatingPointAmount } from "utils/balance"
 import { useSpotPrice } from "api/spotPrice"
 import { useAUSD } from "api/asset"
 import { PoolBase } from "@galacticcouncil/sdk"
@@ -20,8 +20,14 @@ export const useTotalInPool = ({ pool }: Props) => {
   const data = useMemo(() => {
     if (!aUSD.data || !spotAtoAUSD.data || !spotBtoAUSD.data) return undefined
 
-    const balanceA = getBalanceAmount(new BN(assetA.balance), assetA.decimals)
-    const balanceB = getBalanceAmount(new BN(assetB.balance), assetA.decimals)
+    const balanceA = getFloatingPointAmount(
+      new BN(assetA.balance),
+      assetA.decimals,
+    )
+    const balanceB = getFloatingPointAmount(
+      new BN(assetB.balance),
+      assetA.decimals,
+    )
 
     const AtoAUSD = spotAtoAUSD.data.spotPrice
     const BtoAUSD = spotBtoAUSD.data.spotPrice

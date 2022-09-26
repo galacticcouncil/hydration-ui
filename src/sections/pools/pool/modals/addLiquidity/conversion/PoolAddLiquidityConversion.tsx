@@ -4,7 +4,6 @@ import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { SContainer } from "./PoolAddLiquidityConversion.styled"
-import { getDecimalAmount } from "utils/balance"
 import BigNumber from "bignumber.js"
 
 type Props = {
@@ -25,11 +24,11 @@ export const PoolAddLiquidityConversion: FC<Props> = ({
           {t("pools.addLiquidity.modal.conversion.price")}
         </Text>
         <Text fs={11} lh={15} color="primary300">
-          {getDecimalAmount(firstValue.amount, 0) + " " + firstValue.currency}
+          {t("value", { value: firstValue.amount })} {firstValue.currency}
         </Text>
         <Text>=</Text>
         <Text fs={11} lh={15}>
-          {getDecimalAmount(secondValue.amount, 0) + " " + secondValue.currency}
+          {t("value", { value: secondValue.amount })} {secondValue.currency}
         </Text>
       </SContainer>
     </Box>

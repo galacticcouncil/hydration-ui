@@ -12,6 +12,7 @@ import {
 import { WalletConnectAccountSelectAddress } from "sections/wallet/connect/accountSelect/item/address/WalletConnectAccountSelectAddress"
 import { FC } from "react"
 import { css } from "styled-components"
+import { useAssetMeta } from "api/assetMeta"
 
 type Props = {
   isActive: boolean
@@ -32,6 +33,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
   )
   const kuramaAddress = address
   const { data } = useTokenBalance(NATIVE_ASSET_ID, kuramaAddress)
+  const { data: meta } = useAssetMeta(NATIVE_ASSET_ID)
 
   const { t } = useTranslation()
 
@@ -40,7 +42,13 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
       <SSelectItem isActive={isActive} onClick={setAccount}>
         <Box flex align="center" justify="space-between">
           <Text>{name}</Text>
-          <Text>{t("value.bsx", { amount: data?.balance })}</Text>
+          <Text>
+            {t("value.bsx", {
+              value: data?.balance,
+              fixedPointScale: meta?.data?.decimals,
+              decimalPlaces: 4,
+            })}
+          </Text>
         </Box>
 
         <Box

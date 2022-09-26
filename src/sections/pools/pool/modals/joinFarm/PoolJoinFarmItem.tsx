@@ -13,6 +13,7 @@ import { useAsset } from "api/asset"
 import { addSeconds } from "date-fns"
 import { BLOCK_TIME } from "utils/constants"
 import { useBestNumber } from "api/chain"
+import { getFloatingPointAmount } from "utils/balance"
 
 export const PoolJoinFarmItem = (props: {
   farm: AprFarm
@@ -44,7 +45,7 @@ export const PoolJoinFarmItem = (props: {
         </Box>
         <Text fs={20} lh={28} fw={600} color="primary200">
           {t("pools.allFarms.modal.apr.single", {
-            value: props.farm.apr.toFixed(),
+            value: props.farm.apr,
           })}
         </Text>
       </Box>
@@ -61,12 +62,11 @@ export const PoolJoinFarmItem = (props: {
               t={t}
               i18nKey="pools.allFarms.modal.distribution"
               tOptions={{
-                distributed: props.farm.distributedRewards,
-                max: props.farm.maxRewards,
-                formatParams: {
-                  distributed: { precision: 12 },
-                  max: { precision: 12 },
-                },
+                distributed: getFloatingPointAmount(
+                  props.farm.distributedRewards,
+                  12,
+                ),
+                max: getFloatingPointAmount(props.farm.maxRewards, 12),
               }}
             >
               <Text as="span" fs={14} color="neutralGray100" />
@@ -78,7 +78,8 @@ export const PoolJoinFarmItem = (props: {
           <FillBar percentage={props.farm.fullness.times(100).toNumber()} />
           <Text fs={14} color="neutralGray100">
             {t("pools.allFarms.modal.capacity", {
-              capacity: props.farm.fullness.times(100).toNumber(),
+              capacity: props.farm.fullness.times(100),
+              decimalPlaces: 0,
             })}
           </Text>
         </SFarmRow>

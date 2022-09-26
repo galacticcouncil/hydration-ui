@@ -12,11 +12,14 @@ import {
   SSelectAssetButton,
 } from "./PoolAddLiquidityAssetSelect.styled"
 import { u32 } from "@polkadot/types"
+import BigNumber from "bignumber.js"
+import { getFloatingPointAmount } from "utils/balance"
 
 type Props = {
   name: string
   asset: u32 | string
-  balance: string
+  balance: BigNumber | undefined
+  decimals: number
   currency: { short: string; full: string }
   assetIcon: ReactNode
   value: string
@@ -29,6 +32,7 @@ export const PoolAddLiquidityAssetSelect: FC<Props> = ({
   onChange,
   asset,
   balance,
+  decimals,
   ...p
 }) => {
   const { t } = useTranslation()
@@ -46,7 +50,8 @@ export const PoolAddLiquidityAssetSelect: FC<Props> = ({
               i18nKey="selectAsset.balance"
               tOptions={{
                 balance,
-                formatParams: { balance: { precision: 2 } },
+                decimalPlaces: 4,
+                fixedPointScale: decimals,
               }}
             >
               <span css={{ opacity: 0.7 }} />
@@ -56,7 +61,11 @@ export const PoolAddLiquidityAssetSelect: FC<Props> = ({
             size="micro"
             text={t("selectAsset.button.max")}
             capitalize
-            onClick={() => onChange(balance.toString())}
+            onClick={() => {
+              if (balance != null) {
+                onChange(getFloatingPointAmount(balance, decimals).toFixed(4))
+              }
+            }}
           />
         </Box>
       </Box>

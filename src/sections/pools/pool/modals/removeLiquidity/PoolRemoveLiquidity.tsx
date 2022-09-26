@@ -23,7 +23,6 @@ import { usePoolShareToken } from "api/pools"
 import { useTokenBalance } from "api/balances"
 import { useTotalLiquidity } from "api/totalLiquidity"
 import { BN_0, BN_1 } from "utils/constants"
-import { getBalanceAmount } from "utils/balance"
 import { useApiPromise } from "utils/network"
 import { usePaymentInfo } from "api/transaction"
 import { useSpotPrice } from "api/spotPrice"
@@ -146,7 +145,7 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
     >
       <form onSubmit={form.handleSubmit(handleSubmit)}>
         <Heading fs={42} lh={52} mb={16} mt={16}>
-          {t("value.percentage", { percentage: value })}
+          {t("value.percentage", { value })}
         </Heading>
 
         <Controller
@@ -168,18 +167,20 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
           <PoolRemoveLiquidityReward
             name="Token"
             symbol={pool.tokens[0].symbol}
-            amount={getBalanceAmount(
-              removeAmount[0],
-              pool.tokens[0].decimals,
-            ).toFixed()}
+            amount={t("value", {
+              value: removeAmount[0],
+              fixedPointScale: pool.tokens[0].decimals,
+              decimalPlaces: 4,
+            })}
           />
           <PoolRemoveLiquidityReward
             name="Token"
             symbol={pool.tokens[1].symbol}
-            amount={getBalanceAmount(
-              removeAmount[1],
-              pool.tokens[1].decimals,
-            ).toFixed()}
+            amount={t("value", {
+              value: removeAmount[1],
+              fixedPointScale: pool.tokens[1].decimals,
+              decimalPlaces: 4,
+            })}
           />
         </STradingPairContainer>
 
@@ -191,10 +192,9 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
             <Box flex acenter gap={4}>
               <Text fs={14}>
                 {t("pools.removeLiquidity.modal.row.transactionCostValue", {
-                  amount: {
-                    value: paymentInfoEstimate.data?.partialFee.toBigNumber(),
-                    displayDecimals: 2,
-                  },
+                  amount: paymentInfoEstimate.data?.partialFee,
+                  fixedPointScale: 12,
+                  decimalPlaces: 2,
                 })}
               </Text>
             </Box>
@@ -209,11 +209,8 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
                 t={t}
                 i18nKey="pools.removeLiquidity.modal.row.spotPrice"
                 tOptions={{
-                  firstAmount: { value: BN_1, decimals: 0, displayDecimals: 0 },
-                  secondAmount: {
-                    value: spotPrice.data?.spotPrice,
-                    decimals: 0,
-                  },
+                  firstAmount: BN_1,
+                  secondAmount: spotPrice.data?.spotPrice,
                   firstCurrency: pool.tokens[0].symbol,
                   secondCurrency: pool.tokens[1].symbol,
                 }}
