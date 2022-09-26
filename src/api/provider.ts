@@ -5,7 +5,7 @@ import * as definitions from "interfaces/voting/definitions"
 
 export const useProvider = () => {
   return useQuery(
-    QUERY_KEYS.provider("wss://rpc01.hydration.dev"),
+    QUERY_KEYS.provider(import.meta.env.VITE_PROVIDER_URL),
     async ({ queryKey: [_, api] }) => {
       const provider = new WsProvider(api)
       const types = Object.values(definitions).reduce(
