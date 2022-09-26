@@ -5,16 +5,13 @@ import SatoshiVariable from "assets/fonts/SatoshiVariable.ttf"
 import { theme } from "theme"
 
 export const GlobalStyle = createGlobalStyle`
- 
   @font-face {
     font-family: 'SatoshiVariable';
     src: local("SatoshiVariable"),
     url(${SatoshiVariable}) format("truetype");
-    font-display: swap;
+    font-display: auto;
     font-weight: 100 900;
   };
-
-
  
   ${normalize};
   
