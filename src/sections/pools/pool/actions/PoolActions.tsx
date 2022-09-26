@@ -5,27 +5,28 @@ import { ReactComponent as WindMillIcon } from "assets/icons/WindMillIcon.svg"
 import { Box } from "components/Box/Box"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
-import { IconButton } from "components/IconButton/IconButton"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PoolAddLiquidity } from "sections/pools/pool/modals/addLiquidity/PoolAddLiquidity"
 import { PoolRemoveLiquidity } from "sections/pools/pool/modals/removeLiquidity/PoolRemoveLiquidity"
 import { PoolJoinFarm } from "sections/pools/pool/modals/joinFarm/PoolJoinFarm"
 import { PoolBase } from "@galacticcouncil/sdk"
+import { SButtonOpen } from "sections/pools/pool/actions/PoolActions.styled"
+import { useStore } from "state/store"
 
-type Props = { pool: PoolBase; hasJoinedFarms?: boolean }
+type Props = { pool: PoolBase; isExpanded: boolean; onExpandClick: () => void }
 
-export const PoolActions: FC<Props> = ({ pool, hasJoinedFarms }) => {
+export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
   const { t } = useTranslation()
-
   const [openAdd, setOpenAdd] = useState(false)
   const [openRemove, setOpenRemove] = useState(false)
   const [openFarms, setOpenFarms] = useState(false)
+  const { account } = useStore()
 
   return (
     <>
-      <Box flex spread acenter m="26px 0 48px" width={280}>
-        <Box width={214} flex column gap={10} mr={hasJoinedFarms ? 33 : 67}>
+      <Box flex spread acenter m="24px" width={280}>
+        <Box width={214} flex column gap={10}>
           <Button fullWidth size="small" onClick={() => setOpenAdd(true)}>
             <Box flex acenter jcenter>
               <Icon icon={<PlusIcon />} mr={11} />
@@ -47,14 +48,13 @@ export const PoolActions: FC<Props> = ({ pool, hasJoinedFarms }) => {
             </Box>
           </Button>
         </Box>
-        {hasJoinedFarms && (
-          <IconButton
-            icon={<ChevronDown />}
-            width={6}
-            height={3}
-            name={t("pools.pool.actions.chevron.name")}
-          />
-        )}
+        <SButtonOpen
+          isActive={isExpanded}
+          onClick={onExpandClick}
+          disabled={!account}
+        >
+          <ChevronDown />
+        </SButtonOpen>
       </Box>
       <PoolAddLiquidity
         isOpen={openAdd}

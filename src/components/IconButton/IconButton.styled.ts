@@ -1,17 +1,12 @@
-import { colors, margins } from "utils/styles"
-import styled, { css } from "styled-components"
+import { ColorProps, colors, margins } from "utils/styles"
+import styled from "styled-components"
 import { theme } from "theme"
-import { ColorProps } from "utils/styles"
 
 export const SIconButton = styled.button<{ round?: boolean } & ColorProps>`
-  ${(p) =>
-    p.round &&
-    css`
-      border-radius: 50%;
-    `};
+  ${(p) => p.round && "border-radius: 9999px;"};
 
-  width: 34px;
-  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
   background: ${(p) => p.bg || theme.colors.iconButtonGrey};
   border: none;
   display: flex;

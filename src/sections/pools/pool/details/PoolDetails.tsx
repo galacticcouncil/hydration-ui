@@ -16,7 +16,7 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
 
   return (
     <Box flex column width={380}>
-      <Box flex spread mb={40} ml={4}>
+      <Box flex spread mb={32}>
         <Box>
           <Text fs={14} lh={26} color="neutralGray400">
             {t("pools.pool.title")}
@@ -45,18 +45,18 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
           </Text>
         </Box>
       </Box>
-      <Separator mb={34} />
-      <Box flex spread ml={4} mb={36}>
+      <Separator mb={32} />
+      <Box flex spread>
         <Box>
-          <Text fs={14} color="neutralGray400" lh={22}>
-            {t("pools.pool.poolDetails.valueLocked")}
+          <Text fs={14} color="neutralGray400" lh={26}>
+            {t("pools.pool.poolDetails.total")}
           </Text>
           <Text lh={22} color="white" fs={18}>
             {t("value.usd", { amount: data })}
           </Text>
         </Box>
         <Box flex column width={120} align="start">
-          <Text fs={14} color="neutralGray400" lh={22}>
+          <Text fs={14} color="neutralGray400" lh={26}>
             {t("pools.pool.poolDetails.24hours")}
           </Text>
           <Text lh={22} color="white" fs={18}>

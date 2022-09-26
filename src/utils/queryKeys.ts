@@ -2,6 +2,7 @@ import type { u32 } from "@polkadot/types"
 import type { AccountId32 } from "@polkadot/types/interfaces"
 import { CodecHash } from "@polkadot/types/interfaces/runtime"
 import { Maybe } from "./types"
+import { u128 } from "@polkadot/types-codec"
 
 export const QUERY_KEY_PREFIX = "@block"
 
@@ -13,6 +14,8 @@ export const QUERY_KEYS = {
     "poolShareToken",
     poolId.toString(),
   ],
+  deposit: (id: u128) => [QUERY_KEY_PREFIX, "deposit", id.toString()],
+  deposits: (poolId?: string) => [QUERY_KEY_PREFIX, "deposits", poolId],
   globalFarms: (ids: u32[]) => [
     QUERY_KEY_PREFIX,
     "globalFarms",
@@ -28,7 +31,7 @@ export const QUERY_KEYS = {
     "activeYieldFarms",
     poolId.toString(),
   ],
-  globalFarm: (id: string) => [QUERY_KEY_PREFIX, "globalFarm", id],
+  globalFarm: (id: u32) => [QUERY_KEY_PREFIX, "globalFarm", id.toString()],
   yieldFarm: (id: string) => [QUERY_KEY_PREFIX, "yieldFarm", id],
   activeYieldFarm: (id: string) => [QUERY_KEY_PREFIX, "activeYieldFarm", id],
   totalLiquidity: (id: Maybe<AccountId32 | string>) => [

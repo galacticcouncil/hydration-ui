@@ -1,29 +1,41 @@
-import { FC } from "react"
+import { FC, useState } from "react"
 import { PoolActions } from "sections/pools/pool/actions/PoolActions"
 import { PoolIncentives } from "sections/pools/pool/incentives/PoolIncentives"
 import { SContainer } from "sections/pools/pool/Pool.styled"
-import { PoolClaim } from "sections/pools/pool/claim/PoolClaim"
 import { Box } from "components/Box/Box"
 import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
-import { PoolShares } from "sections/pools/pool/shares/PoolShares"
 import { PoolBase } from "@galacticcouncil/sdk"
+import { PoolShares } from "sections/pools/pool/shares/PoolShares"
+import { AnimatePresence, motion } from "framer-motion"
 
-type Props = {
-  pool: PoolBase
-  hasJoinedFarms?: boolean
-  hasLiquidity?: boolean
-}
+type Props = { pool: PoolBase }
 
-export const Pool: FC<Props> = ({ pool, hasJoinedFarms, hasLiquidity }) => {
+export const Pool: FC<Props> = ({ pool }) => {
+  const [isExpanded, setIsExpanded] = useState(false)
+
   return (
     <SContainer>
-      <Box flex spread p="24px 24px 0" gap={10}>
+      <Box flex spread p="24px" gap={10}>
         <PoolDetails pool={pool} />
-        <PoolIncentives id={pool.address} />
-        <PoolActions pool={pool} hasJoinedFarms={hasJoinedFarms} />
+        <PoolIncentives poolId={pool.address} />
+        <PoolActions
+          pool={pool}
+          isExpanded={isExpanded}
+          onExpandClick={() => setIsExpanded((prev) => !prev)}
+        />
       </Box>
-      {hasLiquidity && <PoolShares />}
-      {hasJoinedFarms && <PoolClaim />}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0 }}
+            animate={{ height: "auto" }}
+            exit={{ height: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          >
+            <PoolShares pool={pool} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </SContainer>
   )
 }

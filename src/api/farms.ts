@@ -27,6 +27,11 @@ export const useGlobalFarms = (ids: u32[]) => {
   })
 }
 
+export const useGlobalFarm = (id: u32) => {
+  const api = useApiPromise()
+  return useQuery(QUERY_KEYS.globalFarm(id), getGlobalFarm(api, id))
+}
+
 export const getYieldFarms = (api: ApiPromise, ids: FarmIds[]) => async () => {
   const reqs = ids.map(({ poolId, globalFarmId, yieldFarmId }) =>
     api.query.warehouseLM.yieldFarm(poolId, globalFarmId, yieldFarmId),
@@ -61,6 +66,13 @@ export const getGlobalFarms = (api: ApiPromise, ids: u32[]) => async () => {
   const farms = res.map((data) => data.unwrap())
 
   return farms
+}
+
+export const getGlobalFarm = (api: ApiPromise, id: u32) => async () => {
+  const res = await api.query.warehouseLM.globalFarm(id)
+  const farm = res.unwrap()
+
+  return farm
 }
 
 export interface FarmIds {

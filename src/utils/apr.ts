@@ -117,7 +117,7 @@ export const useAPR = (poolId: AccountId32 | string) => {
       }
     })
 
-    return data
+    return data.filter((x): x is NonNullable<typeof data[number]> => !!x)
   }, [
     bestNumber.data,
     globalFarms.data,

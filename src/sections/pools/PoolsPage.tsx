@@ -12,12 +12,7 @@ export const PoolsPage = () => {
       <PoolsHeader />
       <Box flex column gap={20}>
         {pools.data?.map((pool) => (
-          <Pool
-            key={pool.address}
-            pool={pool}
-            hasJoinedFarms={false}
-            hasLiquidity={false}
-          />
+          <Pool key={pool.address} pool={pool} />
         ))}
       </Box>
     </Page>
