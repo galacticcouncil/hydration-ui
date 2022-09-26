@@ -55,6 +55,9 @@ export const ModalTitle = styled(GradientText)`
 `
 export const ModalBody = styled.div`
   padding: 0 30px 30px;
+
+  max-height: 80vh;
+  overflow-y: auto;
 `
 export const IconsWrapper = styled.div`
   display: flex;
