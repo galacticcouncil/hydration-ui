@@ -1,5 +1,5 @@
 import "react-i18next"
-import type { BalanceFormatOptions } from "utils/balance"
+import type { BalanceFormatOptions } from "utils/formatting"
 import translations from "./i18n/locales/en/translations.json"
 
 declare module "react-i18next" {

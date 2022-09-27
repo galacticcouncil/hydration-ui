@@ -8,6 +8,8 @@ import { PoolJoinFarmDeposit } from "./PoolJoinFarmDeposit"
 import { PoolJoinFarmItem } from "./PoolJoinFarmItem"
 import { Text } from "components/Typography/Text/Text"
 import { useDeposits } from "api/deposits"
+import { useStore } from "state/store"
+import { PoolJoinFarmClaim } from "./PoolJoinFarmClaim"
 
 export function PoolJoinFarmSectionList(props: {
   poolId: string
@@ -19,6 +21,8 @@ export function PoolJoinFarmSectionList(props: {
   const apr = useAPR(props.poolId)
   const deposits = useDeposits(props.poolId)
 
+  const { account } = useStore()
+
   return (
     <Fragment key="list">
       <ModalMeta
@@ -27,40 +31,45 @@ export function PoolJoinFarmSectionList(props: {
           symbol2: props.assetOut.symbol,
         })}
       />
-      <Text fs={18} fw={700} mb={16}>
-        {t("pools.allFarms.modal.list.positions")}
-      </Text>
 
-      {deposits.data?.map((deposit) => {
-        return (
-          <Fragment key={deposit.id.toString()}>
-            {deposit.deposit.yieldFarmEntries.map((entry) => {
-              const farm = apr.data.find(
-                (i) =>
-                  entry.globalFarmId.eq(i.globalFarm.id) &&
-                  entry.yieldFarmId.eq(i.yieldFarm.id),
-              )
+      {account && (
+        <>
+          <Text fs={18} fw={700} mb={16}>
+            {t("pools.allFarms.modal.list.positions")}
+          </Text>
+          <PoolJoinFarmClaim poolId={props.poolId} />
+          {deposits.data?.map((deposit) => {
+            return (
+              <Fragment key={deposit.id.toString()}>
+                {deposit.deposit.yieldFarmEntries.map((entry) => {
+                  const farm = apr.data.find(
+                    (i) =>
+                      entry.globalFarmId.eq(i.globalFarm.id) &&
+                      entry.yieldFarmId.eq(i.yieldFarm.id),
+                  )
 
-              if (farm == null) return null
-              return (
-                <PoolJoinFarmItem
-                  key={farm.yieldFarm.id.toString()}
-                  farm={farm}
-                  deposit={{
-                    assetA: props.assetIn,
-                    assetB: props.assetOut,
-                    data: deposit,
-                  }}
-                />
-              )
-            })}
-          </Fragment>
-        )
-      })}
+                  if (farm == null) return null
+                  return (
+                    <PoolJoinFarmItem
+                      key={farm.yieldFarm.id.toString()}
+                      farm={farm}
+                      deposit={{
+                        assetA: props.assetIn,
+                        assetB: props.assetOut,
+                        data: deposit,
+                      }}
+                    />
+                  )
+                })}
+              </Fragment>
+            )
+          })}
 
-      <Text fs={18} fw={700} mt={20} mb={16}>
-        {t("pools.allFarms.modal.list.availableFarms")}
-      </Text>
+          <Text fs={18} fw={700} mt={20} mb={16}>
+            {t("pools.allFarms.modal.list.availableFarms")}
+          </Text>
+        </>
+      )}
 
       {apr.data.map((farm) => (
         <PoolJoinFarmItem
