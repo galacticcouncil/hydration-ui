@@ -129,12 +129,13 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
       .multipliedBy(data.value)
       .dividedToIntegerBy(100)
 
-    const tx = api.tx.xyk.removeLiquidity(
-      pool.tokens[0].id,
-      pool.tokens[1].id,
-      tokenAmount.toFixed(),
-    )
-    return await createTransaction({ hash: tx.hash.toString(), tx })
+    return await createTransaction({
+      tx: api.tx.xyk.removeLiquidity(
+        pool.tokens[0].id,
+        pool.tokens[1].id,
+        tokenAmount.toFixed(),
+      ),
+    })
   }
 
   return (

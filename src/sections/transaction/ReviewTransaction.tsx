@@ -11,18 +11,14 @@ import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionError } from "./ReviewTransactionError"
 import { ReviewTransactionForm } from "./ReviewTransactionForm"
 import { useApiPromise } from "utils/network"
+import { ISubmittableResult } from "@polkadot/types/types"
 
-type Props = {
-  onCancel: () => void
-  onBack?: () => void
-} & Transaction
-
-export const ReviewTransaction: React.FC<Props> = (props) => {
+export const ReviewTransaction: React.FC<Transaction> = (props) => {
   const { t } = useTranslation()
   const api = useApiPromise()
 
   const sendTx = useMutation(async (sign: SubmittableExtrinsic<"promise">) => {
-    return await new Promise((resolve, reject) => {
+    return await new Promise<ISubmittableResult>((resolve, reject) => {
       sign.send((self) => {
         if (self.isCompleted) {
           if (self.dispatchError) {
@@ -39,7 +35,7 @@ export const ReviewTransaction: React.FC<Props> = (props) => {
 
             reject(new Error(errorMessage))
           } else {
-            resolve(self.txHash)
+            resolve(self)
           }
         }
       })
@@ -58,15 +54,23 @@ export const ReviewTransaction: React.FC<Props> = (props) => {
           title: t("pools.reviewTransaction.modal.title"),
         }
 
+  function handleClose() {
+    if (sendTx.isSuccess) {
+      props.onSuccess?.(sendTx.data)
+    } else {
+      props.onError?.()
+    }
+  }
+
   return (
-    <Modal open={true} onClose={props.onCancel} {...modalProps}>
+    <Modal open={true} onClose={handleClose} {...modalProps}>
       {sendTx.isLoading ? (
         <ReviewTransactionPending />
       ) : sendTx.isSuccess ? (
-        <ReviewTransactionSuccess onClose={props.onCancel} />
+        <ReviewTransactionSuccess onClose={handleClose} />
       ) : sendTx.isError ? (
         <ReviewTransactionError
-          onClose={props.onCancel}
+          onClose={handleClose}
           onReview={() => sendTx.reset()}
         />
       ) : (
@@ -74,7 +78,7 @@ export const ReviewTransaction: React.FC<Props> = (props) => {
           tx={props.tx}
           hash={props.hash}
           title={props.title}
-          onCancel={props.onCancel}
+          onCancel={handleClose}
           onSigned={(signed) => sendTx.mutateAsync(signed)}
         />
       )}

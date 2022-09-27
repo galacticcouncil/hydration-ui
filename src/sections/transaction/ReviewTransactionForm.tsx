@@ -44,7 +44,7 @@ export const ReviewTransactionForm = (
         </Text>
       )}
       <Box mt={16}>
-        <TransactionCode name={`Method ${json.name}`} src={json.code} />
+        {json && <TransactionCode name={json.method} src={json.args} />}
       </Box>
       <Box mt={10}>
         <SDetailRow>

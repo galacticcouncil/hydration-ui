@@ -38,20 +38,16 @@ export const PoolJoinFarmDeposit = (props: {
 
   async function handleSubmit(data: FormValues<typeof form>) {
     if (!account) throw new Error("No account found")
-
-    const tx = api.tx.liquidityMining.depositShares(
-      props.farm.globalFarm.id,
-      props.farm.yieldFarm.id,
-      {
-        assetIn: props.assetIn.id,
-        assetOut: props.assetOut.id,
-      },
-      data.value,
-    )
-
     return await createTransaction({
-      hash: tx.hash.toString(),
-      tx,
+      tx: api.tx.liquidityMining.depositShares(
+        props.farm.globalFarm.id,
+        props.farm.yieldFarm.id,
+        {
+          assetIn: props.assetIn.id,
+          assetOut: props.assetOut.id,
+        },
+        data.value,
+      ),
     })
   }
 
