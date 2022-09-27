@@ -82,6 +82,7 @@
   "pools.allFarms.modal.claim.bsx": "{{num}}<0>.{{denom}} BSX</0>",
   "pools.allFarms.modal.claim.submit": "Claim all",
   "pools.allFarms.modal.lockedShares.value": "{{ value, compact }} {{ assetA }}/{{ assetB }}",
+  "pools.allFarms.modal.withdraw.submit": "Exit all farms",
   "pools.reviewTransaction.modal.title": "Review Transaction Details ",
   "pools.reviewTransaction.modal.joining": "Joining {{ name }} farm with {{ amount }} {{ symbol1 }}/{{ symbol2 }}",
   "pools.reviewTransaction.modal.detail.cost": "Transaction cost:",

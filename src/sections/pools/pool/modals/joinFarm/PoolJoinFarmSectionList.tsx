@@ -10,6 +10,8 @@ import { Text } from "components/Typography/Text/Text"
 import { useDeposits } from "api/deposits"
 import { useStore } from "state/store"
 import { PoolJoinFarmClaim } from "./PoolJoinFarmClaim"
+import { Box } from "components/Box/Box"
+import { PoolJoinFarmWithdraw } from "./PoolJoinFarmWithdraw"
 
 export function PoolJoinFarmSectionList(props: {
   poolId: string
@@ -64,6 +66,16 @@ export function PoolJoinFarmSectionList(props: {
               </Fragment>
             )
           })}
+
+          {!!deposits.data?.length && (
+            <Box flex css={{ justifyContent: "center" }}>
+              <PoolJoinFarmWithdraw
+                poolId={props.poolId}
+                assetIn={props.assetIn}
+                assetOut={props.assetOut}
+              />
+            </Box>
+          )}
 
           <Text fs={18} fw={700} mt={20} mb={16}>
             {t("pools.allFarms.modal.list.availableFarms")}
