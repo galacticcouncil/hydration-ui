@@ -13,7 +13,7 @@ export const useCurrentSharesValue = ({
   pool,
 }: {
   shareToken: Maybe<u32>
-  shareTokenBalance: BN
+  shareTokenBalance?: BN
   pool: PoolBase
 }) => {
   const totalIssuance = useTotalIssuance(shareToken)
@@ -22,7 +22,8 @@ export const useCurrentSharesValue = ({
   const isLoading = totalIssuance.isLoading || totalInPool.isLoading
 
   const data = useMemo(() => {
-    if (!totalIssuance.data || !totalInPool.data) return undefined
+    if (!totalIssuance.data || !totalInPool.data || !shareTokenBalance)
+      return undefined
 
     const issuance = totalIssuance.data.total
     const liquidity = totalInPool.data

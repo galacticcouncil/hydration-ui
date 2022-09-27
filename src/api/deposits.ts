@@ -1,8 +1,9 @@
 import { ApiPromise } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
-import { useApiPromise } from "utils/network"
+import { DEPOSIT_CLASS_ID, useApiPromise } from "utils/network"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u128 } from "@polkadot/types-codec"
+import { AccountId32 } from "@polkadot/types/interfaces"
 
 export type DepositType = Awaited<
   ReturnType<ReturnType<typeof getDeposits>>
@@ -18,6 +19,15 @@ export const useDeposit = (id: u128) => {
   return useQuery(QUERY_KEYS.deposit(id), getDeposit(api, id))
 }
 
+export const useAccountDepositIds = (accountId: AccountId32 | string) => {
+  const api = useApiPromise()
+  return useQuery(
+    QUERY_KEYS.accountDepositIds(accountId),
+    getAccountDepositIds(api, accountId),
+    { enabled: !!accountId },
+  )
+}
+
 export const getDeposits = (api: ApiPromise, poolId?: string) => async () => {
   const res = await api.query.warehouseLM.deposit.entries()
   const data = res.map(([storageKey, codec]) => {
@@ -30,6 +40,20 @@ export const getDeposits = (api: ApiPromise, poolId?: string) => async () => {
 
   return data
 }
+
+export const getAccountDepositIds =
+  (api: ApiPromise, accountId: AccountId32 | string) => async () => {
+    const res = await api.query.uniques.account.entries(
+      accountId,
+      DEPOSIT_CLASS_ID,
+    )
+    const nfts = res.map(([storageKey]) => {
+      const [owner, classId, instanceId] = storageKey.args
+      return { owner, classId, instanceId }
+    })
+
+    return nfts
+  }
 
 export const getDeposit = (api: ApiPromise, id: u128) => async () => {
   const res = await api.query.warehouseLM.deposit(id)

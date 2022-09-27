@@ -8,7 +8,7 @@ import BN from "bignumber.js"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { useCurrentSharesValue } from "sections/pools/pool/shares/value/PoolSharesValue.utils"
 
-type Props = { shareToken: Maybe<u32>; pool: PoolBase; shareTokenBalance: BN }
+type Props = { shareToken: Maybe<u32>; pool: PoolBase; shareTokenBalance?: BN }
 
 export const PoolSharesValue: FC<Props> = (props) => {
   const { t } = useTranslation()

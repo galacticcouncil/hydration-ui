@@ -6,7 +6,7 @@ import {
 import { useTranslation } from "react-i18next"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Box } from "components/Box/Box"
-import { useDeposits } from "api/deposits"
+import { useAccountDepositIds, useDeposits } from "api/deposits"
 import { PoolPositionList } from "sections/pools/pool/position/list/PoolPositionList"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { usePoolShareToken } from "api/pools"
@@ -22,29 +22,33 @@ export const PoolShares: FC<Props> = ({ pool }) => {
   const { t } = useTranslation()
 
   const { account } = useStore()
-  const deposits = useDeposits(pool.address) // TODO: filter deposits belonging to current account
+
   const shareToken = usePoolShareToken(pool.address)
   const balance = useTokenBalance(shareToken.data?.token, account?.address)
+
+  const deposits = useDeposits(pool.address)
+  const accountDepositIds = useAccountDepositIds(account?.address ?? "")
+  const positions = deposits.data?.filter((deposit) =>
+    accountDepositIds.data?.some((ad) => ad.instanceId.eq(deposit.id)),
+  )
 
   return (
     <SContainer>
       <GradientText fs={16} lh={22} mb={12}>
         {t("pools.pool.liquidity.title")}
       </GradientText>
-      {balance.data && (
-        <SDetails>
-          <PoolSharesUnstaked balance={balance.data.balance} />
-          <PoolSharesValue
-            shareToken={shareToken.data?.token}
-            pool={pool}
-            shareTokenBalance={balance.data.balance}
-          />
-          <PoolSharesApr poolId={pool.address} />
-        </SDetails>
-      )}
-      {!!deposits.data?.length && (
+      <SDetails>
+        <PoolSharesUnstaked balance={balance.data?.balance} />
+        <PoolSharesValue
+          shareToken={shareToken.data?.token}
+          pool={pool}
+          shareTokenBalance={balance.data?.balance}
+        />
+        <PoolSharesApr poolId={pool.address} />
+      </SDetails>
+      {!!positions?.length && (
         <Box flex column gap={12} mt={32}>
-          {deposits.data.map(({ id, deposit }, i) => (
+          {positions.map(({ id, deposit }, i) => (
             <PoolPositionList
               key={id.toString()}
               deposit={deposit}

@@ -16,6 +16,11 @@ export const QUERY_KEYS = {
   ],
   deposit: (id: u128) => [QUERY_KEY_PREFIX, "deposit", id.toString()],
   deposits: (poolId?: string) => [QUERY_KEY_PREFIX, "deposits", poolId],
+  accountDepositIds: (accountId: AccountId32 | string) => [
+    QUERY_KEY_PREFIX,
+    "depositIds",
+    accountId?.toString(),
+  ],
   globalFarms: (ids: u32[]) => [
     QUERY_KEY_PREFIX,
     "globalFarms",

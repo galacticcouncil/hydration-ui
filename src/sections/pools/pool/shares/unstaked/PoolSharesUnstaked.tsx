@@ -4,7 +4,7 @@ import { Box } from "components/Box/Box"
 import { useTranslation } from "react-i18next"
 import BigNumber from "bignumber.js"
 
-type Props = { balance: BigNumber }
+type Props = { balance?: BigNumber }
 
 export const PoolSharesUnstaked: FC<Props> = ({ balance }) => {
   const { t } = useTranslation()
