@@ -2,7 +2,6 @@ import { Trans, useTranslation } from "react-i18next"
 import { SMaxButton } from "sections/pools/pool/modals/joinFarm/PoolJoinFarm.styled"
 import { Box } from "components/Box/Box"
 import { Text } from "components/Typography/Text/Text"
-import { AprFarm } from "utils/apr"
 import { PoolToken } from "@galacticcouncil/sdk"
 import { AssetInput } from "components/AssetInput/AssetInput"
 import { DualAssetIcons } from "components/DualAssetIcons/DualAssetIcons"
@@ -15,6 +14,10 @@ import { useForm, Controller } from "react-hook-form"
 import { FormValues } from "utils/types"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { useActiveYieldFarms, useGlobalFarms } from "api/farms"
+import { BN_0 } from "utils/constants"
+import { AprFarm } from "utils/apr"
+import BigNumber from "bignumber.js"
 
 export const PoolJoinFarmDeposit = (props: {
   poolId: string
@@ -22,6 +25,18 @@ export const PoolJoinFarmDeposit = (props: {
   assetOut: PoolToken
   farm?: AprFarm
 }) => {
+  const activeYieldFarms = useActiveYieldFarms(props.poolId)
+  const globalFarms = useGlobalFarms(
+    activeYieldFarms.data?.map((f) => f.globalFarmId) ?? [],
+  )
+
+  const minDeposit =
+    globalFarms.data?.reduce<BigNumber>((memo, i) => {
+      const value = i.minDeposit.toBigNumber()
+      if (value.isGreaterThan(memo)) return value
+      return memo
+    }, BN_0) ?? BN_0
+
   const { t } = useTranslation()
   const { createTransaction } = useStore()
   const api = useApiPromise()
@@ -38,12 +53,28 @@ export const PoolJoinFarmDeposit = (props: {
 
   async function handleSubmit(data: FormValues<typeof form>) {
     if (!account) throw new Error("No account found")
-    if (!props.farm) throw new Error("Missing farm")
+    if (props.farm) {
+      return await createTransaction({
+        tx: api.tx.liquidityMining.depositShares(
+          props.farm.globalFarm.id,
+          props.farm.yieldFarm.id,
+          {
+            assetIn: props.assetIn.id,
+            assetOut: props.assetOut.id,
+          },
+          data.value,
+        ),
+      })
+    }
 
-    return await createTransaction({
+    if (!activeYieldFarms.data)
+      throw new Error("Missing active yield farms data")
+
+    const [firstActive, ...restActive] = activeYieldFarms.data
+    const firstDeposit = await createTransaction({
       tx: api.tx.liquidityMining.depositShares(
-        props.farm.globalFarm.id,
-        props.farm.yieldFarm.id,
+        firstActive.globalFarmId,
+        firstActive.yieldFarmId,
         {
           assetIn: props.assetIn.id,
           assetOut: props.assetOut.id,
@@ -51,6 +82,30 @@ export const PoolJoinFarmDeposit = (props: {
         data.value,
       ),
     })
+
+    for (const record of firstDeposit.events) {
+      // currently, liquidityMining.SharesDeposited does not contain the depositId
+      // instead, we obtain the value from the nft.InstanceMinted event instead,
+      // which should be the same
+      if (api.events.nft.InstanceMinted.is(record.event)) {
+        const depositId = record.event.data.instanceId
+
+        const txs = restActive.map((item) =>
+          api.tx.liquidityMining.redepositLpShares(
+            item.globalFarmId,
+            item.yieldFarmId,
+            { assetIn: props.assetIn.id, assetOut: props.assetOut.id },
+            depositId,
+          ),
+        )
+
+        if (txs.length > 1) {
+          await createTransaction({ tx: api.tx.utility.batchAll(txs) })
+        } else if (txs.length === 1) {
+          await createTransaction({ tx: txs[0] })
+        }
+      }
+    }
   }
 
   return (
@@ -106,10 +161,7 @@ export const PoolJoinFarmDeposit = (props: {
             rules={{
               validate: {
                 minDeposit: (value) => {
-                  const minDeposit =
-                    props.farm?.globalFarm.minDeposit.toBigNumber()
-
-                  return !minDeposit?.lte(value)
+                  return !minDeposit.lte(value)
                     ? t("farms.deposit.error.minDeposit", { minDeposit })
                     : undefined
                 },
