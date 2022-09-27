@@ -4,6 +4,10 @@ import { useApiPromise } from "utils/network"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u128 } from "@polkadot/types-codec"
 
+export type DepositType = Awaited<
+  ReturnType<ReturnType<typeof getDeposits>>
+>[number]
+
 export const useDeposits = (poolId?: string) => {
   const api = useApiPromise()
   return useQuery(QUERY_KEYS.deposits(poolId), getDeposits(api, poolId))

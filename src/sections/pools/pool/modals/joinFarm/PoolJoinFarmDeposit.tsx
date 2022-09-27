@@ -20,7 +20,7 @@ export const PoolJoinFarmDeposit = (props: {
   poolId: string
   assetIn: PoolToken
   assetOut: PoolToken
-  farm: AprFarm
+  farm?: AprFarm
 }) => {
   const { t } = useTranslation()
   const { createTransaction } = useStore()
@@ -38,6 +38,8 @@ export const PoolJoinFarmDeposit = (props: {
 
   async function handleSubmit(data: FormValues<typeof form>) {
     if (!account) throw new Error("No account found")
+    if (!props.farm) throw new Error("Missing farm")
+
     return await createTransaction({
       tx: api.tx.liquidityMining.depositShares(
         props.farm.globalFarm.id,
@@ -105,9 +107,9 @@ export const PoolJoinFarmDeposit = (props: {
               validate: {
                 minDeposit: (value) => {
                   const minDeposit =
-                    props.farm.globalFarm.minDeposit.toBigNumber()
+                    props.farm?.globalFarm.minDeposit.toBigNumber()
 
-                  return !minDeposit.lte(value)
+                  return !minDeposit?.lte(value)
                     ? t("farms.deposit.error.minDeposit", { minDeposit })
                     : undefined
                 },

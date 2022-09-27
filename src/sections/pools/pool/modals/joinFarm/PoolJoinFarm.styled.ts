@@ -44,7 +44,7 @@ export const SFarm = styled.button<{ variant: "list" | "detail" }>`
 
 export const SFarmRow = styled.div`
   display: grid;
-  grid-template-columns: 88px 1fr;
+  grid-template-columns: 92px 1fr;
   grid-column-gap: 12px;
   align-items: center;
 
@@ -61,12 +61,16 @@ export const SFarmIcon = styled.div`
 
   height: 100%;
 
+  margin-right: -10px;
+
   svg {
-    width: 10px;
-    height: 10px;
+    width: 24px;
+    height: 24px;
 
     opacity: 0.5;
     transform: rotate(-90deg);
+
+    color: ${theme.colors.neutralGray200};
   }
 `
 

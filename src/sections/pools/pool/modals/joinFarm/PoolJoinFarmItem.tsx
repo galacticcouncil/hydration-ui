@@ -14,11 +14,20 @@ import { addSeconds } from "date-fns"
 import { BLOCK_TIME } from "utils/constants"
 import { useBestNumber } from "api/chain"
 import { getFloatingPointAmount } from "utils/balance"
+import { css } from "styled-components"
+import { GradientText } from "components/Typography/GradientText/GradientText"
+import { DepositType } from "api/deposits"
+import { Tag } from "components/Tag/Tag"
+import { PoolToken } from "@galacticcouncil/sdk"
 
 export const PoolJoinFarmItem = (props: {
   farm: AprFarm
-  onSelect: () => void
-  variant: "list" | "detail"
+  deposit?: {
+    data: DepositType
+    assetA: PoolToken
+    assetB: PoolToken
+  }
+  onSelect?: () => void
 }) => {
   const asset = useAsset(props.farm.assetId)
   const { t } = useTranslation()
@@ -34,20 +43,33 @@ export const PoolJoinFarmItem = (props: {
 
   return (
     <SFarm
-      as={props.variant === "detail" ? "div" : "button"}
-      variant={props.variant}
+      as={props.onSelect ? "button" : "div"}
+      variant={props.onSelect ? "list" : "detail"}
       onClick={props.onSelect}
     >
-      <Box flex column gap={8}>
-        <Box flex acenter gap={8}>
-          {asset.data?.icon}
-          <Text fw={700}>{asset.data?.name}</Text>
+      <Box
+        flex
+        column
+        gap={8}
+        css={css`
+          align-items: flex-start;
+          justify-content: space-between;
+          height: 100%;
+        `}
+      >
+        {props.deposit && <Tag>{t("pools.allFarms.modal.joined")}</Tag>}
+
+        <Box flex column gap={8}>
+          <Box flex acenter gap={8}>
+            {asset.data?.icon}
+            <Text fw={700}>{asset.data?.name}</Text>
+          </Box>
+          <Text fs={20} lh={28} fw={600} color="primary200">
+            {t("pools.allFarms.modal.apr.single", {
+              value: props.farm.apr,
+            })}
+          </Text>
         </Box>
-        <Text fs={20} lh={28} fw={600} color="primary200">
-          {t("pools.allFarms.modal.apr.single", {
-            value: props.farm.apr,
-          })}
-        </Text>
       </Box>
       <Box flex column>
         <SFarmRow>
@@ -83,13 +105,27 @@ export const PoolJoinFarmItem = (props: {
             })}
           </Text>
         </SFarmRow>
+        {props.deposit && (
+          <SFarmRow>
+            <GradientText fs={14} fw={550}>
+              {t("pools.allFarms.modal.lockedShares")}
+            </GradientText>
+            <Text fs={14} color="neutralGray100">
+              {t("pools.allFarms.modal.lockedShares.value", {
+                value: props.deposit.data.deposit.shares,
+                assetA: props.deposit.assetA.symbol,
+                assetB: props.deposit.assetB.symbol,
+              })}
+            </Text>
+          </SFarmRow>
+        )}
         <Text fs={12} lh={16} fw={400} color="neutralGray500">
           {t("pools.allFarms.modal.end", {
             end: addSeconds(new Date(), secondsDurationToEnd.toNumber()),
           })}
         </Text>
       </Box>
-      {props.variant === "list" && (
+      {props.onSelect && (
         <SFarmIcon>
           <ChevronDown />
         </SFarmIcon>
