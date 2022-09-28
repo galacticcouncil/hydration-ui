@@ -1,43 +1,30 @@
-import { ProviderType } from "sections/wallet/connect/modal/WalletConnectModal.utils"
-import { FC, ReactNode } from "react"
-import { ReactComponent as PolkadotLogo } from "assets/icons/PolkadotLogo.svg"
-import { ReactComponent as TalismanLogo } from "assets/icons/TalismanLogo.svg"
+import { FC } from "react"
 import { SWalletButton } from "sections/wallet/connect/providers/WalletConnectProviders.styled"
 import { Text } from "components/Typography/Text/Text"
 import { css } from "styled-components"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { ReactComponent as DownloadIcon } from "assets/icons/DownloadIcon.svg"
 import { useTranslation } from "react-i18next"
+import { Wallet } from "@talismn/connect-wallets"
 
 type Props = {
-  variant: ProviderType
+  wallet: Wallet
   onClick: () => void
   isInjected: boolean
 }
 
 export const WalletConnectProvidersButton: FC<Props> = ({
-  variant,
+  wallet,
   onClick,
   isInjected,
 }) => {
   const { t } = useTranslation()
 
-  let logo: ReactNode = null
-  let title: ReactNode = null
-
-  if (variant === "polkadot-js") {
-    logo = <PolkadotLogo />
-    title = "Polkadot"
-  } else if (variant === "talisman") {
-    logo = <TalismanLogo />
-    title = "Talisman"
-  }
-
   return (
-    <SWalletButton onClick={onClick} variant={variant}>
-      {logo}
+    <SWalletButton onClick={onClick} variant={wallet.extensionName}>
+      <img src={wallet.logo.src} alt={wallet.logo.alt} width={40} height={40} />
       <Text fs={18} css={{ flexGrow: 1 }}>
-        {title}
+        {wallet.title}
       </Text>
 
       <Text

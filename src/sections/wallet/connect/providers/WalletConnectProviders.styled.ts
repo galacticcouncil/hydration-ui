@@ -1,7 +1,7 @@
 import styled, { css } from "styled-components"
 
 export const SWalletButton = styled.button<{
-  variant: "polkadot-js" | "talisman"
+  variant: string
 }>`
   display: flex;
   align-items: center;
@@ -40,6 +40,20 @@ export const SWalletButton = styled.button<{
 
         :active {
           background: hsla(75, 100%, 68%, 0.12);
+        }
+      `
+    }
+
+    if (variant === "subwallet-js") {
+      return css`
+        background: hsla(222, 100%, 50%, 0.05);
+
+        :hover {
+          background: hsla(222, 100%, 50%, 0.1);
+        }
+
+        :active {
+          background: hsla(222, 100%, 50%, 0.12);
         }
       `
     }

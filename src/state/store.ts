@@ -1,13 +1,12 @@
 import create from "zustand"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
-import type { ProviderType } from "sections/wallet/connect/modal/WalletConnectModal.utils"
 import { ISubmittableResult } from "@polkadot/types/types"
 
 export interface Account {
   name: string
   address: AccountId32 | string
-  provider: ProviderType
+  provider: string
 }
 
 export interface TransactionInput {

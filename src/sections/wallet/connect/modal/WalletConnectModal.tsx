@@ -2,7 +2,6 @@ import { Modal } from "components/Modal/Modal"
 import { useTranslation } from "react-i18next"
 import { FC, useState } from "react"
 
-import { web3Enable } from "@polkadot/extension-dapp"
 import { useMutation } from "@tanstack/react-query"
 import { POLKADOT_APP_NAME } from "utils/network"
 import { WalletConnectConfirmPending } from "sections/wallet/connect/confirmPending/WalletConnectConfirmPending"
@@ -10,6 +9,7 @@ import { WalletConnectProviderSelect } from "sections/wallet/connect/providerSel
 import { WalletConnectAccountSelect } from "sections/wallet/connect/accountSelect/WalletConnectAccountSelect"
 import { useStore } from "state/store"
 import { WalletConnectActiveFooter } from "./WalletConnectActiveFooter"
+import { Wallet } from "@talismn/connect-wallets"
 
 type Props = {
   isOpen: boolean
@@ -19,13 +19,15 @@ type Props = {
 export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
   const { t } = useTranslation("translation")
   const [userSelectedProvider, setUserSelectedProvider] =
-    useState<"talisman" | "polkadot-js" | null>(null)
+    useState<string | null>(null)
 
-  const mutate = useMutation(["web3Enable"], () =>
-    web3Enable(POLKADOT_APP_NAME),
+  const mutate = useMutation(
+    ["web3Enable", userSelectedProvider],
+    async (wallet: Wallet) => wallet.enable(POLKADOT_APP_NAME),
+    { onError: () => setUserSelectedProvider(null) },
   )
-  const { account, setAccount } = useStore()
 
+  const { account, setAccount } = useStore()
   const activeProvider = userSelectedProvider ?? account?.provider
 
   const modalProps = userSelectedProvider
@@ -75,11 +77,9 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
         )
       ) : (
         <WalletConnectProviderSelect
-          onWalletSelect={(provider) => {
-            setUserSelectedProvider(provider)
-            if (mutate.status !== "success") {
-              mutate.mutate()
-            }
+          onWalletSelect={(wallet) => {
+            setUserSelectedProvider(wallet.extensionName)
+            mutate.mutate(wallet)
           }}
         />
       )}

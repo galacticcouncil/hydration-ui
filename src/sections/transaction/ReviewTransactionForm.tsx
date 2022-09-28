@@ -7,9 +7,9 @@ import { TransactionCode } from "components/TransactionCode/TransactionCode"
 import { Transaction, useStore } from "../../state/store"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
 import { usePaymentInfo } from "../../api/transaction"
-import { web3FromAddress } from "@polkadot/extension-dapp"
 import { useMutation } from "@tanstack/react-query"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
+import { getWalletBySource } from "@talismn/connect-wallets"
 
 export const ReviewTransactionForm = (
   props: {
@@ -23,13 +23,14 @@ export const ReviewTransactionForm = (
 
   const signTx = useMutation(async () => {
     const address = account?.address?.toString()
-    if (address == null) throw new Error("Missing active account")
-
-    const injector = await web3FromAddress(address)
+    const wallet = getWalletBySource(account?.provider)
+    if (address == null || wallet == null)
+      throw new Error("Missing active account or wallet")
 
     const signature = await props.tx.signAsync(address, {
-      signer: injector.signer,
+      signer: wallet.signer,
     })
+
     return await props.onSigned(signature)
   })
 

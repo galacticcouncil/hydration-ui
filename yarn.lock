@@ -1737,16 +1737,6 @@
     eventemitter3 "^4.0.7"
     rxjs "^7.5.6"
 
-"@polkadot/extension-dapp@^0.44.5":
-  version "0.44.5"
-  resolved "https://registry.yarnpkg.com/@polkadot/extension-dapp/-/extension-dapp-0.44.5.tgz#c46ff5f4ac7ecd6d74b1c3e7a52b062699f4fd44"
-  integrity sha512-xMVY2hH/hlNuXutoMMAzT+vnWKelQqqwf+I/ANx7GJQzt1mwOgMKGHCpyGajnEUEJ16h0mST/TaDQokL2pTbyQ==
-  dependencies:
-    "@babel/runtime" "^7.18.9"
-    "@polkadot/extension-inject" "^0.44.5"
-    "@polkadot/util" "^10.1.4"
-    "@polkadot/util-crypto" "^10.1.4"
-
 "@polkadot/extension-inject@^0.44.5":
   version "0.44.5"
   resolved "https://registry.yarnpkg.com/@polkadot/extension-inject/-/extension-inject-0.44.5.tgz#85f133840089e3fbf262664e60bc065ea706848e"
@@ -3519,6 +3509,11 @@
     "@svgr/babel-preset" "^6.3.1"
     "@svgr/hast-util-to-babel-ast" "^6.3.1"
     svg-parser "^2.0.4"
+
+"@talismn/connect-wallets@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@talismn/connect-wallets/-/connect-wallets-1.2.1.tgz#ceba2ad1e8771c8d4acaa6a61bd2da1dfbf055f7"
+  integrity sha512-jeLQjXxBcSb4xgcLOHlcp0EFSqsFIi8yicLB+YiqGHbExgb+bSEAShkmif/MtZ4JWa/XD58aoy3HHo4VxxWqnw==
 
 "@tanstack/query-core@^4.0.0-beta.1":
   version "4.1.0"

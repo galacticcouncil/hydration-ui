@@ -4,11 +4,11 @@ import { Trans, useTranslation } from "react-i18next"
 import { Separator } from "components/Separator/Separator"
 import { ExternalLink } from "components/Link/ExternalLink"
 import { WalletConnectProviders } from "sections/wallet/connect/providers/WalletConnectProviders"
-import { PROVIDER_DOWNLOAD_URLS } from "sections/wallet/connect/modal/WalletConnectModal.utils"
 import { FC } from "react"
+import { Wallet } from "@talismn/connect-wallets"
 
 type Props = {
-  onWalletSelect: (provider: "talisman" | "polkadot-js") => void
+  onWalletSelect: (wallet: Wallet) => void
 }
 
 export const WalletConnectProviderSelect: FC<Props> = ({ onWalletSelect }) => {
@@ -21,13 +21,8 @@ export const WalletConnectProviderSelect: FC<Props> = ({ onWalletSelect }) => {
       </Text>
 
       <WalletConnectProviders
-        onConnect={(provider) => {
-          onWalletSelect(provider)
-        }}
-        onDownload={(provider) => {
-          const url = PROVIDER_DOWNLOAD_URLS[provider]
-          if (url) window.open(url, "_blank")
-        }}
+        onConnect={onWalletSelect}
+        onDownload={(wallet) => window.open(wallet.installUrl, "_blank")}
       />
 
       <Text

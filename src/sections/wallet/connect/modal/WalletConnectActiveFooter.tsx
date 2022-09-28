@@ -5,7 +5,6 @@ import { Text } from "components/Typography/Text/Text"
 import { ButtonTransparent } from "components/Button/Button"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { ReactComponent as LogoutIcon } from "assets/icons/LogoutIcon.svg"
-import { getProviderMeta, ProviderType } from "./WalletConnectModal.utils"
 import { Account } from "state/store"
 import { useTranslation } from "react-i18next"
 import {
@@ -13,15 +12,16 @@ import {
   SLogoutContainer,
   SSwitchText,
 } from "./WalletConnectActiveFooter.styled"
+import { getWalletBySource } from "@talismn/connect-wallets"
 
 export function WalletConnectActiveFooter(props: {
   account: Account | undefined
-  provider: ProviderType
+  provider: string
   onSwitch: () => void
   onLogout: () => void
 }) {
-  const { name, logo } = getProviderMeta(props.provider, { size: 30 })
   const { t } = useTranslation()
+  const wallet = getWalletBySource(props.provider)
 
   return (
     <SContainer flex>
@@ -47,10 +47,15 @@ export function WalletConnectActiveFooter(props: {
         onClick={props.onSwitch}
       >
         <Box flex css={{ gap: 22, alignItems: "center" }}>
-          <Box flex css={{ gap: 4, alignItems: "center" }}>
-            {logo}
+          <Box flex css={{ gap: 12, alignItems: "center" }}>
+            <img
+              src={wallet?.logo.src}
+              alt={wallet?.logo.alt}
+              width={30}
+              height={30}
+            />
             <Text fs={14} fw={600} css={{ color: theme.colors.neutralGray100 }}>
-              {name}
+              {wallet?.title}
             </Text>
           </Box>
           <SSwitchText fs={14} fw={500}>
