@@ -147,7 +147,7 @@ export const useTotalInFarms = () => {
   return { data, isLoading }
 }
 
-const getPoolTotal = (
+export const getPoolTotal = (
   tokens: PoolToken[],
   spotPrices: (SpotPrice | undefined)[],
 ) => {

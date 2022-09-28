@@ -3,6 +3,7 @@ import type { AccountId32 } from "@polkadot/types/interfaces"
 import { CodecHash } from "@polkadot/types/interfaces/runtime"
 import { Maybe } from "./types"
 import { u128 } from "@polkadot/types-codec"
+import { FarmIds } from "api/farms"
 
 export const QUERY_KEY_PREFIX = "@block"
 
@@ -37,7 +38,7 @@ export const QUERY_KEYS = {
     poolId.toString(),
   ],
   globalFarm: (id: u32) => [QUERY_KEY_PREFIX, "globalFarm", id.toString()],
-  yieldFarm: (id: string) => [QUERY_KEY_PREFIX, "yieldFarm", id],
+  yieldFarm: (ids: FarmIds) => [QUERY_KEY_PREFIX, "yieldFarm", ids],
   activeYieldFarm: (id: string) => [QUERY_KEY_PREFIX, "activeYieldFarm", id],
   totalLiquidity: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,

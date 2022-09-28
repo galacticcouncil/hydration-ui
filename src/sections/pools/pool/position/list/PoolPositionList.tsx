@@ -9,10 +9,15 @@ import { useTranslation } from "react-i18next"
 import { ReactComponent as FarmIcon } from "assets/icons/FarmIcon.svg"
 import { Box } from "components/Box/Box"
 import { PoolPosition } from "sections/pools/pool/position/PoolPosition"
+import { PoolBase } from "@galacticcouncil/sdk"
 
-type Props = { index: number; deposit: PalletLiquidityMiningDepositData }
+type Props = {
+  index: number
+  deposit: PalletLiquidityMiningDepositData
+  pool: PoolBase
+}
 
-export const PoolPositionList: FC<Props> = ({ index, deposit }) => {
+export const PoolPositionList: FC<Props> = ({ index, deposit, pool }) => {
   const { t } = useTranslation()
 
   return (
@@ -31,6 +36,7 @@ export const PoolPositionList: FC<Props> = ({ index, deposit }) => {
             key={i}
             position={position}
             index={i + 1}
+            pool={pool}
             poolId={deposit.ammPoolId}
           />
         ))}

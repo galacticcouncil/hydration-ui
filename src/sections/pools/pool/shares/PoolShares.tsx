@@ -52,6 +52,7 @@ export const PoolShares: FC<Props> = ({ pool }) => {
             <PoolPositionList
               key={id.toString()}
               deposit={deposit}
+              pool={pool}
               index={i + 1}
             />
           ))}

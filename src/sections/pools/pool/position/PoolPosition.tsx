@@ -1,4 +1,4 @@
-import { FC, useMemo } from "react"
+import { FC } from "react"
 import { Box } from "components/Box/Box"
 import { Text } from "components/Typography/Text/Text"
 import { PoolPositionFarm } from "sections/pools/pool/position/farm/PoolPositionFarm"
@@ -6,33 +6,24 @@ import { useTranslation } from "react-i18next"
 import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { SContainer } from "sections/pools/pool/position/PoolPosition.styled"
-import { useGlobalFarm } from "api/farms"
-import { BLOCK_TIME } from "utils/constants"
-import { subSeconds } from "date-fns"
+import { usePoolPositionData } from "sections/pools/pool/position/PoolPosition.utils"
+import { PoolBase } from "@galacticcouncil/sdk"
 
 type Props = {
   position: PalletLiquidityMiningYieldFarmEntry
   index: number
+  pool: PoolBase
   poolId: AccountId32
 }
 
-export const PoolPosition: FC<Props> = ({ position, index, poolId }) => {
+export const PoolPosition: FC<Props> = ({ position, index, pool, poolId }) => {
   const { t } = useTranslation()
-  const globalFarm = useGlobalFarm(position.globalFarmId)
 
-  const enteredDate = useMemo(() => {
-    if (!globalFarm.data) return "-"
-
-    const enteredAt = position.enteredAt.toBigNumber()
-    const blocksPerPeriod = globalFarm.data.blocksPerPeriod.toBigNumber()
-    const blockRange = enteredAt
-      .times(blocksPerPeriod)
-      .plus(blocksPerPeriod.plus(1))
-
-    const date = subSeconds(Date.now(), blockRange.times(BLOCK_TIME).toNumber())
-
-    return date
-  }, [globalFarm.data, position.enteredAt])
+  const { enteredDate, farmValue } = usePoolPositionData({
+    position,
+    pool,
+    poolId,
+  })
 
   return (
     <SContainer key={index}>
@@ -50,7 +41,7 @@ export const PoolPosition: FC<Props> = ({ position, index, poolId }) => {
         </Text>
         <Text fs={14} lh={18} color="white">
           {t("pools.pool.positions.position.shares", {
-            shares: position.valuedShares.toBigNumber(), // TODO: probably not the correct number
+            shares: position.valuedShares.toBigNumber(),
           })}
         </Text>
       </Box>
@@ -60,7 +51,7 @@ export const PoolPosition: FC<Props> = ({ position, index, poolId }) => {
         </Text>
         <Box flex column gap={2}>
           <Text fs={14} lh={18} color="white">
-            TODO
+            {t("value.usd", { amount: farmValue, decimalPlaces: 6 })}
           </Text>
           <Text fs={12} lh={16} color="neutralGray500">
             TODO
