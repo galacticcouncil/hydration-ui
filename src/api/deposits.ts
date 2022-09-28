@@ -1,5 +1,5 @@
 import { ApiPromise } from "@polkadot/api"
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { DEPOSIT_CLASS_ID, useApiPromise } from "utils/network"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u128 } from "@polkadot/types-codec"
@@ -12,6 +12,19 @@ export type DepositType = Awaited<
 export const useDeposits = (poolId?: string) => {
   const api = useApiPromise()
   return useQuery(QUERY_KEYS.deposits(poolId), getDeposits(api, poolId))
+}
+
+export const useAllDeposits = (poolIds?: string[]) => {
+  const api = useApiPromise()
+  const ids = poolIds?.filter((id): id is string => !!id) ?? []
+
+  return useQueries({
+    queries: ids.map((id) => ({
+      queryKey: QUERY_KEYS.deposits(id),
+      queryFn: getDeposits(api, id),
+      enabled: !!id,
+    })),
+  })
 }
 
 export const useDeposit = (id: u128) => {

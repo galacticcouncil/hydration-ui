@@ -3,16 +3,26 @@ import { Switch } from "components/Switch/Switch"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Heading } from "components/Typography/Heading/Heading"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
+import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import {
   useTotalInFarms,
   useTotalInPools,
 } from "sections/pools/header/PoolsHeader.utils"
+import { useStore } from "state/store"
 
-export const PoolsHeader = () => {
+type Props = {
+  showMyPositions: boolean
+  onShowMyPositionsChange: (value: boolean) => void
+}
+
+export const PoolsHeader: FC<Props> = ({
+  showMyPositions,
+  onShowMyPositionsChange,
+}) => {
   const { t } = useTranslation()
-  const [showMyFarms, setShowMyFarms] = useState<boolean>(false)
+
+  const { account } = useStore()
 
   const totalInPools = useTotalInPools()
   const totalInFarms = useTotalInFarms()
@@ -23,14 +33,16 @@ export const PoolsHeader = () => {
         <GradientText fs={30} fw={700}>
           {t("pools.header.title")}
         </GradientText>
-        <Switch
-          value={showMyFarms}
-          onCheckedChange={setShowMyFarms}
-          size="small"
-          name="my-positions"
-          label={t("pools.header.switch")}
-          withLabel
-        />
+        {!!account && (
+          <Switch
+            value={showMyPositions}
+            onCheckedChange={onShowMyPositionsChange}
+            size="small"
+            name="my-positions"
+            label={t("pools.header.switch")}
+            withLabel
+          />
+        )}
       </Box>
       <Box flex even mb={40}>
         <Box>
