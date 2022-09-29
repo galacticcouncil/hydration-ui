@@ -1,6 +1,6 @@
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/network"
 
-import { useStore } from "../state/store"
+import { useAccountStore } from "../state/store"
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
@@ -55,7 +55,7 @@ export const useTokenBalance = (
   address: Maybe<AccountId32 | string>,
 ) => {
   const api = useApiPromise()
-  const { account } = useStore()
+  const { account } = useAccountStore()
 
   // TODO: replace later with native Polkadot types
   const safeId = id?.toString()
@@ -71,7 +71,7 @@ export const useTokenBalance = (
 }
 
 export function useTokensBalances(tokenIds: string[]) {
-  const { account } = useStore()
+  const { account } = useAccountStore()
   const api = useApiPromise()
 
   const queries = useQueries({

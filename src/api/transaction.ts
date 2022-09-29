@@ -1,5 +1,5 @@
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
-import { useStore } from "../state/store"
+import { useAccountStore } from "../state/store"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "../utils/queryKeys"
@@ -12,7 +12,7 @@ const getPaymentInfo =
   }
 
 export function usePaymentInfo(tx: SubmittableExtrinsic) {
-  const { account } = useStore()
+  const { account } = useAccountStore()
   const finalAccount = account?.address
 
   return useQuery(

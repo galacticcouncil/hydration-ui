@@ -4,7 +4,7 @@ import { Box } from "components/Box/Box"
 import { SDetailRow } from "./ReviewTransaction.styled"
 import { Button } from "components/Button/Button"
 import { TransactionCode } from "components/TransactionCode/TransactionCode"
-import { Transaction, useStore } from "../../state/store"
+import { Transaction, useAccountStore } from "../../state/store"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
 import { usePaymentInfo } from "../../api/transaction"
 import { useMutation } from "@tanstack/react-query"
@@ -19,7 +19,7 @@ export const ReviewTransactionForm = (
   } & Transaction,
 ) => {
   const { t } = useTranslation()
-  const { account } = useStore()
+  const { account } = useAccountStore()
 
   const signTx = useMutation(async () => {
     const address = account?.address?.toString()

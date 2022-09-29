@@ -15,7 +15,7 @@ import { Box } from "components/Box/Box"
 import { PoolRemoveLiquidityReward } from "sections/pools/pool/modals/removeLiquidity/reward/PoolRemoveLiquidityReward"
 import { Separator } from "components/Separator/Separator"
 import { useForm, Controller } from "react-hook-form"
-import { useStore } from "state/store"
+import { useAccountStore, useStore } from "state/store"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { FormValues } from "utils/types"
 import { PoolBase } from "@galacticcouncil/sdk"
@@ -91,7 +91,8 @@ const PoolRemoveLiquidityInput = (props: {
 export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
   const { t } = useTranslation()
   const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
-  const { account, createTransaction } = useStore()
+  const { createTransaction } = useStore()
+  const { account } = useAccountStore()
 
   const api = useApiPromise()
 

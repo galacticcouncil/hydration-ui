@@ -9,7 +9,7 @@ import {
   useTotalInFarms,
   useTotalInPools,
 } from "sections/pools/header/PoolsHeader.utils"
-import { useStore } from "state/store"
+import { useAccountStore } from "state/store"
 
 type Props = {
   showMyPositions: boolean
@@ -22,7 +22,7 @@ export const PoolsHeader: FC<Props> = ({
 }) => {
   const { t } = useTranslation()
 
-  const { account } = useStore()
+  const { account } = useAccountStore()
 
   const totalInPools = useTotalInPools()
   const totalInFarms = useTotalInFarms()

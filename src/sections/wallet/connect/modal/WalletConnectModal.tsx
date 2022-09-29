@@ -7,7 +7,7 @@ import { POLKADOT_APP_NAME } from "utils/network"
 import { WalletConnectConfirmPending } from "sections/wallet/connect/confirmPending/WalletConnectConfirmPending"
 import { WalletConnectProviderSelect } from "sections/wallet/connect/providerSelect/WalletConnectProviderSelect"
 import { WalletConnectAccountSelect } from "sections/wallet/connect/accountSelect/WalletConnectAccountSelect"
-import { useStore } from "state/store"
+import { useAccountStore } from "state/store"
 import { WalletConnectActiveFooter } from "./WalletConnectActiveFooter"
 import { Wallet } from "@talismn/connect-wallets"
 
@@ -27,7 +27,7 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
     { onError: () => setUserSelectedProvider(null) },
   )
 
-  const { account, setAccount } = useStore()
+  const { account, setAccount } = useAccountStore()
   const activeProvider = userSelectedProvider ?? account?.provider
 
   const modalProps = userSelectedProvider

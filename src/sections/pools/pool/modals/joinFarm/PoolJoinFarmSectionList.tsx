@@ -8,7 +8,7 @@ import { PoolJoinFarmDeposit } from "./PoolJoinFarmDeposit"
 import { PoolJoinFarmItem } from "./PoolJoinFarmItem"
 import { Text } from "components/Typography/Text/Text"
 import { useDeposits } from "api/deposits"
-import { useStore } from "state/store"
+import { useAccountStore } from "state/store"
 import { PoolJoinFarmClaim } from "./PoolJoinFarmClaim"
 import { Box } from "components/Box/Box"
 import { PoolJoinFarmWithdraw } from "./PoolJoinFarmWithdraw"
@@ -23,7 +23,7 @@ export function PoolJoinFarmSectionList(props: {
   const apr = useAPR(props.poolId)
   const deposits = useDeposits(props.poolId)
 
-  const { account } = useStore()
+  const { account } = useAccountStore()
 
   return (
     <Fragment key="list">

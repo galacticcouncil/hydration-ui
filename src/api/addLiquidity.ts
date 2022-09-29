@@ -1,5 +1,5 @@
 import { useApiPromise } from "../utils/network"
-import { useStore } from "../state/store"
+import { useAccountStore, useStore } from "../state/store"
 import { useCallback, useState } from "react"
 import BigNumber from "bignumber.js"
 import { usePaymentInfo } from "./transaction"
@@ -11,7 +11,9 @@ interface AddLiquidityAsset {
 
 export function useAddLiquidity(assetA: string, assetB: string) {
   const api = useApiPromise()
-  const { account, createTransaction } = useStore()
+  const { createTransaction } = useStore()
+  const { account } = useAccountStore()
+
   const [pendingTx, setPendingTx] = useState(false)
 
   const { data: paymentInfoData } = usePaymentInfo(

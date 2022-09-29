@@ -6,7 +6,7 @@ import { PoolToken } from "@galacticcouncil/sdk"
 import { AssetInput } from "components/AssetInput/AssetInput"
 import { DualAssetIcons } from "components/DualAssetIcons/DualAssetIcons"
 import { Button } from "components/Button/Button"
-import { useStore } from "state/store"
+import { useAccountStore, useStore } from "state/store"
 import { useApiPromise } from "utils/network"
 import { usePoolShareToken } from "api/pools"
 import { useTokenBalance } from "api/balances"
@@ -43,7 +43,7 @@ export const PoolJoinFarmDeposit = (props: {
 
   const shareToken = usePoolShareToken(props.poolId)
 
-  const { account } = useStore()
+  const { account } = useAccountStore()
   const shareTokenBalance = useTokenBalance(
     shareToken.data?.token,
     account?.address,

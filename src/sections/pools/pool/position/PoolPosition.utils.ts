@@ -9,7 +9,7 @@ import { useTotalInPool } from "sections/pools/pool/Pool.utils"
 import { usePoolShareToken } from "api/pools"
 import { useTokenBalance } from "api/balances"
 import { PoolBase } from "@galacticcouncil/sdk"
-import { useStore } from "state/store"
+import { useAccountStore } from "state/store"
 import { getPoolTotal } from "sections/pools/header/PoolsHeader.utils"
 import { useAUSD } from "api/asset"
 import { useSpotPrices } from "api/spotPrice"
@@ -30,7 +30,7 @@ export const usePoolPositionData = ({
     poolId,
   })
 
-  const { account } = useStore()
+  const { account } = useAccountStore()
   const shareToken = usePoolShareToken(pool.address)
   const shareTokenBalance = useTokenBalance(
     shareToken.data?.token,

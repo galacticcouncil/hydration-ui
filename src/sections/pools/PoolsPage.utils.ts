@@ -1,4 +1,4 @@
-import { useStore } from "state/store"
+import { useAccountStore } from "state/store"
 import { usePools } from "api/pools"
 import { useAccountDepositIds, useAllDeposits } from "api/deposits"
 import { useMemo } from "react"
@@ -6,7 +6,7 @@ import { useMemo } from "react"
 export type PoolsPageFilter = { showMyPositions: boolean }
 
 export const useFilteredPools = ({ showMyPositions }: PoolsPageFilter) => {
-  const { account } = useStore()
+  const { account } = useAccountStore()
   const pools = usePools()
   const accountDeposits = useAccountDepositIds(account?.address ?? "")
   const allDeposits = useAllDeposits(pools.data?.map((pool) => pool.address))

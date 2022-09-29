@@ -12,7 +12,7 @@ import { PoolRemoveLiquidity } from "sections/pools/pool/modals/removeLiquidity/
 import { PoolJoinFarm } from "sections/pools/pool/modals/joinFarm/PoolJoinFarm"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { SButtonOpen } from "sections/pools/pool/actions/PoolActions.styled"
-import { useStore } from "state/store"
+import { useAccountStore } from "state/store"
 
 type Props = { pool: PoolBase; isExpanded: boolean; onExpandClick: () => void }
 
@@ -21,7 +21,7 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
   const [openAdd, setOpenAdd] = useState(false)
   const [openRemove, setOpenRemove] = useState(false)
   const [openFarms, setOpenFarms] = useState(false)
-  const { account } = useStore()
+  const { account } = useAccountStore()
 
   return (
     <>

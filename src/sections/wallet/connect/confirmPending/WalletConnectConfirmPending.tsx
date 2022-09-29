@@ -11,10 +11,7 @@ type Props = { provider: string }
 
 export const WalletConnectConfirmPending: FC<Props> = ({ provider }) => {
   const { t } = useTranslation("translation")
-
   const wallet = getWalletBySource(provider)
-
-  console.log(wallet)
 
   return (
     <Box flex align="center" column>

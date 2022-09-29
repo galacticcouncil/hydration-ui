@@ -12,7 +12,7 @@ import { getFixedPointAmount, getFloatingPointAmount } from "utils/balance"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { useAddLiquidity } from "api/addLiquidity"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
-import { useStore } from "state/store"
+import { useAccountStore } from "state/store"
 import { useMath } from "utils/math"
 import { useTokenBalance } from "api/balances"
 import { useTotalIssuance } from "api/totalIssuance"
@@ -31,7 +31,7 @@ type Props = {
 export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
   const { t } = useTranslation()
 
-  const { account } = useStore()
+  const { account } = useAccountStore()
 
   const { data: shareToken } = usePoolShareToken(pool.address)
   const { data: dataShareToken } = useAsset(shareToken?.token)
