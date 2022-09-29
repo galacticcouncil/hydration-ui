@@ -12,7 +12,7 @@
   "value.bsx": "{{ value, bignumber(numberSuffix: ' BSX') }}",
   "value.usd": "{{ amount, bignumber(numberPrefix: '$'; decimalPlaces: 2) }}",
   "value.percentage": "{{ value, bignumber(numberSuffix: '%') }}",
-  "value.APR": "{{ apr, bignumber(numberSuffix: '% APR') }}",
+  "value.APR": "{{ apr, bignumber(numberSuffix: '% APR'; decimalPlaces: 10) }}",
   "farms.deposit.title": "Amount to deposit",
   "farms.deposit.balance": "<0>Share token balance:</0> {{ balance }}",
   "farms.deposit.assetType": "Token/Token",

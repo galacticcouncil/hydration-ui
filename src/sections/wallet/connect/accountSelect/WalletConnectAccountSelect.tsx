@@ -35,20 +35,17 @@ export const WalletConnectAccountSelect: FC<Props> = ({
       <Box
         flex
         column
-        mt={10}
         gap={10}
+        mt={10}
+        pb={10}
         css={css`
           overflow-x: hidden;
           overflow-y: auto;
-          max-height: 450px;
+          max-height: 300px;
 
-          mask-image: linear-gradient(
-            to bottom,
-            rgba(0, 0, 0, 0),
-            rgba(0, 0, 0, 1) 2%
-          );
-
-          padding: 20px 0;
+          &::-webkit-scrollbar-track {
+            margin-bottom: 10px;
+          }
         `}
       >
         {accounts.data

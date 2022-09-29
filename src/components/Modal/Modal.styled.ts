@@ -58,6 +58,10 @@ export const ModalBody = styled.div`
 
   max-height: 80vh;
   overflow-y: auto;
+
+  &::-webkit-scrollbar-track {
+    margin-bottom: 16px;
+  }
 `
 export const IconsWrapper = styled.div`
   display: flex;

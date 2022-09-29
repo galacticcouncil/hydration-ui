@@ -69,8 +69,8 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   &::-webkit-scrollbar {
-    width: 18px;
-    height: 18px;
+    width: 6px;
+    height: 6px;
   }
 
   &::-webkit-scrollbar-thumb:vertical {
