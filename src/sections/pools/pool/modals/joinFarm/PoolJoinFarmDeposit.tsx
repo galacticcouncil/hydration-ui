@@ -2,7 +2,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { SMaxButton } from "sections/pools/pool/modals/joinFarm/PoolJoinFarm.styled"
 import { Box } from "components/Box/Box"
 import { Text } from "components/Typography/Text/Text"
-import { PoolToken } from "@galacticcouncil/sdk"
+import { PoolBase } from "@galacticcouncil/sdk"
 import { AssetInput } from "components/AssetInput/AssetInput"
 import { DualAssetIcons } from "components/DualAssetIcons/DualAssetIcons"
 import { Button } from "components/Button/Button"
@@ -20,12 +20,10 @@ import { AprFarm } from "utils/apr"
 import BigNumber from "bignumber.js"
 
 export const PoolJoinFarmDeposit = (props: {
-  poolId: string
-  assetIn: PoolToken
-  assetOut: PoolToken
+  pool: PoolBase
   farm?: AprFarm
 }) => {
-  const activeYieldFarms = useActiveYieldFarms(props.poolId)
+  const activeYieldFarms = useActiveYieldFarms(props.pool.address)
   const globalFarms = useGlobalFarms(
     activeYieldFarms.data?.map((f) => f.globalFarmId) ?? [],
   )
@@ -41,7 +39,8 @@ export const PoolJoinFarmDeposit = (props: {
   const { createTransaction } = useStore()
   const api = useApiPromise()
 
-  const shareToken = usePoolShareToken(props.poolId)
+  const shareToken = usePoolShareToken(props.pool.address)
+  const [assetIn, assetOut] = props.pool.tokens
 
   const { account } = useAccountStore()
   const shareTokenBalance = useTokenBalance(
@@ -59,8 +58,8 @@ export const PoolJoinFarmDeposit = (props: {
           props.farm.globalFarm.id,
           props.farm.yieldFarm.id,
           {
-            assetIn: props.assetIn.id,
-            assetOut: props.assetOut.id,
+            assetIn: assetIn.id,
+            assetOut: assetOut.id,
           },
           data.value,
         ),
@@ -76,8 +75,8 @@ export const PoolJoinFarmDeposit = (props: {
         firstActive.globalFarmId,
         firstActive.yieldFarmId,
         {
-          assetIn: props.assetIn.id,
-          assetOut: props.assetOut.id,
+          assetIn: assetIn.id,
+          assetOut: assetOut.id,
         },
         data.value,
       ),
@@ -94,7 +93,7 @@ export const PoolJoinFarmDeposit = (props: {
           api.tx.liquidityMining.redepositLpShares(
             item.globalFarmId,
             item.yieldFarmId,
-            { assetIn: props.assetIn.id, assetOut: props.assetOut.id },
+            { assetIn: assetIn.id, assetOut: assetOut.id },
             depositId,
           ),
         )
@@ -143,12 +142,12 @@ export const PoolJoinFarmDeposit = (props: {
         </Box>
         <Box flex acenter>
           <DualAssetIcons
-            firstIcon={{ icon: getAssetLogo(props.assetIn.symbol) }}
-            secondIcon={{ icon: getAssetLogo(props.assetOut.symbol) }}
+            firstIcon={{ icon: getAssetLogo(assetIn.symbol) }}
+            secondIcon={{ icon: getAssetLogo(assetOut.symbol) }}
           />
           <Box flex column mr={20} css={{ flexShrink: 0 }}>
             <Text fw={700} fs={16}>
-              {props.assetIn.symbol}/{props.assetOut.symbol}
+              {assetIn.symbol}/{assetOut.symbol}
             </Text>
             <Text fw={500} fs={12} color="neutralGray500">
               {t("farms.deposit.assetType")}

@@ -52,7 +52,7 @@ export const useAPR = (poolId: AccountId32 | string) => {
         .div(BN_QUINTILL) // 18dp
       const maxRewardPerPeriod = globalFarm.maxRewardPerPeriod.toBigNumber()
       const blocksPerPeriod = globalFarm.blocksPerPeriod.toBigNumber()
-      const currentPeriod = bestNumber.data
+      const currentPeriod = bestNumber.data.relaychainBlockNumber
         .toBigNumber()
         .dividedToIntegerBy(blocksPerPeriod)
       const blockTime = BLOCK_TIME

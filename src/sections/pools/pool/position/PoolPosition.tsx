@@ -22,7 +22,6 @@ export const PoolPosition: FC<Props> = ({ position, index, pool, poolId }) => {
   const { enteredDate, positionValue, assetA, assetB } = usePoolPositionData({
     position,
     pool,
-    poolId,
   })
 
   return (

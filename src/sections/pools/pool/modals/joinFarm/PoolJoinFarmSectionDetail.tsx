@@ -1,17 +1,18 @@
 import { ModalMeta } from "components/Modal/Modal"
 import { useTranslation } from "react-i18next"
 import { AprFarm } from "utils/apr"
-import { PoolToken } from "@galacticcouncil/sdk"
+import { PoolBase } from "@galacticcouncil/sdk"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { PoolJoinFarmDeposit } from "./PoolJoinFarmDeposit"
 import { PoolJoinFarmItem } from "./PoolJoinFarmItem"
+import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
+import { PoolJoinFarmPosition } from "./PoolJoinFarmPosition"
 
 export function PoolJoinFarmSectionDetail(props: {
-  poolId: string
-  assetIn: PoolToken
-  assetOut: PoolToken
-  onBack: () => void
   farm: AprFarm
+  pool: PoolBase
+  position?: PalletLiquidityMiningYieldFarmEntry
+  onBack: () => void
 }) {
   const { t } = useTranslation()
 
@@ -26,14 +27,17 @@ export function PoolJoinFarmSectionDetail(props: {
         }}
       />
 
-      <PoolJoinFarmItem farm={props.farm} />
+      <PoolJoinFarmItem pool={props.pool} farm={props.farm} />
 
-      <PoolJoinFarmDeposit
-        poolId={props.poolId}
-        assetIn={props.assetIn}
-        assetOut={props.assetOut}
-        farm={props.farm}
-      />
+      {props.position ? (
+        <PoolJoinFarmPosition
+          pool={props.pool}
+          farm={props.farm}
+          position={props.position}
+        />
+      ) : (
+        <PoolJoinFarmDeposit pool={props.pool} farm={props.farm} />
+      )}
     </>
   )
 }

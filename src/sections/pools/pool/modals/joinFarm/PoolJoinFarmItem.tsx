@@ -18,15 +18,12 @@ import { css } from "styled-components"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { DepositType } from "api/deposits"
 import { Tag } from "components/Tag/Tag"
-import { PoolToken } from "@galacticcouncil/sdk"
+import { PoolBase } from "@galacticcouncil/sdk"
 
 export const PoolJoinFarmItem = (props: {
+  pool: PoolBase
   farm: AprFarm
-  deposit?: {
-    data: DepositType
-    assetA: PoolToken
-    assetB: PoolToken
-  }
+  deposit?: DepositType
   onSelect?: () => void
 }) => {
   const asset = useAsset(props.farm.assetId)
@@ -36,10 +33,12 @@ export const PoolJoinFarmItem = (props: {
   if (!bestNumber?.data) return null
 
   const blockDurationToEnd = props.farm.estimatedEndBlock.minus(
-    bestNumber.data.toBigNumber(),
+    bestNumber.data.relaychainBlockNumber.toBigNumber(),
   )
 
   const secondsDurationToEnd = blockDurationToEnd.times(BLOCK_TIME)
+
+  const [assetIn, assetOut] = props.pool.tokens
 
   return (
     <SFarm
@@ -64,7 +63,15 @@ export const PoolJoinFarmItem = (props: {
             {asset.data?.icon}
             <Text fw={700}>{asset.data?.name}</Text>
           </Box>
-          <Text fs={20} lh={28} fw={600} color="primary200">
+          <Text
+            fs={20}
+            lh={28}
+            fw={600}
+            color="primary200"
+            css={css`
+              word-break: break-all;
+            `}
+          >
             {t("pools.allFarms.modal.apr.single", {
               value: props.farm.apr,
             })}
@@ -112,9 +119,9 @@ export const PoolJoinFarmItem = (props: {
             </GradientText>
             <Text fs={14} color="neutralGray100">
               {t("pools.allFarms.modal.lockedShares.value", {
-                value: props.deposit.data.deposit.shares,
-                assetA: props.deposit.assetA.symbol,
-                assetB: props.deposit.assetB.symbol,
+                value: props.deposit.deposit.shares,
+                assetA: assetIn.symbol,
+                assetB: assetOut.symbol,
               })}
             </Text>
           </SFarmRow>

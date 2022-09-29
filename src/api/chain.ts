@@ -4,7 +4,12 @@ import { QUERY_KEYS } from "utils/queryKeys"
 
 export const useBestNumber = () => {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.bestNumber, () => {
-    return api.derive.chain.bestNumber()
+  return useQuery(QUERY_KEYS.bestNumber, async () => {
+    const [validationData, parachainBlockNumber] = await Promise.all([
+      api.query.parachainSystem.validationData(),
+      api.derive.chain.bestNumber(),
+    ])
+    const relaychainBlockNumber = validationData.unwrap().relayParentNumber
+    return { parachainBlockNumber, relaychainBlockNumber }
   })
 }

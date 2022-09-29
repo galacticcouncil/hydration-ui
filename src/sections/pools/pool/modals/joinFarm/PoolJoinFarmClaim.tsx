@@ -18,15 +18,16 @@ import { useMutation } from "@tanstack/react-query"
 import { useStore } from "state/store"
 import { SContainer } from "./PoolJoinFarmClaim.styled"
 import { getFormatSeparators } from "utils/formatting"
+import { PoolBase } from "@galacticcouncil/sdk"
 
-export function PoolJoinFarmClaim(props: { poolId: string }) {
+export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
   const { t, i18n } = useTranslation()
   const math = useMath()
   const bestNumber = useBestNumber()
-  const apr = useAPR(props.poolId)
+  const apr = useAPR(props.pool.address)
 
   // TODO: filter only deposits created by user
-  const deposits = useDeposits(props.poolId)
+  const deposits = useDeposits(props.pool.address)
 
   const ausd = useAUSD()
   const currencies = [
@@ -64,7 +65,7 @@ export function PoolJoinFarmClaim(props: { poolId: string }) {
           )
             return null
 
-          const currentPeriod = bestNumber.data
+          const currentPeriod = bestNumber.data.relaychainBlockNumber
             .toBigNumber()
             .dividedToIntegerBy(
               aprEntry.globalFarm.blocksPerPeriod.toBigNumber(),

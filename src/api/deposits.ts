@@ -4,6 +4,8 @@ import { DEPOSIT_CLASS_ID, useApiPromise } from "utils/network"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u128 } from "@polkadot/types-codec"
 import { AccountId32 } from "@polkadot/types/interfaces"
+import { Maybe } from "utils/types"
+import { undefinedNoop } from "utils/helpers"
 
 export type DepositType = Awaited<
   ReturnType<ReturnType<typeof getDeposits>>
@@ -27,9 +29,13 @@ export const useAllDeposits = (poolIds?: string[]) => {
   })
 }
 
-export const useDeposit = (id: u128) => {
+export const useDeposit = (id: Maybe<u128>) => {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.deposit(id), getDeposit(api, id))
+  return useQuery(
+    QUERY_KEYS.deposit(id),
+    id != null ? getDeposit(api, id) : undefinedNoop,
+    { enabled: !!id },
+  )
 }
 
 export const useAccountDepositIds = (accountId: AccountId32 | string) => {

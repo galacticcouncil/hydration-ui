@@ -67,9 +67,7 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
         pool={pool}
       />
       <PoolJoinFarm
-        poolId={pool.address}
-        assetA={pool.tokens[0]}
-        assetB={pool.tokens[1]}
+        pool={pool}
         isOpen={openFarms}
         onClose={() => setOpenFarms(false)}
         onSelect={() => {

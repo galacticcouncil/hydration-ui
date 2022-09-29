@@ -12,7 +12,11 @@ export const useYieldFarms = (ids: FarmIds[]) => {
   })
 }
 
-export const useYieldFarm = (ids: FarmIds) => {
+export const useYieldFarm = (ids: {
+  poolId: AccountId32 | string
+  globalFarmId: u32 | string
+  yieldFarmId: u32 | string
+}) => {
   const api = useApiPromise()
   return useQuery(QUERY_KEYS.yieldFarm(ids), getYieldFarm(api, ids), {
     enabled: !!ids,
@@ -50,7 +54,18 @@ export const getYieldFarms = (api: ApiPromise, ids: FarmIds[]) => async () => {
 }
 
 export const getYieldFarm =
-  (api: ApiPromise, { yieldFarmId, globalFarmId, poolId }: FarmIds) =>
+  (
+    api: ApiPromise,
+    {
+      yieldFarmId,
+      globalFarmId,
+      poolId,
+    }: {
+      poolId: AccountId32 | string
+      globalFarmId: u32 | string
+      yieldFarmId: u32 | string
+    },
+  ) =>
   async () => {
     const res = await api.query.warehouseLM.yieldFarm(
       poolId,

@@ -3,19 +3,19 @@ import type { AccountId32 } from "@polkadot/types/interfaces"
 import { CodecHash } from "@polkadot/types/interfaces/runtime"
 import { Maybe } from "./types"
 import { u128 } from "@polkadot/types-codec"
-import { FarmIds } from "api/farms"
+import type BigNumber from "bignumber.js"
 
 export const QUERY_KEY_PREFIX = "@block"
 
 export const QUERY_KEYS = {
-  bestNumber: ["bestNumber"],
+  bestNumber: [QUERY_KEY_PREFIX, "bestNumber"],
   pools: [QUERY_KEY_PREFIX, "pools"],
   poolShareToken: (poolId: AccountId32 | string) => [
     QUERY_KEY_PREFIX,
     "poolShareToken",
     poolId.toString(),
   ],
-  deposit: (id: u128) => [QUERY_KEY_PREFIX, "deposit", id.toString()],
+  deposit: (id: Maybe<u128>) => [QUERY_KEY_PREFIX, "deposit", id?.toString()],
   deposits: (poolId?: string) => [QUERY_KEY_PREFIX, "deposits", poolId],
   accountDepositIds: (accountId: AccountId32 | string) => [
     QUERY_KEY_PREFIX,
@@ -38,7 +38,11 @@ export const QUERY_KEYS = {
     poolId.toString(),
   ],
   globalFarm: (id: u32) => [QUERY_KEY_PREFIX, "globalFarm", id.toString()],
-  yieldFarm: (ids: FarmIds) => [QUERY_KEY_PREFIX, "yieldFarm", ids],
+  yieldFarm: (ids: {
+    poolId: AccountId32 | string
+    globalFarmId: u32 | string
+    yieldFarmId: u32 | string
+  }) => [QUERY_KEY_PREFIX, "yieldFarm", ids],
   activeYieldFarm: (id: string) => [QUERY_KEY_PREFIX, "activeYieldFarm", id],
   totalLiquidity: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
@@ -98,6 +102,10 @@ export const QUERY_KEYS = {
     "bestSell",
     params,
   ],
+  timestamp: (bestNumber: Maybe<u32 | BigNumber>) =>
+    bestNumber != null
+      ? ["timestamp", bestNumber]
+      : [QUERY_KEY_PREFIX, "timestamp"],
   provider: (url: string) => ["provider", url],
   math: ["@galacticcouncil/math"],
 } as const
