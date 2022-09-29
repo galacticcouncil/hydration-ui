@@ -1,8 +1,7 @@
 import styled from "styled-components"
 import { theme } from "theme"
-import { Label } from "@radix-ui/react-label"
 
-export const SLabelWrapper = styled(Label)<{ error?: string }>`
+export const SLabelWrapper = styled.label<{ error?: string }>`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
