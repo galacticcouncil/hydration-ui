@@ -7,6 +7,6 @@ export const STag = styled(Box)`
   width: auto;
 
   background: ${theme.gradients.primaryGradient};
-  padding: 4px 6px 2px;
+  padding: 3px 6px;
   border-radius: 4px;
 `
