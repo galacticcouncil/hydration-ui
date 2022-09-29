@@ -19,7 +19,7 @@ type Props = {
 export const PoolPosition: FC<Props> = ({ position, index, pool, poolId }) => {
   const { t } = useTranslation()
 
-  const { enteredDate, farmValue } = usePoolPositionData({
+  const { enteredDate, positionValue, assetA, assetB } = usePoolPositionData({
     position,
     pool,
     poolId,
@@ -51,10 +51,15 @@ export const PoolPosition: FC<Props> = ({ position, index, pool, poolId }) => {
         </Text>
         <Box flex column gap={2}>
           <Text fs={14} lh={18} color="white">
-            {t("value.usd", { amount: farmValue, decimalPlaces: 6 })}
+            {t("value.usd", { amount: positionValue, decimalPlaces: 6 })}
           </Text>
           <Text fs={12} lh={16} color="neutralGray500">
-            TODO
+            {t("pools.pool.positions.position.amounts", {
+              amountA: assetA?.amount,
+              symbolA: assetA?.symbol,
+              amountB: assetB?.amount,
+              symbolB: assetB?.symbol,
+            })}
           </Text>
         </Box>
       </Box>

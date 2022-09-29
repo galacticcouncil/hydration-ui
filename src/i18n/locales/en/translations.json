@@ -50,6 +50,7 @@
   "pools.pool.positions.position.locked": "Locked",
   "pools.pool.positions.position.shares": "{{ shares, compact }} Shares",
   "pools.pool.positions.position.current": "Current value",
+  "pools.pool.positions.position.amounts": "{{ amountA, bignumber(decimalPlaces: 4) }} {{ symbolA }} | {{ amountB, bignumber(decimalPlaces: 4) }} {{ symbolB }}",
   "pools.pool.actions.chevron.name": "Open details button",
   "pools.addLiquidity.modal.title": "Add Liquidity",
   "pools.addLiquidity.modal.row.tradeFee": "Pool Trade Fee",

@@ -1,7 +1,7 @@
 import { useGlobalFarm, useYieldFarm } from "api/farms"
 import { useMemo } from "react"
 import { subSeconds } from "date-fns"
-import { BLOCK_TIME } from "utils/constants"
+import { BLOCK_TIME, BN_10 } from "utils/constants"
 import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { useTotalIssuance } from "api/totalIssuance"
@@ -13,6 +13,7 @@ import { useAccountStore } from "state/store"
 import { getPoolTotal } from "sections/pools/header/PoolsHeader.utils"
 import { useAUSD } from "api/asset"
 import { useSpotPrices } from "api/spotPrice"
+import BN from "bignumber.js"
 
 export const usePoolPositionData = ({
   position,
@@ -70,7 +71,7 @@ export const usePoolPositionData = ({
     return date
   }, [globalFarm.data, position.enteredAt])
 
-  const farmValue = useMemo(() => {
+  const data = useMemo(() => {
     if (!yieldFarm.data || !totalIssuance.data) return undefined
 
     const farmTotalValued = yieldFarm.data.totalValuedShares.toBigNumber()
@@ -87,19 +88,18 @@ export const usePoolPositionData = ({
     const farmValue = poolTotal.times(farmRatio)
     const positionValue = farmValue.times(positionRatio)
 
-    // console.table([
-    //   ["Farm Total Valued Shares", farmTotalValued.toFixed()],
-    //   ["Farm Total Shares", farmTotal.toFixed()],
-    //   ["Position Valued Shares", positionTotalValued.toFixed()],
-    //   ["Position Ratio", positionRatio.toFixed()],
-    //   ["Farm Ratio", farmRatio.toFixed()],
-    //   ["Pool Total", poolTotal.toFixed()],
-    //   ["Farm Value", farmValue.toFixed()],
-    //   ["Position Value", positionValue.toFixed()],
-    // ])
+    const [assetA, assetB] = pool.tokens.map((token) => {
+      const balance = new BN(token.balance).div(
+        BN_10.pow(new BN(token.decimals)),
+      )
+      const farmAmount = balance.times(farmRatio)
+      const positionAmount = farmAmount.times(positionRatio)
 
-    return positionValue
-  }, [yieldFarm.data, totalIssuance.data, spotPrices, position])
+      return { symbol: token.symbol, amount: positionAmount }
+    })
 
-  return { enteredDate, farmValue, isLoading }
+    return { positionValue, assetA, assetB }
+  }, [yieldFarm.data, totalIssuance.data, spotPrices, position, pool])
+
+  return { ...data, enteredDate, isLoading }
 }
