@@ -14,7 +14,8 @@ export const SContainer = styled(Box)`
     ),
     rgba(255, 255, 255, 0.03);
 
-  border: 1px solid rgba(${theme.rgbColors.white}, 0.06);
+  outline: 1px solid rgba(${theme.rgbColors.white}, 0.06);
+  outline-offset: -1px;
 
   border-radius: 12px;
   padding: 30px;
