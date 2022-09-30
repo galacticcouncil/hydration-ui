@@ -1,18 +1,20 @@
 import { css } from "styled-components"
 import { Text } from "components/Typography/Text/Text"
 import { Box } from "components/Box/Box"
-import Identicon from "@polkadot/react-identicon"
 import { FC } from "react"
 import { shortenAccountAddress } from "utils/account"
+import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 
 type Props = {
   name: string
+  theme: string
   address: string
   onClick?: () => void
 }
 
 export const WalletConnectAccountSelectAddress: FC<Props> = ({
   name,
+  theme,
   address,
   onClick,
 }) => {
@@ -36,7 +38,7 @@ export const WalletConnectAccountSelectAddress: FC<Props> = ({
           border-radius: 9999px;
         `}
       >
-        <Identicon size={32} value={address} />
+        <AccountAvatar address={address} theme={theme} size={32} />
       </Box>
 
       <Box

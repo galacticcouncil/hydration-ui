@@ -18,6 +18,7 @@ type Props = {
   isActive: boolean
   address: string
   name: string
+  provider: string
   setAccount: () => void
 }
 
@@ -25,6 +26,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
   isActive,
   address,
   name,
+  provider,
   setAccount,
 }) => {
   const basiliskAddress = encodeAddress(
@@ -62,6 +64,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
           <WalletConnectAccountSelectAddress
             name={t("walletConnect.accountSelect.asset.network")}
             address={basiliskAddress}
+            theme="substrate"
           />
           <Separator
             color={isActive ? "primary200" : "backgroundGray700"}
@@ -70,6 +73,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
           <WalletConnectAccountSelectAddress
             name={t("walletConnect.accountSelect.asset.parachain")}
             address={kusamaAddress}
+            theme={provider}
           />
         </Box>
       </SSelectItem>

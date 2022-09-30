@@ -9,7 +9,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Account, useAccountStore } from "state/store"
 import { shortenAccountAddress } from "utils/account"
 import { ReactComponent as ChevronDownSmall } from "assets/icons/ChevronDownSmall.svg"
-import Identicon from "@polkadot/react-identicon"
+import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 
 const WalletActiveButton = (props: {
   onOpen: () => void
@@ -43,9 +43,10 @@ const WalletActiveButton = (props: {
             color: ${theme.colors.neutralGray300};
           `}
         >
-          <Identicon
+          <AccountAvatar
             size={32}
-            value={props.account.address.toString()}
+            theme={props.account.provider}
+            address={props.account.address.toString()}
             css={css`
               pointer-events: none;
             `}

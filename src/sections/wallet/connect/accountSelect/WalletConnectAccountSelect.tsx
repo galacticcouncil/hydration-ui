@@ -58,6 +58,7 @@ export const WalletConnectAccountSelect: FC<Props> = ({
             return (
               <WalletConnectAccountSelectItem
                 isActive={currentAddress === account.address}
+                provider={provider}
                 key={account.address}
                 name={accountName}
                 address={account.address}
