@@ -56,6 +56,7 @@
   "pools.addLiquidity.modal.row.tradeFee": "Pool Trade Fee",
   "pools.addLiquidity.modal.row.transactionCost": "Transaction cost:",
   "pools.addLiquidity.modal.row.transactionCostValue": "≈ {{ amount, bignumber }} BSX",
+  "pools.addLiquidity.modal.row.transactionTip": "{{ amount, bignumber }} BSX",
   "pools.addLiquidity.modal.row.sharePool": "Share of pool",
   "pools.addLiquidity.modal.row.shareTokens": "Received amount of Share Tokens",
   "pools.addLiquidity.modal.confirmButton": "Confirm",

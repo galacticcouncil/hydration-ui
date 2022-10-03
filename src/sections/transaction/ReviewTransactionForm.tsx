@@ -84,18 +84,18 @@ export const ReviewTransactionForm = (
             {t("pools.reviewTransaction.modal.detail.tip")}
           </Text>
           <Text color="white">
-            {/* TODO */}
-            {/* 0.0066 BSX */}
+            {t("pools.addLiquidity.modal.row.transactionTip", {
+              amount: props.tx.tip,
+              fixedPointScale: 12,
+              decimalPlaces: 2,
+            })}
           </Text>
         </SDetailRow>
         <SDetailRow>
           <Text color="neutralGray300">
             {t("pools.reviewTransaction.modal.detail.nonce")}
           </Text>
-          <Text color="white">
-            {/* TODO */}
-            {/* 0 */}
-          </Text>
+          <Text color="white">{props.tx.nonce.toString()}</Text>
         </SDetailRow>
       </Box>
       <Box mt={24} flex spread>
