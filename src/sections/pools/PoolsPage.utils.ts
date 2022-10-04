@@ -8,7 +8,7 @@ export type PoolsPageFilter = { showMyPositions: boolean }
 export const useFilteredPools = ({ showMyPositions }: PoolsPageFilter) => {
   const { account } = useAccountStore()
   const pools = usePools()
-  const accountDeposits = useAccountDepositIds(account?.address ?? "")
+  const accountDeposits = useAccountDepositIds(account?.address)
   const allDeposits = useAllDeposits(pools.data?.map((pool) => pool.address))
 
   const queries = [pools, accountDeposits, ...allDeposits]
@@ -31,7 +31,7 @@ export const useFilteredPools = ({ showMyPositions }: PoolsPageFilter) => {
       .reduce((acc, deposits) => [...acc, ...deposits], [])
 
     const usersDeposits = depositData.filter((deposit) =>
-      accountDeposits.data.some((ad) => ad.instanceId.eq(deposit.id)),
+      accountDeposits.data?.some((ad) => ad.instanceId.eq(deposit.id)),
     )
 
     const relevantPools = pools.data.filter((pool) =>

@@ -2,7 +2,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { useAPR } from "utils/apr"
 import { useMemo } from "react"
 import { Text } from "components/Typography/Text/Text"
-import { useDeposits } from "api/deposits"
+import { useAccountDepositIds, useDeposits } from "api/deposits"
 import { useBestNumber } from "api/chain"
 import { useMath } from "utils/math"
 import { BN_0, BN_1 } from "utils/constants"
@@ -15,7 +15,7 @@ import { useAUSD } from "api/asset"
 import { useSpotPrices } from "api/spotPrice"
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/network"
 import { useMutation } from "@tanstack/react-query"
-import { useStore } from "state/store"
+import { useAccountStore, useStore } from "state/store"
 import { SContainer } from "./PoolJoinFarmClaim.styled"
 import { getFormatSeparators } from "utils/formatting"
 import { PoolBase } from "@galacticcouncil/sdk"
@@ -26,8 +26,15 @@ export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
   const bestNumber = useBestNumber()
   const apr = useAPR(props.pool.address)
 
+  const { account } = useAccountStore()
   // TODO: filter only deposits created by user
   const deposits = useDeposits(props.pool.address)
+
+  const accountDepositIds = useAccountDepositIds(account?.address)
+
+  const positions = deposits.data?.filter((deposit) =>
+    accountDepositIds.data?.some((ad) => ad.instanceId.eq(deposit.id)),
+  )
 
   const ausd = useAUSD()
   const currencies = [
@@ -40,7 +47,7 @@ export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
   const rewards = useMemo(() => {
     if (bestNumber.data == null) return null
 
-    return deposits.data
+    return positions
       ?.map((record) => {
         return record.deposit.yieldFarmEntries.map((entry) => {
           const aprEntry = apr.data.find(
@@ -113,10 +120,10 @@ export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
       )
   }, [
     apr.data,
+    positions,
     ausdSpotPrices,
     bestNumber.data,
     bsxSpotPrices,
-    deposits.data,
     math.liquidityMining,
   ])
 

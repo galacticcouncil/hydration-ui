@@ -27,7 +27,7 @@ export const PoolShares: FC<Props> = ({ pool }) => {
   const balance = useTokenBalance(shareToken.data?.token, account?.address)
 
   const deposits = useDeposits(pool.address)
-  const accountDepositIds = useAccountDepositIds(account?.address ?? "")
+  const accountDepositIds = useAccountDepositIds(account?.address)
   const positions = deposits.data?.filter((deposit) =>
     accountDepositIds.data?.some((ad) => ad.instanceId.eq(deposit.id)),
   )

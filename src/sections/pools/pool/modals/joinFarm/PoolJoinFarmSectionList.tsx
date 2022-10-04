@@ -7,7 +7,7 @@ import { Fragment } from "react"
 import { PoolJoinFarmDeposit } from "./PoolJoinFarmDeposit"
 import { PoolJoinFarmItem } from "./PoolJoinFarmItem"
 import { Text } from "components/Typography/Text/Text"
-import { useDeposits } from "api/deposits"
+import { useAccountDepositIds, useDeposits } from "api/deposits"
 import { useAccountStore } from "state/store"
 import { PoolJoinFarmClaim } from "./PoolJoinFarmClaim"
 import { Box } from "components/Box/Box"
@@ -25,12 +25,17 @@ export function PoolJoinFarmSectionList(props: {
   ) => void
 }) {
   const { t } = useTranslation()
-  const apr = useAPR(props.pool.address)
-  const deposits = useDeposits(props.pool.address)
-
-  const [assetIn, assetOut] = props.pool.tokens
 
   const { account } = useAccountStore()
+  const apr = useAPR(props.pool.address)
+  const deposits = useDeposits(props.pool.address)
+  const accountDepositIds = useAccountDepositIds(account?.address)
+
+  const positions = deposits.data?.filter((deposit) =>
+    accountDepositIds.data?.some((ad) => ad.instanceId.eq(deposit.id)),
+  )
+
+  const [assetIn, assetOut] = props.pool.tokens
 
   return (
     <Fragment key="list">
@@ -49,7 +54,7 @@ export function PoolJoinFarmSectionList(props: {
 
           <PoolJoinFarmClaim pool={props.pool} />
 
-          {deposits.data?.map((deposit) => {
+          {positions?.map((deposit) => {
             return (
               <Fragment key={deposit.id.toString()}>
                 {deposit.deposit.yieldFarmEntries.map((entry) => {

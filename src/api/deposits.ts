@@ -38,11 +38,13 @@ export const useDeposit = (id: Maybe<u128>) => {
   )
 }
 
-export const useAccountDepositIds = (accountId: AccountId32 | string) => {
+export const useAccountDepositIds = (
+  accountId: Maybe<AccountId32 | string>,
+) => {
   const api = useApiPromise()
   return useQuery(
     QUERY_KEYS.accountDepositIds(accountId),
-    getAccountDepositIds(api, accountId),
+    accountId != null ? getAccountDepositIds(api, accountId) : undefinedNoop,
     { enabled: !!accountId },
   )
 }
