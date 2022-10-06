@@ -2,7 +2,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Box } from "components/Box/Box"
 import { Button } from "components/Button/Button"
 import { ReactComponent as FailIcon } from "assets/icons/FailIcon.svg"
-import { css } from "styled-components"
+import { css } from "@emotion/react"
 import { useTranslation } from "react-i18next"
 import { SButtons } from "./ReviewTransactionError.styled"
 

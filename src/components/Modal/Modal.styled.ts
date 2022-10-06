@@ -2,7 +2,8 @@ import { DialogContent } from "@radix-ui/react-dialog"
 import { SizeProps } from "utils/styles"
 import { IconButton } from "components/IconButton/IconButton"
 import { GradientText } from "components/Typography/GradientText/GradientText"
-import styled, { keyframes } from "styled-components"
+import styled from "@emotion/styled"
+import { keyframes } from "@emotion/react"
 import { theme } from "theme"
 
 const fadeInKeyframes = keyframes`

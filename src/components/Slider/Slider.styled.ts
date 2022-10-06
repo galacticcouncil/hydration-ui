@@ -1,4 +1,4 @@
-import styled from "styled-components"
+import styled from "@emotion/styled"
 import { Range, Root, Thumb, Track } from "@radix-ui/react-slider"
 import { theme } from "theme"
 

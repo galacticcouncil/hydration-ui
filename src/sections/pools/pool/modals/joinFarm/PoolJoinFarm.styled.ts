@@ -1,5 +1,6 @@
 import { Button } from "components/Button/Button"
-import styled, { css } from "styled-components"
+import styled from "@emotion/styled"
+import { css } from "@emotion/react"
 import { theme } from "theme"
 
 export const SFarm = styled.button<{ variant: "list" | "detail" }>`

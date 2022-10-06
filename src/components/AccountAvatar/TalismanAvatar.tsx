@@ -1,4 +1,4 @@
-import { useId, useMemo } from "react"
+import { memo, useId, useMemo } from "react"
 import { encodeAddress } from "@polkadot/util-crypto"
 import color from "color"
 import md5 from "md5"
@@ -30,67 +30,64 @@ function normalizeSeed(seed: string) {
   }
 }
 
-export const TalismanAvatar = (props: {
-  seed: string
-  className?: string
-  width: string | number
-  height: string | number
-}) => {
-  const id = useId()
-  const { bgColor1, bgColor2, transform, glowColor, cx, cy } = useMemo(() => {
-    const hash = md5(normalizeSeed(props.seed))
-    const one = shuffle(hash, 1)
-    const two = shuffle(hash, 2)
+export const TalismanAvatar = memo(
+  (props: { seed: string; className?: string; size: string | number }) => {
+    const id = useId()
+    const { bgColor1, bgColor2, transform, glowColor, cx, cy } = useMemo(() => {
+      const hash = md5(normalizeSeed(props.seed))
+      const one = shuffle(hash, 1)
+      const two = shuffle(hash, 2)
 
-    const [bgColor1, bgColor2, glowColor] = [
-      getColor(hash),
-      getColor(one),
-      getColor(two),
-    ]
-      .sort((t, e) => t.lightness() - e.lightness())
-      .map((i) => i.hex())
+      const [bgColor1, bgColor2, glowColor] = [
+        getColor(hash),
+        getColor(one),
+        getColor(two),
+      ]
+        .sort((t, e) => t.lightness() - e.lightness())
+        .map((i) => i.hex())
 
-    const cx = 10 + encode(hash, 10)
-    const cy = 10 + encode(one, 10)
-    const transform = `rotate(${encode(hash, 360)} 32 32)`
+      const cx = 10 + encode(hash, 10)
+      const cy = 10 + encode(one, 10)
+      const transform = `rotate(${encode(hash, 360)} 32 32)`
 
-    return { bgColor1, bgColor2, glowColor, transform, cx, cy }
-  }, [props.seed])
+      return { bgColor1, bgColor2, glowColor, transform, cx, cy }
+    }, [props.seed])
 
-  return (
-    <svg
-      width={props.width}
-      height={props.height}
-      className={props.className}
-      viewBox="0 0 64 64"
-      version="1.1"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <defs>
-        <linearGradient id={`${id}-bg`}>
-          <stop offset="20%" stopColor={bgColor1} />
-          <stop offset="100%" stopColor={bgColor2} />
-        </linearGradient>
-        <radialGradient id={`${id}-circle`}>
-          <stop offset="10%" stopColor={glowColor} />
-          <stop offset="100%" stopColor="transparent" />
-        </radialGradient>
-        <clipPath id={`${id}-clip`}>
-          <circle cx="32" cy="32" r="32" />
-        </clipPath>
-      </defs>
-      <g clipPath={`url(#${id}-clip)`}>
-        <g transform={transform}>
-          <rect fill={`url(#${id}-bg)`} x={0} y={0} width={64} height={64} />
-          <circle
-            fill={`url(#${id}-circle)`}
-            cx={cx}
-            cy={cy}
-            r={45}
-            opacity={0.7}
-          />
+    return (
+      <svg
+        width={props.size}
+        height={props.size}
+        className={props.className}
+        viewBox="0 0 64 64"
+        version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <linearGradient id={`${id}-bg`}>
+            <stop offset="20%" stopColor={bgColor1} />
+            <stop offset="100%" stopColor={bgColor2} />
+          </linearGradient>
+          <radialGradient id={`${id}-circle`}>
+            <stop offset="10%" stopColor={glowColor} />
+            <stop offset="100%" stopColor="transparent" />
+          </radialGradient>
+          <clipPath id={`${id}-clip`}>
+            <circle cx="32" cy="32" r="32" />
+          </clipPath>
+        </defs>
+        <g clipPath={`url(#${id}-clip)`}>
+          <g transform={transform}>
+            <rect fill={`url(#${id}-bg)`} x={0} y={0} width={64} height={64} />
+            <circle
+              fill={`url(#${id}-circle)`}
+              cx={cx}
+              cy={cy}
+              r={45}
+              opacity={0.7}
+            />
+          </g>
         </g>
-      </g>
-    </svg>
-  )
-}
+      </svg>
+    )
+  },
+)

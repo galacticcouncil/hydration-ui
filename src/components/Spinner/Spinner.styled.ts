@@ -1,5 +1,6 @@
 import { size, SizeProps } from "utils/styles"
-import styled, { keyframes } from "styled-components"
+import styled from "@emotion/styled"
+import { keyframes } from "@emotion/react"
 
 const spin = keyframes`
   0% {

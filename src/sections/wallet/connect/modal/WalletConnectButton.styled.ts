@@ -1,4 +1,4 @@
-import styled from "styled-components"
+import styled from "@emotion/styled"
 import { Button } from "components/Button/Button"
 import { Box } from "components/Box/Box"
 import { theme } from "theme"

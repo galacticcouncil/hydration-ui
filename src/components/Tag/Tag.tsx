@@ -1,5 +1,5 @@
 import { Text } from "components/Typography/Text/Text"
-import { css } from "styled-components"
+import { css } from "@emotion/react"
 import { theme } from "theme"
 import { ReactNode } from "react"
 import { STag } from "./Tag.styled"

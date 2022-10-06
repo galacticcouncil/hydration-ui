@@ -1,6 +1,7 @@
 import { Switch, SwitchThumb } from "@radix-ui/react-switch"
 import { margins, MarginProps } from "utils/styles"
-import styled, { css } from "styled-components"
+import styled from "@emotion/styled"
+import { css } from "@emotion/react"
 import { theme } from "theme"
 
 export const SThumb = styled(SwitchThumb)<{

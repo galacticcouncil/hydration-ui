@@ -1,4 +1,4 @@
-import styled from "styled-components"
+import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SContainer = styled.div`

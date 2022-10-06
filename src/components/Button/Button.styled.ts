@@ -1,5 +1,6 @@
 import { margins, size } from "utils/styles"
-import styled, { css } from "styled-components"
+import styled from "@emotion/styled"
+import { css } from "@emotion/react"
 import { theme } from "theme"
 import { ButtonProps } from "./Button"
 import { Spinner } from "components/Spinner/Spinner.styled"

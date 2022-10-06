@@ -15,23 +15,15 @@ export default defineConfig({
       target: "esnext",
     },
   },
+  esbuild: {
+    logOverride: { "this-is-undefined-in-esm": "silent" },
+  },
   plugins: [
     tsconfigPaths(),
     react({
+      jsxImportSource: "@emotion/react",
       babel: {
-        presets: ["@babel/preset-typescript"],
-        plugins: [
-          "@babel/plugin-transform-typescript",
-          [
-            "babel-plugin-styled-components",
-            {
-              ssr: false,
-              pure: true,
-              displayName: true,
-              fileName: false,
-            },
-          ],
-        ],
+        plugins: ["@emotion/babel-plugin"],
       },
     }),
     wasm(),

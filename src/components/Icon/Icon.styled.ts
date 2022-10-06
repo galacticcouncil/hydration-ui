@@ -1,5 +1,6 @@
 import { margins, size } from "utils/styles"
-import styled, { css } from "styled-components"
+import styled from "@emotion/styled"
+import { css } from "@emotion/react"
 import { IconProps } from "./Icon"
 
 export const SIconWrapper = styled.span<IconProps>`

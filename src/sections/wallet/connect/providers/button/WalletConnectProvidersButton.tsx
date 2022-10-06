@@ -1,7 +1,7 @@
 import { FC } from "react"
 import { SWalletButton } from "sections/wallet/connect/providers/WalletConnectProviders.styled"
 import { Text } from "components/Typography/Text/Text"
-import { css } from "styled-components"
+import { css } from "@emotion/react"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { ReactComponent as DownloadIcon } from "assets/icons/DownloadIcon.svg"
 import { useTranslation } from "react-i18next"

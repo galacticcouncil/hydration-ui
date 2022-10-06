@@ -1,4 +1,4 @@
-import { css } from "styled-components"
+import { css } from "@emotion/react"
 import { Text } from "components/Typography/Text/Text"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Box } from "components/Box/Box"

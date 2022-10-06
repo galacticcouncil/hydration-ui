@@ -1,4 +1,4 @@
-import { css } from "styled-components"
+import { css } from "@emotion/react"
 import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 import { Separator } from "components/Separator/Separator"

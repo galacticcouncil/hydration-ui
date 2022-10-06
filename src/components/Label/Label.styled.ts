@@ -1,4 +1,4 @@
-import styled from "styled-components"
+import styled from "@emotion/styled"
 import { Label } from "@radix-ui/react-label"
 import { theme } from "theme"
 import {
@@ -15,6 +15,7 @@ export const SLabel = styled(Label)<{ error?: string } & FontProps>`
   line-height: 22px;
   color: ${(p) => (p.error ? theme.colors.error : theme.colors.neutralGray100)};
   text-transform: capitalize;
+
   ${fonts};
 `
 

@@ -11,7 +11,7 @@ import {
 } from "./WalletConnectAccountSelectItem.styled"
 import { WalletConnectAccountSelectAddress } from "sections/wallet/connect/accountSelect/item/address/WalletConnectAccountSelectAddress"
 import { FC } from "react"
-import { css } from "styled-components"
+import { css } from "@emotion/react"
 import { useAssetMeta } from "api/assetMeta"
 
 type Props = {

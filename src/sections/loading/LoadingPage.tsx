@@ -2,7 +2,7 @@ import { Spinner } from "components/Spinner/Spinner.styled"
 import { Box } from "components/Box/Box"
 import { ReactComponent as BasiliskIcon } from "assets/icons/BasiliskIcon.svg"
 import { ReactComponent as BasiliskLogo } from "assets/icons/BasiliskLogo.svg"
-import { css } from "styled-components"
+import { css } from "@emotion/react"
 
 export const LoadingPage = () => {
   return (

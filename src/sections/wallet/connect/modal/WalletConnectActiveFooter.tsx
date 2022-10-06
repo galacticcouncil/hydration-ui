@@ -1,5 +1,5 @@
 import { Box } from "components/Box/Box"
-import { css } from "styled-components"
+import { css } from "@emotion/react"
 import { theme } from "theme"
 import { Text } from "components/Typography/Text/Text"
 import { ButtonTransparent } from "components/Button/Button"

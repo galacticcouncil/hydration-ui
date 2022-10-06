@@ -1,4 +1,4 @@
-import { css } from "styled-components"
+import { css } from "@emotion/react"
 import { Text } from "components/Typography/Text/Text"
 import { Box } from "components/Box/Box"
 import { FC } from "react"

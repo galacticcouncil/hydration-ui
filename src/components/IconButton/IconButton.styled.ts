@@ -1,8 +1,10 @@
-import { ColorProps, colors, margins } from "utils/styles"
-import styled from "styled-components"
+import { ColorProps, colors, MarginProps, margins } from "utils/styles"
+import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SIconButton = styled.button<{ round?: boolean } & ColorProps>`
+export const SIconButton = styled.button<
+  { round?: boolean } & ColorProps & MarginProps
+>`
   ${(p) => p.round && "border-radius: 9999px;"};
 
   min-width: 34px;

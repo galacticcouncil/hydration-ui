@@ -1,4 +1,4 @@
-import styled from "styled-components"
+import styled from "@emotion/styled"
 import { LineChart } from "recharts"
 
 export const SChart = styled(LineChart)`

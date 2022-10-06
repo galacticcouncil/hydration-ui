@@ -7,6 +7,7 @@ import { App } from "App"
 import reportWebVitals from "./reportWebVitals"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { GlobalStyle } from "components/GlobalStyle"
+import { Global } from "@emotion/react"
 
 const root = createRoot(document.getElementById("root")!)
 const client = new QueryClient()
@@ -14,7 +15,7 @@ const client = new QueryClient()
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={client}>
-      <GlobalStyle />
+      <Global styles={GlobalStyle} />
       <App />
     </QueryClientProvider>
   </React.StrictMode>,

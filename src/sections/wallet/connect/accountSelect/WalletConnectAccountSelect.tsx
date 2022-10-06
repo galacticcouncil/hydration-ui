@@ -1,5 +1,5 @@
 import { FC } from "react"
-import { css } from "styled-components"
+import { css } from "@emotion/react"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { Box } from "components/Box/Box"

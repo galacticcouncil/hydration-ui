@@ -1,5 +1,5 @@
 import { Box } from "components/Box/Box"
-import styled from "styled-components"
+import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SRightSide = styled(Box)`

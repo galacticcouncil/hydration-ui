@@ -1,5 +1,5 @@
 import { fonts, margins } from "utils/styles"
-import styled from "styled-components"
+import styled from "@emotion/styled"
 import { theme } from "theme"
 import { Heading, HeadingProps } from "../Heading/Heading"
 
