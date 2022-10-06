@@ -111,6 +111,8 @@
   "pools.reviewTransaction.modal.error.description": "Unfortunatelly there was an issue while broadcasting your transaction. Please try again later.",
   "pools.reviewTransaction.modal.error.close": "Close",
   "pools.reviewTransaction.modal.error.review": "Review Action Log",
+  "transaction.mortal.expire": "{{ date, dd/MM/yyyy hh:mm:ss }}",
+  "transaction.immortal.expire": "Never",
   "walletConnect.provider.title": "Connect Wallet",
   "walletConnect.provider.description": "Use available Kusama crypto wallet to connect to Basilisk DEX",
   "walletConnect.provider.continue": "Continue",

@@ -4,11 +4,21 @@ import { useQuery } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import { useApiPromise } from "utils/network"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { Maybe } from "../utils/types"
+import { undefinedNoop } from "../utils/helpers"
 
-export function useTimestamp(blockNumber?: u32 | BigNumber) {
+export function useTimestamp(
+  blockNumber?: Maybe<u32 | BigNumber>,
+  enabled = true,
+) {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.timestamp(blockNumber), () =>
-    getTimestamp(api, blockNumber),
+  return useQuery(
+    QUERY_KEYS.timestamp(blockNumber),
+    () =>
+      blockNumber !== null ? getTimestamp(api, blockNumber) : undefinedNoop(),
+    {
+      enabled: !!blockNumber && enabled,
+    },
   )
 }
 

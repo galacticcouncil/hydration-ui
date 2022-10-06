@@ -10,6 +10,8 @@ import { usePaymentInfo } from "../../api/transaction"
 import { useMutation } from "@tanstack/react-query"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { getWalletBySource } from "@talismn/connect-wallets"
+import { useEra } from "../../api/era"
+import { useBestNumber } from "../../api/chain"
 
 export const ReviewTransactionForm = (
   props: {
@@ -20,6 +22,7 @@ export const ReviewTransactionForm = (
 ) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
+  const bestNumber = useBestNumber()
 
   const signTx = useMutation(async () => {
     const address = account?.address?.toString()
@@ -36,6 +39,11 @@ export const ReviewTransactionForm = (
 
   const json = getTransactionJSON(props.tx)
   const { data: paymentInfoData } = usePaymentInfo(props.tx)
+  const era = useEra(
+    props.tx.era,
+    bestNumber.data?.parachainBlockNumber.toString(),
+    !signTx.isLoading && props.tx.era.isMortalEra,
+  )
 
   return (
     <>
@@ -75,8 +83,11 @@ export const ReviewTransactionForm = (
             {t("pools.reviewTransaction.modal.detail.lifetime")}
           </Text>
           <Text color="white">
-            {/* TODO */}
-            {/* 12/10/2022, 10:00:00 */}
+            {props.tx.era.isMortalEra
+              ? t("transaction.mortal.expire", {
+                  date: era?.deathDate,
+                })
+              : t("transaction.immortal.expire")}
           </Text>
         </SDetailRow>
         <SDetailRow>
