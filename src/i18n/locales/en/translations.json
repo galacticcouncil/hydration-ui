@@ -1,4 +1,6 @@
 {
+  "toast.close": "Close",
+  "toast.counter": "{{ index }} of {{ count }}",
   "modal.closeButton.name": "Close modal button",
   "selectAsset.input.label": "Deposit amount",
   "selectAsset.title": "Select asset",

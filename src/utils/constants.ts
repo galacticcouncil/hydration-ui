@@ -15,3 +15,6 @@ export const TRADING_FEE = new BN(3).div(new BN(1000))
 export const BLOCK_TIME = new BN(6)
 
 export const AUSD_NAME = "AUSD"
+
+// ms until toast closes
+export const TOAST_CLOSE_TIME = 5000
