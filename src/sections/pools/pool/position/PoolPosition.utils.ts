@@ -41,7 +41,7 @@ export const usePoolPositionData = ({
   const aUSD = useAUSD()
   const spotPrices = useSpotPrices(
     pool.tokens.map((token) => token.id),
-    aUSD.data?.token,
+    aUSD.data?.id,
   )
 
   const rewardAsset = useAsset(globalFarm.data?.rewardCurrency)

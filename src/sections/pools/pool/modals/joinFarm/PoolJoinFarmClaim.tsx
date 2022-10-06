@@ -42,7 +42,7 @@ export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
   ]
 
   const bsxSpotPrices = useSpotPrices(currencies, NATIVE_ASSET_ID)
-  const ausdSpotPrices = useSpotPrices(currencies, ausd.data?.token)
+  const ausdSpotPrices = useSpotPrices(currencies, ausd.data?.id)
 
   const rewards = useMemo(() => {
     if (bestNumber.data == null) return null

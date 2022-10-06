@@ -8,7 +8,7 @@
     "@galacticcouncil/math": "https://github.com/galacticcouncil/HydraDX-wasm",
     "@galacticcouncil/math-lbp": "^0.0.0-beta-1",
     "@galacticcouncil/math-xyk": "^0.0.0-beta-1",
-    "@galacticcouncil/sdk": "^0.0.1-beta.11",
+    "@galacticcouncil/sdk": "^0.0.1-beta.12",
     "@polkadot/api": "^9.3.3",
     "@polkadot/extension-inject": "^0.44.5",
     "@polkadot/keyring": "^10.1.7",

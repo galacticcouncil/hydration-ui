@@ -1413,11 +1413,12 @@
   version "0.0.0-beta-1"
   resolved "https://github.com/galacticcouncil/HydraDX-wasm#c926d70e4df9d6ac26ec82d7d985fe60440d5d2a"
 
-"@galacticcouncil/sdk@^0.0.1-beta.11":
-  version "0.0.1-beta.11"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-0.0.1-beta.11.tgz#b66d655fefc8227dcc2069df8fe98d2b660ec47b"
-  integrity sha512-HbjsyNuHeObsgpYZvpqbA9GBjf/UM69lJtLja+Uooz21i18B5fTibcDh9dbfslN66lV1evnG+5X/bikQ1LpG1w==
+"@galacticcouncil/sdk@^0.0.1-beta.12":
+  version "0.0.1-beta.12"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-0.0.1-beta.12.tgz#738a0dffc3b6f92e00d10f7e7112b9a8dae3cf96"
+  integrity sha512-UvrRoXb49yfeJElscmjVdTCpOk+0NFBcX3g0MzlkF8EFGRtkqiYdwzUDY6X0j2Ey109VQh2hcTfipNNihjUjUw==
   dependencies:
+    "@galacticcouncil/math-lbp" "^0.0.0-beta-1"
     "@galacticcouncil/math-xyk" "^0.0.0-beta-1"
     "@polkadot/api" "^9.0.1"
     bignumber.js "^9.1.0"

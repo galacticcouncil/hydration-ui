@@ -22,8 +22,8 @@ export const useTotalInPools = () => {
   const assets = useAssets()
   const aUSD = useAUSD()
   const spotPrices = useSpotPrices(
-    assets.data?.map((asset) => asset.token) ?? [],
-    aUSD.data?.token,
+    assets.data?.map((asset) => asset.id) ?? [],
+    aUSD.data?.id,
   )
 
   const queries = [pools, assets, aUSD, ...spotPrices]
@@ -78,7 +78,7 @@ export const useTotalInFarms = () => {
       .map((pool) => pool.tokens)
       .reduce((acc, tokens) => [...acc, ...tokens], [])
       .map((token) => token.id),
-    aUSD.data?.token,
+    aUSD.data?.id,
   )
 
   const queries = [

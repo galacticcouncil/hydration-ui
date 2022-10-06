@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { FC } from "react"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { PoolBase } from "@galacticcouncil/sdk"
-import { useTotalInPool } from "sections/pools/pool/Pool.utils"
+import { getTradeFee, useTotalInPool } from "sections/pools/pool/Pool.utils"
 
 type Props = { pool: PoolBase }
 
@@ -19,7 +19,7 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
       <Box flex spread mb={32}>
         <Box>
           <Text fs={14} lh={26} color="neutralGray400">
-            {t("pools.pool.title")}
+            {t("pools.pool.title", { type: pool.type })}
           </Text>
           <Box flex acenter>
             <DualAssetIcons
@@ -41,7 +41,7 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
             {t("pools.pool.poolDetails.fee")}
           </Text>
           <Text lh={22} color="white">
-            {t("value.percentage", { value: pool.tradeFee })}
+            {t("value.percentage", { value: getTradeFee(pool.tradeFee) })}
           </Text>
         </Box>
       </Box>
