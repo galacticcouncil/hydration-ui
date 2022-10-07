@@ -1,4 +1,3 @@
-import { MarginProps, SizeProps } from "utils/styles"
 import { Label } from "components/Label/Label"
 import React, { FC } from "react"
 import { SWrapper, SInput } from "./Input.styled"
@@ -15,10 +14,10 @@ export type InputProps = {
   placeholder?: string
   error?: string
   withLabel?: boolean
+  className?: string
   //   TODO add optional tooltip once we have tooltip component
   //   tooltip?: { description: string }
-} & SizeProps &
-  MarginProps
+}
 
 export const Input: FC<InputProps> = ({
   onChange,
@@ -37,7 +36,6 @@ export const Input: FC<InputProps> = ({
         label={label}
         error={p.error}
         withLabel={withLabel}
-        width={p.width}
         {...p}
       >
         <SWrapper unit={p.unit}>

@@ -1,15 +1,11 @@
-import {
-  ColorProps,
-  colors,
-  FontProps,
-  fonts,
-  MarginProps,
-  margins,
-} from "utils/styles"
 import styled from "@emotion/styled"
+import { theme } from "theme"
+import { STypographyProps, handleTypographyProps } from "../Typography.utils"
 
-export const SText = styled.p<ColorProps & MarginProps & FontProps>`
-  ${margins};
-  ${fonts};
-  ${colors};
+export const SText = styled.p<STypographyProps>`
+  color: ${theme.colors.neutralGray100};
+  font-weight: 500;
+  font-size: 16px;
+
+  ${handleTypographyProps}
 `

@@ -2,9 +2,6 @@ import { WalletConnectModal } from "./WalletConnectModal"
 import { SContainer, SLoginButton } from "./WalletConnectButton.styled"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Box } from "components/Box/Box"
-import { css } from "@emotion/react"
-import { theme } from "theme"
 import { Text } from "components/Typography/Text/Text"
 import { Account, useAccountStore } from "state/store"
 import { shortenAccountAddress } from "utils/account"
@@ -18,42 +15,33 @@ const WalletActiveButton = (props: {
 }) => {
   return (
     <SContainer className={props.className} onClick={props.onOpen}>
-      <Box
-        flex
-        gap={12}
-        css={css`
-          align-items: center;
-          justify-content: center;
-        `}
-      >
-        <Box flex column gap={4}>
+      <div sx={{ flex: "row", gap: 12, align: "center", justify: "center" }}>
+        <div sx={{ flex: "column", gap: 4 }}>
           <Text color="neutralGray100" fs={14} lh={14} fw={700}>
             {props.account.name}
           </Text>
           <Text color="neutralGray300" fs={12} lh={12} fw={400}>
             {shortenAccountAddress(props.account.address.toString())}
           </Text>
-        </Box>
-        <Box
-          flex
-          css={css`
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-            color: ${theme.colors.neutralGray300};
-          `}
+        </div>
+        <div
+          sx={{
+            flex: "row",
+            align: "center",
+            justify: "center",
+            gap: 2,
+            color: "neutralGray300",
+          }}
         >
           <AccountAvatar
             size={32}
             theme={props.account.provider}
             address={props.account.address.toString()}
-            css={css`
-              pointer-events: none;
-            `}
+            css={{ pointerEvents: "none" }}
           />
           <ChevronDownSmall />
-        </Box>
-      </Box>
+        </div>
+      </div>
     </SContainer>
   )
 }

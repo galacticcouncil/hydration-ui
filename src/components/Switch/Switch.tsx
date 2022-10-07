@@ -1,4 +1,3 @@
-import { MarginProps } from "utils/styles"
 import { Label } from "components/Label/Label"
 import { FC } from "react"
 import { SSwitch, SThumb } from "./Switch.styled"
@@ -11,7 +10,7 @@ type SwitchProps = {
   disabled?: boolean
   size?: "small" | "regular"
   withLabel?: boolean
-} & MarginProps
+}
 
 export const Switch: FC<SwitchProps> = ({
   value,
@@ -23,7 +22,12 @@ export const Switch: FC<SwitchProps> = ({
   withLabel = false,
 }) => {
   return (
-    <Label id={name} label={label} withLabel={withLabel} flex acenter fs={14}>
+    <Label
+      id={name}
+      label={label}
+      withLabel={withLabel}
+      css={{ fontSize: 14, display: "flex", alignItems: "center" }}
+    >
       <SSwitch
         checked={value}
         onCheckedChange={onCheckedChange}
@@ -31,7 +35,7 @@ export const Switch: FC<SwitchProps> = ({
         size={size}
         name={name}
         id={name}
-        ml={withLabel ? 10 : 0}
+        withLabel={withLabel}
       >
         <SThumb checked={value} disabled={disabled} size={size} />
       </SSwitch>

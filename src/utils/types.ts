@@ -11,3 +11,7 @@ export function isRecord<Key extends string, Value>(
 ): x is Record<Key, Value> {
   return typeof x === "object" && x != null && !Array.isArray(x)
 }
+
+export function keys<O extends object>(o: O) {
+  return Object.keys(o) as (keyof O)[]
+}

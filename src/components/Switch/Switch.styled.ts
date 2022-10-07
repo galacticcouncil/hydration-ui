@@ -1,5 +1,4 @@
 import { Switch, SwitchThumb } from "@radix-ui/react-switch"
-import { margins, MarginProps } from "utils/styles"
 import styled from "@emotion/styled"
 import { css } from "@emotion/react"
 import { theme } from "theme"
@@ -47,9 +46,10 @@ export const SThumb = styled(SwitchThumb)<{
     `}
 `
 
-export const SSwitch = styled(Switch)<
-  { size?: "small" | "regular" } & MarginProps
->`
+export const SSwitch = styled(Switch)<{
+  size?: "small" | "regular"
+  withLabel?: boolean
+}>`
   position: relative;
   border-radius: 45px;
   border: 1px solid ${theme.colors.backgroundGray700};
@@ -84,5 +84,6 @@ export const SSwitch = styled(Switch)<
       border-color: ${theme.colors.primary300};
     }
   }
-  ${margins};
+
+  ${(p) => p.withLabel && css({ marginLeft: 10 })}
 `

@@ -2,7 +2,6 @@ import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
 import { ReactComponent as MinusIcon } from "assets/icons/MinusIcon.svg"
 import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
 import { ReactComponent as WindMillIcon } from "assets/icons/WindMillIcon.svg"
-import { Box } from "components/Box/Box"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { FC, useState } from "react"
@@ -25,29 +24,37 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
 
   return (
     <>
-      <Box flex spread acenter m="24px" width={280}>
-        <Box width={214} flex column gap={10}>
+      <div
+        sx={{
+          flex: "row",
+          justify: "space-between",
+          align: "center",
+          m: 24,
+          width: 280,
+        }}
+      >
+        <div sx={{ width: 214, flex: "column", gap: 10 }}>
           <Button fullWidth size="small" onClick={() => setOpenAdd(true)}>
-            <Box flex acenter jcenter>
-              <Icon icon={<PlusIcon />} mr={11} />
+            <div sx={{ flex: "row", align: "center", justify: "center" }}>
+              <Icon icon={<PlusIcon />} sx={{ mr: 11 }} />
               {t("pools.pool.actions.addLiquidity")}
-            </Box>
+            </div>
           </Button>
 
           <Button fullWidth size="small" onClick={() => setOpenRemove(true)}>
-            <Box flex acenter jcenter>
-              <Icon icon={<MinusIcon />} mr={11} />
+            <div sx={{ flex: "row", align: "center", justify: "center" }}>
+              <Icon icon={<MinusIcon />} sx={{ mr: 11 }} />
               {t("pools.pool.actions.removeLiquidity")}
-            </Box>
+            </div>
           </Button>
 
           <Button fullWidth size="small" onClick={() => setOpenFarms(true)}>
-            <Box flex acenter jcenter>
-              <Icon icon={<WindMillIcon />} mr={11} />
+            <div sx={{ flex: "row", align: "center", justify: "center" }}>
+              <Icon icon={<WindMillIcon />} sx={{ mr: 11 }} />
               {t("pools.pool.actions.joinFarm")}
-            </Box>
+            </div>
           </Button>
-        </Box>
+        </div>
         <SButtonOpen
           isActive={isExpanded}
           onClick={onExpandClick}
@@ -55,7 +62,7 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
         >
           <ChevronDown />
         </SButtonOpen>
-      </Box>
+      </div>
       <PoolAddLiquidity
         isOpen={openAdd}
         onClose={() => setOpenAdd(false)}

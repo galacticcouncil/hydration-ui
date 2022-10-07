@@ -18,8 +18,9 @@ type Props = {
 
 export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
   const { t } = useTranslation("translation")
-  const [userSelectedProvider, setUserSelectedProvider] =
-    useState<string | null>(null)
+  const [userSelectedProvider, setUserSelectedProvider] = useState<
+    string | null
+  >(null)
 
   const mutate = useMutation(
     ["web3Enable", userSelectedProvider],

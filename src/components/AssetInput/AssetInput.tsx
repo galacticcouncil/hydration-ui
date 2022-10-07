@@ -1,4 +1,3 @@
-import { MarginProps, SizeProps } from "utils/styles"
 import React, { FC } from "react"
 import {
   SDollars,
@@ -21,41 +20,30 @@ export type AssetInputProps = {
   error?: string
   withLabel?: boolean
   className?: string
-} & SizeProps &
-  MarginProps
+}
 
-export const AssetInput: FC<AssetInputProps> = ({
-  onChange,
-  value,
-  label,
-  type = "text",
-  placeholder,
-  name,
-  withLabel,
-  className,
-  ...p
-}) => {
+export const AssetInput: FC<AssetInputProps> = (props) => {
   return (
-    <div className={className} css={{ position: "relative" }}>
-      <SLabelWrapper htmlFor={name} error={p.error}>
+    <div className={props.className} css={{ position: "relative" }}>
+      <SLabelWrapper htmlFor={props.name} error={props.error}>
         <SInputWrapper>
           <SInput
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               if (e.target.validity.valid) {
-                onChange(e.target.value.replace(/,/g, "."))
+                props.onChange(e.target.value.replace(/,/g, "."))
               }
             }}
-            value={value ?? ""}
-            id={name}
-            type={type}
-            placeholder={placeholder}
+            value={props.value ?? ""}
+            id={props.name}
+            type={props.type}
+            placeholder={props.placeholder}
           />
 
-          {p.unit && <SUnit>{p.unit}</SUnit>}
+          {props.unit && <SUnit>{props.unit}</SUnit>}
         </SInputWrapper>
-        {p.dollars && <SDollars>{`≈  ${p.dollars}`}</SDollars>}
+        {props.dollars && <SDollars>{`≈  ${props.dollars}`}</SDollars>}
       </SLabelWrapper>
-      {p.error && <SErrorMessage>{p.error}</SErrorMessage>}
+      {props.error && <SErrorMessage>{props.error}</SErrorMessage>}
     </div>
   )
 }

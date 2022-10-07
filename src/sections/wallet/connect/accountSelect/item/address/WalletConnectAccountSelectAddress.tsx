@@ -1,6 +1,5 @@
 import { css } from "@emotion/react"
 import { Text } from "components/Typography/Text/Text"
-import { Box } from "components/Box/Box"
 import { FC } from "react"
 import { shortenAccountAddress } from "utils/account"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
@@ -19,36 +18,19 @@ export const WalletConnectAccountSelectAddress: FC<Props> = ({
   onClick,
 }) => {
   return (
-    <Box
-      flex
-      align="center"
-      gap={10}
+    <div
       onClick={onClick}
-      css={css`
-        position: relative;
-      `}
+      sx={{ flex: "row", align: "center", gap: 10 }}
+      css={{ position: "relative" }}
     >
-      <Box
-        flex
-        align="center"
-        justify="align"
-        bg="backgroundGray1000"
-        p={5}
-        css={css`
-          border-radius: 9999px;
-        `}
+      <div
+        sx={{ p: 5, flex: "row", align: "center", bg: "backgroundGray1000" }}
+        css={{ borderRadius: "9999px" }}
       >
         <AccountAvatar address={address} theme={theme} size={32} />
-      </Box>
+      </div>
 
-      <Box
-        flex
-        column
-        gap={3}
-        css={css`
-          overflow: hidden;
-        `}
-      >
+      <div sx={{ flex: "column", gap: 3 }} css={{ overflow: "hidden" }}>
         <Text fw={600} fs={12}>
           {name}
         </Text>
@@ -64,7 +46,7 @@ export const WalletConnectAccountSelectAddress: FC<Props> = ({
         >
           {shortenAccountAddress(address, 12)}
         </Text>
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }

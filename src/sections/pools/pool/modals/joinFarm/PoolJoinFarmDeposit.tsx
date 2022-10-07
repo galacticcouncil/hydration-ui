@@ -1,6 +1,5 @@
 import { Trans, useTranslation } from "react-i18next"
 import { SMaxButton } from "sections/pools/pool/modals/joinFarm/PoolJoinFarm.styled"
-import { Box } from "components/Box/Box"
 import { Text } from "components/Typography/Text/Text"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { AssetInput } from "components/AssetInput/AssetInput"
@@ -109,13 +108,23 @@ export const PoolJoinFarmDeposit = (props: {
 
   return (
     <form onSubmit={form.handleSubmit(handleSubmit)}>
-      <Box bg="backgroundGray800" p={20} mt={20} css={{ borderRadius: 12 }}>
-        <Box flex acenter spread mb={11}>
+      <div
+        sx={{ bg: "backgroundGray800", p: 20, mt: 20 }}
+        css={{ borderRadius: 12 }}
+      >
+        <div
+          sx={{
+            flex: "row",
+            align: "center",
+            mb: 11,
+            justify: "space-between",
+          }}
+        >
           <Text fw={600} lh={22} color="primary200">
             {t("farms.deposit.title")}
           </Text>
-          <Box flex acenter>
-            <Text fs={12} lh={16} mr={5} color="white">
+          <div sx={{ flex: "row", align: "center" }}>
+            <Text fs={12} lh={16} sx={{ mr: 5 }} color="white">
               <Trans
                 t={t}
                 i18nKey="farms.deposit.balance"
@@ -138,21 +147,21 @@ export const PoolJoinFarmDeposit = (props: {
                 }
               }}
             />
-          </Box>
-        </Box>
-        <Box flex acenter>
+          </div>
+        </div>
+        <div sx={{ flex: "row", align: "center" }}>
           <DualAssetIcons
             firstIcon={{ icon: getAssetLogo(assetIn.symbol) }}
             secondIcon={{ icon: getAssetLogo(assetOut.symbol) }}
           />
-          <Box flex column mr={20} css={{ flexShrink: 0 }}>
+          <div sx={{ flex: "column", mr: 20, flexShrink: 0 }}>
             <Text fw={700} fs={16}>
               {assetIn.symbol}/{assetOut.symbol}
             </Text>
             <Text fw={500} fs={12} color="neutralGray500">
               {t("farms.deposit.assetType")}
             </Text>
-          </Box>
+          </div>
 
           <Controller
             name="value"
@@ -180,10 +189,10 @@ export const PoolJoinFarmDeposit = (props: {
               />
             )}
           />
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Box flex mt={20} css={{ justifyContent: "flex-end" }}>
+      <div sx={{ flex: "row", mt: 20, justify: "flex-end" }}>
         {account ? (
           <Button type="submit" variant="primary">
             {t("farms.deposit.submit")}
@@ -191,7 +200,7 @@ export const PoolJoinFarmDeposit = (props: {
         ) : (
           <WalletConnectButton />
         )}
-      </Box>
+      </div>
     </form>
   )
 }

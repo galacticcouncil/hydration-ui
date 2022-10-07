@@ -5,7 +5,6 @@ import {
 } from "sections/pools/pool/shares/PoolShares.styled"
 import { useTranslation } from "react-i18next"
 import { GradientText } from "components/Typography/GradientText/GradientText"
-import { Box } from "components/Box/Box"
 import { useAccountDepositIds, useDeposits } from "api/deposits"
 import { PoolPositionList } from "sections/pools/pool/position/list/PoolPositionList"
 import { PoolBase } from "@galacticcouncil/sdk"
@@ -34,7 +33,7 @@ export const PoolShares: FC<Props> = ({ pool }) => {
 
   return (
     <SContainer>
-      <GradientText fs={16} lh={22} mb={12}>
+      <GradientText fs={16} lh={22} sx={{ mb: 12 }}>
         {t("pools.pool.liquidity.title")}
       </GradientText>
       <SDetails>
@@ -47,7 +46,7 @@ export const PoolShares: FC<Props> = ({ pool }) => {
         <PoolSharesApr poolId={pool.address} />
       </SDetails>
       {!!positions?.length && (
-        <Box flex column gap={12} mt={32}>
+        <div sx={{ flex: "column", gap: 12, mt: 32 }}>
           {positions.map(({ id, deposit }, i) => (
             <PoolPositionList
               key={id.toString()}
@@ -56,7 +55,7 @@ export const PoolShares: FC<Props> = ({ pool }) => {
               index={i + 1}
             />
           ))}
-        </Box>
+        </div>
       )}
     </SContainer>
   )

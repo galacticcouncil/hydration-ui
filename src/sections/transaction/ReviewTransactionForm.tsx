@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
-import { Box } from "components/Box/Box"
 import { SDetailRow } from "./ReviewTransaction.styled"
 import { Button } from "components/Button/Button"
 import { TransactionCode } from "components/TransactionCode/TransactionCode"
@@ -48,19 +47,19 @@ export const ReviewTransactionForm = (
   return (
     <>
       {props.title && (
-        <Text color="neutralGray400" fw={400} mt={6}>
+        <Text color="neutralGray400" fw={400} sx={{ mt: 6 }}>
           {props.title}
         </Text>
       )}
-      <Box mt={16}>
+      <div sx={{ mt: 16 }}>
         {json && <TransactionCode name={json.method} src={json.args} />}
-      </Box>
-      <Box mt={10}>
+      </div>
+      <div sx={{ mt: 10 }}>
         <SDetailRow>
           <Text color="neutralGray300">
             {t("pools.reviewTransaction.modal.detail.cost")}
           </Text>
-          <Box flex column align="end">
+          <div sx={{ flex: "column", align: "end" }}>
             {paymentInfoData && (
               <>
                 <Text color="white">
@@ -76,7 +75,7 @@ export const ReviewTransactionForm = (
                 </Text>
               </>
             )}
-          </Box>
+          </div>
         </SDetailRow>
         <SDetailRow>
           <Text color="neutralGray300">
@@ -108,8 +107,8 @@ export const ReviewTransactionForm = (
           </Text>
           <Text color="white">{props.tx.nonce.toString()}</Text>
         </SDetailRow>
-      </Box>
-      <Box mt={24} flex spread>
+      </div>
+      <div sx={{ mt: 24, flex: "row", justify: "space-between" }}>
         <Button
           onClick={props.onCancel}
           text={t("pools.reviewTransaction.modal.cancel")}
@@ -122,7 +121,7 @@ export const ReviewTransactionForm = (
           disabled={account == null}
           onClick={() => signTx.mutate()}
         />
-      </Box>
+      </div>
     </>
   )
 }

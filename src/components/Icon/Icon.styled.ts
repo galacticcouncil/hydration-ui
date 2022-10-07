@@ -1,12 +1,8 @@
-import { margins, size } from "utils/styles"
 import styled from "@emotion/styled"
 import { css } from "@emotion/react"
-import { IconProps } from "./Icon"
 
-export const SIconWrapper = styled.span<IconProps>`
+export const SIconWrapper = styled.span<{ size?: number }>`
   display: flex;
-  ${size};
-  ${margins};
   ${(p) =>
     p.size &&
     css`

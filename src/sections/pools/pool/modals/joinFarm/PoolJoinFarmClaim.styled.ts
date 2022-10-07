@@ -1,8 +1,8 @@
-import { Box } from "components/Box/Box"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SContainer = styled(Box)`
+export const SContainer = styled.div`
+  display: flex;
   align-items: center;
   justify-content: space-between;
 

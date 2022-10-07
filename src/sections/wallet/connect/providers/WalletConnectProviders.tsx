@@ -1,4 +1,3 @@
-import { Box } from "components/Box/Box"
 import { WalletConnectProvidersButton } from "sections/wallet/connect/providers/button/WalletConnectProvidersButton"
 import { FC } from "react"
 import { getWallets, Wallet } from "@talismn/connect-wallets"
@@ -15,7 +14,7 @@ export const WalletConnectProviders: FC<Props> = ({
   const wallets = getWallets()
 
   return (
-    <Box flex column align="stretch" mt={8} gap={8}>
+    <div sx={{ flex: "column", align: "stretch", mt: 8, gap: 8 }}>
       {wallets.map((wallet) => {
         return (
           <WalletConnectProvidersButton
@@ -29,6 +28,6 @@ export const WalletConnectProviders: FC<Props> = ({
           />
         )
       })}
-    </Box>
+    </div>
   )
 }

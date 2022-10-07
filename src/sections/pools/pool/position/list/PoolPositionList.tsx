@@ -7,7 +7,6 @@ import { PalletLiquidityMiningDepositData } from "@polkadot/types/lookup"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { useTranslation } from "react-i18next"
 import { ReactComponent as FarmIcon } from "assets/icons/FarmIcon.svg"
-import { Box } from "components/Box/Box"
 import { PoolPosition } from "sections/pools/pool/position/PoolPosition"
 import { PoolBase } from "@galacticcouncil/sdk"
 
@@ -25,7 +24,7 @@ export const PoolPositionList: FC<Props> = ({ index, deposit, pool }) => {
       <SIcon>
         <FarmIcon />
       </SIcon>
-      <Box flex column gap={12}>
+      <div sx={{ flex: "column", gap: 12 }}>
         <div>
           <GradientText fs={16} lh={22}>
             {t("pools.pool.positions.title", { index })}
@@ -40,7 +39,7 @@ export const PoolPositionList: FC<Props> = ({ index, deposit, pool }) => {
             poolId={deposit.ammPoolId}
           />
         ))}
-      </Box>
+      </div>
     </SContainer>
   )
 }

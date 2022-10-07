@@ -2,7 +2,6 @@ import { FC } from "react"
 import { css } from "@emotion/react"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { Box } from "components/Box/Box"
 import { useQuery } from "@tanstack/react-query"
 import { WalletConnectAccountSelectItem } from "sections/wallet/connect/accountSelect/item/WalletConnectAccountSelectItem"
 import { Account } from "state/store"
@@ -28,16 +27,12 @@ export const WalletConnectAccountSelect: FC<Props> = ({
 
   return (
     <>
-      <Text fw={400} mt={6} color="neutralGray200">
+      <Text fw={400} color="neutralGray200" sx={{ mt: 6 }}>
         {t("walletConnect.accountSelect.description")}
       </Text>
 
-      <Box
-        flex
-        column
-        gap={10}
-        mt={10}
-        pb={10}
+      <div
+        sx={{ flex: "column", mt: 10, pb: 10, gap: 10 }}
         css={css`
           overflow-x: hidden;
           overflow-y: auto;
@@ -72,7 +67,7 @@ export const WalletConnectAccountSelect: FC<Props> = ({
               />
             )
           })}
-      </Box>
+      </div>
     </>
   )
 }

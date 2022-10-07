@@ -1,24 +1,4 @@
-import { mapObj } from "utils/object"
-
-const hexToRgb = (hex: string) => {
-  // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i
-  const tmp = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b)
-
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(tmp)
-  return [
-    parseInt(result![1], 16),
-    parseInt(result![2], 16),
-    parseInt(result![3], 16),
-  ].join(",")
-}
-
-const breakpoints = {
-  smallTablet: 640,
-  tablet: 850,
-  desktop: 1280,
-  lgDesktop: 1440,
-} as const
+import { keys } from "utils/types"
 
 const colors = {
   white: "#ffffff",
@@ -92,11 +72,52 @@ const zIndices = {
   modal: 3,
 } as const
 
+const breakpoints = {
+  sm: 640,
+  md: 768,
+  lg: 1024,
+  xl: 1440,
+  xxl: 1536,
+} as const
+type BreakpointKey = keyof typeof breakpoints
+
+const mediaGte = <Key extends BreakpointKey>(key: Key) =>
+  `(min-width: ${breakpoints[key]}px)` as const
+const mediaLt = <Key extends BreakpointKey>(key: Key) =>
+  `(max-width: calc(${breakpoints[key]}px - 1px))` as const
+
+const viewport = {
+  gte: Object.fromEntries(keys(breakpoints).map((i) => [i, mediaGte(i)])) as {
+    [Key in BreakpointKey]: ReturnType<typeof mediaGte<Key>>
+  },
+  lt: Object.fromEntries(keys(breakpoints).map((i) => [i, mediaLt(i)])) as {
+    [Key in BreakpointKey]: ReturnType<typeof mediaLt<Key>>
+  },
+} as const
+
+// Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+const hexToRgb = (hex: string) => {
+  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i
+  const tmp = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b)
+
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(tmp)
+  return [
+    parseInt(result![1], 16),
+    parseInt(result![2], 16),
+    parseInt(result![3], 16),
+  ].join(",")
+}
+
+const rgbColors = Object.fromEntries(
+  keys(colors).map((i) => [i, hexToRgb(colors[i])]),
+) as {
+  [Key in keyof typeof colors]: string
+}
+
 export const theme = {
   colors,
   gradients,
-  rgbColors: mapObj(hexToRgb, colors),
+  rgbColors,
   zIndices,
-  breakpoints,
-  mq: mapObj((x: number) => `@media (min-width: ${x}px)`, breakpoints),
+  viewport,
 }

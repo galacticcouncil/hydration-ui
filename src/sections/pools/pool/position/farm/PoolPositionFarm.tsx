@@ -5,7 +5,6 @@ import { useAPR } from "utils/apr"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { Box } from "components/Box/Box"
 import { useAsset } from "api/asset"
 import { Button } from "components/Button/Button"
 
@@ -31,12 +30,12 @@ export const PoolPositionFarm: FC<Props> = ({
           <Text fs={12} lh={16} color="neutralGray500">
             {t("pools.pool.positions.farms.joinedFarms")}
           </Text>
-          <Box flex acenter gap={6}>
+          <div sx={{ flex: "row", align: "center", gap: 6 }}>
             {asset.data.icon}
             <Text fs={14} lh={16} color="primary200">
               {t("value.APR", { apr: apr.apr })}
             </Text>
-          </Box>
+          </div>
           <Button size="small">
             {t("pools.pool.positions.farms.details")}
           </Button>

@@ -1,6 +1,5 @@
 import i18n from "i18next"
 import { initReactI18next } from "react-i18next"
-import translationEN from "./locales/en/translations.json"
 import {
   BigNumberFormatOptionsSchema,
   formatBigNumber,
@@ -9,6 +8,7 @@ import {
 } from "utils/formatting"
 import { normalizeBigNumber } from "../utils/balance"
 import { isRecord } from "utils/types"
+import { resources } from "./locales"
 
 /**
  * BigNumber.js formatting via i18n
@@ -32,10 +32,6 @@ function getBigNumberFormatParams(
   }
 
   return null
-}
-
-const resources = {
-  en: { translation: translationEN },
 }
 
 function parseFormatStr(formatStr: string | undefined) {
@@ -94,5 +90,17 @@ i18n
       escapeValue: false, // react already safes from xss
     },
   })
+
+if (import.meta.hot) {
+  import.meta.hot.accept(["./locales"], ([module]) => {
+    for (const lang in module?.resources) {
+      for (const ns in module?.resources[lang]) {
+        i18n.addResourceBundle(lang, ns, module?.resources[lang][ns])
+      }
+    }
+
+    i18n.changeLanguage(i18n.language)
+  })
+}
 
 export default i18n

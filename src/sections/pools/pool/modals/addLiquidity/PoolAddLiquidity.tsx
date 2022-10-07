@@ -169,7 +169,6 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
         asset={pool.tokens[0].id}
         balance={accountAssetABalance.data?.balance}
         decimals={pool.tokens[0].decimals}
-        mt={16}
         currency={{
           short: pool.tokens[0].symbol,
           full: pool.tokens[0].symbol,
@@ -177,6 +176,7 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
         assetIcon={getAssetLogo(pool.tokens[0].symbol)}
         value={inputAssetA}
         onChange={handleChangeAssetAInput}
+        sx={{ mt: 16 }}
       />
       <PoolAddLiquidityConversion
         firstValue={{ amount: BN_1, currency: pool.tokens[0].symbol }}
@@ -248,9 +248,9 @@ export const PoolAddLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
           text={t("pools.addLiquidity.modal.confirmButton")}
           variant="primary"
           fullWidth
-          mt={30}
           disabled={pendingTx}
           onClick={handleSubmit}
+          sx={{ mt: 30 }}
         />
       ) : (
         <WalletConnectButton css={{ marginTop: 30, width: "100%" }} />

@@ -7,7 +7,6 @@ import { useBestNumber } from "api/chain"
 import { useMath } from "utils/math"
 import { BN_0, BN_1 } from "utils/constants"
 import BN from "bignumber.js"
-import { Box } from "components/Box/Box"
 import { Button } from "components/Button/Button"
 import { css } from "@emotion/react"
 import { theme } from "theme"
@@ -156,23 +155,12 @@ export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
   })
 
   return (
-    <SContainer flex>
-      <Box
-        css={css`
-          flex-shrink: 1;
-        `}
-      >
-        <Text color="primary200" fs={16} mb={6}>
+    <SContainer>
+      <div css={{ flexShrink: 1 }}>
+        <Text color="primary200" fs={16} sx={{ mb: 6 }}>
           {t("pools.allFarms.modal.claim.title")}
         </Text>
-        <Text
-          fw={900}
-          fs={28}
-          mb={4}
-          css={css`
-            word-break: break-all;
-          `}
-        >
+        <Text fw={900} fs={28} sx={{ mb: 4 }} css={{ wordBreak: "break-all" }}>
           <Trans
             t={t}
             i18nKey="pools.allFarms.modal.claim.bsx"
@@ -194,13 +182,10 @@ export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
         >
           {t("value.usd", { amount: rewards?.ausd })}
         </Text>
-      </Box>
+      </div>
       <Button
         variant="primary"
-        ml={32}
-        css={css`
-          flex-shrink: 0;
-        `}
+        sx={{ ml: 32, flexShrink: 0 }}
         disabled={!!rewards?.bsx.isZero()}
         isLoading={claimMutation.isLoading}
         onClick={() => claimMutation.mutate()}

@@ -1,6 +1,6 @@
-import { size, SizeProps } from "utils/styles"
 import styled from "@emotion/styled"
 import { keyframes } from "@emotion/react"
+import { getResponsiveStyles, ResponsiveValue } from "utils/responsive"
 
 const spin = keyframes`
   0% {
@@ -12,13 +12,14 @@ const spin = keyframes`
   }
 `
 
-export const Spinner = styled.span<SizeProps>`
+export const Spinner = styled.span<{
+  width?: ResponsiveValue<number>
+  height?: ResponsiveValue<number>
+}>`
   --spinner-width: 3px;
 
   display: block;
   position: relative;
-
-  ${size};
 
   border-radius: 9999px;
   mask: radial-gradient(
@@ -55,4 +56,9 @@ export const Spinner = styled.span<SizeProps>`
 
     transform: translateX(calc(var(--spinner-width) / -2));
   }
+
+  ${(p) => [
+    getResponsiveStyles(p.width, (width) => ({ width })),
+    getResponsiveStyles(p.height, (height) => ({ height })),
+  ]}
 `

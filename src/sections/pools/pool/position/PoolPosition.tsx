@@ -1,5 +1,4 @@
 import { FC } from "react"
-import { Box } from "components/Box/Box"
 import { Text } from "components/Typography/Text/Text"
 import { PoolPositionFarm } from "sections/pools/pool/position/farm/PoolPositionFarm"
 import { useTranslation } from "react-i18next"
@@ -26,15 +25,15 @@ export const PoolPosition: FC<Props> = ({ position, index, pool, poolId }) => {
 
   return (
     <SContainer key={index}>
-      <Box flex column gap={6}>
+      <div sx={{ flex: "column", gap: 6 }}>
         <Text fs={12} lh={16} color="neutralGray500">
           {t("pools.pool.positions.position.title", { index })}
         </Text>
         <Text fs={14} lh={18} color="white">
           {t("pools.pool.positions.position.entered", { date: enteredDate })}
         </Text>
-      </Box>
-      <Box flex column gap={6}>
+      </div>
+      <div sx={{ flex: "column", gap: 6 }}>
         <Text fs={12} lh={16} color="neutralGray500">
           {t("pools.pool.positions.position.locked")}
         </Text>
@@ -43,12 +42,12 @@ export const PoolPosition: FC<Props> = ({ position, index, pool, poolId }) => {
             shares: position.valuedShares.toBigNumber(),
           })}
         </Text>
-      </Box>
-      <Box flex column gap={6}>
+      </div>
+      <div sx={{ flex: "column", gap: 6 }}>
         <Text fs={12} lh={16} color="neutralGray500">
           {t("pools.pool.positions.position.current")}
         </Text>
-        <Box flex column gap={2}>
+        <div sx={{ flex: "column", gap: 2 }}>
           <Text fs={14} lh={18} color="white">
             {t("value.usd", { amount: positionValue, decimalPlaces: 6 })}
           </Text>
@@ -60,8 +59,8 @@ export const PoolPosition: FC<Props> = ({ position, index, pool, poolId }) => {
               symbolB: assetB?.symbol,
             })}
           </Text>
-        </Box>
-      </Box>
+        </div>
+      </div>
       <PoolPositionFarm
         poolId={poolId}
         globalFarmId={position.globalFarmId}

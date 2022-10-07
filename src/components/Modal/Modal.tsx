@@ -21,7 +21,6 @@ import { IconButton } from "components/IconButton/IconButton"
 import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
 import { Dialog, DialogDescription, DialogPortal } from "@radix-ui/react-dialog"
 import { useTranslation } from "react-i18next"
-import { SizeProps } from "utils/styles"
 import { theme } from "theme"
 
 type Props = {
@@ -31,7 +30,8 @@ type Props = {
   variant?: "default" | "error"
   secondaryIcon?: { icon: ReactNode; onClick: () => void; name: string }
   withoutClose?: boolean
-} & Pick<SizeProps, "width">
+  width?: number
+}
 
 type PropsOverride = Pick<
   Props,
@@ -83,7 +83,7 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
           <ModalContainer>
             <Backdrop variant={mergedProps.variant} />
             <ModalWindow
-              width={mergedProps.width}
+              maxWidth={mergedProps.width}
               onEscapeKeyDown={props.onClose}
             >
               <IconsWrapper>

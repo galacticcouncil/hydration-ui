@@ -1,7 +1,6 @@
 import { css } from "@emotion/react"
 import { Text } from "components/Typography/Text/Text"
 import { GradientText } from "components/Typography/GradientText/GradientText"
-import { Box } from "components/Box/Box"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { useTranslation } from "react-i18next"
 import { FC } from "react"
@@ -14,8 +13,8 @@ export const WalletConnectConfirmPending: FC<Props> = ({ provider }) => {
   const wallet = getWalletBySource(provider)
 
   return (
-    <Box flex align="center" column>
-      <Box
+    <div sx={{ flex: "column", align: "center" }}>
+      <div
         css={css`
           display: grid;
           grid-template-columns: 1fr;
@@ -36,15 +35,15 @@ export const WalletConnectConfirmPending: FC<Props> = ({ provider }) => {
           width={48}
           height={48}
         />
-      </Box>
-      <GradientText mt={20} fs={24} fw={600} tAlign="center">
+      </div>
+      <GradientText fs={24} fw={600} tAlign="center" sx={{ mt: 20 }}>
         {t("walletConnect.pending.title")}
       </GradientText>
-      <Box pl={20} pr={20} mt={20} mb={40}>
+      <div sx={{ px: 20, mt: 20, mb: 40 }}>
         <Text tAlign="center" fs={16} color="neutralGray200" fw={400} lh={22}>
           {t("walletConnect.pending.description", { name: wallet?.title })}
         </Text>
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }

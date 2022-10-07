@@ -1,15 +1,14 @@
-import { ColorProps, colors, MarginProps, margins } from "utils/styles"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SIconButton = styled.button<
-  { round?: boolean } & ColorProps & MarginProps
->`
+export const SIconButton = styled.button<{ round?: boolean }>`
   ${(p) => p.round && "border-radius: 9999px;"};
 
   min-width: 34px;
   min-height: 34px;
-  background: ${(p) => p.bg || theme.colors.iconButtonGrey};
+
+  background: ${theme.colors.iconButtonGrey};
+
   border: none;
   display: flex;
   align-items: center;
@@ -18,10 +17,7 @@ export const SIconButton = styled.button<
   overflow: hidden;
   position: relative;
 
-  ${colors};
-  ${margins};
-
-  :hover {
+  &:hover {
     &::after {
       content: "";
       width: 100%;

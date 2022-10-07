@@ -4,7 +4,6 @@ import {
   SFarmIcon,
   SFarmRow,
 } from "sections/pools/pool/modals/joinFarm/PoolJoinFarm.styled"
-import { Box } from "components/Box/Box"
 import { Text } from "components/Typography/Text/Text"
 import { FillBar } from "components/FillBar/FillBar"
 import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
@@ -46,23 +45,22 @@ export const PoolJoinFarmItem = (props: {
       variant={props.onSelect ? "list" : "detail"}
       onClick={props.onSelect}
     >
-      <Box
-        flex
-        column
-        gap={8}
-        css={css`
-          align-items: flex-start;
-          justify-content: space-between;
-          height: 100%;
-        `}
+      <div
+        sx={{
+          flex: "column",
+          gap: 8,
+          align: "flex-start",
+          justify: "space-between",
+          height: "100%",
+        }}
       >
         {props.deposit && <Tag>{t("pools.allFarms.modal.joined")}</Tag>}
 
-        <Box flex column gap={8}>
-          <Box flex acenter gap={8}>
+        <div sx={{ flex: "column", gap: 8 }}>
+          <div sx={{ flex: "row", align: "center", gap: 8 }}>
             {asset.data?.icon}
             <Text fw={700}>{asset.data?.name}</Text>
-          </Box>
+          </div>
           <Text
             fs={20}
             lh={28}
@@ -76,9 +74,9 @@ export const PoolJoinFarmItem = (props: {
               value: props.farm.apr,
             })}
           </Text>
-        </Box>
-      </Box>
-      <Box flex column>
+        </div>
+      </div>
+      <div sx={{ flex: "column" }}>
         <SFarmRow>
           <FillBar
             percentage={props.farm.distributedRewards
@@ -131,7 +129,7 @@ export const PoolJoinFarmItem = (props: {
             end: addSeconds(new Date(), secondsDurationToEnd.toNumber()),
           })}
         </Text>
-      </Box>
+      </div>
       {props.onSelect && (
         <SFarmIcon>
           <ChevronDown />

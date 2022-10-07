@@ -1,13 +1,13 @@
-import { Color, MarginProps } from "utils/styles"
 import { FC } from "react"
 import { SSeparator } from "./Separator.styled"
+import { theme } from "theme"
 
 export type SeparatorProps = {
   orientation?: "vertical" | "horizontal"
-  color?: Color
+  color?: keyof typeof theme.colors
   opacity?: number
   size?: number
-} & MarginProps
+}
 
 export const Separator: FC<SeparatorProps> = ({
   orientation = "horizontal",

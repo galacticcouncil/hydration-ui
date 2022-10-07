@@ -1,6 +1,5 @@
 import { FC } from "react"
 import { Text } from "components/Typography/Text/Text"
-import { Box } from "components/Box/Box"
 import { useTranslation } from "react-i18next"
 import { Maybe } from "utils/types"
 import { u32 } from "@polkadot/types"
@@ -16,11 +15,11 @@ export const PoolSharesValue: FC<Props> = (props) => {
   const { dollarValue, assetA, assetB } = useCurrentSharesValue(props)
 
   return (
-    <Box flex column gap={6}>
+    <div sx={{ flex: "column", gap: 6 }}>
       <Text fs={12} lh={16} color="neutralGray500">
         {t("pools.pool.liquidity.value")}
       </Text>
-      <Box flex column gap={2}>
+      <div sx={{ flex: "column", gap: 2 }}>
         <Text fs={14} lh={18} color="white">
           {t("pools.pool.liquidity.amounts", {
             amountA: assetA?.amount,
@@ -32,7 +31,7 @@ export const PoolSharesValue: FC<Props> = (props) => {
         <Text fs={12} lh={16} color="neutralGray500">
           {t("value.usd", { amount: dollarValue })}
         </Text>
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }

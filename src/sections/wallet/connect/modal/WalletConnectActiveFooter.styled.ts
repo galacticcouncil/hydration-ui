@@ -1,9 +1,10 @@
-import { Box } from "components/Box/Box"
 import { Text } from "components/Typography/Text/Text"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SContainer = styled(Box)`
+export const SContainer = styled.div`
+  display: flex;
+
   align-items: center;
   justify-content: space-between;
 
@@ -19,7 +20,9 @@ export const SContainer = styled(Box)`
   padding: 20px 30px;
 `
 
-export const SLogoutContainer = styled(Box)`
+export const SLogoutContainer = styled.div`
+  display: flex;
+
   gap: 2px;
   align-items: center;
   justify-content: center;

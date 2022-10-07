@@ -1,9 +1,9 @@
-import { colors, fonts, margins } from "utils/styles"
 import styled from "@emotion/styled"
-import { HeadingProps } from "./Heading"
+import { theme } from "theme"
+import { handleTypographyProps, STypographyProps } from "../Typography.utils"
 
-export const SH1 = styled.h1<HeadingProps>`
-  ${fonts};
-  ${margins};
-  ${colors};
+export const SHeading = styled.h1<STypographyProps>`
+  color: ${theme.colors.neutralGray100};
+
+  ${handleTypographyProps}
 `

@@ -1,8 +1,7 @@
-import { Box } from "components/Box/Box"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const STag = styled(Box)`
+export const STag = styled.div`
   display: inline-flex;
   width: auto;
 

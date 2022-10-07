@@ -1,4 +1,3 @@
-import { margins, size } from "utils/styles"
 import styled from "@emotion/styled"
 import { css } from "@emotion/react"
 import { theme } from "theme"
@@ -127,8 +126,6 @@ export const SButton = styled.button<ButtonProps>`
     css`
       text-transform: capitalize;
     `}
-  ${size};
-  ${margins};
 `
 
 export const SContent = styled.span`

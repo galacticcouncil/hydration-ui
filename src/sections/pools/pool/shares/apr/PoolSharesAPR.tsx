@@ -1,6 +1,5 @@
 import { FC, useMemo } from "react"
 import { Text } from "components/Typography/Text/Text"
-import { Box } from "components/Box/Box"
 import { useTranslation } from "react-i18next"
 import { useAPR } from "utils/apr"
 
@@ -17,7 +16,7 @@ export const PoolSharesApr: FC<Props> = ({ poolId }) => {
   }, [APRs.data])
 
   return (
-    <Box flex column gap={6}>
+    <div sx={{ flex: "column", gap: 6 }}>
       <Text fs={12} lh={16} color="neutralGray500">
         {t("pools.pool.liquidity.apr.title")}
       </Text>
@@ -31,6 +30,6 @@ export const PoolSharesApr: FC<Props> = ({ poolId }) => {
             : t("value.APR", { apr: sortedAPR[0].apr })}
         </Text>
       )}
-    </Box>
+    </div>
   )
 }

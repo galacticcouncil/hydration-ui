@@ -1,5 +1,4 @@
-import { FC, PropsWithChildren } from "react"
-import { ColorProps } from "utils/styles"
+import { ComponentProps, FC, PropsWithChildren } from "react"
 import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
 import { SExternalLink, SExternalLinkAdornment } from "./ExternalLink.styled"
 
@@ -10,16 +9,15 @@ const ExternalLinkAdornment = () => (
   </SExternalLinkAdornment>
 )
 
-type Props = { href: string } & ColorProps
+type Props = { href: string } & ComponentProps<typeof SExternalLink>
 
 export const ExternalLink: FC<PropsWithChildren<Props>> = ({
   href,
-  color,
-  bg,
+  className,
   children,
 }) => {
   return (
-    <SExternalLink href={href} color={color} bg={bg}>
+    <SExternalLink href={href} className={className}>
       {children} <ExternalLinkAdornment />
     </SExternalLink>
   )

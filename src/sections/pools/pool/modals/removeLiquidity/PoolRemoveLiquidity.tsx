@@ -11,7 +11,6 @@ import { Slider } from "components/Slider/Slider"
 import { BoxSwitch } from "components/BoxSwitch/BoxSwitch"
 import { Input } from "components/Input/Input"
 import { Text } from "components/Typography/Text/Text"
-import { Box } from "components/Box/Box"
 import { PoolRemoveLiquidityReward } from "sections/pools/pool/modals/removeLiquidity/reward/PoolRemoveLiquidityReward"
 import { Separator } from "components/Separator/Separator"
 import { useForm, Controller } from "react-hook-form"
@@ -146,7 +145,7 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
       onClose={onClose}
     >
       <form onSubmit={form.handleSubmit(handleSubmit)}>
-        <Heading fs={42} lh={52} mb={16} mt={16}>
+        <Heading fs={42} lh={52} sx={{ my: 16 }}>
           {t("value.percentage", { value })}
         </Heading>
 
@@ -186,12 +185,12 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
           />
         </STradingPairContainer>
 
-        <Box mb={32} mt={16}>
-          <Box flex acenter justify="space-between">
+        <div sx={{ mt: 16, mb: 32 }}>
+          <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
             <Text color="neutralGray500" fs={15}>
               {t("pools.removeLiquidity.modal.cost")}
             </Text>
-            <Box flex acenter gap={4}>
+            <div sx={{ flex: "row", align: "center", gap: 4 }}>
               <Text fs={14}>
                 {t("pools.removeLiquidity.modal.row.transactionCostValue", {
                   amount: paymentInfoEstimate.data?.partialFee,
@@ -199,10 +198,10 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
                   decimalPlaces: 2,
                 })}
               </Text>
-            </Box>
-          </Box>
-          <Separator mt={8} mb={8} size={2} />
-          <Box flex acenter justify="space-between">
+            </div>
+          </div>
+          <Separator sx={{ my: 8 }} size={2} />
+          <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
             <Text fs={15} color="neutralGray500">
               {t("pools.removeLiquidity.modal.price")}
             </Text>
@@ -218,8 +217,8 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
                 }}
               />
             </Text>
-          </Box>
-        </Box>
+          </div>
+        </div>
 
         {account ? (
           <Button type="submit" variant="primary" fullWidth>

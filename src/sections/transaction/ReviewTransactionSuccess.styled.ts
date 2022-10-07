@@ -1,9 +1,8 @@
-import { Box } from "components/Box/Box"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 import { motion } from "framer-motion"
 
-export const SProgressContainer = styled(Box)`
+export const SProgressContainer = styled.div`
   position: absolute;
   height: 32px;
   width: 100%;

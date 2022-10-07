@@ -1,7 +1,5 @@
 import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
-import { MarginProps } from "utils/styles"
 import { AssetInput } from "components/AssetInput/AssetInput"
-import { Box } from "components/Box/Box"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { FC, ReactNode } from "react"
@@ -23,35 +21,30 @@ type Props = {
   currency: { short: string; full: string }
   assetIcon: ReactNode
   value: string
+  className?: string
   onChange: (v: string) => void
-} & MarginProps
+}
 
-export const PoolAddLiquidityAssetSelect: FC<Props> = ({
-  name,
-  value,
-  onChange,
-  asset,
-  balance,
-  decimals,
-  ...p
-}) => {
+export const PoolAddLiquidityAssetSelect: FC<Props> = (props) => {
   const { t } = useTranslation()
 
   return (
-    <SContainer {...p}>
-      <Box flex acenter spread mb={11}>
+    <SContainer className={props.className}>
+      <div
+        sx={{ flex: "row", align: "center", justify: "space-between", mb: 11 }}
+      >
         <Text fw={600} lh={22} color="primary200">
           {t("selectAsset.title")}
         </Text>
-        <Box flex acenter>
-          <Text fs={12} mr={5} lh={16} color="white">
+        <div sx={{ flex: "row", align: "center" }}>
+          <Text fs={12} lh={16} color="white" sx={{ mr: 5 }}>
             <Trans
               t={t}
               i18nKey="selectAsset.balance"
               tOptions={{
-                balance,
+                balance: props.balance,
                 decimalPlaces: 4,
-                fixedPointScale: decimals,
+                fixedPointScale: props.decimals,
               }}
             >
               <span css={{ opacity: 0.7 }} />
@@ -62,35 +55,39 @@ export const PoolAddLiquidityAssetSelect: FC<Props> = ({
             text={t("selectAsset.button.max")}
             capitalize
             onClick={() => {
-              if (balance != null) {
-                onChange(getFloatingPointAmount(balance, decimals).toFixed(4))
+              if (props.balance != null) {
+                props.onChange(
+                  getFloatingPointAmount(props.balance, props.decimals).toFixed(
+                    4,
+                  ),
+                )
               }
             }}
           />
-        </Box>
-      </Box>
-      <Box flex spread acenter>
+        </div>
+      </div>
+      <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
         <SSelectAssetButton size="small">
-          <Icon icon={p.assetIcon} mr={10} />
-          <Box mr={6}>
+          <Icon icon={props.assetIcon} sx={{ mr: 10 }} />
+          <div sx={{ mr: 6 }}>
             <Text fw={700} color="white">
-              {p.currency.short}
+              {props.currency.short}
             </Text>
             <Text color="neutralGray400" fs={12} lh={14}>
-              {p.currency.full}
+              {props.currency.full}
             </Text>
-          </Box>
+          </div>
           <Icon icon={<ChevronDown />} />
         </SSelectAssetButton>
         <AssetInput
-          value={value}
-          name={name}
+          value={props.value}
+          name={props.name}
           label={t("selectAsset.input.label")}
-          onChange={onChange}
+          onChange={props.onChange}
           dollars="1234 USD"
-          unit={p.currency.short}
+          unit={props.currency.short}
         />
-      </Box>
+      </div>
     </SContainer>
   )
 }

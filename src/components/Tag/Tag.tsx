@@ -1,26 +1,17 @@
 import { Text } from "components/Typography/Text/Text"
-import { css } from "@emotion/react"
-import { theme } from "theme"
 import { ReactNode } from "react"
 import { STag } from "./Tag.styled"
-import { BoxProps } from "components/Box/Box"
 
-export const Tag = ({
-  children,
-  ...props
-}: { children?: ReactNode } & BoxProps) => {
+export const Tag = (props: { children?: ReactNode; className?: string }) => {
   return (
-    <STag {...props}>
+    <STag className={props.className}>
       <Text
         fs={9}
         fw={800}
-        css={css`
-          color: ${theme.colors.black};
-          text-transform: uppercase;
-          display: inline-block;
-        `}
+        sx={{ color: "black" }}
+        css={{ textTransform: "uppercase", display: "inline-block" }}
       >
-        {children}
+        {props.children}
       </Text>
     </STag>
   )

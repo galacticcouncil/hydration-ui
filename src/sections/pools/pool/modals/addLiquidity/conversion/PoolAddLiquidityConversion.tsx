@@ -1,4 +1,3 @@
-import { Box } from "components/Box/Box"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
@@ -17,7 +16,10 @@ export const PoolAddLiquidityConversion: FC<Props> = ({
 }) => {
   const { t } = useTranslation()
   return (
-    <Box flex relative height={35} acenter mt={16} mb={16}>
+    <div
+      sx={{ flex: "row", height: 35, my: 16, align: "center" }}
+      css={{ position: "relative" }}
+    >
       <Separator color="backgroundGray800" />
       <SContainer>
         <Text fs={11} lh={15}>
@@ -31,6 +33,6 @@ export const PoolAddLiquidityConversion: FC<Props> = ({
           {t("value", { value: secondValue.amount })} {secondValue.currency}
         </Text>
       </SContainer>
-    </Box>
+    </div>
   )
 }

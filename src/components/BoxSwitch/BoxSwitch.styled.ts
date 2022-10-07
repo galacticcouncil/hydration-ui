@@ -34,8 +34,14 @@ export const SButton = styled.button<{ isActive: boolean }>`
   }
 `
 
-export const SText = styled(Text)`
+export const SText = styled(Text)<{ isActive: boolean }>`
   transition: all 0.3s ease-in-out;
+  font-weight: 700;
+
+  ${(props) => {
+    if (props.isActive) return { color: theme.colors.black }
+    return { color: theme.colors.white }
+  }}
 `
 
 export const SButtonBackground = styled.div<{ index: number }>`

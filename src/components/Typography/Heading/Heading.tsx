@@ -1,24 +1,21 @@
-import { ColorProps, FontProps, MarginProps } from "utils/styles"
 import { FC, ReactNode } from "react"
-import { SH1 } from "./Heading.styled"
+import { TypographyProps } from "../Typography.utils"
+import { SHeading } from "./Heading.styled"
 
-type variant = "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
-export type HeadingProps = {
-  as?: variant
+interface HeadingProps extends TypographyProps {
+  as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
   children?: ReactNode
   text?: string
-} & FontProps &
-  MarginProps &
-  ColorProps
+}
 
 export const Heading: FC<HeadingProps> = ({
   children,
   text,
+  color,
   as = "h1",
-  color = "neutralGray100",
   ...rest
 }) => (
-  <SH1 as={as} color={color} {...rest}>
+  <SHeading as={as} $color={color} {...rest}>
     {text || children}
-  </SH1>
+  </SHeading>
 )

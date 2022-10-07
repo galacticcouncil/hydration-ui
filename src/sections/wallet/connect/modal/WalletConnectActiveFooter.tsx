@@ -1,4 +1,3 @@
-import { Box } from "components/Box/Box"
 import { css } from "@emotion/react"
 import { theme } from "theme"
 import { Text } from "components/Typography/Text/Text"
@@ -24,10 +23,10 @@ export function WalletConnectActiveFooter(props: {
   const wallet = getWalletBySource(props.provider)
 
   return (
-    <SContainer flex>
+    <SContainer>
       {props.account ? (
         <ButtonTransparent onClick={props.onLogout}>
-          <SLogoutContainer flex>
+          <SLogoutContainer>
             <LogoutIcon />
             <Text css={{ color: "currentColor" }} fs={14} fw={500}>
               {t("walletConnect.logout")}
@@ -46,8 +45,8 @@ export function WalletConnectActiveFooter(props: {
         `}
         onClick={props.onSwitch}
       >
-        <Box flex css={{ gap: 22, alignItems: "center" }}>
-          <Box flex css={{ gap: 12, alignItems: "center" }}>
+        <div sx={{ flex: "row", gap: 22, align: "center" }}>
+          <div sx={{ flex: "row", gap: 12, align: "center" }}>
             <img
               src={wallet?.logo.src}
               alt={wallet?.logo.alt}
@@ -57,12 +56,12 @@ export function WalletConnectActiveFooter(props: {
             <Text fs={14} fw={600} css={{ color: theme.colors.neutralGray100 }}>
               {wallet?.title}
             </Text>
-          </Box>
+          </div>
           <SSwitchText fs={14} fw={500}>
             <span>{t("walletConnect.switch")}</span>
             <ChevronRight css={{ marginLeft: -3 }} />
           </SSwitchText>
-        </Box>
+        </div>
       </ButtonTransparent>
     </SContainer>
   )

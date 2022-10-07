@@ -16,7 +16,7 @@ export const WalletConnectProviderSelect: FC<Props> = ({ onWalletSelect }) => {
 
   return (
     <>
-      <Text fw={400} mt={6} color="neutralGray200">
+      <Text fw={400} color="neutralGray200" sx={{ mt: 6 }}>
         {t("walletConnect.provider.description")}
       </Text>
 
@@ -26,30 +26,35 @@ export const WalletConnectProviderSelect: FC<Props> = ({ onWalletSelect }) => {
       />
 
       <Text
-        mt={20}
-        mb={30}
         fs={14}
         fw={400}
         tAlign="center"
         color="neutralGray400"
+        sx={{ my: 20 }}
       >
         <Trans t={t} i18nKey="walletConnect.provider.terms">
-          <ExternalLink href="/" color="orange100" />
+          <ExternalLink href="/" sx={{ color: "orange100" }} />
         </Trans>
       </Text>
 
       <Separator
-        ml={-30}
         color="white"
         opacity={0.06}
+        sx={{ ml: -30 }}
         css={css`
           width: calc(100% + 60px);
         `}
       />
 
-      <Text fw={400} mt={26} fs={14} tAlign="center" color="neutralGray400">
+      <Text
+        fw={400}
+        fs={14}
+        tAlign="center"
+        color="neutralGray400"
+        sx={{ mt: 26 }}
+      >
         <Trans t={t} i18nKey="walletConnect.provider.learn">
-          <ExternalLink href="/" color="primary450" />
+          <ExternalLink href="/" sx={{ color: "primary450" }} />
         </Trans>
       </Text>
     </>

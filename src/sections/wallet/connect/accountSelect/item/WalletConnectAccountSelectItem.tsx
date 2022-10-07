@@ -1,7 +1,6 @@
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { Separator } from "components/Separator/Separator"
-import { Box } from "components/Box/Box"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { BASILISK_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/network"
 import { useTokenBalance } from "api/balances"
@@ -11,7 +10,6 @@ import {
 } from "./WalletConnectAccountSelectItem.styled"
 import { WalletConnectAccountSelectAddress } from "sections/wallet/connect/accountSelect/item/address/WalletConnectAccountSelectAddress"
 import { FC } from "react"
-import { css } from "@emotion/react"
 import { useAssetMeta } from "api/assetMeta"
 
 type Props = {
@@ -42,7 +40,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
   return (
     <SContainer isActive={isActive}>
       <SSelectItem isActive={isActive} onClick={setAccount}>
-        <Box flex align="center" justify="space-between">
+        <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
           <Text>{name}</Text>
           <Text>
             {t("value.bsx", {
@@ -51,16 +49,9 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
               decimalPlaces: 4,
             })}
           </Text>
-        </Box>
+        </div>
 
-        <Box
-          flex
-          column
-          mt={12}
-          css={css`
-            gap: 12px;
-          `}
-        >
+        <div sx={{ flex: "column", mt: 12, gap: 12 }}>
           <WalletConnectAccountSelectAddress
             name={t("walletConnect.accountSelect.asset.network")}
             address={basiliskAddress}
@@ -75,7 +66,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
             address={kusamaAddress}
             theme={provider}
           />
-        </Box>
+        </div>
       </SSelectItem>
     </SContainer>
   )

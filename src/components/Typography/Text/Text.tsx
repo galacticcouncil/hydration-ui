@@ -1,21 +1,16 @@
-import { ComponentProps, FC, ReactNode } from "react"
+import { ElementType, FC, ReactNode } from "react"
 import { SText } from "./Text.styled"
+import { TypographyProps } from "../Typography.utils"
 
-export type TextProps = {
+export interface TextProps extends TypographyProps {
   children?: ReactNode
   text?: string | number
   className?: string
-} & ComponentProps<typeof SText>
+  as?: ElementType
+}
 
-export const Text: FC<TextProps> = ({
-  children,
-  text,
-  fw = 500,
-  fs = 16,
-  color = "neutralGray100",
-  ...rest
-}) => (
-  <SText {...rest} fw={fw} fs={fs} color={color}>
+export const Text: FC<TextProps> = ({ children, text, color, ...rest }) => (
+  <SText $color={color} {...rest}>
     {text || children}
   </SText>
 )

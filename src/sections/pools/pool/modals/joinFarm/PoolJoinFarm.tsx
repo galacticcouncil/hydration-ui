@@ -1,5 +1,4 @@
 import { Modal } from "components/Modal/Modal"
-import { Box } from "components/Box/Box"
 import { useAPR } from "utils/apr"
 import { u32 } from "@polkadot/types"
 import { PoolBase } from "@galacticcouncil/sdk"
@@ -16,12 +15,11 @@ export const PoolJoinFarm = (props: {
 }) => {
   const apr = useAPR(props.pool.address)
 
-  const [selectedYieldFarmId, setSelectedYieldFarmId] =
-    useState<{
-      globalFarmId: u32
-      yieldFarmId: u32
-      yieldFarmEntry?: PalletLiquidityMiningYieldFarmEntry
-    } | null>(null)
+  const [selectedYieldFarmId, setSelectedYieldFarmId] = useState<{
+    globalFarmId: u32
+    yieldFarmId: u32
+    yieldFarmEntry?: PalletLiquidityMiningYieldFarmEntry
+  } | null>(null)
 
   const selectedFarm = selectedYieldFarmId
     ? apr.data.find(
@@ -33,7 +31,7 @@ export const PoolJoinFarm = (props: {
 
   return (
     <Modal open={props.isOpen} onClose={props.onClose}>
-      <Box flex column gap={8} mt={24}>
+      <div sx={{ flex: "column", gap: 8, mt: 24 }}>
         {selectedFarm != null ? (
           <PoolJoinFarmSectionDetail
             pool={props.pool}
@@ -47,7 +45,7 @@ export const PoolJoinFarm = (props: {
             onSelect={setSelectedYieldFarmId}
           />
         )}
-      </Box>
+      </div>
     </Modal>
   )
 }

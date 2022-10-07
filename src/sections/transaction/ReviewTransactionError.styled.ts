@@ -1,7 +1,6 @@
-import { Box } from "components/Box/Box"
 import styled from "@emotion/styled"
 
-export const SButtons = styled(Box)`
+export const SButtons = styled.div`
   max-width: 200px;
   width: 100%;
   flex-grow: 1;

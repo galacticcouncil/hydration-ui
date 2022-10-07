@@ -1,4 +1,3 @@
-import { Box } from "components/Box/Box"
 import { DualAssetIcons } from "components/DualAssetIcons/DualAssetIcons"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
@@ -15,55 +14,55 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
   const { data } = useTotalInPool({ pool })
 
   return (
-    <Box flex column width={380}>
-      <Box flex spread mb={32}>
-        <Box>
+    <div sx={{ flex: "column", width: 380 }}>
+      <div sx={{ flex: "row", justify: "space-between", mb: 32 }}>
+        <div>
           <Text fs={14} lh={26} color="neutralGray400">
             {t("pools.pool.title", { type: pool.type })}
           </Text>
-          <Box flex acenter>
+          <div sx={{ flex: "row", align: "center" }}>
             <DualAssetIcons
               firstIcon={{ icon: getAssetLogo(pool.tokens[0].symbol) }}
               secondIcon={{ icon: getAssetLogo(pool.tokens[1].symbol) }}
             />
-            <Box flex column gap={1}>
+            <div sx={{ flex: "column", gap: 1 }}>
               <Text fw={700} color="white">
                 {pool.tokens[0].symbol}/{pool.tokens[1].symbol}
               </Text>
               <Text fs={12} lh={14} color="neutralGray500">
                 Token/Token {/*TODO*/}
               </Text>
-            </Box>
-          </Box>
-        </Box>
-        <Box flex column width={120} align="start">
+            </div>
+          </div>
+        </div>
+        <div sx={{ flex: "column", width: 120, align: "start" }}>
           <Text fs={14} color="neutralGray400" lh={26}>
             {t("pools.pool.poolDetails.fee")}
           </Text>
           <Text lh={22} color="white">
             {t("value.percentage", { value: getTradeFee(pool.tradeFee) })}
           </Text>
-        </Box>
-      </Box>
-      <Separator mb={32} />
-      <Box flex spread>
-        <Box>
+        </div>
+      </div>
+      <Separator sx={{ mb: 32 }} />
+      <div sx={{ flex: "row", justify: "space-between" }}>
+        <div>
           <Text fs={14} color="neutralGray400" lh={26}>
             {t("pools.pool.poolDetails.total")}
           </Text>
           <Text lh={22} color="white" fs={18}>
             {t("value.usd", { amount: data })}
           </Text>
-        </Box>
-        <Box flex column width={120} align="start">
+        </div>
+        <div sx={{ flex: "column", width: 120, align: "start" }}>
           <Text fs={14} color="neutralGray400" lh={26}>
             {t("pools.pool.poolDetails.24hours")}
           </Text>
           <Text lh={22} color="white" fs={18}>
             - {/*TODO*/}
           </Text>
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   )
 }

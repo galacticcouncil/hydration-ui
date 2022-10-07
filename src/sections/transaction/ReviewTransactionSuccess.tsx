@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { Text } from "components/Typography/Text/Text"
-import { Box } from "components/Box/Box"
 import { Button } from "components/Button/Button"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { ReactComponent as SuccessIcon } from "assets/icons/SuccessIcon.svg"
@@ -26,20 +25,20 @@ export const ReviewTransactionSuccess = (props: { onClose: () => void }) => {
   }
 
   return (
-    <Box flex align="center" column>
+    <div sx={{ flex: "column", align: "center" }}>
       <SuccessIcon />
-      <GradientText mt={20} fs={24} fw={600} tAlign="center">
+      <GradientText fs={24} fw={600} tAlign="center" sx={{ mt: 20 }}>
         {t("pools.reviewTransaction.modal.success.title")}
       </GradientText>
-      <Box flex column acenter pl={20} pr={20} mt={20} mb={40}>
+      <div sx={{ flex: "column", align: "center", px: 20, mt: 20, mb: 40 }}>
         <Text tAlign="center" fs={16} color="neutralGray200" fw={400} lh={22}>
           {t("pools.reviewTransaction.modal.success.description")}
         </Text>
 
-        <Button variant="secondary" mt={40} onClick={props.onClose}>
+        <Button variant="secondary" sx={{ mt: 40 }} onClick={props.onClose}>
           {t("pools.reviewTransaction.modal.success.close")}
         </Button>
-      </Box>
+      </div>
 
       <SProgressContainer>
         <Text fs={12} fw={400} color="primary100" tAlign="center">
@@ -65,6 +64,6 @@ export const ReviewTransactionSuccess = (props: { onClose: () => void }) => {
           <SProgressBarValue />
         </SProgressBar>
       </SProgressContainer>
-    </Box>
+    </div>
   )
 }

@@ -31,9 +31,7 @@ export const BoxSwitch = ({ options, selected, onSelect }: Props) => {
           isActive={activeIndex === i}
           type="button"
         >
-          <SText fw={700} color={activeIndex === i ? "black" : "white"}>
-            {option.label}
-          </SText>
+          <SText isActive={activeIndex === i}>{option.label}</SText>
         </SButton>
       ))}
       <SButtonBackground index={activeIndex} />

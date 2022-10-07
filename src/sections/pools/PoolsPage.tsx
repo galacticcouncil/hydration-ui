@@ -1,7 +1,6 @@
 import { Page } from "components/Page/Page"
 import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
-import { Box } from "components/Box/Box"
 import { useState } from "react"
 import {
   PoolsPageFilter,
@@ -26,11 +25,11 @@ export const PoolsPage = () => {
           }))
         }
       />
-      <Box flex column gap={20}>
+      <div sx={{ display: "flex", flexDirection: "column", gap: 20 }}>
         {pools.data?.map((pool) => (
           <Pool key={pool.address} pool={pool} />
         ))}
-      </Box>
+      </div>
     </Page>
   )
 }

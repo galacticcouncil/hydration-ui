@@ -10,7 +10,6 @@ import { Text } from "components/Typography/Text/Text"
 import { useAccountDepositIds, useDeposits } from "api/deposits"
 import { useAccountStore } from "state/store"
 import { PoolJoinFarmClaim } from "./PoolJoinFarmClaim"
-import { Box } from "components/Box/Box"
 import { PoolJoinFarmWithdraw } from "./PoolJoinFarmWithdraw"
 import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
 
@@ -48,7 +47,7 @@ export function PoolJoinFarmSectionList(props: {
 
       {account && (
         <>
-          <Text fs={18} fw={700} mb={16}>
+          <Text fs={18} fw={700} sx={{ mb: 16 }}>
             {t("pools.allFarms.modal.list.positions")}
           </Text>
 
@@ -86,12 +85,12 @@ export function PoolJoinFarmSectionList(props: {
           })}
 
           {!!deposits.data?.length && (
-            <Box flex css={{ justifyContent: "center" }}>
+            <div sx={{ flex: "row", justify: "center" }}>
               <PoolJoinFarmWithdraw pool={props.pool} />
-            </Box>
+            </div>
           )}
 
-          <Text fs={18} fw={700} mt={20} mb={16}>
+          <Text fs={18} fw={700} sx={{ mt: 20, mb: 16 }}>
             {t("pools.allFarms.modal.list.availableFarms")}
           </Text>
         </>

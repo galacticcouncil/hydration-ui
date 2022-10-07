@@ -1,4 +1,3 @@
-import { Box } from "components/Box/Box"
 import { Switch } from "components/Switch/Switch"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Heading } from "components/Typography/Heading/Heading"
@@ -29,7 +28,7 @@ export const PoolsHeader: FC<Props> = ({
 
   return (
     <>
-      <Box flex spread mb={43}>
+      <div sx={{ flex: "row", justify: "space-between", mb: 43 }}>
         <GradientText fs={30} fw={700}>
           {t("pools.header.title")}
         </GradientText>
@@ -43,29 +42,29 @@ export const PoolsHeader: FC<Props> = ({
             withLabel
           />
         )}
-      </Box>
-      <Box flex even mb={40}>
-        <Box>
-          <Text color="neutralGray300" mb={14}>
+      </div>
+      <div sx={{ flex: "row", mb: 40 }} css={{ "> *": { flex: 1 } }}>
+        <div>
+          <Text color="neutralGray300" sx={{ mb: 14 }}>
             {t("pools.header.valueLocked")}
           </Text>
-          <Box flex align="baseline">
-            <Heading as="h3" fs={42} fw={900}>
+          <div sx={{ flex: "row", align: "baseline" }}>
+            <Heading as="h3" sx={{ fontSize: 42, fontWeight: 900 }}>
               {t("value.usd", { amount: totalInPools.data })}
             </Heading>
-          </Box>
-        </Box>
-        <Box>
-          <Text color="neutralGray300" mb={14}>
+          </div>
+        </div>
+        <div>
+          <Text color="neutralGray300" sx={{ mb: 14 }}>
             {t("pools.header.valueFarms")}
           </Text>
-          <Box flex align="baseline">
-            <Heading as="h3" fs={42} fw={900}>
+          <div sx={{ flex: "row", align: "baseline" }}>
+            <Heading as="h3" sx={{ fontSize: 42, fontWeight: 900 }}>
               {t("value.usd", { amount: totalInFarms.data })}
             </Heading>
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </div>
     </>
   )
 }

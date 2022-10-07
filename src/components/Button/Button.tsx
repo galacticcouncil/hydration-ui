@@ -1,4 +1,3 @@
-import { MarginProps, SizeProps } from "utils/styles"
 import { Link } from "components/Link/Link"
 import {
   ComponentProps,
@@ -28,8 +27,7 @@ export type ButtonProps = {
   capitalize?: boolean
   children?: ReactNode
   className?: string
-} & SizeProps &
-  MarginProps
+}
 
 export const Button: FC<ButtonProps> = ({
   type = "button",

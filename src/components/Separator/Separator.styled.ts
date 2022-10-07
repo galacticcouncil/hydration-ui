@@ -1,7 +1,6 @@
 import styled from "@emotion/styled"
 import { css } from "@emotion/react"
 import * as RadixSeparator from "@radix-ui/react-separator"
-import { margins } from "utils/styles"
 import { theme } from "theme"
 import { SeparatorProps } from "./Separator"
 
@@ -18,5 +17,4 @@ export const SSeparator = styled(RadixSeparator.Root)<SeparatorProps>`
       height: auto;
       width: ${p.size ?? 1}px;
     `}
-  ${margins};
 `

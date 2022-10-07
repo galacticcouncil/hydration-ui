@@ -1,5 +1,4 @@
 import { FC } from "react"
-import { Box } from "components/Box/Box"
 import { Text } from "components/Typography/Text/Text"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 
@@ -16,19 +15,19 @@ export const PoolRemoveLiquidityReward: FC<Props> = ({
   amount,
 }) => {
   return (
-    <Box flex justify="space-between" acenter>
-      <Box flex acenter gap={8}>
+    <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
+      <div sx={{ flex: "row", align: "center", gap: 8 }}>
         {getAssetLogo(symbol)}
-        <Box flex column>
+        <div sx={{ flex: "column" }}>
           <Text fs={16}>{symbol}</Text>
           <Text fs={12} color="neutralGray500">
             {name}
           </Text>
-        </Box>
-      </Box>
+        </div>
+      </div>
       <Text fs={20} lh={26} fw={700}>
         {amount}
       </Text>
-    </Box>
+    </div>
   )
 }

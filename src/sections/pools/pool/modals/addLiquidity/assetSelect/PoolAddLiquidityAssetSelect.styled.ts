@@ -1,4 +1,3 @@
-import { margins } from "utils/styles"
 import { Button } from "components/Button/Button"
 import styled from "@emotion/styled"
 import { theme } from "theme"
@@ -7,7 +6,6 @@ export const SContainer = styled.div`
   border-radius: 12px;
   background: rgba(${theme.rgbColors.primary100}, 0.06);
   padding: 20px;
-  ${margins};
 `
 
 export const SMaxButton = styled(Button)`

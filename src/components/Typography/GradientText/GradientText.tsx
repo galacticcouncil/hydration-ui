@@ -1,14 +1,15 @@
-import { FontProps, MarginProps } from "utils/styles"
-import { FC } from "react"
-import { HeadingProps } from "../Heading/Heading"
+import { FC, ReactNode } from "react"
+import { TypographyProps } from "../Typography.utils"
 import { SGradientText } from "./GradientText.styled"
 
-export const GradientText: FC<HeadingProps & FontProps & MarginProps> = ({
+interface GradientTextProps extends TypographyProps {
+  as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
+  children?: ReactNode
+  text?: string
+}
+
+export const GradientText: FC<GradientTextProps> = ({
   text,
   children,
   ...props
-}) => (
-  <SGradientText fs={16} {...props}>
-    {text || children}
-  </SGradientText>
-)
+}) => <SGradientText {...props}>{text || children}</SGradientText>

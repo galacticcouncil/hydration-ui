@@ -1,5 +1,4 @@
 import { DialogContent } from "@radix-ui/react-dialog"
-import { SizeProps } from "utils/styles"
 import { IconButton } from "components/IconButton/IconButton"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import styled from "@emotion/styled"
@@ -27,7 +26,7 @@ export const ModalContainer = styled.div`
   z-index: ${theme.zIndices.backdrop};
 `
 
-export const ModalWindow = styled(DialogContent)<Pick<SizeProps, "width">>`
+export const ModalWindow = styled(DialogContent)<{ maxWidth?: number }>`
   background: ${theme.colors.backgroundGray900};
   height: 100vh;
   border: 1px solid rgba(${theme.rgbColors.white}, 0.06);
@@ -37,8 +36,8 @@ export const ModalWindow = styled(DialogContent)<Pick<SizeProps, "width">>`
   position: absolute;
   top: 0;
 
-  ${theme.mq.smallTablet} {
-    max-width: ${(props) => `${props.width ?? 610}px`};
+  @media ${theme.viewport.gte.sm} {
+    max-width: ${(props) => `${props.maxWidth ?? 610}px`};
     height: auto;
     border-radius: 16px;
     top: 50%;
@@ -70,12 +69,12 @@ export const IconsWrapper = styled.div`
   padding: 8px;
   gap: 8px;
 
-  ${theme.mq.smallTablet} {
+  @media ${theme.viewport.gte.sm} {
     justify-content: space-between;
-  } ;
+  }
 `
 export const CloseButton = styled(IconButton)`
-  ${theme.mq.smallTablet} {
+  @media ${theme.viewport.gte.sm} {
     margin-left: auto;
-  } ;
+  }
 `
