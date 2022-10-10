@@ -79,6 +79,9 @@ export const useAPR = (poolId: AccountId32 | string) => {
         apr = poolYieldPerPeriod.times(periodsPerYear)
       }
 
+      // multiply by 100 since APR should be a percentage
+      apr = apr.times(100)
+
       // max distribution of rewards
       // https://www.notion.so/Screen-elements-mapping-Farms-baee6acc456542ca8d2cccd1cc1548ae?p=4a2f16a9f2454095945dbd9ce0eb1b6b&pm=s
       const distributedRewards = globalFarm.accumulatedRewards
