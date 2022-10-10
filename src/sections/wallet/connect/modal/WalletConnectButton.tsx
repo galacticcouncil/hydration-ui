@@ -7,12 +7,21 @@ import { Account, useAccountStore } from "state/store"
 import { shortenAccountAddress } from "utils/account"
 import { ReactComponent as ChevronDownSmall } from "assets/icons/ChevronDownSmall.svg"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
+import { BASILISK_ADDRESS_PREFIX } from "utils/network"
+import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { theme } from "theme"
 
 const WalletActiveButton = (props: {
   onOpen: () => void
   account: Account
   className?: string
 }) => {
+  const basiliskAddress = encodeAddress(
+    decodeAddress(props.account.address),
+    BASILISK_ADDRESS_PREFIX,
+  )
+  const kusamaAddress = props.account.address.toString()
+
   return (
     <SContainer className={props.className} onClick={props.onOpen}>
       <div sx={{ flex: "row", gap: 12, align: "center", justify: "center" }}>
@@ -29,16 +38,31 @@ const WalletActiveButton = (props: {
             flex: "row",
             align: "center",
             justify: "center",
-            gap: 2,
+            gap: 4,
             color: "neutralGray300",
           }}
         >
-          <AccountAvatar
-            size={32}
-            theme={props.account.provider}
-            address={props.account.address.toString()}
-            css={{ pointerEvents: "none" }}
-          />
+          <div>
+            <AccountAvatar
+              size={32}
+              theme="substrate"
+              address={basiliskAddress}
+              css={{
+                pointerEvents: "none",
+                marginRight: -8,
+              }}
+            />
+            <AccountAvatar
+              size={32}
+              theme={props.account.provider}
+              address={kusamaAddress}
+              css={{
+                pointerEvents: "none",
+                outline: `3px solid ${theme.colors.backgroundGray800}`,
+                borderRadius: "9999px",
+              }}
+            />
+          </div>
           <ChevronDownSmall />
         </div>
       </div>
