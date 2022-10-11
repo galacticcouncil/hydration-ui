@@ -10,6 +10,9 @@ import {
 } from "sections/pools/header/PoolsHeader.utils"
 import { useAccountStore } from "state/store"
 
+// TODO: show switch once requested changes to total values in top section are done
+const showSwitch = false
+
 type Props = {
   showMyPositions: boolean
   onShowMyPositionsChange: (value: boolean) => void
@@ -32,7 +35,7 @@ export const PoolsHeader: FC<Props> = ({
         <GradientText fs={30} fw={700}>
           {t("pools.header.title")}
         </GradientText>
-        {!!account && (
+        {showSwitch && !!account && (
           <Switch
             value={showMyPositions}
             onCheckedChange={onShowMyPositionsChange}
