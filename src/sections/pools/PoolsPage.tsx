@@ -1,4 +1,4 @@
-import { Page } from "components/Page/Page"
+import { Page } from "components/Layout/Page/Page"
 import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
 import { useState } from "react"

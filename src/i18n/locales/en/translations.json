@@ -9,6 +9,8 @@
   "header.trade": "Trade",
   "header.pools": "Pools & Farms",
   "header.wallet": "Wallet",
+  "header.lbp": "LBP",
+  "header.bridge": "Bridge",
   "header.walletConnect.button": "Connect wallet",
   "value": "{{ value, bignumber }}",
   "value.bsx": "{{ value, bignumber(numberSuffix: ' BSX') }}",

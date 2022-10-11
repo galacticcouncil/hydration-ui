@@ -8,11 +8,11 @@ export const SPage = styled.div`
   display: flex;
   flex-direction: column;
 `
-export const PageContent = styled.div`
+export const SPageContent = styled.main`
   overflow-y: auto;
   padding: 0 20px;
 `
-export const PageInner = styled.div`
+export const SPageInner = styled.div`
   padding: 44px 0;
   max-width: 1109px;
   margin: 0 auto;
