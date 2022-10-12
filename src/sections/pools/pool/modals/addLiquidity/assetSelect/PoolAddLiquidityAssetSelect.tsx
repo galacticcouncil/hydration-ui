@@ -23,7 +23,7 @@ type Props = {
   currency: { short: string; full: string }
   assetIcon: ReactNode
   allowedAssets?: Maybe<u32 | string>[]
-  onSelectAsset?: (id: Maybe<u32 | string>) => void
+  onSelectAsset?: (id: u32 | string) => void
   value: string
   className?: string
   onChange: (v: string) => void

@@ -9,7 +9,7 @@ import { Button } from "../../../../../components/Button/Button"
 import { WalletConnectButton } from "../../../../wallet/connect/modal/WalletConnectButton"
 import { usePools, usePoolShareToken } from "../../../../../api/pools"
 import { useAsset } from "../../../../../api/asset"
-import { FC, useState } from "react"
+import { FC, useCallback, useState } from "react"
 import { useAddLiquidity } from "../../../../../api/addLiquidity"
 import { useTotalIssuance } from "../../../../../api/totalIssuance"
 import { useTokenBalance } from "../../../../../api/balances"
@@ -23,6 +23,7 @@ import BigNumber from "bignumber.js"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { useAccountStore } from "../../../../../state/store"
 import { useTranslation } from "react-i18next"
+import { u32 } from "@polkadot/types"
 
 interface PoolAddLiquidityModalProps {
   pool: PoolBase
@@ -136,6 +137,29 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
     calculatedShares &&
     calculatedShares.pow(shareIssuance.data.total).multipliedBy(100)
 
+  const handleSelectAsset = useCallback(
+    (assetId: u32 | string, tokenPosition: 0 | 1) => {
+      const nextTokenPosition = tokenPosition === 0 ? 1 : 0
+
+      const possibleNextPools = pools.data?.filter(
+        (nextPool) => nextPool.tokens[tokenPosition].id === assetId,
+      )
+      const nextPool = possibleNextPools?.find(
+        (nexPool) =>
+          nexPool.tokens[nextTokenPosition].id ===
+          pool?.tokens[nextTokenPosition].id,
+      )
+      if (nextPool) {
+        // Try to find pool with same second asset
+        setPoolAddress(nextPool.address)
+      } else if (possibleNextPools?.[tokenPosition]) {
+        // Select first pool with same first asset
+        setPoolAddress(possibleNextPools[tokenPosition].address)
+      }
+    },
+    [pool, pools, setPoolAddress],
+  )
+
   async function handleSubmit() {
     try {
       handleAddLiquidity([
@@ -170,19 +194,7 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
           ?.filter((nextPool) => nextPool.tokens[1].id === pool?.tokens[1].id)
           .map((nextPool) => nextPool.tokens[0].id)}
         onSelectAsset={(assetId) => {
-          const possibleNextPools = pools.data?.filter(
-            (nextPool) => nextPool.tokens[0].id === assetId,
-          )
-          const nextPool = possibleNextPools?.find(
-            (nexPool) => nexPool.tokens[1].id === pool?.tokens[1].id,
-          )
-          if (nextPool) {
-            // Try to find pool with same second asset
-            setPoolAddress(nextPool.address)
-          } else if (possibleNextPools?.[0]) {
-            // Select first pool with same first asset
-            setPoolAddress(possibleNextPools[0].address)
-          }
+          handleSelectAsset(assetId, 0)
           handleChangeAssetAInput("0")
         }}
         asset={pool.tokens[0].id}
@@ -210,19 +222,7 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
           ?.filter((nextPool) => nextPool.tokens[0].id === pool?.tokens[0].id)
           .map((nextPool) => nextPool.tokens[1].id)}
         onSelectAsset={(assetId) => {
-          const possibleNextPools = pools.data?.filter(
-            (nextPool) => nextPool.tokens[1].id === assetId,
-          )
-          const nextPool = possibleNextPools?.find(
-            (nexPool) => nexPool.tokens[0].id === pool?.tokens[0].id,
-          )
-          if (nextPool) {
-            // Try to find pool with same first asset
-            setPoolAddress(nextPool.address)
-          } else if (possibleNextPools?.[0]) {
-            // Select first pool with same second asset
-            setPoolAddress(possibleNextPools[0].address)
-          }
+          handleSelectAsset(assetId, 1)
           handleChangeAssetBInput("0")
         }}
         asset={pool.tokens[1].id}

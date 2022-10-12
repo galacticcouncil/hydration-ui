@@ -4,7 +4,7 @@ import { Maybe } from "../../utils/types"
 import { u32 } from "@polkadot/types"
 
 interface useAssetsModalProps {
-  onSelect?: (id: Maybe<u32 | string>) => void
+  onSelect?: (id: u32 | string) => void
   allowedAssets?: Maybe<u32 | string>[]
 }
 
@@ -19,7 +19,7 @@ export const useAssetsModal = ({
   }, [])
 
   const handleSelect = useCallback(
-    (id: Maybe<u32 | string>) => {
+    (id: u32 | string) => {
       setIsOpen(false)
       onSelect?.(id)
     },

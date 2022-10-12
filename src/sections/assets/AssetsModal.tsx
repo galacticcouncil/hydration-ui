@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next"
 
 interface AssetsModalProps {
   allowedAssets?: Maybe<u32 | string>[]
-  onSelect?: (id: Maybe<u32 | string>) => void
+  onSelect?: (id: u32 | string) => void
   onClose: () => void
 }
 
