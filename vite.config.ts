@@ -21,7 +21,7 @@ export default defineConfig({
   plugins: [
     tsconfigPaths(),
     react({
-      jsxImportSource: "/src/jsx",
+      jsxImportSource: "@basilisk/jsx",
       babel: {
         plugins: ["@emotion/babel-plugin"],
       },

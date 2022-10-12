@@ -1,6 +1,6 @@
-import { theme } from "theme"
+import { theme } from "../theme"
 import { FunctionInterpolation } from "@emotion/react"
-import { getResponsiveStyles, ResponsiveValue } from "utils/responsive"
+import { getResponsiveStyles, ResponsiveValue } from "../utils/responsive"
 import type { Properties as CSSProperties } from "csstype"
 
 type Properties = CSSProperties<(string & {}) | number>

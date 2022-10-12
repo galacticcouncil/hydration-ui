@@ -102,6 +102,16 @@ export const QUERY_KEYS = {
     "bestSell",
     params,
   ],
+  mathLoyaltyRates: (
+    plannedYieldingPeriods: u32,
+    initialRewardPercentage: Maybe<u128>,
+    scaleCoef: Maybe<u32>,
+  ) => [
+    "mathLoyaltyRates",
+    plannedYieldingPeriods,
+    initialRewardPercentage?.toString(),
+    scaleCoef?.toString(),
+  ],
   timestamp: (bestNumber: Maybe<u32 | BigNumber>) =>
     bestNumber != null
       ? ["timestamp", bestNumber]

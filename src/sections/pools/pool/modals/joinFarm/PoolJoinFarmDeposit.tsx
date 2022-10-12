@@ -108,10 +108,7 @@ export const PoolJoinFarmDeposit = (props: {
 
   return (
     <form onSubmit={form.handleSubmit(handleSubmit)}>
-      <div
-        sx={{ bg: "backgroundGray800", p: 20, mt: 20 }}
-        css={{ borderRadius: 12 }}
-      >
+      <div sx={{ bg: "backgroundGray800", p: 20 }} css={{ borderRadius: 12 }}>
         <div
           sx={{
             flex: "row",

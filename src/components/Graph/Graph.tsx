@@ -1,4 +1,4 @@
-import React, { FC } from "react"
+import { FC, memo } from "react"
 import {
   CartesianGrid,
   Line,
@@ -30,10 +30,10 @@ type Props = {
   labelY?: string
 }
 
-export const Graph: FC<Props> = ({ data, labelX, labelY }) => {
+export const Graph: FC<Props> = memo(({ data, labelX, labelY }) => {
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <SChart data={data} margin={{ top: 16, right: 16, bottom: 16, left: 16 }}>
+      <SChart data={data} margin={{ top: 0, right: 0, bottom: 16, left: 16 }}>
         <CartesianGrid stroke={theme.colors.white} opacity={0.12} />
         <XAxis
           padding={{ left: 16, right: 16 }}
@@ -42,6 +42,9 @@ export const Graph: FC<Props> = ({ data, labelX, labelY }) => {
           name={labelX}
           tick={tickProps}
           type="number"
+          tickCount={10}
+          domain={[0, "auto"]}
+          interval={0}
           dataKey="x"
           label={{
             value: labelX,
@@ -84,4 +87,4 @@ export const Graph: FC<Props> = ({ data, labelX, labelY }) => {
       </SChart>
     </ResponsiveContainer>
   )
-}
+})

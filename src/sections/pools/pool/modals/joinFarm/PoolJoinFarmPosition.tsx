@@ -17,7 +17,7 @@ export function PoolJoinFarmPosition(props: {
     usePoolPositionData({ position: props.position, pool: props.pool })
 
   return (
-    <>
+    <div sx={{ flex: "column", gap: 8 }}>
       <Row
         left={t("pools.allFarms.modal.position.joinedDate.label")}
         right={t("pools.allFarms.modal.position.joinedDate.value", {
@@ -43,6 +43,6 @@ export function PoolJoinFarmPosition(props: {
           numberSuffix: rewardAsset?.name && ` ${rewardAsset?.name}`,
         })}
       />
-    </>
+    </div>
   )
 }
