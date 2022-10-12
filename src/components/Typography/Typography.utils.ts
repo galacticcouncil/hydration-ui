@@ -8,6 +8,7 @@ export interface TypographyProps {
   fw?: ResponsiveValue<number>
   lh?: ResponsiveValue<number>
   tAlign?: ResponsiveValue<"left" | "right" | "center">
+  tTransform?: ResponsiveValue<"uppercase" | "lowercase" | "none">
 }
 
 export type STypographyProps = Omit<TypographyProps, "color"> & {
@@ -24,5 +25,6 @@ export const handleTypographyProps: Interpolation<STypographyProps> = (p) => [
   getResponsiveStyles(p.fw, (fontWeight) => ({ fontWeight })),
   getResponsiveStyles(p.fs, (fontSize) => ({ fontSize: assumePx(fontSize) })),
   getResponsiveStyles(p.lh, (value) => ({ lineHeight: assumePx(value) })),
+  getResponsiveStyles(p.tTransform, (value) => ({ textTransform: value })),
   getResponsiveStyles(p.tAlign || "left", (textAlign) => ({ textAlign })),
 ]

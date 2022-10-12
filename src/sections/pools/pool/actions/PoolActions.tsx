@@ -66,7 +66,7 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
       <PoolAddLiquidity
         isOpen={openAdd}
         onClose={() => setOpenAdd(false)}
-        pool={pool}
+        poolAddress={pool.address}
       />
       <PoolRemoveLiquidity
         isOpen={openRemove}
