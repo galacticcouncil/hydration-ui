@@ -62,7 +62,7 @@ export const PoolPosition: FC<Props> = ({ position, index, pool, poolId }) => {
         </div>
       </div>
       <PoolPositionFarm
-        poolId={poolId}
+        pool={pool}
         globalFarmId={position.globalFarmId}
         yieldFarmId={position.yieldFarmId}
       />

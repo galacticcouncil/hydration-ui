@@ -77,9 +77,7 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
         pool={pool}
         isOpen={openFarms}
         onClose={() => setOpenFarms(false)}
-        onSelect={() => {
-          setOpenFarms(false)
-        }}
+        onSelect={() => setOpenFarms(false)}
       />
     </>
   )

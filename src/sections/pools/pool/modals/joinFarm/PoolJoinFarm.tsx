@@ -12,6 +12,7 @@ export const PoolJoinFarm = (props: {
   isOpen: boolean
   onClose: () => void
   onSelect: () => void
+  initialFarm?: { globalFarmId: u32; yieldFarmId: u32 }
 }) => {
   const apr = useAPR(props.pool.address)
 
@@ -19,7 +20,7 @@ export const PoolJoinFarm = (props: {
     globalFarmId: u32
     yieldFarmId: u32
     yieldFarmEntry?: PalletLiquidityMiningYieldFarmEntry
-  } | null>(null)
+  } | null>(props.initialFarm || null)
 
   const selectedFarm = selectedYieldFarmId
     ? apr.data.find(

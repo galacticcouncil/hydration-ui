@@ -6,13 +6,14 @@ import {
   PoolsPageFilter,
   useFilteredPools,
 } from "sections/pools/PoolsPage.utils"
+import { Spinner } from "components/Spinner/Spinner.styled"
 
 export const PoolsPage = () => {
   const [filter, setFilter] = useState<PoolsPageFilter>({
     showMyPositions: false,
   })
 
-  const pools = useFilteredPools(filter)
+  const { data, isLoading } = useFilteredPools(filter)
 
   return (
     <Page>
@@ -26,9 +27,13 @@ export const PoolsPage = () => {
         }
       />
       <div sx={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        {pools.data?.map((pool) => (
-          <Pool key={pool.address} pool={pool} />
-        ))}
+        {isLoading ? (
+          <div sx={{ width: "100%", flex: "row", justify: "center" }}>
+            <Spinner width={32} height={32} />
+          </div>
+        ) : (
+          data?.map((pool) => <Pool key={pool.address} pool={pool} />)
+        )}
       </div>
     </Page>
   )
