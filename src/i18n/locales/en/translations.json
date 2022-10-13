@@ -17,6 +17,7 @@
   "header.bridge": "Bridge",
   "header.walletConnect.button": "Connect wallet",
   "value": "{{ value, bignumber }}",
+  "value.na": "-",
   "value.bsx": "{{ value, bignumber(numberSuffix: ' BSX') }}",
   "value.usd": "{{ amount, bignumber(numberPrefix: '$'; decimalPlaces: 2) }}",
   "value.percentage": "{{ value, bignumber(numberSuffix: '%') }}",

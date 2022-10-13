@@ -112,6 +112,11 @@ export const QUERY_KEYS = {
     initialRewardPercentage?.toString(),
     scaleCoef?.toString(),
   ],
+  tradeVolume: (poolId: Maybe<string>) => [
+    QUERY_KEY_PREFIX,
+    "tradeVolume",
+    poolId,
+  ],
   timestamp: (bestNumber: Maybe<u32 | BigNumber>) =>
     bestNumber != null
       ? ["timestamp", bestNumber]

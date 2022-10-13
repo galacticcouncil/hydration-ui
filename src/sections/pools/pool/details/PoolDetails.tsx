@@ -6,12 +6,32 @@ import { FC } from "react"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { getTradeFee, useTotalInPool } from "sections/pools/pool/Pool.utils"
+import BN from "bignumber.js"
+import { useAssetMeta } from "api/assetMeta"
+import { usePoolDetailsTradeVolume } from "./PoolDetails.utils"
 
 type Props = { pool: PoolBase }
 
+const PoolDetailTradeVolume = (props: { assetId: string; sum: BN }) => {
+  const { t } = useTranslation("translation")
+  const { data: assetMeta } = useAssetMeta(props.assetId)
+  return (
+    <Text lh={22} color="white" fs={18} sx={{ display: "block" }}>
+      {t("value", {
+        value: assetMeta?.data && props.sum,
+        fixedPointScale: assetMeta?.data?.decimals,
+        decimalPlaces: 2,
+        numberSuffix: ` ${assetMeta?.data?.symbol.toHuman()}`,
+      })}
+    </Text>
+  )
+}
+
 export const PoolDetails: FC<Props> = ({ pool }) => {
   const { t } = useTranslation()
-  const { data } = useTotalInPool({ pool })
+  const total = useTotalInPool({ pool })
+
+  const volume = usePoolDetailsTradeVolume(pool.address)
 
   return (
     <div sx={{ flex: "column", width: 380 }}>
@@ -51,16 +71,27 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
             {t("pools.pool.poolDetails.total")}
           </Text>
           <Text lh={22} color="white" fs={18}>
-            {t("value.usd", { amount: data })}
+            {t("value.usd", { amount: total.data })}
           </Text>
         </div>
         <div sx={{ flex: "column", width: 120, align: "start" }}>
           <Text fs={14} color="neutralGray400" lh={26}>
             {t("pools.pool.poolDetails.24hours")}
           </Text>
-          <Text lh={22} color="white" fs={18}>
-            - {/*TODO*/}
-          </Text>
+
+          {volume.length > 0 ? (
+            volume.map(({ assetId, sum }) => (
+              <PoolDetailTradeVolume
+                key={assetId}
+                assetId={assetId}
+                sum={sum}
+              />
+            ))
+          ) : (
+            <Text lh={22} color="white">
+              {t("value.na")}
+            </Text>
+          )}
         </div>
       </div>
     </div>
