@@ -68,11 +68,11 @@ export function formatBigNumber(
   let num = normalizeBigNumber(value)
 
   const localeOptions = getFormatSeparators(locale)
-  const fmtConfig: BigNumber.Format = {
+  const fmtConfig = {
     prefix: options?.numberPrefix ?? "",
     suffix: options?.numberSuffix ?? "",
     decimalSeparator: localeOptions.decimal ?? ".",
-    groupSeparator: localeOptions.group ?? ",",
+    groupSeparator: String.fromCharCode(160), // non-breaking space
     groupSize: 3,
   }
 
@@ -81,10 +81,32 @@ export function formatBigNumber(
   }
 
   if (options?.decimalPlaces != null) {
-    return num.toFormat(
-      Number.parseInt(options.decimalPlaces?.toString(), 10),
-      fmtConfig,
-    )
+    const decimalPlaces = Number.parseInt(options.decimalPlaces?.toString(), 10)
+
+    let [integerPart, fractionPart] = num
+      .toFormat({ ...fmtConfig, prefix: "", suffix: "" })
+      .split(fmtConfig.decimalSeparator)
+
+    if (decimalPlaces === 0 || new BigNumber(integerPart).gt(0))
+      return num.toFormat(decimalPlaces, fmtConfig)
+
+    // handle if input number does not have decimal places
+    fractionPart = (fractionPart ?? "").padEnd(2, "0")
+
+    // count the number of prefix zeroes
+    let numZeroes
+    for (
+      numZeroes = 0;
+      numZeroes < fractionPart.length && fractionPart[numZeroes] === "0";
+      numZeroes++
+    ) {}
+
+    const formatted =
+      integerPart +
+      fmtConfig.decimalSeparator +
+      fractionPart.slice(0, numZeroes + decimalPlaces)
+
+    return fmtConfig.prefix + formatted + fmtConfig.suffix
   }
 
   return num.toFormat(fmtConfig)
