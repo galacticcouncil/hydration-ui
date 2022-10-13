@@ -26,11 +26,19 @@ export const PoolAddLiquidityConversion: FC<Props> = ({
           {t("pools.addLiquidity.modal.conversion.price")}
         </Text>
         <Text fs={11} lh={15} color="primary300">
-          {t("value", { value: firstValue.amount })} {firstValue.currency}
+          {t("value", {
+            value: firstValue.amount,
+            decimalPlaces: 2,
+          })}{" "}
+          {firstValue.currency}
         </Text>
         <Text>=</Text>
         <Text fs={11} lh={15}>
-          {t("value", { value: secondValue.amount })} {secondValue.currency}
+          {t("value", {
+            value: secondValue.amount,
+            decimalPlaces: 2,
+          })}{" "}
+          {secondValue.currency}
         </Text>
       </SContainer>
     </div>

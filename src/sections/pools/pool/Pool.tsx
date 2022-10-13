@@ -6,6 +6,7 @@ import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { PoolShares } from "sections/pools/pool/shares/PoolShares"
 import { AnimatePresence, motion } from "framer-motion"
+import { PoolFooter } from "sections/pools/pool/footer/PoolFooter"
 
 type Props = { pool: PoolBase }
 
@@ -30,11 +31,13 @@ export const Pool: FC<Props> = ({ pool }) => {
             animate={{ height: "auto" }}
             exit={{ height: 0 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
+            css={{ overflow: "hidden" }}
           >
             <PoolShares pool={pool} />
           </motion.div>
         )}
       </AnimatePresence>
+      <PoolFooter pool={pool} />
     </SContainer>
   )
 }

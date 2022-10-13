@@ -16,20 +16,22 @@ export const PoolSharesApr: FC<Props> = ({ poolId }) => {
   }, [APRs.data])
 
   return (
-    <div sx={{ flex: "column", gap: 6 }}>
-      <Text fs={12} lh={16} color="neutralGray500">
-        {t("pools.pool.liquidity.apr.title")}
-      </Text>
-      {!!sortedAPR?.length && (
-        <Text fs={14} lh={18} color="white">
-          {sortedAPR.length > 1
-            ? t("pools.pool.liquidity.apr.value", {
-                min: sortedAPR[0].apr,
-                max: sortedAPR[sortedAPR.length - 1].apr,
-              })
-            : t("value.APR", { apr: sortedAPR[0].apr })}
+    <div sx={{ flex: "row", justify: "end" }}>
+      <div sx={{ flex: "column", gap: 6 }}>
+        <Text fs={12} lh={16} color="neutralGray500">
+          {t("pools.pool.liquidity.apr.title")}
         </Text>
-      )}
+        {!!sortedAPR?.length && (
+          <Text fs={14} lh={18} color="white">
+            {sortedAPR.length > 1
+              ? t("pools.pool.liquidity.apr.value", {
+                  min: sortedAPR[0].apr,
+                  max: sortedAPR[sortedAPR.length - 1].apr,
+                })
+              : t("value.APR", { apr: sortedAPR[0].apr })}
+          </Text>
+        )}
+      </div>
     </div>
   )
 }

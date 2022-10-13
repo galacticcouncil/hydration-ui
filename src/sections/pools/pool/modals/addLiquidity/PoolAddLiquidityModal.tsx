@@ -24,6 +24,7 @@ import { PoolBase } from "@galacticcouncil/sdk"
 import { useAccountStore } from "../../../../../state/store"
 import { useTranslation } from "react-i18next"
 import { u32 } from "@polkadot/types"
+import { getTradeFee } from "sections/pools/pool/Pool.utils"
 
 interface PoolAddLiquidityModalProps {
   pool: PoolBase
@@ -213,7 +214,7 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
         firstValue={{ amount: BN_1, currency: pool.tokens[0].symbol }}
         secondValue={{
           amount: spotPriceData?.spotPrice ?? BN_1,
-          currency: pool.tokens[0].symbol,
+          currency: pool.tokens[1].symbol,
         }}
       />
       <PoolAddLiquidityAssetSelect
@@ -239,23 +240,20 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
 
       <Row
         left={t("pools.addLiquidity.modal.row.tradeFee")}
-        right={t("value.percentage", { value: pool.tradeFee })}
+        right={t("value.percentage", { value: getTradeFee(pool.tradeFee) })}
       />
       <Separator />
       <Row
         left={t("pools.addLiquidity.modal.row.transactionCost")}
         right={
           paymentInfo && (
-            <>
-              <Text>
-                {t("pools.addLiquidity.modal.row.transactionCostValue", {
-                  amount: paymentInfo.partialFee,
-                  fixedPointScale: 12,
-                  decimalPlaces: 2,
-                })}
-              </Text>
-              {/*<Text color="primary400">(2%)</Text>*/} {/*TODO*/}
-            </>
+            <Text>
+              {t("pools.addLiquidity.modal.row.transactionCostValue", {
+                amount: paymentInfo.partialFee,
+                fixedPointScale: 12,
+                decimalPlaces: 2,
+              })}
+            </Text>
           )
         }
       />

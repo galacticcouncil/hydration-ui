@@ -49,7 +49,7 @@ export const PoolPosition: FC<Props> = ({ position, index, pool, poolId }) => {
         </Text>
         <div sx={{ flex: "column", gap: 2 }}>
           <Text fs={14} lh={18} color="white">
-            {t("value.usd", { amount: positionValue, decimalPlaces: 6 })}
+            {t("value.usd", { amount: positionValue })}
           </Text>
           <Text fs={12} lh={16} color="neutralGray500">
             {t("pools.pool.positions.position.amounts", {
