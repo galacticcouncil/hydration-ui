@@ -52,6 +52,13 @@ export const BigNumberFormatOptionsSchema = z
         z.object({ toString: z.unknown() }).passthrough(),
       ])
       .optional(),
+    zeroIntDecimalPlacesCap: z
+      .union([
+        z.number(),
+        z.string(),
+        z.object({ toString: z.unknown() }).passthrough(),
+      ])
+      .optional(),
     numberPrefix: z.string().optional(),
     numberSuffix: z.string().optional(),
   })
@@ -59,6 +66,32 @@ export const BigNumberFormatOptionsSchema = z
 
 export type BalanceFormatOptions = z.infer<typeof BigNumberFormatOptionsSchema>
 
+/**
+ * TODO: write tests
+ *
+ * Percentage:
+ * - int > 0   show 2 decimal digits
+ * - int <= 0  first 2 significant digits, cap to 4 digits
+ *
+ * 0.0000001          0.0000
+ * 0.001              0.0010
+ * 0.1                0.10
+ * 98.0000001        98.00
+ * 98.001            98.00
+ * 98.1              98.10
+ *
+ *
+ * Value:
+ * - int > 0   show 4 decimal digits
+ * - int <= 0  first 4 significant digits, cap to 4 digits
+ *
+ * 0.0000001          0.0000
+ * 0.001              0.0010
+ * 0.1                0.1000
+ * 98.0000001        98.0000
+ * 98.001            98.0010
+ * 98.1              98.1000
+ */
 export function formatBigNumber(
   value: Maybe<BigNumberLikeType>,
   options?: Maybe<z.infer<typeof BigNumberFormatOptionsSchema>>,
@@ -82,6 +115,9 @@ export function formatBigNumber(
 
   if (options?.decimalPlaces != null) {
     const decimalPlaces = Number.parseInt(options.decimalPlaces?.toString(), 10)
+    const zeroIntDecimalPlacesCap = options.zeroIntDecimalPlacesCap
+      ? Number.parseInt(options.zeroIntDecimalPlacesCap?.toString(), 10)
+      : 4
 
     let [integerPart, fractionPart] = num
       .toFormat({ ...fmtConfig, prefix: "", suffix: "" })
@@ -104,7 +140,10 @@ export function formatBigNumber(
     const formatted =
       integerPart +
       fmtConfig.decimalSeparator +
-      fractionPart.slice(0, numZeroes + decimalPlaces)
+      fractionPart.slice(
+        0,
+        Math.min(zeroIntDecimalPlacesCap, numZeroes + decimalPlaces),
+      )
 
     return fmtConfig.prefix + formatted + fmtConfig.suffix
   }
