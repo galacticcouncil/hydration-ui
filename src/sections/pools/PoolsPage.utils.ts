@@ -12,7 +12,9 @@ export const useFilteredPools = ({ showMyPositions }: PoolsPageFilter) => {
   const allDeposits = useAllDeposits(pools.data?.map((pool) => pool.address))
 
   const queries = [pools, accountDeposits, ...allDeposits]
-  const isLoading = queries.some((q) => q.isLoading)
+
+  // https://github.com/TanStack/query/issues/3584
+  const isLoading = queries.some((q) => q.isLoading && q.fetchStatus !== "idle")
 
   const data = useMemo(() => {
     if (!account?.address) return pools.data
