@@ -15,7 +15,7 @@ export const SFarm = styled.button<{ variant: "list" | "detail" }>`
   border-radius: 12px;
   background-color: ${theme.colors.backgroundGray1000};
 
-  transition: all 0.15s ease-in-out;
+  transition: all ${theme.transitions.default};
 
   outline: none;
   border: 1px solid transparent;

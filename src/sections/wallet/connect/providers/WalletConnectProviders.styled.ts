@@ -1,5 +1,6 @@
 import styled from "@emotion/styled"
 import { css } from "@emotion/react"
+import { theme } from "theme"
 
 export const SWalletButton = styled.button<{
   variant: string
@@ -13,7 +14,7 @@ export const SWalletButton = styled.button<{
   border: none;
   border-radius: 12px;
 
-  transition: background 0.2s ease-in-out;
+  transition: background ${theme.transitions.default};
   cursor: pointer;
 
   ${({ variant }) => {

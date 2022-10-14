@@ -84,7 +84,7 @@ export function PoolJoinFarmSectionList(props: {
             )
           })}
 
-          {!!deposits.data?.length && (
+          {!!positions?.length && (
             <div sx={{ flex: "row", justify: "center" }}>
               <PoolJoinFarmWithdraw pool={props.pool} />
             </div>

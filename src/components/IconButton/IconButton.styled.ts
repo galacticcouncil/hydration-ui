@@ -7,7 +7,8 @@ export const SIconButton = styled.button<{ round?: boolean }>`
   min-width: 34px;
   min-height: 34px;
 
-  background: ${theme.colors.iconButtonGrey};
+  background: rgba(${theme.rgbColors.white}, 0.06);
+  transition: background ${theme.transitions.default};
 
   border: none;
   display: flex;
@@ -18,14 +19,6 @@ export const SIconButton = styled.button<{ round?: boolean }>`
   position: relative;
 
   &:hover {
-    &::after {
-      content: "";
-      width: 100%;
-      height: 100%;
-      background: rgba(${theme.rgbColors.white}, 0.06);
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
+    background: rgba(${theme.rgbColors.white}, 0.15);
   }
 `

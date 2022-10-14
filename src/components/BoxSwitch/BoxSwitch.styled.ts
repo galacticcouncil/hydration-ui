@@ -25,7 +25,7 @@ export const SButton = styled.button<{ isActive: boolean }>`
   justify-content: center;
 
   border-radius: 9px;
-  transition: all 0.15s ease-in-out;
+  transition: all ${theme.transitions.default};
 
   &:hover {
     cursor: pointer;
@@ -35,7 +35,7 @@ export const SButton = styled.button<{ isActive: boolean }>`
 `
 
 export const SText = styled(Text)<{ isActive: boolean }>`
-  transition: all 0.3s ease-in-out;
+  transition: all ${theme.transitions.slow};
   font-weight: 700;
 
   ${(props) => {
@@ -57,5 +57,5 @@ export const SButtonBackground = styled.div<{ index: number }>`
 
   background: ${theme.gradients.primaryGradient};
   border-radius: 9px;
-  transition: all 0.3s ease-in-out;
+  transition: all ${theme.transitions.slow};
 `

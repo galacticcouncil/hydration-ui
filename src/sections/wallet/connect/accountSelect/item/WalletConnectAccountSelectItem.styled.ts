@@ -53,6 +53,8 @@ export const SSelectItem = styled.div<{ isActive: boolean }>`
   border-radius: 12px;
   cursor: pointer;
 
+  transition: background ${theme.transitions.default};
+
   &:hover {
     background: rgba(${theme.rgbColors.primary100}, 0.06);
   }

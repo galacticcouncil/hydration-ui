@@ -11,6 +11,8 @@ export const SLabelWrapper = styled.label<{ error?: string }>`
 
   min-height: 54px;
 
+  transition: ${theme.transitions.default};
+
   background: ${theme.colors.backgroundGray800};
   border-radius: 9px;
   border: 1px solid
@@ -32,6 +34,8 @@ export const SInputWrapper = styled.span`
 
   align-items: center;
   gap: 4px;
+
+  width: 100%;
 `
 
 export const SUnit = styled.span`

@@ -114,10 +114,16 @@ const rgbColors = Object.fromEntries(
   [Key in keyof typeof colors]: string
 }
 
+const transitions = {
+  slow: "0.30s ease-in-out",
+  default: "0.15s ease-in-out",
+} as const
+
 export const theme = {
   colors,
   gradients,
   rgbColors,
+  transitions,
   zIndices,
   viewport,
 }

@@ -28,7 +28,7 @@ export const SLogoutContainer = styled.div`
   align-items: center;
   justify-content: center;
   color: ${theme.colors.neutralGray500};
-  transition: color 0.15s ease-in-out;
+  transition: color ${theme.transitions.default};
 
   &:hover {
     color: ${theme.colors.neutralGray400};
@@ -39,7 +39,7 @@ export const SSwitchButton = styled(ButtonTransparent)`
   padding: 12px;
   border-radius: 12px;
   border: 1px solid ${theme.colors.backgroundGray800};
-  transition: 0.15s ease-in-out;
+  transition: ${theme.transitions.default};
 
   &:hover {
     background-color: ${theme.colors.backgroundGray800};

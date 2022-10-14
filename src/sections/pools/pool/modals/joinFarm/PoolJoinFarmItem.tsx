@@ -66,13 +66,9 @@ export const PoolJoinFarmItem = (props: {
             lh={28}
             fw={600}
             color="primary200"
-            css={css`
-              word-break: break-all;
-            `}
+            css={{ whiteSpace: "nowrap" }}
           >
-            {t("pools.allFarms.modal.apr.single", {
-              value: props.farm.apr,
-            })}
+            {t("pools.allFarms.modal.apr.single", { value: props.farm.apr })}
           </Text>
         </div>
       </div>

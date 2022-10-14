@@ -46,7 +46,7 @@ export const SThumb = styled(Thumb)`
   border-radius: 50%;
   border: 7px solid ${theme.colors.backgroundGray1000};
   box-shadow: 0 1px 9px rgba(${theme.rgbColors.primary300}, 0.5);
-  transition: all 0.15s ease-in-out;
+  transition: all ${theme.transitions.default};
 
   &:hover {
     cursor: pointer;

@@ -147,17 +147,19 @@ export const PoolJoinFarmDeposit = (props: {
           </div>
         </div>
         <div sx={{ flex: "row", align: "center" }}>
-          <DualAssetIcons
-            firstIcon={{ icon: getAssetLogo(assetIn.symbol) }}
-            secondIcon={{ icon: getAssetLogo(assetOut.symbol) }}
-          />
-          <div sx={{ flex: "column", mr: 20, flexShrink: 0 }}>
-            <Text fw={700} fs={16}>
-              {assetIn.symbol}/{assetOut.symbol}
-            </Text>
-            <Text fw={500} fs={12} color="neutralGray500">
-              {t("farms.deposit.assetType")}
-            </Text>
+          <div sx={{ flex: "row", flexShrink: 0, align: "center" }}>
+            <DualAssetIcons
+              firstIcon={{ icon: getAssetLogo(assetIn.symbol) }}
+              secondIcon={{ icon: getAssetLogo(assetOut.symbol) }}
+            />
+            <div sx={{ flex: "column", mr: 20, flexShrink: 0 }}>
+              <Text fw={700} fs={16}>
+                {assetIn.symbol}/{assetOut.symbol}
+              </Text>
+              <Text fw={500} fs={12} color="neutralGray500">
+                {t("farms.deposit.assetType")}
+              </Text>
+            </div>
           </div>
 
           <Controller

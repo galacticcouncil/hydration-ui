@@ -18,7 +18,7 @@ export const SButtonOpen = styled(ButtonTransparent)<{ isActive: boolean }>`
       : theme.colors.backgroundGray700};
 
   border-radius: 9999px;
-  transition: all 0.3s ease-in-out;
+  transition: all ${theme.transitions.default};
   transform: ${({ isActive }) => isActive && "rotate(180deg)"};
 
   &:hover {

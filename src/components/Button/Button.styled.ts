@@ -12,6 +12,8 @@ export const SButton = styled.button<ButtonProps>`
   text-transform: uppercase;
   line-height: 18px;
 
+  transition: background ${theme.transitions.default};
+
   ${(p) =>
     p.variant === "primary"
       ? p.disabled
@@ -26,12 +28,10 @@ export const SButton = styled.button<ButtonProps>`
 
             :hover {
               background: ${theme.colors.primary300};
-              transition: background 0.2s ease-in-out;
             }
 
             :active {
               background: ${theme.colors.primary500};
-              transition: background 0.2s ease-in-out;
             }
           `
       : ``}
@@ -103,12 +103,12 @@ export const SButton = styled.button<ButtonProps>`
 
             :hover {
               background: rgba(${theme.rgbColors.primary450}, 0.3);
-              transition: background 0.2s ease-in-out;
+              transition: background ${theme.transitions.default};
             }
 
             :active {
               background: rgba(${theme.rgbColors.primary450}, 0.5);
-              transition: background 0.2s ease-in-out;
+              transition: background ${theme.transitions.default};
             }
           `
       : ``};
