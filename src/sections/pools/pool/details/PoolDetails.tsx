@@ -9,6 +9,7 @@ import { getTradeFee, useTotalInPool } from "sections/pools/pool/Pool.utils"
 import BN from "bignumber.js"
 import { useAssetMeta } from "api/assetMeta"
 import { usePoolDetailsTradeVolume } from "./PoolDetails.utils"
+import { theme } from "theme"
 
 type Props = { pool: PoolBase }
 
@@ -67,7 +68,10 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
           </Text>
         </div>
       </div>
-      <Separator sx={{ mb: 32 }} />
+      <Separator
+        sx={{ mb: 32 }}
+        css={{ background: `rgba(${theme.rgbColors.white}, 0.05)` }}
+      />
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div>
           <Text fs={14} color="neutralGray400" lh={26} fw={400}>

@@ -18,6 +18,8 @@ export const SIconButton = styled.button<{ round?: boolean }>`
   overflow: hidden;
   position: relative;
 
+  padding: 0;
+
   &:hover {
     background: rgba(${theme.rgbColors.white}, 0.15);
   }

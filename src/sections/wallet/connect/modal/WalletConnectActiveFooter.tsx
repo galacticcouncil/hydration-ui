@@ -52,7 +52,7 @@ export function WalletConnectActiveFooter(props: {
           </div>
           <SSwitchText fs={14} fw={500}>
             <span>{t("walletConnect.switch")}</span>
-            <ChevronRight css={{ marginLeft: -3 }} />
+            <ChevronRight css={{ marginLeft: -3, marginTop: 2 }} />
           </SSwitchText>
         </div>
       </SSwitchButton>

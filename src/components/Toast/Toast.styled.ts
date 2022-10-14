@@ -64,10 +64,7 @@ export const SClose = styled(Close)`
   border: none;
   border-radius: 9999px;
 
-  svg {
-    width: 10px;
-    height: 10px;
-  }
+  padding: 4px;
 
   &:hover {
     cursor: pointer;
