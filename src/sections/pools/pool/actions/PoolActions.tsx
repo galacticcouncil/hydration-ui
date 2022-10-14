@@ -29,8 +29,8 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
           flex: "row",
           justify: "space-between",
           align: "center",
-          m: 24,
-          width: 280,
+          my: 24,
+          gap: 18,
         }}
       >
         <div sx={{ width: 214, flex: "column", gap: 10 }}>
