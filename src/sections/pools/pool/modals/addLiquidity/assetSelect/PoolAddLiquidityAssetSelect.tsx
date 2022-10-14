@@ -2,7 +2,7 @@ import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
 import { AssetInput } from "components/AssetInput/AssetInput"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
-import { FC, ReactNode } from "react"
+import { FC, ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import {
   SContainer,
@@ -12,8 +12,10 @@ import {
 import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 import { getFloatingPointAmount } from "utils/balance"
-import { useAssetsModal } from "../../../../../assets/AssetsModal.utils"
-import { Maybe } from "../../../../../../utils/types"
+import { useAssetsModal } from "sections/assets/AssetsModal.utils"
+import { Maybe } from "utils/types"
+import { useAUSD } from "api/asset"
+import { useSpotPrice } from "api/spotPrice"
 
 type Props = {
   name: string
@@ -35,6 +37,15 @@ export const PoolAddLiquidityAssetSelect: FC<Props> = (props) => {
     allowedAssets: props.allowedAssets,
     onSelect: props.onSelectAsset,
   })
+
+  const aUSD = useAUSD()
+  const spotPrice = useSpotPrice(props.asset, aUSD.data?.id)
+
+  const aUSDValue = useMemo(() => {
+    if (!props.value) return null
+    if (spotPrice.data?.spotPrice == null) return null
+    return spotPrice.data.spotPrice.times(props.value)
+  }, [props.value, spotPrice.data])
 
   return (
     <>
@@ -100,7 +111,7 @@ export const PoolAddLiquidityAssetSelect: FC<Props> = (props) => {
             name={props.name}
             label={t("selectAsset.input.label")}
             onChange={props.onChange}
-            dollars="1234 USD"
+            dollars={t("value.usd", { amount: aUSDValue })}
             unit={props.currency.short}
           />
         </div>
