@@ -1,10 +1,8 @@
 import { useTranslation } from "react-i18next"
-
 import { Icon } from "components/Icon/Icon"
-import { ReactComponent as PoolsAndFarms } from "assets/icons/PoolsAndFarms.svg"
-import { ReactComponent as Trade } from "assets/icons/Trade.svg"
-import { ReactComponent as Wallet } from "assets/icons/Wallet.svg"
-import { ReactComponent as Minus } from "assets/icons/FailIcon.svg"
+import { ReactComponent as PoolsAndFarmsIcon } from "assets/icons/PoolsAndFarms.svg"
+import { ReactComponent as TradeIcon } from "assets/icons/Trade.svg"
+import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
 import { MENU_ITEMS, TabKeys } from "utils/tabs"
 import { SMobileNavBar, SNavBarItem } from "./MobileNavBar.styled"
 
@@ -12,11 +10,11 @@ export const MobileNavBar = () => {
   const { t } = useTranslation("translation")
 
   const getIcon = (name: TabKeys) => {
-    if (name === "trade") return <Trade />
-    if (name === "pools") return <PoolsAndFarms />
-    if (name === "wallet") return <Wallet />
+    if (name === "trade") return <TradeIcon />
+    if (name === "pools") return <PoolsAndFarmsIcon />
+    if (name === "wallet") return <WalletIcon />
     // TODO: add missing icons in Figma
-    return <Minus />
+    return null
   }
 
   return (

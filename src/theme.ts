@@ -69,8 +69,9 @@ const gradients = {
 const zIndices = {
   chainedIcon: 1,
   boxSwitch: 1,
-  backdrop: 2,
-  modal: 3,
+  header: 5,
+  backdrop: 9,
+  modal: 10,
 } as const
 
 const breakpoints = {

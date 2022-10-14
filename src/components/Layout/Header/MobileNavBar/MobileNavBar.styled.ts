@@ -2,11 +2,20 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SMobileNavBar = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  position: sticky;
+  left: 0;
+  bottom: 0;
+  z-index: ${theme.zIndices.header};
+
+  height: 54px;
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+  justify-content: center;
   align-items: center;
-  margin-top: auto;
+  gap: 4px;
+
   background: ${theme.gradients.mobNavigationGradient};
 
   @media (${theme.viewport.gte.sm}) {
@@ -17,11 +26,12 @@ export const SMobileNavBar = styled.div`
 export const SNavBarItem = styled.a<{ active?: boolean }>`
   display: flex;
   flex-direction: column;
-  flex: 1 1 0px;
-  gap: 4px;
   justify-content: center;
   align-items: center;
-  padding: 7px 0px;
+  gap: 4px;
+
+  text-align: center;
+  white-space: pre;
   font-size: 12px;
   color: ${({ active }) =>
     active ? theme.colors.primary400 : theme.colors.backgroundGray600};

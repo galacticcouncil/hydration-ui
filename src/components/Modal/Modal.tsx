@@ -9,12 +9,12 @@ import {
   useState,
 } from "react"
 import {
-  ModalWindow,
-  ModalTitle,
-  ModalBody,
-  IconsWrapper,
   CloseButton,
+  IconsWrapper,
+  ModalBody,
   ModalContainer,
+  ModalTitle,
+  ModalWindow,
 } from "./Modal.styled"
 import { Backdrop } from "components/Backdrop/Backdrop"
 import { IconButton } from "components/IconButton/IconButton"
@@ -22,6 +22,7 @@ import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
 import { Dialog, DialogDescription, DialogPortal } from "@radix-ui/react-dialog"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
+import { RemoveScroll } from "react-remove-scroll"
 
 type Props = {
   open: boolean
@@ -104,11 +105,13 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
                   />
                 )}
               </IconsWrapper>
-              <ModalBody>
-                <ModalTitle>{mergedProps.title}</ModalTitle>
-                {props.children}
-              </ModalBody>
-              <DialogDescription />
+              <RemoveScroll enabled={props.open}>
+                <ModalBody>
+                  <ModalTitle>{mergedProps.title}</ModalTitle>
+                  {props.children}
+                </ModalBody>
+                <DialogDescription />
+              </RemoveScroll>
             </ModalWindow>
           </ModalContainer>
         </ModalContext.Provider>

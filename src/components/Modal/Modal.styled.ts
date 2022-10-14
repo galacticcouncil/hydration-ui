@@ -18,7 +18,7 @@ const fadeInKeyframes = keyframes`
 `
 
 export const ModalContainer = styled.div`
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
@@ -27,22 +27,26 @@ export const ModalContainer = styled.div`
 `
 
 export const ModalWindow = styled(DialogContent)<{ maxWidth?: number }>`
-  background: ${theme.colors.backgroundGray900};
-  height: 100vh;
-  border: 1px solid rgba(${theme.rgbColors.white}, 0.06);
-  box-shadow: 0px 38px 46px rgba(0, 0, 0, 0.03);
-  width: 100%;
-  z-index: ${theme.zIndices.modal};
   position: absolute;
   top: 0;
+  z-index: ${theme.zIndices.modal};
+
+  height: 100vh;
+  width: 100%;
+
+  border: 1px solid rgba(${theme.rgbColors.white}, 0.06);
+  box-shadow: 0 38px 46px rgba(0, 0, 0, 0.03);
+  background: ${theme.colors.backgroundGray900};
 
   @media ${theme.viewport.gte.sm} {
-    max-width: ${(props) => `${props.maxWidth ?? 610}px`};
-    height: auto;
-    border-radius: 16px;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+
+    height: auto;
+    max-width: ${(props) => `${props.maxWidth ?? 610}px`};
+
+    border-radius: 16px;
   }
 
   animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) ${fadeInKeyframes};
@@ -53,11 +57,12 @@ export const ModalTitle = styled(GradientText)`
   line-height: 32px;
   font-weight: 500;
 `
-export const ModalBody = styled.div`
-  padding: 0 30px 30px;
 
+export const ModalBody = styled.div`
   max-height: 80vh;
   overflow-y: auto;
+
+  padding: 0 30px 30px;
 
   &::-webkit-scrollbar-track {
     margin-bottom: 16px;
