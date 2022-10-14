@@ -24,7 +24,9 @@ export const SSelectAssetButton = styled(Button)`
   background: transparent;
   border-radius: 10px;
   text-transform: none;
+
   padding: 5px;
+  margin-right: 18px;
 
   :hover {
     background: rgba(${theme.rgbColors.white}, 0.15);

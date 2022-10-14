@@ -6,7 +6,7 @@ import { Spinner } from "components/Spinner/Spinner.styled"
 
 export const SButton = styled.button<ButtonProps>`
   border-radius: 9999px;
-  font-weight: 700;
+  font-weight: 500;
   border: none;
   cursor: pointer;
   text-transform: uppercase;

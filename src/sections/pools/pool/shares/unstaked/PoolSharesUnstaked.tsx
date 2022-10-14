@@ -10,7 +10,7 @@ export const PoolSharesUnstaked: FC<Props> = ({ balance }) => {
 
   return (
     <div sx={{ flex: "column", gap: 6 }}>
-      <Text fs={12} lh={16} color="neutralGray500">
+      <Text fs={12} lh={16} fw={400} color="neutralGray500">
         {t("pools.pool.liquidity.unstakedShares")}
       </Text>
       <Text fs={14} lh={18} color="white">

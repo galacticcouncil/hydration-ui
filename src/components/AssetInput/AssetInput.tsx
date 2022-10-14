@@ -24,7 +24,10 @@ export type AssetInputProps = {
 
 export const AssetInput: FC<AssetInputProps> = (props) => {
   return (
-    <div className={props.className} css={{ position: "relative" }}>
+    <div
+      className={props.className}
+      css={{ position: "relative", width: "100%" }}
+    >
       <SLabelWrapper htmlFor={props.name} error={props.error}>
         <SInputWrapper>
           <SInput

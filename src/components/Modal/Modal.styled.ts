@@ -51,7 +51,7 @@ export const ModalWindow = styled(DialogContent)<{ maxWidth?: number }>`
 export const ModalTitle = styled(GradientText)`
   font-size: 24px;
   line-height: 32px;
-  font-weight: 600;
+  font-weight: 500;
 `
 export const ModalBody = styled.div`
   padding: 0 30px 30px;

@@ -1,4 +1,3 @@
-import { css } from "@emotion/react"
 import { theme } from "theme"
 import { Text } from "components/Typography/Text/Text"
 import { ButtonTransparent } from "components/Button/Button"
@@ -9,6 +8,7 @@ import { useTranslation } from "react-i18next"
 import {
   SContainer,
   SLogoutContainer,
+  SSwitchButton,
   SSwitchText,
 } from "./WalletConnectActiveFooter.styled"
 import { getWalletBySource } from "@talismn/connect-wallets"
@@ -37,14 +37,7 @@ export function WalletConnectActiveFooter(props: {
         <span />
       )}
 
-      <ButtonTransparent
-        css={css`
-          padding: 12px;
-          border-radius: 12px;
-          border: 1px solid ${theme.colors.backgroundGray800};
-        `}
-        onClick={props.onSwitch}
-      >
+      <SSwitchButton onClick={props.onSwitch}>
         <div sx={{ flex: "row", gap: 22, align: "center" }}>
           <div sx={{ flex: "row", gap: 12, align: "center" }}>
             <img
@@ -62,7 +55,7 @@ export function WalletConnectActiveFooter(props: {
             <ChevronRight css={{ marginLeft: -3 }} />
           </SSwitchText>
         </div>
-      </ButtonTransparent>
+      </SSwitchButton>
     </SContainer>
   )
 }

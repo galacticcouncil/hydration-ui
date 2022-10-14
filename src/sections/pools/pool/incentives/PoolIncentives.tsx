@@ -12,7 +12,7 @@ export const PoolIncentives = ({ poolId }: Props) => {
 
   return (
     <div sx={{ width: 256 }}>
-      <Text fs={14} lh={26} color="neutralGray400" sx={{ mb: 18 }}>
+      <Text fs={14} lh={26} fw={400} color="neutralGray400" sx={{ mb: 18 }}>
         {t("pools.pool.incentives.title")}
       </Text>
       {data.map((row, i) => (

@@ -59,7 +59,7 @@ export const PoolAddLiquidityAssetSelect: FC<Props> = (props) => {
             mb: 11,
           }}
         >
-          <Text fw={600} lh={22} color="primary200">
+          <Text fw={500} lh={22} color="primary200">
             {t("selectAsset.title")}
           </Text>
           <div sx={{ flex: "row", align: "center" }}>
@@ -95,8 +95,8 @@ export const PoolAddLiquidityAssetSelect: FC<Props> = (props) => {
         </div>
         <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
           <SSelectAssetButton size="small" onClick={openModal}>
-            <Icon icon={props.assetIcon} sx={{ mr: 10 }} />
-            <div sx={{ mr: 6 }}>
+            <Icon icon={props.assetIcon} />
+            <div>
               <Text fw={700} color="white">
                 {props.currency.short}
               </Text>

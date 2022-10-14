@@ -18,7 +18,7 @@ export const PoolSharesApr: FC<Props> = ({ poolId }) => {
   return (
     <div sx={{ flex: "row", justify: "end" }}>
       <div sx={{ flex: "column", gap: 6 }}>
-        <Text fs={12} lh={16} color="neutralGray500">
+        <Text fs={12} lh={16} fw={400} color="neutralGray500">
           {t("pools.pool.liquidity.apr.title")}
         </Text>
         {!!sortedAPR?.length && (

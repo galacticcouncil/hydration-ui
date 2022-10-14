@@ -37,7 +37,7 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
     <div sx={{ flex: "column", width: 380 }}>
       <div sx={{ flex: "row", justify: "space-between", mb: 32 }}>
         <div>
-          <Text fs={14} lh={26} color="neutralGray400">
+          <Text fs={14} lh={26} fw={400} color="neutralGray400">
             {t("pools.pool.title", { type: pool.type })}
           </Text>
           <div sx={{ flex: "row", align: "center" }}>
@@ -59,7 +59,7 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
           sx={{ flex: "column", width: 120, align: "start" }}
           css={{ alignSelf: "end" }}
         >
-          <Text fs={14} color="neutralGray400" lh={26}>
+          <Text fs={14} fw={400} color="neutralGray400" lh={26}>
             {t("pools.pool.poolDetails.fee")}
           </Text>
           <Text lh={22} color="white">
@@ -70,7 +70,7 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
       <Separator sx={{ mb: 32 }} />
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div>
-          <Text fs={14} color="neutralGray400" lh={26}>
+          <Text fs={14} color="neutralGray400" lh={26} fw={400}>
             {t("pools.pool.poolDetails.total")}
           </Text>
           <Text lh={22} color="white" fs={18}>
@@ -78,7 +78,7 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
           </Text>
         </div>
         <div sx={{ flex: "column", width: 120, align: "start" }}>
-          <Text fs={14} color="neutralGray400" lh={26}>
+          <Text fs={14} color="neutralGray400" lh={26} fw={400}>
             {t("pools.pool.poolDetails.24hours")}
           </Text>
 

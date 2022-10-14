@@ -27,7 +27,7 @@ export const WalletConnectAccountSelect: FC<Props> = ({
 
   return (
     <>
-      <Text fw={400} color="neutralGray200" sx={{ mt: 6 }}>
+      <Text fw={500} color="neutralGray200" sx={{ mt: 6 }}>
         {t("walletConnect.accountSelect.description")}
       </Text>
 

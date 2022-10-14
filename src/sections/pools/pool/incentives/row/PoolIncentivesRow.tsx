@@ -19,10 +19,10 @@ export const PoolIncentivesRow: FC<Props> = ({ assetId, apr }) => {
   return (
     <SContainer>
       <Icon icon={asset.data?.icon} sx={{ mr: 10 }} size={28} />
-      <Text color="white" fw={700}>
+      <Text color="white" fw={500}>
         {asset.data?.name}
       </Text>
-      <Text fw={700} color="primary200" sx={{ ml: "auto" }}>
+      <Text fw={500} color="primary200" sx={{ ml: "auto" }}>
         {t("value.APR", { apr })}
       </Text>
     </SContainer>

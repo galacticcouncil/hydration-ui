@@ -33,7 +33,7 @@ export const PoolShares: FC<Props> = ({ pool }) => {
 
   return (
     <SContainer>
-      <GradientText fs={16} lh={22} sx={{ mb: 12 }}>
+      <GradientText fs={16} lh={22} fw={500} sx={{ mb: 12 }}>
         {t("pools.pool.liquidity.title")}
       </GradientText>
       <SDetails>

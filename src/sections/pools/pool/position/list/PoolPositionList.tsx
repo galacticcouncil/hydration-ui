@@ -26,7 +26,7 @@ export const PoolPositionList: FC<Props> = ({ index, deposit, pool }) => {
       </SIcon>
       <div sx={{ flex: "column", gap: 12 }}>
         <div>
-          <GradientText fs={16} lh={22}>
+          <GradientText fs={16} lh={22} fw={500}>
             {t("pools.pool.positions.title", { index })}
           </GradientText>
         </div>

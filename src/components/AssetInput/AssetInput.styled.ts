@@ -37,9 +37,9 @@ export const SInputWrapper = styled.span`
 export const SUnit = styled.span`
   width: auto;
   color: ${theme.colors.white};
-  font-weight: 700;
+  font-weight: 500;
 
-  font-size: 18px;
+  font-size: 16px;
   line-height: 24px;
 `
 
@@ -57,10 +57,10 @@ export const SInput = styled.input`
   border: none;
 
   color: ${theme.colors.white};
-  font-size: 18px;
+  font-size: 16px;
   line-height: 24px;
   text-align: right;
-  font-weight: 700;
+  font-weight: 500;
 
   padding: 0;
 

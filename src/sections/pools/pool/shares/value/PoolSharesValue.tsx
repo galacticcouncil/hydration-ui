@@ -17,7 +17,7 @@ export const PoolSharesValue: FC<Props> = (props) => {
   return (
     <div sx={{ flex: "row", justify: "center" }}>
       <div sx={{ flex: "column", gap: 6 }}>
-        <Text fs={12} lh={16} color="neutralGray500">
+        <Text fs={12} lh={16} fw={400} color="neutralGray500">
           {t("pools.pool.liquidity.value")}
         </Text>
         <div sx={{ flex: "column", gap: 2 }}>

@@ -1,6 +1,7 @@
 import { Text } from "components/Typography/Text/Text"
 import styled from "@emotion/styled"
 import { theme } from "theme"
+import { ButtonTransparent } from "components/Button/Button"
 
 export const SContainer = styled.div`
   display: flex;
@@ -27,6 +28,23 @@ export const SLogoutContainer = styled.div`
   align-items: center;
   justify-content: center;
   color: ${theme.colors.neutralGray500};
+  transition: color 0.15s ease-in-out;
+
+  &:hover {
+    color: ${theme.colors.neutralGray400};
+  }
+`
+
+export const SSwitchButton = styled(ButtonTransparent)`
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid ${theme.colors.backgroundGray800};
+  transition: 0.15s ease-in-out;
+
+  &:hover {
+    background-color: ${theme.colors.backgroundGray800};
+    border: 1px solid ${theme.colors.backgroundGray700};
+  }
 `
 
 export const SSwitchText = styled(Text)`
