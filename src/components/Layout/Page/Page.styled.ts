@@ -2,13 +2,21 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SPage = styled.div`
-  position: relative;
+  --mobile-nav-height: 54px;
 
-  background: ${theme.gradients.verticalGradient};
-  min-height: 100vh;
+  position: relative;
 
   display: flex;
   flex-direction: column;
+
+  min-height: 100vh;
+  padding-bottom: var(--mobile-nav-height);
+
+  background: ${theme.gradients.verticalGradient};
+
+  @media (${theme.viewport.gte.sm}) {
+    padding-bottom: 0;
+  }
 `
 
 export const SPageContent = styled.main`

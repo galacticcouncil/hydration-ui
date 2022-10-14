@@ -2,12 +2,12 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SMobileNavBar = styled.div`
-  position: sticky;
+  position: fixed;
   left: 0;
   bottom: 0;
   z-index: ${theme.zIndices.header};
 
-  height: 54px;
+  height: var(--mobile-nav-height);
   width: 100%;
 
   display: grid;

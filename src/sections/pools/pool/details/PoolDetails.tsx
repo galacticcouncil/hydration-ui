@@ -56,10 +56,7 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
             </div>
           </div>
         </div>
-        <div
-          sx={{ flex: "column", width: 120, align: "start" }}
-          css={{ alignSelf: "end" }}
-        >
+        <div sx={{ flex: "column", width: 120, align: "start" }}>
           <Text fs={14} fw={400} color="neutralGray400" lh={26}>
             {t("pools.pool.poolDetails.fee")}
           </Text>
