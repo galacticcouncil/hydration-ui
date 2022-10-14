@@ -63,6 +63,7 @@ const gradients = {
   simplifiedGradient: "90deg, #4fffb0, #b3ff8f, #ff984e",
   cardGradient:
     "linear-gradient(180deg, #1C2527 0%, #14161A 80.73%, #121316 100%)",
+  mobNavigationGradient: "linear-gradient(0deg, #141414, #141414), #1C1A1F",
 } as const
 
 const zIndices = {
@@ -73,11 +74,10 @@ const zIndices = {
 } as const
 
 const breakpoints = {
-  sm: 640,
-  md: 768,
-  lg: 1024,
-  xl: 1440,
-  xxl: 1536,
+  sm: 768,
+  md: 1024,
+  lg: 1440,
+  xl: 1536,
 } as const
 type BreakpointKey = keyof typeof breakpoints
 

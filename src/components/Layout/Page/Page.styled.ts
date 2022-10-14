@@ -10,10 +10,19 @@ export const SPage = styled.div`
 `
 export const SPageContent = styled.main`
   overflow-y: auto;
-  padding: 0 20px;
+  padding: 0 12px;
+  overflow-x: hidden;
+
+  @media (${theme.viewport.gte.sm}) {
+    padding: 0 20px;
+  }
 `
 export const SPageInner = styled.div`
-  padding: 44px 0;
+  padding: 16px 0;
   max-width: 1109px;
   margin: 0 auto;
+
+  @media (${theme.viewport.gte.sm}) {
+    padding: 44px 0;
+  }
 `

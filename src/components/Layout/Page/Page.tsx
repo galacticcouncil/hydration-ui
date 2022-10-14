@@ -5,6 +5,7 @@ import {
   SPageInner,
   SPage,
 } from "components/Layout/Page/Page.styled"
+import { MobileNavBar } from "../Header/MobileNavBar/MobileNavBar"
 
 export const Page: FC<PropsWithChildren> = ({ children }) => (
   <SPage>
@@ -12,5 +13,6 @@ export const Page: FC<PropsWithChildren> = ({ children }) => (
     <SPageContent>
       <SPageInner>{children}</SPageInner>
     </SPageContent>
+    <MobileNavBar />
   </SPage>
 )

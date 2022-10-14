@@ -8,7 +8,6 @@ export type ResponsiveValue<Atom> =
   | Readonly<[xs: Atom, sm: Atom, md: Atom]>
   | Readonly<[xs: Atom, sm: Atom, md: Atom, lg: Atom]>
   | Readonly<[xs: Atom, sm: Atom, md: Atom, lg: Atom, xl: Atom]>
-  | Readonly<[xs: Atom, sm: Atom, md: Atom, lg: Atom, xl: Atom, xxl: Atom]>
 
 type InterpolationPrimitive =
   | null
@@ -113,30 +112,6 @@ export function getResponsiveStyles<Key extends string | number>(
           valueMap,
         ),
         [`@media ${theme.viewport.gte.xl}`]: _(xl, valueMap),
-      }
-    }
-
-    if (length === 6) {
-      const [xs, sm, md, lg, xl, xxl] = value
-      return {
-        [`@media ${theme.viewport.lt.sm}`]: _(xs, valueMap),
-        [`@media ${theme.viewport.gte.sm} and ${theme.viewport.lt.md}`]: _(
-          sm,
-          valueMap,
-        ),
-        [`@media ${theme.viewport.gte.md} and ${theme.viewport.lt.lg}`]: _(
-          md,
-          valueMap,
-        ),
-        [`@media ${theme.viewport.gte.lg} and ${theme.viewport.lt.xl}`]: _(
-          lg,
-          valueMap,
-        ),
-        [`@media ${theme.viewport.gte.xl} and ${theme.viewport.lt.xxl}`]: _(
-          xl,
-          valueMap,
-        ),
-        [`@media ${theme.viewport.gte.xxl}`]: _(xxl, valueMap),
       }
     }
 

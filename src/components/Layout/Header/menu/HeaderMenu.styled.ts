@@ -2,7 +2,11 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SList = styled.nav`
-  display: flex;
+  display: none;
+
+  @media (${theme.viewport.gte.sm}) {
+    display: flex;
+  }
 `
 
 export const SItem = styled.a<{ isActive?: boolean }>`
