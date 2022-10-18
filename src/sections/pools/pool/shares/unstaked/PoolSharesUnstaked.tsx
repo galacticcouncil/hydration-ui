@@ -14,7 +14,7 @@ export const PoolSharesUnstaked: FC<Props> = ({ balance }) => {
         {t("pools.pool.liquidity.unstakedShares")}
       </Text>
       <Text fs={14} lh={18} color="white">
-        {t("value", { value: balance })}
+        {t("value", { value: balance, decimalPlaces: 2, fixedPointScale: 12 })}
       </Text>
     </div>
   )
