@@ -1,30 +1,37 @@
-import { EXTERNAL_LINKS } from "./links"
+import { EXTERNAL_LINKS, LINKS } from "./links"
+
+const isWalletPageEnabled = import.meta.env.VITE_FF_WALLET_ENABLED === "true"
 
 export const MENU_ITEMS = [
   {
     key: "lbp",
     translationKey: "header.lbp",
-    active: false,
     href: EXTERNAL_LINKS.lbp,
+    external: true,
   },
   {
     key: "trade",
     translationKey: "header.trade",
-    active: false,
     href: EXTERNAL_LINKS.swap,
+    external: true,
   },
-  { key: "pools", translationKey: "header.pools", active: true, href: "/" },
+  {
+    key: "pools",
+    translationKey: "header.pools",
+    href: LINKS.pools_and_farms,
+    external: false,
+  },
   {
     key: "wallet",
     translationKey: "header.wallet",
-    active: false,
-    href: EXTERNAL_LINKS.wallet,
+    href: isWalletPageEnabled ? LINKS.wallet : EXTERNAL_LINKS.wallet,
+    external: !isWalletPageEnabled,
   },
   {
     key: "bridge",
     translationKey: "header.bridge",
-    active: false,
     href: EXTERNAL_LINKS.bridge,
+    external: true,
   },
 ] as const
 

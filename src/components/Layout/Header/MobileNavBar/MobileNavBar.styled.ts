@@ -23,7 +23,7 @@ export const SMobileNavBar = styled.div`
   }
 `
 
-export const SNavBarItem = styled.a<{ active?: boolean }>`
+export const SNavBarItem = styled.span<{ active?: boolean }>`
   display: flex;
   flex-direction: column;
   justify-content: center;
