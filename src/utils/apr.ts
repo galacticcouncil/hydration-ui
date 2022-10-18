@@ -1,4 +1,4 @@
-import BN from "bignumber.js"
+import BN, { BigNumber } from "bignumber.js"
 import { useActiveYieldFarms, useGlobalFarms, useYieldFarms } from "api/farms"
 import { useMemo } from "react"
 import { AccountId32 } from "@polkadot/types/interfaces/runtime"
@@ -148,4 +148,11 @@ export const getPoolYieldPerPeriod = (
   totalSharesZ: BN,
 ) => {
   return globalRewardPerPeriod.times(multiplier).div(totalSharesZ)
+}
+
+export const getMinAndMaxAPR = (aprFarms: AprFarm[]) => {
+  const aprs = aprFarms.map((aprFarm) => aprFarm.apr)
+  const minApr = BigNumber.minimum(...aprs)
+  const maxApr = BigNumber.maximum(...aprs)
+  return { minApr, maxApr }
 }
