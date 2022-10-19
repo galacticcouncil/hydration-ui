@@ -1,5 +1,5 @@
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/network"
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { u32 } from "@polkadot/types"
@@ -13,6 +13,18 @@ export const useAssetMeta = (id: Maybe<u32 | string>) => {
     id != null ? getAssetMeta(api, id) : undefinedNoop,
     { enabled: !!id },
   )
+}
+
+export const useAssetMetaList = (ids: Array<Maybe<u32 | string>>) => {
+  const api = useApiPromise()
+
+  return useQueries({
+    queries: ids.map((id) => ({
+      queryKey: QUERY_KEYS.assetMeta(id),
+      queryFn: id != null ? getAssetMeta(api, id) : undefinedNoop,
+      enabled: !!id,
+    })),
+  })
 }
 
 export const getAssetMeta = (api: ApiPromise, id: u32 | string) => async () => {

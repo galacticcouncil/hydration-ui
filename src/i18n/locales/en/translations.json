@@ -35,6 +35,7 @@
   "pools.pool.poolDetails.fee": "Trade Fee",
   "pools.pool.poolDetails.total": "Total Value",
   "pools.pool.poolDetails.24hours": "24h Volume",
+  "pools.pool.poolDetails.24hours.tooltip": "USD value is derived from the most up-to-date exchange rate",
   "pools.pool.incentives.title": "Farm Incentives",
   "pools.pool.incentives.apr": "{{ percentage, bignumber(numberSuffix: '% APR') }}",
   "pools.pool.actions.addLiquidity": "Add liquidity",

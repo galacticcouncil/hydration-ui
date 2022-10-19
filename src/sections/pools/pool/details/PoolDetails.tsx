@@ -6,27 +6,11 @@ import { FC } from "react"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { getTradeFee, useTotalInPool } from "sections/pools/pool/Pool.utils"
-import BN from "bignumber.js"
-import { useAssetMeta } from "api/assetMeta"
 import { usePoolDetailsTradeVolume } from "./PoolDetails.utils"
 import { theme } from "theme"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 
 type Props = { pool: PoolBase }
-
-const PoolDetailTradeVolume = (props: { assetId: string; sum: BN }) => {
-  const { t } = useTranslation("translation")
-  const { data: assetMeta } = useAssetMeta(props.assetId)
-  return (
-    <Text lh={22} color="white" fs={18} sx={{ display: "block" }}>
-      {t("value", {
-        value: assetMeta?.data && props.sum,
-        fixedPointScale: assetMeta?.data?.decimals,
-        decimalPlaces: 2,
-        numberSuffix: ` ${assetMeta?.data?.symbol.toHuman()}`,
-      })}
-    </Text>
-  )
-}
 
 export const PoolDetails: FC<Props> = ({ pool }) => {
   const { t } = useTranslation()
@@ -79,23 +63,22 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
           </Text>
         </div>
         <div sx={{ flex: "column", width: 120, align: "start" }}>
-          <Text fs={14} color="neutralGray400" lh={26} fw={400}>
-            {t("pools.pool.poolDetails.24hours")}
-          </Text>
-
-          {volume.length > 0 ? (
-            volume.map(({ assetId, sum }) => (
-              <PoolDetailTradeVolume
-                key={assetId}
-                assetId={assetId}
-                sum={sum}
-              />
-            ))
-          ) : (
-            <Text lh={22} color="white">
-              {t("value.na")}
+          <div sx={{ flex: "row", align: "center", gap: 6 }}>
+            <Text
+              fs={14}
+              color="neutralGray400"
+              lh={26}
+              fw={400}
+              css={{ display: "inline" }}
+            >
+              {t("pools.pool.poolDetails.24hours")}
             </Text>
-          )}
+            <InfoTooltip text={t("pools.pool.poolDetails.24hours.tooltip")} />
+          </div>
+
+          <Text lh={22} color="white">
+            {t("value.usd", { amount: volume })}
+          </Text>
         </div>
       </div>
     </div>
