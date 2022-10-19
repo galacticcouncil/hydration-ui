@@ -5,7 +5,7 @@ import { SChip } from "./PoolPositionChip.styled"
 
 type PositionChipProps = { poolId: string }
 
-const PositionChip = ({ poolId }: PositionChipProps) => {
+export const PositionChip = ({ poolId }: PositionChipProps) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const deposits = useDeposits(poolId)
@@ -24,5 +24,3 @@ const PositionChip = ({ poolId }: PositionChipProps) => {
     </SChip>
   )
 }
-
-export default PositionChip

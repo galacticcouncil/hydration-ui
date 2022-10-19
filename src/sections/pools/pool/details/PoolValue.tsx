@@ -9,7 +9,7 @@ import BN from "bignumber.js"
 type Props = { pool: PoolBase }
 
 const PoolDetailTradeVolume = (props: { assetId: string; sum: BN }) => {
-  const { t } = useTranslation("translation")
+  const { t } = useTranslation()
   const { data: assetMeta } = useAssetMeta(props.assetId)
   return (
     <Text lh={22} color="white" fs={18} sx={{ display: "block" }}>

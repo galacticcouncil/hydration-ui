@@ -1,14 +1,14 @@
 import { FC, useState } from "react"
 import { PoolActions } from "sections/pools/pool/actions/PoolActions"
 import PoolIncentives from "sections/pools/pool/incentives/PoolIncentives"
-import { GridContainer, SContainer } from "sections/pools/pool/Pool.styled"
+import { SGridContainer, SContainer } from "sections/pools/pool/Pool.styled"
 import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { PoolShares } from "sections/pools/pool/shares/PoolShares"
 import { AnimatePresence, motion } from "framer-motion"
 import PoolValue from "./details/PoolValue"
 import { PoolFooter } from "sections/pools/pool/footer/PoolFooter"
-import PositionChip from "./position/chip/PoolPositionChip"
+import { PositionChip } from "./position/chip/PoolPositionChip"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 
@@ -21,7 +21,7 @@ export const Pool: FC<Props> = ({ pool }) => {
   return (
     <SContainer>
       {!isDesktop && <PositionChip poolId={pool.address} />}
-      <GridContainer>
+      <SGridContainer>
         <PoolDetails pool={pool} />
         <PoolIncentives poolId={pool.address} />
         <PoolValue pool={pool} />
@@ -30,7 +30,7 @@ export const Pool: FC<Props> = ({ pool }) => {
           isExpanded={isExpanded}
           onExpandClick={() => setIsExpanded((prev) => !prev)}
         />
-      </GridContainer>
+      </SGridContainer>
       <AnimatePresence>
         {isExpanded && (
           <motion.div

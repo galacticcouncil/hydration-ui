@@ -8,7 +8,7 @@ export const SContainer = styled.div`
   border-radius: 20px;
 `
 
-export const GridContainer = styled.div`
+export const SGridContainer = styled.div`
   padding: 16px;
   display: grid;
   grid-column-gap: 0px;

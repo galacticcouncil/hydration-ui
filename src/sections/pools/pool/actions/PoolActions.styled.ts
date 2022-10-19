@@ -32,3 +32,14 @@ export const SButtonOpen = styled(ButtonTransparent)<{ isActive: boolean }>`
     background-color: ${theme.colors.backgroundGray800};
   }
 `
+
+export const SActionsContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+
+  margin: 24px 0px;
+
+  width: 280px;
+`

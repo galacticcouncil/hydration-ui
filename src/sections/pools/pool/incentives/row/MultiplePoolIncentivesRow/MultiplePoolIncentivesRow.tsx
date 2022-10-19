@@ -1,6 +1,6 @@
 import { Text } from "components/Typography/Text/Text"
 import { Separator } from "components/Separator/Separator"
-import FarmAssetIcon from "./FarmAssetIcon"
+import { FarmAssetIcon } from "./FarmAssetIcon"
 import { AprFarm, getMinAndMaxAPR } from "utils/apr"
 import { useTranslation } from "react-i18next"
 
@@ -8,7 +8,7 @@ type Props = {
   farms: AprFarm[]
 }
 
-const MultiplePoolIncentivesRow = ({ farms }: Props) => {
+export const MultiplePoolIncentivesRow = ({ farms }: Props) => {
   const { t } = useTranslation()
 
   return (
@@ -17,21 +17,22 @@ const MultiplePoolIncentivesRow = ({ farms }: Props) => {
         <div sx={{ flex: "row" }}>
           {farms.map((farm, index) => (
             <FarmAssetIcon
-              key={String(farm.assetId)}
+              key={farm.assetId.toString()}
               assetId={farm.assetId}
-              styles={{ right: `${index * 12}px` }}
+              css={{
+                right: `${index * 10}px`,
+                position: "relative",
+              }}
             />
           ))}
         </div>
-        {!!farms.length ? (
+        {!!farms.length && (
           <Text color="primary200">
             {t("value.multiAPR", getMinAndMaxAPR(farms))}
           </Text>
-        ) : null}
+        )}
       </div>
       <Separator sx={{ mt: 18 }} />
     </>
   )
 }
-
-export default MultiplePoolIncentivesRow

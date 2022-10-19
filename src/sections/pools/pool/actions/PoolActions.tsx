@@ -2,7 +2,7 @@ import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
 import { ReactComponent as MinusIcon } from "assets/icons/MinusIcon.svg"
 import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
 import { ReactComponent as WindMillIcon } from "assets/icons/WindMillIcon.svg"
-import { ReactComponent as MoreBtn } from "assets/icons/MoreBtn.svg"
+import { ReactComponent as MoreIcon } from "assets/icons/MoreIcon.svg"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { FC, useState } from "react"
@@ -11,7 +11,10 @@ import { PoolAddLiquidity } from "sections/pools/pool/modals/addLiquidity/PoolAd
 import { PoolRemoveLiquidity } from "sections/pools/pool/modals/removeLiquidity/PoolRemoveLiquidity"
 import { PoolJoinFarm } from "sections/pools/pool/modals/joinFarm/PoolJoinFarm"
 import { PoolBase } from "@galacticcouncil/sdk"
-import { SButtonOpen } from "sections/pools/pool/actions/PoolActions.styled"
+import {
+  SActionsContainer,
+  SButtonOpen,
+} from "sections/pools/pool/actions/PoolActions.styled"
 import { useAccountStore } from "state/store"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -56,16 +59,7 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
   return (
     <>
       {isDesktop ? (
-        <div
-          sx={{
-            flex: "row",
-            justify: "space-between",
-            align: "center",
-            m: "24px 0px",
-            width: 280,
-            gap: 18,
-          }}
-        >
+        <SActionsContainer>
           {actionButtons}
           <SButtonOpen
             isActive={isExpanded}
@@ -74,7 +68,7 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
           >
             <ChevronDown />
           </SButtonOpen>
-        </div>
+        </SActionsContainer>
       ) : (
         <>
           <Modal
@@ -89,7 +83,7 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
           </Modal>
           <Button size="small" onClick={() => setOpenActions(true)}>
             <div sx={{ flex: "row", align: "center", justify: "center" }}>
-              <Icon icon={<MoreBtn />} sx={{ mr: 11 }} />
+              <Icon icon={<MoreIcon />} sx={{ mr: 11 }} />
               {t("pools.pool.actions.more")}
             </div>
           </Button>

@@ -93,11 +93,11 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
               isDrawer={mergedProps.isDrawer}
             >
               <ModalHeader>
-                {props.titleDrawer ? (
+                {props.titleDrawer && (
                   <Text color="neutralGray100" fs={16} fw={500}>
                     {props.titleDrawer}
                   </Text>
-                ) : null}
+                )}
                 {!!mergedProps.secondaryIcon && (
                   <IconButton
                     icon={mergedProps.secondaryIcon.icon}

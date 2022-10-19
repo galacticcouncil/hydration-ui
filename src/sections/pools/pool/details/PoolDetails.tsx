@@ -14,7 +14,7 @@ export const PoolDetails = ({ pool }: Props) => {
   const { t } = useTranslation()
 
   return (
-    <div sx={{ flex: "column" /*width: ["auto", "auto", 380] */ }}>
+    <div sx={{ flex: "column" }}>
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div>
           <Text fs={14} lh={26} fw={400} color="neutralGray400">
@@ -35,8 +35,8 @@ export const PoolDetails = ({ pool }: Props) => {
             </div>
           </div>
         </div>
-        <div sx={{ flex: "row" }}>
-          <div sx={{ flex: "column", width: ["auto", 120], align: "start" }}>
+        <div sx={{ flex: "row", align: "center" }}>
+          <div sx={{ flex: "column", justify: "center", width: ["auto", 120] }}>
             <Text fs={14} fw={400} color="neutralGray400" lh={26}>
               {t("pools.pool.poolDetails.fee")}
             </Text>
@@ -46,9 +46,13 @@ export const PoolDetails = ({ pool }: Props) => {
           </div>
           <Icon
             icon={<ChevronRight />}
-            sx={{ ml: 11, color: "primary300", display: ["inherit", "none"] }}
-            css={{ alignSelf: "end" }}
-            size={40}
+            sx={{
+              ml: 11,
+              mt: 6,
+              color: "primary300",
+              display: ["inherit", "none"],
+            }}
+            size={36}
           />
         </div>
       </div>
