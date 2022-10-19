@@ -7,8 +7,11 @@ export const SMobileNavBar = styled.div`
   bottom: 0;
   z-index: ${theme.zIndices.header};
 
+  padding-bottom: env(safe-area-inset-bottom);
+
   height: var(--mobile-nav-height);
   width: 100%;
+  transition: all ${theme.transitions.default};
 
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
