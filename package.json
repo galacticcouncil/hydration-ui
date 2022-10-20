@@ -25,7 +25,9 @@
     "@radix-ui/react-slider": "^1.0.0",
     "@radix-ui/react-switch": "^1.0.0",
     "@radix-ui/react-toast": "^1.0.0",
+    "@radix-ui/react-tooltip": "^1.0.2",
     "@talismn/connect-wallets": "^1.2.1",
+    "@tanstack/react-location": "^3.7.4",
     "@tanstack/react-query": "^4.1.0",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
@@ -48,7 +50,6 @@
     "react-is": "^18.2.0",
     "react-json-view": "^1.21.3",
     "react-remove-scroll": "^2.5.5",
-    "react-router-dom": "^6.3.0",
     "react-use": "^17.4.0",
     "recharts": "^2.1.13",
     "typescript": "^4.7.4",
@@ -72,9 +73,9 @@
     "fix:eslint": "eslint --fix src",
     "fix:prettier": "prettier --write \"src/**/*.{ts,tsx,json}\"",
     "generate": "yarn generate:defs && yarn generate:meta && yarn fix:prettier",
-    "generate:info": "ts-node --skip-project node_modules/.bin/polkadot-types-chain-info --ws wss://rpc01.hydration.dev",
-    "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package interfaces --input ./src/interfaces --endpoint wss://rpc01.hydration.dev",
-    "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package interfaces --endpoint wss://rpc01.hydration.dev --output ./src/interfaces"
+    "generate:info": "ts-node --skip-project node_modules/.bin/polkadot-types-chain-info --ws wss://rpc.hydration.dev",
+    "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package interfaces --input ./src/interfaces --endpoint wss://rpc.hydration.dev",
+    "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package interfaces --endpoint wss://rpc.hydration.dev --output ./src/interfaces"
   },
   "eslintConfig": {
     "extends": [

@@ -7,6 +7,7 @@ import { ReactComponent as BSX } from "assets/icons/tokens/BSX.svg"
 import { ReactComponent as KAR } from "assets/icons/tokens/KAR.svg"
 import { ReactComponent as PHA } from "assets/icons/tokens/PHA.svg"
 import { ReactComponent as KSM } from "assets/icons/tokens/KSM.svg"
+import { ReactComponent as TNKR } from "assets/icons/tokens/TNKR.svg"
 import { ReactComponent as PlaceholderIcon } from "assets/icons/tokens/PlaceholderIcon.svg"
 
 export type AssetIconProps = {
@@ -36,6 +37,7 @@ export function getAssetLogo(assetName: string | null | undefined) {
   if (name === "KAR") return <KAR />
   if (name === "KSM") return <KSM />
   if (name === "PHA") return <PHA />
+  if (name === "TNKR") return <TNKR />
 
   return <PlaceholderIcon width={32} height={32} />
 }

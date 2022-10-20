@@ -1,10 +1,5 @@
-import { Link as RouterLink } from "react-router-dom"
-import { FC, ReactNode } from "react"
-
-export type LinkProps = {
-  to: string
-  children: ReactNode
-}
+import { Link as RouterLink, LinkProps } from "@tanstack/react-location"
+import { FC } from "react"
 
 export const Link: FC<LinkProps> = ({ to, children }) => (
   <RouterLink to={to}>{children}</RouterLink>

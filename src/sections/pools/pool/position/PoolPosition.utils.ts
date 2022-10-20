@@ -6,9 +6,7 @@ import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
 import { useTotalIssuance } from "api/totalIssuance"
 import { useTotalInPool } from "sections/pools/pool/Pool.utils"
 import { usePoolShareToken } from "api/pools"
-import { useTokenBalance } from "api/balances"
 import { PoolBase } from "@galacticcouncil/sdk"
-import { useAccountStore } from "state/store"
 import { getPoolTotal } from "sections/pools/header/PoolsHeader.utils"
 import { useAsset, useAUSD } from "api/asset"
 import { useSpotPrices } from "api/spotPrice"
@@ -30,12 +28,7 @@ export const usePoolPositionData = ({
     poolId: pool.address,
   })
 
-  const { account } = useAccountStore()
   const shareToken = usePoolShareToken(pool.address)
-  const shareTokenBalance = useTokenBalance(
-    shareToken.data?.token,
-    account?.address,
-  )
   const totalIssuance = useTotalIssuance(shareToken.data?.token)
   const totalInPool = useTotalInPool({ pool })
   const aUSD = useAUSD()
@@ -52,7 +45,6 @@ export const usePoolPositionData = ({
     globalFarm,
     yieldFarm,
     shareToken,
-    shareTokenBalance,
     totalIssuance,
     totalInPool,
     aUSD,

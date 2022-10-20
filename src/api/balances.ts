@@ -56,17 +56,14 @@ export const useTokenBalance = (
 ) => {
   const api = useApiPromise()
   const { account } = useAccountStore()
-
-  // TODO: replace later with native Polkadot types
-  const safeId = id?.toString()
   const finalAddress = address ?? account?.address
 
   return useQuery(
-    QUERY_KEYS.tokenBalance(safeId, finalAddress),
-    finalAddress != null && safeId != null
-      ? getTokenBalance(api, finalAddress, safeId)
+    QUERY_KEYS.tokenBalance(id, finalAddress),
+    finalAddress != null && id != null
+      ? getTokenBalance(api, finalAddress, id)
       : undefinedNoop,
-    { enabled: !!finalAddress && !!safeId },
+    { enabled: finalAddress != null && id != null },
   )
 }
 

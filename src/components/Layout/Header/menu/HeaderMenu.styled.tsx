@@ -8,11 +8,11 @@ export const SList = styled.nav`
     display: flex;
   }
 `
-
-export const SItem = styled.a<{ isActive?: boolean }>`
+export const SItem = styled.span<{ isActive?: boolean }>`
   font-size: 16px;
   font-weight: 600;
   line-height: 18px;
+  margin-right: 32px;
 
   color: ${({ isActive }) =>
     isActive ? theme.colors.white : theme.colors.neutralGray300};
@@ -20,9 +20,5 @@ export const SItem = styled.a<{ isActive?: boolean }>`
   &:hover {
     color: ${theme.colors.primary100};
     cursor: pointer;
-  }
-
-  &:not(:last-of-type) {
-    margin-right: 32px;
   }
 `

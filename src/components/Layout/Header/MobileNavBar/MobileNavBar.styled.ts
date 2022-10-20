@@ -7,8 +7,11 @@ export const SMobileNavBar = styled.div`
   bottom: 0;
   z-index: ${theme.zIndices.header};
 
+  padding-bottom: env(safe-area-inset-bottom);
+
   height: var(--mobile-nav-height);
   width: 100%;
+  transition: all ${theme.transitions.default};
 
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
@@ -23,7 +26,7 @@ export const SMobileNavBar = styled.div`
   }
 `
 
-export const SNavBarItem = styled.a<{ active?: boolean }>`
+export const SNavBarItem = styled.span<{ active?: boolean }>`
   display: flex;
   flex-direction: column;
   justify-content: center;

@@ -2,26 +2,11 @@ import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
 import { useTotalInPool } from "../Pool.utils"
 import { PoolBase } from "@galacticcouncil/sdk"
-import { useAssetMeta } from "api/assetMeta"
 import { usePoolDetailsTradeVolume } from "./PoolDetails.utils"
-import BN from "bignumber.js"
+
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 
 type Props = { pool: PoolBase }
-
-const PoolDetailTradeVolume = (props: { assetId: string; sum: BN }) => {
-  const { t } = useTranslation()
-  const { data: assetMeta } = useAssetMeta(props.assetId)
-  return (
-    <Text lh={22} color="white" fs={18} sx={{ display: "block" }}>
-      {t("value", {
-        value: assetMeta?.data && props.sum,
-        fixedPointScale: assetMeta?.data?.decimals,
-        decimalPlaces: 2,
-        numberSuffix: ` ${assetMeta?.data?.symbol.toHuman()}`,
-      })}
-    </Text>
-  )
-}
 
 export const PoolValue = ({ pool }: Props) => {
   const { t } = useTranslation()
@@ -38,20 +23,25 @@ export const PoolValue = ({ pool }: Props) => {
           {t("value.usd", { amount: data })}
         </Text>
       </div>
-      <div sx={{ flex: "column", width: ["auto", 120] }}>
-        <Text fs={14} color="neutralGray400" lh={26}>
-          {t("pools.pool.poolDetails.24hours")}
-        </Text>
-        {volume.length > 0 ? (
-          volume.map(({ assetId, sum }) => (
-            <PoolDetailTradeVolume key={assetId} assetId={assetId} sum={sum} />
-          ))
-        ) : (
+      <div sx={{ flex: "column", width: 120, align: "start" }}>
+          <div sx={{ flex: "row", align: "center", gap: 6 }}>
+            <Text
+              fs={14}
+              color="neutralGray400"
+              lh={26}
+              fw={400}
+              css={{ display: "inline" }}
+            >
+              {t("pools.pool.poolDetails.24hours")}
+            </Text>
+            <InfoTooltip text={t("pools.pool.poolDetails.24hours.tooltip")} />
+          </div>
+
           <Text lh={22} color="white">
-            {t("value.na")}
+            {t("value.usd", { amount: volume })}
           </Text>
-        )}
-      </div>
+        </div>
+
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { Icon } from "components/Icon/Icon"
+import { Link } from "@tanstack/react-location"
 import { ReactComponent as PoolsAndFarmsIcon } from "assets/icons/PoolsAndFarms.svg"
 import { ReactComponent as TradeIcon } from "assets/icons/Trade.svg"
 import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
@@ -19,12 +20,29 @@ export const MobileNavBar = () => {
 
   return (
     <SMobileNavBar>
-      {MENU_ITEMS.map((item, index) => (
-        <SNavBarItem key={index} active={item.active} href={item.href}>
-          <Icon size={20} icon={getIcon(item.key)} />
-          {t(item.translationKey)}
-        </SNavBarItem>
-      ))}
+      {MENU_ITEMS.map((item, index) => {
+        if (item.external) {
+          return (
+            <a href={item.href} key={index}>
+              <SNavBarItem key={index}>
+                <Icon size={20} icon={getIcon(item.key)} />
+                {t(item.translationKey)}
+              </SNavBarItem>
+            </a>
+          )
+        }
+
+        return (
+          <Link to={item.href} key={index}>
+            {({ isActive }) => (
+              <SNavBarItem key={index} active={isActive}>
+                <Icon size={20} icon={getIcon(item.key)} />
+                {t(item.translationKey)}
+              </SNavBarItem>
+            )}
+          </Link>
+        )
+      })}
     </SMobileNavBar>
   )
 }

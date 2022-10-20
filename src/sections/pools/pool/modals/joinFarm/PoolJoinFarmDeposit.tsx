@@ -14,9 +14,10 @@ import { FormValues } from "utils/types"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { useActiveYieldFarms, useGlobalFarms } from "api/farms"
-import { BN_0 } from "utils/constants"
+import { BN_0, BN_BILL } from "utils/constants"
 import { AprFarm } from "utils/apr"
 import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 
 export const PoolJoinFarmDeposit = (props: {
   pool: PoolBase
@@ -50,6 +51,7 @@ export const PoolJoinFarmDeposit = (props: {
   const form = useForm<{ value: string }>({})
 
   async function handleSubmit(data: FormValues<typeof form>) {
+    const value = new BN(data.value).times(BN_BILL)
     if (!account) throw new Error("No account found")
     if (props.farm) {
       return await createTransaction({
@@ -60,7 +62,7 @@ export const PoolJoinFarmDeposit = (props: {
             assetIn: assetIn.id,
             assetOut: assetOut.id,
           },
-          data.value,
+          value.toString(),
         ),
       })
     }
@@ -77,7 +79,7 @@ export const PoolJoinFarmDeposit = (props: {
           assetIn: assetIn.id,
           assetOut: assetOut.id,
         },
-        data.value,
+        value.toString(),
       ),
     })
 

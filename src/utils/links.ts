@@ -1,6 +1,6 @@
 export const LINKS = {
   home: "/",
-  pools: "/pools",
+  pools_and_farms: "/pools-and-farms",
   wallet: "/wallet",
 }
 
