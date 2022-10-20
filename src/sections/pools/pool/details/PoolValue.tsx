@@ -24,24 +24,23 @@ export const PoolValue = ({ pool }: Props) => {
         </Text>
       </div>
       <div sx={{ flex: "column", width: 120, align: "start" }}>
-          <div sx={{ flex: "row", align: "center", gap: 6 }}>
-            <Text
-              fs={14}
-              color="neutralGray400"
-              lh={26}
-              fw={400}
-              css={{ display: "inline" }}
-            >
-              {t("pools.pool.poolDetails.24hours")}
-            </Text>
-            <InfoTooltip text={t("pools.pool.poolDetails.24hours.tooltip")} />
-          </div>
-
-          <Text lh={22} color="white">
-            {t("value.usd", { amount: volume })}
+        <div sx={{ flex: "row", align: "center", gap: 6 }}>
+          <Text
+            fs={14}
+            color="neutralGray400"
+            lh={26}
+            fw={400}
+            css={{ display: "inline" }}
+          >
+            {t("pools.pool.poolDetails.24hours")}
           </Text>
+          <InfoTooltip text={t("pools.pool.poolDetails.24hours.tooltip")} />
         </div>
 
+        <Text lh={22} color="white">
+          {t("value.usd", { amount: volume })}
+        </Text>
+      </div>
     </div>
   )
 }
