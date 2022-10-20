@@ -9,7 +9,7 @@ import { MultiplePoolIncentivesRow } from "./row/MultiplePoolIncentivesRow/Multi
 
 type PoolIncentivesProps = { poolId: string }
 
-const PoolIncentives = ({ poolId }: PoolIncentivesProps) => {
+export const PoolIncentives = ({ poolId }: PoolIncentivesProps) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { data } = useAPR(poolId)
@@ -35,5 +35,3 @@ const PoolIncentives = ({ poolId }: PoolIncentivesProps) => {
     </div>
   )
 }
-
-export default PoolIncentives

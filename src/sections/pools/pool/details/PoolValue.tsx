@@ -23,7 +23,7 @@ const PoolDetailTradeVolume = (props: { assetId: string; sum: BN }) => {
   )
 }
 
-const PoolValue = ({ pool }: Props) => {
+export const PoolValue = ({ pool }: Props) => {
   const { t } = useTranslation()
   const { data } = useTotalInPool({ pool })
   const volume = usePoolDetailsTradeVolume(pool.address)
@@ -55,5 +55,3 @@ const PoolValue = ({ pool }: Props) => {
     </div>
   )
 }
-
-export default PoolValue
