@@ -26,6 +26,8 @@
     "@radix-ui/react-switch": "^1.0.0",
     "@radix-ui/react-toast": "^1.0.0",
     "@radix-ui/react-tooltip": "^1.0.2",
+    "@sentry/react": "^7.16.0",
+    "@sentry/tracing": "^7.16.0",
     "@talismn/connect-wallets": "^1.2.1",
     "@tanstack/react-location": "^3.7.4",
     "@tanstack/react-query": "^4.1.0",
@@ -61,7 +63,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "storybook": "start-storybook -p 6006 ./src",
     "build-storybook": "build-storybook ./src",
@@ -133,6 +135,7 @@
     "prop-types": "^15.8.1",
     "ts-node": "^10.9.1",
     "vite": "^3.0.7",
+    "vite-plugin-sentry": "^1.1.6",
     "vite-plugin-svgr": "^2.2.1",
     "vite-tsconfig-paths": "^3.5.0"
   }
