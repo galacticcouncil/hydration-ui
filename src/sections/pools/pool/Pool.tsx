@@ -1,29 +1,36 @@
 import { FC, useState } from "react"
 import { PoolActions } from "sections/pools/pool/actions/PoolActions"
 import { PoolIncentives } from "sections/pools/pool/incentives/PoolIncentives"
-import { SContainer } from "sections/pools/pool/Pool.styled"
+import { SGridContainer, SContainer } from "sections/pools/pool/Pool.styled"
 import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { PoolShares } from "sections/pools/pool/shares/PoolShares"
 import { AnimatePresence, motion } from "framer-motion"
+import { PoolValue } from "./details/PoolValue"
 import { PoolFooter } from "sections/pools/pool/footer/PoolFooter"
+import { PositionChip } from "./position/chip/PoolPositionChip"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 type Props = { pool: PoolBase }
 
 export const Pool: FC<Props> = ({ pool }) => {
   const [isExpanded, setIsExpanded] = useState(false)
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
     <SContainer>
-      <div sx={{ flex: "row", justify: "space-between", p: 24, gap: 10 }}>
+      {!isDesktop && <PositionChip poolId={pool.address} />}
+      <SGridContainer>
         <PoolDetails pool={pool} />
         <PoolIncentives poolId={pool.address} />
+        <PoolValue pool={pool} />
         <PoolActions
           pool={pool}
           isExpanded={isExpanded}
           onExpandClick={() => setIsExpanded((prev) => !prev)}
         />
-      </div>
+      </SGridContainer>
       <AnimatePresence>
         {isExpanded && (
           <motion.div

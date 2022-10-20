@@ -9,12 +9,12 @@ import {
   useState,
 } from "react"
 import {
-  CloseButton,
-  IconsWrapper,
-  ModalBody,
-  ModalContainer,
-  ModalTitle,
   ModalWindow,
+  ModalTitle,
+  ModalBody,
+  ModalHeader,
+  CloseButton,
+  ModalContainer,
 } from "./Modal.styled"
 import { Backdrop } from "components/Backdrop/Backdrop"
 import { IconButton } from "components/IconButton/IconButton"
@@ -23,6 +23,8 @@ import { Dialog, DialogDescription, DialogPortal } from "@radix-ui/react-dialog"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { RemoveScroll } from "react-remove-scroll"
+import { Separator } from "components/Separator/Separator"
+import { Text } from "components/Typography/Text/Text"
 
 type Props = {
   open: boolean
@@ -32,6 +34,8 @@ type Props = {
   secondaryIcon?: { icon: ReactNode; onClick: () => void; name: string }
   withoutClose?: boolean
   width?: number
+  isDrawer?: boolean
+  titleDrawer?: string
 }
 
 type PropsOverride = Pick<
@@ -86,8 +90,14 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
             <ModalWindow
               maxWidth={mergedProps.width}
               onEscapeKeyDown={props.onClose}
+              isDrawer={mergedProps.isDrawer}
             >
-              <IconsWrapper>
+              <ModalHeader>
+                {props.titleDrawer && (
+                  <Text color="neutralGray100" fs={16} fw={500}>
+                    {props.titleDrawer}
+                  </Text>
+                )}
                 {!!mergedProps.secondaryIcon && (
                   <IconButton
                     icon={mergedProps.secondaryIcon.icon}
@@ -101,10 +111,10 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
                     icon={<CrossIcon />}
                     onClick={props.onClose}
                     name={t("modal.closeButton.name")}
-                    css={{ color: theme.colors.white }}
                   />
                 )}
-              </IconsWrapper>
+              </ModalHeader>
+              {mergedProps.isDrawer && <Separator />}
               <RemoveScroll enabled={props.open}>
                 <ModalBody>
                   <ModalTitle>{mergedProps.title}</ModalTitle>

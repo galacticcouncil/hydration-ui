@@ -2,25 +2,20 @@ import { DualAssetIcons } from "components/DualAssetIcons/DualAssetIcons"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { FC } from "react"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { PoolBase } from "@galacticcouncil/sdk"
-import { getTradeFee, useTotalInPool } from "sections/pools/pool/Pool.utils"
-import { usePoolDetailsTradeVolume } from "./PoolDetails.utils"
-import { theme } from "theme"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { getTradeFee } from "sections/pools/pool/Pool.utils"
+import { Icon } from "components/Icon/Icon"
+import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 
 type Props = { pool: PoolBase }
 
-export const PoolDetails: FC<Props> = ({ pool }) => {
+export const PoolDetails = ({ pool }: Props) => {
   const { t } = useTranslation()
-  const total = useTotalInPool({ pool })
-
-  const volume = usePoolDetailsTradeVolume(pool.address)
 
   return (
-    <div sx={{ flex: "column", width: 380 }}>
-      <div sx={{ flex: "row", justify: "space-between", mb: 32 }}>
+    <div sx={{ flex: "column" }}>
+      <div sx={{ flex: "row", justify: "space-between" }}>
         <div>
           <Text fs={14} lh={26} fw={400} color="neutralGray400">
             {t("pools.pool.title", { type: pool.type })}
@@ -40,47 +35,28 @@ export const PoolDetails: FC<Props> = ({ pool }) => {
             </div>
           </div>
         </div>
-        <div sx={{ flex: "column", width: 120, align: "start" }}>
-          <Text fs={14} fw={400} color="neutralGray400" lh={26}>
-            {t("pools.pool.poolDetails.fee")}
-          </Text>
-          <Text lh={22} color="white">
-            {t("value.percentage", { value: getTradeFee(pool.tradeFee) })}
-          </Text>
-        </div>
-      </div>
-      <Separator
-        sx={{ mb: 32 }}
-        css={{ background: `rgba(${theme.rgbColors.white}, 0.05)` }}
-      />
-      <div sx={{ flex: "row", justify: "space-between" }}>
-        <div>
-          <Text fs={14} color="neutralGray400" lh={26} fw={400}>
-            {t("pools.pool.poolDetails.total")}
-          </Text>
-          <Text lh={22} color="white" fs={18}>
-            {t("value.usd", { amount: total.data })}
-          </Text>
-        </div>
-        <div sx={{ flex: "column", width: 120, align: "start" }}>
-          <div sx={{ flex: "row", align: "center", gap: 6 }}>
-            <Text
-              fs={14}
-              color="neutralGray400"
-              lh={26}
-              fw={400}
-              css={{ display: "inline" }}
-            >
-              {t("pools.pool.poolDetails.24hours")}
+        <div sx={{ flex: "row", align: "center" }}>
+          <div sx={{ flex: "column", justify: "center", width: ["auto", 120] }}>
+            <Text fs={14} fw={400} color="neutralGray400" lh={26}>
+              {t("pools.pool.poolDetails.fee")}
             </Text>
-            <InfoTooltip text={t("pools.pool.poolDetails.24hours.tooltip")} />
+            <Text lh={22} color="white">
+              {t("value.percentage", { value: getTradeFee(pool.tradeFee) })}
+            </Text>
           </div>
-
-          <Text lh={22} color="white">
-            {t("value.usd", { amount: volume })}
-          </Text>
+          <Icon
+            icon={<ChevronRight />}
+            sx={{
+              ml: 11,
+              mt: 6,
+              color: "primary300",
+              display: ["inherit", "none"],
+            }}
+            size={36}
+          />
         </div>
       </div>
+      <Separator sx={{ mt: [18, 34] }} />
     </div>
   )
 }

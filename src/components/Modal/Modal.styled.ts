@@ -17,6 +17,26 @@ const fadeInKeyframes = keyframes`
   }
 `
 
+const mobFadeInKeyframes = keyframes`
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+`
+
+const drawerKeyFrames = keyframes`
+0% {
+  transform: translateY(50%);
+}
+
+100% {
+  transform: translateY(0) ;
+}
+`
+
 export const ModalContainer = styled.div`
   position: fixed;
   top: 0;
@@ -26,17 +46,25 @@ export const ModalContainer = styled.div`
   z-index: ${theme.zIndices.backdrop};
 `
 
-export const ModalWindow = styled(DialogContent)<{ maxWidth?: number }>`
+export const ModalWindow = styled(DialogContent)<{
+  maxWidth?: number
+  isDrawer?: boolean
+}>`
   position: absolute;
-  top: 0;
   z-index: ${theme.zIndices.modal};
-
-  height: 100vh;
   width: 100%;
 
   border: 1px solid rgba(${theme.rgbColors.white}, 0.06);
-  box-shadow: 0 38px 46px rgba(0, 0, 0, 0.03);
+  box-shadow: 0px 38px 46px rgba(0, 0, 0, 0.03);
   background: ${theme.colors.backgroundGray900};
+
+  animation: 150ms cubic-bezier(0.16, 1, 0.3, 1)
+    ${({ isDrawer }) => (isDrawer ? drawerKeyFrames : mobFadeInKeyframes)};
+
+  ${({ isDrawer }) =>
+    isDrawer
+      ? { bottom: 0, borderRadius: "20px 20px 0px 0px" }
+      : { top: 0, height: "100vh" }}
 
   @media ${theme.viewport.gte.sm} {
     top: 50%;
@@ -45,11 +73,9 @@ export const ModalWindow = styled(DialogContent)<{ maxWidth?: number }>`
 
     height: auto;
     max-width: ${(props) => `${props.maxWidth ?? 610}px`};
-
     border-radius: 16px;
+    animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) ${fadeInKeyframes};
   }
-
-  animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) ${fadeInKeyframes};
 `
 
 export const ModalTitle = styled(GradientText)`
@@ -59,27 +85,39 @@ export const ModalTitle = styled(GradientText)`
 `
 
 export const ModalBody = styled.div`
-  max-height: 80vh;
+  padding: 0 14px 19px;
   overflow-y: auto;
-
-  padding: 0 30px 30px;
+  max-height: calc(100vh - 60px);
+  @media ${theme.viewport.gte.sm} {
+    padding: 0 30px 30px;
+    max-height: 80vh;
+  }
 
   &::-webkit-scrollbar-track {
     margin-bottom: 16px;
   }
 `
-export const IconsWrapper = styled.div`
+export const ModalHeader = styled.div`
   display: flex;
-  justify-content: flex-end;
-  padding: 8px;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 8px;
   gap: 8px;
 
   @media ${theme.viewport.gte.sm} {
+    padding: 8px;
     justify-content: space-between;
   }
 `
 export const CloseButton = styled(IconButton)`
+  color: ${theme.colors.white};
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 13px 19px;
   @media ${theme.viewport.gte.sm} {
+    position: relative;
+    margin: 0px;
     margin-left: auto;
   }
 `

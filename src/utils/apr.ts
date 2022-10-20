@@ -149,3 +149,10 @@ export const getPoolYieldPerPeriod = (
 ) => {
   return globalRewardPerPeriod.times(multiplier).div(totalSharesZ)
 }
+
+export const getMinAndMaxAPR = (aprFarms: AprFarm[]) => {
+  const aprs = aprFarms.map((aprFarm) => aprFarm.apr)
+  const minApr = BN.minimum(...aprs)
+  const maxApr = BN.maximum(...aprs)
+  return { minApr, maxApr }
+}
