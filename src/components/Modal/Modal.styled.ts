@@ -38,6 +38,9 @@ const drawerKeyFrames = keyframes`
 `
 
 export const ModalContainer = styled.div`
+  --mobile-modal-header-height: 60px;
+  --modal-header-title-height: 32px;
+
   position: fixed;
   top: 0;
   left: 0;
@@ -80,17 +83,23 @@ export const ModalWindow = styled(DialogContent)<{
 
 export const ModalTitle = styled(GradientText)`
   font-size: 24px;
-  line-height: 32px;
+  line-height: var(--modal-header-title-height);
   font-weight: 500;
 `
 
-export const ModalBody = styled.div`
+export const ModalBody = styled.div<{ isDrawer?: boolean }>`
   padding: 0 14px 19px;
   overflow-y: auto;
-  max-height: calc(100vh - 60px);
+
+  ${({ isDrawer }) =>
+    isDrawer
+      ? "max-height: calc(100vh - var(--mobile-modal-header-height));"
+      : "height: calc(100vh - var(--mobile-modal-header-height));"}
+
   @media ${theme.viewport.gte.sm} {
     padding: 0 30px 30px;
     max-height: 80vh;
+    height: auto;
   }
 
   &::-webkit-scrollbar-track {
@@ -103,8 +112,10 @@ export const ModalHeader = styled.div`
   align-items: center;
   padding: 20px 8px;
   gap: 8px;
+  min-height: var(--mobile-modal-header-height);
 
   @media ${theme.viewport.gte.sm} {
+    min-height: fit-content;
     padding: 8px;
     justify-content: space-between;
   }
@@ -119,5 +130,18 @@ export const CloseButton = styled(IconButton)`
     position: relative;
     margin: 0px;
     margin-left: auto;
+  }
+`
+
+export const SecondaryButton = styled(IconButton)`
+  color: ${theme.colors.white};
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 13px 19px;
+  @media ${theme.viewport.gte.sm} {
+    position: relative;
+    margin: 0px;
+    margin-right: auto;
   }
 `

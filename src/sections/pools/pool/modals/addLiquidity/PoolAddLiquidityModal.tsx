@@ -188,97 +188,105 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
   }
 
   return (
-    <>
-      <PoolAddLiquidityAssetSelect
-        name="assetA"
-        allowedAssets={pools.data
-          ?.filter((nextPool) => nextPool.tokens[1].id === pool?.tokens[1].id)
-          .map((nextPool) => nextPool.tokens[0].id)}
-        onSelectAsset={(assetId) => {
-          handleSelectAsset(assetId, 0)
-          handleChangeAssetAInput("0")
-        }}
-        asset={pool.tokens[0].id}
-        balance={accountAssetABalance.data?.balance}
-        decimals={pool.tokens[0].decimals}
-        currency={{
-          short: pool.tokens[0].symbol,
-          full: pool.tokens[0].symbol,
-        }} /*TODO: full token name*/
-        assetIcon={getAssetLogo(pool.tokens[0].symbol)}
-        value={inputAssetA}
-        onChange={handleChangeAssetAInput}
-        sx={{ mt: 16 }}
-      />
-      <PoolAddLiquidityConversion
-        firstValue={{ amount: BN_1, currency: pool.tokens[0].symbol }}
-        secondValue={{
-          amount: spotPriceData?.spotPrice ?? BN_1,
-          currency: pool.tokens[1].symbol,
-        }}
-      />
-      <PoolAddLiquidityAssetSelect
-        name="assetB"
-        allowedAssets={pools.data
-          ?.filter((nextPool) => nextPool.tokens[0].id === pool?.tokens[0].id)
-          .map((nextPool) => nextPool.tokens[1].id)}
-        onSelectAsset={(assetId) => {
-          handleSelectAsset(assetId, 1)
-          handleChangeAssetBInput("0")
-        }}
-        asset={pool.tokens[1].id}
-        balance={accountAssetBBalance.data?.balance}
-        decimals={pool.tokens[1].decimals}
-        currency={{
-          short: pool.tokens[1].symbol,
-          full: pool.tokens[1].symbol,
-        }} /*TODO: full token name*/
-        assetIcon={getAssetLogo(pool.tokens[1].symbol)}
-        value={inputAssetB}
-        onChange={handleChangeAssetBInput}
-      />
+    <div
+      sx={{
+        flex: "column",
+        justify: "space-between",
+        height: "calc(100% - var(--modal-header-title-height))",
+      }}
+    >
+      <div>
+        <PoolAddLiquidityAssetSelect
+          name="assetA"
+          allowedAssets={pools.data
+            ?.filter((nextPool) => nextPool.tokens[1].id === pool?.tokens[1].id)
+            .map((nextPool) => nextPool.tokens[0].id)}
+          onSelectAsset={(assetId) => {
+            handleSelectAsset(assetId, 0)
+            handleChangeAssetAInput("0")
+          }}
+          asset={pool.tokens[0].id}
+          balance={accountAssetABalance.data?.balance}
+          decimals={pool.tokens[0].decimals}
+          currency={{
+            short: pool.tokens[0].symbol,
+            full: pool.tokens[0].symbol,
+          }} /*TODO: full token name*/
+          assetIcon={getAssetLogo(pool.tokens[0].symbol)}
+          value={inputAssetA}
+          onChange={handleChangeAssetAInput}
+          sx={{ mt: 16 }}
+        />
+        <PoolAddLiquidityConversion
+          firstValue={{ amount: BN_1, currency: pool.tokens[0].symbol }}
+          secondValue={{
+            amount: spotPriceData?.spotPrice ?? BN_1,
+            currency: pool.tokens[1].symbol,
+          }}
+        />
+        <PoolAddLiquidityAssetSelect
+          name="assetB"
+          allowedAssets={pools.data
+            ?.filter((nextPool) => nextPool.tokens[0].id === pool?.tokens[0].id)
+            .map((nextPool) => nextPool.tokens[1].id)}
+          onSelectAsset={(assetId) => {
+            handleSelectAsset(assetId, 1)
+            handleChangeAssetBInput("0")
+          }}
+          asset={pool.tokens[1].id}
+          balance={accountAssetBBalance.data?.balance}
+          decimals={pool.tokens[1].decimals}
+          currency={{
+            short: pool.tokens[1].symbol,
+            full: pool.tokens[1].symbol,
+          }} /*TODO: full token name*/
+          assetIcon={getAssetLogo(pool.tokens[1].symbol)}
+          value={inputAssetB}
+          onChange={handleChangeAssetBInput}
+        />
 
-      <Row
-        left={t("pools.addLiquidity.modal.row.tradeFee")}
-        right={t("value.percentage", { value: getTradeFee(pool.tradeFee) })}
-      />
-      <Separator />
-      <Row
-        left={t("pools.addLiquidity.modal.row.transactionCost")}
-        right={
-          paymentInfo && (
-            <Text>
-              {t("pools.addLiquidity.modal.row.transactionCostValue", {
-                amount: paymentInfo.partialFee,
-                fixedPointScale: 12,
-                decimalPlaces: 2,
+        <Row
+          left={t("pools.addLiquidity.modal.row.tradeFee")}
+          right={t("value.percentage", { value: getTradeFee(pool.tradeFee) })}
+        />
+        <Separator />
+        <Row
+          left={t("pools.addLiquidity.modal.row.transactionCost")}
+          right={
+            paymentInfo && (
+              <Text>
+                {t("pools.addLiquidity.modal.row.transactionCostValue", {
+                  amount: paymentInfo.partialFee,
+                  fixedPointScale: 12,
+                  decimalPlaces: 2,
+                })}
+              </Text>
+            )
+          }
+        />
+        <Separator />
+        <Row
+          left={t("pools.addLiquidity.modal.row.sharePool")}
+          right={`${(calculatedRatio && calculatedRatio.isFinite()
+            ? calculatedRatio
+            : BN_100
+          ).toFixed()}%`}
+        />
+        <Separator />
+        {/*TODO add tooltip component afterwards */}
+        <Row
+          left={t("pools.addLiquidity.modal.row.shareTokens")}
+          right={
+            <Text color="primary400">
+              {t("value", {
+                value: calculatedShares ?? BN_0,
+                decimalPlaces: 4,
+                fixedPointScale: dataShareToken?.decimals,
               })}
             </Text>
-          )
-        }
-      />
-      <Separator />
-      <Row
-        left={t("pools.addLiquidity.modal.row.sharePool")}
-        right={`${(calculatedRatio && calculatedRatio.isFinite()
-          ? calculatedRatio
-          : BN_100
-        ).toFixed()}%`}
-      />
-      <Separator />
-      {/*TODO add tooltip component afterwards */}
-      <Row
-        left={t("pools.addLiquidity.modal.row.shareTokens")}
-        right={
-          <Text color="primary400">
-            {t("value", {
-              value: calculatedShares ?? BN_0,
-              decimalPlaces: 4,
-              fixedPointScale: dataShareToken?.decimals,
-            })}
-          </Text>
-        }
-      />
+          }
+        />
+      </div>
       {account ? (
         <Button
           text={t("pools.addLiquidity.modal.confirmButton")}
@@ -291,6 +299,6 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
       ) : (
         <WalletConnectButton css={{ marginTop: 30, width: "100%" }} />
       )}
-    </>
+    </div>
   )
 }

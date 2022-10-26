@@ -43,33 +43,23 @@ export const PoolJoinFarmItem = (props: {
       as={props.onSelect ? "button" : "div"}
       variant={props.onSelect ? "list" : "detail"}
       onClick={props.onSelect}
+      isJoined={!!props.deposit}
     >
+      {props.deposit && <Tag>{t("pools.allFarms.modal.joined")}</Tag>}
       <div
         sx={{
-          flex: "column",
+          flex: ["row", "column"],
+          justify: ["space-between", "start"],
           gap: 8,
-          align: "flex-start",
-          justify: "space-between",
-          height: "100%",
         }}
       >
-        {props.deposit && <Tag>{t("pools.allFarms.modal.joined")}</Tag>}
-
-        <div sx={{ flex: "column", gap: 8 }}>
-          <div sx={{ flex: "row", align: "center", gap: 8 }}>
-            {asset.data?.icon}
-            <Text fw={700}>{asset.data?.name}</Text>
-          </div>
-          <Text
-            fs={20}
-            lh={28}
-            fw={600}
-            color="primary200"
-            css={{ whiteSpace: "nowrap" }}
-          >
-            {t("pools.allFarms.modal.apr.single", { value: props.farm.apr })}
-          </Text>
+        <div sx={{ flex: "row", align: "center", gap: 8 }}>
+          {asset.data?.icon}
+          <Text fw={700}>{asset.data?.name}</Text>
         </div>
+        <Text fs={20} lh={28} fw={600} color="primary200">
+          {t("pools.allFarms.modal.apr.single", { value: props.farm.apr })}
+        </Text>
       </div>
       <div sx={{ flex: "column" }}>
         <SFarmRow>

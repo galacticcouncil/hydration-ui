@@ -2,8 +2,8 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const STag = styled.div`
-  display: inline-flex;
-  width: auto;
+  width: fit-content;
+  height: fit-content;
 
   background: ${theme.gradients.primaryGradient};
   padding: 3px 6px;

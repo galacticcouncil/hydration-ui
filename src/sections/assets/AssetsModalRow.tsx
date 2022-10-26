@@ -66,7 +66,7 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
               numberSuffix: ` ${asset.data.name}`,
             }}
           >
-            <Text color="white" fs={14} lh={18} />
+            <Text color="white" fs={14} lh={18} tAlign="right" />
           </Trans>
         )}
         <Text color="neutralGray400" fs={12} lh={16}>

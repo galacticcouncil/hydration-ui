@@ -48,6 +48,7 @@ export function PoolJoinFarmWithdraw(props: { pool: PoolBase }) {
       disabled={!deposits.data?.length}
       isLoading={mutate.isLoading}
       onClick={() => mutate.mutate()}
+      sx={{ width: ["inherit", "auto"] }}
     >
       {t("pools.allFarms.modal.withdraw.submit")}
     </Button>

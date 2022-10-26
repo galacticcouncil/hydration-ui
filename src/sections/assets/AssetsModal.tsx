@@ -7,6 +7,8 @@ import { Maybe } from "../../utils/types"
 import { u32 } from "@polkadot/types"
 import { Text } from "../../components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 interface AssetsModalProps {
   allowedAssets?: Maybe<u32 | string>[]
@@ -20,6 +22,7 @@ export const AssetsModal: FC<AssetsModalProps> = ({
   onSelect,
 }) => {
   const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
   const assetsRows = useAssets()
 
   const mainAssets = assetsRows.data?.filter((asset) =>
@@ -30,10 +33,15 @@ export const AssetsModal: FC<AssetsModalProps> = ({
   )
 
   return (
-    <Modal open={true} onClose={onClose}>
+    <Modal
+      open={true}
+      onClose={onClose}
+      isDrawer={!isDesktop}
+      titleDrawer={t("selectAsset.title")}
+    >
       {!!mainAssets?.length && (
         <>
-          <SAssetsModalHeader>
+          <SAssetsModalHeader sx={{ m: ["0 -14px", "0 -30px"] }}>
             <Text
               color="neutralGray300"
               fw={500}
@@ -61,7 +69,7 @@ export const AssetsModal: FC<AssetsModalProps> = ({
       )}
       {!!otherAssets?.length && (
         <>
-          <SAssetsModalHeader shadowed>
+          <SAssetsModalHeader shadowed sx={{ m: ["0 -14px", "0 -30px"] }}>
             <Text
               color="neutralGray300"
               fw={500}

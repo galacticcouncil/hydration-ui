@@ -144,82 +144,94 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
       open={isOpen}
       onClose={onClose}
     >
-      <form onSubmit={form.handleSubmit(handleSubmit)}>
-        <Heading fs={42} lh={52} sx={{ my: 16 }}>
-          {t("value.percentage", { value })}
-        </Heading>
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        sx={{
+          flex: "column",
+          justify: "space-between",
+          height: "calc(100% - var(--modal-header-title-height))",
+        }}
+      >
+        <div>
+          <Heading fs={[32, 42]} lh={52} sx={{ my: 16 }}>
+            {t("value.percentage", { value })}
+          </Heading>
 
-        <Controller
-          name="value"
-          control={form.control}
-          render={({ field }) => (
-            <PoolRemoveLiquidityInput
-              value={field.value}
-              onChange={field.onChange}
-            />
-          )}
-        />
-
-        <STradingPairContainer>
-          <Text color="neutralGray400">
-            {t("pools.removeLiquidity.modal.receive")}
-          </Text>
-
-          <PoolRemoveLiquidityReward
-            name="Token"
-            symbol={pool.tokens[0].symbol}
-            amount={t("value", {
-              value: removeAmount[0],
-              fixedPointScale: pool.tokens[0].decimals,
-              decimalPlaces: 4,
-            })}
+          <Controller
+            name="value"
+            control={form.control}
+            render={({ field }) => (
+              <PoolRemoveLiquidityInput
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
           />
-          <PoolRemoveLiquidityReward
-            name="Token"
-            symbol={pool.tokens[1].symbol}
-            amount={t("value", {
-              value: removeAmount[1],
-              fixedPointScale: pool.tokens[1].decimals,
-              decimalPlaces: 4,
-            })}
-          />
-        </STradingPairContainer>
 
-        <div sx={{ mt: 16, mb: 32 }}>
-          <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
-            <Text color="neutralGray500" fs={15}>
-              {t("pools.removeLiquidity.modal.cost")}
+          <STradingPairContainer>
+            <Text color="neutralGray400">
+              {t("pools.removeLiquidity.modal.receive")}
             </Text>
-            <div sx={{ flex: "row", align: "center", gap: 4 }}>
+
+            <PoolRemoveLiquidityReward
+              name="Token"
+              symbol={pool.tokens[0].symbol}
+              amount={t("value", {
+                value: removeAmount[0],
+                fixedPointScale: pool.tokens[0].decimals,
+                decimalPlaces: 4,
+              })}
+            />
+            <PoolRemoveLiquidityReward
+              name="Token"
+              symbol={pool.tokens[1].symbol}
+              amount={t("value", {
+                value: removeAmount[1],
+                fixedPointScale: pool.tokens[1].decimals,
+                decimalPlaces: 4,
+              })}
+            />
+          </STradingPairContainer>
+
+          <div sx={{ mt: 16, mb: 32 }}>
+            <div
+              sx={{ flex: "row", align: "center", justify: "space-between" }}
+            >
+              <Text color="neutralGray500" fs={15}>
+                {t("pools.removeLiquidity.modal.cost")}
+              </Text>
+              <div sx={{ flex: "row", align: "center", gap: 4 }}>
+                <Text fs={14}>
+                  {t("pools.removeLiquidity.modal.row.transactionCostValue", {
+                    amount: paymentInfoEstimate.data?.partialFee,
+                    fixedPointScale: 12,
+                    decimalPlaces: 2,
+                  })}
+                </Text>
+              </div>
+            </div>
+            <Separator sx={{ my: 8 }} size={2} />
+            <div
+              sx={{ flex: "row", align: "center", justify: "space-between" }}
+            >
+              <Text fs={15} color="neutralGray500">
+                {t("pools.removeLiquidity.modal.price")}
+              </Text>
               <Text fs={14}>
-                {t("pools.removeLiquidity.modal.row.transactionCostValue", {
-                  amount: paymentInfoEstimate.data?.partialFee,
-                  fixedPointScale: 12,
-                  decimalPlaces: 2,
-                })}
+                <Trans
+                  t={t}
+                  i18nKey="pools.removeLiquidity.modal.row.spotPrice"
+                  tOptions={{
+                    firstAmount: BN_1,
+                    secondAmount: spotPrice.data?.spotPrice,
+                    firstCurrency: pool.tokens[0].symbol,
+                    secondCurrency: pool.tokens[1].symbol,
+                  }}
+                />
               </Text>
             </div>
           </div>
-          <Separator sx={{ my: 8 }} size={2} />
-          <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
-            <Text fs={15} color="neutralGray500">
-              {t("pools.removeLiquidity.modal.price")}
-            </Text>
-            <Text fs={14}>
-              <Trans
-                t={t}
-                i18nKey="pools.removeLiquidity.modal.row.spotPrice"
-                tOptions={{
-                  firstAmount: BN_1,
-                  secondAmount: spotPrice.data?.spotPrice,
-                  firstCurrency: pool.tokens[0].symbol,
-                  secondCurrency: pool.tokens[1].symbol,
-                }}
-              />
-            </Text>
-          </div>
         </div>
-
         {account ? (
           <Button type="submit" variant="primary" fullWidth>
             {t("pools.removeLiquidity.modal.confirm")}

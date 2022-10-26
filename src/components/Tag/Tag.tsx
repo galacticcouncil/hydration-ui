@@ -9,7 +9,7 @@ export const Tag = (props: { children?: ReactNode; className?: string }) => {
         fs={9}
         fw={800}
         sx={{ color: "black" }}
-        css={{ textTransform: "uppercase", display: "inline-block" }}
+        css={{ textTransform: "uppercase", lineHeight: "normal" }}
       >
         {props.children}
       </Text>

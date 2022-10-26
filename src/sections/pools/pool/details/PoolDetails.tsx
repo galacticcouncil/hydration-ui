@@ -8,9 +8,9 @@ import { getTradeFee } from "sections/pools/pool/Pool.utils"
 import { Icon } from "components/Icon/Icon"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 
-type Props = { pool: PoolBase }
+type Props = { pool: PoolBase; onClick?: () => void }
 
-export const PoolDetails = ({ pool }: Props) => {
+export const PoolDetails = ({ pool, onClick }: Props) => {
   const { t } = useTranslation()
 
   return (
@@ -35,7 +35,7 @@ export const PoolDetails = ({ pool }: Props) => {
             </div>
           </div>
         </div>
-        <div sx={{ flex: "row", align: "center" }}>
+        <div sx={{ flex: "row", align: "center" }} onClick={onClick}>
           <div sx={{ flex: "column", justify: "center", width: ["auto", 120] }}>
             <Text fs={14} fw={400} color="neutralGray400" lh={26}>
               {t("pools.pool.poolDetails.fee")}

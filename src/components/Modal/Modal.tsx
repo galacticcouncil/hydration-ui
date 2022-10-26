@@ -15,13 +15,12 @@ import {
   ModalHeader,
   CloseButton,
   ModalContainer,
+  SecondaryButton,
 } from "./Modal.styled"
 import { Backdrop } from "components/Backdrop/Backdrop"
-import { IconButton } from "components/IconButton/IconButton"
 import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
 import { Dialog, DialogDescription, DialogPortal } from "@radix-ui/react-dialog"
 import { useTranslation } from "react-i18next"
-import { theme } from "theme"
 import { RemoveScroll } from "react-remove-scroll"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
@@ -80,7 +79,7 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
 
   const [propsOverride, setPropsOverride] = useState<PropsOverride | null>(null)
   const mergedProps = { ...props, ...propsOverride }
-
+  const { isDrawer, titleDrawer, secondaryIcon, title } = mergedProps
   return (
     <Dialog open={props.open}>
       <DialogPortal>
@@ -90,20 +89,19 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
             <ModalWindow
               maxWidth={mergedProps.width}
               onEscapeKeyDown={props.onClose}
-              isDrawer={mergedProps.isDrawer}
+              isDrawer={isDrawer}
             >
               <ModalHeader>
-                {props.titleDrawer && (
+                {titleDrawer && isDrawer && (
                   <Text color="neutralGray100" fs={16} fw={500}>
-                    {props.titleDrawer}
+                    {titleDrawer}
                   </Text>
                 )}
-                {!!mergedProps.secondaryIcon && (
-                  <IconButton
-                    icon={mergedProps.secondaryIcon.icon}
-                    onClick={mergedProps.secondaryIcon.onClick}
-                    name={mergedProps.secondaryIcon.name}
-                    css={{ color: theme.colors.white }}
+                {!!secondaryIcon && (
+                  <SecondaryButton
+                    icon={secondaryIcon.icon}
+                    onClick={secondaryIcon.onClick}
+                    name={secondaryIcon.name}
                   />
                 )}
                 {!mergedProps.withoutClose && (
@@ -114,10 +112,10 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
                   />
                 )}
               </ModalHeader>
-              {mergedProps.isDrawer && <Separator />}
+              {isDrawer && <Separator />}
               <RemoveScroll enabled={props.open}>
-                <ModalBody>
-                  <ModalTitle>{mergedProps.title}</ModalTitle>
+                <ModalBody isDrawer={isDrawer}>
+                  <ModalTitle>{title}</ModalTitle>
                   {props.children}
                 </ModalBody>
                 <DialogDescription />

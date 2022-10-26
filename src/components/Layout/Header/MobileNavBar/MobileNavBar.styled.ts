@@ -7,6 +7,7 @@ export const SMobileNavBar = styled.div`
   bottom: 0;
   z-index: ${theme.zIndices.header};
 
+  padding: 2px 0;
   padding-bottom: env(safe-area-inset-bottom);
 
   height: var(--mobile-nav-height);
@@ -38,4 +39,27 @@ export const SNavBarItem = styled.span<{ active?: boolean }>`
   font-size: 12px;
   color: ${({ active }) =>
     active ? theme.colors.primary400 : theme.colors.backgroundGray600};
+`
+
+export const SNavBarItemHidden = styled.a`
+  display: flex;
+  gap: 12px;
+  background: ${theme.colors.backgroundGray800};
+  color: ${theme.colors.neutralGray300};
+  padding: 30px 20px;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid rgba(${theme.rgbColors.white}, 0.06);
+  }
+`
+
+export const STabButton = styled(SNavBarItem)<{ active: boolean }>`
+  ${({ active }) =>
+    active &&
+    `
+    background: rgba(218, 255, 238, 0.06);
+    border-radius: 8px;
+    height: 100%;
+    color: ${theme.colors.backgroundGray600};
+    `}
 `

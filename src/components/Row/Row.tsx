@@ -17,7 +17,7 @@ export const Row: FC<RowProps> = ({ left, right }) => (
       mt: 6,
     }}
   >
-    <Text fs={12} lh={22} fw={400} color="neutralGray300">
+    <Text fs={14} lh={22} fw={400} color="neutralGray300">
       {left}
     </Text>
     <SRightSide>{right}</SRightSide>

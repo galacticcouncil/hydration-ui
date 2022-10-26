@@ -19,8 +19,12 @@ export const STradingPairContainer = styled.div`
   flex-direction: column;
   gap: 16px;
 
-  padding: 16px 32px;
+  padding: 16px 12px;
 
   background-color: ${theme.colors.backgroundGray1000};
   border-radius: 12px;
+
+  @media (${theme.viewport.gte.sm}) {
+    padding: 16px 32px;
+  }
 `

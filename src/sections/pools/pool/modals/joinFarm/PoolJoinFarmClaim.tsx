@@ -1,6 +1,6 @@
 import { Trans, useTranslation } from "react-i18next"
 import { useAPR } from "utils/apr"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { Text } from "components/Typography/Text/Text"
 import { useAccountDepositIds, useDeposits } from "api/deposits"
 import { useBestNumber } from "api/chain"
@@ -18,12 +18,16 @@ import { useAccountStore, useStore } from "state/store"
 import { SContainer } from "./PoolJoinFarmClaim.styled"
 import { getFormatSeparators } from "utils/formatting"
 import { PoolBase } from "@galacticcouncil/sdk"
+import { Modal } from "components/Modal/Modal"
+import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
+import { PoolPositionMobile } from "../../position/PoolPositionMobile"
 
 export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
   const { t, i18n } = useTranslation()
   const math = useMath()
   const bestNumber = useBestNumber()
   const apr = useAPR(props.pool.address)
+  const [openMyPositions, setOpenMyPositions] = useState(false)
 
   const { account } = useAccountStore()
   // TODO: filter only deposits created by user
@@ -125,7 +129,7 @@ export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
     bsxSpotPrices,
     math.liquidityMining,
   ])
-
+  let index = 0
   const separators = getFormatSeparators(i18n.languages[0])
   const [num, denom] = t("value", {
     value: rewards?.bsx,
@@ -160,7 +164,11 @@ export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
         <Text color="primary200" fs={16} sx={{ mb: 6 }}>
           {t("pools.allFarms.modal.claim.title")}
         </Text>
-        <Text fw={900} fs={28} sx={{ mb: 4 }} css={{ wordBreak: "break-all" }}>
+        <Text
+          fw={900}
+          sx={{ mb: 4, fontSize: [24, 28] }}
+          css={{ wordBreak: "break-all" }}
+        >
           <Trans
             t={t}
             i18nKey="pools.allFarms.modal.claim.bsx"
@@ -183,15 +191,62 @@ export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
           {t("value.usd", { amount: rewards?.ausd })}
         </Text>
       </div>
-      <Button
-        variant="primary"
-        sx={{ ml: 32, flexShrink: 0 }}
-        disabled={!!rewards?.bsx.isZero()}
-        isLoading={claimMutation.isLoading}
-        onClick={() => claimMutation.mutate()}
+      <div
+        sx={{
+          flex: "row",
+          justify: "space-between",
+        }}
       >
-        {t("pools.allFarms.modal.claim.submit")}
-      </Button>
+        <Button
+          variant="secondary"
+          sx={{
+            p: "10px 16px",
+            display: ["inherit", "none"],
+          }}
+          disabled={!!rewards?.bsx.isZero()}
+          isLoading={claimMutation.isLoading}
+          onClick={() => setOpenMyPositions(true)}
+        >
+          <WalletIcon />
+          {t("pools.allFarms.modal.myPositions")}
+        </Button>
+        <Button
+          variant="primary"
+          sx={{
+            ml: [0, 32],
+            flexShrink: 0,
+            p: ["10px 16px", "16px 36px"],
+            width: "max-content",
+          }}
+          disabled={!!rewards?.bsx.isZero()}
+          isLoading={claimMutation.isLoading}
+          onClick={() => claimMutation.mutate()}
+        >
+          {t("pools.allFarms.modal.claim.submit")}
+        </Button>
+      </div>
+      <Modal
+        open={openMyPositions}
+        isDrawer
+        titleDrawer={t("pools.allFarms.modal.list.positions")}
+        onClose={() => setOpenMyPositions(false)}
+      >
+        <div sx={{ flex: "column", gap: 10 }}>
+          {positions?.map((deposit, indexA) =>
+            deposit.deposit.yieldFarmEntries.map((entry) => {
+              index++
+              return (
+                <PoolPositionMobile
+                  key={index}
+                  pool={props.pool}
+                  position={entry}
+                  index={index}
+                />
+              )
+            }),
+          )}
+        </div>
+      </Modal>
     </SContainer>
   )
 }

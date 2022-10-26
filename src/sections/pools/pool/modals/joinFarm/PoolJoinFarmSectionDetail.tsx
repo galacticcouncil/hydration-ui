@@ -5,15 +5,20 @@ import { PoolBase } from "@galacticcouncil/sdk"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { PoolJoinFarmDeposit } from "./PoolJoinFarmDeposit"
 import { PoolJoinFarmItem } from "./PoolJoinFarmItem"
-import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
+import {
+  PalletLiquidityMiningDepositData,
+  PalletLiquidityMiningYieldFarmEntry,
+} from "@polkadot/types/lookup"
 import { PoolJoinFarmPosition } from "./PoolJoinFarmPosition"
 import { PoolJoinFarmLoyaltyGraph } from "./PoolJoinFarmLoyaltyGraph"
+import { u128 } from "@polkadot/types"
 
 export function PoolJoinFarmSectionDetail(props: {
   farm: AprFarm
   pool: PoolBase
   position?: PalletLiquidityMiningYieldFarmEntry
   onBack: () => void
+  deposit?: { id: u128; deposit: PalletLiquidityMiningDepositData }
 }) {
   const { t } = useTranslation()
 
@@ -31,7 +36,11 @@ export function PoolJoinFarmSectionDetail(props: {
       />
 
       <div sx={{ flex: "column", gap: 32 }}>
-        <PoolJoinFarmItem pool={props.pool} farm={props.farm} />
+        <PoolJoinFarmItem
+          pool={props.pool}
+          farm={props.farm}
+          deposit={props.deposit}
+        />
 
         {loyaltyCurve && (
           <PoolJoinFarmLoyaltyGraph

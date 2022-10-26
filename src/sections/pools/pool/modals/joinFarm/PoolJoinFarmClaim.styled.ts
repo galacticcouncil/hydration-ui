@@ -3,7 +3,9 @@ import { theme } from "theme"
 
 export const SContainer = styled.div`
   display: flex;
-  align-items: center;
+  gap: 24px;
+  flex-direction: column;
+
   justify-content: space-between;
 
   background: linear-gradient(
@@ -19,4 +21,10 @@ export const SContainer = styled.div`
 
   border-radius: 12px;
   padding: 30px;
+
+  @media (${theme.viewport.gte.sm}) {
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+  }
 `

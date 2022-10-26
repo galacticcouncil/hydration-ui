@@ -51,47 +51,37 @@ export const PoolAddLiquidityAssetSelect: FC<Props> = (props) => {
     <>
       {modal}
       <SContainer className={props.className}>
-        <div
-          sx={{
-            flex: "row",
-            align: "center",
-            justify: "space-between",
-            mb: 11,
-          }}
-        >
-          <Text fw={500} lh={22} color="primary200">
-            {t("selectAsset.title")}
-          </Text>
-          <div sx={{ flex: "row", align: "center" }}>
-            <Text fs={12} lh={16} color="white" sx={{ mr: 5 }}>
-              <Trans
-                t={t}
-                i18nKey="selectAsset.balance"
-                tOptions={{
-                  balance: props.balance,
-                  decimalPlaces: 4,
-                  fixedPointScale: props.decimals,
-                }}
-              >
-                <span css={{ opacity: 0.7 }} />
-              </Trans>
-            </Text>
-            <SMaxButton
-              size="micro"
-              text={t("selectAsset.button.max")}
-              capitalize
-              onClick={() => {
-                if (props.balance != null) {
-                  props.onChange(
-                    getFloatingPointAmount(
-                      props.balance,
-                      props.decimals,
-                    ).toFixed(4),
-                  )
-                }
+        <Text fw={500} lh={22} color="primary200">
+          {t("selectAsset.title")}
+        </Text>
+        <div sx={{ flex: "row", align: "center", pt: [5, 0], justify: "end" }}>
+          <Text fs={12} lh={16} color="white" sx={{ mr: 5 }}>
+            <Trans
+              t={t}
+              i18nKey="selectAsset.balance"
+              tOptions={{
+                balance: props.balance,
+                decimalPlaces: 4,
+                fixedPointScale: props.decimals,
               }}
-            />
-          </div>
+            >
+              <span css={{ opacity: 0.7 }} />
+            </Trans>
+          </Text>
+          <SMaxButton
+            size="micro"
+            text={t("selectAsset.button.max")}
+            capitalize
+            onClick={() => {
+              if (props.balance != null) {
+                props.onChange(
+                  getFloatingPointAmount(props.balance, props.decimals).toFixed(
+                    4,
+                  ),
+                )
+              }
+            }}
+          />
         </div>
         <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
           <SSelectAssetButton size="small" onClick={openModal}>

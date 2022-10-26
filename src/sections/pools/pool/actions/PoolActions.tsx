@@ -31,23 +31,46 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
   const { account } = useAccountStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
+  const closeActionsDrawer = () => setOpenActions(false)
+
   const actionButtons = (
     <div sx={{ width: ["auto", 214], flex: "column", gap: 10 }}>
-      <Button fullWidth size="small" onClick={() => setOpenAdd(true)}>
+      <Button
+        fullWidth
+        size="small"
+        onClick={() => {
+          setOpenAdd(true)
+          closeActionsDrawer()
+        }}
+      >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon icon={<PlusIcon />} sx={{ mr: 11 }} />
           {t("pools.pool.actions.addLiquidity")}
         </div>
       </Button>
 
-      <Button fullWidth size="small" onClick={() => setOpenRemove(true)}>
+      <Button
+        fullWidth
+        size="small"
+        onClick={() => {
+          setOpenRemove(true)
+          closeActionsDrawer()
+        }}
+      >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon icon={<MinusIcon />} sx={{ mr: 11 }} />
           {t("pools.pool.actions.removeLiquidity")}
         </div>
       </Button>
 
-      <Button fullWidth size="small" onClick={() => setOpenFarms(true)}>
+      <Button
+        fullWidth
+        size="small"
+        onClick={() => {
+          setOpenFarms(true)
+          closeActionsDrawer()
+        }}
+      >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon icon={<WindMillIcon />} sx={{ mr: 11 }} />
           {t("pools.pool.actions.joinFarm")}
@@ -77,7 +100,7 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
             titleDrawer={t("pools.pool.actions.header", {
               tokens: `${pool.tokens[0].symbol}/${pool.tokens[1].symbol}`,
             })}
-            onClose={() => setOpenActions(false)}
+            onClose={closeActionsDrawer}
           >
             {actionButtons}
           </Modal>

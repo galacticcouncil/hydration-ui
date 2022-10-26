@@ -3,14 +3,33 @@ import styled from "@emotion/styled"
 import { css } from "@emotion/react"
 import { theme } from "theme"
 
-export const SFarm = styled.button<{ variant: "list" | "detail" }>`
+export const SFarm = styled.button<{
+  variant: "list" | "detail"
+  isJoined?: boolean
+}>`
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-column-gap: 32px;
+  grid-row-gap: 18px;
+  grid-column-gap: 4px;
+  grid-template-columns: 95% auto;
+  > *:nth-of-type(1) {
+    grid-area: ${({ isJoined }) =>
+      isJoined ? "1 / 1 / 2 / 2" : "1 / 1 / 2 / 2"};
+  }
+  > *:nth-of-type(2) {
+    grid-area: ${({ isJoined }) =>
+      isJoined ? "2 / 1 / 3 / 2" : "2 / 1 / 3 / 2"};
+  }
+  > *:nth-of-type(3) {
+    grid-area: ${({ isJoined }) =>
+      isJoined ? "3 / 1 / 4 / 2" : "1 / 2 / 3 / 3"};
+  }
+  > *:nth-of-type(4) {
+    grid-area: 1 / 2 / 4 / 3;
+  }
 
   width: 100%;
 
-  padding: 20px 24px;
+  padding: 16px 20px;
 
   border-radius: 12px;
   background-color: ${theme.colors.backgroundGray1000};
@@ -25,22 +44,43 @@ export const SFarm = styled.button<{ variant: "list" | "detail" }>`
     height: 20px;
   }
 
-  ${(props) => {
-    if (props.variant === "detail") {
-      return css`
-        grid-template-columns: auto 1fr;
-      `
+  @media (${theme.viewport.gte.sm}) {
+    padding: 20px 24px;
+
+    grid-column-gap: 32px;
+    > *:nth-of-type(1) {
+      grid-area: ${({ isJoined }) =>
+        isJoined ? "1 / 1 / 2 / 2" : "1 / 1 / 4 / 2"};
+    }
+    > *:nth-of-type(2) {
+      grid-area: ${({ isJoined }) =>
+        isJoined ? "2 / 1 / 4 / 2" : "1 / 2 / 4 / 3"};
+    }
+    > *:nth-of-type(3) {
+      grid-area: ${({ isJoined }) =>
+        isJoined ? "1 / 2 / 4 / 3" : "1 / 3 / 4 / 4"};
+    }
+    > *:nth-of-type(4) {
+      grid-area: 1 / 3 / 4 / 4;
     }
 
-    return css`
-      grid-template-columns: auto 1fr auto;
-      cursor: pointer;
-
-      &:hover {
-        border-color: ${theme.colors.primary400};
+    ${(props) => {
+      if (props.variant === "detail") {
+        return css`
+          grid-template-columns: auto 1fr;
+        `
       }
-    `
-  }}
+
+      return css`
+        grid-template-columns: 25% 60% auto;
+        cursor: pointer;
+
+        &:hover {
+          border-color: ${theme.colors.primary400};
+        }
+      `
+    }}
+  }
 `
 
 export const SFarmRow = styled.div`

@@ -17,12 +17,16 @@ import { useActiveYieldFarms, useGlobalFarms } from "api/farms"
 import { BN_0, BN_BILL } from "utils/constants"
 import { AprFarm } from "utils/apr"
 import BigNumber from "bignumber.js"
+import { SGridContainer } from "./PoolJoinFarmDeposit.styled"
 import BN from "bignumber.js"
 
-export const PoolJoinFarmDeposit = (props: {
+type PoolJoinFarmDepositProps = {
   pool: PoolBase
   farm?: AprFarm
-}) => {
+  isDrawer?: boolean
+}
+
+export const PoolJoinFarmDeposit = (props: PoolJoinFarmDepositProps) => {
   const activeYieldFarms = useActiveYieldFarms(props.pool.address)
   const globalFarms = useGlobalFarms(
     activeYieldFarms.data?.map((f) => f.globalFarmId) ?? [],
@@ -110,43 +114,34 @@ export const PoolJoinFarmDeposit = (props: {
 
   return (
     <form onSubmit={form.handleSubmit(handleSubmit)}>
-      <div sx={{ bg: "backgroundGray800", p: 20 }} css={{ borderRadius: 12 }}>
-        <div
-          sx={{
-            flex: "row",
-            align: "center",
-            mb: 11,
-            justify: "space-between",
-          }}
-        >
-          <Text fw={600} lh={22} color="primary200">
-            {t("farms.deposit.title")}
-          </Text>
-          <div sx={{ flex: "row", align: "center" }}>
-            <Text fs={12} lh={16} sx={{ mr: 5 }} color="white">
-              <Trans
-                t={t}
-                i18nKey="farms.deposit.balance"
-                tOptions={{
-                  balance: shareTokenBalance.data?.balance ?? "-",
-                }}
-              >
-                <span css={{ opacity: 0.7 }} />
-              </Trans>
-            </Text>
-            <SMaxButton
-              size="micro"
-              text={t("selectAsset.button.max")}
-              capitalize
-              onClick={() => {
-                const balance = shareTokenBalance.data?.balance
-
-                if (balance != null) {
-                  form.setValue("value", balance.toString())
-                }
+      <SGridContainer>
+        <Text fw={600} lh={22} color="primary200">
+          {t("farms.deposit.title")}
+        </Text>
+        <div sx={{ flex: "row", align: "center", justify: "end" }}>
+          <Text fs={12} lh={16} sx={{ mr: 5 }} color="white">
+            <Trans
+              t={t}
+              i18nKey="farms.deposit.balance"
+              tOptions={{
+                balance: shareTokenBalance.data?.balance ?? "-",
               }}
-            />
-          </div>
+            >
+              <span css={{ opacity: 0.7 }} />
+            </Trans>
+          </Text>
+          <SMaxButton
+            size="micro"
+            text={t("selectAsset.button.max")}
+            capitalize
+            onClick={() => {
+              const balance = shareTokenBalance.data?.balance
+
+              if (balance != null) {
+                form.setValue("value", balance.toString())
+              }
+            }}
+          />
         </div>
         <div sx={{ flex: "row", align: "center" }}>
           <div sx={{ flex: "row", flexShrink: 0, align: "center" }}>
@@ -191,12 +186,19 @@ export const PoolJoinFarmDeposit = (props: {
             )}
           />
         </div>
-      </div>
+      </SGridContainer>
 
-      <div sx={{ flex: "row", mt: 20, justify: "flex-end" }}>
+      <div
+        sx={{
+          flex: "row",
+          mt: 20,
+          justify: "flex-end",
+          width: ["100%", "auto"],
+        }}
+      >
         {account ? (
-          <Button type="submit" variant="primary">
-            {t("farms.deposit.submit")}
+          <Button type="submit" variant="primary" sx={{ width: "inherit" }}>
+            {props.isDrawer ? t("confirm") : t("farms.deposit.submit")}
           </Button>
         ) : (
           <WalletConnectButton />

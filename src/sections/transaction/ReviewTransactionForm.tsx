@@ -45,68 +45,76 @@ export const ReviewTransactionForm = (
   )
 
   return (
-    <>
-      {props.title && (
-        <Text color="neutralGray400" fw={400} sx={{ mt: 6 }}>
-          {props.title}
-        </Text>
-      )}
-      <div sx={{ mt: 16 }}>
-        {json && <TransactionCode name={json.method} src={json.args} />}
-      </div>
-      <div sx={{ mt: 10 }}>
-        <SDetailRow>
-          <Text color="neutralGray300">
-            {t("pools.reviewTransaction.modal.detail.cost")}
+    <div
+      sx={{
+        flex: "column",
+        justify: "space-between",
+        height: "calc(100% - var(--modal-header-title-height))",
+      }}
+    >
+      <div>
+        {props.title && (
+          <Text color="neutralGray400" fw={400} sx={{ mt: 6 }}>
+            {props.title}
           </Text>
-          <div sx={{ flex: "column", align: "end" }}>
-            {paymentInfoData && (
-              <>
-                <Text color="white">
-                  {t("pools.addLiquidity.modal.row.transactionCostValue", {
-                    amount: paymentInfoData.partialFee,
-                    fixedPointScale: 12,
-                    decimalPlaces: 2,
-                  })}
-                </Text>
-                <Text color="primary400" fs={12}>
-                  {/* TODO */}
-                  {/* 2% */}
-                </Text>
-              </>
-            )}
-          </div>
-        </SDetailRow>
-        <SDetailRow>
-          <Text color="neutralGray300">
-            {t("pools.reviewTransaction.modal.detail.lifetime")}
-          </Text>
-          <Text color="white">
-            {props.tx.era.isMortalEra
-              ? t("transaction.mortal.expire", {
-                  date: era?.deathDate,
-                })
-              : t("transaction.immortal.expire")}
-          </Text>
-        </SDetailRow>
-        <SDetailRow>
-          <Text color="neutralGray300">
-            {t("pools.reviewTransaction.modal.detail.tip")}
-          </Text>
-          <Text color="white">
-            {t("pools.addLiquidity.modal.row.transactionTip", {
-              amount: props.tx.tip,
-              fixedPointScale: 12,
-              decimalPlaces: 2,
-            })}
-          </Text>
-        </SDetailRow>
-        <SDetailRow>
-          <Text color="neutralGray300">
-            {t("pools.reviewTransaction.modal.detail.nonce")}
-          </Text>
-          <Text color="white">{props.tx.nonce.toString()}</Text>
-        </SDetailRow>
+        )}
+        <div sx={{ mt: 16 }}>
+          {json && <TransactionCode name={json.method} src={json.args} />}
+        </div>
+        <div sx={{ mt: 10 }}>
+          <SDetailRow>
+            <Text color="neutralGray300">
+              {t("pools.reviewTransaction.modal.detail.cost")}
+            </Text>
+            <div sx={{ flex: "column", align: "end" }}>
+              {paymentInfoData && (
+                <>
+                  <Text color="white">
+                    {t("pools.addLiquidity.modal.row.transactionCostValue", {
+                      amount: paymentInfoData.partialFee,
+                      fixedPointScale: 12,
+                      decimalPlaces: 2,
+                    })}
+                  </Text>
+                  <Text color="primary400" fs={12}>
+                    {/* TODO */}
+                    {/* 2% */}
+                  </Text>
+                </>
+              )}
+            </div>
+          </SDetailRow>
+          <SDetailRow>
+            <Text color="neutralGray300">
+              {t("pools.reviewTransaction.modal.detail.lifetime")}
+            </Text>
+            <Text color="white">
+              {props.tx.era.isMortalEra
+                ? t("transaction.mortal.expire", {
+                    date: era?.deathDate,
+                  })
+                : t("transaction.immortal.expire")}
+            </Text>
+          </SDetailRow>
+          <SDetailRow>
+            <Text color="neutralGray300">
+              {t("pools.reviewTransaction.modal.detail.tip")}
+            </Text>
+            <Text color="white">
+              {t("pools.addLiquidity.modal.row.transactionTip", {
+                amount: props.tx.tip,
+                fixedPointScale: 12,
+                decimalPlaces: 2,
+              })}
+            </Text>
+          </SDetailRow>
+          <SDetailRow>
+            <Text color="neutralGray300">
+              {t("pools.reviewTransaction.modal.detail.nonce")}
+            </Text>
+            <Text color="white">{props.tx.nonce.toString()}</Text>
+          </SDetailRow>
+        </div>
       </div>
       <div sx={{ mt: 24, flex: "row", justify: "space-between" }}>
         <Button
@@ -122,6 +130,6 @@ export const ReviewTransactionForm = (
           onClick={() => signTx.mutate()}
         />
       </div>
-    </>
+    </div>
   )
 }

@@ -1,9 +1,9 @@
-import { ModalMeta } from "components/Modal/Modal"
+import { Modal, ModalMeta } from "components/Modal/Modal"
 import { useTranslation } from "react-i18next"
 import { useAPR } from "utils/apr"
-import { u32 } from "@polkadot/types"
+import { u128, u32 } from "@polkadot/types"
 import { PoolBase } from "@galacticcouncil/sdk"
-import { Fragment } from "react"
+import { Fragment, useState } from "react"
 import { PoolJoinFarmDeposit } from "./PoolJoinFarmDeposit"
 import { PoolJoinFarmItem } from "./PoolJoinFarmItem"
 import { Text } from "components/Typography/Text/Text"
@@ -11,7 +11,13 @@ import { useAccountDepositIds, useDeposits } from "api/deposits"
 import { useAccountStore } from "state/store"
 import { PoolJoinFarmClaim } from "./PoolJoinFarmClaim"
 import { PoolJoinFarmWithdraw } from "./PoolJoinFarmWithdraw"
-import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
+import {
+  PalletLiquidityMiningDepositData,
+  PalletLiquidityMiningYieldFarmEntry,
+} from "@polkadot/types/lookup"
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import { Button } from "components/Button/Button"
 
 export function PoolJoinFarmSectionList(props: {
   pool: PoolBase
@@ -20,10 +26,13 @@ export function PoolJoinFarmSectionList(props: {
       yieldFarmId: u32
       globalFarmId: u32
       yieldFarmEntry?: PalletLiquidityMiningYieldFarmEntry
+      deposit?: { id: u128; deposit: PalletLiquidityMiningDepositData }
     } | null,
   ) => void
 }) {
   const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const [openJoinFarm, setOpenJoinFarm] = useState(false)
 
   const { account } = useAccountStore()
   const apr = useAPR(props.pool.address)
@@ -75,6 +84,7 @@ export function PoolJoinFarmSectionList(props: {
                           globalFarmId: farm.globalFarm.id,
                           yieldFarmId: farm.yieldFarm.id,
                           yieldFarmEntry: entry,
+                          deposit,
                         })
                       }
                     />
@@ -85,7 +95,7 @@ export function PoolJoinFarmSectionList(props: {
           })}
 
           {!!positions?.length && (
-            <div sx={{ flex: "row", justify: "center" }}>
+            <div sx={{ flex: "row", justify: "center", width: "100%" }}>
               <PoolJoinFarmWithdraw pool={props.pool} />
             </div>
           )}
@@ -109,8 +119,24 @@ export function PoolJoinFarmSectionList(props: {
           }
         />
       ))}
-
-      <PoolJoinFarmDeposit pool={props.pool} />
+      {isDesktop ? (
+        <PoolJoinFarmDeposit pool={props.pool} isDrawer={!isDesktop} />
+      ) : (
+        <Button
+          variant="primary"
+          sx={{ width: "inherit" }}
+          onClick={() => setOpenJoinFarm(true)}
+        >
+          {t("farms.deposit.submit")}
+        </Button>
+      )}
+      <Modal
+        open={openJoinFarm}
+        isDrawer
+        onClose={() => setOpenJoinFarm(false)}
+      >
+        <PoolJoinFarmDeposit pool={props.pool} isDrawer={!isDesktop} />
+      </Modal>
     </Fragment>
   )
 }

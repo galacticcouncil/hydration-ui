@@ -11,18 +11,23 @@ import { PoolFooter } from "sections/pools/pool/footer/PoolFooter"
 import { PositionChip } from "./position/chip/PoolPositionChip"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { PoolJoinFarm } from "./modals/joinFarm/PoolJoinFarm"
 
 type Props = { pool: PoolBase }
 
 export const Pool: FC<Props> = ({ pool }) => {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [openFarms, setOpenFarms] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
     <SContainer>
       {!isDesktop && <PositionChip poolId={pool.address} />}
       <SGridContainer>
-        <PoolDetails pool={pool} />
+        <PoolDetails
+          pool={pool}
+          onClick={() => !isDesktop && setOpenFarms(true)}
+        />
         <PoolIncentives poolId={pool.address} />
         <PoolValue pool={pool} />
         <PoolActions
@@ -45,6 +50,12 @@ export const Pool: FC<Props> = ({ pool }) => {
         )}
       </AnimatePresence>
       <PoolFooter pool={pool} />
+      <PoolJoinFarm
+        pool={pool}
+        isOpen={openFarms}
+        onClose={() => setOpenFarms(false)}
+        onSelect={() => setOpenFarms(false)}
+      />
     </SContainer>
   )
 }

@@ -1,11 +1,14 @@
 import { Modal } from "components/Modal/Modal"
 import { useAPR } from "utils/apr"
-import { u32 } from "@polkadot/types"
+import { u128, u32 } from "@polkadot/types"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { useState } from "react"
 import { PoolJoinFarmSectionList } from "./PoolJoinFarmSectionList"
 import { PoolJoinFarmSectionDetail } from "./PoolJoinFarmSectionDetail"
-import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
+import {
+  PalletLiquidityMiningDepositData,
+  PalletLiquidityMiningYieldFarmEntry,
+} from "@polkadot/types/lookup"
 
 export const PoolJoinFarm = (props: {
   pool: PoolBase
@@ -20,6 +23,7 @@ export const PoolJoinFarm = (props: {
     globalFarmId: u32
     yieldFarmId: u32
     yieldFarmEntry?: PalletLiquidityMiningYieldFarmEntry
+    deposit?: { id: u128; deposit: PalletLiquidityMiningDepositData }
   } | null>(props.initialFarm || null)
 
   const selectedFarm = selectedYieldFarmId
@@ -39,6 +43,7 @@ export const PoolJoinFarm = (props: {
             farm={selectedFarm}
             position={selectedYieldFarmId?.yieldFarmEntry}
             onBack={() => setSelectedYieldFarmId(null)}
+            deposit={selectedYieldFarmId?.deposit}
           />
         ) : (
           <PoolJoinFarmSectionList

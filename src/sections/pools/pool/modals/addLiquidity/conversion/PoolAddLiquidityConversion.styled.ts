@@ -12,6 +12,7 @@ export const SContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
+  width: max-content;
 
   p {
     font-size: 11px;

@@ -15,7 +15,7 @@ type Props = {
   poolId: AccountId32
 }
 
-export const PoolPosition: FC<Props> = ({ position, index, pool, poolId }) => {
+export const PoolPosition: FC<Props> = ({ position, index, pool }) => {
   const { t } = useTranslation()
 
   const { enteredDate, positionValue, assetA, assetB } = usePoolPositionData({

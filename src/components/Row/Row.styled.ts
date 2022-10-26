@@ -7,6 +7,7 @@ export const SRightSide = styled.div`
   font-size: 14px;
   line-height: 22px;
   color: ${theme.colors.white};
+  text-align: right;
 
   p {
     font-size: 14px;
