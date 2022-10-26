@@ -144,5 +144,11 @@
   "walletConnect.pending.title": "Waiting for Authorization",
   "walletConnect.pending.description": "Please sign into {{name}} to connect to Basilisk",
   "walletConnect.logout": "Log Out",
-  "walletConnect.switch": "Switch"
+  "walletConnect.switch": "Switch",
+  "wallet.header.assets": "Assets",
+  "wallet.header.transactions": "Transactions",
+  "wallet.header.vesting": "Vesting",
+  "wallet.header.switchAccount": "Switch account",
+  "wallet.vesting.claimable": "Claimable",
+  "wallet.vesting.total_vested": "Total Vested"
 }

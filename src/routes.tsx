@@ -13,10 +13,14 @@ export const routes = [
     children: [
       {
         path: "/",
-        element: <WalletPage />,
+        element: <Navigate to="assets" />,
       },
       {
         path: "assets",
+        element: <WalletPage />,
+      },
+      {
+        path: "transactions",
         element: <WalletPage />,
       },
       {

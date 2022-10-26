@@ -2,6 +2,9 @@ export const LINKS = {
   home: "/",
   pools_and_farms: "/pools-and-farms",
   wallet: "/wallet",
+  walletAssets: "/wallet/assets",
+  walletTransactions: "/wallet/transactions",
+  walletVesting: "/wallet/vesting",
 }
 
 export const EXTERNAL_LINKS = {

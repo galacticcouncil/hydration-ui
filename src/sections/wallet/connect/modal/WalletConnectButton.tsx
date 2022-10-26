@@ -10,6 +10,7 @@ import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { BASILISK_ADDRESS_PREFIX } from "utils/network"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { theme } from "theme"
+import { ButtonProps } from "../../../../components/Button/Button"
 
 const WalletActiveButton = (props: {
   onOpen: () => void
@@ -70,13 +71,15 @@ const WalletActiveButton = (props: {
   )
 }
 
-const WalletInactiveButton = (props: {
+export const WalletInactiveButton = (props: {
   onOpen: () => void
   className?: string
+  size?: ButtonProps["size"]
 }) => {
   const { t } = useTranslation("translation")
   return (
     <SLoginButton
+      size={props.size}
       variant="gradient"
       onClick={props.onOpen}
       className={props.className}

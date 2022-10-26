@@ -14,19 +14,20 @@ import {
 } from "./Button.styled"
 
 export type ButtonProps = {
-  variant?: "primary" | "secondary" | "gradient" | "transparent"
+  variant?: "primary" | "secondary" | "gradient" | "transparent" | "outline"
   disabled?: boolean
   text?: string
   to?: string
   type?: "button" | "submit" | "reset"
-  icon?: SVGElement
   onClick?: (e: SyntheticEvent) => void
   size?: "small" | "medium" | "micro"
+  transform?: "uppercase" | "lowercase" | "none"
   fullWidth?: boolean
   isLoading?: boolean
   capitalize?: boolean
   children?: ReactNode
   className?: string
+  active?: boolean
 }
 
 export const Button: FC<ButtonProps> = ({
