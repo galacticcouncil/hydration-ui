@@ -121,6 +121,14 @@ export const QUERY_KEYS = {
     bestNumber != null
       ? ["timestamp", bestNumber]
       : [QUERY_KEY_PREFIX, "timestamp"],
+  vestingSchedules: (address: Maybe<AccountId32 | string>) => [
+    "vestingSchedules",
+    address,
+  ],
+  vestingLockBalance: (address: Maybe<AccountId32 | string>) => [
+    "vestingLock",
+    address,
+  ],
   provider: (url: string) => ["provider", url],
   math: ["@galacticcouncil/math"],
 } as const

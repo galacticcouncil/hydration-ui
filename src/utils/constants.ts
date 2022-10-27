@@ -17,3 +17,6 @@ export const AUSD_NAME = "AUSD"
 
 // ms until toast closes
 export const TOAST_CLOSE_TIME = 5000
+
+// Vesting ID
+export const ORLMVEST = "ormlvest"

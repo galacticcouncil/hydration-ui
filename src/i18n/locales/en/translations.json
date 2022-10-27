@@ -155,5 +155,6 @@
   "wallet.header.vesting": "Vesting",
   "wallet.header.switchAccount": "Switch account",
   "wallet.vesting.claimable": "Claimable",
+  "wallet.vesting.claimable.value": "{{num}}.<0>{{denom}}</0>",
   "wallet.vesting.total_vested": "Total Vested"
 }
