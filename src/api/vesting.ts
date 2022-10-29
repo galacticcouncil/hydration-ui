@@ -1,16 +1,15 @@
 import { AccountId32 } from "@polkadot/types/interfaces"
-import { useApiPromise } from "../utils/network"
 import { useQuery } from "@tanstack/react-query"
-import { QUERY_KEYS } from "../utils/queryKeys"
-import { undefinedNoop } from "../utils/helpers"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { Maybe, undefinedNoop } from "utils/helpers"
 import { ApiPromise } from "@polkadot/api"
-import { Maybe } from "../utils/types"
 import { useBestNumber } from "./chain"
 import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
-import { useAccountStore } from "../state/store"
-import { BN_0, ORLMVEST } from "../utils/constants"
+import { useAccountStore } from "state/store"
+import { BN_0, ORLMVEST } from "utils/constants"
 import { useMemo } from "react"
+import { useApiPromise } from "utils/api"
 
 export const useVestingSchedules = (address: Maybe<AccountId32 | string>) => {
   const api = useApiPromise()
