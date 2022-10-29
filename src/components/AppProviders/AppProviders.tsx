@@ -1,6 +1,6 @@
 import { LoadingPage } from "sections/loading/LoadingPage"
 import { InvalidateOnBlock } from "components/InvalidateOnBlock"
-import { ApiPromiseContext } from "utils/network"
+import { ApiPromiseContext } from "utils/api"
 import { FC, PropsWithChildren } from "react"
 import { useProvider } from "api/provider"
 import { ToastProvider } from "components/Toast/ToastProvider"

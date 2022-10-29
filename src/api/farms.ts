@@ -1,5 +1,5 @@
 import { ApiPromise } from "@polkadot/api"
-import { useApiPromise } from "utils/network"
+import { useApiPromise } from "utils/api"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types-codec"

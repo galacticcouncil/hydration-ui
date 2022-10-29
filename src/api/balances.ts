@@ -1,4 +1,4 @@
-import { NATIVE_ASSET_ID, useApiPromise } from "utils/network"
+import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 
 import { useAccountStore } from "../state/store"
 import BigNumber from "bignumber.js"
@@ -7,8 +7,7 @@ import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "../utils/queryKeys"
 import { u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
-import { Maybe } from "utils/types"
-import { undefinedNoop } from "utils/helpers"
+import { Maybe, undefinedNoop } from "utils/helpers"
 
 function calculateFreeBalance(
   free: BigNumber,

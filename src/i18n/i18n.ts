@@ -7,8 +7,8 @@ import {
   formatNum,
 } from "utils/formatting"
 import { normalizeBigNumber } from "../utils/balance"
-import { isRecord } from "utils/types"
 import { resources } from "./locales"
+import { isRecord } from "utils/helpers"
 
 /**
  * BigNumber.js formatting via i18n

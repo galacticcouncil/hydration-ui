@@ -2,10 +2,9 @@ import { ApiPromise } from "@polkadot/api"
 import { u32 } from "@polkadot/types"
 import { useQuery } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
-import { useApiPromise } from "utils/network"
+import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { Maybe } from "../utils/types"
-import { undefinedNoop } from "../utils/helpers"
+import { Maybe, undefinedNoop } from "../utils/helpers"
 
 export function useTimestamp(
   blockNumber?: Maybe<u32 | BigNumber>,

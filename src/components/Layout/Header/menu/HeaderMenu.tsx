@@ -1,7 +1,7 @@
 import { SItem, SList } from "components/Layout/Header/menu/HeaderMenu.styled"
 import { useTranslation } from "react-i18next"
 import { Link } from "@tanstack/react-location"
-import { MENU_ITEMS } from "utils/tabs"
+import { MENU_ITEMS } from "utils/navigation"
 
 export const HeaderMenu = () => {
   const { t } = useTranslation("translation")

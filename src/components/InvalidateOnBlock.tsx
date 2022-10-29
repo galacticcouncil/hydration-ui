@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { ReactNode, useEffect } from "react"
-import { useApiPromise } from "utils/network"
+import { useApiPromise } from "utils/api"
 import { QUERY_KEY_PREFIX } from "utils/queryKeys"
 
 export const InvalidateOnBlock = (props: { children: ReactNode }) => {

@@ -1,7 +1,7 @@
 import { FC, useMemo } from "react"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { useAPR } from "utils/apr"
+import { useAPR } from "utils/farms/apr"
 
 type Props = { poolId: string }
 

@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { AssetsModal } from "./AssetsModal"
-import { Maybe } from "../../utils/types"
 import { u32 } from "@polkadot/types"
+import { Maybe } from "utils/helpers"
 
 interface useAssetsModalProps {
   onSelect?: (id: u32 | string) => void

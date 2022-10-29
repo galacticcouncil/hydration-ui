@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { useApiPromise } from "utils/network"
+import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 export const useBestNumber = () => {

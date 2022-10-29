@@ -3,7 +3,7 @@ import { theme } from "theme"
 
 export const SContainer = styled.div`
   display: grid;
-  grid-template-columns: auto 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
 
   padding: 16px 46px 16px 26px;

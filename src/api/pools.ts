@@ -1,8 +1,7 @@
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useApiPromise } from "utils/network"
+import { useApiPromise, useTradeRouter } from "utils/api"
 import { ApiPromise } from "@polkadot/api"
-import { useTradeRouter } from "utils/sdk"
 import { TradeRouter } from "@galacticcouncil/sdk"
 
 export const usePools = () => {

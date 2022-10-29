@@ -1,4 +1,4 @@
-import { LINKS } from "utils/links"
+import { LINKS } from "utils/navigation"
 import { TabLink } from "components/Tabs/TabLink"
 import { useTranslation } from "react-i18next"
 

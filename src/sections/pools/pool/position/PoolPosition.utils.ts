@@ -12,7 +12,7 @@ import { useAsset, useAUSD } from "api/asset"
 import { useSpotPrices } from "api/spotPrice"
 import BN from "bignumber.js"
 import { useBestNumber } from "api/chain"
-import { useMath } from "utils/math"
+import { useMath } from "utils/api"
 
 export const usePoolPositionData = ({
   position,

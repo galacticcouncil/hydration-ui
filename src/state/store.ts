@@ -4,7 +4,7 @@ import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { getWalletBySource } from "@talismn/connect-wallets"
-import { POLKADOT_APP_NAME } from "utils/network"
+import { POLKADOT_APP_NAME } from "utils/api"
 
 export interface Account {
   name: string

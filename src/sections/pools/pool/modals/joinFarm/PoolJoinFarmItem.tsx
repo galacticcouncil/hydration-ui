@@ -7,7 +7,7 @@ import {
 import { Text } from "components/Typography/Text/Text"
 import { FillBar } from "components/FillBar/FillBar"
 import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
-import { AprFarm } from "utils/apr"
+import { AprFarm } from "utils/farms/apr"
 import { useAsset } from "api/asset"
 import { addSeconds } from "date-fns"
 import { BLOCK_TIME } from "utils/constants"

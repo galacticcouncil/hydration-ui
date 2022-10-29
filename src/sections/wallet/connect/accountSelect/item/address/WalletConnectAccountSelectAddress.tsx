@@ -1,8 +1,8 @@
 import { css } from "@emotion/react"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
-import { shortenAccountAddress } from "utils/account"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
+import { shortenAccountAddress } from "utils/formatting"
 
 type Props = {
   name: string

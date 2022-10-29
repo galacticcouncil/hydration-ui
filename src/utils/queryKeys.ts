@@ -1,9 +1,9 @@
 import type { u32 } from "@polkadot/types"
 import type { AccountId32 } from "@polkadot/types/interfaces"
 import { CodecHash } from "@polkadot/types/interfaces/runtime"
-import { Maybe } from "./types"
 import { u128 } from "@polkadot/types-codec"
 import type BigNumber from "bignumber.js"
+import { Maybe } from "utils/helpers"
 
 export const QUERY_KEY_PREFIX = "@block"
 

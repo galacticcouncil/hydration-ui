@@ -13,9 +13,9 @@ import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 import { getFloatingPointAmount } from "utils/balance"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
-import { Maybe } from "utils/types"
 import { useAUSD } from "api/asset"
 import { useSpotPrice } from "api/spotPrice"
+import { Maybe } from "utils/helpers"
 
 type Props = {
   name: string

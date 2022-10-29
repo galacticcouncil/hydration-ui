@@ -2,7 +2,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { Separator } from "components/Separator/Separator"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { BASILISK_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/network"
+import { BASILISK_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
 import { useTokenBalance } from "api/balances"
 import {
   SContainer,

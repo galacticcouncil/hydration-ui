@@ -1,6 +1,6 @@
 import { Modal } from "components/Modal/Modal"
-import { useAPR } from "utils/apr"
-import { u128, u32 } from "@polkadot/types"
+import { u32 } from "@polkadot/types"
+import { useAPR } from "utils/farms/apr"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { useState } from "react"
 import { PoolJoinFarmSectionList } from "./PoolJoinFarmSectionList"
@@ -9,6 +9,7 @@ import {
   PalletLiquidityMiningDepositData,
   PalletLiquidityMiningYieldFarmEntry,
 } from "@polkadot/types/lookup"
+import { u128 } from "@polkadot/types-codec"
 
 export const PoolJoinFarm = (props: {
   pool: PoolBase

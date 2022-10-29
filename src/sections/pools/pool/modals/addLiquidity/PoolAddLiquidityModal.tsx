@@ -13,7 +13,6 @@ import { FC, useCallback, useState } from "react"
 import { useAddLiquidity } from "../../../../../api/addLiquidity"
 import { useTotalIssuance } from "../../../../../api/totalIssuance"
 import { useTokenBalance } from "../../../../../api/balances"
-import { useMath } from "../../../../../utils/math"
 import { useSpotPrice } from "../../../../../api/spotPrice"
 import {
   getFixedPointAmount,
@@ -25,6 +24,7 @@ import { useAccountStore } from "../../../../../state/store"
 import { useTranslation } from "react-i18next"
 import { u32 } from "@polkadot/types"
 import { getTradeFee } from "sections/pools/pool/Pool.utils"
+import { useMath } from "utils/api"
 
 interface PoolAddLiquidityModalProps {
   pool: PoolBase

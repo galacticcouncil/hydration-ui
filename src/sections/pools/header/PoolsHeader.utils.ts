@@ -13,7 +13,7 @@ import {
 } from "api/farms"
 import { useQueries } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useApiPromise } from "utils/network"
+import { useApiPromise } from "utils/api"
 import { useTotalIssuances } from "api/totalIssuance"
 import { PoolToken } from "@galacticcouncil/sdk"
 

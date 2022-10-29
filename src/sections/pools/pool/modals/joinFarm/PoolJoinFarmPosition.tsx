@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { AprFarm } from "utils/apr"
+import { AprFarm } from "utils/farms/apr"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { Row } from "components/Row/Row"
 import { Separator } from "components/Separator/Separator"

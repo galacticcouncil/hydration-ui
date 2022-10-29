@@ -1,6 +1,6 @@
 import { Modal, ModalMeta } from "components/Modal/Modal"
 import { useTranslation } from "react-i18next"
-import { useAPR } from "utils/apr"
+import { useAPR } from "utils/farms/apr"
 import { u128, u32 } from "@polkadot/types"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { Fragment, useState } from "react"

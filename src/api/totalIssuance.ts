@@ -1,11 +1,10 @@
-import { useApiPromise } from "utils/network"
+import { useApiPromise } from "utils/api"
 import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BigNumber from "bignumber.js"
 import { u32 } from "@polkadot/types"
-import { Maybe } from "utils/types"
-import { undefinedNoop } from "utils/helpers"
+import { Maybe, undefinedNoop } from "utils/helpers"
 
 export const useTotalIssuance = (token: Maybe<u32>) => {
   const api = useApiPromise()

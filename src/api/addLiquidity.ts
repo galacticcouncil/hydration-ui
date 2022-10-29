@@ -1,4 +1,4 @@
-import { useApiPromise } from "../utils/network"
+import { useApiPromise } from "utils/api"
 import { useAccountStore, useStore } from "../state/store"
 import { useCallback, useState } from "react"
 import BigNumber from "bignumber.js"

@@ -1,4 +1,3 @@
-import { Maybe } from "../../utils/types"
 import { u32 } from "@polkadot/types"
 import { FC, useMemo } from "react"
 import { useAsset, useAUSD } from "../../api/asset"
@@ -10,6 +9,7 @@ import { SAssetRow } from "./AssetsModalRow.styled"
 import { Trans, useTranslation } from "react-i18next"
 import { useSpotPrice } from "../../api/spotPrice"
 import { BN_0 } from "../../utils/constants"
+import { Maybe } from "utils/helpers"
 
 interface AssetsModalRowProps {
   id: Maybe<u32 | string>

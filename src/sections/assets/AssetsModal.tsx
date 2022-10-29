@@ -3,12 +3,12 @@ import { FC } from "react"
 import { useAssets } from "../../api/asset"
 import { AssetsModalRow } from "./AssetsModalRow"
 import { SAssetsModalHeader } from "./AssetsModal.styled"
-import { Maybe } from "../../utils/types"
 import { u32 } from "@polkadot/types"
 import { Text } from "../../components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { Maybe } from "utils/helpers"
 
 interface AssetsModalProps {
   allowedAssets?: Maybe<u32 | string>[]

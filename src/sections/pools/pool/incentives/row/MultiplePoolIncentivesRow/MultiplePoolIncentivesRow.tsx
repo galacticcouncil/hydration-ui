@@ -1,7 +1,7 @@
 import { Text } from "components/Typography/Text/Text"
 import { Separator } from "components/Separator/Separator"
 import { FarmAssetIcon } from "./FarmAssetIcon"
-import { AprFarm, getMinAndMaxAPR } from "utils/apr"
+import { AprFarm, getMinAndMaxAPR } from "utils/farms/apr"
 import { useTranslation } from "react-i18next"
 
 type Props = {

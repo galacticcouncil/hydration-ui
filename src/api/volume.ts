@@ -3,9 +3,8 @@ import { decodeAddress } from "@polkadot/util-crypto"
 import { useQuery } from "@tanstack/react-query"
 import { addDays } from "date-fns"
 import { request, gql } from "graphql-request"
-import { undefinedNoop } from "utils/helpers"
+import { Maybe, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { Maybe } from "utils/types"
 
 const getTradeVolume = (poolAddress: string) => async () => {
   const poolHex = u8aToHex(decodeAddress(poolAddress))

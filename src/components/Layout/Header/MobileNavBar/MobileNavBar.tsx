@@ -6,13 +6,13 @@ import { ReactComponent as TradeIcon } from "assets/icons/Trade.svg"
 import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
 import { ReactComponent as LBPIcon } from "assets/icons/LBPIcon.svg"
 import { ReactComponent as BridgeIcon } from "assets/icons/BridgeIcon.svg"
-import { MENU_ITEMS, TabKeys, TabObject } from "utils/tabs"
 import {
   SMobileNavBar,
   SNavBarItem,
   SNavBarItemHidden,
 } from "./MobileNavBar.styled"
 import { MoreButton } from "./MoreButton"
+import { MENU_ITEMS, TabKeys, TabObject } from "utils/navigation"
 
 export const MobileNavBar = () => {
   const { t } = useTranslation()

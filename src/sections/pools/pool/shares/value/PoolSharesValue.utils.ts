@@ -2,10 +2,10 @@ import { useTotalIssuance } from "api/totalIssuance"
 import { useTotalInPool } from "sections/pools/pool/Pool.utils"
 import { useMemo } from "react"
 import { u32 } from "@polkadot/types"
-import { Maybe } from "utils/types"
 import { PoolBase } from "@galacticcouncil/sdk"
 import BN from "bignumber.js"
 import { BN_10 } from "utils/constants"
+import { Maybe } from "utils/helpers"
 
 export const useCurrentSharesValue = ({
   shareToken,

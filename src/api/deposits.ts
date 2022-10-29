@@ -1,11 +1,10 @@
 import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
-import { DEPOSIT_CLASS_ID, useApiPromise } from "utils/network"
+import { DEPOSIT_CLASS_ID, useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u128 } from "@polkadot/types-codec"
 import { AccountId32 } from "@polkadot/types/interfaces"
-import { Maybe } from "utils/types"
-import { undefinedNoop } from "utils/helpers"
+import { Maybe, undefinedNoop } from "utils/helpers"
 
 export type DepositType = Awaited<
   ReturnType<ReturnType<typeof getDeposits>>

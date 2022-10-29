@@ -1,10 +1,9 @@
-import { NATIVE_ASSET_ID, useApiPromise } from "utils/network"
+import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { u32 } from "@polkadot/types"
-import { Maybe } from "utils/types"
-import { undefinedNoop } from "utils/helpers"
+import { Maybe, undefinedNoop } from "utils/helpers"
 
 export const useAssetMeta = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()

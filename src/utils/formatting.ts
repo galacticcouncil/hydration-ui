@@ -2,9 +2,9 @@ import { format, Locale } from "date-fns"
 import { enUS } from "date-fns/locale"
 import { z } from "zod"
 import { BigNumberLikeType, normalizeBigNumber } from "./balance"
-import { Maybe } from "./types"
 import BigNumber from "bignumber.js"
 import { BN_10 } from "./constants"
+import { Maybe } from "utils/helpers"
 
 export const formatNum = (
   number?: number | string,
@@ -149,4 +149,10 @@ export function formatBigNumber(
   }
 
   return num.toFormat(fmtConfig)
+}
+
+export function shortenAccountAddress(address: string, length = 6) {
+  return `${address.substring(0, length)}...${address.substring(
+    address.length - length,
+  )}`
 }

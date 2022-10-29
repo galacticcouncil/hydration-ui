@@ -16,15 +16,15 @@ import { Separator } from "components/Separator/Separator"
 import { useForm, Controller } from "react-hook-form"
 import { useAccountStore, useStore } from "state/store"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
-import { FormValues } from "utils/types"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { usePoolShareToken } from "api/pools"
 import { useTokenBalance } from "api/balances"
 import { useTotalLiquidity } from "api/totalLiquidity"
 import { BN_0, BN_1 } from "utils/constants"
-import { useApiPromise } from "utils/network"
+import { useApiPromise } from "utils/api"
 import { usePaymentInfo } from "api/transaction"
 import { useSpotPrice } from "api/spotPrice"
+import { FormValues } from "utils/helpers"
 
 const options = [
   { label: "24%", value: 24 },

@@ -2,13 +2,13 @@ import { useAssetMeta } from "./assetMeta"
 import { useAssetDetails } from "./assetDetails"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { u32 } from "@polkadot/types"
-import { Maybe } from "utils/types"
-import { useTradeRouter } from "utils/sdk"
 import { TradeRouter } from "@galacticcouncil/sdk"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { AUSD_NAME } from "utils/constants"
 import { useMemo } from "react"
+import { useTradeRouter } from "utils/api"
+import { Maybe } from "utils/helpers"
 
 export const useAsset = (id: Maybe<u32 | string>) => {
   const detail = useAssetDetails(id)

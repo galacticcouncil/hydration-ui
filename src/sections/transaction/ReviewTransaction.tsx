@@ -10,7 +10,7 @@ import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionError } from "./ReviewTransactionError"
 import { ReviewTransactionForm } from "./ReviewTransactionForm"
-import { useApiPromise } from "utils/network"
+import { useApiPromise } from "utils/api"
 import { ISubmittableResult } from "@polkadot/types/types"
 
 export const ReviewTransaction: React.FC<Transaction> = (props) => {

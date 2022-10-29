@@ -4,7 +4,7 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { Text } from "components/Typography/Text/Text"
 import { PoolIncentivesRow } from "sections/pools/pool/incentives/row/PoolIncentivesRow"
-import { useAPR } from "utils/apr"
+import { useAPR } from "utils/farms/apr"
 import { MultiplePoolIncentivesRow } from "./row/MultiplePoolIncentivesRow/MultiplePoolIncentivesRow"
 
 type PoolIncentivesProps = { poolId: string }

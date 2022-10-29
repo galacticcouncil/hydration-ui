@@ -1,11 +1,10 @@
-import { useApiPromise } from "utils/network"
+import { useApiPromise } from "utils/api"
 import { ApiPromise } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { AccountId32 } from "@polkadot/types/interfaces/runtime"
-import { Maybe } from "utils/types"
-import { undefinedNoop } from "utils/helpers"
+import { Maybe, undefinedNoop } from "utils/helpers"
 
 export const useTotalLiquidity = (id: Maybe<AccountId32 | string>) => {
   const api = useApiPromise()

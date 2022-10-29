@@ -1,4 +1,4 @@
-import { keys } from "utils/types"
+import { keys } from "utils/helpers"
 
 const colors = {
   white: "#ffffff",

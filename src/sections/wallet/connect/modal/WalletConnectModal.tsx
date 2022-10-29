@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { FC, useState } from "react"
 
 import { useMutation } from "@tanstack/react-query"
-import { POLKADOT_APP_NAME } from "utils/network"
+import { POLKADOT_APP_NAME } from "utils/api"
 import { WalletConnectConfirmPending } from "sections/wallet/connect/confirmPending/WalletConnectConfirmPending"
 import { WalletConnectProviderSelect } from "sections/wallet/connect/providerSelect/WalletConnectProviderSelect"
 import { WalletConnectAccountSelect } from "sections/wallet/connect/accountSelect/WalletConnectAccountSelect"

@@ -1,7 +1,7 @@
 import { FC, useState } from "react"
 import { SContainer } from "sections/pools/pool/position/farm/PoolPositionFarm.styled"
 import { u32 } from "@polkadot/types"
-import { useAPR } from "utils/apr"
+import { useAPR } from "utils/farms/apr"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useAsset } from "api/asset"

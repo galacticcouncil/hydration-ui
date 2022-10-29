@@ -1,11 +1,11 @@
 import { FC } from "react"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { Maybe } from "utils/types"
 import { u32 } from "@polkadot/types"
 import BN from "bignumber.js"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { useCurrentSharesValue } from "sections/pools/pool/shares/value/PoolSharesValue.utils"
+import { Maybe } from "utils/helpers"
 
 type Props = { shareToken: Maybe<u32>; pool: PoolBase; shareTokenBalance?: BN }
 

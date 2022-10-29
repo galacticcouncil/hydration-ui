@@ -1,6 +1,6 @@
 import { ModalMeta } from "components/Modal/Modal"
 import { useTranslation } from "react-i18next"
-import { AprFarm } from "utils/apr"
+import { AprFarm } from "utils/farms/apr"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { PoolJoinFarmDeposit } from "./PoolJoinFarmDeposit"

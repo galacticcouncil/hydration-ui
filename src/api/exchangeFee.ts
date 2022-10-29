@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useApiPromise } from "utils/network"
+import { useApiPromise } from "utils/api"
 import { ApiPromise } from "@polkadot/api"
 import BN from "bignumber.js"
 import { TRADING_FEE } from "utils/constants"
