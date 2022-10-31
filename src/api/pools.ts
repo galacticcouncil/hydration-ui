@@ -31,8 +31,16 @@ export const usePoolShareTokens = (poolIds: string[]) => {
   })
 }
 
-export const getPools = (tradeRouter: TradeRouter) => async () =>
-  tradeRouter.getPools()
+export const getPools = (tradeRouter: TradeRouter) => async () => {
+  try {
+    const res = await tradeRouter.getPools()
+    console.log(res)
+    return res
+  } catch (err) {
+    console.error(err)
+    throw err
+  }
+}
 
 const getPoolShareToken = (api: ApiPromise, poolId: string) => async () => {
   const token = await api.query.xyk.shareToken(poolId)

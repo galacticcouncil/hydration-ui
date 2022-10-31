@@ -147,6 +147,10 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       TooManyCandidates: AugmentedError<ApiType>
       /**
+       * Too many invulnerables
+       **/
+      TooManyInvulnerables: AugmentedError<ApiType>
+      /**
        * Unknown error
        **/
       Unknown: AugmentedError<ApiType>
@@ -340,6 +344,10 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       VotesExist: AugmentedError<ApiType>
       /**
+       * Voting period too low
+       **/
+      VotingPeriodLow: AugmentedError<ApiType>
+      /**
        * Invalid upper bound.
        **/
       WrongUpperBound: AugmentedError<ApiType>
@@ -442,13 +450,13 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       NoVotes: AugmentedError<ApiType>
       /**
-       * Cannot report self.
-       **/
-      ReportSelf: AugmentedError<ApiType>
-      /**
        * Runner cannot re-submit candidacy.
        **/
       RunnerUpSubmit: AugmentedError<ApiType>
+      /**
+       * Too many candidates have been created.
+       **/
+      TooManyCandidates: AugmentedError<ApiType>
       /**
        * Cannot vote more than candidates.
        **/
@@ -668,40 +676,6 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
-    liquidityMining: {
-      /**
-       * AMM pool does not exist
-       **/
-      AmmPoolDoesNotExist: AugmentedError<ApiType>
-      /**
-       * Nft pallet didn't return an owner.
-       **/
-      CantFindDepositOwner: AugmentedError<ApiType>
-      /**
-       * AMM did not return assets for given `amm_pool_id`
-       **/
-      CantGetAmmAssets: AugmentedError<ApiType>
-      /**
-       * Deposit data not found
-       **/
-      DepositDataNotFound: AugmentedError<ApiType>
-      /**
-       * Account balance of amm pool shares is not sufficient.
-       **/
-      InsufficientAmmSharesBalance: AugmentedError<ApiType>
-      /**
-       * Account is not deposit owner.
-       **/
-      NotDepositOwner: AugmentedError<ApiType>
-      /**
-       * Yield farm can not be found
-       **/
-      YieldFarmNotFound: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
     marketplace: {
       /**
        * User has to be the token owner to accept an offer
@@ -716,15 +690,15 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       BuyFromSelf: AugmentedError<ApiType>
       /**
-       * Class or instance does not exist
+       * Collection or item does not exist
        **/
-      ClassOrInstanceUnknown: AugmentedError<ApiType>
+      CollectionOrItemUnknown: AugmentedError<ApiType>
       /**
        * Token is currently not for sale
        **/
       NotForSale: AugmentedError<ApiType>
       /**
-       * Royalty not in 0-99 range
+       * Royalty not in 0-9_999 range
        **/
       NotInRange: AugmentedError<ApiType>
       /**
@@ -854,33 +828,33 @@ declare module "@polkadot/api-base/types/errors" {
     }
     nft: {
       /**
-       * Class does not exist
+       * Collection does not exist
        **/
-      ClassUnknown: AugmentedError<ApiType>
+      CollectionUnknown: AugmentedError<ApiType>
       /**
        * ID reserved for runtime
        **/
       IdReserved: AugmentedError<ApiType>
       /**
-       * Instance does not exist
+       * Item does not exist
        **/
-      InstanceUnknown: AugmentedError<ApiType>
+      ItemUnknown: AugmentedError<ApiType>
       /**
-       * Count of classes overflown
+       * Count of collections overflown
        **/
-      NoAvailableClassId: AugmentedError<ApiType>
+      NoAvailableCollectionId: AugmentedError<ApiType>
       /**
-       * Count of instances overflown
+       * Count of items overflown
        **/
-      NoAvailableInstanceId: AugmentedError<ApiType>
+      NoAvailableItemId: AugmentedError<ApiType>
       /**
        * Operation not permitted
        **/
       NotPermitted: AugmentedError<ApiType>
       /**
-       * Class still contains minted tokens
+       * Collection still contains minted tokens
        **/
-      TokenClassNotEmpty: AugmentedError<ApiType>
+      TokenCollectionNotEmpty: AugmentedError<ApiType>
       /**
        * Generic error
        **/
@@ -1032,28 +1006,6 @@ declare module "@polkadot/api-base/types/errors" {
        * Preimage is too large to store on-chain.
        **/
       TooLarge: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
-    priceOracle: {
-      /**
-       * Asset has been already added
-       **/
-      AssetAlreadyAdded: AugmentedError<ApiType>
-      /**
-       * Calculation error occurred while calculating average price
-       **/
-      PriceComputationError: AugmentedError<ApiType>
-      /**
-       * Overflow
-       **/
-      TrackedAssetsOverflow: AugmentedError<ApiType>
-      /**
-       * An unexpected overflow occurred
-       **/
-      UpdateDataOverflow: AugmentedError<ApiType>
       /**
        * Generic error
        **/
@@ -1300,12 +1252,32 @@ declare module "@polkadot/api-base/types/errors" {
        * Failed because the maximum locks was exceeded
        **/
       MaxLocksExceeded: AugmentedError<ApiType>
+      TooManyReserves: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
+    transactionPause: {
+      /**
+       * can not pause
+       **/
+      CannotPause: AugmentedError<ApiType>
+      /**
+       * invalid character encoding
+       **/
+      InvalidCharacter: AugmentedError<ApiType>
       /**
        * Generic error
        **/
       [key: string]: AugmentedError<ApiType>
     }
     treasury: {
+      /**
+       * The spend origin is valid but the amount it is allowed to spend is lower than the
+       * amount to be spent.
+       **/
+      InsufficientPermission: AugmentedError<ApiType>
       /**
        * Proposer's balance is too low.
        **/
@@ -1314,6 +1286,10 @@ declare module "@polkadot/api-base/types/errors" {
        * No proposal or bounty at that index.
        **/
       InvalidIndex: AugmentedError<ApiType>
+      /**
+       * Proposal has not been approved.
+       **/
+      ProposalNotApproved: AugmentedError<ApiType>
       /**
        * Too many approvals in the queue.
        **/
@@ -1325,7 +1301,7 @@ declare module "@polkadot/api-base/types/errors" {
     }
     uniques: {
       /**
-       * The asset instance ID has already been used for an asset.
+       * The item ID has already been used for an item.
        **/
       AlreadyExists: AugmentedError<ApiType>
       /**
@@ -1333,13 +1309,39 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       BadWitness: AugmentedError<ApiType>
       /**
-       * The asset instance or class is frozen.
+       * The provided bid is too low.
+       **/
+      BidTooLow: AugmentedError<ApiType>
+      /**
+       * The item or collection is frozen.
        **/
       Frozen: AugmentedError<ApiType>
       /**
-       * The asset ID is already taken.
+       * The item ID is already taken.
        **/
       InUse: AugmentedError<ApiType>
+      /**
+       * The item is locked.
+       **/
+      Locked: AugmentedError<ApiType>
+      /**
+       * The max supply has already been set.
+       **/
+      MaxSupplyAlreadySet: AugmentedError<ApiType>
+      /**
+       * All items have been minted.
+       **/
+      MaxSupplyReached: AugmentedError<ApiType>
+      /**
+       * The provided max supply is less to the amount of items a collection already has.
+       **/
+      MaxSupplyTooSmall: AugmentedError<ApiType>
+      /**
+       * The `CollectionId` in `NextCollectionId` is not being used.
+       *
+       * This means that you can directly proceed to call `create`.
+       **/
+      NextIdNotUsed: AugmentedError<ApiType>
       /**
        * There is no delegate approved.
        **/
@@ -1349,13 +1351,25 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       NoPermission: AugmentedError<ApiType>
       /**
+       * Item is not for sale.
+       **/
+      NotForSale: AugmentedError<ApiType>
+      /**
+       * The named owner has not signed ownership of the collection is acceptable.
+       **/
+      Unaccepted: AugmentedError<ApiType>
+      /**
        * No approval exists that would allow the transfer.
        **/
       Unapproved: AugmentedError<ApiType>
       /**
-       * The given asset ID is unknown.
+       * The given item ID is unknown.
        **/
-      Unknown: AugmentedError<ApiType>
+      UnknownCollection: AugmentedError<ApiType>
+      /**
+       * The given item ID is unknown.
+       **/
+      UnknownItem: AugmentedError<ApiType>
       /**
        * The delegate turned out to be different to what was expected.
        **/
@@ -1427,117 +1441,6 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
-    warehouseLM: {
-      /**
-       * Deposit does not exist.
-       **/
-      DepositNotFound: AugmentedError<ApiType>
-      /**
-       * Multiple claims in the same period is not allowed.
-       **/
-      DoubleClaimInPeriod: AugmentedError<ApiType>
-      /**
-       * Trying to lock LP shares into already locked yield farm.
-       **/
-      DoubleLock: AugmentedError<ApiType>
-      /**
-       * Account is not allowed to perform action.
-       **/
-      Forbidden: AugmentedError<ApiType>
-      /**
-       * Max number of yield farms in global farm was reached. Global farm can't accept new
-       * yield farms until some yield farm is not removed from storage.
-       **/
-      GlobalFarmIsFull: AugmentedError<ApiType>
-      /**
-       * One or more yield farms exist in global farm.
-       **/
-      GlobalFarmIsNotEmpty: AugmentedError<ApiType>
-      /**
-       * Global farm does not exist.
-       **/
-      GlobalFarmNotFound: AugmentedError<ApiType>
-      /**
-       * Insufficient rewards on `Pot` account.
-       **/
-      InsufficientPotBalance: AugmentedError<ApiType>
-      /**
-       * Reward currency balance is not sufficient.
-       **/
-      InsufficientRewardCurrencyBalance: AugmentedError<ApiType>
-      /**
-       * Blocks per period can't be 0.
-       **/
-      InvalidBlocksPerPeriod: AugmentedError<ApiType>
-      /**
-       * LP shares amount is not valid.
-       **/
-      InvalidDepositAmount: AugmentedError<ApiType>
-      /**
-       * Provided farm id is not valid. Valid range is [1, u32::MAX)
-       **/
-      InvalidFarmId: AugmentedError<ApiType>
-      /**
-       * Loyalty curve's initial reward percentage is not valid. Valid range is: [0, 1).
-       **/
-      InvalidInitialRewardPercentage: AugmentedError<ApiType>
-      /**
-       * Invalid min. deposit was set for global farm.
-       **/
-      InvalidMinDeposit: AugmentedError<ApiType>
-      /**
-       * Yield farm multiplier can't be 0.
-       **/
-      InvalidMultiplier: AugmentedError<ApiType>
-      /**
-       * Planned yielding periods is less than `MinPlannedYieldingPeriods`.
-       **/
-      InvalidPlannedYieldingPeriods: AugmentedError<ApiType>
-      /**
-       * Price adjustment multiplier can't be 0.
-       **/
-      InvalidPriceAdjustment: AugmentedError<ApiType>
-      /**
-       * Total rewards is less than `MinTotalFarmRewards`.
-       **/
-      InvalidTotalRewards: AugmentedError<ApiType>
-      /**
-       * Yield per period can't be 0.
-       **/
-      InvalidYieldPerPeriod: AugmentedError<ApiType>
-      /**
-       * Liquidity mining is canceled.
-       **/
-      LiquidityMiningCanceled: AugmentedError<ApiType>
-      /**
-       * Liquidity mining is not canceled.
-       **/
-      LiquidityMiningIsActive: AugmentedError<ApiType>
-      /**
-       * Maximum number of locks reached for deposit.
-       **/
-      MaxEntriesPerDeposit: AugmentedError<ApiType>
-      /**
-       * Farm's `incentivized_asset` is missing in provided asset pair.
-       **/
-      MissingIncentivizedAsset: AugmentedError<ApiType>
-      /**
-       * Yield farm with given `amm_pool_id` already exists in global farm.
-       **/
-      YieldFarmAlreadyExists: AugmentedError<ApiType>
-      /**
-       * Yield farm entry doesn't exist for given deposit.
-       **/
-      YieldFarmEntryNotFound: AugmentedError<ApiType>
-      /**
-       * Yield farm does not exist.
-       **/
-      YieldFarmNotFound: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
     xcmpQueue: {
       /**
        * Bad overweight index.
@@ -1570,7 +1473,7 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       AssetHasNoReserve: AugmentedError<ApiType>
       /**
-       * The specified index does not exist in a MultiAssets struct
+       * The specified index does not exist in a MultiAssets struct.
        **/
       AssetIndexNonExistent: AugmentedError<ApiType>
       /**
@@ -1589,9 +1492,13 @@ declare module "@polkadot/api-base/types/errors" {
       DestinationNotInvertible: AugmentedError<ApiType>
       /**
        * We tried sending distinct asset and fee but they have different
-       * reserve chains
+       * reserve chains.
        **/
       DistinctReserveForAssetAndFee: AugmentedError<ApiType>
+      /**
+       * Fee is not enough.
+       **/
+      FeeNotEnough: AugmentedError<ApiType>
       /**
        * Could not get ancestry of asset reserve location.
        **/
@@ -1605,6 +1512,10 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       InvalidDest: AugmentedError<ApiType>
       /**
+       * MinXcmFee not registered for certain reserve location
+       **/
+      MinXcmFeeNotDefined: AugmentedError<ApiType>
+      /**
        * Not cross-chain transfer.
        **/
       NotCrossChainTransfer: AugmentedError<ApiType>
@@ -1613,7 +1524,11 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       NotCrossChainTransferableCurrency: AugmentedError<ApiType>
       /**
-       * The number of assets to be sent is over the maximum
+       * Not supported MultiLocation
+       **/
+      NotSupportedMultiLocation: AugmentedError<ApiType>
+      /**
+       * The number of assets to be sent is over the maximum.
        **/
       TooManyAssetsBeingSent: AugmentedError<ApiType>
       /**
@@ -1738,6 +1653,155 @@ declare module "@polkadot/api-base/types/errors" {
        * Liquidity is zero.
        **/
       ZeroLiquidity: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
+    xykLiquidityMining: {
+      /**
+       * Nft pallet didn't return an owner.
+       **/
+      CantFindDepositOwner: AugmentedError<ApiType>
+      /**
+       * XYK did not return assets for given pool id
+       **/
+      CantGetXykAssets: AugmentedError<ApiType>
+      /**
+       * Deposit data not found
+       **/
+      DepositDataNotFound: AugmentedError<ApiType>
+      /**
+       * Account balance of XYK pool shares is not sufficient.
+       **/
+      InsufficientXykSharesBalance: AugmentedError<ApiType>
+      /**
+       * Account is not deposit owner.
+       **/
+      NotDepositOwner: AugmentedError<ApiType>
+      /**
+       * XYK pool does not exist
+       **/
+      XykPoolDoesntExist: AugmentedError<ApiType>
+      /**
+       * Calculated reward to claim is 0.
+       **/
+      ZeroClaimedRewards: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
+    xykWarehouseLM: {
+      /**
+       * Deposit does not exist.
+       **/
+      DepositNotFound: AugmentedError<ApiType>
+      /**
+       * Multiple claims in the same period is not allowed.
+       **/
+      DoubleClaimInPeriod: AugmentedError<ApiType>
+      /**
+       * Trying to lock LP shares into already locked yield farm.
+       **/
+      DoubleLock: AugmentedError<ApiType>
+      /**
+       * Account creation from id failed.
+       **/
+      ErrorGetAccountId: AugmentedError<ApiType>
+      /**
+       * Account is not allowed to perform action.
+       **/
+      Forbidden: AugmentedError<ApiType>
+      /**
+       * Max number of yield farms in global farm was reached. Global farm can't accept new
+       * yield farms until some yield farm is not removed from storage.
+       **/
+      GlobalFarmIsFull: AugmentedError<ApiType>
+      /**
+       * One or more yield farms exist in global farm.
+       **/
+      GlobalFarmIsNotEmpty: AugmentedError<ApiType>
+      /**
+       * Global farm does not exist.
+       **/
+      GlobalFarmNotFound: AugmentedError<ApiType>
+      /**
+       * Insufficient rewards on `Pot` account.
+       **/
+      InsufficientPotBalance: AugmentedError<ApiType>
+      /**
+       * Reward currency balance is not sufficient.
+       **/
+      InsufficientRewardCurrencyBalance: AugmentedError<ApiType>
+      /**
+       * Blocks per period can't be 0.
+       **/
+      InvalidBlocksPerPeriod: AugmentedError<ApiType>
+      /**
+       * LP shares amount is not valid.
+       **/
+      InvalidDepositAmount: AugmentedError<ApiType>
+      /**
+       * Provided farm id is not valid. Valid range is [1, u32::MAX)
+       **/
+      InvalidFarmId: AugmentedError<ApiType>
+      /**
+       * Loyalty curve's initial reward percentage is not valid. Valid range is: [0, 1).
+       **/
+      InvalidInitialRewardPercentage: AugmentedError<ApiType>
+      /**
+       * Invalid min. deposit was set for global farm.
+       **/
+      InvalidMinDeposit: AugmentedError<ApiType>
+      /**
+       * Yield farm multiplier can't be 0.
+       **/
+      InvalidMultiplier: AugmentedError<ApiType>
+      /**
+       * Planned yielding periods is less than `MinPlannedYieldingPeriods`.
+       **/
+      InvalidPlannedYieldingPeriods: AugmentedError<ApiType>
+      /**
+       * Price adjustment multiplier can't be 0.
+       **/
+      InvalidPriceAdjustment: AugmentedError<ApiType>
+      /**
+       * Total rewards is less than `MinTotalFarmRewards`.
+       **/
+      InvalidTotalRewards: AugmentedError<ApiType>
+      /**
+       * Yield per period can't be 0.
+       **/
+      InvalidYieldPerPeriod: AugmentedError<ApiType>
+      /**
+       * Liquidity mining is canceled.
+       **/
+      LiquidityMiningCanceled: AugmentedError<ApiType>
+      /**
+       * Liquidity mining is not canceled.
+       **/
+      LiquidityMiningIsActive: AugmentedError<ApiType>
+      /**
+       * Maximum number of locks reached for deposit.
+       **/
+      MaxEntriesPerDeposit: AugmentedError<ApiType>
+      /**
+       * Farm's `incentivized_asset` is missing in provided asset pair.
+       **/
+      MissingIncentivizedAsset: AugmentedError<ApiType>
+      /**
+       * Yield farm with given `amm_pool_id` already exists in global farm.
+       **/
+      YieldFarmAlreadyExists: AugmentedError<ApiType>
+      /**
+       * Yield farm entry doesn't exist for given deposit.
+       **/
+      YieldFarmEntryNotFound: AugmentedError<ApiType>
+      /**
+       * Yield farm does not exist.
+       **/
+      YieldFarmNotFound: AugmentedError<ApiType>
       /**
        * Generic error
        **/

@@ -49,7 +49,7 @@ export const useAccountDepositIds = (
 }
 
 export const getDeposits = (api: ApiPromise, poolId?: string) => async () => {
-  const res = await api.query.warehouseLM.deposit.entries()
+  const res = await api.query.xykWarehouseLM.deposit.entries()
   const data = res.map(([storageKey, codec]) => {
     const [id] = storageKey.args
     const deposit = codec.unwrap()
@@ -76,7 +76,7 @@ export const getAccountDepositIds =
   }
 
 export const getDeposit = (api: ApiPromise, id: u128) => async () => {
-  const res = await api.query.warehouseLM.deposit(id)
+  const res = await api.query.xykWarehouseLM.deposit(id)
   const data = res.unwrap()
 
   return data

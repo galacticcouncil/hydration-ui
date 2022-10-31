@@ -122,7 +122,10 @@ export const useClaimAllMutation = (poolId: string) => {
       deposits.data
         ?.map((i) =>
           i.deposit.yieldFarmEntries.map((entry) => {
-            return api.tx.liquidityMining.claimRewards(i.id, entry.yieldFarmId)
+            return api.tx.xykLiquidityMining.claimRewards(
+              i.id,
+              entry.yieldFarmId,
+            )
           }),
         )
         .flat(2) ?? []

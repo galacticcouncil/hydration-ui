@@ -26,7 +26,7 @@ export function PoolJoinFarmWithdraw(props: { pool: PoolBase }) {
       positions
         ?.map((record) => {
           return record.deposit.yieldFarmEntries.map((entry) => {
-            return api.tx.liquidityMining.withdrawShares(
+            return api.tx.xykLiquidityMining.withdrawShares(
               record.id,
               entry.yieldFarmId,
               { assetIn: assetIn.id, assetOut: assetOut.id },

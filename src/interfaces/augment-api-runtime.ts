@@ -34,7 +34,7 @@ import type {
   SlotDuration,
 } from "@polkadot/types/interfaces/runtime"
 import type { RuntimeVersion } from "@polkadot/types/interfaces/state"
-import type { ApplyExtrinsicResultPre6 } from "@polkadot/types/interfaces/system"
+import type { ApplyExtrinsicResult } from "@polkadot/types/interfaces/system"
 import type {
   TransactionSource,
   TransactionValidity,
@@ -76,7 +76,7 @@ declare module "@polkadot/api-base/types/calls" {
        **/
       [key: string]: DecoratedCallBase<ApiType>
     }
-    /** 0x40fe3ad401f8959a/5 */
+    /** 0x40fe3ad401f8959a/6 */
     blockBuilder: {
       /**
        * Apply the given extrinsic.
@@ -85,7 +85,7 @@ declare module "@polkadot/api-base/types/calls" {
         ApiType,
         (
           extrinsic: Extrinsic | IExtrinsic | string | Uint8Array,
-        ) => Observable<ApplyExtrinsicResultPre6>
+        ) => Observable<ApplyExtrinsicResult>
       >
       /**
        * Finish the current block.

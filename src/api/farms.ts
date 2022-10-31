@@ -45,7 +45,7 @@ export const useGlobalFarm = (id: u32) => {
 
 export const getYieldFarms = (api: ApiPromise, ids: FarmIds[]) => async () => {
   const reqs = ids.map(({ poolId, globalFarmId, yieldFarmId }) =>
-    api.query.warehouseLM.yieldFarm(poolId, globalFarmId, yieldFarmId),
+    api.query.xykWarehouseLM.yieldFarm(poolId, globalFarmId, yieldFarmId),
   )
   const res = await Promise.all(reqs)
   const farms = res.map((data) => data.unwrap())
@@ -67,7 +67,7 @@ export const getYieldFarm =
     },
   ) =>
   async () => {
-    const res = await api.query.warehouseLM.yieldFarm(
+    const res = await api.query.xykWarehouseLM.yieldFarm(
       poolId,
       globalFarmId,
       yieldFarmId,
@@ -79,7 +79,7 @@ export const getYieldFarm =
 
 export const getActiveYieldFarms =
   (api: ApiPromise, poolId: AccountId32 | string) => async () => {
-    const res = await api.query.warehouseLM.activeYieldFarm.entries(poolId)
+    const res = await api.query.xykWarehouseLM.activeYieldFarm.entries(poolId)
 
     const data = res.map(([storageKey, data]) => {
       const [poolId, globalFarmId] = storageKey.args
@@ -96,7 +96,7 @@ export const getActiveYieldFarms =
   }
 
 export const getGlobalFarms = (api: ApiPromise, ids: u32[]) => async () => {
-  const reqs = ids.map((id) => api.query.warehouseLM.globalFarm(id))
+  const reqs = ids.map((id) => api.query.xykWarehouseLM.globalFarm(id))
   const res = await Promise.all(reqs)
   const farms = res.map((data) => data.unwrap())
 
@@ -104,7 +104,7 @@ export const getGlobalFarms = (api: ApiPromise, ids: u32[]) => async () => {
 }
 
 export const getGlobalFarm = (api: ApiPromise, id: u32) => async () => {
-  const res = await api.query.warehouseLM.globalFarm(id)
+  const res = await api.query.xykWarehouseLM.globalFarm(id)
   const farm = res.unwrap()
 
   return farm

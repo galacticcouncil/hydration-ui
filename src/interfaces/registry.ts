@@ -41,7 +41,6 @@ import type {
   FrameSupportWeightsPerDispatchClassU64,
   FrameSupportWeightsPerDispatchClassWeightsPerClass,
   FrameSupportWeightsRuntimeDbWeight,
-  FrameSupportWeightsWeightToFeeCoefficient,
   FrameSystemAccountInfo,
   FrameSystemCall,
   FrameSystemError,
@@ -57,14 +56,13 @@ import type {
   FrameSystemLimitsBlockWeights,
   FrameSystemLimitsWeightsPerClass,
   FrameSystemPhase,
-  OrmlCurrenciesModuleCall,
-  OrmlCurrenciesModuleError,
-  OrmlCurrenciesModuleEvent,
   OrmlTokensAccountData,
   OrmlTokensBalanceLock,
   OrmlTokensModuleCall,
   OrmlTokensModuleError,
   OrmlTokensModuleEvent,
+  OrmlTokensReserveData,
+  OrmlUnknownTokensModuleCall,
   OrmlUnknownTokensModuleError,
   OrmlUnknownTokensModuleEvent,
   OrmlVestingModuleCall,
@@ -103,6 +101,9 @@ import type {
   PalletCollectiveEvent,
   PalletCollectiveRawOrigin,
   PalletCollectiveVotes,
+  PalletCurrenciesModuleCall,
+  PalletCurrenciesModuleError,
+  PalletCurrenciesModuleEvent,
   PalletDemocracyCall,
   PalletDemocracyConviction,
   PalletDemocracyDelegations,
@@ -163,26 +164,21 @@ import type {
   PalletMultisigMultisig,
   PalletMultisigTimepoint,
   PalletNftCall,
-  PalletNftClassInfo,
-  PalletNftClassType,
+  PalletNftCollectionInfo,
+  PalletNftCollectionType,
   PalletNftError,
   PalletNftEvent,
-  PalletNftInstanceInfo,
+  PalletNftItemInfo,
   PalletPreimageCall,
   PalletPreimageError,
   PalletPreimageEvent,
   PalletPreimageRequestStatus,
-  PalletPriceOracleBucketQueue,
-  PalletPriceOracleCall,
-  PalletPriceOracleError,
-  PalletPriceOracleEvent,
-  PalletPriceOraclePriceEntry,
-  PalletPriceOraclePriceInfo,
   PalletProxyAnnouncement,
   PalletProxyCall,
   PalletProxyError,
   PalletProxyEvent,
   PalletProxyProxyDefinition,
+  PalletRelaychainInfoCall,
   PalletRelaychainInfoError,
   PalletRelaychainInfoEvent,
   PalletSchedulerCall,
@@ -204,20 +200,24 @@ import type {
   PalletTransactionMultiPaymentCurrencyBalanceCheck,
   PalletTransactionMultiPaymentError,
   PalletTransactionMultiPaymentEvent,
+  PalletTransactionPauseCall,
+  PalletTransactionPauseError,
+  PalletTransactionPauseEvent,
   PalletTransactionPaymentChargeTransactionPayment,
+  PalletTransactionPaymentEvent,
   PalletTransactionPaymentReleases,
   PalletTreasuryCall,
   PalletTreasuryError,
   PalletTreasuryEvent,
   PalletTreasuryProposal,
   PalletUniquesCall,
-  PalletUniquesClassDetails,
-  PalletUniquesClassMetadata,
+  PalletUniquesCollectionDetails,
+  PalletUniquesCollectionMetadata,
   PalletUniquesDestroyWitness,
   PalletUniquesError,
   PalletUniquesEvent,
-  PalletUniquesInstanceDetails,
-  PalletUniquesInstanceMetadata,
+  PalletUniquesItemDetails,
+  PalletUniquesItemMetadata,
   PalletUtilityCall,
   PalletUtilityError,
   PalletUtilityEvent,
@@ -230,14 +230,18 @@ import type {
   PalletXykCall,
   PalletXykError,
   PalletXykEvent,
+  PalletXykLiquidityMiningCall,
+  PalletXykLiquidityMiningError,
+  PalletXykLiquidityMiningEvent,
+  ParachainInfoCall,
   PolkadotCorePrimitivesInboundDownwardMessage,
   PolkadotCorePrimitivesInboundHrmpMessage,
   PolkadotCorePrimitivesOutboundHrmpMessage,
   PolkadotParachainPrimitivesXcmpMessageFormat,
-  PolkadotPrimitivesV1AbridgedHostConfiguration,
-  PolkadotPrimitivesV1AbridgedHrmpChannel,
-  PolkadotPrimitivesV1PersistedValidationData,
-  PolkadotPrimitivesV1UpgradeRestriction,
+  PolkadotPrimitivesV2AbridgedHostConfiguration,
+  PolkadotPrimitivesV2AbridgedHrmpChannel,
+  PolkadotPrimitivesV2PersistedValidationData,
+  PolkadotPrimitivesV2UpgradeRestriction,
   PrimitivesAssetAssetPair,
   PrimitivesExchangeIntention,
   PrimitivesIntentionType,
@@ -257,6 +261,7 @@ import type {
   SpRuntimeModuleError,
   SpRuntimeMultiSignature,
   SpRuntimeTokenError,
+  SpRuntimeTransactionalError,
   SpTrieStorageProof,
   SpVersionRuntimeVersion,
   TestingBasiliskRuntimeOpaqueSessionKeys,
@@ -337,7 +342,6 @@ declare module "@polkadot/types/types/registry" {
     FrameSupportWeightsPerDispatchClassU64: FrameSupportWeightsPerDispatchClassU64
     FrameSupportWeightsPerDispatchClassWeightsPerClass: FrameSupportWeightsPerDispatchClassWeightsPerClass
     FrameSupportWeightsRuntimeDbWeight: FrameSupportWeightsRuntimeDbWeight
-    FrameSupportWeightsWeightToFeeCoefficient: FrameSupportWeightsWeightToFeeCoefficient
     FrameSystemAccountInfo: FrameSystemAccountInfo
     FrameSystemCall: FrameSystemCall
     FrameSystemError: FrameSystemError
@@ -353,14 +357,13 @@ declare module "@polkadot/types/types/registry" {
     FrameSystemLimitsBlockWeights: FrameSystemLimitsBlockWeights
     FrameSystemLimitsWeightsPerClass: FrameSystemLimitsWeightsPerClass
     FrameSystemPhase: FrameSystemPhase
-    OrmlCurrenciesModuleCall: OrmlCurrenciesModuleCall
-    OrmlCurrenciesModuleError: OrmlCurrenciesModuleError
-    OrmlCurrenciesModuleEvent: OrmlCurrenciesModuleEvent
     OrmlTokensAccountData: OrmlTokensAccountData
     OrmlTokensBalanceLock: OrmlTokensBalanceLock
     OrmlTokensModuleCall: OrmlTokensModuleCall
     OrmlTokensModuleError: OrmlTokensModuleError
     OrmlTokensModuleEvent: OrmlTokensModuleEvent
+    OrmlTokensReserveData: OrmlTokensReserveData
+    OrmlUnknownTokensModuleCall: OrmlUnknownTokensModuleCall
     OrmlUnknownTokensModuleError: OrmlUnknownTokensModuleError
     OrmlUnknownTokensModuleEvent: OrmlUnknownTokensModuleEvent
     OrmlVestingModuleCall: OrmlVestingModuleCall
@@ -399,6 +402,9 @@ declare module "@polkadot/types/types/registry" {
     PalletCollectiveEvent: PalletCollectiveEvent
     PalletCollectiveRawOrigin: PalletCollectiveRawOrigin
     PalletCollectiveVotes: PalletCollectiveVotes
+    PalletCurrenciesModuleCall: PalletCurrenciesModuleCall
+    PalletCurrenciesModuleError: PalletCurrenciesModuleError
+    PalletCurrenciesModuleEvent: PalletCurrenciesModuleEvent
     PalletDemocracyCall: PalletDemocracyCall
     PalletDemocracyConviction: PalletDemocracyConviction
     PalletDemocracyDelegations: PalletDemocracyDelegations
@@ -459,26 +465,21 @@ declare module "@polkadot/types/types/registry" {
     PalletMultisigMultisig: PalletMultisigMultisig
     PalletMultisigTimepoint: PalletMultisigTimepoint
     PalletNftCall: PalletNftCall
-    PalletNftClassInfo: PalletNftClassInfo
-    PalletNftClassType: PalletNftClassType
+    PalletNftCollectionInfo: PalletNftCollectionInfo
+    PalletNftCollectionType: PalletNftCollectionType
     PalletNftError: PalletNftError
     PalletNftEvent: PalletNftEvent
-    PalletNftInstanceInfo: PalletNftInstanceInfo
+    PalletNftItemInfo: PalletNftItemInfo
     PalletPreimageCall: PalletPreimageCall
     PalletPreimageError: PalletPreimageError
     PalletPreimageEvent: PalletPreimageEvent
     PalletPreimageRequestStatus: PalletPreimageRequestStatus
-    PalletPriceOracleBucketQueue: PalletPriceOracleBucketQueue
-    PalletPriceOracleCall: PalletPriceOracleCall
-    PalletPriceOracleError: PalletPriceOracleError
-    PalletPriceOracleEvent: PalletPriceOracleEvent
-    PalletPriceOraclePriceEntry: PalletPriceOraclePriceEntry
-    PalletPriceOraclePriceInfo: PalletPriceOraclePriceInfo
     PalletProxyAnnouncement: PalletProxyAnnouncement
     PalletProxyCall: PalletProxyCall
     PalletProxyError: PalletProxyError
     PalletProxyEvent: PalletProxyEvent
     PalletProxyProxyDefinition: PalletProxyProxyDefinition
+    PalletRelaychainInfoCall: PalletRelaychainInfoCall
     PalletRelaychainInfoError: PalletRelaychainInfoError
     PalletRelaychainInfoEvent: PalletRelaychainInfoEvent
     PalletSchedulerCall: PalletSchedulerCall
@@ -500,20 +501,24 @@ declare module "@polkadot/types/types/registry" {
     PalletTransactionMultiPaymentCurrencyBalanceCheck: PalletTransactionMultiPaymentCurrencyBalanceCheck
     PalletTransactionMultiPaymentError: PalletTransactionMultiPaymentError
     PalletTransactionMultiPaymentEvent: PalletTransactionMultiPaymentEvent
+    PalletTransactionPauseCall: PalletTransactionPauseCall
+    PalletTransactionPauseError: PalletTransactionPauseError
+    PalletTransactionPauseEvent: PalletTransactionPauseEvent
     PalletTransactionPaymentChargeTransactionPayment: PalletTransactionPaymentChargeTransactionPayment
+    PalletTransactionPaymentEvent: PalletTransactionPaymentEvent
     PalletTransactionPaymentReleases: PalletTransactionPaymentReleases
     PalletTreasuryCall: PalletTreasuryCall
     PalletTreasuryError: PalletTreasuryError
     PalletTreasuryEvent: PalletTreasuryEvent
     PalletTreasuryProposal: PalletTreasuryProposal
     PalletUniquesCall: PalletUniquesCall
-    PalletUniquesClassDetails: PalletUniquesClassDetails
-    PalletUniquesClassMetadata: PalletUniquesClassMetadata
+    PalletUniquesCollectionDetails: PalletUniquesCollectionDetails
+    PalletUniquesCollectionMetadata: PalletUniquesCollectionMetadata
     PalletUniquesDestroyWitness: PalletUniquesDestroyWitness
     PalletUniquesError: PalletUniquesError
     PalletUniquesEvent: PalletUniquesEvent
-    PalletUniquesInstanceDetails: PalletUniquesInstanceDetails
-    PalletUniquesInstanceMetadata: PalletUniquesInstanceMetadata
+    PalletUniquesItemDetails: PalletUniquesItemDetails
+    PalletUniquesItemMetadata: PalletUniquesItemMetadata
     PalletUtilityCall: PalletUtilityCall
     PalletUtilityError: PalletUtilityError
     PalletUtilityEvent: PalletUtilityEvent
@@ -526,14 +531,18 @@ declare module "@polkadot/types/types/registry" {
     PalletXykCall: PalletXykCall
     PalletXykError: PalletXykError
     PalletXykEvent: PalletXykEvent
+    PalletXykLiquidityMiningCall: PalletXykLiquidityMiningCall
+    PalletXykLiquidityMiningError: PalletXykLiquidityMiningError
+    PalletXykLiquidityMiningEvent: PalletXykLiquidityMiningEvent
+    ParachainInfoCall: ParachainInfoCall
     PolkadotCorePrimitivesInboundDownwardMessage: PolkadotCorePrimitivesInboundDownwardMessage
     PolkadotCorePrimitivesInboundHrmpMessage: PolkadotCorePrimitivesInboundHrmpMessage
     PolkadotCorePrimitivesOutboundHrmpMessage: PolkadotCorePrimitivesOutboundHrmpMessage
     PolkadotParachainPrimitivesXcmpMessageFormat: PolkadotParachainPrimitivesXcmpMessageFormat
-    PolkadotPrimitivesV1AbridgedHostConfiguration: PolkadotPrimitivesV1AbridgedHostConfiguration
-    PolkadotPrimitivesV1AbridgedHrmpChannel: PolkadotPrimitivesV1AbridgedHrmpChannel
-    PolkadotPrimitivesV1PersistedValidationData: PolkadotPrimitivesV1PersistedValidationData
-    PolkadotPrimitivesV1UpgradeRestriction: PolkadotPrimitivesV1UpgradeRestriction
+    PolkadotPrimitivesV2AbridgedHostConfiguration: PolkadotPrimitivesV2AbridgedHostConfiguration
+    PolkadotPrimitivesV2AbridgedHrmpChannel: PolkadotPrimitivesV2AbridgedHrmpChannel
+    PolkadotPrimitivesV2PersistedValidationData: PolkadotPrimitivesV2PersistedValidationData
+    PolkadotPrimitivesV2UpgradeRestriction: PolkadotPrimitivesV2UpgradeRestriction
     PrimitivesAssetAssetPair: PrimitivesAssetAssetPair
     PrimitivesExchangeIntention: PrimitivesExchangeIntention
     PrimitivesIntentionType: PrimitivesIntentionType
@@ -553,6 +562,7 @@ declare module "@polkadot/types/types/registry" {
     SpRuntimeModuleError: SpRuntimeModuleError
     SpRuntimeMultiSignature: SpRuntimeMultiSignature
     SpRuntimeTokenError: SpRuntimeTokenError
+    SpRuntimeTransactionalError: SpRuntimeTransactionalError
     SpTrieStorageProof: SpTrieStorageProof
     SpVersionRuntimeVersion: SpVersionRuntimeVersion
     TestingBasiliskRuntimeOpaqueSessionKeys: TestingBasiliskRuntimeOpaqueSessionKeys

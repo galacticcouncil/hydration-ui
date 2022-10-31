@@ -40,7 +40,7 @@ import type {
   PalletLbpPool,
   PalletLiquidityMiningLoyaltyCurve,
   PalletMultisigTimepoint,
-  PalletNftClassType,
+  PalletNftCollectionType,
   PrimitivesAssetAssetPair,
   PrimitivesIntentionType,
   SpRuntimeDispatchError,
@@ -212,11 +212,31 @@ declare module "@polkadot/api-base/types/events" {
       [key: string]: AugmentedEvent<ApiType>
     }
     collatorSelection: {
-      CandidateAdded: AugmentedEvent<ApiType, [AccountId32, u128]>
-      CandidateRemoved: AugmentedEvent<ApiType, [AccountId32]>
-      NewCandidacyBond: AugmentedEvent<ApiType, [u128]>
-      NewDesiredCandidates: AugmentedEvent<ApiType, [u32]>
-      NewInvulnerables: AugmentedEvent<ApiType, [Vec<AccountId32>]>
+      CandidateAdded: AugmentedEvent<
+        ApiType,
+        [accountId: AccountId32, deposit: u128],
+        { accountId: AccountId32; deposit: u128 }
+      >
+      CandidateRemoved: AugmentedEvent<
+        ApiType,
+        [accountId: AccountId32],
+        { accountId: AccountId32 }
+      >
+      NewCandidacyBond: AugmentedEvent<
+        ApiType,
+        [bondAmount: u128],
+        { bondAmount: u128 }
+      >
+      NewDesiredCandidates: AugmentedEvent<
+        ApiType,
+        [desiredCandidates: u32],
+        { desiredCandidates: u32 }
+      >
+      NewInvulnerables: AugmentedEvent<
+        ApiType,
+        [invulnerables: Vec<AccountId32>],
+        { invulnerables: Vec<AccountId32> }
+      >
       /**
        * Generic event
        **/
@@ -459,6 +479,14 @@ declare module "@polkadot/api-base/types/events" {
         { proposalHash: H256; provider: AccountId32; deposit: u128 }
       >
       /**
+       * A proposal got canceled.
+       **/
+      ProposalCanceled: AugmentedEvent<
+        ApiType,
+        [propIndex: u32],
+        { propIndex: u32 }
+      >
+      /**
        * A motion has been proposed by a public account.
        **/
       Proposed: AugmentedEvent<
@@ -530,34 +558,52 @@ declare module "@polkadot/api-base/types/events" {
     dmpQueue: {
       /**
        * Downward message executed with the given outcome.
-       * \[ id, outcome \]
        **/
-      ExecutedDownward: AugmentedEvent<ApiType, [U8aFixed, XcmV2TraitsOutcome]>
+      ExecutedDownward: AugmentedEvent<
+        ApiType,
+        [messageId: U8aFixed, outcome: XcmV2TraitsOutcome],
+        { messageId: U8aFixed; outcome: XcmV2TraitsOutcome }
+      >
       /**
        * Downward message is invalid XCM.
-       * \[ id \]
        **/
-      InvalidFormat: AugmentedEvent<ApiType, [U8aFixed]>
+      InvalidFormat: AugmentedEvent<
+        ApiType,
+        [messageId: U8aFixed],
+        { messageId: U8aFixed }
+      >
       /**
        * Downward message is overweight and was placed in the overweight queue.
-       * \[ id, index, required \]
        **/
-      OverweightEnqueued: AugmentedEvent<ApiType, [U8aFixed, u64, u64]>
+      OverweightEnqueued: AugmentedEvent<
+        ApiType,
+        [messageId: U8aFixed, overweightIndex: u64, requiredWeight: u64],
+        { messageId: U8aFixed; overweightIndex: u64; requiredWeight: u64 }
+      >
       /**
        * Downward message from the overweight queue was executed.
-       * \[ index, used \]
        **/
-      OverweightServiced: AugmentedEvent<ApiType, [u64, u64]>
+      OverweightServiced: AugmentedEvent<
+        ApiType,
+        [overweightIndex: u64, weightUsed: u64],
+        { overweightIndex: u64; weightUsed: u64 }
+      >
       /**
        * Downward message is unsupported version of XCM.
-       * \[ id \]
        **/
-      UnsupportedVersion: AugmentedEvent<ApiType, [U8aFixed]>
+      UnsupportedVersion: AugmentedEvent<
+        ApiType,
+        [messageId: U8aFixed],
+        { messageId: U8aFixed }
+      >
       /**
        * The weight limit for handling downward messages was reached.
-       * \[ id, remaining, required \]
        **/
-      WeightExhausted: AugmentedEvent<ApiType, [U8aFixed, u64, u64]>
+      WeightExhausted: AugmentedEvent<
+        ApiType,
+        [messageId: U8aFixed, remainingWeight: u64, requiredWeight: u64],
+        { messageId: U8aFixed; remainingWeight: u64; requiredWeight: u64 }
+      >
       /**
        * Generic event
        **/
@@ -977,246 +1023,6 @@ declare module "@polkadot/api-base/types/events" {
        **/
       [key: string]: AugmentedEvent<ApiType>
     }
-    liquidityMining: {
-      /**
-       * NFT representing deposit has been destroyed
-       **/
-      DepositDestroyed: AugmentedEvent<
-        ApiType,
-        [who: AccountId32, nftInstanceId: u128],
-        { who: AccountId32; nftInstanceId: u128 }
-      >
-      /**
-       * New global farm was created.
-       **/
-      GlobalFarmCreated: AugmentedEvent<
-        ApiType,
-        [
-          id: u32,
-          owner: AccountId32,
-          totalRewards: u128,
-          rewardCurrency: u32,
-          yieldPerPeriod: Perquintill,
-          plannedYieldingPeriods: u32,
-          blocksPerPeriod: u32,
-          incentivizedAsset: u32,
-          maxRewardPerPeriod: u128,
-          minDeposit: u128,
-          priceAdjustment: u128,
-        ],
-        {
-          id: u32
-          owner: AccountId32
-          totalRewards: u128
-          rewardCurrency: u32
-          yieldPerPeriod: Perquintill
-          plannedYieldingPeriods: u32
-          blocksPerPeriod: u32
-          incentivizedAsset: u32
-          maxRewardPerPeriod: u128
-          minDeposit: u128
-          priceAdjustment: u128
-        }
-      >
-      /**
-       * Global farm was destroyed.
-       **/
-      GlobalFarmDestroyed: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          who: AccountId32,
-          rewardCurrency: u32,
-          undistributedRewards: u128,
-        ],
-        {
-          globalFarmId: u32
-          who: AccountId32
-          rewardCurrency: u32
-          undistributedRewards: u128
-        }
-      >
-      /**
-       * Rewards was claimed.
-       **/
-      RewardClaimed: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          claimed: u128,
-          rewardCurrency: u32,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          claimed: u128
-          rewardCurrency: u32
-        }
-      >
-      /**
-       * New LP tokens was deposited.
-       **/
-      SharesDeposited: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          amount: u128,
-          lpToken: u32,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          amount: u128
-          lpToken: u32
-        }
-      >
-      /**
-       * LP token was redeposited for a new yield farm entry
-       **/
-      SharesRedeposited: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          amount: u128,
-          lpToken: u32,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          amount: u128
-          lpToken: u32
-        }
-      >
-      /**
-       * LP tokens was withdrawn.
-       **/
-      SharesWithdrawn: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          lpToken: u32,
-          amount: u128,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          lpToken: u32
-          amount: u128
-        }
-      >
-      /**
-       * New yield farm was added into the farm.
-       **/
-      YieldFarmCreated: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          multiplier: u128,
-          assetPair: PrimitivesAssetAssetPair,
-          loyaltyCurve: Option<PalletLiquidityMiningLoyaltyCurve>,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          multiplier: u128
-          assetPair: PrimitivesAssetAssetPair
-          loyaltyCurve: Option<PalletLiquidityMiningLoyaltyCurve>
-        }
-      >
-      /**
-       * Yield farm was destroyed from global farm.
-       **/
-      YieldFarmDestroyed: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          assetPair: PrimitivesAssetAssetPair,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          assetPair: PrimitivesAssetAssetPair
-        }
-      >
-      /**
-       * Yield farm for asset pair was resumed.
-       **/
-      YieldFarmResumed: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          assetPair: PrimitivesAssetAssetPair,
-          multiplier: u128,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          assetPair: PrimitivesAssetAssetPair
-          multiplier: u128
-        }
-      >
-      /**
-       * Yield farm for asset pair was stopped.
-       **/
-      YieldFarmStopped: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          assetPair: PrimitivesAssetAssetPair,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          assetPair: PrimitivesAssetAssetPair
-        }
-      >
-      /**
-       * Yield farm multiplier was updated.
-       **/
-      YieldFarmUpdated: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          assetPair: PrimitivesAssetAssetPair,
-          multiplier: u128,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          assetPair: PrimitivesAssetAssetPair
-          multiplier: u128
-        }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
     marketplace: {
       /**
        * Offer was accepted
@@ -1225,15 +1031,15 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [
           who: AccountId32,
-          class_: u128,
-          instance: u128,
+          collection: u128,
+          item: u128,
           amount: u128,
           maker: AccountId32,
         ],
         {
           who: AccountId32
-          class: u128
-          instance: u128
+          collection: u128
+          item: u128
           amount: u128
           maker: AccountId32
         }
@@ -1245,15 +1051,15 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [
           who: AccountId32,
-          class_: u128,
-          instance: u128,
+          collection: u128,
+          item: u128,
           amount: u128,
           expires: u32,
         ],
         {
           who: AccountId32
-          class: u128
-          instance: u128
+          collection: u128
+          item: u128
           amount: u128
           expires: u32
         }
@@ -1263,16 +1069,16 @@ declare module "@polkadot/api-base/types/events" {
        **/
       OfferWithdrawn: AugmentedEvent<
         ApiType,
-        [who: AccountId32, class_: u128, instance: u128],
-        { who: AccountId32; class: u128; instance: u128 }
+        [who: AccountId32, collection: u128, item: u128],
+        { who: AccountId32; collection: u128; item: u128 }
       >
       /**
        * Marketplace data has been added
        **/
       RoyaltyAdded: AugmentedEvent<
         ApiType,
-        [class_: u128, instance: u128, author: AccountId32, royalty: u8],
-        { class: u128; instance: u128; author: AccountId32; royalty: u8 }
+        [collection: u128, item: u128, author: AccountId32, royalty: u16],
+        { collection: u128; item: u128; author: AccountId32; royalty: u16 }
       >
       /**
        * Royalty hs been paid to the author
@@ -1280,17 +1086,17 @@ declare module "@polkadot/api-base/types/events" {
       RoyaltyPaid: AugmentedEvent<
         ApiType,
         [
-          class_: u128,
-          instance: u128,
+          collection: u128,
+          item: u128,
           author: AccountId32,
-          royalty: u8,
+          royalty: u16,
           royaltyAmount: u128,
         ],
         {
-          class: u128
-          instance: u128
+          collection: u128
+          item: u128
           author: AccountId32
-          royalty: u8
+          royalty: u16
           royaltyAmount: u128
         }
       >
@@ -1299,8 +1105,8 @@ declare module "@polkadot/api-base/types/events" {
        **/
       TokenPriceUpdated: AugmentedEvent<
         ApiType,
-        [who: AccountId32, class_: u128, instance: u128, price: Option<u128>],
-        { who: AccountId32; class: u128; instance: u128; price: Option<u128> }
+        [who: AccountId32, collection: u128, item: u128, price: Option<u128>],
+        { who: AccountId32; collection: u128; item: u128; price: Option<u128> }
       >
       /**
        * Token was sold to a new owner
@@ -1310,15 +1116,15 @@ declare module "@polkadot/api-base/types/events" {
         [
           owner: AccountId32,
           buyer: AccountId32,
-          class_: u128,
-          instance: u128,
+          collection: u128,
+          item: u128,
           price: u128,
         ],
         {
           owner: AccountId32
           buyer: AccountId32
-          class: u128
-          instance: u128
+          collection: u128
+          item: u128
           price: u128
         }
       >
@@ -1445,54 +1251,59 @@ declare module "@polkadot/api-base/types/events" {
     }
     nft: {
       /**
-       * A class was created
+       * A collection was created
        **/
-      ClassCreated: AugmentedEvent<
+      CollectionCreated: AugmentedEvent<
         ApiType,
         [
           owner: AccountId32,
-          classId: u128,
-          classType: PalletNftClassType,
+          collectionId: u128,
+          collectionType: PalletNftCollectionType,
           metadata: Bytes,
         ],
         {
           owner: AccountId32
-          classId: u128
-          classType: PalletNftClassType
+          collectionId: u128
+          collectionType: PalletNftCollectionType
           metadata: Bytes
         }
       >
       /**
-       * A class was destroyed
+       * A collection was destroyed
        **/
-      ClassDestroyed: AugmentedEvent<
+      CollectionDestroyed: AugmentedEvent<
         ApiType,
-        [owner: AccountId32, classId: u128],
-        { owner: AccountId32; classId: u128 }
+        [owner: AccountId32, collectionId: u128],
+        { owner: AccountId32; collectionId: u128 }
       >
       /**
-       * An instance was burned
+       * An item was burned
        **/
-      InstanceBurned: AugmentedEvent<
+      ItemBurned: AugmentedEvent<
         ApiType,
-        [owner: AccountId32, classId: u128, instanceId: u128],
-        { owner: AccountId32; classId: u128; instanceId: u128 }
+        [owner: AccountId32, collectionId: u128, itemId: u128],
+        { owner: AccountId32; collectionId: u128; itemId: u128 }
       >
       /**
-       * An instance was minted
+       * An item was minted
        **/
-      InstanceMinted: AugmentedEvent<
+      ItemMinted: AugmentedEvent<
         ApiType,
-        [owner: AccountId32, classId: u128, instanceId: u128, metadata: Bytes],
-        { owner: AccountId32; classId: u128; instanceId: u128; metadata: Bytes }
+        [owner: AccountId32, collectionId: u128, itemId: u128, metadata: Bytes],
+        {
+          owner: AccountId32
+          collectionId: u128
+          itemId: u128
+          metadata: Bytes
+        }
       >
       /**
-       * An instance was transferred
+       * An item was transferred
        **/
-      InstanceTransferred: AugmentedEvent<
+      ItemTransferred: AugmentedEvent<
         ApiType,
-        [from: AccountId32, to: AccountId32, classId: u128, instanceId: u128],
-        { from: AccountId32; to: AccountId32; classId: u128; instanceId: u128 }
+        [from: AccountId32, to: AccountId32, collectionId: u128, itemId: u128],
+        { from: AccountId32; to: AccountId32; collectionId: u128; itemId: u128 }
       >
       /**
        * Generic event
@@ -1516,22 +1327,36 @@ declare module "@polkadot/api-base/types/events" {
     parachainSystem: {
       /**
        * Downward messages were processed using the given weight.
-       * \[ weight_used, result_mqc_head \]
        **/
-      DownwardMessagesProcessed: AugmentedEvent<ApiType, [u64, H256]>
+      DownwardMessagesProcessed: AugmentedEvent<
+        ApiType,
+        [weightUsed: u64, dmqHead: H256],
+        { weightUsed: u64; dmqHead: H256 }
+      >
       /**
        * Some downward messages have been received and will be processed.
-       * \[ count \]
        **/
-      DownwardMessagesReceived: AugmentedEvent<ApiType, [u32]>
+      DownwardMessagesReceived: AugmentedEvent<
+        ApiType,
+        [count: u32],
+        { count: u32 }
+      >
       /**
        * An upgrade has been authorized.
        **/
-      UpgradeAuthorized: AugmentedEvent<ApiType, [H256]>
+      UpgradeAuthorized: AugmentedEvent<
+        ApiType,
+        [codeHash: H256],
+        { codeHash: H256 }
+      >
       /**
        * The validation function was applied as of the contained relay chain block number.
        **/
-      ValidationFunctionApplied: AugmentedEvent<ApiType, [u32]>
+      ValidationFunctionApplied: AugmentedEvent<
+        ApiType,
+        [relayChainBlockNum: u32],
+        { relayChainBlockNum: u32 }
+      >
       /**
        * The relay-chain aborted the upgrade process.
        **/
@@ -1706,20 +1531,6 @@ declare module "@polkadot/api-base/types/events" {
        **/
       [key: string]: AugmentedEvent<ApiType>
     }
-    priceOracle: {
-      /**
-       * Pool was registered.
-       **/
-      PoolRegistered: AugmentedEvent<
-        ApiType,
-        [assetA: u32, assetB: u32],
-        { assetA: u32; assetB: u32 }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
     proxy: {
       /**
        * An announcement was placed to make a call in the future.
@@ -1773,6 +1584,24 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [result: Result<Null, SpRuntimeDispatchError>],
         { result: Result<Null, SpRuntimeDispatchError> }
+      >
+      /**
+       * A proxy was removed.
+       **/
+      ProxyRemoved: AugmentedEvent<
+        ApiType,
+        [
+          delegator: AccountId32,
+          delegatee: AccountId32,
+          proxyType: CommonRuntimeProxyType,
+          delay: u32,
+        ],
+        {
+          delegator: AccountId32
+          delegatee: AccountId32
+          proxyType: CommonRuntimeProxyType
+          delay: u32
+        }
       >
       /**
        * Generic event
@@ -2079,6 +1908,14 @@ declare module "@polkadot/api-base/types/events" {
         { currencyId: u32; who: AccountId32; free: u128; reserved: u128 }
       >
       /**
+       * Deposited some balance into an account
+       **/
+      Deposited: AugmentedEvent<
+        ApiType,
+        [currencyId: u32, who: AccountId32, amount: u128],
+        { currencyId: u32; who: AccountId32; amount: u128 }
+      >
+      /**
        * An account was removed whose balance was non-zero but below
        * ExistentialDeposit, resulting in an outright loss.
        **/
@@ -2096,10 +1933,34 @@ declare module "@polkadot/api-base/types/events" {
         { currencyId: u32; who: AccountId32; amount: u128 }
       >
       /**
+       * Some locked funds were unlocked
+       **/
+      LockRemoved: AugmentedEvent<
+        ApiType,
+        [lockId: U8aFixed, currencyId: u32, who: AccountId32],
+        { lockId: U8aFixed; currencyId: u32; who: AccountId32 }
+      >
+      /**
+       * Some funds are locked
+       **/
+      LockSet: AugmentedEvent<
+        ApiType,
+        [lockId: U8aFixed, currencyId: u32, who: AccountId32, amount: u128],
+        { lockId: U8aFixed; currencyId: u32; who: AccountId32; amount: u128 }
+      >
+      /**
+       * Some balance was reserved (moved from free to reserved).
+       **/
+      Reserved: AugmentedEvent<
+        ApiType,
+        [currencyId: u32, who: AccountId32, amount: u128],
+        { currencyId: u32; who: AccountId32; amount: u128 }
+      >
+      /**
        * Some reserved balance was repatriated (moved from reserved to
        * another account).
        **/
-      RepatriatedReserve: AugmentedEvent<
+      ReserveRepatriated: AugmentedEvent<
         ApiType,
         [
           currencyId: u32,
@@ -2117,12 +1978,30 @@ declare module "@polkadot/api-base/types/events" {
         }
       >
       /**
-       * Some balance was reserved (moved from free to reserved).
+       * Some balances were slashed (e.g. due to mis-behavior)
        **/
-      Reserved: AugmentedEvent<
+      Slashed: AugmentedEvent<
         ApiType,
-        [currencyId: u32, who: AccountId32, amount: u128],
-        { currencyId: u32; who: AccountId32; amount: u128 }
+        [
+          currencyId: u32,
+          who: AccountId32,
+          freeAmount: u128,
+          reservedAmount: u128,
+        ],
+        {
+          currencyId: u32
+          who: AccountId32
+          freeAmount: u128
+          reservedAmount: u128
+        }
+      >
+      /**
+       * The total issuance of an currency has been set
+       **/
+      TotalIssuanceSet: AugmentedEvent<
+        ApiType,
+        [currencyId: u32, amount: u128],
+        { currencyId: u32; amount: u128 }
       >
       /**
        * Transfer succeeded.
@@ -2139,6 +2018,51 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [currencyId: u32, who: AccountId32, amount: u128],
         { currencyId: u32; who: AccountId32; amount: u128 }
+      >
+      /**
+       * Some balances were withdrawn (e.g. pay for transaction fee)
+       **/
+      Withdrawn: AugmentedEvent<
+        ApiType,
+        [currencyId: u32, who: AccountId32, amount: u128],
+        { currencyId: u32; who: AccountId32; amount: u128 }
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    transactionPause: {
+      /**
+       * Paused transaction
+       **/
+      TransactionPaused: AugmentedEvent<
+        ApiType,
+        [palletNameBytes: Bytes, functionNameBytes: Bytes],
+        { palletNameBytes: Bytes; functionNameBytes: Bytes }
+      >
+      /**
+       * Unpaused transaction
+       **/
+      TransactionUnpaused: AugmentedEvent<
+        ApiType,
+        [palletNameBytes: Bytes, functionNameBytes: Bytes],
+        { palletNameBytes: Bytes; functionNameBytes: Bytes }
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    transactionPayment: {
+      /**
+       * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
+       * has been paid by `who`.
+       **/
+      TransactionFeePaid: AugmentedEvent<
+        ApiType,
+        [who: AccountId32, actualFee: u128, tip: u128],
+        { who: AccountId32; actualFee: u128; tip: u128 }
       >
       /**
        * Generic event
@@ -2187,6 +2111,14 @@ declare module "@polkadot/api-base/types/events" {
         { rolloverBalance: u128 }
       >
       /**
+       * A new spend proposal has been approved.
+       **/
+      SpendApproved: AugmentedEvent<
+        ApiType,
+        [proposalIndex: u32, amount: u128, beneficiary: AccountId32],
+        { proposalIndex: u32; amount: u128; beneficiary: AccountId32 }
+      >
+      /**
        * We have ended a spend period and will now allocate funds.
        **/
       Spending: AugmentedEvent<
@@ -2201,166 +2133,248 @@ declare module "@polkadot/api-base/types/events" {
     }
     uniques: {
       /**
-       * An approval for a `delegate` account to transfer the `instance` of an asset `class` was
-       * cancelled by its `owner`.
+       * An approval for a `delegate` account to transfer the `item` of an item
+       * `collection` was cancelled by its `owner`.
        **/
       ApprovalCancelled: AugmentedEvent<
         ApiType,
         [
-          class_: u128,
-          instance: u128,
+          collection: u128,
+          item: u128,
           owner: AccountId32,
           delegate: AccountId32,
         ],
         {
-          class: u128
-          instance: u128
+          collection: u128
+          item: u128
           owner: AccountId32
           delegate: AccountId32
         }
       >
       /**
-       * An `instance` of an asset `class` has been approved by the `owner` for transfer by a
-       * `delegate`.
+       * An `item` of a `collection` has been approved by the `owner` for transfer by
+       * a `delegate`.
        **/
       ApprovedTransfer: AugmentedEvent<
         ApiType,
         [
-          class_: u128,
-          instance: u128,
+          collection: u128,
+          item: u128,
           owner: AccountId32,
           delegate: AccountId32,
         ],
         {
-          class: u128
-          instance: u128
+          collection: u128
+          item: u128
           owner: AccountId32
           delegate: AccountId32
         }
       >
       /**
-       * An asset `class` has had its attributes changed by the `Force` origin.
-       **/
-      AssetStatusChanged: AugmentedEvent<
-        ApiType,
-        [class_: u128],
-        { class: u128 }
-      >
-      /**
-       * Attribute metadata has been cleared for an asset class or instance.
+       * Attribute metadata has been cleared for a `collection` or `item`.
        **/
       AttributeCleared: AugmentedEvent<
         ApiType,
-        [class_: u128, maybeInstance: Option<u128>, key: Bytes],
-        { class: u128; maybeInstance: Option<u128>; key: Bytes }
+        [collection: u128, maybeItem: Option<u128>, key: Bytes],
+        { collection: u128; maybeItem: Option<u128>; key: Bytes }
       >
       /**
-       * New attribute metadata has been set for an asset class or instance.
+       * New attribute metadata has been set for a `collection` or `item`.
        **/
       AttributeSet: AugmentedEvent<
         ApiType,
-        [class_: u128, maybeInstance: Option<u128>, key: Bytes, value: Bytes],
-        { class: u128; maybeInstance: Option<u128>; key: Bytes; value: Bytes }
+        [collection: u128, maybeItem: Option<u128>, key: Bytes, value: Bytes],
+        { collection: u128; maybeItem: Option<u128>; key: Bytes; value: Bytes }
       >
       /**
-       * An asset `instance` was destroyed.
+       * An `item` was destroyed.
        **/
       Burned: AugmentedEvent<
         ApiType,
-        [class_: u128, instance: u128, owner: AccountId32],
-        { class: u128; instance: u128; owner: AccountId32 }
+        [collection: u128, item: u128, owner: AccountId32],
+        { collection: u128; item: u128; owner: AccountId32 }
       >
       /**
-       * Some asset `class` was frozen.
+       * Some `collection` was frozen.
        **/
-      ClassFrozen: AugmentedEvent<ApiType, [class_: u128], { class: u128 }>
-      /**
-       * Metadata has been cleared for an asset class.
-       **/
-      ClassMetadataCleared: AugmentedEvent<
+      CollectionFrozen: AugmentedEvent<
         ApiType,
-        [class_: u128],
-        { class: u128 }
+        [collection: u128],
+        { collection: u128 }
       >
       /**
-       * New metadata has been set for an asset class.
+       * Max supply has been set for a collection.
        **/
-      ClassMetadataSet: AugmentedEvent<
+      CollectionMaxSupplySet: AugmentedEvent<
         ApiType,
-        [class_: u128, data: Bytes, isFrozen: bool],
-        { class: u128; data: Bytes; isFrozen: bool }
+        [collection: u128, maxSupply: u32],
+        { collection: u128; maxSupply: u32 }
       >
       /**
-       * Some asset `class` was thawed.
+       * Metadata has been cleared for a `collection`.
        **/
-      ClassThawed: AugmentedEvent<ApiType, [class_: u128], { class: u128 }>
+      CollectionMetadataCleared: AugmentedEvent<
+        ApiType,
+        [collection: u128],
+        { collection: u128 }
+      >
       /**
-       * An asset class was created.
+       * New metadata has been set for a `collection`.
+       **/
+      CollectionMetadataSet: AugmentedEvent<
+        ApiType,
+        [collection: u128, data: Bytes, isFrozen: bool],
+        { collection: u128; data: Bytes; isFrozen: bool }
+      >
+      /**
+       * Some `collection` was thawed.
+       **/
+      CollectionThawed: AugmentedEvent<
+        ApiType,
+        [collection: u128],
+        { collection: u128 }
+      >
+      /**
+       * A `collection` was created.
        **/
       Created: AugmentedEvent<
         ApiType,
-        [class_: u128, creator: AccountId32, owner: AccountId32],
-        { class: u128; creator: AccountId32; owner: AccountId32 }
+        [collection: u128, creator: AccountId32, owner: AccountId32],
+        { collection: u128; creator: AccountId32; owner: AccountId32 }
       >
       /**
-       * An asset `class` was destroyed.
+       * A `collection` was destroyed.
        **/
-      Destroyed: AugmentedEvent<ApiType, [class_: u128], { class: u128 }>
+      Destroyed: AugmentedEvent<
+        ApiType,
+        [collection: u128],
+        { collection: u128 }
+      >
       /**
-       * An asset class was force-created.
+       * A `collection` was force-created.
        **/
       ForceCreated: AugmentedEvent<
         ApiType,
-        [class_: u128, owner: AccountId32],
-        { class: u128; owner: AccountId32 }
+        [collection: u128, owner: AccountId32],
+        { collection: u128; owner: AccountId32 }
       >
       /**
-       * Some asset `instance` was frozen.
+       * Some `item` was frozen.
        **/
       Frozen: AugmentedEvent<
         ApiType,
-        [class_: u128, instance: u128],
-        { class: u128; instance: u128 }
+        [collection: u128, item: u128],
+        { collection: u128; item: u128 }
       >
       /**
-       * An asset `instance` was issued.
+       * An `item` was issued.
        **/
       Issued: AugmentedEvent<
         ApiType,
-        [class_: u128, instance: u128, owner: AccountId32],
-        { class: u128; instance: u128; owner: AccountId32 }
+        [collection: u128, item: u128, owner: AccountId32],
+        { collection: u128; item: u128; owner: AccountId32 }
       >
       /**
-       * Metadata has been cleared for an asset instance.
+       * An item was bought.
+       **/
+      ItemBought: AugmentedEvent<
+        ApiType,
+        [
+          collection: u128,
+          item: u128,
+          price: u128,
+          seller: AccountId32,
+          buyer: AccountId32,
+        ],
+        {
+          collection: u128
+          item: u128
+          price: u128
+          seller: AccountId32
+          buyer: AccountId32
+        }
+      >
+      /**
+       * The price for the instance was removed.
+       **/
+      ItemPriceRemoved: AugmentedEvent<
+        ApiType,
+        [collection: u128, item: u128],
+        { collection: u128; item: u128 }
+      >
+      /**
+       * The price was set for the instance.
+       **/
+      ItemPriceSet: AugmentedEvent<
+        ApiType,
+        [
+          collection: u128,
+          item: u128,
+          price: u128,
+          whitelistedBuyer: Option<AccountId32>,
+        ],
+        {
+          collection: u128
+          item: u128
+          price: u128
+          whitelistedBuyer: Option<AccountId32>
+        }
+      >
+      /**
+       * A `collection` has had its attributes changed by the `Force` origin.
+       **/
+      ItemStatusChanged: AugmentedEvent<
+        ApiType,
+        [collection: u128],
+        { collection: u128 }
+      >
+      /**
+       * Metadata has been cleared for an item.
        **/
       MetadataCleared: AugmentedEvent<
         ApiType,
-        [class_: u128, instance: u128],
-        { class: u128; instance: u128 }
+        [collection: u128, item: u128],
+        { collection: u128; item: u128 }
       >
       /**
-       * New metadata has been set for an asset instance.
+       * New metadata has been set for an item.
        **/
       MetadataSet: AugmentedEvent<
         ApiType,
-        [class_: u128, instance: u128, data: Bytes, isFrozen: bool],
-        { class: u128; instance: u128; data: Bytes; isFrozen: bool }
+        [collection: u128, item: u128, data: Bytes, isFrozen: bool],
+        { collection: u128; item: u128; data: Bytes; isFrozen: bool }
+      >
+      /**
+       * Event gets emmited when the `NextCollectionId` gets incremented.
+       **/
+      NextCollectionIdIncremented: AugmentedEvent<
+        ApiType,
+        [nextId: u128],
+        { nextId: u128 }
       >
       /**
        * The owner changed.
        **/
       OwnerChanged: AugmentedEvent<
         ApiType,
-        [class_: u128, newOwner: AccountId32],
-        { class: u128; newOwner: AccountId32 }
+        [collection: u128, newOwner: AccountId32],
+        { collection: u128; newOwner: AccountId32 }
       >
       /**
-       * Metadata has been cleared for an asset instance.
+       * Ownership acceptance has changed for an account.
+       **/
+      OwnershipAcceptanceChanged: AugmentedEvent<
+        ApiType,
+        [who: AccountId32, maybeCollection: Option<u128>],
+        { who: AccountId32; maybeCollection: Option<u128> }
+      >
+      /**
+       * Metadata has been cleared for an item.
        **/
       Redeposited: AugmentedEvent<
         ApiType,
-        [class_: u128, successfulInstances: Vec<u128>],
-        { class: u128; successfulInstances: Vec<u128> }
+        [collection: u128, successfulItems: Vec<u128>],
+        { collection: u128; successfulItems: Vec<u128> }
       >
       /**
        * The management team changed.
@@ -2368,33 +2382,33 @@ declare module "@polkadot/api-base/types/events" {
       TeamChanged: AugmentedEvent<
         ApiType,
         [
-          class_: u128,
+          collection: u128,
           issuer: AccountId32,
           admin: AccountId32,
           freezer: AccountId32,
         ],
         {
-          class: u128
+          collection: u128
           issuer: AccountId32
           admin: AccountId32
           freezer: AccountId32
         }
       >
       /**
-       * Some asset `instance` was thawed.
+       * Some `item` was thawed.
        **/
       Thawed: AugmentedEvent<
         ApiType,
-        [class_: u128, instance: u128],
-        { class: u128; instance: u128 }
+        [collection: u128, item: u128],
+        { collection: u128; item: u128 }
       >
       /**
-       * An asset `instance` was transferred.
+       * An `item` was transferred.
        **/
       Transferred: AugmentedEvent<
         ApiType,
-        [class_: u128, instance: u128, from: AccountId32, to: AccountId32],
-        { class: u128; instance: u128; from: AccountId32; to: AccountId32 }
+        [collection: u128, item: u128, from: AccountId32, to: AccountId32],
+        { collection: u128; item: u128; from: AccountId32; to: AccountId32 }
       >
       /**
        * Generic event
@@ -2429,6 +2443,10 @@ declare module "@polkadot/api-base/types/events" {
        **/
       BatchCompleted: AugmentedEvent<ApiType, []>
       /**
+       * Batch of dispatches completed but has errors.
+       **/
+      BatchCompletedWithErrors: AugmentedEvent<ApiType, []>
+      /**
        * Batch of dispatches did not complete fully. Index of first failing dispatch given, as
        * well as the error.
        **/
@@ -2449,6 +2467,14 @@ declare module "@polkadot/api-base/types/events" {
        * A single item within a Batch of dispatches has completed with no error.
        **/
       ItemCompleted: AugmentedEvent<ApiType, []>
+      /**
+       * A single item within a Batch of dispatches has completed with error.
+       **/
+      ItemFailed: AugmentedEvent<
+        ApiType,
+        [error: SpRuntimeDispatchError],
+        { error: SpRuntimeDispatchError }
+      >
       /**
        * Generic event
        **/
@@ -2492,71 +2518,71 @@ declare module "@polkadot/api-base/types/events" {
        **/
       [key: string]: AugmentedEvent<ApiType>
     }
-    warehouseLM: {
-      /**
-       * Global farm accumulated reward per share was updated.
-       **/
-      GlobalFarmAccRPZUpdated: AugmentedEvent<
-        ApiType,
-        [globalFarmId: u32, accumulatedRpz: u128, totalSharesZ: u128],
-        { globalFarmId: u32; accumulatedRpz: u128; totalSharesZ: u128 }
-      >
-      /**
-       * Yield farm accumulated reward per valued share was updated.
-       **/
-      YieldFarmAccRPVSUpdated: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          accumulatedRpvs: u128,
-          totalValuedShares: u128,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          accumulatedRpvs: u128
-          totalValuedShares: u128
-        }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
     xcmpQueue: {
       /**
        * Bad XCM format used.
        **/
-      BadFormat: AugmentedEvent<ApiType, [Option<H256>]>
+      BadFormat: AugmentedEvent<
+        ApiType,
+        [messageHash: Option<H256>],
+        { messageHash: Option<H256> }
+      >
       /**
        * Bad XCM version used.
        **/
-      BadVersion: AugmentedEvent<ApiType, [Option<H256>]>
+      BadVersion: AugmentedEvent<
+        ApiType,
+        [messageHash: Option<H256>],
+        { messageHash: Option<H256> }
+      >
       /**
        * Some XCM failed.
        **/
-      Fail: AugmentedEvent<ApiType, [Option<H256>, XcmV2TraitsError]>
+      Fail: AugmentedEvent<
+        ApiType,
+        [messageHash: Option<H256>, error: XcmV2TraitsError, weight: u64],
+        { messageHash: Option<H256>; error: XcmV2TraitsError; weight: u64 }
+      >
       /**
        * An XCM exceeded the individual message weight budget.
        **/
-      OverweightEnqueued: AugmentedEvent<ApiType, [u32, u32, u64, u64]>
+      OverweightEnqueued: AugmentedEvent<
+        ApiType,
+        [sender: u32, sentAt: u32, index: u64, required: u64],
+        { sender: u32; sentAt: u32; index: u64; required: u64 }
+      >
       /**
        * An XCM from the overweight queue was executed with the given actual weight used.
        **/
-      OverweightServiced: AugmentedEvent<ApiType, [u64, u64]>
+      OverweightServiced: AugmentedEvent<
+        ApiType,
+        [index: u64, used: u64],
+        { index: u64; used: u64 }
+      >
       /**
        * Some XCM was executed ok.
        **/
-      Success: AugmentedEvent<ApiType, [Option<H256>]>
+      Success: AugmentedEvent<
+        ApiType,
+        [messageHash: Option<H256>, weight: u64],
+        { messageHash: Option<H256>; weight: u64 }
+      >
       /**
        * An upward message was sent to the relay chain.
        **/
-      UpwardMessageSent: AugmentedEvent<ApiType, [Option<H256>]>
+      UpwardMessageSent: AugmentedEvent<
+        ApiType,
+        [messageHash: Option<H256>],
+        { messageHash: Option<H256> }
+      >
       /**
        * An HRMP message was sent to a sibling parachain.
        **/
-      XcmpMessageSent: AugmentedEvent<ApiType, [Option<H256>]>
+      XcmpMessageSent: AugmentedEvent<
+        ApiType,
+        [messageHash: Option<H256>],
+        { messageHash: Option<H256> }
+      >
       /**
        * Generic event
        **/
@@ -2707,6 +2733,294 @@ declare module "@polkadot/api-base/types/events" {
           feeAsset: u32
           feeAmount: u128
           pool: AccountId32
+        }
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    xykLiquidityMining: {
+      /**
+       * NFT representing deposit has been destroyed
+       **/
+      DepositDestroyed: AugmentedEvent<
+        ApiType,
+        [who: AccountId32, depositId: u128],
+        { who: AccountId32; depositId: u128 }
+      >
+      /**
+       * New global farm was created.
+       **/
+      GlobalFarmCreated: AugmentedEvent<
+        ApiType,
+        [
+          id: u32,
+          owner: AccountId32,
+          totalRewards: u128,
+          rewardCurrency: u32,
+          yieldPerPeriod: Perquintill,
+          plannedYieldingPeriods: u32,
+          blocksPerPeriod: u32,
+          incentivizedAsset: u32,
+          maxRewardPerPeriod: u128,
+          minDeposit: u128,
+          priceAdjustment: u128,
+        ],
+        {
+          id: u32
+          owner: AccountId32
+          totalRewards: u128
+          rewardCurrency: u32
+          yieldPerPeriod: Perquintill
+          plannedYieldingPeriods: u32
+          blocksPerPeriod: u32
+          incentivizedAsset: u32
+          maxRewardPerPeriod: u128
+          minDeposit: u128
+          priceAdjustment: u128
+        }
+      >
+      /**
+       * Global farm was destroyed.
+       **/
+      GlobalFarmDestroyed: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          who: AccountId32,
+          rewardCurrency: u32,
+          undistributedRewards: u128,
+        ],
+        {
+          globalFarmId: u32
+          who: AccountId32
+          rewardCurrency: u32
+          undistributedRewards: u128
+        }
+      >
+      /**
+       * Global farm's `price_adjustment` was updated.
+       **/
+      GlobalFarmUpdated: AugmentedEvent<
+        ApiType,
+        [id: u32, priceAdjustment: u128],
+        { id: u32; priceAdjustment: u128 }
+      >
+      /**
+       * Rewards was claimed.
+       **/
+      RewardClaimed: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          who: AccountId32,
+          claimed: u128,
+          rewardCurrency: u32,
+          depositId: u128,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          who: AccountId32
+          claimed: u128
+          rewardCurrency: u32
+          depositId: u128
+        }
+      >
+      /**
+       * New LP tokens was deposited.
+       **/
+      SharesDeposited: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          who: AccountId32,
+          amount: u128,
+          lpToken: u32,
+          depositId: u128,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          who: AccountId32
+          amount: u128
+          lpToken: u32
+          depositId: u128
+        }
+      >
+      /**
+       * LP token was redeposited for a new yield farm entry
+       **/
+      SharesRedeposited: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          who: AccountId32,
+          amount: u128,
+          lpToken: u32,
+          depositId: u128,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          who: AccountId32
+          amount: u128
+          lpToken: u32
+          depositId: u128
+        }
+      >
+      /**
+       * LP tokens was withdrawn.
+       **/
+      SharesWithdrawn: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          who: AccountId32,
+          lpToken: u32,
+          amount: u128,
+          depositId: u128,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          who: AccountId32
+          lpToken: u32
+          amount: u128
+          depositId: u128
+        }
+      >
+      /**
+       * New yield farm was added into the farm.
+       **/
+      YieldFarmCreated: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          multiplier: u128,
+          assetPair: PrimitivesAssetAssetPair,
+          loyaltyCurve: Option<PalletLiquidityMiningLoyaltyCurve>,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          multiplier: u128
+          assetPair: PrimitivesAssetAssetPair
+          loyaltyCurve: Option<PalletLiquidityMiningLoyaltyCurve>
+        }
+      >
+      /**
+       * Yield farm was destroyed from global farm.
+       **/
+      YieldFarmDestroyed: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          who: AccountId32,
+          assetPair: PrimitivesAssetAssetPair,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          who: AccountId32
+          assetPair: PrimitivesAssetAssetPair
+        }
+      >
+      /**
+       * Yield farm for asset pair was resumed.
+       **/
+      YieldFarmResumed: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          who: AccountId32,
+          assetPair: PrimitivesAssetAssetPair,
+          multiplier: u128,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          who: AccountId32
+          assetPair: PrimitivesAssetAssetPair
+          multiplier: u128
+        }
+      >
+      /**
+       * Yield farm for asset pair was stopped.
+       **/
+      YieldFarmStopped: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          who: AccountId32,
+          assetPair: PrimitivesAssetAssetPair,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          who: AccountId32
+          assetPair: PrimitivesAssetAssetPair
+        }
+      >
+      /**
+       * Yield farm multiplier was updated.
+       **/
+      YieldFarmUpdated: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          who: AccountId32,
+          assetPair: PrimitivesAssetAssetPair,
+          multiplier: u128,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          who: AccountId32
+          assetPair: PrimitivesAssetAssetPair
+          multiplier: u128
+        }
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    xykWarehouseLM: {
+      /**
+       * Global farm accumulated reward per share was updated.
+       **/
+      GlobalFarmAccRPZUpdated: AugmentedEvent<
+        ApiType,
+        [globalFarmId: u32, accumulatedRpz: u128, totalSharesZ: u128],
+        { globalFarmId: u32; accumulatedRpz: u128; totalSharesZ: u128 }
+      >
+      /**
+       * Yield farm accumulated reward per valued share was updated.
+       **/
+      YieldFarmAccRPVSUpdated: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          accumulatedRpvs: u128,
+          totalValuedShares: u128,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          accumulatedRpvs: u128
+          totalValuedShares: u128
         }
       >
       /**

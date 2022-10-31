@@ -9,7 +9,6 @@ import type { ApiTypes, AugmentedConst } from "@polkadot/api-base/types"
 import type {
   Option,
   U8aFixed,
-  Vec,
   bool,
   u128,
   u16,
@@ -27,7 +26,6 @@ import type {
   FrameSupportPalletId,
   FrameSupportWeightsPays,
   FrameSupportWeightsRuntimeDbWeight,
-  FrameSupportWeightsWeightToFeeCoefficient,
   FrameSystemLimitsBlockLength,
   FrameSystemLimitsBlockWeights,
   SpVersionRuntimeVersion,
@@ -176,6 +174,21 @@ declare module "@polkadot/api-base/types/consts" {
        **/
       desiredRunnersUp: u32 & AugmentedConst<ApiType>
       /**
+       * The maximum number of candidates in a phragmen election.
+       *
+       * Warning: The election happens onchain, and this value will determine
+       * the size of the election. When this limit is reached no more
+       * candidates are accepted in the election.
+       **/
+      maxCandidates: u32 & AugmentedConst<ApiType>
+      /**
+       * The maximum number of voters to allow in a phragmen election.
+       *
+       * Warning: This impacts the size of the election which is run onchain.
+       * When the limit is reached the new voters are ignored.
+       **/
+      maxVoters: u32 & AugmentedConst<ApiType>
+      /**
        * Identifier for the elections-phragmen pallet's lock
        **/
       palletId: U8aFixed & AugmentedConst<ApiType>
@@ -319,9 +332,9 @@ declare module "@polkadot/api-base/types/consts" {
     }
     nft: {
       /**
-       * Class IDs reserved for runtime up to the following constant
+       * Collection IDs reserved for runtime up to the following constant
        **/
-      reserveClassIdUpTo: u128 & AugmentedConst<ApiType>
+      reserveCollectionIdUpTo: u128 & AugmentedConst<ApiType>
       /**
        * Generic const
        **/
@@ -464,6 +477,10 @@ declare module "@polkadot/api-base/types/consts" {
     tokens: {
       maxLocks: u32 & AugmentedConst<ApiType>
       /**
+       * The maximum number of named reserves that can exist on an account.
+       **/
+      maxReserves: u32 & AugmentedConst<ApiType>
+      /**
        * Generic const
        **/
       [key: string]: Codec
@@ -493,15 +510,6 @@ declare module "@polkadot/api-base/types/consts" {
        * transactions.
        **/
       operationalFeeMultiplier: u8 & AugmentedConst<ApiType>
-      /**
-       * The fee to be paid for making a transaction; the per-byte portion.
-       **/
-      transactionByteFee: u128 & AugmentedConst<ApiType>
-      /**
-       * The polynomial that is applied in order to derive fee from weight.
-       **/
-      weightToFee: Vec<FrameSupportWeightsWeightToFeeCoefficient> &
-        AugmentedConst<ApiType>
       /**
        * Generic const
        **/
@@ -546,28 +554,28 @@ declare module "@polkadot/api-base/types/consts" {
     }
     uniques: {
       /**
-       * The basic amount of funds that must be reserved when adding an attribute to an asset.
+       * The basic amount of funds that must be reserved when adding an attribute to an item.
        **/
       attributeDepositBase: u128 & AugmentedConst<ApiType>
       /**
-       * The basic amount of funds that must be reserved for an asset class.
+       * The basic amount of funds that must be reserved for collection.
        **/
-      classDeposit: u128 & AugmentedConst<ApiType>
+      collectionDeposit: u128 & AugmentedConst<ApiType>
       /**
        * The additional funds that must be reserved for the number of bytes store in metadata,
        * either "normal" metadata or attribute metadata.
        **/
       depositPerByte: u128 & AugmentedConst<ApiType>
       /**
-       * The basic amount of funds that must be reserved for an asset instance.
+       * The basic amount of funds that must be reserved for an item.
        **/
-      instanceDeposit: u128 & AugmentedConst<ApiType>
+      itemDeposit: u128 & AugmentedConst<ApiType>
       /**
        * The maximum length of an attribute key.
        **/
       keyLimit: u32 & AugmentedConst<ApiType>
       /**
-       * The basic amount of funds that must be reserved when adding metadata to your asset.
+       * The basic amount of funds that must be reserved when adding metadata to your item.
        **/
       metadataDepositBase: u128 & AugmentedConst<ApiType>
       /**
@@ -598,34 +606,6 @@ declare module "@polkadot/api-base/types/consts" {
        * The minimum amount transferred to call `vested_transfer`.
        **/
       minVestedTransfer: u128 & AugmentedConst<ApiType>
-      /**
-       * Generic const
-       **/
-      [key: string]: Codec
-    }
-    warehouseLM: {
-      /**
-       * Maximum number of yield farms same LP shares can be re/deposited into. This value always
-       * MUST BE >= 1.
-       **/
-      maxFarmEntriesPerDeposit: u32 & AugmentedConst<ApiType>
-      /**
-       * Max number of yield farms can exist in global farm. This includes all farms in the
-       * storage(active, stopped, deleted).
-       **/
-      maxYieldFarmsPerGlobalFarm: u32 & AugmentedConst<ApiType>
-      /**
-       * Minimum number of periods to run liquidity mining program.
-       **/
-      minPlannedYieldingPeriods: u32 & AugmentedConst<ApiType>
-      /**
-       * Minimum total rewards to distribute from global farm during liquidity mining.
-       **/
-      minTotalFarmRewards: u128 & AugmentedConst<ApiType>
-      /**
-       * Pallet id.
-       **/
-      palletId: FrameSupportPalletId & AugmentedConst<ApiType>
       /**
        * Generic const
        **/
@@ -673,6 +653,44 @@ declare module "@polkadot/api-base/types/consts" {
        * Native Asset Id
        **/
       nativeAssetId: u32 & AugmentedConst<ApiType>
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec
+    }
+    xykLiquidityMining: {
+      /**
+       * NFT collection id for liq. mining deposit nfts. Has to be within the range of reserved NFT class IDs.
+       **/
+      nftCollectionId: u128 & AugmentedConst<ApiType>
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec
+    }
+    xykWarehouseLM: {
+      /**
+       * Maximum number of yield farms same LP shares can be re/deposited into. This value always
+       * MUST BE >= 1.
+       **/
+      maxFarmEntriesPerDeposit: u32 & AugmentedConst<ApiType>
+      /**
+       * Max number of yield farms can exist in global farm. This includes all farms in the
+       * storage(active, stopped, deleted).
+       **/
+      maxYieldFarmsPerGlobalFarm: u32 & AugmentedConst<ApiType>
+      /**
+       * Minimum number of periods to run liquidity mining program.
+       **/
+      minPlannedYieldingPeriods: u32 & AugmentedConst<ApiType>
+      /**
+       * Minimum total rewards to distribute from global farm during liquidity mining.
+       **/
+      minTotalFarmRewards: u128 & AugmentedConst<ApiType>
+      /**
+       * Pallet id.
+       **/
+      palletId: FrameSupportPalletId & AugmentedConst<ApiType>
       /**
        * Generic const
        **/

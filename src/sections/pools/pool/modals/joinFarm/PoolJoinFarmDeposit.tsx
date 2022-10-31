@@ -59,7 +59,7 @@ export const PoolJoinFarmDeposit = (props: PoolJoinFarmDepositProps) => {
     if (!account) throw new Error("No account found")
     if (props.farm) {
       return await createTransaction({
-        tx: api.tx.liquidityMining.depositShares(
+        tx: api.tx.xykLiquidityMining.depositShares(
           props.farm.globalFarm.id,
           props.farm.yieldFarm.id,
           {
@@ -76,7 +76,7 @@ export const PoolJoinFarmDeposit = (props: PoolJoinFarmDepositProps) => {
 
     const [firstActive, ...restActive] = activeYieldFarms.data
     const firstDeposit = await createTransaction({
-      tx: api.tx.liquidityMining.depositShares(
+      tx: api.tx.xykLiquidityMining.depositShares(
         firstActive.globalFarmId,
         firstActive.yieldFarmId,
         {
@@ -88,14 +88,11 @@ export const PoolJoinFarmDeposit = (props: PoolJoinFarmDepositProps) => {
     })
 
     for (const record of firstDeposit.events) {
-      // currently, liquidityMining.SharesDeposited does not contain the depositId
-      // instead, we obtain the value from the nft.InstanceMinted event instead,
-      // which should be the same
-      if (api.events.nft.InstanceMinted.is(record.event)) {
-        const depositId = record.event.data.instanceId
+      if (api.events.xykLiquidityMining.SharesDeposited.is(record.event)) {
+        const depositId = record.event.data.depositId
 
         const txs = restActive.map((item) =>
-          api.tx.liquidityMining.redepositLpShares(
+          api.tx.xykLiquidityMining.redepositLpShares(
             item.globalFarmId,
             item.yieldFarmId,
             { assetIn: assetIn.id, assetOut: assetOut.id },
