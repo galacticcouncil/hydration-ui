@@ -110,3 +110,26 @@ export const useVestingClaimableBalance = () => {
     isLoading,
   }
 }
+
+export const useVestingTotalVestedAmount = () => {
+  const { account } = useAccountStore()
+  const { data, isLoading } = useVestingSchedules(account?.address)
+
+  const totalVestedAmount = useMemo(() => {
+    if (data) {
+      return data.reduce((acc, cur) => {
+        const perPeriod = new BigNumber(cur.perPeriod.toHex())
+        const periodCount = new BigNumber(cur.periodCount.toHex())
+        acc.plus(perPeriod.times(periodCount))
+        return acc
+      }, BN_0)
+    }
+
+    return null
+  }, [data])
+
+  return {
+    data: totalVestedAmount,
+    isLoading,
+  }
+}
