@@ -4,6 +4,7 @@ import { WalletTabs } from "./header/WalletTabs"
 import { useMatchRoute } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
 import { WalletVesting } from "./vesting/WalletVesting"
+import { WalletAssets } from "sections/wallet/assets/WalletAssets"
 
 export const WalletPage = () => {
   const matchRoute = useMatchRoute()
@@ -13,6 +14,7 @@ export const WalletPage = () => {
       <WalletHeader />
       <WalletTabs />
       {matchRoute({ to: LINKS.walletVesting }) && <WalletVesting />}
+      {matchRoute({ to: LINKS.walletAssets }) && <WalletAssets />}
     </Page>
   )
 }

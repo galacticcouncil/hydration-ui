@@ -157,5 +157,16 @@
   "wallet.vesting.claimable": "Claimable",
   "wallet.vesting.claimable.value": "{{num}}.<0>{{denom}}</0>",
   "wallet.vesting.total_vested": "Total Vested",
-  "wallet.vesting.total_vested.value": "{{num}}.<0>{{denom}} BSX</0>"
+  "wallet.vesting.total_vested.value": "{{num}}.<0>{{denom}} BSX</0>",
+  "wallet.assets.table.title": "Available Assets",
+  "wallet.assets.table.toggle": "Show All Assets",
+  "wallet.assets.table.placeholder": "Please connect your wallet to view your assets.",
+  "wallet.assets.table.header.name": "Asset Name",
+  "wallet.assets.table.header.transferable": "Transferable Balance",
+  "wallet.assets.table.header.total": "Total Balance",
+  "wallet.assets.table.actions.buy": "Buy",
+  "wallet.assets.table.actions.sell": "Sell",
+  "wallet.assets.table.actions.transfer": "Transfer",
+  "wallet.assets.table.details.origin": "Origin Chain:",
+  "wallet.assets.table.details.locked": "Locked:"
 }

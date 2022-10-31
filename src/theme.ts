@@ -50,6 +50,7 @@ const colors = {
   darkGreen: "#1D2D26",
   darkGray: "#1A171B",
   error: "#FF8A8A",
+  iconGray: "#BDCCD4",
   graphGradient0: "#4FFFB0",
   graphGradient50: "#B3FF8F",
   graphGradient100: "#FF984E",
@@ -69,6 +70,7 @@ const gradients = {
 const zIndices = {
   chainedIcon: 1,
   boxSwitch: 1,
+  tablePlaceholder: 2,
   header: 5,
   backdrop: 9,
   modal: 10,

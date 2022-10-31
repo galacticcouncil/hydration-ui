@@ -43,7 +43,6 @@ export const PoolsHeader: FC<Props> = ({
             size="small"
             name="my-positions"
             label={t("pools.header.switch")}
-            withLabel
           />
         )}
       </div>

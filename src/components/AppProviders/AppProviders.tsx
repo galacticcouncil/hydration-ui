@@ -6,6 +6,8 @@ import { useProvider } from "api/provider"
 import { ToastProvider } from "components/Toast/ToastProvider"
 import { Transactions } from "sections/transaction/Transactions"
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
+import { SkeletonTheme } from "react-loading-skeleton"
+import { theme } from "theme"
 
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   const api = useProvider()
@@ -17,8 +19,13 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
       <ApiPromiseContext.Provider value={api.data}>
         <InvalidateOnBlock>
           <ToastProvider>
-            {children}
-            <Transactions />
+            <SkeletonTheme
+              baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
+              highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
+            >
+              {children}
+              <Transactions />
+            </SkeletonTheme>
           </ToastProvider>
         </InvalidateOnBlock>
       </ApiPromiseContext.Provider>

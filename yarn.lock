@@ -3841,6 +3841,18 @@
     "@types/use-sync-external-store" "^0.0.3"
     use-sync-external-store "^1.2.0"
 
+"@tanstack/react-table@^8.5.17":
+  version "8.5.17"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-table/-/react-table-8.5.17.tgz#2cf86ae17474a007b611ef65b5f56f3b421a8207"
+  integrity sha512-QHCvxGk1fpdcH0XM5DL02broJ50UY6U04/rr0BTQnL6Tt7V4zdRfjHZB6sVHDwbUElJnL+xlfKPi1DNNEIQs8g==
+  dependencies:
+    "@tanstack/table-core" "8.5.17"
+
+"@tanstack/table-core@8.5.17":
+  version "8.5.17"
+  resolved "https://registry.yarnpkg.com/@tanstack/table-core/-/table-core-8.5.17.tgz#753f1aeda6df8a9225ace8cb9d6ec64e5f1f27b2"
+  integrity sha512-oKGg68v1E6UF2RNukSChwNX6W0ongM/QxbFPp+yW4SMOrciGNftG1XDF3dBCM/xbFpN7Pe+L880Evv6kVHrDXA==
+
 "@testing-library/dom@^8.3.0", "@testing-library/dom@^8.5.0":
   version "8.16.0"
   resolved "https://registry.npmjs.org/@testing-library/dom/-/dom-8.16.0.tgz"
@@ -11333,6 +11345,11 @@ react-lifecycles-compat@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
+
+react-loading-skeleton@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/react-loading-skeleton/-/react-loading-skeleton-3.1.0.tgz#ce22942f1af77bfd60854417075792367f54f41e"
+  integrity sha512-j1U1CWWs68nBPOg7tkQqnlFcAMFF6oEK6MgqAo15f8A5p7mjH6xyKn2gHbkcimpwfO0VQXqxAswnSYVr8lWzjw==
 
 react-merge-refs@^1.0.0:
   version "1.1.0"

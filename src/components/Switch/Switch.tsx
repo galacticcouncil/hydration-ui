@@ -9,7 +9,6 @@ type SwitchProps = {
   name: string
   disabled?: boolean
   size?: "small" | "regular"
-  withLabel?: boolean
 }
 
 export const Switch: FC<SwitchProps> = ({
@@ -19,13 +18,12 @@ export const Switch: FC<SwitchProps> = ({
   size = "regular",
   name,
   label,
-  withLabel = false,
 }) => {
   return (
     <Label
       id={name}
       label={label}
-      withLabel={withLabel}
+      withLabel={!!label}
       css={{ fontSize: 14, display: "flex", alignItems: "center" }}
     >
       <SSwitch
@@ -35,7 +33,7 @@ export const Switch: FC<SwitchProps> = ({
         size={size}
         name={name}
         id={name}
-        withLabel={withLabel}
+        withLabel={!!label}
       >
         <SThumb checked={value} disabled={disabled} size={size} />
       </SSwitch>
