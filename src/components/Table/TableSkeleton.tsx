@@ -1,60 +1,70 @@
 import {
-  STable,
-  STableBodyContent,
-  STableContainer,
-  STableData,
-  STableHeaderContent,
-  STablePlaceholderContent,
-  STableRow,
-  STableTitle,
+  Table,
+  TableBodyContent,
+  TableContainer,
+  TableData,
+  TableHeaderContent,
+  TablePlaceholderContent,
+  TableRow,
+  TableTitle,
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
-import { flexRender, Table } from "@tanstack/react-table"
+import { flexRender, Table as ReactTable } from "@tanstack/react-table"
 import { Fragment, ReactNode } from "react"
-import { TableHeader } from "components/Table/Table"
+import { TableSortHeader } from "components/Table/Table"
 
-type Props = { table: Table<unknown>; title: string; placeholder?: ReactNode }
+type Props = {
+  table: ReactTable<unknown>
+  title: string
+  placeholder?: ReactNode
+  className?: string
+}
 
-export const TableSkeleton = ({ table, title, placeholder }: Props) => {
+export const TableSkeleton = ({
+  table,
+  title,
+  placeholder,
+  className,
+}: Props) => {
   return (
-    <STableContainer>
-      <STableTitle>
-        <Text fs={20} lh={26} fw={500} color="white">
+    <TableContainer className={className}>
+      <TableTitle>
+        <Text fs={[16, 20]} lh={[20, 26]} fw={500} color="white">
           {title}
         </Text>
-      </STableTitle>
-      <STable>
-        <STableHeaderContent>
+      </TableTitle>
+      <Table>
+        <TableHeaderContent>
           {table.getHeaderGroups().map((hg) => (
-            <STableRow key={hg.id}>
+            <TableRow key={hg.id}>
               {hg.headers.map((header) => (
-                <TableHeader key={header.id} canSort={false}>
+                <TableSortHeader key={header.id} canSort={false}>
                   {flexRender(
                     header.column.columnDef.header,
                     header.getContext(),
                   )}
-                </TableHeader>
+                </TableSortHeader>
               ))}
-            </STableRow>
+            </TableRow>
           ))}
-        </STableHeaderContent>
-        <STableBodyContent>
+        </TableHeaderContent>
+        <TableBodyContent>
           {placeholder && (
-            <STablePlaceholderContent>{placeholder}</STablePlaceholderContent>
+            <TablePlaceholderContent>{placeholder}</TablePlaceholderContent>
           )}
           {table.getRowModel().rows.map((row, i) => (
             <Fragment key={row.id}>
-              <STableRow isOdd={!(i % 2)}>
+              <TableRow isOdd={!(i % 2)}>
                 {row.getVisibleCells().map((cell) => (
-                  <STableData key={cell.id}>
+                  <TableData key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </STableData>
+                  </TableData>
                 ))}
-              </STableRow>
+              </TableRow>
             </Fragment>
           ))}
-        </STableBodyContent>
-      </STable>
-    </STableContainer>
+        </TableBodyContent>
+      </Table>
+    </TableContainer>
   )
 }

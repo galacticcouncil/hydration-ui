@@ -1,7 +1,7 @@
 import { ReactNode } from "react"
 import { Button } from "components/Button/Button"
 import { SortDirection } from "@tanstack/react-table"
-import { STableHeader } from "components/Table/Table.styled"
+import { TableHeader } from "components/Table/Table.styled"
 import { ReactComponent as CaretIcon } from "assets/icons/CaretIcon.svg"
 
 export const TableAction = (props: {
@@ -19,20 +19,21 @@ export const TableAction = (props: {
   )
 }
 
-export const TableHeader = (props: {
+export const TableSortHeader = (props: {
   canSort: boolean
   sortDirection?: false | SortDirection
   onSort?: (event: unknown) => void
+  className?: string
   children: ReactNode
 }) => {
-  const { canSort, sortDirection, onSort, children } = props
+  const { canSort, sortDirection, onSort, className, children } = props
   const isSorting =
     canSort && sortDirection !== undefined && onSort !== undefined
   const asc = sortDirection === "asc" || sortDirection === false ? 1 : 0
   const desc = sortDirection === "desc" || sortDirection === false ? 1 : 0
 
   return (
-    <STableHeader canSort={canSort} onClick={onSort}>
+    <TableHeader canSort={canSort} onClick={onSort} className={className}>
       <div sx={{ flex: "row", align: "center" }}>
         {children}
         {isSorting && (
@@ -42,6 +43,6 @@ export const TableHeader = (props: {
           </div>
         )}
       </div>
-    </STableHeader>
+    </TableHeader>
   )
 }

@@ -5,6 +5,8 @@ import { Text } from "components/Typography/Text/Text"
 import { ReactComponent as TablePlaceholderIcon } from "assets/icons/TablePlaceholderIcon.svg"
 import { theme } from "theme"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
+import { css } from "@emotion/react"
+import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
 
 export const WalletAssetsTablePlaceholder = () => {
   const { t } = useTranslation()
@@ -14,16 +16,29 @@ export const WalletAssetsTablePlaceholder = () => {
     <TableSkeleton
       table={table}
       title={t("wallet.assets.table.title")}
+      css={assetsTableStyles}
       placeholder={
         <div
           css={{ color: theme.colors.neutralGray500 }}
-          sx={{ flex: "column", align: "center" }}
+          sx={{ flex: "column", align: "center", p: 16 }}
         >
-          <TablePlaceholderIcon />
-          <Text fs={16} lh={22} sx={{ mt: 10, mb: 30 }} color="neutralGray500">
+          <TablePlaceholderIcon sx={{ width: [52, 64], height: [52, 64] }} />
+          <Text
+            fs={[14, 16]}
+            lh={[18, 22]}
+            sx={{ mt: 10, mb: 30, textAlign: "center" }}
+            color="neutralGray500"
+          >
             {t("wallet.assets.table.placeholder")}
           </Text>
-          <WalletConnectButton />
+          <WalletConnectButton
+            css={css`
+              @media (${theme.viewport.lt.sm}) {
+                padding: 12px 15px;
+                font-size: 12px;
+              }
+            `}
+          />
         </div>
       }
     />

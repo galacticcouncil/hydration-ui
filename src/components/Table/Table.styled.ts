@@ -1,7 +1,7 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const STableContainer = styled.div`
+export const TableContainer = styled.div`
   background: linear-gradient(
       180deg,
       rgba(35, 56, 55, 0.3) 0%,
@@ -12,27 +12,31 @@ export const STableContainer = styled.div`
   overflow: hidden;
 `
 
-export const STable = styled.table`
+export const Table = styled.table`
   width: 100%;
   border-spacing: 0;
 `
 
-export const STableTitle = styled.div`
+export const TableTitle = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  padding: 24px 32px;
+  padding: 14px 20px;
   border-bottom: 1px solid rgba(${theme.rgbColors.white}, 0.06);
+
+  @media (${theme.viewport.gte.sm}) {
+    padding: 24px 32px;
+  }
 `
 
-export const STableHeaderContent = styled.thead``
+export const TableHeaderContent = styled.thead``
 
-export const STableBodyContent = styled.tbody`
+export const TableBodyContent = styled.tbody`
   position: relative;
 `
 
-export const STablePlaceholderContent = styled.div`
+export const TablePlaceholderContent = styled.div`
   position: absolute;
   top: 0;
   left: 0;
@@ -48,27 +52,36 @@ export const STablePlaceholderContent = styled.div`
   backdrop-filter: blur(7px);
 `
 
-export const STableRow = styled.tr<{ isOdd?: boolean; isSub?: boolean }>`
+export const TableRow = styled.tr<{ isOdd?: boolean; isSub?: boolean }>`
   ${({ isOdd }) => isOdd && `background: rgba(${theme.rgbColors.white}, 0.03);`}
   ${({ isSub }) => isSub && `background: rgba(${theme.rgbColors.white}, 0.06);`}
 `
 
-export const STableHeader = styled.th<{ canSort?: boolean }>`
-  padding: 24px 32px;
+export const TableHeader = styled.th<{ canSort?: boolean }>`
+  padding: 10px 16px;
 
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 600;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
 
   text-transform: uppercase;
   text-align: start;
   color: ${theme.colors.neutralGray500};
+  white-space: nowrap;
 
   ${({ canSort }) => canSort && "cursor:pointer;"}
+
+  @media (${theme.viewport.gte.sm}) {
+    padding: 24px 32px;
+
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 600;
+  }
 `
 
-export const STableData = styled.td<{ isExpanded?: boolean }>`
-  padding: 24px 32px;
+export const TableData = styled.td<{ isExpanded?: boolean }>`
+  padding: 16px;
   text-align: start;
 
   ${({ isExpanded }) =>
@@ -78,5 +91,9 @@ export const STableData = styled.td<{ isExpanded?: boolean }>`
   &:last-of-type {
     width: 0;
     padding-right: 10px;
+  }
+
+  @media (${theme.viewport.gte.sm}) {
+    padding: 24px 32px;
   }
 `

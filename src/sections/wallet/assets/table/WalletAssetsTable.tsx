@@ -1,20 +1,21 @@
 import { useAssetsTable } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { flexRender } from "@tanstack/react-table"
 import {
-  STable,
-  STableBodyContent,
-  STableContainer,
-  STableData,
-  STableHeaderContent,
-  STableRow,
-  STableTitle,
+  Table,
+  TableContainer,
+  TableBodyContent,
+  TableData,
+  TableHeaderContent,
+  TableRow,
+  TableTitle,
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
 import { Switch } from "components/Switch/Switch"
 import { Fragment, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { WalletAssetsTableDetails } from "sections/wallet/assets/table/details/WalletAssetsTableDetails"
-import { TableHeader } from "components/Table/Table"
+import { TableSortHeader } from "components/Table/Table"
+import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
 
 export const WalletAssetsTable = () => {
   const { t } = useTranslation()
@@ -23,9 +24,9 @@ export const WalletAssetsTable = () => {
   const table = useAssetsTable()
 
   return (
-    <STableContainer>
-      <STableTitle>
-        <Text fs={20} lh={26} fw={500} color="white">
+    <TableContainer css={assetsTableStyles}>
+      <TableTitle>
+        <Text fs={[16, 20]} lh={[20, 26]} fw={500} color="white">
           {t("wallet.assets.table.title")}
         </Text>
         <Switch
@@ -35,13 +36,13 @@ export const WalletAssetsTable = () => {
           name="showAll"
           label={t("wallet.assets.table.toggle")}
         />
-      </STableTitle>
-      <STable>
-        <STableHeaderContent>
+      </TableTitle>
+      <Table>
+        <TableHeaderContent>
           {table.getHeaderGroups().map((hg) => (
-            <STableRow key={hg.id}>
+            <TableRow key={hg.id}>
               {hg.headers.map((header) => (
-                <TableHeader
+                <TableSortHeader
                   key={header.id}
                   canSort={header.column.getCanSort()}
                   sortDirection={header.column.getIsSorted()}
@@ -51,36 +52,36 @@ export const WalletAssetsTable = () => {
                     header.column.columnDef.header,
                     header.getContext(),
                   )}
-                </TableHeader>
+                </TableSortHeader>
               ))}
-            </STableRow>
+            </TableRow>
           ))}
-        </STableHeaderContent>
-        <STableBodyContent>
+        </TableHeaderContent>
+        <TableBodyContent>
           {table.getRowModel().rows.map((row, i) => (
             <Fragment key={row.id}>
-              <STableRow isOdd={!(i % 2)}>
+              <TableRow isOdd={!(i % 2)}>
                 {row.getVisibleCells().map((cell) => (
-                  <STableData key={cell.id}>
+                  <TableData key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </STableData>
+                  </TableData>
                 ))}
-              </STableRow>
+              </TableRow>
               {row.getIsExpanded() && (
-                <STableRow isSub>
-                  <STableData colSpan={table.getAllColumns().length}>
+                <TableRow isSub>
+                  <TableData colSpan={table.getAllColumns().length}>
                     <WalletAssetsTableDetails
                       origin={row.original.origin}
                       locked={row.original.locked}
                       lockedUSD={row.original.lockedUSD}
                     />
-                  </STableData>
-                </STableRow>
+                  </TableData>
+                </TableRow>
               )}
             </Fragment>
           ))}
-        </STableBodyContent>
-      </STable>
-    </STableContainer>
+        </TableBodyContent>
+      </Table>
+    </TableContainer>
   )
 }
