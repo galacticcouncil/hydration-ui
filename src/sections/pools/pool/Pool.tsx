@@ -11,23 +11,21 @@ import { PoolFooter } from "sections/pools/pool/footer/PoolFooter"
 import { PositionChip } from "./position/chip/PoolPositionChip"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { PoolJoinFarm } from "./modals/joinFarm/PoolJoinFarm"
 
 type Props = { pool: PoolBase }
 
 export const Pool: FC<Props> = ({ pool }) => {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [openFarms, setOpenFarms] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
     <SContainer>
-      {!isDesktop && <PositionChip poolId={pool.address} />}
+      <PositionChip
+        sx={{ display: ["inline-block", "none"] }}
+        poolId={pool.address}
+      />
       <SGridContainer>
-        <PoolDetails
-          pool={pool}
-          onClick={() => !isDesktop && setOpenFarms(true)}
-        />
+        <PoolDetails pool={pool} />
         <PoolIncentives poolId={pool.address} />
         <PoolValue pool={pool} />
         <PoolActions
@@ -36,26 +34,22 @@ export const Pool: FC<Props> = ({ pool }) => {
           onExpandClick={() => setIsExpanded((prev) => !prev)}
         />
       </SGridContainer>
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0 }}
-            animate={{ height: "auto" }}
-            exit={{ height: 0 }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-            css={{ overflow: "hidden" }}
-          >
-            <PoolShares pool={pool} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {isDesktop && (
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0 }}
+              animate={{ height: "auto" }}
+              exit={{ height: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              css={{ overflow: "hidden" }}
+            >
+              <PoolShares pool={pool} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
       <PoolFooter pool={pool} />
-      <PoolJoinFarm
-        pool={pool}
-        isOpen={openFarms}
-        onClose={() => setOpenFarms(false)}
-        onSelect={() => setOpenFarms(false)}
-      />
     </SContainer>
   )
 }

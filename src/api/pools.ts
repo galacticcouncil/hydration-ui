@@ -34,7 +34,6 @@ export const usePoolShareTokens = (poolIds: string[]) => {
 export const getPools = (tradeRouter: TradeRouter) => async () => {
   try {
     const res = await tradeRouter.getPools()
-    console.log(res)
     return res
   } catch (err) {
     console.error(err)

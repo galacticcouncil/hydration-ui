@@ -3,20 +3,20 @@ import {
   SContainer,
   SIcon,
 } from "sections/pools/pool/position/list/PoolPositionList.styled"
-import { PalletLiquidityMiningDepositData } from "@polkadot/types/lookup"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { useTranslation } from "react-i18next"
 import { ReactComponent as FarmIcon } from "assets/icons/FarmIcon.svg"
 import { PoolPosition } from "sections/pools/pool/position/PoolPosition"
 import { PoolBase } from "@galacticcouncil/sdk"
+import { DepositNftType } from "api/deposits"
 
 type Props = {
   index: number
-  deposit: PalletLiquidityMiningDepositData
+  depositNft: DepositNftType
   pool: PoolBase
 }
 
-export const PoolPositionList: FC<Props> = ({ index, deposit, pool }) => {
+export const PoolPositionList: FC<Props> = ({ depositNft, index, pool }) => {
   const { t } = useTranslation()
 
   return (
@@ -30,14 +30,8 @@ export const PoolPositionList: FC<Props> = ({ index, deposit, pool }) => {
             {t("pools.pool.positions.title", { index })}
           </GradientText>
         </div>
-        {deposit.yieldFarmEntries.map((position, i) => (
-          <PoolPosition
-            key={i}
-            position={position}
-            index={i + 1}
-            pool={pool}
-            poolId={deposit.ammPoolId}
-          />
+        {depositNft.deposit.yieldFarmEntries.map((entry, i) => (
+          <PoolPosition key={i} index={i + 1} pool={pool} position={entry} />
         ))}
       </div>
     </SContainer>

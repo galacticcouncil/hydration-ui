@@ -3,22 +3,18 @@ import { useTranslation } from "react-i18next"
 import { AprFarm } from "utils/farms/apr"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
-import { PoolJoinFarmDeposit } from "./PoolJoinFarmDeposit"
-import { PoolJoinFarmItem } from "./PoolJoinFarmItem"
-import {
-  PalletLiquidityMiningDepositData,
-  PalletLiquidityMiningYieldFarmEntry,
-} from "@polkadot/types/lookup"
-import { PoolJoinFarmPosition } from "./PoolJoinFarmPosition"
-import { PoolJoinFarmLoyaltyGraph } from "./PoolJoinFarmLoyaltyGraph"
-import { u128 } from "@polkadot/types"
+import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
+import { PoolFarmPosition } from "../../position/PoolFarmPosition"
+import { PoolFarmDetail } from "sections/pools/farm/detail/PoolFarmDetail"
+import { PoolFarmLoyaltyGraph } from "sections/pools/farm/loyaltyGraph/PoolFarmLoyaltyGraph"
+import { DepositNftType } from "api/deposits"
 
-export function PoolJoinFarmSectionDetail(props: {
+export function PoolFarmPositionDetailSectionItem(props: {
   farm: AprFarm
   pool: PoolBase
-  position?: PalletLiquidityMiningYieldFarmEntry
   onBack: () => void
-  deposit?: { id: u128; deposit: PalletLiquidityMiningDepositData }
+  position?: PalletLiquidityMiningYieldFarmEntry
+  depositNft?: DepositNftType
 }) {
   const { t } = useTranslation()
 
@@ -36,28 +32,26 @@ export function PoolJoinFarmSectionDetail(props: {
       />
 
       <div sx={{ flex: "column", gap: 32 }}>
-        <PoolJoinFarmItem
+        <PoolFarmDetail
           pool={props.pool}
           farm={props.farm}
-          deposit={props.deposit}
+          depositNft={props.depositNft}
         />
 
         {loyaltyCurve && (
-          <PoolJoinFarmLoyaltyGraph
+          <PoolFarmLoyaltyGraph
             farm={props.farm}
             loyaltyCurve={loyaltyCurve}
             showDisclaimer={!props.position}
           />
         )}
 
-        {props.position ? (
-          <PoolJoinFarmPosition
+        {props.position && (
+          <PoolFarmPosition
             pool={props.pool}
             farm={props.farm}
             position={props.position}
           />
-        ) : (
-          <PoolJoinFarmDeposit pool={props.pool} farm={props.farm} />
         )}
       </div>
     </>

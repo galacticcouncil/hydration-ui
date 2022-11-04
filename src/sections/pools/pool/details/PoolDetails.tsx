@@ -4,13 +4,12 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { PoolBase } from "@galacticcouncil/sdk"
-import { getTradeFee } from "sections/pools/pool/Pool.utils"
-import { Icon } from "components/Icon/Icon"
-import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
+import { PoolDetailsTradeFee } from "./PoolDetailsTradeFee"
 
-type Props = { pool: PoolBase; onClick?: () => void }
-
-export const PoolDetails = ({ pool, onClick }: Props) => {
+export const PoolDetails = (props: {
+  pool: PoolBase
+  onClick?: () => void
+}) => {
   const { t } = useTranslation()
 
   return (
@@ -18,16 +17,16 @@ export const PoolDetails = ({ pool, onClick }: Props) => {
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div>
           <Text fs={14} lh={26} fw={400} color="neutralGray400">
-            {t("pools.pool.title", { type: pool.type })}
+            {t("pools.pool.title", { type: props.pool.type })}
           </Text>
           <div sx={{ flex: "row", align: "center" }}>
             <DualAssetIcons
-              firstIcon={{ icon: getAssetLogo(pool.tokens[0].symbol) }}
-              secondIcon={{ icon: getAssetLogo(pool.tokens[1].symbol) }}
+              firstIcon={{ icon: getAssetLogo(props.pool.tokens[0].symbol) }}
+              secondIcon={{ icon: getAssetLogo(props.pool.tokens[1].symbol) }}
             />
             <div sx={{ flex: "column", gap: 1 }}>
               <Text fw={700} color="white">
-                {pool.tokens[0].symbol}/{pool.tokens[1].symbol}
+                {props.pool.tokens[0].symbol}/{props.pool.tokens[1].symbol}
               </Text>
               <Text fs={12} lh={14} color="neutralGray500">
                 Token/Token {/*TODO*/}
@@ -35,26 +34,7 @@ export const PoolDetails = ({ pool, onClick }: Props) => {
             </div>
           </div>
         </div>
-        <div sx={{ flex: "row", align: "center" }} onClick={onClick}>
-          <div sx={{ flex: "column", justify: "center", width: ["auto", 120] }}>
-            <Text fs={14} fw={400} color="neutralGray400" lh={26}>
-              {t("pools.pool.poolDetails.fee")}
-            </Text>
-            <Text lh={22} color="white">
-              {t("value.percentage", { value: getTradeFee(pool.tradeFee) })}
-            </Text>
-          </div>
-          <Icon
-            icon={<ChevronRight />}
-            sx={{
-              ml: 11,
-              mt: 6,
-              color: "primary300",
-              display: ["inherit", "none"],
-            }}
-            size={36}
-          />
-        </div>
+        <PoolDetailsTradeFee pool={props.pool} />
       </div>
       <Separator sx={{ mt: [18, 34] }} />
     </div>

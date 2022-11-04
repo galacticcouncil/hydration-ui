@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
 import { SChip } from "./PoolPositionChip.styled"
 
-type PositionChipProps = { poolId: string }
+type PositionChipProps = { poolId: string; className?: string }
 
-export const PositionChip = ({ poolId }: PositionChipProps) => {
+export const PositionChip = ({ poolId, className }: PositionChipProps) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const deposits = useDeposits(poolId)
@@ -19,7 +19,7 @@ export const PositionChip = ({ poolId }: PositionChipProps) => {
   }
 
   return (
-    <SChip>
+    <SChip className={className}>
       {t("pools.pool.positions.amount", { count: positions?.length })}
     </SChip>
   )

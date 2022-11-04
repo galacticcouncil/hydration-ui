@@ -4,16 +4,16 @@ import { Text } from "components/Typography/Text/Text"
 import { Button } from "components/Button/Button"
 import { css } from "@emotion/react"
 import { theme } from "theme"
-import { SContainer } from "./PoolJoinFarmClaim.styled"
+import { SContainer } from "./PoolFarmClaim.styled"
 import { getFormatSeparators } from "utils/formatting"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { useClaimableAmount, useClaimAllMutation } from "utils/farms/claiming"
 import { Modal } from "components/Modal/Modal"
 import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
-import { PoolPositionMobile } from "../../position/PoolPositionMobile"
+import { PoolPositionMobile } from "../../pool/position/PoolPositionMobile"
 import { useUserDeposits } from "utils/farms/deposits"
 
-export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
+export function PoolFarmClaim(props: { pool: PoolBase }) {
   const { t, i18n } = useTranslation()
   const [openMyPositions, setOpenMyPositions] = useState(false)
 
@@ -32,8 +32,8 @@ export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
   const positionsList = useMemo(() => {
     let index = 0
 
-    return positions.data?.map((deposit, i) =>
-      deposit.deposit.yieldFarmEntries.map((entry, j) => {
+    return positions.data?.map((deposit) =>
+      deposit.deposit.yieldFarmEntries.map((entry) => {
         ++index
         return (
           <PoolPositionMobile
@@ -45,7 +45,7 @@ export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
         )
       }),
     )
-  }, [positions.data])
+  }, [positions.data, props.pool])
 
   return (
     <SContainer>
@@ -86,19 +86,23 @@ export function PoolJoinFarmClaim(props: { pool: PoolBase }) {
           justify: "space-between",
         }}
       >
-        <Button
-          variant="secondary"
-          sx={{
-            p: "10px 16px",
-            display: ["inherit", "none"],
-          }}
-          disabled={!!claimable.data?.bsx.isZero()}
-          isLoading={claimAll.mutation.isLoading}
-          onClick={() => setOpenMyPositions(true)}
-        >
-          <WalletIcon />
-          {t("pools.allFarms.modal.myPositions")}
-        </Button>
+        {positions.data && positions.data.length > 0 ? (
+          <Button
+            variant="secondary"
+            sx={{
+              p: "10px 16px",
+              display: ["inherit", "none"],
+            }}
+            disabled={!positions.data?.length}
+            isLoading={claimAll.mutation.isLoading}
+            onClick={() => setOpenMyPositions(true)}
+          >
+            <WalletIcon />
+            {t("pools.allFarms.modal.myPositions")}
+          </Button>
+        ) : (
+          <span />
+        )}
         <Button
           variant="primary"
           sx={{
