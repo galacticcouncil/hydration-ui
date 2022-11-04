@@ -10,6 +10,8 @@ interface ToastParams {
   variant?: "info" | "success" | "error" | "loading"
   text?: string
   children?: ReactNode
+  persist?: boolean
+  onClose?: () => void
 }
 
 interface ToastStore {

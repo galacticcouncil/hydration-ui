@@ -2,8 +2,13 @@ import { Text } from "components/Typography/Text/Text"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { useTranslation } from "react-i18next"
+import { Button } from "components/Button/Button"
 
-export const ReviewTransactionPending = () => {
+type Props = {
+  onClose: () => void
+}
+
+export const ReviewTransactionPending = ({ onClose }: Props) => {
   const { t } = useTranslation()
   return (
     <div sx={{ flex: "column", align: "center", pt: 50 }}>
@@ -16,6 +21,9 @@ export const ReviewTransactionPending = () => {
           {t("pools.reviewTransaction.modal.pending.description")}
         </Text>
       </div>
+      <Button variant="secondary" sx={{ mt: 40 }} onClick={onClose}>
+        {t("pools.reviewTransaction.modal.success.close")}
+      </Button>
     </div>
   )
 }

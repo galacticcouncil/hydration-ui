@@ -23,6 +23,7 @@ type Props = {
   index?: number
   count?: number
   onClose?: () => void
+  persist?: boolean
 }
 
 export const Toast: FC<PropsWithChildren<Props>> = ({
@@ -32,6 +33,7 @@ export const Toast: FC<PropsWithChildren<Props>> = ({
   count,
   onClose,
   children,
+  persist,
 }) => {
   const { t } = useTranslation()
 
@@ -41,7 +43,8 @@ export const Toast: FC<PropsWithChildren<Props>> = ({
       animate={{ x: 0, opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
-      onOpenChange={(open) => !open && onClose?.()}
+      onOpenChange={(open) => !open && !persist && onClose?.()}
+      open={true}
     >
       <SContainer>
         <SIcon>
@@ -75,11 +78,16 @@ export const Toast: FC<PropsWithChildren<Props>> = ({
         <SProgressBar
           variant={variant}
           initial={{ width: "100%" }}
-          animate={{ width: "0%" }}
+          animate={!persist && { width: "0%" }}
           transition={{ duration: TOAST_CLOSE_TIME / 1000, ease: "linear" }}
         />
       </SContainer>
-      <SClose aria-label={t("toast.close")}>
+      <SClose
+        aria-label={t("toast.close")}
+        onClick={() => {
+          onClose?.()
+        }}
+      >
         <CrossIcon />
       </SClose>
     </SRoot>

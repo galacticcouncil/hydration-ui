@@ -11,7 +11,11 @@ export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
   const [toast, setToast] = useState<ToastData>()
 
   useEffect(() => {
-    if (toasts.length) setToast(toasts[0])
+    if (toasts.length) {
+      setToast(toasts[0])
+    } else {
+      setToast(undefined)
+    }
   }, [toasts])
 
   return (
@@ -23,9 +27,13 @@ export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
             key={toast.id}
             variant={toast.variant}
             text={toast.text}
-            onClose={() => remove(toast.id)}
+            onClose={() => {
+              remove(toast.id)
+              toast.onClose?.()
+            }}
             index={1}
             count={toasts.length}
+            persist={toast.persist}
           >
             {toast.children}
           </Toast>

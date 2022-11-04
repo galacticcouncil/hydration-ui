@@ -45,7 +45,7 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
   const [inputAssetA, setInputAssetA] = useState("0")
   const [inputAssetB, setInputAssetB] = useState("0")
 
-  const { pendingTx, handleAddLiquidity, paymentInfo } = useAddLiquidity(
+  const { handleAddLiquidity, paymentInfo } = useAddLiquidity(
     pool.tokens[0].id,
     pool.tokens[1].id,
   )
@@ -162,29 +162,25 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
   )
 
   async function handleSubmit() {
-    try {
-      handleAddLiquidity([
-        {
-          id: pool.tokens[0].id,
-          amount: getFixedPointAmount(
-            new BigNumber(inputAssetA),
-            pool.tokens[0].decimals,
-          ),
-        },
-        {
-          id: pool.tokens[1].id,
-          // For some reason, when amount_b == amount_b_max_limit,
-          // the transaction fails with AssetAmountExceededLimit
-          // TODO: investiage, whether we're not doing something wrong
-          amount: getFixedPointAmount(
-            new BigNumber(inputAssetB),
-            pool.tokens[1].decimals,
-          ).plus(1),
-        },
-      ])
-    } catch (err) {
-      console.log(err)
-    }
+    handleAddLiquidity.mutate([
+      {
+        id: pool.tokens[0].id,
+        amount: getFixedPointAmount(
+          new BigNumber(inputAssetA),
+          pool.tokens[0].decimals,
+        ),
+      },
+      {
+        id: pool.tokens[1].id,
+        // For some reason, when amount_b == amount_b_max_limit,
+        // the transaction fails with AssetAmountExceededLimit
+        // TODO: investiage, whether we're not doing something wrong
+        amount: getFixedPointAmount(
+          new BigNumber(inputAssetB),
+          pool.tokens[1].decimals,
+        ).plus(1),
+      },
+    ])
   }
 
   return (
@@ -292,7 +288,7 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
           text={t("pools.addLiquidity.modal.confirmButton")}
           variant="primary"
           fullWidth
-          disabled={pendingTx}
+          disabled={handleAddLiquidity.isLoading}
           onClick={handleSubmit}
           sx={{ mt: 30 }}
         />
