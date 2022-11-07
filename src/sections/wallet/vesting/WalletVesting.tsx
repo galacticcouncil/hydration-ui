@@ -1,4 +1,5 @@
 import { WalletVestingHeader } from "./WalletVestingHeader"
+import { WalletVestingBox } from "./WalletVestingBox"
 
 export const WalletVesting = () => (
   <div
@@ -7,5 +8,6 @@ export const WalletVesting = () => (
     }}
   >
     <WalletVestingHeader />
+    <WalletVestingBox />
   </div>
 )

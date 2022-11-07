@@ -7,9 +7,10 @@ import { useBestNumber } from "./chain"
 import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 import { useAccountStore } from "state/store"
-import { BN_0, ORMLVEST } from "utils/constants"
+import { BLOCK_TIME, BN_0, ORMLVEST } from "utils/constants"
 import { useMemo } from "react"
 import { useApiPromise } from "utils/api"
+import { getExpectedBlockDate } from "../utils/block"
 
 export const useVestingSchedules = (address: Maybe<AccountId32 | string>) => {
   const api = useApiPromise()
@@ -70,7 +71,73 @@ const getScheduleClaimableBalance = (
   return originalLock.minus(vestedOverPeriods)
 }
 
-export const useVestingClaimableBalance = () => {
+/**
+ * Returns date of next available claim
+ **/
+export const useNextClaimableDate = (schedule: ScheduleType) => {
+  const bestNumberQuery = useBestNumber()
+  const start = schedule.start.toBigNumber()
+  const period = schedule.period.toBigNumber()
+
+  const periodNumber = useMemo(() => {
+    if (bestNumberQuery.data) {
+      const blockNumber =
+        bestNumberQuery.data.relaychainBlockNumber.toBigNumber()
+      return blockNumber.minus(start).div(period)
+    }
+    return null
+  }, [bestNumberQuery, start, period])
+
+  const nextClaimingBlock = useMemo(() => {
+    if (periodNumber) {
+      return new BigNumber(
+        Math.ceil(start.plus(periodNumber).times(period).toNumber()),
+      )
+    }
+    return null
+  }, [periodNumber, start, period])
+
+  const nextClaimableDate = useMemo(() => {
+    if (bestNumberQuery.data && nextClaimingBlock) {
+      const currentBlockNumber =
+        bestNumberQuery.data.relaychainBlockNumber.toBigNumber()
+      return getExpectedBlockDate(currentBlockNumber, nextClaimingBlock)
+    }
+    return null
+  }, [bestNumberQuery, nextClaimingBlock])
+
+  return {
+    data: nextClaimableDate,
+    isLoading: bestNumberQuery.isLoading,
+  }
+}
+
+/**
+ * Returns Bignumber of claimable balance in one schedule
+ **/
+export const useVestingScheduleClaimableBalance = (schedule: ScheduleType) => {
+  const bestNumberQuery = useBestNumber()
+
+  const claimableBalance = useMemo(() => {
+    if (bestNumberQuery.data) {
+      return getScheduleClaimableBalance(
+        schedule,
+        bestNumberQuery.data.relaychainBlockNumber,
+      )
+    }
+    return null
+  }, [schedule, bestNumberQuery])
+
+  return {
+    data: claimableBalance,
+    isLoading: bestNumberQuery.isLoading,
+  }
+}
+
+/**
+ * Returns Bignumber of total claimable balance
+ **/
+export const useVestingTotalClaimableBalance = () => {
   const { account } = useAccountStore()
   const vestingSchedulesQuery = useVestingSchedules(account?.address)
   const vestingLockBalanceQuery = useVestingLockBalance(account?.address)
@@ -111,6 +178,9 @@ export const useVestingClaimableBalance = () => {
   }
 }
 
+/**
+ * Returns BigNumber of totalVestedAmount
+ **/
 export const useVestingTotalVestedAmount = () => {
   const { account } = useAccountStore()
   const { data, isLoading } = useVestingSchedules(account?.address)
@@ -130,6 +200,44 @@ export const useVestingTotalVestedAmount = () => {
 
   return {
     data: totalVestedAmount,
+    isLoading,
+  }
+}
+
+/**
+ * Returns the most future vesting time ending in milliseconds
+ **/
+export const useVestingScheduleEnd = () => {
+  const { account } = useAccountStore()
+  const schedulesQuery = useVestingSchedules(account?.address)
+  const bestNumberQuery = useBestNumber()
+
+  const queries = [schedulesQuery, bestNumberQuery]
+  const isLoading = queries.some((query) => query.isLoading)
+
+  const estimatedEnds = useMemo(() => {
+    if (schedulesQuery.data && bestNumberQuery.data) {
+      const endings = schedulesQuery.data.map((schedule) => {
+        const start = schedule.start.toBigNumber()
+        const period = schedule.period.toBigNumber()
+        const periodCount = schedule.periodCount.toBigNumber()
+        const currentBlock =
+          bestNumberQuery.data.relaychainBlockNumber.toBigNumber()
+
+        const end = start.plus(period.times(periodCount))
+        const blocksToEnd = end.minus(currentBlock)
+
+        return blocksToEnd.times(BLOCK_TIME.times(1000))
+      })
+      const mostFuture = BigNumber.max(...endings)
+      return mostFuture.isNaN() ? null : mostFuture
+    }
+
+    return null
+  }, [schedulesQuery, bestNumberQuery])
+
+  return {
+    data: estimatedEnds,
     isLoading,
   }
 }
