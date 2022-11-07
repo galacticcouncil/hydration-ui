@@ -23,7 +23,7 @@ export const PoolValue = ({ pool }: Props) => {
           {t("value.usd", { amount: data })}
         </Text>
       </div>
-      <div sx={{ flex: "column", width: 120, align: "start" }}>
+      <div sx={{ flex: "column", width: ["auto", 120], align: "start" }}>
         <div sx={{ flex: "row", align: "center", gap: 6 }}>
           <Text
             fs={14}
@@ -37,7 +37,12 @@ export const PoolValue = ({ pool }: Props) => {
           <InfoTooltip text={t("pools.pool.poolDetails.24hours.tooltip")} />
         </div>
 
-        <Text lh={22} color="white">
+        <Text
+          lh={22}
+          color="white"
+          tAlign={["right", "left"]}
+          sx={{ width: "calc(100% - 20px)" }}
+        >
           {t("value.usd", { amount: volume })}
         </Text>
       </div>
