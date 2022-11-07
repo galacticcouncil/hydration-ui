@@ -99,6 +99,7 @@ export function formatBigNumber(
 ) {
   if (value == null) return null
   let num = normalizeBigNumber(value)
+  if (num.isNaN()) return "-"
 
   const localeOptions = getFormatSeparators(locale)
   const fmtConfig = {

@@ -22,3 +22,6 @@ export const TOAST_CLOSE_TIME = 5000
 
 // Vesting ID
 export const ORMLVEST = "ormlvest"
+
+// asset type
+export const ASSET_TYPE_TOKEN = "Token"

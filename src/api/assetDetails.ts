@@ -1,5 +1,5 @@
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { u32 } from "@polkadot/types"
@@ -9,10 +9,23 @@ export const useAssetDetails = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
 
   return useQuery(
-    QUERY_KEYS.assetDetails(id?.toString()),
+    QUERY_KEYS.assetDetails(id),
     id != null ? getAssetDetails(api, id) : undefinedNoop,
     { enabled: !!id },
   )
+}
+
+export const useAssetDetailsList = (ids?: Maybe<u32 | string>[]) => {
+  const api = useApiPromise()
+
+  return useQueries({
+    queries:
+      ids?.map((id) => ({
+        queryKey: QUERY_KEYS.assetDetails(id),
+        queryFn: !!id ? getAssetDetails(api, id) : undefinedNoop,
+        enabled: !!id,
+      })) ?? [],
+  })
 }
 
 export const getAssetDetails =
@@ -22,6 +35,7 @@ export const getAssetDetails =
       const symbol = properties.tokenSymbol.unwrap()[0]
 
       return {
+        id,
         name: symbol.toHuman(),
         assetType: "Token",
         existentialDeposit: "",
@@ -36,5 +50,5 @@ export const getAssetDetails =
       existentialDeposit: any
       locked: boolean
     }
-    return data
+    return { ...data, id }
   }

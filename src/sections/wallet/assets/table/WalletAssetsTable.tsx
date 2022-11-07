@@ -1,4 +1,7 @@
-import { useAssetsTable } from "sections/wallet/assets/table/WalletAssetsTable.utils"
+import {
+  AssetsTableData,
+  useAssetsTable,
+} from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { flexRender } from "@tanstack/react-table"
 import {
   Table,
@@ -17,11 +20,13 @@ import { WalletAssetsTableDetails } from "sections/wallet/assets/table/details/W
 import { TableSortHeader } from "components/Table/Table"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
 
-export const WalletAssetsTable = () => {
+type Props = { data: AssetsTableData[] }
+
+export const WalletAssetsTable = ({ data }: Props) => {
   const { t } = useTranslation()
   const [showAll, setShowAll] = useState(false)
 
-  const table = useAssetsTable()
+  const table = useAssetsTable(data)
 
   return (
     <TableContainer css={assetsTableStyles}>

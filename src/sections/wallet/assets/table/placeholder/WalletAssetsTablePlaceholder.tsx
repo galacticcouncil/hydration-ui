@@ -1,4 +1,3 @@
-import { useAssetsTableSkeleton } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { TableSkeleton } from "components/Table/TableSkeleton"
 import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
@@ -7,6 +6,7 @@ import { theme } from "theme"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { css } from "@emotion/react"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
+import { useAssetsTableSkeleton } from "sections/wallet/assets/table/skeleton/WalletAssetsTableSkeleton.utils"
 
 export const WalletAssetsTablePlaceholder = () => {
   const { t } = useTranslation()
