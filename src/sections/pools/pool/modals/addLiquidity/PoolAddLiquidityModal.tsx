@@ -1,15 +1,14 @@
 import { PoolAddLiquidityAssetSelect } from "./assetSelect/PoolAddLiquidityAssetSelect"
 import { getAssetLogo } from "../../../../../components/AssetIcon/AssetIcon"
 import { PoolAddLiquidityConversion } from "./conversion/PoolAddLiquidityConversion"
-import { BN_0, BN_1, BN_100 } from "../../../../../utils/constants"
+import { BN_1, BN_100 } from "../../../../../utils/constants"
 import { Row } from "../../../../../components/Row/Row"
 import { Separator } from "../../../../../components/Separator/Separator"
 import { Text } from "../../../../../components/Typography/Text/Text"
 import { Button } from "../../../../../components/Button/Button"
 import { WalletConnectButton } from "../../../../wallet/connect/modal/WalletConnectButton"
 import { usePools, usePoolShareToken } from "../../../../../api/pools"
-import { useAsset } from "../../../../../api/asset"
-import { FC, useCallback, useState } from "react"
+import { FC, useCallback, useMemo, useState } from "react"
 import { useAddLiquidity } from "../../../../../api/addLiquidity"
 import { useTotalIssuance } from "../../../../../api/totalIssuance"
 import { useTokenBalance } from "../../../../../api/balances"
@@ -25,6 +24,7 @@ import { useTranslation } from "react-i18next"
 import { u32 } from "@polkadot/types"
 import { getTradeFee } from "sections/pools/pool/Pool.utils"
 import { useMath } from "utils/api"
+import { useAssetMeta } from "../../../../../api/assetMeta"
 
 interface PoolAddLiquidityModalProps {
   pool: PoolBase
@@ -40,7 +40,7 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
 
   const { account } = useAccountStore()
   const { data: shareToken } = usePoolShareToken(pool.address)
-  const { data: dataShareToken } = useAsset(shareToken?.token)
+  const { data: shareTokenMeta } = useAssetMeta(shareToken?.token)
 
   const [inputAssetA, setInputAssetA] = useState("0")
   const [inputAssetB, setInputAssetB] = useState("0")
@@ -111,27 +111,41 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
     setInputAssetB(value)
   }
 
-  const calculatedShares =
-    xyk &&
-    assetAReserve.data &&
-    shareIssuance.data &&
-    dataShareToken &&
-    new BigNumber(
-      xyk.calculate_shares(
-        getFixedPointAmount(
-          assetAReserve.data.balance,
-          pool.tokens[0].decimals,
-        ).toFixed(),
-        getFixedPointAmount(
-          new BigNumber(inputAssetA),
-          pool.tokens[0].decimals,
-        ).toFixed(),
-        getFixedPointAmount(
-          shareIssuance.data.total,
-          dataShareToken.decimals.toNumber(),
-        ).toFixed(),
-      ),
-    )
+  const calculatedShares = useMemo(() => {
+    if (
+      xyk &&
+      assetAReserve.data &&
+      shareIssuance.data &&
+      shareTokenMeta?.data &&
+      inputAssetA
+    ) {
+      return new BigNumber(
+        xyk.calculate_shares(
+          getFixedPointAmount(
+            assetAReserve.data.balance,
+            pool.tokens[0].decimals,
+          ).toFixed(),
+          getFixedPointAmount(
+            new BigNumber(inputAssetA),
+            pool.tokens[0].decimals,
+          ).toFixed(),
+          getFixedPointAmount(
+            shareIssuance.data.total,
+            shareTokenMeta.data?.decimals.toNumber(),
+          ).toFixed(),
+        ),
+      )
+    }
+
+    return null
+  }, [
+    xyk,
+    assetAReserve.data,
+    shareIssuance.data,
+    shareTokenMeta,
+    inputAssetA,
+    pool.tokens,
+  ])
 
   const calculatedRatio =
     shareIssuance.data &&
@@ -273,13 +287,15 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
         <Row
           left={t("pools.addLiquidity.modal.row.shareTokens")}
           right={
-            <Text color="primary400">
-              {t("value", {
-                value: calculatedShares ?? BN_0,
-                decimalPlaces: 4,
-                fixedPointScale: dataShareToken?.decimals,
-              })}
-            </Text>
+            calculatedShares && (
+              <Text color="primary400">
+                {t("value", {
+                  value: calculatedShares,
+                  decimalPlaces: 4,
+                  fixedPointScale: shareTokenMeta?.data?.decimals,
+                })}
+              </Text>
+            )
           }
         />
       </div>
