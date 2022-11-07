@@ -30,7 +30,6 @@ export const usePoolPositionData = ({
 
   const shareToken = usePoolShareToken(pool.address)
   const totalIssuance = useTotalIssuance(shareToken.data?.token)
-  const totalInPool = useTotalInPool({ pool })
   const aUSD = useAUSD()
   const spotPrices = useSpotPrices(
     pool.tokens.map((token) => token.id),
@@ -46,7 +45,6 @@ export const usePoolPositionData = ({
     yieldFarm,
     shareToken,
     totalIssuance,
-    totalInPool,
     aUSD,
     rewardAsset,
     bestNumber,

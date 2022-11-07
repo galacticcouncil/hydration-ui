@@ -1,4 +1,3 @@
-import { Button } from "components/Button/Button"
 import styled from "@emotion/styled"
 import { css } from "@emotion/react"
 import { theme } from "theme"
@@ -112,15 +111,5 @@ export const SFarmIcon = styled.div`
     transform: rotate(-90deg);
 
     color: ${theme.colors.neutralGray200};
-  }
-`
-
-export const SMaxButton = styled(Button)`
-  background: rgba(${theme.rgbColors.white}, 0.06);
-  color: ${theme.colors.white};
-  font-weight: 600;
-
-  :hover {
-    background: rgba(${theme.rgbColors.white}, 0.15);
   }
 `

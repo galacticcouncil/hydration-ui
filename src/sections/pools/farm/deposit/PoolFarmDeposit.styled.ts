@@ -1,3 +1,4 @@
+import { Button } from "components/Button/Button"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
@@ -30,5 +31,15 @@ export const SGridContainer = styled.div`
     > *:nth-child(3) {
       grid-area: 2 / 1 / 3 / 3;
     }
+  }
+`
+
+export const SMaxButton = styled(Button)`
+  background: rgba(${theme.rgbColors.white}, 0.06);
+  color: ${theme.colors.white};
+  font-weight: 600;
+
+  :hover {
+    background: rgba(${theme.rgbColors.white}, 0.15);
   }
 `

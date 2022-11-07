@@ -3,6 +3,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { useApiPromise, useTradeRouter } from "utils/api"
 import { ApiPromise } from "@polkadot/api"
 import { TradeRouter } from "@galacticcouncil/sdk"
+import { AccountId32 } from "@polkadot/types/interfaces"
 
 export const usePools = () => {
   const tradeRouter = useTradeRouter()
@@ -19,7 +20,7 @@ export const usePoolShareToken = (poolId: string) => {
   )
 }
 
-export const usePoolShareTokens = (poolIds: string[]) => {
+export const usePoolShareTokens = (poolIds: (string | AccountId32)[]) => {
   const api = useApiPromise()
 
   return useQueries({
@@ -31,18 +32,11 @@ export const usePoolShareTokens = (poolIds: string[]) => {
   })
 }
 
-export const getPools = (tradeRouter: TradeRouter) => async () => {
-  try {
-    const res = await tradeRouter.getPools()
-    console.log(res)
-    return res
-  } catch (err) {
-    console.error(err)
-    throw err
-  }
-}
+export const getPools = (tradeRouter: TradeRouter) => async () =>
+  tradeRouter.getPools()
 
-const getPoolShareToken = (api: ApiPromise, poolId: string) => async () => {
-  const token = await api.query.xyk.shareToken(poolId)
-  return { poolId, token }
-}
+const getPoolShareToken =
+  (api: ApiPromise, poolId: string | AccountId32) => async () => {
+    const token = await api.query.xyk.shareToken(poolId)
+    return { poolId, token }
+  }

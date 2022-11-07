@@ -1,5 +1,4 @@
 import { Trans, useTranslation } from "react-i18next"
-import { SMaxButton } from "sections/pools/pool/modals/joinFarm/PoolJoinFarm.styled"
 import { Text } from "components/Typography/Text/Text"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { AssetInput } from "components/AssetInput/AssetInput"
@@ -16,7 +15,7 @@ import { useActiveYieldFarms, useGlobalFarms } from "api/farms"
 import { BN_0, BN_BILL } from "utils/constants"
 import { AprFarm } from "utils/farms/apr"
 import BigNumber from "bignumber.js"
-import { SGridContainer } from "./PoolJoinFarmDeposit.styled"
+import { SGridContainer, SMaxButton } from "./PoolFarmDeposit.styled"
 import BN from "bignumber.js"
 import { FormValues } from "utils/helpers"
 
@@ -26,7 +25,7 @@ type PoolJoinFarmDepositProps = {
   isDrawer?: boolean
 }
 
-export const PoolJoinFarmDeposit = (props: PoolJoinFarmDepositProps) => {
+export const PoolFarmDeposit = (props: PoolJoinFarmDepositProps) => {
   const activeYieldFarms = useActiveYieldFarms(props.pool.address)
   const globalFarms = useGlobalFarms(
     activeYieldFarms.data?.map((f) => f.globalFarmId) ?? [],

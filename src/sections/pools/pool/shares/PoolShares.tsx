@@ -27,7 +27,7 @@ export const PoolShares: FC<Props> = ({ pool }) => {
 
   const deposits = useDeposits(pool.address)
   const accountDepositIds = useAccountDepositIds(account?.address)
-  const positions = deposits.data?.filter((deposit) =>
+  const depositNftList = deposits.data?.filter((deposit) =>
     accountDepositIds.data?.some((ad) => ad.instanceId.eq(deposit.id)),
   )
 
@@ -45,14 +45,14 @@ export const PoolShares: FC<Props> = ({ pool }) => {
         />
         <PoolSharesApr poolId={pool.address} />
       </SDetails>
-      {!!positions?.length && (
+      {!!depositNftList?.length && (
         <div sx={{ flex: "column", gap: 12, mt: 32 }}>
-          {positions.map(({ id, deposit }, i) => (
+          {depositNftList.map((nft, i) => (
             <PoolPositionList
-              key={id.toString()}
-              deposit={deposit}
-              pool={pool}
+              key={nft.id.toString()}
               index={i + 1}
+              pool={pool}
+              depositNft={nft}
             />
           ))}
         </div>

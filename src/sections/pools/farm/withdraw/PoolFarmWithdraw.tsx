@@ -6,7 +6,7 @@ import { Button } from "components/Button/Button"
 import { useMutation } from "@tanstack/react-query"
 import { useApiPromise } from "utils/api"
 
-export function PoolJoinFarmWithdraw(props: { pool: PoolBase }) {
+export function PoolFarmWithdraw(props: { pool: PoolBase }) {
   const api = useApiPromise()
 
   const { account } = useAccountStore()

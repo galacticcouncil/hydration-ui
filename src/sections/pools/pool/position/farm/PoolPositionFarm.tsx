@@ -1,28 +1,28 @@
 import { FC, useState } from "react"
 import { SContainer } from "sections/pools/pool/position/farm/PoolPositionFarm.styled"
-import { u32 } from "@polkadot/types"
 import { useAPR } from "utils/farms/apr"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useAsset } from "api/asset"
 import { Button } from "components/Button/Button"
-import { PoolJoinFarm } from "sections/pools/pool/modals/joinFarm/PoolJoinFarm"
 import { PoolBase } from "@galacticcouncil/sdk"
+import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
+import { PoolFarmPositionDetail } from "sections/pools/farm/modals/positionDetail/PoolFarmPositionDetail"
 
-type Props = { pool: PoolBase; globalFarmId: u32; yieldFarmId: u32 }
+type Props = {
+  pool: PoolBase
+  position: PalletLiquidityMiningYieldFarmEntry
+}
 
-export const PoolPositionFarm: FC<Props> = ({
-  pool,
-  globalFarmId,
-  yieldFarmId,
-}) => {
+export const PoolPositionFarm: FC<Props> = ({ pool, position }) => {
   const { t } = useTranslation()
   const [openFarm, setOpenFarm] = useState(false)
 
   const APRs = useAPR(pool.address)
   const apr = APRs.data.find(
     (apr) =>
-      apr.yieldFarm.id.eq(yieldFarmId) && apr.globalFarm.id.eq(globalFarmId),
+      apr.yieldFarm.id.eq(position.yieldFarmId) &&
+      apr.globalFarm.id.eq(position.globalFarmId),
   )
   const asset = useAsset(apr?.assetId)
 
@@ -44,13 +44,14 @@ export const PoolPositionFarm: FC<Props> = ({
           </Button>
         </>
       )}
-      <PoolJoinFarm
-        pool={pool}
-        isOpen={openFarm}
-        onClose={() => setOpenFarm(false)}
-        onSelect={() => setOpenFarm(false)}
-        initialFarm={{ globalFarmId, yieldFarmId }}
-      />
+      {openFarm && (
+        <PoolFarmPositionDetail
+          pool={pool}
+          isOpen={openFarm}
+          onClose={() => setOpenFarm(false)}
+          onSelect={() => setOpenFarm(false)}
+        />
+      )}
     </SContainer>
   )
 }

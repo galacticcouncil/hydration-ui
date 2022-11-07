@@ -22,6 +22,7 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
             <SkeletonTheme
               baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
               highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
+              borderRadius={9999}
             >
               {children}
               <Transactions />

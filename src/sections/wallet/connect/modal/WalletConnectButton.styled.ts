@@ -8,6 +8,8 @@ export const SContainer = styled.div`
   background: ${theme.colors.backgroundGray1000};
   border: 1px solid ${theme.colors.backgroundGray900};
   cursor: pointer;
+
+  flex-shrink: 0;
 `
 
 export const SLoginButton = styled(Button)`

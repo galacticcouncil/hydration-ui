@@ -9,7 +9,7 @@ import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PoolAddLiquidity } from "sections/pools/pool/modals/addLiquidity/PoolAddLiquidity"
 import { PoolRemoveLiquidity } from "sections/pools/pool/modals/removeLiquidity/PoolRemoveLiquidity"
-import { PoolJoinFarm } from "sections/pools/pool/modals/joinFarm/PoolJoinFarm"
+import { PoolFarmJoin } from "sections/pools/farm/modals/join/PoolFarmJoin"
 import { PoolBase } from "@galacticcouncil/sdk"
 import {
   SActionsContainer,
@@ -123,7 +123,7 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
         onClose={() => setOpenRemove(false)}
         pool={pool}
       />
-      <PoolJoinFarm
+      <PoolFarmJoin
         pool={pool}
         isOpen={openFarms}
         onClose={() => setOpenFarms(false)}

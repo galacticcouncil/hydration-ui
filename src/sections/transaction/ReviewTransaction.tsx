@@ -1,5 +1,6 @@
-import React from "react"
+import React, { useState } from "react"
 import { Modal } from "components/Modal/Modal"
+import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { Transaction } from "state/store"
 import { useMutation } from "@tanstack/react-query"
@@ -12,35 +13,75 @@ import { ReviewTransactionError } from "./ReviewTransactionError"
 import { ReviewTransactionForm } from "./ReviewTransactionForm"
 import { useApiPromise } from "utils/api"
 import { ISubmittableResult } from "@polkadot/types/types"
+import { useToast } from "state/toasts"
+import { Button } from "components/Button/Button"
 
 export const ReviewTransaction: React.FC<Transaction> = (props) => {
   const { t } = useTranslation()
+  const { success, add, remove } = useToast()
+  const [minimizeModal, setMinimizeModal] = useState(false)
   const api = useApiPromise()
 
-  const sendTx = useMutation(async (sign: SubmittableExtrinsic<"promise">) => {
-    return await new Promise<ISubmittableResult>((resolve, reject) => {
-      sign.send((self) => {
-        if (self.isCompleted) {
-          if (self.dispatchError) {
-            let errorMessage = self.dispatchError.toString()
+  const sendTx = useMutation(
+    async (sign: SubmittableExtrinsic<"promise">) => {
+      return await new Promise<ISubmittableResult>((resolve, reject) => {
+        sign.send((self) => {
+          if (self.isCompleted) {
+            if (self.dispatchError) {
+              let errorMessage = self.dispatchError.toString()
 
-            if (self.dispatchError.isModule) {
-              const decoded = api.registry.findMetaError(
-                self.dispatchError.asModule,
-              )
-              errorMessage = `${decoded.section}.${
-                decoded.method
-              }: ${decoded.docs.join(" ")}`
+              if (self.dispatchError.isModule) {
+                const decoded = api.registry.findMetaError(
+                  self.dispatchError.asModule,
+                )
+                errorMessage = `${decoded.section}.${
+                  decoded.method
+                }: ${decoded.docs.join(" ")}`
+              }
+
+              reject(new Error(errorMessage))
+            } else {
+              resolve(self)
             }
-
-            reject(new Error(errorMessage))
-          } else {
-            resolve(self)
           }
-        }
+        })
       })
-    })
-  })
+    },
+    {
+      onSuccess: (data) => {
+        remove(`${props.hash}_Pending`)
+        success({
+          children: (
+            <Text fs={12}>{t("pools.reviewTransaction.toast.success")}</Text>
+          ),
+          onClose: () => props.onSuccess?.(data),
+        })
+      },
+      onError: () => {
+        remove(`${props.hash}_Pending`)
+        add({
+          id: `${props.hash}_Error`,
+          variant: "error",
+          children: (
+            <div sx={{ flex: "row" }}>
+              <Text fs={12}>{t("pools.reviewTransaction.toast.error")}</Text>
+              <Button
+                type="button"
+                variant="transparent"
+                size="small"
+                sx={{ p: "0 15px", lineHeight: 12 }}
+                onClick={resetStateOnError}
+              >
+                {t("pools.reviewTransaction.modal.error.review")}
+              </Button>
+            </div>
+          ),
+          persist: true,
+          onClose: () => props.onError?.(),
+        })
+      },
+    },
+  )
 
   const modalProps: Partial<ComponentProps<typeof Modal>> =
     sendTx.isLoading || sendTx.isSuccess || sendTx.isError
@@ -62,10 +103,28 @@ export const ReviewTransaction: React.FC<Transaction> = (props) => {
     }
   }
 
+  const resetStateOnError = () => {
+    sendTx.reset()
+    remove(`${props.hash}_Error`)
+    setMinimizeModal(false)
+  }
+
+  const handleMinimizeModal = () => {
+    setMinimizeModal(true)
+    add({
+      children: (
+        <Text fs={12}>{t("pools.reviewTransaction.toast.pending")}</Text>
+      ),
+      id: `${props.hash}_Pending`,
+      variant: "loading",
+      persist: true,
+    })
+  }
+
   return (
-    <Modal open={true} onClose={handleClose} {...modalProps}>
+    <Modal open={!minimizeModal} onClose={handleClose} {...modalProps}>
       {sendTx.isLoading ? (
-        <ReviewTransactionPending />
+        <ReviewTransactionPending onClose={handleMinimizeModal} />
       ) : sendTx.isSuccess ? (
         <ReviewTransactionSuccess onClose={handleClose} />
       ) : sendTx.isError ? (

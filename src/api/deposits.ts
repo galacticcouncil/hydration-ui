@@ -6,7 +6,7 @@ import { u128 } from "@polkadot/types-codec"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { Maybe, undefinedNoop } from "utils/helpers"
 
-export type DepositType = Awaited<
+export type DepositNftType = Awaited<
   ReturnType<ReturnType<typeof getDeposits>>
 >[number]
 

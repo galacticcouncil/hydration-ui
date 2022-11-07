@@ -2,14 +2,14 @@ import { useTranslation } from "react-i18next"
 import { AprFarm } from "utils/farms/apr"
 import { Graph } from "components/Graph/Graph"
 import { Spinner } from "components/Spinner/Spinner.styled"
-import { useLoyaltyRates } from "./PoolJoinFarmLoyaltyGraph.utils"
+import { useLoyaltyRates } from "./PoolFarmLoyaltyGraph.utils"
 import { Text } from "components/Typography/Text/Text"
 import { PalletLiquidityMiningLoyaltyCurve } from "@polkadot/types/lookup"
 
-export function PoolJoinFarmLoyaltyGraph(props: {
+export function PoolFarmLoyaltyGraph(props: {
   farm: AprFarm
   loyaltyCurve: PalletLiquidityMiningLoyaltyCurve
-  showDisclaimer: boolean
+  showDisclaimer?: boolean
 }) {
   const { t } = useTranslation()
   const rates = useLoyaltyRates(props.farm, props.loyaltyCurve)

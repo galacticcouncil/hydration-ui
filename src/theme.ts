@@ -74,6 +74,7 @@ const zIndices = {
   header: 5,
   backdrop: 9,
   modal: 10,
+  toast: 11,
 } as const
 
 const breakpoints = {

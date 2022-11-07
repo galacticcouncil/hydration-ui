@@ -4,9 +4,9 @@ import { PoolBase } from "@galacticcouncil/sdk"
 import { Row } from "components/Row/Row"
 import { Separator } from "components/Separator/Separator"
 import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
-import { usePoolPositionData } from "../../position/PoolPosition.utils"
+import { usePoolPositionData } from "../../pool/position/PoolPosition.utils"
 
-export function PoolJoinFarmPosition(props: {
+export function PoolFarmPosition(props: {
   pool: PoolBase
   farm: AprFarm
   position: PalletLiquidityMiningYieldFarmEntry
