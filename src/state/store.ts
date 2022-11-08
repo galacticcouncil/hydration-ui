@@ -5,6 +5,7 @@ import { AccountId32 } from "@polkadot/types/interfaces"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { POLKADOT_APP_NAME } from "utils/api"
+import { v4 as uuid } from "uuid"
 
 export interface Account {
   name: string
@@ -19,6 +20,7 @@ export interface TransactionInput {
 
 export interface Transaction extends TransactionInput {
   hash: string
+  id: string
   onSuccess?: (result: ISubmittableResult) => void
   onError?: () => void
 }
@@ -81,18 +83,20 @@ export const useStore = create<Store>((set) => ({
   createTransaction: (transaction) => {
     return new Promise<ISubmittableResult>((onSuccess, onError) => {
       const hash = transaction.tx.hash.toString()
-      set((store) => ({
-        transactions: [
-          { ...transaction, hash, onSuccess, onError },
-          ...(store.transactions?.filter((prev) => prev.hash !== hash) ?? []),
-        ],
-      }))
+      set((store) => {
+        return {
+          transactions: [
+            { ...transaction, hash, id: uuid(), onSuccess, onError },
+            ...(store.transactions ?? []),
+          ],
+        }
+      })
     })
   },
-  cancelTransaction: (hash) => {
+  cancelTransaction: (id) => {
     set((store) => ({
       transactions: store.transactions?.filter(
-        (transaction) => transaction.hash !== hash,
+        (transaction) => transaction.id !== id,
       ),
     }))
   },

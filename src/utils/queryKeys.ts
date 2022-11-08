@@ -101,6 +101,11 @@ export const QUERY_KEYS = {
     hash,
     account,
   ],
+  nextNonce: (account: Maybe<AccountId32 | string>) => [
+    QUERY_KEY_PREFIX,
+    "nonce",
+    account,
+  ],
   bestBuy: (params: Record<string, any>) => [
     QUERY_KEY_PREFIX,
     "bestBuy",

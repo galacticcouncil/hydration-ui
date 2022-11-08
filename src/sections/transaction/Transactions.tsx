@@ -4,23 +4,26 @@ import { ReviewTransaction } from "./ReviewTransaction"
 export const Transactions = () => {
   const { transactions, cancelTransaction } = useStore()
 
-  const currentTransaction = transactions?.at(0)
+  console.table(transactions?.map(({ hash, id }) => ({ hash, id })))
 
-  if (currentTransaction) {
-    return (
-      <ReviewTransaction
-        {...currentTransaction}
-        onError={() => {
-          cancelTransaction(currentTransaction.hash)
-          currentTransaction.onError?.()
-        }}
-        onSuccess={(result) => {
-          cancelTransaction(currentTransaction.hash)
-          currentTransaction.onSuccess?.(result)
-        }}
-      />
-    )
-  }
-
-  return null
+  return (
+    <>
+      {transactions?.map((currentTransaction) => {
+        return (
+          <ReviewTransaction
+            key={currentTransaction.id}
+            {...currentTransaction}
+            onError={() => {
+              cancelTransaction(currentTransaction.id)
+              currentTransaction.onError?.()
+            }}
+            onSuccess={(result) => {
+              cancelTransaction(currentTransaction.id)
+              currentTransaction.onSuccess?.(result)
+            }}
+          />
+        )
+      })}
+    </>
+  )
 }

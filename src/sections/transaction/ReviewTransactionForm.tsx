@@ -3,25 +3,27 @@ import { Text } from "components/Typography/Text/Text"
 import { SDetailRow } from "./ReviewTransaction.styled"
 import { Button } from "components/Button/Button"
 import { TransactionCode } from "components/TransactionCode/TransactionCode"
-import { Transaction, useAccountStore } from "../../state/store"
+import { Transaction, useAccountStore } from "state/store"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
-import { usePaymentInfo } from "../../api/transaction"
+import { useNextNonce, usePaymentInfo } from "api/transaction"
 import { useMutation } from "@tanstack/react-query"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { getWalletBySource } from "@talismn/connect-wallets"
-import { useEra } from "../../api/era"
-import { useBestNumber } from "../../api/chain"
+import { useEra } from "api/era"
+import { useBestNumber } from "api/chain"
 
 export const ReviewTransactionForm = (
   props: {
     title?: string
     onCancel: () => void
     onSigned: (signed: SubmittableExtrinsic<"promise">) => void
-  } & Transaction,
+  } & Omit<Transaction, "id">,
 ) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const bestNumber = useBestNumber()
+
+  const nonce = useNextNonce(account?.address)
 
   const signTx = useMutation(async () => {
     const address = account?.address?.toString()
@@ -31,6 +33,8 @@ export const ReviewTransactionForm = (
 
     const signature = await props.tx.signAsync(address, {
       signer: wallet.signer,
+      // defer to polkadot/api to handle nonce w/ regard to mempool
+      nonce: -1,
     })
 
     return await props.onSigned(signature)
@@ -112,7 +116,7 @@ export const ReviewTransactionForm = (
             <Text color="neutralGray300">
               {t("pools.reviewTransaction.modal.detail.nonce")}
             </Text>
-            <Text color="white">{props.tx.nonce.toString()}</Text>
+            <Text color="white">{nonce.data?.toString()}</Text>
           </SDetailRow>
         </div>
       </div>
