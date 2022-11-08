@@ -10,6 +10,8 @@ export const BN_NAN = new BN(NaN)
 
 export const TRADING_FEE = new BN(3).div(new BN(1000))
 
+export const DEFAULT_DECIMALS = new BN(12)
+
 export const DAY_IN_MILLISECONDS = new BN(86400000)
 
 // block time in seconds

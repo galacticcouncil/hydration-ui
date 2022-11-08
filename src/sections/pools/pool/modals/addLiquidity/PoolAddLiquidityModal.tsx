@@ -1,7 +1,7 @@
 import { PoolAddLiquidityAssetSelect } from "./assetSelect/PoolAddLiquidityAssetSelect"
 import { getAssetLogo } from "../../../../../components/AssetIcon/AssetIcon"
 import { PoolAddLiquidityConversion } from "./conversion/PoolAddLiquidityConversion"
-import { BN_1, BN_100 } from "../../../../../utils/constants"
+import { BN_1, BN_100, DEFAULT_DECIMALS } from "../../../../../utils/constants"
 import { Row } from "../../../../../components/Row/Row"
 import { Separator } from "../../../../../components/Separator/Separator"
 import { Text } from "../../../../../components/Typography/Text/Text"
@@ -111,12 +111,20 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
     setInputAssetB(value)
   }
 
+  const shareTokenDecimals = useMemo(() => {
+    if (shareTokenMeta?.data?.decimals) {
+      return shareTokenMeta.data?.decimals.toNumber()
+    }
+
+    return DEFAULT_DECIMALS.toNumber()
+  }, [shareTokenMeta])
+
   const calculatedShares = useMemo(() => {
     if (
       xyk &&
       assetAReserve.data &&
       shareIssuance.data &&
-      shareTokenMeta?.data &&
+      shareTokenDecimals &&
       inputAssetA
     ) {
       return new BigNumber(
@@ -131,7 +139,7 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
           ).toFixed(),
           getFixedPointAmount(
             shareIssuance.data.total,
-            shareTokenMeta.data?.decimals.toNumber(),
+            shareTokenDecimals,
           ).toFixed(),
         ),
       )
@@ -142,7 +150,7 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
     xyk,
     assetAReserve.data,
     shareIssuance.data,
-    shareTokenMeta,
+    shareTokenDecimals,
     inputAssetA,
     pool.tokens,
   ])
@@ -292,7 +300,7 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
                 {t("value", {
                   value: calculatedShares,
                   decimalPlaces: 4,
-                  fixedPointScale: shareTokenMeta?.data?.decimals,
+                  fixedPointScale: shareTokenDecimals,
                 })}
               </Text>
             )
