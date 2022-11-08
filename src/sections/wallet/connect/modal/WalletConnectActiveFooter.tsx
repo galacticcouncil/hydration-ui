@@ -46,7 +46,7 @@ export function WalletConnectActiveFooter(props: {
               width={30}
               height={30}
             />
-            <Text fs={14} fw={600} css={{ color: theme.colors.neutralGray100 }}>
+            <Text fs={14} fw={600} css={{ color: theme.colors.basic500 }}>
               {wallet?.title}
             </Text>
           </div>

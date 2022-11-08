@@ -6,7 +6,7 @@ import { handleTypographyProps, STypographyProps } from "../Typography.utils"
 export const SGradientText = styled(Heading)<STypographyProps>`
   font-size: 16px;
   display: inline-block;
-  background: linear-gradient(${theme.gradients.simplifiedGradient});
+  background: linear-gradient(${theme.gradients.pinkLightPink});
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 

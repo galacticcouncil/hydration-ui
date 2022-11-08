@@ -27,3 +27,26 @@ export const PrimaryDisabled = () => (
   </>
 )
 export const Secondary = () => <Button>Button primary</Button>
+export const Loading = () => <Button isLoading>Button primary</Button>
+export const Gradient = () => <Button variant="gradient">Button primary</Button>
+export const TabLink = () => (
+  <Button
+    variant="outline"
+    sx={{
+      p: "12px 34px",
+    }}
+  >
+    Assets
+  </Button>
+)
+export const TabLinkActive = () => (
+  <Button
+    variant="outline"
+    active={true}
+    sx={{
+      p: "12px 34px",
+    }}
+  >
+    Assets
+  </Button>
+)

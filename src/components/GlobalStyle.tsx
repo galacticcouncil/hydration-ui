@@ -1,4 +1,4 @@
-import SatoshiVariable from "assets/fonts/SatoshiVariable.ttf"
+import ChakraPetch from "assets/fonts/ChakraPetch/ChakraPetch.ttf"
 
 import { theme } from "theme"
 
@@ -153,9 +153,9 @@ export const normalize = `
 
 export const GlobalStyle = `
   @font-face {
-    font-family: 'SatoshiVariable';
-    src: local("SatoshiVariable"),
-    url(${SatoshiVariable}) format("truetype");
+    font-family: 'ChakraPetch';
+    src: local("ChakraPetch"),
+    url(${ChakraPetch}) format("truetype");
     font-display: auto;
     font-weight: 100 900;
   };
@@ -167,11 +167,10 @@ export const GlobalStyle = `
   }
 
   body {
-    font-size: 16px;
     font-size: 1.6rem;
     margin: 0;
-    font-family: 'SatoshiVariable', sans-serif;
-    background: ${theme.colors.backgroundGray1000};
+    font-family: 'ChakraPetch', sans-serif;
+    background: ${theme.colors.darkBlue400};
   }
 
   html, body, #root {
@@ -182,7 +181,7 @@ export const GlobalStyle = `
   * {
   box-sizing: border-box;
   :focus-visible {
-    outline: 1px solid ${theme.colors.primary300};
+    outline: 1px solid ${theme.colors.brightBlue300};
   }
   }
 

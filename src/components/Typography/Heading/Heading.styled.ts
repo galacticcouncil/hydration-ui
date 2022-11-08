@@ -3,7 +3,7 @@ import { theme } from "theme"
 import { handleTypographyProps, STypographyProps } from "../Typography.utils"
 
 export const SHeading = styled.h1<STypographyProps>`
-  color: ${theme.colors.neutralGray100};
+  color: ${theme.colors.basic100};
 
   ${handleTypographyProps}
 `

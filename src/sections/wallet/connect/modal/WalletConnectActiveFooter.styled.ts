@@ -1,7 +1,7 @@
 import { Text } from "components/Typography/Text/Text"
 import styled from "@emotion/styled"
 import { theme } from "theme"
-import { ButtonTransparent } from "components/Button/Button"
+import { Button } from "components/Button/Button"
 
 export const SContainer = styled.div`
   display: flex;
@@ -35,7 +35,7 @@ export const SLogoutContainer = styled.div`
   }
 `
 
-export const SSwitchButton = styled(ButtonTransparent)`
+export const SSwitchButton = styled(Button)`
   padding: 12px;
   border-radius: 12px;
   border: 1px solid ${theme.colors.backgroundGray800};

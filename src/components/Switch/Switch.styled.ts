@@ -3,57 +3,19 @@ import styled from "@emotion/styled"
 import { css } from "@emotion/react"
 import { theme } from "theme"
 
-export const SThumb = styled(SwitchThumb)<{
-  checked: boolean
-  disabled?: boolean
-  size?: "small" | "regular"
-}>`
-  position: absolute;
-  border-radius: 50%;
-  top: 1px;
-  left: 1px;
-  border-color: ${theme.colors.darkGray};
-  padding: 2px;
-  background: ${theme.colors.neutralGray400};
-  border-style: solid;
-
-  ${(p) =>
-    p.size === "small"
-      ? css`
-          width: 20px;
-          height: 20px;
-          border-width: 1px;
-        `
-      : css`
-          width: 34px;
-          height: 34px;
-          border-width: 2px;
-        `}
-
-  ${(p) =>
-    p.checked &&
-    css`
-      left: initial;
-      right: 1px;
-      background: ${theme.colors.primary500};
-      border-color: ${theme.colors.darkGreen};
-    `}
-
-  ${(p) =>
-    p.disabled &&
-    css`
-      background: ${theme.colors.backgroundGray800};
-    `}
-`
-
 export const SSwitch = styled(Switch)<{
   size?: "small" | "regular"
   withLabel?: boolean
 }>`
+  --switch-thumb-size: ${(p) => (p.size === "small" ? "20px" : "34px")};
+
   position: relative;
+
   border-radius: 45px;
-  border: 1px solid ${theme.colors.backgroundGray700};
-  background: ${theme.colors.darkGray};
+  border: 1px solid ${theme.colors.basic700};
+
+  background: rgba(${theme.rgbColors.black}, 0.25);
+
   cursor: pointer;
 
   ${(p) =>
@@ -67,23 +29,83 @@ export const SSwitch = styled(Switch)<{
           height: 38px;
         `}
 
-  ${(p) =>
-    p.checked &&
-    css`
-      background: ${theme.colors.darkGreen};
-      border: 1px solid ${theme.colors.primary300};
-    `}
-  ${(p) =>
-    p.disabled &&
-    css`
-      pointer-events: none;
-    `};
+  ${(p) => {
+    if (p.disabled) {
+      return css`
+        pointer-events: none;
+      `
+    }
+
+    if (p.checked) {
+      return css`
+        background: #1d2d26; // TODO: change it after changes in the Figma
+        border: 1px solid ${theme.colors.brightBlue400};
+        :hover {
+          border-color: ${theme.colors.brightBlue300};
+        }
+      `
+    }
+  }}
+  }
+
 
   :hover {
     > * {
-      border-color: ${theme.colors.primary300};
+      ${(p) =>
+        p.checked
+          ? css`
+              top: 1px;
+              right: 1px;
+              width: var(--switch-thumb-size);
+              height: var(--switch-thumb-size);
+            `
+          : css`
+              top: 0px;
+              left: 0px;
+              width: calc(var(--switch-thumb-size) + 2px);
+              height: calc(var(--switch-thumb-size) + 2px);
+            `}
+      border: ${(p) => (p.size === "small" ? "1.3px" : "2px")} solid ${
+  theme.colors.brightBlue300
+};
     }
   }
 
   ${(p) => p.withLabel && css({ marginLeft: 10 })}
+`
+
+export const SThumb = styled(SwitchThumb)<{
+  checked: boolean
+  disabled?: boolean
+  size?: "small" | "regular"
+}>`
+  box-sizing: border-box;
+  position: absolute;
+  top: 1px;
+  left: 1px;
+
+  border-width: ${(p) => (p.size === "small" ? "1px" : "2px")};
+  border-radius: 50%;
+
+  background: ${theme.colors.basic400};
+
+  width: var(--switch-thumb-size);
+  height: var(--switch-thumb-size);
+
+  ${(p) =>
+    p.checked &&
+    css`
+      width: calc(var(--switch-thumb-size) - 2px);
+      height: calc(var(--switch-thumb-size) - 2px);
+      left: initial;
+      top: 2px;
+      right: 2px;
+      background: ${theme.colors.brightBlue500};
+    `};
+
+  ${(p) =>
+    p.disabled &&
+    css`
+      background: ${theme.colors.basic800};
+    `}
 `

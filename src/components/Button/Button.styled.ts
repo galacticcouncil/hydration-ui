@@ -1,153 +1,38 @@
+import { css, SerializedStyles } from "@emotion/react"
 import styled from "@emotion/styled"
-import { css } from "@emotion/react"
 import { theme } from "theme"
-import { ButtonProps } from "./Button"
-import { Spinner } from "components/Spinner/Spinner.styled"
+import { ButtonProps, ButtonSize, ButtonVariant } from "./Button"
 
 export const SButton = styled.button<ButtonProps>`
-  border-radius: 9999px;
-  font-weight: 500;
-  border: none;
   cursor: pointer;
-  text-transform: ${({ transform }) => (transform ? transform : "uppercase")};
-  line-height: 18px;
+  text-transform: ${({ transform }) => transform ?? "uppercase"};
+  border: none;
 
-  transition: background ${theme.transitions.default};
+  box-shadow: ${theme.shadows.boxShadow};
 
-  ${(p) =>
-    p.variant === "primary"
-      ? p.disabled
-        ? css`
-            background: rgba(${theme.rgbColors.primary100}, 0.06);
-            color: rgba(${theme.rgbColors.white}, 0.6);
-            pointer-events: none;
-          `
-        : css`
-            color: ${theme.colors.backgroundGray800};
-            background: ${theme.colors.primary400};
-
-            :hover {
-              background: ${theme.colors.primary300};
-            }
-
-            :active {
-              background: ${theme.colors.primary500};
-            }
-          `
-      : ``}
-
-  ${(p) =>
-    p.size === "small" &&
+  ${({ variant }) => variant && variantStyles[variant]}
+  ${({ size }) => size && sizeStyles[size]}
+  ${({ active }) =>
+    active &&
     css`
-      padding: 12px 15px;
-      font-size: 12px;
-    `};
+      background: ${theme.colors.brightBlue700};
 
-  ${(p) =>
-    p.size === "medium" &&
+      border: 1px solid ${theme.colors.brightBlue700};
+
+      transition: all ${theme.transitions.default};
+    `}
+
+  &:disabled {
+    cursor: not-allowed;
+
+    color: rgba(${theme.rgbColors.white}, 0.6);
+    background: ${theme.colors.basic700};
+  }
+
+  ${({ isLoading }) =>
+    isLoading &&
     css`
-      padding: 16px 36px;
-      font-size: 14px;
-    `};
-  ${(p) =>
-    p.size === "micro" &&
-    css`
-      padding: 2px 10px;
-      font-size: 12px;
-      line-height: 16px;
-    `};
-
-  ${(p) =>
-    p.fullWidth &&
-    css`
-      width: 100%;
-    `};
-
-  ${(p) =>
-    p.variant === "gradient" &&
-    css`
-      background: ${theme.gradients.primaryGradient};
-      color: ${theme.colors.backgroundGray800};
-      position: relative;
-      overflow: hidden;
-
-      :hover {
-        &::after {
-          content: "";
-          width: 100%;
-          height: 100%;
-          position: absolute;
-          top: 0;
-          left: 0;
-          background: rgba(${theme.rgbColors.white}, 0.2);
-        }
-      }
-      :active {
-        &::after {
-          background: rgba(${theme.rgbColors.black}, 0.2);
-        }
-      }
-    `};
-
-  ${(p) =>
-    p.variant === "secondary"
-      ? p.disabled
-        ? css`
-            background: ${theme.colors.backgroundGray700};
-            color: rgba(${theme.rgbColors.white}, 0.106);
-            pointer-events: none;
-          `
-        : css`
-            background: rgba(${theme.rgbColors.primary450}, 0.12);
-            color: ${theme.colors.primary400};
-
-            :hover {
-              background: rgba(${theme.rgbColors.primary450}, 0.3);
-              transition: background ${theme.transitions.default};
-            }
-
-            :active {
-              background: rgba(${theme.rgbColors.primary450}, 0.5);
-              transition: background ${theme.transitions.default};
-            }
-          `
-      : ``};
-
-  ${(p) =>
-    p.variant === "transparent"
-      ? css`
-          background: transparent;
-          color: ${theme.colors.primary450};
-        `
-      : ``}
-
-  ${(p) =>
-    p.variant === "outline"
-      ? p.active
-        ? css`
-            background: ${theme.colors.primary450};
-            color: ${theme.colors.black};
-            border: 1px solid ${theme.colors.primary450};
-          `
-        : css`
-            background: transparent;
-            color: ${theme.colors.primary300};
-            border: 1px solid rgba(${theme.rgbColors.primary300}, 0.12);
-
-            :hover,
-            :active {
-              background: ${theme.colors.primary450};
-              color: ${theme.colors.black};
-              border: 1px solid ${theme.colors.primary450};
-              transition: all ${theme.transitions.default};
-            }
-          `
-      : ``}
-
-  ${(p) =>
-    p.capitalize &&
-    css`
-      text-transform: capitalize;
+      background: rgba(218, 255, 238, 0.06);
     `}
 `
 
@@ -157,11 +42,6 @@ export const SContent = styled.span`
   align-items: center;
   justify-content: center;
 `
-
-export const SSpinner = styled(Spinner)`
-  margin-left: -4px;
-`
-
 export const SButtonTransparent = styled.button`
   background: transparent;
   margin: 0;
@@ -177,3 +57,99 @@ export const SButtonTransparent = styled.button`
     cursor: unset;
   }
 `
+
+const variantStyles: Record<ButtonVariant, SerializedStyles> = {
+  primary: css`
+    background: ${theme.colors.pink700};
+    color: ${theme.colors.white};
+
+    :hover {
+      background: ${theme.colors.pink400};
+      color: ${theme.colors.basic800};
+    }
+
+    :active {
+      background: ${theme.colors.pink100};
+      color: ${theme.colors.basic800};
+    }
+  `,
+  secondary: css`
+    background: rgba(37, 203, 255, 0.2);
+    color: ${theme.colors.brightBlue300};
+
+    border: 1px solid ${theme.colors.brightBlue300};
+
+    :hover {
+      background: rgba(47, 211, 247, 0.35);
+      color: ${theme.colors.white};
+
+      border: 1px solid ${theme.colors.brightBlue100};
+    }
+
+    :active {
+      background: ${theme.colors.brightBlue500};
+      color: ${theme.colors.white};
+    }
+  `,
+  gradient: css`
+    background: linear-gradient(90deg, #fc408c 0%, #57b3eb 100%);
+    color: ${theme.colors.white};
+
+    box-shadow: unset;
+
+    position: relative;
+    overflow: hidden;
+
+    :hover {
+      &::after {
+        content: "";
+
+        width: 100%;
+        height: 100%;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+
+        background: rgba(${theme.rgbColors.white}, 0.2);
+      }
+    }
+    :active {
+      &::after {
+        background: rgba(${theme.rgbColors.black}, 0.2);
+      }
+    }
+  `,
+  outline: css`
+    background: rgba(${theme.rgbColors.white}, 0.03);
+    color: ${theme.colors.white};
+
+    border: 1px solid rgba(${theme.rgbColors.white}, 0.1);
+
+    box-shadow: unset;
+
+    :hover,
+    :active {
+      background: ${theme.colors.brightBlue700};
+      border: 1px solid ${theme.colors.brightBlue700};
+
+      transition: all ${theme.transitions.default};
+    }
+  `,
+}
+
+const sizeStyles: Record<ButtonSize, SerializedStyles> = {
+  medium: css`
+    padding: 16px 36px;
+    font-size: 14px;
+  `,
+  small: css`
+    padding: 12px 15px;
+    font-size: 12px;
+  `,
+  micro: css`
+    padding: 2px 10px;
+    font-size: 12px;
+    line-height: 16px;
+  `,
+}

@@ -9,7 +9,7 @@ import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { BASILISK_ADDRESS_PREFIX } from "utils/api"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { theme } from "theme"
-import { ButtonProps } from "../../../../components/Button/Button"
+import { ButtonProps } from "components/Button/Button"
 import { shortenAccountAddress } from "utils/formatting"
 
 const WalletActiveButton = (props: {

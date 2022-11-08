@@ -17,7 +17,6 @@ export const TabLink: FC<TabLinkProps> = ({ to, children, icon }) => (
         sx={{
           p: "12px 34px",
         }}
-        transform="none"
       >
         {icon}
         {children}

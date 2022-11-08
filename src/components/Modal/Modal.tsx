@@ -29,7 +29,7 @@ type Props = {
   open: boolean
   onClose: () => void
   title?: string | undefined
-  variant?: "default" | "error"
+  variant?: "default" | "error" | "success"
   secondaryIcon?: { icon: ReactNode; onClick: () => void; name: string }
   withoutClose?: boolean
   width?: number

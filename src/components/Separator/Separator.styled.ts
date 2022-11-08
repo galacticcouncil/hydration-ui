@@ -6,7 +6,7 @@ import { SeparatorProps } from "./Separator"
 
 export const SSeparator = styled(RadixSeparator.Root)<SeparatorProps>`
   background: ${(p) =>
-    p.color ? theme.colors[p.color] : theme.colors.backgroundGray700};
+    p.color ? theme.colors[p.color] : theme.colors.darkBlue400};
   opacity: ${(p) => p.opacity ?? 1};
   height: ${(p) => p.size ?? 1}px;
   width: 100%;

@@ -1,3 +1,4 @@
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { FC, ReactNode } from "react"
 import { ErrorMessage, LabelWrapper, SLabel } from "./Label.styled"
 
@@ -8,6 +9,7 @@ type LabelProps = {
   error?: string
   withLabel?: boolean
   className?: string
+  tooltip?: string
 }
 
 export const Label: FC<LabelProps> = ({
@@ -16,14 +18,23 @@ export const Label: FC<LabelProps> = ({
   children,
   error,
   withLabel = false,
+  tooltip,
   ...p
 }) => {
   return (
     <LabelWrapper {...p}>
       {/* hidden prop hides label visibly, but keeps it available for screen readers */}
-      <SLabel error={error} htmlFor={id} hidden={!withLabel}>
-        {label}
-      </SLabel>
+      <div
+        /*sx={{ flex: "row", justify: "space-between" }}*/ style={{
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        <SLabel error={error} htmlFor={id} hidden={!withLabel}>
+          {label}
+        </SLabel>
+        {tooltip && <InfoTooltip text={tooltip} />}
+      </div>
 
       {children}
       {error && <ErrorMessage>{error}</ErrorMessage>}

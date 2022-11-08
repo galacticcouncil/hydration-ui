@@ -7,18 +7,21 @@ import {
   SCounter,
   SIcon,
   SProgressBar,
+  SProgressBarBg,
   SRoot,
 } from "components/Toast/Toast.styled"
 import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
-import { ReactComponent as SuccessIcon } from "assets/icons/IconSuccessSmall.svg"
+import { ReactComponent as SuccessIcon } from "assets/icons/SuccessIcon.svg"
 import { ReactComponent as FailIcon } from "assets/icons/IconFailureSmall.svg"
 import { ReactComponent as BasiliskIcon } from "assets/icons/BasiliskIcon.svg"
 import { Text } from "components/Typography/Text/Text"
 import { TOAST_CLOSE_TIME } from "utils/constants"
-import { Spinner } from "components/Spinner/Spinner.styled"
+import { ToastSpinner } from "components/Spinner/Spinner.styled"
+
+export type ToastVariant = "info" | "success" | "error" | "loading"
 
 type Props = {
-  variant?: "info" | "success" | "error" | "loading"
+  variant?: ToastVariant
   text?: string
   index?: number
   count?: number
@@ -46,21 +49,21 @@ export const Toast: FC<PropsWithChildren<Props>> = ({
       onOpenChange={(open) => !open && !persist && onClose?.()}
       open={true}
     >
-      <SContainer>
+      <SContainer variant={variant}>
         <SIcon>
           {variant === "success" ? (
             <SuccessIcon />
           ) : variant === "error" ? (
             <FailIcon />
           ) : variant === "loading" ? (
-            <Spinner width={28} height={28} />
+            <ToastSpinner width={28} height={28} />
           ) : (
             <BasiliskIcon />
           )}
         </SIcon>
         <SContent>
           {text ? (
-            <Text fs={12} lh={16} fw={500} color="neutralGray100">
+            <Text fs={12} lh={16} fw={500} color="basic100">
               {text}
             </Text>
           ) : (
@@ -68,13 +71,14 @@ export const Toast: FC<PropsWithChildren<Props>> = ({
           )}
         </SContent>
         <SCounter>
-          <Text fs={12} lh={14} fw={500} color="neutralGray400">
+          <Text fs={12} lh={14} fw={500} color="basic400">
             {!!index &&
               !!count &&
               count > 1 &&
               t("toast.counter", { index, count })}
           </Text>
         </SCounter>
+        <SProgressBarBg />
         <SProgressBar
           variant={variant}
           initial={{ width: "100%" }}

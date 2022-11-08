@@ -11,7 +11,7 @@ export type IconButtonProps = {
 }
 
 export const IconButton: FC<IconButtonProps> = ({
-  round = true,
+  round = false,
   onClick = noop,
   icon,
   name,

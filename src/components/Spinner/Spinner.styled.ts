@@ -1,5 +1,6 @@
-import styled from "@emotion/styled"
 import { keyframes } from "@emotion/react"
+import styled from "@emotion/styled"
+import { theme } from "theme"
 import { getResponsiveStyles, ResponsiveValue } from "utils/responsive"
 
 const spin = keyframes`
@@ -32,15 +33,7 @@ export const Spinner = styled.span<{
 
   overflow: hidden;
 
-  background: conic-gradient(
-    from 0deg,
-    hsla(149, 83%, 63%, 1) 0deg,
-    hsla(149, 83%, 63%, 1) 45deg,
-    hsla(37, 97%, 59%, 1) 140deg,
-    hsla(40, 91%, 67%, 1) 160deg,
-    hsla(240, 6%, 44%, 0) 220deg,
-    hsla(29, 100%, 72%, 0)
-  );
+  background: ${theme.gradients.spinner};
 
   &:before {
     content: "";
@@ -48,7 +41,6 @@ export const Spinner = styled.span<{
 
     width: var(--spinner-width);
     height: var(--spinner-width);
-    background: hsla(149, 83%, 63%, 1);
 
     border-radius: 9999px;
     top: 0;
@@ -61,4 +53,16 @@ export const Spinner = styled.span<{
     getResponsiveStyles(p.width, (width) => ({ width })),
     getResponsiveStyles(p.height, (height) => ({ height })),
   ]}
+`
+
+export const ToastSpinner = styled(Spinner)`
+  background: conic-gradient(
+    from 0deg,
+    rgba(10, 13, 26, 0) 28.46deg,
+    rgba(43, 166, 255, 0.14) 44.98deg,
+    rgba(146, 183, 255, 0.38) 57.63deg,
+    #ffffff 88deg,
+    #ffffff 100deg,
+    #ffffff 200deg
+  );
 `

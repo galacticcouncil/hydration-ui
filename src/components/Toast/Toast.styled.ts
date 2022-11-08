@@ -2,6 +2,8 @@ import { Close, Root, Title } from "@radix-ui/react-toast"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 import { motion } from "framer-motion"
+import { css, SerializedStyles } from "@emotion/react"
+import { ToastVariant } from "./Toast"
 
 export const SRoot = styled(motion(Root))`
   position: relative;
@@ -12,7 +14,7 @@ export const SRoot = styled(motion(Root))`
   }
 `
 
-export const SContainer = styled.div`
+export const SContainer = styled.div<{ variant: ToastVariant }>`
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-column-gap: 14px;
@@ -22,8 +24,7 @@ export const SContainer = styled.div`
 
   padding: 14px;
 
-  background-color: ${theme.colors.backgroundGray1000};
-  border-radius: 12px;
+  ${({ variant }) => variantBg[variant]};
 `
 
 export const SIcon = styled.div`
@@ -32,8 +33,8 @@ export const SIcon = styled.div`
   justify-content: center;
 
   svg {
-    width: 28px;
-    height: 28px;
+    width: 16px;
+    height: 16px;
   }
 `
 
@@ -47,38 +48,87 @@ export const SCounter = styled.div`
 `
 
 export const SClose = styled(Close)`
+  min-width: 24px;
+  min-height: 24px;
+
+  color: ${theme.colors.white};
+  background: #0e132f;
+  transition: background ${theme.transitions.default};
+
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: -12px;
+  right: -8px;
   overflow: hidden;
+
+  border: 1px solid #30344c;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  width: 24px;
-  height: 24px;
+  cursor: pointer;
 
-  color: ${theme.colors.neutralGray100};
-  background-color: ${theme.colors.backgroundGray800};
-  border: none;
-  border-radius: 9999px;
+  padding: 0;
 
-  padding: 4px;
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 
   &:hover {
-    cursor: pointer;
+    background: ${theme.colors.basic500};
+    border: none;
   }
 `
 
+export const SProgressBarBg = styled.div`
+  background: ${theme.colors.basic700};
+
+  width: 100%;
+  height: 1.6px;
+
+  position: absolute;
+  bottom: 0;
+  left: 0;
+`
+
 export const SProgressBar = styled(motion.div)<{
-  variant?: "info" | "success" | "error" | "loading"
+  variant: ToastVariant
 }>`
   position: absolute;
   bottom: 0;
   left: 0;
 
   height: 2px;
-  background-color: ${({ variant }) =>
-    variant === "error" ? theme.colors.red400 : theme.colors.primary500};
+  ${({ variant }) => variantProgressBarBg[variant]};
 `
+
+const variantBg: Record<ToastVariant, SerializedStyles> = {
+  success: css`
+    background: rgba(${theme.rgbColors.green100}, 0.25);
+  `,
+  info: css`
+    background: rgba(${theme.rgbColors.brightBlue200}, 0.2);
+  `,
+  error: css`
+    background: rgba(${theme.rgbColors.error}, 0.25);
+  `,
+  loading: css`
+    background: rgba(${theme.rgbColors.brightBlue200}, 0.2);
+  `,
+}
+
+const variantProgressBarBg: Record<ToastVariant, SerializedStyles> = {
+  success: css`
+    background: ${theme.colors.green600};
+  `,
+  info: css`
+    background: ${theme.colors.brightBlue700};
+  `,
+  error: css`
+    background: ${theme.colors.red700};
+  `,
+  loading: css`
+    background: ${theme.colors.brightBlue700};
+  `,
+}
