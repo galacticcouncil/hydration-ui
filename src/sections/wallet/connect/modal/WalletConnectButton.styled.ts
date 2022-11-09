@@ -8,6 +8,15 @@ export const SContainer = styled.div`
   cursor: pointer;
 
   flex-shrink: 0;
+
+  :active,
+  :hover {
+    background: rgba(${theme.rgbColors.brightBlue100}, 0.12);
+  }
+
+  :active {
+    outline: 1px solid ${theme.colors.brightBlue300};
+  }
 `
 
 export const SLoginButton = styled(Button)`

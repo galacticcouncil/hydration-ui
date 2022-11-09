@@ -1,6 +1,5 @@
 import { Spinner } from "components/Spinner/Spinner.styled"
-import { ReactComponent as BasiliskIcon } from "assets/icons/BasiliskIcon.svg"
-import { ReactComponent as BasiliskLogo } from "assets/icons/BasiliskLogo.svg"
+import { ReactComponent as HydraLogo } from "assets/icons/HydraLogo.svg"
 import { css } from "@emotion/react"
 
 export const LoadingPage = () => {
@@ -18,8 +17,7 @@ export const LoadingPage = () => {
       `}
     >
       <div sx={{ flex: "row", gap: 16, align: "center" }}>
-        <BasiliskIcon width={72} height={72} />
-        <BasiliskLogo width={148} height={44} />
+        <HydraLogo width={50} height={50} />
       </div>
       <Spinner width={32} height={32} />
     </div>

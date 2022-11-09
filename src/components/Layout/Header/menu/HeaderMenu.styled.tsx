@@ -9,16 +9,17 @@ export const SList = styled.nav`
   }
 `
 export const SItem = styled.span<{ isActive?: boolean }>`
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 500;
   line-height: 18px;
   margin-right: 32px;
+  text-transform: uppercase;
 
   color: ${({ isActive }) =>
-    isActive ? theme.colors.white : theme.colors.neutralGray300};
+    isActive ? theme.colors.brightBlue100 : theme.colors.basic100};
 
   &:hover {
-    color: ${theme.colors.primary100};
+    color: ${theme.colors.brightBlue100};
     cursor: pointer;
   }
 `

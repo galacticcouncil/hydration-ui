@@ -1,4 +1,3 @@
-import { GradientText } from "components/Typography/GradientText/GradientText"
 import { useTranslation } from "react-i18next"
 import { useAccountStore } from "../../../state/store"
 import { Text } from "components/Typography/Text/Text"
@@ -13,7 +12,7 @@ import { WalletInactiveButton } from "../connect/modal/WalletConnectButton"
 export const WalletHeader = () => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
-  const [_copyState, copy] = useCopyToClipboard()
+  const [, copy] = useCopyToClipboard()
   const [open, setOpen] = useState(false)
 
   return (
@@ -21,9 +20,9 @@ export const WalletHeader = () => {
       <div
         sx={{ flex: "row", justify: "space-between", align: "center", pb: 16 }}
       >
-        <GradientText fs={20} fw={600} lh={20}>
+        <Text fs={20} fw={500} lh={20} css={{ fontFamily: "FontOver" }}>
           {account?.name}
-        </GradientText>
+        </Text>
         {account?.address ? (
           <div sx={{ flex: "row", align: "center" }}>
             <div
@@ -34,7 +33,7 @@ export const WalletHeader = () => {
                 mr: 50,
               }}
             >
-              <Text color="primary300" fs={14} fw={500}>
+              <Text color="brightBlue300" fs={14} fw={500}>
                 {account.address}
               </Text>
               <ButtonTransparent
@@ -42,12 +41,16 @@ export const WalletHeader = () => {
               >
                 <CopyIcon
                   sx={{
-                    color: "primary300",
+                    color: "brightBlue300",
                   }}
                 />
               </ButtonTransparent>
             </div>
-            <Button size="small" onClick={() => setOpen(true)}>
+            <Button
+              size="small"
+              variant="primary"
+              onClick={() => setOpen(true)}
+            >
               {t("wallet.header.switchAccount")}
             </Button>
           </div>

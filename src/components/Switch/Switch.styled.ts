@@ -38,7 +38,7 @@ export const SSwitch = styled(Switch)<{
 
     if (p.checked) {
       return css`
-        background: #1d2d26; // TODO: change it after changes in the Figma
+        background: rgba(218, 255, 238, 0.06);
         border: 1px solid ${theme.colors.brightBlue400};
         :hover {
           border-color: ${theme.colors.brightBlue300};
@@ -46,7 +46,7 @@ export const SSwitch = styled(Switch)<{
       `
     }
   }}
-  }
+  
 
 
   :hover {
@@ -65,9 +65,8 @@ export const SSwitch = styled(Switch)<{
               width: calc(var(--switch-thumb-size) + 2px);
               height: calc(var(--switch-thumb-size) + 2px);
             `}
-      border: ${(p) => (p.size === "small" ? "1.3px" : "2px")} solid ${
-  theme.colors.brightBlue300
-};
+      border: ${(p) => (p.size === "small" ? "1.3px" : "2px")} solid ${theme
+        .colors.brightBlue300};
     }
   }
 

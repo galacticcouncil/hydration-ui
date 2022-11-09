@@ -1,4 +1,6 @@
 import ChakraPetch from "assets/fonts/ChakraPetch/ChakraPetch.ttf"
+import ChakraPetchBold from "assets/fonts/ChakraPetch/ChakraPetchBold.ttf"
+import FontOver from "assets/fonts/FontOver/FontOver.ttf"
 
 import { theme } from "theme"
 
@@ -157,7 +159,20 @@ export const GlobalStyle = `
     src: local("ChakraPetch"),
     url(${ChakraPetch}) format("truetype");
     font-display: auto;
-    font-weight: 100 900;
+  };
+
+  @font-face {
+    font-family: 'ChakraPetchBold';
+    src: local("ChakraPetchBold"),
+    url(${ChakraPetchBold}) format("truetype");
+    font-display: auto;
+  };
+
+  @font-face {
+    font-family: 'FontOver';
+    src: local("FontOver"),
+    url(${FontOver}) format("truetype");
+    font-display: auto;
   };
  
   ${normalize}

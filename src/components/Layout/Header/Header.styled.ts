@@ -13,6 +13,6 @@ export const SHeader = styled.header`
   background: rgba(${theme.rgbColors.black}, 0.2);
 
   @media (${theme.viewport.gte.sm}) {
-    padding: 8px 17px;
+    padding: 8px 75px;
   }
 `

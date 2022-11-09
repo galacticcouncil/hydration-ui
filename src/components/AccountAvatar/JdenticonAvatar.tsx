@@ -1,5 +1,6 @@
 import * as jdenticon from "jdenticon"
 import { memo, useMemo } from "react"
+import { theme } from "theme"
 
 export const JdenticonAvatar = memo(
   (props: { publicKey: string; size: number; className?: string }) => {
@@ -12,7 +13,11 @@ export const JdenticonAvatar = memo(
 
     return (
       <span
-        css={{ display: "inline-block", lineHeight: 0 }}
+        css={{
+          display: "inline-block",
+          lineHeight: 0,
+          background: theme.colors.darkBlue400,
+        }}
         className={props.className}
         dangerouslySetInnerHTML={html}
       />

@@ -92,7 +92,7 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
     }
   `,
   gradient: css`
-    background: linear-gradient(90deg, #fc408c 0%, #57b3eb 100%);
+    background: ${theme.gradients.pinkLightPink};
     color: ${theme.colors.white};
 
     box-shadow: unset;
@@ -140,7 +140,7 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
 
 const sizeStyles: Record<ButtonSize, SerializedStyles> = {
   medium: css`
-    padding: 16px 36px;
+    padding: 16px 23px;
     font-size: 14px;
   `,
   small: css`
