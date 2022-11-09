@@ -64,12 +64,10 @@ export const QUERY_KEYS = {
     "totalLiquidities",
     ...ids,
   ],
-  tokenBalance: (id: Maybe<string | u32>, address?: AccountId32 | string) => [
-    QUERY_KEY_PREFIX,
-    "tokenBalance",
-    id?.toString(),
-    address,
-  ],
+  tokenBalance: (
+    id: Maybe<string | u32>,
+    address: Maybe<AccountId32 | string>,
+  ) => [QUERY_KEY_PREFIX, "tokenBalance", id?.toString(), address],
   tokensBalances: (ids: string[], address?: string) => [
     QUERY_KEY_PREFIX,
     "tokenBalances",
@@ -77,16 +75,7 @@ export const QUERY_KEYS = {
     ...ids,
   ],
   assets: [QUERY_KEY_PREFIX, "assets"],
-  assetDetails: (id: Maybe<u32 | string>) => [
-    QUERY_KEY_PREFIX,
-    "assetDetails",
-    id?.toString(),
-  ],
-  assetMeta: (id: Maybe<u32 | string>) => [
-    QUERY_KEY_PREFIX,
-    "assetMeta",
-    id?.toString(),
-  ],
+  assetsMeta: [QUERY_KEY_PREFIX, "assetsMeta"],
   exchangeFee: [QUERY_KEY_PREFIX, "exchangeFee"],
   calculateTotalLiqInPools: [QUERY_KEY_PREFIX, "totalLiqInPools"],
   spotPrice: (assetA: string, assetB: string) => [

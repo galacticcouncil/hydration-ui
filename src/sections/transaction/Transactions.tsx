@@ -4,8 +4,6 @@ import { ReviewTransaction } from "./ReviewTransaction"
 export const Transactions = () => {
   const { transactions, cancelTransaction } = useStore()
 
-  console.table(transactions?.map(({ hash, id }) => ({ hash, id })))
-
   return (
     <>
       {transactions?.map((currentTransaction) => {

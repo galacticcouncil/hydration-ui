@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next"
 import { WalletAssetsTableDetails } from "sections/wallet/assets/table/details/WalletAssetsTableDetails"
 import { TableSortHeader } from "components/Table/Table"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
+import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 
 type Props = { data: AssetsTableData[] }
 
@@ -26,7 +27,10 @@ export const WalletAssetsTable = ({ data }: Props) => {
   const { t } = useTranslation()
   const [showAll, setShowAll] = useState(false)
 
-  const table = useAssetsTable(data)
+  const [transferAsset, setTransferAsset] = useState<string | null>(null)
+  const table = useAssetsTable(data, {
+    onTransfer: setTransferAsset,
+  })
 
   return (
     <TableContainer css={assetsTableStyles}>
@@ -87,6 +91,13 @@ export const WalletAssetsTable = ({ data }: Props) => {
           ))}
         </TableBodyContent>
       </Table>
+      {transferAsset && (
+        <WalletTransferModal
+          open
+          initialAsset={transferAsset}
+          onClose={() => setTransferAsset(null)}
+        />
+      )}
     </TableContainer>
   )
 }

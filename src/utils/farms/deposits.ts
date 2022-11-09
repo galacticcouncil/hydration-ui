@@ -21,6 +21,7 @@ export const useUserDeposits = (poolId: string) => {
   return {
     data: userDeposits,
     isLoading: deposits.isLoading || depositIds.isLoading,
+    isInitialLoading: deposits.isInitialLoading || depositIds.isInitialLoading,
   }
 }
 
@@ -32,6 +33,7 @@ export const useAllUserDeposits = () => {
 
   const queries = [pools, ...allDeposits, depositIds]
   const isLoading = queries.some((q) => q.isLoading)
+  const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
   const deposits = useMemo(() => {
     if (allDeposits.some((q) => !q.data)) return undefined
@@ -66,5 +68,6 @@ export const useAllUserDeposits = () => {
   return {
     data: { deposits, positions },
     isLoading,
+    isInitialLoading,
   }
 }

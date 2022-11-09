@@ -17,7 +17,12 @@ import { WalletAssetsTableActions } from "sections/wallet/assets/table/actions/W
 import { useMedia } from "react-use"
 import { theme } from "theme"
 
-export const useAssetsTable = (data: AssetsTableData[]) => {
+export const useAssetsTable = (
+  data: AssetsTableData[],
+  actions: {
+    onTransfer: (assetId: string) => void
+  },
+) => {
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<AssetsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
@@ -64,6 +69,7 @@ export const useAssetsTable = (data: AssetsTableData[]) => {
       cell: ({ row }) => (
         <WalletAssetsTableActions
           toggleExpanded={() => row.toggleExpanded()}
+          onTransferClick={() => actions.onTransfer(row.original.id)}
           symbol={row.original.symbol}
         />
       ),
@@ -83,6 +89,7 @@ export const useAssetsTable = (data: AssetsTableData[]) => {
 }
 
 export type AssetsTableData = {
+  id: string
   symbol: string
   name: string
   transferable: BN

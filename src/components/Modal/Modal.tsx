@@ -16,6 +16,7 @@ import {
   CloseButton,
   ModalContainer,
   SecondaryButton,
+  ModalWindowContainer,
 } from "./Modal.styled"
 import { Backdrop } from "components/Backdrop/Backdrop"
 import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
@@ -31,6 +32,7 @@ type Props = {
   title?: string | undefined
   variant?: "default" | "error"
   secondaryIcon?: { icon: ReactNode; onClick: () => void; name: string }
+  topContent?: ReactNode
   withoutClose?: boolean
   width?: number
   isDrawer?: boolean
@@ -86,40 +88,47 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
         <ModalContext.Provider value={setPropsOverride}>
           <ModalContainer>
             <Backdrop variant={mergedProps.variant} />
+
             <ModalWindow
               maxWidth={mergedProps.width}
               onEscapeKeyDown={props.onClose}
               isDrawer={isDrawer}
             >
-              <ModalHeader>
-                {titleDrawer && isDrawer && (
-                  <Text color="neutralGray100" fs={16} fw={500}>
-                    {titleDrawer}
-                  </Text>
-                )}
-                {!!secondaryIcon && (
-                  <SecondaryButton
-                    icon={secondaryIcon.icon}
-                    onClick={secondaryIcon.onClick}
-                    name={secondaryIcon.name}
-                  />
-                )}
-                {!mergedProps.withoutClose && (
-                  <CloseButton
-                    icon={<CrossIcon />}
-                    onClick={props.onClose}
-                    name={t("modal.closeButton.name")}
-                  />
-                )}
-              </ModalHeader>
-              {isDrawer && <Separator />}
-              <RemoveScroll enabled={props.open}>
-                <ModalBody isDrawer={isDrawer}>
-                  <ModalTitle>{title}</ModalTitle>
-                  {props.children}
-                </ModalBody>
-                <DialogDescription />
-              </RemoveScroll>
+              {props.topContent}
+
+              <ModalWindowContainer isDrawer={isDrawer}>
+                <ModalHeader>
+                  {titleDrawer && isDrawer && (
+                    <Text color="neutralGray100" fs={16} fw={500}>
+                      {titleDrawer}
+                    </Text>
+                  )}
+                  {!!secondaryIcon && (
+                    <SecondaryButton
+                      icon={secondaryIcon.icon}
+                      onClick={secondaryIcon.onClick}
+                      name={secondaryIcon.name}
+                    />
+                  )}
+                  {!mergedProps.withoutClose && (
+                    <CloseButton
+                      icon={<CrossIcon />}
+                      onClick={props.onClose}
+                      name={t("modal.closeButton.name")}
+                    />
+                  )}
+                </ModalHeader>
+                {isDrawer && <Separator />}
+                <RemoveScroll enabled={props.open}>
+                  <>
+                    <ModalBody isDrawer={isDrawer}>
+                      <ModalTitle>{title}</ModalTitle>
+                      {props.children}
+                    </ModalBody>
+                  </>
+                  <DialogDescription />
+                </RemoveScroll>
+              </ModalWindowContainer>
             </ModalWindow>
           </ModalContainer>
         </ModalContext.Provider>

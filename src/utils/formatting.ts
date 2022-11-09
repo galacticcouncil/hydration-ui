@@ -5,6 +5,7 @@ import { BigNumberLikeType, normalizeBigNumber } from "./balance"
 import BigNumber from "bignumber.js"
 import { BN_10 } from "./constants"
 import { Maybe } from "utils/helpers"
+import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 
 export const formatNum = (
   number?: number | string,
@@ -156,4 +157,15 @@ export function shortenAccountAddress(address: string, length = 6) {
   return `${address.substring(0, length)}...${address.substring(
     address.length - length,
   )}`
+}
+
+export function safeConvertAddressSS58(
+  address: Maybe<string>,
+  ss58prefix: number,
+) {
+  try {
+    return encodeAddress(decodeAddress(address), ss58prefix)
+  } catch {
+    return null
+  }
 }

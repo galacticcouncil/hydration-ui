@@ -111,10 +111,13 @@ export const PoolFarmDeposit = (props: PoolJoinFarmDepositProps) => {
   return (
     <form onSubmit={form.handleSubmit(handleSubmit)}>
       <SGridContainer>
-        <Text fw={600} lh={22} color="primary200">
+        <Text fw={600} lh={22} color="primary200" css={{ gridArea: "title" }}>
           {t("farms.deposit.title")}
         </Text>
-        <div sx={{ flex: "row", align: "center", justify: "end" }}>
+        <div
+          sx={{ flex: "row", align: "center", justify: "end" }}
+          css={{ gridArea: "balance" }}
+        >
           <Text fs={12} lh={16} sx={{ mr: 5 }} color="white">
             <Trans
               t={t}
@@ -139,7 +142,7 @@ export const PoolFarmDeposit = (props: PoolJoinFarmDepositProps) => {
             }}
           />
         </div>
-        <div sx={{ flex: "row", align: "center" }}>
+        <div sx={{ flex: "row", align: "center" }} css={{ gridArea: "input" }}>
           <div sx={{ flex: "row", flexShrink: 0, align: "center" }}>
             <DualAssetIcons
               firstIcon={{ icon: getAssetLogo(assetIn.symbol) }}

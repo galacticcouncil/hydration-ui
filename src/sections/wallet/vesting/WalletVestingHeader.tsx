@@ -48,7 +48,7 @@ export const WalletVestingHeader = () => {
 
   const totalVestedValue = t("value", {
     value: totalVestedAmount,
-    fixedPointScale: nativeAsset?.data?.decimals ?? 12,
+    fixedPointScale: nativeAsset?.decimals ?? 12,
     decimalPlaces: 2,
   }).split(separators.decimal ?? ".")
 

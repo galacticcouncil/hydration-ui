@@ -112,8 +112,8 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
   }
 
   const shareTokenDecimals = useMemo(() => {
-    if (shareTokenMeta?.data?.decimals) {
-      return shareTokenMeta.data?.decimals.toNumber()
+    if (shareTokenMeta?.decimals) {
+      return shareTokenMeta.decimals.toNumber()
     }
 
     return DEFAULT_DECIMALS.toNumber()
@@ -226,10 +226,7 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
           asset={pool.tokens[0].id}
           balance={accountAssetABalance.data?.balance}
           decimals={pool.tokens[0].decimals}
-          currency={{
-            short: pool.tokens[0].symbol,
-            full: pool.tokens[0].symbol,
-          }} /*TODO: full token name*/
+          assetName={pool.tokens[0].symbol}
           assetIcon={getAssetLogo(pool.tokens[0].symbol)}
           value={inputAssetA}
           onChange={handleChangeAssetAInput}
@@ -254,10 +251,7 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
           asset={pool.tokens[1].id}
           balance={accountAssetBBalance.data?.balance}
           decimals={pool.tokens[1].decimals}
-          currency={{
-            short: pool.tokens[1].symbol,
-            full: pool.tokens[1].symbol,
-          }} /*TODO: full token name*/
+          assetName={pool.tokens[1].symbol}
           assetIcon={getAssetLogo(pool.tokens[1].symbol)}
           value={inputAssetB}
           onChange={handleChangeAssetBInput}

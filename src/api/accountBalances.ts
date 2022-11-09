@@ -10,17 +10,18 @@ export const useAccountBalances = (id: Maybe<AccountId32 | string>) => {
   return useQuery(
     QUERY_KEYS.accountBalances(id),
     !!id ? getAccountBalances(api, id) : undefinedNoop,
+    { enabled: id != null },
   )
 }
 
-export const getAccountBalances =
+const getAccountBalances =
   (api: ApiPromise, accountId: AccountId32 | string) => async () => {
     const [tokens, native] = await Promise.all([
       api.query.tokens.accounts.entries(accountId),
       api.query.system.account(accountId),
     ])
     const balances = tokens.map(([key, data]) => {
-      const [_, id] = key.args
+      const [, id] = key.args
       return { id, data }
     })
 

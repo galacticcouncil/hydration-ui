@@ -81,12 +81,18 @@ export const useAccountStore = create(
 
 export const useStore = create<Store>((set) => ({
   createTransaction: (transaction) => {
-    return new Promise<ISubmittableResult>((onSuccess, onError) => {
+    return new Promise<ISubmittableResult>((resolve, reject) => {
       const hash = transaction.tx.hash.toString()
       set((store) => {
         return {
           transactions: [
-            { ...transaction, hash, id: uuid(), onSuccess, onError },
+            {
+              ...transaction,
+              hash,
+              id: uuid(),
+              onSuccess: resolve,
+              onError: () => reject(new Error("Transaction rejected")),
+            },
             ...(store.transactions ?? []),
           ],
         }

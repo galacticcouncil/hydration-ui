@@ -6,7 +6,7 @@ import { useAccountStore } from "state/store"
 import { useAccountBalances } from "api/accountBalances"
 import { useSpotPrices } from "api/spotPrice"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { ASSET_TYPE_TOKEN, BN_10 } from "utils/constants"
+import { BN_10 } from "utils/constants"
 import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { PalletBalancesAccountData } from "@polkadot/types/lookup"
 import { u32 } from "@polkadot/types"
@@ -20,27 +20,25 @@ export const useAssetsTableData = () => {
     ? [NATIVE_ASSET_ID, ...accountBalances.data.balances.map((b) => b.id)]
     : []
   const balances = useAssetsBalances()
-  const assetDetails = useAssetDetailsList(tokenIds)
-  const assets = assetDetails.filter(
-    (ad) => ad.data?.assetType === ASSET_TYPE_TOKEN,
-  )
+  const assets = useAssetDetailsList(tokenIds)
 
-  const queries = [...assetDetails, balances]
+  const queries = [assets, balances]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (assetDetails.some((q) => !q.data) || !balances.data) return []
+    if (isLoading || !assets.data || !balances.data) return []
 
-    const res = assets.map((asset) => {
+    const res = assets.data.map((asset) => {
       const balance = balances.data?.find(
-        (b) => b.id.toString() === asset.data?.id.toString(),
+        (b) => b.id.toString() === asset.id.toString(),
       )
 
       if (!balance) return null
 
       return {
-        symbol: asset.data?.name,
-        name: getAssetName(asset.data?.name),
+        id: asset.id?.toString(),
+        symbol: asset.name,
+        name: getAssetName(asset.name),
         transferable: balance.transferable,
         transferableUSD: balance.transferableUSD,
         total: balance.total,
@@ -52,7 +50,7 @@ export const useAssetsTableData = () => {
     })
 
     return res.filter((x): x is AssetsTableData => x !== null)
-  }, [assets, balances.data])
+  }, [assets.data, balances.data, isLoading])
 
   return { data, isLoading }
 }
@@ -67,13 +65,13 @@ const useAssetsBalances = () => {
   const aUSD = useAUSD()
   const spotPrices = useSpotPrices(tokenIds, aUSD.data?.id)
 
-  const queries = [accountBalances, ...assetMetas, aUSD, ...spotPrices]
+  const queries = [accountBalances, assetMetas, aUSD, ...spotPrices]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
     if (
       !accountBalances.data ||
-      assetMetas.some((q) => !q.data) ||
+      !assetMetas.data ||
       spotPrices.some((q) => !q.data)
     )
       return undefined
@@ -82,11 +80,11 @@ const useAssetsBalances = () => {
       accountBalances.data.balances.map((ab) => {
         const id = ab.id
         const spotPrice = spotPrices.find((sp) => id.eq(sp.data?.tokenIn))
-        const meta = assetMetas.find((am) => id.eq(am.data?.id))
+        const meta = assetMetas.data.find((am) => id.eq(am?.id))
 
-        if (!spotPrice?.data || !meta?.data?.data) return null
+        if (!spotPrice?.data || !meta) return null
 
-        const dp = BN_10.pow(meta.data.data.decimals.toBigNumber())
+        const dp = BN_10.pow(meta.decimals.toBigNumber())
         const free = ab.data.free.toBigNumber()
         const reserved = ab.data.reserved.toBigNumber()
         const frozen = ab.data.frozen.toBigNumber()
@@ -100,9 +98,9 @@ const useAssetsBalances = () => {
       })
 
     const nativeBalance = accountBalances.data.native.data
-    const nativeDecimals = assetMetas
-      .find((am) => am.data?.id === NATIVE_ASSET_ID)
-      ?.data?.data?.decimals.toBigNumber()
+    const nativeDecimals = assetMetas.data
+      .find((am) => am?.id === NATIVE_ASSET_ID)
+      ?.decimals.toBigNumber()
     const nativeSpotPrice = spotPrices.find(
       (sp) => sp.data?.tokenIn === NATIVE_ASSET_ID,
     )?.data?.spotPrice

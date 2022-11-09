@@ -45,7 +45,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
           <Text>
             {t("value.bsx", {
               value: data?.balance,
-              fixedPointScale: meta?.data?.decimals,
+              fixedPointScale: meta?.decimals,
               decimalPlaces: 4,
             })}
           </Text>

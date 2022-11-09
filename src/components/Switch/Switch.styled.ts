@@ -2,6 +2,7 @@ import { Switch, SwitchThumb } from "@radix-ui/react-switch"
 import styled from "@emotion/styled"
 import { css } from "@emotion/react"
 import { theme } from "theme"
+import isPropValid from "@emotion/is-prop-valid"
 
 export const SThumb = styled(SwitchThumb)<{
   checked: boolean
@@ -46,7 +47,9 @@ export const SThumb = styled(SwitchThumb)<{
     `}
 `
 
-export const SSwitch = styled(Switch)<{
+export const SSwitch = styled(Switch, {
+  shouldForwardProp: (prop) => isPropValid(prop) && prop !== "withLabel",
+})<{
   size?: "small" | "regular"
   withLabel?: boolean
 }>`

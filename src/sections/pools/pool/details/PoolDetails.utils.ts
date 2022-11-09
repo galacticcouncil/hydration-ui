@@ -44,11 +44,11 @@ export function usePoolDetailsTradeVolume(poolAddress: string) {
     if (volume.isLoading) return null
 
     const combinedAssets = spotPrices.map((spotPrice, idx) => {
-      const asset = assets[idx]
-      if (asset.data?.data == null || spotPrice.data == null) return null
+      const asset = assets.data?.[idx]
+      if (asset == null || spotPrice.data == null) return null
       return {
         spotPrice: spotPrice.data,
-        asset: asset.data.data,
+        asset: asset,
       }
     })
 

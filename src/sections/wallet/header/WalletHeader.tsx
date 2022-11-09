@@ -13,7 +13,7 @@ import { WalletInactiveButton } from "../connect/modal/WalletConnectButton"
 export const WalletHeader = () => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
-  const [_copyState, copy] = useCopyToClipboard()
+  const [, copy] = useCopyToClipboard()
   const [open, setOpen] = useState(false)
 
   return (
