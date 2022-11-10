@@ -3,7 +3,7 @@ import { Label } from "@radix-ui/react-label"
 import { theme } from "theme"
 
 export const SLabel = styled(Label)<{ error?: string }>`
-  color: ${(p) => (p.error ? theme.colors.error : theme.colors.neutralGray100)};
+  color: ${(p) => (p.error ? theme.colors.error : theme.colors.white)};
   text-transform: capitalize;
 `
 

@@ -15,8 +15,7 @@ export type InputProps = {
   error?: string
   withLabel?: boolean
   className?: string
-  //   TODO add optional tooltip once we have tooltip component
-  //   tooltip?: { description: string }
+  tooltip?: string
 }
 
 export const Input: FC<InputProps> = ({
@@ -27,6 +26,7 @@ export const Input: FC<InputProps> = ({
   placeholder,
   name,
   withLabel,
+  tooltip,
   ...p
 }) => {
   return (
@@ -36,6 +36,7 @@ export const Input: FC<InputProps> = ({
         label={label}
         error={p.error}
         withLabel={withLabel}
+        tooltip={tooltip}
         {...p}
       >
         <SWrapper unit={p.unit}>

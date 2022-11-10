@@ -10,7 +10,7 @@ export const SIconButton = styled.button<{ round?: boolean }>`
   background: rgba(${theme.rgbColors.white}, 0.06);
   transition: background ${theme.transitions.default};
 
-  border: none;
+  border: 1px solid #30344c;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,6 +21,7 @@ export const SIconButton = styled.button<{ round?: boolean }>`
   padding: 0;
 
   &:hover {
-    background: rgba(${theme.rgbColors.white}, 0.15);
+    background: ${theme.colors.basic500};
+    border: none;
   }
 `

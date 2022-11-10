@@ -11,18 +11,17 @@ export const STrigger = styled(Tooltip.Trigger)`
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-
-  color: ${theme.colors.neutralGray300};
-  background: ${theme.colors.backgroundGray700};
-  border: 1px solid ${theme.colors.backgroundGray600};
+  color: ${theme.colors.pink600};
+  background: transparent;
+  border: 1px solid ${theme.colors.pink600};
 
   transition: all ${theme.transitions.default};
 
   border-radius: 9999px;
 
   &[data-state*="open"] {
-    color: ${theme.colors.primary400};
-    background: rgba(${theme.rgbColors.primary450}, 0.38);
-    border-color: rgba(${theme.rgbColors.primary400}, 0.41);
+    color: ${theme.colors.basic900};
+    background: ${theme.colors.pink600};
+    border-color: ${theme.colors.pink600};
   }
 `

@@ -61,6 +61,9 @@ export const ModalWindow = styled(DialogContent, {
   z-index: ${theme.zIndices.modal};
   width: 100%;
 
+  box-shadow: ${theme.shadows.modal};
+  background: ${theme.colors.darkBlue700};
+
   animation: 150ms cubic-bezier(0.16, 1, 0.3, 1)
     ${({ isDrawer }) => (isDrawer ? drawerKeyFrames : mobFadeInKeyframes)};
 
@@ -76,7 +79,7 @@ export const ModalWindow = styled(DialogContent, {
 
     height: auto;
     max-width: ${(props) => `${props.maxWidth ?? 610}px`};
-    border-radius: 16px;
+
     animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) ${fadeInKeyframes};
   }
 `

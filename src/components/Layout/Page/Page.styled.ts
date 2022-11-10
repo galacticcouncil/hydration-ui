@@ -12,7 +12,7 @@ export const SPage = styled.div`
   min-height: 100vh;
   padding-bottom: var(--mobile-nav-height);
 
-  background: ${theme.gradients.verticalGradient};
+  background: ${theme.gradients.background};
 
   @media (${theme.viewport.gte.sm}) {
     padding-bottom: 0;

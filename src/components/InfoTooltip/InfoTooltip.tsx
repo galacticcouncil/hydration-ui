@@ -27,15 +27,17 @@ export function InfoTooltip(props: { text: ReactNode }) {
       </STrigger>
       <Tooltip.Portal>
         <Tooltip.Content
-          sx={{ bg: "black", p: 16 }}
-          css={{ borderRadius: 6, maxWidth: "calc(100vw - 12px * 2)" }}
+          sx={{ bg: "darkBlue400", p: "11px 16px" }}
+          css={{ maxWidth: "calc(100vw - 12px * 2)" }}
           side="bottom"
           align="start"
           sideOffset={3}
           alignOffset={-10}
           collisionPadding={12}
         >
-          <Text sx={{ fontSize: 12, fontWeight: 400 }}>{props.text}</Text>
+          <Text fs={11} fw={500}>
+            {props.text}
+          </Text>
           <Tooltip.Arrow />
         </Tooltip.Content>
       </Tooltip.Portal>

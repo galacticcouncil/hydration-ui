@@ -1,11 +1,10 @@
-import { GradientText } from "../../../components/Typography/GradientText/GradientText"
 import { useTranslation } from "react-i18next"
 import { useAccountStore } from "../../../state/store"
-import { Text } from "../../../components/Typography/Text/Text"
+import { Text } from "components/Typography/Text/Text"
 import { useCopyToClipboard } from "react-use"
-import { ReactComponent as CopyIcon } from "../../../assets/icons/CopyIcon.svg"
-import { Button, ButtonTransparent } from "../../../components/Button/Button"
-import { Separator } from "../../../components/Separator/Separator"
+import { ReactComponent as CopyIcon } from "assets/icons/CopyIcon.svg"
+import { Button, ButtonTransparent } from "components/Button/Button"
+import { Separator } from "components/Separator/Separator"
 import { WalletConnectModal } from "../connect/modal/WalletConnectModal"
 import { useState } from "react"
 import { WalletInactiveButton } from "../connect/modal/WalletConnectButton"
@@ -21,9 +20,9 @@ export const WalletHeader = () => {
       <div
         sx={{ flex: "row", justify: "space-between", align: "center", pb: 16 }}
       >
-        <GradientText fs={20} fw={600} lh={20}>
+        <Text fs={20} fw={500} lh={20} css={{ fontFamily: "FontOver" }}>
           {account?.name}
-        </GradientText>
+        </Text>
         {account?.address ? (
           <div sx={{ flex: "row", align: "center" }}>
             <div
@@ -34,7 +33,7 @@ export const WalletHeader = () => {
                 mr: 50,
               }}
             >
-              <Text color="primary300" fs={14} fw={500}>
+              <Text color="brightBlue300" fs={14} fw={500}>
                 {account.address}
               </Text>
               <ButtonTransparent
@@ -42,12 +41,16 @@ export const WalletHeader = () => {
               >
                 <CopyIcon
                   sx={{
-                    color: "primary300",
+                    color: "brightBlue300",
                   }}
                 />
               </ButtonTransparent>
             </div>
-            <Button size="small" onClick={() => setOpen(true)}>
+            <Button
+              size="small"
+              variant="primary"
+              onClick={() => setOpen(true)}
+            >
               {t("wallet.header.switchAccount")}
             </Button>
           </div>

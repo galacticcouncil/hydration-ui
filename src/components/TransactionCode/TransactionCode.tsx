@@ -1,5 +1,5 @@
 import ReactJson, { ReactJsonViewProps } from "react-json-view"
-import { theme } from "../../theme"
+import { theme } from "theme"
 
 export const TransactionCode = (props: ReactJsonViewProps) => (
   <ReactJson
@@ -18,19 +18,19 @@ export const TransactionCode = (props: ReactJsonViewProps) => (
       base04: "purple",
       base05: "white",
       base06: "white",
-      base07: theme.colors.neutralGray200,
+      base07: theme.colors.basic100,
       base08: "#444",
-      base09: theme.colors.primary400,
+      base09: theme.colors.brightBlue700,
       base0A: "rgba(70, 70, 230, 0)",
       base0B: "rgba(70, 70, 230, 0)",
       base0C: "rgba(70, 70, 230, 0)",
-      base0D: theme.colors.yellow300,
-      base0E: theme.colors.neutralGray200,
+      base0D: theme.colors.warning,
+      base0E: theme.colors.basic100,
       base0F: "rgba(70, 70, 230, 1)",
     }}
     {...props}
     style={{
-      fontFamily: "SatoshiVariable",
+      fontFamily: "ChakraPetch",
       fontSize: "12px",
 
       padding: "20px 30px",

@@ -1,16 +1,18 @@
-import { WalletConnectModal } from "./WalletConnectModal"
-import { SContainer, SLoginButton } from "./WalletConnectButton.styled"
 import { useState } from "react"
+import { theme } from "theme"
 import { useTranslation } from "react-i18next"
+import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+
 import { Text } from "components/Typography/Text/Text"
-import { Account, useAccountStore } from "state/store"
 import { ReactComponent as ChevronDownSmall } from "assets/icons/ChevronDownSmall.svg"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
+import { ButtonProps } from "components/Button/Button"
 import { BASILISK_ADDRESS_PREFIX } from "utils/api"
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { theme } from "theme"
-import { ButtonProps } from "../../../../components/Button/Button"
+import { Account, useAccountStore } from "state/store"
 import { shortenAccountAddress } from "utils/formatting"
+
+import { WalletConnectModal } from "./WalletConnectModal"
+import { SContainer, SLoginButton } from "./WalletConnectButton.styled"
 
 const WalletActiveButton = (props: {
   onOpen: () => void
@@ -27,10 +29,15 @@ const WalletActiveButton = (props: {
     <SContainer className={props.className} onClick={props.onOpen}>
       <div sx={{ flex: "row", gap: 12, align: "center", justify: "center" }}>
         <div sx={{ flex: "column", gap: 4 }}>
-          <Text color="neutralGray100" fs={14} lh={14} fw={700}>
+          <Text
+            color="basic100"
+            fs={14}
+            lh={14}
+            css={{ fontFamily: "ChakraPetchBold" }}
+          >
             {props.account.name}
           </Text>
-          <Text color="neutralGray300" fs={12} lh={12} fw={400}>
+          <Text color="basic300" fs={12} lh={12} fw={400}>
             {shortenAccountAddress(props.account.address.toString())}
           </Text>
         </div>
@@ -40,7 +47,6 @@ const WalletActiveButton = (props: {
             align: "center",
             justify: "center",
             gap: 4,
-            color: "neutralGray300",
           }}
         >
           <div>
@@ -59,12 +65,12 @@ const WalletActiveButton = (props: {
               address={kusamaAddress}
               css={{
                 pointerEvents: "none",
-                outline: `3px solid ${theme.colors.backgroundGray800}`,
+                outline: `3px solid ${theme.colors.basic800}`,
                 borderRadius: "9999px",
               }}
             />
           </div>
-          <ChevronDownSmall />
+          <ChevronDownSmall sx={{ color: "basic100" }} />
         </div>
       </div>
     </SContainer>
@@ -83,6 +89,7 @@ export const WalletInactiveButton = (props: {
       variant="gradient"
       onClick={props.onOpen}
       className={props.className}
+      transform="none"
     >
       {t("header.walletConnect.button")}
     </SLoginButton>

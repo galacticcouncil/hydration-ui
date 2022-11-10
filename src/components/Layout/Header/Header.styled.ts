@@ -10,9 +10,9 @@ export const SHeader = styled.header`
   padding: 6px 12px;
 
   backdrop-filter: blur(16px);
-  background: rgba(${theme.rgbColors.backgroundGray1000}, 0.2);
+  background: rgba(${theme.rgbColors.black}, 0.2);
 
   @media (${theme.viewport.gte.sm}) {
-    padding: 6px 30px;
+    padding: 8px 75px;
   }
 `

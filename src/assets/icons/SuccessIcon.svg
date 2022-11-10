@@ -1,29 +1,8 @@
-<svg width="136" height="136" viewBox="0 0 136 136" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="67.5" cy="69.5" r="58" fill="url(#paint0_linear_9108_128327)" fill-opacity="0.3" />
-  <path d="M54.5 72L63.5 81L82.5 61" stroke="url(#paint1_linear_9108_128327)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M54.5 72L63.5 81L82.5 61" stroke="url(#paint2_linear_9108_128327)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M54.5 72L63.5 81L82.5 61" stroke="url(#paint3_linear_9108_128327)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
-  <defs>
-    <linearGradient id="paint0_linear_9108_128327" x1="67.5" y1="-44.5161" x2="67.5" y2="193.086" gradientUnits="userSpaceOnUse">
-      <stop offset="0.0560296" stop-color="#4FFFB0" stop-opacity="0" />
-      <stop offset="0.323175" stop-color="#4FFFB0" stop-opacity="0.14" />
-      <stop offset="0.633467" stop-color="#2EFFA1" />
-      <stop offset="0.751279" stop-color="#FFE668" />
-    </linearGradient>
-    <linearGradient id="paint1_linear_9108_128327" x1="54.8567" y1="49.125" x2="83.6592" y2="49.125" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFCE4F" />
-      <stop offset="1" stop-color="#4FFFB0" />
-    </linearGradient>
-    <linearGradient id="paint2_linear_9108_128327" x1="54.8567" y1="49.125" x2="83.6592" y2="49.125" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#4FFFB0" />
-      <stop offset="0.505223" stop-color="#A2FF76" />
-      <stop offset="1" stop-color="#FF984E" />
-    </linearGradient>
-    <linearGradient id="paint3_linear_9108_128327" x1="54.8567" y1="49.125" x2="83.6592" y2="49.125" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#4FFFB0" />
-      <stop offset="0.463556" stop-color="#B3FF8F" />
-      <stop offset="1" stop-color="#FF984E" />
-    </linearGradient>
-  </defs>
+<svg width="13" height="10" viewBox="0 0 13 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.601562" y="4.97485" width="2.4" height="2.4" fill="#00FFA0"/>
+<rect x="3" y="7.37476" width="2.4" height="2.4" fill="#00FFA0"/>
+<rect x="10.2031" y="2.57471" width="2.4" height="2.4" transform="rotate(90 10.2031 2.57471)" fill="#00FFA0"/>
+<rect x="7.80078" y="4.97485" width="2.4" height="2.4" transform="rotate(90 7.80078 4.97485)" fill="#00FFA0"/>
+<rect x="5.40234" y="7.37476" width="2.4" height="2.4" transform="rotate(90 5.40234 7.37476)" fill="#00FFA0"/>
+<rect x="12.6016" y="0.174805" width="2.4" height="2.4" transform="rotate(90 12.6016 0.174805)" fill="#00FFA0"/>
 </svg>
-  

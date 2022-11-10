@@ -4,7 +4,7 @@ import { theme } from "theme"
 
 export const SContainer = styled.div`
   border-radius: 12px;
-  background: rgba(${theme.rgbColors.primary100}, 0.06);
+  background: rgba(${theme.rgbColors.brightBlue100}, 0.06);
   padding: 14px;
 
   grid-row-gap: 5px;

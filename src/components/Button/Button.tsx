@@ -1,58 +1,33 @@
-import { Link } from "components/Link/Link"
-import {
-  ComponentProps,
-  FC,
-  forwardRef,
-  ReactNode,
-  SyntheticEvent,
-} from "react"
-import {
-  SButton,
-  SButtonTransparent,
-  SContent,
-  SSpinner,
-} from "./Button.styled"
+import { Spinner } from "components/Spinner/Spinner.styled"
+import { ComponentProps, forwardRef } from "react"
+import { SButton, SButtonTransparent, SContent } from "./Button.styled"
 
-export type ButtonProps = {
-  variant?: "primary" | "secondary" | "gradient" | "transparent" | "outline"
-  disabled?: boolean
+export type ButtonVariant = "primary" | "secondary" | "gradient" | "outline"
+export type ButtonSize = "small" | "medium" | "micro"
+
+export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: ButtonVariant
+  size?: ButtonSize
   text?: string
-  to?: string
-  type?: "button" | "submit" | "reset"
-  onClick?: (e: SyntheticEvent) => void
-  size?: "small" | "medium" | "micro"
-  transform?: "uppercase" | "lowercase" | "none"
-  fullWidth?: boolean
   isLoading?: boolean
-  capitalize?: boolean
-  children?: ReactNode
-  className?: string
+  children?: React.ReactNode
   active?: boolean
+  transform?: "uppercase" | "lowercase" | "none"
 }
 
-export const Button: FC<ButtonProps> = ({
-  type = "button",
+export const Button: React.FC<ButtonProps> = ({
   variant = "secondary",
   size = "medium",
   ...props
 }) => {
-  const disabled = props.isLoading || props.disabled
-  const element = (
-    <SButton
-      {...props}
-      type={type}
-      variant={variant}
-      size={size}
-      disabled={disabled}
-    >
+  return (
+    <SButton variant={variant} size={size} {...props}>
       <SContent>
-        {props.isLoading && <SSpinner width={16} height={16} />}
+        {props.isLoading && <Spinner width={16} height={16} />}
         {props.text || props.children}
       </SContent>
     </SButton>
   )
-  if (props.to) return <Link to={props.to}>{element}</Link>
-  return element
 }
 
 export const ButtonTransparent = forwardRef<
