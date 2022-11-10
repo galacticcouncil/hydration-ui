@@ -3,8 +3,7 @@ import { useAssetDetails, useAssetDetailsList } from "./assetDetails"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { u32 } from "@polkadot/types"
 import { AUSD_NAME } from "utils/constants"
-import { useMemo } from "react"
-import { Maybe } from "utils/helpers"
+import { Maybe, useQuerySelect } from "utils/helpers"
 
 export const useAsset = (id: Maybe<u32 | string>) => {
   const detail = useAssetDetails(id)
@@ -29,15 +28,7 @@ export const useAsset = (id: Maybe<u32 | string>) => {
 }
 
 export const useAUSD = () => {
-  const { data, ...rest } = useAssetDetailsList()
-
-  const aUSD = useMemo(
-    () =>
-      data?.find(
-        (asset) => asset.name.toLowerCase() === AUSD_NAME.toLowerCase(),
-      ),
-    [data],
+  return useQuerySelect(useAssetDetailsList(), (data) =>
+    data.find((asset) => asset.name.toLowerCase() === AUSD_NAME.toLowerCase()),
   )
-
-  return { data: aUSD, ...rest }
 }
