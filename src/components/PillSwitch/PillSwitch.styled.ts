@@ -16,7 +16,7 @@ export const SSwitch = styled.div`
   gap: 9px;
 `
 
-export const SButton = styled(motion.button)<{ isActive: boolean }>`
+export const SButton = styled.button<{ isActive: boolean }>`
   all: unset;
 
   display: flex;
@@ -24,7 +24,6 @@ export const SButton = styled(motion.button)<{ isActive: boolean }>`
   justify-content: center;
 
   border-radius: 9px;
-  transition: all ${theme.transitions.default};
 
   font-weight: 700;
   font-size: 12px;
