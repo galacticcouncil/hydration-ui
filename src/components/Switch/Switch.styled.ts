@@ -78,7 +78,6 @@ export const SThumb = styled(SwitchThumb)<{
   disabled?: boolean
   size?: "small" | "regular"
 }>`
-  box-sizing: border-box;
   position: absolute;
   top: 1px;
   left: 1px;

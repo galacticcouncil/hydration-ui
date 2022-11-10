@@ -24,12 +24,7 @@ export const Label: FC<LabelProps> = ({
   return (
     <LabelWrapper {...p}>
       {/* hidden prop hides label visibly, but keeps it available for screen readers */}
-      <div
-        /*sx={{ flex: "row", justify: "space-between" }}*/ style={{
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
+      <div sx={{ flex: "row", justify: "space-between" }}>
         <SLabel error={error} htmlFor={id} hidden={!withLabel}>
           {label}
         </SLabel>
