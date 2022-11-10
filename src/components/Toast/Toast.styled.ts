@@ -85,7 +85,7 @@ export const SProgressBarBg = styled.div`
   background: ${theme.colors.basic700};
 
   width: 100%;
-  height: 1.6px;
+  height: 1px;
 
   position: absolute;
   bottom: 0;
