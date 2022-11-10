@@ -3,38 +3,69 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { u32 } from "@polkadot/types"
-import { Maybe, undefinedNoop } from "utils/helpers"
+import { Maybe } from "utils/helpers"
+import { useAccountBalances } from "./accountBalances"
+import { AccountId32 } from "@polkadot/types/interfaces"
 
 export const useAssetDetails = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
-
-  return useQuery(
-    QUERY_KEYS.assetDetails(id?.toString()),
-    id != null ? getAssetDetails(api, id) : undefinedNoop,
-    { enabled: !!id },
-  )
+  return useQuery(QUERY_KEYS.assets, getAssetDetails(api), {
+    select: (data) => data.find((i) => i.id === id?.toString()),
+  })
 }
 
-export const getAssetDetails =
-  (api: ApiPromise, id: u32 | string) => async () => {
-    if (id.toString() === NATIVE_ASSET_ID) {
-      const properties = await api.rpc.system.properties()
-      const symbol = properties.tokenSymbol.unwrap()[0]
+export const useAssetDetailsList = (ids?: Maybe<u32 | string>[]) => {
+  const api = useApiPromise()
 
+  const normalizedIds = ids?.reduce<string[]>((memo, item) => {
+    if (item != null) memo.push(item.toString())
+    return memo
+  }, [])
+
+  return useQuery(QUERY_KEYS.assets, getAssetDetails(api), {
+    select: (data) => {
+      return normalizedIds != null
+        ? data.filter((i) => normalizedIds?.includes(i.id))
+        : data
+    },
+  })
+}
+
+export const useAssetAccountDetails = (
+  address: Maybe<AccountId32 | string>,
+) => {
+  const accountBalances = useAccountBalances(address)
+
+  const ids = accountBalances.data?.balances
+    ? [NATIVE_ASSET_ID, ...accountBalances.data.balances.map((b) => b.id)]
+    : []
+
+  return useAssetDetailsList(ids)
+}
+
+const getAssetDetails = (api: ApiPromise) => async () => {
+  const [system, entries] = await Promise.all([
+    api.rpc.system.properties(),
+    api.query.assetRegistry.assets.entries(),
+  ])
+
+  const assets = entries
+    .filter(([_, data]) => data.unwrap().assetType.isToken)
+    .map(([key, data]) => {
       return {
-        name: symbol.toHuman(),
-        assetType: "Token",
-        existentialDeposit: "",
-        locked: false,
+        id: key.args[0].toString(),
+        name: data.unwrap().name.toUtf8(),
+        locked: data.unwrap().locked.toPrimitive(),
       }
-    }
+    })
 
-    const res = await api.query.assetRegistry.assets(id)
-    const data = res.toHuman() as {
-      name: string
-      assetType: "Token" | { PoolShare: string[] }
-      existentialDeposit: any
-      locked: boolean
-    }
-    return data
+  if (!assets.find((i) => i.id === NATIVE_ASSET_ID)) {
+    assets.push({
+      id: NATIVE_ASSET_ID,
+      locked: false,
+      name: system.tokenSymbol.unwrap()[0].toString(),
+    })
   }
+
+  return assets
+}

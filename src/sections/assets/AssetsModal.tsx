@@ -1,6 +1,5 @@
 import { Modal } from "../../components/Modal/Modal"
 import { FC } from "react"
-import { useAssets } from "../../api/asset"
 import { AssetsModalRow } from "./AssetsModalRow"
 import { SAssetsModalHeader } from "./AssetsModal.styled"
 import { u32 } from "@polkadot/types"
@@ -9,6 +8,8 @@ import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { Maybe } from "utils/helpers"
+import { useAccountStore } from "state/store"
+import { useAssetAccountDetails } from "api/assetDetails"
 
 interface AssetsModalProps {
   allowedAssets?: Maybe<u32 | string>[]
@@ -23,14 +24,19 @@ export const AssetsModal: FC<AssetsModalProps> = ({
 }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const assetsRows = useAssets()
+  const { account } = useAccountStore()
 
-  const mainAssets = assetsRows.data?.filter((asset) =>
-    allowedAssets?.includes(asset.id),
-  )
-  const otherAssets = assetsRows.data?.filter(
-    (asset) => !allowedAssets?.includes(asset.id),
-  )
+  const assetsRows = useAssetAccountDetails(account?.address)
+
+  const mainAssets =
+    (allowedAssets != null
+      ? assetsRows.data?.filter((asset) => allowedAssets.includes(asset.id))
+      : assetsRows.data) ?? []
+
+  const otherAssets =
+    (allowedAssets != null
+      ? assetsRows.data?.filter((asset) => !allowedAssets?.includes(asset.id))
+      : []) ?? []
 
   return (
     <Modal
@@ -61,6 +67,7 @@ export const AssetsModal: FC<AssetsModalProps> = ({
           </SAssetsModalHeader>
           {mainAssets?.map((asset) => (
             <AssetsModalRow
+              key={asset.id}
               id={asset.id}
               onClick={() => onSelect?.(asset.id)}
             />
@@ -81,6 +88,7 @@ export const AssetsModal: FC<AssetsModalProps> = ({
           </SAssetsModalHeader>
           {otherAssets?.map((asset) => (
             <AssetsModalRow
+              key={asset.id}
               id={asset.id}
               onClick={() => onSelect?.(asset.id)}
             />

@@ -35,7 +35,7 @@ export function PoolDetailsTradeFee(props: { pool: PoolBase }) {
           <Text fs={14} fw={400} color="neutralGray400" lh={26}>
             {t("pools.pool.poolDetails.fee")}
           </Text>
-          <Text lh={22} color="white">
+          <Text lh={22} color="white" tAlign={["right", "left"]}>
             {t("value.percentage", { value: getTradeFee(props.pool.tradeFee) })}
           </Text>
         </div>

@@ -82,6 +82,7 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
 
 export const TableData = styled.td<{ isExpanded?: boolean }>`
   padding: 16px;
+  padding-right: 0;
   text-align: start;
 
   ${({ isExpanded }) =>

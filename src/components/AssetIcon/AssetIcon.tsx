@@ -29,15 +29,28 @@ export const AssetIcon: FC<AssetIconProps> = ({
   </AssetIconWrapper>
 )
 
-export function getAssetLogo(assetName: string | null | undefined) {
-  const name = assetName?.toUpperCase()
+export function getAssetLogo(symbol: string | null | undefined) {
+  const _symbol = symbol?.toUpperCase()
 
-  if (name === "AUSD") return <AUSD />
-  if (name === "BSX") return <BSX />
-  if (name === "KAR") return <KAR />
-  if (name === "KSM") return <KSM />
-  if (name === "PHA") return <PHA />
-  if (name === "TNKR") return <TNKR />
+  if (_symbol === "AUSD") return <AUSD />
+  if (_symbol === "BSX") return <BSX />
+  if (_symbol === "KAR") return <KAR />
+  if (_symbol === "KSM") return <KSM />
+  if (_symbol === "PHA") return <PHA />
+  if (_symbol === "TNKR") return <TNKR />
 
   return <PlaceholderIcon width={32} height={32} />
+}
+
+export function getAssetName(symbol: string | null | undefined) {
+  const _symbol = symbol?.toUpperCase()
+
+  if (_symbol === "AUSD") return "Acala Dollar"
+  if (_symbol === "BSX") return "Basilisk"
+  if (_symbol === "KAR") return "Karura"
+  if (_symbol === "KSM") return "Kusama"
+  if (_symbol === "PHA") return "Phala"
+  if (_symbol === "TNKR") return "Tinkernet"
+
+  return "-"
 }

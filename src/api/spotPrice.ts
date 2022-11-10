@@ -2,7 +2,7 @@ import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types"
 import { TradeRouter } from "@galacticcouncil/sdk"
-import { BN_1, BN_10 } from "utils/constants"
+import { BN_1, BN_10, BN_NAN } from "utils/constants"
 import BN from "bignumber.js"
 import { useTradeRouter } from "utils/api"
 import { Maybe } from "utils/helpers"
@@ -47,8 +47,12 @@ export const getSpotPrice =
     // X -> X would return undefined, no need for spot price in such case
     if (tokenIn === tokenOut) return { tokenIn, tokenOut, spotPrice: BN_1 }
 
-    const res = await tradeRouter.getBestSpotPrice(tokenIn, tokenOut)
-    const spotPrice = res.amount.div(BN_10.pow(res.decimals))
+    // error replies are valid in case token has no spot price
+    let spotPrice = BN_NAN
+    try {
+      const res = await tradeRouter.getBestSpotPrice(tokenIn, tokenOut)
+      spotPrice = res.amount.div(BN_10.pow(res.decimals))
+    } catch (e) {}
 
     return { tokenIn, tokenOut, spotPrice }
   }

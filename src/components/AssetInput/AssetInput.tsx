@@ -1,4 +1,5 @@
 import React, { FC } from "react"
+import { Maybe } from "utils/helpers"
 import {
   SDollars,
   SErrorMessage,
@@ -14,7 +15,7 @@ export type AssetInputProps = {
   name: string
   label: string
   dollars?: string
-  unit?: string
+  unit?: Maybe<string>
   type?: string
   placeholder?: string
   error?: string

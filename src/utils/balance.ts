@@ -1,6 +1,13 @@
 import { BN } from "@polkadot/util"
 import { BN_10 } from "./constants"
 import BigNumber from "bignumber.js"
+import {
+  BigNumberFormatOptionsSchema,
+  formatBigNumber,
+  getFormatSeparators,
+} from "./formatting"
+import { z } from "zod"
+import i18n from "i18next"
 
 export type BigNumberLikeType = BN | BigNumber | number | string
 
@@ -33,4 +40,20 @@ export const getFixedPointAmount = (
   decimals: string | number,
 ) => {
   return normalizeBigNumber(amount)?.times(BN_10.pow(decimals))
+}
+
+export const separateBalance = (
+  value: BigNumber,
+  options?: z.infer<typeof BigNumberFormatOptionsSchema>,
+) => {
+  const formatted = formatBigNumber(value, options, "en")
+  const separators = getFormatSeparators(i18n.languages[0])
+  if (formatted) {
+    const [num, denom] = formatted.split(separators.decimal ?? ".")
+    return {
+      num,
+      denom,
+    }
+  }
+  return null
 }

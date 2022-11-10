@@ -3,7 +3,7 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const ToastViewport = styled(Viewport)`
-  position: absolute;
+  position: fixed;
   bottom: 0;
   right: 0;
   overflow: hidden;
