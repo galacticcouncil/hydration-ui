@@ -4,6 +4,7 @@ import { GradientText } from "components/Typography/GradientText/GradientText"
 import styled from "@emotion/styled"
 import { keyframes } from "@emotion/react"
 import { theme } from "theme"
+import isPropValid from "@emotion/is-prop-valid"
 
 const fadeInKeyframes = keyframes`
   0% {
@@ -49,7 +50,10 @@ export const ModalContainer = styled.div`
   z-index: ${theme.zIndices.backdrop};
 `
 
-export const ModalWindow = styled(DialogContent)<{
+export const ModalWindow = styled(DialogContent, {
+  shouldForwardProp: (prop) =>
+    isPropValid(prop) && prop !== "maxWidth" && prop !== "isDrawer",
+})<{
   maxWidth?: number
   isDrawer?: boolean
 }>`
@@ -77,6 +81,18 @@ export const ModalWindow = styled(DialogContent)<{
     max-width: ${(props) => `${props.maxWidth ?? 610}px`};
 
     animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) ${fadeInKeyframes};
+  }
+`
+
+export const ModalWindowContainer = styled.div<{ isDrawer?: boolean }>`
+  border: 1px solid rgba(${theme.rgbColors.white}, 0.06);
+  box-shadow: 0px 38px 46px rgba(0, 0, 0, 0.03);
+  background: ${theme.colors.backgroundGray900};
+
+  ${({ isDrawer }) => (isDrawer ? { borderRadius: "20px 20px 0px 0px" } : {})}
+
+  @media ${theme.viewport.gte.sm} {
+    border-radius: 16px;
   }
 `
 

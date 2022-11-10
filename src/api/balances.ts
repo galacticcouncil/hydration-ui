@@ -1,6 +1,5 @@
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 
-import { useAccountStore } from "../state/store"
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
@@ -54,27 +53,40 @@ export const useTokenBalance = (
   address: Maybe<AccountId32 | string>,
 ) => {
   const api = useApiPromise()
-  const { account } = useAccountStore()
-  const finalAddress = address ?? account?.address
 
   return useQuery(
-    QUERY_KEYS.tokenBalance(id, finalAddress),
-    finalAddress != null && id != null
-      ? getTokenBalance(api, finalAddress, id)
+    QUERY_KEYS.tokenBalance(id, address),
+    address != null && id != null
+      ? getTokenBalance(api, address, id)
       : undefinedNoop,
-    { enabled: finalAddress != null && id != null },
+    { enabled: address != null && id != null },
   )
 }
 
-export function useTokensBalances(tokenIds: (string | u32)[]) {
-  const { account } = useAccountStore()
+export function useTokensBalances(
+  tokenIds: (string | u32)[],
+  address: Maybe<AccountId32 | string>,
+) {
   const api = useApiPromise()
 
   return useQueries({
     queries: tokenIds.map((id) => ({
-      queryKey: QUERY_KEYS.tokenBalance(id),
-      queryFn: () => getTokenBalance(api, account?.address ?? "", id)(),
-      enabled: !!account,
+      queryKey: QUERY_KEYS.tokenBalance(id, address),
+      queryFn:
+        address != null ? getTokenBalance(api, address, id) : undefinedNoop,
+      enabled: !!address,
     })),
+  })
+}
+
+const getExistentialDeposit = (api: ApiPromise) => {
+  return api.consts.balances.existentialDeposit
+}
+
+export function useExistentialDeposit() {
+  const api = useApiPromise()
+  return useQuery(QUERY_KEYS.existentialDeposit, async () => {
+    const existentialDeposit = await getExistentialDeposit(api)
+    return existentialDeposit.toBigNumber()
   })
 }

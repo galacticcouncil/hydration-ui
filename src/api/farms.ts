@@ -7,9 +7,7 @@ import { AccountId32 } from "@polkadot/types/interfaces/runtime"
 
 export const useYieldFarms = (ids: FarmIds[]) => {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.yieldFarms(ids), getYieldFarms(api, ids), {
-    enabled: !!ids.length,
-  })
+  return useQuery(QUERY_KEYS.yieldFarms(ids), getYieldFarms(api, ids))
 }
 
 export const useYieldFarm = (ids: {

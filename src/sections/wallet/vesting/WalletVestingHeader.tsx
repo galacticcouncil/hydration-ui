@@ -1,9 +1,10 @@
 import { Text } from "components/Typography/Text/Text"
 import { Heading } from "components/Typography/Heading/Heading"
-import { Separator } from "components/Separator/Separator"
 import { Trans, useTranslation } from "react-i18next"
+import { Separator } from "../../../components/Separator/Separator"
 import {
-  useVestingClaimableBalance,
+  useVestingTotalClaimableBalance,
+  useVestingScheduleEnd,
   useVestingTotalVestedAmount,
 } from "api/vesting"
 import { useSpotPrice } from "api/spotPrice"
@@ -15,12 +16,16 @@ import { css } from "@emotion/react"
 import { theme } from "theme"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { useAssetMeta } from "../../../api/assetMeta"
+import { STable, SSeparator } from "./WalletVestingHeader.styled"
+import { addDays } from "date-fns"
+import { DAY_IN_MILLISECONDS } from "../../../utils/constants"
 
 export const WalletVestingHeader = () => {
   const { t } = useTranslation()
 
-  const { data: claimableBalance } = useVestingClaimableBalance()
+  const { data: claimableBalance } = useVestingTotalClaimableBalance()
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
+  const { data: vestingScheduleEnd } = useVestingScheduleEnd()
 
   const AUSD = useAUSD()
   const spotPrice = useSpotPrice(NATIVE_ASSET_ID, AUSD.data?.id)
@@ -43,7 +48,7 @@ export const WalletVestingHeader = () => {
 
   const totalVestedValue = t("value", {
     value: totalVestedAmount,
-    fixedPointScale: nativeAsset?.data?.decimals ?? 12,
+    fixedPointScale: nativeAsset?.decimals ?? 12,
     decimalPlaces: 2,
   }).split(separators.decimal ?? ".")
 
@@ -127,6 +132,39 @@ export const WalletVestingHeader = () => {
           {t("value.usd", { amount: totalVestedUSD })}
         </Text>
       </div>
+
+      {vestingScheduleEnd && (
+        <STable>
+          <div>
+            <Text color="neutralGray300" sx={{ mb: 10 }}>
+              {t("wallet.vesting.vesting_schedule_end")}
+            </Text>
+            <Text color="white" fs={18} fw={700}>
+              {t("wallet.vesting.vesting_schedule_end_value", {
+                date: addDays(
+                  new Date(),
+                  vestingScheduleEnd.div(DAY_IN_MILLISECONDS).toNumber(),
+                ),
+              })}
+            </Text>
+          </div>
+          <SSeparator />
+          <div>
+            <Text color="neutralGray300" sx={{ mb: 10 }}>
+              {t("wallet.vesting.vesting_days_left")}
+            </Text>
+            <Text color="white" fs={18} fw={700}>
+              {t("wallet.vesting.vesting_days_left_value", {
+                count: vestingScheduleEnd.div(DAY_IN_MILLISECONDS).isLessThan(0)
+                  ? 0
+                  : Math.ceil(
+                      vestingScheduleEnd.div(DAY_IN_MILLISECONDS).toNumber(),
+                    ),
+              })}
+            </Text>
+          </div>
+        </STable>
+      )}
     </div>
   )
 }

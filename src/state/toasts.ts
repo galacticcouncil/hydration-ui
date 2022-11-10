@@ -4,10 +4,11 @@ import { v4 as uuid } from "uuid"
 
 export interface ToastData extends ToastParams {
   id: string
+  variant?: "info" | "success" | "error" | "loading"
 }
 
 interface ToastParams {
-  variant?: "info" | "success" | "error" | "loading"
+  id?: string
   text?: string
   children?: ReactNode
   persist?: boolean
@@ -20,7 +21,7 @@ interface ToastStore {
   remove: (id: string) => void
 }
 
-export const useToastsStore = create<ToastStore>((set) => ({
+const useToastsStore = create<ToastStore>((set) => ({
   toasts: [],
   add: (toast) => set((state) => ({ toasts: [...state.toasts, toast] })),
   remove: (id: string) =>
@@ -30,14 +31,26 @@ export const useToastsStore = create<ToastStore>((set) => ({
 export const useToast = () => {
   const { toasts, add, remove } = useToastsStore()
 
-  const info = (toast: ToastParams) =>
-    add({ ...toast, id: uuid(), variant: "info" })
-  const success = (toast: ToastParams) =>
-    add({ ...toast, id: uuid(), variant: "success" })
-  const error = (toast: ToastParams) =>
-    add({ ...toast, id: uuid(), variant: "error" })
-  const loading = (toast: ToastParams) =>
-    add({ ...toast, id: uuid(), variant: "loading" })
+  const info = (toast: ToastParams) => {
+    const id = toast.id ?? uuid()
+    add({ id, ...toast, variant: "info" })
+    return id
+  }
+  const success = (toast: ToastParams) => {
+    const id = toast.id ?? uuid()
+    add({ id, ...toast, variant: "success" })
+    return id
+  }
+  const error = (toast: ToastParams) => {
+    const id = toast.id ?? uuid()
+    add({ id, ...toast, variant: "error" })
+    return id
+  }
+  const loading = (toast: ToastParams) => {
+    const id = toast.id ?? uuid()
+    add({ id, ...toast, variant: "loading" })
+    return id
+  }
 
-  return { toasts, info, success, error, loading, add, remove }
+  return { toasts, info, success, error, loading, remove }
 }

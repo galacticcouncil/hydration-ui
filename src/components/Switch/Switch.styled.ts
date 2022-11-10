@@ -2,20 +2,18 @@ import { Switch, SwitchThumb } from "@radix-ui/react-switch"
 import styled from "@emotion/styled"
 import { css } from "@emotion/react"
 import { theme } from "theme"
+import isPropValid from "@emotion/is-prop-valid"
 
-export const SSwitch = styled(Switch)<{
+export const SSwitch = styled(Switch, {
+  shouldForwardProp: (prop) => isPropValid(prop) && prop !== "withLabel",
+})<{
   size?: "small" | "regular"
   withLabel?: boolean
 }>`
-  --switch-thumb-size: ${(p) => (p.size === "small" ? "20px" : "34px")};
-
   position: relative;
-
   border-radius: 45px;
   border: 1px solid ${theme.colors.basic700};
-
   background: rgba(${theme.rgbColors.black}, 0.25);
-
   cursor: pointer;
 
   ${(p) =>

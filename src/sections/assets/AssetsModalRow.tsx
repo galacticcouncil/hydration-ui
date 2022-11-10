@@ -10,6 +10,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { useSpotPrice } from "../../api/spotPrice"
 import { BN_0 } from "../../utils/constants"
 import { Maybe } from "utils/helpers"
+import { getAssetName } from "components/AssetIcon/AssetIcon"
 
 interface AssetsModalRowProps {
   id: Maybe<u32 | string>
@@ -44,7 +45,7 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
             {asset.data?.name}
           </Text>
           <Text color="neutralGray400" fs={12} lh={16}>
-            {asset.data?.symbol ?? asset.data?.name}
+            {getAssetName(asset.data?.name)}
           </Text>
         </div>
       </div>

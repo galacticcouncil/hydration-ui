@@ -46,8 +46,6 @@ export const Toast: FC<PropsWithChildren<Props>> = ({
       animate={{ x: 0, opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
-      onOpenChange={(open) => !open && !persist && onClose?.()}
-      open={true}
     >
       <SContainer variant={variant}>
         <SIcon>
@@ -84,6 +82,7 @@ export const Toast: FC<PropsWithChildren<Props>> = ({
           initial={{ width: "100%" }}
           animate={!persist && { width: "0%" }}
           transition={{ duration: TOAST_CLOSE_TIME / 1000, ease: "linear" }}
+          onAnimationComplete={onClose}
         />
       </SContainer>
       <SClose

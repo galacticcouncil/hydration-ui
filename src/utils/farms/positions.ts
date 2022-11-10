@@ -43,7 +43,7 @@ export const useTotalInPositions = () => {
     aUSD,
     ...spotPrices,
   ]
-  const isLoading = queries.some((q) => q.isLoading)
+  const isLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
     if (
