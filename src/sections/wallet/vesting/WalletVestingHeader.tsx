@@ -155,9 +155,11 @@ export const WalletVestingHeader = () => {
             </Text>
             <Text color="white" fs={18} fw={700}>
               {t("wallet.vesting.vesting_days_left_value", {
-                count: Math.ceil(
-                  vestingScheduleEnd.div(DAY_IN_MILLISECONDS).toNumber(),
-                ),
+                count: vestingScheduleEnd.div(DAY_IN_MILLISECONDS).isLessThan(0)
+                  ? 0
+                  : Math.ceil(
+                      vestingScheduleEnd.div(DAY_IN_MILLISECONDS).toNumber(),
+                    ),
               })}
             </Text>
           </div>

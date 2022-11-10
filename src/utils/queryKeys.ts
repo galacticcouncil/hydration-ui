@@ -134,4 +134,5 @@ export const QUERY_KEYS = {
   ],
   provider: (url: string) => ["provider", url],
   math: ["@galacticcouncil/math"],
+  existentialDeposit: ["existentialDeposit"],
 } as const

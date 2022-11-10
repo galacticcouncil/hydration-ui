@@ -78,3 +78,15 @@ export function useTokensBalances(
     })),
   })
 }
+
+const getExistentialDeposit = (api: ApiPromise) => {
+  return api.consts.balances.existentialDeposit
+}
+
+export function useExistentialDeposit() {
+  const api = useApiPromise()
+  return useQuery(QUERY_KEYS.existentialDeposit, async () => {
+    const existentialDeposit = await getExistentialDeposit(api)
+    return existentialDeposit.toBigNumber()
+  })
+}

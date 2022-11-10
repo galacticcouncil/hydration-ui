@@ -17,15 +17,7 @@ export const WalletVestingBox = () => {
     }
 
     if (data) {
-      return !!data.length ? (
-        <>
-          {data.map((schedule, key) => (
-            <WalletVestingSchedule schedule={schedule} key={key} />
-          ))}
-        </>
-      ) : (
-        <WalletVestingEmpty />
-      )
+      return !!data.length ? <WalletVestingSchedule /> : <WalletVestingEmpty />
     }
 
     return null

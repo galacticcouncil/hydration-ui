@@ -1,5 +1,5 @@
 import { SSchedule, SInner } from "./WalletVestingSchedule.styled"
-import { FC, useCallback, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { Text } from "../../../components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 import { getFormatSeparators } from "../../../utils/formatting"
@@ -9,34 +9,27 @@ import { theme } from "../../../theme"
 import { Heading } from "../../../components/Typography/Heading/Heading"
 import { Button } from "../../../components/Button/Button"
 import {
-  ScheduleType,
   useNextClaimableDate,
-  useVestingScheduleClaimableBalance,
+  useVestingTotalClaimableBalance,
 } from "../../../api/vesting"
 import { useAUSD } from "../../../api/asset"
 import { useSpotPrice } from "../../../api/spotPrice"
 import { NATIVE_ASSET_ID, useApiPromise } from "../../../utils/api"
-import { useTokenBalance } from "../../../api/balances"
+import { useExistentialDeposit, useTokenBalance } from "../../../api/balances"
 import { useAccountStore, useStore } from "../../../state/store"
 import { usePaymentInfo } from "../../../api/transaction"
 
-interface WalletVestingScheduleProps {
-  schedule: ScheduleType
-}
-
-export const WalletVestingSchedule: FC<WalletVestingScheduleProps> = ({
-  schedule,
-}) => {
+export const WalletVestingSchedule = () => {
   const { t } = useTranslation()
   const api = useApiPromise()
   const { createTransaction } = useStore()
   const { account } = useAccountStore()
   const separators = getFormatSeparators(i18n.languages[0])
-  const { data: claimableBalance } =
-    useVestingScheduleClaimableBalance(schedule)
+  const { data: claimableBalance } = useVestingTotalClaimableBalance()
 
-  const { data: nextClaimableDate } = useNextClaimableDate(schedule)
+  const { data: nextClaimableDate } = useNextClaimableDate()
   const { data: paymentInfoData } = usePaymentInfo(api.tx.vesting.claim())
+  const { data: existentialDeposit } = useExistentialDeposit()
 
   const AUSD = useAUSD()
   const spotPrice = useSpotPrice(NATIVE_ASSET_ID, AUSD.data?.id)
@@ -56,14 +49,14 @@ export const WalletVestingSchedule: FC<WalletVestingScheduleProps> = ({
   }).split(separators.decimal ?? ".")
 
   const isClaimAllowed = useMemo(() => {
-    if (paymentInfoData && balance.data && claimableBalance) {
+    if (paymentInfoData && existentialDeposit && claimableBalance) {
       return claimableBalance.isGreaterThan(
-        balance.data.balance.plus(paymentInfoData.partialFee.toBigNumber()),
+        existentialDeposit.plus(paymentInfoData.partialFee.toBigNumber()),
       )
     }
 
     return false
-  }, [paymentInfoData, balance.data, claimableBalance])
+  }, [paymentInfoData, existentialDeposit, claimableBalance])
 
   const handleClaim = useCallback(async () => {
     return await createTransaction({
