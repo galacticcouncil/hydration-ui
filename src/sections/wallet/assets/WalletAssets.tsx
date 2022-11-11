@@ -1,8 +1,8 @@
-import { WalletAssetsTable } from "sections/wallet/assets/table/WalletAssetsTable"
 import { useAssetsTableData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
-import { useAccountStore } from "state/store"
 import { WalletAssetsTablePlaceholder } from "sections/wallet/assets/table/placeholder/WalletAssetsTablePlaceholder"
 import { WalletAssetsTableSkeleton } from "sections/wallet/assets/table/skeleton/WalletAssetsTableSkeleton"
+import { WalletAssetsTable } from "sections/wallet/assets/table/WalletAssetsTable"
+import { useAccountStore } from "state/store"
 import { WalletAssetsHeader } from "./WalletAssetsHeader"
 
 export const WalletAssets = () => {
@@ -12,7 +12,9 @@ export const WalletAssets = () => {
   return (
     <div sx={{ mt: [34, 56] }}>
       {!account ? (
-        <WalletAssetsTablePlaceholder />
+        <>
+          <WalletAssetsTablePlaceholder />
+        </>
       ) : isLoading ? (
         <>
           <WalletAssetsHeader isLoading={isLoading} />

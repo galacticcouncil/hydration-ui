@@ -1,24 +1,24 @@
-import {
-  AssetsTableData,
-  useAssetsTable,
-} from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { flexRender } from "@tanstack/react-table"
+import { Switch } from "components/Switch/Switch"
+import { TableSortHeader } from "components/Table/Table"
 import {
   Table,
-  TableContainer,
   TableBodyContent,
+  TableContainer,
   TableData,
   TableHeaderContent,
   TableRow,
   TableTitle,
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
-import { Switch } from "components/Switch/Switch"
 import { Fragment, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { WalletAssetsTableDetails } from "sections/wallet/assets/table/details/WalletAssetsTableDetails"
-import { TableSortHeader } from "components/Table/Table"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
+import {
+  AssetsTableData,
+  useAssetsTable,
+} from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 
 type Props = { data: AssetsTableData[] }
@@ -35,7 +35,13 @@ export const WalletAssetsTable = ({ data }: Props) => {
   return (
     <TableContainer css={assetsTableStyles}>
       <TableTitle>
-        <Text fs={[16, 20]} lh={[20, 26]} fw={500} color="white">
+        <Text
+          fs={[16, 19]}
+          lh={[20, 24.7]}
+          css={{ fontFamily: "FontOver" }}
+          fw={500}
+          color="white"
+        >
           {t("wallet.assets.table.title")}
         </Text>
         <Switch

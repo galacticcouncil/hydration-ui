@@ -1,8 +1,8 @@
-import { ReactNode } from "react"
-import { Button } from "components/Button/Button"
 import { SortDirection } from "@tanstack/react-table"
-import { TableHeader } from "components/Table/Table.styled"
 import { ReactComponent as CaretIcon } from "assets/icons/CaretIcon.svg"
+import { Button } from "components/Button/Button"
+import { TableHeader } from "components/Table/Table.styled"
+import { ReactNode } from "react"
 
 export const TableAction = (props: {
   icon: ReactNode

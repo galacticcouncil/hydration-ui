@@ -74,21 +74,22 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
     }
   `,
   secondary: css`
-    background: rgba(37, 203, 255, 0.2);
+    border-radius: 4px;
+    background: rgba(${theme.rgbColors.alpha0}, 0.06);
     color: ${theme.colors.brightBlue300};
-
     border: 1px solid ${theme.colors.brightBlue300};
+    box-shadow: unset;
 
     :hover {
-      background: rgba(47, 211, 247, 0.35);
+      background: rgba(${theme.rgbColors.brightBlue500}, 0.9);
       color: ${theme.colors.white};
-
       border: 1px solid ${theme.colors.brightBlue100};
     }
 
     :active {
-      background: ${theme.colors.brightBlue500};
+      background: ${theme.colors.brightBlue400};
       color: ${theme.colors.white};
+      border: 1px solid ${theme.colors.brightBlue100};
     }
   `,
   gradient: css`
