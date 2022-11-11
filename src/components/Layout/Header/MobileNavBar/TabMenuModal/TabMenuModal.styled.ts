@@ -30,7 +30,7 @@ export const SBackdrop = styled.div`
   height: 100vh;
 
   position: fixed;
-  bottom: 54px;
+  bottom: 60px;
   left: 0;
 
   background: rgba(0, 7, 50, 0.7);
