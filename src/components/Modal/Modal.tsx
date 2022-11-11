@@ -95,11 +95,10 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
               isDrawer={isDrawer}
             >
               {props.topContent}
-
               <ModalWindowContainer isDrawer={isDrawer}>
                 <ModalHeader>
                   {titleDrawer && isDrawer && (
-                    <Text color="neutralGray100" fs={16} fw={500}>
+                    <Text color="white" fs={16} fw={500}>
                       {titleDrawer}
                     </Text>
                   )}
@@ -120,12 +119,10 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
                 </ModalHeader>
                 {isDrawer && <Separator />}
                 <RemoveScroll enabled={props.open}>
-                  <>
-                    <ModalBody isDrawer={isDrawer}>
-                      <ModalTitle>{title}</ModalTitle>
-                      {props.children}
-                    </ModalBody>
-                  </>
+                  <ModalBody isDrawer={isDrawer}>
+                    <ModalTitle>{title}</ModalTitle>
+                    {props.children}
+                  </ModalBody>
                   <DialogDescription />
                 </RemoveScroll>
               </ModalWindowContainer>

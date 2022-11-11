@@ -1,11 +1,10 @@
-import { FC } from "react"
-import { css } from "@emotion/react"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useQuery } from "@tanstack/react-query"
 import { WalletConnectAccountSelectItem } from "sections/wallet/connect/accountSelect/item/WalletConnectAccountSelectItem"
 import { Account } from "state/store"
 import { getWalletBySource } from "@talismn/connect-wallets"
+import { SContainer } from "./WalletConnectAccountSelect.styled"
 
 type Props = {
   provider: string
@@ -13,11 +12,11 @@ type Props = {
   currentAddress: string | undefined
 }
 
-export const WalletConnectAccountSelect: FC<Props> = ({
+export const WalletConnectAccountSelect = ({
   provider,
   onSelect,
   currentAddress,
-}) => {
+}: Props) => {
   const { t } = useTranslation("translation")
 
   const accounts = useQuery(["web3Accounts", provider], async () => {
@@ -27,22 +26,11 @@ export const WalletConnectAccountSelect: FC<Props> = ({
 
   return (
     <>
-      <Text fw={500} color="neutralGray200" sx={{ mt: 6 }}>
+      <Text fw={400} color="basic400" sx={{ mt: 6 }}>
         {t("walletConnect.accountSelect.description")}
       </Text>
 
-      <div
-        sx={{ flex: "column", mt: 10, pb: 10, gap: 10 }}
-        css={css`
-          overflow-x: hidden;
-          overflow-y: auto;
-          max-height: 300px;
-
-          &::-webkit-scrollbar-track {
-            margin-bottom: 10px;
-          }
-        `}
-      >
+      <SContainer>
         {accounts.data
           // As Talisman allows Ethereum accounts to be added as well, filter these accounts out
           // as I believe these are not supported on Basilisk / HydraDX
@@ -67,7 +55,7 @@ export const WalletConnectAccountSelect: FC<Props> = ({
               />
             )
           })}
-      </div>
+      </SContainer>
     </>
   )
 }

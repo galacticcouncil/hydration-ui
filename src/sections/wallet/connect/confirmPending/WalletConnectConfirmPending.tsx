@@ -1,14 +1,12 @@
 import { css } from "@emotion/react"
 import { Text } from "components/Typography/Text/Text"
-import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { useTranslation } from "react-i18next"
-import { FC } from "react"
 import { getWalletBySource } from "@talismn/connect-wallets"
 
 type Props = { provider: string }
 
-export const WalletConnectConfirmPending: FC<Props> = ({ provider }) => {
+export const WalletConnectConfirmPending = ({ provider }: Props) => {
   const { t } = useTranslation("translation")
   const wallet = getWalletBySource(provider)
 
@@ -36,11 +34,18 @@ export const WalletConnectConfirmPending: FC<Props> = ({ provider }) => {
           height={48}
         />
       </div>
-      <GradientText fs={24} fw={600} tAlign="center" sx={{ mt: 20 }}>
+      <Text
+        fs={19}
+        fw={500}
+        tAlign="center"
+        sx={{ mt: 20 }}
+        tTransform="uppercase"
+        css={{ fontFamily: "FontOver" }}
+      >
         {t("walletConnect.pending.title")}
-      </GradientText>
+      </Text>
       <div sx={{ px: 20, mt: 20, mb: 40 }}>
-        <Text tAlign="center" fs={16} color="neutralGray200" fw={400} lh={22}>
+        <Text tAlign="center" fs={16} color="basic200" fw={400} lh={22}>
           {t("walletConnect.pending.description", { name: wallet?.title })}
         </Text>
       </div>

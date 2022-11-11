@@ -1,6 +1,6 @@
 import { DialogContent } from "@radix-ui/react-dialog"
 import { IconButton } from "components/IconButton/IconButton"
-import { GradientText } from "components/Typography/GradientText/GradientText"
+import { Text } from "components/Typography/Text/Text"
 import styled from "@emotion/styled"
 import { keyframes } from "@emotion/react"
 import { theme } from "theme"
@@ -80,6 +80,8 @@ export const ModalWindow = styled(DialogContent, {
     height: auto;
     max-width: ${(props) => `${props.maxWidth ?? 610}px`};
 
+    border-radius: 4px;
+
     animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) ${fadeInKeyframes};
   }
 `
@@ -87,7 +89,7 @@ export const ModalWindow = styled(DialogContent, {
 export const ModalWindowContainer = styled.div<{ isDrawer?: boolean }>`
   border: 1px solid rgba(${theme.rgbColors.white}, 0.06);
   box-shadow: 0px 38px 46px rgba(0, 0, 0, 0.03);
-  background: ${theme.colors.backgroundGray900};
+  background: ${theme.colors.basic900};
 
   ${({ isDrawer }) => (isDrawer ? { borderRadius: "20px 20px 0px 0px" } : {})}
 
@@ -96,10 +98,12 @@ export const ModalWindowContainer = styled.div<{ isDrawer?: boolean }>`
   }
 `
 
-export const ModalTitle = styled(GradientText)`
-  font-size: 24px;
+export const ModalTitle = styled(Text)`
+  font-size: 19px;
   line-height: var(--modal-header-title-height);
   font-weight: 500;
+  font-family: "FontOver", sans-serif;
+  color: ${theme.colors.white};
 `
 
 export const ModalBody = styled.div<{ isDrawer?: boolean }>`

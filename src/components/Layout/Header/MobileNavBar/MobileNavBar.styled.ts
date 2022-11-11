@@ -20,7 +20,8 @@ export const SMobileNavBar = styled.div`
   align-items: center;
   gap: 4px;
 
-  background: ${theme.gradients.mobNavigationGradient};
+  background: rgba(${theme.rgbColors.darkBlue900}, 0.6);
+  backdrop-filter: blur(12px);
 
   @media (${theme.viewport.gte.sm}) {
     display: none;
@@ -37,29 +38,34 @@ export const SNavBarItem = styled.span<{ active?: boolean }>`
   text-align: center;
   white-space: pre;
   font-size: 12px;
+
+  height: 100%;
+
   color: ${({ active }) =>
-    active ? theme.colors.primary400 : theme.colors.backgroundGray600};
+    active ? theme.colors.brightBlue300 : theme.colors.basic400};
+
+  ${({ active }) =>
+    active &&
+    "background: radial-gradient(52.5% 52.5% at 46.28% 112.5%, #00579F 0%, #023B6A 25%, rgba(0, 23, 54, 0) 100%);"}
 `
 
 export const SNavBarItemHidden = styled.a`
   display: flex;
   gap: 12px;
-  background: ${theme.colors.backgroundGray800};
-  color: ${theme.colors.neutralGray300};
-  padding: 30px 20px;
 
-  &:not(:last-child) {
-    border-bottom: 1px solid rgba(${theme.rgbColors.white}, 0.06);
-  }
+  background: rgba(${theme.rgbColors.primaryA06}, 0.06);
+  color: ${theme.colors.brightBlue200};
+
+  padding: 28px 20px;
+
+  border-radius: 4px;
 `
 
 export const STabButton = styled(SNavBarItem)<{ active: boolean }>`
   ${({ active }) =>
     active &&
     `
-    background: rgba(218, 255, 238, 0.06);
-    border-radius: 8px;
     height: 100%;
-    color: ${theme.colors.backgroundGray600};
+    color: ${theme.colors.brightBlue300};
     `}
 `

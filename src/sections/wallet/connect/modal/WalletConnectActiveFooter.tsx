@@ -27,8 +27,8 @@ export function WalletConnectActiveFooter(props: {
       {props.account ? (
         <ButtonTransparent onClick={props.onLogout}>
           <SLogoutContainer>
-            <LogoutIcon />
-            <Text css={{ color: "currentColor" }} fs={14} fw={500}>
+            <LogoutIcon css={{ color: theme.colors.basic500 }} />
+            <Text css={{ color: theme.colors.basic500 }} fs={14} fw={500}>
               {t("walletConnect.logout")}
             </Text>
           </SLogoutContainer>

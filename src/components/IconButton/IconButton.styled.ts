@@ -2,6 +2,8 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SIconButton = styled.button<{ round?: boolean }>`
+  border-radius: 4px;
+
   ${(p) => p.round && "border-radius: 9999px;"};
 
   min-width: 34px;

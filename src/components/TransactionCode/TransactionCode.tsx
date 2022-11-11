@@ -24,7 +24,7 @@ export const TransactionCode = (props: ReactJsonViewProps) => (
       base0A: "rgba(70, 70, 230, 0)",
       base0B: "rgba(70, 70, 230, 0)",
       base0C: "rgba(70, 70, 230, 0)",
-      base0D: theme.colors.warning,
+      base0D: theme.colors.warning300,
       base0E: theme.colors.basic100,
       base0F: "rgba(70, 70, 230, 1)",
     }}

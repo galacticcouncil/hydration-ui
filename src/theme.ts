@@ -40,13 +40,16 @@ const colors = {
   basic700: "#5D6175",
   basic800: "#26282F",
   basic900: "#00041D",
-  warning: "#F5A855",
+  warning100: "#FFE2C3",
+  warning300: "#F5A855",
   error: "#FF8A8A",
   red100: "#EF0303",
   red700: "#FF0000",
   green100: "#03EF97",
   green600: "#30FFB1",
   iconGray: "#BDCCD4",
+  primaryA15: "#4CD5F3",
+  primaryA06: "#DAFFEE",
 } as const
 
 const gradients = {
@@ -63,6 +66,9 @@ const gradients = {
 
 const shadows = {
   boxShadow: "3px 3px 0px rgba(199, 199, 199, 0.27)",
+  internalBox: "4px 4px 0px rgba(102,181,255,0.19)",
+  internalBoxSecondary: "4px 4px 0px rgba(102,181,255,0.19)",
+  internalBoxDark: "4px 4px 0px #0A0C17;",
   modal:
     "0px 0px 100px rgba(84, 155, 194, 0.12), 6px 6px 0px rgba(102, 181, 255, 0.19)",
 } as const

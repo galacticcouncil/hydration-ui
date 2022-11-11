@@ -24,7 +24,7 @@ export const WalletConnectAccountSelectAddress: FC<Props> = ({
       css={{ position: "relative" }}
     >
       <div
-        sx={{ p: 5, flex: "row", align: "center", bg: "backgroundGray1000" }}
+        sx={{ p: 5, flex: "row", align: "center" }}
         css={{ borderRadius: "9999px" }}
       >
         <AccountAvatar address={address} theme={theme} size={32} />

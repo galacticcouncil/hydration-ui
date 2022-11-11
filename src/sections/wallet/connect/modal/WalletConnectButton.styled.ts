@@ -4,10 +4,14 @@ import { theme } from "theme"
 
 export const SContainer = styled.div`
   padding: 9px 9px 8px 14px;
+
   background: rgba(${theme.rgbColors.darkBlue900}, 0.6);
+
   cursor: pointer;
 
   flex-shrink: 0;
+
+  border-radius: 4px;
 
   :active,
   :hover {

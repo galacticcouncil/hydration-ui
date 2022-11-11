@@ -1,5 +1,4 @@
 import styled from "@emotion/styled"
-import { css } from "@emotion/react"
 import { theme } from "theme"
 
 export const SWalletButton = styled.button<{
@@ -12,52 +11,18 @@ export const SWalletButton = styled.button<{
   padding: 16px;
 
   border: none;
-  border-radius: 12px;
+  border-radius: 4px;
 
   transition: background ${theme.transitions.default};
   cursor: pointer;
 
-  ${({ variant }) => {
-    if (variant === "polkadot-js") {
-      return css`
-        background: hsla(33, 100%, 50%, 0.05);
+  background: rgba(${theme.rgbColors.primaryA06}, 0.06);
 
-        :hover {
-          background: hsla(33, 100%, 50%, 0.1);
-        }
+  &:hover {
+    background: rgba(${theme.rgbColors.primaryA15}, 0.12);
+  }
 
-        :active {
-          background: hsla(33, 100%, 50%, 0.12);
-        }
-      `
-    }
-
-    if (variant === "talisman") {
-      return css`
-        background: hsla(75, 100%, 68%, 0.05);
-
-        :hover {
-          background: hsla(75, 100%, 68%, 0.1);
-        }
-
-        :active {
-          background: hsla(75, 100%, 68%, 0.12);
-        }
-      `
-    }
-
-    if (variant === "subwallet-js") {
-      return css`
-        background: hsla(222, 100%, 50%, 0.05);
-
-        :hover {
-          background: hsla(222, 100%, 50%, 0.1);
-        }
-
-        :active {
-          background: hsla(222, 100%, 50%, 0.12);
-        }
-      `
-    }
-  }}
+  &:active {
+    background: rgba(${theme.rgbColors.brightBlue100}, 0.35);
+  }
 `

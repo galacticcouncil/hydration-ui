@@ -1,7 +1,5 @@
-import { FC } from "react"
 import { SWalletButton } from "sections/wallet/connect/providers/WalletConnectProviders.styled"
 import { Text } from "components/Typography/Text/Text"
-import { css } from "@emotion/react"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { ReactComponent as DownloadIcon } from "assets/icons/DownloadIcon.svg"
 import { useTranslation } from "react-i18next"
@@ -13,11 +11,11 @@ type Props = {
   isInjected: boolean
 }
 
-export const WalletConnectProvidersButton: FC<Props> = ({
+export const WalletConnectProvidersButton = ({
   wallet,
   onClick,
   isInjected,
-}) => {
+}: Props) => {
   const { t } = useTranslation()
 
   return (
@@ -28,14 +26,10 @@ export const WalletConnectProvidersButton: FC<Props> = ({
       </Text>
 
       <Text
-        color="neutralGray300"
+        color="brightBlue300"
         fs={14}
         tAlign="right"
-        css={css`
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        `}
+        sx={{ flex: "row", align: "center", gap: 4 }}
       >
         {isInjected ? (
           <>
