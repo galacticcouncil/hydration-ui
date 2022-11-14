@@ -91,7 +91,7 @@ export const PoolFarmDeposit = (props: PoolJoinFarmDepositProps) => {
         const depositId = record.event.data.depositId
 
         const txs = restActive.map((item) =>
-          api.tx.xykLiquidityMining.redepositLpShares(
+          api.tx.xykLiquidityMining.redepositShares(
             item.globalFarmId,
             item.yieldFarmId,
             { assetIn: assetIn.id, assetOut: assetOut.id },
