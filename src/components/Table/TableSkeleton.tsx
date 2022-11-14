@@ -1,3 +1,5 @@
+import { flexRender, Table as ReactTable } from "@tanstack/react-table"
+import { TableSortHeader } from "components/Table/Table"
 import {
   Table,
   TableBodyContent,
@@ -9,15 +11,14 @@ import {
   TableTitle,
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
-import { flexRender, Table as ReactTable } from "@tanstack/react-table"
 import { Fragment, ReactNode } from "react"
-import { TableSortHeader } from "components/Table/Table"
 
 type Props = {
   table: ReactTable<unknown>
   title: string
   placeholder?: ReactNode
   className?: string
+  hideHeader?: boolean
 }
 
 export const TableSkeleton = ({
@@ -25,32 +26,45 @@ export const TableSkeleton = ({
   title,
   placeholder,
   className,
+  hideHeader = false,
 }: Props) => {
   return (
     <TableContainer className={className}>
       <TableTitle>
-        <Text fs={[16, 20]} lh={[20, 26]} fw={500} color="white">
+        <Text
+          fs={[15, 19]}
+          lh={[19.5, 24.7]}
+          css={{ fontFamily: "FontOver" }}
+          fw={500}
+          color="white"
+        >
           {title}
         </Text>
       </TableTitle>
       <Table>
-        <TableHeaderContent>
-          {table.getHeaderGroups().map((hg) => (
-            <TableRow key={hg.id}>
-              {hg.headers.map((header) => (
-                <TableSortHeader key={header.id} canSort={false}>
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext(),
-                  )}
-                </TableSortHeader>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeaderContent>
+        {!hideHeader && (
+          <TableHeaderContent>
+            {table.getHeaderGroups().map((hg) => (
+              <TableRow key={hg.id}>
+                {hg.headers.map((header) => (
+                  <TableSortHeader key={header.id} canSort={false}>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+                  </TableSortHeader>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeaderContent>
+        )}
         <TableBodyContent>
           {placeholder && (
-            <TablePlaceholderContent>{placeholder}</TablePlaceholderContent>
+            <tr>
+              <td colSpan={9999}>
+                <TablePlaceholderContent>{placeholder}</TablePlaceholderContent>
+              </td>
+            </tr>
           )}
           {table.getRowModel().rows.map((row, i) => (
             <Fragment key={row.id}>

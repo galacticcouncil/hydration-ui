@@ -207,7 +207,7 @@
   "wallet.assets.transfer.crosschain.guide.karura": "<0>1. First you will have to use the Bridge App to move them from Kusama's chain to Karura's</0><1>2. Once your KSM are in Karura's network.</1><2>3. You should be able to trade them in Basilisk.</2><3>IMPORTANT: Any assets must first be sent to Kusama, then to Karura.</3><4>Below you will find step by step instructions on how to move your KSM from Karura to Kusama.</4><5>Go to full instructions</5>",
   "wallet.assets.table.title": "Available Assets",
   "wallet.assets.table.toggle": "Show All Assets",
-  "wallet.assets.table.placeholder": "Please connect your wallet to view your assets.",
+  "wallet.assets.table.placeholder": "Seem like there is no account added yet. Add one through your extension.",
   "wallet.assets.table.header.name": "Asset Name",
   "wallet.assets.table.header.transferable": "Transferable Balance",
   "wallet.assets.table.header.total": "Total Balance",

@@ -1,12 +1,14 @@
 import { ReactComponent as BuyIcon } from "assets/icons/BuyIcon.svg"
+import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronDown.svg"
+import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.svg"
+import { ReactComponent as MoreIcon } from "assets/icons/MoreDotsIcon.svg"
 import { ReactComponent as SellIcon } from "assets/icons/SellIcon.svg"
 import { ReactComponent as TransferIcon } from "assets/icons/TransferIcon.svg"
 import { ButtonTransparent } from "components/Button/Button"
-import { theme } from "theme"
-import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronDown.svg"
-import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.svg"
-import { useTranslation } from "react-i18next"
 import { TableAction } from "components/Table/Table"
+import { useTranslation } from "react-i18next"
+import { theme } from "theme"
+import { MoreButton } from "./WalletAssetsTable.styled"
 
 type Props = {
   toggleExpanded: () => void
@@ -43,6 +45,9 @@ export const WalletAssetsTableActions = (props: Props) => {
         <TableAction icon={<TransferIcon />} onClick={props.onTransferClick}>
           {t("wallet.assets.table.actions.transfer")}
         </TableAction>
+
+        <MoreButton name="More" icon={<MoreIcon />} />
+
         <ButtonTransparent
           onClick={props.toggleExpanded}
           css={{ color: theme.colors.iconGray }}

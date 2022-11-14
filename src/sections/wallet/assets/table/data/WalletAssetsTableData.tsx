@@ -1,26 +1,29 @@
+import { css } from "@emotion/react"
+import BN from "bignumber.js"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
-import BN from "bignumber.js"
 import { useTranslation } from "react-i18next"
 import { SIcon } from "sections/wallet/assets/table/data/WalletAssetsTableData.styled"
+import { theme } from "theme"
 
 export const WalletAssetsTableName = (props: {
   symbol: string
   name: string
 }) => {
   return (
-    <div sx={{ flex: "row", gap: 6, align: "center" }}>
+    <div sx={{ flex: "row", gap: 8, align: "center" }}>
       <SIcon>{getAssetLogo(props.symbol)}</SIcon>
       <div sx={{ flex: "column", width: "100%" }}>
-        <Text fs={14} lh={[16, 18]} fw={500} color="white">
+        <Text fs={[14, 16]} lh={[16, 16]} fw={700} color="white">
           {props.symbol}
         </Text>
         <Text
-          fs={[10, 12]}
-          lh={[14, 16]}
+          fs={[12, 14]}
+          lh={[14, 14]}
           fw={500}
-          color="neutralGray400"
-          css={{ letterSpacing: "0.02em" }}
+          css={{
+            color: `rgba(${theme.rgbColors.whiteish500}, 0.61)`,
+          }}
         >
           {props.name}
         </Text>
@@ -37,10 +40,17 @@ export const WalletAssetsTableBalance = (props: {
 
   return (
     <div sx={{ flex: "column", align: ["end", "start"], gap: 2 }}>
-      <Text fs={14} lh={18} fw={500} color="white">
+      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
         {t("value", { value: props.balance, decimalPlaces: 4 })}
       </Text>
-      <Text fs={[11, 12]} lh={[14, 16]} fw={500} color="neutralGray500">
+      <Text
+        fs={[12, 13]}
+        lh={[14, 20]}
+        fw={500}
+        css={css`
+          color: rgba(${theme.rgbColors.whiteish500}, 0.61);
+        `}
+      >
         {t("value.usd", { amount: props.balanceUSD })}
       </Text>
     </div>

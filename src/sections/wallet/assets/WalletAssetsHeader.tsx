@@ -53,7 +53,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
         mb: [29, 57],
         align: ["start", "center"],
         justify: "space-between",
-        flexWrap: ["nowrap", "wrap"],
+        //flexWrap: ["nowrap", "wrap"],
       }}
     >
       <div
@@ -63,7 +63,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
           align: ["center", "start"],
           mb: [15, 0],
           width: ["100%", "auto"],
-          flexWrap: ["wrap", "nowrap"],
+          //flexWrap: ["wrap", "nowrap"],
         }}
       >
         <Text color="brightBlue300" sx={{ fontSize: [14, 16], mb: [0, 14] }}>
@@ -119,7 +119,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
           align: ["center", "start"],
           mb: [15, 0],
           width: ["100%", "auto"],
-          flexWrap: ["wrap", "nowrap"],
+          //flexWrap: ["wrap", "nowrap"],
         }}
       >
         <Text color="brightBlue300" sx={{ fontSize: [14, 16], mb: [0, 14] }}>

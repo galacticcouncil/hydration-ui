@@ -2,14 +2,52 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const TableContainer = styled.div`
-  background: linear-gradient(
-      180deg,
-      rgba(35, 56, 55, 0.3) 0%,
-      rgba(0, 0, 0, 0) 100%
-    ),
-    #16171c;
-  border-radius: 20px;
+  background: #111320;
+  border-radius: 4px;
   overflow: hidden;
+  box-shadow: ${theme.shadows.boxShadowTable};
+
+  background-image: radial-gradient(
+      circle at 100% 100%,
+      transparent 3px,
+      rgba(144, 165, 198, 0.3) 3px,
+      rgba(144, 165, 198, 0.3) 4px,
+      transparent 4px
+    ),
+    linear-gradient(
+      to right,
+      rgba(144, 165, 198, 0.3),
+      rgba(144, 165, 198, 0.3)
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      transparent 3px,
+      rgba(144, 165, 198, 0.3) 3px,
+      rgba(144, 165, 198, 0.3) 4px,
+      transparent 4px
+    ),
+    linear-gradient(to bottom, rgba(144, 165, 198, 0.3), rgba(158, 167, 180, 0)),
+    radial-gradient(
+      circle at 0% 0%,
+      transparent 3px,
+      rgba(158, 167, 180, 0) 3px,
+      rgba(158, 167, 180, 0) 4px,
+      transparent 4px
+    ),
+    linear-gradient(to left, rgba(158, 167, 180, 0), rgba(158, 167, 180, 0)),
+    radial-gradient(
+      circle at 100% 0%,
+      transparent 3px,
+      rgba(158, 167, 180, 0) 3px,
+      rgba(158, 167, 180, 0) 4px,
+      transparent 4px
+    ),
+    linear-gradient(to top, rgba(158, 167, 180, 0), rgba(144, 165, 198, 0.3));
+  background-size: 4px 4px, calc(100% - 8px) 1px, 4px 4px, 1px calc(100% - 8px);
+  background-position: top left, top center, top right, center right,
+    bottom right, bottom center, bottom left, center left;
+
+  background-repeat: no-repeat;
 `
 
 export const Table = styled.table`
@@ -26,7 +64,7 @@ export const TableTitle = styled.div`
   border-bottom: 1px solid rgba(${theme.rgbColors.white}, 0.06);
 
   @media (${theme.viewport.gte.sm}) {
-    padding: 24px 32px;
+    padding: 24px 30px;
   }
 `
 
@@ -38,18 +76,17 @@ export const TableBodyContent = styled.tbody`
 
 export const TablePlaceholderContent = styled.div`
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
   z-index: ${theme.zIndices.tablePlaceholder};
-
-  width: 100%;
-  height: 100%;
 
   display: grid;
   place-items: center;
 
   background: rgba(${theme.rgbColors.black}, 0.5);
-  backdrop-filter: blur(7px);
+  backdrop-filter: blur(8px);
 `
 
 export const TableRow = styled.tr<{ isOdd?: boolean; isSub?: boolean }>`
@@ -66,7 +103,7 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
 
   text-transform: uppercase;
   text-align: start;
-  color: ${theme.colors.neutralGray500};
+  color: rgba(${theme.rgbColors.white}, 0.7);
   white-space: nowrap;
 
   ${({ canSort }) => canSort && "cursor:pointer;"}
