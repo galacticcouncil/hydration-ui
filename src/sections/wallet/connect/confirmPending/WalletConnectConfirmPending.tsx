@@ -40,7 +40,7 @@ export const WalletConnectConfirmPending = ({ provider }: Props) => {
         tAlign="center"
         sx={{ mt: 20 }}
         tTransform="uppercase"
-        css={{ fontFamily: "FontOver" }}
+        font="FontOver"
       >
         {t("walletConnect.pending.title")}
       </Text>

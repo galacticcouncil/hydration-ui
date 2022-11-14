@@ -79,11 +79,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
           />
         ) : (
           totalUsd && (
-            <Heading
-              as="h3"
-              sx={{ fontSize: [19, 42], fontWeight: 500 }}
-              css={{ fontFamily: "FontOver" }}
-            >
+            <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
               <Trans
                 t={t}
                 i18nKey="wallet.assets.header.value"
@@ -139,11 +135,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
           />
         ) : (
           transferableUsd && (
-            <Heading
-              as="h3"
-              sx={{ fontSize: [19, 42], fontWeight: 500 }}
-              css={{ fontFamily: "FontOver" }}
-            >
+            <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
               <Trans
                 t={t}
                 i18nKey="wallet.assets.header.value"

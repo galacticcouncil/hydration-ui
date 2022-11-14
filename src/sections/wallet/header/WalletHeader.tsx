@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useAccountStore } from "../../../state/store"
 import { Text } from "components/Typography/Text/Text"
-import { useCopyToClipboard, useWindowSize } from "react-use"
+import { useCopyToClipboard } from "react-use"
 import { ReactComponent as CopyIcon } from "assets/icons/CopyIcon.svg"
 import { Button, ButtonTransparent } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
@@ -14,7 +14,6 @@ export const WalletHeader = () => {
   const { account } = useAccountStore()
   const [, copy] = useCopyToClipboard()
   const [open, setOpen] = useState(false)
-  const { width } = useWindowSize()
 
   return (
     <>
@@ -26,7 +25,7 @@ export const WalletHeader = () => {
           pb: 16,
         }}
       >
-        <Text fs={20} fw={500} lh={20} css={{ fontFamily: "FontOver" }}>
+        <Text fs={20} fw={500} lh={20} font="FontOver">
           {account?.name}
         </Text>
         {account?.address ? (
@@ -43,7 +42,7 @@ export const WalletHeader = () => {
                 color="brightBlue300"
                 fs={14}
                 fw={500}
-                sx={{ maxWidth: [width - 60, "fit-content"] }}
+                sx={{ maxWidth: ["calc(100vw - 60px)", "fit-content"] }}
                 css={{
                   wordWrap: "break-word",
                 }}

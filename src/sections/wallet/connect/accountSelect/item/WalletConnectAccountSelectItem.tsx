@@ -37,7 +37,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
   return (
     <SSelectItem isActive={isActive} onClick={setAccount}>
       <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
-        <Text css={{ fontFamily: "ChakraPetchBold" }}>{name}</Text>
+        <Text font="ChakraPetchBold">{name}</Text>
         <div sx={{ flex: "row", align: "end", gap: 2 }}>
           <Text>
             {t("value.bsx", {
@@ -46,11 +46,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
               decimalPlaces: 4,
             })}
           </Text>
-          <Text
-            fs={14}
-            css={{ fontFamily: "ChakraPetchBold" }}
-            tTransform="uppercase"
-          >
+          <Text fs={14} font="ChakraPetchBold" tTransform="uppercase">
             bsx
           </Text>
         </div>

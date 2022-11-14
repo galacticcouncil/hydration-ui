@@ -7,6 +7,7 @@ export interface TypographyProps {
   fs?: ResponsiveValue<number>
   fw?: ResponsiveValue<number>
   lh?: ResponsiveValue<number>
+  font?: ResponsiveValue<"ChakraPetch" | "ChakraPetchBold" | "FontOver">
   tAlign?: ResponsiveValue<"left" | "right" | "center">
   tTransform?: ResponsiveValue<"uppercase" | "lowercase" | "none">
 }
@@ -25,6 +26,7 @@ export const handleTypographyProps: Interpolation<STypographyProps> = (p) => [
   getResponsiveStyles(p.fw, (fontWeight) => ({ fontWeight })),
   getResponsiveStyles(p.fs, (fontSize) => ({ fontSize: assumePx(fontSize) })),
   getResponsiveStyles(p.lh, (value) => ({ lineHeight: assumePx(value) })),
+  getResponsiveStyles(p.font, (fontFamily) => ({ fontFamily })),
   getResponsiveStyles(p.tTransform, (value) => ({ textTransform: value })),
   getResponsiveStyles(p.tAlign || "left", (textAlign) => ({ textAlign })),
 ]
