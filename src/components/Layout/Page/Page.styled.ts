@@ -2,7 +2,7 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SPage = styled.div`
-  --mobile-nav-height: calc(54px + env(safe-area-inset-bottom));
+  --mobile-nav-height: calc(60px + env(safe-area-inset-bottom));
 
   position: relative;
 

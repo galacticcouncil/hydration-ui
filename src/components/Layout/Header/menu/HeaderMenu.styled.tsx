@@ -16,7 +16,7 @@ export const SItem = styled.span<{ isActive?: boolean }>`
   text-transform: uppercase;
 
   color: ${({ isActive }) =>
-    isActive ? theme.colors.brightBlue100 : theme.colors.basic100};
+    isActive ? theme.colors.white : theme.colors.iconGray};
 
   &:hover {
     color: ${theme.colors.brightBlue100};

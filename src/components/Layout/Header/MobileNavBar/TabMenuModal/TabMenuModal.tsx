@@ -1,7 +1,9 @@
 import { Dialog, DialogPortal } from "@radix-ui/react-dialog"
 import { PropsWithChildren } from "react"
 import { RemoveScroll } from "react-remove-scroll"
-import { SBackdrop, SModalContent } from "./TabMenuModal.styled"
+import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import { CloseButton, SBackdrop, SModalContent } from "./TabMenuModal.styled"
+import { useTranslation } from "react-i18next"
 
 type TabMenuModalProps = {
   open: boolean
@@ -12,14 +14,22 @@ export const TabMenuModal = ({
   open,
   onClose,
   children,
-}: PropsWithChildren<TabMenuModalProps>) => (
-  <Dialog open={open}>
-    <DialogPortal>
-      <SBackdrop>
-        <SModalContent onInteractOutside={onClose}>
-          <RemoveScroll enabled={open}>{children}</RemoveScroll>
-        </SModalContent>
-      </SBackdrop>
-    </DialogPortal>
-  </Dialog>
-)
+}: PropsWithChildren<TabMenuModalProps>) => {
+  const { t } = useTranslation()
+  return (
+    <Dialog open={open}>
+      <DialogPortal>
+        <SBackdrop>
+          <SModalContent>
+            <CloseButton
+              icon={<CrossIcon />}
+              onClick={onClose}
+              name={t("modal.closeButton.name")}
+            />
+            <RemoveScroll enabled={open}>{children}</RemoveScroll>
+          </SModalContent>
+        </SBackdrop>
+      </DialogPortal>
+    </Dialog>
+  )
+}

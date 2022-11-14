@@ -6,9 +6,9 @@ import { ButtonProps, ButtonSize, ButtonVariant } from "./Button"
 export const SButton = styled.button<ButtonProps>`
   cursor: pointer;
   text-transform: ${({ transform }) => transform ?? "uppercase"};
-  border: none;
 
-  box-shadow: ${theme.shadows.boxShadow};
+  border: none;
+  border-radius: 4px;
 
   ${({ variant }) => variant && variantStyles[variant]}
   ${({ size }) => size && sizeStyles[size]}
@@ -95,8 +95,6 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
     background: ${theme.gradients.pinkLightPink};
     color: ${theme.colors.white};
 
-    box-shadow: unset;
-
     position: relative;
     overflow: hidden;
 
@@ -125,8 +123,6 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
     color: ${theme.colors.white};
 
     border: 1px solid rgba(${theme.rgbColors.white}, 0.1);
-
-    box-shadow: unset;
 
     :hover,
     :active {

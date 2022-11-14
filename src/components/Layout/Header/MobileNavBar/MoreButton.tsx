@@ -20,7 +20,7 @@ export const MoreButton = ({ tabs }: MoreButtonProps) => {
         {t("header.more")}
       </STabButton>
       <TabMenuModal open={openModal} onClose={() => setOpenModal(false)}>
-        <div sx={{ flex: "column" }}>{tabs}</div>
+        <div sx={{ flex: "column", color: "white", p: 7, gap: 8 }}>{tabs}</div>
       </TabMenuModal>
     </>
   )
