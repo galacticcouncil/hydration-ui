@@ -1,7 +1,7 @@
 import { Text } from "components/Typography/Text/Text"
 import styled from "@emotion/styled"
 import { theme } from "theme"
-import { Button } from "components/Button/Button"
+import { ButtonTransparent } from "components/Button/Button"
 
 export const SContainer = styled.div`
   display: flex;
@@ -9,16 +9,20 @@ export const SContainer = styled.div`
   align-items: center;
   justify-content: space-between;
 
-  background: ${theme.colors.backgroundGray1000};
+  background: rgba(${theme.rgbColors.darkBlue900}, 0.6);
+  backdrop-filter: blur(12px);
 
-  margin: 0px -30px -30px;
-  width: calc(100% + 30px * 2);
+  width: 100%;
 
-  border-radius: 16px;
+  border-radius: 4px;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
 
   padding: 20px 30px;
+
+  position: absolute;
+  bottom: 0;
+  left: 0;
 `
 
 export const SLogoutContainer = styled.div`
@@ -27,28 +31,27 @@ export const SLogoutContainer = styled.div`
   gap: 2px;
   align-items: center;
   justify-content: center;
-  color: ${theme.colors.neutralGray500};
+  color: ${theme.colors.basic500};
   transition: color ${theme.transitions.default};
 
   &:hover {
-    color: ${theme.colors.neutralGray400};
+    color: ${theme.colors.basic400};
   }
 `
 
-export const SSwitchButton = styled(Button)`
+export const SSwitchButton = styled(ButtonTransparent)`
   padding: 12px;
-  border-radius: 12px;
-  border: 1px solid ${theme.colors.backgroundGray800};
+  border-radius: 4px;
+  border: 1px solid ${theme.colors.basic800};
   transition: ${theme.transitions.default};
 
   &:hover {
-    background-color: ${theme.colors.backgroundGray800};
-    border: 1px solid ${theme.colors.backgroundGray700};
+    border: 1px solid ${theme.colors.basic700};
   }
 `
 
 export const SSwitchText = styled(Text)`
-  color: ${theme.colors.primary450};
+  color: ${theme.colors.brightBlue500};
   display: flex;
   align-items: center;
   justify-content: center;

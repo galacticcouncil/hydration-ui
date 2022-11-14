@@ -18,16 +18,6 @@ const isWalletPageEnabled = import.meta.env.VITE_FF_WALLET_ENABLED === "true"
 
 export const MENU_ITEMS = [
   {
-    key: "wallet",
-    translationKey: "header.wallet",
-    href: isWalletPageEnabled ? LINKS.wallet : EXTERNAL_LINKS.wallet,
-    external: !isWalletPageEnabled,
-    mobVisible: true,
-  },
-] as const
-
-/*export const MENU_ITEMS = [
-{
     key: "lbp",
     translationKey: "header.lbp",
     href: EXTERNAL_LINKS.lbp,
@@ -62,7 +52,7 @@ export const MENU_ITEMS = [
     external: true,
     mobVisible: false,
   },
-] as const*/
+] as const
 
 export type TabKeys = typeof MENU_ITEMS[number]["key"]
 export type TabObject = typeof MENU_ITEMS[number]

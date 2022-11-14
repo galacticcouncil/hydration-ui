@@ -29,12 +29,7 @@ const WalletActiveButton = (props: {
     <SContainer className={props.className} onClick={props.onOpen}>
       <div sx={{ flex: "row", gap: 12, align: "center", justify: "center" }}>
         <div sx={{ flex: "column", gap: 4 }}>
-          <Text
-            color="basic100"
-            fs={14}
-            lh={14}
-            css={{ fontFamily: "ChakraPetchBold" }}
-          >
+          <Text color="basic100" fs={14} lh={14} font="ChakraPetchBold">
             {props.account.name}
           </Text>
           <Text color="basic300" fs={12} lh={12} fw={400}>

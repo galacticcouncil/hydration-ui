@@ -9,6 +9,7 @@ import { separateBalance } from "../../../utils/balance"
 import { css } from "@emotion/react"
 import { theme } from "../../../theme"
 import Skeleton from "react-loading-skeleton"
+import { useMedia } from "react-use"
 
 interface WalletAssetsHeaderProps {
   data?: AssetsTableData[]
@@ -20,6 +21,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
   isLoading,
 }) => {
   const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const totalUsd = useMemo(() => {
     if (data) {
@@ -45,16 +47,26 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
   }, [data])
 
   return (
-    <div sx={{ flex: ["column", "row"], mb: [29, 57], gap: [0, 132] }}>
+    <div
+      sx={{
+        flex: ["column", "row"],
+        mb: [29, 57],
+        align: ["start", "center"],
+        justify: "space-between",
+        flexWrap: ["nowrap", "wrap"],
+      }}
+    >
       <div
         sx={{
           flex: ["row", "column"],
           justify: "space-between",
           align: ["center", "start"],
           mb: [15, 0],
+          width: ["100%", "auto"],
+          flexWrap: ["wrap", "nowrap"],
         }}
       >
-        <Text color="neutralGray300" sx={{ fontSize: [14, 16], mb: [0, 14] }}>
+        <Text color="brightBlue300" sx={{ fontSize: [14, 16], mb: [0, 14] }}>
           {t("wallet.assets.header.total")}
         </Text>
 
@@ -67,7 +79,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
           />
         ) : (
           totalUsd && (
-            <Heading as="h3" sx={{ fontSize: [16, 52], fontWeight: 900 }}>
+            <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
               <Trans
                 t={t}
                 i18nKey="wallet.assets.header.value"
@@ -80,7 +92,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
               >
                 <span
                   sx={{
-                    fontSize: [16, 26],
+                    fontSize: [19, 26],
                   }}
                   css={css`
                     color: rgba(${theme.rgbColors.white}, 0.4);
@@ -91,7 +103,14 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
           )
         )}
       </div>
-      <Separator sx={{ mb: 15, display: ["inherit", "none"] }} />
+      <Separator
+        sx={{
+          mb: [15, 0],
+          height: ["1px", "70px"],
+        }}
+        css={{ background: `rgba(${theme.rgbColors.white}, 0.12)` }}
+        orientation={isDesktop ? "vertical" : "horizontal"}
+      />
 
       <div
         sx={{
@@ -99,9 +118,11 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
           justify: "space-between",
           align: ["center", "start"],
           mb: [15, 0],
+          width: ["100%", "auto"],
+          flexWrap: ["wrap", "nowrap"],
         }}
       >
-        <Text color="neutralGray300" sx={{ fontSize: [14, 16], mb: [0, 14] }}>
+        <Text color="brightBlue300" sx={{ fontSize: [14, 16], mb: [0, 14] }}>
           {t("wallet.assets.header.transferable")}
         </Text>
 
@@ -114,7 +135,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
           />
         ) : (
           transferableUsd && (
-            <Heading as="h3" sx={{ fontSize: [16, 52], fontWeight: 900 }}>
+            <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
               <Trans
                 t={t}
                 i18nKey="wallet.assets.header.value"
@@ -127,7 +148,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
               >
                 <span
                   sx={{
-                    fontSize: [16, 26],
+                    fontSize: [19, 26],
                   }}
                   css={css`
                     color: rgba(${theme.rgbColors.white}, 0.4);

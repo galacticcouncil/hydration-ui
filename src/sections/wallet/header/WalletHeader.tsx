@@ -18,9 +18,14 @@ export const WalletHeader = () => {
   return (
     <>
       <div
-        sx={{ flex: "row", justify: "space-between", align: "center", pb: 16 }}
+        sx={{
+          flex: ["column", "row"],
+          justify: "space-between",
+          align: ["start", "center"],
+          pb: 16,
+        }}
       >
-        <Text fs={20} fw={500} lh={20} css={{ fontFamily: "FontOver" }}>
+        <Text fs={20} fw={500} lh={20} font="FontOver">
           {account?.name}
         </Text>
         {account?.address ? (
@@ -33,7 +38,15 @@ export const WalletHeader = () => {
                 mr: 50,
               }}
             >
-              <Text color="brightBlue300" fs={14} fw={500}>
+              <Text
+                color="brightBlue300"
+                fs={14}
+                fw={500}
+                sx={{ maxWidth: ["calc(100vw - 60px)", "fit-content"] }}
+                css={{
+                  wordWrap: "break-word",
+                }}
+              >
                 {account.address}
               </Text>
               <ButtonTransparent
@@ -49,6 +62,7 @@ export const WalletHeader = () => {
             <Button
               size="small"
               variant="primary"
+              sx={{ display: ["none", "inherit"] }}
               onClick={() => setOpen(true)}
             >
               {t("wallet.header.switchAccount")}

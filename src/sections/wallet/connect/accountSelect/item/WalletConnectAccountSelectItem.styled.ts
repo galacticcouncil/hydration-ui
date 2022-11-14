@@ -2,65 +2,28 @@ import styled from "@emotion/styled"
 import { css } from "@emotion/react"
 import { theme } from "theme"
 
-export const SContainer = styled.div<{ isActive: boolean }>`
-  position: relative;
-
-  --secondary-color: ${theme.colors.neutralGray300};
-
-  ${(p) => {
-    if (p.isActive) {
-      return css`
-        --secondary-color: ${theme.colors.primary200};
-
-        &:before {
-          content: "";
-
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-
-          z-index: -1;
-          border-radius: 12px;
-
-          pointer-events: none;
-
-          background: linear-gradient(
-              90deg,
-              #4fffb0 1.27%,
-              #b3ff8f 48.96%,
-              #ff984e 104.14%
-            ),
-            linear-gradient(
-              90deg,
-              #4fffb0 1.27%,
-              #a2ff76 53.24%,
-              #ff984e 104.14%
-            ),
-            linear-gradient(90deg, #ffce4f 1.27%, #4fffb0 104.14%);
-        }
-      `
-    }
-  }};
-`
-
 export const SSelectItem = styled.div<{ isActive: boolean }>`
+  --secondary-color: ${({ isActive }) =>
+    isActive ? theme.colors.pink600 : theme.colors.brightBlue300};
+
   display: flex;
   flex-direction: column;
-  background: ${theme.colors.backgroundGray800};
-  padding: 16px 20px;
-  border-radius: 12px;
+  background: rgba(${theme.rgbColors.primaryA06}, 0.06);
+  padding: 16px;
+  border-radius: 4px;
   cursor: pointer;
+  margin-right: 15px;
+  box-shadow: 4px 4px 0px #0a0c17;
 
   transition: background ${theme.transitions.default};
 
   &:hover {
-    background: rgba(${theme.rgbColors.primary100}, 0.06);
+    background: rgba(${theme.rgbColors.primaryA15}, 0.12);
+    box-shadow: 4px 4px 0px rgba(102, 181, 255, 0.19);
   }
 
   &:active {
-    background: rgba(${theme.rgbColors.primary100}, 0.07);
+    background: rgba(${theme.rgbColors.brightBlue100}, 0.35);
   }
 
   position: relative;
@@ -71,21 +34,14 @@ export const SSelectItem = styled.div<{ isActive: boolean }>`
         &,
         &:hover,
         &:active {
-          background-color: rgb(38, 56, 52);
-          background-image: linear-gradient(
-            285.92deg,
-            rgba(73, 228, 159, 0) 25.46%,
-            rgba(228, 175, 73, 0.2) 98.29%
-          );
+          background: rgba(${theme.rgbColors.pink700}, 0.27);
         }
 
+        border: 1px solid ${theme.colors.pink700};
         position: relative;
         padding: 14px 18px;
-        margin: 1px;
-        border-radius: 11px;
+        box-shadow: 4px 4px 0px rgba(243, 102, 255, 0.19);
       `
     }
-
-    return ``
   }}
 `

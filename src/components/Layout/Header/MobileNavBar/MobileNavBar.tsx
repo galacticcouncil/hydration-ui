@@ -48,7 +48,7 @@ export const MobileNavBar = () => {
       {visibleTabs.map((item, index) => {
         if (item.external) {
           return (
-            <a href={item.href} key={index}>
+            <a href={item.href} key={index} sx={{ height: "100%" }}>
               <SNavBarItem key={index}>
                 <Icon size={20} icon={getIcon(item.key)} />
                 {t(item.translationKey)}
@@ -58,7 +58,7 @@ export const MobileNavBar = () => {
         }
 
         return (
-          <Link to={item.href} key={index}>
+          <Link to={item.href} key={index} css={{ height: "100%" }}>
             {({ isActive }) => (
               <SNavBarItem key={index} active={isActive}>
                 <Icon size={20} icon={getIcon(item.key)} />

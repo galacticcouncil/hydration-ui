@@ -13,6 +13,6 @@ export const Page: FC<PropsWithChildren> = ({ children }) => (
     <SPageContent>
       <SPageInner>{children}</SPageInner>
     </SPageContent>
-    {/*<MobileNavBar />*/}
+    <MobileNavBar />
   </SPage>
 )

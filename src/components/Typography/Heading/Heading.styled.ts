@@ -4,6 +4,7 @@ import { handleTypographyProps, STypographyProps } from "../Typography.utils"
 
 export const SHeading = styled.h1<STypographyProps>`
   color: ${theme.colors.basic100};
+  font-family: FontOver;
 
   ${handleTypographyProps}
 `

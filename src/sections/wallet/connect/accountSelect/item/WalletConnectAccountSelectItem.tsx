@@ -4,10 +4,7 @@ import { Separator } from "components/Separator/Separator"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { BASILISK_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
 import { useTokenBalance } from "api/balances"
-import {
-  SContainer,
-  SSelectItem,
-} from "./WalletConnectAccountSelectItem.styled"
+import { SSelectItem } from "./WalletConnectAccountSelectItem.styled"
 import { WalletConnectAccountSelectAddress } from "sections/wallet/connect/accountSelect/item/address/WalletConnectAccountSelectAddress"
 import { FC } from "react"
 import { useAssetMeta } from "api/assetMeta"
@@ -38,10 +35,10 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
   const { t } = useTranslation()
 
   return (
-    <SContainer isActive={isActive}>
-      <SSelectItem isActive={isActive} onClick={setAccount}>
-        <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
-          <Text>{name}</Text>
+    <SSelectItem isActive={isActive} onClick={setAccount}>
+      <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
+        <Text font="ChakraPetchBold">{name}</Text>
+        <div sx={{ flex: "row", align: "end", gap: 2 }}>
           <Text>
             {t("value.bsx", {
               value: data?.balance,
@@ -49,25 +46,25 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
               decimalPlaces: 4,
             })}
           </Text>
+          <Text fs={14} font="ChakraPetchBold" tTransform="uppercase">
+            bsx
+          </Text>
         </div>
+      </div>
 
-        <div sx={{ flex: "column", mt: 12, gap: 12 }}>
-          <WalletConnectAccountSelectAddress
-            name={t("walletConnect.accountSelect.asset.network")}
-            address={basiliskAddress}
-            theme="substrate"
-          />
-          <Separator
-            color={isActive ? "primary200" : "backgroundGray700"}
-            opacity={isActive ? 0.1 : 1}
-          />
-          <WalletConnectAccountSelectAddress
-            name={t("walletConnect.accountSelect.asset.parachain")}
-            address={kusamaAddress}
-            theme={provider}
-          />
-        </div>
-      </SSelectItem>
-    </SContainer>
+      <div sx={{ flex: "column", mt: 12, gap: 12 }}>
+        <WalletConnectAccountSelectAddress
+          name={t("walletConnect.accountSelect.asset.network")}
+          address={basiliskAddress}
+          theme="substrate"
+        />
+        <Separator color="basic700" opacity={isActive ? 0.3 : 1} />
+        <WalletConnectAccountSelectAddress
+          name={t("walletConnect.accountSelect.asset.parachain")}
+          address={kusamaAddress}
+          theme={provider}
+        />
+      </div>
+    </SSelectItem>
   )
 }
