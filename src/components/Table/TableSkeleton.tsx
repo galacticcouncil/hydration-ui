@@ -32,8 +32,8 @@ export const TableSkeleton = ({
     <TableContainer className={className}>
       <TableTitle>
         <Text
-          fs={[16, 19]}
-          lh={[20, 24.7]}
+          fs={[15, 19]}
+          lh={[19.5, 24.7]}
           css={{ fontFamily: "FontOver" }}
           fw={500}
           color="white"

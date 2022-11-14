@@ -3,6 +3,7 @@ import { ReactComponent as TablePlaceholderIcon } from "assets/icons/TablePlaceh
 import { TableSkeleton } from "components/Table/TableSkeleton"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import { useMedia } from "react-use"
 import { useAssetsTableSkeleton } from "sections/wallet/assets/table/skeleton/WalletAssetsTableSkeleton.utils"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
@@ -10,20 +11,25 @@ import { theme } from "theme"
 
 export const WalletAssetsTablePlaceholder = () => {
   const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
   const table = useAssetsTableSkeleton(false)
 
   return (
     <TableSkeleton
       table={table}
-      title={t("wallet.assets.table.title")}
+      title={
+        isDesktop ? t("wallet.assets.table.title") : t("wallet.header.assets")
+      }
       css={assetsTableStyles}
       hideHeader={true}
       placeholder={
         <div
-          css={{
-            color: theme.colors.neutralGray500,
+          sx={{
+            flex: "column",
+            align: "center",
+            width: 280,
+            color: "neutralGray500",
           }}
-          sx={{ flex: "column", align: "center", width: 280 }}
         >
           <TablePlaceholderIcon sx={{ width: [52, 64], height: [52, 64] }} />
           <Text

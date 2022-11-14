@@ -13,6 +13,7 @@ import {
 import { Text } from "components/Typography/Text/Text"
 import { Fragment, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useMedia } from "react-use"
 import { WalletAssetsTableDetails } from "sections/wallet/assets/table/details/WalletAssetsTableDetails"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
 import {
@@ -20,14 +21,17 @@ import {
   useAssetsTable,
 } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
+import { theme } from "theme"
 
 type Props = { data: AssetsTableData[] }
 
 export const WalletAssetsTable = ({ data }: Props) => {
   const { t } = useTranslation()
   const [showAll, setShowAll] = useState(false)
-
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
+
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
   const table = useAssetsTable(data, {
     onTransfer: setTransferAsset,
   })
@@ -36,13 +40,15 @@ export const WalletAssetsTable = ({ data }: Props) => {
     <TableContainer css={assetsTableStyles}>
       <TableTitle>
         <Text
-          fs={[16, 19]}
+          fs={[15, 19]}
           lh={[20, 24.7]}
           css={{ fontFamily: "FontOver" }}
           fw={500}
           color="white"
         >
-          {t("wallet.assets.table.title")}
+          {isDesktop
+            ? t("wallet.assets.table.title")
+            : t("wallet.header.assets")}
         </Text>
         <Switch
           value={showAll}

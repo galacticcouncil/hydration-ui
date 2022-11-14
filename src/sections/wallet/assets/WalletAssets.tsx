@@ -12,9 +12,7 @@ export const WalletAssets = () => {
   return (
     <div sx={{ mt: [34, 56] }}>
       {!account ? (
-        <>
-          <WalletAssetsTablePlaceholder />
-        </>
+        <WalletAssetsTablePlaceholder />
       ) : isLoading ? (
         <>
           <WalletAssetsHeader isLoading={isLoading} />

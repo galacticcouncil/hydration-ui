@@ -22,11 +22,7 @@ export const Switch = ({
     id={name}
     label={label}
     withLabel={!!label}
-    css={{
-      fontSize: 14,
-      display: "flex",
-      alignItems: "center",
-    }}
+    sx={{ fontSize: 12, flex: "row", align: "center" }}
   >
     <SSwitch
       checked={value}
