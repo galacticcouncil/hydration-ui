@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 
 import { WalletTransferSectionOnchain } from "sections/wallet/transfer/onchain/WalletTransferSectionOnchain"
 import { WalletTransferSectionCrosschain } from "sections/wallet/transfer/crosschain/WalletTransferSectionCrosschain"
+import { SPillContainer } from "./WalletTransferModal.styled"
 
 export function WalletTransferModal(props: {
   open: boolean
@@ -21,7 +22,7 @@ export function WalletTransferModal(props: {
       open={props.open}
       onClose={props.onClose}
       topContent={
-        <div sx={{ flex: "column", align: "center", mb: 16 }}>
+        <SPillContainer>
           <PillSwitch
             options={[
               {
@@ -36,7 +37,7 @@ export function WalletTransferModal(props: {
             value={chain}
             onChange={setChain}
           />
-        </div>
+        </SPillContainer>
       }
     >
       {chain === "onchain" && (

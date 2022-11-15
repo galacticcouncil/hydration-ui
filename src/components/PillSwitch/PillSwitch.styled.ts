@@ -14,6 +14,12 @@ export const SSwitch = styled.div`
   border-radius: 9999px;
 
   gap: 9px;
+
+  --padding-y: 0px;
+
+  @media ${theme.viewport.gte.sm} {
+    --padding-y: 4px;
+  }
 `
 
 export const SButton = styled.button<{ isActive: boolean }>`
@@ -28,8 +34,8 @@ export const SButton = styled.button<{ isActive: boolean }>`
   font-weight: 700;
   font-size: 12px;
 
-  line-height: 32px;
-  padding: 2px 18px;
+  padding: var(--padding-y) 18px;
+  line-height: 24px;
 
   text-transform: uppercase;
 

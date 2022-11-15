@@ -62,7 +62,7 @@ export function WalletTransferSectionOnchain(props: {
     <>
       <ModalMeta title={t("wallet.assets.transfer.title")} />
 
-      <Spacer size={26} />
+      <Spacer size={[13, 26]} />
 
       <form onSubmit={form.handleSubmit(onSubmit)} sx={{ flex: "column" }}>
         <div sx={{ bg: "backgroundGray1000" }} css={{ borderRadius: 12 }}>

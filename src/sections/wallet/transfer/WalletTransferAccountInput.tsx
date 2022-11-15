@@ -3,6 +3,7 @@ import { AddressInput } from "components/AddressInput/AddressInput"
 import { Maybe } from "utils/helpers"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { ReactComponent as GuestIcon } from "assets/icons/GuestIcon.svg"
+import { SIconContainer } from "./WalletTransferAccountInput.styled"
 
 interface Props {
   name: string
@@ -26,16 +27,13 @@ export const WalletTransferAccountInput = (props: Props) => {
         gap: 16,
       }}
     >
-      <div
-        sx={{ bg: "black", flex: "column", align: "center", p: 8 }}
-        css={{ borderRadius: 9999 }}
-      >
+      <SIconContainer>
         {validAddress ? (
-          <AccountAvatar address={validAddress} size={42} theme="basilisk" />
+          <AccountAvatar address={validAddress} size={36} theme="basilisk" />
         ) : (
-          <GuestIcon />
+          <GuestIcon width={36} height={36} />
         )}
-      </div>
+      </SIconContainer>
 
       <AddressInput
         disabled={!props.onChange}
