@@ -8,6 +8,11 @@ import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.sv
 import { useTranslation } from "react-i18next"
 import { TableAction } from "components/Table/Table"
 
+import { Dropdown } from "components/Dropdown/Dropdown"
+import { ReactComponent as DollarIcon } from "assets/icons/DollarIcon.svg"
+import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
+import { ReactComponent as MoreDotsIcon } from "assets/icons/MoreDotsIcon.svg"
+
 type Props = {
   toggleExpanded: () => void
   symbol: string
@@ -27,7 +32,14 @@ export const WalletAssetsTableActions = (props: Props) => {
           <ChevronRightIcon />
         </ButtonTransparent>
       </div>
-      <div sx={{ flex: "row", gap: 10, display: ["none", "flex"] }}>
+      <div
+        sx={{
+          flex: "row",
+          gap: 10,
+          display: ["none", "flex"],
+          align: "center",
+        }}
+      >
         <TableAction
           icon={<BuyIcon />}
           onClick={() => console.log("buy", props.symbol)}
@@ -43,6 +55,25 @@ export const WalletAssetsTableActions = (props: Props) => {
         <TableAction icon={<TransferIcon />} onClick={props.onTransferClick}>
           {t("wallet.assets.table.actions.transfer")}
         </TableAction>
+
+        <Dropdown
+          items={[
+            {
+              key: "add",
+              icon: <PlusIcon />,
+              label: t("wallet.assets.table.actions.add.liquidity"),
+            },
+            {
+              key: "remove",
+              icon: <DollarIcon />,
+              label: t("wallet.assets.table.actions.payment.asset"),
+            },
+          ]}
+          onSelect={(item) => console.log("item", item)}
+        >
+          <MoreDotsIcon />
+        </Dropdown>
+
         <ButtonTransparent
           onClick={props.toggleExpanded}
           css={{ color: theme.colors.iconGray }}

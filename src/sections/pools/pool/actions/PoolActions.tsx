@@ -44,7 +44,7 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
         }}
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
-          <Icon icon={<PlusIcon />} sx={{ mr: 11 }} />
+          <Icon icon={<PlusIcon />} sx={{ mr: 8 }} />
           {t("pools.pool.actions.addLiquidity")}
         </div>
       </Button>
@@ -58,7 +58,7 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
         }}
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
-          <Icon icon={<MinusIcon />} sx={{ mr: 11 }} />
+          <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
           {t("pools.pool.actions.removeLiquidity")}
         </div>
       </Button>
@@ -72,7 +72,7 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
         }}
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
-          <Icon icon={<WindMillIcon />} sx={{ mr: 11 }} />
+          <Icon icon={<WindMillIcon />} sx={{ mr: 8 }} />
           {t("pools.pool.actions.joinFarm")}
         </div>
       </Button>
@@ -106,7 +106,7 @@ export const PoolActions: FC<Props> = ({ pool, isExpanded, onExpandClick }) => {
           </Modal>
           <Button size="small" onClick={() => setOpenActions(true)}>
             <div sx={{ flex: "row", align: "center", justify: "center" }}>
-              <Icon icon={<MoreIcon />} sx={{ mr: 11 }} />
+              <Icon icon={<MoreIcon />} sx={{ mr: 8 }} />
               {t("pools.pool.actions.more")}
             </div>
           </Button>

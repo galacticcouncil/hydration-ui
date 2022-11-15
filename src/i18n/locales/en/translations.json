@@ -215,6 +215,8 @@
   "wallet.assets.table.actions.buy": "Buy",
   "wallet.assets.table.actions.sell": "Sell",
   "wallet.assets.table.actions.transfer": "Transfer",
+  "wallet.assets.table.actions.add.liquidity": "Add Liquidity",
+  "wallet.assets.table.actions.payment.asset": "Set as Fee Payment Asset",
   "wallet.assets.table.details.origin": "Origin Chain:",
   "wallet.assets.table.details.locked": "Locked:"
 }
