@@ -7,15 +7,16 @@ import { SContainer } from "sections/pools/pool/position/PoolPosition.styled"
 import { usePoolPositionData } from "sections/pools/pool/position/PoolPosition.utils"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { PoolPositionFarmRedeposit } from "sections/pools/pool/position/farm/PoolPositionFarmRedeposit"
-import { getFloatingPointAmount } from "utils/balance"
+import BN from "bignumber.js"
 
 type Props = {
   index: number
   pool: PoolBase
   position: PalletLiquidityMiningYieldFarmEntry
+  shares: BN
 }
 
-export const PoolPosition: FC<Props> = ({ index, pool, position }) => {
+export const PoolPosition: FC<Props> = ({ index, pool, position, shares }) => {
   const { t } = useTranslation()
 
   const { enteredDate, positionValue, assetA, assetB } = usePoolPositionData({
@@ -39,9 +40,7 @@ export const PoolPosition: FC<Props> = ({ index, pool, position }) => {
             {t("pools.pool.positions.position.locked")}
           </Text>
           <Text fs={14} lh={18} color="white" css={{ wordBreak: "break-all" }}>
-            {t("pools.pool.positions.position.shares", {
-              shares: getFloatingPointAmount(position.valuedShares, 12),
-            })}
+            {t("pools.pool.positions.position.shares", { shares })}
           </Text>
         </div>
         <div sx={{ flex: "column", gap: 6 }}>

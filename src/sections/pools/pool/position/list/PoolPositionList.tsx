@@ -31,7 +31,13 @@ export const PoolPositionList: FC<Props> = ({ depositNft, index, pool }) => {
           </GradientText>
         </div>
         {depositNft.deposit.yieldFarmEntries.map((entry, i) => (
-          <PoolPosition key={i} index={i + 1} pool={pool} position={entry} />
+          <PoolPosition
+            key={i}
+            index={i + 1}
+            pool={pool}
+            position={entry}
+            shares={depositNft.deposit.shares.toBigNumber()}
+          />
         ))}
       </div>
     </SContainer>
