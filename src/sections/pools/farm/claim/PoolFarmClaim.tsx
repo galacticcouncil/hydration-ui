@@ -5,29 +5,27 @@ import { Button } from "components/Button/Button"
 import { css } from "@emotion/react"
 import { theme } from "theme"
 import { SContainer } from "./PoolFarmClaim.styled"
-import { getFormatSeparators } from "utils/formatting"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { useClaimableAmount, useClaimAllMutation } from "utils/farms/claiming"
 import { Modal } from "components/Modal/Modal"
 import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
 import { PoolPositionMobile } from "../../pool/position/PoolPositionMobile"
 import { useUserDeposits } from "utils/farms/deposits"
+import { separateBalance } from "utils/balance"
 
 export function PoolFarmClaim(props: { pool: PoolBase }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const [openMyPositions, setOpenMyPositions] = useState(false)
 
   const positions = useUserDeposits(props.pool.address)
   const claimable = useClaimableAmount(props.pool)
   const claimAll = useClaimAllMutation(props.pool.address)
 
-  const separators = getFormatSeparators(i18n.languages[0])
-  const [num, denom] = t("value", {
-    value: claimable.data?.bsx,
+  const balance = separateBalance(claimable.data?.bsx, {
     fixedPointScale: 12,
     numberPrefix: "≈",
     decimalPlaces: 4,
-  }).split(separators.decimal ?? ".")
+  })
 
   const positionsList = useMemo(() => {
     let index = 0
@@ -60,8 +58,12 @@ export function PoolFarmClaim(props: { pool: PoolBase }) {
         >
           <Trans
             t={t}
-            i18nKey="pools.allFarms.modal.claim.bsx"
-            tOptions={{ num, denom }}
+            i18nKey={
+              !claimable.data?.bsx.isNaN()
+                ? "pools.allFarms.modal.claim.bsx"
+                : "pools.allFarms.modal.claim.bsx.nan"
+            }
+            tOptions={balance ?? {}}
           >
             <span
               css={css`

@@ -7,6 +7,7 @@ import { SContainer } from "sections/pools/pool/position/PoolPosition.styled"
 import { usePoolPositionData } from "sections/pools/pool/position/PoolPosition.utils"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { PoolPositionFarmRedeposit } from "sections/pools/pool/position/farm/PoolPositionFarmRedeposit"
+import { getFloatingPointAmount } from "utils/balance"
 
 type Props = {
   index: number
@@ -39,7 +40,7 @@ export const PoolPosition: FC<Props> = ({ index, pool, position }) => {
           </Text>
           <Text fs={14} lh={18} color="white" css={{ wordBreak: "break-all" }}>
             {t("pools.pool.positions.position.shares", {
-              shares: position.valuedShares.toBigNumber(),
+              shares: getFloatingPointAmount(position.valuedShares, 12),
             })}
           </Text>
         </div>

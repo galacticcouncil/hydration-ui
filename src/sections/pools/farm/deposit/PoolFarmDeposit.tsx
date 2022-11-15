@@ -18,6 +18,7 @@ import BigNumber from "bignumber.js"
 import { SGridContainer, SMaxButton } from "./PoolFarmDeposit.styled"
 import BN from "bignumber.js"
 import { FormValues } from "utils/helpers"
+import { getFloatingPointAmount } from "utils/balance"
 
 type PoolJoinFarmDepositProps = {
   pool: PoolBase
@@ -164,7 +165,7 @@ export const PoolFarmDeposit = (props: PoolJoinFarmDepositProps) => {
             rules={{
               validate: {
                 minDeposit: (value) => {
-                  return !minDeposit.lte(value)
+                  return !getFloatingPointAmount(minDeposit, 12).lte(value)
                     ? t("farms.deposit.error.minDeposit", { minDeposit })
                     : undefined
                 },

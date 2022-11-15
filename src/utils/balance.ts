@@ -8,6 +8,7 @@ import {
 } from "./formatting"
 import { z } from "zod"
 import i18n from "i18next"
+import { Maybe } from "./helpers"
 
 export type BigNumberLikeType = BN | BigNumber | number | string
 
@@ -43,10 +44,11 @@ export const getFixedPointAmount = (
 }
 
 export const separateBalance = (
-  value: BigNumber,
+  value: Maybe<BigNumber>,
   options?: z.infer<typeof BigNumberFormatOptionsSchema>,
 ) => {
-  const formatted = formatBigNumber(value, options, "en")
+  if (!value || value?.isNaN()) return null
+  const formatted = formatBigNumber(value, options, i18n.languages[0])
   const separators = getFormatSeparators(i18n.languages[0])
   if (formatted) {
     const [num, denom] = formatted.split(separators.decimal ?? ".")
