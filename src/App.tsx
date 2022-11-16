@@ -13,11 +13,10 @@ const history = createHashHistory()
 const location = new ReactLocation({ history })
 
 export const App = () => {
-  const { info, setSidebar } = useToast()
+  const { info } = useToast()
   return (
     <AppProviders>
       <Button onClick={() => info({ text: "test" })}>Open toast</Button>
-      <Button onClick={() => setSidebar(true)}>Open sidebar</Button>
       <Router location={location} routes={routes} />
       {import.meta.env.VITE_SENTRY_DSN && (
         <TestnetModal

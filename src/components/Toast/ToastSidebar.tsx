@@ -7,6 +7,7 @@ import { ReactNode } from "react"
 import { SWrapper, SDialogContent, SCloseButton } from "./ToastSidebar.styled"
 import { ToastContent } from "./ToastContent"
 import { useToast } from "state/toasts"
+import { useTranslation } from "react-i18next"
 
 const ToastGroupHeader = (props: { children?: ReactNode }) => (
   <Text
@@ -23,6 +24,11 @@ export function ToastSidebar() {
   const store = useToast()
   const onClose = () => store.setSidebar(false)
 
+  const pendingToasts = store.toasts.filter((x) => x.variant === "loading")
+  const completedToasts = store.toasts.filter((x) => x.variant !== "loading")
+
+  const { t } = useTranslation()
+
   return (
     <Dialog open={store.sidebar}>
       <DialogPortal>
@@ -30,36 +36,52 @@ export function ToastSidebar() {
           <Backdrop onClick={onClose} />
           <SDialogContent onEscapeKeyDown={onClose}>
             <Text fw={500} fs={16} tAlign="center" sx={{ py: 24 }}>
-              Recent Transactions
+              {t("toast.sidebar.title")}
             </Text>
 
-            <SCloseButton name="Close" icon={<CrossIcon />} onClick={onClose} />
+            <SCloseButton
+              name={t("toast.close")}
+              icon={<CrossIcon />}
+              onClick={onClose}
+            />
 
-            <ToastGroupHeader>Pending</ToastGroupHeader>
+            {pendingToasts.length > 0 && (
+              <>
+                <ToastGroupHeader>
+                  {t("toast.sidebar.pending")}
+                </ToastGroupHeader>
 
-            <div sx={{ flex: "column", gap: 6, p: 8 }}>
-              {store.toasts
-                .filter((x) => x.persist)
-                .map((toast) => (
-                  <ToastContent
-                    key={toast.id}
-                    variant={toast.variant}
-                    content={{ text: toast.text, children: toast.children }}
-                  />
-                ))}
-            </div>
+                <div sx={{ flex: "column", gap: 6, p: 8 }}>
+                  {pendingToasts.map((toast) => (
+                    <ToastContent
+                      key={toast.id}
+                      variant={toast.variant}
+                      content={{ text: toast.text, children: toast.children }}
+                      dateCreated={toast.dateCreated}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
 
-            <ToastGroupHeader>Completed</ToastGroupHeader>
+            {completedToasts.length > 0 && (
+              <>
+                <ToastGroupHeader>
+                  {t("toast.sidebar.completed")}
+                </ToastGroupHeader>
 
-            <div sx={{ flex: "column", gap: 6, p: 8 }}>
-              {store.toasts.map((toast) => (
-                <ToastContent
-                  key={toast.id}
-                  variant={toast.variant}
-                  content={{ text: toast.text, children: toast.children }}
-                />
-              ))}
-            </div>
+                <div sx={{ flex: "column", gap: 6, p: 8 }}>
+                  {completedToasts.map((toast) => (
+                    <ToastContent
+                      key={toast.id}
+                      variant={toast.variant}
+                      content={{ text: toast.text, children: toast.children }}
+                      dateCreated={toast.dateCreated}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </SDialogContent>
         </SWrapper>
       </DialogPortal>

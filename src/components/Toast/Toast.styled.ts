@@ -15,7 +15,7 @@ export const SRoot = styled(motion(Root))`
 
 export const SContainer = styled.div`
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   grid-column-gap: 14px;
 
   position: relative;

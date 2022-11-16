@@ -1,6 +1,10 @@
 {
   "toast.close": "Close",
   "toast.counter": "{{ index }} of {{ count }}",
+  "toast.date": "{{ value, relativetime }}",
+  "toast.sidebar.title": "Recent Transactions",
+  "toast.sidebar.pending": "Pending",
+  "toast.sidebar.completed": "Completed",
   "confirm": "Confirm",
   "error.positive": "Must be positive",
   "error.validNumber": "Must be a number",
