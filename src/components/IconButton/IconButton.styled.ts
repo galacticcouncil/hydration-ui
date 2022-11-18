@@ -9,7 +9,9 @@ export const SIconButton = styled.button<{ round?: boolean }>`
   min-width: 34px;
   min-height: 34px;
 
-  background: rgba(${theme.rgbColors.white}, 0.06);
+  background: rgba(${theme.rgbColors.alpha0}, 0.06);
+  color: ${theme.colors.brightBlue700};
+
   transition: background ${theme.transitions.default};
 
   border: 1px solid #30344c;
@@ -23,7 +25,12 @@ export const SIconButton = styled.button<{ round?: boolean }>`
   padding: 0;
 
   &:hover {
-    background: ${theme.colors.basic500};
-    border: none;
+    color: ${theme.colors.white};
+    background: rgba(${theme.rgbColors.brightBlue100}, 0.39);
+    border: 1px solid rgba(${theme.rgbColors.brightBlue200}, 0.39);
+  }
+
+  &:focus {
+    background: rgba(${theme.rgbColors.primaryA15}, 0.12);
   }
 `
