@@ -9,16 +9,17 @@ interface AddLiquidityAsset {
   amount: BigNumber
 }
 
-export function useAddLiquidity(assetA: string, assetB: string) {
+export function useAddLiquidityPaymentInfo(assetA: string, assetB: string) {
+  const api = useApiPromise()
+  return usePaymentInfo(api.tx.xyk.addLiquidity(assetA, assetB, "0", "0"))
+}
+
+export function useAddLiquidityMutation() {
   const api = useApiPromise()
   const { createTransaction } = useStore()
   const { account } = useAccountStore()
 
-  const { data: paymentInfoData } = usePaymentInfo(
-    api.tx.xyk.addLiquidity(assetA, assetB, "0", "0"),
-  )
-
-  const handleAddLiquidity = useMutation(
+  return useMutation(
     async ([assetA, assetB]: [AddLiquidityAsset, AddLiquidityAsset]) => {
       if (!account) throw new Error("Missing account")
       return await createTransaction({
@@ -31,9 +32,4 @@ export function useAddLiquidity(assetA: string, assetB: string) {
       })
     },
   )
-
-  return {
-    handleAddLiquidity,
-    paymentInfo: paymentInfoData,
-  }
 }

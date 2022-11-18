@@ -1,30 +1,30 @@
 import { PoolAddLiquidityAssetSelect } from "./assetSelect/PoolAddLiquidityAssetSelect"
-import { getAssetLogo } from "../../../../../components/AssetIcon/AssetIcon"
+import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { PoolAddLiquidityConversion } from "./conversion/PoolAddLiquidityConversion"
-import { BN_1, BN_100, DEFAULT_DECIMALS } from "../../../../../utils/constants"
-import { Row } from "../../../../../components/Row/Row"
-import { Separator } from "../../../../../components/Separator/Separator"
-import { Text } from "../../../../../components/Typography/Text/Text"
-import { Button } from "../../../../../components/Button/Button"
-import { WalletConnectButton } from "../../../../wallet/connect/modal/WalletConnectButton"
-import { usePools, usePoolShareToken } from "../../../../../api/pools"
+import { BN_1, BN_100, DEFAULT_DECIMALS } from "utils/constants"
+import { Row } from "components/Row/Row"
+import { Separator } from "components/Separator/Separator"
+import { Text } from "components/Typography/Text/Text"
+import { Button } from "components/Button/Button"
+import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
+import { usePools, usePoolShareToken } from "api/pools"
 import { FC, useCallback, useMemo, useState } from "react"
-import { useAddLiquidity } from "../../../../../api/addLiquidity"
-import { useTotalIssuance } from "../../../../../api/totalIssuance"
-import { useTokenBalance } from "../../../../../api/balances"
-import { useSpotPrice } from "../../../../../api/spotPrice"
 import {
-  getFixedPointAmount,
-  getFloatingPointAmount,
-} from "../../../../../utils/balance"
+  useAddLiquidityMutation,
+  useAddLiquidityPaymentInfo,
+} from "api/addLiquidity"
+import { useTotalIssuance } from "api/totalIssuance"
+import { useTokensBalances } from "api/balances"
+import { useSpotPrice } from "api/spotPrice"
+import { getFixedPointAmount, getFloatingPointAmount } from "utils/balance"
 import BigNumber from "bignumber.js"
 import { PoolBase } from "@galacticcouncil/sdk"
-import { useAccountStore } from "../../../../../state/store"
+import { useAccountStore } from "state/store"
 import { useTranslation } from "react-i18next"
 import { u32 } from "@polkadot/types"
 import { getTradeFee } from "sections/pools/pool/Pool.utils"
 import { useMath } from "utils/api"
-import { useAssetMeta } from "../../../../../api/assetMeta"
+import { useAssetMeta } from "api/assetMeta"
 
 interface PoolAddLiquidityModalProps {
   pool: PoolBase
@@ -38,78 +38,33 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
   const { t } = useTranslation()
   const pools = usePools()
 
+  const { xyk } = useMath()
   const { account } = useAccountStore()
   const { data: shareToken } = usePoolShareToken(pool.address)
   const { data: shareTokenMeta } = useAssetMeta(shareToken?.token)
 
-  const [inputAssetA, setInputAssetA] = useState("0")
-  const [inputAssetB, setInputAssetB] = useState("0")
+  const [input, setInput] = useState<{
+    values: [string, string]
+    lastUpdated: 0 | 1
+  }>({ values: ["0", "0"], lastUpdated: 0 })
 
-  const { handleAddLiquidity, paymentInfo } = useAddLiquidity(
+  const paymentInfo = useAddLiquidityPaymentInfo(
     pool.tokens[0].id,
     pool.tokens[1].id,
   )
 
+  const handleAddLiquidity = useAddLiquidityMutation()
   const shareIssuance = useTotalIssuance(shareToken?.token)
-  const assetAReserve = useTokenBalance(pool.tokens[0].id, pool.address)
-  const assetBReserve = useTokenBalance(pool.tokens[1].id, pool.address)
+  const spotPrice = useSpotPrice(pool.tokens[0].id, pool.tokens[1].id)
 
-  const { xyk } = useMath()
-  const { data: spotPriceData } = useSpotPrice(
-    pool.tokens[0].id,
-    pool.tokens[1].id,
+  const reserves = useTokensBalances(
+    pool.tokens.map((i) => i.id),
+    pool.address,
   )
-
-  const accountAssetABalance = useTokenBalance(
-    pool.tokens[0].id,
+  const balances = useTokensBalances(
+    pool.tokens.map((i) => i.id),
     account?.address,
   )
-
-  const accountAssetBBalance = useTokenBalance(
-    pool.tokens[1].id,
-    account?.address,
-  )
-
-  const handleChangeAssetAInput = (value: string) => {
-    if (assetAReserve.data && assetBReserve.data && xyk) {
-      const parsedValue = getFixedPointAmount(value, pool.tokens[0].decimals)
-
-      const calculatedAmount = xyk.calculate_liquidity_in(
-        assetAReserve.data.balance.toFixed(),
-        assetBReserve.data.balance.toFixed(),
-        parsedValue.toFixed(),
-      )
-      setInputAssetB(
-        getFloatingPointAmount(
-          calculatedAmount,
-          pool.tokens[0].decimals,
-        ).toFixed(4),
-      )
-    }
-    setInputAssetA(value)
-  }
-
-  const handleChangeAssetBInput = (value: string) => {
-    if (assetAReserve.data && assetBReserve.data && xyk) {
-      const parsedValue = getFixedPointAmount(
-        new BigNumber(value),
-        pool.tokens[0].decimals,
-      )
-      const calculatedAmount = xyk.calculate_liquidity_in(
-        assetBReserve.data.balance.toFixed(),
-        assetAReserve.data.balance.toFixed(),
-        parsedValue.toFixed(),
-      )
-
-      setInputAssetA(
-        getFloatingPointAmount(
-          calculatedAmount,
-          pool.tokens[1].decimals,
-        ).toFixed(4),
-      )
-    }
-    setInputAssetB(value)
-  }
 
   const shareTokenDecimals = useMemo(() => {
     if (shareTokenMeta?.decimals) {
@@ -122,19 +77,19 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
   const calculatedShares = useMemo(() => {
     if (
       xyk &&
-      assetAReserve.data &&
+      reserves[0].data &&
       shareIssuance.data &&
       shareTokenDecimals &&
-      inputAssetA
+      input.values[0]
     ) {
       return new BigNumber(
         xyk.calculate_shares(
           getFixedPointAmount(
-            assetAReserve.data.balance,
+            reserves[0].data.balance,
             pool.tokens[0].decimals,
           ).toFixed(),
           getFixedPointAmount(
-            new BigNumber(inputAssetA),
+            new BigNumber(input.values[0]),
             pool.tokens[0].decimals,
           ).toFixed(),
           getFixedPointAmount(
@@ -148,59 +103,94 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
     return null
   }, [
     xyk,
-    assetAReserve.data,
+    reserves,
     shareIssuance.data,
     shareTokenDecimals,
-    inputAssetA,
+    input.values,
     pool.tokens,
   ])
 
-  const calculatedRatio =
+  let calculatedRatio =
     shareIssuance.data &&
     calculatedShares &&
-    calculatedShares.pow(shareIssuance.data.total).multipliedBy(100)
+    calculatedShares.div(shareIssuance.data.total).multipliedBy(100)
+
+  if (calculatedRatio && !calculatedRatio.isFinite()) {
+    calculatedRatio = BN_100
+  }
+
+  const handleChange = useCallback(
+    (value: string, currPosition: 0 | 1) => {
+      const nextPosition = currPosition === 0 ? 1 : 0
+
+      const currReserves = reserves[currPosition].data
+      const nextReserves = reserves[nextPosition].data
+
+      if (currReserves && nextReserves && xyk) {
+        const values: [string, string] = ["", ""]
+
+        values[currPosition] = value
+        values[nextPosition] = getFloatingPointAmount(
+          xyk.calculate_liquidity_in(
+            currReserves.balance.toFixed(),
+            nextReserves.balance.toFixed(),
+            getFixedPointAmount(
+              new BigNumber(value),
+              pool.tokens[currPosition].decimals,
+            ).toFixed(),
+          ),
+          pool.tokens[currPosition].decimals,
+        ).toFixed(4)
+
+        setInput({ values, lastUpdated: currPosition })
+      }
+    },
+    [pool.tokens, reserves, xyk],
+  )
 
   const handleSelectAsset = useCallback(
-    (assetId: u32 | string, tokenPosition: 0 | 1) => {
-      const nextTokenPosition = tokenPosition === 0 ? 1 : 0
+    (assetId: u32 | string, currPosition: 0 | 1) => {
+      const nextPosition = currPosition === 0 ? 1 : 0
 
       const possibleNextPools = pools.data?.filter(
-        (nextPool) => nextPool.tokens[tokenPosition].id === assetId,
+        (nextPool) => nextPool.tokens[currPosition].id === assetId,
       )
       const nextPool = possibleNextPools?.find(
         (nexPool) =>
-          nexPool.tokens[nextTokenPosition].id ===
-          pool?.tokens[nextTokenPosition].id,
+          nexPool.tokens[nextPosition].id === pool?.tokens[nextPosition].id,
       )
       if (nextPool) {
         // Try to find pool with same second asset
         setPoolAddress(nextPool.address)
-      } else if (possibleNextPools?.[tokenPosition]) {
+      } else if (possibleNextPools?.[currPosition]) {
         // Select first pool with same first asset
-        setPoolAddress(possibleNextPools[tokenPosition].address)
+        setPoolAddress(possibleNextPools[currPosition].address)
       }
+
+      // reset the value input
+      handleChange("0", currPosition)
     },
-    [pool, pools, setPoolAddress],
+    [pool, pools, setPoolAddress, handleChange],
   )
 
   async function handleSubmit() {
+    const curr = input.lastUpdated
+    const next = input.lastUpdated === 0 ? 1 : 0
+
     handleAddLiquidity.mutate([
       {
-        id: pool.tokens[0].id,
+        id: pool.tokens[curr].id,
         amount: getFixedPointAmount(
-          new BigNumber(inputAssetA),
-          pool.tokens[0].decimals,
+          new BigNumber(input.values[curr]),
+          pool.tokens[curr].decimals,
         ),
       },
       {
-        id: pool.tokens[1].id,
-        // For some reason, when amount_b == amount_b_max_limit,
-        // the transaction fails with AssetAmountExceededLimit
-        // TODO: investiage, whether we're not doing something wrong
+        id: pool.tokens[next].id,
         amount: getFixedPointAmount(
-          new BigNumber(inputAssetB),
-          pool.tokens[1].decimals,
-        ).plus(1),
+          new BigNumber(input.values[next]),
+          pool.tokens[next].decimals,
+        ).times(1.0 + 0.3), // TODO: add provision percentage configuration
       },
     ])
   }
@@ -219,23 +209,20 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
           allowedAssets={pools.data
             ?.filter((nextPool) => nextPool.tokens[1].id === pool?.tokens[1].id)
             .map((nextPool) => nextPool.tokens[0].id)}
-          onSelectAsset={(assetId) => {
-            handleSelectAsset(assetId, 0)
-            handleChangeAssetAInput("0")
-          }}
           asset={pool.tokens[0].id}
-          balance={accountAssetABalance.data?.balance}
+          balance={balances[0].data?.balance}
           decimals={pool.tokens[0].decimals}
           assetName={pool.tokens[0].symbol}
           assetIcon={getAssetLogo(pool.tokens[0].symbol)}
-          value={inputAssetA}
-          onChange={handleChangeAssetAInput}
+          value={input.values[0]}
+          onChange={(value) => handleChange(value, 0)}
+          onSelectAsset={(assetId) => handleSelectAsset(assetId, 0)}
           sx={{ mt: 16 }}
         />
         <PoolAddLiquidityConversion
           firstValue={{ amount: BN_1, currency: pool.tokens[0].symbol }}
           secondValue={{
-            amount: spotPriceData?.spotPrice ?? BN_1,
+            amount: spotPrice.data?.spotPrice ?? BN_1,
             currency: pool.tokens[1].symbol,
           }}
         />
@@ -244,17 +231,14 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
           allowedAssets={pools.data
             ?.filter((nextPool) => nextPool.tokens[0].id === pool?.tokens[0].id)
             .map((nextPool) => nextPool.tokens[1].id)}
-          onSelectAsset={(assetId) => {
-            handleSelectAsset(assetId, 1)
-            handleChangeAssetBInput("0")
-          }}
           asset={pool.tokens[1].id}
-          balance={accountAssetBBalance.data?.balance}
+          balance={balances[1].data?.balance}
           decimals={pool.tokens[1].decimals}
           assetName={pool.tokens[1].symbol}
           assetIcon={getAssetLogo(pool.tokens[1].symbol)}
-          value={inputAssetB}
-          onChange={handleChangeAssetBInput}
+          value={input.values[1]}
+          onChange={(value) => handleChange(value, 1)}
+          onSelectAsset={(assetId) => handleSelectAsset(assetId, 1)}
         />
 
         <Row
@@ -268,7 +252,7 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
             paymentInfo && (
               <Text>
                 {t("pools.addLiquidity.modal.row.transactionCostValue", {
-                  amount: paymentInfo.partialFee,
+                  amount: paymentInfo.data?.partialFee,
                   fixedPointScale: 12,
                   decimalPlaces: 2,
                 })}
@@ -279,13 +263,12 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
         <Separator />
         <Row
           left={t("pools.addLiquidity.modal.row.sharePool")}
-          right={`${(calculatedRatio && calculatedRatio.isFinite()
-            ? calculatedRatio
-            : BN_100
-          ).toFixed()}%`}
+          right={t("value.percentage", {
+            value: calculatedRatio,
+            decimalPlaces: 4,
+          })}
         />
         <Separator />
-        {/*TODO add tooltip component afterwards */}
         <Row
           left={t("pools.addLiquidity.modal.row.shareTokens")}
           right={
