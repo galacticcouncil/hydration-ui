@@ -7,13 +7,17 @@ export const SSwitch = styled.div`
   z-index: ${theme.zIndices.boxSwitch};
 
   display: flex;
-  gap: var(--btn-gap);
 
   background: rgba(${theme.rgbColors.white}, 0.12);
   padding: 5px;
-  border-radius: 9999px;
+  border-radius: 4px;
 
   gap: 9px;
+
+  left: 50%;
+  transform: translate(-50%, 0);
+
+  width: max-content;
 `
 
 export const SButton = styled.button<{ isActive: boolean }>`
@@ -23,7 +27,7 @@ export const SButton = styled.button<{ isActive: boolean }>`
   align-items: center;
   justify-content: center;
 
-  border-radius: 9px;
+  border-radius: 4px;
 
   font-weight: 700;
   font-size: 12px;
@@ -37,10 +41,10 @@ export const SButton = styled.button<{ isActive: boolean }>`
 
   ${({ isActive }) => {
     if (isActive) {
-      return { color: theme.colors.backgroundGray1000 }
+      return { color: theme.colors.white }
     }
 
-    return { color: theme.colors.neutralGray500 }
+    return { color: theme.colors.basic500 }
   }}
 `
 
@@ -55,6 +59,6 @@ export const SButtonBackground = styled(motion.span)`
 
   display: block;
 
-  background: ${theme.gradients.primaryGradient};
-  border-radius: 9999px;
+  background: ${theme.colors.pink700};
+  border-radius: 4px;
 `

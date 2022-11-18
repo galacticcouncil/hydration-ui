@@ -9,7 +9,7 @@ export const SList = styled.nav`
   }
 `
 export const SItem = styled.span<{ isActive?: boolean }>`
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
   line-height: 18px;
   margin-right: 32px;

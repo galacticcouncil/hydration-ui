@@ -23,8 +23,10 @@ import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
 import { Dialog, DialogDescription, DialogPortal } from "@radix-ui/react-dialog"
 import { useTranslation } from "react-i18next"
 import { RemoveScroll } from "react-remove-scroll"
-import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
+import { Interpolation } from "@emotion/styled"
+import { Theme } from "@emotion/react"
+import { Spacer } from "components/Spacer/Spacer"
 
 type Props = {
   open: boolean
@@ -37,11 +39,12 @@ type Props = {
   width?: number
   isDrawer?: boolean
   titleDrawer?: string
+  containerStyles?: Interpolation<Theme>
 }
 
 type PropsOverride = Pick<
   Props,
-  "variant" | "width" | "withoutClose" | "secondaryIcon" | "title"
+  "variant" | "width" | "secondaryIcon" | "title" | "isDrawer"
 >
 
 const ModalContext = createContext<(override: PropsOverride | null) => void>(
@@ -57,8 +60,8 @@ export const ModalMeta = (props: PropsOverride) => {
       title: props.title,
       variant: props.variant,
       width: props.width,
-      withoutClose: props.withoutClose,
       secondaryIcon: props.secondaryIcon,
+      isDrawer: props.isDrawer,
     })
     return () => {
       context(null)
@@ -69,8 +72,8 @@ export const ModalMeta = (props: PropsOverride) => {
     props.title,
     props.variant,
     props.width,
-    props.withoutClose,
     props.secondaryIcon,
+    props.isDrawer,
   ])
 
   return null
@@ -81,12 +84,16 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
 
   const [propsOverride, setPropsOverride] = useState<PropsOverride | null>(null)
   const mergedProps = { ...props, ...propsOverride }
-  const { isDrawer, titleDrawer, secondaryIcon, title } = mergedProps
+  const { isDrawer, titleDrawer, secondaryIcon, title, withoutClose } =
+    mergedProps
+
+  const visibleHeader = !withoutClose || !!secondaryIcon || titleDrawer
+
   return (
     <Dialog open={props.open}>
       <DialogPortal>
         <ModalContext.Provider value={setPropsOverride}>
-          <ModalContainer>
+          <ModalContainer css={props.containerStyles}>
             <Backdrop variant={mergedProps.variant} />
 
             <ModalWindow
@@ -96,29 +103,32 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
             >
               {props.topContent}
               <ModalWindowContainer isDrawer={isDrawer}>
-                <ModalHeader>
-                  {titleDrawer && isDrawer && (
-                    <Text color="white" fs={16} fw={500}>
-                      {titleDrawer}
-                    </Text>
-                  )}
-                  {!!secondaryIcon && (
-                    <SecondaryButton
-                      icon={secondaryIcon.icon}
-                      onClick={secondaryIcon.onClick}
-                      name={secondaryIcon.name}
-                    />
-                  )}
-                  {!mergedProps.withoutClose && (
-                    <CloseButton
-                      icon={<CrossIcon />}
-                      onClick={props.onClose}
-                      name={t("modal.closeButton.name")}
-                    />
-                  )}
-                </ModalHeader>
-                {isDrawer && <Separator />}
-                <RemoveScroll enabled={props.open}>
+                {visibleHeader ? (
+                  <ModalHeader>
+                    {titleDrawer && isDrawer && (
+                      <Text color="white" fs={16} fw={500}>
+                        {titleDrawer}
+                      </Text>
+                    )}
+                    {!!secondaryIcon && (
+                      <SecondaryButton
+                        icon={secondaryIcon.icon}
+                        onClick={secondaryIcon.onClick}
+                        name={secondaryIcon.name}
+                      />
+                    )}
+                    {!mergedProps.withoutClose && (
+                      <CloseButton
+                        icon={<CrossIcon />}
+                        onClick={props.onClose}
+                        name={t("modal.closeButton.name")}
+                      />
+                    )}
+                  </ModalHeader>
+                ) : (
+                  <Spacer size={20} />
+                )}
+                <RemoveScroll enabled={props.open} css={{ flexGrow: 1 }}>
                   <ModalBody isDrawer={isDrawer}>
                     <ModalTitle>{title}</ModalTitle>
                     {props.children}

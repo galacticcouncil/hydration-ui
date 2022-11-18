@@ -8,7 +8,7 @@ import { ButtonTransparent } from "components/Button/Button"
 import { TableAction } from "components/Table/Table"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
-import { MoreButton } from "./WalletAssetsTable.styled"
+import { SMoreButton } from "./WalletAssetsTable.styled"
 
 type Props = {
   toggleExpanded: () => void
@@ -46,7 +46,7 @@ export const WalletAssetsTableActions = (props: Props) => {
           {t("wallet.assets.table.actions.transfer")}
         </TableAction>
 
-        <MoreButton name="More" icon={<MoreIcon />} />
+        <SMoreButton name="More" icon={<MoreIcon />} />
 
         <ButtonTransparent
           onClick={props.toggleExpanded}

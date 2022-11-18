@@ -22,11 +22,13 @@ import {
 } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 import { theme } from "theme"
+import { WalletAssetsTableActionsMob } from "./actions/WalletAssetsTableActionsMob"
 
 type Props = { data: AssetsTableData[] }
 
 export const WalletAssetsTable = ({ data }: Props) => {
   const { t } = useTranslation()
+  const [row, setRow] = useState<AssetsTableData | undefined>(undefined)
   const [showAll, setShowAll] = useState(false)
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
 
@@ -81,7 +83,12 @@ export const WalletAssetsTable = ({ data }: Props) => {
         <TableBodyContent>
           {table.getRowModel().rows.map((row, i) => (
             <Fragment key={row.id}>
-              <TableRow isOdd={!(i % 2)}>
+              <TableRow
+                isOdd={!(i % 2)}
+                onClick={() => {
+                  !isDesktop && setRow(row.original)
+                }}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableData key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -108,6 +115,13 @@ export const WalletAssetsTable = ({ data }: Props) => {
           open
           initialAsset={transferAsset}
           onClose={() => setTransferAsset(null)}
+        />
+      )}
+      {!isDesktop && (
+        <WalletAssetsTableActionsMob
+          row={row}
+          onClose={() => setRow(undefined)}
+          onTransferClick={setTransferAsset}
         />
       )}
     </TableContainer>

@@ -25,9 +25,10 @@ const colors = {
   vibrantBlue600: "#0A1FA7",
   vibrantBlue700: "#031586",
   darkBlue400: "#333750",
+  darkBlue401: "#1C2038",
   darkBlue500: "#000524",
   darkBlue600: "#00041D",
-  darkBlue700: "#000316",
+  darkBlue700: "#111320",
   darkBlue800: "#00020E",
   darkBlue900: "#000107",
   darkBlue1000: "#000524",
@@ -49,7 +50,7 @@ const colors = {
   green600: "#30FFB1",
   iconGray: "#BDCCD4",
   neutralGray500: "#787E82",
-  whiteish500: "#DDE5FF",
+  whiteish500: "#878C9E",
   alpha0: "#9EA7BA",
   primaryA15: "#4CD5F3",
   primaryA06: "#DAFFEE",
@@ -75,7 +76,7 @@ const shadows = {
   internalBoxSecondary: "4px 4px 0px rgba(102,181,255,0.19)",
   internalBoxDark: "4px 4px 0px #0A0C17;",
   modal:
-    "0px 0px 100px rgba(84, 155, 194, 0.12), 6px 6px 0px rgba(102, 181, 255, 0.19)",
+    "0px 10px 30px rgba(91, 144, 172, 0.12), 3px 3px 0px rgba(126, 161, 194, 0.12);",
 } as const
 
 const zIndices = {

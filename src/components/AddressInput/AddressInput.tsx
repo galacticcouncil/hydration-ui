@@ -1,11 +1,11 @@
 import { useAsset } from "api/asset"
 import { Text } from "components/Typography/Text/Text"
-import { InputHTMLAttributes, forwardRef } from "react"
+import { InputHTMLAttributes, forwardRef, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { BASILISK_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { Maybe } from "utils/helpers"
-import { SErrorMessage, SInput, SInputWrapper } from "./AddressInput.styled"
+import { SInput, SInputWrapper } from "./AddressInput.styled"
 
 type InputProps = {
   onChange?: (value: string) => void
@@ -19,6 +19,7 @@ type InputProps = {
   placeholder?: string
   withLabel?: boolean
   className?: string
+  rightIcon?: ReactNode
 }
 
 export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
@@ -32,8 +33,8 @@ export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
     )
 
     return (
-      <label id={props.name} className={props.className}>
-        <SInputWrapper disabled={props.disabled} error={props.error}>
+      <SInputWrapper disabled={props.disabled}>
+        <div sx={{ flex: "column", width: "calc(100% - 34px)" }}>
           <SInput
             ref={ref}
             onChange={(e) => props.onChange?.(e.target.value)}
@@ -43,19 +44,24 @@ export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
             error={props.error}
             disabled={props.disabled}
             placeholder={props.placeholder}
+            autoComplete="off"
           />
           {nativeAddress && nativeAddress !== props.value && (
-            <Text color="primary300" fs={12} lh={16}>
+            <Text
+              color="brightBlue300"
+              fs={12}
+              lh={16}
+              css={{ wordWrap: "break-word" }}
+            >
               {t("address.input.native", {
                 symbol: asset.data?.name,
                 address: nativeAddress,
               })}
             </Text>
           )}
-        </SInputWrapper>
-
-        {props.error && <SErrorMessage>{props.error}</SErrorMessage>}
-      </label>
+        </div>
+        {props.rightIcon ?? null}
+      </SInputWrapper>
     )
   },
 )

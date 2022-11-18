@@ -13,8 +13,6 @@ export const SContainer = styled.button`
   background: rgba(${theme.rgbColors.white}, 0.03);
   border-radius: 12px;
 
-  color: ${theme.colors.neutralGray300};
-
   transition: all ${theme.transitions.default};
 
   &:hover {

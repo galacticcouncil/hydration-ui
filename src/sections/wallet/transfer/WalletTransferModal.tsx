@@ -1,12 +1,19 @@
 import { u32 } from "@polkadot/types"
 import { Modal } from "components/Modal/Modal"
 import { PillSwitch } from "components/PillSwitch/PillSwitch"
+import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { useState } from "react"
 
 import { useTranslation } from "react-i18next"
 
 import { WalletTransferSectionOnchain } from "sections/wallet/transfer/onchain/WalletTransferSectionOnchain"
 import { WalletTransferSectionCrosschain } from "sections/wallet/transfer/crosschain/WalletTransferSectionCrosschain"
+import { STopContentContainer } from "./WalletTransferModal.styled"
+import { CloseButton, SecondaryButton } from "components/Modal/Modal.styled"
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import { CROSSCHAINS } from "./crosschain/WalletTransferSectionCrosschain.utils"
 
 export function WalletTransferModal(props: {
   open: boolean
@@ -15,13 +22,28 @@ export function WalletTransferModal(props: {
 }) {
   const { t } = useTranslation()
   const [chain, setChain] = useState<"onchain" | "crosschain">("onchain")
+  const [active, setActive] = useState<typeof CROSSCHAINS[number] | undefined>()
+
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
     <Modal
       open={props.open}
       onClose={props.onClose}
+      containerStyles={{
+        height: isDesktop ? "100vh" : "calc(100vh - 75px)",
+      }}
+      withoutClose={!isDesktop}
       topContent={
-        <div sx={{ flex: "column", align: "center", mb: 16 }}>
+        <STopContentContainer>
+          {active && (
+            <SecondaryButton
+              icon={<ChevronRight css={{ transform: "rotate(180deg)" }} />}
+              name="Back"
+              onClick={() => setActive(undefined)}
+              sx={{ display: ["inherit", "none"], top: "unset" }}
+            />
+          )}
           <PillSwitch
             options={[
               {
@@ -36,19 +58,36 @@ export function WalletTransferModal(props: {
             value={chain}
             onChange={setChain}
           />
-        </div>
+          <CloseButton
+            icon={<CrossIcon />}
+            onClick={props.onClose}
+            name={t("modal.closeButton.name")}
+            sx={{
+              m: 0,
+              display: ["inherit", "none"],
+              top: "unset",
+              right: 26,
+            }}
+          />
+        </STopContentContainer>
       }
     >
-      {chain === "onchain" && (
-        <WalletTransferSectionOnchain
-          initialAsset={props.initialAsset}
-          onClose={props.onClose}
-        />
-      )}
+      <div sx={{ height: "100%" }}>
+        {chain === "onchain" && (
+          <WalletTransferSectionOnchain
+            initialAsset={props.initialAsset}
+            onClose={props.onClose}
+          />
+        )}
 
-      {chain === "crosschain" && (
-        <WalletTransferSectionCrosschain onClose={props.onClose} />
-      )}
+        {chain === "crosschain" && (
+          <WalletTransferSectionCrosschain
+            onClose={props.onClose}
+            active={active}
+            setActive={setActive}
+          />
+        )}
+      </div>
     </Modal>
   )
 }
