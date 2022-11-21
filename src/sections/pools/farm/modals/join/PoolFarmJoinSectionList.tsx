@@ -63,7 +63,7 @@ export function PoolFarmJoinSectionList(props: {
         ) : (
           <Button
             variant="primary"
-            sx={{ width: "inherit" }}
+            sx={{ width: "100%" }}
             onClick={() => setOpenJoinFarm(true)}
           >
             {t("farms.deposit.submit")}

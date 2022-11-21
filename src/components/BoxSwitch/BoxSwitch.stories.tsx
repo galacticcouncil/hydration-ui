@@ -8,7 +8,7 @@ export default {
 } as ComponentMeta<typeof BoxSwitchComponent>
 
 const options = [
-  { label: "24%", value: 24 },
+  { label: "25%", value: 25 },
   { label: "50%", value: 50 },
   { label: "75%", value: 75 },
   { label: "MAX", value: 100 },

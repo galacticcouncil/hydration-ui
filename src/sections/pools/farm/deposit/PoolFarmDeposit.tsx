@@ -197,7 +197,7 @@ export const PoolFarmDeposit = (props: PoolJoinFarmDepositProps) => {
         }}
       >
         {account ? (
-          <Button type="submit" variant="primary" sx={{ width: "inherit" }}>
+          <Button type="submit" variant="primary" sx={{ width: "100%" }}>
             {props.isDrawer ? t("confirm") : t("farms.deposit.submit")}
           </Button>
         ) : (
