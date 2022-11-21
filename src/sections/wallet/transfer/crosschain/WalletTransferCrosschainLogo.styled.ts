@@ -11,4 +11,5 @@ export const SIconContainer = styled.span`
   background: rgba(${theme.rgbColors.white}, 0.08);
   border: 1px solid rgba(${theme.rgbColors.white}, 0.16);
   padding: 10px;
+  width: min-content;
 `

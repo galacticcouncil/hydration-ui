@@ -1,14 +1,17 @@
-import { useState } from "react"
-
 import { WalletTransferCrosschainList } from "./WalletTransferCrosschainList"
 import { WalletTransferSectionCrosschainGuide } from "./WalletTransferSectionCrosschainGuide"
 import { CROSSCHAINS } from "./WalletTransferSectionCrosschain.utils"
 
-export function WalletTransferSectionCrosschain(props: {
+type Props = {
   onClose: () => void
-}) {
-  const [active, setActive] = useState<typeof CROSSCHAINS[number] | undefined>()
-
+  active?: typeof CROSSCHAINS[number]
+  setActive: (chain: typeof CROSSCHAINS[number] | undefined) => void
+}
+export function WalletTransferSectionCrosschain({
+  onClose,
+  active,
+  setActive,
+}: Props) {
   return (
     <>
       {active ? (
@@ -22,7 +25,7 @@ export function WalletTransferSectionCrosschain(props: {
         </WalletTransferSectionCrosschainGuide>
       ) : (
         <WalletTransferCrosschainList
-          onClose={props.onClose}
+          onClose={onClose}
           onSelect={(name) => {
             const active = CROSSCHAINS.find((i) => i.name === name)
             if (active != null) {

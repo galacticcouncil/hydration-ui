@@ -143,6 +143,7 @@ const sizeStyles: Record<ButtonSize, SerializedStyles> = {
   small: css`
     padding: 12px 15px;
     font-size: 12px;
+    line-height: 20px;
   `,
   micro: css`
     padding: 2px 10px;

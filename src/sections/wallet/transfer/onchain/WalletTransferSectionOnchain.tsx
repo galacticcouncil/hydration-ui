@@ -2,24 +2,26 @@ import { u32 } from "@polkadot/types"
 import { Button } from "components/Button/Button"
 import { ModalMeta } from "components/Modal/Modal"
 import { Separator } from "components/Separator/Separator"
-import { Spacer } from "components/Spacer/Spacer"
-import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { FormValues } from "utils/helpers"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { useAccountStore, useStore } from "state/store"
-import {
-  BASILISK_ADDRESS_PREFIX,
-  NATIVE_ASSET_ID,
-  useApiPromise,
-} from "utils/api"
+import { useStore } from "state/store"
+import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import BigNumber from "bignumber.js"
 import { BN_10 } from "utils/constants"
 import { useAssetMeta } from "api/assetMeta"
 import { useTranslation } from "react-i18next"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
-import { safeConvertAddressSS58 } from "utils/formatting"
+import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import {
+  CloseIcon,
+  PasteAddressIcon,
+} from "./WalletTransferSectionOnchain.styled"
+import { Text } from "components/Typography/Text/Text"
+import { GradientText } from "components/Typography/GradientText/GradientText"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export function WalletTransferSectionOnchain(props: {
   initialAsset: u32 | string
@@ -30,13 +32,13 @@ export function WalletTransferSectionOnchain(props: {
 
   const api = useApiPromise()
   const { createTransaction } = useStore()
-  const { account } = useAccountStore()
 
   const form = useForm<{
     dest: string
     amount: string
   }>({})
 
+  const isDesktop = useMedia(theme.viewport.gte.sm)
   const assetMeta = useAssetMeta(asset)
 
   const onSubmit = async (values: FormValues<typeof form>) => {
@@ -61,70 +63,95 @@ export function WalletTransferSectionOnchain(props: {
   return (
     <>
       <ModalMeta title={t("wallet.assets.transfer.title")} />
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        sx={{
+          flex: "column",
+          justify: "space-between",
+          pt: 26,
+          height: "100%",
+        }}
+      >
+        <div sx={{ flex: "column" }}>
+          <Controller
+            name="dest"
+            control={form.control}
+            render={({ field: { name, onChange, value } }) => {
+              const rightIcon = value ? (
+                <CloseIcon
+                  icon={<CrossIcon />}
+                  onClick={() => onChange("")}
+                  name={t("modal.closeButton.name")}
+                />
+              ) : (
+                <PasteAddressIcon
+                  onClick={async () => {
+                    const text = await navigator.clipboard.readText()
+                    onChange(text)
+                  }}
+                />
+              )
 
-      <Spacer size={26} />
+              return (
+                <WalletTransferAccountInput
+                  label={t("wallet.assets.transfer.dest.label")}
+                  name={name}
+                  value={value}
+                  onChange={onChange}
+                  placeholder={t("wallet.assets.transfer.dest.placeholder")}
+                  rightIcon={rightIcon}
+                />
+              )
+            }}
+          />
 
-      <form onSubmit={form.handleSubmit(onSubmit)} sx={{ flex: "column" }}>
-        <div sx={{ bg: "backgroundGray1000" }} css={{ borderRadius: 12 }}>
-          <div sx={{ flex: "column", gap: 8, p: 20 }}>
-            <Text fw={500}>{t("wallet.assets.transfer.from.label")}</Text>
-
-            <WalletTransferAccountInput
-              name="from"
-              value={safeConvertAddressSS58(
-                account?.address?.toString(),
-                BASILISK_ADDRESS_PREFIX,
-              )}
-            />
-          </div>
-
-          <Separator color="backgroundGray900" />
-
-          <div sx={{ flex: "column", gap: 8, p: 20 }}>
-            <Text fw={500}>{t("wallet.assets.transfer.dest.label")}</Text>
-
-            <Controller
-              name="dest"
-              control={form.control}
-              render={({ field: { name, onChange, value } }) => {
-                return (
-                  <WalletTransferAccountInput
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                  />
-                )
-              }}
-            />
+          <Controller
+            name="amount"
+            control={form.control}
+            render={({ field: { name, value, onChange } }) => (
+              <WalletTransferAssetSelect
+                title={
+                  isDesktop
+                    ? t("wallet.assets.transfer.asset.label")
+                    : t("wallet.assets.transfer.asset.label_mob")
+                }
+                name={name}
+                value={value}
+                onChange={onChange}
+                asset={asset}
+                onAssetChange={setAsset}
+              />
+            )}
+          />
+          <div
+            sx={{
+              mt: 18,
+              flex: "row",
+              justify: "space-between",
+            }}
+          >
+            <Text fs={13} color="basic300">
+              {t("wallet.assets.transfer.transaction_cost")}
+            </Text>
+            <div sx={{ flex: "row", align: "center", gap: 4 }}>
+              {/*TODO: calculate the value of the transaction cost*/}
+              <Text fs={14}>~12 BSX</Text>
+              <GradientText fs={12} font="ChakraPetch">
+                {"(2%)"}
+              </GradientText>
+            </div>
           </div>
         </div>
-
-        <Spacer size={10} />
-
-        <Controller
-          name="amount"
-          control={form.control}
-          render={({ field: { name, value, onChange } }) => (
-            <WalletTransferAssetSelect
-              title={t("wallet.assets.transfer.asset.label")}
-              name={name}
-              value={value}
-              onChange={onChange}
-              asset={asset}
-              onAssetChange={setAsset}
-            />
-          )}
-        />
-
-        <Spacer size={20} />
-
-        <div sx={{ flex: "row", justify: "space-between" }}>
-          <Button onClick={props.onClose}>
-            {t("wallet.assets.transfer.cancel")}
-          </Button>
-          <Button type="submit" variant="primary">
-            {t("wallet.assets.transfer.submit")}
-          </Button>
+        <div>
+          <Separator color="darkBlue401" sx={{ mt: 31 }} />
+          <div sx={{ flex: "row", justify: "space-between", mt: 20 }}>
+            <Button onClick={props.onClose}>
+              {t("wallet.assets.transfer.cancel")}
+            </Button>
+            <Button type="submit" variant="primary">
+              {t("wallet.assets.transfer.submit")}
+            </Button>
+          </div>
         </div>
       </form>
     </>
