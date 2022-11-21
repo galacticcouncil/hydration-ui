@@ -9,6 +9,7 @@ import { SErrorMessage, SInput, SInputWrapper } from "./AddressInput.styled"
 
 type InputProps = {
   onChange?: (value: string) => void
+  onBlur?: () => void
   value: Maybe<string>
   disabled?: boolean
   type?: InputHTMLAttributes<HTMLInputElement>["type"]
@@ -37,6 +38,7 @@ export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
           <SInput
             ref={ref}
             onChange={(e) => props.onChange?.(e.target.value)}
+            onBlur={props.onBlur}
             value={props.value ?? ""}
             id={props.name}
             type={props.type}

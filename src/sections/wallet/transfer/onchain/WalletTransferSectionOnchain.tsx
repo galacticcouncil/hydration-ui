@@ -20,6 +20,7 @@ import { useAssetMeta } from "api/assetMeta"
 import { useTranslation } from "react-i18next"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { safeConvertAddressSS58 } from "utils/formatting"
+import { Alert } from "components/Alert/Alert"
 
 export function WalletTransferSectionOnchain(props: {
   initialAsset: u32 | string
@@ -86,14 +87,37 @@ export function WalletTransferSectionOnchain(props: {
             <Controller
               name="dest"
               control={form.control}
-              render={({ field: { name, onChange, value } }) => {
-                return (
-                  <WalletTransferAccountInput
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                  />
-                )
+              render={({
+                field: { name, onChange, value, onBlur },
+                fieldState: { error },
+              }) => (
+                <WalletTransferAccountInput
+                  name={name}
+                  value={value}
+                  onChange={onChange}
+                  onBlur={onBlur}
+                  error={error?.message}
+                />
+              )}
+              rules={{
+                required: t("wallet.assets.transfer.error.required"),
+                validate: {
+                  validAddress: (value) =>
+                    safeConvertAddressSS58(value, 0) != null ||
+                    t("wallet.assets.transfer.error.validAddress"),
+                  notSame: (value) => {
+                    if (!account?.address) return true
+                    const from = safeConvertAddressSS58(
+                      account.address.toString(),
+                      0,
+                    )
+                    const to = safeConvertAddressSS58(value, 0)
+                    if (from != null && to != null && from === to) {
+                      return t("wallet.assets.transfer.error.notSame")
+                    }
+                    return true
+                  },
+                },
               }}
             />
           </div>
@@ -101,20 +125,44 @@ export function WalletTransferSectionOnchain(props: {
 
         <Spacer size={10} />
 
-        <Controller
-          name="amount"
-          control={form.control}
-          render={({ field: { name, value, onChange } }) => (
-            <WalletTransferAssetSelect
-              title={t("wallet.assets.transfer.asset.label")}
-              name={name}
-              value={value}
-              onChange={onChange}
-              asset={asset}
-              onAssetChange={setAsset}
-            />
+        <div sx={{ flex: "column", gap: 10 }}>
+          <Controller
+            name="amount"
+            control={form.control}
+            render={({
+              field: { name, value, onChange },
+              fieldState: { error },
+            }) => (
+              <WalletTransferAssetSelect
+                title={t("wallet.assets.transfer.asset.label")}
+                name={name}
+                value={value}
+                onChange={onChange}
+                asset={asset}
+                onAssetChange={setAsset}
+                error={error?.message}
+              />
+            )}
+            rules={{
+              validate: {
+                validNumber: (value) => {
+                  try {
+                    if (!new BigNumber(value).isNaN()) return true
+                  } catch {}
+                  return t("error.validNumber")
+                },
+                positive: (value) =>
+                  new BigNumber(value).gt(0) || t("error.positive"),
+              },
+            }}
+          />
+
+          {asset !== "0" && (
+            <Alert variant="warning">
+              {t("wallet.assets.transfer.warning.nonNative")}
+            </Alert>
           )}
-        />
+        </div>
 
         <Spacer size={20} />
 
