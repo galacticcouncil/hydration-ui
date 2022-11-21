@@ -1,6 +1,7 @@
 export const LINKS = {
   home: "/",
   pools_and_farms: "/pools-and-farms",
+  trade: "/trade",
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
@@ -27,8 +28,8 @@ export const MENU_ITEMS = [
   {
     key: "trade",
     translationKey: "header.trade",
-    href: EXTERNAL_LINKS.swap,
-    external: true,
+    href: LINKS.trade,
+    external: false,
     mobVisible: true,
   },
   {

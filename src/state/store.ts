@@ -1,7 +1,6 @@
 import create from "zustand"
 import { persist } from "zustand/middleware"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
-import { AccountId32 } from "@polkadot/types/interfaces"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { POLKADOT_APP_NAME } from "utils/api"
@@ -9,7 +8,7 @@ import { v4 as uuid } from "uuid"
 
 export interface Account {
   name: string
-  address: AccountId32 | string
+  address: string
   provider: string
 }
 
