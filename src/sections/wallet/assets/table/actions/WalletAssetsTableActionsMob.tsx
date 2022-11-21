@@ -23,8 +23,9 @@ export const WalletAssetsTableActionsMob = ({
   onTransferClick,
 }: Props) => {
   const { t } = useTranslation()
-  console.log(row, "ROW DATA")
+
   if (!row) return null
+
   return (
     <Modal open={!!row} isDrawer onClose={onClose}>
       <div>
