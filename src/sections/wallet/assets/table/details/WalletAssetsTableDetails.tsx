@@ -19,7 +19,7 @@ export const WalletAssetsTableDetails = ({
   return (
     <div sx={{ flex: "row" }}>
       <div sx={{ flex: "column", align: "end", m: "auto", gap: 8 }}>
-        <Text fs={12} lh={14} fw={500} color="neutralGray300">
+        <Text fs={14} lh={14} fw={500} color="basic300">
           {t("wallet.assets.table.details.origin")}
         </Text>
         <Text fs={14} lh={18} fw={500} color="white">
@@ -33,13 +33,13 @@ export const WalletAssetsTableDetails = ({
         }}
       />
       <div sx={{ m: "auto" }}>
-        <Text fs={12} lh={14} fw={500} color="neutralGray300">
+        <Text fs={14} lh={14} fw={500} color="basic300">
           {t("wallet.assets.table.details.locked")}
         </Text>
-        <Text fs={14} lh={18} fw={500} color="white" sx={{ mt: 8 }}>
+        <Text fs={16} lh={22} fw={400} color="white" sx={{ mt: 8 }}>
           {t("value", { value: locked })}
         </Text>
-        <Text fs={12} lh={16} fw={500} color="neutralGray500" sx={{ mt: 2 }}>
+        <Text fs={11} lh={16} fw={500} color="whiteish500" sx={{ mt: 2 }}>
           {t("value.usd", { amount: lockedUSD })}
         </Text>
       </div>

@@ -29,7 +29,7 @@ export const AssetInput: FC<AssetInputProps> = (props) => {
       className={props.className}
       css={{ position: "relative", width: "100%" }}
     >
-      <SLabelWrapper htmlFor={props.name} error={props.error}>
+      <SLabelWrapper error={props.error}>
         <SInputWrapper>
           <SInput
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,7 +45,7 @@ export const AssetInput: FC<AssetInputProps> = (props) => {
 
           {props.unit && <SUnit>{props.unit}</SUnit>}
         </SInputWrapper>
-        {props.dollars && <SDollars>{`≈  ${props.dollars}`}</SDollars>}
+        {props.dollars && <SDollars>{`≈  ${props.dollars} USD`}</SDollars>}
       </SLabelWrapper>
       {props.error && <SErrorMessage>{props.error}</SErrorMessage>}
     </div>

@@ -6,31 +6,39 @@ import { useTranslation } from "react-i18next"
 import { SIcon } from "sections/wallet/assets/table/data/WalletAssetsTableData.styled"
 import { theme } from "theme"
 
-export const WalletAssetsTableName = (props: {
+export const WalletAssetsTableName = ({
+  large,
+  symbol,
+  name,
+}: {
   symbol: string
   name: string
-}) => {
-  return (
-    <div sx={{ flex: "row", gap: 8, align: "center" }}>
-      <SIcon>{getAssetLogo(props.symbol)}</SIcon>
-      <div sx={{ flex: "column", width: "100%" }}>
-        <Text fs={[14, 16]} lh={[16, 16]} fw={700} color="white">
-          {props.symbol}
-        </Text>
-        <Text
-          fs={[12, 14]}
-          lh={[14, 14]}
-          fw={500}
-          css={{
-            color: `rgba(${theme.rgbColors.whiteish500}, 0.61)`,
-          }}
-        >
-          {props.name}
-        </Text>
-      </div>
+  large?: boolean
+}) => (
+  <div sx={{ flex: "row", gap: 8, align: "center" }}>
+    <SIcon large={large}>{getAssetLogo(symbol)}</SIcon>
+    <div sx={{ flex: "column", width: "100%" }}>
+      <Text
+        fs={[large ? 18 : 14, 16]}
+        lh={[large ? 16 : 23, 16]}
+        fw={700}
+        color="white"
+      >
+        {symbol}
+      </Text>
+      <Text
+        fs={[large ? 13 : 12, 14]}
+        lh={[large ? 17 : 14, 14]}
+        fw={500}
+        css={{
+          color: `rgba(${theme.rgbColors.whiteish500}, 0.61)`,
+        }}
+      >
+        {name}
+      </Text>
     </div>
-  )
-}
+  </div>
+)
 
 export const WalletAssetsTableBalance = (props: {
   balance: BN

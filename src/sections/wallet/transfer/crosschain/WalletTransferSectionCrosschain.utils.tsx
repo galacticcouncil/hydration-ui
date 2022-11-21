@@ -11,19 +11,39 @@ function CrosschainKaruraGuide() {
   return (
     <div sx={{ flex: "column", align: "center", gap: 16 }}>
       <Trans t={t} i18nKey="wallet.assets.transfer.crosschain.guide.karura">
-        <Text tAlign="center" fw={400} sx={{ maxWidth: 400 }} />
+        <Text
+          tAlign="center"
+          fw={400}
+          sx={{ maxWidth: 400 }}
+          color="basic200"
+        />
 
-        <Text tAlign="center" fw={400} sx={{ maxWidth: 400 }} />
+        <Text
+          tAlign="center"
+          fw={400}
+          sx={{ maxWidth: 400 }}
+          color="basic200"
+        />
 
-        <Text tAlign="center" fw={400} sx={{ maxWidth: 400 }} />
+        <Text
+          tAlign="center"
+          fw={400}
+          sx={{ maxWidth: 400 }}
+          color="basic200"
+        />
 
-        <Text tAlign="center" fw={400} sx={{ color: "yellow300" }} />
+        <Text tAlign="center" fw={400} sx={{ color: "warning300" }} />
 
-        <Text tAlign="center" fw={400} sx={{ maxWidth: 500 }} />
+        <Text
+          tAlign="center"
+          fw={400}
+          sx={{ maxWidth: 500 }}
+          color="basic200"
+        />
 
         <ExternalLink
           href="https://docs.bsx.fi/howto_bridge/#karura"
-          sx={{ color: "primary450" }}
+          sx={{ color: "brightBlue300" }}
         />
       </Trans>
     </div>

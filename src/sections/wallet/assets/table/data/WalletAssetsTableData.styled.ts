@@ -1,11 +1,11 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SIcon = styled.div`
+export const SIcon = styled.div<{ large?: boolean }>`
   &,
   svg {
-    width: 24px;
-    height: 24px;
+    width: ${({ large }) => (large ? "42px" : "24px")};
+    height: ${({ large }) => (large ? "42px" : "24px")};
   }
 
   @media (${theme.viewport.gte.sm}) {

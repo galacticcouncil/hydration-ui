@@ -1,10 +1,10 @@
 import { DialogContent } from "@radix-ui/react-dialog"
 import { IconButton } from "components/IconButton/IconButton"
-import { Text } from "components/Typography/Text/Text"
 import styled from "@emotion/styled"
 import { keyframes } from "@emotion/react"
 import { theme } from "theme"
 import isPropValid from "@emotion/is-prop-valid"
+import { GradientText } from "components/Typography/GradientText/GradientText"
 
 const fadeInKeyframes = keyframes`
   0% {
@@ -43,7 +43,7 @@ export const ModalContainer = styled.div`
   --modal-header-title-height: 32px;
 
   position: fixed;
-  top: 0;
+  bottom: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
@@ -62,7 +62,7 @@ export const ModalWindow = styled(DialogContent, {
   width: 100%;
 
   box-shadow: ${theme.shadows.modal};
-  background: ${theme.colors.darkBlue700};
+  background: ${theme.colors.darkBlue900};
 
   animation: 150ms cubic-bezier(0.16, 1, 0.3, 1)
     ${({ isDrawer }) => (isDrawer ? drawerKeyFrames : mobFadeInKeyframes)};
@@ -70,7 +70,7 @@ export const ModalWindow = styled(DialogContent, {
   ${({ isDrawer }) =>
     isDrawer
       ? { bottom: 0, borderRadius: "20px 20px 0px 0px" }
-      : { top: 0, height: "100vh" }}
+      : { top: 0, height: "100%" }}
 
   @media ${theme.viewport.gte.sm} {
     top: 50%;
@@ -87,33 +87,40 @@ export const ModalWindow = styled(DialogContent, {
 `
 
 export const ModalWindowContainer = styled.div<{ isDrawer?: boolean }>`
-  border: 1px solid rgba(${theme.rgbColors.white}, 0.06);
-  box-shadow: 0px 38px 46px rgba(0, 0, 0, 0.03);
-  background: ${theme.colors.basic900};
+  display: flex;
+  flex-direction: column;
+
+  height: 100%;
+
+  background: ${theme.colors.darkBlue700};
 
   ${({ isDrawer }) => (isDrawer ? { borderRadius: "20px 20px 0px 0px" } : {})}
 
   @media ${theme.viewport.gte.sm} {
-    border-radius: 16px;
+    border-radius: 4px;
   }
 `
 
-export const ModalTitle = styled(Text)`
-  font-size: 19px;
+export const ModalTitle = styled(GradientText)`
+  font-size: 24px;
   line-height: var(--modal-header-title-height);
   font-weight: 500;
   font-family: "FontOver", sans-serif;
-  color: ${theme.colors.white};
+  background: ${theme.gradients.pinkLightBlue};
+  -webkit-background-clip: text;
 `
 
 export const ModalBody = styled.div<{ isDrawer?: boolean }>`
-  padding: 0 14px 19px;
+  display: flex;
+  flex-direction: column;
+
+  padding: 0 20px 36px;
   overflow-y: auto;
 
   ${({ isDrawer }) =>
     isDrawer
       ? "max-height: calc(100vh - var(--mobile-modal-header-height));"
-      : "height: calc(100vh - var(--mobile-modal-header-height));"}
+      : "height: 100%;"}
 
   @media ${theme.viewport.gte.sm} {
     padding: 0 30px 30px;

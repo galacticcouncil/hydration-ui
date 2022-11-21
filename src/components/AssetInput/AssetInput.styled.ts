@@ -10,22 +10,6 @@ export const SLabelWrapper = styled.label<{ error?: string }>`
   padding: 7px 14px;
 
   min-height: 54px;
-
-  transition: ${theme.transitions.default};
-
-  background: ${theme.colors.backgroundGray800};
-  border-radius: 9px;
-  border: 1px solid
-    ${(p) => (p.error ? theme.colors.error : theme.colors.backgroundGray600)};
-
-  :focus-within,
-  :hover {
-    background: ${theme.colors.backgroundGray700};
-  }
-
-  :focus-within {
-    border-color: ${theme.colors.primary300};
-  }
 `
 
 export const SInputWrapper = styled.span`
@@ -48,10 +32,10 @@ export const SUnit = styled.span`
 `
 
 export const SDollars = styled.span`
-  font-size: 10px;
-  line-height: 14px;
-  color: ${theme.colors.neutralGray400};
-  font-weight: 600;
+  font-size: 11px;
+  line-height: 15.4px;
+  color: ${theme.colors.basic400};
+  font-weight: 400;
 `
 
 export const SInput = styled.input`
@@ -61,10 +45,10 @@ export const SInput = styled.input`
   border: none;
 
   color: ${theme.colors.white};
-  font-size: 16px;
+  font-size: 18px;
   line-height: 24px;
   text-align: right;
-  font-weight: 500;
+  font-weight: 600;
 
   padding: 0;
 

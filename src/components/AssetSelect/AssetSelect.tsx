@@ -3,7 +3,7 @@ import { AssetInput } from "components/AssetInput/AssetInput"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { ReactNode, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import {
   SContainer,
   SMaxButton,
@@ -16,6 +16,7 @@ import { useAUSD } from "api/asset"
 import { useSpotPrice } from "api/spotPrice"
 import { Maybe } from "utils/helpers"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
+import { theme } from "theme"
 
 export const AssetSelect = (props: {
   name: string
@@ -46,47 +47,60 @@ export const AssetSelect = (props: {
 
   return (
     <>
-      <SContainer className={props.className}>
-        <Text fw={500} lh={22} color="primary200" css={{ gridArea: "title" }}>
-          {props.title}
-        </Text>
-        <div
-          sx={{ flex: "row", align: "center", pt: [5, 0], justify: "end" }}
-          css={{ gridArea: "balance" }}
-        >
-          <Text fs={12} lh={16} color="white" sx={{ mr: 5 }}>
-            <Trans
-              t={t}
-              i18nKey="selectAsset.balance"
-              tOptions={{
-                balance: props.balance,
-                decimalPlaces: 4,
-                fixedPointScale: props.decimals,
-              }}
-            >
-              <span css={{ opacity: 0.7 }} />
-            </Trans>
+      <SContainer className={props.className} htmlFor={props.name}>
+        <div sx={{ flex: "row", justify: "space-between" }}>
+          <Text
+            fw={500}
+            fs={12}
+            lh={22}
+            tTransform="uppercase"
+            color="whiteish500"
+          >
+            {props.title}
           </Text>
-          <SMaxButton
-            size="micro"
-            text={t("selectAsset.button.max")}
-            capitalize
-            onClick={() => {
-              if (props.decimals != null && props.balance != null) {
-                props.onChange(
-                  getFloatingPointAmount(props.balance, props.decimals).toFixed(
-                    4,
-                  ),
-                )
-              }
-            }}
-          />
+          <div
+            sx={{ flex: "row", align: "center", pt: [5, 0], justify: "end" }}
+          >
+            <Text
+              fs={11}
+              lh={16}
+              sx={{ mr: 5 }}
+              css={{ color: `rgba(${theme.rgbColors.white}, 0.7)` }}
+            >
+              {t("selectAsset.balance.label")}
+            </Text>
+            <Text fs={11} lh={16} sx={{ mr: 5 }}>
+              {t("selectAsset.balance.value", {
+                balance: props.balance,
+              })}
+            </Text>
+
+            <SMaxButton
+              size="micro"
+              text={t("selectAsset.button.max")}
+              onClick={(e) => {
+                e.preventDefault()
+                if (props.decimals != null && props.balance != null) {
+                  props.onChange(
+                    getFloatingPointAmount(
+                      props.balance,
+                      props.decimals,
+                    ).toFixed(4),
+                  )
+                }
+              }}
+            />
+          </div>
         </div>
-        <div
-          sx={{ flex: "row", align: "center", justify: "space-between" }}
-          css={{ gridArea: "input" }}
-        >
-          <SSelectAssetButton size="small" onClick={props.onSelectAssetClick}>
+
+        <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
+          <SSelectAssetButton
+            size="small"
+            onClick={(e) => {
+              e.preventDefault()
+              props.onSelectAssetClick()
+            }}
+          >
             <Icon icon={props.assetIcon} />
             {props.assetName && (
               <div>
@@ -94,10 +108,12 @@ export const AssetSelect = (props: {
                   {props.assetName}
                 </Text>
                 <Text
-                  css={{ whiteSpace: "nowrap" }}
-                  color="neutralGray400"
                   fs={12}
                   lh={14}
+                  css={{
+                    whiteSpace: "nowrap",
+                    color: `rgba(${theme.rgbColors.whiteish500}, 0.6)`,
+                  }}
                 >
                   {getAssetName(props.assetName)}
                 </Text>
@@ -111,7 +127,7 @@ export const AssetSelect = (props: {
             label={t("selectAsset.input.label")}
             onChange={props.onChange}
             dollars={t("value.usd", { amount: aUSDValue })}
-            unit={props.assetName}
+            placeholder="0.00"
           />
         </div>
       </SContainer>

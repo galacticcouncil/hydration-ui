@@ -35,7 +35,7 @@ export const SInput = styled.input<{ error?: string; unit?: string }>`
 
   border: none;
   border-bottom: 1px solid
-    ${({ error }) => (error ? theme.colors.error : theme.colors.basic600)};
+    ${({ error }) => (error ? theme.colors.error : theme.colors.basic400)};
 
   background: rgba(218, 255, 238, 0.06);
   color: ${theme.colors.white};

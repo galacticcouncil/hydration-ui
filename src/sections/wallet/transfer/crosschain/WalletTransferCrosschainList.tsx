@@ -14,34 +14,35 @@ export function WalletTransferCrosschainList(props: {
   const { t } = useTranslation()
 
   return (
-    <>
+    <div sx={{ flex: "column", justify: "space-between", height: "100%" }}>
       <ModalMeta title={t("wallet.assets.transfer.crosschain.title")} />
+      <div sx={{ flex: "column" }}>
+        <Text fs={18} lh={25} sx={{ maxWidth: 360 }}>
+          {t("wallet.assets.transfer.crosschain.description")}
+        </Text>
 
-      <Spacer size={15} />
+        <Spacer size={30} />
 
-      <Text fs={18} lh={25} sx={{ maxWidth: 360 }}>
-        {t("wallet.assets.transfer.crosschain.description")}
-      </Text>
+        <SList>
+          {CROSSCHAINS.map((chain) => (
+            <WalletTransferCrosschainListItem
+              key={chain.name}
+              icon={chain.icon}
+              name={chain.name}
+              type={chain.type}
+              onClick={() => props.onSelect(chain.name)}
+            />
+          ))}
+        </SList>
+      </div>
 
-      <Spacer size={30} />
+      <div sx={{ flex: "column", align: "center" }}>
+        <Spacer size={30} />
 
-      <SList>
-        {CROSSCHAINS.map((chain) => (
-          <WalletTransferCrosschainListItem
-            key={chain.name}
-            icon={chain.icon}
-            name={chain.name}
-            type={chain.type}
-            onClick={() => props.onSelect(chain.name)}
-          />
-        ))}
-      </SList>
-
-      <Spacer size={30} />
-
-      <Button variant="secondary" onClick={props.onClose}>
-        {t("wallet.assets.transfer.cancel")}
-      </Button>
-    </>
+        <Button variant="secondary" onClick={props.onClose}>
+          {t("wallet.assets.transfer.cancel")}
+        </Button>
+      </div>
+    </div>
   )
 }
