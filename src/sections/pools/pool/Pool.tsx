@@ -19,7 +19,7 @@ export const Pool: FC<Props> = ({ pool }) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
-    <SContainer>
+    <SContainer id={pool.address}>
       <PositionChip
         sx={{ display: ["inline-block", "none"] }}
         poolId={pool.address}

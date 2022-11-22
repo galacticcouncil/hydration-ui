@@ -6,7 +6,7 @@ import { ReactComponent as CaretIcon } from "assets/icons/CaretIcon.svg"
 
 export const TableAction = (props: {
   icon: ReactNode
-  onClick: () => void
+  onClick?: () => void
   children: ReactNode
 }) => {
   return (

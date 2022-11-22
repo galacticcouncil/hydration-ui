@@ -72,7 +72,7 @@ export const useTotalsInPools = () => {
 
       const token = shareTokens.find((st) => st.data?.poolId === pool.address)
         ?.data?.token
-      const issuance = totalIssuances.find((ti) => ti.data?.token.eq(token))
+      const issuance = totalIssuances.find((ti) => ti.data?.token === token)
         ?.data?.total
       const balance = balances.find((b) => token?.eq(b.data?.assetId))?.data
         ?.balance
@@ -185,8 +185,8 @@ export const useTotalInFarms = () => {
         const shareToken = shareTokens.find(
           (st) => farm.pool.address === st.data?.poolId,
         )
-        const totalIssuance = totalIssuances.find((ti) =>
-          ti.data?.token?.eq(shareToken?.data?.token),
+        const totalIssuance = totalIssuances.find(
+          (ti) => ti.data?.token === shareToken?.data?.token,
         )
 
         const farmIssuance = farm.yieldFarm.totalShares

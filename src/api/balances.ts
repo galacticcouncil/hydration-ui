@@ -25,6 +25,8 @@ export const getTokenBalance =
       const freeBalance = new BigNumber(res.data.free.toHex())
       const miscFrozenBalance = new BigNumber(res.data.miscFrozen.toHex())
       const feeFrozenBalance = new BigNumber(res.data.feeFrozen.toHex())
+      const reservedBalance = new BigNumber(res.data.reserved.toHex())
+
       const balance = new BigNumber(
         calculateFreeBalance(
           freeBalance,
@@ -33,7 +35,12 @@ export const getTokenBalance =
         ) ?? NaN,
       )
 
-      return { accountId: account, assetId: id, balance }
+      return {
+        accountId: account,
+        assetId: id,
+        balance,
+        total: freeBalance.plus(reservedBalance),
+      }
     }
 
     const res = (await api.query.tokens.accounts(account, id)) as any
@@ -45,7 +52,12 @@ export const getTokenBalance =
       calculateFreeBalance(freeBalance, reservedBalance, frozenBalance) ?? NaN,
     )
 
-    return { accountId: account, assetId: id, balance }
+    return {
+      accountId: account,
+      assetId: id,
+      balance,
+      total: freeBalance.plus(reservedBalance),
+    }
   }
 
 export const useTokenBalance = (

@@ -1,4 +1,3 @@
-import BN from "bignumber.js"
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -9,23 +8,19 @@ import {
 } from "@tanstack/react-table"
 import { useTranslation } from "react-i18next"
 import { useState } from "react"
-import {
-  WalletAssetsTableBalance,
-  WalletAssetsTableName,
-} from "sections/wallet/assets/table/data/WalletAssetsTableData"
-import { WalletAssetsTableActions } from "sections/wallet/assets/table/actions/WalletAssetsTableActions"
+import { WalletAssetsTableBalance } from "sections/wallet/assets/table/data/WalletAssetsTableData"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
+import { WalletLiquidityPositionsTableName } from "./data/WalletLiquidityPositionsData"
+import BigNumber from "bignumber.js"
+import { WalletLiquidityPositionsTableActions } from "./actions/WalletLiquidityPositionsTableActions"
 
-export const useAssetsTable = (
-  data: AssetsTableData[],
-  actions: {
-    onTransfer: (assetId: string) => void
-  },
+export const useLiquidityPositionsTable = (
+  data: LiquidityPositionsTableData[],
 ) => {
   const { t } = useTranslation()
-  const { accessor, display } = createColumnHelper<AssetsTableData>()
+  const { accessor, display } =
+    createColumnHelper<LiquidityPositionsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -37,10 +32,15 @@ export const useAssetsTable = (
   }
 
   const columns = [
-    accessor("symbol", {
+    accessor("name", {
       id: "name",
       header: t("wallet.assets.table.header.name"),
-      cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
+      cell: ({ row }) => (
+        <WalletLiquidityPositionsTableName
+          symbolA={row.original.assetA.symbol}
+          symbolB={row.original.assetB.symbol}
+        />
+      ),
     }),
     accessor("transferable", {
       id: "transferable",
@@ -50,7 +50,7 @@ export const useAssetsTable = (
       cell: ({ row }) => (
         <WalletAssetsTableBalance
           balance={row.original.transferable}
-          balanceUSD={row.original.transferableUSD}
+          balanceUSD={row.original.transferableUsd}
         />
       ),
     }),
@@ -61,17 +61,16 @@ export const useAssetsTable = (
       cell: ({ row }) => (
         <WalletAssetsTableBalance
           balance={row.original.total}
-          balanceUSD={row.original.totalUSD}
+          balanceUSD={row.original.totalUsd}
         />
       ),
     }),
     display({
       id: "actions",
       cell: ({ row }) => (
-        <WalletAssetsTableActions
+        <WalletLiquidityPositionsTableActions
+          address={row.original.poolAddress}
           toggleExpanded={() => row.toggleExpanded()}
-          onTransferClick={() => actions.onTransfer(row.original.id)}
-          symbol={row.original.symbol}
         />
       ),
     }),
@@ -89,16 +88,23 @@ export const useAssetsTable = (
   return table
 }
 
-export type AssetsTableData = {
-  id: string
-  symbol: string
-  name: string
-  transferable: BN
-  transferableUSD: BN
-  total: BN
-  totalUSD: BN
-  locked: BN
-  lockedUSD: BN
-  origin: string
-  assetType: PalletAssetRegistryAssetType["type"]
+export type LiquidityPositionsTableData = {
+  name?: string
+  poolAddress: string
+  assetA: {
+    symbol: string
+    balance?: BigNumber
+    balanceUsd?: BigNumber
+    chain: string
+  }
+  assetB: {
+    symbol: string
+    balance?: BigNumber
+    balanceUsd?: BigNumber
+    chain: string
+  }
+  total: BigNumber
+  totalUsd: BigNumber
+  transferable: BigNumber
+  transferableUsd: BigNumber
 }

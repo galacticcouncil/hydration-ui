@@ -225,5 +225,10 @@
   "wallet.assets.table.actions.add.liquidity": "Add Liquidity",
   "wallet.assets.table.actions.payment.asset": "Set as Fee Payment Asset",
   "wallet.assets.table.details.origin": "Origin Chain:",
-  "wallet.assets.table.details.locked": "Locked:"
+  "wallet.assets.table.details.locked": "Locked:",
+  "wallet.assets.liquidityPositions.table.title": "Liquidity Positions",
+  "wallet.assets.liquidityPositions.table.actions.transfer": "Transfer",
+  "wallet.assets.liquidityPositions.table.actions.details": "Details",
+  "wallet.assets.liquidityPositions.table.details.balance": "{{ symbol }} Balance:",
+  "wallet.assets.liquidityPositions.table.details.chain": "{{ symbol }} Origin Chain:"
 }
