@@ -7,7 +7,7 @@ import { TradePage } from "sections/trade/TradePage"
 export const routes = [
   {
     path: "/",
-    element: <Navigate to="/trade" />,
+    element: <Navigate to="/pools-and-farms" />,
   },
   { path: "pools-and-farms", element: <PoolsPage /> },
   { path: "trade", element: <TradePage /> },
