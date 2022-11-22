@@ -2,50 +2,20 @@ import React, { useState } from "react"
 import { Modal } from "components/Modal/Modal"
 import { useTranslation } from "react-i18next"
 import { Transaction } from "state/store"
-import { useMutation } from "@tanstack/react-query"
-import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { ComponentProps } from "react"
 
 import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionError } from "./ReviewTransactionError"
 import { ReviewTransactionForm } from "./ReviewTransactionForm"
-import { useApiPromise } from "utils/api"
-import { ISubmittableResult } from "@polkadot/types/types"
 import { ReviewTransactionToast } from "./ReviewTransactionToast"
+import { useSendTransactionMutation } from "./ReviewTransaction.utils"
 
 export const ReviewTransaction: React.FC<Transaction> = (props) => {
   const { t } = useTranslation()
-  const api = useApiPromise()
   const [minimizeModal, setMinimizeModal] = useState(false)
 
-  const sendTx = useMutation(async (sign: SubmittableExtrinsic<"promise">) => {
-    return await new Promise<ISubmittableResult>(async (resolve, reject) => {
-      const unsubscribe = await sign.send((result) => {
-        if (!result || !result.status) return
-        if (result.isCompleted) {
-          if (result.dispatchError) {
-            let errorMessage = result.dispatchError.toString()
-
-            if (result.dispatchError.isModule) {
-              const decoded = api.registry.findMetaError(
-                result.dispatchError.asModule,
-              )
-              errorMessage = `${decoded.section}.${
-                decoded.method
-              }: ${decoded.docs.join(" ")}`
-            }
-
-            reject(new Error(errorMessage))
-          } else {
-            resolve(result)
-          }
-
-          unsubscribe()
-        }
-      })
-    })
-  })
+  const sendTx = useSendTransactionMutation()
 
   const modalProps: Partial<ComponentProps<typeof Modal>> =
     sendTx.isLoading || sendTx.isSuccess || sendTx.isError
@@ -89,7 +59,10 @@ export const ReviewTransaction: React.FC<Transaction> = (props) => {
       )}
       <Modal open={!minimizeModal} onClose={handleClose} {...modalProps}>
         {sendTx.isLoading ? (
-          <ReviewTransactionPending onClose={handleClose} />
+          <ReviewTransactionPending
+            txState={sendTx.txState}
+            onClose={handleClose}
+          />
         ) : sendTx.isSuccess ? (
           <ReviewTransactionSuccess onClose={handleClose} />
         ) : sendTx.isError ? (

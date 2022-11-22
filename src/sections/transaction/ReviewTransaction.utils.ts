@@ -1,5 +1,11 @@
 import type { AnyJson } from "@polkadot/types-codec/types"
-import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
+import { SubmittableExtrinsic } from "@polkadot/api/types"
+import { useApiPromise } from "utils/api"
+import { useIsMounted } from "utils/helpers"
+import { useState } from "react"
+import { ExtrinsicStatus } from "@polkadot/types/interfaces"
+import { useMutation } from "@tanstack/react-query"
+import { ISubmittableResult } from "@polkadot/types/types"
 
 type TxMethod = AnyJson & {
   method: string
@@ -43,11 +49,55 @@ function isTxExtrinsic(x: AnyJson): x is TxExtrinsic {
   )
 }
 
-export function getTransactionJSON(tx: SubmittableExtrinsic) {
+export function getTransactionJSON(tx: SubmittableExtrinsic<"promise">) {
   const txEx = tx.toHuman()
   const res = isTxExtrinsic(txEx) ? getTxHuman(txEx.method) : null
   if (res == null || Object.entries(res).length !== 1) return null
 
   const [method, { args }] = Object.entries(res)[0]
   return { method, args }
+}
+
+export const useSendTransactionMutation = () => {
+  const api = useApiPromise()
+  const isMounted = useIsMounted()
+  const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
+
+  const sendTx = useMutation(async (sign: SubmittableExtrinsic<"promise">) => {
+    return await new Promise<ISubmittableResult>(async (resolve, reject) => {
+      const unsubscribe = await sign.send((result) => {
+        if (!result || !result.status) return
+        if (isMounted.current) setTxState(result.status.type)
+        if (result.isCompleted) {
+          if (result.dispatchError) {
+            let errorMessage = result.dispatchError.toString()
+
+            if (result.dispatchError.isModule) {
+              const decoded = api.registry.findMetaError(
+                result.dispatchError.asModule,
+              )
+              errorMessage = `${decoded.section}.${
+                decoded.method
+              }: ${decoded.docs.join(" ")}`
+            }
+
+            reject(new Error(errorMessage))
+          } else {
+            resolve(result)
+          }
+
+          unsubscribe()
+        }
+      })
+    })
+  })
+
+  return {
+    ...sendTx,
+    txState: txState,
+    reset: () => {
+      setTxState(null)
+      sendTx.reset()
+    },
+  }
 }

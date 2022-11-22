@@ -1,5 +1,5 @@
 import { UseQueryResult } from "@tanstack/react-query"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { UseFormReturn } from "react-hook-form"
 
 export const noop = () => {}
@@ -18,6 +18,17 @@ export function isRecord<Key extends string, Value>(
 
 export function keys<O extends object>(o: O) {
   return Object.keys(o) as (keyof O)[]
+}
+
+export const useIsMounted = () => {
+  const ref = useRef<boolean>(true)
+
+  useEffect(() => {
+    ref.current = true
+    return () => void (ref.current = false)
+  }, [])
+
+  return ref
 }
 
 /**
