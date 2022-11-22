@@ -50,6 +50,9 @@ export const TablePlaceholderContent = styled.div`
 
   background: rgba(${theme.rgbColors.black}, 0.5);
   backdrop-filter: blur(7px);
+
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
 `
 
 export const TableRow = styled.tr<{ isOdd?: boolean; isSub?: boolean }>`
