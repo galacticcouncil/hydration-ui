@@ -12,6 +12,7 @@ interface Props {
   name: string
   value: Maybe<string>
   onChange?: (value: string) => void
+  onBlur?: () => void
   error?: string
   label?: string
   placeholder?: string
@@ -49,6 +50,7 @@ export const WalletTransferAccountInput = (props: Props) => {
             disabled={isDisabled}
             name={props.name}
             label={props.name}
+            onBlur={props.onBlur}
             onChange={props.onChange}
             value={props.value}
             error={props.error}

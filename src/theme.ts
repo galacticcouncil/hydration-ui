@@ -44,6 +44,7 @@ const colors = {
   basic800: "#26282F",
   basic900: "#00041D",
   warning100: "#FFE2C3",
+  warning200: "#FFDF38",
   warning300: "#F5A855",
   error: "#FF8A8A",
   red100: "#EF0303",

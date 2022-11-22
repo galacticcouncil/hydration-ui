@@ -6,7 +6,7 @@ import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { FormValues } from "utils/helpers"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { useStore } from "state/store"
+import { useAccountStore, useStore } from "state/store"
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import BigNumber from "bignumber.js"
 import { BN_10 } from "utils/constants"
@@ -22,6 +22,8 @@ import { Text } from "components/Typography/Text/Text"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { safeConvertAddressSS58 } from "utils/formatting"
+import { Alert } from "components/Alert/Alert"
 
 export function WalletTransferSectionOnchain(props: {
   initialAsset: u32 | string
@@ -40,6 +42,7 @@ export function WalletTransferSectionOnchain(props: {
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const assetMeta = useAssetMeta(asset)
+  const { account } = useAccountStore()
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (assetMeta.data?.decimals == null) throw new Error("Missing asset meta")
@@ -76,7 +79,30 @@ export function WalletTransferSectionOnchain(props: {
           <Controller
             name="dest"
             control={form.control}
-            render={({ field: { name, onChange, value } }) => {
+            rules={{
+              required: t("wallet.assets.transfer.error.required"),
+              validate: {
+                validAddress: (value) =>
+                  safeConvertAddressSS58(value, 0) != null ||
+                  t("wallet.assets.transfer.error.validAddress"),
+                notSame: (value) => {
+                  if (!account?.address) return true
+                  const from = safeConvertAddressSS58(
+                    account.address.toString(),
+                    0,
+                  )
+                  const to = safeConvertAddressSS58(value, 0)
+                  if (from != null && to != null && from === to) {
+                    return t("wallet.assets.transfer.error.notSame")
+                  }
+                  return true
+                },
+              },
+            }}
+            render={({
+              field: { name, onChange, value, onBlur },
+              fieldState: { error },
+            }) => {
               const rightIcon = value ? (
                 <CloseIcon
                   icon={<CrossIcon />}
@@ -100,6 +126,8 @@ export function WalletTransferSectionOnchain(props: {
                   onChange={onChange}
                   placeholder={t("wallet.assets.transfer.dest.placeholder")}
                   rightIcon={rightIcon}
+                  onBlur={onBlur}
+                  error={error?.message}
                 />
               )
             }}
@@ -108,7 +136,23 @@ export function WalletTransferSectionOnchain(props: {
           <Controller
             name="amount"
             control={form.control}
-            render={({ field: { name, value, onChange } }) => (
+            rules={{
+              required: t("wallet.assets.transfer.error.amount.required"),
+              validate: {
+                validNumber: (value) => {
+                  try {
+                    if (!new BigNumber(value).isNaN()) return true
+                  } catch {}
+                  return t("error.validNumber")
+                },
+                positive: (value) =>
+                  new BigNumber(value).gt(0) || t("error.positive"),
+              },
+            }}
+            render={({
+              field: { name, value, onChange },
+              fieldState: { error },
+            }) => (
               <WalletTransferAssetSelect
                 title={
                   isDesktop
@@ -120,9 +164,15 @@ export function WalletTransferSectionOnchain(props: {
                 onChange={onChange}
                 asset={asset}
                 onAssetChange={setAsset}
+                error={error?.message}
               />
             )}
           />
+          {asset !== "0" && (
+            <Alert variant="warning">
+              {t("wallet.assets.transfer.warning.nonNative")}
+            </Alert>
+          )}
           <div
             sx={{
               mt: 18,
@@ -130,7 +180,7 @@ export function WalletTransferSectionOnchain(props: {
               justify: "space-between",
             }}
           >
-            <Text fs={13} color="basic300">
+            <Text fs={13} color="darkBlue300">
               {t("wallet.assets.transfer.transaction_cost")}
             </Text>
             <div sx={{ flex: "row", align: "center", gap: 4 }}>

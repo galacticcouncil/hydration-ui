@@ -2,7 +2,6 @@ import React, { FC } from "react"
 import { Maybe } from "utils/helpers"
 import {
   SDollars,
-  SErrorMessage,
   SInput,
   SInputWrapper,
   SLabelWrapper,
@@ -47,7 +46,6 @@ export const AssetInput: FC<AssetInputProps> = (props) => {
         </SInputWrapper>
         {props.dollars && <SDollars>{`≈  ${props.dollars} USD`}</SDollars>}
       </SLabelWrapper>
-      {props.error && <SErrorMessage>{props.error}</SErrorMessage>}
     </div>
   )
 }
