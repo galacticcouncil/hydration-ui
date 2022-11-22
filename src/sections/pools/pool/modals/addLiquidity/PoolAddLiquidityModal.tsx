@@ -289,7 +289,6 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
           text={t("pools.addLiquidity.modal.confirmButton")}
           variant="primary"
           fullWidth
-          disabled={handleAddLiquidity.isLoading}
           onClick={handleSubmit}
           sx={{ mt: 30 }}
         />
