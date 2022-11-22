@@ -1,38 +1,44 @@
-import { flexRender } from "@tanstack/react-table"
+import { useTranslation } from "react-i18next"
+import { Fragment, useState } from "react"
 import {
   Table,
-  TableContainer,
   TableBodyContent,
+  TableContainer,
   TableData,
   TableHeaderContent,
   TableRow,
   TableTitle,
 } from "components/Table/Table.styled"
-import { Text } from "components/Typography/Text/Text"
-import { Fragment, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { TableSortHeader } from "components/Table/Table"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
+import { Text } from "components/Typography/Text/Text"
+import { TableSortHeader } from "components/Table/Table"
+import { flexRender } from "@tanstack/react-table"
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 import {
-  LiquidityPositionsTableData,
-  useLiquidityPositionsTable,
-} from "./WalletLiquidityPositionsTable.utils"
-import { WalletLiquidityPositionsTableDetails } from "./details/WalletLiquidityPositionsTableDetails"
+  HydraPositionsTableData,
+  useHydraPositionsTable,
+} from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
+import { WalletAssetsHydraPositionsDetails } from "sections/wallet/assets/hydraPositions/details/WalletAssetsHydraPositionsDetails"
 
-type Props = { data: LiquidityPositionsTableData[] }
+type Props = { data: HydraPositionsTableData[] }
 
-export const WalletLiquidityPositionsTable = ({ data }: Props) => {
+export const WalletAssetsHydraPositions = ({ data }: Props) => {
   const { t } = useTranslation()
-
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
-  const table = useLiquidityPositionsTable(data)
+
+  const table = useHydraPositionsTable(data, { onTransfer: setTransferAsset })
 
   return (
     <TableContainer css={assetsTableStyles}>
       <TableTitle>
-        <Text fs={[16, 20]} lh={[20, 26]} fw={500} color="white">
-          {t("wallet.assets.liquidityPositions.table.title")}
+        <Text
+          fs={[16, 20]}
+          lh={[20, 26]}
+          css={{ fontFamily: "FontOver" }}
+          fw={500}
+          color="white"
+        >
+          {t("wallet.assets.hydraPositions.title")}
         </Text>
       </TableTitle>
       <Table>
@@ -68,9 +74,11 @@ export const WalletLiquidityPositionsTable = ({ data }: Props) => {
               {row.getIsExpanded() && (
                 <TableRow isSub>
                   <TableData colSpan={table.getAllColumns().length}>
-                    <WalletLiquidityPositionsTableDetails
-                      assetA={row.original.assetA}
-                      assetB={row.original.assetB}
+                    <WalletAssetsHydraPositionsDetails
+                      symbol={row.original.symbol}
+                      amount={row.original.providedAmount}
+                      amountUSD={row.original.providedAmountUSD}
+                      shares={row.original.sharesAmount}
                     />
                   </TableData>
                 </TableRow>

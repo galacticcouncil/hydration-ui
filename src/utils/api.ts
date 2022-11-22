@@ -6,6 +6,8 @@ import { QUERY_KEYS } from "utils/queryKeys"
 
 export const BASILISK_ADDRESS_PREFIX = 10041
 export const NATIVE_ASSET_ID = "0"
+export const LRNA_ASSET_ID = "1"
+export const OMNIPOOL_POSITION_COLLECTION_ID = "3"
 export const DEPOSIT_CLASS_ID = "1" // TODO: replace with constant from api
 export const POLKADOT_APP_NAME = "Hydra Web App"
 
@@ -26,16 +28,18 @@ export const useTradeRouter = () => {
 }
 
 export const getMath = () => async () => {
-  const [xyk, lbp, liquidityMining] = await Promise.all([
+  const [xyk, lbp, liquidityMining, omnipool] = await Promise.all([
     import("@galacticcouncil/math-xyk"),
     import("@galacticcouncil/math-lbp"),
     import("@galacticcouncil/math/build/liquidity-mining/bundler"),
+    import("@galacticcouncil/math-omnipool/build/omnipool/bundler"),
   ])
 
   return {
     xyk,
     lbp,
     liquidityMining,
+    omnipool,
   }
 }
 export const useMath = () => {

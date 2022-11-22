@@ -8,12 +8,10 @@ import { ReactComponent as KAR } from "assets/icons/tokens/KAR.svg"
 import { ReactComponent as PHA } from "assets/icons/tokens/PHA.svg"
 import { ReactComponent as KSM } from "assets/icons/tokens/KSM.svg"
 import { ReactComponent as TNKR } from "assets/icons/tokens/TNKR.svg"
-
 import { ReactComponent as HDX } from "assets/icons/tokens/HDX.svg"
 import { ReactComponent as LRNA } from "assets/icons/tokens/LRNA.svg"
 import { ReactComponent as DAI } from "assets/icons/tokens/DAI.svg"
 import { ReactComponent as DOT } from "assets/icons/tokens/DOT.svg"
-
 import { ReactComponent as PlaceholderIcon } from "assets/icons/tokens/PlaceholderIcon.svg"
 
 export type AssetIconProps = {
@@ -44,7 +42,6 @@ export function getAssetLogo(symbol: string | null | undefined) {
   if (_symbol === "KSM") return <KSM />
   if (_symbol === "PHA") return <PHA />
   if (_symbol === "TNKR") return <TNKR />
-
   if (_symbol === "HDX") return <HDX />
   if (_symbol === "LRNA") return <LRNA />
   if (_symbol === "DAI") return <DAI />
@@ -62,7 +59,6 @@ export function getAssetName(symbol: string | null | undefined) {
   if (_symbol === "KSM") return "Kusama"
   if (_symbol === "PHA") return "Phala"
   if (_symbol === "TNKR") return "Tinkernet"
-
   if (_symbol === "HDX") return "Hydra"
   if (_symbol === "LRNA") return "Lerna"
   if (_symbol === "DAI") return "Dai"

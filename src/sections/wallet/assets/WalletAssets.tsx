@@ -4,23 +4,25 @@ import { WalletAssetsTableSkeleton } from "sections/wallet/assets/table/skeleton
 import { WalletAssetsTable } from "sections/wallet/assets/table/WalletAssetsTable"
 import { useAccountStore } from "state/store"
 import { WalletAssetsHeader } from "./WalletAssetsHeader"
-import { WalletLiquidityPositionsSkeleton } from "./table/skeleton/WalletLiquidityPositionsSkeleton"
+import { WalletAssetsHydraPositions } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions"
+import { useAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
+import { WalletAssetsHydraPositionsSkeleton } from "sections/wallet/assets/hydraPositions/skeleton/WalletAssetsHydraPositionsSkeleton"
 
 export const WalletAssets = () => {
   const { account } = useAccountStore()
-  const assetTableQuery = useAssetsTableData()
-
-  const queries = [assetTableQuery]
-  const isLoading = queries.some((query) => query.isLoading)
-  const hasData = queries.every((query) => query.data)
+  const assetsTable = useAssetsTableData()
+  const positionsTable = useAssetsHydraPositionsData()
 
   return (
     <div sx={{ mt: [34, 56] }}>
       {!account ? (
         <WalletAssetsTablePlaceholder />
-      ) : isLoading ? (
+      ) : (
         <>
-          <WalletAssetsHeader isLoading={isLoading} />
+          <WalletAssetsHeader
+            isLoading={assetsTable.isLoading}
+            data={assetsTable.data}
+          />
           <div
             sx={{
               display: "flex",
@@ -28,25 +30,18 @@ export const WalletAssets = () => {
               gap: 20,
             }}
           >
-            <WalletAssetsTableSkeleton />
-            <WalletLiquidityPositionsSkeleton />
+            {assetsTable.isLoading ? (
+              <WalletAssetsTableSkeleton />
+            ) : (
+              <WalletAssetsTable data={assetsTable.data} />
+            )}
+            {positionsTable.isLoading ? (
+              <WalletAssetsHydraPositionsSkeleton />
+            ) : (
+              <WalletAssetsHydraPositions data={positionsTable.data} />
+            )}
           </div>
         </>
-      ) : (
-        hasData && (
-          <>
-            <WalletAssetsHeader data={assetTableQuery.data} />
-            <div
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 20,
-              }}
-            >
-              <WalletAssetsTable data={assetTableQuery.data} />
-            </div>
-          </>
-        )
       )}
     </div>
   )

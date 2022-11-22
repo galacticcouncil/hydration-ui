@@ -45,8 +45,8 @@ export const WalletAssetsTable = ({ data }: Props) => {
     <TableContainer css={assetsTableStyles}>
       <TableTitle>
         <Text
-          fs={[15, 19]}
-          lh={[20, 24.7]}
+          fs={[16, 20]}
+          lh={[20, 26]}
           css={{ fontFamily: "FontOver" }}
           fw={500}
           color="white"
