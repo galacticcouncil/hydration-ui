@@ -26,7 +26,7 @@ export const WalletVestingBox = () => {
   return (
     <SBox>
       <Heading
-        fs={20}
+        fs={[15, 19]}
         fw={500}
         sx={{
           ml: 10,

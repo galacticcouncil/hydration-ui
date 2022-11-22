@@ -25,8 +25,12 @@ export const SButton = styled.button<ButtonProps>`
   &:disabled {
     cursor: not-allowed;
 
-    color: rgba(${theme.rgbColors.white}, 0.6);
-    background: ${theme.colors.basic700};
+    color: ${theme.colors.darkBlue300};
+    background: rgba(218, 255, 238, 0.06);
+
+    &::after {
+      all: unset;
+    }
   }
 
   ${({ isLoading }) =>

@@ -58,7 +58,7 @@ export const ReviewTransactionForm = (
     >
       <div>
         {props.title && (
-          <Text color="neutralGray400" fw={400} sx={{ mt: 6 }}>
+          <Text color="basic400" fw={400} sx={{ mt: 6 }}>
             {props.title}
           </Text>
         )}
@@ -67,7 +67,7 @@ export const ReviewTransactionForm = (
         </div>
         <div sx={{ mt: 10 }}>
           <SDetailRow>
-            <Text color="neutralGray300">
+            <Text color="darkBlue200">
               {t("pools.reviewTransaction.modal.detail.cost")}
             </Text>
             <div sx={{ flex: "column", align: "end" }}>
@@ -80,7 +80,7 @@ export const ReviewTransactionForm = (
                       decimalPlaces: 2,
                     })}
                   </Text>
-                  <Text color="primary400" fs={12}>
+                  <Text color="brightBlue200" fs={12}>
                     {/* TODO */}
                     {/* 2% */}
                   </Text>
@@ -89,7 +89,7 @@ export const ReviewTransactionForm = (
             </div>
           </SDetailRow>
           <SDetailRow>
-            <Text color="neutralGray300">
+            <Text color="darkBlue200">
               {t("pools.reviewTransaction.modal.detail.lifetime")}
             </Text>
             <Text color="white">
@@ -101,7 +101,7 @@ export const ReviewTransactionForm = (
             </Text>
           </SDetailRow>
           <SDetailRow>
-            <Text color="neutralGray300">
+            <Text color="darkBlue200">
               {t("pools.reviewTransaction.modal.detail.tip")}
             </Text>
             <Text color="white">
@@ -113,7 +113,7 @@ export const ReviewTransactionForm = (
             </Text>
           </SDetailRow>
           <SDetailRow>
-            <Text color="neutralGray300">
+            <Text color="darkBlue200">
               {t("pools.reviewTransaction.modal.detail.nonce")}
             </Text>
             <Text color="white">{nonce.data?.toString()}</Text>

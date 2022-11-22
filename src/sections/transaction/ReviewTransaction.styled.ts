@@ -6,7 +6,7 @@ export const SDetailRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid ${theme.colors.backgroundGray800};
+  border-bottom: 1px solid ${theme.colors.darkBlue401};
 
   &:last-child {
     border: none;
