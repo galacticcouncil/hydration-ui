@@ -24,6 +24,8 @@ const colors = {
   vibrantBlue500: "#152DC7",
   vibrantBlue600: "#0A1FA7",
   vibrantBlue700: "#031586",
+  darkBlue200: "#999BA7",
+  darkBlue300: "#66697C",
   darkBlue400: "#333750",
   darkBlue401: "#1C2038",
   darkBlue500: "#000524",

@@ -1,4 +1,4 @@
-import { SSchedule, SInner } from "./WalletVestingSchedule.styled"
+import { SSchedule, SInner, SClaimButton } from "./WalletVestingSchedule.styled"
 import { useCallback, useMemo } from "react"
 import { Text } from "../../../components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
@@ -7,7 +7,6 @@ import i18n from "i18next"
 import { css } from "@emotion/react"
 import { theme } from "../../../theme"
 import { Heading } from "../../../components/Typography/Heading/Heading"
-import { Button } from "../../../components/Button/Button"
 import {
   useNextClaimableDate,
   useVestingTotalClaimableBalance,
@@ -70,54 +69,58 @@ export const WalletVestingSchedule = () => {
         <div
           sx={{
             flex: "column",
-            gap: 10,
+            gap: 6,
           }}
         >
-          <Text color="primary200" fs={16} fw={500}>
+          <Text color="brightBlue200" fs={[14, 16]} fw={500}>
             {t("wallet.vesting.claimable_now")}
           </Text>
-          <Heading as="h3" sx={{ fontSize: [16, 42], fontWeight: 900 }}>
+          <Heading as="h3" font="FontOver" sx={{ fontSize: [28, 34] }}>
             <Trans
               t={t}
               i18nKey="wallet.vesting.claimable_now_value"
               tOptions={{ num, denom }}
             >
               <span
+                sx={{ fontSize: [14, 21] }}
                 css={css`
                   color: rgba(${theme.rgbColors.white}, 0.4);
-                  font-size: 22px;
                 `}
               />
             </Trans>
           </Heading>
-          <Text color="neutralGray300" fs={16} lh={18}>
+          <Text
+            fs={[14, 16]}
+            lh={18}
+            css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }}
+          >
             {t("value.usd", { amount: claimableUSD })}
           </Text>
         </div>
         <div
           sx={{
             textAlign: "center",
+            mt: [24, 0],
+            width: ["100%", "auto"],
           }}
         >
           {balance.data && claimableBalance && (
-            <Button
+            <SClaimButton
               variant="gradient"
               transform="uppercase"
               onClick={handleClaim}
               disabled={!isClaimAllowed}
-              sx={{
-                fontWeight: 800,
-              }}
             >
               {t("wallet.vesting.claim_assets")}
-            </Button>
+            </SClaimButton>
           )}
           {nextClaimableDate && (
             <Text
-              color="neutralGray300"
+              color="basic300"
               tAlign="center"
               sx={{
                 mt: 15,
+                display: ["none", "inherit"],
               }}
             >
               {t("wallet.vesting.estimated_claim_date", {
