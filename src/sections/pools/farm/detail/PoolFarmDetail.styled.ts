@@ -43,7 +43,7 @@ export const SFarm = styled.button<{
     height: 20px;
   }
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding: 20px 24px;
 
     grid-column-gap: 32px;

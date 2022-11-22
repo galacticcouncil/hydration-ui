@@ -14,7 +14,7 @@ export const SGridContainer = styled.div`
   grid-column-gap: 0px;
   grid-row-gap: 18px;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding: 24px;
     display: grid;
     grid-template-columns: 1fr repeat(2, min-content);

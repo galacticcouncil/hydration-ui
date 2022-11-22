@@ -4,7 +4,7 @@ import { theme } from "theme"
 export const SList = styled.nav`
   display: none;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     display: flex;
   }
 `

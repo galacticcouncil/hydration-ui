@@ -11,7 +11,7 @@ export const SAssetRow = styled.div`
 
   border-bottom: 1px solid ${theme.colors.backgroundGray800};
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     margin: 0 -30px;
     padding: 15px 30px;
     box-sizing: content-box;
