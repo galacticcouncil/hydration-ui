@@ -25,7 +25,7 @@ export const TableTitle = styled.div`
   padding: 14px 20px;
   border-bottom: 1px solid rgba(${theme.rgbColors.white}, 0.06);
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding: 24px 32px;
   }
 `
@@ -50,6 +50,9 @@ export const TablePlaceholderContent = styled.div`
 
   background: rgba(${theme.rgbColors.black}, 0.5);
   backdrop-filter: blur(7px);
+
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
 `
 
 export const TableRow = styled.tr<{ isOdd?: boolean; isSub?: boolean }>`
@@ -71,7 +74,7 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
 
   ${({ canSort }) => canSort && "cursor:pointer;"}
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding: 24px 32px;
 
     font-size: 12px;
@@ -94,7 +97,7 @@ export const TableData = styled.td<{ isExpanded?: boolean }>`
     padding-right: 10px;
   }
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding: 24px 32px;
   }
 `

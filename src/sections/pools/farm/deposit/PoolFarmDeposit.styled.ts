@@ -8,7 +8,7 @@ export const SGridContainer = styled.div`
 
   grid-template-areas: "title title" "input input" "balance balance";
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     background: ${theme.colors.backgroundGray800};
     padding: 20px;
     border-radius: 12px;

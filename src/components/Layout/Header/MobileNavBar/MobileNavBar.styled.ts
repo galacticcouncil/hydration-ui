@@ -22,7 +22,7 @@ export const SMobileNavBar = styled.div`
 
   background: ${theme.gradients.mobNavigationGradient};
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     display: none;
   }
 `

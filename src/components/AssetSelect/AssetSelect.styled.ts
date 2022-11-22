@@ -12,7 +12,7 @@ export const SContainer = styled.div`
 
   grid-template-areas: "title title" "input input" "balance balance";
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding: 20px;
     grid-row-gap: 11px;
 
