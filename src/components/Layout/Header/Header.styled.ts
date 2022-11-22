@@ -12,7 +12,7 @@ export const SHeader = styled.header`
   backdrop-filter: blur(16px);
   background: rgba(${theme.rgbColors.backgroundGray1000}, 0.2);
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding: 6px 30px;
   }
 `

@@ -22,7 +22,7 @@ export const SContainer = styled.div`
   border-radius: 12px;
   padding: 30px;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     flex-direction: row;
     align-items: center;
     gap: 0;

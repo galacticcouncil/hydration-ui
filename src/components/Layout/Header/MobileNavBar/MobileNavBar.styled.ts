@@ -21,8 +21,8 @@ export const SMobileNavBar = styled.div`
   gap: 4px;
 
   background: ${theme.gradients.mobNavigationGradient};
-
-  @media (${theme.viewport.gte.sm}) {
+  
+  @media ${theme.viewport.gte.sm} {
     display: none;
   }
 `

@@ -24,7 +24,7 @@ export const STradingPairContainer = styled.div`
   background-color: ${theme.colors.backgroundGray1000};
   border-radius: 12px;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding: 16px 32px;
   }
 `
