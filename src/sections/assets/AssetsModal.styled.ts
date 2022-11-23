@@ -7,10 +7,10 @@ export const SAssetsModalHeader = styled.div<{
   display: flex;
   justify-content: space-between;
   background: ${({ shadowed }) =>
-    shadowed ? `rgba(${theme.rgbColors.white}, .03)` : "transparent"};
-  border: 1px solid ${theme.colors.backgroundGray800};
+    shadowed
+      ? `rgba(${theme.rgbColors.white}, .03)`
+      : `rgba(${theme.rgbColors.alpha0}, 0.06)`};
   border-left: none;
   border-right: none;
   padding: 5px 30px;
-  margin: 0 -30px;
 `

@@ -30,7 +30,7 @@ export const SIconButton = styled.button<{ round?: boolean }>`
     border: 1px solid rgba(${theme.rgbColors.brightBlue200}, 0.39);
   }
 
-  &:focus {
+  &:active {
     background: rgba(${theme.rgbColors.primaryA15}, 0.12);
   }
 `

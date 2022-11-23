@@ -9,19 +9,19 @@ export const SAssetRow = styled.div`
   justify-content: space-between;
   width: 100%;
 
-  border-bottom: 1px solid ${theme.colors.backgroundGray800};
+  background: rgba(${theme.rgbColors.white}, 0.03);
 
-  @media (${theme.viewport.gte.sm}) {
-    margin: 0 -30px;
-    padding: 15px 30px;
-    box-sizing: content-box;
-  }
+  border-bottom: 1px solid ${theme.colors.darkBlue401};
+
+  box-sizing: content-box;
+  margin: 0 -30px;
+  padding: 15px 30px;
 
   &:hover {
-    background: rgba(${theme.rgbColors.primary100}, 0.06);
+    background: rgba(${theme.rgbColors.white}, 0.06);
   }
 
   &:active {
-    background: rgba(${theme.rgbColors.primary100}, 0.07);
+    background: rgba(${theme.rgbColors.white}, 0.07);
   }
 `
