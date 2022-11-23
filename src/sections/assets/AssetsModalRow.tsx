@@ -44,7 +44,7 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
           <Text fw={700} color="white" fs={16} lh={22}>
             {asset.data?.name}
           </Text>
-          <Text color="neutralGray400" fs={12} lh={16}>
+          <Text color="whiteish500" fs={12} lh={16}>
             {getAssetName(asset.data?.name)}
           </Text>
         </div>
@@ -70,7 +70,7 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
             <Text color="white" fs={14} lh={18} tAlign="right" />
           </Trans>
         )}
-        <Text color="neutralGray400" fs={12} lh={16}>
+        <Text color="whiteish500" fs={12} lh={16}>
           {t("value.usd", {
             amount: totalUSD,
           })}
