@@ -6,12 +6,13 @@ import { useAccountStore } from "state/store"
 import { useAccountBalances } from "api/accountBalances"
 import { useSpotPrices } from "api/spotPrice"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { BN_10 } from "utils/constants"
+import { BN_0, BN_10 } from "utils/constants"
 import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { PalletBalancesAccountData } from "@polkadot/types/lookup"
 import { u32 } from "@polkadot/types"
 import { useAssetDetailsList } from "api/assetDetails"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
+import { useTokensLocks } from "../../../../../api/balances"
 
 export const useAssetsTableData = () => {
   const { account } = useAccountStore()
@@ -43,8 +44,8 @@ export const useAssetsTableData = () => {
         transferableUSD: balance.transferableUSD,
         total: balance.total,
         totalUSD: balance.totalUSD,
-        locked: new BN(999999999), // TODO
-        lockedUSD: new BN(999999999), // TODO
+        locked: balance.locked,
+        lockedUSD: balance.lockedUsd,
         origin: "TODO",
       }
     })
@@ -64,6 +65,7 @@ const useAssetsBalances = () => {
   const assetMetas = useAssetMetaList(tokenIds)
   const aUSD = useAUSD()
   const spotPrices = useSpotPrices(tokenIds, aUSD.data?.id)
+  const locks = useTokensLocks(tokenIds)
 
   const queries = [accountBalances, assetMetas, aUSD, ...spotPrices]
   const isLoading = queries.some((q) => q.isLoading)
@@ -72,7 +74,8 @@ const useAssetsBalances = () => {
     if (
       !accountBalances.data ||
       !assetMetas.data ||
-      spotPrices.some((q) => !q.data)
+      spotPrices.some((q) => !q.data) ||
+      !locks.data
     )
       return undefined
 
@@ -81,6 +84,7 @@ const useAssetsBalances = () => {
         const id = ab.id
         const spotPrice = spotPrices.find((sp) => id.eq(sp.data?.tokenIn))
         const meta = assetMetas.data.find((am) => id.eq(am?.id))
+        const lock = locks.data.find((lock) => id.eq(lock.id))
 
         if (!spotPrice?.data || !meta) return null
 
@@ -94,7 +98,18 @@ const useAssetsBalances = () => {
         const transferable = free.minus(frozen).div(dp)
         const transferableUSD = transferable.times(spotPrice.data.spotPrice)
 
-        return { id, total, totalUSD, transferable, transferableUSD }
+        const locked = (lock?.amount ?? BN_0).div(dp)
+        const lockedUsd = locked.times(spotPrice.data.spotPrice)
+
+        return {
+          id,
+          total,
+          totalUSD,
+          transferable,
+          transferableUSD,
+          locked,
+          lockedUsd,
+        }
       })
 
     const nativeBalance = accountBalances.data.native.data
@@ -104,16 +119,22 @@ const useAssetsBalances = () => {
     const nativeSpotPrice = spotPrices.find(
       (sp) => sp.data?.tokenIn === NATIVE_ASSET_ID,
     )?.data?.spotPrice
+
+    const nativeLock = locks.data.find(
+      (lock) => lock.id === NATIVE_ASSET_ID,
+    )?.amount
+
     const native = getNativeBalances(
       nativeBalance,
       nativeDecimals,
       nativeSpotPrice,
+      nativeLock,
     )
 
     return [native, ...tokens].filter(
       (x): x is AssetsTableDataBalances => x !== null,
     )
-  }, [accountBalances.data, assetMetas, spotPrices])
+  }, [accountBalances.data, assetMetas, spotPrices, locks])
 
   return { data, isLoading }
 }
@@ -122,6 +143,7 @@ const getNativeBalances = (
   balance: PalletBalancesAccountData,
   decimals?: BN,
   spotPrice?: BN,
+  lock?: BN,
 ): AssetsTableDataBalances | null => {
   if (!decimals || !spotPrice) return null
 
@@ -136,12 +158,17 @@ const getNativeBalances = (
   const transferable = free.minus(BN.max(feeFrozen, miscFrozen)).div(dp)
   const transferableUSD = transferable.times(spotPrice)
 
+  const locked = (lock ?? BN_0).div(dp)
+  const lockedUsd = locked.times(spotPrice)
+
   return {
     id: NATIVE_ASSET_ID,
     total,
     totalUSD,
     transferable,
     transferableUSD,
+    locked,
+    lockedUsd,
   }
 }
 
@@ -151,4 +178,6 @@ type AssetsTableDataBalances = {
   totalUSD: BN
   transferable: BN
   transferableUSD: BN
+  locked: BN
+  lockedUsd: BN
 }

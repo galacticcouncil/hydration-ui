@@ -7,6 +7,7 @@ import { QUERY_KEYS } from "../utils/queryKeys"
 import { u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { Maybe, undefinedNoop } from "utils/helpers"
+import { useAccountStore } from "../state/store"
 
 function calculateFreeBalance(
   free: BigNumber,
@@ -90,3 +91,60 @@ export function useExistentialDeposit() {
     return existentialDeposit.toBigNumber()
   })
 }
+
+export const useTokensLocks = (ids: Maybe<u32 | string>[]) => {
+  const api = useApiPromise()
+  const { account } = useAccountStore()
+
+  const normalizedIds = ids?.reduce<string[]>((memo, item) => {
+    if (item != null) memo.push(item.toString())
+    return memo
+  }, [])
+
+  const queries = useQueries({
+    queries: normalizedIds?.map((id) => ({
+      queryKey: QUERY_KEYS.lock(account?.address, id),
+      queryFn:
+        account?.address != null
+          ? getTokenLock(api, account.address, id)
+          : undefinedNoop,
+      enabled: !!account?.address,
+    })),
+  })
+
+  return {
+    isLoading: queries.some((query) => query.isLoading),
+    data: queries.reduce(
+      (
+        acc: {
+          id: string
+          amount: BigNumber
+        }[],
+        cur,
+      ) => {
+        if (cur.data) {
+          acc.push(...cur.data)
+        }
+        return acc
+      },
+      [],
+    ),
+  }
+}
+
+export const getTokenLock =
+  (api: ApiPromise, address: AccountId32 | string, id: string) => async () => {
+    if (id === NATIVE_ASSET_ID) {
+      const res = await api.query.balances.locks(address)
+      return res.map((lock) => ({
+        id: id.toString(),
+        amount: lock.amount.toBigNumber(),
+      }))
+    }
+
+    const res = await api.query.tokens.locks(address, id)
+    return res.map((lock) => ({
+      id: lock.id.toString(),
+      amount: lock.amount.toBigNumber(),
+    }))
+  }
