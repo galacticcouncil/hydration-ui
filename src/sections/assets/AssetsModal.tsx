@@ -5,8 +5,6 @@ import { SAssetsModalHeader } from "./AssetsModal.styled"
 import { u32 } from "@polkadot/types"
 import { Text } from "../../components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { useMedia } from "react-use"
-import { theme } from "theme"
 import { Maybe } from "utils/helpers"
 import { useAccountStore } from "state/store"
 import { useAssetAccountDetails } from "api/assetDetails"
@@ -23,7 +21,6 @@ export const AssetsModal: FC<AssetsModalProps> = ({
   onSelect,
 }) => {
   const { t } = useTranslation()
-  const isDesktop = useMedia(theme.viewport.gte.sm)
   const { account } = useAccountStore()
 
   const assetsRows = useAssetAccountDetails(account?.address)
@@ -39,29 +36,14 @@ export const AssetsModal: FC<AssetsModalProps> = ({
       : []) ?? []
 
   return (
-    <Modal
-      open={true}
-      onClose={onClose}
-      isDrawer={!isDesktop}
-      titleDrawer={t("selectAsset.title")}
-    >
+    <Modal open={true} onClose={onClose}>
       {!!mainAssets?.length && (
         <>
-          <SAssetsModalHeader sx={{ m: ["0 -14px", "0 -30px"] }}>
-            <Text
-              color="neutralGray300"
-              fw={500}
-              fs={12}
-              tTransform="uppercase"
-            >
+          <SAssetsModalHeader sx={{ m: ["0 -40px", "0 -40px"] }}>
+            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
               {t("selectAssets.asset")}
             </Text>
-            <Text
-              color="neutralGray300"
-              fw={500}
-              fs={12}
-              tTransform="uppercase"
-            >
+            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
               {t("selectAssets.your_balance")}
             </Text>
           </SAssetsModalHeader>
@@ -76,13 +58,8 @@ export const AssetsModal: FC<AssetsModalProps> = ({
       )}
       {!!otherAssets?.length && (
         <>
-          <SAssetsModalHeader shadowed sx={{ m: ["0 -14px", "0 -30px"] }}>
-            <Text
-              color="neutralGray300"
-              fw={500}
-              fs={12}
-              tTransform="uppercase"
-            >
+          <SAssetsModalHeader shadowed sx={{ m: ["0 -40px", "0 -40px"] }}>
+            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
               {t("selectAssets.asset_without_pair")}
             </Text>
           </SAssetsModalHeader>
