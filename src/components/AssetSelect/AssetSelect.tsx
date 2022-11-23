@@ -44,11 +44,6 @@ export const AssetSelect = (props: {
   const aUSDValue = useMemo(() => {
     if (!props.value) return null
     if (spotPrice.data?.spotPrice == null) return null
-    console.log(
-      props.value,
-      spotPrice.data.spotPrice.times(props.value),
-      "ssssss",
-    )
     return spotPrice.data.spotPrice.times(props.value)
   }, [props.value, spotPrice.data])
 
