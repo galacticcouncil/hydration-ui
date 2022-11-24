@@ -7,8 +7,6 @@ import {
 import { routes } from "./routes"
 import { TestnetModal } from "sections/testnet/TestnetModal"
 
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
-
 const history = createHashHistory()
 const location = new ReactLocation({ history })
 
@@ -21,8 +19,6 @@ export const App = () => {
           onBack={() => (window.location.href = "https://bsx.fi/")}
         />
       )}
-
-      <ReactQueryDevtools />
     </AppProviders>
   )
 }
