@@ -31,7 +31,7 @@ export const ReviewTransactionSuccess = (props: { onClose: () => void }) => {
         {t("pools.reviewTransaction.modal.success.title")}
       </GradientText>
       <div sx={{ flex: "column", align: "center", px: 20, mt: 20, mb: 40 }}>
-        <Text tAlign="center" fs={16} color="neutralGray200" fw={400} lh={22}>
+        <Text tAlign="center" fs={16} color="basic400" fw={400} lh={22}>
           {t("pools.reviewTransaction.modal.success.description")}
         </Text>
 
@@ -41,7 +41,7 @@ export const ReviewTransactionSuccess = (props: { onClose: () => void }) => {
       </div>
 
       <SProgressContainer>
-        <Text fs={12} fw={400} color="primary100" tAlign="center">
+        <Text fs={12} fw={400} color="brightBlue300" tAlign="center">
           <Trans
             i18nKey="pools.reviewTransaction.modal.success.timer"
             t={t}

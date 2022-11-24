@@ -2,7 +2,12 @@ import { Spinner } from "components/Spinner/Spinner.styled"
 import { ComponentProps, forwardRef } from "react"
 import { SButton, SButtonTransparent, SContent } from "./Button.styled"
 
-export type ButtonVariant = "primary" | "secondary" | "gradient" | "outline"
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "gradient"
+  | "outline"
+  | "transparent"
 export type ButtonSize = "small" | "medium" | "micro"
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
