@@ -20,16 +20,16 @@ export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
         <AnimatePresence>
           {toast && (
             <Toast
+              index={1}
               key={toast.id}
               variant={toast.variant}
-              text={toast.text}
+              title={toast.title}
+              actions={toast.actions}
               onClose={() => hide(toast.id)}
-              index={1}
               count={activeToasts.length}
               persist={toast.persist}
-            >
-              {toast.children}
-            </Toast>
+              dateCreated={toast.dateCreated}
+            />
           )}
         </AnimatePresence>
       </Provider>

@@ -8,6 +8,7 @@ import { SWrapper, SDialogContent, SCloseButton } from "./ToastSidebar.styled"
 import { ToastContent } from "./ToastContent"
 import { useToast } from "state/toasts"
 import { useTranslation } from "react-i18next"
+import { RemoveScroll } from "react-remove-scroll"
 
 const ToastGroupHeader = (props: { children?: ReactNode }) => (
   <Text
@@ -34,55 +35,60 @@ export function ToastSidebar() {
       <DialogPortal>
         <SWrapper>
           <Backdrop onClick={onClose} />
-          <SDialogContent onEscapeKeyDown={onClose}>
-            <Text fw={500} fs={16} tAlign="center" sx={{ py: 24 }}>
-              {t("toast.sidebar.title")}
-            </Text>
 
-            <SCloseButton
-              name={t("toast.close")}
-              icon={<CrossIcon />}
-              onClick={onClose}
-            />
+          <RemoveScroll enabled={store.sidebar}>
+            <SDialogContent onEscapeKeyDown={onClose}>
+              <Text fw={500} fs={16} tAlign="center" sx={{ py: 24 }}>
+                {t("toast.sidebar.title")}
+              </Text>
 
-            {pendingToasts.length > 0 && (
-              <>
-                <ToastGroupHeader>
-                  {t("toast.sidebar.pending")}
-                </ToastGroupHeader>
+              <SCloseButton
+                name={t("toast.close")}
+                icon={<CrossIcon />}
+                onClick={onClose}
+              />
 
-                <div sx={{ flex: "column", gap: 6, p: 8 }}>
-                  {pendingToasts.map((toast) => (
-                    <ToastContent
-                      key={toast.id}
-                      variant={toast.variant}
-                      content={{ text: toast.text, children: toast.children }}
-                      dateCreated={toast.dateCreated}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
+              {pendingToasts.length > 0 && (
+                <>
+                  <ToastGroupHeader>
+                    {t("toast.sidebar.pending")}
+                  </ToastGroupHeader>
 
-            {completedToasts.length > 0 && (
-              <>
-                <ToastGroupHeader>
-                  {t("toast.sidebar.completed")}
-                </ToastGroupHeader>
+                  <div sx={{ flex: "column", gap: 6, p: 8 }}>
+                    {pendingToasts.map((toast) => (
+                      <ToastContent
+                        key={toast.id}
+                        variant={toast.variant}
+                        title={toast.title}
+                        actions={toast.actions}
+                        dateCreated={toast.dateCreated}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
 
-                <div sx={{ flex: "column", gap: 6, p: 8 }}>
-                  {completedToasts.map((toast) => (
-                    <ToastContent
-                      key={toast.id}
-                      variant={toast.variant}
-                      content={{ text: toast.text, children: toast.children }}
-                      dateCreated={toast.dateCreated}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </SDialogContent>
+              {completedToasts.length > 0 && (
+                <>
+                  <ToastGroupHeader>
+                    {t("toast.sidebar.completed")}
+                  </ToastGroupHeader>
+
+                  <div sx={{ flex: "column", gap: 6, p: 8 }}>
+                    {completedToasts.map((toast) => (
+                      <ToastContent
+                        key={toast.id}
+                        variant={toast.variant}
+                        title={toast.title}
+                        actions={toast.actions}
+                        dateCreated={toast.dateCreated}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </SDialogContent>
+          </RemoveScroll>
         </SWrapper>
       </DialogPortal>
     </Dialog>

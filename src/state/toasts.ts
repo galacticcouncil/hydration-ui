@@ -13,8 +13,8 @@ export interface ToastData extends ToastParams {
 
 interface ToastParams {
   id?: string
-  text?: string
-  children?: ReactNode
+  title?: string | ReactNode
+  actions?: ReactNode
   persist?: boolean
 }
 

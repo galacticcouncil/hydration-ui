@@ -1,5 +1,5 @@
 import { ReactNode } from "react"
-import { SContainer, SContent, SIcon } from "components/Toast/Toast.styled"
+import { SContainer, SIcon, STitle } from "components/Toast/Toast.styled"
 import { ReactComponent as SuccessIcon } from "assets/icons/IconSuccessSmall.svg"
 import { ReactComponent as FailIcon } from "assets/icons/IconFailureSmall.svg"
 import { ReactComponent as BasiliskIcon } from "assets/icons/BasiliskIcon.svg"
@@ -10,8 +10,10 @@ import { useTranslation } from "react-i18next"
 
 export function ToastContent(props: {
   variant: Maybe<"info" | "success" | "error" | "loading">
+  title?: string | ReactNode
+  actions?: ReactNode
+  meta?: ReactNode
   dateCreated?: Date
-  content: { text?: string; children?: ReactNode }
   children?: ReactNode
 }) {
   const { t } = useTranslation()
@@ -31,20 +33,29 @@ export function ToastContent(props: {
           <BasiliskIcon />
         )}
       </SIcon>
-      <div sx={{ flex: "column", gap: 2, justify: "center" }}>
-        <SContent>
-          {"text" in props.content && (
-            <Text fs={12} lh={16} fw={500} color="neutralGray100">
-              {props.content.text}
+      <div sx={{ flex: "column", gap: 4, justify: "center" }}>
+        <div sx={{ flex: "row", justify: "space-between", align: "flex-end" }}>
+          <STitle>
+            {typeof props.title === "string" ? (
+              <Text fs={12} lh={16} fw={500} color="neutralGray100">
+                {props.title}
+              </Text>
+            ) : (
+              props.title
+            )}
+          </STitle>
+
+          {props.actions}
+        </div>
+        <div sx={{ flex: "row", justify: "space-between", align: "flex-end" }}>
+          {props.dateCreated && (
+            <Text fs={12} color="neutralGray400">
+              {t("toast.date", { value: props.dateCreated })}
             </Text>
           )}
-          {"children" in props.content && <>{props.content.children}</>}
-        </SContent>
-        {props.dateCreated && (
-          <Text fs={12} color="neutralGray400">
-            {t("toast.date", { value: props.dateCreated })}
-          </Text>
-        )}
+
+          {props.meta}
+        </div>
       </div>
       {props.children}
     </SContainer>

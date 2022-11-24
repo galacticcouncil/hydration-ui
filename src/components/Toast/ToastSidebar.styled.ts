@@ -25,6 +25,8 @@ export const SDialogContent = styled(DialogContent)`
   background: ${theme.colors.backgroundGray900};
   border-radius: 16px;
   box-shadow: 0px 0px 60px rgba(0, 0, 0, 0.36);
+
+  overflow-y: auto;
 `
 export const SCloseButton = styled(IconButton)`
   color: ${theme.colors.white};

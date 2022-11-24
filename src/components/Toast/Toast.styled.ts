@@ -38,13 +38,8 @@ export const SIcon = styled.div`
   }
 `
 
-export const SContent = styled(Title)`
+export const STitle = styled(Title)`
   display: flex;
-  align-items: center;
-`
-
-export const SCounter = styled.div`
-  margin-top: auto;
 `
 
 export const SClose = styled(Close)`
@@ -72,14 +67,23 @@ export const SClose = styled(Close)`
   }
 `
 
-export const SProgressBar = styled(motion.div)<{
-  variant: Maybe<"info" | "success" | "error" | "loading">
-}>`
+export const SProgressContainer = styled.div`
   position: absolute;
   bottom: 0;
   left: 0;
+  right: 0;
 
   height: 2px;
+  background: ${theme.colors.backgroundGray700};
+
+  transform: rotate(180deg);
+`
+
+export const SProgressBar = styled(motion.div)<{
+  variant: Maybe<"info" | "success" | "error" | "loading">
+}>`
+  height: 2px;
+  
   background-color: ${({ variant }) =>
     variant === "error" ? theme.colors.red400 : theme.colors.primary500};
 `
