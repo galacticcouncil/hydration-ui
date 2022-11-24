@@ -21,10 +21,10 @@ export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
 
   useEffect(() => {
     const now = Date.now()
-    // ignore quick toast change, user probably hasn't read it within 500ms
-    if (Math.abs(now - lastToastUpdate.current) > 500) {
+    // ignore quick toast change, user probably hasn't read it within 50ms
+    if (Math.abs(now - lastToastUpdate.current) > 50) {
       const prevId = lastToastId.current
-      if (prevId !== currId && Math.abs(now - lastToastUpdate.current) > 500) {
+      if (prevId !== currId) {
         // if previous toast is null = new session, reset to 0
         // otherwise new toast is in the same "session"
         setToastSeenInGroupCount(prevId == null ? 0 : (counter) => counter + 1)
