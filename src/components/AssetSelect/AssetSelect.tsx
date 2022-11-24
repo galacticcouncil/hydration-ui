@@ -35,6 +35,8 @@ export const AssetSelect = (props: {
 
   onChange: (v: string) => void
   onSelectAssetClick: () => void
+
+  error?: string
 }) => {
   const { t } = useTranslation()
 
@@ -134,6 +136,7 @@ export const AssetSelect = (props: {
             onChange={props.onChange}
             dollars={t("value.usd", { amount: aUSDValue })}
             placeholder="0.00"
+            unit={props.assetName}
             error={props.error}
           />
         </div>

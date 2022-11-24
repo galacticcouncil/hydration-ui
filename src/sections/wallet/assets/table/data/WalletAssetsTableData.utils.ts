@@ -46,6 +46,7 @@ export const useAssetsTableData = () => {
         locked: new BN(999999999), // TODO
         lockedUSD: new BN(999999999), // TODO
         origin: "TODO",
+        assetType: asset.assetType,
       }
     })
 
@@ -55,7 +56,7 @@ export const useAssetsTableData = () => {
   return { data, isLoading }
 }
 
-const useAssetsBalances = () => {
+export const useAssetsBalances = () => {
   const { account } = useAccountStore()
   const accountBalances = useAccountBalances(account?.address)
   const tokenIds = accountBalances.data?.balances

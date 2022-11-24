@@ -20,6 +20,11 @@ export const QUERY_KEYS = {
     "poolShareToken",
     poolId.toString(),
   ],
+  poolAssets: (address: AccountId32 | string) => [
+    QUERY_KEY_PREFIX,
+    "poolAssets",
+    address.toString(),
+  ],
   deposit: (id: Maybe<u128>) => [QUERY_KEY_PREFIX, "deposit", id?.toString()],
   deposits: (poolId?: string) => [QUERY_KEY_PREFIX, "deposits", poolId],
   accountDepositIds: (accountId: Maybe<AccountId32 | string>) => [

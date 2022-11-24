@@ -14,6 +14,7 @@ import { CloseButton, SecondaryButton } from "components/Modal/Modal.styled"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { CROSSCHAINS } from "./crosschain/WalletTransferSectionCrosschain.utils"
+import { css } from "@emotion/react"
 
 export function WalletTransferModal(props: {
   open: boolean
@@ -57,6 +58,10 @@ export function WalletTransferModal(props: {
             ]}
             value={chain}
             onChange={setChain}
+            css={css`
+              left: 50%;
+              transform: translate(-50%, 0);
+            `}
           />
           <CloseButton
             icon={<CrossIcon />}

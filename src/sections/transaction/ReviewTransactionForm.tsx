@@ -127,7 +127,11 @@ export const ReviewTransactionForm = (
           variant="secondary"
         />
         <Button
-          text={t("pools.reviewTransaction.modal.confirmButton")}
+          text={t(
+            signTx.isLoading
+              ? "pools.reviewTransaction.modal.confirmButton.loading"
+              : "pools.reviewTransaction.modal.confirmButton",
+          )}
           variant="primary"
           isLoading={signTx.isLoading}
           disabled={account == null}

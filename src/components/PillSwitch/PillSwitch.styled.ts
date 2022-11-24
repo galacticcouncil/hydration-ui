@@ -32,8 +32,8 @@ export const SButton = styled.button<{ isActive: boolean }>`
   font-weight: 700;
   font-size: 12px;
 
-  line-height: 32px;
   padding: 2px 18px;
+  line-height: 32px;
 
   text-transform: uppercase;
 

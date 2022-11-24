@@ -42,7 +42,7 @@ export const WalletTransferAccountInput = (props: Props) => {
             />
           ) : (
             <SIconContainer>
-              <GuestIcon />
+              <GuestIcon width={35} height={35} />
             </SIconContainer>
           )}
 

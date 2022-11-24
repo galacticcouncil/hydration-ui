@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv, splitVendorChunkPlugin } from "vite"
+import { defineConfig, splitVendorChunkPlugin } from "vite"
 import react from "@vitejs/plugin-react"
 import wasm from "vite-plugin-wasm"
 import svgr from "vite-plugin-svgr"
@@ -7,14 +7,14 @@ import vitePluginSentry from "vite-plugin-sentry"
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd())
-  const sentryEnabled = !!process.env.SENTRY_AUTH_TOKEN && !!env.VITE_SENTRY_DSN
+  // const env = loadEnv(mode, process.cwd())
+  // const sentryEnabled = !!process.env.SENTRY_AUTH_TOKEN && !!env.VITE_SENTRY_DSN
 
   return {
     build: {
       target: "esnext",
       outDir: "build",
-      sourcemap: sentryEnabled,
+      // sourcemap: sentryEnabled,
     },
     optimizeDeps: {
       esbuildOptions: {

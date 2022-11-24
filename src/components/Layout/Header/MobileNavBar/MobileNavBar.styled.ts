@@ -23,7 +23,7 @@ export const SMobileNavBar = styled.div`
   background: rgba(${theme.rgbColors.darkBlue900}, 0.6);
   backdrop-filter: blur(12px);
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     display: none;
   }
 `

@@ -9,7 +9,7 @@ export const assetsTableStyles = css`
       }
     }
 
-    @media (${theme.viewport.gte.sm}) {
+    @media ${theme.viewport.gte.sm} {
       &:nth-last-of-type(2) {
         > div {
           justify-content: flex-start;

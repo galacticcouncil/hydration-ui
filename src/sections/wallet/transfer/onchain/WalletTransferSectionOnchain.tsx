@@ -24,6 +24,7 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { Alert } from "components/Alert/Alert"
+import { Spacer } from "components/Spacer/Spacer"
 
 export function WalletTransferSectionOnchain(props: {
   initialAsset: u32 | string
@@ -66,14 +67,12 @@ export function WalletTransferSectionOnchain(props: {
   return (
     <>
       <ModalMeta title={t("wallet.assets.transfer.title")} />
+
+      <Spacer size={[13, 26]} />
+
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        sx={{
-          flex: "column",
-          justify: "space-between",
-          pt: 26,
-          height: "100%",
-        }}
+        sx={{ flex: "column", justify: "space-between", height: "100%" }}
       >
         <div sx={{ flex: "column" }}>
           <Controller
@@ -169,7 +168,7 @@ export function WalletTransferSectionOnchain(props: {
             )}
           />
           {asset !== "0" && (
-            <Alert variant="warning">
+            <Alert variant="warning" css={{ marginTop: 22 }}>
               {t("wallet.assets.transfer.warning.nonNative")}
             </Alert>
           )}

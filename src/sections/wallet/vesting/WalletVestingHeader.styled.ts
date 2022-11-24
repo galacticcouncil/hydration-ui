@@ -15,7 +15,7 @@ export const STable = styled.div`
 
   width: 100%;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     border: unset;
 
     margin-top: 0;

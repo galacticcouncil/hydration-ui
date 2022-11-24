@@ -42,7 +42,7 @@ export const WalletAssetsTablePlaceholder = () => {
           </Text>
           <WalletConnectButton
             css={css`
-              @media (${theme.viewport.lt.sm}) {
+              @media ${theme.viewport.lt.sm} {
                 padding: 12px 15px;
                 font-size: 12px;
               }

@@ -6,8 +6,6 @@ import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 
 const SContainer = styled.div<{ variant: "warning" | "error" }>`
-  margin-top: 22px;
-
   padding: 16px;
   display: grid;
   grid-template-columns: auto 1fr;
@@ -33,7 +31,7 @@ export function Alert(props: {
   children?: ReactNode
 }) {
   return (
-    <SContainer variant={props.variant}>
+    <SContainer variant={props.variant} className={props.className}>
       {props.variant === "error" && <ErrorIcon />}
       {props.variant === "warning" && <WarningIcon />}
 

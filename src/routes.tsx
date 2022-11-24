@@ -1,4 +1,5 @@
 import { WalletPage } from "./sections/wallet/WalletPage"
+
 import { Navigate } from "@tanstack/react-location"
 
 export const routes = [
@@ -6,7 +7,6 @@ export const routes = [
     path: "/",
     element: <Navigate to="/wallet" />,
   },
-
   {
     path: "wallet",
     children: [

@@ -10,13 +10,14 @@ export const WalletTransferAssetSelect = (props: {
 
   value: string
   onChange: (value: string) => void
-  error?: string
 
   asset: u32 | string
   onAssetChange: (asset: u32 | string) => void
 
   title?: string
   className?: string
+
+  error?: string
 }) => {
   const { account } = useAccountStore()
   const asset = useAsset(props.asset)

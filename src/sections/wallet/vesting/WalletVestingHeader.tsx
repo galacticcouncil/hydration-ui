@@ -42,18 +42,8 @@ export const WalletVestingHeader = () => {
         justify: "space-between",
       }}
     >
-      <div
-        sx={{
-          flex: ["column", "row"],
-          width: "100%",
-        }}
-      >
-        <div
-          sx={{
-            flex: ["row", "column"],
-            justify: "space-between",
-          }}
-        >
+      <div sx={{ flex: ["column", "row"], width: "100%" }}>
+        <div sx={{ flex: ["row", "column"], justify: "space-between" }}>
           <Text color="brightBlue300">{t("wallet.vesting.total_vested")}</Text>
           <div sx={{ flex: "row", align: "start" }}>
             <Heading as="h3" lh={[25, 42]} sx={{ fontSize: [19, 34] }}>
