@@ -10,6 +10,5 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           cache: yarn
-      - run: echo "test"
       - run: yarn install --frozen-lockfile
       - run: yarn run lint
