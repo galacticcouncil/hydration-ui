@@ -8,6 +8,7 @@ import { Maybe } from "utils/helpers"
 import { SInput, SInputWrapper } from "./AddressInput.styled"
 
 type InputProps = {
+  onBlur?: () => void
   onChange?: (value: string) => void
   value: Maybe<string>
   disabled?: boolean
@@ -38,6 +39,7 @@ export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
           <SInput
             ref={ref}
             onChange={(e) => props.onChange?.(e.target.value)}
+            onBlur={props.onBlur}
             value={props.value ?? ""}
             id={props.name}
             type={props.type}

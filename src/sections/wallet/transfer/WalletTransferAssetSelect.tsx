@@ -10,6 +10,7 @@ export const WalletTransferAssetSelect = (props: {
 
   value: string
   onChange: (value: string) => void
+  error?: string
 
   asset: u32 | string
   onAssetChange: (asset: u32 | string) => void
@@ -40,6 +41,7 @@ export const WalletTransferAssetSelect = (props: {
         balance={balance.data?.balance}
         assetName={asset.data?.name?.toString()}
         onSelectAssetClick={openModal}
+        error={props.error}
       />
     </>
   )
