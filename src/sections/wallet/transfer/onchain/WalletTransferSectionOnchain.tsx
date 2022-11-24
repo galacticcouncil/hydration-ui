@@ -19,11 +19,11 @@ import {
   PasteAddressIcon,
 } from "./WalletTransferSectionOnchain.styled"
 import { Text } from "components/Typography/Text/Text"
-import { GradientText } from "components/Typography/GradientText/GradientText"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { Alert } from "components/Alert/Alert"
+import { usePaymentInfo } from "api/transaction"
 import { Spacer } from "components/Spacer/Spacer"
 
 export function WalletTransferSectionOnchain(props: {
@@ -44,6 +44,12 @@ export function WalletTransferSectionOnchain(props: {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const assetMeta = useAssetMeta(asset)
   const { account } = useAccountStore()
+
+  const { data: paymentInfoData } = usePaymentInfo(
+    asset === NATIVE_ASSET_ID
+      ? api.tx.balances.transferKeepAlive("", "0")
+      : api.tx.tokens.transferKeepAlive("", asset, "0"),
+  )
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (assetMeta.data?.decimals == null) throw new Error("Missing asset meta")
@@ -183,11 +189,13 @@ export function WalletTransferSectionOnchain(props: {
               {t("wallet.assets.transfer.transaction_cost")}
             </Text>
             <div sx={{ flex: "row", align: "center", gap: 4 }}>
-              {/*TODO: calculate the value of the transaction cost*/}
-              <Text fs={14}>~12 BSX</Text>
-              <GradientText fs={12} font="ChakraPetch">
-                {"(2%)"}
-              </GradientText>
+              <Text fs={14}>
+                {t("pools.addLiquidity.modal.row.transactionCostValue", {
+                  amount: paymentInfoData?.partialFee,
+                  fixedPointScale: 12,
+                  decimalPlaces: 2,
+                })}
+              </Text>
             </div>
           </div>
         </div>
