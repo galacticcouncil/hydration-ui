@@ -11,7 +11,7 @@ import { Text } from "components/Typography/Text/Text"
 import { TOAST_CLOSE_TIME } from "utils/constants"
 import { Maybe } from "utils/helpers"
 import { ToastContent } from "./ToastContent"
-import { Button } from "components/Button/Button"
+import { motion } from "framer-motion"
 
 type Props = {
   variant: Maybe<"info" | "success" | "error" | "loading">
@@ -37,42 +37,44 @@ export const Toast: FC<Props> = ({
   const { t } = useTranslation()
 
   return (
-    <SRoot
-      initial={{ x: 32, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-      forceMount
-    >
-      <ToastContent
-        variant={variant ?? "info"}
-        title={title}
-        actions={actions}
-        dateCreated={dateCreated}
-        meta={
-          <div sx={{ flex: "row", gap: 8 }}>
-            <Text fs={12} lh={14} fw={500} color="neutralGray400">
-              {!!index &&
-                !!count &&
-                count > 1 &&
-                t("toast.counter", { index, count })}
-            </Text>
-          </div>
-        }
+    <SRoot forceMount>
+      <motion.div
+        layout
+        initial={{ x: 32, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
       >
-        <SProgressContainer>
-          <SProgressBar
-            variant={variant}
-            initial={{ width: "0%" }}
-            animate={!persist && { width: "100%" }}
-            transition={{ duration: TOAST_CLOSE_TIME / 1000 }}
-            onAnimationComplete={onClose}
-          />
-        </SProgressContainer>
-      </ToastContent>
-      <SClose aria-label={t("toast.close")} onClick={onClose}>
-        <CrossIcon />
-      </SClose>
+        <ToastContent
+          variant={variant ?? "info"}
+          title={title}
+          actions={actions}
+          dateCreated={dateCreated}
+          meta={
+            <div sx={{ flex: "row", gap: 8 }}>
+              <Text fs={12} lh={14} fw={500} color="neutralGray400">
+                {!!index &&
+                  !!count &&
+                  count > 1 &&
+                  t("toast.counter", { index, count })}
+              </Text>
+            </div>
+          }
+        >
+          <SProgressContainer>
+            <SProgressBar
+              variant={variant}
+              initial={{ width: "0%" }}
+              animate={!persist && { width: "100%" }}
+              transition={{ duration: TOAST_CLOSE_TIME / 1000 }}
+              onAnimationComplete={onClose}
+            />
+          </SProgressContainer>
+        </ToastContent>
+        <SClose aria-label={t("toast.close")} onClick={onClose}>
+          <CrossIcon />
+        </SClose>
+      </motion.div>
     </SRoot>
   )
 }

@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren } from "react"
+import { FC, PropsWithChildren, useEffect, useRef, useState } from "react"
 import { ToastViewport } from "components/Toast/ToastViewport"
 import { Provider } from "@radix-ui/react-toast"
 import { useToast } from "state/toasts"
@@ -13,6 +13,28 @@ export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
   const activeToasts = toasts.filter((i) => !i.hidden)
   const toast = activeToasts[0]
 
+  const [toastSeenInGroupCount, setToastSeenInGroupCount] = useState(0)
+
+  const currId = toast?.id ?? null
+  const lastToastId = useRef<string | null>(currId)
+  const lastToastUpdate = useRef<number>(Date.now())
+
+  useEffect(() => {
+    const now = Date.now()
+    // ignore quick toast change, user probably hasn't read it within 500ms
+    if (Math.abs(now - lastToastUpdate.current) > 500) {
+      const prevId = lastToastId.current
+      if (prevId !== currId && Math.abs(now - lastToastUpdate.current) > 500) {
+        // if previous toast is null = new session, reset to 0
+        // otherwise new toast is in the same "session"
+        setToastSeenInGroupCount(prevId == null ? 0 : (counter) => counter + 1)
+      }
+      lastToastId.current = currId
+    }
+
+    lastToastUpdate.current = now
+  }, [currId])
+
   return (
     <>
       <Provider duration={0}>
@@ -20,13 +42,13 @@ export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
         <AnimatePresence>
           {toast && (
             <Toast
-              index={1}
+              index={1 + toastSeenInGroupCount}
+              count={activeToasts.length + toastSeenInGroupCount}
               key={toast.id}
               variant={toast.variant}
               title={toast.title}
               actions={toast.actions}
               onClose={() => hide(toast.id)}
-              count={activeToasts.length}
               persist={toast.persist}
               dateCreated={toast.dateCreated}
             />

@@ -11,6 +11,7 @@ export const SWrapper = styled.div`
   height: 100vh;
   z-index: ${theme.zIndices.backdrop};
 `
+
 export const SDialogContent = styled(DialogContent)`
   position: absolute;
   z-index: ${theme.zIndices.modal};
@@ -19,7 +20,7 @@ export const SDialogContent = styled(DialogContent)`
   top: 8px;
   bottom: 8px;
 
-  width: 100%;
+  width: calc(100% - 16px);
   max-width: 400px;
 
   background: ${theme.colors.backgroundGray900};
@@ -32,6 +33,6 @@ export const SCloseButton = styled(IconButton)`
   color: ${theme.colors.white};
 
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: 8px;
+  right: 8px;
 `

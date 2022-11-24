@@ -4,7 +4,7 @@ import { theme } from "theme"
 import { motion } from "framer-motion"
 import { Maybe } from "utils/helpers"
 
-export const SRoot = styled(motion(Root))`
+export const SRoot = styled(Root)`
   position: relative;
   width: 384px;
 
@@ -83,7 +83,7 @@ export const SProgressBar = styled(motion.div)<{
   variant: Maybe<"info" | "success" | "error" | "loading">
 }>`
   height: 2px;
-  
+
   background-color: ${({ variant }) =>
     variant === "error" ? theme.colors.red400 : theme.colors.primary500};
 `
