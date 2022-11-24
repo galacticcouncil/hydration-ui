@@ -5,15 +5,12 @@ import { WalletAssetsTable } from "sections/wallet/assets/table/WalletAssetsTabl
 import { useAccountStore } from "state/store"
 import { WalletAssetsHeader } from "./WalletAssetsHeader"
 import { WalletLiquidityPositionsSkeleton } from "./table/skeleton/WalletLiquidityPositionsSkeleton"
-import { WalletLiquidityPositionsTable } from "./table/WalletLiquidityPositionsTable"
-import { useLiquidityPositionsTableData } from "./table/data/WalletLiquidityPositionsData.utils"
 
 export const WalletAssets = () => {
   const { account } = useAccountStore()
   const assetTableQuery = useAssetsTableData()
-  const liquidityPositionsQuery = useLiquidityPositionsTableData()
 
-  const queries = [assetTableQuery, liquidityPositionsQuery]
+  const queries = [assetTableQuery]
   const isLoading = queries.some((query) => query.isLoading)
   const hasData = queries.every((query) => query.data)
 
@@ -47,9 +44,6 @@ export const WalletAssets = () => {
               }}
             >
               <WalletAssetsTable data={assetTableQuery.data} />
-              <WalletLiquidityPositionsTable
-                data={liquidityPositionsQuery.data}
-              />
             </div>
           </>
         )
