@@ -24,6 +24,9 @@ export const SContainer = styled.div<{ variant: ToastVariant }>`
 
   padding: 14px;
 
+  border-radius: 2px;
+  backdrop-filter: blur(10px);
+
   ${({ variant }) => variantBg[variant]};
 `
 
@@ -61,6 +64,7 @@ export const SClose = styled(Close)`
   overflow: hidden;
 
   border: 1px solid #30344c;
+  border-radius: 4px;
 
   display: flex;
   align-items: center;
@@ -76,8 +80,9 @@ export const SClose = styled(Close)`
   }
 
   &:hover {
-    background: ${theme.colors.basic500};
-    border: none;
+    color: ${theme.colors.white};
+    background: rgba(${theme.rgbColors.brightBlue100}, 0.39);
+    border: 1px solid rgba(${theme.rgbColors.brightBlue200}, 0.39);
   }
 `
 
@@ -100,7 +105,17 @@ export const SProgressBar = styled(motion.div)<{
   left: 0;
 
   height: 2px;
-  ${({ variant }) => variantProgressBarBg[variant]};
+  background: ${({ variant }) => variantProgressBarBg[variant]};
+`
+
+export const Shadow = styled.div<{ variant: ToastVariant }>`
+  margin-top: 5px;
+  height: 0px;
+
+  -webkit-box-shadow: 0px 20px 15px 4px rgb(219 26 26);
+  -moz-box-shadow: 0px 20px 15px 4px rgb(219 26 26);
+  box-shadow: 0px 20px 15px 4px
+    ${({ variant }) => variantProgressBarBg[variant]};
 `
 
 const variantBg: Record<ToastVariant, SerializedStyles> = {
@@ -111,24 +126,16 @@ const variantBg: Record<ToastVariant, SerializedStyles> = {
     background: rgba(${theme.rgbColors.brightBlue200}, 0.2);
   `,
   error: css`
-    background: rgba(${theme.rgbColors.error}, 0.25);
+    background: rgba(${theme.rgbColors.red100}, 0.25);
   `,
   loading: css`
     background: rgba(${theme.rgbColors.brightBlue200}, 0.2);
   `,
 }
 
-const variantProgressBarBg: Record<ToastVariant, SerializedStyles> = {
-  success: css`
-    background: ${theme.colors.green600};
-  `,
-  info: css`
-    background: ${theme.colors.brightBlue700};
-  `,
-  error: css`
-    background: ${theme.colors.red700};
-  `,
-  loading: css`
-    background: ${theme.colors.brightBlue700};
-  `,
+const variantProgressBarBg: Record<ToastVariant, string> = {
+  success: theme.colors.green600,
+  info: theme.colors.brightBlue700,
+  error: theme.colors.red700,
+  loading: theme.colors.brightBlue700,
 }
