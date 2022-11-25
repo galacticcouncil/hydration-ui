@@ -1,6 +1,6 @@
 import { u32 } from "@polkadot/types"
 import { FC, useMemo } from "react"
-import { useAsset, useAUSD } from "../../api/asset"
+import { useAsset, useUsdPeggedAsset } from "../../api/asset"
 import { useTokenBalance } from "../../api/balances"
 import { useAccountStore } from "../../state/store"
 import { Icon } from "../../components/Icon/Icon"
@@ -21,10 +21,10 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
   const { account } = useAccountStore()
   const { t } = useTranslation()
   const asset = useAsset(id)
-  const AUSD = useAUSD()
+  const usd = useUsdPeggedAsset()
   const balance = useTokenBalance(id, account?.address)
 
-  const spotPrice = useSpotPrice(id, AUSD.data?.id)
+  const spotPrice = useSpotPrice(id, usd.data?.id)
   const totalUSD = useMemo(() => {
     if (balance.data && spotPrice.data) {
       return balance.data.balance.times(spotPrice.data.spotPrice)

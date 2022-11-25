@@ -2,7 +2,6 @@ import { useAssetMeta } from "./assetMeta"
 import { useAssetDetails, useAssetDetailsList } from "./assetDetails"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { u32 } from "@polkadot/types"
-import { AUSD_NAME } from "utils/constants"
 import { Maybe, useQuerySelect } from "utils/helpers"
 
 export const useAsset = (id: Maybe<u32 | string>) => {
@@ -27,8 +26,12 @@ export const useAsset = (id: Maybe<u32 | string>) => {
   }
 }
 
-export const useAUSD = () => {
+export const useUsdPeggedAsset = () => {
   return useQuerySelect(useAssetDetailsList(), (data) =>
-    data.find((asset) => asset.name.toLowerCase() === AUSD_NAME.toLowerCase()),
+    data.find(
+      (asset) =>
+        asset.name.toLowerCase() ===
+        import.meta.env.VITE_USD_PEGGED_ASSET_NAME.toLowerCase(),
+    ),
   )
 }

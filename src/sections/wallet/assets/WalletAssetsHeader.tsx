@@ -58,6 +58,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
     >
       <div
         sx={{
+          flexGrow: 1,
           flex: ["row", "column"],
           justify: "space-between",
           align: ["center", "start"],
@@ -114,6 +115,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
 
       <div
         sx={{
+          flexGrow: 1,
           flex: ["row", "column"],
           justify: "space-between",
           align: ["center", "start"],
