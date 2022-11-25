@@ -16,7 +16,7 @@ import { getAssetName } from "components/AssetIcon/AssetIcon"
 export const useAssetsTableData = () => {
   const tradeAssets = useTradeAssets()
   const balances = useAssetsBalances()
-  const assets = useAssetDetailsList(undefined)
+  const assets = useAssetDetailsList()
 
   const queries = [assets, tradeAssets, balances]
   const isLoading = queries.some((q) => q.isLoading)
@@ -51,7 +51,7 @@ export const useAssetsTableData = () => {
       .filter((x): x is AssetsTableData => x !== null)
       .sort((a, b) => a.symbol.localeCompare(b.symbol))
       .sort((a, b) => b.transferable.minus(a.transferable).toNumber())
-      .sort((a) => (a.id === NATIVE_ASSET_ID ? -1 : 1))
+      .sort((a) => (a.id === NATIVE_ASSET_ID ? -1 : 1)) // native asset first
   }, [assets.data, balances.data, isLoading, tradeAssets.data])
 
   return { data, isLoading }
