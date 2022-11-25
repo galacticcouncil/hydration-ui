@@ -1,4 +1,4 @@
-import { useUsdPeggedAsset } from "api/asset"
+import { useUsdPeggedAsset, useTradeAssets } from "api/asset"
 import { useMemo } from "react"
 import BN from "bignumber.js"
 import { useAssetMetaList } from "api/assetMeta"
@@ -15,6 +15,7 @@ import { getAssetName } from "components/AssetIcon/AssetIcon"
 
 export const useAssetsTableData = () => {
   const { account } = useAccountStore()
+  const tradeAssets = useTradeAssets()
   const accountBalances = useAccountBalances(account?.address)
   const tokenIds = accountBalances.data?.balances
     ? [NATIVE_ASSET_ID, ...accountBalances.data.balances.map((b) => b.id)]
@@ -22,11 +23,12 @@ export const useAssetsTableData = () => {
   const balances = useAssetsBalances()
   const assets = useAssetDetailsList(tokenIds)
 
-  const queries = [assets, balances]
+  const queries = [assets, tradeAssets, balances]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (isLoading || !assets.data || !balances.data) return []
+    if (isLoading || !tradeAssets.data || !assets.data || !balances.data)
+      return []
 
     const res = assets.data.map((asset) => {
       const balance = balances.data?.find(
@@ -41,6 +43,8 @@ export const useAssetsTableData = () => {
         name: getAssetName(asset.name),
         transferable: balance.transferable,
         transferableUSD: balance.transferableUSD,
+        inTradeRouter:
+          tradeAssets.data.find((i) => i.id === asset.id?.toString()) != null,
         total: balance.total,
         totalUSD: balance.totalUSD,
         locked: new BN(999999999), // TODO
@@ -51,7 +55,7 @@ export const useAssetsTableData = () => {
     })
 
     return res.filter((x): x is AssetsTableData => x !== null)
-  }, [assets.data, balances.data, isLoading])
+  }, [assets.data, balances.data, isLoading, tradeAssets.data])
 
   return { data, isLoading }
 }

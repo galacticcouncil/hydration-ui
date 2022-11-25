@@ -16,6 +16,8 @@ import { ReactComponent as MoreDotsIcon } from "assets/icons/MoreDotsIcon.svg"
 type Props = {
   toggleExpanded: () => void
   symbol: string
+  onBuyClick: (() => void) | undefined
+  onSellClick: (() => void) | undefined
   onTransferClick: () => void
 }
 
@@ -42,13 +44,15 @@ export const WalletAssetsTableActions = (props: Props) => {
       >
         <TableAction
           icon={<BuyIcon />}
-          onClick={() => console.log("buy", props.symbol)}
+          onClick={props.onBuyClick}
+          disabled={props.onBuyClick == null}
         >
           {t("wallet.assets.table.actions.buy")}
         </TableAction>
         <TableAction
           icon={<SellIcon />}
-          onClick={() => console.log("sell", props.symbol)}
+          onClick={props.onSellClick}
+          disabled={props.onSellClick == null}
         >
           {t("wallet.assets.table.actions.sell")}
         </TableAction>
