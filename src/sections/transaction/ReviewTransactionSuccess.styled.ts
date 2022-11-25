@@ -23,10 +23,10 @@ export const SProgressBar = styled(motion.div)`
   left: 0;
 `
 export const SProgressTime = styled.span`
-  color: ${theme.colors.brightBlue300};
+  color: ${theme.colors.brightBlue100};
 `
 export const SProgressBarValue = styled.div`
   width: 100%;
   height: 3px;
-  background: ${theme.colors.brightBlue700};
+  background: ${theme.colors.brightBlue300};
 `
