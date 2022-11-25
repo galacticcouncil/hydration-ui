@@ -3,7 +3,7 @@ import { SBackdrop } from "./Backdrop.styled"
 
 type BackdropProps = {
   onClick?: () => void
-  variant?: "default" | "error"
+  variant?: "default" | "success" | "error"
   children?: ReactNode
 }
 

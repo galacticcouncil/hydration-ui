@@ -1,4 +1,5 @@
 import { UseQueryResult } from "@tanstack/react-query"
+import { useEffect, useRef, useState } from "react"
 import { UseFormReturn } from "react-hook-form"
 
 export const noop = () => {}
@@ -54,4 +55,16 @@ export function useQuerySelect<TData, TError, TNewData>(
   })
 
   return trackedItem
+}
+
+export const useNow = (enabled: boolean) => {
+  const [now, setNow] = useState(new Date())
+
+  useEffect(() => {
+    if (!enabled) return
+    const interval = window.setInterval(() => setNow(new Date()), 500)
+    return () => window.clearInterval(interval)
+  }, [enabled])
+
+  return now
 }

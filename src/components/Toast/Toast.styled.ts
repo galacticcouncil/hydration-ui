@@ -2,8 +2,9 @@ import { Close, Root, Title } from "@radix-ui/react-toast"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 import { motion } from "framer-motion"
+import { Maybe } from "utils/helpers"
 
-export const SRoot = styled(motion(Root))`
+export const SRoot = styled(Root)`
   position: relative;
   width: 384px;
 
@@ -14,7 +15,7 @@ export const SRoot = styled(motion(Root))`
 
 export const SContainer = styled.div`
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   grid-column-gap: 14px;
 
   position: relative;
@@ -37,13 +38,8 @@ export const SIcon = styled.div`
   }
 `
 
-export const SContent = styled(Title)`
+export const STitle = styled(Title)`
   display: flex;
-  align-items: center;
-`
-
-export const SCounter = styled.div`
-  margin-top: auto;
 `
 
 export const SClose = styled(Close)`
@@ -71,14 +67,23 @@ export const SClose = styled(Close)`
   }
 `
 
-export const SProgressBar = styled(motion.div)<{
-  variant?: "info" | "success" | "error" | "loading"
-}>`
+export const SProgressContainer = styled.div`
   position: absolute;
   bottom: 0;
   left: 0;
+  right: 0;
 
   height: 2px;
+  background: ${theme.colors.backgroundGray700};
+
+  transform: rotate(180deg);
+`
+
+export const SProgressBar = styled(motion.div)<{
+  variant: Maybe<"info" | "success" | "error" | "loading">
+}>`
+  height: 2px;
+
   background-color: ${({ variant }) =>
     variant === "error" ? theme.colors.red400 : theme.colors.primary500};
 `

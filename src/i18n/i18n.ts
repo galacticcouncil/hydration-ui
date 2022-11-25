@@ -5,6 +5,7 @@ import {
   formatBigNumber,
   formatDate,
   formatNum,
+  formatRelativeTime,
 } from "utils/formatting"
 import { normalizeBigNumber } from "../utils/balance"
 import { resources } from "./locales"
@@ -72,6 +73,14 @@ i18n
 
         if (formatName === "bignumber") {
           return formatBigNumber(value, getBigNumberFormatParams(options), lng)
+        }
+
+        if (formatName === "relativetime") {
+          return formatRelativeTime(
+            value,
+            options.targetDate ?? new Date(),
+            lng,
+          )
         }
 
         // Not ideal, but we don't have a way to format BigNumber to a compact form
