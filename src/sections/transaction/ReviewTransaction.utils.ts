@@ -1,11 +1,11 @@
 import type { AnyJson } from "@polkadot/types-codec/types"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { useApiPromise } from "utils/api"
-import { useIsMounted } from "utils/helpers"
 import { useState } from "react"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { useMutation } from "@tanstack/react-query"
 import { ISubmittableResult } from "@polkadot/types/types"
+import { useMountedState } from "react-use"
 
 type TxMethod = AnyJson & {
   method: string
@@ -60,14 +60,14 @@ export function getTransactionJSON(tx: SubmittableExtrinsic<"promise">) {
 
 export const useSendTransactionMutation = () => {
   const api = useApiPromise()
-  const isMounted = useIsMounted()
+  const isMounted = useMountedState()
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
 
   const sendTx = useMutation(async (sign: SubmittableExtrinsic<"promise">) => {
     return await new Promise<ISubmittableResult>(async (resolve, reject) => {
       const unsubscribe = await sign.send((result) => {
         if (!result || !result.status) return
-        if (isMounted.current) setTxState(result.status.type)
+        if (isMounted()) setTxState(result.status.type)
         if (result.isCompleted) {
           if (result.dispatchError) {
             let errorMessage = result.dispatchError.toString()

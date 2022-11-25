@@ -20,17 +20,6 @@ export function keys<O extends object>(o: O) {
   return Object.keys(o) as (keyof O)[]
 }
 
-export const useIsMounted = () => {
-  const ref = useRef<boolean>(true)
-
-  useEffect(() => {
-    ref.current = true
-    return () => void (ref.current = false)
-  }, [])
-
-  return ref
-}
-
 /**
  * This hook allows us to modify the `data` property and pass through
  * other React Query keys while not triggering unnecessary renders due to object spread
