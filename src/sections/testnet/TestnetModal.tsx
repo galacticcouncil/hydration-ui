@@ -27,15 +27,15 @@ export function TestnetModal(props: { onBack: () => void }) {
         </div>
 
         <div sx={{ flex: "column", gap: 20, maxWidth: 450 }}>
-          <Text fs={14} fw={500} color="neutralGray200">
+          <Text fs={14} fw={500} color="basic400">
             {t("testnet.modal.description.1.text")}
           </Text>
 
-          <Text fs={14} fw={500} color="neutralGray200">
+          <Text fs={14} fw={500} color="basic400">
             {t("testnet.modal.description.2.text")}
           </Text>
 
-          <Text fs={14} fw={500} color="neutralGray200">
+          <Text fs={14} fw={500} color="basic400">
             <Trans t={t} i18nKey="testnet.modal.description.3.text">
               <a sx={{ fontWeight: 700 }} href="https://sentry.io/privacy/">
                 &nbsp;
@@ -43,7 +43,7 @@ export function TestnetModal(props: { onBack: () => void }) {
             </Trans>
           </Text>
 
-          <Text fs={14} fw={500} color="yellow200">
+          <Text fs={14} fw={500} color="warning300">
             {t("testnet.modal.description.4.text")}
           </Text>
         </div>

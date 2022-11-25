@@ -10,7 +10,6 @@ import { SInput, SInputWrapper } from "./AddressInput.styled"
 type InputProps = {
   onBlur?: () => void
   onChange?: (value: string) => void
-  onBlur?: () => void
   value: Maybe<string>
   disabled?: boolean
   type?: InputHTMLAttributes<HTMLInputElement>["type"]

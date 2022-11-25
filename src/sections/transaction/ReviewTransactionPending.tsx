@@ -17,7 +17,7 @@ export const ReviewTransactionPending = ({ onClose }: Props) => {
         {t("pools.reviewTransaction.modal.pending.title")}
       </GradientText>
       <div sx={{ px: 20, mt: 20, mb: 40 }}>
-        <Text tAlign="center" fs={16} color="neutralGray200" fw={400} lh={22}>
+        <Text tAlign="center" fs={16} color="basic400" fw={400} lh={22}>
           {t("pools.reviewTransaction.modal.pending.description")}
         </Text>
       </div>

@@ -16,7 +16,7 @@ import type {
   u64,
   u8,
 } from "@polkadot/types-codec"
-import type { Codec, ITuple } from "@polkadot/types-codec/types"
+import type { Codec } from "@polkadot/types-codec/types"
 import type {
   AccountId32,
   Percent,
@@ -72,6 +72,20 @@ declare module "@polkadot/api-base/types/consts" {
        * The maximum number of named reserves that can exist on an account.
        **/
       maxReserves: u32 & AugmentedConst<ApiType>
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec
+    }
+    collatorRewards: {
+      /**
+       * Reward Asset Id
+       **/
+      rewardCurrencyId: u32 & AugmentedConst<ApiType>
+      /**
+       * Reward amount per one collator.
+       **/
+      rewardPerCollator: u128 & AugmentedConst<ApiType>
       /**
        * Generic const
        **/
@@ -146,20 +160,6 @@ declare module "@polkadot/api-base/types/consts" {
        **/
       [key: string]: Codec
     }
-    duster: {
-      /**
-       * Native Asset Id
-       **/
-      nativeCurrencyId: u32 & AugmentedConst<ApiType>
-      /**
-       * Reward amount
-       **/
-      reward: u128 & AugmentedConst<ApiType>
-      /**
-       * Generic const
-       **/
-      [key: string]: Codec
-    }
     elections: {
       /**
        * How much should be locked up in order to submit one's candidacy.
@@ -214,13 +214,6 @@ declare module "@polkadot/api-base/types/consts" {
        **/
       [key: string]: Codec
     }
-    exchange: {
-      maxOutRatio: u128 & AugmentedConst<ApiType>
-      /**
-       * Generic const
-       **/
-      [key: string]: Codec
-    }
     identity: {
       /**
        * The amount held on deposit for a registered identity
@@ -250,37 +243,6 @@ declare module "@polkadot/api-base/types/consts" {
        * be another trie item whose value is the size of an account ID plus 32 bytes.
        **/
       subAccountDeposit: u128 & AugmentedConst<ApiType>
-      /**
-       * Generic const
-       **/
-      [key: string]: Codec
-    }
-    lbp: {
-      /**
-       * Max fraction of pool to sell in single transaction
-       **/
-      maxInRatio: u128 & AugmentedConst<ApiType>
-      /**
-       * Max fraction of pool to buy in single transaction
-       **/
-      maxOutRatio: u128 & AugmentedConst<ApiType>
-      /**
-       * Minimum pool liquidity, sole purpose of this is to keep the math working
-       **/
-      minPoolLiquidity: u128 & AugmentedConst<ApiType>
-      /**
-       * Minimum trading limit, sole purpose of this is to keep the math working
-       **/
-      minTradingLimit: u128 & AugmentedConst<ApiType>
-      repayFee: ITuple<[u32, u32]> & AugmentedConst<ApiType>
-      /**
-       * Generic const
-       **/
-      [key: string]: Codec
-    }
-    marketplace: {
-      minimumOfferAmount: u128 & AugmentedConst<ApiType>
-      royaltyBondAmount: u128 & AugmentedConst<ApiType>
       /**
        * Generic const
        **/
@@ -330,11 +292,47 @@ declare module "@polkadot/api-base/types/consts" {
        **/
       [key: string]: Codec
     }
-    nft: {
+    omnipool: {
       /**
-       * Collection IDs reserved for runtime up to the following constant
+       * Asset fee
        **/
-      reserveCollectionIdUpTo: u128 & AugmentedConst<ApiType>
+      assetFee: Permill & AugmentedConst<ApiType>
+      /**
+       * Native Asset ID
+       **/
+      hdxAssetId: u32 & AugmentedConst<ApiType>
+      /**
+       * Hub Asset ID
+       **/
+      hubAssetId: u32 & AugmentedConst<ApiType>
+      /**
+       * Max fraction of asset reserve to sell in single transaction
+       **/
+      maxInRatio: u128 & AugmentedConst<ApiType>
+      /**
+       * Max fraction of asset reserve to buy in single transaction
+       **/
+      maxOutRatio: u128 & AugmentedConst<ApiType>
+      /**
+       * Minimum pool liquidity which can be added
+       **/
+      minimumPoolLiquidity: u128 & AugmentedConst<ApiType>
+      /**
+       * Minimum trading limit
+       **/
+      minimumTradingLimit: u128 & AugmentedConst<ApiType>
+      /**
+       * Protocol fee
+       **/
+      protocolFee: Permill & AugmentedConst<ApiType>
+      /**
+       * Preferred stable Asset ID
+       **/
+      stableCoinAssetId: u32 & AugmentedConst<ApiType>
+      /**
+       * TVL cap
+       **/
+      tvlCap: u128 & AugmentedConst<ApiType>
       /**
        * Generic const
        **/
@@ -623,74 +621,6 @@ declare module "@polkadot/api-base/types/consts" {
        * Self chain location.
        **/
       selfLocation: XcmV1MultiLocation & AugmentedConst<ApiType>
-      /**
-       * Generic const
-       **/
-      [key: string]: Codec
-    }
-    xyk: {
-      /**
-       * Trading fee rate
-       **/
-      getExchangeFee: ITuple<[u32, u32]> & AugmentedConst<ApiType>
-      /**
-       * Max fraction of pool to sell in single transaction
-       **/
-      maxInRatio: u128 & AugmentedConst<ApiType>
-      /**
-       * Max fraction of pool to buy in single transaction
-       **/
-      maxOutRatio: u128 & AugmentedConst<ApiType>
-      /**
-       * Minimum pool liquidity
-       **/
-      minPoolLiquidity: u128 & AugmentedConst<ApiType>
-      /**
-       * Minimum trading limit
-       **/
-      minTradingLimit: u128 & AugmentedConst<ApiType>
-      /**
-       * Native Asset Id
-       **/
-      nativeAssetId: u32 & AugmentedConst<ApiType>
-      /**
-       * Generic const
-       **/
-      [key: string]: Codec
-    }
-    xykLiquidityMining: {
-      /**
-       * NFT collection id for liq. mining deposit nfts. Has to be within the range of reserved NFT class IDs.
-       **/
-      nftCollectionId: u128 & AugmentedConst<ApiType>
-      /**
-       * Generic const
-       **/
-      [key: string]: Codec
-    }
-    xykWarehouseLM: {
-      /**
-       * Maximum number of yield farms same LP shares can be re/deposited into. This value always
-       * MUST BE >= 1.
-       **/
-      maxFarmEntriesPerDeposit: u32 & AugmentedConst<ApiType>
-      /**
-       * Max number of yield farms can exist in global farm. This includes all farms in the
-       * storage(active, stopped, deleted).
-       **/
-      maxYieldFarmsPerGlobalFarm: u32 & AugmentedConst<ApiType>
-      /**
-       * Minimum number of periods to run liquidity mining program.
-       **/
-      minPlannedYieldingPeriods: u32 & AugmentedConst<ApiType>
-      /**
-       * Minimum total rewards to distribute from global farm during liquidity mining.
-       **/
-      minTotalFarmRewards: u128 & AugmentedConst<ApiType>
-      /**
-       * Pallet id.
-       **/
-      palletId: FrameSupportPalletId & AugmentedConst<ApiType>
       /**
        * Generic const
        **/

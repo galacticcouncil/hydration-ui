@@ -35,8 +35,6 @@ export const AssetSelect = (props: {
 
   onChange: (v: string) => void
   onSelectAssetClick: () => void
-
-  error?: string
 }) => {
   const { t } = useTranslation()
 
