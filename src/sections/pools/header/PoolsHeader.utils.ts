@@ -3,7 +3,7 @@ import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_1 } from "utils/constants"
 import { useMemo } from "react"
 import BN from "bignumber.js"
-import { useAUSD } from "api/asset"
+import { useUsdPeggedAsset } from "api/asset"
 import { SpotPrice, useSpotPrices } from "api/spotPrice"
 import {
   FarmIds,
@@ -24,10 +24,10 @@ import { useAccountStore } from "state/store"
 export const useTotalsInPools = () => {
   const pools = usePools()
   const assets = useAssetDetailsList()
-  const aUSD = useAUSD()
+  const usd = useUsdPeggedAsset()
   const spotPrices = useSpotPrices(
     assets.data?.map((asset) => asset.id) ?? [],
-    aUSD.data?.id,
+    usd.data?.id,
   )
   const shareTokens = usePoolShareTokens(
     pools.data?.map((p) => p.address) ?? [],
@@ -45,7 +45,7 @@ export const useTotalsInPools = () => {
   const queries = [
     pools,
     assets,
-    aUSD,
+    usd,
     ...balances,
     ...spotPrices,
     ...shareTokens,
@@ -57,7 +57,7 @@ export const useTotalsInPools = () => {
     if (
       !pools.data ||
       !assets.data ||
-      !aUSD.data ||
+      !usd.data ||
       spotPrices.some((q) => !q.data) ||
       shareTokens.some((q) => !q.data) ||
       totalIssuances.some((q) => !q.data)
@@ -101,7 +101,7 @@ export const useTotalsInPools = () => {
   }, [
     pools.data,
     assets.data,
-    aUSD.data,
+    usd.data,
     balances,
     spotPrices,
     shareTokens,
@@ -137,13 +137,13 @@ export const useTotalInFarms = () => {
     shareTokens.map((q) => q.data?.token),
   )
 
-  const aUSD = useAUSD()
+  const usd = useUsdPeggedAsset()
   const spotPrices = useSpotPrices(
     (pools.data ?? [])
       .map((pool) => pool.tokens)
       .reduce((acc, tokens) => [...acc, ...tokens], [])
       .map((token) => token.id),
-    aUSD.data?.id,
+    usd.data?.id,
   )
 
   const queries = [
@@ -153,7 +153,7 @@ export const useTotalInFarms = () => {
     yieldFarms,
     ...shareTokens,
     ...totalIssuances,
-    aUSD,
+    usd,
     ...spotPrices,
   ]
   const isLoading = queries.some((q) => q.isLoading)

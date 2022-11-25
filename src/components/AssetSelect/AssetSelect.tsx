@@ -12,7 +12,7 @@ import {
 import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 import { getFloatingPointAmount } from "utils/balance"
-import { useAUSD } from "api/asset"
+import { useUsdPeggedAsset } from "api/asset"
 import { useSpotPrice } from "api/spotPrice"
 import { Maybe } from "utils/helpers"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
@@ -37,8 +37,8 @@ export const AssetSelect = (props: {
 }) => {
   const { t } = useTranslation()
 
-  const aUSD = useAUSD()
-  const spotPrice = useSpotPrice(props.asset, aUSD.data?.id)
+  const usd = useUsdPeggedAsset()
+  const spotPrice = useSpotPrice(props.asset, usd.data?.id)
 
   const aUSDValue = useMemo(() => {
     if (!props.value) return null
