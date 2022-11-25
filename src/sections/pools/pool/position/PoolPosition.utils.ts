@@ -7,7 +7,7 @@ import { useTotalIssuance } from "api/totalIssuance"
 import { usePoolShareToken } from "api/pools"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { getPoolTotal } from "sections/pools/header/PoolsHeader.utils"
-import { useAsset, useAUSD } from "api/asset"
+import { useAsset, useUsdPeggedAsset } from "api/asset"
 import { useSpotPrices } from "api/spotPrice"
 import BN from "bignumber.js"
 import { useBestNumber } from "api/chain"
@@ -29,10 +29,10 @@ export const usePoolPositionData = ({
 
   const shareToken = usePoolShareToken(pool.address)
   const totalIssuance = useTotalIssuance(shareToken.data?.token)
-  const aUSD = useAUSD()
+  const usd = useUsdPeggedAsset()
   const spotPrices = useSpotPrices(
     pool.tokens.map((token) => token.id),
-    aUSD.data?.id,
+    usd.data?.id,
   )
 
   const rewardAsset = useAsset(globalFarm.data?.rewardCurrency)
@@ -44,7 +44,7 @@ export const usePoolPositionData = ({
     yieldFarm,
     shareToken,
     totalIssuance,
-    aUSD,
+    usd,
     rewardAsset,
     bestNumber,
     math,

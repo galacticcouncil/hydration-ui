@@ -12,7 +12,7 @@ import {
   useNextClaimableDate,
   useVestingTotalClaimableBalance,
 } from "../../../api/vesting"
-import { useAUSD } from "../../../api/asset"
+import { useUsdPeggedAsset } from "../../../api/asset"
 import { useSpotPrice } from "../../../api/spotPrice"
 import { NATIVE_ASSET_ID, useApiPromise } from "../../../utils/api"
 import { useExistentialDeposit, useTokenBalance } from "../../../api/balances"
@@ -31,8 +31,8 @@ export const WalletVestingSchedule = () => {
   const { data: paymentInfoData } = usePaymentInfo(api.tx.vesting.claim())
   const { data: existentialDeposit } = useExistentialDeposit()
 
-  const AUSD = useAUSD()
-  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, AUSD.data?.id)
+  const usd = useUsdPeggedAsset()
+  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, usd.data?.id)
   const balance = useTokenBalance(NATIVE_ASSET_ID, account?.address)
 
   const claimableUSD = useMemo(() => {

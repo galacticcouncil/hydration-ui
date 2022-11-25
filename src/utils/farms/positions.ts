@@ -4,7 +4,7 @@ import { BN_0 } from "utils/constants"
 import { useYieldFarms } from "api/farms"
 import { usePools, usePoolShareTokens } from "api/pools"
 import { useTotalIssuances } from "api/totalIssuance"
-import { useAUSD } from "api/asset"
+import { useUsdPeggedAsset } from "api/asset"
 import { useSpotPrices } from "api/spotPrice"
 import { useAllUserDeposits } from "utils/farms/deposits"
 
@@ -27,11 +27,11 @@ export const useTotalInPositions = () => {
   const totalIssuances = useTotalIssuances(
     shareTokens.map((st) => st.data?.token),
   )
-  const aUSD = useAUSD()
+  const usd = useUsdPeggedAsset()
   const spotPrices = useSpotPrices(
     pools.data?.map((pool) => pool.tokens.map((token) => token.id)).flat(2) ??
       [],
-    aUSD.data?.id,
+    usd.data?.id,
   )
 
   const queries = [
@@ -40,7 +40,7 @@ export const useTotalInPositions = () => {
     yieldFarms,
     ...shareTokens,
     ...totalIssuances,
-    aUSD,
+    usd,
     ...spotPrices,
   ]
   const isLoading = queries.some((q) => q.isInitialLoading)
@@ -51,7 +51,7 @@ export const useTotalInPositions = () => {
       !deposits.data.positions ||
       !pools.data ||
       !yieldFarms.data ||
-      !aUSD.data ||
+      !usd.data ||
       shareTokens.some((q) => !q.data) ||
       totalIssuances.some((q) => !q.data) ||
       spotPrices.some((q) => !q.data)
@@ -96,7 +96,7 @@ export const useTotalInPositions = () => {
     deposits.data.deposits,
     deposits.data.positions,
     pools.data,
-    aUSD.data,
+    usd.data,
     yieldFarms,
     shareTokens,
     totalIssuances,

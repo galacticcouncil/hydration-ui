@@ -3,7 +3,7 @@ import { BN_0, BN_1 } from "utils/constants"
 import BN from "bignumber.js"
 import { useBestNumber } from "api/chain"
 import { useAPR } from "utils/farms/apr"
-import { useAUSD } from "api/asset"
+import { useUsdPeggedAsset } from "api/asset"
 import { useSpotPrices } from "api/spotPrice"
 import { PoolBase } from "@galacticcouncil/sdk"
 import { useUserDeposits } from "utils/farms/deposits"
@@ -16,14 +16,14 @@ export const useClaimableAmount = (pool: PoolBase) => {
   const deposits = useUserDeposits(pool.address)
   const apr = useAPR(pool.address)
   const math = useMath()
-  const aUSD = useAUSD()
+  const usd = useUsdPeggedAsset()
   const currencies = [
     ...new Set(apr.data.map((i) => i.globalFarm.rewardCurrency.toString())),
   ]
   const bsxSpotPrices = useSpotPrices(currencies, NATIVE_ASSET_ID)
-  const ausdSpotPrices = useSpotPrices(currencies, aUSD.data?.id)
+  const ausdSpotPrices = useSpotPrices(currencies, usd.data?.id)
 
-  const queries = [deposits, bestNumber, apr, math, aUSD, ...ausdSpotPrices]
+  const queries = [deposits, bestNumber, apr, math, usd, ...ausdSpotPrices]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
@@ -42,14 +42,14 @@ export const useClaimableAmount = (pool: PoolBase) => {
             aprEntry?.globalFarm.rewardCurrency.eq(a.data?.tokenIn),
           )?.data
 
-          const ausd = ausdSpotPrices.find((a) =>
+          const usd = ausdSpotPrices.find((a) =>
             aprEntry?.globalFarm.rewardCurrency.eq(a.data?.tokenIn),
           )?.data
 
           if (
             aprEntry == null ||
             bsx == null ||
-            ausd == null ||
+            usd == null ||
             math.liquidityMining == null
           )
             return null
@@ -87,7 +87,7 @@ export const useClaimableAmount = (pool: PoolBase) => {
 
           // bsx reward
           const bsxReward = reward.multipliedBy(bsx.spotPrice)
-          const ausdReward = reward.multipliedBy(ausd.spotPrice)
+          const ausdReward = reward.multipliedBy(usd.spotPrice)
 
           return { ausd: ausdReward, bsx: bsxReward }
         })
