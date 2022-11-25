@@ -19,7 +19,7 @@ export const WalletLiquidityPositionsTableDetailsChain: FC<Props> = ({
         fs={12}
         lh={14}
         fw={500}
-        color="neutralGray300"
+        color="basic400"
         sx={{
           mb: 8,
         }}

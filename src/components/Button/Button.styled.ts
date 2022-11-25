@@ -137,6 +137,10 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
       transition: all ${theme.transitions.default};
     }
   `,
+  transparent: css`
+    background: transparent;
+    color: ${theme.colors.brightBlue600};
+  `,
 }
 
 const sizeStyles: Record<ButtonSize, SerializedStyles> = {

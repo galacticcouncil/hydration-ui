@@ -14,11 +14,11 @@ export const ReviewTransactionError = (props: {
   return (
     <div sx={{ flex: "column", align: "center" }}>
       <FailIcon />
-      <Text color="red400" fs={24} fw={600} tAlign="center" sx={{ mt: 20 }}>
+      <Text color="white" fs={24} fw={600} tAlign="center" sx={{ mt: 20 }}>
         {t("pools.reviewTransaction.modal.error.title")}
       </Text>
       <div sx={{ flex: "column", align: "center", px: 20, mt: 20, mb: 40 }}>
-        <Text tAlign="center" fs={16} color="neutralGray200" fw={400} lh={22}>
+        <Text tAlign="center" fs={16} color="basic400" fw={400} lh={22}>
           {t("pools.reviewTransaction.modal.error.description")}
         </Text>
 
