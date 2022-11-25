@@ -5,8 +5,8 @@ import {
 import { flexRender } from "@tanstack/react-table"
 import {
   Table,
-  TableContainer,
   TableBodyContent,
+  TableContainer,
   TableData,
   TableHeaderContent,
   TableRow,
@@ -14,7 +14,7 @@ import {
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
 import { Switch } from "components/Switch/Switch"
-import { Fragment, useState } from "react"
+import { Fragment, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { WalletAssetsTableDetails } from "sections/wallet/assets/table/details/WalletAssetsTableDetails"
 import { TableSortHeader } from "components/Table/Table"
@@ -25,12 +25,15 @@ type Props = { data: AssetsTableData[] }
 
 export const WalletAssetsTable = ({ data }: Props) => {
   const { t } = useTranslation()
-  const [showAll, setShowAll] = useState(false)
-
+  const [showAll, setShowAll] = useState(true)
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
-  const table = useAssetsTable(data, {
-    onTransfer: setTransferAsset,
-  })
+
+  const filteredData = useMemo(
+    () => (showAll ? data : data.filter((row) => !row.total.isZero())),
+    [data, showAll],
+  )
+
+  const table = useAssetsTable(filteredData, { onTransfer: setTransferAsset })
 
   return (
     <TableContainer css={assetsTableStyles}>
