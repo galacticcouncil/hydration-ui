@@ -1,4 +1,4 @@
-import { useAUSD } from "api/asset"
+import { useUsdPeggedAsset } from "api/asset"
 import { useMemo } from "react"
 import BN from "bignumber.js"
 import { useAssetMetaList } from "api/assetMeta"
@@ -47,6 +47,7 @@ export const useAssetsTableData = () => {
         locked: balance.locked,
         lockedUSD: balance.lockedUsd,
         origin: "TODO",
+        assetType: asset.assetType,
       }
     })
 
@@ -56,18 +57,18 @@ export const useAssetsTableData = () => {
   return { data, isLoading }
 }
 
-const useAssetsBalances = () => {
+export const useAssetsBalances = () => {
   const { account } = useAccountStore()
   const accountBalances = useAccountBalances(account?.address)
   const tokenIds = accountBalances.data?.balances
     ? [NATIVE_ASSET_ID, ...accountBalances.data.balances.map((b) => b.id)]
     : []
   const assetMetas = useAssetMetaList(tokenIds)
-  const aUSD = useAUSD()
+  const usd = useUsdPeggedAsset()
   const spotPrices = useSpotPrices(tokenIds, aUSD.data?.id)
   const locks = useTokensLocks(tokenIds)
 
-  const queries = [accountBalances, assetMetas, aUSD, ...spotPrices]
+  const queries = [accountBalances, assetMetas, usd, ...spotPrices]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {

@@ -1,22 +1,12 @@
-<svg width="136" height="136" viewBox="0 0 136 136" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="67.5" cy="69.5" r="58" fill="url(#paint0_linear_9108_15567)" fill-opacity="0.4" />
-  <path d="M56.0625 81.1682L61.3158 75.9149L79.3776 58.0293" stroke="url(#paint1_linear_9108_15567)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M56.0625 58.0295L61.3158 63.2829L79.3776 81.1685" stroke="url(#paint2_linear_9108_15567)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
-  <defs>
-    <linearGradient id="paint0_linear_9108_15567" x1="67.5" y1="-44.5161" x2="67.5" y2="123.5" gradientUnits="userSpaceOnUse">
-      <stop offset="0.0560296" stop-color="#FF4F4F" stop-opacity="0" />
-      <stop offset="0.35885" stop-color="#FF4F4F" stop-opacity="0.29" />
-      <stop offset="0.438769" stop-color="#FF6868" stop-opacity="0.27" />
-      <stop offset="1" stop-color="#FF6868" />
-    </linearGradient>
-    <linearGradient id="paint1_linear_9108_15567" x1="53.5217" y1="47.4097" x2="80.4619" y2="47.4097" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FF8A8A" />
-      <stop offset="1" stop-color="#DA5D5D" />
-    </linearGradient>
-    <linearGradient id="paint2_linear_9108_15567" x1="53.5217" y1="91.788" x2="80.4619" y2="91.788" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FF8A8A" />
-      <stop offset="1" stop-color="#DA5D5D" />
-    </linearGradient>
-  </defs>
+<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.992188" y="0.074707" width="4" height="4" fill="#FF4B4B"/>
+<rect x="4.99219" y="4.07495" width="4" height="4" fill="#FF4B4B"/>
+<rect x="8.99609" y="8.07471" width="4" height="4" fill="#FF4B4B"/>
+<rect x="12.9922" y="12.0747" width="4" height="4" fill="#FF4B4B"/>
+<rect x="16.9922" y="16.0747" width="4" height="4" fill="#FF4B4B"/>
+<rect x="20.9922" y="0.074707" width="4" height="4" transform="rotate(90 20.9922 0.074707)" fill="#FF4B4B"/>
+<rect x="16.9922" y="4.07495" width="4" height="4" transform="rotate(90 16.9922 4.07495)" fill="#FF4B4B"/>
+<rect x="12.9961" y="8.07471" width="4" height="4" transform="rotate(90 12.9961 8.07471)" fill="#FF4B4B"/>
+<rect x="8.99609" y="12.0747" width="4" height="4" transform="rotate(90 8.99609 12.0747)" fill="#FF4B4B"/>
+<rect x="4.99219" y="16.0747" width="4" height="4" transform="rotate(90 4.99219 16.0747)" fill="#FF4B4B"/>
 </svg>
-  

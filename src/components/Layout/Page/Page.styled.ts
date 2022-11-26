@@ -14,7 +14,7 @@ export const SPage = styled.div`
 
   background: ${theme.gradients.background};
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding-bottom: 0;
   }
 `
@@ -24,7 +24,7 @@ export const SPageContent = styled.main`
   padding: 0 12px;
   overflow-x: hidden;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding: 0 20px;
   }
 `
@@ -34,7 +34,7 @@ export const SPageInner = styled.div`
   max-width: 1109px;
   margin: 0 auto;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding: 44px 0;
   }
 `

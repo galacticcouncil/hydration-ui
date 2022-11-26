@@ -3,7 +3,7 @@ import { Heading } from "components/Typography/Heading/Heading"
 import { Trans, useTranslation } from "react-i18next"
 import { useVestingScheduleEnd, useVestingTotalVestedAmount } from "api/vesting"
 import { useSpotPrice } from "api/spotPrice"
-import { useAUSD } from "api/asset"
+import { useUsdPeggedAsset } from "api/asset"
 import { useMemo } from "react"
 import { css } from "@emotion/react"
 import { theme } from "theme"
@@ -20,8 +20,8 @@ export const WalletVestingHeader = () => {
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
   const { data: vestingScheduleEnd } = useVestingScheduleEnd()
 
-  const AUSD = useAUSD()
-  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, AUSD.data?.id)
+  const usd = useUsdPeggedAsset()
+  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, usd.data?.id)
   const { data: nativeAsset } = useAssetMeta(NATIVE_ASSET_ID)
 
   const totalVestedValue = totalVestedAmount ?? BN_0
@@ -42,18 +42,8 @@ export const WalletVestingHeader = () => {
         justify: "space-between",
       }}
     >
-      <div
-        sx={{
-          flex: ["column", "row"],
-          width: "100%",
-        }}
-      >
-        <div
-          sx={{
-            flex: ["row", "column"],
-            justify: "space-between",
-          }}
-        >
+      <div sx={{ flex: ["column", "row"], width: "100%" }}>
+        <div sx={{ flex: ["row", "column"], justify: "space-between" }}>
           <Text color="brightBlue300">{t("wallet.vesting.total_vested")}</Text>
           <div sx={{ flex: "row", align: "start" }}>
             <Heading as="h3" lh={[25, 42]} sx={{ fontSize: [19, 34] }}>

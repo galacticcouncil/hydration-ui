@@ -16,10 +16,10 @@ import type {
   CheckInherentsResult,
   InherentData,
 } from "@polkadot/types/interfaces/blockbuilder"
+import type { BlockHash } from "@polkadot/types/interfaces/chain"
 import type { AuthorityId } from "@polkadot/types/interfaces/consensus"
 import type { CollationInfo } from "@polkadot/types/interfaces/cumulus"
 import type { Extrinsic } from "@polkadot/types/interfaces/extrinsics"
-import type { BlockHash } from "@polkadot/types/interfaces/chain"
 import type { OpaqueMetadata } from "@polkadot/types/interfaces/metadata"
 import type {
   FeeDetails,
@@ -88,10 +88,6 @@ declare module "@polkadot/api-base/types/calls" {
         ) => Observable<ApplyExtrinsicResult>
       >
       /**
-       * Finish the current block.
-       **/
-      finalizeBlock: AugmentedCall<ApiType, () => Observable<Header>>
-      /**
        * Check that the inherents are valid.
        **/
       checkInherents: AugmentedCall<
@@ -105,6 +101,10 @@ declare module "@polkadot/api-base/types/calls" {
           data: InherentData | { data?: any } | string | Uint8Array,
         ) => Observable<CheckInherentsResult>
       >
+      /**
+       * Finish the current block.
+       **/
+      finalizeBlock: AugmentedCall<ApiType, () => Observable<Header>>
       /**
        * Generate inherent extrinsics.
        **/

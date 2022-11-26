@@ -12,7 +12,7 @@ export const SSchedule = styled.div`
   margin-top: 26px;
   position: relative;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     background: linear-gradient(
       180deg,
       rgba(0, 86, 158, 0.2) 0%,
@@ -51,7 +51,7 @@ export const SInner = styled.div`
   justify-content: space-between;
   align-items: start;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     flex-direction: row;
     padding: 46px 74px;
     align-items: center;
@@ -84,12 +84,12 @@ export const SClaimButton = styled(Button)`
     &::after {
       all: unset;
     }
-    @media (${theme.viewport.gte.sm}) {
+    @media ${theme.viewport.gte.sm} {
       border: unset;
     }
   }
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     border: unset;
 
     box-shadow: unset;

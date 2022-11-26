@@ -28,7 +28,7 @@ export const SContainer = styled.label<{ error?: boolean }>`
         error ? theme.colors.error : theme.colors.brightBlue600};
   }
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding: 12px;
   }
 `

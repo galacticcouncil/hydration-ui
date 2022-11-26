@@ -3,7 +3,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { UseMutationResult } from "@tanstack/react-query"
 import { useToast } from "state/toasts"
-import { Button } from "components/Button/Button"
+import { ButtonTransparent } from "components/Button/Button"
 
 export function ReviewTransactionToast<
   TData = unknown,
@@ -50,15 +50,18 @@ export function ReviewTransactionToast<
         children: (
           <div sx={{ flex: "row" }}>
             <Text fs={12}>{t("pools.reviewTransaction.toast.error")}</Text>
-            <Button
+            <ButtonTransparent
               type="button"
-              variant="transparent"
-              size="small"
-              sx={{ p: "0 15px", lineHeight: 12 }}
+              sx={{
+                p: "0 15px",
+                lineHeight: 12,
+                fontSize: 12,
+                color: "brightBlue300",
+              }}
               onClick={() => reviewRef.current?.()}
             >
               {t("pools.reviewTransaction.modal.error.review")}
-            </Button>
+            </ButtonTransparent>
           </div>
         ),
       })

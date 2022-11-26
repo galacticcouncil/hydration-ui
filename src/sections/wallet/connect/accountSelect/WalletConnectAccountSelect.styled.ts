@@ -12,7 +12,7 @@ export const SContainer = styled.div`
   overflow-x: hidden;
   overflow-y: auto;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     max-height: 465px;
   }
 

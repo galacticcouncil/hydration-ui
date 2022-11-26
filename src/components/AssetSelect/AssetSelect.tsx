@@ -12,15 +12,17 @@ import {
 import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 import { getFloatingPointAmount } from "utils/balance"
-import { useAUSD } from "api/asset"
+import { useUsdPeggedAsset } from "api/asset"
 import { useSpotPrice } from "api/spotPrice"
 import { Maybe } from "utils/helpers"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { theme } from "theme"
+import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
 
 export const AssetSelect = (props: {
   name: string
   value: string
+  error?: string
 
   title: ReactNode
   className?: string
@@ -36,8 +38,8 @@ export const AssetSelect = (props: {
 }) => {
   const { t } = useTranslation()
 
-  const aUSD = useAUSD()
-  const spotPrice = useSpotPrice(props.asset, aUSD.data?.id)
+  const usd = useUsdPeggedAsset()
+  const spotPrice = useSpotPrice(props.asset, usd.data?.id)
 
   const aUSDValue = useMemo(() => {
     if (!props.value) return null
@@ -47,7 +49,11 @@ export const AssetSelect = (props: {
 
   return (
     <>
-      <SContainer className={props.className} htmlFor={props.name}>
+      <SContainer
+        className={props.className}
+        htmlFor={props.name}
+        error={!!props.error}
+      >
         <div sx={{ flex: "row", justify: "space-between" }}>
           <Text
             fw={500}
@@ -128,9 +134,12 @@ export const AssetSelect = (props: {
             onChange={props.onChange}
             dollars={t("value.usd", { amount: aUSDValue })}
             placeholder="0.00"
+            unit={props.assetName}
+            error={props.error}
           />
         </div>
       </SContainer>
+      {props.error && <SErrorMessage>{props.error}</SErrorMessage>}
     </>
   )
 }

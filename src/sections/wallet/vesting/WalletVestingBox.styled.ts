@@ -33,7 +33,7 @@ export const SBox = styled.div`
     pointer-events: none;
   }
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     box-shadow: 0px 10px 30px rgba(91, 144, 172, 0.12),
       3px 3px 0px rgba(126, 161, 194, 0.12);
     margin: 0;

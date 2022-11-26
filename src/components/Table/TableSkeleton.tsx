@@ -41,44 +41,45 @@ export const TableSkeleton = ({
           {title}
         </Text>
       </TableTitle>
-      <Table>
-        {!hideHeader && (
-          <TableHeaderContent>
-            {table.getHeaderGroups().map((hg) => (
-              <TableRow key={hg.id}>
-                {hg.headers.map((header) => (
-                  <TableSortHeader key={header.id} canSort={false}>
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
-                  </TableSortHeader>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeaderContent>
+      <div css={{ position: "relative" }}>
+        {placeholder && (
+          <TablePlaceholderContent>{placeholder}</TablePlaceholderContent>
         )}
-        <TableBodyContent>
-          {placeholder && (
-            <tr>
-              <td colSpan={9999}>
-                <TablePlaceholderContent>{placeholder}</TablePlaceholderContent>
-              </td>
-            </tr>
+        <Table>
+          {!hideHeader && (
+            <TableHeaderContent>
+              {table.getHeaderGroups().map((hg) => (
+                <TableRow key={hg.id}>
+                  {hg.headers.map((header) => (
+                    <TableSortHeader key={header.id} canSort={false}>
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                    </TableSortHeader>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeaderContent>
           )}
-          {table.getRowModel().rows.map((row, i) => (
-            <Fragment key={row.id}>
-              <TableRow isOdd={!(i % 2)}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableData key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableData>
-                ))}
-              </TableRow>
-            </Fragment>
-          ))}
-        </TableBodyContent>
-      </Table>
+          <TableBodyContent>
+            {table.getRowModel().rows.map((row, i) => (
+              <Fragment key={row.id}>
+                <TableRow isOdd={!(i % 2)}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableData key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableData>
+                  ))}
+                </TableRow>
+              </Fragment>
+            ))}
+          </TableBodyContent>
+        </Table>
+      </div>
     </TableContainer>
   )
 }

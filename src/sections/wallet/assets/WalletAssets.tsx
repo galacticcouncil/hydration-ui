@@ -4,10 +4,15 @@ import { WalletAssetsTableSkeleton } from "sections/wallet/assets/table/skeleton
 import { WalletAssetsTable } from "sections/wallet/assets/table/WalletAssetsTable"
 import { useAccountStore } from "state/store"
 import { WalletAssetsHeader } from "./WalletAssetsHeader"
+import { WalletLiquidityPositionsSkeleton } from "./table/skeleton/WalletLiquidityPositionsSkeleton"
 
 export const WalletAssets = () => {
   const { account } = useAccountStore()
-  const { data, isLoading } = useAssetsTableData()
+  const assetTableQuery = useAssetsTableData()
+
+  const queries = [assetTableQuery]
+  const isLoading = queries.some((query) => query.isLoading)
+  const hasData = queries.every((query) => query.data)
 
   return (
     <div sx={{ mt: [34, 56] }}>
@@ -16,13 +21,30 @@ export const WalletAssets = () => {
       ) : isLoading ? (
         <>
           <WalletAssetsHeader isLoading={isLoading} />
-          <WalletAssetsTableSkeleton />
+          <div
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 20,
+            }}
+          >
+            <WalletAssetsTableSkeleton />
+            <WalletLiquidityPositionsSkeleton />
+          </div>
         </>
       ) : (
-        data && (
+        hasData && (
           <>
-            <WalletAssetsHeader data={data} />
-            <WalletAssetsTable data={data} />
+            <WalletAssetsHeader data={assetTableQuery.data} />
+            <div
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 20,
+              }}
+            >
+              <WalletAssetsTable data={assetTableQuery.data} />
+            </div>
           </>
         )
       )}

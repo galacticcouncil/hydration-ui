@@ -31,7 +31,14 @@ export const WalletAssetsTableActions = (props: Props) => {
           <ChevronRightIcon />
         </ButtonTransparent>
       </div>
-      <div sx={{ flex: "row", gap: 10, display: ["none", "flex"] }}>
+      <div
+        sx={{
+          flex: "row",
+          gap: 10,
+          display: ["none", "flex"],
+          align: "center",
+        }}
+      >
         <TableAction
           icon={<BuyIcon />}
           onClick={() => console.log("buy", props.symbol)}

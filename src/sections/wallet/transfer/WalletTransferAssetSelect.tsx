@@ -16,6 +16,8 @@ export const WalletTransferAssetSelect = (props: {
 
   title?: string
   className?: string
+
+  error?: string
 }) => {
   const { account } = useAccountStore()
   const asset = useAsset(props.asset)
@@ -40,6 +42,7 @@ export const WalletTransferAssetSelect = (props: {
         balance={balance.data?.balance}
         assetName={asset.data?.name?.toString()}
         onSelectAssetClick={openModal}
+        error={props.error}
       />
     </>
   )

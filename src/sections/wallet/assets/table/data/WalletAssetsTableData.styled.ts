@@ -8,7 +8,7 @@ export const SIcon = styled.div<{ large?: boolean }>`
     height: ${({ large }) => (large ? "42px" : "24px")};
   }
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     &,
     svg {
       width: 32px;

@@ -16,6 +16,7 @@ import {
 import { WalletAssetsTableActions } from "sections/wallet/assets/table/actions/WalletAssetsTableActions"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
 
 export const useAssetsTable = (
   data: AssetsTableData[],
@@ -99,4 +100,5 @@ export type AssetsTableData = {
   locked: BN
   lockedUSD: BN
   origin: string
+  assetType: PalletAssetRegistryAssetType["type"]
 }

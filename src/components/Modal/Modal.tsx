@@ -81,8 +81,8 @@ export const ModalMeta = (props: PropsOverride) => {
 
 export const Modal: FC<PropsWithChildren<Props>> = (props) => {
   const { t } = useTranslation()
-
   const [propsOverride, setPropsOverride] = useState<PropsOverride | null>(null)
+
   const mergedProps = { ...props, ...propsOverride }
   const { isDrawer, titleDrawer, secondaryIcon, title, withoutClose } =
     mergedProps
@@ -97,9 +97,12 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
             <Backdrop variant={mergedProps.variant} />
 
             <ModalWindow
-              maxWidth={mergedProps.width}
-              onEscapeKeyDown={props.onClose}
               isDrawer={isDrawer}
+              maxWidth={mergedProps.width}
+              onEscapeKeyDown={!props.withoutClose ? props.onClose : undefined}
+              onInteractOutside={
+                !props.withoutClose ? props.onClose : undefined
+              }
             >
               {props.topContent}
               <ModalWindowContainer isDrawer={isDrawer}>

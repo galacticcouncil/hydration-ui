@@ -117,6 +117,30 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
+    claims: {
+      /**
+       * Value reached maximum and cannot be incremented further
+       **/
+      BalanceOverflow: AugmentedError<ApiType>
+      /**
+       * Ethereum signature is not valid
+       **/
+      InvalidEthereumSignature: AugmentedError<ApiType>
+      /**
+       * Claim is not valid
+       **/
+      NoClaimOrAlreadyClaimed: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
+    collatorRewards: {
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
     collatorSelection: {
       /**
        * User is already a candidate
@@ -370,36 +394,6 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
-    duster: {
-      /**
-       * Account is excluded from dusting.
-       **/
-      AccountBlacklisted: AugmentedError<ApiType>
-      /**
-       * Account is not present in the non-dustable list.
-       **/
-      AccountNotBlacklisted: AugmentedError<ApiType>
-      /**
-       * The balance is sufficient to keep account open.
-       **/
-      BalanceSufficient: AugmentedError<ApiType>
-      /**
-       * Dust account is not set.
-       **/
-      DustAccountNotSet: AugmentedError<ApiType>
-      /**
-       * Reserve account is not set.
-       **/
-      ReserveAccountNotSet: AugmentedError<ApiType>
-      /**
-       * The balance is zero.
-       **/
-      ZeroBalance: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
     elections: {
       /**
        * Duplicated candidate submission.
@@ -474,40 +468,6 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
-    exchange: {
-      /**
-       * Insufficient asset balance.
-       **/
-      InsufficientAssetBalance: AugmentedError<ApiType>
-      /**
-       * Overflow
-       **/
-      IntentionCountOverflow: AugmentedError<ApiType>
-      /**
-       * Trade amount is too low.
-       **/
-      MinimumTradeLimitNotReached: AugmentedError<ApiType>
-      /**
-       * Token pool does not exist.
-       **/
-      TokenPoolNotFound: AugmentedError<ApiType>
-      /**
-       * Given trading limit has been exceeded (buy).
-       **/
-      TradeAmountExceededLimit: AugmentedError<ApiType>
-      /**
-       * Given trading limit has not been reached (sell).
-       **/
-      TradeAmountNotReachedLimit: AugmentedError<ApiType>
-      /**
-       * Overflow
-       **/
-      ZeroSpotPrice: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
     identity: {
       /**
        * Account ID is already named.
@@ -573,158 +533,6 @@ declare module "@polkadot/api-base/types/errors" {
        * Too many subs-accounts.
        **/
       TooManySubAccounts: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
-    lbp: {
-      /**
-       * Liquidity being added should not be zero
-       **/
-      CannotAddZeroLiquidity: AugmentedError<ApiType>
-      /**
-       * Pool assets can not be the same
-       **/
-      CannotCreatePoolWithSameAssets: AugmentedError<ApiType>
-      /**
-       * Invalid fee amount
-       **/
-      FeeAmountInvalid: AugmentedError<ApiType>
-      /**
-       * Not more than one fee collector per asset id
-       **/
-      FeeCollectorWithAssetAlreadyUsed: AugmentedError<ApiType>
-      /**
-       * Asset balance too low
-       **/
-      InsufficientAssetBalance: AugmentedError<ApiType>
-      /**
-       * Liquidity has not reached the required minimum.
-       **/
-      InsufficientLiquidity: AugmentedError<ApiType>
-      /**
-       * Amount is less than minimum trading limit.
-       **/
-      InsufficientTradingAmount: AugmentedError<ApiType>
-      /**
-       * Invalid block range
-       **/
-      InvalidBlockRange: AugmentedError<ApiType>
-      /**
-       * Weight set is out of range
-       **/
-      InvalidWeight: AugmentedError<ApiType>
-      /**
-       * Trade amount is too high
-       **/
-      MaxInRatioExceeded: AugmentedError<ApiType>
-      /**
-       * Trade amount is too high
-       **/
-      MaxOutRatioExceeded: AugmentedError<ApiType>
-      /**
-       * Sale duration is too long
-       **/
-      MaxSaleDurationExceeded: AugmentedError<ApiType>
-      /**
-       * Nothing to update
-       **/
-      NothingToUpdate: AugmentedError<ApiType>
-      /**
-       * Account is not a pool owner
-       **/
-      NotOwner: AugmentedError<ApiType>
-      /**
-       * An unexpected integer overflow occurred
-       **/
-      Overflow: AugmentedError<ApiType>
-      /**
-       * Pool has been already created
-       **/
-      PoolAlreadyExists: AugmentedError<ApiType>
-      /**
-       * Pool does not exist
-       **/
-      PoolNotFound: AugmentedError<ApiType>
-      /**
-       * Sale is not running
-       **/
-      SaleIsNotRunning: AugmentedError<ApiType>
-      /**
-       * Sale is still in progress
-       **/
-      SaleNotEnded: AugmentedError<ApiType>
-      /**
-       * Sale already started
-       **/
-      SaleStarted: AugmentedError<ApiType>
-      /**
-       * Trading limit reached
-       **/
-      TradingLimitReached: AugmentedError<ApiType>
-      /**
-       * Calculation error
-       **/
-      WeightCalculationError: AugmentedError<ApiType>
-      /**
-       * Can not perform a trade with zero amount
-       **/
-      ZeroAmount: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
-    marketplace: {
-      /**
-       * User has to be the token owner to accept an offer
-       **/
-      AcceptNotAuthorized: AugmentedError<ApiType>
-      /**
-       * User already made an offer for this token
-       **/
-      AlreadyOffered: AugmentedError<ApiType>
-      /**
-       * Cannot buy a token from yourself
-       **/
-      BuyFromSelf: AugmentedError<ApiType>
-      /**
-       * Collection or item does not exist
-       **/
-      CollectionOrItemUnknown: AugmentedError<ApiType>
-      /**
-       * Token is currently not for sale
-       **/
-      NotForSale: AugmentedError<ApiType>
-      /**
-       * Royalty not in 0-9_999 range
-       **/
-      NotInRange: AugmentedError<ApiType>
-      /**
-       * Account is not the owner of the token
-       **/
-      NotTheTokenOwner: AugmentedError<ApiType>
-      /**
-       * Offer is no longer valid
-       **/
-      OfferExpired: AugmentedError<ApiType>
-      /**
-       * Offer is lower than the minimum threshold
-       **/
-      OfferTooLow: AugmentedError<ApiType>
-      /**
-       * Royalty can be set only once
-       **/
-      RoyaltyAlreadySet: AugmentedError<ApiType>
-      /**
-       * No offer for this token found from the user
-       **/
-      UnknownOffer: AugmentedError<ApiType>
-      /**
-       * User has to be offer maker or token owner to withdraw an offer
-       **/
-      WithdrawNotAuthorized: AugmentedError<ApiType>
       /**
        * Generic error
        **/
@@ -826,35 +634,111 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
-    nft: {
+    omnipool: {
       /**
-       * Collection does not exist
+       * Asset is already in omnipool
        **/
-      CollectionUnknown: AugmentedError<ApiType>
+      AssetAlreadyAdded: AugmentedError<ApiType>
       /**
-       * ID reserved for runtime
+       * Asset is not in omnipool
        **/
-      IdReserved: AugmentedError<ApiType>
+      AssetNotFound: AugmentedError<ApiType>
       /**
-       * Item does not exist
+       * Asset is not registered in asset registry
        **/
-      ItemUnknown: AugmentedError<ApiType>
+      AssetNotRegistered: AugmentedError<ApiType>
       /**
-       * Count of collections overflown
+       * Asset is not allowed to be refunded.
        **/
-      NoAvailableCollectionId: AugmentedError<ApiType>
+      AssetRefundNotAllowed: AugmentedError<ApiType>
       /**
-       * Count of items overflown
+       * Asset weight cap has been exceeded.
        **/
-      NoAvailableItemId: AugmentedError<ApiType>
+      AssetWeightCapExceeded: AugmentedError<ApiType>
       /**
-       * Operation not permitted
+       * Minimum limit has not been reached during trade.
        **/
-      NotPermitted: AugmentedError<ApiType>
+      BuyLimitNotReached: AugmentedError<ApiType>
       /**
-       * Collection still contains minted tokens
+       * Signed account is not owner of position instance.
        **/
-      TokenCollectionNotEmpty: AugmentedError<ApiType>
+      Forbidden: AugmentedError<ApiType>
+      /**
+       * LRNA update after trade results in positive value.
+       **/
+      HubAssetUpdateError: AugmentedError<ApiType>
+      /**
+       * Balance too low
+       **/
+      InsufficientBalance: AugmentedError<ApiType>
+      /**
+       * Provided liquidity is below minimum allowed limit
+       **/
+      InsufficientLiquidity: AugmentedError<ApiType>
+      /**
+       * Insufficient shares in position
+       **/
+      InsufficientShares: AugmentedError<ApiType>
+      /**
+       * Traded amount is below minimum allowed limit
+       **/
+      InsufficientTradingAmount: AugmentedError<ApiType>
+      /**
+       * HJb Asset's trabable is only allowed to be SELL or BUY.
+       **/
+      InvalidHubAssetTradableState: AugmentedError<ApiType>
+      /**
+       * Invalid initial asset price. Price must be non-zero.
+       **/
+      InvalidInitialAssetPrice: AugmentedError<ApiType>
+      /**
+       * Amount of shares provided cannot be 0.
+       **/
+      InvalidSharesAmount: AugmentedError<ApiType>
+      /**
+       * Max fraction of asset reserve to sell has been exceeded.
+       **/
+      MaxInRatioExceeded: AugmentedError<ApiType>
+      /**
+       * Max fraction of asset reserve to buy has been exceeded.
+       **/
+      MaxOutRatioExceeded: AugmentedError<ApiType>
+      /**
+       * Adding token as protocol ( root ), token balance has not been updated prior to add token.
+       **/
+      MissingBalance: AugmentedError<ApiType>
+      /**
+       * No native asset in the pool yet.
+       **/
+      NoNativeAssetInPool: AugmentedError<ApiType>
+      /**
+       * No stable asset in the pool
+       **/
+      NoStableAssetInPool: AugmentedError<ApiType>
+      /**
+       * Asset is not allowed to be bought or sold
+       **/
+      NotAllowed: AugmentedError<ApiType>
+      /**
+       * Position has not been found.
+       **/
+      PositionNotFound: AugmentedError<ApiType>
+      /**
+       * Imbalance results in positive value.
+       **/
+      PositiveImbalance: AugmentedError<ApiType>
+      /**
+       * Sell or buy with same asset ids is not allowed.
+       **/
+      SameAssetTradeNotAllowed: AugmentedError<ApiType>
+      /**
+       * Maximum limit has been exceeded during trade.
+       **/
+      SellLimitExceeded: AugmentedError<ApiType>
+      /**
+       * TVL cap has been exceeded
+       **/
+      TVLCapExceeded: AugmentedError<ApiType>
       /**
        * Generic error
        **/
@@ -1055,6 +939,28 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
+    scheduler: {
+      /**
+       * Failed to schedule a call
+       **/
+      FailedToSchedule: AugmentedError<ApiType>
+      /**
+       * Cannot find the scheduled call.
+       **/
+      NotFound: AugmentedError<ApiType>
+      /**
+       * Reschedule failed because it does not change scheduled time.
+       **/
+      RescheduleNoChange: AugmentedError<ApiType>
+      /**
+       * Given target block number is in the past.
+       **/
+      TargetBlockNumberInPast: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
     session: {
       /**
        * Registered duplicate key.
@@ -1076,28 +982,6 @@ declare module "@polkadot/api-base/types/errors" {
        * No keys are associated with this account.
        **/
       NoKeys: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
-    scheduler: {
-      /**
-       * Failed to schedule a call
-       **/
-      FailedToSchedule: AugmentedError<ApiType>
-      /**
-       * Cannot find the scheduled call.
-       **/
-      NotFound: AugmentedError<ApiType>
-      /**
-       * Reschedule failed because it does not change scheduled time.
-       **/
-      RescheduleNoChange: AugmentedError<ApiType>
-      /**
-       * Given target block number is in the past.
-       **/
-      TargetBlockNumberInPast: AugmentedError<ApiType>
       /**
        * Generic error
        **/
@@ -1253,20 +1137,6 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       MaxLocksExceeded: AugmentedError<ApiType>
       TooManyReserves: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
-    transactionPause: {
-      /**
-       * can not pause
-       **/
-      CannotPause: AugmentedError<ApiType>
-      /**
-       * invalid character encoding
-       **/
-      InvalidCharacter: AugmentedError<ApiType>
       /**
        * Generic error
        **/
@@ -1547,261 +1417,6 @@ declare module "@polkadot/api-base/types/errors" {
        * The fee is zero.
        **/
       ZeroFee: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
-    xyk: {
-      /**
-       * Overflow
-       **/
-      AddAssetAmountInvalid: AugmentedError<ApiType>
-      /**
-       * Asset amount has exceeded given limit.
-       **/
-      AssetAmountExceededLimit: AugmentedError<ApiType>
-      /**
-       * Asset amount has not reached given limit.
-       **/
-      AssetAmountNotReachedLimit: AugmentedError<ApiType>
-      /**
-       * Overflow
-       **/
-      BuyAssetAmountInvalid: AugmentedError<ApiType>
-      /**
-       * Overflow
-       **/
-      CannotApplyDiscount: AugmentedError<ApiType>
-      /**
-       * Pool cannot be created due to outside factors.
-       **/
-      CannotCreatePool: AugmentedError<ApiType>
-      /**
-       * It is not allowed to create a pool between same assets.
-       **/
-      CannotCreatePoolWithSameAssets: AugmentedError<ApiType>
-      /**
-       * Overflow
-       **/
-      CreatePoolAssetAmountInvalid: AugmentedError<ApiType>
-      /**
-       * Overflow
-       **/
-      FeeAmountInvalid: AugmentedError<ApiType>
-      /**
-       * Asset balance is not sufficient.
-       **/
-      InsufficientAssetBalance: AugmentedError<ApiType>
-      /**
-       * Liquidity has not reached the required minimum.
-       **/
-      InsufficientLiquidity: AugmentedError<ApiType>
-      /**
-       * Not enough core asset liquidity in the pool.
-       **/
-      InsufficientNativeCurrencyBalance: AugmentedError<ApiType>
-      /**
-       * Not enough asset liquidity in the pool.
-       **/
-      InsufficientPoolAssetBalance: AugmentedError<ApiType>
-      /**
-       * Amount is less than min trading limit.
-       **/
-      InsufficientTradingAmount: AugmentedError<ApiType>
-      /**
-       * Overflow
-       **/
-      InvalidLiquidityAmount: AugmentedError<ApiType>
-      /**
-       * Overflow
-       **/
-      InvalidMintedLiquidity: AugmentedError<ApiType>
-      /**
-       * Max fraction of pool to sell in single transaction has been exceeded.
-       **/
-      MaxInRatioExceeded: AugmentedError<ApiType>
-      /**
-       * Max fraction of pool to buy in single transaction has been exceeded.
-       **/
-      MaxOutRatioExceeded: AugmentedError<ApiType>
-      /**
-       * Overflow
-       **/
-      Overflow: AugmentedError<ApiType>
-      /**
-       * Overflow
-       **/
-      RemoveAssetAmountInvalid: AugmentedError<ApiType>
-      /**
-       * Overflow
-       **/
-      SellAssetAmountInvalid: AugmentedError<ApiType>
-      /**
-       * Liquidity pool for given assets already exists.
-       **/
-      TokenPoolAlreadyExists: AugmentedError<ApiType>
-      /**
-       * Liquidity pool for given assets does not exist.
-       **/
-      TokenPoolNotFound: AugmentedError<ApiType>
-      /**
-       * It is not allowed to create a pool with zero initial price.
-       **/
-      ZeroInitialPrice: AugmentedError<ApiType>
-      /**
-       * Liquidity is zero.
-       **/
-      ZeroLiquidity: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
-    xykLiquidityMining: {
-      /**
-       * Nft pallet didn't return an owner.
-       **/
-      CantFindDepositOwner: AugmentedError<ApiType>
-      /**
-       * XYK did not return assets for given pool id
-       **/
-      CantGetXykAssets: AugmentedError<ApiType>
-      /**
-       * Deposit data not found
-       **/
-      DepositDataNotFound: AugmentedError<ApiType>
-      /**
-       * Account balance of XYK pool shares is not sufficient.
-       **/
-      InsufficientXykSharesBalance: AugmentedError<ApiType>
-      /**
-       * Account is not deposit owner.
-       **/
-      NotDepositOwner: AugmentedError<ApiType>
-      /**
-       * XYK pool does not exist
-       **/
-      XykPoolDoesntExist: AugmentedError<ApiType>
-      /**
-       * Calculated reward to claim is 0.
-       **/
-      ZeroClaimedRewards: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
-    xykWarehouseLM: {
-      /**
-       * Deposit does not exist.
-       **/
-      DepositNotFound: AugmentedError<ApiType>
-      /**
-       * Multiple claims in the same period is not allowed.
-       **/
-      DoubleClaimInPeriod: AugmentedError<ApiType>
-      /**
-       * Trying to lock LP shares into already locked yield farm.
-       **/
-      DoubleLock: AugmentedError<ApiType>
-      /**
-       * Account creation from id failed.
-       **/
-      ErrorGetAccountId: AugmentedError<ApiType>
-      /**
-       * Account is not allowed to perform action.
-       **/
-      Forbidden: AugmentedError<ApiType>
-      /**
-       * Max number of yield farms in global farm was reached. Global farm can't accept new
-       * yield farms until some yield farm is not removed from storage.
-       **/
-      GlobalFarmIsFull: AugmentedError<ApiType>
-      /**
-       * One or more yield farms exist in global farm.
-       **/
-      GlobalFarmIsNotEmpty: AugmentedError<ApiType>
-      /**
-       * Global farm does not exist.
-       **/
-      GlobalFarmNotFound: AugmentedError<ApiType>
-      /**
-       * Insufficient rewards on `Pot` account.
-       **/
-      InsufficientPotBalance: AugmentedError<ApiType>
-      /**
-       * Reward currency balance is not sufficient.
-       **/
-      InsufficientRewardCurrencyBalance: AugmentedError<ApiType>
-      /**
-       * Blocks per period can't be 0.
-       **/
-      InvalidBlocksPerPeriod: AugmentedError<ApiType>
-      /**
-       * LP shares amount is not valid.
-       **/
-      InvalidDepositAmount: AugmentedError<ApiType>
-      /**
-       * Provided farm id is not valid. Valid range is [1, u32::MAX)
-       **/
-      InvalidFarmId: AugmentedError<ApiType>
-      /**
-       * Loyalty curve's initial reward percentage is not valid. Valid range is: [0, 1).
-       **/
-      InvalidInitialRewardPercentage: AugmentedError<ApiType>
-      /**
-       * Invalid min. deposit was set for global farm.
-       **/
-      InvalidMinDeposit: AugmentedError<ApiType>
-      /**
-       * Yield farm multiplier can't be 0.
-       **/
-      InvalidMultiplier: AugmentedError<ApiType>
-      /**
-       * Planned yielding periods is less than `MinPlannedYieldingPeriods`.
-       **/
-      InvalidPlannedYieldingPeriods: AugmentedError<ApiType>
-      /**
-       * Price adjustment multiplier can't be 0.
-       **/
-      InvalidPriceAdjustment: AugmentedError<ApiType>
-      /**
-       * Total rewards is less than `MinTotalFarmRewards`.
-       **/
-      InvalidTotalRewards: AugmentedError<ApiType>
-      /**
-       * Yield per period can't be 0.
-       **/
-      InvalidYieldPerPeriod: AugmentedError<ApiType>
-      /**
-       * Liquidity mining is canceled.
-       **/
-      LiquidityMiningCanceled: AugmentedError<ApiType>
-      /**
-       * Liquidity mining is not canceled.
-       **/
-      LiquidityMiningIsActive: AugmentedError<ApiType>
-      /**
-       * Maximum number of locks reached for deposit.
-       **/
-      MaxEntriesPerDeposit: AugmentedError<ApiType>
-      /**
-       * Farm's `incentivized_asset` is missing in provided asset pair.
-       **/
-      MissingIncentivizedAsset: AugmentedError<ApiType>
-      /**
-       * Yield farm with given `amm_pool_id` already exists in global farm.
-       **/
-      YieldFarmAlreadyExists: AugmentedError<ApiType>
-      /**
-       * Yield farm entry doesn't exist for given deposit.
-       **/
-      YieldFarmEntryNotFound: AugmentedError<ApiType>
-      /**
-       * Yield farm does not exist.
-       **/
-      YieldFarmNotFound: AugmentedError<ApiType>
       /**
        * Generic error
        **/

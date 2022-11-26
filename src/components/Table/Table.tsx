@@ -6,7 +6,7 @@ import { ReactNode } from "react"
 
 export const TableAction = (props: {
   icon: ReactNode
-  onClick: () => void
+  onClick?: () => void
   children: ReactNode
 }) => {
   return (

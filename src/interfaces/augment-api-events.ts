@@ -25,25 +25,22 @@ import type { ITuple } from "@polkadot/types-codec/types"
 import type {
   AccountId32,
   H256,
-  Perquintill,
+  Permill,
 } from "@polkadot/types/interfaces/runtime"
 import type {
-  CommonRuntimeAssetLocation,
   CommonRuntimeProxyType,
   FrameSupportScheduleLookupError,
   FrameSupportTokensMiscBalanceStatus,
   FrameSupportWeightsDispatchInfo,
   OrmlVestingVestingSchedule,
   PalletAssetRegistryAssetType,
+  PalletClaimsEthereumAddress,
   PalletDemocracyVoteAccountVote,
   PalletDemocracyVoteThreshold,
-  PalletLbpPool,
-  PalletLiquidityMiningLoyaltyCurve,
   PalletMultisigTimepoint,
-  PalletNftCollectionType,
-  PrimitivesAssetAssetPair,
-  PrimitivesIntentionType,
+  PalletOmnipoolTradability,
   SpRuntimeDispatchError,
+  TestingHydradxRuntimeAssetLocation,
   XcmV1MultiAsset,
   XcmV1MultiLocation,
   XcmV1MultiassetMultiAssets,
@@ -65,8 +62,8 @@ declare module "@polkadot/api-base/types/events" {
        **/
       LocationSet: AugmentedEvent<
         ApiType,
-        [assetId: u32, location: CommonRuntimeAssetLocation],
-        { assetId: u32; location: CommonRuntimeAssetLocation }
+        [assetId: u32, location: TestingHydradxRuntimeAssetLocation],
+        { assetId: u32; location: TestingHydradxRuntimeAssetLocation }
       >
       /**
        * Metadata set for an asset.
@@ -205,6 +202,30 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [who: AccountId32, amount: u128],
         { who: AccountId32; amount: u128 }
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    claims: {
+      Claim: AugmentedEvent<
+        ApiType,
+        [AccountId32, PalletClaimsEthereumAddress, u128]
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    collatorRewards: {
+      /**
+       * Collator was rewarded.
+       **/
+      CollatorRewarded: AugmentedEvent<
+        ApiType,
+        [who: AccountId32, amount: u128, currency: u32],
+        { who: AccountId32; amount: u128; currency: u32 }
       >
       /**
        * Generic event
@@ -609,28 +630,6 @@ declare module "@polkadot/api-base/types/events" {
        **/
       [key: string]: AugmentedEvent<ApiType>
     }
-    duster: {
-      /**
-       * Account added to non-dustable list.
-       **/
-      Added: AugmentedEvent<ApiType, [who: AccountId32], { who: AccountId32 }>
-      /**
-       * Account dusted.
-       **/
-      Dusted: AugmentedEvent<
-        ApiType,
-        [who: AccountId32, amount: u128],
-        { who: AccountId32; amount: u128 }
-      >
-      /**
-       * Account removed from non-dustable list.
-       **/
-      Removed: AugmentedEvent<ApiType, [who: AccountId32], { who: AccountId32 }>
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
     elections: {
       /**
        * A candidate was slashed by amount due to failing to obtain a seat as member or
@@ -688,138 +687,6 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [seatHolder: AccountId32, amount: u128],
         { seatHolder: AccountId32; amount: u128 }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
-    exchange: {
-      /**
-       * Error event - insufficient balance of specified asset
-       **/
-      InsufficientAssetBalanceEvent: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          assetId: u32,
-          intentionType: PrimitivesIntentionType,
-          intentionId: H256,
-          errorDetail: SpRuntimeDispatchError,
-        ],
-        {
-          who: AccountId32
-          assetId: u32
-          intentionType: PrimitivesIntentionType
-          intentionId: H256
-          errorDetail: SpRuntimeDispatchError
-        }
-      >
-      /**
-       * Intention registered event
-       **/
-      IntentionRegistered: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          assetA: u32,
-          assetB: u32,
-          amount: u128,
-          intentionType: PrimitivesIntentionType,
-          intentionId: H256,
-        ],
-        {
-          who: AccountId32
-          assetA: u32
-          assetB: u32
-          amount: u128
-          intentionType: PrimitivesIntentionType
-          intentionId: H256
-        }
-      >
-      /**
-       * Intention resolved as AMM Trade
-       **/
-      IntentionResolvedAMMTrade: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          intentionType: PrimitivesIntentionType,
-          intentionId: H256,
-          amount: u128,
-          amountSoldOrBought: u128,
-          poolAccountId: AccountId32,
-        ],
-        {
-          who: AccountId32
-          intentionType: PrimitivesIntentionType
-          intentionId: H256
-          amount: u128
-          amountSoldOrBought: u128
-          poolAccountId: AccountId32
-        }
-      >
-      /**
-       * Intention resolved as Direct Trade
-       **/
-      IntentionResolvedDirectTrade: AugmentedEvent<
-        ApiType,
-        [
-          accountIdA: AccountId32,
-          accountIdB: AccountId32,
-          intentionIdA: H256,
-          intentionIdB: H256,
-          amountA: u128,
-          amountB: u128,
-        ],
-        {
-          accountIdA: AccountId32
-          accountIdB: AccountId32
-          intentionIdA: H256
-          intentionIdB: H256
-          amountA: u128
-          amountB: u128
-        }
-      >
-      /**
-       * Paid fees event
-       **/
-      IntentionResolvedDirectTradeFees: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          intentionId: H256,
-          feeReceiver: AccountId32,
-          assetId: u32,
-          feeAmount: u128,
-        ],
-        {
-          who: AccountId32
-          intentionId: H256
-          feeReceiver: AccountId32
-          assetId: u32
-          feeAmount: u128
-        }
-      >
-      /**
-       * Intention Error Event
-       **/
-      IntentionResolveErrorEvent: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          assetIds: PrimitivesAssetAssetPair,
-          intentionType: PrimitivesIntentionType,
-          intentionId: H256,
-          errorDetail: SpRuntimeDispatchError,
-        ],
-        {
-          who: AccountId32
-          assetIds: PrimitivesAssetAssetPair
-          intentionType: PrimitivesIntentionType
-          intentionId: H256
-          errorDetail: SpRuntimeDispatchError
-        }
       >
       /**
        * Generic event
@@ -907,226 +774,6 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [sub: AccountId32, main: AccountId32, deposit: u128],
         { sub: AccountId32; main: AccountId32; deposit: u128 }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
-    lbp: {
-      /**
-       * Purchase executed.
-       **/
-      BuyExecuted: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          assetOut: u32,
-          assetIn: u32,
-          amount: u128,
-          buyPrice: u128,
-          feeAsset: u32,
-          feeAmount: u128,
-        ],
-        {
-          who: AccountId32
-          assetOut: u32
-          assetIn: u32
-          amount: u128
-          buyPrice: u128
-          feeAsset: u32
-          feeAmount: u128
-        }
-      >
-      /**
-       * New liquidity was provided to the pool.
-       **/
-      LiquidityAdded: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          assetA: u32,
-          assetB: u32,
-          amountA: u128,
-          amountB: u128,
-        ],
-        {
-          who: AccountId32
-          assetA: u32
-          assetB: u32
-          amountA: u128
-          amountB: u128
-        }
-      >
-      /**
-       * Liquidity was removed from the pool and the pool was destroyed.
-       **/
-      LiquidityRemoved: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          assetA: u32,
-          assetB: u32,
-          amountA: u128,
-          amountB: u128,
-        ],
-        {
-          who: AccountId32
-          assetA: u32
-          assetB: u32
-          amountA: u128
-          amountB: u128
-        }
-      >
-      /**
-       * Pool was created by the `CreatePool` origin.
-       **/
-      PoolCreated: AugmentedEvent<
-        ApiType,
-        [pool: AccountId32, data: PalletLbpPool],
-        { pool: AccountId32; data: PalletLbpPool }
-      >
-      /**
-       * Pool data were updated.
-       **/
-      PoolUpdated: AugmentedEvent<
-        ApiType,
-        [pool: AccountId32, data: PalletLbpPool],
-        { pool: AccountId32; data: PalletLbpPool }
-      >
-      /**
-       * Sale executed.
-       **/
-      SellExecuted: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          assetIn: u32,
-          assetOut: u32,
-          amount: u128,
-          salePrice: u128,
-          feeAsset: u32,
-          feeAmount: u128,
-        ],
-        {
-          who: AccountId32
-          assetIn: u32
-          assetOut: u32
-          amount: u128
-          salePrice: u128
-          feeAsset: u32
-          feeAmount: u128
-        }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
-    marketplace: {
-      /**
-       * Offer was accepted
-       **/
-      OfferAccepted: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          collection: u128,
-          item: u128,
-          amount: u128,
-          maker: AccountId32,
-        ],
-        {
-          who: AccountId32
-          collection: u128
-          item: u128
-          amount: u128
-          maker: AccountId32
-        }
-      >
-      /**
-       * Offer was placed on a token
-       **/
-      OfferPlaced: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          collection: u128,
-          item: u128,
-          amount: u128,
-          expires: u32,
-        ],
-        {
-          who: AccountId32
-          collection: u128
-          item: u128
-          amount: u128
-          expires: u32
-        }
-      >
-      /**
-       * Offer was withdrawn
-       **/
-      OfferWithdrawn: AugmentedEvent<
-        ApiType,
-        [who: AccountId32, collection: u128, item: u128],
-        { who: AccountId32; collection: u128; item: u128 }
-      >
-      /**
-       * Marketplace data has been added
-       **/
-      RoyaltyAdded: AugmentedEvent<
-        ApiType,
-        [collection: u128, item: u128, author: AccountId32, royalty: u16],
-        { collection: u128; item: u128; author: AccountId32; royalty: u16 }
-      >
-      /**
-       * Royalty hs been paid to the author
-       **/
-      RoyaltyPaid: AugmentedEvent<
-        ApiType,
-        [
-          collection: u128,
-          item: u128,
-          author: AccountId32,
-          royalty: u16,
-          royaltyAmount: u128,
-        ],
-        {
-          collection: u128
-          item: u128
-          author: AccountId32
-          royalty: u16
-          royaltyAmount: u128
-        }
-      >
-      /**
-       * The price for a token was updated
-       **/
-      TokenPriceUpdated: AugmentedEvent<
-        ApiType,
-        [who: AccountId32, collection: u128, item: u128, price: Option<u128>],
-        { who: AccountId32; collection: u128; item: u128; price: Option<u128> }
-      >
-      /**
-       * Token was sold to a new owner
-       **/
-      TokenSold: AugmentedEvent<
-        ApiType,
-        [
-          owner: AccountId32,
-          buyer: AccountId32,
-          collection: u128,
-          item: u128,
-          price: u128,
-        ],
-        {
-          owner: AccountId32
-          buyer: AccountId32
-          collection: u128
-          item: u128
-          price: u128
-        }
       >
       /**
        * Generic event
@@ -1249,61 +896,151 @@ declare module "@polkadot/api-base/types/events" {
        **/
       [key: string]: AugmentedEvent<ApiType>
     }
-    nft: {
+    omnipool: {
       /**
-       * A collection was created
+       * Amount has been refunded for asset which has not been accepted to add to omnipool.
        **/
-      CollectionCreated: AugmentedEvent<
+      AssetRefunded: AugmentedEvent<
+        ApiType,
+        [assetId: u32, amount: u128, recipient: AccountId32],
+        { assetId: u32; amount: u128; recipient: AccountId32 }
+      >
+      /**
+       * Asset's weight cap has been updated.
+       **/
+      AssetWeightCapUpdated: AugmentedEvent<
+        ApiType,
+        [assetId: u32, cap: Permill],
+        { assetId: u32; cap: Permill }
+      >
+      /**
+       * Buy trade executed.
+       **/
+      BuyExecuted: AugmentedEvent<
         ApiType,
         [
-          owner: AccountId32,
-          collectionId: u128,
-          collectionType: PalletNftCollectionType,
-          metadata: Bytes,
+          who: AccountId32,
+          assetIn: u32,
+          assetOut: u32,
+          amountIn: u128,
+          amountOut: u128,
         ],
         {
-          owner: AccountId32
-          collectionId: u128
-          collectionType: PalletNftCollectionType
-          metadata: Bytes
+          who: AccountId32
+          assetIn: u32
+          assetOut: u32
+          amountIn: u128
+          amountOut: u128
         }
       >
       /**
-       * A collection was destroyed
+       * Liquidity of an asset was added to Omnipool.
        **/
-      CollectionDestroyed: AugmentedEvent<
+      LiquidityAdded: AugmentedEvent<
         ApiType,
-        [owner: AccountId32, collectionId: u128],
-        { owner: AccountId32; collectionId: u128 }
+        [who: AccountId32, assetId: u32, amount: u128, positionId: u128],
+        { who: AccountId32; assetId: u32; amount: u128; positionId: u128 }
       >
       /**
-       * An item was burned
+       * Liquidity of an asset was removed to Omnipool.
        **/
-      ItemBurned: AugmentedEvent<
+      LiquidityRemoved: AugmentedEvent<
         ApiType,
-        [owner: AccountId32, collectionId: u128, itemId: u128],
-        { owner: AccountId32; collectionId: u128; itemId: u128 }
-      >
-      /**
-       * An item was minted
-       **/
-      ItemMinted: AugmentedEvent<
-        ApiType,
-        [owner: AccountId32, collectionId: u128, itemId: u128, metadata: Bytes],
+        [who: AccountId32, positionId: u128, assetId: u32, sharesRemoved: u128],
         {
-          owner: AccountId32
-          collectionId: u128
-          itemId: u128
-          metadata: Bytes
+          who: AccountId32
+          positionId: u128
+          assetId: u32
+          sharesRemoved: u128
         }
       >
       /**
-       * An item was transferred
+       * LP Position was created and NFT instance minted.
        **/
-      ItemTransferred: AugmentedEvent<
+      PositionCreated: AugmentedEvent<
         ApiType,
-        [from: AccountId32, to: AccountId32, collectionId: u128, itemId: u128],
-        { from: AccountId32; to: AccountId32; collectionId: u128; itemId: u128 }
+        [
+          positionId: u128,
+          owner: AccountId32,
+          asset: u32,
+          amount: u128,
+          shares: u128,
+          price: u128,
+        ],
+        {
+          positionId: u128
+          owner: AccountId32
+          asset: u32
+          amount: u128
+          shares: u128
+          price: u128
+        }
+      >
+      /**
+       * LP Position was destroyed and NFT instance burned.
+       **/
+      PositionDestroyed: AugmentedEvent<
+        ApiType,
+        [positionId: u128, owner: AccountId32],
+        { positionId: u128; owner: AccountId32 }
+      >
+      /**
+       * LP Position was created and NFT instance minted.
+       **/
+      PositionUpdated: AugmentedEvent<
+        ApiType,
+        [
+          positionId: u128,
+          owner: AccountId32,
+          asset: u32,
+          amount: u128,
+          shares: u128,
+          price: u128,
+        ],
+        {
+          positionId: u128
+          owner: AccountId32
+          asset: u32
+          amount: u128
+          shares: u128
+          price: u128
+        }
+      >
+      /**
+       * Sell trade executed.
+       **/
+      SellExecuted: AugmentedEvent<
+        ApiType,
+        [
+          who: AccountId32,
+          assetIn: u32,
+          assetOut: u32,
+          amountIn: u128,
+          amountOut: u128,
+        ],
+        {
+          who: AccountId32
+          assetIn: u32
+          assetOut: u32
+          amountIn: u128
+          amountOut: u128
+        }
+      >
+      /**
+       * An asset was added to Omnipool
+       **/
+      TokenAdded: AugmentedEvent<
+        ApiType,
+        [assetId: u32, initialAmount: u128, initialPrice: u128],
+        { assetId: u32; initialAmount: u128; initialPrice: u128 }
+      >
+      /**
+       * Aseet's tradable state has been updated.
+       **/
+      TradableStateUpdated: AugmentedEvent<
+        ApiType,
+        [assetId: u32, state: PalletOmnipoolTradability],
+        { assetId: u32; state: PalletOmnipoolTradability }
       >
       /**
        * Generic event
@@ -1623,21 +1360,6 @@ declare module "@polkadot/api-base/types/events" {
        **/
       [key: string]: AugmentedEvent<ApiType>
     }
-    session: {
-      /**
-       * New session has happened. Note that the argument is the session index, not the
-       * block number as the type might suggest.
-       **/
-      NewSession: AugmentedEvent<
-        ApiType,
-        [sessionIndex: u32],
-        { sessionIndex: u32 }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
     scheduler: {
       /**
        * The call for the provided hash was not found so the task has been aborted.
@@ -1686,6 +1408,21 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [when: u32, index: u32],
         { when: u32; index: u32 }
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    session: {
+      /**
+       * New session has happened. Note that the argument is the session index, not the
+       * block number as the type might suggest.
+       **/
+      NewSession: AugmentedEvent<
+        ApiType,
+        [sessionIndex: u32],
+        { sessionIndex: u32 }
       >
       /**
        * Generic event
@@ -2026,28 +1763,6 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [currencyId: u32, who: AccountId32, amount: u128],
         { currencyId: u32; who: AccountId32; amount: u128 }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
-    transactionPause: {
-      /**
-       * Paused transaction
-       **/
-      TransactionPaused: AugmentedEvent<
-        ApiType,
-        [palletNameBytes: Bytes, functionNameBytes: Bytes],
-        { palletNameBytes: Bytes; functionNameBytes: Bytes }
-      >
-      /**
-       * Unpaused transaction
-       **/
-      TransactionUnpaused: AugmentedEvent<
-        ApiType,
-        [palletNameBytes: Bytes, functionNameBytes: Bytes],
-        { palletNameBytes: Bytes; functionNameBytes: Bytes }
       >
       /**
        * Generic event
@@ -2605,422 +2320,6 @@ declare module "@polkadot/api-base/types/events" {
           assets: XcmV1MultiassetMultiAssets
           fee: XcmV1MultiAsset
           dest: XcmV1MultiLocation
-        }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
-    xyk: {
-      /**
-       * Asset purchase executed.
-       **/
-      BuyExecuted: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          assetOut: u32,
-          assetIn: u32,
-          amount: u128,
-          buyPrice: u128,
-          feeAsset: u32,
-          feeAmount: u128,
-          pool: AccountId32,
-        ],
-        {
-          who: AccountId32
-          assetOut: u32
-          assetIn: u32
-          amount: u128
-          buyPrice: u128
-          feeAsset: u32
-          feeAmount: u128
-          pool: AccountId32
-        }
-      >
-      /**
-       * New liquidity was provided to the pool.
-       **/
-      LiquidityAdded: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          assetA: u32,
-          assetB: u32,
-          amountA: u128,
-          amountB: u128,
-        ],
-        {
-          who: AccountId32
-          assetA: u32
-          assetB: u32
-          amountA: u128
-          amountB: u128
-        }
-      >
-      /**
-       * Liquidity was removed from the pool.
-       **/
-      LiquidityRemoved: AugmentedEvent<
-        ApiType,
-        [who: AccountId32, assetA: u32, assetB: u32, shares: u128],
-        { who: AccountId32; assetA: u32; assetB: u32; shares: u128 }
-      >
-      /**
-       * Pool was created.
-       **/
-      PoolCreated: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          assetA: u32,
-          assetB: u32,
-          initialSharesAmount: u128,
-          shareToken: u32,
-          pool: AccountId32,
-        ],
-        {
-          who: AccountId32
-          assetA: u32
-          assetB: u32
-          initialSharesAmount: u128
-          shareToken: u32
-          pool: AccountId32
-        }
-      >
-      /**
-       * Pool was destroyed.
-       **/
-      PoolDestroyed: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          assetA: u32,
-          assetB: u32,
-          shareToken: u32,
-          pool: AccountId32,
-        ],
-        {
-          who: AccountId32
-          assetA: u32
-          assetB: u32
-          shareToken: u32
-          pool: AccountId32
-        }
-      >
-      /**
-       * Asset sale executed.
-       **/
-      SellExecuted: AugmentedEvent<
-        ApiType,
-        [
-          who: AccountId32,
-          assetIn: u32,
-          assetOut: u32,
-          amount: u128,
-          salePrice: u128,
-          feeAsset: u32,
-          feeAmount: u128,
-          pool: AccountId32,
-        ],
-        {
-          who: AccountId32
-          assetIn: u32
-          assetOut: u32
-          amount: u128
-          salePrice: u128
-          feeAsset: u32
-          feeAmount: u128
-          pool: AccountId32
-        }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
-    xykLiquidityMining: {
-      /**
-       * NFT representing deposit has been destroyed
-       **/
-      DepositDestroyed: AugmentedEvent<
-        ApiType,
-        [who: AccountId32, depositId: u128],
-        { who: AccountId32; depositId: u128 }
-      >
-      /**
-       * New global farm was created.
-       **/
-      GlobalFarmCreated: AugmentedEvent<
-        ApiType,
-        [
-          id: u32,
-          owner: AccountId32,
-          totalRewards: u128,
-          rewardCurrency: u32,
-          yieldPerPeriod: Perquintill,
-          plannedYieldingPeriods: u32,
-          blocksPerPeriod: u32,
-          incentivizedAsset: u32,
-          maxRewardPerPeriod: u128,
-          minDeposit: u128,
-          priceAdjustment: u128,
-        ],
-        {
-          id: u32
-          owner: AccountId32
-          totalRewards: u128
-          rewardCurrency: u32
-          yieldPerPeriod: Perquintill
-          plannedYieldingPeriods: u32
-          blocksPerPeriod: u32
-          incentivizedAsset: u32
-          maxRewardPerPeriod: u128
-          minDeposit: u128
-          priceAdjustment: u128
-        }
-      >
-      /**
-       * Global farm was destroyed.
-       **/
-      GlobalFarmDestroyed: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          who: AccountId32,
-          rewardCurrency: u32,
-          undistributedRewards: u128,
-        ],
-        {
-          globalFarmId: u32
-          who: AccountId32
-          rewardCurrency: u32
-          undistributedRewards: u128
-        }
-      >
-      /**
-       * Global farm's `price_adjustment` was updated.
-       **/
-      GlobalFarmUpdated: AugmentedEvent<
-        ApiType,
-        [id: u32, priceAdjustment: u128],
-        { id: u32; priceAdjustment: u128 }
-      >
-      /**
-       * Rewards was claimed.
-       **/
-      RewardClaimed: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          claimed: u128,
-          rewardCurrency: u32,
-          depositId: u128,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          claimed: u128
-          rewardCurrency: u32
-          depositId: u128
-        }
-      >
-      /**
-       * New LP tokens was deposited.
-       **/
-      SharesDeposited: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          amount: u128,
-          lpToken: u32,
-          depositId: u128,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          amount: u128
-          lpToken: u32
-          depositId: u128
-        }
-      >
-      /**
-       * LP token was redeposited for a new yield farm entry
-       **/
-      SharesRedeposited: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          amount: u128,
-          lpToken: u32,
-          depositId: u128,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          amount: u128
-          lpToken: u32
-          depositId: u128
-        }
-      >
-      /**
-       * LP tokens was withdrawn.
-       **/
-      SharesWithdrawn: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          lpToken: u32,
-          amount: u128,
-          depositId: u128,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          lpToken: u32
-          amount: u128
-          depositId: u128
-        }
-      >
-      /**
-       * New yield farm was added into the farm.
-       **/
-      YieldFarmCreated: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          multiplier: u128,
-          assetPair: PrimitivesAssetAssetPair,
-          loyaltyCurve: Option<PalletLiquidityMiningLoyaltyCurve>,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          multiplier: u128
-          assetPair: PrimitivesAssetAssetPair
-          loyaltyCurve: Option<PalletLiquidityMiningLoyaltyCurve>
-        }
-      >
-      /**
-       * Yield farm was destroyed from global farm.
-       **/
-      YieldFarmDestroyed: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          assetPair: PrimitivesAssetAssetPair,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          assetPair: PrimitivesAssetAssetPair
-        }
-      >
-      /**
-       * Yield farm for asset pair was resumed.
-       **/
-      YieldFarmResumed: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          assetPair: PrimitivesAssetAssetPair,
-          multiplier: u128,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          assetPair: PrimitivesAssetAssetPair
-          multiplier: u128
-        }
-      >
-      /**
-       * Yield farm for asset pair was stopped.
-       **/
-      YieldFarmStopped: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          assetPair: PrimitivesAssetAssetPair,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          assetPair: PrimitivesAssetAssetPair
-        }
-      >
-      /**
-       * Yield farm multiplier was updated.
-       **/
-      YieldFarmUpdated: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          who: AccountId32,
-          assetPair: PrimitivesAssetAssetPair,
-          multiplier: u128,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          who: AccountId32
-          assetPair: PrimitivesAssetAssetPair
-          multiplier: u128
-        }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
-    xykWarehouseLM: {
-      /**
-       * Global farm accumulated reward per share was updated.
-       **/
-      GlobalFarmAccRPZUpdated: AugmentedEvent<
-        ApiType,
-        [globalFarmId: u32, accumulatedRpz: u128, totalSharesZ: u128],
-        { globalFarmId: u32; accumulatedRpz: u128; totalSharesZ: u128 }
-      >
-      /**
-       * Yield farm accumulated reward per valued share was updated.
-       **/
-      YieldFarmAccRPVSUpdated: AugmentedEvent<
-        ApiType,
-        [
-          globalFarmId: u32,
-          yieldFarmId: u32,
-          accumulatedRpvs: u128,
-          totalValuedShares: u128,
-        ],
-        {
-          globalFarmId: u32
-          yieldFarmId: u32
-          accumulatedRpvs: u128
-          totalValuedShares: u128
         }
       >
       /**
