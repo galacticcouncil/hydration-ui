@@ -1,4 +1,4 @@
-import { useUsdPeggedAsset, useTradeAssets } from "api/asset"
+import { useTradeAssets, useUsdPeggedAsset } from "api/asset"
 import { useMemo } from "react"
 import BN from "bignumber.js"
 import { useAssetMetaList } from "api/assetMeta"
@@ -6,7 +6,7 @@ import { useAccountStore } from "state/store"
 import { useAccountBalances } from "api/accountBalances"
 import { useSpotPrices } from "api/spotPrice"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { BN_10 } from "utils/constants"
+import { BN_0, BN_10 } from "utils/constants"
 import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { PalletBalancesAccountData } from "@polkadot/types/lookup"
 import { u32 } from "@polkadot/types"
@@ -14,14 +14,9 @@ import { useAssetDetailsList } from "api/assetDetails"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 
 export const useAssetsTableData = () => {
-  const { account } = useAccountStore()
   const tradeAssets = useTradeAssets()
-  const accountBalances = useAccountBalances(account?.address)
-  const tokenIds = accountBalances.data?.balances
-    ? [NATIVE_ASSET_ID, ...accountBalances.data.balances.map((b) => b.id)]
-    : []
   const balances = useAssetsBalances()
-  const assets = useAssetDetailsList(tokenIds)
+  const assets = useAssetDetailsList()
 
   const queries = [assets, tradeAssets, balances]
   const isLoading = queries.some((q) => q.isLoading)
@@ -35,26 +30,28 @@ export const useAssetsTableData = () => {
         (b) => b.id.toString() === asset.id.toString(),
       )
 
-      if (!balance) return null
-
       return {
         id: asset.id?.toString(),
         symbol: asset.name,
         name: getAssetName(asset.name),
-        transferable: balance.transferable,
-        transferableUSD: balance.transferableUSD,
+        transferable: balance?.transferable ?? BN_0,
+        transferableUSD: balance?.transferableUSD ?? BN_0,
         inTradeRouter:
           tradeAssets.data.find((i) => i.id === asset.id?.toString()) != null,
-        total: balance.total,
-        totalUSD: balance.totalUSD,
-        locked: new BN(999999999), // TODO
-        lockedUSD: new BN(999999999), // TODO
+        total: balance?.total ?? BN_0,
+        totalUSD: balance?.totalUSD ?? BN_0,
+        locked: BN_0, // TODO
+        lockedUSD: BN_0, // TODO
         origin: "TODO",
         assetType: asset.assetType,
       }
     })
 
-    return res.filter((x): x is AssetsTableData => x !== null)
+    return res
+      .filter((x): x is AssetsTableData => x !== null)
+      .sort((a, b) => a.symbol.localeCompare(b.symbol))
+      .sort((a, b) => b.transferable.minus(a.transferable).toNumber())
+      .sort((a) => (a.id === NATIVE_ASSET_ID ? -1 : 1)) // native asset first
   }, [assets.data, balances.data, isLoading, tradeAssets.data])
 
   return { data, isLoading }
