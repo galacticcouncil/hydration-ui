@@ -113,7 +113,7 @@ export const useTokensLocks = (ids: Maybe<u32 | string>[]) => {
     return memo
   }, [])
 
-  const queries = useQueries({
+  return useQueries({
     queries: normalizedIds?.map((id) => ({
       queryKey: QUERY_KEYS.lock(account?.address, id),
       queryFn:
@@ -123,25 +123,6 @@ export const useTokensLocks = (ids: Maybe<u32 | string>[]) => {
       enabled: !!account?.address,
     })),
   })
-
-  return {
-    isLoading: queries.some((query) => query.isLoading),
-    data: queries.reduce(
-      (
-        acc: {
-          id: string
-          amount: BigNumber
-        }[],
-        cur,
-      ) => {
-        if (cur.data) {
-          acc.push(...cur.data)
-        }
-        return acc
-      },
-      [],
-    ),
-  }
 }
 
 export const getTokenLock =

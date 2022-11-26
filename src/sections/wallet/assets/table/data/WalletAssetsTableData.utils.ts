@@ -13,6 +13,7 @@ import { u32 } from "@polkadot/types"
 import { useAssetDetailsList } from "api/assetDetails"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useTokensLocks } from "../../../../../api/balances"
+import BigNumber from "bignumber.js"
 
 export const useAssetsTableData = () => {
   const { account } = useAccountStore()
@@ -65,10 +66,16 @@ export const useAssetsBalances = () => {
     : []
   const assetMetas = useAssetMetaList(tokenIds)
   const usd = useUsdPeggedAsset()
-  const spotPrices = useSpotPrices(tokenIds, aUSD.data?.id)
-  const locks = useTokensLocks(tokenIds)
+  const spotPrices = useSpotPrices(tokenIds, usd.data?.id)
+  const locksQueries = useTokensLocks(tokenIds)
 
-  const queries = [accountBalances, assetMetas, usd, ...spotPrices]
+  const queries = [
+    accountBalances,
+    assetMetas,
+    usd,
+    ...spotPrices,
+    ...locksQueries,
+  ]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
@@ -76,16 +83,32 @@ export const useAssetsBalances = () => {
       !accountBalances.data ||
       !assetMetas.data ||
       spotPrices.some((q) => !q.data) ||
-      !locks.data
+      locksQueries.some((q) => !q.data)
     )
       return undefined
+
+    const locks = locksQueries.reduce(
+      (
+        acc: {
+          id: string
+          amount: BigNumber
+        }[],
+        cur,
+      ) => {
+        if (cur.data) {
+          acc.push(...cur.data)
+        }
+        return acc
+      },
+      [],
+    )
 
     const tokens: (AssetsTableDataBalances | null)[] =
       accountBalances.data.balances.map((ab) => {
         const id = ab.id
         const spotPrice = spotPrices.find((sp) => id.eq(sp.data?.tokenIn))
         const meta = assetMetas.data.find((am) => id.eq(am?.id))
-        const lock = locks.data.find((lock) => id.eq(lock.id))
+        const lock = locks.find((lock) => id.eq(lock.id))
 
         if (!spotPrice?.data || !meta) return null
 
@@ -121,9 +144,7 @@ export const useAssetsBalances = () => {
       (sp) => sp.data?.tokenIn === NATIVE_ASSET_ID,
     )?.data?.spotPrice
 
-    const nativeLock = locks.data.find(
-      (lock) => lock.id === NATIVE_ASSET_ID,
-    )?.amount
+    const nativeLock = locks.find((lock) => lock.id === NATIVE_ASSET_ID)?.amount
 
     const native = getNativeBalances(
       nativeBalance,
@@ -135,7 +156,7 @@ export const useAssetsBalances = () => {
     return [native, ...tokens].filter(
       (x): x is AssetsTableDataBalances => x !== null,
     )
-  }, [accountBalances.data, assetMetas, spotPrices, locks])
+  }, [accountBalances.data, assetMetas, spotPrices, locksQueries])
 
   return { data, isLoading }
 }
