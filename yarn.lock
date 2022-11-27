@@ -2177,7 +2177,7 @@
     "@polkadot/types-codec" "9.3.3"
     "@polkadot/util" "^10.1.7"
 
-"@polkadot/types-known@9.3.3":
+"@polkadot/types-known@9.3.3", "@polkadot/types-known@^9.3.3":
   version "9.3.3"
   resolved "https://registry.yarnpkg.com/@polkadot/types-known/-/types-known-9.3.3.tgz#483f6e0ed45a34e1acd91e5ed23b7d2871d2fe6b"
   integrity sha512-TcDGzHpPZdMxrywLHTbjaHaFRdJdFaL5QGpvcSeDwAGHz7zU6Aq29AT9HwJ8GrBNihLALUj79S1/D2WfmJuXFA==
