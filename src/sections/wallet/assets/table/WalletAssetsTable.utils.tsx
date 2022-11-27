@@ -17,6 +17,7 @@ import { WalletAssetsTableActions } from "sections/wallet/assets/table/actions/W
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
+import { useSetAsFeePayment } from "../../../../api/payment"
 
 export const useAssetsTable = (
   data: AssetsTableData[],
@@ -27,6 +28,7 @@ export const useAssetsTable = (
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<AssetsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
+  const setFeeAsPayment = useSetAsFeePayment()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
@@ -71,6 +73,7 @@ export const useAssetsTable = (
         <WalletAssetsTableActions
           toggleExpanded={() => row.toggleExpanded()}
           onTransferClick={() => actions.onTransfer(row.original.id)}
+          onSetFeeAsPaymentClick={() => setFeeAsPayment(row.original.id)}
           symbol={row.original.symbol}
         />
       ),

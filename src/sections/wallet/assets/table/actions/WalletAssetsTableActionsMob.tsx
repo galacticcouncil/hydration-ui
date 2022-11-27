@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
 import { AssetsTableData } from "../WalletAssetsTable.utils"
 import { SActionButtonsContainer } from "./WalletAssetsTable.styled"
+import { useSetAsFeePayment } from "../../../../../api/payment"
 
 type Props = {
   row?: AssetsTableData
@@ -23,6 +24,8 @@ export const WalletAssetsTableActionsMob = ({
   onTransferClick,
 }: Props) => {
   const { t } = useTranslation()
+
+  const setFeeAsPayment = useSetAsFeePayment()
 
   if (!row) return null
 
@@ -95,9 +98,12 @@ export const WalletAssetsTableActionsMob = ({
               </Button>
             </div>
             <div>
-              <Button sx={{ width: "100%" }} size="small">
-                {/*TODO*/}
-                Set as fee payment asset
+              <Button
+                sx={{ width: "100%" }}
+                size="small"
+                onClick={() => setFeeAsPayment(row.id)}
+              >
+                {t("wallet.assets.table.actions.payment.asset")}
               </Button>
             </div>
           </div>

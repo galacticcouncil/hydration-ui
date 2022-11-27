@@ -16,6 +16,7 @@ type Props = {
   toggleExpanded: () => void
   symbol: string
   onTransferClick: () => void
+  onSetFeeAsPaymentClick: () => void
 }
 
 export const WalletAssetsTableActions = (props: Props) => {
@@ -63,12 +64,16 @@ export const WalletAssetsTableActions = (props: Props) => {
               label: t("wallet.assets.table.actions.claim"),
             },
             {
-              key: "remove",
+              key: "setAsFeePayment",
               icon: <DollarIcon />,
               label: t("wallet.assets.table.actions.payment.asset"),
             },
           ]}
-          onSelect={(item) => console.log("item", item)}
+          onSelect={(item) => {
+            if (item === "setAsFeePayment") {
+              props.onSetFeeAsPaymentClick()
+            }
+          }}
         >
           <MoreIcon />
         </Dropdown>
