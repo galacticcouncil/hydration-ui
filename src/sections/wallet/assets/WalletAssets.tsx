@@ -5,10 +5,12 @@ import { WalletAssetsTable } from "sections/wallet/assets/table/WalletAssetsTabl
 import { useAccountStore } from "state/store"
 import { WalletAssetsHeader } from "./WalletAssetsHeader"
 import { WalletLiquidityPositionsSkeleton } from "./table/skeleton/WalletLiquidityPositionsSkeleton"
+import { useAcceptedCurrencies } from "../../../api/payment"
 
 export const WalletAssets = () => {
   const { account } = useAccountStore()
   const assetTableQuery = useAssetsTableData()
+  const acceptedCurrencies = useAcceptedCurrencies(account?.address)
 
   const queries = [assetTableQuery]
   const isLoading = queries.some((query) => query.isLoading)
