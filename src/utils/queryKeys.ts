@@ -137,6 +137,11 @@ export const QUERY_KEYS = {
     "vestingLock",
     address,
   ],
+  lock: (address: Maybe<AccountId32 | string>, asset: Maybe<u32 | string>) => [
+    "lock",
+    address,
+    asset,
+  ],
   provider: (url: string) => ["provider", url],
   math: ["@galacticcouncil/math"],
   existentialDeposit: ["existentialDeposit"],
