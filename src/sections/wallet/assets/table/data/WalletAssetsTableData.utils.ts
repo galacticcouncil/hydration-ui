@@ -16,43 +16,39 @@ import { useTokensLocks } from "../../../../../api/balances"
 import BigNumber from "bignumber.js"
 
 export const useAssetsTableData = () => {
-  const { account } = useAccountStore()
-  const accountBalances = useAccountBalances(account?.address)
-  const tokenIds = accountBalances.data?.balances
-    ? [NATIVE_ASSET_ID, ...accountBalances.data.balances.map((b) => b.id)]
-    : []
   const balances = useAssetsBalances()
-  const assets = useAssetDetailsList(tokenIds)
+  const assets = useAssetDetailsList()
 
   const queries = [assets, balances]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
     if (isLoading || !assets.data || !balances.data) return []
-
     const res = assets.data.map((asset) => {
       const balance = balances.data?.find(
         (b) => b.id.toString() === asset.id.toString(),
       )
 
-      if (!balance) return null
-
       return {
         id: asset.id?.toString(),
         symbol: asset.name,
         name: getAssetName(asset.name),
-        transferable: balance.transferable,
-        transferableUSD: balance.transferableUSD,
-        total: balance.total,
-        totalUSD: balance.totalUSD,
-        locked: balance.locked,
-        lockedUSD: balance.lockedUsd,
+        transferable: balance?.transferable ?? BN_0,
+        transferableUSD: balance?.transferableUSD ?? BN_0,
+        total: balance?.total ?? BN_0,
+        totalUSD: balance?.totalUSD ?? BN_0,
+        locked: balance?.locked ?? BN_0,
+        lockedUSD: balance?.lockedUsd ?? BN_0,
         origin: "TODO",
         assetType: asset.assetType,
       }
     })
 
-    return res.filter((x): x is AssetsTableData => x !== null)
+    return res
+      .filter((x): x is AssetsTableData => x !== null)
+      .sort((a, b) => a.symbol.localeCompare(b.symbol))
+      .sort((a, b) => b.transferable.minus(a.transferable).toNumber())
+      .sort((a) => (a.id === NATIVE_ASSET_ID ? -1 : 1)) // native asset first
   }, [assets.data, balances.data, isLoading])
 
   return { data, isLoading }

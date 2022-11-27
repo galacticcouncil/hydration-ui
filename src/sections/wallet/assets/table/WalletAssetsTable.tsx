@@ -11,7 +11,7 @@ import {
   TableTitle,
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
-import { Fragment, useState } from "react"
+import { Fragment, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { WalletAssetsTableDetails } from "sections/wallet/assets/table/details/WalletAssetsTableDetails"
@@ -29,14 +29,17 @@ type Props = { data: AssetsTableData[] }
 export const WalletAssetsTable = ({ data }: Props) => {
   const { t } = useTranslation()
   const [row, setRow] = useState<AssetsTableData | undefined>(undefined)
-  const [showAll, setShowAll] = useState(false)
+  const [showAll, setShowAll] = useState(true)
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const table = useAssetsTable(data, {
-    onTransfer: setTransferAsset,
-  })
+  const filteredData = useMemo(
+    () => (showAll ? data : data.filter((row) => !row.total.isZero())),
+    [data, showAll],
+  )
+
+  const table = useAssetsTable(filteredData, { onTransfer: setTransferAsset })
 
   return (
     <TableContainer css={assetsTableStyles}>
