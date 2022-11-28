@@ -11,16 +11,33 @@ import { Dropdown } from "components/Dropdown/Dropdown"
 import { TableAction } from "components/Table/Table"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
+import { isNotNil } from "../../../../../utils/types"
 
 type Props = {
   toggleExpanded: () => void
   symbol: string
   onTransferClick: () => void
   onSetFeeAsPaymentClick: () => void
+  couldBeSetAsPaymentFee: boolean
 }
 
 export const WalletAssetsTableActions = (props: Props) => {
   const { t } = useTranslation()
+
+  const actionItems = [
+    {
+      key: "add",
+      icon: <ClaimIcon />,
+      label: t("wallet.assets.table.actions.claim"),
+    },
+    props.couldBeSetAsPaymentFee
+      ? {
+          key: "setAsFeePayment",
+          icon: <DollarIcon />,
+          label: t("wallet.assets.table.actions.payment.asset"),
+        }
+      : null,
+  ].filter(isNotNil)
 
   return (
     <>
@@ -57,18 +74,7 @@ export const WalletAssetsTableActions = (props: Props) => {
         </TableAction>
 
         <Dropdown
-          items={[
-            {
-              key: "add",
-              icon: <ClaimIcon />,
-              label: t("wallet.assets.table.actions.claim"),
-            },
-            {
-              key: "setAsFeePayment",
-              icon: <DollarIcon />,
-              label: t("wallet.assets.table.actions.payment.asset"),
-            },
-          ]}
+          items={actionItems}
           onSelect={(item) => {
             if (item === "setAsFeePayment") {
               props.onSetFeeAsPaymentClick()

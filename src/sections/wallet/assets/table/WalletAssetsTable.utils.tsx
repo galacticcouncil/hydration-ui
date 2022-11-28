@@ -74,6 +74,7 @@ export const useAssetsTable = (
           toggleExpanded={() => row.toggleExpanded()}
           onTransferClick={() => actions.onTransfer(row.original.id)}
           onSetFeeAsPaymentClick={() => setFeeAsPayment(row.original.id)}
+          couldBeSetAsPaymentFee={row.original.couldBeSetAsPaymentFee}
           symbol={row.original.symbol}
         />
       ),
@@ -104,4 +105,5 @@ export type AssetsTableData = {
   lockedUSD: BN
   origin: string
   assetType: PalletAssetRegistryAssetType["type"]
+  couldBeSetAsPaymentFee: boolean
 }

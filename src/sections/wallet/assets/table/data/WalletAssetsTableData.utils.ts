@@ -14,6 +14,7 @@ import { useAssetDetailsList } from "api/assetDetails"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useTokensLocks } from "../../../../../api/balances"
 import BigNumber from "bignumber.js"
+import { useAcceptedCurrencies } from "../../../../../api/payment"
 
 export const useAssetsTableData = () => {
   const { account } = useAccountStore()
@@ -22,13 +23,38 @@ export const useAssetsTableData = () => {
     ? [NATIVE_ASSET_ID, ...accountBalances.data.balances.map((b) => b.id)]
     : []
   const balances = useAssetsBalances()
+  const acceptedCurrenciesQuery = useAcceptedCurrencies(tokenIds)
   const assets = useAssetDetailsList(tokenIds)
 
-  const queries = [assets, balances]
+  const queries = [assets, balances, ...acceptedCurrenciesQuery]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (isLoading || !assets.data || !balances.data) return []
+    if (
+      isLoading ||
+      !assets.data ||
+      !balances.data ||
+      acceptedCurrenciesQuery.some((q) => !q.data)
+    )
+      return []
+
+    const acceptedCurrencies = acceptedCurrenciesQuery
+      .reduce(
+        (
+          acc: {
+            id: string
+            accepted: boolean
+          }[],
+          cur,
+        ) => {
+          if (cur.data) {
+            acc.push(cur.data)
+          }
+          return acc
+        },
+        [],
+      )
+      .filter((currency) => currency.accepted)
 
     const res = assets.data.map((asset) => {
       const balance = balances.data?.find(
@@ -36,6 +62,10 @@ export const useAssetsTableData = () => {
       )
 
       if (!balance) return null
+
+      const couldBeSetAsPaymentFee = acceptedCurrencies.some(
+        (currency) => currency.id === asset.id?.toString(),
+      )
 
       return {
         id: asset.id?.toString(),
@@ -49,11 +79,12 @@ export const useAssetsTableData = () => {
         lockedUSD: balance.lockedUsd,
         origin: "TODO",
         assetType: asset.assetType,
+        couldBeSetAsPaymentFee,
       }
     })
 
     return res.filter((x): x is AssetsTableData => x !== null)
-  }, [assets.data, balances.data, isLoading])
+  }, [assets.data, balances.data, isLoading, acceptedCurrenciesQuery])
 
   return { data, isLoading }
 }

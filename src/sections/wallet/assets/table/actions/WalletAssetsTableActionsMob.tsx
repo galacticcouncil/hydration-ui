@@ -97,15 +97,17 @@ export const WalletAssetsTableActionsMob = ({
                 {t("wallet.assets.table.actions.transfer")}
               </Button>
             </div>
-            <div>
-              <Button
-                sx={{ width: "100%" }}
-                size="small"
-                onClick={() => setFeeAsPayment(row.id)}
-              >
-                {t("wallet.assets.table.actions.payment.asset")}
-              </Button>
-            </div>
+            {row.couldBeSetAsPaymentFee && (
+              <div>
+                <Button
+                  sx={{ width: "100%" }}
+                  size="small"
+                  onClick={() => setFeeAsPayment(row.id)}
+                >
+                  {t("wallet.assets.table.actions.payment.asset")}
+                </Button>
+              </div>
+            )}
           </div>
         </SActionButtonsContainer>
       </div>
