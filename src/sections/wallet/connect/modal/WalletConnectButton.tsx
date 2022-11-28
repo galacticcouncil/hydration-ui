@@ -7,7 +7,7 @@ import { Text } from "components/Typography/Text/Text"
 import { ReactComponent as ChevronDownSmall } from "assets/icons/ChevronDownSmall.svg"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { ButtonProps } from "components/Button/Button"
-import { BASILISK_ADDRESS_PREFIX } from "utils/api"
+import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { Account, useAccountStore } from "state/store"
 import { shortenAccountAddress } from "utils/formatting"
 
@@ -19,11 +19,11 @@ const WalletActiveButton = (props: {
   account: Account
   className?: string
 }) => {
-  const basiliskAddress = encodeAddress(
+  const hydraAddress = encodeAddress(
     decodeAddress(props.account.address),
-    BASILISK_ADDRESS_PREFIX,
+    HYDRA_ADDRESS_PREFIX,
   )
-  const kusamaAddress = props.account.address.toString()
+  const polkadotAddress = props.account.address.toString()
 
   return (
     <SContainer className={props.className} onClick={props.onOpen}>
@@ -48,7 +48,7 @@ const WalletActiveButton = (props: {
             <AccountAvatar
               size={32}
               theme="substrate"
-              address={basiliskAddress}
+              address={hydraAddress}
               css={{
                 pointerEvents: "none",
                 marginRight: -8,
@@ -57,7 +57,7 @@ const WalletActiveButton = (props: {
             <AccountAvatar
               size={32}
               theme={props.account.provider}
-              address={kusamaAddress}
+              address={polkadotAddress}
               css={{
                 pointerEvents: "none",
                 outline: `3px solid ${theme.colors.basic800}`,

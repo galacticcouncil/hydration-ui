@@ -2,7 +2,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { Separator } from "components/Separator/Separator"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { BASILISK_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
+import { HYDRA_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
 import { useTokenBalance } from "api/balances"
 import { SSelectItem } from "./WalletConnectAccountSelectItem.styled"
 import { WalletConnectAccountSelectAddress } from "sections/wallet/connect/accountSelect/item/address/WalletConnectAccountSelectAddress"
@@ -24,12 +24,12 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
   provider,
   setAccount,
 }) => {
-  const basiliskAddress = encodeAddress(
+  const hydraAddress = encodeAddress(
     decodeAddress(address),
-    BASILISK_ADDRESS_PREFIX,
+    HYDRA_ADDRESS_PREFIX,
   )
-  const kusamaAddress = address
-  const { data } = useTokenBalance(NATIVE_ASSET_ID, kusamaAddress)
+  const polkadotAddress = address
+  const { data } = useTokenBalance(NATIVE_ASSET_ID, polkadotAddress)
   const { data: meta } = useAssetMeta(NATIVE_ASSET_ID)
 
   const { t } = useTranslation()
@@ -55,13 +55,13 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
       <div sx={{ flex: "column", mt: 12, gap: 12 }}>
         <WalletConnectAccountSelectAddress
           name={t("walletConnect.accountSelect.asset.network")}
-          address={basiliskAddress}
+          address={hydraAddress}
           theme="substrate"
         />
         <Separator color="basic700" opacity={isActive ? 0.3 : 1} />
         <WalletConnectAccountSelectAddress
           name={t("walletConnect.accountSelect.asset.parachain")}
-          address={kusamaAddress}
+          address={polkadotAddress}
           theme={provider}
         />
       </div>

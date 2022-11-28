@@ -4,7 +4,7 @@ import { PolkadotApiPoolService, TradeRouter } from "@galacticcouncil/sdk"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 
-export const BASILISK_ADDRESS_PREFIX = 10041
+export const HYDRA_ADDRESS_PREFIX = 63
 export const NATIVE_ASSET_ID = "0"
 export const DEPOSIT_CLASS_ID = "1" // TODO: replace with constant from api
 export const POLKADOT_APP_NAME = "Hydra Web App"
