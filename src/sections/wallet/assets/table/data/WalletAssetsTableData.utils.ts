@@ -94,7 +94,13 @@ export const useAssetsTableData = () => {
     })
 
     return res.filter((x): x is AssetsTableData => x !== null)
-  }, [assets.data, balances.data, isLoading, acceptedCurrenciesQuery, accountCurrency])
+  }, [
+    assets.data,
+    balances.data,
+    isLoading,
+    acceptedCurrenciesQuery,
+    accountCurrency,
+  ])
 
   return { data, isLoading }
 }

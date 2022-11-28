@@ -11,13 +11,11 @@ export const WalletAssetsTableName = ({
   symbol,
   name,
   isPaymentFee,
-  isDesktop,
 }: {
   symbol: string
   name: string
   large?: boolean
   isPaymentFee: boolean
-  isDesktop: boolean
 }) => {
   const { t } = useTranslation()
 
@@ -52,7 +50,7 @@ export const WalletAssetsTableName = ({
           fw={700}
           sx={{
             mt: 4,
-            ml: isDesktop ? 40 : large ? 50 : 32,
+            ml: large ? 50 : [32, 40],
           }}
           color="pink700"
           tTransform="uppercase"

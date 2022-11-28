@@ -25,6 +25,7 @@ import { safeConvertAddressSS58 } from "utils/formatting"
 import { Alert } from "components/Alert/Alert"
 import { usePaymentInfo } from "api/transaction"
 import { Spacer } from "components/Spacer/Spacer"
+import { useAccountCurrency } from "../../../../api/payment"
 
 export function WalletTransferSectionOnchain(props: {
   initialAsset: u32 | string
@@ -44,6 +45,8 @@ export function WalletTransferSectionOnchain(props: {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const assetMeta = useAssetMeta(asset)
   const { account } = useAccountStore()
+  const accountCurrency = useAccountCurrency(account?.address)
+  const accountCurrencyMeta = useAssetMeta(accountCurrency.data)
 
   const { data: paymentInfoData } = usePaymentInfo(
     asset === NATIVE_ASSET_ID
@@ -192,6 +195,7 @@ export function WalletTransferSectionOnchain(props: {
               <Text fs={14}>
                 {t("pools.addLiquidity.modal.row.transactionCostValue", {
                   amount: paymentInfoData?.partialFee,
+                  symbol: accountCurrencyMeta.data?.symbol,
                   fixedPointScale: 12,
                   decimalPlaces: 2,
                 })}

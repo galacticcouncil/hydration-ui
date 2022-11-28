@@ -42,9 +42,7 @@ export const useAssetsTable = (
     accessor("symbol", {
       id: "name",
       header: t("wallet.assets.table.header.name"),
-      cell: ({ row }) => (
-        <WalletAssetsTableName {...row.original} isDesktop={isDesktop} />
-      ),
+      cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
     }),
     accessor("transferable", {
       id: "transferable",
