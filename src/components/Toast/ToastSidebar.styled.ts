@@ -37,10 +37,10 @@ export const SDialogContent = styled(DialogContent)`
   width: 100%;
   max-height: 80vh;
 
-  background: ${theme.colors.backgroundGray900};
+  background: ${theme.colors.basic900};
   box-shadow: 0px 0px 60px rgba(${theme.rgbColors.black}, 0.36);
 
-  border-radius: 16px;
+  border-radius: 4px;
   border-bottom-left-radius: 0px;
   border-bottom-right-radius: 0px;
 

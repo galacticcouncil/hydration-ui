@@ -2,20 +2,12 @@ import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import {
   SClose,
-  SContainer,
-  SContent,
-  SCounter,
   Shadow,
-  SIcon,
   SProgressBar,
   SProgressContainer,
   SRoot,
 } from "components/Toast/Toast.styled"
 import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
-import { ReactComponent as SuccessIcon } from "assets/icons/SuccessIcon.svg"
-import { ReactComponent as FailIcon } from "assets/icons/FailIcon.svg"
-import { ReactComponent as InfoIcon } from "assets/icons/InfoIcon.svg"
-import { ReactComponent as BasiliskIcon } from "assets/icons/BasiliskIcon.svg"
 import { Text } from "components/Typography/Text/Text"
 import { TOAST_CLOSE_TIME } from "utils/constants"
 import { ToastContent } from "./ToastContent"
@@ -86,6 +78,7 @@ export const Toast: FC<Props> = ({
           <CrossIcon />
         </SClose>
       </motion.div>
+      <Shadow variant={variant} />
     </SRoot>
   )
 }

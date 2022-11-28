@@ -1,15 +1,17 @@
 import { ReactNode } from "react"
 import { SContainer, SIcon, STitle } from "components/Toast/Toast.styled"
-import { ReactComponent as SuccessIcon } from "assets/icons/IconSuccessSmall.svg"
-import { ReactComponent as FailIcon } from "assets/icons/IconFailureSmall.svg"
-import { ReactComponent as BasiliskIcon } from "assets/icons/BasiliskIcon.svg"
+import { ReactComponent as SuccessIcon } from "assets/icons/SuccessIcon.svg"
+import { ReactComponent as FailIcon } from "assets/icons/FailIcon.svg"
+import { ReactComponent as InfoIcon } from "assets/icons/InfoIcon.svg"
 import { Text } from "components/Typography/Text/Text"
-import { Spinner } from "components/Spinner/Spinner.styled"
+import { ToastSpinner } from "components/Spinner/Spinner.styled"
 import { Maybe, useNow } from "utils/helpers"
 import { useTranslation } from "react-i18next"
+import { ToastVariant } from "./Toast"
+import { theme } from "theme"
 
 export function ToastContent(props: {
-  variant: Maybe<"info" | "success" | "error" | "loading">
+  variant: Maybe<ToastVariant>
   title?: string | ReactNode
   actions?: ReactNode
   meta?: ReactNode
@@ -21,23 +23,23 @@ export function ToastContent(props: {
   useNow(props.dateCreated != null)
 
   return (
-    <SContainer>
+    <SContainer variant={props.variant ?? "info"}>
       <SIcon>
         {props.variant === "success" ? (
           <SuccessIcon />
         ) : props.variant === "error" ? (
           <FailIcon />
         ) : props.variant === "loading" ? (
-          <Spinner width={28} height={28} />
+          <ToastSpinner width={28} height={28} />
         ) : (
-          <BasiliskIcon />
+          <InfoIcon />
         )}
       </SIcon>
       <div sx={{ flex: "column", gap: 4, justify: "center" }}>
         <div sx={{ flex: "row", justify: "space-between", align: "flex-end" }}>
           <STitle>
             {typeof props.title === "string" ? (
-              <Text fs={12} lh={16} fw={500} color="neutralGray100">
+              <Text fs={12} lh={16} fw={500} color="white">
                 {props.title}
               </Text>
             ) : (
@@ -49,7 +51,10 @@ export function ToastContent(props: {
         </div>
         <div sx={{ flex: "row", justify: "space-between", align: "flex-end" }}>
           {props.dateCreated && (
-            <Text fs={12} color="neutralGray400">
+            <Text
+              fs={12}
+              css={{ color: `rgba(${theme.rgbColors.white}, 0.6)` }}
+            >
               {t("toast.date", { value: props.dateCreated })}
             </Text>
           )}

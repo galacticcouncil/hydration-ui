@@ -2,7 +2,7 @@
   "toast.close": "Close",
   "toast.counter": "{{ index }} of {{ count }}",
   "toast.date": "{{ value, relativetime }}",
-  "toast.sidebar.title": "Recent Transactions",
+  "toast.sidebar.title": "Recent Activities",
   "toast.sidebar.pending": "Pending",
   "toast.sidebar.completed": "Completed",
   "confirm": "Confirm",

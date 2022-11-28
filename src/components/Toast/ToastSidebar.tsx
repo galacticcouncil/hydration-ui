@@ -9,13 +9,15 @@ import { ToastContent } from "./ToastContent"
 import { useToast } from "state/toasts"
 import { useTranslation } from "react-i18next"
 import { RemoveScroll } from "react-remove-scroll"
+import { Heading } from "components/Typography/Heading/Heading"
 
 const ToastGroupHeader = (props: { children?: ReactNode }) => (
   <Text
     fw={400}
     fs={14}
-    css={{ background: `rgba(${theme.rgbColors.black}, 0.2)` }}
+    css={{ background: `rgba(${theme.rgbColors.primaryA06}, 0.06)` }}
     sx={{ px: 22, py: 10 }}
+    color="basic400"
   >
     {props.children}
   </Text>
@@ -38,9 +40,9 @@ export function ToastSidebar() {
 
           <RemoveScroll enabled={store.sidebar}>
             <SDialogContent onEscapeKeyDown={onClose}>
-              <Text fw={500} fs={16} tAlign="center" sx={{ py: 24 }}>
+              <Heading fw={500} fs={15} tAlign="left" sx={{ py: 24, pl: 30 }}>
                 {t("toast.sidebar.title")}
-              </Text>
+              </Heading>
 
               <SCloseButton
                 name={t("toast.close")}
