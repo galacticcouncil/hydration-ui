@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren } from "react"
+import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import {
   SClose,
@@ -8,7 +8,7 @@ import {
   Shadow,
   SIcon,
   SProgressBar,
-  SProgressBarBg,
+  SProgressContainer,
   SRoot,
 } from "components/Toast/Toast.styled"
 import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
@@ -18,86 +18,74 @@ import { ReactComponent as InfoIcon } from "assets/icons/InfoIcon.svg"
 import { ReactComponent as BasiliskIcon } from "assets/icons/BasiliskIcon.svg"
 import { Text } from "components/Typography/Text/Text"
 import { TOAST_CLOSE_TIME } from "utils/constants"
-import { ToastSpinner } from "components/Spinner/Spinner.styled"
+import { ToastContent } from "./ToastContent"
+import { motion } from "framer-motion"
 
 export type ToastVariant = "info" | "success" | "error" | "loading"
 
 type Props = {
   variant?: ToastVariant
+  title?: string | ReactNode
+  actions?: ReactNode
   text?: string
   index?: number
   count?: number
   onClose?: () => void
   persist?: boolean
+  dateCreated?: Date
 }
 
-export const Toast: FC<PropsWithChildren<Props>> = ({
+export const Toast: FC<Props> = ({
   variant = "info",
-  text,
+  title,
+  actions,
   index,
   count,
+  dateCreated,
   onClose,
-  children,
   persist,
 }) => {
   const { t } = useTranslation()
 
   return (
-    <SRoot
-      initial={{ x: 32, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5, ease: "easeInOut" }}
-    >
-      <SContainer variant={variant}>
-        <SIcon>
-          {variant === "success" ? (
-            <SuccessIcon />
-          ) : variant === "error" ? (
-            <FailIcon />
-          ) : variant === "loading" ? (
-            <ToastSpinner width={28} height={28} />
-          ) : variant === "info" ? (
-            <InfoIcon />
-          ) : (
-            <BasiliskIcon />
-          )}
-        </SIcon>
-        <SContent>
-          {text ? (
-            <Text fs={12} lh={16} fw={500} color="basic100">
-              {text}
-            </Text>
-          ) : (
-            children
-          )}
-        </SContent>
-        <SCounter>
-          <Text fs={12} lh={14} fw={500} color="basic400">
-            {!!index &&
-              !!count &&
-              count > 1 &&
-              t("toast.counter", { index, count })}
-          </Text>
-        </SCounter>
-        <SProgressBarBg />
-        <SProgressBar
-          variant={variant}
-          initial={{ width: "100%" }}
-          animate={!persist && { width: "0%" }}
-          transition={{ duration: TOAST_CLOSE_TIME / 1000, ease: "linear" }}
-          onAnimationComplete={onClose}
-        />
-      </SContainer>
-      <SClose
-        aria-label={t("toast.close")}
-        onClick={() => {
-          onClose?.()
-        }}
+    <SRoot forceMount>
+      <motion.div
+        layout
+        initial={{ x: 32, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
       >
-        <CrossIcon />
-      </SClose>
-      <Shadow variant={variant} />
+        <ToastContent
+          variant={variant ?? "info"}
+          title={title}
+          actions={actions}
+          dateCreated={dateCreated}
+          meta={
+            <div sx={{ flex: "row", gap: 8 }}>
+              <Text fs={12} lh={14} fw={500} color="basic400">
+                {!!index &&
+                  !!count &&
+                  count > 1 &&
+                  t("toast.counter", { index, count })}
+              </Text>
+            </div>
+          }
+        >
+          <SProgressContainer>
+            <SProgressBar
+              variant={variant}
+              initial={{ width: "0%" }}
+              animate={!persist && { width: "100%" }}
+              transition={{ duration: TOAST_CLOSE_TIME / 1000 }}
+              onAnimationComplete={onClose}
+            />
+          </SProgressContainer>
+        </ToastContent>
+        <SClose aria-label={t("toast.close")} onClick={onClose}>
+          <CrossIcon />
+        </SClose>
+      </motion.div>
     </SRoot>
   )
 }
