@@ -17,6 +17,7 @@ import { NATIVE_ASSET_ID, useApiPromise } from "../../../utils/api"
 import { useExistentialDeposit, useTokenBalance } from "../../../api/balances"
 import { useAccountStore, useStore } from "../../../state/store"
 import { usePaymentInfo } from "../../../api/transaction"
+import { useAssetMeta } from "../../../api/assetMeta"
 
 export const WalletVestingSchedule = () => {
   const { t } = useTranslation()
@@ -29,6 +30,7 @@ export const WalletVestingSchedule = () => {
   const { data: nextClaimableDate } = useNextClaimableDate()
   const { data: paymentInfoData } = usePaymentInfo(api.tx.vesting.claim())
   const { data: existentialDeposit } = useExistentialDeposit()
+  const { data: meta } = useAssetMeta(NATIVE_ASSET_ID)
 
   const usd = useUsdPeggedAsset()
   const spotPrice = useSpotPrice(NATIVE_ASSET_ID, usd.data?.id)
@@ -79,7 +81,7 @@ export const WalletVestingSchedule = () => {
             <Trans
               t={t}
               i18nKey="wallet.vesting.claimable_now_value"
-              tOptions={{ num, denom }}
+              tOptions={{ num, denom, symbol: meta?.symbol }}
             >
               <span
                 sx={{ fontSize: [14, 21] }}

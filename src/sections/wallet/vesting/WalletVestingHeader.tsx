@@ -55,6 +55,7 @@ export const WalletVestingHeader = () => {
                     fixedPointScale: nativeAsset?.decimals ?? 12,
                     decimalPlaces: 2,
                   }),
+                  symbol: nativeAsset?.symbol,
                 }}
               >
                 <span
