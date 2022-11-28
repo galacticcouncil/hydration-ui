@@ -12,7 +12,7 @@ import { PalletBalancesAccountData } from "@polkadot/types/lookup"
 import { u32 } from "@polkadot/types"
 import { useAssetDetailsList } from "api/assetDetails"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
-import { useTokensLocks } from "../../../../../api/balances"
+import { useTokensLocks } from "api/balances"
 import BigNumber from "bignumber.js"
 
 export const useAssetsTableData = () => {
@@ -72,7 +72,7 @@ export const useAssetsBalances = () => {
     ...spotPrices,
     ...locksQueries,
   ]
-  const isLoading = queries.some((q) => q.isInitialLoading)
+  const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
     if (
@@ -154,7 +154,7 @@ export const useAssetsBalances = () => {
     )
   }, [accountBalances.data, assetMetas, spotPrices, locksQueries])
 
-  return { data, isLoading }
+  return { data, isLoading: isInitialLoading }
 }
 
 const getNativeBalances = (

@@ -8,7 +8,7 @@
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@galacticcouncil/math": "https://github.com/galacticcouncil/HydraDX-wasm",
-    "@galacticcouncil/math-omnipool": "https://github.com/galacticcouncil/HydraDX-wasm#feat/omnipool",
+    "@galacticcouncil/math-omnipool": "https://github.com/galacticcouncil/HydraDX-wasm#2eb9bf933c8ddfcc19d16f980496957967b613bd",
     "@galacticcouncil/math-lbp": "^0.0.0-beta-1",
     "@galacticcouncil/math-xyk": "^0.0.0-beta-1",
     "@galacticcouncil/sdk": "^0.0.1-beta.12",
