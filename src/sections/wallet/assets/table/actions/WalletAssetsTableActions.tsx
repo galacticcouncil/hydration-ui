@@ -4,7 +4,7 @@ import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.sv
 import { ReactComponent as MoreIcon } from "assets/icons/MoreDotsIcon.svg"
 import { ReactComponent as SellIcon } from "assets/icons/SellIcon.svg"
 import { ReactComponent as TransferIcon } from "assets/icons/TransferIcon.svg"
-import { ReactComponent as ClaimIcon } from "assets/icons/ClaimIcon.svg"
+//import { ReactComponent as ClaimIcon } from "assets/icons/ClaimIcon.svg"
 import { ReactComponent as DollarIcon } from "assets/icons/DollarIcon.svg"
 import { ButtonTransparent } from "components/Button/Button"
 import { Dropdown } from "components/Dropdown/Dropdown"
@@ -57,11 +57,11 @@ export const WalletAssetsTableActions = (props: Props) => {
 
         <Dropdown
           items={[
-            {
+            /*{
               key: "add",
               icon: <ClaimIcon />,
               label: t("wallet.assets.table.actions.claim"),
-            },
+            },*/
             {
               key: "remove",
               icon: <DollarIcon />,

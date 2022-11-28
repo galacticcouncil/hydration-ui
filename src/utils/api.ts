@@ -7,7 +7,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 export const BASILISK_ADDRESS_PREFIX = 10041
 export const NATIVE_ASSET_ID = "0"
 export const DEPOSIT_CLASS_ID = "1" // TODO: replace with constant from api
-export const POLKADOT_APP_NAME = "Basilisk Web App"
+export const POLKADOT_APP_NAME = "Hydra Web App"
 
 export const ApiPromiseContext = createContext<ApiPromise>({} as ApiPromise)
 export const useApiPromise = () => useContext(ApiPromiseContext)
