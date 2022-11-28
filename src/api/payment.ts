@@ -2,7 +2,7 @@ import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Maybe, undefinedNoop } from "utils/helpers"
-import { useApiPromise } from "utils/api"
+import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import { useStore } from "state/store"
 import { u32 } from "@polkadot/types-codec"
 import { normalizeId } from "../utils/assets"
@@ -51,7 +51,12 @@ const getAccountCurrency =
     const result = await api.query.multiTransactionPayment.accountCurrencyMap(
       address,
     )
-    return result.toString()
+
+    if (result) {
+      return result.toString()
+    }
+
+    return NATIVE_ASSET_ID
   }
 
 export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
