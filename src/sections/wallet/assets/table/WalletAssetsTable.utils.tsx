@@ -42,7 +42,9 @@ export const useAssetsTable = (
     accessor("symbol", {
       id: "name",
       header: t("wallet.assets.table.header.name"),
-      cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
+      cell: ({ row }) => (
+        <WalletAssetsTableName {...row.original} isDesktop={isDesktop} />
+      ),
     }),
     accessor("transferable", {
       id: "transferable",
@@ -106,4 +108,5 @@ export type AssetsTableData = {
   origin: string
   assetType: PalletAssetRegistryAssetType["type"]
   couldBeSetAsPaymentFee: boolean
+  isPaymentFee: boolean
 }

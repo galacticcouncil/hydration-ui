@@ -146,4 +146,8 @@ export const QUERY_KEYS = {
   math: ["@galacticcouncil/math"],
   existentialDeposit: ["existentialDeposit"],
   acceptedCurrency: (id: Maybe<u32 | string>) => ["acceptedCurrency", id],
+  accountCurrency: (address: Maybe<AccountId32 | string>) => [
+    "accountCurrency",
+    address,
+  ],
 } as const

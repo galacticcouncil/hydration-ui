@@ -14,7 +14,10 @@ import { useAssetDetailsList } from "api/assetDetails"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useTokensLocks } from "../../../../../api/balances"
 import BigNumber from "bignumber.js"
-import { useAcceptedCurrencies } from "../../../../../api/payment"
+import {
+  useAcceptedCurrencies,
+  useAccountCurrency,
+} from "../../../../../api/payment"
 
 export const useAssetsTableData = () => {
   const { account } = useAccountStore()
@@ -24,9 +27,15 @@ export const useAssetsTableData = () => {
     : []
   const balances = useAssetsBalances()
   const acceptedCurrenciesQuery = useAcceptedCurrencies(tokenIds)
+  const accountCurrency = useAccountCurrency(account?.address)
   const assets = useAssetDetailsList(tokenIds)
 
-  const queries = [assets, balances, ...acceptedCurrenciesQuery]
+  const queries = [
+    assets,
+    balances,
+    accountCurrency,
+    ...acceptedCurrenciesQuery,
+  ]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
@@ -79,12 +88,13 @@ export const useAssetsTableData = () => {
         lockedUSD: balance.lockedUsd,
         origin: "TODO",
         assetType: asset.assetType,
+        isPaymentFee: asset.id?.toString() === accountCurrency.data,
         couldBeSetAsPaymentFee,
       }
     })
 
     return res.filter((x): x is AssetsTableData => x !== null)
-  }, [assets.data, balances.data, isLoading, acceptedCurrenciesQuery])
+  }, [assets.data, balances.data, isLoading, acceptedCurrenciesQuery, accountCurrency])
 
   return { data, isLoading }
 }

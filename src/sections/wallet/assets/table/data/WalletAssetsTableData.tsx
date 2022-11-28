@@ -10,35 +10,59 @@ export const WalletAssetsTableName = ({
   large,
   symbol,
   name,
+  isPaymentFee,
+  isDesktop,
 }: {
   symbol: string
   name: string
   large?: boolean
-}) => (
-  <div sx={{ flex: "row", gap: 8, align: "center" }}>
-    <SIcon large={large}>{getAssetLogo(symbol)}</SIcon>
-    <div sx={{ flex: "column", width: "100%" }}>
-      <Text
-        fs={[large ? 18 : 14, 16]}
-        lh={[large ? 16 : 23, 16]}
-        fw={700}
-        color="white"
-      >
-        {symbol}
-      </Text>
-      <Text
-        fs={[large ? 13 : 12, 14]}
-        lh={[large ? 17 : 14, 14]}
-        fw={500}
-        css={{
-          color: `rgba(${theme.rgbColors.whiteish500}, 0.61)`,
-        }}
-      >
-        {name}
-      </Text>
+  isPaymentFee: boolean
+  isDesktop: boolean
+}) => {
+  const { t } = useTranslation()
+
+  return (
+    <div>
+      <div sx={{ flex: "row", gap: 8, align: "center" }}>
+        <SIcon large={large}>{getAssetLogo(symbol)}</SIcon>
+        <div sx={{ flex: "column", width: "100%" }}>
+          <Text
+            fs={[large ? 18 : 14, 16]}
+            lh={[large ? 16 : 23, 16]}
+            fw={700}
+            color="white"
+          >
+            {symbol}
+          </Text>
+          <Text
+            fs={[large ? 13 : 12, 14]}
+            lh={[large ? 17 : 14, 14]}
+            fw={500}
+            css={{
+              color: `rgba(${theme.rgbColors.whiteish500}, 0.61)`,
+            }}
+          >
+            {name}
+          </Text>
+        </div>
+      </div>
+      {isPaymentFee && (
+        <Text
+          fs={9}
+          fw={700}
+          sx={{
+            mt: 4,
+            ml: isDesktop ? 40 : large ? 50 : 32,
+          }}
+          color="pink700"
+          tTransform="uppercase"
+        >
+          {t("wallet.assets.table.details.feePaymentAsset")}
+        </Text>
+      )}
     </div>
-  </div>
-)
+  )
+}
 
 export const WalletAssetsTableBalance = (props: {
   balance: BN

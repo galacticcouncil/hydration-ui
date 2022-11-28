@@ -1,11 +1,12 @@
 import { ApiPromise } from "@polkadot/api"
-import { useQueries } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { useApiPromise } from "utils/api"
 import { useStore } from "state/store"
 import { u32 } from "@polkadot/types-codec"
 import { normalizeId } from "../utils/assets"
+import { AccountId32 } from "@open-web3/orml-types/interfaces"
 
 const getAcceptedCurrency = (api: ApiPromise, id: u32 | string) => async () => {
   const normalizedId = normalizeId(id)
@@ -43,4 +44,23 @@ export const useSetAsFeePayment = () => {
       })
     }
   }
+}
+
+const getAccountCurrency =
+  (api: ApiPromise, address: string | AccountId32) => async () => {
+    const result = await api.query.multiTransactionPayment.accountCurrencyMap(
+      address,
+    )
+    return result.toString()
+  }
+
+export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
+  const api = useApiPromise()
+  return useQuery(
+    QUERY_KEYS.accountCurrency(address),
+    !!address ? getAccountCurrency(api, address) : undefinedNoop,
+    {
+      enabled: !!address,
+    },
+  )
 }
