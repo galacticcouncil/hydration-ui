@@ -31,8 +31,10 @@ export const getMath = () => async () => {
   const [xyk, lbp, liquidityMining, omnipool] = await Promise.all([
     import("@galacticcouncil/math-xyk"),
     import("@galacticcouncil/math-lbp"),
-    import("@galacticcouncil/math/build/liquidity-mining/bundler"),
-    import("@galacticcouncil/math-omnipool/build/omnipool/bundler"),
+    import(
+      "@galacticcouncil/math/build/liquidity-mining/bundler/hydra_dx_wasm"
+    ),
+    import("@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"),
   ])
 
   return {
