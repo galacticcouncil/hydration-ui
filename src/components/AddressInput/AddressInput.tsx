@@ -2,7 +2,7 @@ import { useAsset } from "api/asset"
 import { Text } from "components/Typography/Text/Text"
 import { InputHTMLAttributes, forwardRef, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { BASILISK_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
+import { HYDRA_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { Maybe } from "utils/helpers"
 import { SInput, SInputWrapper } from "./AddressInput.styled"
@@ -30,7 +30,7 @@ export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
 
     const nativeAddress = safeConvertAddressSS58(
       props.value,
-      BASILISK_ADDRESS_PREFIX,
+      HYDRA_ADDRESS_PREFIX,
     )
 
     return (
