@@ -1586,6 +1586,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-lbp/-/math-lbp-0.0.0-beta-1.tgz#196e82e5f4918d6922c918fa26bd4e261e2ec151"
   integrity sha512-KIRqKg5XpqkUVuLe7puh4aemznR6TDeACYOkg9bpmNw0WyMAa0vK+Q952LbcWnppIGTwmvkIXRfUsrfYyKQQbw==
 
+"@galacticcouncil/math-omnipool@https://github.com/galacticcouncil/HydraDX-wasm#2eb9bf933c8ddfcc19d16f980496957967b613bd":
+  version "0.0.0-beta-1"
+  resolved "https://github.com/galacticcouncil/HydraDX-wasm#2eb9bf933c8ddfcc19d16f980496957967b613bd"
+
 "@galacticcouncil/math-xyk@^0.0.0-beta-1":
   version "0.0.0-beta-1"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.0.0-beta-1.tgz#3da79f57098021bb2230bdf0774782cd5c799270"
@@ -1593,7 +1597,7 @@
 
 "@galacticcouncil/math@https://github.com/galacticcouncil/HydraDX-wasm":
   version "0.0.0-beta-1"
-  resolved "https://github.com/galacticcouncil/HydraDX-wasm#c926d70e4df9d6ac26ec82d7d985fe60440d5d2a"
+  resolved "https://github.com/galacticcouncil/HydraDX-wasm#3889310b8f0d57f1a84fda32bc28fee9ec4100b3"
 
 "@galacticcouncil/sdk@^0.0.1-beta.12":
   version "0.0.1-beta.12"

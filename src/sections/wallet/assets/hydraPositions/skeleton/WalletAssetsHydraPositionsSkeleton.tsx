@@ -1,16 +1,16 @@
 import { TableSkeleton } from "components/Table/TableSkeleton"
 import { useTranslation } from "react-i18next"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
-import { useAssetsTableSkeleton } from "./WalletAssetsTableSkeleton.utils"
+import { useHydraPositionsTableSkeleton } from "sections/wallet/assets/hydraPositions/skeleton/WalletAssetsHydraPositionsSkeleton.utils"
 
-export const WalletLiquidityPositionsSkeleton = () => {
+export const WalletAssetsHydraPositionsSkeleton = () => {
   const { t } = useTranslation()
-  const table = useAssetsTableSkeleton()
+  const table = useHydraPositionsTableSkeleton()
 
   return (
     <TableSkeleton
       table={table}
-      title={t("wallet.assets.liquidityPositions.table.title")}
+      title={t("wallet.assets.hydraPositions.title")}
       css={assetsTableStyles}
     />
   )
