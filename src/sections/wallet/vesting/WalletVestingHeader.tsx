@@ -76,7 +76,9 @@ export const WalletVestingHeader = () => {
           </Text>
         </div>
       </div>
-      <SSeparator sx={{ display: ["none", "inherit"] }} />
+      {vestingScheduleEnd && (
+        <SSeparator sx={{ display: ["none", "inherit"] }} />
+      )}
       {vestingScheduleEnd && (
         <STable>
           <div>

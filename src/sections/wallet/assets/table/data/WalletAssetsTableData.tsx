@@ -17,7 +17,7 @@ export const WalletAssetsTableName = ({
 }) => (
   <div sx={{ flex: "row", gap: 8, align: "center" }}>
     <SIcon large={large}>{getAssetLogo(symbol)}</SIcon>
-    <div sx={{ flex: "column", width: "100%" }}>
+    <div sx={{ flex: "column", width: "100%", gap: 4 }}>
       <Text
         fs={[large ? 18 : 14, 16]}
         lh={[large ? 16 : 23, 16]}
