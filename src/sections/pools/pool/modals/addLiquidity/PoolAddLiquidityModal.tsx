@@ -46,7 +46,7 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
   const [input, setInput] = useState<{
     values: [string, string]
     lastUpdated: 0 | 1
-  }>({ values: ["0", "0"], lastUpdated: 0 })
+  }>({ values: ["", ""], lastUpdated: 0 })
 
   const paymentInfo = useAddLiquidityPaymentInfo(
     pool.tokens[0].id,

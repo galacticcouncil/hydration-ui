@@ -41,7 +41,7 @@ export const AssetSelect = (props: {
   const spotPrice = useSpotPrice(props.asset, usd.data?.id)
 
   const aUSDValue = useMemo(() => {
-    if (!props.value) return null
+    if (!props.value) return 0
     if (spotPrice.data?.spotPrice == null) return null
     return spotPrice.data.spotPrice.times(props.value)
   }, [props.value, spotPrice.data])
@@ -115,6 +115,7 @@ export const AssetSelect = (props: {
             dollars={t("value.usd", { amount: aUSDValue })}
             unit={props.assetName}
             error={props.error}
+            placeholder="0"
           />
         </div>
       </SContainer>

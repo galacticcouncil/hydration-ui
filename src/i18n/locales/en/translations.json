@@ -145,6 +145,7 @@
   "pools.reviewTransaction.modal.detail.nonce": "Nonce:",
   "pools.reviewTransaction.modal.confirmButton": "Sign & Confirm",
   "pools.reviewTransaction.modal.confirmButton.loading": "Waiting for Signature",
+  "pools.reviewTransaction.modal.confirmButton.warning": "Please accept update through your wallet extension.",
   "pools.reviewTransaction.modal.cancel": "Cancel",
   "pools.reviewTransaction.modal.pending.title": "Submiting...",
   "pools.reviewTransaction.modal.pending.description": "Fantastic! Data has been broadcasted and awaits confirmation on the blockchain.",

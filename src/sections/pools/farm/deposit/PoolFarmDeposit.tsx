@@ -138,7 +138,10 @@ export const PoolFarmDeposit = (props: PoolJoinFarmDepositProps) => {
               const balance = shareTokenBalance.data?.balance
 
               if (balance != null) {
-                form.setValue("value", balance.toString())
+                form.setValue(
+                  "value",
+                  getFloatingPointAmount(balance, 12).toString(),
+                )
               }
             }}
           />

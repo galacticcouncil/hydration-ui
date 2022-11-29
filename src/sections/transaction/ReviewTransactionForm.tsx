@@ -120,23 +120,32 @@ export const ReviewTransactionForm = (
           </SDetailRow>
         </div>
       </div>
-      <div sx={{ mt: 24, flex: "row", justify: "space-between" }}>
+      <div
+        sx={{ mt: 24, flex: "row", justify: "space-between", align: "start" }}
+      >
         <Button
           onClick={props.onCancel}
           text={t("pools.reviewTransaction.modal.cancel")}
           variant="secondary"
         />
-        <Button
-          text={t(
-            signTx.isLoading
-              ? "pools.reviewTransaction.modal.confirmButton.loading"
-              : "pools.reviewTransaction.modal.confirmButton",
+        <div sx={{ flex: "column", justify: "center", gap: 4 }}>
+          <Button
+            text={t(
+              signTx.isLoading
+                ? "pools.reviewTransaction.modal.confirmButton.loading"
+                : "pools.reviewTransaction.modal.confirmButton",
+            )}
+            variant="primary"
+            isLoading={signTx.isLoading}
+            disabled={account == null}
+            onClick={() => signTx.mutate()}
+          />
+          {signTx.isLoading && (
+            <Text fs={12} lh={16} tAlign="center" color="yellow400">
+              {t("pools.reviewTransaction.modal.confirmButton.warning")}
+            </Text>
           )}
-          variant="primary"
-          isLoading={signTx.isLoading}
-          disabled={account == null}
-          onClick={() => signTx.mutate()}
-        />
+        </div>
       </div>
     </div>
   )

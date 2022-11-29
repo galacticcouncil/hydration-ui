@@ -156,10 +156,10 @@ export const useTotalInFarms = () => {
     usd,
     ...spotPrices,
   ]
-  const isLoading = queries.some((q) => q.isLoading)
+  const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
-    if (isLoading) return undefined
+    if (isInitialLoading) return undefined
 
     const mappedFarms = farmIds.map((ids) => {
       const globalFarm = globalFarms.data?.find((gf) =>
@@ -184,15 +184,16 @@ export const useTotalInFarms = () => {
         )
         const shareToken = shareTokens.find(
           (st) => farm.pool.address === st.data?.poolId,
-        )
+        )?.data?.token
         const totalIssuance = totalIssuances.find(
-          (ti) => ti.data?.token === shareToken?.data?.token,
-        )
+          (ti) => ti.data?.token === shareToken,
+        )?.data?.total
 
         const farmIssuance = farm.yieldFarm.totalShares
-        const ratio = farmIssuance
-          .toBigNumber()
-          .div(totalIssuance?.data?.total ?? BN_1)
+        const ratio =
+          totalIssuance !== undefined && !totalIssuance?.isZero()
+            ? farmIssuance.toBigNumber().div(totalIssuance)
+            : BN_0
 
         const farmTotal = poolTotal.times(ratio)
 
@@ -204,7 +205,7 @@ export const useTotalInFarms = () => {
   }, [
     farmIds,
     globalFarms.data,
-    isLoading,
+    isInitialLoading,
     pools.data,
     shareTokens,
     spotPrices,
@@ -212,7 +213,7 @@ export const useTotalInFarms = () => {
     yieldFarms.data,
   ])
 
-  return { data, isLoading }
+  return { data, isLoading: isInitialLoading }
 }
 
 export const getPoolTotal = (
