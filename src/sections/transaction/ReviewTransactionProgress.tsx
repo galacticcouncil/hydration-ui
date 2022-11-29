@@ -26,7 +26,7 @@ export const ReviewTransactionProgress = (props: {
 
   return (
     <SProgressContainer>
-      <Text fs={12} fw={400} color="primary100" tAlign="center">
+      <Text fs={12} fw={400} color="white" tAlign="center">
         <Trans
           i18nKey="pools.reviewTransaction.modal.success.timer"
           t={t}
