@@ -57,24 +57,28 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
         }}
       >
         {balance.data && asset.data && (
-          <Trans
-            t={t}
-            i18nKey="selectAssets.balance"
-            tOptions={{
-              balance: balance.data.balance,
-              decimalPlaces: 4,
-              fixedPointScale: asset.data.decimals,
-              numberSuffix: ` ${asset.data.name}`,
-            }}
-          >
-            <Text color="white" fs={14} lh={18} tAlign="right" />
-          </Trans>
+          <>
+            <Trans
+              t={t}
+              i18nKey="selectAssets.balance"
+              tOptions={{
+                balance: balance.data.balance,
+                decimalPlaces: 4,
+                fixedPointScale: asset.data.decimals,
+                numberSuffix: ` ${asset.data.name}`,
+              }}
+            >
+              <Text color="white" fs={14} lh={18} tAlign="right" />
+            </Trans>
+            <Text color="neutralGray400" fs={12} lh={16}>
+              {t("value.usd", {
+                amount: totalUSD,
+                decimalPlaces: 4,
+                fixedPointScale: asset.data.decimals,
+              })}
+            </Text>
+          </>
         )}
-        <Text color="neutralGray400" fs={12} lh={16}>
-          {t("value.usd", {
-            amount: totalUSD,
-          })}
-        </Text>
       </div>
     </SAssetRow>
   )
