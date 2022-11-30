@@ -81,6 +81,10 @@ export const useAPR = (poolId: AccountId32 | string) => {
 
       // multiply by 100 since APR should be a percentage
       apr = apr.times(100)
+      // all of the APR calculations are using only half of the position -
+      // this is correct in terms of inputs but for the user,
+      // they are not depositing only half of the position, they are depositing 2 assets
+      apr = apr.div(2)
 
       // max distribution of rewards
       // https://www.notion.so/Screen-elements-mapping-Farms-baee6acc456542ca8d2cccd1cc1548ae?p=4a2f16a9f2454095945dbd9ce0eb1b6b&pm=s
