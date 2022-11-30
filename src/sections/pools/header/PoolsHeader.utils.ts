@@ -1,6 +1,6 @@
 import { usePools, usePoolShareTokens } from "api/pools"
 import { getFloatingPointAmount } from "utils/balance"
-import { BN_0, BN_1 } from "utils/constants"
+import { BN_0 } from "utils/constants"
 import { useMemo } from "react"
 import BN from "bignumber.js"
 import { useUsdPeggedAsset } from "api/asset"

@@ -12,11 +12,18 @@ import { PalletBalancesAccountData } from "@polkadot/types/lookup"
 import { u32 } from "@polkadot/types"
 import { useAssetDetailsList } from "api/assetDetails"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
+import { useTokensLocks } from "../../../../../api/balances"
+import BigNumber from "bignumber.js"
 
 export const useAssetsTableData = () => {
+  const { account } = useAccountStore()
   const tradeAssets = useTradeAssets()
+  const accountBalances = useAccountBalances(account?.address)
+  const tokenIds = accountBalances.data?.balances
+    ? [NATIVE_ASSET_ID, ...accountBalances.data.balances.map((b) => b.id)]
+    : []
   const balances = useAssetsBalances()
-  const assets = useAssetDetailsList()
+  const assets = useAssetDetailsList(tokenIds)
 
   const queries = [assets, tradeAssets, balances]
   const isLoading = queries.some((q) => q.isLoading)
@@ -40,8 +47,8 @@ export const useAssetsTableData = () => {
           tradeAssets.data.find((i) => i.id === asset.id?.toString()) != null,
         total: balance?.total ?? BN_0,
         totalUSD: balance?.totalUSD ?? BN_0,
-        locked: BN_0, // TODO
-        lockedUSD: BN_0, // TODO
+        locked: balance?.locked,
+        lockedUSD: balance?.lockedUsd,
         origin: "TODO",
         assetType: asset.assetType,
       }
@@ -66,6 +73,7 @@ export const useAssetsBalances = () => {
   const assetMetas = useAssetMetaList(tokenIds)
   const usd = useUsdPeggedAsset()
   const spotPrices = useSpotPrices(tokenIds, usd.data?.id)
+  const locksQueries = useTokensLocks(tokenIds)
 
   const queries = [accountBalances, assetMetas, usd, ...spotPrices]
   const isLoading = queries.some((q) => q.isLoading)
@@ -74,15 +82,38 @@ export const useAssetsBalances = () => {
     if (
       !accountBalances.data ||
       !assetMetas.data ||
-      spotPrices.some((q) => !q.data)
+      spotPrices.some((q) => !q.data) ||
+      locksQueries.some((q) => !q.data)
     )
       return undefined
+
+    const locks = locksQueries.reduce(
+      (
+        acc: {
+          id: string
+          amount: BigNumber
+        }[],
+        cur,
+      ) => {
+        if (!!cur.data?.length) {
+          acc.push(
+            ...cur?.data?.map((cur) => ({
+              id: cur.id,
+              amount: cur.amount.toBigNumber(),
+            })),
+          )
+        }
+        return acc
+      },
+      [],
+    )
 
     const tokens: (AssetsTableDataBalances | null)[] =
       accountBalances.data.balances.map((ab) => {
         const id = ab.id
         const spotPrice = spotPrices.find((sp) => id.eq(sp.data?.tokenIn))
         const meta = assetMetas.data.find((am) => id.eq(am?.id))
+        const lock = locks.find((lock) => id.eq(lock.id))
 
         if (!spotPrice?.data || !meta) return null
 
@@ -96,7 +127,18 @@ export const useAssetsBalances = () => {
         const transferable = free.minus(frozen).div(dp)
         const transferableUSD = transferable.times(spotPrice.data.spotPrice)
 
-        return { id, total, totalUSD, transferable, transferableUSD }
+        const locked = (lock?.amount ?? BN_0).div(dp)
+        const lockedUsd = locked.times(spotPrice.data.spotPrice)
+
+        return {
+          id,
+          total,
+          totalUSD,
+          transferable,
+          transferableUSD,
+          locked,
+          lockedUsd,
+        }
       })
 
     const nativeBalance = accountBalances.data.native.data
@@ -106,16 +148,20 @@ export const useAssetsBalances = () => {
     const nativeSpotPrice = spotPrices.find(
       (sp) => sp.data?.tokenIn === NATIVE_ASSET_ID,
     )?.data?.spotPrice
+
+    const nativeLock = locks.find((lock) => lock.id === NATIVE_ASSET_ID)?.amount
+
     const native = getNativeBalances(
       nativeBalance,
       nativeDecimals,
       nativeSpotPrice,
+      nativeLock,
     )
 
     return [native, ...tokens].filter(
       (x): x is AssetsTableDataBalances => x !== null,
     )
-  }, [accountBalances.data, assetMetas, spotPrices])
+  }, [accountBalances.data, assetMetas, spotPrices, locksQueries])
 
   return { data, isLoading }
 }
@@ -124,6 +170,7 @@ const getNativeBalances = (
   balance: PalletBalancesAccountData,
   decimals?: BN,
   spotPrice?: BN,
+  lock?: BN,
 ): AssetsTableDataBalances | null => {
   if (!decimals || !spotPrice) return null
 
@@ -138,12 +185,17 @@ const getNativeBalances = (
   const transferable = free.minus(BN.max(feeFrozen, miscFrozen)).div(dp)
   const transferableUSD = transferable.times(spotPrice)
 
+  const locked = (lock ?? BN_0).div(dp)
+  const lockedUsd = locked.times(spotPrice)
+
   return {
     id: NATIVE_ASSET_ID,
     total,
     totalUSD,
     transferable,
     transferableUSD,
+    locked,
+    lockedUsd,
   }
 }
 
@@ -153,4 +205,6 @@ type AssetsTableDataBalances = {
   totalUSD: BN
   transferable: BN
   transferableUSD: BN
+  locked: BN
+  lockedUsd: BN
 }
