@@ -161,6 +161,7 @@
   "walletConnect.accountSelect.description": "Pick one of your accounts to connect to Hydra",
   "walletConnect.accountSelect.asset.parachain": "Polkadot",
   "walletConnect.accountSelect.asset.network": "Hydra",
+  "walletConnect.accountSelect.substrate.address": "Substrate address",
   "walletConnect.pending.title": "Waiting for Authorization",
   "walletConnect.pending.description": "Please sign into {{name}} Wallet Extension to connect to Hydra",
   "walletConnect.logout": "Log Out",

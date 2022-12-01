@@ -60,7 +60,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
         />
         <Separator color="basic700" opacity={isActive ? 0.3 : 1} />
         <WalletConnectAccountSelectAddress
-          name={t("walletConnect.accountSelect.asset.parachain")}
+          name={t("walletConnect.accountSelect.substrate.address")}
           address={polkadotAddress}
           theme={provider}
         />
