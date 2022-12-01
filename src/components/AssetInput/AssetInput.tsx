@@ -1,4 +1,5 @@
 import React, { FC } from "react"
+import { formatAssetValue } from "utils/formatting"
 import { Maybe } from "utils/helpers"
 import {
   SDollars,
@@ -34,10 +35,12 @@ export const AssetInput: FC<AssetInputProps> = (props) => {
           <SInput
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               if (e.target.validity.valid) {
-                props.onChange(e.target.value.replace(/,/g, "."))
+                props.onChange(
+                  e.target.value.replace(/\s+/g, "").replace(/,/g, "."),
+                )
               }
             }}
-            value={props.value ?? ""}
+            value={formatAssetValue(props.value) ?? ""}
             id={props.name}
             type={props.type}
             placeholder={props.placeholder}
