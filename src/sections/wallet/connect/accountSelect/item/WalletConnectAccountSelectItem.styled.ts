@@ -21,10 +21,7 @@ export const SContainer = styled.div<{ isActive: boolean }>`
           right: 0;
           bottom: 0;
 
-          z-index: -1;
           border-radius: 12px;
-
-          pointer-events: none;
 
           background: linear-gradient(
               90deg,
@@ -39,6 +36,8 @@ export const SContainer = styled.div<{ isActive: boolean }>`
               #ff984e 104.14%
             ),
             linear-gradient(90deg, #ffce4f 1.27%, #4fffb0 104.14%);
+
+          pointer-events: none;
         }
       `
     }
@@ -69,7 +68,6 @@ export const SSelectItem = styled.div<{ isActive: boolean }>`
     if (p.isActive) {
       return css`
         &,
-        &:hover,
         &:active {
           background-color: rgb(38, 56, 52);
           background-image: linear-gradient(
@@ -77,6 +75,14 @@ export const SSelectItem = styled.div<{ isActive: boolean }>`
             rgba(73, 228, 159, 0) 25.46%,
             rgba(228, 175, 73, 0.2) 98.29%
           );
+        }
+        &:hover {
+          background: linear-gradient(
+              285.92deg,
+              rgba(73, 228, 159, 0) 25.46%,
+              rgba(228, 175, 73, 0.2) 98.29%
+            ),
+            rgb(46, 104, 81);
         }
 
         position: relative;
