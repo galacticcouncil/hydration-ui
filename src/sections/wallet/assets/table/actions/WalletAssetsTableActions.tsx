@@ -13,12 +13,16 @@ import { ReactComponent as DollarIcon } from "assets/icons/DollarIcon.svg"
 import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
 import { ReactComponent as MoreDotsIcon } from "assets/icons/MoreDotsIcon.svg"
 
+import { isNotNil } from "utils/helpers"
+
 type Props = {
   toggleExpanded: () => void
   symbol: string
   onBuyClick: (() => void) | undefined
   onSellClick: (() => void) | undefined
   onTransferClick: () => void
+  onSetFeeAsPaymentClick: () => void
+  couldBeSetAsPaymentFee: boolean
 }
 
 export const WalletAssetsTableActions = (props: Props) => {
@@ -67,13 +71,19 @@ export const WalletAssetsTableActions = (props: Props) => {
               icon: <PlusIcon />,
               label: t("wallet.assets.table.actions.add.liquidity"),
             },
-            {
-              key: "remove",
-              icon: <DollarIcon />,
-              label: t("wallet.assets.table.actions.payment.asset"),
-            },
-          ]}
-          onSelect={(item) => console.log("item", item)}
+            props.couldBeSetAsPaymentFee
+              ? {
+                  key: "setAsFeePayment",
+                  icon: <DollarIcon />,
+                  label: t("wallet.assets.table.actions.payment.asset"),
+                }
+              : null,
+          ].filter(isNotNil)}
+          onSelect={(item) => {
+            if (item === "setAsFeePayment") {
+              props.onSetFeeAsPaymentClick()
+            }
+          }}
         >
           <MoreDotsIcon />
         </Dropdown>

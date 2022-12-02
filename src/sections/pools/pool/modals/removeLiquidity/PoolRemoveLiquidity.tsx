@@ -25,6 +25,8 @@ import { useApiPromise } from "utils/api"
 import { usePaymentInfo } from "api/transaction"
 import { useSpotPrice } from "api/spotPrice"
 import { FormValues } from "utils/helpers"
+import { useAccountCurrency } from "../../../../../api/payments"
+import { useAssetMeta } from "../../../../../api/assetMeta"
 
 const options = [
   { label: "25%", value: 25 },
@@ -92,6 +94,8 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
   const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
   const { createTransaction } = useStore()
   const { account } = useAccountStore()
+  const accountCurrency = useAccountCurrency(account?.address)
+  const feeMeta = useAssetMeta(accountCurrency.data)
 
   const api = useApiPromise()
 
@@ -204,7 +208,8 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
                 <Text fs={14}>
                   {t("pools.removeLiquidity.modal.row.transactionCostValue", {
                     amount: paymentInfoEstimate.data?.partialFee,
-                    fixedPointScale: 12,
+                    symbol: feeMeta.data?.symbol,
+                    fixedPointScale: feeMeta.data?.decimals ?? 12,
                     decimalPlaces: 2,
                   })}
                 </Text>

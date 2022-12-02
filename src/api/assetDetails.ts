@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { u32 } from "@polkadot/types"
-import { Maybe } from "utils/helpers"
+import { Maybe, normalizeId, isNotNil } from "utils/helpers"
 import { useAccountBalances } from "./accountBalances"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
@@ -27,10 +27,7 @@ export const useAssetDetailsList = (
 ) => {
   const api = useApiPromise()
 
-  const normalizedIds = ids?.reduce<string[]>((memo, item) => {
-    if (item != null) memo.push(item.toString())
-    return memo
-  }, [])
+  const normalizedIds = ids?.filter(isNotNil).map(normalizeId)
 
   return useQuery(QUERY_KEYS.assets, getAssetDetails(api), {
     select: (data) => {

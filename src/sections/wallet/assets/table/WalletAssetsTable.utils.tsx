@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-table"
 import { useTranslation } from "react-i18next"
 import { useState } from "react"
+import { useSetAsFeePayment } from "api/payments"
 import {
   WalletAssetsTableBalance,
   WalletAssetsTableName,
@@ -27,6 +28,7 @@ export const useAssetsTable = (
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<AssetsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
+  const setFeeAsPayment = useSetAsFeePayment()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
@@ -70,6 +72,8 @@ export const useAssetsTable = (
       id: "actions",
       cell: ({ row }) => (
         <WalletAssetsTableActions
+          onSetFeeAsPaymentClick={() => setFeeAsPayment(row.original.id)}
+          couldBeSetAsPaymentFee={row.original.couldBeSetAsPaymentFee}
           onBuyClick={
             row.original.inTradeRouter
               ? () =>
@@ -121,4 +125,6 @@ export type AssetsTableData = {
   origin: string
   inTradeRouter: boolean
   assetType: PalletAssetRegistryAssetType["type"]
+  couldBeSetAsPaymentFee: boolean
+  isPaymentFee: boolean
 }
