@@ -107,19 +107,6 @@ export const ReviewTransactionForm = (
           </SDetailRow>
           <SDetailRow>
             <Text color="neutralGray300">
-              {t("pools.reviewTransaction.modal.detail.tip")}
-            </Text>
-            <Text color="white">
-              {t("pools.addLiquidity.modal.row.transactionTip", {
-                amount: props.tx.tip,
-                symbol: feeMeta.data?.symbol,
-                fixedPointScale: 12,
-                decimalPlaces: 2,
-              })}
-            </Text>
-          </SDetailRow>
-          <SDetailRow>
-            <Text color="neutralGray300">
               {t("pools.reviewTransaction.modal.detail.nonce")}
             </Text>
             <Text color="white">{nonce.data?.toString()}</Text>
