@@ -17,10 +17,7 @@ export const Header = () => {
   return (
     <SHeader>
       <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
-        <Icon
-          icon={isDesktop ? <HydraLogoFull /> : <HydraLogo />}
-          sx={{ mr: 11 }}
-        />
+        <Icon icon={isDesktop ? <HydraLogoFull /> : <HydraLogo />} />
         {isDesktop && <HeaderMenu />}
         <div sx={{ flex: "row", align: "center", gap: [12, 24] }}>
           <SBellIcon

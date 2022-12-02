@@ -20,7 +20,7 @@
   "selectAsset.button.max": "Max",
   "address.input.native": "{{symbol}}: {{address}}",
   "header.trade": "Trade",
-  "header.pools": "Pools & Farms",
+  "header.pools": "Pools",
   "header.wallet": "Wallet",
   "header.lbp": "LBP",
   "header.bridge": "Bridge",
