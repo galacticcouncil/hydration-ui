@@ -1,36 +1,62 @@
-import { FC, PropsWithChildren } from "react"
+import { FC, PropsWithChildren, useEffect, useRef, useState } from "react"
 import { ToastViewport } from "components/Toast/ToastViewport"
 import { Provider } from "@radix-ui/react-toast"
 import { useToast } from "state/toasts"
 import { Toast } from "components/Toast/Toast"
 import { AnimatePresence } from "framer-motion"
 
+import { ToastSidebar } from "./ToastSidebar"
+
 export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
-  const { toasts, remove } = useToast()
-  const toast = toasts[0]
+  const { toasts, hide } = useToast()
+
+  const activeToasts = toasts.filter((i) => !i.hidden)
+  const toast = activeToasts[0]
+
+  const [toastSeenInGroupCount, setToastSeenInGroupCount] = useState(0)
+
+  const currId = toast?.id ?? null
+  const lastToastId = useRef<string | null>(currId)
+  const lastToastUpdate = useRef<number>(Date.now())
+
+  useEffect(() => {
+    const now = Date.now()
+    // ignore quick toast change, user probably hasn't read it within 50ms
+    if (Math.abs(now - lastToastUpdate.current) > 50) {
+      const prevId = lastToastId.current
+      if (prevId !== currId) {
+        // if previous toast is null = new session, reset to 0
+        // otherwise new toast is in the same "session"
+        setToastSeenInGroupCount(prevId == null ? 0 : (counter) => counter + 1)
+      }
+      lastToastId.current = currId
+    }
+
+    lastToastUpdate.current = now
+  }, [currId])
 
   return (
-    <Provider duration={0}>
-      <ToastViewport />
-      <AnimatePresence>
-        {toast && (
-          <Toast
-            key={toast.id}
-            variant={toast.variant}
-            text={toast.text}
-            onClose={() => {
-              remove(toast.id)
-              toast.onClose?.()
-            }}
-            index={1}
-            count={toasts.length}
-            persist={toast.persist}
-          >
-            {toast.children}
-          </Toast>
-        )}
-      </AnimatePresence>
+    <>
+      <Provider duration={0}>
+        <ToastViewport />
+        <AnimatePresence>
+          {toast && (
+            <Toast
+              index={1 + toastSeenInGroupCount}
+              count={activeToasts.length + toastSeenInGroupCount}
+              key={toast.id}
+              variant={toast.variant}
+              title={toast.title}
+              actions={toast.actions}
+              onClose={() => hide(toast.id)}
+              persist={toast.persist}
+              dateCreated={toast.dateCreated}
+            />
+          )}
+        </AnimatePresence>
+      </Provider>
       {children}
-    </Provider>
+      <ToastSidebar />
+    </>
   )
 }

@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from "react"
-import { Text } from "components/Typography/Text/Text"
+import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { UseMutationResult } from "@tanstack/react-query"
 import { useToast } from "state/toasts"
@@ -35,9 +34,7 @@ export function ReviewTransactionToast<
     if (isSuccess) {
       // toast should be still present, even if ReviewTransaction is unmounted
       toastRef.current.success({
-        children: (
-          <Text fs={12}>{t("pools.reviewTransaction.toast.success")}</Text>
-        ),
+        title: t("pools.reviewTransaction.toast.success"),
       })
 
       closeRef.current?.()
@@ -47,22 +44,20 @@ export function ReviewTransactionToast<
     if (isError) {
       toRemoveId = toastRef.current.error({
         persist: true,
-        children: (
-          <div sx={{ flex: "row" }}>
-            <Text fs={12}>{t("pools.reviewTransaction.toast.error")}</Text>
-            <ButtonTransparent
-              type="button"
-              sx={{
-                p: "0 15px",
-                lineHeight: 12,
-                fontSize: 12,
-                color: "brightBlue300",
-              }}
-              onClick={() => reviewRef.current?.()}
-            >
-              {t("pools.reviewTransaction.modal.error.review")}
-            </ButtonTransparent>
-          </div>
+        title: t("pools.reviewTransaction.toast.error"),
+        actions: (
+          <ButtonTransparent
+            type="button"
+            sx={{
+              p: "0 15px",
+              lineHeight: 12,
+              fontSize: 12,
+              color: "brightBlue300",
+            }}
+            onClick={() => reviewRef.current?.()}
+          >
+            {t("pools.reviewTransaction.modal.error.review")}
+          </ButtonTransparent>
         ),
       })
     }
@@ -70,9 +65,7 @@ export function ReviewTransactionToast<
     if (isLoading) {
       toRemoveId = toastRef.current.loading({
         persist: true,
-        children: (
-          <Text fs={12}>{t("pools.reviewTransaction.toast.pending")}</Text>
-        ),
+        title: t("pools.reviewTransaction.toast.pending"),
       })
     }
 

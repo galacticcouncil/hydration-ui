@@ -37,6 +37,33 @@ export const formatDate = (
   return format(date, formatting, { locale: locale || enUS })
 }
 
+export const formatRelativeTime = (
+  sourceDate: Date,
+  targetDate: Date,
+  locales?: string | string[],
+) => {
+  const units = {
+    year: 24 * 60 * 60 * 1000 * 365,
+    month: (24 * 60 * 60 * 1000 * 365) / 12,
+    day: 24 * 60 * 60 * 1000,
+    hour: 60 * 60 * 1000,
+    minute: 60 * 1000,
+    second: 1000,
+  } as const
+
+  const formatter = new Intl.RelativeTimeFormat(locales, { numeric: "auto" })
+  const elapsed = sourceDate.valueOf() - targetDate.valueOf()
+
+  for (const key in units) {
+    const unit = key as keyof typeof units
+    if (Math.abs(elapsed) > units[unit] || unit === "second") {
+      return formatter.format(Math.round(elapsed / units[unit]), unit)
+    }
+  }
+
+  return null
+}
+
 export const BigNumberFormatOptionsSchema = z
   .object({
     fixedPointScale: z
