@@ -19,7 +19,7 @@ export const SHeader = styled.header`
 `
 
 export const SBellIcon = styled(BellIcon)`
-  color: white;
+  color: ${theme.colors.white};
 
   :hover {
     color: ${theme.colors.brightBlue400};
