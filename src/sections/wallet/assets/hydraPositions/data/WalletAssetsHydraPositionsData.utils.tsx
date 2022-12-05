@@ -16,10 +16,13 @@ import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
 import { useUsdPeggedAsset } from "api/asset"
 import BigNumber from "bignumber.js";
+import {
+  calculate_liquidity_lrna_out,
+  calculate_liquidity_out
+} from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
 
 export const useAssetsHydraPositionsData = () => {
   const { account } = useAccountStore()
-  const math = useMath()
   const uniques = useUniques(
     account?.address ?? "",
     OMNIPOOL_POSITION_COLLECTION_ID,
@@ -43,7 +46,6 @@ export const useAssetsHydraPositionsData = () => {
   )
 
   const queries = [
-    math,
     uniques,
     positions,
     metas,
@@ -56,7 +58,6 @@ export const useAssetsHydraPositionsData = () => {
 
   const data = useMemo(() => {
     if (
-      !math.omnipool ||
       !uniques.data ||
       !positions.data ||
       !metas.data ||
@@ -84,14 +85,12 @@ export const useAssetsHydraPositionsData = () => {
           !meta ||
           !lrnaMeta ||
           !omnipoolAsset?.data ||
-          !omnipoolBalance?.data ||
-          !math.omnipool
+          !omnipoolBalance?.data
         )
           return null
 
         const id = position.assetId.toString()
         const symbol = meta.symbol
-
         const name = getAssetName(meta.symbol)
 
         const [n,d] = position.price.map(n => new BigNumber(n.toString()))
@@ -107,8 +106,8 @@ export const useAssetsHydraPositionsData = () => {
           position.shares.toString()
         ]
 
-        const lernaOutResult = math.omnipool.calculate_liquidity_lrna_out.apply(this, params)
-        const liquidityOutResult = math.omnipool.calculate_liquidity_out.apply(this, params)
+        const lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
+        const liquidityOutResult = calculate_liquidity_out.apply(this, params)
         if (liquidityOutResult === '-1' || lernaOutResult === '-1') {
           console.log('error calculating liquidity out', {liquidityOutResult, lernaOutResult})
           return null
@@ -161,7 +160,6 @@ export const useAssetsHydraPositionsData = () => {
 
     return rows
   }, [
-    math.omnipool,
     uniques.data,
     positions.data,
     metas.data,
