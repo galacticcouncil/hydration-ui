@@ -3,6 +3,7 @@ import { Text } from "components/Typography/Text/Text"
 import BN from "bignumber.js"
 import { useTranslation } from "react-i18next"
 import { SIcon } from "sections/wallet/assets/table/data/WalletAssetsTableData.styled"
+import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 
 export const WalletAssetsTableName = (props: {
   symbol: string
@@ -59,9 +60,17 @@ export const WalletAssetsTableBalance = (props: {
       <Text fs={14} lh={18} fw={500} color="white">
         {t("value", { value: props.balance, type: "token" })}
       </Text>
-      <Text fs={[11, 12]} lh={[14, 16]} fw={500} color="neutralGray500">
+
+      <DollarAssetValue
+        value={props.balanceUSD}
+        wrapper={(children) => (
+          <Text fs={[11, 12]} lh={[14, 16]} fw={500} color="neutralGray500">
+            {children}
+          </Text>
+        )}
+      >
         {t("value.usd", { amount: props.balanceUSD, type: "dollar" })}
-      </Text>
+      </DollarAssetValue>
     </div>
   )
 }

@@ -239,6 +239,7 @@
   "wallet.assets.table.details.feePaymentAsset": "$ Fee payment asset",
   "wallet.assets.table.details.origin": "Origin Chain:",
   "wallet.assets.table.details.locked": "Locked:",
+  "wallet.assets.table.details.noprice.tooltip": "USD price currently not available",
   "wallet.assets.liquidityPositions.table.title": "Liquidity Positions",
   "wallet.assets.liquidityPositions.table.actions.transfer": "Transfer",
   "wallet.assets.liquidityPositions.table.actions.details": "Details",
