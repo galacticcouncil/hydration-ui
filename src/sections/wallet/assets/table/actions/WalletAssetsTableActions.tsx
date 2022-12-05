@@ -11,7 +11,7 @@ import { Dropdown } from "components/Dropdown/Dropdown"
 import { TableAction } from "components/Table/Table"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
-import { isNotNil } from "../../../../../utils/types"
+import { isNotNil } from "utils/helpers"
 
 type Props = {
   toggleExpanded: () => void

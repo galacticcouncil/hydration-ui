@@ -11,6 +11,8 @@ import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { useEra } from "api/era"
 import { useBestNumber } from "api/chain"
+import { useAccountCurrency } from "../../api/payment"
+import { useAssetMeta } from "../../api/assetMeta"
 
 export const ReviewTransactionForm = (
   props: {
@@ -22,6 +24,8 @@ export const ReviewTransactionForm = (
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const bestNumber = useBestNumber()
+  const accountCurrency = useAccountCurrency(account?.address)
+  const feeMeta = useAssetMeta(accountCurrency.data)
 
   const nonce = useNextNonce(account?.address)
 
@@ -76,6 +80,7 @@ export const ReviewTransactionForm = (
                   <Text color="white">
                     {t("pools.addLiquidity.modal.row.transactionCostValue", {
                       amount: paymentInfoData.partialFee,
+                      symbol: feeMeta.data?.symbol,
                       fixedPointScale: 12,
                       decimalPlaces: 2,
                     })}

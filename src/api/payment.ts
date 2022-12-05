@@ -1,11 +1,10 @@
 import { ApiPromise } from "@polkadot/api"
-import { useQueries, useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { Maybe, undefinedNoop } from "utils/helpers"
+import { Maybe, undefinedNoop, normalizeId } from "utils/helpers"
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
-import { useStore } from "state/store"
+import { useAccountStore, useStore } from "state/store"
 import { u32 } from "@polkadot/types-codec"
-import { normalizeId } from "../utils/assets"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 
 const getAcceptedCurrency = (api: ApiPromise, id: u32 | string) => async () => {
@@ -13,6 +12,7 @@ const getAcceptedCurrency = (api: ApiPromise, id: u32 | string) => async () => {
   const result = await api.query.multiTransactionPayment.acceptedCurrencies(
     normalizedId,
   )
+
   return {
     id: normalizedId,
     accepted: !result.isEmpty,
@@ -24,7 +24,7 @@ export const useAcceptedCurrencies = (ids: Maybe<string | u32>[]) => {
 
   return useQueries({
     queries: ids.map((id) => ({
-      queryKey: QUERY_KEYS.acceptedCurrency(id),
+      queryKey: QUERY_KEYS.acceptedCurrencies(id),
       queryFn: !!id ? getAcceptedCurrency(api, id) : undefinedNoop,
       enabled: !!id,
     })),
@@ -33,16 +33,19 @@ export const useAcceptedCurrencies = (ids: Maybe<string | u32>[]) => {
 
 export const useSetAsFeePayment = () => {
   const api = useApiPromise()
+  const { account } = useAccountStore()
   const { createTransaction } = useStore()
+  const queryClient = useQueryClient()
 
-  return (tokenId?: string) => {
-    if (!tokenId) {
-      undefinedNoop()
-    } else {
-      createTransaction({
-        tx: api.tx.multiTransactionPayment.setCurrency(tokenId),
-      })
-    }
+  return async (tokenId?: string) => {
+    if (!tokenId) return
+    const transaction = await createTransaction({
+      tx: api.tx.multiTransactionPayment.setCurrency(tokenId),
+    })
+    if (transaction.isError) return
+    await queryClient.refetchQueries({
+      queryKey: QUERY_KEYS.accountCurrency(account?.address),
+    })
   }
 }
 
@@ -52,7 +55,7 @@ const getAccountCurrency =
       address,
     )
 
-    if (result) {
+    if (!result.isEmpty) {
       return result.toString()
     }
 
