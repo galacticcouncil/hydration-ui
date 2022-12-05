@@ -1,6 +1,7 @@
 import { UseQueryResult } from "@tanstack/react-query"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { UseFormReturn } from "react-hook-form"
+import { u32 } from "@polkadot/types-codec"
 
 export const noop = () => {}
 export const undefinedNoop = () => undefined
@@ -67,4 +68,16 @@ export const useNow = (enabled: boolean) => {
   }, [enabled])
 
   return now
+}
+
+export function normalizeId(id: string | u32) {
+  return id.toString()
+}
+
+export function isNil<T>(val: T | null | undefined): val is null | undefined {
+  return val === undefined || val === null
+}
+
+export function isNotNil<T>(val: T | null | undefined): val is T {
+  return !isNil(val)
 }

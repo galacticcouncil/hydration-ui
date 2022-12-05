@@ -40,14 +40,14 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
         <Text font="ChakraPetchBold">{name}</Text>
         <div sx={{ flex: "row", align: "end", gap: 2 }}>
           <Text>
-            {t("value.hdx", {
+            {t("value.native", {
               value: data?.balance,
               fixedPointScale: meta?.decimals,
               decimalPlaces: 4,
             })}
           </Text>
           <Text fs={14} font="ChakraPetchBold" tTransform="uppercase">
-            hdx
+            {meta?.symbol}
           </Text>
         </div>
       </div>
