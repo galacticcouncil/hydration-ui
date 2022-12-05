@@ -62,8 +62,8 @@ export const AssetSelect = (props: {
               i18nKey="selectAsset.balance"
               tOptions={{
                 balance: props.balance,
-                decimalPlaces: 4,
                 fixedPointScale: props.decimals,
+                type: "token",
               }}
             >
               <span css={{ opacity: 0.7 }} />

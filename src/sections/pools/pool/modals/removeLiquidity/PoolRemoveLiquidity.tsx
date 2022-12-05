@@ -183,7 +183,7 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
               amount={t("value", {
                 value: removeAmount[0],
                 fixedPointScale: pool.tokens[0].decimals,
-                decimalPlaces: 4,
+                type: "token",
               })}
             />
             <PoolRemoveLiquidityReward
@@ -192,7 +192,7 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
               amount={t("value", {
                 value: removeAmount[1],
                 fixedPointScale: pool.tokens[1].decimals,
-                decimalPlaces: 4,
+                type: "token",
               })}
             />
           </STradingPairContainer>
@@ -210,7 +210,6 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
                     amount: paymentInfoEstimate.data?.partialFee,
                     symbol: feeMeta.data?.symbol,
                     fixedPointScale: feeMeta.data?.decimals ?? 12,
-                    decimalPlaces: 2,
                   })}
                 </Text>
               </div>
@@ -231,6 +230,7 @@ export const PoolRemoveLiquidity: FC<Props> = ({ isOpen, onClose, pool }) => {
                     secondAmount: spotPrice.data?.spotPrice,
                     firstCurrency: pool.tokens[0].symbol,
                     secondCurrency: pool.tokens[1].symbol,
+                    type: "token",
                   }}
                 />
               </Text>

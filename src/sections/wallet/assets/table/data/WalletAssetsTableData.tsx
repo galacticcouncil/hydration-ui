@@ -57,10 +57,10 @@ export const WalletAssetsTableBalance = (props: {
   return (
     <div sx={{ flex: "column", align: ["end", "start"], gap: 2 }}>
       <Text fs={14} lh={18} fw={500} color="white">
-        {t("value", { value: props.balance, decimalPlaces: 4 })}
+        {t("value", { value: props.balance, type: "token" })}
       </Text>
       <Text fs={[11, 12]} lh={[14, 16]} fw={500} color="neutralGray500">
-        {t("value.usd", { amount: props.balanceUSD })}
+        {t("value.usd", { amount: props.balanceUSD, type: "dollar" })}
       </Text>
     </div>
   )

@@ -63,9 +63,9 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
               i18nKey="selectAssets.balance"
               tOptions={{
                 balance: balance.data.balance,
-                decimalPlaces: 4,
                 fixedPointScale: asset.data.decimals,
                 numberSuffix: ` ${asset.data.name}`,
+                type: "token",
               }}
             >
               <Text color="white" fs={14} lh={18} tAlign="right" />
@@ -73,7 +73,6 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
             <Text color="neutralGray400" fs={12} lh={16}>
               {t("value.usd", {
                 amount: totalUSD,
-                decimalPlaces: 4,
                 fixedPointScale: asset.data.decimals,
               })}
             </Text>

@@ -89,6 +89,10 @@ export const BigNumberFormatOptionsSchema = z
       .optional(),
     numberPrefix: z.string().optional(),
     numberSuffix: z.string().optional(),
+    type: z
+      .union([z.literal("dollar"), z.literal("token"), z.literal("percentage")])
+      .default("token")
+      .optional(),
   })
   .refine((data) => Object.keys(data).length >= 1)
 
@@ -97,34 +101,60 @@ export type BalanceFormatOptions = z.infer<typeof BigNumberFormatOptionsSchema>
 /**
  * TODO: write tests
  *
+ * https://www.notion.so/Number-formatting-e26c4fa5c3564773a57711dfd854e28c
+ *
  * Percentage:
- * - int > 0   show 2 decimal digits
- * - int <= 0  first 2 significant digits, cap to 4 digits
+ * - Display only 2 decimals, by cutting them not rounding
+ * - If the integer number is 0 display 2 decimals
+ * - If the percentage number is bigger than 99.99% (2 digits) don’t show any decimals
+ * - Last integer unit is separated from decimals with a DOT symbol (.)
  *
- * 0.0000001          0.0000
- * 0.001              0.0010
- * 0.1                0.10
- * 98.0000001        98.00
- * 98.001            98.00
- * 98.1              98.10
+ * Examples:
+ *
+ * - 12.345%     =>     12.34%
+ * - 0.345%      =>      0.34%
+ * - 99.991%     =>       100%
  *
  *
- * Value:
- * - int > 0   show 4 decimal digits
- * - int <= 0  first 4 significant digits, cap to 4 digits
+ * Dollar value:
+ * Display only 2 decimals, by cutting them not rounding
+ * Separate integers numbers with a space in group of 3 digits
+ * If dollar value equals ZERO, only display, 0, without decimals
+ * If dollar value is less than 0.01 show 0
+ * If dollar value is higher than 999 dont show decimals
  *
- * 0.0000001          0.0000
- * 0.001              0.0010
- * 0.1                0.1000
- * 98.0000001        98.0000
- * 98.001            98.0010
- * 98.1              98.1000
+ *  Examples:
+ *
+ * - 984.3498765   =>    984.34
+ * - 1000          =>     1 000
+ * - 0.009         =>         0
+ * - 999           =>     1 000
+ *
+ *
+ * Token value:
+ * - If integer value is higher than 999.9999 show only 2 decimals
+ * - If the integer number is equal or less than 0 display a maximum of 6  decimals, by cutting them not rounding
+ * - If token value equals ZERO, only display, 0, without decimals
+ * - If the final digit of the amount is 0 decimal it should be round it up
+ * - If token balance is higher than 99 999.99 don’t show decimals
+ * - If token balance is higher than 9 999.9999 only show 2 decimals
+ *
+ * Examples:
+ *
+ * - 1 234.56789    =>     1 234.56
+ * - 0.034556722    =>     0.034556
+ * - 234.56700      =>      234.567
+ * - 99 999.99      =>      100 000
+ * - 9 999.9999     =>    10 000.99
+ *
  */
 export function formatBigNumber(
   value: Maybe<BigNumberLikeType>,
   options?: Maybe<z.infer<typeof BigNumberFormatOptionsSchema>>,
   locale?: string | string[],
 ) {
+  BigNumber.config({ ROUNDING_MODE: BigNumber.ROUND_DOWN })
+
   if (value == null) return null
   let num = normalizeBigNumber(value)
   if (num.isNaN()) return "-"
@@ -142,42 +172,46 @@ export function formatBigNumber(
     num = num.div(BN_10.pow(options.fixedPointScale?.toString()))
   }
 
-  if (options?.decimalPlaces != null) {
-    const decimalPlaces = Number.parseInt(options.decimalPlaces?.toString(), 10)
-    const zeroIntDecimalPlacesCap = options.zeroIntDecimalPlacesCap
-      ? Number.parseInt(options.zeroIntDecimalPlacesCap?.toString(), 10)
-      : 4
-
-    let [integerPart, fractionPart] = num
-      .toFormat({ ...fmtConfig, prefix: "", suffix: "" })
-      .split(fmtConfig.decimalSeparator)
-
-    if (decimalPlaces === 0 || new BigNumber(integerPart).gt(0))
-      return num.toFormat(decimalPlaces, fmtConfig)
-
-    // handle if input number does not have decimal places
-    fractionPart = (fractionPart ?? "").padEnd(2, "0")
-
-    // count the number of prefix zeroes
-    let numZeroes
-    for (
-      numZeroes = 0;
-      numZeroes < fractionPart.length && fractionPart[numZeroes] === "0";
-      numZeroes++
-    ) {}
-
-    const formatted =
-      integerPart +
-      fmtConfig.decimalSeparator +
-      fractionPart.slice(
-        0,
-        Math.min(zeroIntDecimalPlacesCap, numZeroes + decimalPlaces),
-      )
-
-    return fmtConfig.prefix + formatted + fmtConfig.suffix
+  /*
+    If any type value equals ZERO, only display, 0, without decimals
+    If dollar value is less than 0.01 show 0
+  */
+  if (num.eq(0) || (options?.type === "dollar" && num.lt(0.01))) {
+    return BigNumber(0).toFormat(fmtConfig)
   }
 
-  return num.toFormat(fmtConfig)
+  /* If dollar value is higher than 999 dont show decimals */
+  if (options?.type === "dollar" && num.gt(999)) {
+    return num.toFormat(0, fmtConfig)
+  }
+
+  /* If the percentage number is bigger than 99.99% (2 digits) don’t show any decimals */
+  if (options?.type === "percentage" && num.gt(99.99)) {
+    return num.toFormat(0, BigNumber.ROUND_HALF_UP, fmtConfig)
+  }
+
+  /* Display only 2 decimals, by cutting them not rounding */
+  if (options?.type !== "token") {
+    return num.decimalPlaces(2).toFormat(fmtConfig)
+  }
+
+  /*If token balance is higher than 99 999.99 don’t show decimals */
+  if (num.gt(99999.9999)) {
+    return num.toFormat(0, fmtConfig)
+  }
+
+  /*If integer value is higher than 999.9999 show only 2 decimals. */
+  if (num.gt(999.9999)) {
+    return num.decimalPlaces(2).toFormat(fmtConfig)
+  }
+
+  /* If the integer number is equal or less than 0 display a maximum of 6 decimals, by cutting them not rounding */
+  /* If the final digit of the amount is 0 decimal it should be round it up. */
+  if (num.lt(1)) {
+    return num.decimalPlaces(6).toFormat(fmtConfig)
+  }
+
+  return num.decimalPlaces(4).toFormat(fmtConfig)
 }
 
 export function shortenAccountAddress(address: string, length = 6) {
@@ -201,7 +235,8 @@ export function safeConvertAddressSS58(
  * Format asset value by 3 digits
  */
 export const formatAssetValue = (value: string) => {
-  var parts = value.toString().split(".")
+  if (value == null) return ""
+  let parts = value.toString().split(".")
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ")
   return parts.join(".")
 }

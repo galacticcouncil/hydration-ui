@@ -87,7 +87,6 @@ export const PoolFarmDetail = (props: {
           <Text fs={14} color="neutralGray100">
             {t("pools.allFarms.modal.capacity", {
               capacity: props.farm.fullness.times(100),
-              decimalPlaces: 0,
             })}
           </Text>
         </SFarmRow>
