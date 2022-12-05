@@ -21,6 +21,8 @@ type Props = {
   onBuyClick: (() => void) | undefined
   onSellClick: (() => void) | undefined
   onTransferClick: () => void
+  couldAddLiquidity: boolean
+  onAddLiquidityClick: () => void
   onSetFeeAsPaymentClick: () => void
   couldBeSetAsPaymentFee: boolean
 }
@@ -66,22 +68,31 @@ export const WalletAssetsTableActions = (props: Props) => {
 
         <Dropdown
           items={[
-            {
-              key: "add",
-              icon: <PlusIcon />,
-              label: t("wallet.assets.table.actions.add.liquidity"),
-            },
+            props.couldAddLiquidity
+              ? {
+                  key: "addLiquidity" as const,
+                  icon: <PlusIcon />,
+                  label: t("wallet.assets.table.actions.add.liquidity"),
+                }
+              : null,
             props.couldBeSetAsPaymentFee
               ? {
-                  key: "setAsFeePayment",
+                  key: "setAsFeePayment" as const,
                   icon: <DollarIcon />,
                   label: t("wallet.assets.table.actions.payment.asset"),
                 }
               : null,
           ].filter(isNotNil)}
           onSelect={(item) => {
-            if (item === "setAsFeePayment") {
-              props.onSetFeeAsPaymentClick()
+            switch (item) {
+              case "addLiquidity": {
+                props.onAddLiquidityClick()
+                break
+              }
+              case "setAsFeePayment": {
+                props.onSetFeeAsPaymentClick()
+                break
+              }
             }
           }}
         >
