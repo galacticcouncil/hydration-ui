@@ -12,12 +12,9 @@ import { PalletBalancesAccountData } from "@polkadot/types/lookup"
 import { u32 } from "@polkadot/types"
 import { useAssetDetailsList } from "api/assetDetails"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
-import { useTokensLocks } from "../../../../../api/balances"
-import BigNumber from "bignumber.js"
-import {
-  useAcceptedCurrencies,
-  useAccountCurrency,
-} from "../../../../../api/payments"
+import { useTokensLocks } from "api/balances"
+import { useAcceptedCurrencies, useAccountCurrency } from "api/payments"
+import { usePools } from "api/pools"
 
 export const useAssetsTableData = () => {
   const { account } = useAccountStore()
@@ -28,6 +25,7 @@ export const useAssetsTableData = () => {
     : []
   const balances = useAssetsBalances()
   const assets = useAssetDetailsList(tokenIds)
+  const pools = usePools()
 
   const acceptedCurrenciesQuery = useAcceptedCurrencies(
     assets.data?.map((asset) => asset.id) ?? [],
@@ -39,6 +37,7 @@ export const useAssetsTableData = () => {
     tradeAssets,
     balances,
     accountCurrency,
+    pools,
     ...acceptedCurrenciesQuery,
   ]
   const isLoading = queries.some((q) => q.isLoading)
@@ -49,6 +48,7 @@ export const useAssetsTableData = () => {
       !tradeAssets.data ||
       !assets.data ||
       !balances.data ||
+      !pools.data ||
       acceptedCurrenciesQuery.some((q) => !q.data)
     )
       return []
@@ -75,6 +75,10 @@ export const useAssetsTableData = () => {
           currency.id !== accountCurrency.data,
       )
 
+      const poolLiquidityAddress = pools.data?.find(
+        (pool) => pool.tokens[0].id === asset.id.toString(),
+      )?.address
+
       return {
         id: asset.id?.toString(),
         symbol: asset.name,
@@ -91,6 +95,7 @@ export const useAssetsTableData = () => {
         assetType: asset.assetType,
         isPaymentFee: asset.id?.toString() === accountCurrency.data,
         couldBeSetAsPaymentFee,
+        poolLiquidityAddress,
       }
     })
 
@@ -100,11 +105,12 @@ export const useAssetsTableData = () => {
       .sort((a, b) => b.transferable.minus(a.transferable).toNumber())
       .sort((a) => (a.id === NATIVE_ASSET_ID ? -1 : 1)) // native asset first
   }, [
-    assets.data,
-    balances.data,
     isLoading,
     tradeAssets.data,
+    assets.data,
+    balances.data,
     acceptedCurrenciesQuery,
+    pools.data,
     accountCurrency.data,
   ])
 
@@ -138,7 +144,7 @@ export const useAssetsBalances = () => {
       (
         acc: {
           id: string
-          amount: BigNumber
+          amount: BN
         }[],
         cur,
       ) => {

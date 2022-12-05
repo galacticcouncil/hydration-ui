@@ -22,7 +22,10 @@ import { useNavigate } from "@tanstack/react-location"
 
 export const useAssetsTable = (
   data: AssetsTableData[],
-  actions: { onTransfer: (assetId: string) => void },
+  actions: {
+    onTransfer: (assetId: string) => void
+    onAddLiquidity: (assetId: string) => void
+  },
 ) => {
   const navigate = useNavigate()
   const { t } = useTranslation()
@@ -92,6 +95,11 @@ export const useAssetsTable = (
                   })
               : undefined
           }
+          couldAddLiquidity={!!row.original.poolLiquidityAddress}
+          onAddLiquidityClick={() =>
+            row.original.poolLiquidityAddress != null &&
+            actions.onAddLiquidity(row.original.poolLiquidityAddress)
+          }
           toggleExpanded={() => row.toggleExpanded()}
           onTransferClick={() => actions.onTransfer(row.original.id)}
           symbol={row.original.symbol}
@@ -126,5 +134,6 @@ export type AssetsTableData = {
   inTradeRouter: boolean
   assetType: PalletAssetRegistryAssetType["type"]
   couldBeSetAsPaymentFee: boolean
+  poolLiquidityAddress: string | undefined
   isPaymentFee: boolean
 }
