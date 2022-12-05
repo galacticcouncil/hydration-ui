@@ -15,7 +15,7 @@ export const WalletAssetsTableName = ({
   symbol: string
   name: string
   large?: boolean
-  isPaymentFee: boolean
+  isPaymentFee?: boolean
 }) => {
   const { t } = useTranslation()
 
