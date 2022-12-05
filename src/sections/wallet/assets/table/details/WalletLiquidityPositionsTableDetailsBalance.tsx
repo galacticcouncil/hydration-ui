@@ -52,14 +52,14 @@ export const WalletLiquidityPositionsTableDetailsBalance: FC<Props> = ({
       >
         {t("value", {
           value: balance,
-          decimalPlaces: 4,
+          type: "token",
         })}
       </Text>
       <Text fs={12} lh={16} fw={500} color="neutralGray500">
         {t("value", {
           value: balanceUsd,
-          decimalPlaces: 4,
           numberPrefix: "$",
+          type: "dollar",
         })}
       </Text>
     </div>

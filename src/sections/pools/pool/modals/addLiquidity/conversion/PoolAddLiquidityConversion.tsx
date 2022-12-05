@@ -28,7 +28,7 @@ export const PoolAddLiquidityConversion: FC<Props> = ({
         <Text fs={11} lh={15} color="primary300">
           {t("value", {
             value: firstValue.amount,
-            decimalPlaces: 2,
+            type: "token",
           })}{" "}
           {firstValue.currency}
         </Text>
@@ -36,7 +36,7 @@ export const PoolAddLiquidityConversion: FC<Props> = ({
         <Text fs={11} lh={15}>
           {t("value", {
             value: secondValue.amount,
-            decimalPlaces: 2,
+            type: "token",
           })}{" "}
           {secondValue.currency}
         </Text>

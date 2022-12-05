@@ -82,7 +82,7 @@ export const ReviewTransactionForm = (
                       amount: paymentInfoData.partialFee,
                       symbol: feeMeta.data?.symbol,
                       fixedPointScale: 12,
-                      decimalPlaces: 2,
+                      type: "token",
                     })}
                   </Text>
                   <Text color="primary400" fs={12}>

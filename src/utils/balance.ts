@@ -51,9 +51,10 @@ export const separateBalance = (
   const formatted = formatBigNumber(value, options, i18n.languages[0])
   const separators = getFormatSeparators(i18n.languages[0])
   if (formatted) {
-    const [num, denom] = formatted.split(separators.decimal ?? ".")
+    const [num, denom = ""] = formatted.split(separators.decimal ?? ".")
+
     return {
-      num,
+      num: `${num}${denom.length ? "." : ""}`,
       denom,
     }
   }

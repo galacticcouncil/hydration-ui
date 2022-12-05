@@ -5,6 +5,7 @@ import { PoolBase } from "@galacticcouncil/sdk"
 import { usePoolDetailsTradeVolume } from "./PoolDetails.utils"
 
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "./PoolValue.styled"
 
 type Props = { pool: PoolBase }
 
@@ -34,7 +35,9 @@ export const PoolValue = ({ pool }: Props) => {
           >
             {t("pools.pool.poolDetails.24hours")}
           </Text>
-          <InfoTooltip text={t("pools.pool.poolDetails.24hours.tooltip")} />
+          <InfoTooltip text={t("pools.pool.poolDetails.24hours.tooltip")}>
+            <SInfoIcon />
+          </InfoTooltip>
         </div>
 
         <Text

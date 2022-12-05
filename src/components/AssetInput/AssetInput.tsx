@@ -11,7 +11,7 @@ import {
 } from "./AssetInput.styled"
 
 export type AssetInputProps = {
-  value: string
+  value: Maybe<string>
   onChange: (val: string) => void
   name: string
   label: string
@@ -40,7 +40,7 @@ export const AssetInput: FC<AssetInputProps> = (props) => {
                 )
               }
             }}
-            value={formatAssetValue(props.value) ?? ""}
+            value={formatAssetValue(props.value ?? "")}
             id={props.name}
             type={props.type}
             placeholder={props.placeholder}

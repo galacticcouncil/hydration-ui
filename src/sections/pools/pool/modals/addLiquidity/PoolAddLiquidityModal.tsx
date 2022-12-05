@@ -258,7 +258,6 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
                   amount: paymentInfo.data?.partialFee,
                   symbol: feeMeta.data?.symbol,
                   fixedPointScale: feeMeta.data?.decimals ?? 12,
-                  decimalPlaces: 2,
                 })}
               </Text>
             )
@@ -269,7 +268,6 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
           left={t("pools.addLiquidity.modal.row.sharePool")}
           right={t("value.percentage", {
             value: calculatedRatio,
-            decimalPlaces: 4,
           })}
         />
         <Separator />
@@ -280,8 +278,8 @@ export const PoolAddLiquidityModal: FC<PoolAddLiquidityModalProps> = ({
               <Text color="primary400">
                 {t("value", {
                   value: calculatedShares,
-                  decimalPlaces: 4,
                   fixedPointScale: shareTokenDecimals,
+                  type: "token",
                 })}
               </Text>
             )

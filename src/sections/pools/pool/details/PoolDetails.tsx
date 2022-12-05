@@ -18,7 +18,7 @@ export const PoolDetails = (props: {
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div>
           <Text fs={14} lh={26} fw={400} color="neutralGray400">
-            {t("pools.pool.title", { type: props.pool.type })}
+            {t("pools.pool.title", { poolType: props.pool.type })}
           </Text>
           <div sx={{ flex: "row", align: "center" }}>
             <DualAssetIcons

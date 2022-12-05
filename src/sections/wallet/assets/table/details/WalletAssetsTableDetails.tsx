@@ -37,10 +37,10 @@ export const WalletAssetsTableDetails = ({
           {t("wallet.assets.table.details.locked")}
         </Text>
         <Text fs={14} lh={18} fw={500} color="white" sx={{ mt: 8 }}>
-          {t("value", { value: locked })}
+          {t("value", { value: locked, type: "token" })}
         </Text>
         <Text fs={12} lh={16} fw={500} color="neutralGray500" sx={{ mt: 2 }}>
-          {t("value.usd", { amount: lockedUSD })}
+          {t("value.usd", { amount: lockedUSD, type: "dollar" })}
         </Text>
       </div>
     </div>

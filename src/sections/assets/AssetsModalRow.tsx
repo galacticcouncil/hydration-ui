@@ -11,6 +11,7 @@ import { useSpotPrice } from "../../api/spotPrice"
 import { BN_0 } from "../../utils/constants"
 import { Maybe } from "utils/helpers"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
+import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 
 interface AssetsModalRowProps {
   id: Maybe<u32 | string>
@@ -63,20 +64,27 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
               i18nKey="selectAssets.balance"
               tOptions={{
                 balance: balance.data.balance,
-                decimalPlaces: 4,
                 fixedPointScale: asset.data.decimals,
                 numberSuffix: ` ${asset.data.name}`,
+                type: "token",
               }}
             >
               <Text color="white" fs={14} lh={18} tAlign="right" />
             </Trans>
-            <Text color="neutralGray400" fs={12} lh={16}>
+
+            <DollarAssetValue
+              value={totalUSD}
+              wrapper={(children) => (
+                <Text color="neutralGray400" fs={12} lh={16}>
+                  {children}
+                </Text>
+              )}
+            >
               {t("value.usd", {
                 amount: totalUSD,
-                decimalPlaces: 4,
                 fixedPointScale: asset.data.decimals,
               })}
-            </Text>
+            </DollarAssetValue>
           </>
         )}
       </div>

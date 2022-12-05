@@ -57,7 +57,10 @@ function parseFormatStr(formatStr: string | undefined) {
     }
   }
 
-  return { formatName: formatName?.toLowerCase().trim(), formatOptions }
+  return {
+    formatName: formatName?.toLowerCase().trim(),
+    formatOptions,
+  }
 }
 
 i18n
