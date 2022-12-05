@@ -80,7 +80,7 @@ const shadows = {
   internalBoxDark: "4px 4px 0px #0A0C17;",
   modal:
     "0px 10px 30px rgba(91, 144, 172, 0.12), 3px 3px 0px rgba(126, 161, 194, 0.12);",
-  contentBox: `3px 4px 0px rgba(102, 181, 255, 0.19);`
+  contentBox: `3px 4px 0px rgba(102, 181, 255, 0.19);`,
 } as const
 
 const zIndices = {

@@ -20,7 +20,7 @@ export const useOmnipoolPools = () => {
   )
   const balances = useTokensBalances(
     assets.data?.map((a) => a.id) ?? [],
-    OMNIPOOL_ADDRESS,
+    import.meta.env.VITE_OMNIPOOL_ADDRESS ?? "",
   )
 
   const queries = [assets, metas, math, usd, ...spotPrices, ...balances]
