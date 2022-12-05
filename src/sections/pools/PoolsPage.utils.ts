@@ -1,7 +1,7 @@
 import { useOmnipoolAssets } from "api/omnipool"
 import { useMemo } from "react"
 import { useAssetMetaList } from "api/assetMeta"
-import { BN_10, BN_NAN, OMNIPOOL_ADDRESS, TRADING_FEE } from "utils/constants"
+import { BN_10, BN_NAN, TRADING_FEE } from "utils/constants"
 import { useMath } from "utils/api"
 import BN from "bignumber.js"
 import { u32 } from "@polkadot/types-codec"
