@@ -1,5 +1,5 @@
 import { Text } from "components/Typography/Text/Text"
-import { theme } from "theme"
+//import { theme } from "theme"
 import { useTranslation } from "react-i18next"
 import BN from "bignumber.js"
 
@@ -18,7 +18,7 @@ export const WalletAssetsTableDetails = ({
 
   return (
     <div sx={{ flex: "row" }}>
-      <div sx={{ flex: "column", align: "end", m: "auto", gap: 8 }}>
+      {/*<div sx={{ flex: "column", align: "end", m: "auto", gap: 8 }}>
         <Text fs={14} lh={14} fw={500} color="basic300">
           {t("wallet.assets.table.details.origin")}
         </Text>
@@ -31,8 +31,8 @@ export const WalletAssetsTableDetails = ({
           width: 1,
           background: `rgba(${theme.rgbColors.white}, 0.06)`,
         }}
-      />
-      <div sx={{ m: "auto" }}>
+      />*/}
+      <div /*sx={{ m: "auto" }}*/>
         <Text fs={14} lh={14} fw={500} color="basic300">
           {t("wallet.assets.table.details.locked")}
         </Text>

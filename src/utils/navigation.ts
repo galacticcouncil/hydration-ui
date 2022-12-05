@@ -18,7 +18,7 @@ export const EXTERNAL_LINKS = {
 const isWalletPageEnabled = import.meta.env.VITE_FF_WALLET_ENABLED === "true"
 
 export const MENU_ITEMS = [
-  {
+  /*{
     key: "lbp",
     translationKey: "header.lbp",
     href: EXTERNAL_LINKS.lbp,
@@ -39,19 +39,19 @@ export const MENU_ITEMS = [
     external: false,
     mobVisible: true,
   },
+    {
+    key: "bridge",
+    translationKey: "header.bridge",
+    href: EXTERNAL_LINKS.bridge,
+    external: true,
+    mobVisible: false,
+  },*/
   {
     key: "wallet",
     translationKey: "header.wallet",
     href: isWalletPageEnabled ? LINKS.wallet : EXTERNAL_LINKS.wallet,
     external: !isWalletPageEnabled,
     mobVisible: true,
-  },
-  {
-    key: "bridge",
-    translationKey: "header.bridge",
-    href: EXTERNAL_LINKS.bridge,
-    external: true,
-    mobVisible: false,
   },
 ] as const
 

@@ -2,13 +2,17 @@ import { Text } from "components/Typography/Text/Text"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { useTranslation } from "react-i18next"
 import { Button } from "components/Button/Button"
+import { ExtrinsicStatus } from "@polkadot/types/interfaces"
+import { ReviewTransactionProgress } from "./ReviewTransactionProgress"
+import { Spacer } from "components/Spacer/Spacer"
 import { Heading } from "components/Typography/Heading/Heading"
 
 type Props = {
   onClose: () => void
+  txState: ExtrinsicStatus["type"] | null
 }
 
-export const ReviewTransactionPending = ({ onClose }: Props) => {
+export const ReviewTransactionPending = ({ onClose, txState }: Props) => {
   const { t } = useTranslation()
   return (
     <div sx={{ flex: "column", align: "center", pt: 50 }}>
@@ -24,6 +28,12 @@ export const ReviewTransactionPending = ({ onClose }: Props) => {
       <Button variant="primary" sx={{ mt: 40 }} onClick={onClose}>
         {t("pools.reviewTransaction.modal.success.close")}
       </Button>
+
+      <Spacer size={40} />
+
+      {txState === "Broadcast" && (
+        <ReviewTransactionProgress duration={3} onComplete={onClose} />
+      )}
     </div>
   )
 }

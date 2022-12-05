@@ -1,5 +1,6 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
+import { ReactComponent as BellIcon } from "assets/icons/BellIcon.svg"
 
 export const SHeader = styled.header`
   position: sticky;
@@ -14,5 +15,14 @@ export const SHeader = styled.header`
 
   @media ${theme.viewport.gte.sm} {
     padding: 8px 75px;
+  }
+`
+
+export const SBellIcon = styled(BellIcon)`
+  color: ${theme.colors.white};
+
+  :hover {
+    color: ${theme.colors.brightBlue400};
+    cursor: pointer;
   }
 `

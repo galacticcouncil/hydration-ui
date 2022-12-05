@@ -1,28 +1,13 @@
-import { useState } from "react"
 import { Text } from "components/Typography/Text/Text"
 import { Button } from "components/Button/Button"
 import { ReactComponent as FullSuccessIcon } from "assets/icons/FullSuccessIcon.svg"
-import { Trans, useTranslation } from "react-i18next"
-import {
-  SProgressContainer,
-  SProgressTime,
-  SProgressBar,
-  SProgressBarValue,
-} from "./ReviewTransactionSuccess.styled"
+import { useTranslation } from "react-i18next"
 import { Heading } from "components/Typography/Heading/Heading"
+import { ReviewTransactionProgress } from "./ReviewTransactionProgress"
+import { Spacer } from "components/Spacer/Spacer"
 
 export const ReviewTransactionSuccess = (props: { onClose: () => void }) => {
   const { t } = useTranslation()
-  const [sec, setSec] = useState(3)
-  const updateSeconds = (percentage: string) => {
-    const newSec = Math.round(
-      (Number.parseFloat(percentage.slice(0, -1)) / 100) * 3,
-    )
-
-    if (sec !== newSec) {
-      setSec(newSec)
-    }
-  }
 
   return (
     <div sx={{ flex: "column", align: "center" }}>
@@ -40,30 +25,9 @@ export const ReviewTransactionSuccess = (props: { onClose: () => void }) => {
         </Button>
       </div>
 
-      <SProgressContainer>
-        <Text fs={12} fw={400} color="basic500" tAlign="center">
-          <Trans
-            i18nKey="pools.reviewTransaction.modal.success.timer"
-            t={t}
-            tOptions={{ value: sec }}
-          >
-            <SProgressTime />
-          </Trans>
-        </Text>
-        <SProgressBar
-          initial={{ width: "100%" }}
-          animate={{ width: "0%" }}
-          transition={{ duration: 3 }}
-          onUpdate={(latest) => {
-            if (typeof latest.width === "string") {
-              updateSeconds(latest.width)
-            }
-          }}
-          onAnimationComplete={() => props.onClose()}
-        >
-          <SProgressBarValue />
-        </SProgressBar>
-      </SProgressContainer>
+      <Spacer size={40} />
+
+      <ReviewTransactionProgress duration={3} onComplete={props.onClose} />
     </div>
   )
 }

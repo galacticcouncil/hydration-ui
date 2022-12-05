@@ -12,7 +12,7 @@ import { PalletBalancesAccountData } from "@polkadot/types/lookup"
 import { u32 } from "@polkadot/types"
 import { useAssetDetailsList } from "api/assetDetails"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
-import { useTokensLocks } from "../../../../../api/balances"
+import { useTokensLocks } from "api/balances"
 import BigNumber from "bignumber.js"
 import {
   useAcceptedCurrencies,
@@ -39,13 +39,7 @@ export const useAssetsTableData = () => {
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (
-      isLoading ||
-      !assets.data ||
-      !balances.data ||
-      acceptedCurrenciesQuery.some((q) => !q.data)
-    )
-      return []
+    if (isLoading || !assets.data || !balances.data || acceptedCurrenciesQuery.some((q) => !q.data)) return []
 
     const acceptedCurrencies = acceptedCurrenciesQuery
       .reduce(
@@ -80,12 +74,12 @@ export const useAssetsTableData = () => {
         id: asset.id?.toString(),
         symbol: asset.name,
         name: getAssetName(asset.name),
-        transferable: balance.transferable,
-        transferableUSD: balance.transferableUSD,
-        total: balance.total,
-        totalUSD: balance.totalUSD,
-        locked: balance.locked,
-        lockedUSD: balance.lockedUsd,
+        transferable: balance?.transferable ?? BN_0,
+        transferableUSD: balance?.transferableUSD ?? BN_0,
+        total: balance?.total ?? BN_0,
+        totalUSD: balance?.totalUSD ?? BN_0,
+        locked: balance?.locked ?? BN_0,
+        lockedUSD: balance?.lockedUsd ?? BN_0,
         origin: "TODO",
         assetType: asset.assetType,
         isPaymentFee: asset.id?.toString() === accountCurrency.data,
@@ -93,14 +87,13 @@ export const useAssetsTableData = () => {
       }
     })
 
-    return res.filter((x): x is AssetsTableData => x !== null)
-  }, [
-    assets.data,
-    balances.data,
-    isLoading,
-    acceptedCurrenciesQuery,
-    accountCurrency,
-  ])
+    return res
+      .filter((x): x is AssetsTableData => x !== null)
+      .sort((a, b) => a.symbol.localeCompare(b.symbol))
+      .sort((a, b) => b.transferable.minus(a.transferable).toNumber())
+      .sort((a) => (a.id === NATIVE_ASSET_ID ? -1 : 1)) // native asset first
+  }, [assets.data, balances.data, isLoading, acceptedCurrenciesQuery,
+    accountCurrency,])
 
   return { data, isLoading }
 }
@@ -123,7 +116,7 @@ export const useAssetsBalances = () => {
     ...spotPrices,
     ...locksQueries,
   ]
-  const isLoading = queries.some((q) => q.isLoading)
+  const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
     if (
@@ -205,7 +198,7 @@ export const useAssetsBalances = () => {
     )
   }, [accountBalances.data, assetMetas, spotPrices, locksQueries])
 
-  return { data, isLoading }
+  return { data, isLoading: isInitialLoading }
 }
 
 const getNativeBalances = (

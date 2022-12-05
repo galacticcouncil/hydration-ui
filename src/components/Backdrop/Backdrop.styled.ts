@@ -20,7 +20,7 @@ export const SBackdrop = styled.div<{
 
   ${({ variant }) => variant && variantStyles[variant]}
 
-  backdrop-filter: blur(7px);
+  backdrop-filter: blur(15px);
 `
 
 const variantStyles: Record<BackdropVariant, SerializedStyles> = {

@@ -21,9 +21,7 @@ import { useSetAsFeePayment } from "../../../../api/payment"
 
 export const useAssetsTable = (
   data: AssetsTableData[],
-  actions: {
-    onTransfer: (assetId: string) => void
-  },
+  actions: { onTransfer: (assetId: string) => void },
 ) => {
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<AssetsTableData>()
@@ -42,6 +40,7 @@ export const useAssetsTable = (
     accessor("symbol", {
       id: "name",
       header: t("wallet.assets.table.header.name"),
+      sortingFn: (a, b) => a.original.symbol.localeCompare(b.original.symbol),
       cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
     }),
     accessor("transferable", {

@@ -52,19 +52,15 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
         flex: ["column", "row"],
         mb: [29, 57],
         align: ["start", "center"],
-        justify: "space-between",
-        //flexWrap: ["nowrap", "wrap"],
       }}
     >
       <div
         sx={{
-          flexGrow: 1,
           flex: ["row", "column"],
           justify: "space-between",
           align: ["center", "start"],
           mb: [15, 0],
-          width: ["100%", "auto"],
-          //flexWrap: ["wrap", "nowrap"],
+          minWidth: ["100%", "30%"],
         }}
       >
         <Text color="brightBlue300" sx={{ fontSize: [14, 16], mb: [0, 14] }}>
@@ -81,12 +77,19 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
         ) : (
           totalUsd && (
             <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
+              <Text
+                font="ChakraPetch"
+                fw={900}
+                fs={[19, 42]}
+                sx={{ display: "inline-block" }}
+              >
+                $
+              </Text>
               <Trans
                 t={t}
                 i18nKey="wallet.assets.header.value"
                 tOptions={{
                   ...separateBalance(totalUsd, {
-                    numberPrefix: "$",
                     decimalPlaces: 2,
                   }),
                 }}
@@ -115,51 +118,63 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
 
       <div
         sx={{
-          flexGrow: 1,
           flex: ["row", "column"],
-          justify: "space-between",
-          align: ["center", "start"],
+          align: ["center", "end"],
           mb: [15, 0],
-          width: ["100%", "auto"],
-          //flexWrap: ["wrap", "nowrap"],
+          minWidth: ["100%", "30%"],
         }}
       >
-        <Text color="brightBlue300" sx={{ fontSize: [14, 16], mb: [0, 14] }}>
-          {t("wallet.assets.header.transferable")}
-        </Text>
+        <div
+          sx={{
+            flex: ["row", "column"],
+            justify: "space-between",
+            minWidth: ["100%", "30%"],
+          }}
+        >
+          <Text color="brightBlue300" sx={{ fontSize: [14, 16], mb: [0, 14] }}>
+            {t("wallet.assets.header.transferable")}
+          </Text>
 
-        {isLoading ? (
-          <Skeleton
-            sx={{
-              width: [97, 168],
-              height: [27, 42],
-            }}
-          />
-        ) : (
-          transferableUsd && (
-            <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
-              <Trans
-                t={t}
-                i18nKey="wallet.assets.header.value"
-                tOptions={{
-                  ...separateBalance(transferableUsd, {
-                    numberPrefix: "$",
-                    decimalPlaces: 2,
-                  }),
-                }}
-              >
-                <span
-                  sx={{
-                    fontSize: [19, 26],
+          {isLoading ? (
+            <Skeleton
+              sx={{
+                width: [97, 168],
+                height: [27, 42],
+              }}
+            />
+          ) : (
+            transferableUsd && (
+              <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
+                <Text
+                  font="ChakraPetch"
+                  fw={900}
+                  fs={[19, 42]}
+                  sx={{ display: "inline-block" }}
+                >
+                  $
+                </Text>
+                <Trans
+                  t={t}
+                  i18nKey="wallet.assets.header.value"
+                  tOptions={{
+                    ...separateBalance(transferableUsd, {
+                      decimalPlaces: 2,
+                    }),
                   }}
-                  css={css`
-                    color: rgba(${theme.rgbColors.white}, 0.4);
-                  `}
-                />
-              </Trans>
-            </Heading>
-          )
-        )}
+                >
+                  <span
+                    sx={{
+                      fontSize: [19, 26],
+                    }}
+                    css={css`
+                      color: rgba(${theme.rgbColors.white}, 0.4);
+                    `}
+                  />
+                </Trans>
+              </Heading>
+            )
+          )}
+        </div>
       </div>
     </div>
   )
