@@ -17,6 +17,7 @@ import { useSpotPrice } from "api/spotPrice"
 import { NATIVE_ASSET_ID } from "utils/api"
 
 import BigNumber from "bignumber.js"
+import { BN_1 } from "utils/constants"
 export const ReviewTransactionForm = (
   props: {
     title?: string
@@ -85,7 +86,7 @@ export const ReviewTransactionForm = (
                     {t("pools.addLiquidity.modal.row.transactionCostValue", {
                       amount: new BigNumber(
                         paymentInfoData.partialFee.toHex(),
-                      ).multipliedBy(spotPrice.data?.spotPrice ?? 1),
+                      ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
                       symbol: feeMeta.data?.symbol,
                       fixedPointScale: 12,
                       decimalPlaces: 2,

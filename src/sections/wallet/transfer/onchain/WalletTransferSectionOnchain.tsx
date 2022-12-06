@@ -9,7 +9,7 @@ import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransf
 import { useAccountStore, useStore } from "state/store"
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import BigNumber from "bignumber.js"
-import { BN_10 } from "utils/constants"
+import { BN_1, BN_10 } from "utils/constants"
 import { useAssetMeta } from "api/assetMeta"
 import { useTranslation } from "react-i18next"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
@@ -200,7 +200,7 @@ export function WalletTransferSectionOnchain(props: {
                   {t("pools.addLiquidity.modal.row.transactionCostValue", {
                     amount: new BigNumber(
                       paymentInfoData.partialFee.toHex(),
-                    ).multipliedBy(spotPrice.data?.spotPrice ?? 1),
+                    ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
                     symbol: accountCurrencyMeta.data?.symbol,
                     fixedPointScale: 12,
                     decimalPlaces: 2,
