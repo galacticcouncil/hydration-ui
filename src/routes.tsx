@@ -6,7 +6,7 @@ import { TradePage } from "sections/trade/TradePage"
 export const routes = [
   {
     path: "/",
-    element: <Navigate to="/wallet" />,
+    element: <Navigate to="/trade" />,
   },
   {
     path: "trade",
