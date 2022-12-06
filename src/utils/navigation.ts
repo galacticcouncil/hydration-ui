@@ -39,13 +39,20 @@ export const MENU_ITEMS = [
     external: false,
     mobVisible: true,
   },
-    {
+  {
     key: "bridge",
     translationKey: "header.bridge",
     href: EXTERNAL_LINKS.bridge,
     external: true,
     mobVisible: false,
   },*/
+  {
+    key: "trade",
+    translationKey: "header.trade",
+    href: LINKS.trade,
+    external: false,
+    mobVisible: true,
+  },
   {
     key: "wallet",
     translationKey: "header.wallet",
