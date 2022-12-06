@@ -25,10 +25,12 @@ export const useAssetsTableData = () => {
   const balances = useAssetsBalances()
   const acceptedCurrenciesQuery = useAcceptedCurrencies(tokenIds)
   const accountCurrency = useAccountCurrency(account?.address)
-  const assets = useAssetDetailsList(tokenIds)
+  const assetDetails = useAssetDetailsList(tokenIds)
+
+  const assetMetadata = useAssetMetaList(tokenIds)
 
   const queries = [
-    assets,
+    assetDetails,
     balances,
     accountCurrency,
     ...acceptedCurrenciesQuery,
@@ -38,7 +40,7 @@ export const useAssetsTableData = () => {
   const data = useMemo(() => {
     if (
       isLoading ||
-      !assets.data ||
+      !assetDetails.data ||
       !balances.data ||
       acceptedCurrenciesQuery.some((q) => !q.data)
     )
@@ -55,9 +57,13 @@ export const useAssetsTableData = () => {
       ),
     ]
 
-    const res = assets.data.map((asset) => {
+    const res = assetDetails.data.map((asset) => {
       const balance = balances.data?.find(
         (b) => b.id.toString() === asset.id.toString(),
+      )
+
+      const metadata = assetMetadata.data?.find(
+        (a) => a.id.toString() === asset.id.toString(),
       )
 
       if (!balance) return null
@@ -70,8 +76,8 @@ export const useAssetsTableData = () => {
 
       return {
         id: asset.id?.toString(),
-        symbol: asset.name,
-        name: getAssetName(asset.name),
+        symbol: metadata?.symbol,
+        name: asset.name,
         transferable: balance?.transferable ?? BN_0,
         transferableUSD: balance?.transferableUSD ?? BN_0,
         total: balance?.total ?? BN_0,
@@ -91,7 +97,7 @@ export const useAssetsTableData = () => {
       .sort((a, b) => b.transferable.minus(a.transferable).toNumber())
       .sort((a) => (a.id === NATIVE_ASSET_ID ? -1 : 1)) // native asset first
   }, [
-    assets.data,
+    assetDetails.data,
     balances.data,
     isLoading,
     acceptedCurrenciesQuery,

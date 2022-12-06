@@ -90,6 +90,7 @@ export const useAssetsHydraPositionsData = () => {
 
         const id = position.assetId.toString()
         const symbol = meta.symbol
+
         const name = getAssetName(meta.symbol)
 
         const omniAssetState = new math.omnipool.AssetState(
