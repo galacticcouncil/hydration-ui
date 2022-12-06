@@ -41,6 +41,7 @@ export const WalletTransferAssetSelect = (props: {
         decimals={asset.data?.decimals?.toNumber()}
         balance={balance.data?.balance}
         assetName={asset.data?.name?.toString()}
+        assetSymbol={asset.data?.symbol?.toString()}
         onSelectAssetClick={openModal}
         error={props.error}
       />

@@ -29,6 +29,7 @@ export const AssetSelect = (props: {
 
   asset: u32 | string
   assetName: Maybe<string>
+  assetSymbol: Maybe<string>
   assetIcon: Maybe<ReactNode>
   decimals: Maybe<number>
   balance: Maybe<BigNumber>
@@ -108,10 +109,10 @@ export const AssetSelect = (props: {
             }}
           >
             <Icon icon={props.assetIcon} />
-            {props.assetName && (
+            {props.assetSymbol && (
               <div>
                 <Text fw={700} color="white">
-                  {props.assetName}
+                  {props.assetSymbol}
                 </Text>
                 <Text
                   fs={12}
@@ -121,7 +122,7 @@ export const AssetSelect = (props: {
                     color: `rgba(${theme.rgbColors.whiteish500}, 0.6)`,
                   }}
                 >
-                  {getAssetName(props.assetName)}
+                  {props.assetName || getAssetName(props.assetSymbol)}
                 </Text>
               </div>
             )}
@@ -134,7 +135,7 @@ export const AssetSelect = (props: {
             onChange={props.onChange}
             dollars={t("value.usd", { amount: aUSDValue })}
             placeholder="0.00"
-            unit={props.assetName}
+            unit={props.assetSymbol}
             error={props.error}
           />
         </div>
