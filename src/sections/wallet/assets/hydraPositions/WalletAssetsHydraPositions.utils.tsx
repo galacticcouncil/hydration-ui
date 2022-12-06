@@ -40,23 +40,23 @@ export const useHydraPositionsTable = (
     }),
     accessor("value", {
       id: "value",
-      header: t("wallet.assets.hydraPositions.header.value"),
+      header: t("wallet.assets.hydraPositions.header.position"),
       sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
       cell: ({ row }) => (
         <WalletAssetsHydraPositionsData
           symbol={row.original.symbol}
           lrna={row.original.lrna}
           value={row.original.value}
-          valueUSD={row.original.valueUSD}
+          valueUSD={null}
         />
       ),
     }),
     accessor("price", {
       id: "price",
-      header: t("wallet.assets.hydraPositions.header.price"),
+      header: t("wallet.assets.hydraPositions.header.value"),
       cell: ({ row }) => (
         <Text fw={500} fs={16} lh={16} color="green600">
-          {t("value.usd", { amount: row.original.price })}
+          {t("value.usd", { amount: row.original.valueUSD })}
         </Text>
       ),
     }),

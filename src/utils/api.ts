@@ -11,7 +11,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 export const HYDRA_ADDRESS_PREFIX = 63
 export const NATIVE_ASSET_ID = "0"
 export const LRNA_ASSET_ID = "1"
-export const OMNIPOOL_POSITION_COLLECTION_ID = "3"
+export const OMNIPOOL_POSITION_COLLECTION_ID = "1337"
 export const DEPOSIT_CLASS_ID = "1" // TODO: replace with constant from api
 export const POLKADOT_APP_NAME = "HydraDX"
 

@@ -25,3 +25,5 @@ export const ORMLVEST = "ormlvest"
 
 // asset type
 export const ASSET_TYPE_TOKEN = "Token"
+
+BN.config({ EXPONENTIAL_AT: 666 })

@@ -28,9 +28,9 @@ export const WalletAssetsHydraPositionsActions = (props: Props) => {
         </div>
       </div>
       <div sx={{ flex: "row", gap: 10, display: ["none", "flex"] }}>
-        <TableAction icon={<TransferIcon />} onClick={props.onTransferClick}>
-          {t("wallet.assets.hydraPositions.actions.transfer")}
-        </TableAction>
+        {/*<TableAction icon={<TransferIcon />} onClick={props.onTransferClick}>*/}
+        {/*  {t("wallet.assets.hydraPositions.actions.transfer")}*/}
+        {/*</TableAction>*/}
         {/*<TableAction*/}
         {/*  icon={<DetailsIcon />}*/}
         {/*  onClick={() => console.log("details")}*/}

@@ -15,6 +15,7 @@ import { useUniques } from "api/uniques"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
 import { useUsdPeggedAsset } from "api/asset"
+import BigNumber from "bignumber.js";
 
 export const useAssetsHydraPositionsData = () => {
   const { account } = useAccountStore()
@@ -98,10 +99,12 @@ export const useAssetsHydraPositionsData = () => {
           omnipoolAsset.data.hubReserve.toString(),
           omnipoolAsset.data.shares.toString(),
         )
+        const [p,d] = position.price.map(n => new BigNumber(n.toString()))
+        const fixedPrice = p.dividedBy(d).multipliedBy(BN_10.pow(18)).toFixed(0).toString()
         const omniPosition = new math.omnipool.Position(
           position.amount.toString(),
           position.shares.toString(),
-          position.price.toString(),
+          fixedPrice,
         )
         const liquidityOutResult = math.omnipool.calculate_liquidity_out(
           omniAssetState,
@@ -122,7 +125,7 @@ export const useAssetsHydraPositionsData = () => {
         const value = new BN(liquidityOutResult.get_asset_amount()).div(valueDp)
         let valueUSD = BN_NAN
 
-        const price = position.price.toBigNumber().div(BN_10.pow(18))
+        const price = new BN(fixedPrice).div(BN_10.pow(18))
 
         const providedAmount = position.amount.toBigNumber().div(valueDp)
         let providedAmountUSD = BN_NAN
@@ -130,9 +133,9 @@ export const useAssetsHydraPositionsData = () => {
         const sharesAmount = position.shares.toBigNumber().div(BN_10.pow(12))
 
         if (lrnaSp?.data && valueSp?.data)
-          valueUSD = lrna
-            .times(lrnaSp.data.spotPrice)
-            .plus(value.times(valueSp.data.spotPrice))
+          valueUSD = value.times(valueSp.data.spotPrice)
+            // TODO fix lerna spot price
+            //.plus(lrna.times(lrnaSp.data.spotPrice))
 
         if (valueSp?.data)
           providedAmountUSD = providedAmount.times(valueSp.data.spotPrice)
