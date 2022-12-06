@@ -59,7 +59,7 @@ export function getAssetName(symbol: string | null | undefined) {
   if (_symbol === "KSM") return "Kusama"
   if (_symbol === "PHA") return "Phala"
   if (_symbol === "TNKR") return "Tinkernet"
-  if (_symbol === "HDX") return "Hydra"
+  if (_symbol === "HDX") return "HydraDX"
   if (_symbol === "LRNA") return "Lerna"
   if (_symbol === "DAI") return "Dai"
   if (_symbol === "DOT") return "Polkadot"
