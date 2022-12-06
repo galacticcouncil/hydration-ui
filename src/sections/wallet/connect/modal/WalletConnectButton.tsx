@@ -9,7 +9,7 @@ import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { ButtonProps } from "components/Button/Button"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { Account, useAccountStore } from "state/store"
-import { shortenAccountAddress } from "utils/formatting"
+import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
 
 import { WalletConnectModal } from "./WalletConnectModal"
 import { SContainer, SLoginButton } from "./WalletConnectButton.styled"
@@ -33,7 +33,12 @@ const WalletActiveButton = (props: {
             {props.account.name}
           </Text>
           <Text color="basic300" fs={12} lh={12} fw={400}>
-            {shortenAccountAddress(props.account.address.toString())}
+            {shortenAccountAddress(
+              safeConvertAddressSS58(
+                props.account.address.toString(),
+                HYDRA_ADDRESS_PREFIX,
+              ) ?? "",
+            )}
           </Text>
         </div>
         <div
