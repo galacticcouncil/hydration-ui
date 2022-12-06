@@ -1,11 +1,16 @@
 import { WalletPage } from "./sections/wallet/WalletPage"
 
 import { Navigate } from "@tanstack/react-location"
+import { TradePage } from "sections/trade/TradePage"
 
 export const routes = [
   {
     path: "/",
     element: <Navigate to="/wallet" />,
+  },
+  {
+    path: "trade",
+    element: <TradePage />,
   },
   {
     path: "wallet",
