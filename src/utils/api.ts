@@ -1,8 +1,12 @@
-import {ApiPromise} from "@polkadot/api"
-import {createContext, useContext, useMemo} from "react"
-import {PolkadotApiPoolService, PoolType, TradeRouter} from "@galacticcouncil/sdk"
-import {useQuery} from "@tanstack/react-query"
-import {QUERY_KEYS} from "utils/queryKeys"
+import { ApiPromise } from "@polkadot/api"
+import { createContext, useContext, useMemo } from "react"
+import {
+  PolkadotApiPoolService,
+  PoolType,
+  TradeRouter,
+} from "@galacticcouncil/sdk"
+import { useQuery } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 export const HYDRA_ADDRESS_PREFIX = 63
 export const NATIVE_ASSET_ID = "0"
@@ -19,7 +23,9 @@ export const useTradeRouter = () => {
 
   const router = useMemo(() => {
     const poolService = new PolkadotApiPoolService(api)
-    const tradeRouter = new TradeRouter(poolService, {includeOnly: [PoolType.Omni]})
+    const tradeRouter = new TradeRouter(poolService, {
+      includeOnly: [PoolType.Omni],
+    })
 
     return tradeRouter
   }, [api])
