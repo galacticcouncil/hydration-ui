@@ -81,6 +81,7 @@ export const QUERY_KEYS = {
   ],
   assets: [QUERY_KEY_PREFIX, "assets"],
   assetsMeta: [QUERY_KEY_PREFIX, "assetsMeta"],
+  tradeAssets: [QUERY_KEY_PREFIX, "tradeAssets"],
   exchangeFee: [QUERY_KEY_PREFIX, "exchangeFee"],
   calculateTotalLiqInPools: [QUERY_KEY_PREFIX, "totalLiqInPools"],
   spotPrice: (assetA: string, assetB: string) => [

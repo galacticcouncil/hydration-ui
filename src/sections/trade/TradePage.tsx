@@ -6,6 +6,7 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useAccountStore } from "state/store"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
 import { z } from "zod"
+import { Spinner } from "components/Spinner/Spinner.styled"
 
 const NotificationCenter = createComponent({
   tagName: "gc-notification-center",
@@ -41,20 +42,35 @@ export function TradePage() {
   const { account } = useAccountStore()
 
   const search = useSearch<SearchGenerics>()
+
+  const [loaded, setLoaded] = React.useState(false)
   const ref = React.useRef<Apps.TradeApp>(null)
 
   return (
     <Page>
-      <div>
+      <div sx={{ flex: "column", align: "center" }}>
+        {!loaded && <Spinner width={64} height={64} />}
         <NotificationCenter>
           <TransactionCenter>
             <TradeApp
               ref={ref}
+              css={{ display: loaded ? "block" : "none" }}
               accountName={account?.name}
               accountProvider={account?.provider}
               accountAddress={account?.address}
               apiAddress={import.meta.env.VITE_PROVIDER_URL}
               pools="Omni"
+              onInit={() => {
+                const app = ref.current
+                const safeSearch = TradeAppSearch.safeParse(search)
+
+                if (app != null && safeSearch.success) {
+                  const asset = safeSearch.data
+                  app.setInitialAssets(asset.type, asset.id)
+                }
+
+                setLoaded(true)
+              }}
             />
           </TransactionCenter>
         </NotificationCenter>

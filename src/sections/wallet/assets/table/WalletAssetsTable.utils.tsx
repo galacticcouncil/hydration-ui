@@ -18,6 +18,7 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
 import { useSetAsFeePayment } from "../../../../api/payment"
+import { useNavigate } from "@tanstack/react-location"
 
 export const useAssetsTable = (
   data: AssetsTableData[],
@@ -27,6 +28,7 @@ export const useAssetsTable = (
   const { accessor, display } = createColumnHelper<AssetsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
   const setFeeAsPayment = useSetAsFeePayment()
+  const navigate = useNavigate()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
@@ -75,6 +77,24 @@ export const useAssetsTable = (
           onSetFeeAsPaymentClick={() => setFeeAsPayment(row.original.id)}
           couldBeSetAsPaymentFee={row.original.couldBeSetAsPaymentFee}
           symbol={row.original.symbol}
+          onBuyClick={
+            row.original.inTradeRouter
+              ? () =>
+                  navigate({
+                    to: "/trade",
+                    search: { type: "assetOut", id: row.original.id },
+                  })
+              : undefined
+          }
+          onSellClick={
+            row.original.inTradeRouter
+              ? () =>
+                  navigate({
+                    to: "/trade",
+                    search: { type: "assetIn", id: row.original.id },
+                  })
+              : undefined
+          }
         />
       ),
     }),
@@ -103,6 +123,7 @@ export type AssetsTableData = {
   locked: BN
   lockedUSD: BN
   origin: string
+  inTradeRouter: boolean
   assetType: PalletAssetRegistryAssetType["type"]
   couldBeSetAsPaymentFee: boolean
   isPaymentFee: boolean

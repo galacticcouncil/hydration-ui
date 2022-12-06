@@ -1,4 +1,4 @@
-import { useUsdPeggedAsset } from "api/asset"
+import { useTradeAssets, useUsdPeggedAsset } from "api/asset"
 import { useMemo } from "react"
 import BN from "bignumber.js"
 import { useAssetMetaList } from "api/assetMeta"
@@ -19,6 +19,7 @@ import { useAcceptedCurrencies, useAccountCurrency } from "api/payment"
 export const useAssetsTableData = () => {
   const { account } = useAccountStore()
   const accountBalances = useAccountBalances(account?.address)
+  const tradeAssets = useTradeAssets()
   const tokenIds = accountBalances.data?.balances
     ? [NATIVE_ASSET_ID, ...accountBalances.data.balances.map((b) => b.id)]
     : []
@@ -42,6 +43,7 @@ export const useAssetsTableData = () => {
       isLoading ||
       !assetDetails.data ||
       !balances.data ||
+      !tradeAssets.data ||
       acceptedCurrenciesQuery.some((q) => !q.data)
     )
       return []
@@ -80,6 +82,8 @@ export const useAssetsTableData = () => {
         name: asset.name || getAssetName(metadata?.symbol),
         transferable: balance?.transferable ?? BN_0,
         transferableUSD: balance?.transferableUSD ?? BN_0,
+        inTradeRouter:
+          tradeAssets.data.find((i) => i.id === asset.id?.toString()) != null,
         total: balance?.total ?? BN_0,
         totalUSD: balance?.totalUSD ?? BN_0,
         locked: balance?.locked ?? BN_0,
@@ -97,10 +101,12 @@ export const useAssetsTableData = () => {
       .sort((a, b) => b.transferable.minus(a.transferable).toNumber())
       .sort((a) => (a.id === NATIVE_ASSET_ID ? -1 : 1)) // native asset first
   }, [
+    isLoading,
     assetDetails.data,
     balances.data,
-    isLoading,
+    tradeAssets.data,
     acceptedCurrenciesQuery,
+    assetMetadata.data,
     accountCurrency.data,
   ])
 
