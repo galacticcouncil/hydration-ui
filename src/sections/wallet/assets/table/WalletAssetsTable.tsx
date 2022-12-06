@@ -55,13 +55,13 @@ export const WalletAssetsTable = ({ data }: Props) => {
             ? t("wallet.assets.table.title")
             : t("wallet.header.assets")}
         </Text>
-        <Switch
-          value={showAll}
-          onCheckedChange={(value) => setShowAll(value)}
-          size="small"
-          name="showAll"
-          label={t("wallet.assets.table.toggle")}
-        />
+        {/*<Switch*/}
+        {/*  value={showAll}*/}
+        {/*  onCheckedChange={(value) => setShowAll(value)}*/}
+        {/*  size="small"*/}
+        {/*  name="showAll"*/}
+        {/*  label={t("wallet.assets.table.toggle")}*/}
+        {/*/>*/}
       </TableTitle>
       <Table>
         <TableHeaderContent>
