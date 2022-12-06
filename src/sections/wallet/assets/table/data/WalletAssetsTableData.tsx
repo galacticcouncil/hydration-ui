@@ -37,7 +37,6 @@ export const WalletAssetsTableName = ({
             lh={[large ? 17 : 14, 14]}
             fw={500}
             css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
-            sx={{ mt: [0, 4] }}
           >
             {name}
           </Text>
