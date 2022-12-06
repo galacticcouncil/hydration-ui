@@ -44,8 +44,8 @@ export function getAssetLogo(symbol: string | null | undefined) {
   if (_symbol === "TNKR") return <TNKR />
   if (_symbol === "HDX") return <HDX />
   if (_symbol === "LRNA") return <LRNA />
-  if (_symbol === "DAI STABLECOIN (PORTAL)") return <DAI />
-  if (_symbol === "POLKADOT") return <DOT />
+  if (_symbol === "DAI") return <DAI />
+  if (_symbol === "DOT") return <DOT />
 
   return <PlaceholderIcon width={32} height={32} />
 }
