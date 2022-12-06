@@ -2,8 +2,10 @@ import { Page } from "components/Layout/Page/Page"
 
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
-import { createComponent } from "@lit-labs/react"
+import { createComponent, EventName } from "@lit-labs/react"
 import { useAccountStore } from "state/store"
+import { MakeGenerics, useSearch } from "@tanstack/react-location"
+import { z } from "zod"
 
 const NotificationCenter = createComponent({
   tagName: "gc-notification-center",
@@ -21,11 +23,24 @@ export const TradeApp = createComponent({
   tagName: "gc-trade-app",
   elementClass: Apps.TradeApp,
   react: React,
+  events: {
+    onInit: "gc:init" as EventName<CustomEvent>,
+  },
 })
+
+const TradeAppSearch = z.object({
+  type: z.union([z.literal("assetIn"), z.literal("assetOut")]),
+  id: z.number().transform((value) => String(value)),
+})
+
+type SearchGenerics = MakeGenerics<{
+  Search: z.infer<typeof TradeAppSearch>
+}>
 
 export function TradePage() {
   const { account } = useAccountStore()
 
+  const search = useSearch<SearchGenerics>()
   const ref = React.useRef<Apps.TradeApp>(null)
 
   return (
