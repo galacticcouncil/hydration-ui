@@ -77,7 +77,7 @@ export const useAssetsTableData = () => {
       return {
         id: asset.id?.toString(),
         symbol: metadata?.symbol,
-        name: asset.name,
+        name: asset.name || getAssetName(metadata?.symbol),
         transferable: balance?.transferable ?? BN_0,
         transferableUSD: balance?.transferableUSD ?? BN_0,
         total: balance?.total ?? BN_0,

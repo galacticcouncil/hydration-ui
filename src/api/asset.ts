@@ -11,7 +11,7 @@ export const useAsset = (id: Maybe<u32 | string>) => {
   const queries = [detail, meta]
   const isLoading = queries.some((q) => q.isLoading)
 
-  const icon = getAssetLogo(detail.data?.name)
+  const icon = getAssetLogo(meta.data?.symbol)
 
   if (detail.data == null || meta.data == null)
     return { isLoading, data: undefined }
@@ -21,6 +21,7 @@ export const useAsset = (id: Maybe<u32 | string>) => {
     data: {
       ...detail.data,
       decimals: meta.data.decimals,
+      symbol: meta.data.symbol,
       icon,
     },
   }

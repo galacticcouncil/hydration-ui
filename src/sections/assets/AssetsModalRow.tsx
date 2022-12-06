@@ -42,10 +42,10 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
         <Icon icon={asset.data?.icon} sx={{ mr: 10 }} />
         <div sx={{ mr: 6 }}>
           <Text fw={700} color="white" fs={16} lh={22}>
-            {asset.data?.name}
+            {asset.data?.symbol}
           </Text>
           <Text color="whiteish500" fs={12} lh={16}>
-            {getAssetName(asset.data?.name)}
+            {asset.data?.name || getAssetName(asset.data?.symbol)}
           </Text>
         </div>
       </div>
