@@ -65,7 +65,7 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
                 balance: balance.data.balance,
                 decimalPlaces: 4,
                 fixedPointScale: asset.data.decimals,
-                numberSuffix: ` ${asset.data.name}`,
+                numberSuffix: ` ${asset.data.symbol}`,
               }}
             >
               <Text color="white" fs={14} lh={18} tAlign="right" />
