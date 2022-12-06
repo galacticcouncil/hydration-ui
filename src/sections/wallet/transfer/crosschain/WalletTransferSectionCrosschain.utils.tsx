@@ -58,13 +58,6 @@ export const CROSSCHAINS: Array<{
   url: string
 }> = [
   {
-    icon: <Karura />,
-    name: "Karura",
-    type: "both",
-    url: "https://apps.karura.network/bridge",
-    guide: <CrosschainKaruraGuide />,
-  },
-  {
     icon: <Wormhole />,
     name: "Wormhole",
     type: "both",
