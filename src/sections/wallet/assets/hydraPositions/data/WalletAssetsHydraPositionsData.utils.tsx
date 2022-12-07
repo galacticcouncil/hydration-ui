@@ -1,7 +1,7 @@
 import {
-  LRNA_ASSET_ID, OMNIPOOL_ACCOUNT,
+  LRNA_ASSET_ID,
+  OMNIPOOL_ACCOUNT_ADDRESS,
   OMNIPOOL_POSITION_COLLECTION_ID,
-  useMath,
 } from "utils/api"
 import { useAccountStore } from "state/store"
 import { useMemo } from "react"
@@ -15,10 +15,9 @@ import { useUniques } from "api/uniques"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
 import { useUsdPeggedAsset } from "api/asset"
-import BigNumber from "bignumber.js";
 import {
   calculate_liquidity_lrna_out,
-  calculate_liquidity_out
+  calculate_liquidity_out,
 } from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
 
 export const useAssetsHydraPositionsData = () => {
@@ -37,7 +36,7 @@ export const useAssetsHydraPositionsData = () => {
   const omnipoolAssets = useOmnipoolAssets()
   const omnipoolBalances = useTokensBalances(
     positions.data?.map((p) => p.assetId) ?? [],
-    OMNIPOOL_ACCOUNT,
+    OMNIPOOL_ACCOUNT_ADDRESS,
   )
   const usd = useUsdPeggedAsset()
   const spotPrices = useSpotPrices(
@@ -93,25 +92,31 @@ export const useAssetsHydraPositionsData = () => {
         const symbol = meta.symbol
         const name = getAssetName(meta.symbol)
 
-        const [n,d] = position.price.map(n => new BigNumber(n.toString()))
-        const fixedPrice = n.dividedBy(d).multipliedBy(BN_10.pow(18)).toFixed(0).toString()
+        const [nom, denom] = position.price.map((n) => new BN(n.toString()))
+        const price = nom.div(denom)
+        const positionPrice = price.times(BN_10.pow(18))
 
-        const params = [
+        const params: [
+          asset_reserve: string,
+          asset_hub_reserve: string,
+          asset_shares: string,
+          position_amount: string,
+          position_shares: string,
+          position_price: string,
+          shares_to_remove: string,
+        ] = [
           omnipoolBalance.data.balance.toString(),
           omnipoolAsset.data.hubReserve.toString(),
           omnipoolAsset.data.shares.toString(),
           position.amount.toString(),
           position.shares.toString(),
-          fixedPrice,
-          position.shares.toString()
+          positionPrice.toFixed(),
+          position.shares.toString(),
         ]
 
         const lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
         const liquidityOutResult = calculate_liquidity_out.apply(this, params)
-        if (liquidityOutResult === '-1' || lernaOutResult === '-1') {
-          console.log('error calculating liquidity out', {liquidityOutResult, lernaOutResult})
-          return null
-        }
+        if (liquidityOutResult === "-1" || lernaOutResult === "-1") return null
 
         const lrnaSp = spotPrices.find(
           (sp) => sp.data?.tokenIn === LRNA_ASSET_ID,
@@ -124,19 +129,15 @@ export const useAssetsHydraPositionsData = () => {
         const value = new BN(liquidityOutResult).div(valueDp)
         let valueUSD = BN_NAN
 
-        const price = new BN(fixedPrice).div(BN_10.pow(18))
-
         const providedAmount = position.amount.toBigNumber().div(valueDp)
         let providedAmountUSD = BN_NAN
 
         const sharesAmount = position.shares.toBigNumber().div(BN_10.pow(12))
 
         if (lrnaSp?.data && valueSp?.data)
-          valueUSD = value.times(valueSp.data.spotPrice)
-            // TODO fix lerna spot price
-        if (Number(lrna) > 0)
-          console.log("lrna price missing!!!");
-            //.plus(lrna.times(lrnaSp.data.spotPrice))
+          valueUSD = value
+            .times(valueSp.data.spotPrice)
+            .plus(lrna.times(lrnaSp.data.spotPrice))
 
         if (valueSp?.data)
           providedAmountUSD = providedAmount.times(valueSp.data.spotPrice)

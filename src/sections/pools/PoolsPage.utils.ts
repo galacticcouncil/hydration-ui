@@ -1,14 +1,20 @@
 import { useOmnipoolAssets } from "api/omnipool"
 import { useMemo } from "react"
 import { useAssetMetaList } from "api/assetMeta"
-import { BN_NAN, OMNIPOOL_ADDRESS, TRADING_FEE } from "utils/constants"
+import { BN_NAN, TRADING_FEE } from "utils/constants"
 import BN from "bignumber.js"
 import { u32 } from "@polkadot/types-codec"
 import { useTokensBalances } from "api/balances"
 import { useSpotPrices } from "api/spotPrice"
 import { useUsdPeggedAsset } from "api/asset"
 import { getFloatingPointAmount } from "utils/balance"
-import { Tradability } from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
+import {
+  is_add_liquidity_allowed,
+  is_buy_allowed,
+  is_remove_liquidity_allowed,
+  is_sell_allowed,
+} from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
+import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 
 export const useOmnipoolPools = () => {
   const assets = useOmnipoolAssets()
@@ -20,7 +26,7 @@ export const useOmnipoolPools = () => {
   )
   const balances = useTokensBalances(
     assets.data?.map((a) => a.id) ?? [],
-    OMNIPOOL_ADDRESS,
+    OMNIPOOL_ACCOUNT_ADDRESS,
   )
 
   const queries = [assets, metas, usd, ...spotPrices, ...balances]
@@ -59,11 +65,11 @@ export const useOmnipoolPools = () => {
 
         const volume24h = BN_NAN // TODO
 
-        const tradability = new Tradability(asset.data.tradable.bits.toNumber())
-        const canSell = tradability.can_sell()
-        const canBuy = tradability.can_buy()
-        const canAddLiquidity = tradability.can_add_liquidity()
-        const canRemoveLiquidity = tradability.can_remove_liquidity()
+        const bits = asset.data.tradable.bits.toNumber()
+        const canSell = is_sell_allowed(bits)
+        const canBuy = is_buy_allowed(bits)
+        const canAddLiquidity = is_add_liquidity_allowed(bits)
+        const canRemoveLiquidity = is_remove_liquidity_allowed(bits)
 
         return {
           id,
