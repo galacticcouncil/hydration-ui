@@ -9,7 +9,7 @@ import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransf
 import { useAccountStore, useStore } from "state/store"
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import BigNumber from "bignumber.js"
-import { BN_10 } from "utils/constants"
+import { BN_1, BN_10 } from "utils/constants"
 import { useAssetMeta } from "api/assetMeta"
 import { useTranslation } from "react-i18next"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
@@ -26,6 +26,7 @@ import { Alert } from "components/Alert/Alert"
 import { usePaymentInfo } from "api/transaction"
 import { Spacer } from "components/Spacer/Spacer"
 import { useAccountCurrency } from "../../../../api/payment"
+import { useSpotPrice } from "api/spotPrice"
 
 export function WalletTransferSectionOnchain(props: {
   initialAsset: u32 | string
@@ -47,6 +48,8 @@ export function WalletTransferSectionOnchain(props: {
   const { account } = useAccountStore()
   const accountCurrency = useAccountCurrency(account?.address)
   const accountCurrencyMeta = useAssetMeta(accountCurrency.data)
+
+  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, accountCurrencyMeta.data?.id)
 
   const { data: paymentInfoData } = usePaymentInfo(
     asset === NATIVE_ASSET_ID
@@ -192,14 +195,18 @@ export function WalletTransferSectionOnchain(props: {
               {t("wallet.assets.transfer.transaction_cost")}
             </Text>
             <div sx={{ flex: "row", align: "center", gap: 4 }}>
-              <Text fs={14}>
-                {t("pools.addLiquidity.modal.row.transactionCostValue", {
-                  amount: paymentInfoData?.partialFee,
-                  symbol: accountCurrencyMeta.data?.symbol,
-                  fixedPointScale: 12,
-                  decimalPlaces: 2,
-                })}
-              </Text>
+              {paymentInfoData?.partialFee != null && (
+                <Text fs={14}>
+                  {t("pools.addLiquidity.modal.row.transactionCostValue", {
+                    amount: new BigNumber(
+                      paymentInfoData.partialFee.toHex(),
+                    ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
+                    symbol: accountCurrencyMeta.data?.symbol,
+                    fixedPointScale: 12,
+                    decimalPlaces: 2,
+                  })}
+                </Text>
+              )}
             </div>
           </div>
         </div>
