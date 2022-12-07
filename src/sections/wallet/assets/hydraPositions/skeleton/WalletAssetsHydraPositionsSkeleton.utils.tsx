@@ -17,7 +17,7 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
   const columnVisibility: VisibilityState = {
     name: true,
     value: true,
-    price: isDesktop,
+    valueUSD: isDesktop,
     actions: true,
   }
 
@@ -44,7 +44,7 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
     }),
     display({
       id: "value",
-      header: t("wallet.assets.hydraPositions.header.value"),
+      header: t("wallet.assets.hydraPositions.header.position"),
       cell: () => (
         <div
           sx={{ width: [90, 134], height: [24, 32], ml: ["auto", "initial"] }}
@@ -59,7 +59,7 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
     }),
     display({
       id: "price",
-      header: t("wallet.assets.hydraPositions.header.price"),
+      header: t("wallet.assets.hydraPositions.header.value"),
       cell: () => (
         <div>
           <Skeleton width={134} height={32} enableAnimation={enableAnimation} />
