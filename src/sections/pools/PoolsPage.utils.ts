@@ -57,7 +57,7 @@ export const useOmnipoolPools = () => {
         // if (!meta || !balance) return null
 
         const id = asset.id
-        const symbol = meta?.symbol ?? "?"
+        const symbol = meta?.symbol ?? "N/A"
         const tradeFee = TRADING_FEE
 
         const total = getFloatingPointAmount(
