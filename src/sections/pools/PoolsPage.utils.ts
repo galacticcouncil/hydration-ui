@@ -1,7 +1,7 @@
 import { useOmnipoolAssets } from "api/omnipool"
 import { useMemo } from "react"
 import { useAssetMetaList } from "api/assetMeta"
-import { BN_NAN, TRADING_FEE } from "utils/constants"
+import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
 import BN from "bignumber.js"
 import { u32 } from "@polkadot/types-codec"
 import { useTokensBalances } from "api/balances"
@@ -54,13 +54,16 @@ export const useOmnipoolPools = () => {
           (b) => b.data?.assetId.toString() === asset.id.toString(),
         )?.data?.balance
 
-        if (!meta || !balance) return null
+        // if (!meta || !balance) return null
 
         const id = asset.id
-        const symbol = meta.symbol
+        const symbol = meta?.symbol ?? "?"
         const tradeFee = TRADING_FEE
 
-        const total = getFloatingPointAmount(balance, meta.decimals.toNumber())
+        const total = getFloatingPointAmount(
+          balance ?? BN_0,
+          meta?.decimals?.toNumber() ?? 12,
+        )
         const totalUSD = !spotPrice ? BN_NAN : total.times(spotPrice)
 
         const volume24h = BN_NAN // TODO
