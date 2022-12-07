@@ -1,5 +1,5 @@
 import {
-  LRNA_ASSET_ID,
+  LRNA_ASSET_ID, OMNIPOOL_ACCOUNT,
   OMNIPOOL_POSITION_COLLECTION_ID,
   useMath,
 } from "utils/api"
@@ -32,9 +32,9 @@ export const useAssetsHydraPositionsData = () => {
     ...(positions.data?.map((p) => p.assetId) ?? []),
   ])
   const omnipoolAssets = useOmnipoolAssets()
-  const balances = useTokensBalances(
+  const omnipoolBalances = useTokensBalances(
     positions.data?.map((p) => p.assetId) ?? [],
-    account?.address,
+    OMNIPOOL_ACCOUNT,
   )
   const usd = useUsdPeggedAsset()
   const spotPrices = useSpotPrices(
@@ -48,7 +48,7 @@ export const useAssetsHydraPositionsData = () => {
     positions,
     metas,
     omnipoolAssets,
-    ...balances,
+    ...omnipoolBalances,
     usd,
     ...spotPrices,
   ]
@@ -61,7 +61,7 @@ export const useAssetsHydraPositionsData = () => {
       !positions.data ||
       !metas.data ||
       !omnipoolAssets.data ||
-      balances.some((q) => !q.data)
+      omnipoolBalances.some((q) => !q.data)
     )
       return []
 
@@ -76,7 +76,7 @@ export const useAssetsHydraPositionsData = () => {
         const omnipoolAsset = omnipoolAssets.data.find(
           (a) => a.id.toString() === position.assetId.toString(),
         )
-        const balance = balances.find(
+        const omnipoolBalance = omnipoolBalances.find(
           (b) => b.data?.assetId.toString() === position.assetId.toString(),
         )
 
@@ -84,7 +84,7 @@ export const useAssetsHydraPositionsData = () => {
           !meta ||
           !lrnaMeta ||
           !omnipoolAsset?.data ||
-          !balance?.data ||
+          !omnipoolBalance?.data ||
           !math.omnipool
         )
           return null
@@ -94,35 +94,35 @@ export const useAssetsHydraPositionsData = () => {
 
         const name = getAssetName(meta.symbol)
 
-        const omniAssetState = new math.omnipool.AssetState(
-          balance.data.balance.toString(),
+        const [n,d] = position.price.map(n => new BigNumber(n.toString()))
+        const fixedPrice = n.dividedBy(d).multipliedBy(BN_10.pow(18)).toFixed(0).toString()
+
+        const params = [
+          omnipoolBalance.data.balance.toString(),
           omnipoolAsset.data.hubReserve.toString(),
           omnipoolAsset.data.shares.toString(),
-        )
-        const [p,d] = position.price.map(n => new BigNumber(n.toString()))
-        const fixedPrice = p.dividedBy(d).multipliedBy(BN_10.pow(18)).toFixed(0).toString()
-        const omniPosition = new math.omnipool.Position(
           position.amount.toString(),
           position.shares.toString(),
           fixedPrice,
-        )
-        const liquidityOutResult = math.omnipool.calculate_liquidity_out(
-          omniAssetState,
-          omniPosition,
-          position.shares.toString(),
-        )
+          position.shares.toString()
+        ]
 
-        if (liquidityOutResult.is_error()) return null
+        const lernaOutResult = math.omnipool.calculate_liquidity_lrna_out.apply(this, params)
+        const liquidityOutResult = math.omnipool.calculate_liquidity_out.apply(this, params)
+        if (liquidityOutResult === '-1' || lernaOutResult === '-1') {
+          console.log('error calculating liquidity out', {liquidityOutResult, lernaOutResult})
+          return null
+        }
 
         const lrnaSp = spotPrices.find(
           (sp) => sp.data?.tokenIn === LRNA_ASSET_ID,
         )
         const lrnaDp = BN_10.pow(lrnaMeta.decimals.toBigNumber())
-        const lrna = new BN(liquidityOutResult.get_lrna_amount()).div(lrnaDp)
+        const lrna = new BN(lernaOutResult).div(lrnaDp)
 
         const valueSp = spotPrices.find((sp) => sp.data?.tokenIn === id)
         const valueDp = BN_10.pow(meta.decimals.toBigNumber())
-        const value = new BN(liquidityOutResult.get_asset_amount()).div(valueDp)
+        const value = new BN(liquidityOutResult).div(valueDp)
         let valueUSD = BN_NAN
 
         const price = new BN(fixedPrice).div(BN_10.pow(18))
@@ -135,6 +135,8 @@ export const useAssetsHydraPositionsData = () => {
         if (lrnaSp?.data && valueSp?.data)
           valueUSD = value.times(valueSp.data.spotPrice)
             // TODO fix lerna spot price
+        if (Number(lrna) > 0)
+          console.log("lrna price missing!!!");
             //.plus(lrna.times(lrnaSp.data.spotPrice))
 
         if (valueSp?.data)
@@ -164,7 +166,7 @@ export const useAssetsHydraPositionsData = () => {
     positions.data,
     metas.data,
     omnipoolAssets.data,
-    balances,
+    omnipoolBalances,
     spotPrices,
   ])
 
