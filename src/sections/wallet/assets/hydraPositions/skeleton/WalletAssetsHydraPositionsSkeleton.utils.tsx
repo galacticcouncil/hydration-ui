@@ -59,7 +59,7 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
     }),
     display({
       id: "price",
-      header: t("wallet.assets.hydraPositions.header.value"),
+      header: t("wallet.assets.hydraPositions.header.valueUSD"),
       cell: () => (
         <div>
           <Skeleton width={134} height={32} enableAnimation={enableAnimation} />
