@@ -10,7 +10,7 @@ import { useAssetMetaList } from "api/assetMeta"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 import BN from "bignumber.js"
 import { useTokensBalances } from "api/balances"
-import { BN_10, BN_NAN } from "utils/constants"
+import { BN_0, BN_10, BN_NAN } from "utils/constants"
 import { useUniques } from "api/uniques"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
@@ -92,8 +92,10 @@ export const useAssetsHydraPositionsData = () => {
         const symbol = meta.symbol
         const name = getAssetName(meta.symbol)
 
-        const [nom, denom] = position.price.map((n) => new BN(n.toString()))
-        const price = nom.div(denom)
+        // TODO: uncomment once dev api is up-to-date
+        // const [nom, denom] = position.price.map((n) => new BN(n.toString()))
+        // const price = nom.div(denom)
+        const price = BN_0
         const positionPrice = price.times(BN_10.pow(18))
 
         const params: [
