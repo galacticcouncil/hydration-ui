@@ -1,7 +1,6 @@
 import { useTradeAssets } from "api/asset"
 import { useMemo } from "react"
 import BN from "bignumber.js"
-import BigNumber from "bignumber.js"
 import { useAssetMetaList } from "api/assetMeta"
 import { useAccountStore } from "state/store"
 import { useAccountBalances } from "api/accountBalances"
@@ -145,19 +144,8 @@ export const useAssetsBalances = () => {
       return undefined
 
     const locks = locksQueries.reduce(
-      (
-        acc: {
-          id: string
-          amount: BigNumber
-        }[],
-        cur,
-      ) => {
-        if (cur.data) {
-          acc.push(...cur.data)
-        }
-        return acc
-      },
-      [],
+      (acc, cur) => (cur.data ? [...acc, ...cur.data] : acc),
+      [] as { id: string; amount: BN }[],
     )
 
     const tokens: (AssetsTableDataBalances | null)[] =
