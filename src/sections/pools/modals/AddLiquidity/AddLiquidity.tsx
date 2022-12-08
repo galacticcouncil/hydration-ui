@@ -87,12 +87,12 @@ export const AddLiquidity = ({ isOpen, onClose, id }: AddLiquidityProps) => {
             {t("pools.pool.liquidity.poolFees")}
           </Text>
           <Text fs={14} color="white">
-            0.15%
+            TODO
           </Text>
         </div>
 
         <Text color="pink500" fs={15} font="FontOver" tTransform="uppercase">
-          Position Details
+          {t("pools.addLiquidity.modal.positionDetails")}
         </Text>
 
         <div
@@ -105,10 +105,10 @@ export const AddLiquidity = ({ isOpen, onClose, id }: AddLiquidityProps) => {
           }}
         >
           <Text color="darkBlue300" fs={14}>
-            Price:
+            {t("pools.removeLiquidity.modal.price")}
           </Text>
           <Text fs={14} color="white">
-            1 BTC = 20 000$
+            TODO
           </Text>
         </div>
         <Separator color="darkBlue401" />
@@ -122,22 +122,23 @@ export const AddLiquidity = ({ isOpen, onClose, id }: AddLiquidityProps) => {
           }}
         >
           <Text color="darkBlue300" fs={14}>
-            Received amount of Pool Shares
+            {t("pools.addLiquidity.modal.receive")}
           </Text>
           <Text fs={14} color="white">
-            1000
+            TODO
           </Text>
         </div>
         <Separator color="darkBlue401" />
         <Text color="warningOrange200" fs={14} fw={400} sx={{ mt: 17, mb: 24 }}>
-          Please keep in mind that you’ll receive NFT for this position that
-          will be available in your wallet after the transaction gets processed.
+          {t("pools.addLiquidity.modal.warning")}
         </Text>
         <Separator
           color="darkBlue401"
           sx={{ mx: "-30px", mb: 20, width: "auto" }}
         />
-        <Button variant="primary">Mint Liquidity Position</Button>
+        <Button variant="primary">
+          {t("pools.addLiquidity.modal.confirmButton")}
+        </Button>
       </form>
     </Modal>
   )

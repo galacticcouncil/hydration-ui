@@ -84,7 +84,7 @@ const RemoveLiquidityInput = ({
           <Text fs={11} css={{ opacity: 0.7 }}>
             {t("balance")}
           </Text>
-          <Text fs={11}>1 024 436 778.996</Text>
+          <Text fs={11}>TODO</Text>
         </div>
       </SSlippage>
     </>
@@ -159,7 +159,7 @@ export const RemoveLiquidity = ({
             {t("pools.pool.liquidity.poolFees")}
           </Text>
           <Text fs={14} color="graySoft">
-            0.3%
+            TODO
           </Text>
         </div>
         <Button variant="primary">

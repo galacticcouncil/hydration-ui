@@ -11,9 +11,11 @@ export const PoolFooter = () => {
     <SContainer>
       <div sx={{ flex: "row", gap: 85 }}>
         <Text fs={[16, 16]}>
-          Total locked $3 000 of which $1 000 not farming.
+          {t("pools.pool.claim.totals", { locked: "TODO", available: "TODO" })}
         </Text>
-        <Text fs={[16, 16]}>$12 Claimable</Text>
+        <Text fs={[16, 16]}>
+          {t("pools.pool.claim.claimable", { claimable: "TODO" })}
+        </Text>
       </div>
       <Button variant="primary" size="small" sx={{ width: 178 }}>
         <Icon icon={<WalletIcon />} />

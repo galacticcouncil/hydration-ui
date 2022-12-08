@@ -52,7 +52,7 @@ export const LiquidityPositions = ({ pool }: LiquidityPositionsProps) => {
                 })}
               </Text>
               <Text fs={[14, 14]} color="whiteish500">
-                $2 000
+                TODO
               </Text>
             </div>
           </div>
