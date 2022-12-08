@@ -28,7 +28,7 @@ export const useHydraPositionsTable = (
   const columnVisibility: VisibilityState = {
     name: true,
     value: true,
-    price: isDesktop,
+    valueUSD: isDesktop,
     actions: true,
   }
 
@@ -47,13 +47,12 @@ export const useHydraPositionsTable = (
           symbol={row.original.symbol}
           lrna={row.original.lrna}
           value={row.original.value}
-          valueUSD={null}
         />
       ),
     }),
-    accessor("price", {
-      id: "price",
-      header: t("wallet.assets.hydraPositions.header.value"),
+    accessor("valueUSD", {
+      id: "valueUSD",
+      header: t("wallet.assets.hydraPositions.header.valueUSD"),
       cell: ({ row }) => (
         <Text fw={500} fs={16} lh={16} color="green600">
           {t("value.usd", { amount: row.original.valueUSD })}

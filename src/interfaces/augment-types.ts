@@ -162,8 +162,6 @@ import type {
   UnrewardedRelayer,
   UnrewardedRelayersState,
 } from "@polkadot/types/interfaces/bridges"
-import type { BlockHash } from "@polkadot/types/interfaces/chain"
-import type { PrefixedStorageKey } from "@polkadot/types/interfaces/childstate"
 import type { StatementKind } from "@polkadot/types/interfaces/claims"
 import type {
   CollectiveOrigin,
@@ -458,6 +456,8 @@ import type {
   StoredPendingChange,
   StoredState,
 } from "@polkadot/types/interfaces/grandpa"
+import type { BlockHash } from "@polkadot/types/interfaces/chain"
+import type { PrefixedStorageKey } from "@polkadot/types/interfaces/childstate"
 import type {
   IdentityFields,
   IdentityInfo,
@@ -597,7 +597,6 @@ import type {
   MmrProof,
 } from "@polkadot/types/interfaces/mmr"
 import type { NpApiError } from "@polkadot/types/interfaces/nompools"
-import type { StorageKind } from "@polkadot/types/interfaces/offchain"
 import type {
   DeferredOffenceOf,
   Kind,
@@ -607,6 +606,7 @@ import type {
   ReportIdOf,
   Reporter,
 } from "@polkadot/types/interfaces/offences"
+import type { StorageKind } from "@polkadot/types/interfaces/offchain"
 import type {
   AbridgedCandidateReceipt,
   AbridgedHostConfiguration,
@@ -898,15 +898,6 @@ import type {
   SiVariant,
 } from "@polkadot/types/interfaces/scaleInfo"
 import type {
-  Period,
-  Priority,
-  SchedulePeriod,
-  SchedulePriority,
-  Scheduled,
-  ScheduledTo254,
-  TaskAddress,
-} from "@polkadot/types/interfaces/scheduler"
-import type {
   BeefyKey,
   FullIdentification,
   IdentificationTuple,
@@ -930,6 +921,15 @@ import type {
   SessionKeys9B,
   ValidatorCount,
 } from "@polkadot/types/interfaces/session"
+import type {
+  Period,
+  Priority,
+  SchedulePeriod,
+  SchedulePriority,
+  Scheduled,
+  ScheduledTo254,
+  TaskAddress,
+} from "@polkadot/types/interfaces/scheduler"
 import type {
   Bid,
   BidKind,
@@ -1356,17 +1356,11 @@ declare module "@polkadot/types/types/registry" {
     CandidateInfo: CandidateInfo
     CandidatePendingAvailability: CandidatePendingAvailability
     CandidateReceipt: CandidateReceipt
-    ChainId: ChainId
-    ChainProperties: ChainProperties
-    ChainType: ChainType
-    ChangesTrieConfiguration: ChangesTrieConfiguration
-    ChangesTrieSignal: ChangesTrieSignal
-    CheckInherentsResult: CheckInherentsResult
     ClassDetails: ClassDetails
     ClassId: ClassId
     ClassMetadata: ClassMetadata
-    CodecHash: CodecHash
     CodeHash: CodeHash
+    CodecHash: CodecHash
     CodeSource: CodeSource
     CodeUploadRequest: CodeUploadRequest
     CodeUploadResult: CodeUploadResult
@@ -1677,6 +1671,12 @@ declare module "@polkadot/types/types/registry" {
     HrmpChannel: HrmpChannel
     HrmpChannelId: HrmpChannelId
     HrmpOpenChannelRequest: HrmpOpenChannelRequest
+    ChainId: ChainId
+    ChainProperties: ChainProperties
+    ChainType: ChainType
+    ChangesTrieConfiguration: ChangesTrieConfiguration
+    ChangesTrieSignal: ChangesTrieSignal
+    CheckInherentsResult: CheckInherentsResult
     i128: i128
     I128: I128
     i16: i16
@@ -1845,10 +1845,10 @@ declare module "@polkadot/types/types/registry" {
     Null: Null
     OccupiedCore: OccupiedCore
     OccupiedCoreAssumption: OccupiedCoreAssumption
-    OffchainAccuracy: OffchainAccuracy
-    OffchainAccuracyCompact: OffchainAccuracyCompact
     OffenceDetails: OffenceDetails
     Offender: Offender
+    OffchainAccuracy: OffchainAccuracy
+    OffchainAccuracyCompact: OffchainAccuracyCompact
     OldV1SessionInfo: OldV1SessionInfo
     OpaqueCall: OpaqueCall
     OpaqueKeyOwnershipProof: OpaqueKeyOwnershipProof
@@ -1893,11 +1893,11 @@ declare module "@polkadot/types/types/registry" {
     PalletStorageMetadataLatest: PalletStorageMetadataLatest
     PalletStorageMetadataV14: PalletStorageMetadataV14
     PalletVersion: PalletVersion
+    ParaGenesisArgs: ParaGenesisArgs
     ParachainDispatchOrigin: ParachainDispatchOrigin
     ParachainInherentData: ParachainInherentData
     ParachainProposal: ParachainProposal
     ParachainsInherentData: ParachainsInherentData
-    ParaGenesisArgs: ParaGenesisArgs
     ParaId: ParaId
     ParaInfo: ParaInfo
     ParaLifecycle: ParaLifecycle
@@ -1996,10 +1996,10 @@ declare module "@polkadot/types/types/registry" {
     RegistrationJudgement: RegistrationJudgement
     RegistrationTo198: RegistrationTo198
     RelayBlockNumber: RelayBlockNumber
-    RelayChainBlockNumber: RelayChainBlockNumber
-    RelayChainHash: RelayChainHash
     RelayerId: RelayerId
     RelayHash: RelayHash
+    RelayChainBlockNumber: RelayChainBlockNumber
+    RelayChainHash: RelayChainHash
     Releases: Releases
     Remark: Remark
     Renouncing: Renouncing
@@ -2029,16 +2029,6 @@ declare module "@polkadot/types/types/registry" {
     RuntimeVersionPartial: RuntimeVersionPartial
     RuntimeVersionPre3: RuntimeVersionPre3
     RuntimeVersionPre4: RuntimeVersionPre4
-    Schedule: Schedule
-    Scheduled: Scheduled
-    ScheduledCore: ScheduledCore
-    ScheduledTo254: ScheduledTo254
-    SchedulePeriod: SchedulePeriod
-    SchedulePriority: SchedulePriority
-    ScheduleTo212: ScheduleTo212
-    ScheduleTo258: ScheduleTo258
-    ScheduleTo264: ScheduleTo264
-    Scheduling: Scheduling
     ScrapedOnChainVotes: ScrapedOnChainVotes
     Seal: Seal
     SealV0: SealV0
@@ -2065,6 +2055,16 @@ declare module "@polkadot/types/types/registry" {
     SessionKeys9B: SessionKeys9B
     SetId: SetId
     SetIndex: SetIndex
+    Schedule: Schedule
+    Scheduled: Scheduled
+    ScheduledCore: ScheduledCore
+    ScheduledTo254: ScheduledTo254
+    SchedulePeriod: SchedulePeriod
+    SchedulePriority: SchedulePriority
+    ScheduleTo212: ScheduleTo212
+    ScheduleTo258: ScheduleTo258
+    ScheduleTo264: ScheduleTo264
+    Scheduling: Scheduling
     Si0Field: Si0Field
     Si0LookupTypeId: Si0LookupTypeId
     Si0Path: Si0Path
@@ -2146,7 +2146,6 @@ declare module "@polkadot/types/types/registry" {
     StakingLedgerTo240: StakingLedgerTo240
     Statement: Statement
     StatementKind: StatementKind
-    StorageChangeSet: StorageChangeSet
     StorageData: StorageData
     StorageDeposit: StorageDeposit
     StorageEntryMetadataLatest: StorageEntryMetadataLatest
@@ -2177,6 +2176,7 @@ declare module "@polkadot/types/types/registry" {
     StorageHasherV13: StorageHasherV13
     StorageHasherV14: StorageHasherV14
     StorageHasherV9: StorageHasherV9
+    StorageChangeSet: StorageChangeSet
     StorageInfo: StorageInfo
     StorageKey: StorageKey
     StorageKind: StorageKind
