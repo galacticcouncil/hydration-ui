@@ -64,5 +64,5 @@ export function getAssetName(symbol: string | null | undefined) {
   if (_symbol === "DAI") return "Dai"
   if (_symbol === "DOT") return "Polkadot"
 
-  return "-"
+  return "N/A"
 }

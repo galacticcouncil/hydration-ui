@@ -1,6 +1,7 @@
-import { useTradeAssets, useUsdPeggedAsset } from "api/asset"
+import { useTradeAssets } from "api/asset"
 import { useMemo } from "react"
 import BN from "bignumber.js"
+import BigNumber from "bignumber.js"
 import { useAssetMetaList } from "api/assetMeta"
 import { useAccountStore } from "state/store"
 import { useAccountBalances } from "api/accountBalances"
@@ -13,8 +14,8 @@ import { u32 } from "@polkadot/types"
 import { useAssetDetailsList } from "api/assetDetails"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useTokensLocks } from "api/balances"
-import BigNumber from "bignumber.js"
 import { useAcceptedCurrencies, useAccountCurrency } from "api/payment"
+import { useApiIds } from "api/consts"
 
 export const useAssetsTableData = () => {
   const { account } = useAccountStore()
@@ -27,13 +28,13 @@ export const useAssetsTableData = () => {
   const acceptedCurrenciesQuery = useAcceptedCurrencies(tokenIds)
   const accountCurrency = useAccountCurrency(account?.address)
   const assetDetails = useAssetDetailsList(tokenIds)
-
   const assetMetadata = useAssetMetaList(tokenIds)
 
   const queries = [
     assetDetails,
     balances,
     accountCurrency,
+    assetMetadata,
     ...acceptedCurrenciesQuery,
   ]
   const isLoading = queries.some((q) => q.isLoading)
@@ -42,6 +43,7 @@ export const useAssetsTableData = () => {
     if (
       isLoading ||
       !assetDetails.data ||
+      !assetMetadata.data ||
       !balances.data ||
       !tradeAssets.data ||
       acceptedCurrenciesQuery.some((q) => !q.data)
@@ -78,7 +80,7 @@ export const useAssetsTableData = () => {
 
       return {
         id: asset.id?.toString(),
-        symbol: metadata?.symbol,
+        symbol: metadata?.symbol ?? "N/A",
         name: asset.name || getAssetName(metadata?.symbol),
         transferable: balance?.transferable ?? BN_0,
         transferableUSD: balance?.transferableUSD ?? BN_0,
@@ -120,14 +122,14 @@ export const useAssetsBalances = () => {
     ? [NATIVE_ASSET_ID, ...accountBalances.data.balances.map((b) => b.id)]
     : []
   const assetMetas = useAssetMetaList(tokenIds)
-  const usd = useUsdPeggedAsset()
-  const spotPrices = useSpotPrices(tokenIds, usd.data?.id)
+  const apiIds = useApiIds()
+  const spotPrices = useSpotPrices(tokenIds, apiIds.data?.usdId)
   const locksQueries = useTokensLocks(tokenIds)
 
   const queries = [
     accountBalances,
     assetMetas,
-    usd,
+    apiIds,
     ...spotPrices,
     ...locksQueries,
   ]

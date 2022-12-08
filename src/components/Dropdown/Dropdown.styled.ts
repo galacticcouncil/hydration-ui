@@ -1,4 +1,4 @@
-import { keyframes } from "@emotion/react"
+import { css, keyframes } from "@emotion/react"
 import styled from "@emotion/styled"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import { theme } from "theme"
@@ -105,4 +105,12 @@ export const STrigger = styled(DropdownMenu.Trigger)`
   &[data-state="open"] {
     background: rgba(${theme.rgbColors.primaryA15}, 0.12);
   }
+
+  ${({ disabled }) =>
+    disabled &&
+    css`
+      background: rgba(${theme.rgbColors.basic100}, 0.06);
+      color: rgba(${theme.rgbColors.white}, 0.6);
+      pointer-events: none;
+    `}
 `

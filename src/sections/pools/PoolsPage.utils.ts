@@ -6,7 +6,6 @@ import BN from "bignumber.js"
 import { u32 } from "@polkadot/types-codec"
 import { useTokensBalances } from "api/balances"
 import { useSpotPrices } from "api/spotPrice"
-import { useUsdPeggedAsset } from "api/asset"
 import { getFloatingPointAmount } from "utils/balance"
 import {
   is_add_liquidity_allowed,
@@ -15,28 +14,29 @@ import {
   is_sell_allowed,
 } from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
+import { useApiIds } from "api/consts"
 
 export const useOmnipoolPools = () => {
   const assets = useOmnipoolAssets()
   const metas = useAssetMetaList(assets.data?.map((a) => a.id) ?? [])
-  const usd = useUsdPeggedAsset()
+  const apiIds = useApiIds()
   const spotPrices = useSpotPrices(
     assets.data?.map((a) => a.id) ?? [],
-    usd.data?.id,
+    apiIds.data?.usdId,
   )
   const balances = useTokensBalances(
     assets.data?.map((a) => a.id) ?? [],
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
 
-  const queries = [assets, metas, usd, ...spotPrices, ...balances]
+  const queries = [assets, metas, apiIds, ...spotPrices, ...balances]
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
     if (
       !assets.data ||
       !metas.data ||
-      !usd.data ||
+      !apiIds.data ||
       spotPrices.some((q) => !q.data) ||
       balances.some((b) => !b.data)
     )
@@ -90,7 +90,7 @@ export const useOmnipoolPools = () => {
       .filter((x): x is OmnipoolPool => x !== null)
 
     return rows
-  }, [assets.data, metas.data, usd.data, spotPrices, balances])
+  }, [assets.data, metas.data, apiIds.data, spotPrices, balances])
 
   return { data, isLoading: isInitialLoading }
 }

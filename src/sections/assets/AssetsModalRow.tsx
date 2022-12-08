@@ -1,16 +1,17 @@
 import { u32 } from "@polkadot/types"
 import { FC, useMemo } from "react"
-import { useAsset, useUsdPeggedAsset } from "../../api/asset"
-import { useTokenBalance } from "../../api/balances"
-import { useAccountStore } from "../../state/store"
-import { Icon } from "../../components/Icon/Icon"
-import { Text } from "../../components/Typography/Text/Text"
+import { useAsset } from "api/asset"
+import { useTokenBalance } from "api/balances"
+import { useAccountStore } from "state/store"
+import { Icon } from "components/Icon/Icon"
+import { Text } from "components/Typography/Text/Text"
 import { SAssetRow } from "./AssetsModalRow.styled"
 import { Trans, useTranslation } from "react-i18next"
-import { useSpotPrice } from "../../api/spotPrice"
-import { BN_0 } from "../../utils/constants"
+import { useSpotPrice } from "api/spotPrice"
+import { BN_0 } from "utils/constants"
 import { Maybe } from "utils/helpers"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
+import { useApiIds } from "api/consts"
 
 interface AssetsModalRowProps {
   id: Maybe<u32 | string>
@@ -21,10 +22,10 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
   const { account } = useAccountStore()
   const { t } = useTranslation()
   const asset = useAsset(id)
-  const usd = useUsdPeggedAsset()
+  const apiIds = useApiIds()
   const balance = useTokenBalance(id, account?.address)
 
-  const spotPrice = useSpotPrice(id, usd.data?.id)
+  const spotPrice = useSpotPrice(id, apiIds.data?.usdId)
   const totalUSD = useMemo(() => {
     if (balance.data && spotPrice.data) {
       return balance.data.balance.times(spotPrice.data.spotPrice)

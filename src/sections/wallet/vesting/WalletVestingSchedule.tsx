@@ -1,23 +1,23 @@
-import { SSchedule, SInner, SClaimButton } from "./WalletVestingSchedule.styled"
+import { SClaimButton, SInner, SSchedule } from "./WalletVestingSchedule.styled"
 import { useCallback, useMemo } from "react"
-import { Text } from "../../../components/Typography/Text/Text"
+import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
-import { getFormatSeparators } from "../../../utils/formatting"
+import { getFormatSeparators } from "utils/formatting"
 import i18n from "i18next"
 import { css } from "@emotion/react"
-import { theme } from "../../../theme"
-import { Heading } from "../../../components/Typography/Heading/Heading"
+import { theme } from "theme"
+import { Heading } from "components/Typography/Heading/Heading"
 import {
   useNextClaimableDate,
   useVestingTotalClaimableBalance,
-} from "../../../api/vesting"
-import { useUsdPeggedAsset } from "../../../api/asset"
-import { useSpotPrice } from "../../../api/spotPrice"
-import { NATIVE_ASSET_ID, useApiPromise } from "../../../utils/api"
-import { useExistentialDeposit, useTokenBalance } from "../../../api/balances"
-import { useAccountStore, useStore } from "../../../state/store"
-import { usePaymentInfo } from "../../../api/transaction"
-import { useAssetMeta } from "../../../api/assetMeta"
+} from "api/vesting"
+import { useSpotPrice } from "api/spotPrice"
+import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
+import { useExistentialDeposit, useTokenBalance } from "api/balances"
+import { useAccountStore, useStore } from "state/store"
+import { usePaymentInfo } from "api/transaction"
+import { useAssetMeta } from "api/assetMeta"
+import { useApiIds } from "api/consts"
 
 export const WalletVestingSchedule = () => {
   const { t } = useTranslation()
@@ -32,8 +32,8 @@ export const WalletVestingSchedule = () => {
   const { data: existentialDeposit } = useExistentialDeposit()
   const { data: meta } = useAssetMeta(NATIVE_ASSET_ID)
 
-  const usd = useUsdPeggedAsset()
-  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, usd.data?.id)
+  const apiIds = useApiIds()
+  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, apiIds.data?.usdId)
   const balance = useTokenBalance(NATIVE_ASSET_ID, account?.address)
 
   const claimableUSD = useMemo(() => {

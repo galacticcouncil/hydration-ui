@@ -131,14 +131,17 @@ export const QUERY_KEYS = {
       ? ["timestamp", bestNumber]
       : [QUERY_KEY_PREFIX, "timestamp"],
   vestingSchedules: (address: Maybe<AccountId32 | string>) => [
+    QUERY_KEY_PREFIX,
     "vestingSchedules",
     address,
   ],
   vestingLockBalance: (address: Maybe<AccountId32 | string>) => [
+    QUERY_KEY_PREFIX,
     "vestingLock",
     address,
   ],
   lock: (address: Maybe<AccountId32 | string>, asset: Maybe<u32 | string>) => [
+    QUERY_KEY_PREFIX,
     "lock",
     address,
     asset,
@@ -153,14 +156,21 @@ export const QUERY_KEYS = {
   omnipoolPositions: [QUERY_KEY_PREFIX, "omnipoolPositions"],
   provider: (url: string) => ["provider", url],
   math: ["@galacticcouncil/math"],
-  existentialDeposit: ["existentialDeposit"],
+  existentialDeposit: [QUERY_KEY_PREFIX, "existentialDeposit"],
   acceptedCurrencies: (address: Maybe<u32 | string>) => [
+    QUERY_KEY_PREFIX,
     "acceptedCurrencies",
     address,
   ],
-  acceptedCurrency: (id: Maybe<u32 | string>) => ["acceptedCurrency", id],
+  acceptedCurrency: (id: Maybe<u32 | string>) => [
+    QUERY_KEY_PREFIX,
+    "acceptedCurrency",
+    id,
+  ],
   accountCurrency: (address: Maybe<AccountId32 | string>) => [
+    QUERY_KEY_PREFIX,
     "accountCurrency",
     address,
   ],
+  apiIds: [QUERY_KEY_PREFIX, "apiIds"],
 } as const
