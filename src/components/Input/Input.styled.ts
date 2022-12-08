@@ -33,9 +33,10 @@ export const SInput = styled.input<{ error?: string; unit?: string }>`
 
   box-sizing: border-box;
 
+  border-radius: 4px;
   border: none;
   border-bottom: 1px solid
-    ${({ error }) => (error ? theme.colors.error : theme.colors.basic400)};
+    ${({ error }) => (error ? theme.colors.error : theme.colors.darkBlue400)};
 
   background: rgba(218, 255, 238, 0.06);
   color: ${theme.colors.white};
@@ -45,7 +46,7 @@ export const SInput = styled.input<{ error?: string; unit?: string }>`
   padding: 20px 18px;
 
   ::placeholder {
-    color: rgba(${theme.colors.white}, 0.4);
+    color: rgba(114, 131, 165, 0.6);
   }
 
   :focus,

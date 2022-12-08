@@ -94,7 +94,7 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
       <DialogPortal>
         <ModalContext.Provider value={setPropsOverride}>
           <ModalContainer css={props.containerStyles}>
-            <Backdrop variant={mergedProps.variant ?? "success"} />
+            <Backdrop variant={mergedProps.variant ?? "default"} />
 
             <ModalWindow
               isDrawer={isDrawer}

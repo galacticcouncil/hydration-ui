@@ -18,6 +18,7 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   children?: React.ReactNode
   active?: boolean
   transform?: "uppercase" | "lowercase" | "none"
+  fullWidth?: boolean
 }
 
 export const Button: React.FC<ButtonProps> = ({
