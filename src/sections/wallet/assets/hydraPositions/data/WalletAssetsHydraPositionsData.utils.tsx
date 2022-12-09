@@ -1,8 +1,4 @@
-import {
-  LRNA_ASSET_ID,
-  OMNIPOOL_ACCOUNT_ADDRESS,
-  OMNIPOOL_POSITION_COLLECTION_ID,
-} from "utils/api"
+import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { useAccountStore } from "state/store"
 import { useMemo } from "react"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
@@ -14,23 +10,25 @@ import { BN_0, BN_10, BN_NAN } from "utils/constants"
 import { useUniques } from "api/uniques"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
-import { useUsdPeggedAsset } from "api/asset"
 import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
 } from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
+import { useApiIds } from "api/consts"
 
 export const useAssetsHydraPositionsData = () => {
   const { account } = useAccountStore()
+  const apiIds = useApiIds()
   const uniques = useUniques(
     account?.address ?? "",
-    OMNIPOOL_POSITION_COLLECTION_ID,
+    apiIds.data?.omnipoolCollectionId ?? "",
   )
   const positions = useOmnipoolPositions(
     uniques.data?.map((u) => u.itemId) ?? [],
   )
   const metas = useAssetMetaList([
-    LRNA_ASSET_ID,
+    apiIds.data?.usdId,
+    apiIds.data?.lrnaId,
     ...(positions.data?.map((p) => p.assetId) ?? []),
   ])
   const omnipoolAssets = useOmnipoolAssets()
@@ -38,19 +36,18 @@ export const useAssetsHydraPositionsData = () => {
     positions.data?.map((p) => p.assetId) ?? [],
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
-  const usd = useUsdPeggedAsset()
   const spotPrices = useSpotPrices(
-    [LRNA_ASSET_ID, ...(positions.data?.map((p) => p.assetId) ?? [])],
-    usd.data?.id,
+    [apiIds.data?.lrnaId, ...(positions.data?.map((p) => p.assetId) ?? [])],
+    apiIds.data?.usdId,
   )
 
   const queries = [
+    apiIds,
     uniques,
     positions,
     metas,
     omnipoolAssets,
     ...omnipoolBalances,
-    usd,
     ...spotPrices,
   ]
   const isLoading = queries.some((q) => q.isInitialLoading)
@@ -61,6 +58,7 @@ export const useAssetsHydraPositionsData = () => {
       !positions.data ||
       !metas.data ||
       !omnipoolAssets.data ||
+      !apiIds.data ||
       omnipoolBalances.some((q) => !q.data)
     )
       return []
@@ -71,7 +69,7 @@ export const useAssetsHydraPositionsData = () => {
           (m) => m.id.toString() === position.assetId.toString(),
         )
         const lrnaMeta = metas.data.find(
-          (m) => m.id.toString() === LRNA_ASSET_ID,
+          (m) => m.id.toString() === apiIds.data.lrnaId,
         )
         const omnipoolAsset = omnipoolAssets.data.find(
           (a) => a.id.toString() === position.assetId.toString(),
@@ -121,7 +119,7 @@ export const useAssetsHydraPositionsData = () => {
         if (liquidityOutResult === "-1" || lernaOutResult === "-1") return null
 
         const lrnaSp = spotPrices.find(
-          (sp) => sp.data?.tokenIn === LRNA_ASSET_ID,
+          (sp) => sp.data?.tokenIn === apiIds.data.lrnaId,
         )
         const lrnaDp = BN_10.pow(lrnaMeta.decimals.toBigNumber())
         const lrna = new BN(lernaOutResult).div(lrnaDp)
@@ -167,6 +165,7 @@ export const useAssetsHydraPositionsData = () => {
     positions.data,
     metas.data,
     omnipoolAssets.data,
+    apiIds.data,
     omnipoolBalances,
     spotPrices,
   ])

@@ -3,16 +3,16 @@ import { Heading } from "components/Typography/Heading/Heading"
 import { Trans, useTranslation } from "react-i18next"
 import { useVestingScheduleEnd, useVestingTotalVestedAmount } from "api/vesting"
 import { useSpotPrice } from "api/spotPrice"
-import { useUsdPeggedAsset } from "api/asset"
 import { useMemo } from "react"
 import { css } from "@emotion/react"
 import { theme } from "theme"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { useAssetMeta } from "../../../api/assetMeta"
-import { STable, SSeparator } from "./WalletVestingHeader.styled"
+import { SSeparator, STable } from "./WalletVestingHeader.styled"
 import { addDays } from "date-fns"
 import { BN_0, DAY_IN_MILLISECONDS } from "../../../utils/constants"
 import { separateBalance } from "utils/balance"
+import { useApiIds } from "api/consts"
 
 export const WalletVestingHeader = () => {
   const { t } = useTranslation()
@@ -20,8 +20,8 @@ export const WalletVestingHeader = () => {
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
   const { data: vestingScheduleEnd } = useVestingScheduleEnd()
 
-  const usd = useUsdPeggedAsset()
-  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, usd.data?.id)
+  const apiIds = useApiIds()
+  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, apiIds.data?.usdId)
   const { data: nativeAsset } = useAssetMeta(NATIVE_ASSET_ID)
 
   const totalVestedValue = totalVestedAmount ?? BN_0

@@ -14,7 +14,7 @@ export function Dropdown<T extends string>(props: {
 }) {
   return (
     <DropdownMenu.Root>
-      <STrigger>{props.children}</STrigger>
+      <STrigger disabled={!props.items.length}>{props.children}</STrigger>
       <DropdownMenu.Portal>
         <SContent sideOffset={8}>
           {props.items.map((i) => (
