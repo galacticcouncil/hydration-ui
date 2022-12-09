@@ -22,6 +22,12 @@ export const SButton = styled.button<ButtonProps>`
       transition: all ${theme.transitions.default};
     `}
 
+    ${({ fullWidth }) =>
+    fullWidth &&
+    css`
+      width: 100%;
+    `}
+
   &:disabled {
     cursor: not-allowed;
 
@@ -151,7 +157,7 @@ const sizeStyles: Record<ButtonSize, SerializedStyles> = {
   small: css`
     padding: 12px 15px;
     font-size: 12px;
-    line-height: 20px;
+    line-height: 12px;
   `,
   micro: css`
     padding: 2px 10px;

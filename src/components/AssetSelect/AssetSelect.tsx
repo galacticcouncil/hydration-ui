@@ -110,13 +110,13 @@ export const AssetSelect = (props: {
           >
             <Icon icon={props.assetIcon} />
             {props.assetSymbol && (
-              <div>
-                <Text fw={700} color="white">
+              <div sx={{ flex: "column", justify: "space-between" }}>
+                <Text fw={700} lh={16} color="white">
                   {props.assetSymbol}
                 </Text>
                 <Text
-                  fs={12}
-                  lh={14}
+                  fs={13}
+                  lh={13}
                   css={{
                     whiteSpace: "nowrap",
                     color: `rgba(${theme.rgbColors.whiteish500}, 0.6)`,
