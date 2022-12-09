@@ -34,6 +34,7 @@ import type {
   H256,
   Perbill,
   Permill,
+  Weight,
 } from "@polkadot/types/interfaces/runtime"
 import type {
   CommonRuntimeProxyType,
@@ -423,10 +424,10 @@ declare module "@polkadot/api-base/types/submittable" {
         (
           proposalHash: H256 | string | Uint8Array,
           index: Compact<u32> | AnyNumber | Uint8Array,
-          proposalWeightBound: Compact<u64> | AnyNumber | Uint8Array,
+          proposalWeightBound: Compact<Weight> | AnyNumber | Uint8Array,
           lengthBound: Compact<u32> | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [H256, Compact<u32>, Compact<u64>, Compact<u32>]
+        [H256, Compact<u32>, Compact<Weight>, Compact<u32>]
       >
       /**
        * Disapprove a proposal, close, and remove it from the system, regardless of its current
@@ -1126,9 +1127,9 @@ declare module "@polkadot/api-base/types/submittable" {
       serviceOverweight: AugmentedSubmittable<
         (
           index: u64 | AnyNumber | Uint8Array,
-          weightLimit: u64 | AnyNumber | Uint8Array,
+          weightLimit: Weight | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [u64, u64]
+        [u64, Weight]
       >
       /**
        * Generic tx
@@ -1741,9 +1742,15 @@ declare module "@polkadot/api-base/types/submittable" {
             | { height?: any; index?: any }
             | string,
           callHash: U8aFixed | string | Uint8Array,
-          maxWeight: u64 | AnyNumber | Uint8Array,
+          maxWeight: Weight | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [u16, Vec<AccountId32>, Option<PalletMultisigTimepoint>, U8aFixed, u64]
+        [
+          u16,
+          Vec<AccountId32>,
+          Option<PalletMultisigTimepoint>,
+          U8aFixed,
+          Weight,
+        ]
       >
       /**
        * Register approval for a dispatch to be made from a deterministic composite account if
@@ -1807,7 +1814,7 @@ declare module "@polkadot/api-base/types/submittable" {
             | string,
           call: WrapperKeepOpaque<Call> | object | string | Uint8Array,
           storeCall: bool | boolean | Uint8Array,
-          maxWeight: u64 | AnyNumber | Uint8Array,
+          maxWeight: Weight | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
         [
           u16,
@@ -1815,7 +1822,7 @@ declare module "@polkadot/api-base/types/submittable" {
           Option<PalletMultisigTimepoint>,
           WrapperKeepOpaque<Call>,
           bool,
-          u64,
+          Weight,
         ]
       >
       /**
@@ -2282,9 +2289,9 @@ declare module "@polkadot/api-base/types/submittable" {
             | { V2: any }
             | string
             | Uint8Array,
-          maxWeight: u64 | AnyNumber | Uint8Array,
+          maxWeight: Weight | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [XcmVersionedXcm, u64]
+        [XcmVersionedXcm, Weight]
       >
       /**
        * Set a safe XCM version (the version that XCM should be encoded with if the most recent
@@ -2939,58 +2946,6 @@ declare module "@polkadot/api-base/types/submittable" {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>
     }
-    session: {
-      /**
-       * Removes any session key(s) of the function caller.
-       *
-       * This doesn't take effect until the next session.
-       *
-       * The dispatch origin of this function must be Signed and the account must be either be
-       * convertible to a validator ID using the chain's typical addressing system (this usually
-       * means being a controller account) or directly convertible into a validator ID (which
-       * usually means being a stash account).
-       *
-       * # <weight>
-       * - Complexity: `O(1)` in number of key types. Actual cost depends on the number of length
-       * of `T::Keys::key_ids()` which is fixed.
-       * - DbReads: `T::ValidatorIdOf`, `NextKeys`, `origin account`
-       * - DbWrites: `NextKeys`, `origin account`
-       * - DbWrites per key id: `KeyOwner`
-       * # </weight>
-       **/
-      purgeKeys: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>
-      /**
-       * Sets the session key(s) of the function caller to `keys`.
-       * Allows an account to set its session key prior to becoming a validator.
-       * This doesn't take effect until the next session.
-       *
-       * The dispatch origin of this function must be signed.
-       *
-       * # <weight>
-       * - Complexity: `O(1)`. Actual cost depends on the number of length of
-       * `T::Keys::key_ids()` which is fixed.
-       * - DbReads: `origin account`, `T::ValidatorIdOf`, `NextKeys`
-       * - DbWrites: `origin account`, `NextKeys`
-       * - DbReads per key id: `KeyOwner`
-       * - DbWrites per key id: `KeyOwner`
-       * # </weight>
-       **/
-      setKeys: AugmentedSubmittable<
-        (
-          keys:
-            | TestingHydradxRuntimeOpaqueSessionKeys
-            | { aura?: any }
-            | string
-            | Uint8Array,
-          proof: Bytes | string | Uint8Array,
-        ) => SubmittableExtrinsic<ApiType>,
-        [TestingHydradxRuntimeOpaqueSessionKeys, Bytes]
-      >
-      /**
-       * Generic tx
-       **/
-      [key: string]: SubmittableExtrinsicFunction<ApiType>
-    }
     scheduler: {
       /**
        * Cancel an anonymously scheduled task.
@@ -3124,6 +3079,58 @@ declare module "@polkadot/api-base/types/submittable" {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>
     }
+    session: {
+      /**
+       * Removes any session key(s) of the function caller.
+       *
+       * This doesn't take effect until the next session.
+       *
+       * The dispatch origin of this function must be Signed and the account must be either be
+       * convertible to a validator ID using the chain's typical addressing system (this usually
+       * means being a controller account) or directly convertible into a validator ID (which
+       * usually means being a stash account).
+       *
+       * # <weight>
+       * - Complexity: `O(1)` in number of key types. Actual cost depends on the number of length
+       * of `T::Keys::key_ids()` which is fixed.
+       * - DbReads: `T::ValidatorIdOf`, `NextKeys`, `origin account`
+       * - DbWrites: `NextKeys`, `origin account`
+       * - DbWrites per key id: `KeyOwner`
+       * # </weight>
+       **/
+      purgeKeys: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>
+      /**
+       * Sets the session key(s) of the function caller to `keys`.
+       * Allows an account to set its session key prior to becoming a validator.
+       * This doesn't take effect until the next session.
+       *
+       * The dispatch origin of this function must be signed.
+       *
+       * # <weight>
+       * - Complexity: `O(1)`. Actual cost depends on the number of length of
+       * `T::Keys::key_ids()` which is fixed.
+       * - DbReads: `origin account`, `T::ValidatorIdOf`, `NextKeys`
+       * - DbWrites: `origin account`, `NextKeys`
+       * - DbReads per key id: `KeyOwner`
+       * - DbWrites per key id: `KeyOwner`
+       * # </weight>
+       **/
+      setKeys: AugmentedSubmittable<
+        (
+          keys:
+            | TestingHydradxRuntimeOpaqueSessionKeys
+            | { aura?: any }
+            | string
+            | Uint8Array,
+          proof: Bytes | string | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [TestingHydradxRuntimeOpaqueSessionKeys, Bytes]
+      >
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>
+    }
     sudo: {
       /**
        * Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
@@ -3196,9 +3203,9 @@ declare module "@polkadot/api-base/types/submittable" {
       sudoUncheckedWeight: AugmentedSubmittable<
         (
           call: Call | IMethod | string | Uint8Array,
-          weight: u64 | AnyNumber | Uint8Array,
+          weight: Weight | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [Call, u64]
+        [Call, Weight]
       >
       /**
        * Generic tx
@@ -3350,10 +3357,10 @@ declare module "@polkadot/api-base/types/submittable" {
         (
           proposalHash: H256 | string | Uint8Array,
           index: Compact<u32> | AnyNumber | Uint8Array,
-          proposalWeightBound: Compact<u64> | AnyNumber | Uint8Array,
+          proposalWeightBound: Compact<Weight> | AnyNumber | Uint8Array,
           lengthBound: Compact<u32> | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [H256, Compact<u32>, Compact<u64>, Compact<u32>]
+        [H256, Compact<u32>, Compact<Weight>, Compact<u32>]
       >
       /**
        * Disapprove a proposal, close, and remove it from the system, regardless of its current
@@ -3818,6 +3825,26 @@ declare module "@polkadot/api-base/types/submittable" {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>
     }
+    transactionPause: {
+      pauseTransaction: AugmentedSubmittable<
+        (
+          palletName: Bytes | string | Uint8Array,
+          functionName: Bytes | string | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [Bytes, Bytes]
+      >
+      unpauseTransaction: AugmentedSubmittable<
+        (
+          palletName: Bytes | string | Uint8Array,
+          functionName: Bytes | string | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [Bytes, Bytes]
+      >
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>
+    }
     treasury: {
       /**
        * Approve a proposal. At a later time, the proposal will be allocated to the beneficiary
@@ -3921,11 +3948,14 @@ declare module "@polkadot/api-base/types/submittable" {
       /**
        * Approve an item to be transferred by a delegated third-party account.
        *
-       * Origin must be Signed and must be the owner of the `item`.
+       * The origin must conform to `ForceOrigin` or must be `Signed` and the sender must be
+       * either the owner of the `item` or the admin of the collection.
        *
        * - `collection`: The collection of the item to be approved for delegated transfer.
        * - `item`: The item of the item to be approved for delegated transfer.
        * - `delegate`: The account to delegate permission to transfer the item.
+       *
+       * Important NOTE: The `approved` account gets reset after each transfer.
        *
        * Emits `ApprovedTransfer` on success.
        *
@@ -4093,6 +4123,7 @@ declare module "@polkadot/api-base/types/submittable" {
        * `ItemDeposit` funds of sender are reserved.
        *
        * Parameters:
+       * - `collection`: The identifier of the new collection. This must not be currently in use.
        * - `admin`: The admin of this collection. The admin is the initial address of each
        * member of the collection's admin team.
        *
@@ -4102,9 +4133,10 @@ declare module "@polkadot/api-base/types/submittable" {
        **/
       create: AugmentedSubmittable<
         (
+          collection: u128 | AnyNumber | Uint8Array,
           admin: AccountId32 | string | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [AccountId32]
+        [u128, AccountId32]
       >
       /**
        * Destroy a collection of fungible items.
@@ -4143,6 +4175,7 @@ declare module "@polkadot/api-base/types/submittable" {
        *
        * Unlike `create`, no funds are reserved.
        *
+       * - `collection`: The identifier of the new item. This must not be currently in use.
        * - `owner`: The owner of this collection of items. The owner has full superuser
        * permissions
        * over this item, but may later change and configure the permissions using
@@ -4154,10 +4187,11 @@ declare module "@polkadot/api-base/types/submittable" {
        **/
       forceCreate: AugmentedSubmittable<
         (
+          collection: u128 | AnyNumber | Uint8Array,
           owner: AccountId32 | string | Uint8Array,
           freeHolding: bool | boolean | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [AccountId32, bool]
+        [u128, AccountId32, bool]
       >
       /**
        * Alter the attributes of a given item.
@@ -4481,6 +4515,8 @@ declare module "@polkadot/api-base/types/submittable" {
       /**
        * Move an item from the sender account to another.
        *
+       * This resets the approved account of the item.
+       *
        * Origin must be Signed and the signing account must be either:
        * - the Admin of the `collection`;
        * - the Owner of the `item`;
@@ -4522,23 +4558,6 @@ declare module "@polkadot/api-base/types/submittable" {
           owner: AccountId32 | string | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
         [u128, AccountId32]
-      >
-      /**
-       * Increments the `CollectionId` stored in `NextCollectionId`.
-       *
-       * This is only callable when the next `CollectionId` is already being
-       * used for some other collection.
-       *
-       * The origin must be Signed and the sender must have sufficient funds
-       * free.
-       *
-       * Emits `NextCollectionIdIncremented` event when successful.
-       *
-       * Weight: `O(1)`
-       **/
-      tryIncrementId: AugmentedSubmittable<
-        () => SubmittableExtrinsic<ApiType>,
-        []
       >
       /**
        * Generic tx
