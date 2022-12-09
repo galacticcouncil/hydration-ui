@@ -37,7 +37,7 @@ import type {
   FrameSupportWeightsDispatchInfo,
   FrameSupportWeightsPays,
   FrameSupportWeightsPerDispatchClassU32,
-  FrameSupportWeightsPerDispatchClassU64,
+  FrameSupportWeightsPerDispatchClassWeight,
   FrameSupportWeightsPerDispatchClassWeightsPerClass,
   FrameSupportWeightsRuntimeDbWeight,
   FrameSystemAccountInfo,
@@ -183,6 +183,9 @@ import type {
   PalletTransactionMultiPaymentCall,
   PalletTransactionMultiPaymentError,
   PalletTransactionMultiPaymentEvent,
+  PalletTransactionPauseCall,
+  PalletTransactionPauseError,
+  PalletTransactionPauseEvent,
   PalletTransactionPaymentChargeTransactionPayment,
   PalletTransactionPaymentEvent,
   PalletTransactionPaymentReleases,
@@ -310,7 +313,7 @@ declare module "@polkadot/types/types/registry" {
     FrameSupportWeightsDispatchInfo: FrameSupportWeightsDispatchInfo
     FrameSupportWeightsPays: FrameSupportWeightsPays
     FrameSupportWeightsPerDispatchClassU32: FrameSupportWeightsPerDispatchClassU32
-    FrameSupportWeightsPerDispatchClassU64: FrameSupportWeightsPerDispatchClassU64
+    FrameSupportWeightsPerDispatchClassWeight: FrameSupportWeightsPerDispatchClassWeight
     FrameSupportWeightsPerDispatchClassWeightsPerClass: FrameSupportWeightsPerDispatchClassWeightsPerClass
     FrameSupportWeightsRuntimeDbWeight: FrameSupportWeightsRuntimeDbWeight
     FrameSystemAccountInfo: FrameSystemAccountInfo
@@ -456,6 +459,9 @@ declare module "@polkadot/types/types/registry" {
     PalletTransactionMultiPaymentCall: PalletTransactionMultiPaymentCall
     PalletTransactionMultiPaymentError: PalletTransactionMultiPaymentError
     PalletTransactionMultiPaymentEvent: PalletTransactionMultiPaymentEvent
+    PalletTransactionPauseCall: PalletTransactionPauseCall
+    PalletTransactionPauseError: PalletTransactionPauseError
+    PalletTransactionPauseEvent: PalletTransactionPauseEvent
     PalletTransactionPaymentChargeTransactionPayment: PalletTransactionPaymentChargeTransactionPayment
     PalletTransactionPaymentEvent: PalletTransactionPaymentEvent
     PalletTransactionPaymentReleases: PalletTransactionPaymentReleases

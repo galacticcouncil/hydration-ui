@@ -939,6 +939,28 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
+    scheduler: {
+      /**
+       * Failed to schedule a call
+       **/
+      FailedToSchedule: AugmentedError<ApiType>
+      /**
+       * Cannot find the scheduled call.
+       **/
+      NotFound: AugmentedError<ApiType>
+      /**
+       * Reschedule failed because it does not change scheduled time.
+       **/
+      RescheduleNoChange: AugmentedError<ApiType>
+      /**
+       * Given target block number is in the past.
+       **/
+      TargetBlockNumberInPast: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
     session: {
       /**
        * Registered duplicate key.
@@ -960,28 +982,6 @@ declare module "@polkadot/api-base/types/errors" {
        * No keys are associated with this account.
        **/
       NoKeys: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
-    scheduler: {
-      /**
-       * Failed to schedule a call
-       **/
-      FailedToSchedule: AugmentedError<ApiType>
-      /**
-       * Cannot find the scheduled call.
-       **/
-      NotFound: AugmentedError<ApiType>
-      /**
-       * Reschedule failed because it does not change scheduled time.
-       **/
-      RescheduleNoChange: AugmentedError<ApiType>
-      /**
-       * Given target block number is in the past.
-       **/
-      TargetBlockNumberInPast: AugmentedError<ApiType>
       /**
        * Generic error
        **/
@@ -1142,6 +1142,20 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
+    transactionPause: {
+      /**
+       * can not pause
+       **/
+      CannotPause: AugmentedError<ApiType>
+      /**
+       * invalid character encoding
+       **/
+      InvalidCharacter: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
     treasury: {
       /**
        * The spend origin is valid but the amount it is allowed to spend is lower than the
@@ -1206,12 +1220,6 @@ declare module "@polkadot/api-base/types/errors" {
        * The provided max supply is less to the amount of items a collection already has.
        **/
       MaxSupplyTooSmall: AugmentedError<ApiType>
-      /**
-       * The `CollectionId` in `NextCollectionId` is not being used.
-       *
-       * This means that you can directly proceed to call `create`.
-       **/
-      NextIdNotUsed: AugmentedError<ApiType>
       /**
        * There is no delegate approved.
        **/

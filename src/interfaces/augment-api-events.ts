@@ -26,6 +26,7 @@ import type {
   AccountId32,
   H256,
   Permill,
+  Weight,
 } from "@polkadot/types/interfaces/runtime"
 import type {
   CommonRuntimeProxyType,
@@ -598,16 +599,16 @@ declare module "@polkadot/api-base/types/events" {
        **/
       OverweightEnqueued: AugmentedEvent<
         ApiType,
-        [messageId: U8aFixed, overweightIndex: u64, requiredWeight: u64],
-        { messageId: U8aFixed; overweightIndex: u64; requiredWeight: u64 }
+        [messageId: U8aFixed, overweightIndex: u64, requiredWeight: Weight],
+        { messageId: U8aFixed; overweightIndex: u64; requiredWeight: Weight }
       >
       /**
        * Downward message from the overweight queue was executed.
        **/
       OverweightServiced: AugmentedEvent<
         ApiType,
-        [overweightIndex: u64, weightUsed: u64],
-        { overweightIndex: u64; weightUsed: u64 }
+        [overweightIndex: u64, weightUsed: Weight],
+        { overweightIndex: u64; weightUsed: Weight }
       >
       /**
        * Downward message is unsupported version of XCM.
@@ -622,8 +623,8 @@ declare module "@polkadot/api-base/types/events" {
        **/
       WeightExhausted: AugmentedEvent<
         ApiType,
-        [messageId: U8aFixed, remainingWeight: u64, requiredWeight: u64],
-        { messageId: U8aFixed; remainingWeight: u64; requiredWeight: u64 }
+        [messageId: U8aFixed, remainingWeight: Weight, requiredWeight: Weight],
+        { messageId: U8aFixed; remainingWeight: Weight; requiredWeight: Weight }
       >
       /**
        * Generic event
@@ -1067,8 +1068,8 @@ declare module "@polkadot/api-base/types/events" {
        **/
       DownwardMessagesProcessed: AugmentedEvent<
         ApiType,
-        [weightUsed: u64, dmqHead: H256],
-        { weightUsed: u64; dmqHead: H256 }
+        [weightUsed: Weight, dmqHead: H256],
+        { weightUsed: Weight; dmqHead: H256 }
       >
       /**
        * Some downward messages have been received and will be processed.
@@ -1178,7 +1179,7 @@ declare module "@polkadot/api-base/types/events" {
        *
        * \[ id, pallet index, call index, actual weight, max budgeted weight \]
        **/
-      NotifyOverweight: AugmentedEvent<ApiType, [u64, u8, u8, u64, u64]>
+      NotifyOverweight: AugmentedEvent<ApiType, [u64, u8, u8, Weight, Weight]>
       /**
        * A given location which had a version change subscription was dropped owing to an error
        * migrating the location to our new XCM format.
@@ -1360,21 +1361,6 @@ declare module "@polkadot/api-base/types/events" {
        **/
       [key: string]: AugmentedEvent<ApiType>
     }
-    session: {
-      /**
-       * New session has happened. Note that the argument is the session index, not the
-       * block number as the type might suggest.
-       **/
-      NewSession: AugmentedEvent<
-        ApiType,
-        [sessionIndex: u32],
-        { sessionIndex: u32 }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
     scheduler: {
       /**
        * The call for the provided hash was not found so the task has been aborted.
@@ -1423,6 +1409,21 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [when: u32, index: u32],
         { when: u32; index: u32 }
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    session: {
+      /**
+       * New session has happened. Note that the argument is the session index, not the
+       * block number as the type might suggest.
+       **/
+      NewSession: AugmentedEvent<
+        ApiType,
+        [sessionIndex: u32],
+        { sessionIndex: u32 }
       >
       /**
        * Generic event
@@ -1769,6 +1770,28 @@ declare module "@polkadot/api-base/types/events" {
        **/
       [key: string]: AugmentedEvent<ApiType>
     }
+    transactionPause: {
+      /**
+       * Paused transaction
+       **/
+      TransactionPaused: AugmentedEvent<
+        ApiType,
+        [palletNameBytes: Bytes, functionNameBytes: Bytes],
+        { palletNameBytes: Bytes; functionNameBytes: Bytes }
+      >
+      /**
+       * Unpaused transaction
+       **/
+      TransactionUnpaused: AugmentedEvent<
+        ApiType,
+        [palletNameBytes: Bytes, functionNameBytes: Bytes],
+        { palletNameBytes: Bytes; functionNameBytes: Bytes }
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
     transactionPayment: {
       /**
        * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
@@ -2060,14 +2083,6 @@ declare module "@polkadot/api-base/types/events" {
         { collection: u128; item: u128; data: Bytes; isFrozen: bool }
       >
       /**
-       * Event gets emmited when the `NextCollectionId` gets incremented.
-       **/
-      NextCollectionIdIncremented: AugmentedEvent<
-        ApiType,
-        [nextId: u128],
-        { nextId: u128 }
-      >
-      /**
        * The owner changed.
        **/
       OwnerChanged: AugmentedEvent<
@@ -2255,32 +2270,32 @@ declare module "@polkadot/api-base/types/events" {
        **/
       Fail: AugmentedEvent<
         ApiType,
-        [messageHash: Option<H256>, error: XcmV2TraitsError, weight: u64],
-        { messageHash: Option<H256>; error: XcmV2TraitsError; weight: u64 }
+        [messageHash: Option<H256>, error: XcmV2TraitsError, weight: Weight],
+        { messageHash: Option<H256>; error: XcmV2TraitsError; weight: Weight }
       >
       /**
        * An XCM exceeded the individual message weight budget.
        **/
       OverweightEnqueued: AugmentedEvent<
         ApiType,
-        [sender: u32, sentAt: u32, index: u64, required: u64],
-        { sender: u32; sentAt: u32; index: u64; required: u64 }
+        [sender: u32, sentAt: u32, index: u64, required: Weight],
+        { sender: u32; sentAt: u32; index: u64; required: Weight }
       >
       /**
        * An XCM from the overweight queue was executed with the given actual weight used.
        **/
       OverweightServiced: AugmentedEvent<
         ApiType,
-        [index: u64, used: u64],
-        { index: u64; used: u64 }
+        [index: u64, used: Weight],
+        { index: u64; used: Weight }
       >
       /**
        * Some XCM was executed ok.
        **/
       Success: AugmentedEvent<
         ApiType,
-        [messageHash: Option<H256>, weight: u64],
-        { messageHash: Option<H256>; weight: u64 }
+        [messageHash: Option<H256>, weight: Weight],
+        { messageHash: Option<H256>; weight: Weight }
       >
       /**
        * An upward message was sent to the relay chain.
