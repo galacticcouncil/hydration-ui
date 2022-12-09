@@ -28,6 +28,7 @@ export const useAssetsHydraPositionsData = () => {
   )
   const metas = useAssetMetaList([
     apiIds.data?.usdId,
+    apiIds.data?.lrnaId,
     ...(positions.data?.map((p) => p.assetId) ?? []),
   ])
   const omnipoolAssets = useOmnipoolAssets()
@@ -164,6 +165,7 @@ export const useAssetsHydraPositionsData = () => {
     positions.data,
     metas.data,
     omnipoolAssets.data,
+    apiIds.data,
     omnipoolBalances,
     spotPrices,
   ])
