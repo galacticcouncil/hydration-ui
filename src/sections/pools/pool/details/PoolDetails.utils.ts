@@ -3,8 +3,8 @@ import { useMemo } from "react"
 import BN from "bignumber.js"
 import { BN_0, BN_10 } from "utils/constants"
 import { useSpotPrices } from "api/spotPrice"
-import { useUsdPeggedAsset } from "api/asset"
 import { useAssetMetaList } from "api/assetMeta"
+import { useApiIds } from "api/consts"
 
 export function usePoolDetailsTradeVolume(poolAddress: string) {
   const volume = useTradeVolume(poolAddress)
@@ -36,9 +36,9 @@ export function usePoolDetailsTradeVolume(poolAddress: string) {
     return { assets: Object.keys(sums), sums }
   }, [volume.data])
 
-  const usd = useUsdPeggedAsset()
+  const apiIds = useApiIds()
   const assets = useAssetMetaList(values.assets)
-  const spotPrices = useSpotPrices(values.assets, usd.data?.id)
+  const spotPrices = useSpotPrices(values.assets, apiIds.data?.usdId)
 
   return useMemo(() => {
     if (volume.isLoading) return null

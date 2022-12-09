@@ -1,24 +1,24 @@
 import { useMemo } from "react"
 import { getFloatingPointAmount } from "utils/balance"
 import { useSpotPrice } from "api/spotPrice"
-import { useUsdPeggedAsset } from "api/asset"
 import { PoolBase, PoolFee } from "@galacticcouncil/sdk"
 import BN from "bignumber.js"
+import { useApiIds } from "api/consts"
 
 type Props = { pool: PoolBase }
 
 export const useTotalInPool = ({ pool }: Props) => {
   const [assetA, assetB] = pool.tokens
 
-  const usd = useUsdPeggedAsset()
-  const spotAtoAUSD = useSpotPrice(assetA.id, usd.data?.id)
-  const spotBtoAUSD = useSpotPrice(assetB.id, usd.data?.id)
+  const apiIds = useApiIds()
+  const spotAtoAUSD = useSpotPrice(assetA.id, apiIds.data?.usdId)
+  const spotBtoAUSD = useSpotPrice(assetB.id, apiIds.data?.usdId)
 
-  const queries = [usd, spotAtoAUSD, spotBtoAUSD]
+  const queries = [apiIds, spotAtoAUSD, spotBtoAUSD]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (!usd.data || !spotAtoAUSD.data || !spotBtoAUSD.data) return undefined
+    if (!apiIds.data || !spotAtoAUSD.data || !spotBtoAUSD.data) return undefined
 
     const balanceA = getFloatingPointAmount(
       new BN(assetA.balance),
@@ -38,7 +38,7 @@ export const useTotalInPool = ({ pool }: Props) => {
 
     return total
   }, [
-    usd.data,
+    apiIds.data,
     assetA.balance,
     assetA.decimals,
     assetB.balance,
