@@ -25,7 +25,7 @@ import { safeConvertAddressSS58 } from "utils/formatting"
 import { Alert } from "components/Alert/Alert"
 import { usePaymentInfo } from "api/transaction"
 import { Spacer } from "components/Spacer/Spacer"
-import { useAccountCurrency } from "../../../../api/payment"
+import { useAccountCurrency } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
 
 export function WalletTransferSectionOnchain(props: {

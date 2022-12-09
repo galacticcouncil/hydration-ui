@@ -69,7 +69,7 @@ export const WalletAssetsTableActions = (props: Props) => {
         <TableAction
           icon={<SellIcon />}
           onClick={props.onSellClick}
-          disabled={props.onBuyClick == null}
+          disabled={props.onSellClick == null}
         >
           {t("wallet.assets.table.actions.sell")}
         </TableAction>

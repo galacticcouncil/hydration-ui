@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
 import { AssetsTableData } from "../WalletAssetsTable.utils"
 import { SActionButtonsContainer } from "./WalletAssetsTable.styled"
-import { useSetAsFeePayment } from "../../../../../api/payment"
+import { useSetAsFeePayment } from "api/payments"
 
 type Props = {
   row?: AssetsTableData

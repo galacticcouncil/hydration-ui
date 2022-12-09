@@ -1,6 +1,8 @@
 import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "./PoolValue.styled"
 
 type PoolValueProps = { pool: OmnipoolPool }
 
@@ -32,6 +34,9 @@ export const PoolValue = ({ pool }: PoolValueProps) => {
           >
             {t("value.usd", { amount: pool.volume24h })}
           </Text>
+          <InfoTooltip text={t("pools.pool.poolDetails.24hours.tooltip")}>
+            <SInfoIcon />
+          </InfoTooltip>
         </div>
       </div>
     </div>

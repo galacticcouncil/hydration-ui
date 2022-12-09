@@ -43,7 +43,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
             {t("value.native", {
               value: data?.balance,
               fixedPointScale: meta?.decimals,
-              decimalPlaces: 4,
+              type: "token",
             })}
           </Text>
           <Text fs={14} font="ChakraPetchBold" tTransform="uppercase">

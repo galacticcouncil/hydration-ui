@@ -95,7 +95,7 @@ export const SProgressContainer = styled.div`
 `
 
 export const SProgressBar = styled(motion.div)<{
-  variant: Maybe<"info" | "success" | "error" | "loading">
+  variant: Maybe<ToastVariant>
 }>`
   height: 2px;
 
