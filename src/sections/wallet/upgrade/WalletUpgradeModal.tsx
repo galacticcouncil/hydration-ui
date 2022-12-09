@@ -56,9 +56,7 @@ export function WalletUpgradeModal() {
 
         <SVersionContainer>
           <SVersion variant="left">
-            <Text color="basic400">
-              {t("metadata.update.version.old")}
-            </Text>
+            <Text color="basic400">{t("metadata.update.version.old")}</Text>
             <Text fs={20} fw={700} color="basic400">
               {state.data?.currVersion ?? "-"}
             </Text>
