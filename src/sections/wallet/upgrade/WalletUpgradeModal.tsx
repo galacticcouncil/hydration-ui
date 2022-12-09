@@ -39,7 +39,7 @@ export function WalletUpgradeModal() {
           tAlign="center"
           fs={16}
           lh={22}
-          color="neutralGray400"
+          color="basic400"
           fw={400}
           css={{ maxWidth: 300 }}
         >
@@ -48,7 +48,7 @@ export function WalletUpgradeModal() {
 
         <Spacer size={12} />
 
-        <ExternalLink sx={{ color: "primary450" }} href="/">
+        <ExternalLink sx={{ color: "brightBlue300" }} href="/">
           {t("metadata.update.link")}
         </ExternalLink>
 
@@ -56,10 +56,10 @@ export function WalletUpgradeModal() {
 
         <SVersionContainer>
           <SVersion variant="left">
-            <Text color="neutralGray400">
+            <Text color="basic400">
               {t("metadata.update.version.old")}
             </Text>
-            <Text fs={20} fw={700} color="neutralGray400">
+            <Text fs={20} fw={700} color="basic400">
               {state.data?.currVersion ?? "-"}
             </Text>
           </SVersion>
@@ -74,20 +74,20 @@ export function WalletUpgradeModal() {
             >
               <path
                 d="M0 5.5H117M117 5.5L112 0.5M117 5.5L112 10.5"
-                stroke="#8AFFCB"
+                stroke="#85D1FF"
               />
             </svg>
           </SVersionArrow>
 
           <SVersion variant="right">
-            <Text tAlign={["left", "right"]} color="primary450">
+            <Text tAlign={["left", "right"]} color="brightBlue600">
               {t("metadata.update.version.new")}
             </Text>
             <Text
               tAlign={["left", "right"]}
               fs={20}
               fw={700}
-              color="primary300"
+              color="brightBlue300"
             >
               {state.data?.nextVersion}
             </Text>

@@ -94,27 +94,7 @@ export const useAssetsTable = (
           }
           toggleExpanded={() => row.toggleExpanded()}
           onTransferClick={() => actions.onTransfer(row.original.id)}
-          onSetFeeAsPaymentClick={() => setFeeAsPayment(row.original.id)}
-          couldBeSetAsPaymentFee={row.original.couldBeSetAsPaymentFee}
           symbol={row.original.symbol}
-          onBuyClick={
-            row.original.inTradeRouter
-              ? () =>
-                  navigate({
-                    to: "/trade",
-                    search: { type: "assetOut", id: row.original.id },
-                  })
-              : undefined
-          }
-          onSellClick={
-            row.original.inTradeRouter
-              ? () =>
-                  navigate({
-                    to: "/trade",
-                    search: { type: "assetIn", id: row.original.id },
-                  })
-              : undefined
-          }
         />
       ),
     }),

@@ -7,8 +7,8 @@ export const SVersionContainer = styled.div`
   flex-direction: column;
 
   align-items: stretch;
-  border: 1px solid ${theme.colors.backgroundGray600};
-  border-radius: 16px;
+  border: 1px solid ${theme.colors.basic600};
+  border-radius: 2px;
 
   position: relative;
   padding: 6px;
@@ -34,7 +34,6 @@ export const SVersionArrow = styled.div`
   }
 `
 export const SVersion = styled.div<{ variant: "left" | "right" }>`
-  border-radius: 10px;
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -54,7 +53,7 @@ export const SVersion = styled.div<{ variant: "left" | "right" }>`
       }
       case "right": {
         return css`
-          background: rgba(${theme.rgbColors.primary100}, 0.06);
+          background: rgba(${theme.rgbColors.primaryA06}, 0.06);
 
           @media ${theme.viewport.gte.sm} {
             grid-column-start: 2;

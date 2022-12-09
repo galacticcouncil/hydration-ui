@@ -138,7 +138,6 @@ export const AssetSelect = (props: {
             placeholder="0.00"
             unit={props.assetSymbol}
             error={props.error}
-            placeholder="0"
           />
         </div>
       </SContainer>
