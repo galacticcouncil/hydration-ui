@@ -2,7 +2,7 @@ import styled from "@emotion/styled"
 import { Button } from "components/Button/Button"
 import { theme } from "theme"
 
-export const SInnerContainer = styled.div`
+export const SContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -16,14 +16,6 @@ export const SInnerContainer = styled.div`
 
   @media (${theme.viewport.gte.sm}) {
     padding: 22px 44px;
-  }
-`
-
-export const SOuterContainer = styled.div`
-  background: rgba(${theme.rgbColors.darkBlue900}, 0.4);
-
-  @media (${theme.viewport.gte.sm}) {
-    padding: 20px 30px;
   }
 `
 

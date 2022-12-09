@@ -93,7 +93,7 @@
   "pools.pool.positions.position.locked": "Locked",
   "pools.pool.positions.position.lockedShares": "Locked shares",
   "pools.pool.positions.position.lockedSharesValue": "{{ shares, bignumber(fixedPointScale: 12; type: 'token') }}",
-  "pools.pool.positions.position.shares": "{{ shares, bignumber(fixedPointScale: 12; type: 'token') }} Shares",
+  "pools.pool.positions.position.shares": "{{ shares, bignumber(type: 'token') }} Shares",
   "pools.pool.positions.position.current": "Current value",
   "pools.pool.positions.position.amounts": "{{ amountA, bignumber(type: 'token') }} {{ symbolA }} | {{ amountB, bignumber(type: 'token') }} {{ symbolB }}",
   "pools.pool.actions.chevron.name": "Open details button",
