@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-table"
 import { useTranslation } from "react-i18next"
 import { useState } from "react"
+import { useSetAsFeePayment } from "api/payments"
 import {
   WalletAssetsTableBalance,
   WalletAssetsTableName,
@@ -17,18 +18,17 @@ import { WalletAssetsTableActions } from "sections/wallet/assets/table/actions/W
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
-import { useSetAsFeePayment } from "../../../../api/payment"
 import { useNavigate } from "@tanstack/react-location"
 
 export const useAssetsTable = (
   data: AssetsTableData[],
   actions: { onTransfer: (assetId: string) => void },
 ) => {
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<AssetsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
   const setFeeAsPayment = useSetAsFeePayment()
-  const navigate = useNavigate()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
@@ -72,11 +72,8 @@ export const useAssetsTable = (
       id: "actions",
       cell: ({ row }) => (
         <WalletAssetsTableActions
-          toggleExpanded={() => row.toggleExpanded()}
-          onTransferClick={() => actions.onTransfer(row.original.id)}
           onSetFeeAsPaymentClick={() => setFeeAsPayment(row.original.id)}
           couldBeSetAsPaymentFee={row.original.couldBeSetAsPaymentFee}
-          symbol={row.original.symbol}
           onBuyClick={
             row.original.inTradeRouter
               ? () =>
@@ -95,6 +92,9 @@ export const useAssetsTable = (
                   })
               : undefined
           }
+          toggleExpanded={() => row.toggleExpanded()}
+          onTransferClick={() => actions.onTransfer(row.original.id)}
+          symbol={row.original.symbol}
         />
       ),
     }),

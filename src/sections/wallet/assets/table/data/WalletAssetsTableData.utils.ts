@@ -13,13 +13,13 @@ import { u32 } from "@polkadot/types"
 import { useAssetDetailsList } from "api/assetDetails"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useTokensLocks } from "api/balances"
-import { useAcceptedCurrencies, useAccountCurrency } from "api/payment"
+import { useAcceptedCurrencies, useAccountCurrency } from "api/payments"
 import { useApiIds } from "api/consts"
 
 export const useAssetsTableData = () => {
   const { account } = useAccountStore()
-  const accountBalances = useAccountBalances(account?.address)
   const tradeAssets = useTradeAssets()
+  const accountBalances = useAccountBalances(account?.address)
   const tokenIds = accountBalances.data?.balances
     ? [NATIVE_ASSET_ID, ...accountBalances.data.balances.map((b) => b.id)]
     : []

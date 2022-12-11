@@ -5,6 +5,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SIcon } from "sections/wallet/assets/table/data/WalletAssetsTableData.styled"
 import { theme } from "theme"
+import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 
 export const WalletAssetsTableName = ({
   large,
@@ -81,6 +82,17 @@ export const WalletAssetsTableBalance = (props: {
       >
         {t("value.usd", { amount: props.balanceUSD })}
       </Text>
+
+      <DollarAssetValue
+        value={props.balanceUSD}
+        wrapper={(children) => (
+          <Text fs={[11, 12]} lh={[14, 16]} fw={500} color="neutralGray500">
+            {children}
+          </Text>
+        )}
+      >
+        {t("value.usd", { amount: props.balanceUSD, type: "dollar" })}
+      </DollarAssetValue>
     </div>
   )
 }

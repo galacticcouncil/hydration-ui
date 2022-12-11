@@ -11,8 +11,8 @@ import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { useEra } from "api/era"
 import { useBestNumber } from "api/chain"
-import { useAccountCurrency } from "../../api/payment"
-import { useAssetMeta } from "../../api/assetMeta"
+import { useAccountCurrency } from "api/payments"
+import { useAssetMeta } from "api/assetMeta"
 import { useSpotPrice } from "api/spotPrice"
 import { NATIVE_ASSET_ID } from "utils/api"
 
@@ -89,7 +89,7 @@ export const ReviewTransactionForm = (
                       ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
                       symbol: feeMeta.data?.symbol,
                       fixedPointScale: 12,
-                      decimalPlaces: 2,
+                      type: "token",
                     })}
                   </Text>
                   <Text color="brightBlue200" fs={12}>
@@ -120,23 +120,32 @@ export const ReviewTransactionForm = (
           </SDetailRow>
         </div>
       </div>
-      <div sx={{ mt: 24, flex: "row", justify: "space-between" }}>
+      <div
+        sx={{ mt: 24, flex: "row", justify: "space-between", align: "start" }}
+      >
         <Button
           onClick={props.onCancel}
           text={t("pools.reviewTransaction.modal.cancel")}
           variant="secondary"
         />
-        <Button
-          text={t(
-            signTx.isLoading
-              ? "pools.reviewTransaction.modal.confirmButton.loading"
-              : "pools.reviewTransaction.modal.confirmButton",
+        <div sx={{ flex: "column", justify: "center", gap: 4 }}>
+          <Button
+            text={t(
+              signTx.isLoading
+                ? "pools.reviewTransaction.modal.confirmButton.loading"
+                : "pools.reviewTransaction.modal.confirmButton",
+            )}
+            variant="primary"
+            isLoading={signTx.isLoading}
+            disabled={account == null}
+            onClick={() => signTx.mutate()}
+          />
+          {signTx.isLoading && (
+            <Text fs={12} lh={16} tAlign="center" color="warning300">
+              {t("pools.reviewTransaction.modal.confirmButton.warning")}
+            </Text>
           )}
-          variant="primary"
-          isLoading={signTx.isLoading}
-          disabled={account == null}
-          onClick={() => signTx.mutate()}
-        />
+        </div>
       </div>
     </div>
   )

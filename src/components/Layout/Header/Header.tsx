@@ -6,8 +6,8 @@ import { SBellIcon, SHeader } from "components/Layout/Header/Header.styled"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { useToast } from "state/toasts"
 import { useTranslation } from "react-i18next"
-import { useMedia } from "react-use"
 import { theme } from "theme"
+import { useMedia } from "react-use"
 
 export const Header = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)

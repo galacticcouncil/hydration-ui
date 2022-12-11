@@ -43,7 +43,7 @@ export const AssetSelect = (props: {
   const spotPrice = useSpotPrice(props.asset, apiIds.data?.usdId)
 
   const aUSDValue = useMemo(() => {
-    if (!props.value) return null
+    if (!props.value) return 0
     if (spotPrice.data?.spotPrice == null) return null
     return spotPrice.data.spotPrice.times(props.value)
   }, [props.value, spotPrice.data])
@@ -79,6 +79,7 @@ export const AssetSelect = (props: {
             <Text fs={11} lh={16} sx={{ mr: 5 }}>
               {t("selectAsset.balance.value", {
                 balance: props.balance,
+                type: "token",
               })}
             </Text>
 

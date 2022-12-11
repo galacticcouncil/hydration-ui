@@ -1,6 +1,6 @@
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { FC, ReactNode } from "react"
-import { ErrorMessage, LabelWrapper, SLabel } from "./Label.styled"
+import { ErrorMessage, LabelWrapper, SInfoIcon, SLabel } from "./Label.styled"
 
 type LabelProps = {
   label: string
@@ -28,7 +28,11 @@ export const Label: FC<LabelProps> = ({
         <SLabel error={error} htmlFor={id} hidden={!withLabel}>
           {label}
         </SLabel>
-        {tooltip && <InfoTooltip text={tooltip} />}
+        {tooltip && (
+          <InfoTooltip text={tooltip}>
+            <SInfoIcon />
+          </InfoTooltip>
+        )}
       </div>
 
       {children}

@@ -8,10 +8,11 @@ import { Text } from "components/Typography/Text/Text"
 import { SAssetRow } from "./AssetsModalRow.styled"
 import { Trans, useTranslation } from "react-i18next"
 import { useSpotPrice } from "api/spotPrice"
-import { BN_0 } from "utils/constants"
+import { BN_NAN } from "utils/constants"
 import { Maybe } from "utils/helpers"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useApiIds } from "api/consts"
+import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 
 interface AssetsModalRowProps {
   id: Maybe<u32 | string>
@@ -30,7 +31,7 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
     if (balance.data && spotPrice.data) {
       return balance.data.balance.times(spotPrice.data.spotPrice)
     }
-    return BN_0
+    return BN_NAN
   }, [balance, spotPrice])
 
   return (
@@ -64,20 +65,27 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
               i18nKey="selectAssets.balance"
               tOptions={{
                 balance: balance.data.balance,
-                decimalPlaces: 4,
                 fixedPointScale: asset.data.decimals,
                 numberSuffix: ` ${asset.data.symbol}`,
+                type: "token",
               }}
             >
               <Text color="white" fs={14} lh={18} tAlign="right" />
             </Trans>
-            <Text color="whiteish500" fs={12} lh={16}>
+
+            <DollarAssetValue
+              value={totalUSD}
+              wrapper={(children) => (
+                <Text color="whiteish500" fs={12} lh={16}>
+                  {children}
+                </Text>
+              )}
+            >
               {t("value.usd", {
                 amount: totalUSD,
-                decimalPlaces: 4,
                 fixedPointScale: asset.data.decimals,
               })}
-            </Text>
+            </DollarAssetValue>
           </>
         )}
       </div>

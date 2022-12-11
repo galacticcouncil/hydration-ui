@@ -19,7 +19,6 @@ type Props = {
   variant?: ToastVariant
   title?: string | ReactNode
   actions?: ReactNode
-  text?: string
   index?: number
   count?: number
   onClose?: () => void

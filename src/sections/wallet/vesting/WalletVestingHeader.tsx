@@ -53,7 +53,7 @@ export const WalletVestingHeader = () => {
                 tOptions={{
                   ...separateBalance(totalVestedValue, {
                     fixedPointScale: nativeAsset?.decimals ?? 12,
-                    decimalPlaces: 2,
+                    type: "token",
                   }),
                   symbol: nativeAsset?.symbol,
                 }}

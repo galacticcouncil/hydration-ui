@@ -1,5 +1,5 @@
 import { flexRender } from "@tanstack/react-table"
-import { Switch } from "components/Switch/Switch"
+// import { Switch } from "components/Switch/Switch"
 import { TableSortHeader } from "components/Table/Table"
 import {
   Table,
@@ -29,7 +29,7 @@ type Props = { data: AssetsTableData[] }
 export const WalletAssetsTable = ({ data }: Props) => {
   const { t } = useTranslation()
   const [row, setRow] = useState<AssetsTableData | undefined>(undefined)
-  const [showAll, setShowAll] = useState(true)
+  const [showAll] = useState(true)
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -86,12 +86,7 @@ export const WalletAssetsTable = ({ data }: Props) => {
         <TableBodyContent>
           {table.getRowModel().rows.map((row, i) => (
             <Fragment key={row.id}>
-              <TableRow
-                isOdd={!(i % 2)}
-                onClick={() => {
-                  !isDesktop && setRow(row.original)
-                }}
-              >
+              <TableRow isOdd={!(i % 2)}>
                 {row.getVisibleCells().map((cell) => (
                   <TableData key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -113,6 +108,7 @@ export const WalletAssetsTable = ({ data }: Props) => {
           ))}
         </TableBodyContent>
       </Table>
+
       {transferAsset && (
         <WalletTransferModal
           open
