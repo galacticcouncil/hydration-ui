@@ -23,20 +23,17 @@ export const PoolValue = ({ pool }: PoolValueProps) => {
           </div>
         </div>
         <div sx={{ flex: "column", gap: 10 }}>
-          <Text fs={13} color="basic400">
-            {t("pools.pool.poolDetails.24hours")}
-          </Text>
-          <Text
-            lh={22}
-            color="white"
-            tAlign={["right", "left"]}
-            sx={{ width: "calc(100% - 20px)" }}
-          >
+          <div sx={{ flex: "row", align: "center", gap: 6 }}>
+            <Text fs={13} color="basic400">
+              {t("pools.pool.poolDetails.24hours")}
+            </Text>
+            <InfoTooltip text={t("pools.pool.poolDetails.24hours.tooltip")}>
+              <SInfoIcon />
+            </InfoTooltip>
+          </div>
+          <Text lh={22} color="white" tAlign={["right", "left"]}>
             {t("value.usd", { amount: pool.volume24h })}
           </Text>
-          <InfoTooltip text={t("pools.pool.poolDetails.24hours.tooltip")}>
-            <SInfoIcon />
-          </InfoTooltip>
         </div>
       </div>
     </div>
