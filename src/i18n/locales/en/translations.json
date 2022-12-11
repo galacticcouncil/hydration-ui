@@ -66,7 +66,7 @@
   "pools.pool.actions.joinFarm": "Join farm",
   "pools.pool.actions.more": "More",
   "pools.pool.actions.header": "{{tokens}} Pool Actions",
-  "pools.pool.claim.button": "Claim all farms",
+  "pools.pool.claim.button": "Claim All",
   "pools.pool.claim.total": "Total locked {{ locked, bignumber(numberPrefix: '$'; type: 'dollar') }}",
   "pools.pool.claim.totals": "Total locked {{ locked, bignumber(numberPrefix: '$'; type: 'dollar') }} of which {{ available, bignumber(numberPrefix: '$'; type: 'dollar') }} not farming.",
   "pools.pool.claim.claimable": "{{ claimable, bignumber(numberPrefix: '$'; type: 'dollar') }} Claimable",
