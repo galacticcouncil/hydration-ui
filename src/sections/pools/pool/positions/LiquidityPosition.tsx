@@ -9,6 +9,8 @@ import {
   SContainer,
 } from "sections/pools/pool/positions/LiquidityPosition.styled"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
+import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
+import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 
 type Props = { position: HydraPositionsTableData; index: number }
 
@@ -39,18 +41,28 @@ export const LiquidityPosition = ({ position, index }: Props) => {
             </Text>
           </div>
           <Separator orientation="vertical" />
-          <div sx={{ flex: "column", gap: 6 }}>
-            <Text fs={[16, 16]}>TODO</Text>
-            <Text fs={[14, 14]} color="whiteish500">
-              TODO
-            </Text>
+          <div sx={{ flex: "column", gap: 2 }}>
+            <WalletAssetsHydraPositionsData
+              symbol={position.symbol}
+              value={position.value}
+              lrna={position.lrna}
+            />
+            <DollarAssetValue
+              value={position.valueUSD}
+              wrapper={(children) => (
+                <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                  {children}
+                </Text>
+              )}
+            >
+              {t("value.usd", { amount: position.valueUSD })}
+            </DollarAssetValue>
           </div>
         </div>
       </div>
-      <div sx={{ width: 220, flex: "row", align: "center" }}>
+      <div sx={{ flex: "row", justify: "end" }}>
         <SButton
           variant="primary"
-          fullWidth
           size="small"
           onClick={() => {
             console.log("Remove Liquidity")

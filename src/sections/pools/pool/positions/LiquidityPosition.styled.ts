@@ -3,10 +3,10 @@ import { Button } from "components/Button/Button"
 import { theme } from "theme"
 
 export const SContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  gap: 80px;
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  grid-column-gap: 16px;
+  align-items: center;
 
   width: 100%;
 
@@ -20,6 +20,9 @@ export const SContainer = styled.div`
 `
 
 export const SButton = styled(Button)`
+  width: 100%;
+  max-width: 220px;
+  
   background: rgba(${theme.rgbColors.red100}, 0.25);
   border: 1px solid ${theme.colors.red400};
   color: ${theme.colors.red400};
