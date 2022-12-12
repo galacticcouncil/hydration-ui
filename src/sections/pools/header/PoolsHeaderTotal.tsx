@@ -1,7 +1,9 @@
 import { Heading } from "components/Typography/Heading/Heading"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
-import { BN_0 } from "utils/constants"
+import { Text } from "components/Typography/Text/Text"
+import { useTotalInPools } from "sections/pools/header/PoolsHeaderTotal.utils"
+import BN from "bignumber.js"
 
 type Props = { myPositions: boolean; variant: "pools" | "farms" }
 
@@ -21,17 +23,32 @@ export const PoolsHeaderTotal = ({ myPositions, variant }: Props) => {
   return null
 }
 
-const PoolsHeaderTotalPools = () => {
+const PoolsHeaderTotalData = ({
+  value,
+  isLoading,
+}: {
+  value: BN | undefined
+  isLoading: boolean
+}) => {
   const { t } = useTranslation()
-  // const { data, isLoading } = useTotalsInPools()
-  const { data, isLoading } = { data: { poolTotal: BN_0 }, isLoading: false }
 
   return (
-    <Heading as="h3" sx={{ fontSize: [16, 42], fontWeight: 900 }}>
+    <Heading as="h3" sx={{ fontSize: [16, 42], fontWeight: 500 }}>
       {!isLoading ? (
-        t("value.usd", {
-          amount: data?.poolTotal,
-        })
+        <>
+          <Text
+            font="ChakraPetch"
+            fw={900}
+            fs={[19, 42]}
+            sx={{ display: "inline-block" }}
+          >
+            $
+          </Text>
+          {t("value", {
+            value,
+            type: "dollar",
+          })}
+        </>
       ) : (
         <Skeleton width={256} />
       )}
@@ -39,44 +56,40 @@ const PoolsHeaderTotalPools = () => {
   )
 }
 
-const PoolsHeaderTotalPoolsUser = () => {
-  const { t } = useTranslation()
-  // const { data, isLoading } = useTotalsInPools()
-  const { data, isLoading } = { data: { userTotal: BN_0 }, isLoading: false }
+const PoolsHeaderTotalPools = () => {
+  const { data, isLoading } = useTotalInPools()
+  return <PoolsHeaderTotalData value={data} isLoading={isLoading} />
+}
 
+const PoolsHeaderTotalPoolsUser = () => {
   return (
-    <Heading as="h3" sx={{ fontSize: [16, 42], fontWeight: 900 }}>
-      {!isLoading ? (
-        t("value.usd", {
-          amount: data?.userTotal,
-        })
-      ) : (
-        <Skeleton width={256} />
-      )}
+    <Heading
+      as="h3"
+      sx={{ fontSize: [16, 42], fontWeight: 500 }}
+    >
+      TODO
     </Heading>
   )
 }
 
 const PoolsHeaderTotalFarms = () => {
-  const { t } = useTranslation()
-  // const { data, isLoading } = useTotalInFarms()
-  const { data, isLoading } = { data: BN_0, isLoading: false }
-
   return (
-    <Heading as="h3" sx={{ fontSize: [16, 42], fontWeight: 900 }}>
-      {!isLoading ? t("value.usd", { amount: data }) : <Skeleton width={256} />}
+    <Heading
+      as="h3"
+      sx={{ fontSize: [16, 42], fontWeight: 500 }}
+    >
+      TODO
     </Heading>
   )
 }
 
 const PoolsHeaderTotalFarmsUser = () => {
-  const { t } = useTranslation()
-  // const { data, isLoading } = useTotalInPositions()
-  const { data, isLoading } = { data: BN_0, isLoading: false }
-
   return (
-    <Heading as="h3" sx={{ fontSize: [16, 42], fontWeight: 900 }}>
-      {!isLoading ? t("value.usd", { amount: data }) : <Skeleton width={256} />}
+    <Heading
+      as="h3"
+      sx={{ fontSize: [16, 42], fontWeight: 500 }}
+    >
+      TODO
     </Heading>
   )
 }
