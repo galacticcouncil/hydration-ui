@@ -22,7 +22,7 @@ export const SContainer = styled.div`
 export const SButton = styled(Button)`
   width: 100%;
   max-width: 220px;
-  
+
   background: rgba(${theme.rgbColors.red100}, 0.25);
   border: 1px solid ${theme.colors.red400};
   color: ${theme.colors.red400};
