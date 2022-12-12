@@ -63,10 +63,7 @@ const PoolsHeaderTotalPools = () => {
 
 const PoolsHeaderTotalPoolsUser = () => {
   return (
-    <Heading
-      as="h3"
-      sx={{ fontSize: [16, 42], fontWeight: 500 }}
-    >
+    <Heading as="h3" sx={{ fontSize: [16, 42], fontWeight: 500 }}>
       TODO
     </Heading>
   )
@@ -74,10 +71,7 @@ const PoolsHeaderTotalPoolsUser = () => {
 
 const PoolsHeaderTotalFarms = () => {
   return (
-    <Heading
-      as="h3"
-      sx={{ fontSize: [16, 42], fontWeight: 500 }}
-    >
+    <Heading as="h3" sx={{ fontSize: [16, 42], fontWeight: 500 }}>
       TODO
     </Heading>
   )
@@ -85,10 +79,7 @@ const PoolsHeaderTotalFarms = () => {
 
 const PoolsHeaderTotalFarmsUser = () => {
   return (
-    <Heading
-      as="h3"
-      sx={{ fontSize: [16, 42], fontWeight: 500 }}
-    >
+    <Heading as="h3" sx={{ fontSize: [16, 42], fontWeight: 500 }}>
       TODO
     </Heading>
   )
