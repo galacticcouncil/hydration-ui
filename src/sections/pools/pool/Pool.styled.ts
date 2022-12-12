@@ -40,3 +40,11 @@ export const SGridContainer = styled.div`
     }
   }
 `
+
+export const SPositions = styled.div`
+  background: rgba(${theme.rgbColors.darkBlue900}, 0.4);
+
+  @media (${theme.viewport.gte.sm}) {
+    padding: 20px 30px;
+  }
+`

@@ -3,6 +3,7 @@ import { Text } from "components/Typography/Text/Text"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "./PoolValue.styled"
+import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 
 type PoolValueProps = { pool: OmnipoolPool }
 
@@ -23,20 +24,24 @@ export const PoolValue = ({ pool }: PoolValueProps) => {
           </div>
         </div>
         <div sx={{ flex: "column", gap: 10 }}>
-          <Text fs={13} color="basic400">
-            {t("pools.pool.poolDetails.24hours")}
-          </Text>
-          <Text
-            lh={22}
-            color="white"
-            tAlign={["right", "left"]}
-            sx={{ width: "calc(100% - 20px)" }}
+          <div sx={{ flex: "row", align: "center", gap: 6 }}>
+            <Text fs={13} color="basic400">
+              {t("pools.pool.poolDetails.24hours")}
+            </Text>
+            <InfoTooltip text={t("pools.pool.poolDetails.24hours.tooltip")}>
+              <SInfoIcon />
+            </InfoTooltip>
+          </div>
+          <DollarAssetValue
+            value={pool.volume24h}
+            wrapper={(children) => (
+              <Text lh={22} color="white" tAlign={["right", "left"]}>
+                {children}
+              </Text>
+            )}
           >
             {t("value.usd", { amount: pool.volume24h })}
-          </Text>
-          <InfoTooltip text={t("pools.pool.poolDetails.24hours.tooltip")}>
-            <SInfoIcon />
-          </InfoTooltip>
+          </DollarAssetValue>
         </div>
       </div>
     </div>

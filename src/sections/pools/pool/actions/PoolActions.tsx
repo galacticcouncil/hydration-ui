@@ -20,12 +20,14 @@ import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiq
 
 type PoolActionsProps = {
   pool: OmnipoolPool
+  canExpand: boolean
   isExpanded: boolean
   onExpandClick: () => void
 }
 
 export const PoolActions = ({
   pool,
+  canExpand,
   isExpanded,
   onExpandClick,
 }: PoolActionsProps) => {
@@ -82,7 +84,7 @@ export const PoolActions = ({
             icon={<ChevronDown />}
             isActive={isExpanded}
             onClick={onExpandClick}
-            disabled={!account}
+            disabled={!account || !canExpand}
           />
         </SActionsContainer>
       ) : (
