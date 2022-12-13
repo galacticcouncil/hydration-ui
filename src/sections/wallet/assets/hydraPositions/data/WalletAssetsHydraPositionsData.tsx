@@ -27,7 +27,7 @@ export const WalletAssetsHydraPositionsData = ({
         color="white"
         tAlign={["right", "left"]}
       >
-        <Trans i18nKey={tKey} tOptions={{ value, symbol, lrna }}>
+        <Trans i18nKey={tKey} tOptions={{ value, symbol, lrna, type: "token" }}>
           <br sx={{ display: ["initial", "none"] }} />
         </Trans>
       </Text>

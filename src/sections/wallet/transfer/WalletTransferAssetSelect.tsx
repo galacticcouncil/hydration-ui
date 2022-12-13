@@ -9,6 +9,7 @@ export const WalletTransferAssetSelect = (props: {
   name: string
 
   value: string
+  onBlur?: (value: string) => void
   onChange: (value: string) => void
 
   asset: u32 | string
@@ -36,6 +37,7 @@ export const WalletTransferAssetSelect = (props: {
         className={props.className}
         value={props.value}
         onChange={props.onChange}
+        onBlur={props.onBlur}
         asset={props.asset}
         assetIcon={asset.data?.icon}
         decimals={asset.data?.decimals?.toNumber()}

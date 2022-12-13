@@ -2,13 +2,26 @@ import { useApiPromise } from "utils/api"
 import { useQuery } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { u128 } from "@polkadot/types-codec"
+import { u128, u32 } from "@polkadot/types-codec"
+
+export const useOmnipoolAsset = (id: u32 | string) => {
+  const api = useApiPromise()
+
+  return useQuery(QUERY_KEYS.omnipoolAsset(id), getOmnipoolAsset(api, id))
+}
 
 export const useOmnipoolAssets = () => {
   const api = useApiPromise()
 
   return useQuery(QUERY_KEYS.omnipoolAssets, getOmnipoolAssets(api))
 }
+
+export const getOmnipoolAsset =
+  (api: ApiPromise, id: u32 | string) => async () => {
+    const res = await api.query.omnipool.assets(id)
+
+    return res.value
+  }
 
 export const getOmnipoolAssets = (api: ApiPromise) => async () => {
   const res = await api.query.omnipool.assets.entries()

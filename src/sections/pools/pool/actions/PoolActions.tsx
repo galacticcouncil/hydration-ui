@@ -23,6 +23,7 @@ type PoolActionsProps = {
   canExpand: boolean
   isExpanded: boolean
   onExpandClick: () => void
+  refetch: () => void
 }
 
 export const PoolActions = ({
@@ -30,6 +31,7 @@ export const PoolActions = ({
   canExpand,
   isExpanded,
   onExpandClick,
+  refetch,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openActions, setOpenActions] = useState(false)
@@ -107,16 +109,21 @@ export const PoolActions = ({
           </Button>
         </>
       )}
-      <AddLiquidity
-        isOpen={openAdd}
-        onClose={() => setOpenAdd(false)}
-        id={pool.id}
-      />
-      <RemoveLiquidity
-        isOpen={openRemove}
-        onClose={() => setOpenRemove(false)}
-        pool={pool}
-      />
+      {openAdd && (
+        <AddLiquidity
+          isOpen={openAdd}
+          onClose={() => setOpenAdd(false)}
+          pool={pool}
+          onSuccess={refetch}
+        />
+      )}
+      {openRemove && (
+        <RemoveLiquidity
+          isOpen={openRemove}
+          onClose={() => setOpenRemove(false)}
+          pool={pool}
+        />
+      )}
     </>
   )
 }

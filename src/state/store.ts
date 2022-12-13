@@ -28,6 +28,7 @@ interface Store {
   transactions?: Transaction[]
   createTransaction: (
     transaction: TransactionInput,
+    options?: { onSuccess?: () => void },
   ) => Promise<ISubmittableResult>
   cancelTransaction: (hash: string) => void
 }
@@ -79,7 +80,7 @@ export const useAccountStore = create(
 )
 
 export const useStore = create<Store>((set) => ({
-  createTransaction: (transaction) => {
+  createTransaction: (transaction, options) => {
     return new Promise<ISubmittableResult>((resolve, reject) => {
       const hash = transaction.tx.hash.toString()
       set((store) => {
@@ -89,7 +90,10 @@ export const useStore = create<Store>((set) => ({
               ...transaction,
               hash,
               id: uuid(),
-              onSuccess: resolve,
+              onSuccess: (value) => {
+                resolve(value)
+                options?.onSuccess?.()
+              },
               onError: () => reject(new Error("Transaction rejected")),
             },
             ...(store.transactions ?? []),

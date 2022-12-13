@@ -11,6 +11,7 @@ import {
 
 export type AssetInputProps = {
   value: Maybe<string>
+  onBlur?: (val: string) => void
   onChange: (val: string) => void
   name: string
   label: string
@@ -32,6 +33,7 @@ export const AssetInput: FC<AssetInputProps> = (props) => {
       <SLabelWrapper error={props.error}>
         <SInputWrapper>
           <SInput
+            onBlur={() => props.onBlur?.(props.value ?? "")}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               if (e.target.validity.valid) {
                 props.onChange(
