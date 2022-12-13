@@ -16,7 +16,7 @@ import {
 } from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
 import { useApiIds } from "api/consts"
 
-export const useAssetsHydraPositionsData = () => {
+export const useHydraPositionsData = () => {
   const { account } = useAccountStore()
   const apiIds = useApiIds()
   const uniques = useUniques(

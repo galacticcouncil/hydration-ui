@@ -36,7 +36,7 @@ export const useTotalInPools = () => {
     )
       return undefined
 
-    const totals = assets.data
+    const total = assets.data
       .map((asset) => {
         const id = asset.id.toString()
         const meta = metas.data.find((m) => m.id === id)
@@ -53,8 +53,34 @@ export const useTotalInPools = () => {
       })
       .reduce((acc, curr) => acc.plus(curr), BN_0)
 
-    return totals
+    return total
   }, [apiIds.data, assets.data, metas.data, balances, spotPrices])
+
+  return { data, isLoading }
+}
+
+export const useUsersTotalInPools = () => {
+  const apiIds = useApiIds()
+  const assets = useOmnipoolAssets()
+  const metas = useAssetMetaList([
+    apiIds.data?.usdId,
+    ...(assets.data?.map((a) => a.id) ?? []),
+  ])
+  const balances = useTokensBalances(
+    assets.data?.map((a) => a.id.toString()) ?? [],
+    OMNIPOOL_ACCOUNT_ADDRESS,
+  )
+  const spotPrices = useSpotPrices(
+    assets.data?.map((a) => a.id) ?? [],
+    apiIds.data?.usdId,
+  )
+
+  const queries = [apiIds, assets, metas, ...balances, ...spotPrices]
+  const isLoading = queries.some((q) => q.isInitialLoading)
+
+  const data = useMemo(() => {
+    if (true) return undefined
+  }, [])
 
   return { data, isLoading }
 }
