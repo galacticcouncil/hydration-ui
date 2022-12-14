@@ -11,7 +11,7 @@ import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
 import { useSpotPrice } from "api/spotPrice"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { calculate_shares } from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
-import { useOmnipoolAsset } from "api/omnipool"
+import { useOmnipoolAsset, useOmnipoolFee } from "api/omnipool"
 import { useTokenBalance } from "api/balances"
 import { useApiIds } from "api/consts"
 import { useAssetMeta } from "api/assetMeta"
@@ -44,6 +44,7 @@ export const AddLiquidity = ({
   const omnipoolBalance = useTokenBalance(assetId, OMNIPOOL_ACCOUNT_ADDRESS)
   const { account } = useAccountStore()
   const assetBalance = useTokenBalance(assetId, account?.address)
+  const { data: omnipoolFee } = useOmnipoolFee()
 
   const { createTransaction } = useStore()
   const { t } = useTranslation()
@@ -165,7 +166,7 @@ export const AddLiquidity = ({
             {t("pools.pool.liquidity.poolFees")}
           </Text>
           <Text fs={14} color="white">
-            TODO
+            {t("value.percentage", { value: omnipoolFee?.fee })}
           </Text>
         </div>
 

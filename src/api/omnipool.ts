@@ -44,6 +44,23 @@ export const useOmnipoolPositions = (itemIds: u128[]) => {
   )
 }
 
+export const useOmnipoolFee = () => {
+  const api = useApiPromise()
+
+  return useQuery(QUERY_KEYS.omnipoolFee, getOmnipoolFee(api))
+}
+
+export const getOmnipoolFee = (api: ApiPromise) => async () => {
+  const [assetFee, protocolFee] = await Promise.all([
+    api.consts.omnipool.assetFee,
+    api.consts.omnipool.protocolFee,
+  ])
+
+  return {
+    fee: assetFee.toBigNumber().plus(protocolFee.toBigNumber()).div(10000),
+  }
+}
+
 export const getOmnipoolPositions =
   (api: ApiPromise, itemIds: u128[]) => async () => {
     const res = await api.query.omnipool.positions.multi(itemIds)
