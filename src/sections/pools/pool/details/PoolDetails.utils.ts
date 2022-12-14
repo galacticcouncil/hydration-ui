@@ -5,9 +5,10 @@ import { BN_0, BN_10 } from "utils/constants"
 import { useSpotPrices } from "api/spotPrice"
 import { useAssetMetaList } from "api/assetMeta"
 import { useApiIds } from "api/consts"
+import { u32 } from "@polkadot/types-codec"
 
-export function usePoolDetailsTradeVolume(poolAddress: string) {
-  const volume = useTradeVolume(poolAddress)
+export function usePoolDetailsTradeVolume(assetId: u32) {
+  const volume = useTradeVolume(assetId)
 
   const values = useMemo(() => {
     // Assuming trade volume is the aggregate amount being
@@ -20,14 +21,14 @@ export function usePoolDetailsTradeVolume(poolAddress: string) {
         if (memo[assetIn] == null) memo[assetIn] = BN_0
         if (memo[assetOut] == null) memo[assetOut] = BN_0
 
-        if (item.name === "XYK.BuyExecuted") {
-          memo[assetIn] = memo[assetIn].plus(item.args.amount)
-          memo[assetOut] = memo[assetOut].plus(item.args.buyPrice)
+        if (item.name === "Omnipool.BuyExecuted") {
+          memo[assetIn] = memo[assetIn].plus(item.args.amountIn)
+          memo[assetOut] = memo[assetOut].plus(item.args.amountOut)
         }
 
-        if (item.name === "XYK.SellExecuted") {
-          memo[assetIn] = memo[assetIn].plus(item.args.amount)
-          memo[assetOut] = memo[assetOut].plus(item.args.salePrice)
+        if (item.name === "Omnipool.SellExecuted") {
+          memo[assetIn] = memo[assetIn].plus(item.args.amountIn)
+          memo[assetOut] = memo[assetOut].plus(item.args.amountOut)
         }
 
         return memo
@@ -40,7 +41,10 @@ export function usePoolDetailsTradeVolume(poolAddress: string) {
   const assets = useAssetMetaList(values.assets)
   const spotPrices = useSpotPrices(values.assets, apiIds.data?.usdId)
 
-  return useMemo(() => {
+  const queries = [volume, apiIds, assets, ...spotPrices]
+  const isLoading = queries.some((q) => q.isInitialLoading)
+
+  const data = useMemo(() => {
     if (volume.isLoading) return null
 
     const combinedAssets = spotPrices.map((spotPrice, idx) => {
@@ -64,4 +68,6 @@ export function usePoolDetailsTradeVolume(poolAddress: string) {
 
     return result
   }, [volume.isLoading, assets, spotPrices, values.sums])
+
+  return { data, isLoading }
 }
