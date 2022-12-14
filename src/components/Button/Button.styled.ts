@@ -33,6 +33,7 @@ export const SButton = styled.button<ButtonProps>`
 
     color: ${theme.colors.darkBlue300};
     background: rgba(218, 255, 238, 0.06);
+    border-color: ${theme.colors.darkBlue300};
 
     &::after {
       all: unset;

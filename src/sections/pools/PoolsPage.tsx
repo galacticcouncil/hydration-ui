@@ -3,6 +3,9 @@ import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { useState } from "react"
 import { Pool } from "sections/pools/pool/Pool"
 import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
+import { PoolSkeleton } from "./skeleton/PoolSkeleton"
+
+const SKELETON_AMOUNT = 3
 
 export const PoolsPage = () => {
   const [filter, setFilter] = useState({ showMyPositions: false })
@@ -20,17 +23,19 @@ export const PoolsPage = () => {
           }))
         }
       />
-      {pools.isLoading ? (
-        <div>TODO: skeleton loader</div>
-      ) : (
-        pools.data && (
-          <div sx={{ flex: "column", gap: 20 }}>
-            {pools.data.map((pool) => (
+      <div sx={{ flex: "column", gap: 20 }}>
+        {!pools.isLoading && pools.data
+          ? pools.data.map((pool) => (
               <Pool key={pool.id.toString()} pool={pool} />
+            ))
+          : [...Array(SKELETON_AMOUNT)].map((_, index) => (
+              <PoolSkeleton
+                key={index}
+                length={SKELETON_AMOUNT}
+                index={index}
+              />
             ))}
-          </div>
-        )
-      )}
+      </div>
     </Page>
   )
 }

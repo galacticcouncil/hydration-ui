@@ -116,51 +116,59 @@ export const RemoveLiquidity = ({
           height: "calc(100% - var(--modal-header-title-height))",
         }}
       >
-        <Controller
-          name="value"
-          control={form.control}
-          render={({ field }) => (
-            <RemoveLiquidityInput
-              value={field.value}
-              onChange={field.onChange}
+        <div>
+          <Controller
+            name="value"
+            control={form.control}
+            render={({ field }) => (
+              <RemoveLiquidityInput
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
+          />
+
+          <STradingPairContainer>
+            <Text color="brightBlue300">
+              {t("pools.removeLiquidity.modal.receive")}
+            </Text>
+
+            <RemoveLiquidityReward
+              name="Token"
+              symbol={pool.symbol}
+              amount={t("value", {
+                value: 1,
+                fixedPointScale: 12,
+                type: "token",
+              })}
             />
-          )}
-        />
+            <RemoveLiquidityReward
+              name="Token"
+              symbol={pool.symbol}
+              amount={t("value", {
+                value: 1,
+                fixedPointScale: 12,
+                type: "token",
+              })}
+            />
+          </STradingPairContainer>
 
-        <STradingPairContainer>
-          <Text color="brightBlue300">
-            {t("pools.removeLiquidity.modal.receive")}
-          </Text>
-
-          <RemoveLiquidityReward
-            name="Token"
-            symbol={pool.symbol}
-            amount={t("value", {
-              value: 1,
-              fixedPointScale: 12,
-              type: "token",
-            })}
-          />
-          <RemoveLiquidityReward
-            name="Token"
-            symbol={pool.symbol}
-            amount={t("value", {
-              value: 1,
-              fixedPointScale: 12,
-              type: "token",
-            })}
-          />
-        </STradingPairContainer>
-
-        <div
-          sx={{ flex: "row", justify: "space-between", mt: 12, mb: 45, mx: 20 }}
-        >
-          <Text color="darkBlue300" fs={14}>
-            {t("pools.pool.liquidity.poolFees")}
-          </Text>
-          <Text fs={14} color="graySoft">
-            TODO
-          </Text>
+          <div
+            sx={{
+              flex: "row",
+              justify: "space-between",
+              mt: 12,
+              mb: 45,
+              mx: 20,
+            }}
+          >
+            <Text color="darkBlue300" fs={14}>
+              {t("pools.pool.liquidity.poolFees")}
+            </Text>
+            <Text fs={14} color="graySoft">
+              TODO
+            </Text>
+          </div>
         </div>
         <Button variant="primary">
           {t("pools.removeLiquidity.modal.confirm")}
