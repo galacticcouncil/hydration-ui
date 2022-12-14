@@ -84,6 +84,7 @@ export const useUsersTotalInPools = () => {
     uniques,
     positions,
     metas,
+    omnipoolAssets,
     ...omnipoolBalances,
     ...spotPrices,
   ]
@@ -91,11 +92,11 @@ export const useUsersTotalInPools = () => {
 
   const data = useMemo(() => {
     if (
+      !apiIds.data ||
       !uniques.data ||
       !positions.data ||
       !metas.data ||
       !omnipoolAssets.data ||
-      !apiIds.data ||
       omnipoolBalances.some((q) => !q.data) ||
       spotPrices.some((q) => !q.data)
     )
