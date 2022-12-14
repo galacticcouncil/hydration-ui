@@ -20,7 +20,7 @@ export const getOmnipoolAsset =
   (api: ApiPromise, id: u32 | string) => async () => {
     const res = await api.query.omnipool.assets(id)
 
-    return res.value
+    return res.unwrap()
   }
 
 export const getOmnipoolAssets = (api: ApiPromise) => async () => {

@@ -203,7 +203,6 @@ export function WalletTransferSectionOnchain(props: {
                     ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
                     symbol: accountCurrencyMeta.data?.symbol,
                     fixedPointScale: 12,
-                    decimalPlaces: 2,
                   })}
                 </Text>
               )}

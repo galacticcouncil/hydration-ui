@@ -44,7 +44,7 @@ export const WalletAssetsTableActionsMob = ({
               {t("wallet.assets.table.header.total")}
             </Text>
             <Text fs={14} lh={14} color="white">
-              {t("value", { value: row.total, decimalPlaces: 4 })}
+              {t("value", { value: row.total })}
             </Text>
             <Text fs={12} lh={17} color="whiteish500">
               {t("value.usd", { amount: row.totalUSD })}
@@ -55,7 +55,7 @@ export const WalletAssetsTableActionsMob = ({
               {t("wallet.assets.table.header.transferable")}
             </Text>
             <Text fs={14} lh={14} color="white">
-              {t("value", { value: row.transferable, decimalPlaces: 4 })}
+              {t("value", { value: row.transferable })}
             </Text>
             <Text fs={12} lh={17} color="whiteish500">
               {t("value.usd", { amount: row.transferableUSD })}
