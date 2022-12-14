@@ -208,7 +208,7 @@ export function formatBigNumber(
   /* If the integer number is equal or less than 0 display a maximum of 6 decimals, by cutting them not rounding */
   /* If the final digit of the amount is 0 decimal it should be round it up. */
   if (num.lt(1)) {
-    return num.decimalPlaces(6).toFormat(fmtConfig)
+    return num.decimalPlaces(6, BigNumber.ROUND_UP).toFormat(fmtConfig)
   }
 
   return num.decimalPlaces(4).toFormat(fmtConfig)
