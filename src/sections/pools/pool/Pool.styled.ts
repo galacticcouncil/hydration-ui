@@ -2,13 +2,20 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SContainer = styled.div`
-  width: 100%;
+  width: calc(100% + 24px);
 
   border-radius: 4px;
   background-color: ${theme.colors.darkBlue700};
   box-shadow: ${theme.shadows.contentBox};
 
   overflow: hidden;
+
+  margin: 0 -12px;
+
+  @media (${theme.viewport.gte.sm}) {
+    margin: unset;
+    width: 100%;
+  }
 `
 
 export const SGridContainer = styled.div`

@@ -11,7 +11,7 @@ export const PoolValue = ({ pool }: PoolValueProps) => {
   const { t } = useTranslation()
 
   return (
-    <div sx={{ flex: "column", width: 300, justify: "end" }}>
+    <div sx={{ flex: "column", width: ["auto", 300], justify: "end" }}>
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div sx={{ flex: "column", gap: 10 }}>
           <Text fs={13} color="basic400">

@@ -86,7 +86,12 @@ export const WalletAssetsTable = ({ data }: Props) => {
         <TableBodyContent>
           {table.getRowModel().rows.map((row, i) => (
             <Fragment key={row.id}>
-              <TableRow isOdd={!(i % 2)}>
+              <TableRow
+                isOdd={!(i % 2)}
+                onClick={() => {
+                  !isDesktop && setRow(row.original)
+                }}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableData key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

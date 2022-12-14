@@ -44,10 +44,7 @@ export const WalletAssetsTableActions = (props: Props) => {
   return (
     <>
       <div sx={{ display: ["block", "none"] }}>
-        <ButtonTransparent
-          onClick={() => console.log("detail", props.symbol)}
-          css={{ color: theme.colors.iconGray }}
-        >
+        <ButtonTransparent css={{ color: theme.colors.iconGray }}>
           <ChevronRightIcon />
         </ButtonTransparent>
       </div>
