@@ -3,9 +3,10 @@ import { theme } from "theme"
 
 export const TableContainer = styled.div`
   background: #111320;
-  border-radius: 4px;
   overflow: hidden;
   box-shadow: ${theme.shadows.boxShadowTable};
+
+  margin: 0 -12px;
 
   background-image: radial-gradient(
       circle at 100% 100%,
@@ -48,6 +49,12 @@ export const TableContainer = styled.div`
     bottom right, bottom center, bottom left, center left;
 
   background-repeat: no-repeat;
+
+  @media (${theme.viewport.gte.sm}) {
+    border-radius: 4px;
+
+    margin: unset;
+  }
 `
 
 export const Table = styled.table`

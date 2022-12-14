@@ -7,6 +7,7 @@ import { WalletAssetsHeader } from "./WalletAssetsHeader"
 import { WalletAssetsHydraPositions } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions"
 import { useAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { WalletAssetsHydraPositionsSkeleton } from "sections/wallet/assets/hydraPositions/skeleton/WalletAssetsHydraPositionsSkeleton"
+import { Spacer } from "components/Spacer/Spacer"
 
 export const WalletAssets = () => {
   const { account } = useAccountStore()
@@ -27,7 +28,7 @@ export const WalletAssets = () => {
             sx={{
               display: "flex",
               flexDirection: "column",
-              gap: 20,
+              gap: [0, 20],
             }}
           >
             {assetsTable.isLoading ? (
@@ -35,6 +36,15 @@ export const WalletAssets = () => {
             ) : (
               <WalletAssetsTable data={assetsTable.data} />
             )}
+            <Spacer
+              size={10}
+              sx={{
+                bg: "darkBlue700",
+                mx: "-12px",
+                width: "calc(100% + 24px)",
+                display: ["inherit", "none"],
+              }}
+            />
             {positionsTable.isLoading ? (
               <WalletAssetsHydraPositionsSkeleton />
             ) : (

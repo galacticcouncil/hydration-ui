@@ -13,7 +13,7 @@ export const PoolDetails = ({ pool, onClick }: PoolDetailsProps) => {
   const { t } = useTranslation()
 
   return (
-    <div sx={{ flex: "column", width: 300 }}>
+    <div sx={{ flex: "column", width: ["auto", 300] }}>
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div sx={{ flex: "column", gap: 10 }}>
           <Text fs={13} color="basic400">
