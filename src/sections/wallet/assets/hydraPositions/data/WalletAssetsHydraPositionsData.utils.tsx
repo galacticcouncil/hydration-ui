@@ -59,7 +59,8 @@ export const useHydraPositionsData = () => {
       !metas.data ||
       !omnipoolAssets.data ||
       !apiIds.data ||
-      omnipoolBalances.some((q) => !q.data)
+      omnipoolBalances.some((q) => !q.data) ||
+      spotPrices.some((q) => !q.data)
     )
       return []
 

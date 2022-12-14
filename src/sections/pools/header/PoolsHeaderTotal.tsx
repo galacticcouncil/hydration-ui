@@ -2,7 +2,10 @@ import { Heading } from "components/Typography/Heading/Heading"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { Text } from "components/Typography/Text/Text"
-import { useTotalInPools } from "sections/pools/header/PoolsHeaderTotal.utils"
+import {
+  useTotalInPools,
+  useUsersTotalInPools,
+} from "sections/pools/header/PoolsHeaderTotal.utils"
 import BN from "bignumber.js"
 
 type Props = { myPositions: boolean; variant: "pools" | "farms" }
@@ -62,11 +65,8 @@ const PoolsHeaderTotalPools = () => {
 }
 
 const PoolsHeaderTotalPoolsUser = () => {
-  return (
-    <Heading as="h3" sx={{ fontSize: [16, 42], fontWeight: 500 }}>
-      TODO
-    </Heading>
-  )
+  const { data, isLoading } = useUsersTotalInPools()
+  return <PoolsHeaderTotalData value={data} isLoading={isLoading} />
 }
 
 const PoolsHeaderTotalFarms = () => {
