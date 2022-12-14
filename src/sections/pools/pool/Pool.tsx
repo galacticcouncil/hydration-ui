@@ -31,12 +31,13 @@ export const Pool = ({ pool }: Props) => {
         <PoolValue pool={pool} />
         <PoolActions
           pool={pool}
+          refetch={positions.refetch}
           canExpand={!positions.isLoading && !!positions.data?.length}
           isExpanded={isExpanded}
           onExpandClick={() => setIsExpanded((prev) => !prev)}
         />
       </SGridContainer>
-      {isDesktop && positions.data?.length && (
+      {isDesktop && !!positions.data?.length && (
         <AnimatePresence>
           {isExpanded && (
             <motion.div

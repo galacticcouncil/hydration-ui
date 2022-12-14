@@ -34,6 +34,7 @@ export const AssetSelect = (props: {
   decimals: Maybe<number>
   balance: Maybe<BigNumber>
 
+  onBlur?: (v: string) => void
   onChange: (v: string) => void
   onSelectAssetClick: () => void
 }) => {
@@ -79,6 +80,7 @@ export const AssetSelect = (props: {
             <Text fs={11} lh={16} sx={{ mr: 5 }}>
               {t("selectAsset.balance.value", {
                 balance: props.balance,
+                fixedPointScale: props.decimals ?? 12,
                 type: "token",
               })}
             </Text>
@@ -89,12 +91,12 @@ export const AssetSelect = (props: {
               onClick={(e) => {
                 e.preventDefault()
                 if (props.decimals != null && props.balance != null) {
-                  props.onChange(
-                    getFloatingPointAmount(
-                      props.balance,
-                      props.decimals,
-                    ).toFixed(4),
-                  )
+                  const value = getFloatingPointAmount(
+                    props.balance,
+                    props.decimals,
+                  ).toFixed(4)
+                  props.onChange(value)
+                  props.onBlur?.(value)
                 }
               }}
             />
@@ -133,6 +135,7 @@ export const AssetSelect = (props: {
             value={props.value}
             name={props.name}
             label={t("selectAsset.input.label")}
+            onBlur={props.onBlur}
             onChange={props.onChange}
             dollars={t("value.usd", { amount: aUSDValue })}
             placeholder="0.00"

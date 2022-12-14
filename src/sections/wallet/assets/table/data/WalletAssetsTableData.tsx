@@ -70,7 +70,7 @@ export const WalletAssetsTableBalance = (props: {
   return (
     <div sx={{ flex: "column", align: ["end", "start"], gap: 2 }}>
       <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
-        {t("value", { value: props.balance, decimalPlaces: 4 })}
+        {t("value", { value: props.balance })}
       </Text>
       <Text
         fs={[12, 13]}

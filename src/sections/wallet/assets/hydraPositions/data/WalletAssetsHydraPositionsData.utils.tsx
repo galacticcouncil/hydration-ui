@@ -130,7 +130,9 @@ export const useAssetsHydraPositionsData = () => {
         const providedAmount = position.amount.toBigNumber().div(valueDp)
         let providedAmountUSD = BN_NAN
 
-        const sharesAmount = position.shares.toBigNumber().div(BN_10.pow(12))
+        const sharesAmount = position.shares
+          .toBigNumber()
+          .div(BN_10.pow(meta.decimals.toNumber()))
 
         if (lrnaSp?.data && valueSp?.data)
           valueUSD = value
@@ -168,5 +170,5 @@ export const useAssetsHydraPositionsData = () => {
     spotPrices,
   ])
 
-  return { data, isLoading }
+  return { data, isLoading, refetch: positions.refetch }
 }

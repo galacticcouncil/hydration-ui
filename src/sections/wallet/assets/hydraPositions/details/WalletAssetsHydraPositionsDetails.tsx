@@ -64,7 +64,7 @@ export const WalletAssetsHydraPositionsDetails = ({
           {t("wallet.assets.hydraPositions.details.shares")}
         </Text>
         <Text fs={14} lh={18} fw={500} color="white" sx={{ mt: 8 }}>
-          {t("value", { value: shares, decimalPlaces: 4 })}
+          {t("value", { value: shares })}
         </Text>
       </div>
     </div>

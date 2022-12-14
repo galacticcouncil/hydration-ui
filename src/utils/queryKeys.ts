@@ -153,6 +153,12 @@ export const QUERY_KEYS = {
     collectionId.toString(),
   ],
   omnipoolAssets: [QUERY_KEY_PREFIX, "omnipoolAssets"],
+  omnipoolFee: [QUERY_KEY_PREFIX, "omnipoolFee"],
+  omnipoolAsset: (id: u32 | string) => [
+    QUERY_KEY_PREFIX,
+    "omnipoolAsset",
+    id?.toString(),
+  ],
   omnipoolPositions: [QUERY_KEY_PREFIX, "omnipoolPositions"],
   provider: (url: string) => ["provider", url],
   math: ["@galacticcouncil/math"],

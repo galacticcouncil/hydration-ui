@@ -7,32 +7,63 @@ import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransf
 import { Text } from "components/Typography/Text/Text"
 import { Separator } from "components/Separator/Separator"
 import { Button } from "components/Button/Button"
+import { useApiPromise } from "utils/api"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { BN_10 } from "utils/constants"
+import { useStore } from "state/store"
 import { u32 } from "@polkadot/types"
+import { FormValues } from "utils/helpers"
+import { useAddLiquidity } from "./AddLiquidity.utils"
 
 type AddLiquidityProps = {
   isOpen: boolean
   onClose: () => void
-  id: string | u32
+  pool: OmnipoolPool
+  onSuccess: () => void
 }
 
-export const AddLiquidity = ({ isOpen, onClose, id }: AddLiquidityProps) => {
-  const [asset, setAsset] = useState(id)
+export const AddLiquidity = ({
+  isOpen,
+  onClose,
+  pool,
+  onSuccess,
+}: AddLiquidityProps) => {
+  const [assetId, setAssetId] = useState<u32 | string>(pool?.id.toString())
+  const [assetValue, setAssetValue] = useState("")
 
+  const { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance } =
+    useAddLiquidity(assetId, assetValue)
+
+  const api = useApiPromise()
+  const { createTransaction } = useStore()
   const { t } = useTranslation()
-
   const form = useForm<{
     amount: string
   }>({})
 
-  const onSubmit = async (values: any) => {
-    console.log(values)
+  const onSubmit = async (values: FormValues<typeof form>) => {
+    if (assetMeta?.decimals == null) throw new Error("Missing asset meta")
+
+    const amount = new BigNumber(values.amount)
+      .multipliedBy(BN_10.pow(assetMeta.decimals.toNumber()))
+      .toString()
+
+    return await createTransaction(
+      {
+        tx: api.tx.omnipool.addLiquidity(assetId, amount),
+      },
+      { onSuccess },
+    )
   }
 
   return (
     <Modal
       open={isOpen}
       title={t("pools.addLiquidity.modal.title")}
-      onClose={onClose}
+      onClose={() => {
+        onClose()
+        form.reset()
+      }}
     >
       <form
         onSubmit={form.handleSubmit(onSubmit)}
@@ -58,6 +89,23 @@ export const AddLiquidity = ({ isOpen, onClose, id }: AddLiquidityProps) => {
                 },
                 positive: (value) =>
                   new BigNumber(value).gt(0) || t("error.positive"),
+                maxBalance: (value) => {
+                  try {
+                    if (assetMeta?.decimals == null)
+                      throw new Error("Missing asset meta")
+                    if (
+                      assetBalance?.balance.gte(
+                        BigNumber(value).multipliedBy(
+                          BN_10.pow(assetMeta?.decimals.toNumber()),
+                        ),
+                      )
+                    )
+                      return true
+                  } catch {}
+                  return t(
+                    "pools.addLiquidity.modal.validation.notEnoughBalance",
+                  )
+                },
               },
             }}
             render={({
@@ -68,9 +116,10 @@ export const AddLiquidity = ({ isOpen, onClose, id }: AddLiquidityProps) => {
                 title={t("wallet.assets.transfer.asset.label_mob")}
                 name={name}
                 value={value}
+                onBlur={setAssetValue}
                 onChange={onChange}
-                asset={asset}
-                onAssetChange={setAsset}
+                asset={assetId}
+                onAssetChange={setAssetId}
                 error={error?.message}
               />
             )}
@@ -88,7 +137,7 @@ export const AddLiquidity = ({ isOpen, onClose, id }: AddLiquidityProps) => {
               {t("pools.pool.liquidity.poolFees")}
             </Text>
             <Text fs={14} color="white">
-              TODO
+              {t("value.percentage", { value: omnipoolFee?.fee })}
             </Text>
           </div>
 
@@ -109,7 +158,11 @@ export const AddLiquidity = ({ isOpen, onClose, id }: AddLiquidityProps) => {
               {t("pools.removeLiquidity.modal.price")}
             </Text>
             <Text fs={14} color="white">
-              TODO
+              {t("pools.addLiquidity.modal.row.spotPrice", {
+                firstAmount: 1,
+                firstCurrency: assetMeta?.symbol,
+                secondAmount: spotPrice?.spotPrice,
+              })}
             </Text>
           </div>
           <Separator color="darkBlue401" />
@@ -126,7 +179,11 @@ export const AddLiquidity = ({ isOpen, onClose, id }: AddLiquidityProps) => {
               {t("pools.addLiquidity.modal.receive")}
             </Text>
             <Text fs={14} color="white">
-              TODO
+              {t("value", {
+                value: calculatedShares,
+                fixedPointScale: assetMeta?.decimals.toString(),
+                type: "token",
+              })}
             </Text>
           </div>
           <Separator color="darkBlue401" />
@@ -143,7 +200,7 @@ export const AddLiquidity = ({ isOpen, onClose, id }: AddLiquidityProps) => {
             sx={{ mx: "-30px", mb: 20, width: "auto" }}
           />
         </div>
-        <Button variant="primary">
+        <Button variant="primary" type="submit">
           {t("pools.addLiquidity.modal.confirmButton")}
         </Button>
       </form>

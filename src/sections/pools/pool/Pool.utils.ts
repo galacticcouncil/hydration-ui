@@ -11,5 +11,5 @@ export const usePoolPositions = (pool: OmnipoolPool) => {
     [pool.id, positions.data],
   )
 
-  return { data, isLoading: positions.isLoading }
+  return { data, isLoading: positions.isLoading, refetch: positions.refetch }
 }
