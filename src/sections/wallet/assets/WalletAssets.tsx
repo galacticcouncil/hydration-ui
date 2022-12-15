@@ -5,14 +5,14 @@ import { WalletAssetsTable } from "sections/wallet/assets/table/WalletAssetsTabl
 import { useAccountStore } from "state/store"
 import { WalletAssetsHeader } from "./WalletAssetsHeader"
 import { WalletAssetsHydraPositions } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions"
-import { useAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
+import { useHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { WalletAssetsHydraPositionsSkeleton } from "sections/wallet/assets/hydraPositions/skeleton/WalletAssetsHydraPositionsSkeleton"
 import { Spacer } from "components/Spacer/Spacer"
 
 export const WalletAssets = () => {
   const { account } = useAccountStore()
   const assetsTable = useAssetsTableData()
-  const positionsTable = useAssetsHydraPositionsData()
+  const positionsTable = useHydraPositionsData()
 
   return (
     <div sx={{ mt: [34, 56] }}>

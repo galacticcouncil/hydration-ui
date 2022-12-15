@@ -3,7 +3,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
 import { Text } from "components/Typography/Text/Text"
-import { Separator } from "components/Separator/Separator"
+// import { Separator } from "components/Separator/Separator"
 import { PoolsHeaderTotal } from "sections/pools/header/PoolsHeaderTotal"
 import { Heading } from "components/Typography/Heading/Heading"
 
@@ -48,15 +48,15 @@ export const PoolsHeader: FC<Props> = ({
             <PoolsHeaderTotal variant="pools" myPositions={showMyPositions} />
           </div>
         </div>
-        <Separator sx={{ mb: 12, display: ["inherit", "none"] }} />
-        <div sx={{ flex: ["row", "column"], justify: "space-between" }}>
-          <Text color="brightBlue300" sx={{ mb: 14 }}>
-            {t("pools.header.totalFarms")}
-          </Text>
-          <div sx={{ flex: "row", align: "baseline" }}>
-            <PoolsHeaderTotal variant="farms" myPositions={showMyPositions} />
-          </div>
-        </div>
+        {/*<Separator sx={{ mb: 12, display: ["inherit", "none"] }} />*/}
+        {/*<div sx={{ flex: ["row", "column"], justify: "space-between" }}>*/}
+        {/*  <Text color="brightBlue300" sx={{ mb: 14 }}>*/}
+        {/*    {t("pools.header.totalFarms")}*/}
+        {/*  </Text>*/}
+        {/*  <div sx={{ flex: "row", align: "baseline" }}>*/}
+        {/*    <PoolsHeaderTotal variant="farms" myPositions={showMyPositions} />*/}
+        {/*  </div>*/}
+        {/*</div>*/}
       </div>
     </>
   )

@@ -90,7 +90,6 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
                 i18nKey="wallet.assets.header.value"
                 tOptions={{
                   ...separateBalance(totalUsd, {
-                    numberPrefix: "$",
                     type: "dollar",
                   }),
                 }}
@@ -159,7 +158,6 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
                   i18nKey="wallet.assets.header.value"
                   tOptions={{
                     ...separateBalance(transferableUsd, {
-                      numberPrefix: "$",
                       type: "dollar",
                     }),
                   }}

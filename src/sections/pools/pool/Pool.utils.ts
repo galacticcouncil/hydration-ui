@@ -1,9 +1,9 @@
 import { useMemo } from "react"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
-import { useAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
+import { useHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 
 export const usePoolPositions = (pool: OmnipoolPool) => {
-  const positions = useAssetsHydraPositionsData()
+  const positions = useHydraPositionsData()
 
   const data = useMemo(
     () =>
