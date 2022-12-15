@@ -94,15 +94,7 @@ export const useAssetsHydraPositionsData = () => {
         const price = nom.div(denom)
         const positionPrice = price.times(BN_10.pow(18))
 
-        const params: [
-          asset_reserve: string,
-          asset_hub_reserve: string,
-          asset_shares: string,
-          position_amount: string,
-          position_shares: string,
-          position_price: string,
-          shares_to_remove: string,
-        ] = [
+        const params: Parameters<typeof calculate_liquidity_out> = [
           omnipoolBalance.data.balance.toString(),
           omnipoolAsset.data.hubReserve.toString(),
           omnipoolAsset.data.shares.toString(),
@@ -111,7 +103,6 @@ export const useAssetsHydraPositionsData = () => {
           positionPrice.toFixed(),
           position.shares.toString(),
         ]
-
         const lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
         const liquidityOutResult = calculate_liquidity_out.apply(this, params)
         if (liquidityOutResult === "-1" || lernaOutResult === "-1") return null

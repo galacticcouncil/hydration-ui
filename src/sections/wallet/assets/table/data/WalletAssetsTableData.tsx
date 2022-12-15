@@ -1,4 +1,3 @@
-import { css } from "@emotion/react"
 import BN from "bignumber.js"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
@@ -71,16 +70,6 @@ export const WalletAssetsTableBalance = (props: {
     <div sx={{ flex: "column", align: ["end", "start"], gap: 2 }}>
       <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
         {t("value", { value: props.balance })}
-      </Text>
-      <Text
-        fs={[12, 13]}
-        lh={[14, 20]}
-        fw={500}
-        css={css`
-          color: rgba(${theme.rgbColors.whiteish500}, 0.61);
-        `}
-      >
-        {t("value.usd", { amount: props.balanceUSD })}
       </Text>
 
       <DollarAssetValue
