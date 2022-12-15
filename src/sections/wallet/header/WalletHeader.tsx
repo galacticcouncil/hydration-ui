@@ -8,6 +8,7 @@ import { Separator } from "components/Separator/Separator"
 import { WalletConnectModal } from "../connect/modal/WalletConnectModal"
 import { useState } from "react"
 import { WalletInactiveButton } from "../connect/modal/WalletConnectButton"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 
 export const WalletHeader = () => {
   const { t } = useTranslation()
@@ -49,15 +50,20 @@ export const WalletHeader = () => {
               >
                 {account.address}
               </Text>
-              <ButtonTransparent
-                onClick={() => copy(account.address.toString())}
+              <InfoTooltip
+                text={t("wallet.header.copyAddress.hover")}
+                textOnClick={t("wallet.header.copyAddress.click")}
               >
-                <CopyIcon
-                  sx={{
-                    color: "brightBlue300",
-                  }}
-                />
-              </ButtonTransparent>
+                <ButtonTransparent
+                  onClick={() => copy(account.address.toString())}
+                >
+                  <CopyIcon
+                    sx={{
+                      color: "brightBlue300",
+                    }}
+                  />
+                </ButtonTransparent>
+              </InfoTooltip>
             </div>
             <Button
               size="small"
