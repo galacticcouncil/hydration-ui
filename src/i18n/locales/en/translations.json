@@ -190,6 +190,8 @@
   "wallet.header.transactions": "Transactions",
   "wallet.header.vesting": "Vesting",
   "wallet.header.switchAccount": "Switch account",
+  "wallet.header.copyAddress.hover": "Copy to clipboard",
+  "wallet.header.copyAddress.click": "Copied!",
   "wallet.vesting.vesting_schedule_end": "Vesting schedule End",
   "wallet.vesting.vesting_schedule_end_value": "{{ date, dd.MM.yyyy }}",
   "wallet.vesting.vesting_days_left": "Days Left:",
