@@ -70,6 +70,7 @@ export const ReviewTransaction: React.FC<Transaction> = (props) => {
         ) : (
           <ReviewTransactionForm
             tx={props.tx}
+            overrides={props.overrides}
             hash={props.hash}
             title={props.title}
             onCancel={handleClose}
