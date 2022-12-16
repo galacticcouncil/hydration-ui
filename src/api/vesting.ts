@@ -144,6 +144,8 @@ export const useVestingTotalClaimableBalance = () => {
       vestingLockBalanceQuery.data
     ) {
       const futureLocks = vestingSchedulesQuery.data.reduce((acc, cur) => {
+        if (!bestNumberQuery.data) return BN_0
+
         const claimable = getScheduleClaimableBalance(
           cur,
           bestNumberQuery.data.relaychainBlockNumber,
@@ -208,6 +210,8 @@ export const useVestingScheduleEnd = () => {
   const estimatedEnds = useMemo(() => {
     if (schedulesQuery.data && bestNumberQuery.data) {
       const endings = schedulesQuery.data.map((schedule) => {
+        if (!bestNumberQuery.data) return BN_0
+
         const start = schedule.start.toBigNumber()
         const period = schedule.period.toBigNumber()
         const periodCount = schedule.periodCount.toBigNumber()
