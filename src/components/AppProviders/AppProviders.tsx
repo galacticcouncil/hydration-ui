@@ -1,3 +1,5 @@
+import * as React from "react"
+import * as Apps from "@galacticcouncil/apps"
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import { useProvider } from "api/provider"
 import { InvalidateOnBlock } from "components/InvalidateOnBlock"
@@ -8,6 +10,19 @@ import { LoadingPage } from "sections/loading/LoadingPage"
 import { Transactions } from "sections/transaction/Transactions"
 import { theme } from "theme"
 import { ApiPromiseContext } from "utils/api"
+import { createComponent } from "@lit-labs/react"
+
+const NotificationCenter = createComponent({
+  tagName: "gc-notification-center",
+  elementClass: Apps.NotificationCenter,
+  react: React,
+})
+
+const TransactionCenter = createComponent({
+  tagName: "gc-transaction-center",
+  elementClass: Apps.TransactionCenter,
+  react: React,
+})
 
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   const api = useProvider()
@@ -24,7 +39,9 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
               highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
               borderRadius={4}
             >
-              {children}
+              <NotificationCenter>
+                <TransactionCenter>{children}</TransactionCenter>
+              </NotificationCenter>
               <Transactions />
             </SkeletonTheme>
           </ToastProvider>

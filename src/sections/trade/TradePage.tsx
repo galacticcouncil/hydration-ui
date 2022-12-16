@@ -7,18 +7,6 @@ import { useAccountStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
 
-const NotificationCenter = createComponent({
-  tagName: "gc-notification-center",
-  elementClass: Apps.NotificationCenter,
-  react: React,
-})
-
-const TransactionCenter = createComponent({
-  tagName: "gc-transaction-center",
-  elementClass: Apps.TransactionCenter,
-  react: React,
-})
-
 export const TradeApp = createComponent({
   tagName: "gc-trade-app",
   elementClass: Apps.TradeApp,
@@ -50,20 +38,17 @@ export function TradePage() {
   return (
     <Page>
       <div>
-        <NotificationCenter>
-          <TransactionCenter>
-            <TradeApp
-              ref={ref}
-              accountName={account?.name}
-              accountProvider={account?.provider}
-              accountAddress={account?.address}
-              apiAddress={import.meta.env.VITE_PROVIDER_URL}
-              assetIn={search.success ? search.data.assetIn : undefined}
-              assetOut={search.success ? search.data.assetOut : undefined}
-              pools="Omni"
-            />
-          </TransactionCenter>
-        </NotificationCenter>
+        <TradeApp
+          ref={ref}
+          accountName={account?.name}
+          accountProvider={account?.provider}
+          accountAddress={account?.address}
+          apiAddress={import.meta.env.VITE_PROVIDER_URL}
+          stableCoinAssetId="2"
+          assetIn={search.success ? search.data.assetIn : undefined}
+          assetOut={search.success ? search.data.assetOut : undefined}
+          pools="Omni"
+        />
       </div>
     </Page>
   )
