@@ -9,12 +9,19 @@ import { WalletConnectModal } from "../connect/modal/WalletConnectModal"
 import { useState } from "react"
 import { WalletInactiveButton } from "../connect/modal/WalletConnectButton"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 
 export const WalletHeader = () => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const [, copy] = useCopyToClipboard()
   const [open, setOpen] = useState(false)
+
+  const hydraAddress = encodeAddress(
+    decodeAddress(account?.address),
+    HYDRA_ADDRESS_PREFIX,
+  )
 
   return (
     <>
@@ -48,7 +55,7 @@ export const WalletHeader = () => {
                   wordWrap: "break-word",
                 }}
               >
-                {account.address}
+                {hydraAddress}
               </Text>
               <InfoTooltip
                 text={t("wallet.header.copyAddress.hover")}
