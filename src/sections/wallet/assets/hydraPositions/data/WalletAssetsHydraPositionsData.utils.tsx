@@ -78,14 +78,14 @@ export const useHydraPositionsData = () => {
         if (!position) return null
 
         const assetId = position.assetId.toString()
-        const meta = metas.data.find((m) => m.id.toString() === assetId)
+        const meta = metas.data?.find((m) => m.id.toString() === assetId)
         const details = detailsList.data?.find(
           (d) => d.id.toString() === assetId,
         )
-        const lrnaMeta = metas.data.find(
-          (m) => m.id.toString() === apiIds.data.hubId,
+        const lrnaMeta = metas.data?.find(
+          (m) => m.id.toString() === apiIds.data?.hubId,
         )
-        const omnipoolAsset = omnipoolAssets.data.find(
+        const omnipoolAsset = omnipoolAssets.data?.find(
           (a) => a.id.toString() === assetId,
         )
         const omnipoolBalance = omnipoolBalances.find(
@@ -142,7 +142,7 @@ export const useHydraPositionsData = () => {
         }
 
         const lrnaSp = spotPrices.find(
-          (sp) => sp.data?.tokenIn === apiIds.data.hubId,
+          (sp) => sp.data?.tokenIn === apiIds.data?.hubId,
         )
         const lrnaDp = BN_10.pow(lrnaMeta?.decimals.toNumber() ?? 12)
         const lrna =

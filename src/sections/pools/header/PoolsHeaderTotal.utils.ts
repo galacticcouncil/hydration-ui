@@ -44,7 +44,7 @@ export const useTotalInPools = () => {
     const total = assets.data
       .map((asset) => {
         const id = asset.id.toString()
-        const meta = metas.data.find((m) => m.id === id)
+        const meta = metas.data?.find((m) => m.id === id)
         const balance = balances.find((b) => b.data?.assetId.toString() === id)
         const sp = spotPrices.find((sp) => sp.data?.tokenIn === id)
 
@@ -109,17 +109,18 @@ export const useUsersTotalInPools = () => {
 
       const position = query.data
 
-      const meta = metas.data.find(
+      const meta = metas.data?.find(
         (m) => m.id.toString() === position.assetId.toString(),
       )
-      const omnipoolAsset = omnipoolAssets.data.find(
+      const omnipoolAsset = omnipoolAssets.data?.find(
         (a) => a.id.toString() === position.assetId.toString(),
       )
       const omnipoolBalance = omnipoolBalances.find(
         (b) => b.data?.assetId.toString() === position.assetId.toString(),
       )
 
-      if (!meta || !omnipoolAsset?.data || !omnipoolBalance?.data) return BN_0
+      if (!meta?.decimals || !omnipoolAsset?.data || !omnipoolBalance?.data)
+        return BN_0
 
       const id = position.assetId.toString()
 
@@ -141,7 +142,7 @@ export const useUsersTotalInPools = () => {
       if (liquidityOutResult === "-1") return BN_0
 
       const valueSp = spotPrices.find((sp) => sp.data?.tokenIn === id)
-      const valueDp = BN_10.pow(meta.decimals.toBigNumber())
+      const valueDp = BN_10.pow(meta.decimals.toNumber())
       const value = new BN(liquidityOutResult).div(valueDp)
 
       if (!valueSp?.data?.spotPrice) return BN_0

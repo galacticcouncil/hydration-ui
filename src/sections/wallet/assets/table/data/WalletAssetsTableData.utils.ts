@@ -181,7 +181,7 @@ export const useAssetsBalances = () => {
         const spotPrice = spotPrices.find(
           (sp) => id.toString() === sp.data?.tokenIn,
         )
-        const meta = assetMetas.data.find((am) => id.toString() === am?.id)
+        const meta = assetMetas.data?.find((am) => id.toString() === am?.id)
 
         if (!spotPrice?.data || !meta) return null
 
