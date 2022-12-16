@@ -90,7 +90,7 @@ export const QUERY_KEYS = {
     assetA,
     assetB,
   ],
-  paymentInfo: (hash: CodecHash, account?: AccountId32 | string) => [
+  paymentInfo: (hash: Maybe<CodecHash>, account?: AccountId32 | string) => [
     QUERY_KEY_PREFIX,
     "paymentInfo",
     hash,

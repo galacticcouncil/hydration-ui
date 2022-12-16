@@ -3,13 +3,18 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { u32, u8 } from "@polkadot/types"
-import { Maybe } from "utils/helpers"
+import { Maybe, undefinedNoop } from "utils/helpers"
 
 export const useAssetMeta = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.assetsMeta, getAllAssetMeta(api), {
-    select: (data) => data.find((i) => i.id === id?.toString()),
-  })
+  return useQuery(
+    QUERY_KEYS.assetsMeta,
+    !!api ? getAllAssetMeta(api) : undefinedNoop,
+    {
+      select: (data) => data?.find((i) => i.id === id?.toString()),
+      enabled: !!api,
+    },
+  )
 }
 
 export const useAssetMetaList = (ids: Array<Maybe<u32 | string>>) => {
@@ -19,9 +24,14 @@ export const useAssetMetaList = (ids: Array<Maybe<u32 | string>>) => {
     .filter((x): x is u32 | string => !!x)
     .map((i) => i?.toString())
 
-  return useQuery(QUERY_KEYS.assetsMeta, getAllAssetMeta(api), {
-    select: (data) => data.filter((i) => normalizedIds.includes(i.id)),
-  })
+  return useQuery(
+    QUERY_KEYS.assetsMeta,
+    !!api ? getAllAssetMeta(api) : undefinedNoop,
+    {
+      select: (data) => data?.filter((i) => normalizedIds.includes(i.id)),
+      enabled: !!api,
+    },
+  )
 }
 
 const getAllAssetMeta = (api: ApiPromise) => async () => {

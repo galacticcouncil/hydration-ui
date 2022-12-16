@@ -19,13 +19,17 @@ export const OMNIPOOL_ACCOUNT_ADDRESS = encodeAddress(
 export const DEPOSIT_CLASS_ID = "1" // TODO: replace with constant from api
 export const POLKADOT_APP_NAME = "HydraDX"
 
-export const ApiPromiseContext = createContext<ApiPromise>({} as ApiPromise)
+export const ApiPromiseContext = createContext<ApiPromise | undefined>(
+  {} as ApiPromise,
+)
 export const useApiPromise = () => useContext(ApiPromiseContext)
 
 export const useTradeRouter = () => {
   const api = useApiPromise()
 
   const router = useMemo(() => {
+    if (!api) return
+
     const poolService = new PolkadotApiPoolService(api)
     const tradeRouter = new TradeRouter(poolService, {
       includeOnly: [PoolType.Omni],

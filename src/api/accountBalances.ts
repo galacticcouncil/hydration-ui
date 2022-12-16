@@ -9,8 +9,8 @@ export const useAccountBalances = (id: Maybe<AccountId32 | string>) => {
   const api = useApiPromise()
   return useQuery(
     QUERY_KEYS.accountBalances(id),
-    !!id ? getAccountBalances(api, id) : undefinedNoop,
-    { enabled: id != null },
+    !!id && !!api ? getAccountBalances(api, id) : undefinedNoop,
+    { enabled: !!api && id != null },
   )
 }
 

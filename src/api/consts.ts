@@ -2,11 +2,14 @@ import { useApiPromise } from "utils/api"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
+import { undefinedNoop } from "utils/helpers"
 
 export const useApiIds = () => {
   const api = useApiPromise()
 
-  return useQuery(QUERY_KEYS.apiIds, getApiIds(api))
+  return useQuery(QUERY_KEYS.apiIds, !!api ? getApiIds(api) : undefinedNoop, {
+    enabled: !!api,
+  })
 }
 
 export const getApiIds = (api: ApiPromise) => async () => {

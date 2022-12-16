@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -27,8 +27,8 @@ export const useAcceptedCurrencies = (ids: Maybe<string | u32>[]) => {
   return useQueries({
     queries: ids.map((id) => ({
       queryKey: QUERY_KEYS.acceptedCurrencies(id),
-      queryFn: !!id ? getAcceptedCurrency(api, id) : undefinedNoop,
-      enabled: !!id,
+      queryFn: !!api && !!id ? getAcceptedCurrency(api, id) : undefinedNoop,
+      enabled: !!api && !!id,
     })),
   })
 }
@@ -39,17 +39,17 @@ export const useSetAsFeePayment = () => {
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
   const { data: paymentInfoData } = usePaymentInfo(
-    api.tx.balances.transferKeepAlive("", "0"),
+    api?.tx.balances.transferKeepAlive("", "0"),
   )
 
   return async (tokenId?: string, toast?: ToastMessage) => {
-    if (!(tokenId && paymentInfoData)) return
+    if (!(api && tokenId && paymentInfoData)) return
 
     const transaction = await createTransaction(
       {
         tx: api.tx.multiTransactionPayment.setCurrency(tokenId),
         overrides: {
-          fee: new BigNumber(paymentInfoData.partialFee.toHex()),
+          fee: new BN(paymentInfoData.partialFee.toHex()),
         },
       },
       { toast },
@@ -78,9 +78,7 @@ export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
   const api = useApiPromise()
   return useQuery(
     QUERY_KEYS.accountCurrency(address),
-    !!address ? getAccountCurrency(api, address) : undefinedNoop,
-    {
-      enabled: !!address,
-    },
+    !!api && !!address ? getAccountCurrency(api, address) : undefinedNoop,
+    { enabled: !!api && !!address },
   )
 }

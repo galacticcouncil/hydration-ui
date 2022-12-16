@@ -5,7 +5,7 @@ import { TradeRouter } from "@galacticcouncil/sdk"
 import { BN_1, BN_10, BN_NAN } from "utils/constants"
 import BN from "bignumber.js"
 import { useTradeRouter } from "utils/api"
-import { Maybe } from "utils/helpers"
+import { Maybe, undefinedNoop } from "utils/helpers"
 
 export const useSpotPrice = (
   assetA: Maybe<u32 | string>,
@@ -17,8 +17,10 @@ export const useSpotPrice = (
 
   return useQuery(
     QUERY_KEYS.spotPrice(tokenIn, tokenOut),
-    getSpotPrice(tradeRouter, tokenIn, tokenOut),
-    { enabled: !!tokenIn && !!tokenOut },
+    !!tradeRouter
+      ? getSpotPrice(tradeRouter, tokenIn, tokenOut)
+      : undefinedNoop,
+    { enabled: !!tradeRouter && !!tokenIn && !!tokenOut },
   )
 }
 
@@ -36,8 +38,10 @@ export const useSpotPrices = (
   return useQueries({
     queries: assets.map((tokenIn) => ({
       queryKey: QUERY_KEYS.spotPrice(tokenIn, tokenOut),
-      queryFn: getSpotPrice(tradeRouter, tokenIn, tokenOut),
-      enabled: !!tokenIn && !!tokenOut,
+      queryFn: !!tradeRouter
+        ? getSpotPrice(tradeRouter, tokenIn, tokenOut)
+        : undefinedNoop,
+      enabled: !!tradeRouter && !!tokenIn && !!tokenOut,
     })),
   })
 }

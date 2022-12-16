@@ -11,8 +11,8 @@ export const useTotalIssuance = (token: Maybe<u32>) => {
 
   return useQuery(
     QUERY_KEYS.totalIssuance(token),
-    token ? getTotalIssuance(api, token) : undefinedNoop,
-    { enabled: !!token },
+    !!api && token ? getTotalIssuance(api, token) : undefinedNoop,
+    { enabled: !!api && !!token },
   )
 }
 
@@ -24,8 +24,8 @@ export const useTotalIssuances = (tokens: Maybe<u32 | string>[]) => {
   return useQueries({
     queries: tokenIds.map((id) => ({
       queryKey: QUERY_KEYS.totalIssuance(id),
-      queryFn: getTotalIssuance(api, id),
-      enabled: !!id,
+      queryFn: !!api ? getTotalIssuance(api, id) : undefinedNoop,
+      enabled: !!api && !!id,
     })),
   })
 }

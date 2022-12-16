@@ -3,16 +3,21 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { u32 } from "@polkadot/types"
-import { Maybe, normalizeId, isNotNil } from "utils/helpers"
+import { Maybe, normalizeId, isNotNil, undefinedNoop } from "utils/helpers"
 import { useAccountBalances } from "./accountBalances"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
 
 export const useAssetDetails = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.assets, getAssetDetails(api), {
-    select: (data) => data.find((i) => i.id === id?.toString()),
-  })
+  return useQuery(
+    QUERY_KEYS.assets,
+    !!api ? getAssetDetails(api) : undefinedNoop,
+    {
+      select: (data) => data?.find((i) => i.id === id?.toString()),
+      enabled: !!api,
+    },
+  )
 }
 
 interface AssetDetailsListFilter {
@@ -29,18 +34,23 @@ export const useAssetDetailsList = (
 
   const normalizedIds = ids?.filter(isNotNil).map(normalizeId)
 
-  return useQuery(QUERY_KEYS.assets, getAssetDetails(api), {
-    select: (data) => {
-      const normalized =
-        normalizedIds != null
-          ? data.filter((i) => normalizedIds?.includes(i.id))
-          : data
+  return useQuery(
+    QUERY_KEYS.assets,
+    !!api ? getAssetDetails(api) : undefinedNoop,
+    {
+      select: (data) => {
+        const normalized =
+          normalizedIds != null
+            ? data?.filter((i) => normalizedIds?.includes(i.id))
+            : data
 
-      return normalized.filter((asset) =>
-        filter.assetType.includes(asset.assetType),
-      )
+        return normalized?.filter((asset) =>
+          filter.assetType.includes(asset.assetType),
+        )
+      },
+      enabled: !!api,
     },
-  })
+  )
 }
 
 export const useAssetAccountDetails = (

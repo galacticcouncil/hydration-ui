@@ -3,16 +3,27 @@ import { useQueries, useQuery } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u128, u32 } from "@polkadot/types-codec"
+import { undefinedNoop } from "utils/helpers"
 import { ITuple } from "@polkadot/types-codec/types"
 
 export const useOmnipoolAsset = (id: u32 | string) => {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.omnipoolAsset(id), getOmnipoolAsset(api, id))
+
+  return useQuery(
+    QUERY_KEYS.omnipoolAsset(id),
+    !!api ? getOmnipoolAsset(api, id) : undefinedNoop,
+    { enabled: !!api },
+  )
 }
 
 export const useOmnipoolAssets = () => {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.omnipoolAssets, getOmnipoolAssets(api))
+
+  return useQuery(
+    QUERY_KEYS.omnipoolAssets,
+    !!api ? getOmnipoolAssets(api) : undefinedNoop,
+    { enabled: !!api },
+  )
 }
 
 export const useHubAssetTradability = () => {
@@ -54,7 +65,12 @@ export const useOmnipoolPositions = (itemIds: u128[]) => {
 
 export const useOmnipoolFee = () => {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.omnipoolFee, getOmnipoolFee(api))
+
+  return useQuery(
+    QUERY_KEYS.omnipoolFee,
+    !!api ? getOmnipoolFee(api) : undefinedNoop,
+    { enabled: !!api },
+  )
 }
 
 export const getOmnipoolFee = (api: ApiPromise) => async () => {

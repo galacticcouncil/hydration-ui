@@ -1,13 +1,12 @@
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
-
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
-import { QUERY_KEYS } from "../utils/queryKeys"
+import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { Maybe, undefinedNoop } from "utils/helpers"
-import { useAccountStore } from "../state/store"
+import { useAccountStore } from "state/store"
 
 function calculateFreeBalance(
   free: BigNumber,
@@ -69,10 +68,10 @@ export const useTokenBalance = (
 
   return useQuery(
     QUERY_KEYS.tokenBalance(id, address),
-    address != null && id != null
+    !!api && address != null && id != null
       ? getTokenBalance(api, address, id)
       : undefinedNoop,
-    { enabled: address != null && id != null },
+    { enabled: !!api && address != null && id != null },
   )
 }
 
@@ -86,22 +85,26 @@ export function useTokensBalances(
     queries: tokenIds.map((id) => ({
       queryKey: QUERY_KEYS.tokenBalance(id, address),
       queryFn:
-        address != null ? getTokenBalance(api, address, id) : undefinedNoop,
-      enabled: !!id && !!address,
+        !!api && !!address ? getTokenBalance(api, address, id) : undefinedNoop,
+      enabled: !!api && !!id && !!address,
     })),
   })
 }
 
-const getExistentialDeposit = (api: ApiPromise) => {
+const getExistentialDeposit = (api: ApiPromise) => async () => {
   return api.consts.balances.existentialDeposit
 }
 
 export function useExistentialDeposit() {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.existentialDeposit, async () => {
-    const existentialDeposit = await getExistentialDeposit(api)
-    return existentialDeposit.toBigNumber()
-  })
+  return useQuery(
+    QUERY_KEYS.existentialDeposit,
+    !!api ? getExistentialDeposit(api) : undefinedNoop,
+    {
+      select: (data) => data?.toBigNumber(),
+      enabled: !!api,
+    },
+  )
 }
 
 export const useTokensLocks = (ids: Maybe<u32 | string>[]) => {
@@ -117,10 +120,10 @@ export const useTokensLocks = (ids: Maybe<u32 | string>[]) => {
     queries: normalizedIds?.map((id) => ({
       queryKey: QUERY_KEYS.lock(account?.address, id),
       queryFn:
-        account?.address != null
+        !!api && account?.address != null
           ? getTokenLock(api, account.address, id)
           : undefinedNoop,
-      enabled: !!account?.address,
+      enabled: !!api && !!account?.address,
     })),
   })
 }

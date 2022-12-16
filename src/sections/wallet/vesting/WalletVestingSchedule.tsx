@@ -26,7 +26,7 @@ export const WalletVestingSchedule = () => {
   const { data: claimableBalance } = useVestingTotalClaimableBalance()
 
   const { data: nextClaimableDate } = useNextClaimableDate()
-  const { data: paymentInfoData } = usePaymentInfo(api.tx.vesting.claim())
+  const { data: paymentInfoData } = usePaymentInfo(api?.tx.vesting.claim())
   const { data: existentialDeposit } = useExistentialDeposit()
   const { data: meta } = useAssetMeta(NATIVE_ASSET_ID)
 
@@ -52,6 +52,7 @@ export const WalletVestingSchedule = () => {
   }, [paymentInfoData, existentialDeposit, claimableBalance])
 
   const handleClaim = useCallback(async () => {
+    if (!api) throw new Error("Missing ApiPromise")
     return await createTransaction({
       tx: api.tx.vesting.claim(),
     })

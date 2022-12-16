@@ -4,7 +4,6 @@ import { InvalidateOnBlock } from "components/InvalidateOnBlock"
 import { ToastProvider } from "components/Toast/ToastProvider"
 import { FC, PropsWithChildren } from "react"
 import { SkeletonTheme } from "react-loading-skeleton"
-import { LoadingPage } from "sections/loading/LoadingPage"
 import { Transactions } from "sections/transaction/Transactions"
 import { theme } from "theme"
 import { ApiPromiseContext } from "utils/api"
@@ -12,8 +11,6 @@ import { GcTransactionCenter } from "sections/gcapps/TransactionCenter"
 
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   const api = useProvider()
-
-  if (!api.data) return <LoadingPage />
 
   return (
     <TooltipProvider>

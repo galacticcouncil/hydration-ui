@@ -46,6 +46,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   })
 
   const onSubmit = async (values: FormValues<typeof form>) => {
+    if (!api) throw new Error("Missing ApiPromise")
     if (assetMeta?.decimals == null) throw new Error("Missing asset meta")
 
     const amount = getFixedPointAmount(

@@ -10,15 +10,15 @@ import { useAccountStore } from "state/store"
 import { BLOCK_TIME, BN_0, ORMLVEST } from "utils/constants"
 import { useMemo } from "react"
 import { useApiPromise } from "utils/api"
-import { getExpectedBlockDate } from "../utils/block"
+import { getExpectedBlockDate } from "utils/block"
 import { compareAsc } from "date-fns"
 
 export const useVestingSchedules = (address: Maybe<AccountId32 | string>) => {
   const api = useApiPromise()
   return useQuery(
     QUERY_KEYS.vestingSchedules(address),
-    address != null ? getVestingSchedules(api, address) : undefinedNoop,
-    { enabled: !!address },
+    !!api && !!address ? getVestingSchedules(api, address) : undefinedNoop,
+    { enabled: !!api && !!address },
   )
 }
 
@@ -26,10 +26,8 @@ export const useVestingLockBalance = (address: Maybe<AccountId32 | string>) => {
   const api = useApiPromise()
   return useQuery(
     QUERY_KEYS.vestingLockBalance(address),
-    address != null ? getVestingLockBalance(api, address) : undefinedNoop,
-    {
-      enabled: !!address,
-    },
+    !!api && !!address ? getVestingLockBalance(api, address) : undefinedNoop,
+    { enabled: !!address },
   )
 }
 

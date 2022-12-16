@@ -10,7 +10,7 @@ export const InvalidateOnBlock = (props: { children: ReactNode }) => {
   useEffect(() => {
     let cancel: () => void
 
-    api.rpc.chain
+    api?.rpc.chain
       .subscribeNewHeads(() => {
         queryClient.invalidateQueries([QUERY_KEY_PREFIX])
       })

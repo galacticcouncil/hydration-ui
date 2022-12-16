@@ -66,7 +66,7 @@ export const useSendTransactionMutation = () => {
   const sendTx = useMutation(async (sign: SubmittableExtrinsic<"promise">) => {
     return await new Promise<ISubmittableResult>(async (resolve, reject) => {
       const unsubscribe = await sign.send((result) => {
-        if (!result || !result.status) return
+        if (!api || !result || !result.status) return
         if (isMounted()) setTxState(result.status.type)
         if (result.isCompleted) {
           if (result.dispatchError) {

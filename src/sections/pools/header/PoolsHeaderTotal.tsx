@@ -37,7 +37,7 @@ const PoolsHeaderTotalData = ({
 
   return (
     <Heading as="h3" sx={{ fontSize: [16, 42], fontWeight: 500 }}>
-      {!isLoading ? (
+      {!isLoading && !!value ? (
         <>
           <Text
             font="ChakraPetch"

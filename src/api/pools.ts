@@ -6,11 +6,16 @@ import { useMemo } from "react"
 import { u32 } from "@polkadot/types"
 import { useTotalIssuances } from "./totalIssuance"
 import { useTokensBalances } from "./balances"
-import { useAccountStore } from "../state/store"
+import { useAccountStore } from "state/store"
+import { undefinedNoop } from "utils/helpers"
 
 export const usePools = () => {
   const tradeRouter = useTradeRouter()
-  return useQuery(QUERY_KEYS.pools, getPools(tradeRouter))
+  return useQuery(
+    QUERY_KEYS.pools,
+    !!tradeRouter ? getPools(tradeRouter) : undefinedNoop,
+    { enabled: !!tradeRouter },
+  )
 }
 
 export const getPools = (tradeRouter: TradeRouter) => async () =>

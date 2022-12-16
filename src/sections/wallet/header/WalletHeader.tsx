@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { useAccountStore } from "../../../state/store"
+import { useAccountStore } from "state/store"
 import { Text } from "components/Typography/Text/Text"
 import { useCopyToClipboard } from "react-use"
 import { ReactComponent as CopyIcon } from "assets/icons/CopyIcon.svg"
@@ -18,8 +18,8 @@ export const WalletHeader = () => {
   const [, copy] = useCopyToClipboard()
   const [open, setOpen] = useState(false)
 
-  const hydraAddress = account
-    ? encodeAddress(decodeAddress(account?.address), HYDRA_ADDRESS_PREFIX)
+  const hydraAddress = account?.address
+    ? encodeAddress(decodeAddress(account.address), HYDRA_ADDRESS_PREFIX)
     : ""
 
   return (

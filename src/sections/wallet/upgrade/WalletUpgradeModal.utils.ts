@@ -42,6 +42,7 @@ export const useUpdateMetadataMutation = () => {
       const wallet = getWalletBySource(account?.provider)
       const extension = wallet?.extension as InjectedExtension | undefined
 
+      if (!api) throw new Error("Missing ApiPromise")
       if (wallet == null) throw new Error("Missing wallet")
       if (extension == null) throw new Error("Missing extension")
 
@@ -71,6 +72,7 @@ export const useUpdateMetadataMutation = () => {
     const wallet = getWalletBySource(account?.provider)
     const extension = wallet?.extension as InjectedExtension | undefined
 
+    if (!api) throw new Error("Missing ApiPromise")
     if (wallet == null) throw new Error("Missing wallet")
     if (extension == null) throw new Error("Missing extension")
 

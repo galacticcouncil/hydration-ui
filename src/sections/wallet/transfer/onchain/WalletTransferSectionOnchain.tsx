@@ -53,11 +53,12 @@ export function WalletTransferSectionOnchain(props: {
 
   const { data: paymentInfoData } = usePaymentInfo(
     asset === NATIVE_ASSET_ID
-      ? api.tx.balances.transferKeepAlive("", "0")
-      : api.tx.tokens.transferKeepAlive("", asset, "0"),
+      ? api?.tx.balances.transferKeepAlive("", "0")
+      : api?.tx.tokens.transferKeepAlive("", asset, "0"),
   )
 
   const onSubmit = async (values: FormValues<typeof form>) => {
+    if (!api) throw new Error("Missing ApiPromise")
     if (assetMeta.data?.decimals == null) throw new Error("Missing asset meta")
 
     const amount = new BigNumber(values.amount).multipliedBy(

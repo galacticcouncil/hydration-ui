@@ -4,6 +4,7 @@ import { useApiPromise } from "utils/api"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
+import { undefinedNoop } from "utils/helpers"
 
 export const useUniques = (
   address: string | AccountId32,
@@ -13,8 +14,8 @@ export const useUniques = (
 
   return useQuery(
     QUERY_KEYS.uniques(address, collectionId),
-    getUniques(api, address, collectionId),
-    { enabled: !!address && !!collectionId },
+    !!api ? getUniques(api, address, collectionId) : undefinedNoop,
+    { enabled: !!api && !!address && !!collectionId },
   )
 }
 
