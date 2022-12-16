@@ -56,7 +56,7 @@ export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
               css={{ wordWrap: "break-word" }}
             >
               {t("address.input.native", {
-                symbol: asset.data?.name,
+                symbol: asset.data?.symbol,
                 address: nativeAddress,
               })}
             </Text>
