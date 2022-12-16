@@ -18,7 +18,9 @@ export function usePaymentInfo(tx: Maybe<SubmittableExtrinsic>) {
 
   return useQuery(
     QUERY_KEYS.paymentInfo(tx?.hash, finalAccount),
-    !!tx && finalAccount != null ? getPaymentInfo(tx, finalAccount) : undefinedNoop,
+    !!tx && finalAccount != null
+      ? getPaymentInfo(tx, finalAccount)
+      : undefinedNoop,
     { enabled: !!tx && !!finalAccount },
   )
 }
