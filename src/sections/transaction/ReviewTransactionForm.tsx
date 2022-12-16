@@ -84,8 +84,9 @@ export const ReviewTransactionForm = (
                 <>
                   <Text color="white">
                     {t("pools.addLiquidity.modal.row.transactionCostValue", {
-                      amount: new BigNumber(
-                        paymentInfoData.partialFee.toHex(),
+                      amount: (
+                        props.overrides?.fee ??
+                        new BigNumber(paymentInfoData.partialFee.toHex())
                       ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
                       symbol: feeMeta.data?.symbol,
                       fixedPointScale: 12,

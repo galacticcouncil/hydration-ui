@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -6,6 +7,7 @@ import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import { useAccountStore, useStore } from "state/store"
 import { u32 } from "@polkadot/types-codec"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
+import { usePaymentInfo } from "./transaction"
 
 const getAcceptedCurrency = (api: ApiPromise, id: u32 | string) => async () => {
   const normalizedId = normalizeId(id)
@@ -36,11 +38,18 @@ export const useSetAsFeePayment = () => {
   const { account } = useAccountStore()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
+  const { data: paymentInfoData } = usePaymentInfo(
+    api.tx.balances.transferKeepAlive("", "0"),
+  )
 
   return async (tokenId?: string) => {
-    if (!tokenId) return
+    if (!(tokenId && paymentInfoData)) return
+
     const transaction = await createTransaction({
       tx: api.tx.multiTransactionPayment.setCurrency(tokenId),
+      overrides: {
+        fee: new BigNumber(paymentInfoData.partialFee.toHex()),
+      },
     })
     if (transaction.isError) return
     await queryClient.refetchQueries({

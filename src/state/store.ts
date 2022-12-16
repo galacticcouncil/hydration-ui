@@ -5,6 +5,7 @@ import { ISubmittableResult } from "@polkadot/types/types"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { POLKADOT_APP_NAME } from "utils/api"
 import { v4 as uuid } from "uuid"
+import BigNumber from "bignumber.js"
 
 export interface Account {
   name: string
@@ -15,6 +16,9 @@ export interface Account {
 export interface TransactionInput {
   title?: string
   tx: SubmittableExtrinsic
+  overrides?: {
+    fee: BigNumber
+  }
 }
 
 export interface Transaction extends TransactionInput {
