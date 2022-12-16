@@ -11,7 +11,7 @@
     "@galacticcouncil/math-lbp": "^0.0.3",
     "@galacticcouncil/math-xyk": "^0.0.3",
     "@galacticcouncil/sdk": "^0.0.1-beta.20",
-    "@galacticcouncil/apps": "^1.0.3",
+    "@galacticcouncil/apps": "https://github.com/galacticcouncil/apps#fbd8d1139c1e553956856c1e7a59ec189c41a7ea",
     "@lit-labs/react": "^1.1.0",
     "@polkadot/api": "^9.3.3",
     "@polkadot/extension-inject": "^0.44.5",
