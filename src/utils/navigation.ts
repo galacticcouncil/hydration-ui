@@ -39,13 +39,13 @@ export const MENU_ITEMS = [
     external: false,
     mobVisible: true,
   },
-  {
-    key: "pools",
-    translationKey: "header.pools",
-    href: LINKS.pools_and_farms,
-    external: false,
-    mobVisible: true,
-  },
+  // {
+  //   key: "pools",
+  //   translationKey: "header.pools",
+  //   href: LINKS.pools_and_farms,
+  //   external: false,
+  //   mobVisible: true,
+  // },
   {
     key: "wallet",
     translationKey: "header.wallet",
