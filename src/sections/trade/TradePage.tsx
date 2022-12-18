@@ -1,4 +1,5 @@
 import { Page } from "components/Layout/Page/Page"
+import { SContainer } from "./TradePage.styled"
 
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
@@ -37,7 +38,7 @@ export function TradePage() {
 
   return (
     <Page>
-      <div>
+      <SContainer>
         <TradeApp
           ref={ref}
           accountName={account?.name}
@@ -49,7 +50,7 @@ export function TradePage() {
           assetOut={search.success ? search.data.assetOut : undefined}
           pools="Omni"
         />
-      </div>
+      </SContainer>
     </Page>
   )
 }
