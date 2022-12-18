@@ -16,6 +16,7 @@ export const EXTERNAL_LINKS = {
 } as const
 
 const isWalletPageEnabled = import.meta.env.VITE_FF_WALLET_ENABLED === "true"
+const isPoolsPageEnabled = import.meta.env.VITE_FF_POOLS_ENABLED === "true"
 
 export const MENU_ITEMS = [
   /*{
@@ -36,6 +37,7 @@ export const MENU_ITEMS = [
     key: "trade",
     translationKey: "header.trade",
     href: LINKS.trade,
+    enabled: true,
     external: false,
     mobVisible: true,
   },
@@ -43,13 +45,15 @@ export const MENU_ITEMS = [
     key: "pools",
     translationKey: "header.pools",
     href: LINKS.pools_and_farms,
+    enabled: isPoolsPageEnabled,
     external: false,
-    mobVisible: true,
+    mobVisible: false,
   },
   {
     key: "wallet",
     translationKey: "header.wallet",
     href: isWalletPageEnabled ? LINKS.wallet : EXTERNAL_LINKS.wallet,
+    enabled: true,
     external: !isWalletPageEnabled,
     mobVisible: true,
   },

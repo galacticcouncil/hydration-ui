@@ -9,6 +9,10 @@ export const HeaderMenu = () => {
   return (
     <SList>
       {MENU_ITEMS.map((item, i) => {
+        if (!item.enabled) {
+          return null
+        }
+
         if (item.external) {
           return (
             <a href={item.href} key={i}>
