@@ -1,54 +1,5 @@
-import { Text } from "components/Typography/Text/Text"
 import { ReactComponent as Wormhole } from "assets/icons/crosschains/Wormhole.svg"
-import { ReactComponent as Karura } from "assets/icons/crosschains/Karura.svg"
 import { ReactNode } from "react"
-import { ExternalLink } from "components/Link/ExternalLink"
-import { Trans, useTranslation } from "react-i18next"
-
-function CrosschainKaruraGuide() {
-  const { t } = useTranslation()
-
-  return (
-    <div sx={{ flex: "column", align: "center", gap: 16 }}>
-      <Trans t={t} i18nKey="wallet.assets.transfer.crosschain.guide.karura">
-        <Text
-          tAlign="center"
-          fw={400}
-          sx={{ maxWidth: 400 }}
-          color="basic200"
-        />
-
-        <Text
-          tAlign="center"
-          fw={400}
-          sx={{ maxWidth: 400 }}
-          color="basic200"
-        />
-
-        <Text
-          tAlign="center"
-          fw={400}
-          sx={{ maxWidth: 400 }}
-          color="basic200"
-        />
-
-        <Text tAlign="center" fw={400} sx={{ color: "warning300" }} />
-
-        <Text
-          tAlign="center"
-          fw={400}
-          sx={{ maxWidth: 500 }}
-          color="basic200"
-        />
-
-        <ExternalLink
-          href="https://docs.bsx.fi/howto_bridge/#karura"
-          sx={{ color: "brightBlue300" }}
-        />
-      </Trans>
-    </div>
-  )
-}
 
 export const CROSSCHAINS: Array<{
   icon: ReactNode

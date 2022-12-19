@@ -18,10 +18,9 @@ export const WalletHeader = () => {
   const [, copy] = useCopyToClipboard()
   const [open, setOpen] = useState(false)
 
-  const hydraAddress = account ? encodeAddress(
-    decodeAddress(account?.address),
-    HYDRA_ADDRESS_PREFIX,
-  ): '';
+  const hydraAddress = account
+    ? encodeAddress(decodeAddress(account?.address), HYDRA_ADDRESS_PREFIX)
+    : ""
 
   return (
     <>

@@ -2,10 +2,10 @@ import { theme } from "theme"
 import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronDown.svg"
 import { ButtonTransparent } from "components/Button/Button"
 import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.svg"
-import { ReactComponent as TransferIcon } from "assets/icons/TransferIcon.svg"
+//import { ReactComponent as TransferIcon } from "assets/icons/TransferIcon.svg"
 // import { ReactComponent as DetailsIcon } from "assets/icons/DetailsIcon.svg"
-import { TableAction } from "components/Table/Table"
-import { useTranslation } from "react-i18next"
+//import { TableAction } from "components/Table/Table"
+//import { useTranslation } from "react-i18next"
 
 type Props = {
   toggleExpanded: () => void
@@ -13,7 +13,7 @@ type Props = {
 }
 
 export const WalletAssetsHydraPositionsActions = (props: Props) => {
-  const { t } = useTranslation()
+  //const { t } = useTranslation()
 
   return (
     <>
