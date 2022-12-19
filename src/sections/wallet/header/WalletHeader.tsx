@@ -51,9 +51,7 @@ export const WalletHeader = () => {
                 fs={14}
                 fw={500}
                 sx={{ maxWidth: ["calc(100vw - 60px)", "fit-content"] }}
-                css={{
-                  wordWrap: "break-word",
-                }}
+                css={{ wordWrap: "break-word" }}
               >
                 {hydraAddress}
               </Text>
@@ -64,11 +62,7 @@ export const WalletHeader = () => {
                 <ButtonTransparent
                   onClick={() => copy(account.address.toString())}
                 >
-                  <CopyIcon
-                    sx={{
-                      color: "brightBlue300",
-                    }}
-                  />
+                  <CopyIcon sx={{ color: "brightBlue300" }} />
                 </ButtonTransparent>
               </InfoTooltip>
             </div>
