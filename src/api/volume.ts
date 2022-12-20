@@ -9,8 +9,6 @@ export const getTradeVolume = (assetId: u32) => async () => {
   const assetIn = assetId.toNumber()
   const after = addDays(new Date(), -1).toISOString()
 
-  console.log(assetIn)
-
   // This is being typed manually, as GraphQL schema does not
   // describe the event arguments at all
   return await request<{
@@ -42,7 +40,7 @@ export const getTradeVolume = (assetId: u32) => async () => {
       query TradeVolume($assetIn: Int!, $after: DateTime!) {
         events(
           where: {
-            args_jsonContains: { asset_in: $assetIn }
+            args_jsonContains: { assetIn: $assetIn }
             block: { timestamp_gte: $after }
             AND: {
               name_eq: "Omnipool.SellExecuted"
