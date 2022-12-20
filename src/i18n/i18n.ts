@@ -90,7 +90,11 @@ i18n
         if (formatName === "compact") {
           const num = normalizeBigNumber(value)
           if (num == null) return null
-          return formatNum(num.toFixed(), { notation: "compact" }, lng)
+          return formatNum(
+            num.toFixed(),
+            { notation: "compact" },
+            lng,
+          )?.replaceAll(",", String.fromCharCode(160))
         }
 
         if (value instanceof Date) {

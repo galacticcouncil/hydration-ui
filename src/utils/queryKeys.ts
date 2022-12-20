@@ -180,4 +180,5 @@ export const QUERY_KEYS = {
     address,
   ],
   apiIds: [QUERY_KEY_PREFIX, "apiIds"],
+  tvlCap: [QUERY_KEY_PREFIX, "tvlCap"],
 } as const

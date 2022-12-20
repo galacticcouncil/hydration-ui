@@ -13,6 +13,7 @@ import { PoolIncentives } from "./details/PoolIncentives"
 import { usePoolPositions } from "sections/pools/pool/Pool.utils"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import { PoolCapacity } from "sections/pools/pool/capacity/PoolCapacity"
 
 type Props = { pool: OmnipoolPool }
 
@@ -37,6 +38,7 @@ export const Pool = ({ pool }: Props) => {
           onExpandClick={() => setIsExpanded((prev) => !prev)}
         />
       </SGridContainer>
+      <PoolCapacity pool={pool} />
       {isDesktop && !!positions.data?.length && (
         <AnimatePresence>
           {isExpanded && (
