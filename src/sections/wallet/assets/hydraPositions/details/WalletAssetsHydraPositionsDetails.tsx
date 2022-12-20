@@ -41,7 +41,7 @@ export const WalletAssetsHydraPositionsDetails = ({
           </Text>
         </div>
         <Text fs={14} lh={18} fw={500} color="white" sx={{ mt: 8 }}>
-          {t("value", { value: amount })}
+          {t("value", { value: amount, numberSuffix: ` ${symbol ?? "N/A"}` })}
         </Text>
         <Text
           fs={12}
