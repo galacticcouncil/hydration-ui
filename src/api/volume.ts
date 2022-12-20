@@ -7,7 +7,7 @@ import { u32 } from "@polkadot/types-codec"
 
 export const getTradeVolume = (assetId: u32) => async () => {
   const assetIn = assetId.toNumber()
-  const after = addDays(new Date(), -1).toISOString()
+  const after = addDays(new Date(), -20).toISOString()
 
   // This is being typed manually, as GraphQL schema does not
   // describe the event arguments at all
