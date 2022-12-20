@@ -41,7 +41,11 @@ export const WalletAssetsHydraPositionsDetails = ({
           </Text>
         </div>
         <Text fs={14} lh={18} fw={500} color="white" sx={{ mt: 8 }}>
-          {t("value", { value: amount, numberSuffix: ` ${symbol ?? "N/A"}` })}
+          {t("value", {
+            value: amount,
+            numberSuffix: ` ${symbol ?? "N/A"}`,
+            type: "token",
+          })}
         </Text>
         <Text
           fs={12}
@@ -64,7 +68,7 @@ export const WalletAssetsHydraPositionsDetails = ({
           {t("wallet.assets.hydraPositions.details.shares")}
         </Text>
         <Text fs={14} lh={18} fw={500} color="white" sx={{ mt: 8 }}>
-          {t("value", { value: shares })}
+          {t("value", { value: shares, type: "token" })}
         </Text>
       </div>
     </div>
