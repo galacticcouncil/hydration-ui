@@ -1581,17 +1581,18 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
-"@galacticcouncil/apps@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.0.4.tgz#5500f184ad6a40a331f1857f2291e53340960fa2"
-  integrity sha512-HsjGslkZXnL5D7vS/Hnm7ksb7thYVmn6wbiDMdPW4l+sPe2GrWNViE/uqckXSpsZ6hiMax6Y4KEfcXYqun+z+g==
+"@galacticcouncil/apps@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.0.5.tgz#5642847cd2e183853ada44548cc04032e9f6bdfb"
+  integrity sha512-xH9FVn2nH/5/FR1yoy8Lw4aFSEt1ubfJ58tfHgGkeZRiZIeDEdmvDzHdxWZFoNbjBs0niNEqD1oKcCZpjRCMag==
   dependencies:
-    "@galacticcouncil/ui" "^1.0.29"
+    "@galacticcouncil/ui" "^1.0.30"
     "@lit/reactive-element" "^1.0.0"
     "@talismn/connect-wallets" "^1.2.1"
     "@thi.ng/atom" "^5.1.3"
     "@vaadin/router" "^1.7.4"
     humanize-duration "^3.27.3"
+    imask "^6.4.3"
     lit "^2.0.0"
     lit-element "^3.0.0"
     lit-html "^2.0.0"
@@ -1630,10 +1631,10 @@
     capi "^0.1.0-beta.12"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^1.0.29":
-  version "1.0.29"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.0.29.tgz#c270f6e455c311effc3b1f4ab908cdbafeccae04"
-  integrity sha512-p47mcrzJNQzfyPC4QVbqEBZWu55XeQiWCwjY/rzQ1WtFT6pmGu4vHDyr3e6/9kzVEscH/uKR0z1oG3xRH+FalQ==
+"@galacticcouncil/ui@^1.0.30":
+  version "1.0.30"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.0.30.tgz#bcfcfc2b5209b6769e7bce65b166ab60ece308e1"
+  integrity sha512-zMmmn6kGM1uWfba/I20JiWF/eL82G3ROvdr8QVfAMZVWBkuGV5Hr7e1oR13/xEuUb3+iu7XfAkIq08mE6UHPjA==
   dependencies:
     "@lit/reactive-element" "^1.0.0"
     imask "^6.4.3"
