@@ -101,7 +101,14 @@ export const useOmnipoolPools = () => {
       .filter((x): x is OmnipoolPool => x !== null)
 
     return rows
-  }, [assets.data, metas.data, apiIds.data, spotPrices, balances])
+  }, [
+    assets.data,
+    assetDetails.data,
+    metas.data,
+    apiIds.data,
+    spotPrices,
+    balances,
+  ])
 
   return { data, isLoading: isInitialLoading }
 }
