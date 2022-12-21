@@ -7,7 +7,9 @@ export const usePoolPositions = (pool: OmnipoolPool) => {
 
   const data = useMemo(
     () =>
-      positions.data.filter((position) => position.id === pool.id.toString()),
+      positions.data.filter(
+        (position) => position.assetId === pool.id.toString(),
+      ),
     [pool.id, positions.data],
   )
 

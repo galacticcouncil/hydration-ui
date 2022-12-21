@@ -29,7 +29,7 @@ export const LiquidityPosition = ({ position, index }: Props) => {
             {t("pools.pool.positions.position.title", { index })}
           </Text>
         </div>
-        <div sx={{ flex: "row", justify: "space-between" }}>
+        <div css={{ display: "grid", gridTemplateColumns: "1fr auto 1fr" }}>
           <div sx={{ flex: "column", gap: 6 }}>
             <Text fs={[14, 14]} color="whiteish500">
               {t("pools.pool.positions.position.amount")}
@@ -41,7 +41,7 @@ export const LiquidityPosition = ({ position, index }: Props) => {
             </Text>
           </div>
           <Separator orientation="vertical" />
-          <div sx={{ flex: "column", gap: 2 }}>
+          <div sx={{ flex: "column", gap: 2, align: "end" }}>
             <WalletAssetsHydraPositionsData
               symbol={position.symbol}
               value={position.value}
