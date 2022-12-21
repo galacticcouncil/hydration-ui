@@ -3,22 +3,22 @@ import { theme } from "theme"
 
 export const SContainer = styled.div`
   position: relative;
-
-  padding: 0 30px 20px;
-
+  padding: 0 20px 20px;
   text-align: center;
-`
 
-export const SText = styled.div``
+  @media ${theme.viewport.gte.md} {
+    padding: 0 30px 20px;
+  }
+`
 
 export const SBarContainer = styled.div`
   position: relative;
-  
+
   width: 100%;
   height: 7px;
-  
+
   margin-top: 3px;
-  
+
   border-radius: 2px;
   background-color: ${theme.colors.darkBlue401};
 `

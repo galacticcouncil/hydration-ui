@@ -31,7 +31,7 @@ export const PoolDetails = ({ pool, onClick }: PoolDetailsProps) => {
             </div>
           </div>
         </div>
-        <div sx={{ flex: "column", gap: 10 }}>
+        <div sx={{ flex: "column", gap: 10, align: ["end", "start"] }}>
           <Text fs={13} color="basic400">
             {t("pools.pool.poolDetails.fee")}
           </Text>
