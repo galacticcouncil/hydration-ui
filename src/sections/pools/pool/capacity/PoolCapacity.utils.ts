@@ -34,15 +34,26 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
     if (!asset?.data)
       return { capacity: BN_NAN, filled: BN_NAN, filledPercent: BN_NAN, symbol }
 
+    const assetReserve = poolBalance.data.balance.toString()
     const assetHubReserve = asset.data.hubReserve.toString()
     const assetCap = asset.data.cap.toString()
-    const totalHubReserve = hubBalance.data.balance.toString()
+    const totalHubReserve = hubBalance.data.total.toString()
 
     const capDifference = calculate_cap_difference(
+      assetReserve,
       assetHubReserve,
       assetCap,
       totalHubReserve,
     )
+
+    // console.table([
+    //   ["asset_id", asset.id.toString()],
+    //   ["asset_reserve", assetReserve],
+    //   ["asset_hub_reserve", assetHubReserve],
+    //   ["asset_cap", assetCap],
+    //   ["total_hub_reserve", totalHubReserve],
+    //   ["calculate_cap_difference", capDifference],
+    // ])
 
     if (capDifference === "-1")
       return { capacity: BN_NAN, filled: BN_NAN, filledPercent: BN_NAN, symbol }
@@ -50,14 +61,6 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
     const capacity = poolBalance.data.balance.plus(new BN(capDifference))
     const filled = poolBalance.data.balance
     const filledPercent = filled.div(capacity).times(100)
-
-    console.table([
-      ["asset_id", asset.id.toString()],
-      ["asset_hub_reserve", assetHubReserve],
-      ["asset_cap", assetCap],
-      ["total_hub_reserve", totalHubReserve],
-      ["calculate_cap_difference", capDifference],
-    ])
 
     return { capacity, filled, filledPercent, symbol }
   }, [
