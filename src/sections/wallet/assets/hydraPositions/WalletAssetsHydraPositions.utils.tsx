@@ -64,7 +64,7 @@ export const useHydraPositionsTable = (
       cell: ({ row }) => (
         <WalletAssetsHydraPositionsActions
           toggleExpanded={() => row.toggleExpanded()}
-          onTransferClick={() => actions.onTransfer(row.original.id)}
+          onTransferClick={() => actions.onTransfer(row.original.assetId)}
         />
       ),
     }),
@@ -83,7 +83,7 @@ export const useHydraPositionsTable = (
 }
 
 export type HydraPositionsTableData = {
-  id: string
+  assetId: string
   symbol: string
   name: string
   lrna: BN

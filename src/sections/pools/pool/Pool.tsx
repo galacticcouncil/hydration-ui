@@ -54,7 +54,7 @@ export const Pool = ({ pool }: Props) => {
                 <div sx={{ flex: "column", gap: 16 }}>
                   {positions.data.map((position, i) => (
                     <LiquidityPosition
-                      key={position.id}
+                      key={`${i}-${position.assetId}`}
                       position={position}
                       index={i + 1}
                     />
