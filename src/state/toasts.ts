@@ -27,7 +27,7 @@ interface ToastStore {
   add: (
     variant: ToastVariant,
     toast: ToastParams,
-    fn: (value: ToastData[]) => void,
+    setLocalStorage: (toasts: ToastData[]) => void,
   ) => string
   remove: (id: string) => void
   hide: (id: string) => void
@@ -41,7 +41,7 @@ const useToastsStore = create<ToastStore>((set) => ({
   toasts: [],
   sidebar: false,
 
-  add(variant, toast, fn) {
+  add(variant, toast, setLocalStorage) {
     const id = toast.id ?? uuid()
     const dateCreated = new Date().toISOString()
     const title = renderToString(toast.title)
@@ -61,7 +61,7 @@ const useToastsStore = create<ToastStore>((set) => ({
           hidden: state.sidebar,
         } as ToastData,
       ]
-      fn(toasts)
+      setLocalStorage(toasts)
       return { toasts }
     })
 

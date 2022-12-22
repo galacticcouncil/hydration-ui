@@ -14,7 +14,7 @@ export function ReviewTransactionToast<
   mutation: UseMutationResult<TData, TError, TVariables, TContext>
   onReview?: () => void
   onClose?: () => void
-  toast?: ToastMessage
+  toastMessage?: ToastMessage
 }) {
   const toast = useToast()
   const { t } = useTranslation()
@@ -34,7 +34,7 @@ export function ReviewTransactionToast<
     if (isSuccess) {
       // toast should be still present, even if ReviewTransaction is unmounted
       toastRef.current.success({
-        title: props.toast?.onSuccess ?? (
+        title: props.toastMessage?.onSuccess ?? (
           <p>{t("pools.reviewTransaction.toast.success")}</p>
         ),
       })
@@ -45,7 +45,7 @@ export function ReviewTransactionToast<
     let toRemoveId: string | undefined = undefined
     if (isError) {
       toastRef.current.error({
-        title: props.toast?.onError ?? (
+        title: props.toastMessage?.onError ?? (
           <p>{t("pools.reviewTransaction.toast.error")}</p>
         ),
       })
@@ -53,7 +53,7 @@ export function ReviewTransactionToast<
 
     if (isLoading) {
       toRemoveId = toastRef.current.loading({
-        title: props.toast?.onLoading ?? (
+        title: props.toastMessage?.onLoading ?? (
           <p>{t("pools.reviewTransaction.toast.pending")}</p>
         ),
       })
@@ -62,7 +62,7 @@ export function ReviewTransactionToast<
     return () => {
       if (toRemoveId) toastRef.current.remove(toRemoveId)
     }
-  }, [t, props.toast, isError, isSuccess, isLoading])
+  }, [t, props.toastMessage, isError, isSuccess, isLoading])
 
   return null
 }

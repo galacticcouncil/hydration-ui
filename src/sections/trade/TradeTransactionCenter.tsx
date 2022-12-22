@@ -32,7 +32,7 @@ const getRenderString = (data: TemplateResult): string => {
   }, "")
 }
 
-const getToastTitle = (message: Notification["message"]) => {
+const ToastTitle = ({ message }: { message: Notification["message"] }) => {
   if (typeof message === "string") return <p>{message}</p>
 
   return (
@@ -57,7 +57,7 @@ export const TradeTransactionCenter = ({
     <TransactionCenter
       onGCNotification={(e) => {
         if (e.detail.toast) {
-          const toastVariant = e.detail.type === "" ? "info" : e.detail.type
+          const toastVariant = e.detail.type || "info"
           const existingToast = toast.toasts.find(
             (toast) => toast.id === e.detail.id,
           )
@@ -71,7 +71,7 @@ export const TradeTransactionCenter = ({
             toast.remove(e.detail.id)
           }
           toast.add(toastVariant, {
-            title: getToastTitle(e.detail.message),
+            title: <ToastTitle message={e.detail.message} />,
             id: e.detail.id,
           })
         } else {
