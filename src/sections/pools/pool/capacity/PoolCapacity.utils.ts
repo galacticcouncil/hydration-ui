@@ -4,10 +4,11 @@ import { useOmnipoolAssets } from "api/omnipool"
 import { useTokenBalance } from "api/balances"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { useMemo } from "react"
-import { BN_10, BN_NAN } from "utils/constants"
+import { BN_NAN } from "utils/constants"
 import BN from "bignumber.js"
 import { calculate_cap_difference } from "@galacticcouncil/math/build/omnipool/bundler"
 import { useAssetMeta } from "api/assetMeta"
+import { getFloatingPointAmount } from "utils/balance"
 
 export const usePoolCapacity = (pool: OmnipoolPool) => {
   const apiIds = useApiIds()
@@ -73,7 +74,7 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
     const capacity = poolBalance.data.balance.plus(new BN(capDifference))
     const filled = poolBalance.data.balance
     const filledPercent = filled.div(capacity).times(100)
-    const isUnlimited = asset.data.cap.toBigNumber().div(BN_10.pow(18)).eq(1)
+    const isUnlimited = getFloatingPointAmount(asset.data.cap, 18).eq(1)
 
     return { capacity, filled, filledPercent, symbol, isUnlimited }
   }, [

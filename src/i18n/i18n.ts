@@ -6,6 +6,7 @@ import {
   formatDate,
   formatNum,
   formatRelativeTime,
+  getFormatSeparators,
 } from "utils/formatting"
 import { normalizeBigNumber } from "../utils/balance"
 import { resources } from "./locales"
@@ -94,7 +95,10 @@ i18n
             num.toFixed(),
             { notation: "compact" },
             lng,
-          )?.replaceAll(",", String.fromCharCode(160))
+          )?.replaceAll(
+            getFormatSeparators(lng).group ?? ",",
+            String.fromCharCode(160),
+          )
         }
 
         if (value instanceof Date) {
