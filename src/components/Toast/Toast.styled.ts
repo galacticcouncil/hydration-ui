@@ -4,7 +4,7 @@ import { theme } from "theme"
 import { motion } from "framer-motion"
 import { Maybe } from "utils/helpers"
 import { css, SerializedStyles } from "@emotion/react"
-import { ToastVariant } from "./Toast"
+import { ToastVariant } from "state/toasts"
 
 export const SRoot = styled(Root)`
   position: relative;
@@ -44,6 +44,13 @@ export const SIcon = styled.div`
 
 export const STitle = styled(Title)`
   display: flex;
+
+  font-weight: 500;
+  font-size: 12px;
+  color: ${theme.colors.basic400};
+  & .highlight {
+    color: ${theme.colors.white};
+  }
 `
 
 export const SClose = styled(Close)`
@@ -107,13 +114,13 @@ const variantBg: Record<ToastVariant, SerializedStyles> = {
     background: rgba(${theme.rgbColors.green100}, 0.25);
   `,
   info: css`
-    background: rgba(${theme.rgbColors.brightBlue200}, 0.2);
+    background: rgba(${theme.rgbColors.primaryA20}, 0.2);
   `,
   error: css`
     background: rgba(${theme.rgbColors.red100}, 0.25);
   `,
-  loading: css`
-    background: rgba(${theme.rgbColors.brightBlue200}, 0.2);
+  progress: css`
+    background: rgba(${theme.rgbColors.primaryA20}, 0.2);
   `,
 }
 
@@ -131,5 +138,14 @@ const variantProgressBarBg: Record<ToastVariant, string> = {
   success: theme.colors.green600,
   info: theme.colors.brightBlue700,
   error: theme.colors.red700,
-  loading: theme.colors.brightBlue700,
+  progress: theme.colors.brightBlue700,
 }
+
+export const ToastContentWrapper = styled.div`
+  font-weight: 500;
+  font-size: 12px;
+  color: ${theme.colors.basic400};
+  & .highlight {
+    color: ${theme.colors.white};
+  }
+`

@@ -55,6 +55,7 @@ export const ReviewTransaction: React.FC<Transaction> = (props) => {
           mutation={sendTx}
           onReview={onReview}
           onClose={handleClose}
+          toastMessage={props.toastMessage}
         />
       )}
       <Modal open={!minimizeModal} onClose={handleClose} {...modalProps}>

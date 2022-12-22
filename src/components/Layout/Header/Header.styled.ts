@@ -21,6 +21,10 @@ export const SHeader = styled.header`
 export const SBellIcon = styled(BellIcon)`
   color: ${theme.colors.white};
 
+  top: 8px;
+
+  margin: 0 8px;
+
   :hover {
     color: ${theme.colors.brightBlue400};
     cursor: pointer;

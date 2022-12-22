@@ -4,11 +4,11 @@ import { ReactComponent as SuccessIcon } from "assets/icons/SuccessIcon.svg"
 import { ReactComponent as FailIcon } from "assets/icons/FailIcon.svg"
 import { ReactComponent as InfoIcon } from "assets/icons/InfoIcon.svg"
 import { Text } from "components/Typography/Text/Text"
-import { ToastSpinner } from "components/Spinner/Spinner.styled"
+import { Spinner } from "components/Spinner/Spinner.styled"
 import { Maybe, useNow } from "utils/helpers"
 import { useTranslation } from "react-i18next"
-import { ToastVariant } from "./Toast"
 import { theme } from "theme"
+import { ToastVariant } from "state/toasts"
 
 export function ToastContent(props: {
   variant: Maybe<ToastVariant>
@@ -29,8 +29,8 @@ export function ToastContent(props: {
           <SuccessIcon />
         ) : props.variant === "error" ? (
           <FailIcon />
-        ) : props.variant === "loading" ? (
-          <ToastSpinner width={28} height={28} />
+        ) : props.variant === "progress" ? (
+          <Spinner width={28} height={28} />
         ) : (
           <InfoIcon />
         )}
@@ -39,9 +39,7 @@ export function ToastContent(props: {
         <div sx={{ flex: "row", justify: "space-between", align: "flex-end" }}>
           <STitle>
             {typeof props.title === "string" ? (
-              <Text fs={12} lh={16} fw={500} color="white">
-                {props.title}
-              </Text>
+              <p dangerouslySetInnerHTML={{ __html: props.title }} />
             ) : (
               props.title
             )}
@@ -54,6 +52,7 @@ export function ToastContent(props: {
             <Text
               fs={12}
               css={{ color: `rgba(${theme.rgbColors.white}, 0.6)` }}
+              tTransform="uppercase"
             >
               {t("toast.date", { value: props.dateCreated })}
             </Text>

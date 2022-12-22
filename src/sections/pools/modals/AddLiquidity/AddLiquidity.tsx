@@ -1,6 +1,6 @@
 import { Modal } from "components/Modal/Modal"
 import { useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { Controller, useForm } from "react-hook-form"
 import BigNumber from "bignumber.js"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
@@ -52,7 +52,56 @@ export const AddLiquidity = ({
       {
         tx: api.tx.omnipool.addLiquidity(assetId, amount),
       },
-      { onSuccess },
+      {
+        onSuccess,
+        toast: {
+          onLoading: (
+            <Trans
+              t={t}
+              i18nKey="pools.addLiquidity.modal.toast.onLoading"
+              tOptions={{
+                value: values.amount,
+                symbol: assetMeta?.symbol,
+                shares: calculatedShares,
+                fixedPointScale: assetMeta?.decimals.toString(),
+              }}
+            >
+              <span />
+              <span className="highlight" />
+            </Trans>
+          ),
+          onSuccess: (
+            <Trans
+              t={t}
+              i18nKey="pools.addLiquidity.modal.toast.onSuccess"
+              tOptions={{
+                value: values.amount,
+                symbol: assetMeta?.symbol,
+                shares: calculatedShares,
+                fixedPointScale: assetMeta?.decimals.toString(),
+              }}
+            >
+              <span />
+              <span className="highlight" />
+            </Trans>
+          ),
+          onError: (
+            <Trans
+              t={t}
+              i18nKey="pools.addLiquidity.modal.toast.onLoading"
+              tOptions={{
+                value: values.amount,
+                symbol: assetMeta?.symbol,
+                shares: calculatedShares,
+                fixedPointScale: assetMeta?.decimals.toString(),
+              }}
+            >
+              <span />
+              <span className="highlight" />
+            </Trans>
+          ),
+        },
+      },
     )
   }
 
