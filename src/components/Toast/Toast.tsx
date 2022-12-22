@@ -12,8 +12,7 @@ import { Text } from "components/Typography/Text/Text"
 import { TOAST_CLOSE_TIME } from "utils/constants"
 import { ToastContent } from "./ToastContent"
 import { motion } from "framer-motion"
-
-export type ToastVariant = "info" | "success" | "error" | "loading"
+import { ToastVariant } from "state/toasts"
 
 type Props = {
   variant?: ToastVariant

@@ -11,7 +11,7 @@ import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import BigNumber from "bignumber.js"
 import { BN_1, BN_10 } from "utils/constants"
 import { useAssetMeta } from "api/assetMeta"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
 import {
@@ -21,7 +21,7 @@ import {
 import { Text } from "components/Typography/Text/Text"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { safeConvertAddressSS58 } from "utils/formatting"
+import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
 import { Alert } from "components/Alert/Alert"
 import { usePaymentInfo } from "api/transaction"
 import { Spacer } from "components/Spacer/Spacer"
@@ -64,16 +64,64 @@ export function WalletTransferSectionOnchain(props: {
       BN_10.pow(assetMeta.data?.decimals?.toString()),
     )
 
-    return await createTransaction({
-      tx:
-        asset === NATIVE_ASSET_ID
-          ? api.tx.balances.transferKeepAlive(values.dest, amount.toFixed())
-          : api.tx.tokens.transferKeepAlive(
-              values.dest,
-              asset,
-              amount.toFixed(),
-            ),
-    })
+    return await createTransaction(
+      {
+        tx:
+          asset === NATIVE_ASSET_ID
+            ? api.tx.balances.transferKeepAlive(values.dest, amount.toFixed())
+            : api.tx.tokens.transferKeepAlive(
+                values.dest,
+                asset,
+                amount.toFixed(),
+              ),
+      },
+      {
+        toast: {
+          onLoading: (
+            <Trans
+              t={t}
+              i18nKey="wallet.assets.transfer.toast.onLoading"
+              tOptions={{
+                value: values.amount,
+                symbol: assetMeta.data?.symbol,
+                address: shortenAccountAddress(values.dest, 12),
+              }}
+            >
+              <span />
+              <span className="highlight" />
+            </Trans>
+          ),
+          onSuccess: (
+            <Trans
+              t={t}
+              i18nKey="wallet.assets.transfer.toast.onSuccess"
+              tOptions={{
+                value: values.amount,
+                symbol: assetMeta.data?.symbol,
+                address: shortenAccountAddress(values.dest, 12),
+              }}
+            >
+              <span />
+              <span className="highlight" />
+            </Trans>
+          ),
+          onError: (
+            <Trans
+              t={t}
+              i18nKey="wallet.assets.transfer.toast.onLoading"
+              tOptions={{
+                value: values.amount,
+                symbol: assetMeta.data?.symbol,
+                address: shortenAccountAddress(values.dest, 12),
+              }}
+            >
+              <span />
+              <span className="highlight" />
+            </Trans>
+          ),
+        },
+      },
+    )
   }
 
   return (

@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { UseMutationResult } from "@tanstack/react-query"
 import { useToast } from "state/toasts"
-import { ButtonTransparent } from "components/Button/Button"
+import { ToastMessage } from "state/store"
 
 export function ReviewTransactionToast<
   TData = unknown,
@@ -14,11 +14,11 @@ export function ReviewTransactionToast<
   mutation: UseMutationResult<TData, TError, TVariables, TContext>
   onReview?: () => void
   onClose?: () => void
+  toast?: ToastMessage
 }) {
   const toast = useToast()
   const { t } = useTranslation()
   const { isError, isSuccess, isLoading } = props.mutation
-
   const toastRef = useRef<typeof toast>(toast)
   useEffect(() => void (toastRef.current = toast), [toast])
 
@@ -34,7 +34,9 @@ export function ReviewTransactionToast<
     if (isSuccess) {
       // toast should be still present, even if ReviewTransaction is unmounted
       toastRef.current.success({
-        title: t("pools.reviewTransaction.toast.success"),
+        title: props.toast?.onSuccess ?? (
+          <p>{t("pools.reviewTransaction.toast.success")}</p>
+        ),
       })
 
       closeRef.current?.()
@@ -42,37 +44,25 @@ export function ReviewTransactionToast<
 
     let toRemoveId: string | undefined = undefined
     if (isError) {
-      toRemoveId = toastRef.current.error({
-        persist: true,
-        title: t("pools.reviewTransaction.toast.error"),
-        actions: (
-          <ButtonTransparent
-            type="button"
-            sx={{
-              p: "0 15px",
-              lineHeight: 12,
-              fontSize: 12,
-              color: "brightBlue300",
-            }}
-            onClick={() => reviewRef.current?.()}
-          >
-            {t("pools.reviewTransaction.modal.error.review")}
-          </ButtonTransparent>
+      toastRef.current.error({
+        title: props.toast?.onError ?? (
+          <p>{t("pools.reviewTransaction.toast.error")}</p>
         ),
       })
     }
 
     if (isLoading) {
       toRemoveId = toastRef.current.loading({
-        persist: true,
-        title: t("pools.reviewTransaction.toast.pending"),
+        title: props.toast?.onLoading ?? (
+          <p>{t("pools.reviewTransaction.toast.pending")}</p>
+        ),
       })
     }
 
     return () => {
       if (toRemoveId) toastRef.current.remove(toRemoveId)
     }
-  }, [t, isError, isSuccess, isLoading])
+  }, [t, props.toast, isError, isSuccess, isLoading])
 
   return null
 }

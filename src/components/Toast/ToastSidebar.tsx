@@ -27,8 +27,8 @@ export function ToastSidebar() {
   const store = useToast()
   const onClose = () => store.setSidebar(false)
 
-  const pendingToasts = store.toasts.filter((x) => x.variant === "loading")
-  const completedToasts = store.toasts.filter((x) => x.variant !== "loading")
+  const pendingToasts = store.toasts.filter((x) => x.variant === "progress")
+  const completedToasts = store.toasts.filter((x) => x.variant !== "progress")
 
   const { t } = useTranslation()
 
@@ -61,9 +61,17 @@ export function ToastSidebar() {
                       <ToastContent
                         key={toast.id}
                         variant={toast.variant}
-                        title={toast.title}
+                        title={
+                          <div
+                            dangerouslySetInnerHTML={{ __html: toast.title }}
+                          />
+                        }
                         actions={toast.actions}
-                        dateCreated={toast.dateCreated}
+                        dateCreated={
+                          typeof toast.dateCreated === "string"
+                            ? new Date(toast.dateCreated)
+                            : toast.dateCreated
+                        }
                       />
                     ))}
                   </div>
@@ -81,9 +89,17 @@ export function ToastSidebar() {
                       <ToastContent
                         key={toast.id}
                         variant={toast.variant}
-                        title={toast.title}
+                        title={
+                          <div
+                            dangerouslySetInnerHTML={{ __html: toast.title }}
+                          />
+                        }
                         actions={toast.actions}
-                        dateCreated={toast.dateCreated}
+                        dateCreated={
+                          typeof toast.dateCreated === "string"
+                            ? new Date(toast.dateCreated)
+                            : toast.dateCreated
+                        }
                       />
                     ))}
                   </div>

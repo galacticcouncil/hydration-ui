@@ -5,7 +5,14 @@ import { ISubmittableResult } from "@polkadot/types/types"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { POLKADOT_APP_NAME } from "utils/api"
 import { v4 as uuid } from "uuid"
+import { ReactElement } from "react"
 import BigNumber from "bignumber.js"
+
+export interface ToastMessage {
+  onLoading?: ReactElement
+  onSuccess?: ReactElement
+  onError?: ReactElement
+}
 
 export interface Account {
   name: string
@@ -26,13 +33,17 @@ export interface Transaction extends TransactionInput {
   id: string
   onSuccess?: (result: ISubmittableResult) => void
   onError?: () => void
+  toast?: ToastMessage
 }
 
 interface Store {
   transactions?: Transaction[]
   createTransaction: (
     transaction: TransactionInput,
-    options?: { onSuccess?: () => void },
+    options?: {
+      onSuccess?: () => void
+      toast?: ToastMessage
+    },
   ) => Promise<ISubmittableResult>
   cancelTransaction: (hash: string) => void
 }
@@ -94,6 +105,11 @@ export const useStore = create<Store>((set) => ({
               ...transaction,
               hash,
               id: uuid(),
+              toast: {
+                onLoading: options?.toast?.onLoading,
+                onSuccess: options?.toast?.onSuccess,
+                onError: options?.toast?.onError,
+              },
               onSuccess: (value) => {
                 resolve(value)
                 options?.onSuccess?.()
