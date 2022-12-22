@@ -16,9 +16,9 @@ export const getApiIds = (api: ApiPromise) => async () => {
     api.consts.omnipool.stableCoinAssetId,
     api.consts.omnipool.nftCollectionId,
   ])
-  const [nativeId, lrnaId, usdId, omnipoolCollectionId] = apiIds.map((c) =>
+  const [nativeId, hubId, usdId, omnipoolCollectionId] = apiIds.map((c) =>
     c.toString(),
   )
 
-  return { nativeId, lrnaId, usdId, omnipoolCollectionId }
+  return { nativeId, hubId, usdId, omnipoolCollectionId }
 }
