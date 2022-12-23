@@ -13,21 +13,18 @@ import { BN_10 } from "utils/constants"
 import { useStore } from "state/store"
 import { u32 } from "@polkadot/types"
 import { FormValues } from "utils/helpers"
-import { useAddLiquidity } from "./AddLiquidity.utils"
+import { useAddLiquidity, useVerifyCap } from "./AddLiquidity.utils"
+import { getFixedPointAmount } from "utils/balance"
+import { AddLiquidityLimitWarning } from "sections/pools/modals/AddLiquidity/AddLiquidityLimitWarning"
 
-type AddLiquidityProps = {
+type Props = {
+  pool: OmnipoolPool
   isOpen: boolean
   onClose: () => void
-  pool: OmnipoolPool
   onSuccess: () => void
 }
 
-export const AddLiquidity = ({
-  isOpen,
-  onClose,
-  pool,
-  onSuccess,
-}: AddLiquidityProps) => {
+export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   const [assetId, setAssetId] = useState<u32 | string>(pool?.id.toString())
   const [assetValue, setAssetValue] = useState("")
 
@@ -37,16 +34,22 @@ export const AddLiquidity = ({
   const api = useApiPromise()
   const { createTransaction } = useStore()
   const { t } = useTranslation()
-  const form = useForm<{
-    amount: string
-  }>({})
+  const form = useForm<{ amount: string }>({})
+  const amountIn = form.watch("amount")
+
+  const isWithinLimit = useVerifyCap({
+    assetId: assetId.toString(),
+    amount: amountIn,
+    decimals: assetMeta?.decimals.toNumber() ?? 12,
+  })
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (assetMeta?.decimals == null) throw new Error("Missing asset meta")
 
-    const amount = new BigNumber(values.amount)
-      .multipliedBy(BN_10.pow(assetMeta.decimals.toNumber()))
-      .toString()
+    const amount = getFixedPointAmount(
+      values.amount,
+      assetMeta.decimals.toNumber(),
+    ).toString()
 
     return await createTransaction(
       {
@@ -244,6 +247,9 @@ export const AddLiquidity = ({
           >
             {t("pools.addLiquidity.modal.warning")}
           </Text>
+
+          {isWithinLimit.data === false && <AddLiquidityLimitWarning />}
+
           <Separator
             color="darkBlue401"
             sx={{ mx: "-30px", mb: 20, width: "auto" }}
