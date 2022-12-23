@@ -110,6 +110,7 @@
   "pools.addLiquidity.modal.positionDetails": "Position Details",
   "pools.addLiquidity.modal.receive": "Received amount of Pool Shares",
   "pools.addLiquidity.modal.warning": "Please keep in mind that you’ll receive NFT for this position that will be available in your wallet after the transaction gets processed.",
+  "pools.addLiquidity.modal.warningLimit": "The amount of Asset entered is more than the Max Pool Liquidity Limit",
   "pools.addLiquidity.modal.row.spotPrice": "{{ firstAmount, bignumber(type: 'token') }} {{ firstCurrency }} ≈ {{ secondAmount, bignumber(type: 'dollar'; numberSuffix: '$') }}",
   "pools.addLiquidity.modal.validation.notEnoughBalance": "There is no enough balance on your account",
   "pools.addLiquidity.modal.toast.onLoading": "<0>Adding </0><1>{{value}} {{symbol}}</1><0> to Omnipool for </0><1>{{shares, bignumber(type: 'token')}}</1><0> shares</0>",

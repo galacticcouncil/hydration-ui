@@ -1,4 +1,8 @@
-import { calculate_shares } from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
+import {
+  calculate_liquidity_hub_in,
+  calculate_shares,
+  verify_asset_cap,
+} from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
 import { u32 } from "@polkadot/types"
 import { useAssetMeta } from "api/assetMeta"
 import { useTokenBalance } from "api/balances"
@@ -10,6 +14,7 @@ import { useMemo } from "react"
 import { useAccountStore } from "state/store"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { BN_10 } from "utils/constants"
+import { getFixedPointAmount } from "utils/balance"
 
 export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
   const omnipoolBalance = useTokenBalance(assetId, OMNIPOOL_ACCOUNT_ADDRESS)
@@ -46,4 +51,68 @@ export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
   }, [omnipoolBalance, assetValue, ommipoolAsset, assetMeta])
 
   return { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance }
+}
+
+export const useVerifyCap = ({
+  assetId,
+  amount,
+  decimals,
+}: {
+  assetId: string
+  amount: string
+  decimals: number
+}) => {
+  const apiIds = useApiIds()
+  const asset = useOmnipoolAsset(assetId)
+  const hubBalance = useTokenBalance(
+    apiIds.data?.hubId,
+    OMNIPOOL_ACCOUNT_ADDRESS,
+  )
+  const poolBalance = useTokenBalance(assetId, OMNIPOOL_ACCOUNT_ADDRESS)
+
+  const queries = [apiIds, hubBalance]
+  const isLoading = queries.some((q) => q.isLoading)
+
+  const data = useMemo(() => {
+    if (
+      !apiIds.data ||
+      !asset.data ||
+      !hubBalance.data ||
+      !poolBalance.data ||
+      !amount
+    )
+      return undefined
+
+    const assetReserve = poolBalance.data.balance.toString()
+    const assetHubReserve = asset.data.hubReserve.toString()
+    const assetShares = asset.data.shares.toString()
+    const assetCap = asset.data.cap.toString()
+    const totalHubReserve = hubBalance.data.total.toString()
+    const amountIn = getFixedPointAmount(amount, decimals).toFixed(0)
+
+    const hubIn = calculate_liquidity_hub_in(
+      assetReserve,
+      assetHubReserve,
+      assetShares,
+      amountIn,
+    )
+
+    const isWithinLimit = verify_asset_cap(
+      assetHubReserve,
+      assetCap,
+      hubIn,
+      totalHubReserve,
+    )
+
+    return isWithinLimit
+  }, [
+    amount,
+    decimals,
+    apiIds.data,
+    asset.data,
+    hubBalance.data,
+    poolBalance.data,
+  ])
+
+  return { data, isLoading }
 }
