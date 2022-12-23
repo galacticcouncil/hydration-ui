@@ -15,9 +15,12 @@ import {
 } from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { useApiIds } from "api/consts"
+import { useAssetDetailsList } from "api/assetDetails"
+import { getAssetName } from "components/AssetIcon/AssetIcon"
 
 export const useOmnipoolPools = () => {
   const assets = useOmnipoolAssets()
+  const assetDetails = useAssetDetailsList(assets.data?.map((a) => a.id) ?? [])
   const metas = useAssetMetaList(assets.data?.map((a) => a.id) ?? [])
   const apiIds = useApiIds()
   const spotPrices = useSpotPrices(
@@ -29,12 +32,20 @@ export const useOmnipoolPools = () => {
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
 
-  const queries = [assets, metas, apiIds, ...spotPrices, ...balances]
+  const queries = [
+    assets,
+    assetDetails,
+    metas,
+    apiIds,
+    ...spotPrices,
+    ...balances,
+  ]
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
     if (
       !assets.data ||
+      !assetDetails.data ||
       !metas.data ||
       !apiIds.data ||
       spotPrices.some((q) => !q.data) ||
@@ -44,6 +55,9 @@ export const useOmnipoolPools = () => {
 
     const rows: OmnipoolPool[] = assets.data
       .map((asset) => {
+        const details = assetDetails.data.find(
+          (d) => d.id.toString() === asset.id.toString(),
+        )
         const meta = metas.data?.find(
           (m) => m.id.toString() === asset.id.toString(),
         )
@@ -56,6 +70,7 @@ export const useOmnipoolPools = () => {
 
         const id = asset.id
         const symbol = meta?.symbol ?? "N/A"
+        const name = details?.name || getAssetName(meta?.symbol)
         const tradeFee = TRADING_FEE
 
         const total = getFloatingPointAmount(
@@ -73,6 +88,7 @@ export const useOmnipoolPools = () => {
         return {
           id,
           symbol,
+          name,
           tradeFee,
           total,
           totalUSD,
@@ -85,7 +101,14 @@ export const useOmnipoolPools = () => {
       .filter((x): x is OmnipoolPool => x !== null)
 
     return rows
-  }, [assets.data, metas.data, apiIds.data, spotPrices, balances])
+  }, [
+    assets.data,
+    assetDetails.data,
+    metas.data,
+    apiIds.data,
+    spotPrices,
+    balances,
+  ])
 
   return { data, isLoading: isInitialLoading }
 }
@@ -93,6 +116,7 @@ export const useOmnipoolPools = () => {
 export type OmnipoolPool = {
   id: u32
   symbol: string
+  name: string
   tradeFee: BN
   total: BN
   totalUSD: BN

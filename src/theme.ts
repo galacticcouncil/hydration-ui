@@ -59,6 +59,7 @@ const colors = {
   whiteish500: "#878C9E",
   alpha0: "#9EA7BA",
   primaryA15: "#4CD5F3",
+  primaryA20: "#25CBFF",
   primaryA06: "#DAFFEE",
 } as const
 
@@ -71,7 +72,7 @@ const gradients = {
   pinkLightBlue: "linear-gradient(90deg, #FC408C 0%, #57B3EB 100%)",
   pinkLightPink: "linear-gradient(90deg, #FC408C 30%, #EFB0FF 100%)",
   spinner:
-    "conic-gradient(from 90.65deg at 50% 50%, #FC408C -1.87deg, rgba(10, 13, 26, 0) 117.39deg, #00C2FF 185.07deg, #004DE2 219.37deg, #FC408C 294.78deg, #FC408C 358.13deg, rgba(10, 13, 26, 0) 477.39deg)",
+    "conic-gradient(from -60.84deg at 50% 50%, rgba(10, 13, 26, 0) 0deg, rgba(10, 13, 26, 0) 134.49deg, #00C2FF 185.07deg, #004DE2 243.24deg, #FC408C 294.78deg, #FC408C 358.13deg, rgba(10, 13, 26, 0) 360deg)",
 } as const
 
 const shadows = {

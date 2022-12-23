@@ -19,6 +19,8 @@ export const SContainer = styled.div`
 `
 
 export const SGridContainer = styled.div`
+  position: relative;
+
   display: grid;
   grid-column-gap: 0px;
   grid-row-gap: 18px;

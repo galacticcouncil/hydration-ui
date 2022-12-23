@@ -6,6 +6,7 @@ import {
   formatDate,
   formatNum,
   formatRelativeTime,
+  getFormatSeparators,
 } from "utils/formatting"
 import { normalizeBigNumber } from "../utils/balance"
 import { resources } from "./locales"
@@ -90,7 +91,14 @@ i18n
         if (formatName === "compact") {
           const num = normalizeBigNumber(value)
           if (num == null) return null
-          return formatNum(num.toFixed(), { notation: "compact" }, lng)
+          return formatNum(
+            num.toFixed(),
+            { notation: "compact" },
+            lng,
+          )?.replaceAll(
+            getFormatSeparators(lng).group ?? ",",
+            String.fromCharCode(160),
+          )
         }
 
         if (value instanceof Date) {

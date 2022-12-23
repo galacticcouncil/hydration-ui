@@ -29,7 +29,7 @@ export const useHydraPositionsData = () => {
   )
   const metas = useAssetMetaList([
     apiIds.data?.usdId,
-    apiIds.data?.lrnaId,
+    apiIds.data?.hubId,
     ...(positions.data?.map((p) => p.assetId) ?? []),
   ])
   const detailsList = useAssetDetailsList(
@@ -41,7 +41,7 @@ export const useHydraPositionsData = () => {
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
   const spotPrices = useSpotPrices(
-    [apiIds.data?.lrnaId, ...(positions.data?.map((p) => p.assetId) ?? [])],
+    [apiIds.data?.hubId, ...(positions.data?.map((p) => p.assetId) ?? [])],
     apiIds.data?.usdId,
   )
 
@@ -77,7 +77,7 @@ export const useHydraPositionsData = () => {
           (d) => d.id.toString() === assetId,
         )
         const lrnaMeta = metas.data.find(
-          (m) => m.id.toString() === apiIds.data.lrnaId,
+          (m) => m.id.toString() === apiIds.data.hubId,
         )
         const omnipoolAsset = omnipoolAssets.data.find(
           (a) => a.id.toString() === assetId,
@@ -136,7 +136,7 @@ export const useHydraPositionsData = () => {
         }
 
         const lrnaSp = spotPrices.find(
-          (sp) => sp.data?.tokenIn === apiIds.data.lrnaId,
+          (sp) => sp.data?.tokenIn === apiIds.data.hubId,
         )
         const lrnaDp = BN_10.pow(lrnaMeta?.decimals.toNumber() ?? 12)
         const lrna =

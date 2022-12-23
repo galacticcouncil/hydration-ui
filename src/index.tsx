@@ -28,12 +28,10 @@ const root = createRoot(document.getElementById("root")!)
 const client = new QueryClient()
 
 root.render(
-  <React.StrictMode>
-    <QueryClientProvider client={client}>
-      <Global styles={GlobalStyle} />
-      <App />
-    </QueryClientProvider>
-  </React.StrictMode>,
+  <QueryClientProvider client={client}>
+    <Global styles={GlobalStyle} />
+    <App />
+  </QueryClientProvider>,
 )
 
 // If you want to start measuring performance in your app, pass a function
