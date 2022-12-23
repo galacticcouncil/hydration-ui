@@ -38,7 +38,7 @@ import type {
   ContractCallRequest,
   ContractExecResult,
   ContractInstantiateResult,
-  InstantiateRequest,
+  InstantiateRequestV1,
 } from "@polkadot/types/interfaces/contracts"
 import type { BlockStats } from "@polkadot/types/interfaces/dev"
 import type { CreatedBlock } from "@polkadot/types/interfaces/engine"
@@ -336,12 +336,11 @@ declare module "@polkadot/rpc-core/types/jsonrpc" {
       instantiate: AugmentedRpc<
         (
           request:
-            | InstantiateRequest
+            | InstantiateRequestV1
             | {
                 origin?: any
                 value?: any
                 gasLimit?: any
-                storageDepositLimit?: any
                 code?: any
                 data?: any
                 salt?: any
@@ -367,7 +366,11 @@ declare module "@polkadot/rpc-core/types/jsonrpc" {
         (
           uploadRequest:
             | CodeUploadRequest
-            | { origin?: any; code?: any; storageDepositLimit?: any }
+            | {
+                origin?: any
+                code?: any
+                storageDepositLimit?: any
+              }
             | string
             | Uint8Array,
           at?: BlockHash | string | Uint8Array,
