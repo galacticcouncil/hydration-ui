@@ -1606,11 +1606,6 @@
     short-uuid "^4.2.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/math-lbp@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-lbp/-/math-lbp-0.0.3.tgz#45021043b85024f6b3ba67ec21434f793ea8f467"
-  integrity sha512-g4JCjBEMHEXlwmIxJuIvzUYLkt3CgQQ5hmuiGMy24+2yIQE2ELeUNuERVaJWx9ezfqk5HLs8x2c+I1tgqLv7Jw==
-
 "@galacticcouncil/math-lbp@^0.0.4":
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-lbp/-/math-lbp-0.0.4.tgz#da6fe8251361a2469fddf55cff5d9d3d70dcc415"
@@ -1620,11 +1615,6 @@
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-omnipool/-/math-omnipool-0.0.4.tgz#877374f443b28144ab13ac311fe2183ea38455a9"
   integrity sha512-RS2Kj9r8fKbnQUXoK77Swch7CK9+1dJWylLD7AavPLfN/1dO543OEy+J5OkN1uOT5XTI6d195ezcU8CyL2SA3Q==
-
-"@galacticcouncil/math-xyk@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.0.3.tgz#42c48bd7754c41670bef63d7363cde808fda5081"
-  integrity sha512-u6Gyv6CLh66awBKpDyaKXxhmDVqEOvOb77uxD0EIgpXuijcVK8Pb7Y+ZejtfCeaEuTrAmwnVK4ClHbdVVTvHjA==
 
 "@galacticcouncil/math-xyk@^0.0.4":
   version "0.0.4"
