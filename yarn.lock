@@ -1460,9 +1460,9 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.0.4.tgz#208ea74df5ba8faa7df247b1b577baac2884534b"
   integrity sha512-NY9pjx1e9/lFR/BLK2eDOuBEaN2S4IYGUwKXztkVsUtDOvdMHtfQ5DWjv8hswLwDU/oijhb7D1LThZKRISm74Q==
 
-"@galacticcouncil/math@https://github.com/galacticcouncil/HydraDX-wasm#1252bb777a470a080ec97634bebaadcc31d40737":
+"@galacticcouncil/math@https://github.com/galacticcouncil/HydraDX-wasm#541f223a81cac9c9a7f73e02223e2749478e23fe":
   version "0.0.1"
-  resolved "https://github.com/galacticcouncil/HydraDX-wasm#1252bb777a470a080ec97634bebaadcc31d40737"
+  resolved "https://github.com/galacticcouncil/HydraDX-wasm#541f223a81cac9c9a7f73e02223e2749478e23fe"
 
 "@galacticcouncil/sdk@^0.0.1":
   version "0.0.1"
