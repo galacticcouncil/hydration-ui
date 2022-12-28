@@ -29,6 +29,9 @@ export const SDialogContent = styled(DialogContent)`
   position: absolute;
   z-index: ${theme.zIndices.modal};
 
+  display: flex;
+  flex-direction: column;
+
   top: unset;
   left: 0;
   right: 0;
@@ -46,8 +49,6 @@ export const SDialogContent = styled(DialogContent)`
 
   border: 1px solid rgba(${theme.rgbColors.white}, 0.06);
 
-  overflow-y: auto;
-
   @media ${theme.viewport.gte.sm} {
     left: unset;
     right: 8px;
@@ -62,8 +63,16 @@ export const SDialogContent = styled(DialogContent)`
 
     border-bottom-left-radius: 16px;
     border-bottom-right-radius: 16px;
+
+    padding-bottom: 12px;
   }
 `
+export const SidebarBody = styled.div`
+  overflow-y: auto;
+
+  height: 100%;
+`
+
 export const SCloseButton = styled(IconButton)`
   color: ${theme.colors.white};
 

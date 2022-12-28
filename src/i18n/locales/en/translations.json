@@ -5,6 +5,8 @@
   "toast.sidebar.title": "Recent Activities",
   "toast.sidebar.pending": "Pending",
   "toast.sidebar.completed": "Completed",
+  "toast.sidebar.empty.text1": "There is no recent activity.",
+  "toast.sidebar.empty.text2": "It’s quite peaceful day.",
   "metadata.update.title": "Update Metadata",
   "metadata.update.description": "Before reviewing your transaction, please update the metadata in your wallet.",
   "metadata.update.link": "More Info",
