@@ -39,7 +39,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
       <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
         <Text font="ChakraPetchBold">{name}</Text>
         <div sx={{ flex: "row", align: "end", gap: 2 }}>
-          <Text>
+          <Text color="basic200" fw={400}>
             {t("value.native", {
               value: data?.balance,
               fixedPointScale: meta?.decimals,

@@ -36,12 +36,9 @@ export const SSelectItem = styled.div<{ isActive: boolean }>`
           background: rgba(${theme.rgbColors.pink700}, 0.27);
         }
         &:hover {
-          background: linear-gradient(
-              285.92deg,
-              rgba(73, 228, 159, 0) 25.46%,
-              rgba(228, 175, 73, 0.2) 98.29%
-            ),
-            rgb(46, 104, 81);
+          --secondary-color: ${theme.colors.pink100};
+          background: rgba(${theme.rgbColors.pink400Alpha}, 0.46);
+          border: 1px solid ${theme.colors.pink100};
         }
 
         border: 1px solid ${theme.colors.pink700};
