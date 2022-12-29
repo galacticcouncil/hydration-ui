@@ -61,7 +61,7 @@ export const WalletHeader = () => {
                 <CopyIcon
                   sx={{ color: "brightBlue300" }}
                   css={{ cursor: "pointer" }}
-                  onClick={() => copy(account.address.toString())}
+                  onClick={() => copy(hydraAddress)}
                 />
               </InfoTooltip>
             </div>
