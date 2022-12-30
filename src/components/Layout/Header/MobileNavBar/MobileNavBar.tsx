@@ -37,7 +37,7 @@ export const MobileNavBar = () => {
   )
 
   const hiddenTabItems = hiddenTabs.map((hiddenTab, index) => (
-    <SNavBarItemHidden href={hiddenTab.href} key={index}>
+    <SNavBarItemHidden to={hiddenTab.href} key={index}>
       <Icon size={20} icon={getIcon(hiddenTab.key)} />
       {t(hiddenTab.translationKey)}
     </SNavBarItemHidden>
