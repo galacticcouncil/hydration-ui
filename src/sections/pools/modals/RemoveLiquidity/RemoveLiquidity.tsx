@@ -111,6 +111,7 @@ export const RemoveLiquidity = ({
     >
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
+        autoComplete="off"
         sx={{
           flex: "column",
           justify: "space-between",

@@ -120,6 +120,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
     >
       <form
         onSubmit={form.handleSubmit(onSubmit)}
+        autoComplete="off"
         sx={{
           flex: "column",
           justify: "space-between",
