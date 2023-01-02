@@ -1,5 +1,4 @@
 import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
-import { ReactComponent as MinusIcon } from "assets/icons/MinusIcon.svg"
 import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
 import { ReactComponent as MoreIcon } from "assets/icons/MoreIcon.svg"
 import { Button } from "components/Button/Button"
@@ -16,7 +15,6 @@ import { theme } from "theme"
 import { Modal } from "components/Modal/Modal"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
-import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
 
 type PoolActionsProps = {
   pool: OmnipoolPool
@@ -35,12 +33,9 @@ export const PoolActions = ({
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openActions, setOpenActions] = useState(false)
-  const { account } = useAccountStore()
-
-  const isDesktop = useMedia(theme.viewport.gte.sm)
-
   const [openAdd, setOpenAdd] = useState(false)
-  const [openRemove, setOpenRemove] = useState(false)
+  const { account } = useAccountStore()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const closeActionsDrawer = () => setOpenActions(false)
 
@@ -49,6 +44,7 @@ export const PoolActions = ({
       <Button
         fullWidth
         size="small"
+        disabled={!account}
         onClick={() => {
           setOpenAdd(true)
           closeActionsDrawer()
@@ -57,20 +53,6 @@ export const PoolActions = ({
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon icon={<PlusIcon />} sx={{ mr: 8 }} />
           {t("pools.pool.actions.addLiquidity")}
-        </div>
-      </Button>
-
-      <Button
-        fullWidth
-        size="small"
-        onClick={() => {
-          setOpenRemove(true)
-          closeActionsDrawer()
-        }}
-      >
-        <div sx={{ flex: "row", align: "center", justify: "center" }}>
-          <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
-          {t("pools.pool.actions.removeLiquidity")}
         </div>
       </Button>
     </div>
@@ -115,13 +97,6 @@ export const PoolActions = ({
           onClose={() => setOpenAdd(false)}
           pool={pool}
           onSuccess={refetch}
-        />
-      )}
-      {openRemove && (
-        <RemoveLiquidity
-          isOpen={openRemove}
-          onClose={() => setOpenRemove(false)}
-          pool={pool}
         />
       )}
     </>
