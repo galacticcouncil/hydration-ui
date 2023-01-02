@@ -84,7 +84,6 @@ export const SClose = styled(Close)`
 
   &:hover {
     color: ${theme.colors.white};
-    background: rgba(${theme.rgbColors.brightBlue100}, 0.39);
     border: 1px solid rgba(${theme.rgbColors.brightBlue200}, 0.39);
   }
 `
