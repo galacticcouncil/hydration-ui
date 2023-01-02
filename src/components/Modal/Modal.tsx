@@ -36,6 +36,7 @@ type Props = {
   secondaryIcon?: { icon: ReactNode; onClick: () => void; name: string }
   topContent?: ReactNode
   withoutClose?: boolean
+  withoutOutsideClose?: boolean
   width?: number
   isDrawer?: boolean
   titleDrawer?: string
@@ -44,7 +45,12 @@ type Props = {
 
 type PropsOverride = Pick<
   Props,
-  "variant" | "width" | "secondaryIcon" | "title" | "isDrawer"
+  | "variant"
+  | "width"
+  | "secondaryIcon"
+  | "title"
+  | "isDrawer"
+  | "withoutOutsideClose"
 >
 
 const ModalContext = createContext<(override: PropsOverride | null) => void>(
@@ -62,6 +68,7 @@ export const ModalMeta = (props: PropsOverride) => {
       width: props.width,
       secondaryIcon: props.secondaryIcon,
       isDrawer: props.isDrawer,
+      withoutOutsideClose: props.withoutOutsideClose,
     })
     return () => {
       context(null)
@@ -74,6 +81,7 @@ export const ModalMeta = (props: PropsOverride) => {
     props.width,
     props.secondaryIcon,
     props.isDrawer,
+    props.withoutOutsideClose,
   ])
 
   return null
@@ -101,7 +109,9 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
               maxWidth={mergedProps.width}
               onEscapeKeyDown={!props.withoutClose ? props.onClose : undefined}
               onInteractOutside={
-                !props.withoutClose ? props.onClose : undefined
+                props.withoutClose || mergedProps.withoutOutsideClose
+                  ? undefined
+                  : props.onClose
               }
             >
               {props.topContent}

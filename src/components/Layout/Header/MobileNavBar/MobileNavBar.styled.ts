@@ -1,5 +1,6 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
+import { Link } from "@tanstack/react-location"
 
 export const SMobileNavBar = styled.div`
   position: fixed;
@@ -49,7 +50,7 @@ export const SNavBarItem = styled.span<{ active?: boolean }>`
     "background: radial-gradient(52.5% 52.5% at 46.28% 112.5%, #00579F 0%, #023B6A 25%, rgba(0, 23, 54, 0) 100%);"}
 `
 
-export const SNavBarItemHidden = styled.a`
+export const SNavBarItemHidden = styled(Link)`
   display: flex;
   gap: 12px;
 

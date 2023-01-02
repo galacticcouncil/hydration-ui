@@ -111,6 +111,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   return (
     <Modal
       open={isOpen}
+      withoutOutsideClose
       title={t("pools.addLiquidity.modal.title")}
       onClose={() => {
         onClose()
@@ -119,6 +120,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
     >
       <form
         onSubmit={form.handleSubmit(onSubmit)}
+        autoComplete="off"
         sx={{
           flex: "column",
           justify: "space-between",

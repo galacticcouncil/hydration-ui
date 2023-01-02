@@ -39,7 +39,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
       <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
         <Text font="ChakraPetchBold">{name}</Text>
         <div sx={{ flex: "row", align: "end", gap: 2 }}>
-          <Text>
+          <Text color="basic200" fw={400}>
             {t("value.native", {
               value: data?.balance,
               fixedPointScale: meta?.decimals,
@@ -57,12 +57,17 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
           name={t("walletConnect.accountSelect.asset.network")}
           address={hydraAddress}
           theme="substrate"
+          isActive={isActive}
         />
-        <Separator color="basic700" opacity={isActive ? 0.3 : 1} />
+        <Separator
+          opacity={isActive ? 0.3 : 1}
+          css={{ background: "var(--secondary-color)" }}
+        />
         <WalletConnectAccountSelectAddress
           name={t("walletConnect.accountSelect.substrate.address")}
           address={polkadotAddress}
           theme={provider}
+          isActive={isActive}
         />
       </div>
     </SSelectItem>

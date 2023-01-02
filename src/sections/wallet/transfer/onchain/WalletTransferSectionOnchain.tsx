@@ -126,12 +126,16 @@ export function WalletTransferSectionOnchain(props: {
 
   return (
     <>
-      <ModalMeta title={t("wallet.assets.transfer.title")} />
+      <ModalMeta
+        title={t("wallet.assets.transfer.title")}
+        withoutOutsideClose
+      />
 
       <Spacer size={[13, 26]} />
 
       <form
         onSubmit={form.handleSubmit(onSubmit)}
+        autoComplete="off"
         sx={{ flex: "column", justify: "space-between", height: "100%" }}
       >
         <div sx={{ flex: "column" }}>

@@ -10,6 +10,7 @@ const colors = {
   pink500: "#FF67A4",
   pink600: "#FC408C",
   pink700: "#F6297C",
+  pink400Alpha: "#FF0369",
   brightBlue100: "#A6DDFF",
   brightBlue200: "#9CDDFF",
   brightBlue300: "#85D1FF",
@@ -35,7 +36,7 @@ const colors = {
   darkBlue900: "#000107",
   darkBlue1000: "#000524",
   basic100: "#ECEDEF",
-  basic200: "#8F90A6",
+  basic200: "#D4D6DF",
   basic300: "#BBBEC9",
   basic400: "#B2B6C5",
   basic500: "#878C9E",
@@ -64,7 +65,7 @@ const colors = {
 } as const
 
 const gradients = {
-  background: "linear-gradient(180deg, #00579F 0%, #023B6A 25%, #001736 100%)",
+  background: "linear-gradient(180deg, #00579F 0%, #023B6A 25%, #060917 100%)",
   pink: "linear-gradient(90deg, #FC408C 0%, #15161C 100%)",
   lightBlue: "linear-gradient(90deg, #57B3EB 0%, #15161C 100%)",
   darkBlue: "linear-gradient(90deg, #0A1FA7 0%, #15161C 100%)",

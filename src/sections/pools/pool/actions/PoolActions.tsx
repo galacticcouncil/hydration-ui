@@ -1,5 +1,4 @@
 import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
-import { ReactComponent as MinusIcon } from "assets/icons/MinusIcon.svg"
 import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
 import { ReactComponent as MoreIcon } from "assets/icons/MoreIcon.svg"
 import { Button } from "components/Button/Button"
@@ -34,8 +33,8 @@ export const PoolActions = ({
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openActions, setOpenActions] = useState(false)
+  const [openAdd, setOpenAdd] = useState(false)
   const { account } = useAccountStore()
-
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const [openAdd, setOpenAdd] = useState(false)
@@ -47,6 +46,7 @@ export const PoolActions = ({
       <Button
         fullWidth
         size="small"
+        disabled={!account}
         onClick={() => {
           setOpenAdd(true)
           closeActionsDrawer()

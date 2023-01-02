@@ -161,11 +161,13 @@ export const RemoveLiquidity = ({
   return (
     <Modal
       open={isOpen}
+      withoutOutsideClose
       title={t("pools.removeLiquidity.modal.title")}
       onClose={onClose}
     >
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
+        autoComplete="off"
         sx={{
           flex: "column",
           justify: "space-between",

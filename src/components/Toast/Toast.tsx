@@ -45,6 +45,7 @@ export const Toast: FC<Props> = ({
         animate={{ x: 0, opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
+        css={{ backdropFilter: "blur(15px)" }}
       >
         <ToastContent
           variant={variant ?? "info"}
