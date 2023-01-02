@@ -135,6 +135,7 @@ export function WalletTransferSectionOnchain(props: {
 
       <form
         onSubmit={form.handleSubmit(onSubmit)}
+        autoComplete="off"
         sx={{ flex: "column", justify: "space-between", height: "100%" }}
       >
         <div sx={{ flex: "column" }}>
