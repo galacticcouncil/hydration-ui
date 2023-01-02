@@ -15,7 +15,6 @@ import { useState } from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import BN from "bignumber.js"
-import { u128 } from "@polkadot/types-codec"
 
 export const useHydraPositionsTable = (
   data: HydraPositionsTableData[],
@@ -84,7 +83,7 @@ export const useHydraPositionsTable = (
 }
 
 export type HydraPositionsTableData = {
-  id: u128
+  id: string
   assetId: string
   symbol: string
   name: string

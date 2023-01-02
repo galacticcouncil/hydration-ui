@@ -37,8 +37,6 @@ export const PoolActions = ({
   const { account } = useAccountStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const [openAdd, setOpenAdd] = useState(false)
-
   const closeActionsDrawer = () => setOpenActions(false)
 
   const actionButtons = (
