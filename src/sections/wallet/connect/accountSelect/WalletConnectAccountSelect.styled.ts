@@ -14,9 +14,12 @@ export const SContainer = styled.div`
 
   @media ${theme.viewport.gte.sm} {
     max-height: 465px;
+
+    margin-right: -18px;
   }
 
   &::-webkit-scrollbar-track {
     margin-bottom: 76px;
+    background: rgba(41, 41, 45, 0.5);
   }
 `

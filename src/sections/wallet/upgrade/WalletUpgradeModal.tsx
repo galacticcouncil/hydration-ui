@@ -1,7 +1,6 @@
 import { Button } from "components/Button/Button"
 import { ExternalLink } from "components/Link/ExternalLink"
 import { Modal } from "components/Modal/Modal"
-import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Text } from "components/Typography/Text/Text"
 import { useUpdateMetadataMutation } from "sections/wallet/upgrade/WalletUpgradeModal.utils"
 import { ReactComponent as UpdateMetadataIcon } from "assets/icons/UpdateMetadataIcon.svg"
@@ -23,15 +22,22 @@ export function WalletUpgradeModal() {
 
   if (!state.data || !state.data.needsUpdate) return null
   return (
-    <Modal open={open} onClose={onClose} width={460}>
+    <Modal open={open} onClose={onClose} width={608}>
       <div sx={{ flex: "column", align: "center" }}>
         <UpdateMetadataIcon />
 
         <Spacer size={12} />
 
-        <GradientText fs={24} lh={32} fw={600} tAlign="center">
+        <Text
+          fs={19}
+          lh={24}
+          fw={500}
+          font="FontOver"
+          tAlign="center"
+          tTransform="uppercase"
+        >
           {t("metadata.update.title")}
-        </GradientText>
+        </Text>
 
         <Spacer size={8} />
 
@@ -41,7 +47,7 @@ export function WalletUpgradeModal() {
           lh={22}
           color="basic400"
           fw={400}
-          css={{ maxWidth: 300 }}
+          css={{ maxWidth: 350 }}
         >
           {t("metadata.update.description")}
         </Text>
@@ -103,6 +109,7 @@ export function WalletUpgradeModal() {
             variant="primary"
             isLoading={mutation.isLoading}
             onClick={() => mutation.mutateAsync().then(onClose)}
+            sx={{ width: ["auto", 196] }}
           >
             {t("metadata.update.confirm")}
           </Button>
