@@ -4,18 +4,29 @@ import { Input } from "components/Input/Input"
 import { Modal } from "components/Modal/Modal"
 import { Slider } from "components/Slider/Slider"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { FormValues } from "utils/helpers"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
+import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
+
+import {
+  calculate_liquidity_lrna_out,
+  calculate_liquidity_out,
+} from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
+import { useOmnipoolAssets, useOmnipoolFee } from "../../../../api/omnipool"
+import { useTokenBalance } from "../../../../api/balances"
+import { OMNIPOOL_ACCOUNT_ADDRESS } from "../../../../utils/api"
+import { BN_10 } from "../../../../utils/constants"
+import { useAssetMeta } from "../../../../api/assetMeta"
+import { useRemoveLiquidity } from "./RemoveLiquidity.utils"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
   onClose: () => void
-  pool: OmnipoolPool
+  position: HydraPositionsTableData
 }
 
 type RemoveLiquidityInputProps = {
@@ -54,12 +65,6 @@ const RemoveLiquidityInput = ({
 
   return (
     <>
-      <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
-        1200
-      </Text>
-      <Text fs={18} font="FontOver" color="pink500" sx={{ mb: 20 }}>
-        {t("value.percentage", { value })}
-      </Text>
       <Slider
         value={[value]}
         onChange={([val]) => onSelect(val)}
@@ -94,14 +99,65 @@ const RemoveLiquidityInput = ({
 export const RemoveLiquidity = ({
   isOpen,
   onClose,
-  pool,
+  position,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
   const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
 
+  const { data: omnipoolFee } = useOmnipoolFee()
+  const { data: metaData } = useAssetMeta(position.assetId)
+  const removeLiquidity = useRemoveLiquidity()
+
   const handleSubmit = async (values: FormValues<typeof form>) => {
-    console.log(values)
+    const value = position.shares.div(100).times(values.value)
+    await removeLiquidity(position.id, value.toFixed(0))
   }
+
+  const omnipoolAssets = useOmnipoolAssets()
+  const omnipoolBalance = useTokenBalance(
+    position.assetId,
+    OMNIPOOL_ACCOUNT_ADDRESS,
+  )
+
+  const omnipoolAsset = omnipoolAssets.data?.find(
+    (a) => a.id.toString() === position.assetId,
+  )
+
+  const value = form.watch("value")
+
+  const removeSharesValue = useMemo(() => {
+    return position.shares.div(100).times(value)
+  }, [value, position])
+
+  const removeLiquidityValues = useMemo(() => {
+    const positionPrice = position.price.times(BN_10.pow(18))
+    if (omnipoolBalance.data && omnipoolAsset?.data) {
+      const params: Parameters<typeof calculate_liquidity_out> = [
+        omnipoolBalance.data.balance.toString(),
+        omnipoolAsset.data.hubReserve.toString(),
+        omnipoolAsset.data.shares.toString(),
+        position.providedAmount.toString(),
+        position.shares.toString(),
+        positionPrice.toFixed(0),
+        removeSharesValue.toFixed(0),
+      ]
+      return {
+        token: calculate_liquidity_out.apply(this, params),
+        lrna: calculate_liquidity_lrna_out.apply(this, params),
+      }
+    }
+  }, [omnipoolBalance, omnipoolAsset, position, removeSharesValue])
+
+  // const params: Parameters<typeof calculate_liquidity_out> = [
+  //   omnipoolBalance.data.balance.toString(),
+  //   omnipoolAsset.data.hubReserve.toString(),
+  //   omnipoolAsset.data.shares.toString(),
+  //   position.amount.toString(),
+  //   position.shares.toString(),
+  //   positionPrice.toFixed(0),
+  //   position.shares.toString(),
+  // ]
+
   return (
     <Modal
       open={isOpen}
@@ -117,6 +173,16 @@ export const RemoveLiquidity = ({
         }}
       >
         <div>
+          <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
+            {t("pools.removeLiquidity.modal.value", {
+              value: removeSharesValue.div(
+                BN_10.pow(metaData?.decimals.toNumber() ?? 12),
+              ),
+            })}
+          </Text>
+          <Text fs={18} font="FontOver" color="pink500" sx={{ mb: 20 }}>
+            {t("value.percentage", { value })}
+          </Text>
           <Controller
             name="value"
             control={form.control}
@@ -134,19 +200,19 @@ export const RemoveLiquidity = ({
             </Text>
 
             <RemoveLiquidityReward
-              name="Token"
-              symbol={pool.symbol}
+              name={position.name}
+              symbol={position.symbol}
               amount={t("value", {
-                value: 1,
-                fixedPointScale: 12,
+                value: removeLiquidityValues?.token,
+                fixedPointScale: metaData?.decimals ?? 12,
                 type: "token",
               })}
             />
             <RemoveLiquidityReward
-              name="Token"
-              symbol={pool.symbol}
+              name="Lerna"
+              symbol="LRNA"
               amount={t("value", {
-                value: 1,
+                value: removeLiquidityValues?.lrna,
                 fixedPointScale: 12,
                 type: "token",
               })}
@@ -166,7 +232,7 @@ export const RemoveLiquidity = ({
               {t("pools.pool.liquidity.poolFees")}
             </Text>
             <Text fs={14} color="graySoft">
-              TODO
+              {t("value.percentage", { value: omnipoolFee?.fee })}
             </Text>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useApiPromise } from "utils/api"
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u128, u32 } from "@polkadot/types-codec"
@@ -37,11 +37,13 @@ export const getOmnipoolAssets = (api: ApiPromise) => async () => {
 export const useOmnipoolPositions = (itemIds: u128[]) => {
   const api = useApiPromise()
 
-  return useQuery(
-    QUERY_KEYS.omnipoolPositions,
-    getOmnipoolPositions(api, itemIds),
-    { enabled: !!itemIds.length },
-  )
+  return useQueries({
+    queries: itemIds.map((id) => ({
+      queryKey: QUERY_KEYS.omnipoolPosition(id),
+      queryFn: getOmnipoolPosition(api, id),
+      enabled: !!itemIds.length,
+    })),
+  })
 }
 
 export const useOmnipoolFee = () => {
@@ -60,6 +62,20 @@ export const getOmnipoolFee = (api: ApiPromise) => async () => {
     fee: assetFee.toBigNumber().plus(protocolFee.toBigNumber()).div(10000),
   }
 }
+
+export const getOmnipoolPosition =
+  (api: ApiPromise, itemId: u128) => async () => {
+    const res = await api.query.omnipool.positions(itemId)
+    const data = res.unwrap()
+
+    return {
+      id: itemId,
+      assetId: data.assetId,
+      amount: data.amount,
+      shares: data.shares,
+      price: data.price,
+    }
+  }
 
 export const getOmnipoolPositions =
   (api: ApiPromise, itemIds: u128[]) => async () => {

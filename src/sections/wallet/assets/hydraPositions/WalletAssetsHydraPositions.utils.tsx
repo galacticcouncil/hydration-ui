@@ -15,6 +15,7 @@ import { useState } from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import BN from "bignumber.js"
+import { u128 } from "@polkadot/types-codec"
 
 export const useHydraPositionsTable = (
   data: HydraPositionsTableData[],
@@ -83,6 +84,7 @@ export const useHydraPositionsTable = (
 }
 
 export type HydraPositionsTableData = {
+  id: u128
   assetId: string
   symbol: string
   name: string
@@ -92,5 +94,6 @@ export type HydraPositionsTableData = {
   price: BN
   providedAmount: BN
   providedAmountUSD: BN
+  shares: BN
   sharesAmount: BN
 }

@@ -160,6 +160,7 @@ export const QUERY_KEYS = {
     id?.toString(),
   ],
   omnipoolPositions: [QUERY_KEY_PREFIX, "omnipoolPositions"],
+  omnipoolPosition: (id: u128) => [QUERY_KEY_PREFIX, "omnipoolPosition", id],
   provider: (url: string) => ["provider", url],
   math: ["@galacticcouncil/math"],
   existentialDeposit: [QUERY_KEY_PREFIX, "existentialDeposit"],

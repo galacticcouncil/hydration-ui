@@ -11,11 +11,17 @@ import {
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
+import { useState } from "react"
+import { RemoveLiquidity } from "../../modals/RemoveLiquidity/RemoveLiquidity"
 
-type Props = { position: HydraPositionsTableData; index: number }
+type Props = {
+  position: HydraPositionsTableData
+  index: number
+}
 
 export const LiquidityPosition = ({ position, index }: Props) => {
   const { t } = useTranslation()
+  const [openRemove, setOpenRemove] = useState(false)
 
   return (
     <SContainer>
@@ -65,7 +71,7 @@ export const LiquidityPosition = ({ position, index }: Props) => {
           variant="primary"
           size="small"
           onClick={() => {
-            console.log("Remove Liquidity")
+            setOpenRemove(true)
           }}
         >
           <div sx={{ flex: "row", align: "center", justify: "center" }}>
@@ -74,6 +80,13 @@ export const LiquidityPosition = ({ position, index }: Props) => {
           </div>
         </SButton>
       </div>
+      {openRemove && (
+        <RemoveLiquidity
+          isOpen={openRemove}
+          onClose={() => setOpenRemove(false)}
+          position={position}
+        />
+      )}
     </SContainer>
   )
 }

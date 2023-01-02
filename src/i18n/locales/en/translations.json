@@ -116,6 +116,7 @@
   "pools.addLiquidity.modal.toast.onLoading": "<0>Adding </0><1>{{value}} {{symbol}}</1><0> to Omnipool for </0><1>{{shares, bignumber(type: 'token')}}</1><0> shares</0>",
   "pools.addLiquidity.modal.toast.onSuccess": "<0>You added </0><1>{{value}} {{symbol}}</1><0> to Omnipool for </0><1>{{shares, bignumber(type: 'token')}}</1><0> shares</0>",
   "pools.removeLiquidity.modal.title": "Remove Liquidity",
+  "pools.removeLiquidity.modal.value": "{{ value, bignumber(type: 'token') }}",
   "pools.removeLiquidity.modal.input.placeholder": "Custom",
   "pools.removeLiquidity.modal.receive": "You'll receive",
   "pools.removeLiquidity.modal.cost": "Transaction cost",

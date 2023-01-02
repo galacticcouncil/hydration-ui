@@ -16,7 +16,6 @@ import { theme } from "theme"
 import { Modal } from "components/Modal/Modal"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
-import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
 
 type PoolActionsProps = {
   pool: OmnipoolPool
@@ -40,7 +39,6 @@ export const PoolActions = ({
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const [openAdd, setOpenAdd] = useState(false)
-  const [openRemove, setOpenRemove] = useState(false)
 
   const closeActionsDrawer = () => setOpenActions(false)
 
@@ -57,20 +55,6 @@ export const PoolActions = ({
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon icon={<PlusIcon />} sx={{ mr: 8 }} />
           {t("pools.pool.actions.addLiquidity")}
-        </div>
-      </Button>
-
-      <Button
-        fullWidth
-        size="small"
-        onClick={() => {
-          setOpenRemove(true)
-          closeActionsDrawer()
-        }}
-      >
-        <div sx={{ flex: "row", align: "center", justify: "center" }}>
-          <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
-          {t("pools.pool.actions.removeLiquidity")}
         </div>
       </Button>
     </div>
@@ -115,13 +99,6 @@ export const PoolActions = ({
           onClose={() => setOpenAdd(false)}
           pool={pool}
           onSuccess={refetch}
-        />
-      )}
-      {openRemove && (
-        <RemoveLiquidity
-          isOpen={openRemove}
-          onClose={() => setOpenRemove(false)}
-          pool={pool}
         />
       )}
     </>
