@@ -126,7 +126,10 @@ export function WalletTransferSectionOnchain(props: {
 
   return (
     <>
-      <ModalMeta title={t("wallet.assets.transfer.title")} />
+      <ModalMeta
+        title={t("wallet.assets.transfer.title")}
+        withoutOutsideClose
+      />
 
       <Spacer size={[13, 26]} />
 
