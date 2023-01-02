@@ -65,7 +65,7 @@ const colors = {
 } as const
 
 const gradients = {
-  background: "linear-gradient(180deg, #00579F 0%, #023B6A 25%, #001736 100%)",
+  background: "linear-gradient(180deg, #00579F 0%, #023B6A 25%, #060917 100%)",
   pink: "linear-gradient(90deg, #FC408C 0%, #15161C 100%)",
   lightBlue: "linear-gradient(90deg, #57B3EB 0%, #15161C 100%)",
   darkBlue: "linear-gradient(90deg, #0A1FA7 0%, #15161C 100%)",

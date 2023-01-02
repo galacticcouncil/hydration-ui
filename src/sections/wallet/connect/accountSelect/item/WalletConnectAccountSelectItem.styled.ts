@@ -8,12 +8,11 @@ export const SSelectItem = styled.div<{ isActive: boolean }>`
 
   display: flex;
   flex-direction: column;
-  background: rgba(${theme.rgbColors.primaryA06}, 0.06);
+  background: rgba(${theme.rgbColors.alpha0}, 0.06);
   padding: 16px;
   border-radius: 4px;
   cursor: pointer;
-  margin-right: 15px;
-  box-shadow: 4px 4px 0px #0a0c17;
+  margin-right: 12px;
 
   transition: background ${theme.transitions.default};
 
@@ -23,7 +22,8 @@ export const SSelectItem = styled.div<{ isActive: boolean }>`
   }
 
   &:active {
-    background: rgba(${theme.rgbColors.brightBlue100}, 0.35);
+    background: rgba(${theme.rgbColors.primaryA20}, 0.2);
+    box-shadow: 4px 4px 0px #0a0c17;
   }
 
   position: relative;

@@ -59,7 +59,10 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
           theme="substrate"
           isActive={isActive}
         />
-        <Separator color="basic700" opacity={isActive ? 0.3 : 1} />
+        <Separator
+          opacity={isActive ? 0.3 : 1}
+          css={{ background: "var(--secondary-color)" }}
+        />
         <WalletConnectAccountSelectAddress
           name={t("walletConnect.accountSelect.substrate.address")}
           address={polkadotAddress}
