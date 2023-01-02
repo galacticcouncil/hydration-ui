@@ -58,7 +58,12 @@ export const ReviewTransaction: React.FC<Transaction> = (props) => {
           toastMessage={props.toastMessage}
         />
       )}
-      <Modal open={!minimizeModal} onClose={handleClose} {...modalProps}>
+      <Modal
+        open={!minimizeModal}
+        onClose={handleClose}
+        withoutOutsideClose
+        {...modalProps}
+      >
         {sendTx.isLoading ? (
           <ReviewTransactionPending
             txState={sendTx.txState}

@@ -105,6 +105,7 @@ export const RemoveLiquidity = ({
   return (
     <Modal
       open={isOpen}
+      withoutOutsideClose
       title={t("pools.removeLiquidity.modal.title")}
       onClose={onClose}
     >
