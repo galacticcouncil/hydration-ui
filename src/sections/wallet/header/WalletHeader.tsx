@@ -3,7 +3,7 @@ import { useAccountStore } from "../../../state/store"
 import { Text } from "components/Typography/Text/Text"
 import { useCopyToClipboard } from "react-use"
 import { ReactComponent as CopyIcon } from "assets/icons/CopyIcon.svg"
-import { Button, ButtonTransparent } from "components/Button/Button"
+import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
 import { WalletConnectModal } from "../connect/modal/WalletConnectModal"
 import { useState } from "react"
@@ -58,11 +58,11 @@ export const WalletHeader = () => {
                 text={t("wallet.header.copyAddress.hover")}
                 textOnClick={t("wallet.header.copyAddress.click")}
               >
-                <ButtonTransparent
-                  onClick={() => copy(account.address.toString())}
-                >
-                  <CopyIcon sx={{ color: "brightBlue300" }} />
-                </ButtonTransparent>
+                <CopyIcon
+                  sx={{ color: "brightBlue300" }}
+                  css={{ cursor: "pointer" }}
+                  onClick={() => copy(hydraAddress)}
+                />
               </InfoTooltip>
             </div>
             <Button
