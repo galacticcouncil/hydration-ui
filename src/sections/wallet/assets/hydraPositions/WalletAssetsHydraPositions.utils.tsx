@@ -94,5 +94,4 @@ export type HydraPositionsTableData = {
   providedAmount: BN
   providedAmountUSD: BN
   shares: BN
-  sharesAmount: BN
 }

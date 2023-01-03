@@ -20,13 +20,15 @@ import { useOmnipoolAssets, useOmnipoolFee } from "../../../../api/omnipool"
 import { useTokenBalance } from "../../../../api/balances"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "../../../../utils/api"
 import { BN_10 } from "../../../../utils/constants"
-import { useAssetMeta } from "../../../../api/assetMeta"
+import { useAssetMetaList } from "../../../../api/assetMeta"
 import { useRemoveLiquidity } from "./RemoveLiquidity.utils"
+import { useApiIds } from "../../../../api/consts"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
   onClose: () => void
   position: HydraPositionsTableData
+  onSuccess: () => void
 }
 
 type RemoveLiquidityInputProps = {
@@ -99,14 +101,23 @@ const RemoveLiquidityInput = ({
 export const RemoveLiquidity = ({
   isOpen,
   onClose,
+  onSuccess,
   position,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
   const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
 
   const { data: omnipoolFee } = useOmnipoolFee()
-  const { data: metaData } = useAssetMeta(position.assetId)
-  const removeLiquidity = useRemoveLiquidity()
+
+  const apiIds = useApiIds()
+  const metas = useAssetMetaList([apiIds.data?.hubId, position.assetId])
+
+  const meta = metas.data?.find((m) => m.id.toString() === position.assetId)
+  const lrnaMeta = metas.data?.find(
+    (m) => m.id.toString() === apiIds.data?.hubId,
+  )
+
+  const removeLiquidity = useRemoveLiquidity(onSuccess)
 
   const handleSubmit = async (values: FormValues<typeof form>) => {
     const value = position.shares.div(100).times(values.value)
@@ -148,16 +159,6 @@ export const RemoveLiquidity = ({
     }
   }, [omnipoolBalance, omnipoolAsset, position, removeSharesValue])
 
-  // const params: Parameters<typeof calculate_liquidity_out> = [
-  //   omnipoolBalance.data.balance.toString(),
-  //   omnipoolAsset.data.hubReserve.toString(),
-  //   omnipoolAsset.data.shares.toString(),
-  //   position.amount.toString(),
-  //   position.shares.toString(),
-  //   positionPrice.toFixed(0),
-  //   position.shares.toString(),
-  // ]
-
   return (
     <Modal
       open={isOpen}
@@ -178,7 +179,7 @@ export const RemoveLiquidity = ({
           <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
             {t("pools.removeLiquidity.modal.value", {
               value: removeSharesValue.div(
-                BN_10.pow(metaData?.decimals.toNumber() ?? 12),
+                BN_10.pow(meta?.decimals.toNumber() ?? 12),
               ),
             })}
           </Text>
@@ -206,7 +207,7 @@ export const RemoveLiquidity = ({
               symbol={position.symbol}
               amount={t("value", {
                 value: removeLiquidityValues?.token,
-                fixedPointScale: metaData?.decimals ?? 12,
+                fixedPointScale: meta?.decimals ?? 12,
                 type: "token",
               })}
             />
@@ -215,7 +216,7 @@ export const RemoveLiquidity = ({
               symbol="LRNA"
               amount={t("value", {
                 value: removeLiquidityValues?.lrna,
-                fixedPointScale: 12,
+                fixedPointScale: lrnaMeta?.decimals ?? 12,
                 type: "token",
               })}
             />

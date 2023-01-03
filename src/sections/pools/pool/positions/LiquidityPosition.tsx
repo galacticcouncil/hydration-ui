@@ -13,15 +13,19 @@ import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPosi
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { useState } from "react"
 import { RemoveLiquidity } from "../../modals/RemoveLiquidity/RemoveLiquidity"
+import { useAssetMeta } from "../../../../api/assetMeta"
 
 type Props = {
   position: HydraPositionsTableData
+  onSuccess: () => void
   index: number
 }
 
-export const LiquidityPosition = ({ position, index }: Props) => {
+export const LiquidityPosition = ({ position, index, onSuccess }: Props) => {
   const { t } = useTranslation()
   const [openRemove, setOpenRemove] = useState(false)
+
+  const meta = useAssetMeta(position.assetId)
 
   return (
     <SContainer>
@@ -42,7 +46,8 @@ export const LiquidityPosition = ({ position, index }: Props) => {
             </Text>
             <Text fs={[16, 16]}>
               {t("pools.pool.positions.position.shares", {
-                shares: position.sharesAmount,
+                shares: position.shares,
+                fixedPointScale: meta.data?.decimals ?? 12,
               })}
             </Text>
           </div>
@@ -85,6 +90,7 @@ export const LiquidityPosition = ({ position, index }: Props) => {
           isOpen={openRemove}
           onClose={() => setOpenRemove(false)}
           position={position}
+          onSuccess={onSuccess}
         />
       )}
     </SContainer>

@@ -159,9 +159,7 @@ export const useHydraPositionsData = () => {
         const providedAmount = position.amount.toBigNumber().div(valueDp)
         let providedAmountUSD = BN_NAN
 
-        const sharesAmount = position.shares
-          .toBigNumber()
-          .div(BN_10.pow(meta?.decimals.toNumber() ?? 12))
+        const shares = position.shares.toBigNumber()
 
         if (
           lrnaSp?.data &&
@@ -187,8 +185,7 @@ export const useHydraPositionsData = () => {
           price,
           providedAmount,
           providedAmountUSD,
-          shares: position.shares.toBigNumber(),
-          sharesAmount,
+          shares,
         }
 
         return result
@@ -210,6 +207,6 @@ export const useHydraPositionsData = () => {
   return {
     data,
     isLoading,
-    refetch: () => positions.map((query) => query.refetch),
+    refetch: uniques.refetch,
   }
 }

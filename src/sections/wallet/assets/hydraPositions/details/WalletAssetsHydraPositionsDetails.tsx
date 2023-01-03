@@ -4,8 +4,10 @@ import { useTranslation } from "react-i18next"
 import BN from "bignumber.js"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { css } from "@emotion/react"
+import { useAssetMeta } from "../../../../../api/assetMeta"
 
 type Props = {
+  assetId: string
   symbol: string
   amount: BN
   amountUSD: BN
@@ -13,12 +15,15 @@ type Props = {
 }
 
 export const WalletAssetsHydraPositionsDetails = ({
+  assetId,
   symbol,
   amount,
   amountUSD,
   shares,
 }: Props) => {
   const { t } = useTranslation()
+
+  const meta = useAssetMeta(assetId)
 
   return (
     <div sx={{ flex: "row" }}>
@@ -68,7 +73,11 @@ export const WalletAssetsHydraPositionsDetails = ({
           {t("wallet.assets.hydraPositions.details.shares")}
         </Text>
         <Text fs={14} lh={18} fw={500} color="white" sx={{ mt: 8 }}>
-          {t("value", { value: shares, type: "token" })}
+          {t("value", {
+            value: shares,
+            fixedPointScale: meta.data?.decimals ?? 12,
+            type: "token",
+          })}
         </Text>
       </div>
     </div>
