@@ -29,6 +29,7 @@
   "selectAsset.balance.value": "{{ balance, bignumber(type: 'token') }}",
   "selectAsset.button.max": "Max",
   "address.input.native": "{{symbol}}: {{address}}",
+  "header.transfer": "Transfer",
   "header.trade": "Trade",
   "header.pools": "Pools",
   "header.wallet": "Wallet",
