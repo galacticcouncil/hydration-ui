@@ -11,11 +11,21 @@ import {
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
+import { useState } from "react"
+import { RemoveLiquidity } from "../../modals/RemoveLiquidity/RemoveLiquidity"
+import { useAssetMeta } from "../../../../api/assetMeta"
 
-type Props = { position: HydraPositionsTableData; index: number }
+type Props = {
+  position: HydraPositionsTableData
+  onSuccess: () => void
+  index: number
+}
 
-export const LiquidityPosition = ({ position, index }: Props) => {
+export const LiquidityPosition = ({ position, index, onSuccess }: Props) => {
   const { t } = useTranslation()
+  const [openRemove, setOpenRemove] = useState(false)
+
+  const meta = useAssetMeta(position.assetId)
 
   return (
     <SContainer>
@@ -36,7 +46,8 @@ export const LiquidityPosition = ({ position, index }: Props) => {
             </Text>
             <Text fs={[16, 16]}>
               {t("pools.pool.positions.position.shares", {
-                shares: position.sharesAmount,
+                shares: position.shares,
+                fixedPointScale: meta.data?.decimals ?? 12,
               })}
             </Text>
           </div>
@@ -65,7 +76,7 @@ export const LiquidityPosition = ({ position, index }: Props) => {
           variant="primary"
           size="small"
           onClick={() => {
-            console.log("Remove Liquidity")
+            setOpenRemove(true)
           }}
         >
           <div sx={{ flex: "row", align: "center", justify: "center" }}>
@@ -74,6 +85,14 @@ export const LiquidityPosition = ({ position, index }: Props) => {
           </div>
         </SButton>
       </div>
+      {openRemove && (
+        <RemoveLiquidity
+          isOpen={openRemove}
+          onClose={() => setOpenRemove(false)}
+          position={position}
+          onSuccess={onSuccess}
+        />
+      )}
     </SContainer>
   )
 }

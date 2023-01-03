@@ -5,11 +5,12 @@ import { useSpotPrices } from "api/spotPrice"
 import { useApiIds } from "api/consts"
 import { useMemo } from "react"
 import { useAssetMetaList } from "api/assetMeta"
-import { BN_0, BN_10 } from "utils/constants"
+import { BN_0, BN_10, BN_NAN } from "utils/constants"
 import { useUniques } from "api/uniques"
 import { useAccountStore } from "state/store"
 import BN from "bignumber.js"
 import { calculate_liquidity_out } from "@galacticcouncil/math/build/omnipool/bundler"
+import { isNotNil } from "../../../utils/helpers"
 
 export const useTotalInPools = () => {
   const apiIds = useApiIds()
@@ -73,7 +74,8 @@ export const useUsersTotalInPools = () => {
   const positions = useOmnipoolPositions(
     uniques.data?.map((u) => u.itemId) ?? [],
   )
-  const assetIds = positions.data?.map((p) => p.assetId.toString()) ?? []
+  const assetIds =
+    positions.map((p) => p.data?.assetId.toString()).filter(isNotNil) ?? []
   const metas = useAssetMetaList([apiIds.data?.usdId.toString(), ...assetIds])
   const omnipoolAssets = useOmnipoolAssets()
   const omnipoolBalances = useTokensBalances(assetIds, OMNIPOOL_ACCOUNT_ADDRESS)
@@ -82,9 +84,9 @@ export const useUsersTotalInPools = () => {
   const queries = [
     apiIds,
     uniques,
-    positions,
     metas,
     omnipoolAssets,
+    ...positions,
     ...omnipoolBalances,
     ...spotPrices,
   ]
@@ -94,15 +96,19 @@ export const useUsersTotalInPools = () => {
     if (
       !apiIds.data ||
       !uniques.data ||
-      !positions.data ||
       !metas.data ||
       !omnipoolAssets.data ||
+      positions.some((q) => !q.data) ||
       omnipoolBalances.some((q) => !q.data) ||
       spotPrices.some((q) => !q.data)
     )
       return undefined
 
-    const totals = positions.data.map((position) => {
+    const totals = positions.map((query) => {
+      if (!query.data) return BN_NAN
+
+      const position = query.data
+
       const meta = metas.data.find(
         (m) => m.id.toString() === position.assetId.toString(),
       )
@@ -148,7 +154,7 @@ export const useUsersTotalInPools = () => {
     return totals.reduce((acc, total) => acc.plus(total), BN_0)
   }, [
     uniques.data,
-    positions.data,
+    positions,
     metas.data,
     omnipoolAssets.data,
     apiIds.data,

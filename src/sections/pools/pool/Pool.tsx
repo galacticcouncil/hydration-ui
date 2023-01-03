@@ -59,6 +59,7 @@ export const Pool = ({ pool }: Props) => {
                       key={`${i}-${position.assetId}`}
                       position={position}
                       index={i + 1}
+                      onSuccess={positions.refetch}
                     />
                   ))}
                 </div>

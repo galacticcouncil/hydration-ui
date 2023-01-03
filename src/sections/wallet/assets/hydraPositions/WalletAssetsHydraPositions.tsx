@@ -75,10 +75,11 @@ export const WalletAssetsHydraPositions = ({ data }: Props) => {
                 <TableRow isSub>
                   <TableData colSpan={table.getAllColumns().length}>
                     <WalletAssetsHydraPositionsDetails
+                      assetId={row.original.assetId}
                       symbol={row.original.symbol}
                       amount={row.original.providedAmount}
                       amountUSD={row.original.providedAmountUSD}
-                      shares={row.original.sharesAmount}
+                      shares={row.original.shares}
                     />
                   </TableData>
                 </TableRow>

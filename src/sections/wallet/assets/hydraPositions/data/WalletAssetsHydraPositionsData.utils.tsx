@@ -16,6 +16,7 @@ import {
 } from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
 import { useApiIds } from "api/consts"
 import { useAssetDetailsList } from "api/assetDetails"
+import { isNotNil, undefinedNoop } from "../../../../../utils/helpers"
 
 export const useHydraPositionsData = () => {
   const { account } = useAccountStore()
@@ -27,31 +28,33 @@ export const useHydraPositionsData = () => {
   const positions = useOmnipoolPositions(
     uniques.data?.map((u) => u.itemId) ?? [],
   )
+
   const metas = useAssetMetaList([
     apiIds.data?.usdId,
     apiIds.data?.hubId,
-    ...(positions.data?.map((p) => p.assetId) ?? []),
+    ...positions.map((query) => query.data?.assetId),
   ])
+
   const detailsList = useAssetDetailsList(
-    positions.data?.map((p) => p.assetId.toString()) ?? [],
+    positions.map((p) => p.data?.assetId?.toString()) ?? [],
   )
   const omnipoolAssets = useOmnipoolAssets()
   const omnipoolBalances = useTokensBalances(
-    positions.data?.map((p) => p.assetId) ?? [],
+    positions.map((p) => p.data?.assetId).filter(isNotNil) ?? [],
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
   const spotPrices = useSpotPrices(
-    [apiIds.data?.hubId, ...(positions.data?.map((p) => p.assetId) ?? [])],
+    [apiIds.data?.hubId, ...(positions?.map((p) => p.data?.assetId) ?? [])],
     apiIds.data?.usdId,
   )
 
   const queries = [
     apiIds,
     uniques,
-    positions,
     metas,
     detailsList,
     omnipoolAssets,
+    ...positions,
     ...omnipoolBalances,
     ...spotPrices,
   ]
@@ -60,17 +63,20 @@ export const useHydraPositionsData = () => {
   const data = useMemo(() => {
     if (
       !uniques.data ||
-      !positions.data ||
       !metas.data ||
       !omnipoolAssets.data ||
       !apiIds.data ||
+      positions.some((q) => !q.data) ||
       omnipoolBalances.some((q) => !q.data) ||
       spotPrices.some((q) => !q.data)
     )
       return []
 
-    const rows: HydraPositionsTableData[] = positions.data
-      .map((position) => {
+    const rows: HydraPositionsTableData[] = positions
+      .map((query) => {
+        const position = query.data
+        if (!position) return undefinedNoop()
+
         const assetId = position.assetId.toString()
         const meta = metas.data.find((m) => m.id.toString() === assetId)
         const details = detailsList.data?.find(
@@ -153,9 +159,7 @@ export const useHydraPositionsData = () => {
         const providedAmount = position.amount.toBigNumber().div(valueDp)
         let providedAmountUSD = BN_NAN
 
-        const sharesAmount = position.shares
-          .toBigNumber()
-          .div(BN_10.pow(meta?.decimals.toNumber() ?? 12))
+        const shares = position.shares.toBigNumber()
 
         if (
           lrnaSp?.data &&
@@ -171,6 +175,7 @@ export const useHydraPositionsData = () => {
           providedAmountUSD = providedAmount.times(valueSp.data.spotPrice)
 
         const result = {
+          id: position.id.toString(),
           assetId,
           symbol,
           name,
@@ -180,7 +185,7 @@ export const useHydraPositionsData = () => {
           price,
           providedAmount,
           providedAmountUSD,
-          sharesAmount,
+          shares,
         }
 
         return result
@@ -190,7 +195,7 @@ export const useHydraPositionsData = () => {
     return rows
   }, [
     uniques.data,
-    positions.data,
+    positions,
     metas.data,
     detailsList.data,
     omnipoolAssets.data,
@@ -199,5 +204,9 @@ export const useHydraPositionsData = () => {
     spotPrices,
   ])
 
-  return { data, isLoading, refetch: positions.refetch }
+  return {
+    data,
+    isLoading,
+    refetch: uniques.refetch,
+  }
 }

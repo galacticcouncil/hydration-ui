@@ -83,6 +83,7 @@ export const useHydraPositionsTable = (
 }
 
 export type HydraPositionsTableData = {
+  id: string
   assetId: string
   symbol: string
   name: string
@@ -92,5 +93,5 @@ export type HydraPositionsTableData = {
   price: BN
   providedAmount: BN
   providedAmountUSD: BN
-  sharesAmount: BN
+  shares: BN
 }
