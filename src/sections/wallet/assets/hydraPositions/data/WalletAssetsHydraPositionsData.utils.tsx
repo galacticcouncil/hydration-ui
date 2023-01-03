@@ -183,7 +183,7 @@ export const useHydraPositionsData = () => {
           value,
           valueUSD,
           price,
-          providedAmount,
+          providedAmount: position.amount.toBigNumber(),
           providedAmountUSD,
           shares,
         }

@@ -48,6 +48,7 @@ export const WalletAssetsHydraPositionsDetails = ({
         <Text fs={14} lh={18} fw={500} color="white" sx={{ mt: 8 }}>
           {t("value", {
             value: amount,
+            fixedPointScale: meta.data?.decimals ?? 12,
             numberSuffix: ` ${symbol ?? "N/A"}`,
             type: "token",
           })}
