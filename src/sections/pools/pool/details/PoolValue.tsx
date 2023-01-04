@@ -24,7 +24,7 @@ export const PoolValue = ({ pool }: PoolValueProps) => {
           </Text>
           <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
             <Text lh={22} color="white" fs={18}>
-              {t("value.usd", { amount: pool.total })}
+              {t("value.usd", { amount: pool.totalUSD })}
             </Text>
           </div>
         </div>
