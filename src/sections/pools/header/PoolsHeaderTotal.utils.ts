@@ -133,7 +133,7 @@ export const useUsersTotalInPools = () => {
         omnipoolAsset.data.shares.toString(),
         position.amount.toString(),
         position.shares.toString(),
-        positionPrice.toFixed(),
+        positionPrice.toFixed(0),
         position.shares.toString(),
       ]
 
