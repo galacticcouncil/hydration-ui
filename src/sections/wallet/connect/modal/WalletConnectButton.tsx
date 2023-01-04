@@ -1,10 +1,10 @@
 import { useState } from "react"
-import { theme } from "theme"
 import { useTranslation } from "react-i18next"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 
 import { Text } from "components/Typography/Text/Text"
 import { ReactComponent as ChevronDownSmall } from "assets/icons/ChevronDownSmall.svg"
+import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { ButtonProps } from "components/Button/Button"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
@@ -65,7 +65,6 @@ const WalletActiveButton = (props: {
               address={polkadotAddress}
               css={{
                 pointerEvents: "none",
-                outline: `3px solid ${theme.colors.basic800}`,
                 borderRadius: "9999px",
               }}
             />
@@ -91,6 +90,7 @@ export const WalletInactiveButton = (props: {
       className={props.className}
       transform="none"
     >
+      <WalletIcon />
       {t("header.walletConnect.button")}
     </SLoginButton>
   )

@@ -27,6 +27,23 @@ export const SLoginButton = styled(Button)`
   display: flex;
   gap: 16px;
   align-items: center;
-  text-align: center;
   justify-content: center;
+
+  text-align: center;
+
+  text-transform: uppercase;
+  font-size: 16px;
+  line-height: 16px;
+
+  padding: 15px 23px;
+
+  background: linear-gradient(
+    360deg,
+    #ff1e79 -32.73%,
+    rgba(255, 103, 164, 0.32) 91.44%
+  );
+
+  box-shadow: 0px 10px 40px rgba(255, 103, 164, 0.31);
+
+  border: 1px solid ${theme.colors.pink700};
 `

@@ -17,7 +17,14 @@ export const WalletAssets = () => {
   return (
     <div sx={{ mt: [34, 56] }}>
       {!account ? (
-        <WalletAssetsTablePlaceholder />
+        <>
+          <WalletAssetsHeader
+            isLoading={true}
+            data={assetsTable.data}
+            disabledAnimation
+          />
+          <WalletAssetsTablePlaceholder />
+        </>
       ) : (
         <>
           <WalletAssetsHeader

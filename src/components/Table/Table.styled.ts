@@ -92,11 +92,14 @@ export const TablePlaceholderContent = styled.div`
   display: grid;
   place-items: center;
 
-  background: rgba(${theme.rgbColors.black}, 0.5);
+  background: rgba(11, 13, 25, 0.6);
   backdrop-filter: blur(8px);
 `
 
 export const TableRow = styled.tr<{ isOdd?: boolean; isSub?: boolean }>`
+  :hover {
+    background: rgba(${theme.rgbColors.white}, 0.06);
+  }
   ${({ isOdd }) => isOdd && `background: rgba(${theme.rgbColors.white}, 0.03);`}
   ${({ isSub }) => isSub && `background: rgba(${theme.rgbColors.white}, 0.06);`}
 `

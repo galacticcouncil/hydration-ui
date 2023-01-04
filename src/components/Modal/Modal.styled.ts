@@ -95,6 +95,29 @@ export const ModalWindowContainer = styled.div<{ isDrawer?: boolean }>`
   ${({ isDrawer }) => (isDrawer ? { borderRadius: "20px 20px 0px 0px" } : {})}
 
   @media ${theme.viewport.gte.sm} {
+    :before {
+      content: "";
+      position: absolute;
+      inset: 0;
+
+      border-radius: 4px;
+      padding: 1px; // a width of the border
+
+      background: linear-gradient(
+        180deg,
+        rgba(102, 151, 227, 0.35) 0%,
+        rgba(68, 109, 174, 0.3) 66.67%,
+        rgba(91, 151, 245, 0) 99.99%,
+        rgba(158, 167, 180, 0) 100%
+      );
+
+      -webkit-mask: linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
     border-radius: 4px;
   }
 `

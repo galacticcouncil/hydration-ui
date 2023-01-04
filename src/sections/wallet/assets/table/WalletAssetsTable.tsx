@@ -89,6 +89,7 @@ export const WalletAssetsTable = ({ data }: Props) => {
               <TableRow
                 isOdd={!(i % 2)}
                 onClick={() => {
+                  isDesktop && row.toggleSelected()
                   !isDesktop && setRow(row.original)
                 }}
               >
@@ -98,7 +99,7 @@ export const WalletAssetsTable = ({ data }: Props) => {
                   </TableData>
                 ))}
               </TableRow>
-              {row.getIsExpanded() && (
+              {row.getIsSelected() && (
                 <TableRow isSub>
                   <TableData colSpan={table.getAllColumns().length}>
                     <WalletAssetsTableDetails

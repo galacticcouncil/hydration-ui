@@ -7,8 +7,8 @@ export const SButtonOpen = styled(IconButton)<{
   isActive?: boolean
   disabled?: boolean
 }>`
-  width: 34px;
-  height: 34px;
+  width: 41px;
+  height: 41px;
 
   display: flex;
   align-items: center;
@@ -50,6 +50,6 @@ export const SActionsContainer = styled.div`
 
   @media (${theme.viewport.gte.sm}) {
     margin: 0;
-    width: 100%;
+    width: 340px;
   }
 `

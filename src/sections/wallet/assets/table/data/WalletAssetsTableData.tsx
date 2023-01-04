@@ -33,8 +33,8 @@ export const WalletAssetsTableName = ({
             {symbol}
           </Text>
           <Text
-            fs={[large ? 13 : 12, 14]}
-            lh={[large ? 17 : 14, 14]}
+            fs={[large ? 13 : 12, 13]}
+            lh={[large ? 17 : 14, 13]}
             fw={500}
             css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
           >
@@ -50,7 +50,7 @@ export const WalletAssetsTableName = ({
             mt: 4,
             ml: large ? 50 : [32, 40],
           }}
-          color="pink700"
+          color="brightBlue300"
           tTransform="uppercase"
         >
           {t("wallet.assets.table.details.feePaymentAsset")}
@@ -75,7 +75,12 @@ export const WalletAssetsTableBalance = (props: {
       <DollarAssetValue
         value={props.balanceUSD}
         wrapper={(children) => (
-          <Text fs={[11, 12]} lh={[14, 16]} fw={500} color="neutralGray500">
+          <Text
+            fs={[11, 13]}
+            lh={[14, 16]}
+            fw={500}
+            css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
+          >
             {children}
           </Text>
         )}

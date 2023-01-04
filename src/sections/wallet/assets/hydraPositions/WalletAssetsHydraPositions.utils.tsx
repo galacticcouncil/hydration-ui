@@ -69,8 +69,9 @@ export const useHydraPositionsTable = (
       id: "actions",
       cell: ({ row }) => (
         <WalletAssetsHydraPositionsActions
-          toggleExpanded={() => row.toggleExpanded()}
+          toggleExpanded={row.toggleSelected}
           onTransferClick={() => actions.onTransfer(row.original.assetId)}
+          isExpanded={row.getIsSelected()}
         />
       ),
     }),

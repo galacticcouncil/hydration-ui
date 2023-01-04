@@ -34,6 +34,7 @@ export const SGridContainer = styled.div`
     grid-template-rows: repeat(2, 1fr);
     grid-column-gap: 48px;
     grid-row-gap: 0px;
+    grid-template-columns: 1fr auto auto;
 
     > div:nth-of-type(1) {
       grid-area: 1 / 1 / 2 / 2;

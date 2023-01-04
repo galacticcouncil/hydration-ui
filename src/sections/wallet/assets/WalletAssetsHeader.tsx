@@ -14,11 +14,13 @@ import { useMedia } from "react-use"
 interface WalletAssetsHeaderProps {
   data?: AssetsTableData[]
   isLoading?: boolean
+  disabledAnimation?: boolean
 }
 
 export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
   data,
   isLoading,
+  disabledAnimation,
 }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -69,6 +71,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
 
         {isLoading ? (
           <Skeleton
+            enableAnimation={!disabledAnimation}
             sx={{
               width: [97, 208],
               height: [27, 42],
@@ -141,6 +144,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
                 width: [97, 168],
                 height: [27, 42],
               }}
+              enableAnimation={!disabledAnimation}
             />
           ) : (
             transferableUsd && (

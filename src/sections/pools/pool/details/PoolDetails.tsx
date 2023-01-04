@@ -13,7 +13,7 @@ export const PoolDetails = ({ pool, onClick }: PoolDetailsProps) => {
   const { t } = useTranslation()
 
   return (
-    <div sx={{ flex: "column", width: ["auto", 300] }}>
+    <div sx={{ flex: "column" }}>
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div sx={{ flex: "column", gap: 10 }}>
           <Text fs={13} color="basic400">
@@ -31,7 +31,14 @@ export const PoolDetails = ({ pool, onClick }: PoolDetailsProps) => {
             </div>
           </div>
         </div>
-        <div sx={{ flex: "column", gap: 10, align: ["end", "start"] }}>
+        <div
+          sx={{
+            flex: "column",
+            gap: 10,
+            align: ["end", "start"],
+            width: ["auto", 118],
+          }}
+        >
           <Text fs={13} color="basic400">
             {t("liquidity.asset.details.fee")}
           </Text>

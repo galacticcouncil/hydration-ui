@@ -16,7 +16,7 @@ export const PoolValue = ({ pool }: PoolValueProps) => {
   const { data, isLoading } = usePoolDetailsTradeVolume(pool.id)
 
   return (
-    <div sx={{ flex: "column", width: ["auto", 300], justify: "end" }}>
+    <div sx={{ flex: "column", justify: "end" }}>
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div sx={{ flex: "column", gap: 10 }}>
           <Text fs={13} color="basic400">
@@ -28,7 +28,7 @@ export const PoolValue = ({ pool }: PoolValueProps) => {
             </Text>
           </div>
         </div>
-        <div sx={{ flex: "column", gap: 10 }}>
+        <div sx={{ flex: "column", gap: 10, width: ["auto", 118] }}>
           <div sx={{ flex: "row", align: "center", gap: 6 }}>
             <Text fs={13} color="basic400">
               {t("liquidity.asset.details.24hours")}
@@ -43,7 +43,7 @@ export const PoolValue = ({ pool }: PoolValueProps) => {
             <DollarAssetValue
               value={data ?? BN_NAN}
               wrapper={(children) => (
-                <Text lh={22} color="white" tAlign={["right", "left"]}>
+                <Text fs={18} lh={22} color="white" tAlign={["right", "left"]}>
                   {children}
                 </Text>
               )}

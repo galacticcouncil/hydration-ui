@@ -15,7 +15,11 @@ export const TableAction = (props: {
       disabled={props.disabled}
       size="small"
       sx={{ p: "9px 12px" }}
-      onClick={props.onClick}
+      onClick={(e) => {
+        e.stopPropagation()
+        e.preventDefault()
+        props.onClick?.()
+      }}
     >
       <div sx={{ flex: "row", align: "center" }}>
         {props.icon}
