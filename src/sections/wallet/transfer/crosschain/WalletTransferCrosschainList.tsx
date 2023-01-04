@@ -15,10 +15,10 @@ export function WalletTransferCrosschainList(props: {
 
   return (
     <div sx={{ flex: "column", justify: "space-between", height: "100%" }}>
-      <ModalMeta title={t("wallet.assets.transfer.crosschain.title")} />
+      <ModalMeta title={t("wallet.assets.transfer.bridge.title")} />
       <div sx={{ flex: "column" }}>
         <Text fs={18} lh={25} sx={{ maxWidth: 360 }}>
-          {t("wallet.assets.transfer.crosschain.description")}
+          {t("wallet.assets.transfer.bridge.description")}
         </Text>
 
         <Spacer size={30} />
