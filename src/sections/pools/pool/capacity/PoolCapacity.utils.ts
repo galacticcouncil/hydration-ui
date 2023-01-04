@@ -99,17 +99,6 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
         capDifference = tvlCapDifference
     }
 
-    console.table([
-      ["asset_id", asset.id.toString()],
-      ["asset_reserve", assetReserve],
-      ["asset_hub_reserve", assetHubReserve],
-      ["stable_asset_reserve", stableAssetReserve],
-      ["stable_asset_hub_reserve", stableAssetHubReserve],
-      ["asset_cap", assetCap],
-      ["total_hub_reserve", totalHubReserve],
-      ["calculate_cap_difference", capDifference],
-    ])
-
     if (capDifference === "-1")
       return {
         capacity: BN_NAN,
