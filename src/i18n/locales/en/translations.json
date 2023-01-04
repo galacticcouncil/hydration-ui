@@ -31,7 +31,7 @@
   "address.input.native": "{{symbol}}: {{address}}",
   "header.transfer": "Transfer",
   "header.trade": "Trade",
-  "header.pools": "Pools",
+  "header.liquidity": "Liquidity",
   "header.wallet": "Wallet",
   "header.lbp": "LBP",
   "header.bridge": "Bridge",

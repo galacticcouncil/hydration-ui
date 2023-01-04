@@ -156,9 +156,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
                     )
                       return true
                   } catch {}
-                  return t(
-                    "liquidity.add.modal.validation.notEnoughBalance",
-                  )
+                  return t("liquidity.add.modal.validation.notEnoughBalance")
                 },
               },
             }}

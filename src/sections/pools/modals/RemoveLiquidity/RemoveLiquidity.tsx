@@ -239,9 +239,7 @@ export const RemoveLiquidity = ({
             </Text>
           </div>
         </div>
-        <Button variant="primary">
-          {t("liquidity.remove.modal.confirm")}
-        </Button>
+        <Button variant="primary">{t("liquidity.remove.modal.confirm")}</Button>
       </form>
     </Modal>
   )

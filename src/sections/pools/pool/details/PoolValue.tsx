@@ -33,7 +33,9 @@ export const PoolValue = ({ pool }: PoolValueProps) => {
             <Text fs={13} color="basic400">
               {t("liquidity.asset.poolDetails.24hours")}
             </Text>
-            <InfoTooltip text={t("liquidity.asset.poolDetails.24hours.tooltip")}>
+            <InfoTooltip
+              text={t("liquidity.asset.poolDetails.24hours.tooltip")}
+            >
               <SInfoIcon />
             </InfoTooltip>
           </div>
