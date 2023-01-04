@@ -95,9 +95,7 @@ const RemoveLiquidityInput = ({
           <Text fs={11} css={{ opacity: 0.7 }}>
             {t("balance")}
           </Text>
-          <Text fs={11}>
-            {t("pools.removeLiquidity.modal.shares", { shares })}
-          </Text>
+          <Text fs={11}>{t("liquidity.remove.modal.shares", { shares })}</Text>
         </div>
       </SSlippage>
     </>
