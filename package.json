@@ -7,7 +7,7 @@
     "@emotion/is-prop-valid": "^1.2.0",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
-    "@galacticcouncil/math": "https://github.com/galacticcouncil/HydraDX-wasm#1252bb777a470a080ec97634bebaadcc31d40737",
+    "@galacticcouncil/math": "https://github.com/galacticcouncil/HydraDX-wasm#b99d5d52d618c06c9f170d4a5bde0bb78007efde",
     "@galacticcouncil/math-lbp": "^0.0.4",
     "@galacticcouncil/math-xyk": "^0.0.4",
     "@galacticcouncil/sdk": "^0.0.1",
