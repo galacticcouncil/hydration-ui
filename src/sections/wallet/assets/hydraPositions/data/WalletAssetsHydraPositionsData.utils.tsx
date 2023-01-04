@@ -161,15 +161,15 @@ export const useHydraPositionsData = () => {
 
         const shares = position.shares.toBigNumber()
 
-        if (
-          lrnaSp?.data &&
-          valueSp?.data &&
-          liquidityOutResult !== "-1" &&
-          lernaOutResult !== "-1"
-        )
-          valueUSD = value
-            .times(valueSp.data.spotPrice)
-            .plus(lrna.times(lrnaSp.data.spotPrice))
+        if (liquidityOutResult !== "-1" && valueSp?.data) {
+          valueUSD = value.times(valueSp.data.spotPrice)
+
+          if (lrna.gt(0)) {
+            valueUSD = !lrnaSp?.data
+              ? BN_NAN
+              : valueUSD.plus(lrna.times(lrnaSp.data.spotPrice))
+          }
+        }
 
         if (valueSp?.data)
           providedAmountUSD = providedAmount.times(valueSp.data.spotPrice)
