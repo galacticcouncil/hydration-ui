@@ -23,6 +23,8 @@ import { BN_10 } from "../../../../utils/constants"
 import { useAssetMetaList } from "../../../../api/assetMeta"
 import { useRemoveLiquidity } from "./RemoveLiquidity.utils"
 import { useApiIds } from "../../../../api/consts"
+import BN from "bignumber.js"
+import { getFloatingPointAmount } from "utils/balance"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
@@ -34,6 +36,7 @@ type RemoveLiquidityProps = {
 type RemoveLiquidityInputProps = {
   value: number
   onChange: (value: number) => void
+  shares: BN
 }
 
 const options = [
@@ -46,10 +49,10 @@ const options = [
 const RemoveLiquidityInput = ({
   value,
   onChange,
+  shares,
 }: RemoveLiquidityInputProps) => {
-  const [input, setInput] = useState("")
-
   const { t } = useTranslation()
+  const [input, setInput] = useState("")
 
   const handleOnChange = (value: string) => {
     setInput(value)
@@ -83,6 +86,7 @@ const RemoveLiquidityInput = ({
           name="custom"
           label="Custom"
           placeholder="Custom"
+          unit="%"
         />
         <div
           sx={{ flex: "row", justify: "end", gap: 4, mt: 9 }}
@@ -91,7 +95,7 @@ const RemoveLiquidityInput = ({
           <Text fs={11} css={{ opacity: 0.7 }}>
             {t("balance")}
           </Text>
-          <Text fs={11}>TODO</Text>
+          <Text fs={11}>{t("liquidity.remove.modal.shares", { shares })}</Text>
         </div>
       </SSlippage>
     </>
@@ -178,8 +182,9 @@ export const RemoveLiquidity = ({
         <div>
           <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
             {t("liquidity.remove.modal.value", {
-              value: removeSharesValue.div(
-                BN_10.pow(meta?.decimals.toNumber() ?? 12),
+              value: getFloatingPointAmount(
+                removeSharesValue,
+                meta?.decimals.toNumber() ?? 12,
               ),
             })}
           </Text>
@@ -193,6 +198,10 @@ export const RemoveLiquidity = ({
               <RemoveLiquidityInput
                 value={field.value}
                 onChange={field.onChange}
+                shares={getFloatingPointAmount(
+                  position.shares,
+                  meta?.decimals.toNumber() ?? 12,
+                )}
               />
             )}
           />
