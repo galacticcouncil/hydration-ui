@@ -53,6 +53,12 @@ export const useHydraPositionsTable = (
     accessor("valueUSD", {
       id: "valueUSD",
       header: t("wallet.assets.hydraPositions.header.valueUSD"),
+      sortingFn: (a, b) =>
+        b.original.valueUSD.isNaN()
+          ? 1
+          : a.original.valueUSD.gt(b.original.valueUSD)
+          ? 1
+          : -1,
       cell: ({ row }) => (
         <Text fw={500} fs={16} lh={16} color="green600">
           {t("value.usd", { amount: row.original.valueUSD })}
