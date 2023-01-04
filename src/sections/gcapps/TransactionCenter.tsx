@@ -10,7 +10,7 @@ const TransactionCenter = createComponent({
   elementClass: Apps.TransactionCenter,
   react: React,
   events: {
-    onGCNotification: "gc:notification:new" as EventName<
+    onNotificationNew: "gc:notification:new" as EventName<
       CustomEvent<Notification>
     >,
   },
@@ -44,41 +44,34 @@ const ToastTitle = ({ message }: { message: Notification["message"] }) => {
   )
 }
 
-type TradeTransactionCenterProps = {
+const handleNotification = (e: any, toast: any): void => {
+  if (e.detail.toast) {
+    const toastVariant = e.detail.type || "info"
+    const existingToast = toast.toasts.find(
+      (toast: any) => toast.id === e.detail.id,
+    )
+
+    if (existingToast) {
+      // remove if there is a progrees toast
+      toast.remove(e.detail.id)
+    }
+    toast.add(toastVariant, {
+      title: <ToastTitle message={e.detail.message} />,
+      id: e.detail.id,
+    })
+  } else {
+    toast.remove(e.detail.id)
+  }
+}
+
+type TransactionCenterProps = {
   children: React.ReactNode
 }
 
-export const TradeTransactionCenter = ({
-  children,
-}: TradeTransactionCenterProps) => {
+export const GcTransactionCenter = ({ children }: TransactionCenterProps) => {
   const toast = useToast()
-
   return (
-    <TransactionCenter
-      onGCNotification={(e) => {
-        if (e.detail.toast) {
-          const toastVariant = e.detail.type || "info"
-          const existingToast = toast.toasts.find(
-            (toast) => toast.id === e.detail.id,
-          )
-
-          // it can be removed after the duplicated event listener is deleted on trade app
-          const isDuplicatedEvent = existingToast?.variant === e.detail.type
-          if (isDuplicatedEvent) return
-
-          if (existingToast) {
-            // remove if there is a progrees toast
-            toast.remove(e.detail.id)
-          }
-          toast.add(toastVariant, {
-            title: <ToastTitle message={e.detail.message} />,
-            id: e.detail.id,
-          })
-        } else {
-          toast.remove(e.detail.id)
-        }
-      }}
-    >
+    <TransactionCenter onNotificationNew={(e) => handleNotification(e, toast)}>
       {children}
     </TransactionCenter>
   )

@@ -6,6 +6,7 @@ export const LINKS = {
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
   walletVesting: "/wallet/vesting",
+  transfer: "/transfer",
 }
 
 export const EXTERNAL_LINKS = {
@@ -16,22 +17,9 @@ export const EXTERNAL_LINKS = {
 } as const
 
 const isPoolsPageEnabled = import.meta.env.VITE_FF_POOLS_ENABLED === "true"
+const isXcmPageEnabled = import.meta.env.VITE_FF_XCM_ENABLED === "true"
 
 export const MENU_ITEMS = [
-  /*{
-    key: "lbp",
-    translationKey: "header.lbp",
-    href: EXTERNAL_LINKS.lbp,
-    external: true,
-    mobVisible: false,
-  },
-  {
-    key: "bridge",
-    translationKey: "header.bridge",
-    href: EXTERNAL_LINKS.bridge,
-    external: true,
-    mobVisible: false,
-  },*/
   {
     key: "trade",
     translationKey: "header.trade",
@@ -53,6 +41,14 @@ export const MENU_ITEMS = [
     translationKey: "header.wallet",
     href: LINKS.wallet,
     enabled: true,
+    external: false,
+    mobVisible: true,
+  },
+  {
+    key: "transfer",
+    translationKey: "header.transfer",
+    href: LINKS.transfer,
+    enabled: isXcmPageEnabled,
     external: false,
     mobVisible: true,
   },

@@ -1,7 +1,9 @@
 import { WalletPage } from "./sections/wallet/WalletPage"
 
 import { Navigate } from "@tanstack/react-location"
-import { TradePage } from "sections/trade/TradePage"
+import { TradePage } from "sections/gcapps/trade/TradePage"
+import { XcmPage } from "sections/gcapps/xcm/XcmPage"
+
 import { PoolsPage } from "sections/pools/PoolsPage"
 
 export const routes = [
@@ -37,5 +39,9 @@ export const routes = [
   {
     path: "pools-and-farms",
     element: <PoolsPage />,
+  },
+  {
+    path: "transfer",
+    element: <XcmPage />,
   },
 ]
