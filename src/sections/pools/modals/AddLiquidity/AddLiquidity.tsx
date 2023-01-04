@@ -61,7 +61,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
           onLoading: (
             <Trans
               t={t}
-              i18nKey="pools.addLiquidity.modal.toast.onLoading"
+              i18nKey="liquidity.add.modal.toast.onLoading"
               tOptions={{
                 value: values.amount,
                 symbol: assetMeta?.symbol,
@@ -76,7 +76,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
           onSuccess: (
             <Trans
               t={t}
-              i18nKey="pools.addLiquidity.modal.toast.onSuccess"
+              i18nKey="liquidity.add.modal.toast.onSuccess"
               tOptions={{
                 value: values.amount,
                 symbol: assetMeta?.symbol,
@@ -91,7 +91,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
           onError: (
             <Trans
               t={t}
-              i18nKey="pools.addLiquidity.modal.toast.onLoading"
+              i18nKey="liquidity.add.modal.toast.onLoading"
               tOptions={{
                 value: values.amount,
                 symbol: assetMeta?.symbol,
@@ -112,7 +112,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
     <Modal
       open={isOpen}
       withoutOutsideClose
-      title={t("pools.addLiquidity.modal.title")}
+      title={t("liquidity.add.modal.title")}
       onClose={() => {
         onClose()
         form.reset()
@@ -157,7 +157,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
                       return true
                   } catch {}
                   return t(
-                    "pools.addLiquidity.modal.validation.notEnoughBalance",
+                    "liquidity.add.modal.validation.notEnoughBalance",
                   )
                 },
               },
@@ -188,7 +188,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
             }}
           >
             <Text color="basic300" fs={14}>
-              {t("pools.pool.liquidity.poolFees")}
+              {t("liquidity.asset.liquidity.assetFees")}
             </Text>
             <Text fs={14} color="white">
               {t("value.percentage", { value: omnipoolFee?.fee })}
@@ -196,7 +196,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
           </div>
 
           <Text color="pink500" fs={15} font="FontOver" tTransform="uppercase">
-            {t("pools.addLiquidity.modal.positionDetails")}
+            {t("liquidity.add.modal.positionDetails")}
           </Text>
 
           <div
@@ -209,10 +209,10 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
             }}
           >
             <Text color="darkBlue300" fs={14}>
-              {t("pools.removeLiquidity.modal.price")}
+              {t("liquidity.remove.modal.price")}
             </Text>
             <Text fs={14} color="white">
-              {t("pools.addLiquidity.modal.row.spotPrice", {
+              {t("liquidity.add.modal.row.spotPrice", {
                 firstAmount: 1,
                 firstCurrency: assetMeta?.symbol,
                 secondAmount: spotPrice?.spotPrice,
@@ -230,7 +230,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
             }}
           >
             <Text color="darkBlue300" fs={14}>
-              {t("pools.addLiquidity.modal.receive")}
+              {t("liquidity.add.modal.receive")}
             </Text>
             <Text fs={14} color="white">
               {t("value", {
@@ -247,7 +247,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
             fw={400}
             sx={{ mt: 17, mb: 24 }}
           >
-            {t("pools.addLiquidity.modal.warning")}
+            {t("liquidity.add.modal.warning")}
           </Text>
 
           {isWithinLimit.data === false && <AddLiquidityLimitWarning />}
@@ -258,7 +258,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
           />
         </div>
         <Button variant="primary" type="submit">
-          {t("pools.addLiquidity.modal.confirmButton")}
+          {t("liquidity.add.modal.confirmButton")}
         </Button>
       </form>
     </Modal>

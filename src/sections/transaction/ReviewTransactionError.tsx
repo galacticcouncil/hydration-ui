@@ -16,11 +16,11 @@ export const ReviewTransactionError = (props: {
     <div sx={{ flex: "column", align: "center" }}>
       <FullFailIcon />
       <Heading fs={19} fw={500} tAlign="center" sx={{ mt: 20 }}>
-        {t("pools.reviewTransaction.modal.error.title")}
+        {t("liquidity.reviewTransaction.modal.error.title")}
       </Heading>
       <div sx={{ flex: "column", align: "center", px: 20, mt: 20, mb: 40 }}>
         <Text tAlign="center" fs={16} color="basic400" fw={400} lh={22}>
-          {t("pools.reviewTransaction.modal.error.description")}
+          {t("liquidity.reviewTransaction.modal.error.description")}
         </Text>
 
         <SButtons>
@@ -35,7 +35,7 @@ export const ReviewTransactionError = (props: {
               flex-grow: 1;
             `}
           >
-            {t("pools.reviewTransaction.modal.error.close")}
+            {t("liquidity.reviewTransaction.modal.error.close")}
           </Button>
 
           <ButtonTransparent
@@ -43,7 +43,7 @@ export const ReviewTransactionError = (props: {
             sx={{ mt: 10, color: "brightBlue400", fontSize: 14 }}
             onClick={props.onReview}
           >
-            {t("pools.reviewTransaction.modal.error.review")}
+            {t("liquidity.reviewTransaction.modal.error.review")}
           </ButtonTransparent>
         </SButtons>
       </div>

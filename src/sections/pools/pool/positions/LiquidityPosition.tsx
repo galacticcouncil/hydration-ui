@@ -36,16 +36,16 @@ export const LiquidityPosition = ({ position, index, onSuccess }: Props) => {
             sx={{ width: 18, height: "fit-content" }}
           />
           <Text fs={[18, 18]}>
-            {t("pools.pool.positions.position.title", { index })}
+            {t("liquidity.asset.positions.position.title", { index })}
           </Text>
         </div>
         <div css={{ display: "grid", gridTemplateColumns: "1fr auto 1fr" }}>
           <div sx={{ flex: "column", gap: 6 }}>
             <Text fs={[14, 14]} color="whiteish500">
-              {t("pools.pool.positions.position.amount")}
+              {t("liquidity.asset.positions.position.amount")}
             </Text>
             <Text fs={[16, 16]}>
-              {t("pools.pool.positions.position.shares", {
+              {t("liquidity.asset.positions.position.shares", {
                 shares: position.shares,
                 fixedPointScale: meta.data?.decimals ?? 12,
               })}
@@ -81,7 +81,7 @@ export const LiquidityPosition = ({ position, index, onSuccess }: Props) => {
         >
           <div sx={{ flex: "row", align: "center", justify: "center" }}>
             <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
-            {t("pools.pool.actions.removeLiquidity")}
+            {t("liquidity.asset.actions.removeLiquidity")}
           </div>
         </SButton>
       </div>

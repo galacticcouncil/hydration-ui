@@ -51,7 +51,7 @@ export const Pool = ({ pool }: Props) => {
             >
               <SPositions>
                 <Text fs={[16, 16]} color="basic400" sx={{ mb: 20 }}>
-                  {t("pools.pool.nft.title")}
+                  {t("liquidity.asset.positions.title")}
                 </Text>
                 <div sx={{ flex: "column", gap: 16 }}>
                   {positions.data.map((position, i) => (

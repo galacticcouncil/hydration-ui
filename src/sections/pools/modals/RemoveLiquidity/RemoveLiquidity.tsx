@@ -163,7 +163,7 @@ export const RemoveLiquidity = ({
     <Modal
       open={isOpen}
       withoutOutsideClose
-      title={t("pools.removeLiquidity.modal.title")}
+      title={t("liquidity.remove.modal.title")}
       onClose={onClose}
     >
       <form
@@ -177,7 +177,7 @@ export const RemoveLiquidity = ({
       >
         <div>
           <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
-            {t("pools.removeLiquidity.modal.value", {
+            {t("liquidity.remove.modal.value", {
               value: removeSharesValue.div(
                 BN_10.pow(meta?.decimals.toNumber() ?? 12),
               ),
@@ -199,7 +199,7 @@ export const RemoveLiquidity = ({
 
           <STradingPairContainer>
             <Text color="brightBlue300">
-              {t("pools.removeLiquidity.modal.receive")}
+              {t("liquidity.remove.modal.receive")}
             </Text>
 
             <RemoveLiquidityReward
@@ -232,7 +232,7 @@ export const RemoveLiquidity = ({
             }}
           >
             <Text color="darkBlue300" fs={14}>
-              {t("pools.pool.liquidity.poolFees")}
+              {t("liquidity.asset.liquidity.assetFees")}
             </Text>
             <Text fs={14} color="graySoft">
               {t("value.percentage", { value: omnipoolFee?.fee })}
@@ -240,7 +240,7 @@ export const RemoveLiquidity = ({
           </div>
         </div>
         <Button variant="primary">
-          {t("pools.removeLiquidity.modal.confirm")}
+          {t("liquidity.remove.modal.confirm")}
         </Button>
       </form>
     </Modal>

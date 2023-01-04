@@ -13,15 +13,15 @@ export const ReviewTransactionSuccess = (props: { onClose: () => void }) => {
     <div sx={{ flex: "column", align: "center" }}>
       <FullSuccessIcon />
       <Heading fs={19} fw={500} tAlign="center" sx={{ mt: 20 }}>
-        {t("pools.reviewTransaction.modal.success.title")}
+        {t("liquidity.reviewTransaction.modal.success.title")}
       </Heading>
       <div sx={{ flex: "column", align: "center", px: 20, mt: 20, mb: 40 }}>
         <Text tAlign="center" fs={16} color="basic400" fw={400} lh={22}>
-          {t("pools.reviewTransaction.modal.success.description")}
+          {t("liquidity.reviewTransaction.modal.success.description")}
         </Text>
 
         <Button variant="secondary" sx={{ mt: 40 }} onClick={props.onClose}>
-          {t("pools.reviewTransaction.modal.success.close")}
+          {t("liquidity.reviewTransaction.modal.success.close")}
         </Button>
       </div>
 

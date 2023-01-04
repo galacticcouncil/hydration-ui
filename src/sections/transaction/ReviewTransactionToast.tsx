@@ -35,7 +35,7 @@ export function ReviewTransactionToast<
       // toast should be still present, even if ReviewTransaction is unmounted
       toastRef.current.success({
         title: props.toastMessage?.onSuccess ?? (
-          <p>{t("pools.reviewTransaction.toast.success")}</p>
+          <p>{t("liquidity.reviewTransaction.toast.success")}</p>
         ),
       })
 
@@ -46,7 +46,7 @@ export function ReviewTransactionToast<
     if (isError) {
       toastRef.current.error({
         title: props.toastMessage?.onError ?? (
-          <p>{t("pools.reviewTransaction.toast.error")}</p>
+          <p>{t("liquidity.reviewTransaction.toast.error")}</p>
         ),
       })
     }
@@ -54,7 +54,7 @@ export function ReviewTransactionToast<
     if (isLoading) {
       toRemoveId = toastRef.current.loading({
         title: props.toastMessage?.onLoading ?? (
-          <p>{t("pools.reviewTransaction.toast.pending")}</p>
+          <p>{t("liquidity.reviewTransaction.toast.pending")}</p>
         ),
       })
     }
