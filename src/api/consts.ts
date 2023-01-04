@@ -22,3 +22,13 @@ export const getApiIds = (api: ApiPromise) => async () => {
 
   return { nativeId, hubId, usdId, omnipoolCollectionId }
 }
+
+export const useTVLCap = () => {
+  const api = useApiPromise()
+
+  return useQuery(QUERY_KEYS.tvlCap, getTvlCap(api))
+}
+
+export const getTvlCap = (api: ApiPromise) => async () => {
+  return api.consts.omnipool.tvlCap
+}

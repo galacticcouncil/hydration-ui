@@ -14,13 +14,11 @@ export const PoolCapacity = ({ pool }: Props) => {
   if (capacity.isLoading || !capacity.data) return null
 
   const isError = capacity.data.capacity.isNaN()
-  const isUnlimited = capacity.data.isUnlimited
-  const filled =
-    isError || isUnlimited ? "0" : capacity.data.filledPercent.toFixed(2)
+  const filled = isError ? "0" : capacity.data.filledPercent.toFixed(2)
 
   return (
     <SContainer ref={ref}>
-      {!isError && !isUnlimited && (
+      {!isError && (
         <Trans
           i18nKey="liquidity.asset.capacity"
           tOptions={{

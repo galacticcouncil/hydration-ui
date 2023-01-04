@@ -87,7 +87,7 @@ export function useTokensBalances(
       queryKey: QUERY_KEYS.tokenBalance(id, address),
       queryFn:
         address != null ? getTokenBalance(api, address, id) : undefinedNoop,
-      enabled: !!address,
+      enabled: !!id && !!address,
     })),
   })
 }
