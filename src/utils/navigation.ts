@@ -1,6 +1,6 @@
 export const LINKS = {
   home: "/",
-  pools_and_farms: "/pools-and-farms",
+  liquidity: "/liquidity",
   trade: "/trade",
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
@@ -31,7 +31,7 @@ export const MENU_ITEMS = [
   {
     key: "pools",
     translationKey: "header.liquidity",
-    href: LINKS.pools_and_farms,
+    href: LINKS.liquidity,
     enabled: isPoolsPageEnabled,
     external: false,
     mobVisible: false,

@@ -37,7 +37,7 @@ export const routes = [
     ],
   },
   {
-    path: "pools-and-farms",
+    path: "liquidity",
     element: <PoolsPage />,
   },
   {
