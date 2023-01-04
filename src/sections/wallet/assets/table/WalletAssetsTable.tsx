@@ -1,5 +1,5 @@
 import { flexRender } from "@tanstack/react-table"
-// import { Switch } from "components/Switch/Switch"
+import { Switch } from "components/Switch/Switch"
 import { TableSortHeader } from "components/Table/Table"
 import {
   Table,
@@ -29,13 +29,13 @@ type Props = { data: AssetsTableData[] }
 export const WalletAssetsTable = ({ data }: Props) => {
   const { t } = useTranslation()
   const [row, setRow] = useState<AssetsTableData | undefined>(undefined)
-  const [showAll] = useState(true)
+  const [showAll, setShowAll] = useState(false)
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const filteredData = useMemo(
-    () => (showAll ? data : data.filter((row) => !row.total.isZero())),
+    () => (showAll ? data : data.filter((row) => row.total.gt(0))),
     [data, showAll],
   )
 
@@ -55,13 +55,13 @@ export const WalletAssetsTable = ({ data }: Props) => {
             ? t("wallet.assets.table.title")
             : t("wallet.header.assets")}
         </Text>
-        {/*<Switch*/}
-        {/*  value={showAll}*/}
-        {/*  onCheckedChange={(value) => setShowAll(value)}*/}
-        {/*  size="small"*/}
-        {/*  name="showAll"*/}
-        {/*  label={t("wallet.assets.table.toggle")}*/}
-        {/*/>*/}
+        <Switch
+          value={showAll}
+          onCheckedChange={(value) => setShowAll(value)}
+          size="small"
+          name="showAll"
+          label={t("wallet.assets.table.toggle")}
+        />
       </TableTitle>
       <Table>
         <TableHeaderContent>
