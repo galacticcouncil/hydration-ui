@@ -71,8 +71,14 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
         isUnlimited: false,
       }
 
-    const capacity = poolBalance.data.balance.plus(new BN(capDifference))
-    const filled = poolBalance.data.balance
+    const capacity = getFloatingPointAmount(
+      poolBalance.data.balance.plus(new BN(capDifference)),
+      meta.data?.decimals.toNumber() ?? 12,
+    )
+    const filled = getFloatingPointAmount(
+      poolBalance.data.balance,
+      meta.data?.decimals.toNumber() ?? 12,
+    )
     const filledPercent = filled.div(capacity).times(100)
     const isUnlimited = getFloatingPointAmount(asset.data.cap, 18).eq(1)
 

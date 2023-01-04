@@ -16,7 +16,7 @@ import {
 } from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
 import { useApiIds } from "api/consts"
 import { useAssetDetailsList } from "api/assetDetails"
-import { isNotNil, undefinedNoop } from "../../../../../utils/helpers"
+import { isNotNil } from "utils/helpers"
 
 export const useHydraPositionsData = () => {
   const { account } = useAccountStore()
@@ -75,7 +75,7 @@ export const useHydraPositionsData = () => {
     const rows: HydraPositionsTableData[] = positions
       .map((query) => {
         const position = query.data
-        if (!position) return undefinedNoop()
+        if (!position) return null
 
         const assetId = position.assetId.toString()
         const meta = metas.data.find((m) => m.id.toString() === assetId)
