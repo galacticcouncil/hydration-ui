@@ -20,14 +20,16 @@ export const useAssetsTableData = () => {
   const { account } = useAccountStore()
   const tradeAssets = useTradeAssets()
   const accountBalances = useAccountBalances(account?.address)
-  const tokenIds = accountBalances.data?.balances
-    ? [NATIVE_ASSET_ID, ...accountBalances.data.balances.map((b) => b.id)]
-    : []
   const balances = useAssetsBalances()
-  const acceptedCurrenciesQuery = useAcceptedCurrencies(tokenIds)
+  const acceptedCurrenciesQuery = useAcceptedCurrencies([
+    NATIVE_ASSET_ID,
+    ...(accountBalances.data?.balances ?? []).map((b) => b.id),
+  ])
   const accountCurrency = useAccountCurrency(account?.address)
-  const assetDetails = useAssetDetailsList(tokenIds)
-  const assetMetadata = useAssetMetaList(tokenIds)
+  const assetDetails = useAssetDetailsList()
+  const assetMetadata = useAssetMetaList(
+    assetDetails.data?.map((ad) => ad.id.toString()) ?? [],
+  )
 
   const queries = [
     assetDetails,
@@ -68,8 +70,6 @@ export const useAssetsTableData = () => {
       const metadata = assetMetadata.data?.find(
         (a) => a.id.toString() === asset.id.toString(),
       )
-
-      if (!balance) return null
 
       const couldBeSetAsPaymentFee = acceptedCurrencies.some(
         (currency) =>

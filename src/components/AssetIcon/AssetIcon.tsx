@@ -12,6 +12,10 @@ import { ReactComponent as HDX } from "assets/icons/tokens/HDX.svg"
 import { ReactComponent as LRNA } from "assets/icons/tokens/LRNA.svg"
 import { ReactComponent as DAI } from "assets/icons/tokens/DAI.svg"
 import { ReactComponent as DOT } from "assets/icons/tokens/DOT.svg"
+import { ReactComponent as BTC } from "assets/icons/tokens/BTC.svg"
+import { ReactComponent as ETH } from "assets/icons/tokens/ETH.svg"
+import { ReactComponent as USDC } from "assets/icons/tokens/USDC.svg"
+import { ReactComponent as USDT } from "assets/icons/tokens/USDT.svg"
 import { ReactComponent as PlaceholderIcon } from "assets/icons/tokens/PlaceholderIcon.svg"
 
 export type AssetIconProps = {
@@ -46,6 +50,10 @@ export function getAssetLogo(symbol: string | null | undefined) {
   if (_symbol === "LRNA") return <LRNA />
   if (_symbol === "DAI") return <DAI />
   if (_symbol === "DOT") return <DOT />
+  if (_symbol === "BTC") return <BTC />
+  if (_symbol === "ETH") return <ETH />
+  if (_symbol === "USDC") return <USDC />
+  if (_symbol === "USDT") return <USDT />
 
   return <PlaceholderIcon width={32} height={32} />
 }
@@ -63,6 +71,10 @@ export function getAssetName(symbol: string | null | undefined) {
   if (_symbol === "LRNA") return "Lerna"
   if (_symbol === "DAI") return "Dai"
   if (_symbol === "DOT") return "Polkadot"
+  if (_symbol === "BTC") return "Bitcoin"
+  if (_symbol === "ETH") return "Ethereum"
+  if (_symbol === "USDC") return "USD Coin"
+  if (_symbol === "USDT") return "Tether"
 
   return "N/A"
 }
