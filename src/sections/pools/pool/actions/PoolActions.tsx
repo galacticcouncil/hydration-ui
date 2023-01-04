@@ -52,7 +52,7 @@ export const PoolActions = ({
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon icon={<PlusIcon />} sx={{ mr: 8 }} />
-          {t("pools.pool.actions.addLiquidity")}
+          {t("liquidity.asset.actions.addLiquidity")}
         </div>
       </Button>
     </div>
@@ -76,7 +76,7 @@ export const PoolActions = ({
           <Modal
             open={openActions}
             isDrawer
-            titleDrawer={t("pools.pool.actions.header", {
+            titleDrawer={t("liquidity.asset.actions.header", {
               tokens: `${pool.symbol}/${pool.symbol}`,
             })}
             onClose={closeActionsDrawer}
@@ -86,7 +86,7 @@ export const PoolActions = ({
           <Button size="small" onClick={() => setOpenActions(true)}>
             <div sx={{ flex: "row", align: "center", justify: "center" }}>
               <Icon icon={<MoreIcon />} sx={{ mr: 8 }} />
-              {t("pools.pool.actions.more")}
+              {t("liquidity.asset.actions.more")}
             </div>
           </Button>
         </>

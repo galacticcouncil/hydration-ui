@@ -33,7 +33,7 @@ export const PoolSkeleton = ({
           <div sx={{ flex: "row", justify: "space-between" }}>
             <div sx={{ flex: "column", gap: 10 }}>
               <Text fs={13} color="basic400">
-                {t("pools.pool.title")}
+                {t("liquidity.asset.title")}
               </Text>
               <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
                 <div>
@@ -54,7 +54,7 @@ export const PoolSkeleton = ({
             </div>
             <div sx={{ flex: "column", gap: 10 }}>
               <Text fs={13} color="basic400">
-                {t("pools.pool.poolDetails.fee")}
+                {t("liquidity.asset.poolDetails.fee")}
               </Text>
               <Text>
                 <Skeleton width={118} height={21} />
@@ -66,7 +66,7 @@ export const PoolSkeleton = ({
 
         <div sx={{ minWidth: 200 }}>
           <Text fs={13} color="basic400" sx={{ mb: [0, 16] }}>
-            {t("pools.pool.incentives.title")}
+            {t("liquidity.asset.incentives.title")}
           </Text>
           {[...Array(isDesktop ? FARM_AMOUNT : 1)].map((_, farmIndex) => {
             return (
@@ -104,7 +104,7 @@ export const PoolSkeleton = ({
           <div sx={{ flex: "row", justify: "space-between" }}>
             <div sx={{ flex: "column", gap: 10 }}>
               <Text fs={13} color="basic400">
-                {t("pools.pool.poolDetails.total")}
+                {t("liquidity.asset.poolDetails.total")}
               </Text>
               <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
                 <Skeleton width={118} height={21} />
@@ -113,7 +113,7 @@ export const PoolSkeleton = ({
             <div sx={{ flex: "column", gap: 10 }}>
               <div sx={{ flex: "row", align: "center", gap: 6 }}>
                 <Text fs={13} color="basic400">
-                  {t("pools.pool.poolDetails.24hours")}
+                  {t("liquidity.asset.poolDetails.24hours")}
                 </Text>
               </div>
               <Skeleton width={118} height={21} />
@@ -126,7 +126,7 @@ export const PoolSkeleton = ({
             <Button fullWidth size="small" disabled>
               <div sx={{ flex: "row", align: "center", justify: "center" }}>
                 <Icon icon={<PlusIcon />} sx={{ mr: 8 }} />
-                {t("pools.pool.actions.addLiquidity")}
+                {t("liquidity.asset.actions.addLiquidity")}
               </div>
             </Button>
             <SButtonOpen

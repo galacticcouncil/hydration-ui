@@ -26,7 +26,7 @@ export const ReviewTransaction: React.FC<Transaction> = (props) => {
           withoutClose: sendTx.isLoading,
         }
       : {
-          title: t("pools.reviewTransaction.modal.title"),
+          title: t("liquidity.reviewTransaction.modal.title"),
         }
 
   function handleClose() {

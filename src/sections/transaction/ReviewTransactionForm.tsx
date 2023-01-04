@@ -77,13 +77,13 @@ export const ReviewTransactionForm = (
         <div sx={{ mt: 10 }}>
           <SDetailRow>
             <Text color="darkBlue200">
-              {t("pools.reviewTransaction.modal.detail.cost")}
+              {t("liquidity.reviewTransaction.modal.detail.cost")}
             </Text>
             <div sx={{ flex: "column", align: "end" }}>
               {paymentInfoData && (
                 <>
                   <Text color="white">
-                    {t("pools.addLiquidity.modal.row.transactionCostValue", {
+                    {t("liquidity.add.modal.row.transactionCostValue", {
                       amount: (
                         props.overrides?.fee ??
                         new BigNumber(paymentInfoData.partialFee.toHex())
@@ -103,7 +103,7 @@ export const ReviewTransactionForm = (
           </SDetailRow>
           <SDetailRow>
             <Text color="darkBlue200">
-              {t("pools.reviewTransaction.modal.detail.lifetime")}
+              {t("liquidity.reviewTransaction.modal.detail.lifetime")}
             </Text>
             <Text color="white">
               {props.tx.era.isMortalEra
@@ -115,7 +115,7 @@ export const ReviewTransactionForm = (
           </SDetailRow>
           <SDetailRow>
             <Text color="darkBlue200">
-              {t("pools.reviewTransaction.modal.detail.nonce")}
+              {t("liquidity.reviewTransaction.modal.detail.nonce")}
             </Text>
             <Text color="white">{nonce.data?.toString()}</Text>
           </SDetailRow>
@@ -126,15 +126,15 @@ export const ReviewTransactionForm = (
       >
         <Button
           onClick={props.onCancel}
-          text={t("pools.reviewTransaction.modal.cancel")}
+          text={t("liquidity.reviewTransaction.modal.cancel")}
           variant="secondary"
         />
         <div sx={{ flex: "column", justify: "center", gap: 4 }}>
           <Button
             text={t(
               signTx.isLoading
-                ? "pools.reviewTransaction.modal.confirmButton.loading"
-                : "pools.reviewTransaction.modal.confirmButton",
+                ? "liquidity.reviewTransaction.modal.confirmButton.loading"
+                : "liquidity.reviewTransaction.modal.confirmButton",
             )}
             variant="primary"
             isLoading={signTx.isLoading}
@@ -143,7 +143,7 @@ export const ReviewTransactionForm = (
           />
           {signTx.isLoading && (
             <Text fs={12} lh={16} tAlign="center" color="warning300">
-              {t("pools.reviewTransaction.modal.confirmButton.warning")}
+              {t("liquidity.reviewTransaction.modal.confirmButton.warning")}
             </Text>
           )}
         </div>

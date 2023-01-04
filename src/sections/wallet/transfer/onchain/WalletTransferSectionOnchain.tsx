@@ -249,7 +249,7 @@ export function WalletTransferSectionOnchain(props: {
             <div sx={{ flex: "row", align: "center", gap: 4 }}>
               {paymentInfoData?.partialFee != null && (
                 <Text fs={14}>
-                  {t("pools.addLiquidity.modal.row.transactionCostValue", {
+                  {t("liquidity.add.modal.row.transactionCostValue", {
                     amount: new BigNumber(
                       paymentInfoData.partialFee.toHex(),
                     ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),

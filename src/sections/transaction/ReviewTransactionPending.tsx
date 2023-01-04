@@ -18,15 +18,15 @@ export const ReviewTransactionPending = ({ onClose, txState }: Props) => {
     <div sx={{ flex: "column", align: "center", pt: 50 }}>
       <Spinner css={{ width: 135, height: 135 }} />
       <Heading fs={19} fw={500} tAlign="center" sx={{ mt: 20 }}>
-        {t("pools.reviewTransaction.modal.pending.title")}
+        {t("liquidity.reviewTransaction.modal.pending.title")}
       </Heading>
       <div sx={{ px: 20, mt: 20, mb: 40 }}>
         <Text tAlign="center" fs={16} color="basic400" fw={400} lh={22}>
-          {t("pools.reviewTransaction.modal.pending.description")}
+          {t("liquidity.reviewTransaction.modal.pending.description")}
         </Text>
       </div>
       <Button variant="primary" sx={{ mt: 40 }} onClick={onClose}>
-        {t("pools.reviewTransaction.modal.success.close")}
+        {t("liquidity.reviewTransaction.modal.success.close")}
       </Button>
 
       <Spacer size={40} />

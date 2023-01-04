@@ -12,7 +12,7 @@ export const AddLiquidityLimitWarning = () => {
     >
       <IconWarning />
       <Text color="white" fs={13} fw={400}>
-        {t("pools.addLiquidity.modal.warningLimit")}
+        {t("liquidity.add.modal.warningLimit")}
       </Text>
     </div>
   )

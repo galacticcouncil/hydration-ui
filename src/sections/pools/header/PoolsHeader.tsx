@@ -24,7 +24,7 @@ export const PoolsHeader: FC<Props> = ({
     <>
       <div sx={{ flex: "row", justify: "space-between", mb: 43 }}>
         <Heading fs={20} lh={26} fw={500}>
-          {t("pools.header.title")}
+          {t("liquidity.header.title")}
         </Heading>
         {!!account && (
           <Switch
@@ -32,7 +32,7 @@ export const PoolsHeader: FC<Props> = ({
             onCheckedChange={onShowMyPositionsChange}
             size="small"
             name="my-positions"
-            label={t("pools.header.switch")}
+            label={t("liquidity.header.switch")}
           />
         )}
       </div>
@@ -42,21 +42,12 @@ export const PoolsHeader: FC<Props> = ({
       >
         <div sx={{ flex: ["row", "column"], justify: "space-between" }}>
           <Text color="brightBlue300" sx={{ mb: 14 }}>
-            {t("pools.header.totalLocked")}
+            {t("liquidity.header.totalLocked")}
           </Text>
           <div sx={{ flex: "row", align: "baseline" }}>
             <PoolsHeaderTotal variant="pools" myPositions={showMyPositions} />
           </div>
         </div>
-        {/*<Separator sx={{ mb: 12, display: ["inherit", "none"] }} />*/}
-        {/*<div sx={{ flex: ["row", "column"], justify: "space-between" }}>*/}
-        {/*  <Text color="brightBlue300" sx={{ mb: 14 }}>*/}
-        {/*    {t("pools.header.totalFarms")}*/}
-        {/*  </Text>*/}
-        {/*  <div sx={{ flex: "row", align: "baseline" }}>*/}
-        {/*    <PoolsHeaderTotal variant="farms" myPositions={showMyPositions} />*/}
-        {/*  </div>*/}
-        {/*</div>*/}
       </div>
     </>
   )

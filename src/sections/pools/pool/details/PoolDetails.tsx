@@ -17,7 +17,7 @@ export const PoolDetails = ({ pool, onClick }: PoolDetailsProps) => {
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div sx={{ flex: "column", gap: 10 }}>
           <Text fs={13} color="basic400">
-            {t("pools.pool.title")}
+            {t("liquidity.asset.title")}
           </Text>
           <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
             <div>{getAssetLogo(pool.symbol)}</div>
@@ -33,7 +33,7 @@ export const PoolDetails = ({ pool, onClick }: PoolDetailsProps) => {
         </div>
         <div sx={{ flex: "column", gap: 10, align: ["end", "start"] }}>
           <Text fs={13} color="basic400">
-            {t("pools.pool.poolDetails.fee")}
+            {t("liquidity.asset.poolDetails.fee")}
           </Text>
           <Text>
             {t("value.percentage", { value: pool.tradeFee.times(100) })}

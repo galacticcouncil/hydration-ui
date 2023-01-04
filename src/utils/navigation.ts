@@ -30,7 +30,7 @@ export const MENU_ITEMS = [
   },
   {
     key: "pools",
-    translationKey: "header.pools",
+    translationKey: "header.liquidity",
     href: LINKS.pools_and_farms,
     enabled: isPoolsPageEnabled,
     external: false,

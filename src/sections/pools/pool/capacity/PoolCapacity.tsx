@@ -22,7 +22,7 @@ export const PoolCapacity = ({ pool }: Props) => {
     <SContainer ref={ref}>
       {!isError && !isUnlimited && (
         <Trans
-          i18nKey="pools.pool.capacity"
+          i18nKey="liquidity.asset.capacity"
           tOptions={{
             symbol: capacity.data.symbol,
             filled: capacity.data.filled,

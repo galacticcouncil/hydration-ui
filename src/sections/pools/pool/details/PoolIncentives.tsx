@@ -6,7 +6,7 @@ export const PoolIncentives = () => {
   return (
     <div sx={{ minWidth: 200 }}>
       <Text fs={13} color="basic400">
-        {t("pools.pool.incentives.title")}
+        {t("liquidity.asset.incentives.title")}
       </Text>
     </div>
   )
