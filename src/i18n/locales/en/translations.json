@@ -124,6 +124,8 @@
   "wallet.vesting.vesting_schedule_end": "Vesting schedule end",
   "wallet.vesting.vesting_schedule_end_value": "{{ date, dd.MM.yyyy }}",
   "wallet.vesting.vesting_days_left": "Days left:",
+  "wallet.vesting.vesting_days_left_value_one": "{{ count }} day",
+  "wallet.vesting.vesting_days_left_value_other": "{{ count }} days",
   "wallet.vesting.claimable": "Claimable",
   "wallet.vesting.total_vested": "Total vested",
   "wallet.vesting.total_vested.value": "{{num}}.<0>{{denom}} {{ symbol }}</0>",
