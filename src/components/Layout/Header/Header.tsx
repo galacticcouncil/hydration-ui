@@ -20,8 +20,10 @@ export const Header = () => {
   return (
     <SHeader>
       <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
-        <Icon icon={isDesktop ? <HydraLogoFull /> : <HydraLogo />} />
-        {isDesktop && <HeaderMenu />}
+        <div sx={{ flex: "row", align: "center" }}>
+          <Icon icon={isDesktop ? <HydraLogoFull /> : <HydraLogo />} />
+          {isDesktop && <HeaderMenu />}
+        </div>
         <div sx={{ flex: "row", align: "center", gap: [12, 24] }}>
           <div css={{ position: "relative" }}>
             {isLoadingToast && <Spinner width={40} height={40} />}

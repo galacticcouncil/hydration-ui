@@ -131,7 +131,8 @@ export const useAssetsTable = (
                   })
               : undefined
           }
-          toggleExpanded={() => row.toggleExpanded()}
+          toggleExpanded={row.toggleSelected}
+          isExpanded={row.getIsSelected()}
           onTransferClick={() => actions.onTransfer(row.original.id)}
           symbol={row.original.symbol}
         />

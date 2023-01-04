@@ -21,6 +21,7 @@ type Props = {
   onTransferClick: () => void
   onSetFeeAsPaymentClick: () => void
   couldBeSetAsPaymentFee: boolean
+  isExpanded: boolean
 }
 
 export const WalletAssetsTableActions = (props: Props) => {
@@ -87,7 +88,11 @@ export const WalletAssetsTableActions = (props: Props) => {
 
         <ButtonTransparent
           onClick={props.toggleExpanded}
-          css={{ color: theme.colors.iconGray }}
+          css={{
+            color: theme.colors.iconGray,
+            opacity: props.isExpanded ? "1" : "0.5",
+            transform: props.isExpanded ? "rotate(180deg)" : undefined,
+          }}
         >
           <ChevronDownIcon />
         </ButtonTransparent>

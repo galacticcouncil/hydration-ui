@@ -40,7 +40,7 @@ export const PoolActions = ({
   const closeActionsDrawer = () => setOpenActions(false)
 
   const actionButtons = (
-    <div sx={{ width: ["auto", "100%"], flex: "column", gap: 10 }}>
+    <div sx={{ flex: "column", gap: 10, flexGrow: 1 }}>
       <Button
         fullWidth
         size="small"
@@ -51,7 +51,7 @@ export const PoolActions = ({
         }}
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
-          <Icon icon={<PlusIcon />} sx={{ mr: 8 }} />
+          <Icon icon={<PlusIcon />} sx={{ mr: 8, height: 16 }} />
           {t("liquidity.asset.actions.addLiquidity")}
         </div>
       </Button>

@@ -10,6 +10,7 @@ import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.sv
 type Props = {
   toggleExpanded: () => void
   onTransferClick: () => void
+  isExpanded: boolean
 }
 
 export const WalletAssetsHydraPositionsActions = (props: Props) => {
@@ -39,7 +40,11 @@ export const WalletAssetsHydraPositionsActions = (props: Props) => {
         {/*</TableAction>*/}
         <ButtonTransparent
           onClick={props.toggleExpanded}
-          css={{ color: theme.colors.iconGray }}
+          css={{
+            color: theme.colors.iconGray,
+            opacity: props.isExpanded ? "1" : "0.5",
+            transform: props.isExpanded ? "rotate(180deg)" : undefined,
+          }}
         >
           <ChevronDownIcon />
         </ButtonTransparent>

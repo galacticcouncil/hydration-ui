@@ -77,15 +77,15 @@ export const STrigger = styled(DropdownMenu.Trigger)`
 
   border-radius: 4px;
 
-  min-width: 34px;
-  min-height: 34px;
+  min-width: 40px;
+  min-height: 40px;
 
-  background: rgba(${theme.rgbColors.alpha0}, 0.06);
-  color: ${theme.colors.brightBlue700};
+  background: rgba(${theme.rgbColors.primaryA15}, 0.12);
+  color: ${theme.colors.brightBlue300};
 
   transition: background ${theme.transitions.default};
 
-  border: 1px solid #30344c;
+  border: 1px solid ${theme.colors.brightBlue300};
 
   display: flex;
   align-items: center;
@@ -98,19 +98,25 @@ export const STrigger = styled(DropdownMenu.Trigger)`
 
   &:hover {
     color: ${theme.colors.white};
-    background: rgba(${theme.rgbColors.brightBlue100}, 0.39);
+    background: rgba(${theme.rgbColors.brightBlue500}, 0.9);
     border: 1px solid rgba(${theme.rgbColors.brightBlue200}, 0.39);
   }
 
   &[data-state="open"] {
-    background: rgba(${theme.rgbColors.primaryA15}, 0.12);
+    background: ${theme.colors.brightBlue400};
+    color: ${theme.colors.white};
+    border: 1px solid ${theme.colors.brightBlue100};
   }
 
   ${({ disabled }) =>
     disabled &&
     css`
       background: rgba(${theme.rgbColors.basic100}, 0.06);
-      color: rgba(${theme.rgbColors.white}, 0.6);
+      color: ${theme.colors.darkBlue300};
+
+      border: 1px solid ${theme.colors.darkBlue300};
+
       pointer-events: none;
+      cursor: not-allowed;
     `}
 `

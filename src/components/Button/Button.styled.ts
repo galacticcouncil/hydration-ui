@@ -86,7 +86,7 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
   `,
   secondary: css`
     border-radius: 4px;
-    background: rgba(${theme.rgbColors.alpha0}, 0.06);
+    background: rgba(${theme.rgbColors.primaryA15}, 0.12);
     color: ${theme.colors.brightBlue300};
     border: 1px solid ${theme.colors.brightBlue300};
     box-shadow: unset;

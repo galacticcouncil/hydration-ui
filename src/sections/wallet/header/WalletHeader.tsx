@@ -7,7 +7,6 @@ import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
 import { WalletConnectModal } from "../connect/modal/WalletConnectModal"
 import { useState } from "react"
-import { WalletInactiveButton } from "../connect/modal/WalletConnectButton"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
@@ -33,9 +32,9 @@ export const WalletHeader = () => {
         }}
       >
         <Text fs={20} fw={500} lh={20} font="FontOver">
-          {account?.name}
+          {account?.name ?? t("wallet.header.noAccountSelected")}
         </Text>
-        {account?.address ? (
+        {account?.address && (
           <div sx={{ flex: "row", align: "center" }}>
             <div
               sx={{
@@ -74,8 +73,6 @@ export const WalletHeader = () => {
               {t("wallet.header.switchAccount")}
             </Button>
           </div>
-        ) : (
-          <WalletInactiveButton size="small" onOpen={() => setOpen(true)} />
         )}
       </div>
       <Separator color="white" opacity={0.12} />

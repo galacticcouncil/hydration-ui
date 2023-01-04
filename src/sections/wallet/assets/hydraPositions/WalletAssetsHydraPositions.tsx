@@ -64,14 +64,14 @@ export const WalletAssetsHydraPositions = ({ data }: Props) => {
         <TableBodyContent>
           {table.getRowModel().rows.map((row, i) => (
             <Fragment key={row.id}>
-              <TableRow isOdd={!(i % 2)}>
+              <TableRow isOdd={!(i % 2)} onClick={() => row.toggleSelected()}>
                 {row.getVisibleCells().map((cell) => (
                   <TableData key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableData>
                 ))}
               </TableRow>
-              {row.getIsExpanded() && (
+              {row.getIsSelected() && (
                 <TableRow isSub>
                   <TableData colSpan={table.getAllColumns().length}>
                     <WalletAssetsHydraPositionsDetails
