@@ -48,7 +48,7 @@ export function WalletTransferSectionCrosschainGuide(props: {
           <Spacer size={10} />
 
           <GradientText fs={20} lh={28} fw={600}>
-            {t("wallet.assets.transfer.crosschain.guide.title", {
+            {t("wallet.assets.transfer.bridge.guide.title", {
               name: props.name,
             })}
           </GradientText>
@@ -68,7 +68,7 @@ export function WalletTransferSectionCrosschainGuide(props: {
           </Button>
 
           <Button variant="primary" onClick={props.onVisit}>
-            {t("wallet.assets.transfer.crosschain.guide.submit", {
+            {t("wallet.assets.transfer.bridge.guide.submit", {
               name: props.name,
             })}{" "}
             <LinkIcon />

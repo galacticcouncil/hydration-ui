@@ -200,7 +200,7 @@ export function WalletTransferSectionOnchain(props: {
             name="amount"
             control={form.control}
             rules={{
-              required: t("wallet.assets.transfer.error.amount.required"),
+              required: t("wallet.assets.transfer.error.required"),
               validate: {
                 validNumber: (value) => {
                   try {

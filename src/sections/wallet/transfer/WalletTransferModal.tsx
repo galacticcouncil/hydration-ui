@@ -53,7 +53,7 @@ export function WalletTransferModal(props: {
               },
               {
                 value: "crosschain" as const,
-                label: t("wallet.assets.transfer.switch.crosschain"),
+                label: t("wallet.assets.transfer.switch.bridge"),
               },
             ]}
             value={chain}

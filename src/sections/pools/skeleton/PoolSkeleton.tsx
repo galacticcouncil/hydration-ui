@@ -54,7 +54,7 @@ export const PoolSkeleton = ({
             </div>
             <div sx={{ flex: "column", gap: 10 }}>
               <Text fs={13} color="basic400">
-                {t("liquidity.asset.poolDetails.fee")}
+                {t("liquidity.asset.details.fee")}
               </Text>
               <Text>
                 <Skeleton width={118} height={21} />
@@ -104,7 +104,7 @@ export const PoolSkeleton = ({
           <div sx={{ flex: "row", justify: "space-between" }}>
             <div sx={{ flex: "column", gap: 10 }}>
               <Text fs={13} color="basic400">
-                {t("liquidity.asset.poolDetails.total")}
+                {t("liquidity.asset.details.total")}
               </Text>
               <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
                 <Skeleton width={118} height={21} />
@@ -113,7 +113,7 @@ export const PoolSkeleton = ({
             <div sx={{ flex: "column", gap: 10 }}>
               <div sx={{ flex: "row", align: "center", gap: 6 }}>
                 <Text fs={13} color="basic400">
-                  {t("liquidity.asset.poolDetails.24hours")}
+                  {t("liquidity.asset.details.24hours")}
                 </Text>
               </div>
               <Skeleton width={118} height={21} />
