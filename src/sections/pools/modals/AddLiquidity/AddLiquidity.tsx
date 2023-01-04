@@ -133,7 +133,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
             name="amount"
             control={form.control}
             rules={{
-              required: t("wallet.assets.transfer.error.amount.required"),
+              required: t("wallet.assets.transfer.error.required"),
               validate: {
                 validNumber: (value) => {
                   try {

@@ -20,7 +20,7 @@ export const PoolValue = ({ pool }: PoolValueProps) => {
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div sx={{ flex: "column", gap: 10 }}>
           <Text fs={13} color="basic400">
-            {t("liquidity.asset.poolDetails.total")}
+            {t("liquidity.asset.details.total")}
           </Text>
           <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
             <Text lh={22} color="white" fs={18}>
@@ -31,11 +31,9 @@ export const PoolValue = ({ pool }: PoolValueProps) => {
         <div sx={{ flex: "column", gap: 10, width: ["auto", 118] }}>
           <div sx={{ flex: "row", align: "center", gap: 6 }}>
             <Text fs={13} color="basic400">
-              {t("liquidity.asset.poolDetails.24hours")}
+              {t("liquidity.asset.details.24hours")}
             </Text>
-            <InfoTooltip
-              text={t("liquidity.asset.poolDetails.24hours.tooltip")}
-            >
+            <InfoTooltip text={t("liquidity.asset.details.24hours.tooltip")}>
               <SInfoIcon />
             </InfoTooltip>
           </div>

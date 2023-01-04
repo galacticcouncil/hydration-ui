@@ -23,7 +23,7 @@ export function WalletTransferCrosschainListItem(props: {
           {props.name}
         </Text>
         <Text fs={12} fw={500} lh={16} color="basic400">
-          {t(`wallet.assets.transfer.crosschain.type.${props.type}`)}
+          {t(`wallet.assets.transfer.bridge.type.${props.type}`)}
         </Text>
       </span>
 

@@ -40,7 +40,7 @@ export const PoolDetails = ({ pool, onClick }: PoolDetailsProps) => {
           }}
         >
           <Text fs={13} color="basic400">
-            {t("liquidity.asset.poolDetails.fee")}
+            {t("liquidity.asset.details.fee")}
           </Text>
           <Text>
             {t("value.percentage", { value: pool.tradeFee.times(100) })}
