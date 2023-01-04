@@ -81,6 +81,7 @@
   "liquidity.remove.modal.value": "{{ value, bignumber(type: 'token') }}",
   "liquidity.remove.modal.receive": "You will receive:",
   "liquidity.remove.modal.price": "Price:",
+  "liquidity.remove.modal.shares": "{{ shares, bignumber(type: 'token') }} Shares",
   "liquidity.remove.modal.confirm": "Remove liquidity",
   "liquidity.reviewTransaction.modal.title": "Review transaction details",
   "liquidity.reviewTransaction.modal.detail.cost": "Transaction cost:",
