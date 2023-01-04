@@ -39,23 +39,24 @@ export const AssetIcon: FC<AssetIconProps> = ({
 
 export function getAssetLogo(symbol: string | null | undefined) {
   const _symbol = symbol?.toUpperCase()
+  const size = { width: 32, height: 32 }
 
-  if (_symbol === "AUSD") return <AUSD />
-  if (_symbol === "BSX") return <BSX />
-  if (_symbol === "KAR") return <KAR />
-  if (_symbol === "KSM") return <KSM />
-  if (_symbol === "PHA") return <PHA />
-  if (_symbol === "TNKR") return <TNKR />
-  if (_symbol === "HDX") return <HDX />
-  if (_symbol === "LRNA") return <LRNA />
-  if (_symbol === "DAI") return <DAI />
-  if (_symbol === "DOT") return <DOT />
-  if (_symbol === "BTC") return <BTC />
-  if (_symbol === "ETH") return <ETH />
-  if (_symbol === "USDC") return <USDC />
-  if (_symbol === "USDT") return <USDT />
+  if (_symbol === "AUSD") return <AUSD {...size} />
+  if (_symbol === "BSX") return <BSX {...size} />
+  if (_symbol === "KAR") return <KAR {...size} />
+  if (_symbol === "KSM") return <KSM {...size} />
+  if (_symbol === "PHA") return <PHA {...size} />
+  if (_symbol === "TNKR") return <TNKR {...size} />
+  if (_symbol === "HDX") return <HDX {...size} />
+  if (_symbol === "LRNA") return <LRNA {...size} />
+  if (_symbol === "DAI") return <DAI {...size} />
+  if (_symbol === "DOT") return <DOT {...size} />
+  if (_symbol === "BTC") return <BTC {...size} />
+  if (_symbol === "ETH") return <ETH {...size} />
+  if (_symbol === "USDC") return <USDC {...size} />
+  if (_symbol === "USDT") return <USDT {...size} />
 
-  return <PlaceholderIcon width={32} height={32} />
+  return <PlaceholderIcon {...size} />
 }
 
 export function getAssetName(symbol: string | null | undefined) {
