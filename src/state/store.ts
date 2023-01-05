@@ -32,6 +32,7 @@ export interface Transaction extends TransactionInput {
   hash: string
   id: string
   onSuccess?: (result: ISubmittableResult) => void
+  onSubmitted?: () => void
   onError?: () => void
   toastMessage?: ToastMessage
 }
@@ -42,6 +43,7 @@ interface Store {
     transaction: TransactionInput,
     options?: {
       onSuccess?: () => void
+      onSubmitted?: () => void
       toast?: ToastMessage
     },
   ) => Promise<ISubmittableResult>
@@ -109,6 +111,9 @@ export const useStore = create<Store>((set) => ({
                 onLoading: options?.toast?.onLoading,
                 onSuccess: options?.toast?.onSuccess,
                 onError: options?.toast?.onError,
+              },
+              onSubmitted: () => {
+                options?.onSubmitted?.()
               },
               onSuccess: (value) => {
                 resolve(value)

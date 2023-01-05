@@ -80,7 +80,10 @@ export const ReviewTransaction: React.FC<Transaction> = (props) => {
             hash={props.hash}
             title={props.title}
             onCancel={handleClose}
-            onSigned={(signed) => sendTx.mutateAsync(signed)}
+            onSigned={(signed) => {
+              props.onSubmitted?.()
+              sendTx.mutateAsync(signed)
+            }}
           />
         )}
       </Modal>

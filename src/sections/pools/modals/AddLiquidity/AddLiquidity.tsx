@@ -57,6 +57,10 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
       },
       {
         onSuccess,
+        onSubmitted: () => {
+          onClose()
+          form.reset()
+        },
         toast: {
           onLoading: (
             <Trans
