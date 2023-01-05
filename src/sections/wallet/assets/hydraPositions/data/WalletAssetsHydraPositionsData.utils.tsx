@@ -174,6 +174,7 @@ export const useHydraPositionsData = () => {
         if (valueSp?.data)
           providedAmountUSD = providedAmount.times(valueSp.data.spotPrice)
 
+
         const result = {
           id: position.id.toString(),
           assetId,
@@ -191,6 +192,7 @@ export const useHydraPositionsData = () => {
         return result
       })
       .filter((x): x is HydraPositionsTableData => x !== null)
+      .sort((a, b) => parseInt(a.id) - parseInt(b.id))
 
     return rows
   }, [
