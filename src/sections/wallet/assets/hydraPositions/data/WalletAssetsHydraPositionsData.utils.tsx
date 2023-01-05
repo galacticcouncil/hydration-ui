@@ -191,6 +191,7 @@ export const useHydraPositionsData = () => {
         return result
       })
       .filter((x): x is HydraPositionsTableData => x !== null)
+      .sort((a, b) => parseInt(a.id) - parseInt(b.id))
 
     return rows
   }, [
