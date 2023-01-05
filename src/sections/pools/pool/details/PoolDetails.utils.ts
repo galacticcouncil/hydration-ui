@@ -18,7 +18,7 @@ export function usePoolDetailsTradeVolume(assetId: u32) {
         const assetIn = item.args.assetIn.toString()
         const assetOut = item.args.assetOut.toString()
         const amountIn = new BN(item.args.amountIn)
-        const amountOut = new BN(item.args.amountIn)
+        const amountOut = new BN(item.args.amountOut)
 
         if (memo[assetIn] == null) memo[assetIn] = BN_0
         if (memo[assetOut] == null) memo[assetOut] = BN_0
