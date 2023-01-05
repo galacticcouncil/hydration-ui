@@ -174,7 +174,6 @@ export const useHydraPositionsData = () => {
         if (valueSp?.data)
           providedAmountUSD = providedAmount.times(valueSp.data.spotPrice)
 
-
         const result = {
           id: position.id.toString(),
           assetId,
