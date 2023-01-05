@@ -11,6 +11,11 @@ export const ToastViewport = styled(Viewport)`
 
   margin: 0;
   padding: 16px;
+  margin-bottom: calc(60px + env(safe-area-inset-bottom));
 
   list-style: none;
+
+  @media (${theme.viewport.gte.sm}) {
+    margin-bottom: 0;
+  }
 `

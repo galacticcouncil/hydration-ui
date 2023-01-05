@@ -27,6 +27,7 @@ export const MENU_ITEMS = [
     enabled: true,
     external: false,
     mobVisible: true,
+    mobOrder: 0,
   },
   {
     key: "pools",
@@ -34,7 +35,8 @@ export const MENU_ITEMS = [
     href: LINKS.liquidity,
     enabled: isPoolsPageEnabled,
     external: false,
-    mobVisible: false,
+    mobVisible: true,
+    mobOrder: 2,
   },
   {
     key: "wallet",
@@ -43,6 +45,7 @@ export const MENU_ITEMS = [
     enabled: true,
     external: false,
     mobVisible: true,
+    mobOrder: 1,
   },
   {
     key: "transfer",
@@ -50,7 +53,8 @@ export const MENU_ITEMS = [
     href: LINKS.transfer,
     enabled: isXcmPageEnabled,
     external: false,
-    mobVisible: true,
+    mobVisible: false,
+    mobOrder: 3,
   },
 ] as const
 

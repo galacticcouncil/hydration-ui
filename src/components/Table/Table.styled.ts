@@ -75,7 +75,10 @@ export const TableTitle = styled.div`
   }
 `
 
-export const TableHeaderContent = styled.thead``
+export const TableHeaderContent = styled.thead`
+  @media (${theme.viewport.lt.md}) {
+  }
+`
 
 export const TableBodyContent = styled.tbody`
   position: relative;
@@ -105,7 +108,7 @@ export const TableRow = styled.tr<{ isOdd?: boolean; isSub?: boolean }>`
 `
 
 export const TableHeader = styled.th<{ canSort?: boolean }>`
-  padding: 10px 16px;
+  padding: 10px 0 10px 16px;
 
   font-size: 11px;
   line-height: 14px;
@@ -114,6 +117,7 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
   text-transform: uppercase;
   text-align: start;
   color: rgba(${theme.rgbColors.white}, 0.7);
+  color: ${theme.colors.basic600};
   white-space: nowrap;
 
   ${({ canSort }) => canSort && "cursor:pointer;"}

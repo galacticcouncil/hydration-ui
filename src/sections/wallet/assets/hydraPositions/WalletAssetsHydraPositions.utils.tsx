@@ -60,7 +60,7 @@ export const useHydraPositionsTable = (
           ? 1
           : -1,
       cell: ({ row }) => (
-        <Text fw={500} fs={16} lh={16} color="green600">
+        <Text fw={500} fs={16} lh={16} color="green600" tAlign="left">
           {t("value.usd", { amount: row.original.valueUSD })}
         </Text>
       ),

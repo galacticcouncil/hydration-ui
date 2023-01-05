@@ -127,10 +127,16 @@ export const Shadow = styled.div<{ variant: ToastVariant }>`
   margin-top: 5px;
   height: 0px;
 
+  display: none;
+
   -webkit-box-shadow: 0px 20px 15px 4px rgb(219 26 26);
   -moz-box-shadow: 0px 20px 15px 4px rgb(219 26 26);
   box-shadow: 0px 20px 15px 4px
     ${({ variant }) => variantProgressBarBg[variant]};
+
+  @media (${theme.viewport.gte.sm}) {
+    display: inherit;
+  }
 `
 
 const variantProgressBarBg: Record<ToastVariant, string> = {

@@ -52,7 +52,7 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
     <div
       sx={{
         flex: ["column", "row"],
-        mb: [29, 57],
+        mb: [4, 57],
         align: ["start", "center"],
       }}
     >

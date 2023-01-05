@@ -27,6 +27,8 @@ import { Text } from "components/Typography/Text/Text"
 import { Interpolation } from "@emotion/styled"
 import { Theme } from "@emotion/react"
 import { Spacer } from "components/Spacer/Spacer"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 type Props = {
   open: boolean
@@ -90,6 +92,7 @@ export const ModalMeta = (props: PropsOverride) => {
 export const Modal: FC<PropsWithChildren<Props>> = (props) => {
   const { t } = useTranslation()
   const [propsOverride, setPropsOverride] = useState<PropsOverride | null>(null)
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const mergedProps = { ...props, ...propsOverride }
   const { isDrawer, titleDrawer, secondaryIcon, title, withoutClose } =
@@ -143,7 +146,13 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
                 )}
                 <RemoveScroll enabled={props.open} css={{ flexGrow: 1 }}>
                   <ModalBody isDrawer={isDrawer}>
-                    <ModalTitle>{title}</ModalTitle>
+                    {isDesktop ? (
+                      <ModalTitle>{title}</ModalTitle>
+                    ) : (
+                      <Text fs={19} font="FontOver">
+                        {title}
+                      </Text>
+                    )}
                     {props.children}
                   </ModalBody>
                   <DialogDescription />
