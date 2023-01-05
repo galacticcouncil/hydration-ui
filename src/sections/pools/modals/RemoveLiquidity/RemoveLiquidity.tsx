@@ -172,6 +172,10 @@ export const RemoveLiquidity = ({
       },
       {
         onSuccess,
+        onSubmitted: () => {
+          onClose()
+          form.reset()
+        },
         toast: {
           onLoading: (
             <Trans
@@ -225,7 +229,10 @@ export const RemoveLiquidity = ({
       open={isOpen}
       withoutOutsideClose
       title={t("liquidity.remove.modal.title")}
-      onClose={onClose}
+      onClose={() => {
+        onClose()
+        form.reset()
+      }}
     >
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
