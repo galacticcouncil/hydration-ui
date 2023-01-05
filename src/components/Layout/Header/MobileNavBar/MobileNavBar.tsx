@@ -27,7 +27,9 @@ export const MobileNavBar = () => {
     return null
   }
 
-  const [visibleTabs, hiddenTabs] = MENU_ITEMS.reduce(
+  const [visibleTabs, hiddenTabs] = MENU_ITEMS.filter(
+    (item) => item.enabled,
+  ).reduce(
     (result, value) => {
       const isVisible = value.mobVisible
       result[isVisible ? 0 : 1].push(value)
