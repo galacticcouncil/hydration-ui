@@ -23,7 +23,7 @@ type Props = {
   onClose?: () => void
   persist?: boolean
   dateCreated?: Date
-  onClick: () => void
+  onClick?: () => void
 }
 
 export const Toast: FC<Props> = ({
