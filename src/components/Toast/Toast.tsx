@@ -23,6 +23,7 @@ type Props = {
   onClose?: () => void
   persist?: boolean
   dateCreated?: Date
+  onClick: () => void
 }
 
 export const Toast: FC<Props> = ({
@@ -33,6 +34,7 @@ export const Toast: FC<Props> = ({
   count,
   dateCreated,
   onClose,
+  onClick,
   persist,
 }) => {
   const { t } = useTranslation()
@@ -51,6 +53,7 @@ export const Toast: FC<Props> = ({
           variant={variant ?? "info"}
           title={title}
           actions={actions}
+          onClick={onClick}
           dateCreated={dateCreated}
           meta={
             <div sx={{ flex: "row", gap: 8 }}>

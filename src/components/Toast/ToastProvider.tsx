@@ -8,7 +8,7 @@ import { AnimatePresence } from "framer-motion"
 import { ToastSidebar } from "./ToastSidebar"
 
 export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
-  const { toasts, hide, sidebar } = useToast()
+  const { toasts, hide, sidebar, setSidebar } = useToast()
 
   const activeToasts = toasts.filter((i) => !i.hidden)
   const toast = activeToasts[0]
@@ -48,6 +48,7 @@ export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
               variant={toast.variant}
               title={toast.title}
               actions={toast.actions}
+              onClick={() => setSidebar(true)}
               onClose={() => hide(toast.id)}
               persist={toast.persist}
               dateCreated={new Date(toast.dateCreated)}
