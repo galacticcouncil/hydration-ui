@@ -52,7 +52,9 @@ export function getAssetLogo(symbol: string | null | undefined) {
   if (_symbol === "DAI") return <DAI {...size} />
   if (_symbol === "DOT") return <DOT {...size} />
   if (_symbol === "BTC") return <BTC {...size} />
+  if (_symbol === "WBTC") return <BTC {...size} />
   if (_symbol === "ETH") return <ETH {...size} />
+  if (_symbol === "WETH") return <ETH {...size} />
   if (_symbol === "USDC") return <USDC {...size} />
   if (_symbol === "USDT") return <USDT {...size} />
 
