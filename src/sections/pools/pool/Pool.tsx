@@ -68,7 +68,7 @@ export const Pool = ({ pool }: Props) => {
           )}
         </AnimatePresence>
       )}
-      {isDesktop && <PoolFooter />}
+      {isDesktop && pool.hasPositions && <PoolFooter />}
     </SContainer>
   )
 }

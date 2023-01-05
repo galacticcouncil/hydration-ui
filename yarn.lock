@@ -1952,17 +1952,22 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
-"@galacticcouncil/apps@^1.0.7":
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.0.7.tgz#459951f456cd15501555dfde68d8fb5ed7f73b02"
-  integrity sha512-87KElFsLN2YJLiEhLyE3Aj7RffC/BWOd2b9Y7JHAoi+amPMymSlihj/EBwvjxpllRx11zphe7GkssSCtxfue8w==
+"@galacticcouncil/apps@^1.0.8":
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.0.8.tgz#1bdc414c86f2334fbdc4dd976470cccda90d052d"
+  integrity sha512-tVw4FYubBoDCD6RvcRWvLnNx7+TXLwnPETrpS8c7G/PODrRm69POelaTxsUObjCQdZn64fGRAcdbvXZp76Frlw==
   dependencies:
     "@galacticcouncil/ui" "^1.0.39"
     "@lit/reactive-element" "^1.0.0"
     "@talismn/connect-wallets" "^1.2.1"
     "@thi.ng/atom" "^5.1.3"
     "@vaadin/router" "^1.7.4"
+    chart.js "^4.1.1"
+    chartjs-adapter-date-fns "^3.0.0"
+    chartjs-plugin-annotation "^2.1.1"
+    date-fns "^2.29.3"
     humanize-duration "^3.27.3"
+    i18next "^22.4.8"
     imask "^6.4.3"
     lit "^2.5.0"
     short-uuid "^4.2.0"
@@ -2225,6 +2230,11 @@
   version "0.1.23"
   resolved "https://registry.yarnpkg.com/@kiltprotocol/type-definitions/-/type-definitions-0.1.23.tgz#c54475dad7849dc4654975da33590872fc9acdde"
   integrity sha512-5bGUDo8aVTWttwUrV1gyRUlbBn9zllv6/ofAda9ejMbjY5o99YqsAWlXg1mro6BqE3rcF/i0tGbIdO9Z0tOttA==
+
+"@kurkle/color@^0.3.0":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@kurkle/color/-/color-0.3.1.tgz#ef72bc8022ccf77cdd2715097f062ee591ec145c"
+  integrity sha512-hW0GwZj06z/ZFUW2Espl7toVDjghJN+EKqyXzPSV8NV89d5BYp5rRMBJoc+aUN0x5OXDMeRQHazejr2Xmqj2tw==
 
 "@laminar/type-definitions@0.3.1":
   version "0.3.1"
@@ -7698,6 +7708,23 @@ charenc@0.0.2:
   resolved "https://registry.yarnpkg.com/charenc/-/charenc-0.0.2.tgz#c0a1d2f3a7092e03774bfa83f14c0fc5790a8667"
   integrity sha512-yrLQ/yVUFXkzg7EDQsPieE/53+0RlaWTs+wBrvW36cyilJ2SaDWfl4Yj7MtLTXleV9uEKefbAGUPv2/iWSooRA==
 
+chart.js@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/chart.js/-/chart.js-4.1.1.tgz#9bd96ddaa444205ec55dd103f713f65530e9a2df"
+  integrity sha512-P0pCosNXp+LR8zO/QTkZKT6Hb7p0DPFtypEeVOf+6x06hX13NIb75R0DXUA4Ksx/+48chDQKtCCmRCviQRTqsA==
+  dependencies:
+    "@kurkle/color" "^0.3.0"
+
+chartjs-adapter-date-fns@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/chartjs-adapter-date-fns/-/chartjs-adapter-date-fns-3.0.0.tgz#c25f63c7f317c1f96f9a7c44bd45eeedb8a478e5"
+  integrity sha512-Rs3iEB3Q5pJ973J93OBTpnP7qoGwvq3nUnoMdtxO+9aoJof7UFcRbWcIDteXuYd1fgAvct/32T9qaLyLuZVwCg==
+
+chartjs-plugin-annotation@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/chartjs-plugin-annotation/-/chartjs-plugin-annotation-2.1.1.tgz#686865387d8e81130dfd81437cc4a70145df7a98"
+  integrity sha512-RVKfwNpecvVZdEUshqk9RtqjwVn9koehQBiz1ZWclgFOVayr2CSTENI6VqsyjuYtzBTFEX6Qark7SqYtnwNiAA==
+
 chokidar@^2.1.8:
   version "2.1.8"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-2.1.8.tgz#804b3a7b6a99358c3c5c61e71d8728f041cff917"
@@ -8382,7 +8409,7 @@ data-uri-to-buffer@^4.0.0:
   resolved "https://registry.yarnpkg.com/data-uri-to-buffer/-/data-uri-to-buffer-4.0.0.tgz#b5db46aea50f6176428ac05b73be39a57701a64b"
   integrity sha512-Vr3mLBA8qWmcuschSLAOogKgQ/Jwxulv3RNE4FXnYWRGujzrRWQI4m12fQqRkwX06C0KanhLr4hK+GydchZsaA==
 
-date-fns@^2.29.1:
+date-fns@^2.29.1, date-fns@^2.29.3:
   version "2.29.3"
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.29.3.tgz#27402d2fc67eb442b511b70bbdf98e6411cd68a8"
   integrity sha512-dDCnyH2WnnKusqvZZ6+jA1O51Ibt8ZMRNkDZdyAyK4YfbDwa/cEmuztzG5pk6hqlp9aSBPYcjOlktquahGwGeA==
@@ -10723,6 +10750,13 @@ i18next@^21.8.16:
   integrity sha512-YeuIBmFsGjUfO3qBmMOc0rQaun4mIpGKET5WDwvu8lU7gvwpcariZLNtL0Fzj+zazcHUrlXHiptcFhBMFaxzfg==
   dependencies:
     "@babel/runtime" "^7.17.2"
+
+i18next@^22.4.8:
+  version "22.4.8"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-22.4.8.tgz#7a3c5d26a93e8e5f32eee07b58484e2f721fb45b"
+  integrity sha512-XSOy17ZWqflOiJRYE/dzv6vDle2Se32dnHREHb93UnZzZ1+UnvQ8yKtt1fpNL3zvXz5AwCqqixrtTVZmRetaiQ==
+  dependencies:
+    "@babel/runtime" "^7.20.6"
 
 iconv-lite@0.4.24:
   version "0.4.24"

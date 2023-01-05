@@ -17,13 +17,14 @@ export function ToastContent(props: {
   meta?: ReactNode
   dateCreated?: Date
   children?: ReactNode
+  onClick?: () => void
 }) {
   const { t } = useTranslation()
 
   useNow(props.dateCreated != null)
 
   return (
-    <SContainer variant={props.variant ?? "info"}>
+    <SContainer variant={props.variant ?? "info"} onClick={props.onClick}>
       <SIcon>
         {props.variant === "success" ? (
           <SuccessIcon />

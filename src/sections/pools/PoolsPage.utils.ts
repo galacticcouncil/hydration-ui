@@ -1,4 +1,4 @@
-import { useOmnipoolAssets } from "api/omnipool"
+import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useMemo } from "react"
 import { useAssetMetaList } from "api/assetMeta"
 import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
@@ -17,8 +17,11 @@ import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { useApiIds } from "api/consts"
 import { useAssetDetailsList } from "api/assetDetails"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
+import { useUniques } from "api/uniques"
+import { useAccountStore } from "state/store"
 
-export const useOmnipoolPools = () => {
+export const useOmnipoolPools = (withPositions?: boolean) => {
+  const { account } = useAccountStore()
   const assets = useOmnipoolAssets()
   const assetDetails = useAssetDetailsList(assets.data?.map((a) => a.id) ?? [])
   const metas = useAssetMetaList(assets.data?.map((a) => a.id) ?? [])
@@ -31,25 +34,35 @@ export const useOmnipoolPools = () => {
     assets.data?.map((a) => a.id) ?? [],
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
+  const uniques = useUniques(
+    account?.address ?? "",
+    apiIds.data?.omnipoolCollectionId ?? "",
+  )
+  const positions = useOmnipoolPositions(
+    uniques.data?.map((u) => u.itemId) ?? [],
+  )
 
   const queries = [
     assets,
     assetDetails,
     metas,
     apiIds,
+    uniques,
+    ...positions,
     ...spotPrices,
     ...balances,
   ]
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
-  const data = useMemo(() => {
+  const pools = useMemo(() => {
     if (
       !assets.data ||
       !assetDetails.data ||
       !metas.data ||
       !apiIds.data ||
       spotPrices.some((q) => !q.data) ||
-      balances.some((b) => !b.data)
+      balances.some((q) => !q.data) ||
+      positions.some((q) => !q.data)
     )
       return undefined
 
@@ -84,6 +97,9 @@ export const useOmnipoolPools = () => {
         const canBuy = is_buy_allowed(bits)
         const canAddLiquidity = is_add_liquidity_allowed(bits)
         const canRemoveLiquidity = is_remove_liquidity_allowed(bits)
+        const hasPositions = positions.some(
+          (p) => p.data?.assetId.toString() === id.toString(),
+        )
 
         return {
           id,
@@ -96,6 +112,7 @@ export const useOmnipoolPools = () => {
           canBuy,
           canAddLiquidity,
           canRemoveLiquidity,
+          hasPositions,
         }
       })
       .filter((x): x is OmnipoolPool => x !== null)
@@ -108,7 +125,13 @@ export const useOmnipoolPools = () => {
     apiIds.data,
     spotPrices,
     balances,
+    positions,
   ])
+
+  const data = useMemo(
+    () => (withPositions ? pools?.filter((pool) => pool.hasPositions) : pools),
+    [pools, withPositions],
+  )
 
   return { data, isLoading: isInitialLoading }
 }
@@ -124,4 +147,5 @@ export type OmnipoolPool = {
   canBuy: boolean
   canAddLiquidity: boolean
   canRemoveLiquidity: boolean
+  hasPositions: boolean
 }
