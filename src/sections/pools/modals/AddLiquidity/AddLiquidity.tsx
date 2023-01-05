@@ -35,7 +35,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   const { createTransaction } = useStore()
   const { t } = useTranslation()
   const form = useForm<{ amount: string }>({
-    mode: "onChange"
+    mode: "onChange",
   })
   const amountIn = form.watch("amount")
 
