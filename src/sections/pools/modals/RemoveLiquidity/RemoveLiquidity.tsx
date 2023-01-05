@@ -6,7 +6,7 @@ import { Slider } from "components/Slider/Slider"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { FormValues } from "utils/helpers"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
@@ -18,13 +18,14 @@ import {
 } from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
 import { useOmnipoolAssets, useOmnipoolFee } from "../../../../api/omnipool"
 import { useTokenBalance } from "../../../../api/balances"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "../../../../utils/api"
+import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "../../../../utils/api"
 import { BN_10 } from "../../../../utils/constants"
 import { useAssetMetaList } from "../../../../api/assetMeta"
-import { useRemoveLiquidity } from "./RemoveLiquidity.utils"
 import { useApiIds } from "../../../../api/consts"
 import BN from "bignumber.js"
 import { getFloatingPointAmount } from "utils/balance"
+import { useStore } from "../../../../state/store"
+import BigNumber from "bignumber.js"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
@@ -112,6 +113,8 @@ export const RemoveLiquidity = ({
   const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
 
   const { data: omnipoolFee } = useOmnipoolFee()
+  const api = useApiPromise()
+  const { createTransaction } = useStore()
 
   const apiIds = useApiIds()
   const metas = useAssetMetaList([apiIds.data?.hubId, position.assetId])
@@ -121,12 +124,11 @@ export const RemoveLiquidity = ({
     (m) => m.id.toString() === apiIds.data?.hubId,
   )
 
-  const removeLiquidity = useRemoveLiquidity(onSuccess)
+  const value = form.watch("value")
 
-  const handleSubmit = async (values: FormValues<typeof form>) => {
-    const value = position.shares.div(100).times(values.value)
-    await removeLiquidity(position.id, value.toFixed(0))
-  }
+  const removeSharesValue = useMemo(() => {
+    return position.shares.div(100).times(value)
+  }, [value, position])
 
   const omnipoolAssets = useOmnipoolAssets()
   const omnipoolBalance = useTokenBalance(
@@ -137,12 +139,6 @@ export const RemoveLiquidity = ({
   const omnipoolAsset = omnipoolAssets.data?.find(
     (a) => a.id.toString() === position.assetId,
   )
-
-  const value = form.watch("value")
-
-  const removeSharesValue = useMemo(() => {
-    return position.shares.div(100).times(value)
-  }, [value, position])
 
   const removeLiquidityValues = useMemo(() => {
     const positionPrice = position.price.times(BN_10.pow(18))
@@ -162,6 +158,67 @@ export const RemoveLiquidity = ({
       }
     }
   }, [omnipoolBalance, omnipoolAsset, position, removeSharesValue])
+
+  const handleSubmit = async (values: FormValues<typeof form>) => {
+    const value = position.shares.div(100).times(values.value)
+
+    if (!(removeLiquidityValues && lrnaMeta && meta)) return
+
+    const lrnaAsBigNumber = new BigNumber(removeLiquidityValues.lrna)
+
+    await createTransaction(
+      {
+        tx: api.tx.omnipool.removeLiquidity(position.id, value.toFixed(0)),
+      },
+      {
+        onSuccess,
+        toast: {
+          onLoading: (
+            <Trans
+              t={t}
+              i18nKey="liquidity.remove.modal.toast.onLoading"
+              tOptions={{
+                value: value,
+                amount: removeLiquidityValues.token,
+                fixedPointScale: meta.decimals ?? 12,
+                symbol: position.symbol,
+                withLrna: lrnaAsBigNumber.isGreaterThan(0)
+                  ? t("liquidity.remove.modal.toast.withLrna", {
+                      lrna: lrnaAsBigNumber,
+                      fixedPointScale: lrnaMeta.decimals ?? 12,
+                    })
+                  : "",
+              }}
+            >
+              <span />
+              <span className="highlight" />
+            </Trans>
+          ),
+          onSuccess: (
+            <Trans
+              t={t}
+              i18nKey="liquidity.remove.modal.toast.onSuccess"
+              tOptions={{
+                value: value,
+                amount: removeLiquidityValues.token,
+                fixedPointScale: meta.decimals ?? 12,
+                symbol: position.symbol,
+                withLrna: lrnaAsBigNumber.isGreaterThan(0)
+                  ? t("liquidity.remove.modal.toast.withLrna", {
+                      lrna: lrnaAsBigNumber,
+                      fixedPointScale: lrnaMeta.decimals ?? 12,
+                    })
+                  : "",
+              }}
+            >
+              <span />
+              <span className="highlight" />
+            </Trans>
+          ),
+        },
+      },
+    )
+  }
 
   return (
     <Modal
