@@ -49,8 +49,8 @@ export function usePoolDetailsTradeVolume(assetId: u32) {
   const data = useMemo(() => {
     if (volume.isLoading) return null
 
-    const combinedAssets = spotPrices.map((spotPrice, idx) => {
-      const asset = assets.data?.[idx]
+    const combinedAssets = spotPrices.map((spotPrice) => {
+      const asset = assets.data?.find((a) => a.id === spotPrice.data?.tokenIn)
       if (asset == null || spotPrice.data == null) return null
       return {
         spotPrice: spotPrice.data,
