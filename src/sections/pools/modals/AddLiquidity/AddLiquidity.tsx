@@ -262,7 +262,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
         <Button
           variant="primary"
           type="submit"
-          disabled={isWithinLimit.data === false}
+          disabled={isWithinLimit.data === false || !form.formState.isValid}
         >
           {t("liquidity.add.modal.confirmButton")}
         </Button>
