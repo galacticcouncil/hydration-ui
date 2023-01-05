@@ -16,6 +16,7 @@ import { ReactComponent as BTC } from "assets/icons/tokens/BTC.svg"
 import { ReactComponent as ETH } from "assets/icons/tokens/ETH.svg"
 import { ReactComponent as USDC } from "assets/icons/tokens/USDC.svg"
 import { ReactComponent as USDT } from "assets/icons/tokens/USDT.svg"
+import { ReactComponent as APE } from "assets/icons/tokens/APE.svg"
 import { ReactComponent as PlaceholderIcon } from "assets/icons/tokens/PlaceholderIcon.svg"
 
 export type AssetIconProps = {
@@ -57,6 +58,7 @@ export function getAssetLogo(symbol: string | null | undefined) {
   if (_symbol === "WETH") return <ETH {...size} />
   if (_symbol === "USDC") return <USDC {...size} />
   if (_symbol === "USDT") return <USDT {...size} />
+  if (_symbol === "APE") return <APE {...size} />
 
   return <PlaceholderIcon {...size} />
 }
@@ -78,6 +80,7 @@ export function getAssetName(symbol: string | null | undefined) {
   if (_symbol === "ETH") return "Ethereum"
   if (_symbol === "USDC") return "USD Coin"
   if (_symbol === "USDT") return "Tether"
+  if (_symbol === "APE") return "ApeCoin"
 
   return "N/A"
 }
