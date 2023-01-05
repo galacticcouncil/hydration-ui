@@ -34,7 +34,9 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   const api = useApiPromise()
   const { createTransaction } = useStore()
   const { t } = useTranslation()
-  const form = useForm<{ amount: string }>({})
+  const form = useForm<{ amount: string }>({
+    mode: "onChange",
+  })
   const amountIn = form.watch("amount")
 
   const isWithinLimit = useVerifyCap({
@@ -262,7 +264,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
         <Button
           variant="primary"
           type="submit"
-          disabled={isWithinLimit.data === false}
+          disabled={isWithinLimit.data === false || !form.formState.isValid}
         >
           {t("liquidity.add.modal.confirmButton")}
         </Button>
