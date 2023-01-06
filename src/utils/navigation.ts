@@ -6,7 +6,7 @@ export const LINKS = {
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
   walletVesting: "/wallet/vesting",
-  transfer: "/transfer",
+  cross_chain: "/cross-chain",
 }
 
 export const EXTERNAL_LINKS = {
@@ -48,9 +48,9 @@ export const MENU_ITEMS = [
     mobOrder: 1,
   },
   {
-    key: "xcm",
+    key: "cross-chain",
     translationKey: "header.xcm",
-    href: LINKS.transfer,
+    href: LINKS.cross_chain,
     enabled: isXcmPageEnabled,
     external: false,
     mobVisible: false,
