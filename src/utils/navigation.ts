@@ -48,8 +48,8 @@ export const MENU_ITEMS = [
     mobOrder: 1,
   },
   {
-    key: "transfer",
-    translationKey: "header.transfer",
+    key: "xcm",
+    translationKey: "header.xcm",
     href: LINKS.transfer,
     enabled: isXcmPageEnabled,
     external: false,
