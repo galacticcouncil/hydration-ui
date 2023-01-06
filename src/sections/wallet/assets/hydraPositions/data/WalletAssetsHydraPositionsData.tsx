@@ -19,18 +19,16 @@ export const WalletAssetsHydraPositionsData = ({
       : "wallet.assets.hydraPositions.data.value"
 
   return (
-    <div sx={{ display: "flex", flexWrap: "wrap" }}>
-      <Text
-        fs={[14, 16]}
-        lh={[16, 18]}
-        fw={500}
-        color="white"
-        tAlign={["right", "left"]}
-      >
-        <Trans i18nKey={tKey} tOptions={{ value, symbol, lrna, type: "token" }}>
-          <br sx={{ display: ["initial", "none"] }} />
-        </Trans>
-      </Text>
-    </div>
+    <Text
+      fs={[14, 16]}
+      lh={[16, 18]}
+      fw={500}
+      color="white"
+      tAlign={["right", "left"]}
+    >
+      <Trans i18nKey={tKey} tOptions={{ value, symbol, lrna, type: "token" }}>
+        <br sx={{ display: ["initial", "none"] }} />
+      </Trans>
+    </Text>
   )
 }

@@ -4,8 +4,7 @@ import { Link } from "@tanstack/react-location"
 import { ReactComponent as PoolsAndFarmsIcon } from "assets/icons/PoolsAndFarms.svg"
 import { ReactComponent as TradeIcon } from "assets/icons/Trade.svg"
 import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
-//import { ReactComponent as LBPIcon } from "assets/icons/LBPIcon.svg"
-//import { ReactComponent as BridgeIcon } from "assets/icons/BridgeIcon.svg"
+import { ReactComponent as TransferIcon } from "assets/icons/TransferTabIcon.svg"
 import {
   SMobileNavBar,
   SNavBarItem,
@@ -21,8 +20,7 @@ export const MobileNavBar = () => {
     if (name === "trade") return <TradeIcon />
     if (name === "pools") return <PoolsAndFarmsIcon />
     if (name === "wallet") return <WalletIcon />
-    //if (name === "lbp") return <LBPIcon />
-    //if (name === "bridge") return <BridgeIcon />
+    if (name === "transfer") return <TransferIcon />
 
     return null
   }
@@ -47,29 +45,31 @@ export const MobileNavBar = () => {
 
   return (
     <SMobileNavBar>
-      {visibleTabs.map((item, index) => {
-        if (item.external) {
-          return (
-            <a href={item.href} key={index} sx={{ height: "100%" }}>
-              <SNavBarItem key={index}>
-                <Icon size={20} icon={getIcon(item.key)} />
-                {t(item.translationKey)}
-              </SNavBarItem>
-            </a>
-          )
-        }
+      {visibleTabs
+        .sort((a, b) => a.mobOrder - b.mobOrder)
+        .map((item, index) => {
+          if (item.external) {
+            return (
+              <a href={item.href} key={index} sx={{ height: "100%" }}>
+                <SNavBarItem key={index}>
+                  <Icon size={20} icon={getIcon(item.key)} />
+                  {t(item.translationKey)}
+                </SNavBarItem>
+              </a>
+            )
+          }
 
-        return (
-          <Link to={item.href} key={index} css={{ height: "100%" }}>
-            {({ isActive }) => (
-              <SNavBarItem key={index} active={isActive}>
-                <Icon size={20} icon={getIcon(item.key)} />
-                {t(item.translationKey)}
-              </SNavBarItem>
-            )}
-          </Link>
-        )
-      })}
+          return (
+            <Link to={item.href} key={index} css={{ height: "100%" }}>
+              {({ isActive }) => (
+                <SNavBarItem key={index} active={isActive}>
+                  <Icon size={20} icon={getIcon(item.key)} />
+                  {t(item.translationKey)}
+                </SNavBarItem>
+              )}
+            </Link>
+          )
+        })}
       {(hiddenTabItems?.length ?? 0) > 0 && (
         <MoreButton tabs={hiddenTabItems} />
       )}

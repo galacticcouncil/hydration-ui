@@ -44,8 +44,8 @@ export const SButton = styled.button<{ isActive: boolean }>`
       return { color: theme.colors.white }
     }
 
-    return { color: theme.colors.basic500 }
-  }}
+    return { color: theme.colors.brightBlue100 }
+  }};
 `
 
 export const SButtonBackground = styled(motion.span)`

@@ -19,7 +19,7 @@ export const SHeader = styled.header`
 `
 
 export const SBellIcon = styled(BellIcon)`
-  color: ${theme.colors.white};
+  color: #d9d9d9;
 
   top: 8px;
 

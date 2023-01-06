@@ -1,4 +1,4 @@
-import { SBox } from "./WalletVestingBox.styled"
+import { SBox, SMobBackground } from "./WalletVestingBox.styled"
 import { Heading } from "../../../components/Typography/Heading/Heading"
 import { useTranslation } from "react-i18next"
 import { WalletVestingSchedule } from "./WalletVestingSchedule"
@@ -24,17 +24,20 @@ export const WalletVestingBox = () => {
   }
 
   return (
-    <SBox>
-      <Heading
-        fs={[15, 19]}
-        fw={500}
-        sx={{
-          ml: 10,
-        }}
-      >
-        {t("wallet.vesting.your_vesting")}
-      </Heading>
-      {renderContent()}
-    </SBox>
+    <div sx={{ flex: "column", flexGrow: 1 }}>
+      <SBox>
+        <Heading
+          fs={[15, 19]}
+          fw={500}
+          sx={{
+            ml: 10,
+          }}
+        >
+          {t("wallet.vesting.your_vesting")}
+        </Heading>
+        {renderContent()}
+      </SBox>
+      <SMobBackground />
+    </div>
   )
 }
