@@ -162,8 +162,12 @@ export type AssetsTableData = {
   transferableUSD: BN
   total: BN
   totalUSD: BN
-  locked: BN
-  lockedUSD: BN
+  lockedVesting: BN
+  lockedVestingUSD: BN
+  lockedDemocracy: BN
+  lockedDemocracyUSD: BN
+  reserved: BN
+  reservedUSD: BN
   origin: string
   inTradeRouter: boolean
   assetType: PalletAssetRegistryAssetType["type"]
