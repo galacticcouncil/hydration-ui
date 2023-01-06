@@ -16,8 +16,8 @@ export const useAssetsTableSkeleton = (enableAnimation = true) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
     name: true,
-    transferable: isDesktop,
-    total: true,
+    transferable: true,
+    total: isDesktop,
     actions: true,
   }
 

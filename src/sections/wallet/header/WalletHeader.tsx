@@ -10,6 +10,7 @@ import { useState } from "react"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
+import { SWalletHeader } from "./WalletHeader.styled"
 
 export const WalletHeader = () => {
   const { t } = useTranslation()
@@ -23,14 +24,7 @@ export const WalletHeader = () => {
 
   return (
     <>
-      <div
-        sx={{
-          flex: ["column", "row"],
-          justify: "space-between",
-          align: ["start", "center"],
-          pb: 16,
-        }}
-      >
+      <SWalletHeader>
         <Text fs={20} fw={500} lh={20} font="FontOver">
           {account?.name ?? t("wallet.header.noAccountSelected")}
         </Text>
@@ -74,8 +68,12 @@ export const WalletHeader = () => {
             </Button>
           </div>
         )}
-      </div>
-      <Separator color="white" opacity={0.12} />
+      </SWalletHeader>
+      <Separator
+        color="white"
+        opacity={0.12}
+        sx={{ display: ["none", "inherit"] }}
+      />
 
       <WalletConnectModal isOpen={open} onClose={() => setOpen(false)} />
     </>

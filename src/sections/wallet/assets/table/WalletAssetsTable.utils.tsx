@@ -33,15 +33,17 @@ export const useAssetsTable = (
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
     name: true,
-    transferable: isDesktop,
-    total: true,
+    transferable: true,
+    total: isDesktop,
     actions: true,
   }
 
   const columns = [
     accessor("symbol", {
       id: "name",
-      header: t("wallet.assets.table.header.name"),
+      header: isDesktop
+        ? t("wallet.assets.table.header.name")
+        : t("selectAssets.asset"),
       sortingFn: (a, b) => a.original.symbol.localeCompare(b.original.symbol),
       cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
     }),

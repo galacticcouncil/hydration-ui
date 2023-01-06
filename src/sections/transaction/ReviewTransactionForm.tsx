@@ -71,6 +71,9 @@ export const ReviewTransactionForm = (
             {props.title}
           </Text>
         )}
+        <Text fs={16} fw={400} color="basic400">
+          {t("liquidity.reviewTransaction.modal.desc")}
+        </Text>
         <div sx={{ mt: 16 }}>
           {json && <TransactionCode name={json.method} src={json.args} />}
         </div>

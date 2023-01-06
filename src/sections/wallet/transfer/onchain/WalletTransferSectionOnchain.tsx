@@ -267,7 +267,11 @@ export function WalletTransferSectionOnchain(props: {
             <Button onClick={props.onClose}>
               {t("wallet.assets.transfer.cancel")}
             </Button>
-            <Button type="submit" variant="primary">
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={!form.formState.isDirty}
+            >
               {t("wallet.assets.transfer.submit")}
             </Button>
           </div>

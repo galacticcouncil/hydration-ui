@@ -23,7 +23,7 @@ export const WalletAssetsTableName = ({
     <div>
       <div sx={{ flex: "row", gap: 8, align: "center" }}>
         <SIcon large={large}>{getAssetLogo(symbol)}</SIcon>
-        <div sx={{ flex: "column", width: "100%", gap: 4 }}>
+        <div sx={{ flex: "column", width: "100%", gap: [0, 4] }}>
           <Text
             fs={[large ? 18 : 14, 16]}
             lh={[large ? 16 : 23, 16]}
@@ -69,7 +69,7 @@ export const WalletAssetsTableBalance = (props: {
   return (
     <div sx={{ flex: "column", align: ["end", "start"], gap: 2 }}>
       <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
-        {t("value", { value: props.balance })}
+        {t("value.token", { value: props.balance })}
       </Text>
 
       <DollarAssetValue

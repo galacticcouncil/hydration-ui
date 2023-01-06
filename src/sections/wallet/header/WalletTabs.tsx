@@ -7,13 +7,9 @@ import { ReactComponent as AssetsIcon } from "assets/icons/AssetsIcon.svg"
 import { ReactComponent as PositionsIcon } from "assets/icons/PositionsIcon.svg"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { useAccountStore } from "state/store"
-import { useVestingSchedules } from "api/vesting"
 
 export const WalletTabs = () => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
-  const { data } = useVestingSchedules(account?.address)
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
@@ -36,15 +32,13 @@ export const WalletTabs = () => {
       {/*<TabLink to={LINKS.walletTransactions} icon={<TransactionsIcon />}>
         {t("wallet.header.transactions")}
     </TabLink>*/}
-      {!!data?.length && (
-        <TabLink
-          to={LINKS.walletVesting}
-          icon={<PositionsIcon />}
-          fullWidth={!isDesktop}
-        >
-          {t("wallet.header.vesting")}
-        </TabLink>
-      )}
+      <TabLink
+        to={LINKS.walletVesting}
+        icon={<PositionsIcon />}
+        fullWidth={!isDesktop}
+      >
+        {t("wallet.header.vesting")}
+      </TabLink>
     </div>
   )
 }

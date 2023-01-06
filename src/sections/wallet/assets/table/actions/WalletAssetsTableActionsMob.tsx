@@ -3,6 +3,7 @@ import { Modal } from "components/Modal/Modal"
 import { ReactComponent as TransferIcon } from "assets/icons/TransferIcon.svg"
 import { ReactComponent as SellIcon } from "assets/icons/SellIcon.svg"
 import { ReactComponent as BuyIcon } from "assets/icons/BuyIcon.svg"
+import { ReactComponent as DollarIcon } from "assets/icons/DollarIcon.svg"
 import { WalletAssetsTableName } from "../data/WalletAssetsTableData"
 import { Separator } from "components/Separator/Separator"
 import { theme } from "theme"
@@ -63,7 +64,7 @@ export const WalletAssetsTableActionsMob = ({
           </div>
         </div>
         <SActionButtonsContainer>
-          <div sx={{ py: 20 }}>
+          <div sx={{ pt: 20, pb: 30 }}>
             <Text fs={14} lh={16} color="whiteish500">
               {t("wallet.assets.table.details.locked")}
             </Text>
@@ -104,6 +105,7 @@ export const WalletAssetsTableActionsMob = ({
                   size="small"
                   onClick={() => setFeeAsPayment(row.id)}
                 >
+                  <DollarIcon />
                   {t("wallet.assets.table.actions.payment.asset")}
                 </Button>
               </div>
