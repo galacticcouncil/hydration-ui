@@ -3,6 +3,7 @@ import { useQueries, useQuery } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u128, u32 } from "@polkadot/types-codec"
+import { ITuple } from "@polkadot/types-codec/types"
 
 export const useOmnipoolAsset = (id: u32 | string) => {
   const api = useApiPromise()
@@ -63,18 +64,27 @@ export const getOmnipoolFee = (api: ApiPromise) => async () => {
   }
 }
 
+export type OmnipoolPosition = {
+  id: u128
+  assetId: u32
+  amount: u128
+  shares: u128
+  price: ITuple<[u128, u128]>
+}
+
 export const getOmnipoolPosition =
   (api: ApiPromise, itemId: u128) => async () => {
     const res = await api.query.omnipool.positions(itemId)
     const data = res.unwrap()
-
-    return {
+    const position: OmnipoolPosition = {
       id: itemId,
       assetId: data.assetId,
       amount: data.amount,
       shares: data.shares,
       price: data.price,
     }
+
+    return position
   }
 
 export const getOmnipoolPositions =
