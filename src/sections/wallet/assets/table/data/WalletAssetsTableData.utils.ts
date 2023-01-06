@@ -151,9 +151,17 @@ export const useAssetsBalances = () => {
     const tokens: (AssetsTableDataBalances | null)[] =
       accountBalances.data.balances.map((ab) => {
         const id = ab.id
-        const spotPrice = spotPrices.find((sp) => id.eq(sp.data?.tokenIn))
-        const meta = assetMetas.data.find((am) => id.eq(am?.id))
-        const lock = locks.find((lock) => id.eq(lock.id))
+        const spotPrice = spotPrices.find(
+          (sp) => id.toString() === sp.data?.tokenIn,
+        )
+        const meta = assetMetas.data.find((am) => id.toString() === am?.id)
+        const lock = locks.reduce(
+          (max, lock) =>
+            lock.id === id.toString() && lock.amount.gt(max)
+              ? lock.amount
+              : max,
+          BN_0,
+        )
 
         if (!spotPrice?.data || !meta) return null
 
@@ -167,7 +175,7 @@ export const useAssetsBalances = () => {
         const transferable = free.minus(frozen).div(dp)
         const transferableUSD = transferable.times(spotPrice.data.spotPrice)
 
-        const locked = (lock?.amount ?? BN_0).div(dp)
+        const locked = lock.plus(reserved).div(dp)
         const lockedUsd = locked.times(spotPrice.data.spotPrice)
 
         return {
@@ -189,7 +197,11 @@ export const useAssetsBalances = () => {
       (sp) => sp.data?.tokenIn === NATIVE_ASSET_ID,
     )?.data?.spotPrice
 
-    const nativeLock = locks.find((lock) => lock.id === NATIVE_ASSET_ID)?.amount
+    const nativeLock = locks.reduce(
+      (max, lock) =>
+        lock.id === NATIVE_ASSET_ID && lock.amount.gt(max) ? lock.amount : max,
+      BN_0,
+    )
 
     const native = getNativeBalances(
       nativeBalance,
@@ -225,7 +237,7 @@ const getNativeBalances = (
   const transferable = free.minus(BN.max(feeFrozen, miscFrozen)).div(dp)
   const transferableUSD = transferable.times(spotPrice)
 
-  const locked = (lock ?? BN_0).div(dp)
+  const locked = (lock ?? BN_0).plus(reserved).div(dp)
   const lockedUsd = locked.times(spotPrice)
 
   return {
