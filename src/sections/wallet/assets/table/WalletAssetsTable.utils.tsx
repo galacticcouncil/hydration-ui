@@ -162,6 +162,8 @@ export type AssetsTableData = {
   transferableUSD: BN
   total: BN
   totalUSD: BN
+  lockedMax: BN
+  lockedMaxUSD: BN
   lockedVesting: BN
   lockedVestingUSD: BN
   lockedDemocracy: BN
