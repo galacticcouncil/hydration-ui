@@ -40,7 +40,7 @@ export const WalletAssetsTableActionsMob = ({
           css={{ background: `rgba(${theme.rgbColors.alpha0}, 0.06)` }}
         />
         <div sx={{ flex: "row", justify: "space-between", py: 30 }}>
-          <div>
+          <div sx={{ flex: "column", gap: 4 }}>
             <Text fs={14} lh={16} color="whiteish500">
               {t("wallet.assets.table.header.total")}
             </Text>
@@ -51,7 +51,7 @@ export const WalletAssetsTableActionsMob = ({
               {t("value.usd", { amount: row.totalUSD })}
             </Text>
           </div>
-          <div>
+          <div sx={{ flex: "column", gap: 4 }}>
             <Text fs={14} lh={16} color="whiteish500">
               {t("wallet.assets.table.header.transferable")}
             </Text>
@@ -64,16 +64,29 @@ export const WalletAssetsTableActionsMob = ({
           </div>
         </div>
         <SActionButtonsContainer>
-          <div sx={{ pt: 20, pb: 30 }}>
-            <Text fs={14} lh={16} color="whiteish500">
-              {t("wallet.assets.table.details.locked")}
-            </Text>
-            <Text fs={14} lh={14} color="white">
-              {t("value", { value: row.locked })}
-            </Text>
-            <Text fs={12} lh={17} color="whiteish500">
-              {t("value.usd", { amount: row.lockedUSD })}
-            </Text>
+          <div sx={{ flex: "row", justify: "space-between" }}>
+            <div sx={{ flex: "column", gap: 4, pt: 20, pb: 30 }}>
+              <Text fs={14} lh={16} color="whiteish500">
+                {t("wallet.assets.table.details.lockedDemocracy")}
+              </Text>
+              <Text fs={14} lh={14} color="white">
+                {t("value", { value: row.lockedDemocracy })}
+              </Text>
+              <Text fs={12} lh={17} color="whiteish500">
+                {t("value.usd", { amount: row.lockedDemocracyUSD })}
+              </Text>
+            </div>
+            <div sx={{ flex: "column", gap: 4, pt: 20, pb: 30 }}>
+              <Text fs={14} lh={16} color="whiteish500">
+                {t("wallet.assets.table.details.lockedVesting")}
+              </Text>
+              <Text fs={14} lh={14} color="white">
+                {t("value", { value: row.lockedVesting })}
+              </Text>
+              <Text fs={12} lh={17} color="whiteish500">
+                {t("value.usd", { amount: row.lockedVestingUSD })}
+              </Text>
+            </div>
           </div>
           <div sx={{ flex: "column", gap: 12 }}>
             <div>
