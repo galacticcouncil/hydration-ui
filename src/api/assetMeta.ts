@@ -27,14 +27,17 @@ export const useAssetMetaList = (ids: Array<Maybe<u32 | string>>) => {
 const getAllAssetMeta = (api: ApiPromise) => async () => {
   const entries = await api.query.assetRegistry.assetMetadataMap.entries()
 
-  const result: Array<{ id: string; symbol: string; decimals: u8 | u32 }> =
-    entries.map(([key, data]) => {
-      return {
-        id: key.args[0].toString(),
-        symbol: data.unwrap().symbol.toUtf8(),
-        decimals: data.unwrap().decimals,
-      }
-    })
+  const result: Array<{
+    id: string
+    symbol: string
+    decimals: u8 | u32 | number
+  }> = entries.map(([key, data]) => {
+    return {
+      id: key.args[0].toString(),
+      symbol: data.unwrap().symbol.toUtf8(),
+      decimals: data.unwrap().decimals.toNumber(),
+    }
+  })
 
   if (!result.find((i) => i.id === NATIVE_ASSET_ID)) {
     const properties = await api.rpc.system.properties()
@@ -43,8 +46,8 @@ const getAllAssetMeta = (api: ApiPromise) => async () => {
 
     result.push({
       id: NATIVE_ASSET_ID,
-      symbol: symbol.toString(),
-      decimals: decimals,
+      symbol: "HDX",
+      decimals: 12,
     })
   }
 
