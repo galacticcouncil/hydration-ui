@@ -75,10 +75,7 @@ export const TableTitle = styled.div`
   }
 `
 
-export const TableHeaderContent = styled.thead`
-  @media (${theme.viewport.lt.md}) {
-  }
-`
+export const TableHeaderContent = styled.thead``
 
 export const TableBodyContent = styled.tbody`
   position: relative;
