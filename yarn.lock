@@ -1952,10 +1952,10 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
-"@galacticcouncil/apps@^1.0.9":
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.0.9.tgz#2c4b073fedd86865a18f57ca4ee9b10039176674"
-  integrity sha512-axRjSNvOSUEKjcw0cZIXsnVCfo3tWGgYvoUAL+fUG0mE3YIartFXO9DT51wiIJKYRCECCiCBWDmVVKtqhddESw==
+"@galacticcouncil/apps@^1.0.10":
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.0.10.tgz#8a257f721489c279f27bd9610371da8d4c1bb299"
+  integrity sha512-0ngt+ZG1WjbllyiBhADIkVL8C8NvRPypmioOsyolbZB57DiayJ9lMqAMb2qj3SXZfeHj7PYMBwAAL90mU+gxrQ==
   dependencies:
     "@galacticcouncil/ui" "^1.0.40"
     "@lit/reactive-element" "^1.0.0"
