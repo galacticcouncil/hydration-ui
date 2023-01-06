@@ -41,7 +41,7 @@
   "value.percentage": "{{ value, bignumber(numberSuffix: '%'; type: 'percentage') }}",
   "value.APR": "{{ apr, bignumber(numberSuffix: '% APR'; type: 'percentage') }}",
   "value.multiAPR": "{{minApr, bignumber(type: 'percentage')}}-{{maxApr, bignumber(type: 'percentage')}}% APR",
-  "value.native": "{{ value, bignumber(type: 'token') }}",
+  "value.token": "{{ value, bignumber(type: 'token') }}",
   "liquidity.header.title": "Liquidity",
   "liquidity.header.switch": "My liquidity positions",
   "liquidity.header.totalLocked": "Total value locked",
