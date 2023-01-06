@@ -69,6 +69,7 @@ export function ToastSidebar() {
                       justify: "center",
                       align: "center",
                       height: "100%",
+                      py: 100,
                     }}
                   >
                     <NoActivities

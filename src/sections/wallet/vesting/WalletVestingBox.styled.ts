@@ -5,7 +5,7 @@ export const SBox = styled.div`
   background: ${theme.colors.darkBlue700};
 
   padding: 22px 20px;
-  margin: -16px -12px;
+  margin: -16px -12px 0;
 
   border-radius: 4px;
 
@@ -37,5 +37,19 @@ export const SBox = styled.div`
     box-shadow: 0px 10px 30px rgba(91, 144, 172, 0.12),
       3px 3px 0px rgba(126, 161, 194, 0.12);
     margin: 0;
+  }
+`
+
+export const SMobBackground = styled.div`
+  background: #111523;
+
+  border-top: 1px solid #1e2536;
+
+  margin: 0 -15px -15px;
+
+  flex-grow: 1;
+
+  @media (${theme.viewport.gte.sm}) {
+    display: none;
   }
 `

@@ -24,17 +24,30 @@ export const SPageContent = styled.main`
   padding: 0 12px;
   overflow-x: hidden;
 
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+
   @media ${theme.viewport.gte.sm} {
     padding: 0 20px;
+
+    display: block;
   }
 `
 
 export const SPageInner = styled.div`
   padding: 16px 0;
-  max-width: 1109px;
-  margin: 0 auto;
+
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 
   @media ${theme.viewport.gte.sm} {
     padding: 44px 0;
+
+    max-width: 1109px;
+    margin: 0 auto;
+
+    display: block;
   }
 `

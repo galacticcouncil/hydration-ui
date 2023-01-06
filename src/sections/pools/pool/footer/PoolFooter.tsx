@@ -1,43 +1,27 @@
-import { Button } from "components/Button/Button"
 import { SContainer } from "./PoolFooter.styled"
 import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
-import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
-import { BN_NAN } from "utils/constants"
+import { useUsersTotalInPool } from "sections/pools/pool/footer/PoolFooter.utils"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import Skeleton from "react-loading-skeleton"
 
-export const PoolFooter = () => {
+type Props = { pool: OmnipoolPool }
+
+export const PoolFooter = ({ pool }: Props) => {
   const { t } = useTranslation()
 
-  const { locked, claimable } = {
-    locked: BN_NAN,
-    claimable: BN_NAN,
-  } // TODO
+  const locked = useUsersTotalInPool(pool)
 
   return (
     <SContainer>
       <div>
-        <Text fs={16}>{t("liquidity.asset.claim.total", { locked })}</Text>
-      </div>
-      <div sx={{ flex: "row", justify: "center" }}>
-        {!claimable.isNaN() && !claimable.isZero() && (
-          <Text fs={16} tAlign="center">
-            {t("liquidity.asset.claim.claimable", { claimable })}
-          </Text>
-        )}
-      </div>
-      <div sx={{ flex: "row", justify: "end" }}>
-        {!claimable.isNaN() && !claimable?.isZero() && (
-          <Button
-            variant="primary"
-            size="small"
-            sx={{ p: "14px 44px", fontSize: 13 }}
-            // isLoading={claimAll.isLoading}
-            // onClick={() => claimAll.mutate()}
-          >
-            <WalletIcon />
-            {t("liquidity.asset.claim.button")}
-          </Button>
-        )}
+        <Text fs={16}>
+          {locked.isLoading ? (
+            <Skeleton />
+          ) : (
+            t("liquidity.asset.claim.total", { locked: locked.data })
+          )}
+        </Text>
       </div>
     </SContainer>
   )

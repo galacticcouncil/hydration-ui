@@ -33,15 +33,17 @@ export const useAssetsTable = (
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
     name: true,
-    transferable: isDesktop,
-    total: true,
+    transferable: true,
+    total: isDesktop,
     actions: true,
   }
 
   const columns = [
     accessor("symbol", {
       id: "name",
-      header: t("wallet.assets.table.header.name"),
+      header: isDesktop
+        ? t("wallet.assets.table.header.name")
+        : t("selectAssets.asset"),
       sortingFn: (a, b) => a.original.symbol.localeCompare(b.original.symbol),
       cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
     }),
@@ -160,8 +162,14 @@ export type AssetsTableData = {
   transferableUSD: BN
   total: BN
   totalUSD: BN
-  locked: BN
-  lockedUSD: BN
+  lockedMax: BN
+  lockedMaxUSD: BN
+  lockedVesting: BN
+  lockedVestingUSD: BN
+  lockedDemocracy: BN
+  lockedDemocracyUSD: BN
+  reserved: BN
+  reservedUSD: BN
   origin: string
   inTradeRouter: boolean
   assetType: PalletAssetRegistryAssetType["type"]

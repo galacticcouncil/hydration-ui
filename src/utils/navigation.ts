@@ -6,7 +6,7 @@ export const LINKS = {
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
   walletVesting: "/wallet/vesting",
-  transfer: "/transfer",
+  cross_chain: "/cross-chain",
 }
 
 export const EXTERNAL_LINKS = {
@@ -27,6 +27,7 @@ export const MENU_ITEMS = [
     enabled: true,
     external: false,
     mobVisible: true,
+    mobOrder: 0,
   },
   {
     key: "pools",
@@ -34,7 +35,8 @@ export const MENU_ITEMS = [
     href: LINKS.liquidity,
     enabled: isPoolsPageEnabled,
     external: false,
-    mobVisible: false,
+    mobVisible: true,
+    mobOrder: 2,
   },
   {
     key: "wallet",
@@ -43,14 +45,16 @@ export const MENU_ITEMS = [
     enabled: true,
     external: false,
     mobVisible: true,
+    mobOrder: 1,
   },
   {
-    key: "transfer",
-    translationKey: "header.transfer",
-    href: LINKS.transfer,
+    key: "cross-chain",
+    translationKey: "header.xcm",
+    href: LINKS.cross_chain,
     enabled: isXcmPageEnabled,
     external: false,
-    mobVisible: true,
+    mobVisible: false,
+    mobOrder: 3,
   },
 ] as const
 

@@ -33,6 +33,9 @@ export function WalletTransferModal(props: {
       onClose={props.onClose}
       containerStyles={{
         height: isDesktop ? "100vh" : "calc(100vh - 75px)",
+        "& > div": {
+          background: theme.gradients.background,
+        },
       }}
       withoutClose={!isDesktop}
       topContent={
@@ -71,7 +74,8 @@ export function WalletTransferModal(props: {
               m: 0,
               display: ["inherit", "none"],
               top: "unset",
-              right: 26,
+              right: 16,
+              bg: "darkBlue700",
             }}
           />
         </STopContentContainer>

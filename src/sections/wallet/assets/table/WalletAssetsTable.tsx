@@ -102,11 +102,7 @@ export const WalletAssetsTable = ({ data }: Props) => {
               {row.getIsSelected() && (
                 <TableRow isSub>
                   <TableData colSpan={table.getAllColumns().length}>
-                    <WalletAssetsTableDetails
-                      origin={row.original.origin}
-                      locked={row.original.locked}
-                      lockedUSD={row.original.lockedUSD}
-                    />
+                    <WalletAssetsTableDetails {...row.original} />
                   </TableData>
                 </TableRow>
               )}

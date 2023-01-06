@@ -40,7 +40,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
         <Text font="ChakraPetchBold">{name}</Text>
         <div sx={{ flex: "row", align: "end", gap: 2 }}>
           <Text color="basic200" fw={400}>
-            {t("value.native", {
+            {t("value.token", {
               value: data?.balance,
               fixedPointScale: meta?.decimals,
               type: "token",
