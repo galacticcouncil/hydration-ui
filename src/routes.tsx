@@ -41,7 +41,7 @@ export const routes = [
     element: <PoolsPage />,
   },
   {
-    path: "transfer",
+    path: "cross-chain",
     element: <XcmPage />,
   },
 ]

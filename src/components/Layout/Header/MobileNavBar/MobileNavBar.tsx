@@ -20,7 +20,7 @@ export const MobileNavBar = () => {
     if (name === "trade") return <TradeIcon />
     if (name === "pools") return <PoolsAndFarmsIcon />
     if (name === "wallet") return <WalletIcon />
-    if (name === "xcm") return <TransferIcon />
+    if (name === "cross-chain") return <TransferIcon />
 
     return null
   }
