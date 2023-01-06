@@ -175,7 +175,7 @@ export const useAssetsBalances = () => {
         const transferable = free.minus(frozen).div(dp)
         const transferableUSD = transferable.times(spotPrice.data.spotPrice)
 
-        const locked = lock.plus(reserved).div(dp)
+        const locked = lock.div(dp)
         const lockedUsd = locked.times(spotPrice.data.spotPrice)
 
         return {
@@ -237,7 +237,7 @@ const getNativeBalances = (
   const transferable = free.minus(BN.max(feeFrozen, miscFrozen)).div(dp)
   const transferableUSD = transferable.times(spotPrice)
 
-  const locked = (lock ?? BN_0).plus(reserved).div(dp)
+  const locked = (lock ?? BN_0).div(dp)
   const lockedUsd = locked.times(spotPrice)
 
   return {
