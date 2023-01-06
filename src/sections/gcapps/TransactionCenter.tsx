@@ -1,6 +1,6 @@
 import React from "react"
 import * as Apps from "@galacticcouncil/apps"
-import type { Notification } from "@galacticcouncil/apps/dist/types/component/notification/types"
+import type { Notification } from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
 import { useToast } from "state/toasts"
 import type { TemplateResult } from "lit-html"
@@ -44,7 +44,7 @@ const ToastTitle = ({ message }: { message: Notification["message"] }) => {
   )
 }
 
-const handleNotification = (e: any, toast: any): void => {
+const handleNotification = (e: CustomEvent, toast: any): void => {
   if (e.detail.toast) {
     const toastVariant = e.detail.type || "info"
     const existingToast = toast.toasts.find(
