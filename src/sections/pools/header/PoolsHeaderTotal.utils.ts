@@ -10,7 +10,7 @@ import { useUniques } from "api/uniques"
 import { useAccountStore } from "state/store"
 import BN from "bignumber.js"
 import { calculate_liquidity_out } from "@galacticcouncil/math/build/omnipool/bundler"
-import { isNotNil } from "../../../utils/helpers"
+import { isNotNil } from "utils/helpers"
 
 export const useTotalInPools = () => {
   const apiIds = useApiIds()
