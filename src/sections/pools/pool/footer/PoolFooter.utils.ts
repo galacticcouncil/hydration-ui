@@ -2,7 +2,11 @@ import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useAccountStore } from "state/store"
 import { useApiIds } from "api/consts"
 import { useUniques } from "api/uniques"
-import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
+import {
+  OmnipoolPosition,
+  useOmnipoolAssets,
+  useOmnipoolPositions,
+} from "api/omnipool"
 import { isNotNil } from "utils/helpers"
 import { useAssetMetaList } from "api/assetMeta"
 import { useTokensBalances } from "api/balances"
@@ -54,9 +58,13 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
       return undefined
 
     const totals = positions
-      .map((query) => query.data)
-      .filter(isNotNil)
-      .filter((position) => position.assetId.toString() === pool.id.toString())
+      .reduce(
+        (acc, curr) =>
+          curr.data?.assetId.toString() === pool.id.toString()
+            ? [...acc, curr.data]
+            : acc,
+        [] as OmnipoolPosition[],
+      )
       .map((position) => {
         const meta = metas.data.find(
           (m) => m.id.toString() === position.assetId.toString(),
