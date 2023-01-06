@@ -1952,10 +1952,10 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
-"@galacticcouncil/apps@^1.0.10":
-  version "1.0.10"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.0.10.tgz#8a257f721489c279f27bd9610371da8d4c1bb299"
-  integrity sha512-0ngt+ZG1WjbllyiBhADIkVL8C8NvRPypmioOsyolbZB57DiayJ9lMqAMb2qj3SXZfeHj7PYMBwAAL90mU+gxrQ==
+"@galacticcouncil/apps@^1.0.11":
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.0.11.tgz#2f68cb78de23d93f82b836d9445463408c132cbe"
+  integrity sha512-lnIiwr4SN+Rf1hiYWarmb8WbS3f52qxupXDyOySWqoCoQ99GPW2LP0e98DWU2t255Q1pajSsirBB2RH+gFck+Q==
   dependencies:
     "@galacticcouncil/ui" "^1.0.40"
     "@lit/reactive-element" "^1.0.0"
@@ -2008,10 +2008,10 @@
   version "0.0.4"
   resolved "https://github.com/galacticcouncil/HydraDX-wasm#b99d5d52d618c06c9f170d4a5bde0bb78007efde"
 
-"@galacticcouncil/sdk@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-0.0.1.tgz#a760cfbd4114667def45fabe0b152d8a9b6db87f"
-  integrity sha512-MfkdIWjldA+2icmryWZTotjibeIx9U5fXFD1t9AXCSfe7Bx6xTvxMtTdxoocLKO6Us6hJT/OL3PealY3ATGobg==
+"@galacticcouncil/sdk@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-0.0.3.tgz#ade4fb3ae1ff3cbbb5bd689709ca3f4a0ada1239"
+  integrity sha512-+RQT9237InVLRhpI9bbiSZRURxfevWhxvpA/JWmzVuAf+DKVFnGkn7XhSvz/NIsXZxzy6NYmSVMz7Rg83o8rSw==
   dependencies:
     "@galacticcouncil/math-lbp" "^0.0.4"
     "@galacticcouncil/math-omnipool" "^0.0.4"
