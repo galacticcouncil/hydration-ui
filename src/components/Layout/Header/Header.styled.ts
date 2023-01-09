@@ -14,6 +14,10 @@ export const SHeader = styled.header`
   background: rgba(${theme.rgbColors.black}, 0.2);
 
   @media ${theme.viewport.gte.sm} {
+    padding: 8px 40px 8px 40px;
+  }
+
+  @media ${theme.viewport.gte.md} {
     padding: 8px 40px 8px 0;
   }
 `
