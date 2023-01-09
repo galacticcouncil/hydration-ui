@@ -74,6 +74,7 @@
   "scripts": {
     "dev": "vite",
     "dev:rococo": "vite -m rococo",
+    "dev:production": "vite -m production",
     "build": "vite build",
     "preview": "vite preview",
     "postinstall": "patch-package",
