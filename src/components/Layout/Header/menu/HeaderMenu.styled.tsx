@@ -12,13 +12,15 @@ export const SList = styled.nav`
 `
 export const SItem = styled.span<{ isActive?: boolean }>`
   font-size: 15px;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 18px;
 
   margin-right: 12px;
   padding: 8px 12px;
 
   color: #bdccd4;
+
+  text-transform: uppercase;
 
   &:hover {
     color: ${theme.colors.white};
@@ -29,7 +31,7 @@ export const SItem = styled.span<{ isActive?: boolean }>`
     isActive &&
     css`
       color: ${theme.colors.brightBlue100};
-      background: rgba(84, 99, 128, 0.35);
+      background: rgba(${theme.rgbColors.white}, 0.12);
 
       border-radius: 4px;
     `};
