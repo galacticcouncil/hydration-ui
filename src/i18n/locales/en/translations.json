@@ -194,6 +194,8 @@
   "wallet.assets.table.details.lockedVesting": "Locked in Vesting",
   "wallet.assets.table.details.lockedDemocracy": "Locked in Democracy",
   "wallet.assets.table.details.noprice.tooltip": "USD price currently not available",
+  "wallet.assets.hydraPositions.empty.desc": "You don’t have any liquidity position yet, add liquidity and start earning with Hydra.",
+  "wallet.assets.hydraPositions.empty.btn": "Start providing liquidity",
   "wallet.assets.hydraPositions.title": "Liquidity positions",
   "wallet.assets.hydraPositions.header.name": "Asset",
   "wallet.assets.hydraPositions.header.valueUSD": "Value",
