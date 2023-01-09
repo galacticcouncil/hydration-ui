@@ -75,7 +75,7 @@ export const WalletVestingSchedule = () => {
               i18nKey="wallet.vesting.claimable_now_value"
               tOptions={{
                 ...separateBalance(claimableBalance, {
-                  fixedPointScale: 12,
+                  fixedPointScale: meta?.decimals.toNumber() ?? 12,
                   type: "token",
                 }),
                 symbol: meta?.symbol,
@@ -94,7 +94,10 @@ export const WalletVestingSchedule = () => {
             lh={18}
             css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }}
           >
-            {t("value.usd", { amount: claimableUSD })}
+            {t("value.usd", {
+              amount: claimableUSD,
+              fixedPointScale: meta?.decimals.toNumber() ?? 12,
+            })}
           </Text>
         </div>
         <div
