@@ -7,7 +7,7 @@
     "@emotion/is-prop-valid": "^1.2.0",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
-    "@galacticcouncil/math": "https://github.com/galacticcouncil/HydraDX-wasm#b99d5d52d618c06c9f170d4a5bde0bb78007efde",
+    "@galacticcouncil/math": "https://github.com/galacticcouncil/HydraDX-wasm#f5afe579bb8308eba1ba79501626e37f82c2c52b",
     "@galacticcouncil/math-lbp": "^0.0.4",
     "@galacticcouncil/math-xyk": "^0.0.4",
     "@galacticcouncil/sdk": "^0.0.3",
@@ -74,6 +74,7 @@
   "scripts": {
     "dev": "vite",
     "dev:rococo": "vite -m rococo",
+    "dev:production": "vite -m production",
     "build": "vite build",
     "preview": "vite preview",
     "postinstall": "patch-package",

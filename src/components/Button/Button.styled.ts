@@ -34,8 +34,10 @@ export const SButton = styled.button<ButtonProps>`
     transform: none;
 
     color: ${theme.colors.darkBlue300};
-    background: rgba(218, 255, 238, 0.06);
-    border-color: ${theme.colors.darkBlue300};
+    border: 1px solid ${theme.colors.darkBlue300};
+    background: rgba(${theme.rgbColors.alpha0}, 0.06);
+
+    opacity: 0.7;
 
     &::after,
     &::before {
