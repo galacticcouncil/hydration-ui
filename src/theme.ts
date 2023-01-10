@@ -92,7 +92,7 @@ const zIndices = {
   boxSwitch: 1,
   header: 5,
   backdrop: 9,
-  tablePlaceholder: 9,
+  tablePlaceholder: 4,
   modal: 10,
   toast: 11,
 } as const

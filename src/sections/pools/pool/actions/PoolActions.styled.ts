@@ -1,4 +1,3 @@
-import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { IconButton } from "components/IconButton/IconButton"
 import { theme } from "theme"
@@ -14,22 +13,16 @@ export const SButtonOpen = styled(IconButton)<{
   align-items: center;
   justify-content: center;
 
-  color: ${theme.colors.white};
-
-  ${({ isActive }) =>
-    isActive &&
-    css`
-      border: none;
-      background-color: rgba(${theme.rgbColors.primaryA15}, 0.12);
-      color: ${theme.colors.brightBlue200};
-    `}
+  color: #bdccd4;
 
   &:disabled,
   &[disabled] {
-    border: none;
-
     color: ${theme.colors.darkBlue300};
-    background-color: rgba(${theme.rgbColors.primaryA06}, 0.06);
+    background: rgba(${theme.rgbColors.alpha0}, 0.06);
+
+    border: 1px solid ${theme.colors.darkBlue300};
+
+    opacity: 0.7;
 
     cursor: not-allowed;
   }

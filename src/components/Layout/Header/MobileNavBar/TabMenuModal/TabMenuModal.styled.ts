@@ -30,8 +30,9 @@ export const SBackdrop = styled.div`
   height: 100vh;
 
   position: fixed;
-  bottom: 60px;
+  bottom: calc(60px + env(safe-area-inset-bottom));
   left: 0;
+  z-index: ${theme.zIndices.modal};
 
   background: rgba(0, 7, 50, 0.7);
 `

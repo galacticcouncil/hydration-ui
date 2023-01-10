@@ -3,10 +3,12 @@ import { theme } from "theme"
 import { ReactComponent as BellIcon } from "assets/icons/BellIcon.svg"
 
 export const SHeader = styled.header`
-  position: sticky;
+  position: fixed;
   top: 0;
   left: 0;
   z-index: ${theme.zIndices.header};
+
+  width: calc(100% - 1px);
 
   padding: 6px 12px;
 
