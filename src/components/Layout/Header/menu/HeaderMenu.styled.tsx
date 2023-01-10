@@ -20,6 +20,8 @@ export const SItem = styled.span<{ isActive?: boolean }>`
 
   color: #bdccd4;
 
+  white-space: nowrap;
+
   &:hover {
     color: ${theme.colors.white};
     cursor: pointer;
