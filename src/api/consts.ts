@@ -30,5 +30,5 @@ export const useTVLCap = () => {
 }
 
 export const getTvlCap = (api: ApiPromise) => async () => {
-  return api.consts.omnipool.tvlCap
+  return api.consts.omnipool.tvlCap || await api.query.omnipool.tvlCap();
 }
