@@ -49,9 +49,17 @@ const useToastsStore = create<ToastStore>((set) => ({
     set((state) => {
       // set max 10 toasts
       const prevToasts =
-        state.toasts.length > 9 ? state.toasts.slice(1, 10) : [...state.toasts]
+        state.toasts.length > 9
+          ? state.toasts
+              .sort(
+                (a, b) =>
+                  new Date(b.dateCreated).getTime() -
+                  new Date(a.dateCreated).getTime(),
+              )
+              .slice(0, 9)
+          : [...state.toasts]
+
       const toasts = [
-        ...prevToasts,
         {
           ...toast,
           variant,
@@ -60,6 +68,7 @@ const useToastsStore = create<ToastStore>((set) => ({
           id,
           hidden: state.sidebar,
         } as ToastData,
+        ...prevToasts,
       ]
       setLocalStorage(toasts)
       return { toasts }
