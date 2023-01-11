@@ -94,8 +94,7 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
       totalHubReserve,
     )
 
-    if (!new BN(0).eq(new BN(capDifference)))
-      capDifference = tvlCapDifference
+    if (!new BN(0).eq(new BN(capDifference))) capDifference = tvlCapDifference
 
     if (capDifference === "-1")
       return {
