@@ -3,19 +3,19 @@ import { theme } from "theme"
 
 export const SPage = styled.div`
   --mobile-nav-height: calc(60px + env(safe-area-inset-bottom));
+  --nav-height: 65px;
 
   position: relative;
 
   display: flex;
   flex-direction: column;
 
-  min-height: 100vh;
-  padding-bottom: var(--mobile-nav-height);
+  height: 100vh;
 
   background: ${theme.gradients.background};
 
   @media ${theme.viewport.gte.sm} {
-    padding-bottom: 0;
+    --nav-height: 70px;
   }
 `
 
@@ -28,10 +28,26 @@ export const SPageContent = styled.main`
   flex-direction: column;
   flex-grow: 1;
 
+  padding-top: var(--nav-height);
+  padding-bottom: var(--mobile-nav-height);
+
+  ::-webkit-scrollbar {
+    width: 0px;
+  }
+
+  ::-webkit-scrollbar-track {
+    margin-top: var(--nav-height);
+  }
+
   @media ${theme.viewport.gte.sm} {
     padding: 0 20px;
+    padding-top: var(--nav-height);
 
     display: block;
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
   }
 `
 

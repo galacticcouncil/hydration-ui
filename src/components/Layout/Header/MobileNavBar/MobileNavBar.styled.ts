@@ -12,7 +12,8 @@ export const SMobileNavBar = styled.div`
   padding-bottom: env(safe-area-inset-bottom);
 
   height: var(--mobile-nav-height);
-  width: 100%;
+  width: calc(100% - 1px);
+
   transition: all ${theme.transitions.default};
 
   display: grid;

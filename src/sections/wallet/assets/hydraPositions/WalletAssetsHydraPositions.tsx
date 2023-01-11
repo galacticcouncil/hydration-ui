@@ -19,6 +19,7 @@ import {
   useHydraPositionsTable,
 } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { WalletAssetsHydraPositionsDetails } from "sections/wallet/assets/hydraPositions/details/WalletAssetsHydraPositionsDetails"
+import { EmptyState } from "./EmptyState"
 
 type Props = { data: HydraPositionsTableData[] }
 
@@ -62,30 +63,37 @@ export const WalletAssetsHydraPositions = ({ data }: Props) => {
           ))}
         </TableHeaderContent>
         <TableBodyContent>
-          {table.getRowModel().rows.map((row, i) => (
-            <Fragment key={row.id}>
-              <TableRow isOdd={!(i % 2)} onClick={() => row.toggleSelected()}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableData key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableData>
-                ))}
-              </TableRow>
-              {row.getIsSelected() && (
-                <TableRow isSub>
-                  <TableData colSpan={table.getAllColumns().length}>
-                    <WalletAssetsHydraPositionsDetails
-                      assetId={row.original.assetId}
-                      symbol={row.original.symbol}
-                      amount={row.original.providedAmount}
-                      amountUSD={row.original.providedAmountUSD}
-                      shares={row.original.shares}
-                    />
-                  </TableData>
+          {table.options.data.length ? (
+            table.getRowModel().rows.map((row, i) => (
+              <Fragment key={row.id}>
+                <TableRow isOdd={!(i % 2)} onClick={() => row.toggleSelected()}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableData key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableData>
+                  ))}
                 </TableRow>
-              )}
-            </Fragment>
-          ))}
+                {row.getIsSelected() && (
+                  <TableRow isSub>
+                    <TableData colSpan={table.getAllColumns().length}>
+                      <WalletAssetsHydraPositionsDetails
+                        assetId={row.original.assetId}
+                        symbol={row.original.symbol}
+                        amount={row.original.providedAmount}
+                        amountUSD={row.original.providedAmountUSD}
+                        shares={row.original.shares}
+                      />
+                    </TableData>
+                  </TableRow>
+                )}
+              </Fragment>
+            ))
+          ) : (
+            <EmptyState />
+          )}
         </TableBodyContent>
       </Table>
       {transferAsset && (
