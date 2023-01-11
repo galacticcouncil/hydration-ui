@@ -1366,11 +1366,6 @@
   resolved "https://registry.yarnpkg.com/@darwinia/types/-/types-2.8.3.tgz#86a8f0e5294e37a1a757cf94b4ae5853651160b8"
   integrity sha512-lquGAhY64mAOuxQ/2GP+S4iZTQTQsOouoysJWzy1xJwzF/F2i7zTL7tZTUKdseJrubeSNP/B50GklgjzkH/pgA==
 
-"@deno/shim-deno-test@~0.3.2", "@deno/shim-deno-test@~0.3.3":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@deno/shim-deno-test/-/shim-deno-test-0.3.3.tgz#2dd014a2649507477f904d0172dd88341354086d"
-  integrity sha512-Ge0Tnl7zZY0VvEfgsyLhjid8DzI1d0La0dgm+3m0/A8gZXgp5xwlyIyue5e4SCUuVB/3AH/0lun9LcJhhTwmbg==
-
 "@design-systems/utils@2.12.0":
   version "2.12.0"
   resolved "https://registry.yarnpkg.com/@design-systems/utils/-/utils-2.12.0.tgz#955c108be07cb8f01532207cbfea8f848fa760c9"
@@ -1994,31 +1989,39 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-lbp/-/math-lbp-0.0.4.tgz#da6fe8251361a2469fddf55cff5d9d3d70dcc415"
   integrity sha512-U+HvbdG8JK7Kad1iD850/zs83MDQ8yIJ3AVSL67lXII81+I0cBDHgogf9hL59LnBc2gYm7A+APUmGz/V23PvmQ==
 
-"@galacticcouncil/math-omnipool@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-omnipool/-/math-omnipool-0.0.4.tgz#877374f443b28144ab13ac311fe2183ea38455a9"
-  integrity sha512-RS2Kj9r8fKbnQUXoK77Swch7CK9+1dJWylLD7AavPLfN/1dO543OEy+J5OkN1uOT5XTI6d195ezcU8CyL2SA3Q==
+"@galacticcouncil/math-lbp@^0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-lbp/-/math-lbp-0.0.7.tgz#3982a11b57590f1b87f89ec7ab0b4ca87e49a596"
+  integrity sha512-lK/X1JCVu1q5slr8kWmDDrktGR+TD0gEM+wpeMRoXZdGZh00NzUCF47JaXSjnn1dAtjhOXRYbwhbaZPGfyP4nQ==
+
+"@galacticcouncil/math-omnipool@^0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-omnipool/-/math-omnipool-0.0.7.tgz#bd96f8bdba3e54bc8f2c0345b75f9e9831754cd2"
+  integrity sha512-CQri4ibga4SI5SVvsqhWV95eeAzuGDyS9U7cjE3QsXPV7sUl7tjkEz5+Xgwvf0FxqlPSb/u23xV6Z65qmfZDkw==
 
 "@galacticcouncil/math-xyk@^0.0.4":
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.0.4.tgz#208ea74df5ba8faa7df247b1b577baac2884534b"
   integrity sha512-NY9pjx1e9/lFR/BLK2eDOuBEaN2S4IYGUwKXztkVsUtDOvdMHtfQ5DWjv8hswLwDU/oijhb7D1LThZKRISm74Q==
 
+"@galacticcouncil/math-xyk@^0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.0.7.tgz#627d797c0e50737d7525dcb4dc99531835743652"
+  integrity sha512-bnW+EQmMUJp8/kRRuHIBuemV4Ehu/L81s8+Ujjh0H94mweqeDorfisATNvP4wI9PWm7FMGkp2BZdsoeGnEIYFQ==
+
 "@galacticcouncil/math@https://github.com/galacticcouncil/HydraDX-wasm#f5afe579bb8308eba1ba79501626e37f82c2c52b":
   version "0.0.4"
   resolved "https://github.com/galacticcouncil/HydraDX-wasm#f5afe579bb8308eba1ba79501626e37f82c2c52b"
 
-"@galacticcouncil/sdk@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-0.0.3.tgz#ade4fb3ae1ff3cbbb5bd689709ca3f4a0ada1239"
-  integrity sha512-+RQT9237InVLRhpI9bbiSZRURxfevWhxvpA/JWmzVuAf+DKVFnGkn7XhSvz/NIsXZxzy6NYmSVMz7Rg83o8rSw==
+"@galacticcouncil/sdk@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-0.0.5.tgz#8ccc971780deee08acb7ceb743633ba75cf61594"
+  integrity sha512-4u+wej5vRmuIf7YszW8esaqLQDpirhH5z39Ikz3C5lKSqv//aHjmRkhV+NP/En6IB/XuBWuXSaVVmM/TrK3NNA==
   dependencies:
-    "@galacticcouncil/math-lbp" "^0.0.4"
-    "@galacticcouncil/math-omnipool" "^0.0.4"
-    "@galacticcouncil/math-xyk" "^0.0.4"
-    "@polkadot/api" "^9.9.1"
+    "@galacticcouncil/math-lbp" "^0.0.7"
+    "@galacticcouncil/math-omnipool" "^0.0.7"
+    "@galacticcouncil/math-xyk" "^0.0.7"
     bignumber.js "^9.1.0"
-    capi "^0.1.0-beta.12"
     lodash.clonedeep "^4.5.0"
 
 "@galacticcouncil/ui@^1.0.40":
@@ -5499,14 +5502,6 @@
     pako "^2.0.4"
     websocket "^1.0.32"
 
-"@substrate/smoldot-light@0.7.6":
-  version "0.7.6"
-  resolved "https://registry.yarnpkg.com/@substrate/smoldot-light/-/smoldot-light-0.7.6.tgz#be28401529f2ed7f7661968531807bf96d3eb314"
-  integrity sha512-bpoUYfKtAn8BMzVY88F34CivU/uymKKvmqY3sQ2oSV5h71Cj6jREOknSgVVVwPk8BpUYlp8paYFbtuR4cQpVOA==
-  dependencies:
-    pako "^2.0.4"
-    ws "^8.8.1"
-
 "@substrate/smoldot-light@0.7.7":
   version "0.7.7"
   resolved "https://registry.yarnpkg.com/@substrate/smoldot-light/-/smoldot-light-0.7.7.tgz#ee5f89bb25af64d2014d97548b959b7da4c67f08"
@@ -7632,19 +7627,6 @@ canvas-renderer@~2.2.0:
   integrity sha512-RrBgVL5qCEDIXpJ6NrzyRNoTnXxYarqm/cS/W6ERhUJts5UQtt/XPEosGN3rqUkZ4fjBArlnCbsISJ+KCFnIAg==
   dependencies:
     "@types/node" "*"
-
-capi@^0.1.0-beta.12:
-  version "0.1.0-beta.22"
-  resolved "https://registry.yarnpkg.com/capi/-/capi-0.1.0-beta.22.tgz#c780a0eb24a42173e3c40a4157a759c87c32bbc6"
-  integrity sha512-4QlT8h6UR4Fy34JLttt6CH3gIi9+LaBOxkykXICkDYTaqOQoDglWfjN4HHZdjhL2bmD7f7x7p1optYihHWRdvQ==
-  dependencies:
-    "@deno/shim-deno-test" "~0.3.2"
-    "@substrate/smoldot-light" "0.7.6"
-    scale-codec "^0.9.1"
-    tslib "2.3.1"
-    wat-the-crypto "^0.0.1"
-    ws "^8.5.0"
-    zones "0.1.0-beta.13"
 
 capture-exit@^2.0.0:
   version "2.0.0"
@@ -14317,11 +14299,6 @@ sane@^4.0.3:
     minimist "^1.1.1"
     walker "~1.0.5"
 
-scale-codec@^0.9.1:
-  version "0.9.1"
-  resolved "https://registry.yarnpkg.com/scale-codec/-/scale-codec-0.9.1.tgz#b6d8d4edb88ef846ced601dff96f93b76c8b21b2"
-  integrity sha512-5Ni6sFvTkG2ijfWw8geP/B4rqXQVJrT2oAtlybdpXKz3CBsmEr5CgFeLItukHpUnb6VkLXWpyqQAL8hh698n0g==
-
 scheduler@^0.23.0:
   version "0.23.0"
   resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.23.0.tgz#ba8041afc3d30eb206a487b6b384002e4e61fdfe"
@@ -15342,11 +15319,6 @@ tsconfig-paths@^4.0.0:
     minimist "^1.2.6"
     strip-bom "^3.0.0"
 
-tslib@2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.3.1.tgz#e8a335add5ceae51aa261d32a490158ef042ef01"
-  integrity sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw==
-
 tslib@2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.4.0.tgz#7cecaa7f073ce680a05847aa77be941098f36dc3"
@@ -15885,11 +15857,6 @@ walker@^1.0.7, walker@~1.0.5:
   dependencies:
     makeerror "1.0.12"
 
-wat-the-crypto@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/wat-the-crypto/-/wat-the-crypto-0.0.1.tgz#755c27f29f674435012d3002790e6d50a42c4d36"
-  integrity sha512-FAbXr+wTYahT/xJT6xEggdK9TFxNTJZANjUsJoYrCCNWbPEXsUzDh/v0cruAzRWLclG2tQq3E0hJRarptFQjMA==
-
 watchpack-chokidar2@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/watchpack-chokidar2/-/watchpack-chokidar2-2.0.1.tgz#38500072ee6ece66f3769936950ea1771be1c957"
@@ -16182,10 +16149,15 @@ ws@7.4.6:
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
   integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==
 
-ws@^8.2.3, ws@^8.5.0, ws@^8.8.1:
+ws@^8.2.3:
   version "8.11.0"
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.11.0.tgz#6a0d36b8edfd9f96d8b25683db2f8d7de6e8e143"
   integrity sha512-HPG3wQd9sNQoT9xHyNCXoDUa+Xw/VevmY9FoHyQ+g+rrMn4j6FB4np7Z0OhdTgjx6MgQLK7jwSy1YecU1+4Asg==
+
+ws@^8.8.1:
+  version "8.12.0"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.12.0.tgz#485074cc392689da78e1828a9ff23585e06cddd8"
+  integrity sha512-kU62emKIdKVeEIOIKVegvqpXMSTAMLJozpHZaJNDYqBjzlSYXQGviYwN1osDLJ9av68qHd4a2oSjd7yD4pacig==
 
 x-default-browser@^0.4.0:
   version "0.4.0"
@@ -16286,14 +16258,6 @@ zod@^3.19.1:
   version "3.20.2"
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.20.2.tgz#068606642c8f51b3333981f91c0a8ab37dfc2807"
   integrity sha512-1MzNQdAvO+54H+EaK5YpyEy0T+Ejo/7YLHS93G3RnYWh5gaotGHwGeN/ZO687qEDU2y4CdStQYXVHIgrUl5UVQ==
-
-zones@0.1.0-beta.13:
-  version "0.1.0-beta.13"
-  resolved "https://registry.yarnpkg.com/zones/-/zones-0.1.0-beta.13.tgz#77627962623a56620ca570992eaa34e78f795072"
-  integrity sha512-dd59FEkYrKTb1lKehFy71zuexRHtEfttNtxrRBGrDTkwPwhkTkqkf792hqu1QEPgcJnwI0T0Cuc033uQymRnAQ==
-  dependencies:
-    "@deno/shim-deno-test" "~0.3.3"
-    tslib "2.3.1"
 
 zustand@^4.1.1:
   version "4.1.5"
