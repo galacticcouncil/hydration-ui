@@ -76,8 +76,6 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
     const stableAssetHubReserve = assetUsd.data.hubReserve.toString()
     const TVLCap = tvlCap.data.toString()
 
-    const isCap100Percent = getFloatingPointAmount(asset.data.cap, 18).eq(1)
-
     let capDifference = calculate_cap_difference(
       assetReserve,
       assetHubReserve,
