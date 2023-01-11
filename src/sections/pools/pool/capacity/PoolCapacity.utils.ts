@@ -85,19 +85,17 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
       totalHubReserve,
     )
 
-    if (isCap100Percent) {
-      const tvlCapDifference = calculate_tvl_cap_difference(
-        assetReserve,
-        assetHubReserve,
-        stableAssetReserve,
-        stableAssetHubReserve,
-        TVLCap,
-        totalHubReserve,
-      )
+    const tvlCapDifference = calculate_tvl_cap_difference(
+      assetReserve,
+      assetHubReserve,
+      stableAssetReserve,
+      stableAssetHubReserve,
+      TVLCap,
+      totalHubReserve,
+    )
 
-      if (new BN(tvlCapDifference).lt(new BN(capDifference)))
-        capDifference = tvlCapDifference
-    }
+    if (!new BN(0).eq(new BN(capDifference)))
+      capDifference = tvlCapDifference
 
     if (capDifference === "-1")
       return {
