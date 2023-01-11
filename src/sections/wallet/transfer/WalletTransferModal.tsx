@@ -31,12 +31,16 @@ export function WalletTransferModal(props: {
     <Modal
       open={props.open}
       onClose={props.onClose}
-      containerStyles={{
-        height: isDesktop ? "100vh" : "calc(100vh - 75px)",
-        "& > div": {
-          background: theme.gradients.background,
-        },
-      }}
+      containerStyles={
+        !isDesktop
+          ? {
+              height: "calc(100vh - 75px)",
+              "& > div": {
+                background: theme.gradients.background,
+              },
+            }
+          : undefined
+      }
       withoutClose={!isDesktop}
       topContent={
         <STopContentContainer>

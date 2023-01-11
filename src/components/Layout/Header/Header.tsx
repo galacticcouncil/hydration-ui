@@ -12,6 +12,7 @@ import { Spinner } from "components/Spinner/Spinner.styled"
 
 export const Header = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isMediumMedia = useMedia(theme.viewport.lt.md)
   const { setSidebar, toasts } = useToast()
   const { t } = useTranslation()
 
@@ -21,7 +22,11 @@ export const Header = () => {
     <SHeader>
       <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
         <div sx={{ flex: "row", align: "center" }}>
-          <Icon icon={isDesktop ? <HydraLogoFull /> : <HydraLogo />} />
+          <Icon
+            icon={
+              isDesktop && !isMediumMedia ? <HydraLogoFull /> : <HydraLogo />
+            }
+          />
           {isDesktop && <HeaderMenu />}
         </div>
         <div sx={{ flex: "row", align: "center", gap: [12, 24] }}>
