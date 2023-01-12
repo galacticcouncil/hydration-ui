@@ -63,7 +63,7 @@
   "liquidity.asset.positions.position.amount": "Amount",
   "liquidity.asset.positions.position.title": "Liquidity position #{{ index }}",
   "liquidity.asset.positions.position.shares": "{{ shares, bignumber(type: 'token') }} asset shares",
-  "liquidity.asset.capacity": "<0>Estimated capacity for this asset:</0> <1>{{ filled, compact }} / {{ capacity, compact }} {{ symbol }}</1>",
+  "liquidity.asset.capacity": "<0>Current capacity for this asset:</0> <1>{{ filled, compact }} / {{ capacity, compact }} {{ symbol }}</1>",
   "liquidity.add.modal.title": "Add liquidity",
   "liquidity.add.modal.row.transactionCostValue": "≈ {{ amount, bignumber }} {{ symbol }}",
   "liquidity.add.modal.confirmButton": "Add liquidity",
