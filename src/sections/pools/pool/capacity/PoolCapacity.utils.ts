@@ -76,23 +76,30 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
     const stableAssetHubReserve = assetUsd.data.hubReserve.toString()
     const TVLCap = tvlCap.data.toString()
 
-    let assetCapDifference = calculate_cap_difference(
+    const isCap100Percent = getFloatingPointAmount(asset.data.cap, 18).eq(1)
+
+    let capDifference = calculate_cap_difference(
       assetReserve,
       assetHubReserve,
       assetCap,
       totalHubReserve,
     )
 
-    const tvlCapDifference = calculate_tvl_cap_difference(
-      assetReserve,
-      assetHubReserve,
-      stableAssetReserve,
-      stableAssetHubReserve,
-      TVLCap,
-      totalHubReserve,
-    )
+    if (isCap100Percent) {
+      const tvlCapDifference = calculate_tvl_cap_difference(
+        assetReserve,
+        assetHubReserve,
+        stableAssetReserve,
+        stableAssetHubReserve,
+        TVLCap,
+        totalHubReserve,
+      )
 
-    if (assetCapDifference === "-1")
+      if (new BN(tvlCapDifference).lt(new BN(capDifference)))
+        capDifference = tvlCapDifference
+    }
+
+    if (capDifference === "-1")
       return {
         capacity: BN_NAN,
         filled: BN_NAN,
@@ -101,14 +108,14 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
       }
 
     const capacity = getFloatingPointAmount(
-      assetBalance.data.balance.plus(new BN(tvlCapDifference)).times(getFloatingPointAmount(assetCap, 18)),
+      assetBalance.data.balance.plus(new BN(capDifference)),
       meta.data?.decimals.toNumber() ?? 12,
     )
     const filled = getFloatingPointAmount(
       assetBalance.data.balance,
       meta.data?.decimals.toNumber() ?? 12,
     )
-    const filledPercent = filled.div(BN.max(capacity, filled)).times(100)
+    const filledPercent = filled.div(capacity).times(100)
 
     return { capacity, filled, filledPercent, symbol }
   }, [apiIds.data, assets.data, balances, meta.data, pool.id, tvlCap.data])
