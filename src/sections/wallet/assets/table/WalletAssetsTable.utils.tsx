@@ -116,7 +116,7 @@ export const useAssetsTable = (
           }
           couldBeSetAsPaymentFee={row.original.couldBeSetAsPaymentFee}
           onBuyClick={
-            row.original.inTradeRouter && row.original.symbol !== 'LRNA'
+            row.original.inTradeRouter && row.original.symbol !== "LRNA"
               ? () =>
                   navigate({
                     to: "/trade",
