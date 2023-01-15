@@ -116,7 +116,8 @@ export const useAssetsTable = (
           }
           couldBeSetAsPaymentFee={row.original.couldBeSetAsPaymentFee}
           onBuyClick={
-            row.original.inTradeRouter && row.original.symbol !== 'LRNA'
+            row.original.tradability.inTradeRouter &&
+            row.original.tradability.canBuy
               ? () =>
                   navigate({
                     to: "/trade",
@@ -125,7 +126,8 @@ export const useAssetsTable = (
               : undefined
           }
           onSellClick={
-            row.original.inTradeRouter
+            row.original.tradability.inTradeRouter &&
+            row.original.tradability.canSell
               ? () =>
                   navigate({
                     to: "/trade",
@@ -171,8 +173,14 @@ export type AssetsTableData = {
   reserved: BN
   reservedUSD: BN
   origin: string
-  inTradeRouter: boolean
   assetType: PalletAssetRegistryAssetType["type"]
   couldBeSetAsPaymentFee: boolean
   isPaymentFee: boolean
+  tradability: {
+    inTradeRouter: boolean
+    canBuy: boolean
+    canSell: boolean
+    canAddLiquidity: boolean
+    canRemoveLiquidity: boolean
+  }
 }
