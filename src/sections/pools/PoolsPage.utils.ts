@@ -7,18 +7,13 @@ import { u32 } from "@polkadot/types-codec"
 import { useTokensBalances } from "api/balances"
 import { useSpotPrices } from "api/spotPrice"
 import { getFloatingPointAmount } from "utils/balance"
-import {
-  is_add_liquidity_allowed,
-  is_buy_allowed,
-  is_remove_liquidity_allowed,
-  is_sell_allowed,
-} from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { useApiIds } from "api/consts"
 import { useAssetDetailsList } from "api/assetDetails"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useUniques } from "api/uniques"
 import { useAccountStore } from "state/store"
+import { useAssetsTradability } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 
 export const useOmnipoolPools = (withPositions?: boolean) => {
   const { account } = useAccountStore()
@@ -30,6 +25,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     assets.data?.map((a) => a.id) ?? [],
     apiIds.data?.usdId,
   )
+  const assetsTradability = useAssetsTradability()
   const balances = useTokensBalances(
     assets.data?.map((a) => a.id) ?? [],
     OMNIPOOL_ACCOUNT_ADDRESS,
@@ -48,6 +44,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     metas,
     apiIds,
     uniques,
+    assetsTradability,
     ...positions,
     ...spotPrices,
     ...balances,
@@ -60,6 +57,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
       !assetDetails.data ||
       !metas.data ||
       !apiIds.data ||
+      !assetsTradability.data ||
       spotPrices.some((q) => !q.data) ||
       balances.some((q) => !q.data) ||
       positions.some((q) => !q.data)
@@ -80,6 +78,15 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
         const balance = balances.find(
           (b) => b.data?.assetId.toString() === asset.id.toString(),
         )?.data?.balance
+        const tradabilityData = assetsTradability.data?.find(
+          (t) => t.id === asset.id.toString(),
+        )
+        const tradability = {
+          canBuy: !!tradabilityData?.canBuy,
+          canSell: !!tradabilityData?.canSell,
+          canAddLiquidity: !!tradabilityData?.canAddLiquidity,
+          canRemoveLiquidity: !!tradabilityData?.canRemoveLiquidity,
+        }
 
         const id = asset.id
         const symbol = meta?.symbol ?? "N/A"
@@ -92,11 +99,6 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
         )
         const totalUSD = !spotPrice ? BN_NAN : total.times(spotPrice)
 
-        const bits = asset.data.tradable.bits.toNumber()
-        const canSell = is_sell_allowed(bits)
-        const canBuy = is_buy_allowed(bits)
-        const canAddLiquidity = is_add_liquidity_allowed(bits)
-        const canRemoveLiquidity = is_remove_liquidity_allowed(bits)
         const hasPositions = positions.some(
           (p) => p.data?.assetId.toString() === id.toString(),
         )
@@ -108,10 +110,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
           tradeFee,
           total,
           totalUSD,
-          canSell,
-          canBuy,
-          canAddLiquidity,
-          canRemoveLiquidity,
+          tradability,
           hasPositions,
         }
       })
@@ -126,6 +125,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     spotPrices,
     balances,
     positions,
+    assetsTradability.data,
   ])
 
   const data = useMemo(
@@ -143,9 +143,11 @@ export type OmnipoolPool = {
   tradeFee: BN
   total: BN
   totalUSD: BN
-  canSell: boolean
-  canBuy: boolean
-  canAddLiquidity: boolean
-  canRemoveLiquidity: boolean
+  tradability: {
+    canSell: boolean
+    canBuy: boolean
+    canAddLiquidity: boolean
+    canRemoveLiquidity: boolean
+  }
   hasPositions: boolean
 }
