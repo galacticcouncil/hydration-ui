@@ -15,6 +15,13 @@ import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useTokensLocks } from "api/balances"
 import { useAcceptedCurrencies, useAccountCurrency } from "api/payments"
 import { useApiIds } from "api/consts"
+import { useHubAssetTradability, useOmnipoolAssets } from "api/omnipool"
+import {
+  is_buy_allowed,
+  is_sell_allowed,
+  is_add_liquidity_allowed,
+  is_remove_liquidity_allowed,
+} from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
 
 export const useAssetsTableData = () => {
   const { account } = useAccountStore()
@@ -30,12 +37,14 @@ export const useAssetsTableData = () => {
   const assetMetadata = useAssetMetaList(
     assetDetails.data?.map((ad) => ad.id.toString()) ?? [],
   )
+  const assetsTradability = useAssetsTradability()
 
   const queries = [
     assetDetails,
     balances,
     accountCurrency,
     assetMetadata,
+    assetsTradability,
     ...acceptedCurrenciesQuery,
   ]
   const isLoading = queries.some((q) => q.isLoading)
@@ -47,6 +56,7 @@ export const useAssetsTableData = () => {
       !assetMetadata.data ||
       !balances.data ||
       !tradeAssets.data ||
+      !assetsTradability.data ||
       acceptedCurrenciesQuery.some((q) => !q.data)
     )
       return []
@@ -66,16 +76,27 @@ export const useAssetsTableData = () => {
       const balance = balances.data?.find(
         (b) => b.id.toString() === asset.id.toString(),
       )
-
       const metadata = assetMetadata.data?.find(
         (a) => a.id.toString() === asset.id.toString(),
       )
-
       const couldBeSetAsPaymentFee = acceptedCurrencies.some(
         (currency) =>
           currency.id === asset.id?.toString() &&
           currency.id !== accountCurrency.data,
       )
+
+      const tradabilityData = assetsTradability.data?.find(
+        (t) => t.id === asset.id.toString(),
+      )
+      const inTradeRouter =
+        tradeAssets.data.find((i) => i.id === asset.id?.toString()) != null
+      const tradability = {
+        canBuy: !!tradabilityData?.canBuy,
+        canSell: !!tradabilityData?.canSell,
+        canAddLiquidity: !!tradabilityData?.canAddLiquidity,
+        canRemoveLiquidity: !!tradabilityData?.canRemoveLiquidity,
+        inTradeRouter,
+      }
 
       return {
         id: asset.id?.toString(),
@@ -83,8 +104,6 @@ export const useAssetsTableData = () => {
         name: asset.name || getAssetName(metadata?.symbol),
         transferable: balance?.transferable ?? BN_0,
         transferableUSD: balance?.transferableUSD ?? BN_0,
-        inTradeRouter:
-          tradeAssets.data.find((i) => i.id === asset.id?.toString()) != null,
         total: balance?.total ?? BN_0,
         totalUSD: balance?.totalUSD ?? BN_0,
         lockedMax: balance?.lockedMax ?? BN_0,
@@ -99,6 +118,7 @@ export const useAssetsTableData = () => {
         assetType: asset.assetType,
         isPaymentFee: asset.id?.toString() === accountCurrency.data,
         couldBeSetAsPaymentFee,
+        tradability,
       }
     })
 
@@ -110,10 +130,11 @@ export const useAssetsTableData = () => {
   }, [
     isLoading,
     assetDetails.data,
+    assetMetadata.data,
     balances.data,
     tradeAssets.data,
+    assetsTradability.data,
     acceptedCurrenciesQuery,
-    assetMetadata.data,
     accountCurrency.data,
   ])
 
@@ -321,4 +342,46 @@ type AssetsTableDataBalances = {
   lockedDemocracyUSD: BN
   reserved: BN
   reservedUSD: BN
+}
+
+export const useAssetsTradability = () => {
+  const assets = useOmnipoolAssets()
+  const hubTradability = useHubAssetTradability()
+  const apiIds = useApiIds()
+
+  const queries = [assets, hubTradability, apiIds]
+  const isLoading = queries.some((q) => q.isLoading)
+  const isInitialLoading = queries.some((q) => q.isInitialLoading)
+
+  const data = useMemo(() => {
+    if (!assets.data || !hubTradability.data || !apiIds.data) return undefined
+
+    const results = assets.data.map((asset) => {
+      const id = asset.id.toString()
+      const bits = asset.data.tradable.bits.toNumber()
+      const canBuy = is_buy_allowed(bits)
+      const canSell = is_sell_allowed(bits)
+      const canAddLiquidity = is_add_liquidity_allowed(bits)
+      const canRemoveLiquidity = is_remove_liquidity_allowed(bits)
+
+      return { id, canBuy, canSell, canAddLiquidity, canRemoveLiquidity }
+    })
+
+    const hubBits = hubTradability.data.bits.toNumber()
+    const canBuyHub = is_buy_allowed(hubBits)
+    const canSellHub = is_sell_allowed(hubBits)
+    const canAddLiquidityHub = is_add_liquidity_allowed(hubBits)
+    const canRemoveLiquidityHub = is_remove_liquidity_allowed(hubBits)
+    const hubResult = {
+      id: apiIds.data.hubId,
+      canBuy: canBuyHub,
+      canSell: canSellHub,
+      canAddLiquidity: canAddLiquidityHub,
+      canRemoveLiquidity: canRemoveLiquidityHub,
+    }
+
+    return [...results, hubResult]
+  }, [assets, hubTradability, apiIds])
+
+  return { data, isLoading, isInitialLoading }
 }
