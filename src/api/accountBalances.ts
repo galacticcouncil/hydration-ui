@@ -14,7 +14,7 @@ export const useAccountBalances = (id: Maybe<AccountId32 | string>) => {
   )
 }
 
-const getAccountBalances =
+export const getAccountBalances =
   (api: ApiPromise, accountId: AccountId32 | string) => async () => {
     const [tokens, native] = await Promise.all([
       api.query.tokens.accounts.entries(accountId),

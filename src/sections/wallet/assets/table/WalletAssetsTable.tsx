@@ -24,12 +24,15 @@ import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModa
 import { theme } from "theme"
 import { WalletAssetsTableActionsMob } from "./actions/WalletAssetsTableActionsMob"
 
-type Props = { data: AssetsTableData[] }
+type Props = {
+  data: AssetsTableData[]
+  showAll: boolean
+  setShowAll: (value: boolean) => void
+}
 
-export const WalletAssetsTable = ({ data }: Props) => {
+export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
   const { t } = useTranslation()
   const [row, setRow] = useState<AssetsTableData | undefined>(undefined)
-  const [showAll, setShowAll] = useState(false)
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)

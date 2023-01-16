@@ -7,9 +7,8 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useState } from "react"
-import { useSetAsFeePayment } from "api/payments"
 import {
   WalletAssetsTableBalance,
   WalletAssetsTableName,
@@ -28,7 +27,6 @@ export const useAssetsTable = (
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<AssetsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
-  const setFeeAsPayment = useSetAsFeePayment()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
@@ -74,46 +72,6 @@ export const useAssetsTable = (
       id: "actions",
       cell: ({ row }) => (
         <WalletAssetsTableActions
-          onSetFeeAsPaymentClick={() =>
-            setFeeAsPayment(row.original.id, {
-              onLoading: (
-                <Trans
-                  t={t}
-                  i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
-                  tOptions={{
-                    asset: row.original.symbol,
-                  }}
-                >
-                  <span />
-                  <span className="highlight" />
-                </Trans>
-              ),
-              onSuccess: (
-                <Trans
-                  t={t}
-                  i18nKey="wallet.assets.table.actions.payment.toast.onSuccess"
-                  tOptions={{
-                    asset: row.original.symbol,
-                  }}
-                >
-                  <span />
-                  <span className="highlight" />
-                </Trans>
-              ),
-              onError: (
-                <Trans
-                  t={t}
-                  i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
-                  tOptions={{
-                    asset: row.original.symbol,
-                  }}
-                >
-                  <span />
-                  <span className="highlight" />
-                </Trans>
-              ),
-            })
-          }
           couldBeSetAsPaymentFee={row.original.couldBeSetAsPaymentFee}
           onBuyClick={
             row.original.tradability.inTradeRouter &&
@@ -139,6 +97,7 @@ export const useAssetsTable = (
           isExpanded={row.getIsSelected()}
           onTransferClick={() => actions.onTransfer(row.original.id)}
           symbol={row.original.symbol}
+          id={row.original.id}
         />
       ),
     }),
