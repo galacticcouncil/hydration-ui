@@ -11,5 +11,6 @@ declare module "@polkadot/types-codec/abstract" {
 declare global {
   interface Window {
     injectedWeb3?: Record<string, InjectedWindowProvider>
+    walletExtension?: { isNovaWallet?: boolean }
   }
 }
