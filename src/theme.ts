@@ -59,6 +59,7 @@ const colors = {
   graySoft: "#EBEBEB",
   whiteish500: "#878C9E",
   alpha0: "#9EA7BA",
+  primaryA0: "#546380",
   primaryA15: "#4CD5F3",
   primaryA20: "#25CBFF",
   primaryA06: "#DAFFEE",

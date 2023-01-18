@@ -30,12 +30,12 @@ export const LiquidityPosition = ({ position, index, onSuccess }: Props) => {
   return (
     <SContainer>
       <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
-        <div sx={{ flex: "row", gap: 7, align: "center", ml: "-25px" }}>
+        <div sx={{ flex: "row", gap: 7, align: "center", ml: [0, "-25px"] }}>
           <Icon
             icon={getAssetLogo(position.symbol)}
             sx={{ width: 18, height: "fit-content" }}
           />
-          <Text fs={[18, 18]}>
+          <Text fs={[14, 18]} color={["white", "basic100"]}>
             {t("liquidity.asset.positions.position.title", { index })}
           </Text>
         </div>
