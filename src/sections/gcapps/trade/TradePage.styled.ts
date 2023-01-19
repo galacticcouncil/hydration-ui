@@ -7,4 +7,9 @@ export const SContainer = styled.div`
   @media (${theme.viewport.gte.sm}) {
     margin: unset;
   }
+
+  @media (${theme.viewport.lt.xs}) {
+    flex: 1;
+    background: #111320;
+  }
 `
