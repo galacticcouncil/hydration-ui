@@ -40,16 +40,16 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
       (a) => a.id.toString() === pool.id.toString(),
     )
     const assetUsd = assets.data.find(
-      (a) => a.id.toString() === apiIds.data.usdId.toString(),
+      (a) => a.id.toString() === apiIds.data?.usdId.toString(),
     )
     const assetBalance = balances.find(
       (b) => b.data?.assetId.toString() === pool.id.toString(),
     )
     const hubBalance = balances.find(
-      (b) => b.data?.assetId.toString() === apiIds.data.hubId.toString(),
+      (b) => b.data?.assetId.toString() === apiIds.data?.hubId.toString(),
     )
     const usdBalance = balances.find(
-      (b) => b.data?.assetId.toString() === apiIds.data.usdId.toString(),
+      (b) => b.data?.assetId.toString() === apiIds.data?.usdId.toString(),
     )
     const symbol = meta.data?.symbol ?? "N/A"
 

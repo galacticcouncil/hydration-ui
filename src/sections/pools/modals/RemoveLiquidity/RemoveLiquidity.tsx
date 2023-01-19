@@ -11,21 +11,20 @@ import { FormValues } from "utils/helpers"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
 import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-
 import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
 } from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
-import { useOmnipoolAssets, useOmnipoolFee } from "../../../../api/omnipool"
-import { useTokenBalance } from "../../../../api/balances"
-import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "../../../../utils/api"
-import { BN_10 } from "../../../../utils/constants"
-import { useAssetMetaList } from "../../../../api/assetMeta"
-import { useApiIds } from "../../../../api/consts"
+import { useOmnipoolAssets, useOmnipoolFee } from "api/omnipool"
+import { useTokenBalance } from "api/balances"
+import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
+import { BN_10 } from "utils/constants"
+import { useAssetMetaList } from "api/assetMeta"
+import { useApiIds } from "api/consts"
 import BN from "bignumber.js"
-import { getFloatingPointAmount } from "utils/balance"
-import { useStore } from "../../../../state/store"
 import BigNumber from "bignumber.js"
+import { getFloatingPointAmount } from "utils/balance"
+import { useStore } from "state/store"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
@@ -162,7 +161,7 @@ export const RemoveLiquidity = ({
   const handleSubmit = async (values: FormValues<typeof form>) => {
     const value = position.shares.div(100).times(values.value)
 
-    if (!(removeLiquidityValues && lrnaMeta && meta)) return
+    if (!(api && removeLiquidityValues && lrnaMeta && meta)) return
 
     const lrnaAsBigNumber = new BigNumber(removeLiquidityValues.lrna)
 

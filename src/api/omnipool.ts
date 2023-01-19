@@ -28,7 +28,11 @@ export const useOmnipoolAssets = () => {
 
 export const useHubAssetTradability = () => {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.hubAssetTradability, getHubAssetTradability(api))
+  return useQuery(
+    QUERY_KEYS.hubAssetTradability,
+    !!api ? getHubAssetTradability(api) : undefinedNoop,
+    { enabled: !!api },
+  )
 }
 
 export const getHubAssetTradability = (api: ApiPromise) => async () =>
@@ -57,8 +61,8 @@ export const useOmnipoolPositions = (itemIds: u128[]) => {
   return useQueries({
     queries: itemIds.map((id) => ({
       queryKey: QUERY_KEYS.omnipoolPosition(id),
-      queryFn: getOmnipoolPosition(api, id),
-      enabled: !!itemIds.length,
+      queryFn: !!api ? getOmnipoolPosition(api, id) : undefinedNoop,
+      enabled: !!api && !!itemIds.length,
     })),
   })
 }

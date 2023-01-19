@@ -66,7 +66,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
 
     const rows: OmnipoolPool[] = assets.data
       .map((asset) => {
-        const details = assetDetails.data.find(
+        const details = assetDetails.data?.find(
           (d) => d.id.toString() === asset.id.toString(),
         )
         const meta = metas.data?.find(

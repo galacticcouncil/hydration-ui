@@ -29,7 +29,9 @@ export const getApiIds = (api: ApiPromise) => async () => {
 export const useTVLCap = () => {
   const api = useApiPromise()
 
-  return useQuery(QUERY_KEYS.tvlCap, getTvlCap(api))
+  return useQuery(QUERY_KEYS.tvlCap, !!api ? getTvlCap(api) : undefinedNoop, {
+    enabled: !!api,
+  })
 }
 
 export const getTvlCap = (api: ApiPromise) => async () => {

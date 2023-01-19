@@ -66,10 +66,10 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
         [] as OmnipoolPosition[],
       )
       .map((position) => {
-        const meta = metas.data.find(
+        const meta = metas.data?.find(
           (m) => m.id.toString() === position.assetId.toString(),
         )
-        const omnipoolAsset = omnipoolAssets.data.find(
+        const omnipoolAsset = omnipoolAssets.data?.find(
           (a) => a.id.toString() === position.assetId.toString(),
         )
         const omnipoolBalance = omnipoolBalances.find(
