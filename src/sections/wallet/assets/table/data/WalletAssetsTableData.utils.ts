@@ -89,7 +89,7 @@ export const useAssetsTableData = () => {
         (t) => t.id === asset.id.toString(),
       )
       const inTradeRouter =
-        tradeAssets.data.find((i) => i.id === asset.id?.toString()) != null
+        tradeAssets.data?.find((i) => i.id === asset.id?.toString()) != null
       const tradability = {
         canBuy: !!tradabilityData?.canBuy,
         canSell: !!tradabilityData?.canSell,
