@@ -9,7 +9,12 @@ export const SContainer = styled.div`
   }
 
   @media (${theme.viewport.lt.xs}) {
+    display: flex;
     flex: 1;
     background: #111320;
+
+    gc-xcm-app {
+      flex: 1;
+    }
   }
 `
