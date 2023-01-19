@@ -58,13 +58,10 @@ export const useOmnipoolFee = () => {
 }
 
 export const getOmnipoolFee = (api: ApiPromise) => async () => {
-  const [assetFee, protocolFee] = await Promise.all([
-    api.consts.omnipool.assetFee,
-    api.consts.omnipool.protocolFee,
-  ])
+  const assetFee = await api.consts.omnipool.assetFee
 
   return {
-    fee: assetFee.toBigNumber().plus(protocolFee.toBigNumber()).div(10000),
+    fee: assetFee.toBigNumber().div(10000),
   }
 }
 

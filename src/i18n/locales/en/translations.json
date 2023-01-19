@@ -68,6 +68,7 @@
   "liquidity.add.modal.row.transactionCostValue": "≈ {{ amount, bignumber }} {{ symbol }}",
   "liquidity.add.modal.confirmButton": "Add liquidity",
   "liquidity.add.modal.positionDetails": "Position details",
+  "liquidity.add.modal.lpFee": "LP fee:",
   "liquidity.add.modal.receive": "Received amount of asset shares:",
   "liquidity.add.modal.warning": "You will receive an NFT representing this liquidity position in your wallet.",
   "liquidity.add.modal.warningLimit": "The amount of liquidity you wish to provide exceeds the maximum allowed capacity for this asset.",

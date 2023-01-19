@@ -192,7 +192,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
             }}
           >
             <Text color="basic300" fs={14}>
-              {t("liquidity.asset.liquidity.assetFees")}
+              {t("liquidity.add.modal.lpFee")}
             </Text>
             <Text fs={14} color="white">
               {t("value.percentage", { value: omnipoolFee?.fee })}
