@@ -12,6 +12,8 @@ import {
   SSwitchText,
 } from "./WalletConnectActiveFooter.styled"
 import { getWalletBySource } from "@talismn/connect-wallets"
+import { useMedia } from "react-use"
+import { getWalletMeta } from "./WalletConnectModal.utils"
 
 export function WalletConnectActiveFooter(props: {
   account: Account | undefined
@@ -21,6 +23,9 @@ export function WalletConnectActiveFooter(props: {
 }) {
   const { t } = useTranslation()
   const wallet = getWalletBySource(props.provider)
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isNovaWallet = window.walletExtension?.isNovaWallet || !isDesktop
+  const walletMeta = getWalletMeta(wallet, isNovaWallet)
 
   return (
     <SContainer>
@@ -41,13 +46,13 @@ export function WalletConnectActiveFooter(props: {
         <div sx={{ flex: "row", gap: 22, align: "center" }}>
           <div sx={{ flex: "row", gap: 12, align: "center" }}>
             <img
-              src={wallet?.logo.src}
-              alt={wallet?.logo.alt}
+              src={walletMeta?.logo.src}
+              alt={walletMeta?.logo.alt}
               width={30}
               height={30}
             />
             <Text fs={14} fw={600} css={{ color: theme.colors.basic500 }}>
-              {wallet?.title}
+              {walletMeta?.title}
             </Text>
           </div>
           <SSwitchText fs={14} fw={500}>

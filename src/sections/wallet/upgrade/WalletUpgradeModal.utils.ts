@@ -61,7 +61,7 @@ export const useUpdateMetadataMutation = () => {
       return {
         currVersion: known?.specVersion.toString(),
         nextVersion: api.runtimeVersion.specVersion?.toString(),
-        needsUpdate,
+        needsUpdate: !window.walletExtension?.isNovaWallet && needsUpdate,
       }
     },
     { enabled: account != null },

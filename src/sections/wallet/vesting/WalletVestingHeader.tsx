@@ -73,7 +73,10 @@ export const WalletVestingHeader = () => {
             }}
             css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }}
           >
-            {t("value.usd", { amount: totalVestedUSD })}
+            {t("value.usd", {
+              amount: totalVestedUSD,
+              fixedPointScale: nativeAsset?.decimals ?? 12,
+            })}
           </Text>
         </div>
       </div>
