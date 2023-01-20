@@ -1962,10 +1962,10 @@
     lightweight-charts "^3.8.0"
     short-uuid "^4.2.0"
 
-"@galacticcouncil/bridge@^0.0.1-rc22":
-  version "0.0.1-rc22"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.1-rc22.tgz#cd69800a1d33f65495c79deb0f3f989060256446"
-  integrity sha512-GQj8nNfVrEFzSFE540D2z3mTSh368SuY98Oa6uQ48mKHWTedLtms2HLK8u4EP1cD/iD66tt+Nn/cFyiz93mUZg==
+"@galacticcouncil/bridge@^0.0.1-rc24":
+  version "0.0.1-rc24"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.1-rc24.tgz#e1266c48ef7819fb574ae440db04e6a67c19b2d7"
+  integrity sha512-xOdibNJTRuAnAXyAKNMpB+of+UFOCPvMcUwSuN7zXixuBfBxDWxUlb6InJyOcpy57JtkwIWbE8U+BWJBLMXqfQ==
   dependencies:
     "@acala-network/api" "4.1.8-9"
     "@acala-network/sdk" "4.1.8-9"
