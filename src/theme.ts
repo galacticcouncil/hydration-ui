@@ -59,6 +59,7 @@ const colors = {
   graySoft: "#EBEBEB",
   whiteish500: "#878C9E",
   alpha0: "#9EA7BA",
+  primaryA0: "#546380",
   primaryA15: "#4CD5F3",
   primaryA20: "#25CBFF",
   primaryA06: "#DAFFEE",
@@ -98,6 +99,7 @@ const zIndices = {
 } as const
 
 const breakpoints = {
+  xs: 520,
   sm: 768,
   md: 1024,
   lg: 1440,

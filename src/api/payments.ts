@@ -9,17 +9,18 @@ import { u32 } from "@polkadot/types-codec"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { usePaymentInfo } from "./transaction"
 
-const getAcceptedCurrency = (api: ApiPromise, id: u32 | string) => async () => {
-  const normalizedId = normalizeId(id)
-  const result = await api.query.multiTransactionPayment.acceptedCurrencies(
-    normalizedId,
-  )
+export const getAcceptedCurrency =
+  (api: ApiPromise, id: u32 | string) => async () => {
+    const normalizedId = normalizeId(id)
+    const result = await api.query.multiTransactionPayment.acceptedCurrencies(
+      normalizedId,
+    )
 
-  return {
-    id: normalizedId,
-    accepted: !result.isEmpty,
+    return {
+      id: normalizedId,
+      accepted: !result.isEmpty,
+    }
   }
-}
 
 export const useAcceptedCurrencies = (ids: Maybe<string | u32>[]) => {
   const api = useApiPromise()
@@ -61,7 +62,7 @@ export const useSetAsFeePayment = () => {
   }
 }
 
-const getAccountCurrency =
+export const getAccountCurrency =
   (api: ApiPromise, address: string | AccountId32) => async () => {
     const result = await api.query.multiTransactionPayment.accountCurrencyMap(
       address,

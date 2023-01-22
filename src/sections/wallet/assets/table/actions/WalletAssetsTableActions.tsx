@@ -9,23 +9,25 @@ import { ReactComponent as DollarIcon } from "assets/icons/DollarIcon.svg"
 import { ButtonTransparent } from "components/Button/Button"
 import { Dropdown } from "components/Dropdown/Dropdown"
 import { TableAction } from "components/Table/Table"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { isNotNil } from "utils/helpers"
+import { useSetAsFeePayment } from "api/payments"
 
 type Props = {
   toggleExpanded: () => void
   symbol: string
+  id: string
   onBuyClick: (() => void) | undefined
   onSellClick: (() => void) | undefined
   onTransferClick: () => void
-  onSetFeeAsPaymentClick: () => void
   couldBeSetAsPaymentFee: boolean
   isExpanded: boolean
 }
 
 export const WalletAssetsTableActions = (props: Props) => {
   const { t } = useTranslation()
+  const setFeeAsPayment = useSetAsFeePayment()
 
   const actionItems = [
     /*{
@@ -79,7 +81,44 @@ export const WalletAssetsTableActions = (props: Props) => {
           items={actionItems}
           onSelect={(item) => {
             if (item === "setAsFeePayment") {
-              props.onSetFeeAsPaymentClick()
+              setFeeAsPayment(props.id, {
+                onLoading: (
+                  <Trans
+                    t={t}
+                    i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
+                    tOptions={{
+                      asset: props.symbol,
+                    }}
+                  >
+                    <span />
+                    <span className="highlight" />
+                  </Trans>
+                ),
+                onSuccess: (
+                  <Trans
+                    t={t}
+                    i18nKey="wallet.assets.table.actions.payment.toast.onSuccess"
+                    tOptions={{
+                      asset: props.symbol,
+                    }}
+                  >
+                    <span />
+                    <span className="highlight" />
+                  </Trans>
+                ),
+                onError: (
+                  <Trans
+                    t={t}
+                    i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
+                    tOptions={{
+                      asset: props.symbol,
+                    }}
+                  >
+                    <span />
+                    <span className="highlight" />
+                  </Trans>
+                ),
+              })
             }
           }}
         >

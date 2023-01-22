@@ -16,7 +16,7 @@ import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
 } from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
-import { useOmnipoolAssets, useOmnipoolFee } from "../../../../api/omnipool"
+import { useOmnipoolAssets } from "../../../../api/omnipool"
 import { useTokenBalance } from "../../../../api/balances"
 import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "../../../../utils/api"
 import { BN_10 } from "../../../../utils/constants"
@@ -112,7 +112,6 @@ export const RemoveLiquidity = ({
   const { t } = useTranslation()
   const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
 
-  const { data: omnipoolFee } = useOmnipoolFee()
   const api = useApiPromise()
   const { createTransaction } = useStore()
 
@@ -294,23 +293,6 @@ export const RemoveLiquidity = ({
               })}
             />
           </STradingPairContainer>
-
-          <div
-            sx={{
-              flex: "row",
-              justify: "space-between",
-              mt: 12,
-              mb: 45,
-              mx: 20,
-            }}
-          >
-            <Text color="darkBlue300" fs={14}>
-              {t("liquidity.asset.liquidity.assetFees")}
-            </Text>
-            <Text fs={14} color="graySoft">
-              {t("value.percentage", { value: omnipoolFee?.fee })}
-            </Text>
-          </div>
         </div>
         <Button variant="primary">{t("liquidity.remove.modal.confirm")}</Button>
       </form>
