@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { UseMutationResult } from "@tanstack/react-query"
 import { useToast } from "state/toasts"
 import { ToastMessage } from "state/store"
+import { getTransactionLink } from "../../api/transaction"
 
 export function ReviewTransactionToast<
   TData = unknown,
@@ -11,6 +12,7 @@ export function ReviewTransactionToast<
   TContext = unknown,
 >(props: {
   id: string
+  hash: string
   mutation: UseMutationResult<TData, TError, TVariables, TContext>
   onReview?: () => void
   onClose?: () => void
@@ -37,6 +39,7 @@ export function ReviewTransactionToast<
         title: props.toastMessage?.onSuccess ?? (
           <p>{t("liquidity.reviewTransaction.toast.success")}</p>
         ),
+        link: getTransactionLink(props.hash),
       })
 
       closeRef.current?.()
@@ -48,6 +51,7 @@ export function ReviewTransactionToast<
         title: props.toastMessage?.onError ?? (
           <p>{t("liquidity.reviewTransaction.toast.error")}</p>
         ),
+        link: getTransactionLink(props.hash),
       })
     }
 
@@ -56,13 +60,14 @@ export function ReviewTransactionToast<
         title: props.toastMessage?.onLoading ?? (
           <p>{t("liquidity.reviewTransaction.toast.pending")}</p>
         ),
+        link: getTransactionLink(props.hash),
       })
     }
 
     return () => {
       if (toRemoveId) toastRef.current.remove(toRemoveId)
     }
-  }, [t, props.toastMessage, isError, isSuccess, isLoading])
+  }, [t, props.toastMessage, isError, isSuccess, isLoading, props.hash])
 
   return null
 }

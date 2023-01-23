@@ -36,3 +36,7 @@ export function useNextNonce(account: Maybe<AccountId32 | string>) {
     { enabled: !!account },
   )
 }
+
+export function getTransactionLink(hash: string) {
+  return `https://hydradx.subscan.io/extrinsic/${hash}`
+}

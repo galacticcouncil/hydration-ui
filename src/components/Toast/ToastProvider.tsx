@@ -43,6 +43,7 @@ export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
           {!sidebar && toast && (
             <Toast
               index={1 + toastSeenInGroupCount}
+              link={toast.link}
               count={activeToasts.length + toastSeenInGroupCount}
               key={toast.id}
               variant={toast.variant}
