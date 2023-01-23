@@ -19,6 +19,7 @@ export const App = () => {
 
     const style = document.createElement("style")
     style.setAttribute("uigc-font-face", "")
+    style.setAttribute("uigc-base", "")
 
     head.appendChild(style)
     html.setAttribute("theme", "hdx")
