@@ -12,6 +12,7 @@ import { Text } from "components/Typography/Text/Text"
 import { AssetsTableData } from "../WalletAssetsTable.utils"
 import { SActionButtonsContainer } from "./WalletAssetsTable.styled"
 import { useSetAsFeePayment } from "api/payments"
+import { useNavigate } from "@tanstack/react-location"
 
 type Props = {
   row?: AssetsTableData
@@ -25,6 +26,7 @@ export const WalletAssetsTableActionsMob = ({
   onTransferClick,
 }: Props) => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   const setFeeAsPayment = useSetAsFeePayment()
 
@@ -91,11 +93,35 @@ export const WalletAssetsTableActionsMob = ({
           <div sx={{ flex: "column", gap: 12 }}>
             <div>
               <div sx={{ flex: "row", gap: 12 }}>
-                <Button sx={{ width: "100%" }} size="small">
+                <Button
+                  sx={{ width: "100%" }}
+                  size="small"
+                  onClick={
+                    row.tradability.inTradeRouter && row.tradability.canBuy
+                      ? () =>
+                          navigate({
+                            to: "/trade",
+                            search: { assetOut: row.id },
+                          })
+                      : undefined
+                  }
+                >
                   <BuyIcon />
                   {t("wallet.assets.table.actions.buy")}
                 </Button>
-                <Button sx={{ width: "100%" }} size="small">
+                <Button
+                  sx={{ width: "100%" }}
+                  size="small"
+                  onClick={
+                    row.tradability.inTradeRouter && row.tradability.canSell
+                      ? () =>
+                          navigate({
+                            to: "/trade",
+                            search: { assetIn: row.id },
+                          })
+                      : undefined
+                  }
+                >
                   <SellIcon />
                   {t("wallet.assets.table.actions.sell")}
                 </Button>

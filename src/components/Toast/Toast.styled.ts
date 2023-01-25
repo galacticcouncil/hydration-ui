@@ -77,6 +77,8 @@ export const SClose = styled(Close)`
 
   padding: 0;
 
+  transition: ${theme.transitions.slow};
+
   svg {
     width: 14px;
     height: 14px;

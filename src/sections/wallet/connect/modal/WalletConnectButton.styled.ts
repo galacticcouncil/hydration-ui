@@ -13,6 +13,8 @@ export const SContainer = styled.div`
 
   border-radius: 4px;
 
+  transition: ${theme.transitions.slow};
+
   :active,
   :hover {
     background: rgba(${theme.rgbColors.brightBlue100}, 0.12);
