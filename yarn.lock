@@ -1947,12 +1947,12 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
-"@galacticcouncil/apps@^1.0.17":
-  version "1.0.17"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.0.17.tgz#4a1e924958678ba84784098a301dffd9d4f95a58"
-  integrity sha512-x1QjIRaMqT9XwmOwWy2LscD3HJ7wR7wMUHsnl2wt8gq3jGouBMBQDzLLTkmW8Ok6E3QYzoFtshtNm0wVFcwwCA==
+"@galacticcouncil/apps@^1.0.19":
+  version "1.0.19"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.0.19.tgz#d97d97512fce4fadf99d0fef6bc4e0b3b804e3d7"
+  integrity sha512-w5Ft0Ic4PH0AMWVojyDPK0QuaiwJ71JYc96S5J0N3kZmMsUR7e+Brvk9ntFi6Y/maIYuaPUXar2ViwFMzR0b2A==
   dependencies:
-    "@galacticcouncil/ui" "^1.0.57"
+    "@galacticcouncil/ui" "^1.0.61"
     "@talismn/connect-wallets" "^1.2.1"
     "@thi.ng/atom" "^5.1.3"
     "@thi.ng/cache" "^2.1.35"
@@ -2018,10 +2018,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^1.0.57":
-  version "1.0.57"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.0.57.tgz#d9a8f0071e93384d160c85f9399c0e3285164137"
-  integrity sha512-18Bc2NoeWInylU8Fua4uGBdkZw6Xhi/NSLk4e9sTYLWGrIT/RwnlrJdqNMj9pdHgrWFNZmMmlIST3rF9j5I94Q==
+"@galacticcouncil/ui@^1.0.61":
+  version "1.0.61"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.0.61.tgz#df362096c5bc06bf8cc03ef531cd012811bfa1a0"
+  integrity sha512-Qw7af4UKqkE2rQw9evmuRWbHML+xyKpV7uYxaJd3OcZsOpeeopyItBCfmVgTz2kDKfdRNx4NqSzF/5miaqWWqw==
   dependencies:
     "@lit/reactive-element" "^1.0.0"
     imask "^6.4.3"
