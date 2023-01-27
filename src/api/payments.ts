@@ -18,7 +18,7 @@ export const getAcceptedCurrency =
 
     return {
       id: normalizedId,
-      accepted: !result.isEmpty,
+      accepted: normalizedId === NATIVE_ASSET_ID || !result.isEmpty,
     }
   }
 
