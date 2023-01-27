@@ -1947,10 +1947,10 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
-"@galacticcouncil/apps@^1.0.19":
-  version "1.0.19"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.0.19.tgz#d97d97512fce4fadf99d0fef6bc4e0b3b804e3d7"
-  integrity sha512-w5Ft0Ic4PH0AMWVojyDPK0QuaiwJ71JYc96S5J0N3kZmMsUR7e+Brvk9ntFi6Y/maIYuaPUXar2ViwFMzR0b2A==
+"@galacticcouncil/apps@^1.0.20":
+  version "1.0.20"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.0.20.tgz#5ba158c6e706709d851db841d20d6017b379783d"
+  integrity sha512-BFYwH4Es0j7Zrsujy/gwkG7wTwHxww/aMezDrPcfAeDgj5tHtT5l2Y/Hl6XumFl/IjWvS0CAb0jUYZNx6ZYZkA==
   dependencies:
     "@galacticcouncil/ui" "^1.0.61"
     "@talismn/connect-wallets" "^1.2.1"
@@ -1962,10 +1962,10 @@
     lightweight-charts "^3.8.0"
     short-uuid "^4.2.0"
 
-"@galacticcouncil/bridge@^0.0.1-rc27":
-  version "0.0.1-rc27"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.1-rc27.tgz#dbe7a4356814eecc86cd64dd824a72f9b747b3af"
-  integrity sha512-/vx2/lYXq1S1QJOBVRU8APz37JD19p8iYiZqP6jedB6Y+ORZMiAExfs5BV2U5A31FRu6Q0hjO2WB5XEbrPVQhQ==
+"@galacticcouncil/bridge@^0.0.1-rc29":
+  version "0.0.1-rc29"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.1-rc29.tgz#c1dbdbf592ac748b1b041d397abe3948ac5dd448"
+  integrity sha512-UseA99M8Hh5u5D8oaJWIHETv6eI0Gq4FNdSPAiiRx4Cp2R8MK//c40UbaQ0WoHPZZGWzp+yCDfWK6OiwT52fKg==
   dependencies:
     "@acala-network/api" "4.1.8-9"
     "@acala-network/sdk" "4.1.8-9"
