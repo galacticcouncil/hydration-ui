@@ -12,9 +12,12 @@ export const SSelectItem = styled.div<{ isActive: boolean }>`
   padding: 16px;
   border-radius: 4px;
   cursor: pointer;
-  margin-right: 12px;
 
   transition: background ${theme.transitions.default};
+
+  @media (${theme.viewport.gte.sm}) {
+    margin-right: 12px;
+  }
 
   &:hover {
     background: rgba(${theme.rgbColors.primaryA15}, 0.12);
