@@ -143,7 +143,7 @@ export const ModalBody = styled.div<{ isDrawer?: boolean }>`
   ${({ isDrawer }) =>
     isDrawer
       ? "max-height: calc(100vh - var(--mobile-modal-header-height));"
-      : "height: 100%;"}
+      : "height: calc(100vh - var(--mobile-modal-header-height));"}
 
   @media ${theme.viewport.gte.sm} {
     padding: 0 30px 30px;

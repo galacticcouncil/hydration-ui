@@ -12,10 +12,18 @@ export const SContainer = styled.div`
   overflow-x: hidden;
   overflow-y: auto;
 
+  ::-webkit-scrollbar {
+    width: 0px;
+  }
+
   @media ${theme.viewport.gte.sm} {
     max-height: 465px;
 
     margin-right: -18px;
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
   }
 
   &::-webkit-scrollbar-track {
