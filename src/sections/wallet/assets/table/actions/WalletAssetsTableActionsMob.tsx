@@ -12,7 +12,7 @@ import { Text } from "components/Typography/Text/Text"
 import { AssetsTableData } from "../WalletAssetsTable.utils"
 import { SActionButtonsContainer } from "./WalletAssetsTable.styled"
 import { useSetAsFeePayment } from "api/payments"
-import { useNavigate } from "@tanstack/react-location"
+import { Link } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
 
 type Props = {
@@ -27,11 +27,13 @@ export const WalletAssetsTableActionsMob = ({
   onTransferClick,
 }: Props) => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
 
   const setFeeAsPayment = useSetAsFeePayment()
 
   if (!row) return null
+
+  const canBuy = row.tradability.inTradeRouter && row.tradability.canBuy
+  const canSell = row.tradability.inTradeRouter && row.tradability.canSell
 
   return (
     <Modal open={!!row} isDrawer onClose={onClose}>
@@ -93,38 +95,28 @@ export const WalletAssetsTableActionsMob = ({
           </div>
           <div sx={{ flex: "column", gap: 12 }}>
             <div sx={{ flex: "row", gap: 12 }}>
-              <Button
+              <Link
+                to={LINKS.trade}
+                search={{ assetOut: row.id }}
+                disabled={!canBuy}
                 sx={{ width: "100%" }}
-                size="small"
-                onClick={
-                  row.tradability.inTradeRouter && row.tradability.canBuy
-                    ? () =>
-                        navigate({
-                          to: LINKS.trade,
-                          search: { assetOut: row.id },
-                        })
-                    : undefined
-                }
               >
-                <BuyIcon />
-                {t("wallet.assets.table.actions.buy")}
-              </Button>
-              <Button
+                <Button sx={{ width: "100%" }} size="small" disabled={!canBuy}>
+                  <BuyIcon />
+                  {t("wallet.assets.table.actions.buy")}
+                </Button>
+              </Link>
+              <Link
+                to={LINKS.trade}
+                search={{ assetIn: row.id }}
+                disabled={!canSell}
                 sx={{ width: "100%" }}
-                size="small"
-                onClick={
-                  row.tradability.inTradeRouter && row.tradability.canSell
-                    ? () =>
-                        navigate({
-                          to: LINKS.trade,
-                          search: { assetIn: row.id },
-                        })
-                    : undefined
-                }
               >
-                <SellIcon />
-                {t("wallet.assets.table.actions.sell")}
-              </Button>
+                <Button sx={{ width: "100%" }} size="small" disabled={!canSell}>
+                  <SellIcon />
+                  {t("wallet.assets.table.actions.sell")}
+                </Button>
+              </Link>
             </div>
             <div>
               <Button
