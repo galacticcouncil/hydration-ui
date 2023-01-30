@@ -38,11 +38,13 @@ export const Header = () => {
         <div sx={{ flex: "row", align: "center", gap: [12, 24] }}>
           <div sx={{ flex: "row" }}>
             <InfoTooltip text={t("header.documentation.tooltip")} type="black">
-              <SQuestionmark
-                onClick={() =>
-                  window.open("https://docs.hydradx.io/", "_blank")
-                }
-              />
+              <a
+                href="https://docs.hydradx.io/"
+                target="blank"
+                rel="noreferrer"
+              >
+                <SQuestionmark />
+              </a>
             </InfoTooltip>
             <InfoTooltip
               text={

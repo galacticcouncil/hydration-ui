@@ -31,8 +31,8 @@ export function InfoTooltip({
     >
       <STrigger
         onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
+          textOnClick && e.preventDefault()
+          textOnClick && e.stopPropagation()
           // change the content on the click if the text is provided
           textOnClick && setContent(textOnClick)
           setOpen(true)
