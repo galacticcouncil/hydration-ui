@@ -24,8 +24,13 @@ export const SItem = styled.span<{ isActive?: boolean }>`
 
   text-transform: uppercase;
 
+  border-radius: 4px;
+
+  transition: ${theme.transitions.slow};
+
   &:hover {
     color: ${theme.colors.white};
+    background: rgba(${theme.rgbColors.alpha0}, 0.06);
     cursor: pointer;
   }
 
@@ -34,7 +39,5 @@ export const SItem = styled.span<{ isActive?: boolean }>`
     css`
       color: ${theme.colors.brightBlue100};
       background: rgba(${theme.rgbColors.white}, 0.12);
-
-      border-radius: 4px;
     `};
 `

@@ -2,15 +2,21 @@ import * as Tooltip from "@radix-ui/react-tooltip"
 import { Text } from "components/Typography/Text/Text"
 import { ReactNode, useState } from "react"
 import { theme } from "theme"
-import { STrigger } from "./InfoTooltip.styled"
+import { SContent, STrigger } from "./InfoTooltip.styled"
 
 type InfoTooltipProps = {
   text: ReactNode
   textOnClick?: ReactNode
   children: ReactNode
+  type?: "default" | "black"
 }
 
-export function InfoTooltip({ text, textOnClick, children }: InfoTooltipProps) {
+export function InfoTooltip({
+  text,
+  textOnClick,
+  children,
+  type = "default",
+}: InfoTooltipProps) {
   const [open, setOpen] = useState(false)
   const [content, setContent] = useState(text)
   return (
@@ -25,8 +31,8 @@ export function InfoTooltip({ text, textOnClick, children }: InfoTooltipProps) {
     >
       <STrigger
         onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
+          textOnClick && e.preventDefault()
+          textOnClick && e.stopPropagation()
           // change the content on the click if the text is provided
           textOnClick && setContent(textOnClick)
           setOpen(true)
@@ -39,9 +45,8 @@ export function InfoTooltip({ text, textOnClick, children }: InfoTooltipProps) {
         {children}
       </STrigger>
       <Tooltip.Portal>
-        <Tooltip.Content
-          sx={{ bg: "darkBlue400", p: "11px 16px" }}
-          css={{ maxWidth: "calc(100vw - 12px * 2)", zIndex: 10 }}
+        <SContent
+          type={type}
           side="bottom"
           align="start"
           sideOffset={3}
@@ -51,10 +56,14 @@ export function InfoTooltip({ text, textOnClick, children }: InfoTooltipProps) {
           <Text fs={11} fw={500}>
             {content}
           </Text>
-          <Tooltip.Arrow
-            css={{ "& > polygon": { fill: theme.colors.darkBlue400 } }}
-          />
-        </Tooltip.Content>
+          {type === "default" && (
+            <Tooltip.Arrow
+              css={{
+                "& > polygon": { fill: theme.colors.darkBlue400 },
+              }}
+            />
+          )}
+        </SContent>
       </Tooltip.Portal>
     </Tooltip.Root>
   )

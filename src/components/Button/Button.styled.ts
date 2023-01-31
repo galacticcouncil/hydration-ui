@@ -10,6 +10,8 @@ export const SButton = styled.button<ButtonProps>`
   border: none;
   border-radius: 4px;
 
+  transition: ${theme.transitions.slow};
+
   ${({ variant }) => variant && variantStyles[variant]}
   ${({ size }) => size && sizeStyles[size]}
   ${({ active }) =>

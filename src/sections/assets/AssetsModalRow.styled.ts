@@ -17,6 +17,8 @@ export const SAssetRow = styled.div`
   margin: 0 -30px;
   padding: 15px 30px;
 
+  transition: ${theme.transitions.slow};
+
   &:hover {
     background: rgba(${theme.rgbColors.white}, 0.06);
   }
