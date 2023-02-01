@@ -51,6 +51,7 @@ export const useSetAsFeePayment = () => {
         tx: api.tx.multiTransactionPayment.setCurrency(tokenId),
         overrides: {
           fee: new BigNumber(paymentInfoData.partialFee.toHex()),
+          currencyId: tokenId,
         },
       },
       { toast },

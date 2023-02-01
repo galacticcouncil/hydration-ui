@@ -15,9 +15,9 @@ import { useAccountCurrency } from "api/payments"
 import { useAssetMeta } from "api/assetMeta"
 import { useSpotPrice } from "api/spotPrice"
 import { NATIVE_ASSET_ID } from "utils/api"
-
 import BigNumber from "bignumber.js"
 import { BN_1 } from "utils/constants"
+
 export const ReviewTransactionForm = (
   props: {
     title?: string
@@ -29,7 +29,9 @@ export const ReviewTransactionForm = (
   const { account } = useAccountStore()
   const bestNumber = useBestNumber()
   const accountCurrency = useAccountCurrency(account?.address)
-  const feeMeta = useAssetMeta(accountCurrency.data)
+  const feeMeta = useAssetMeta(
+    props.overrides?.currencyId ?? accountCurrency.data,
+  )
 
   const nonce = useNextNonce(account?.address)
   const spotPrice = useSpotPrice(NATIVE_ASSET_ID, feeMeta.data?.id)
