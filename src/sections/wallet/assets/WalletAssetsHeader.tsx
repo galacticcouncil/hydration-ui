@@ -2,51 +2,51 @@ import { Text } from "../../../components/Typography/Text/Text"
 import { Heading } from "../../../components/Typography/Heading/Heading"
 import { Separator } from "../../../components/Separator/Separator"
 import { Trans, useTranslation } from "react-i18next"
-import { AssetsTableData } from "./table/WalletAssetsTable.utils"
-import { FC, useMemo } from "react"
+import { useMemo } from "react"
 import { BN_0 } from "../../../utils/constants"
 import { separateBalance } from "../../../utils/balance"
 import { css } from "@emotion/react"
 import { theme } from "../../../theme"
 import Skeleton from "react-loading-skeleton"
 import { useMedia } from "react-use"
+import { useAssetsTableData } from "./table/data/WalletAssetsTableData.utils"
+import { useHydraPositionsData } from "./hydraPositions/data/WalletAssetsHydraPositionsData.utils"
+import BN from "bignumber.js"
 
 interface WalletAssetsHeaderProps {
-  data?: AssetsTableData[]
-  isLoading?: boolean
-  disabledAnimation?: boolean
+  disconnected?: boolean
 }
 
-export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
-  data,
-  isLoading,
-  disabledAnimation,
-}) => {
+export const WalletAssetsHeader = ({
+  disconnected,
+}: WalletAssetsHeaderProps) => {
   const { t } = useTranslation()
+
+  const assets = useAssetsTableData(false)
+  const positions = useHydraPositionsData()
+
+  const amount = useMemo(() => {
+    if (!positions.data) return BN_0
+
+    return positions.data.reduce(
+      (acc, { valueUSD }) => acc.plus(BN(valueUSD)),
+      BN_0,
+    )
+  }, [positions.data])
+
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const totalUsd = useMemo(() => {
-    if (data) {
-      return data.reduce((acc, cur) => {
+    if (assets) {
+      return assets.data.reduce((acc, cur) => {
         if (!cur.totalUSD.isNaN()) {
           return acc.plus(cur.totalUSD)
         }
         return acc
       }, BN_0)
     }
-    return null
-  }, [data])
-
-  const transferableUsd = useMemo(() => {
-    if (data) {
-      return data.reduce((acc, cur) => {
-        if (!cur.transferableUSD.isNaN()) {
-          return acc.plus(cur.transferableUSD)
-        }
-        return acc
-      }, BN_0)
-    }
-  }, [data])
+    return BN_0
+  }, [assets])
 
   return (
     <div
@@ -69,45 +69,43 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
           {t("wallet.assets.header.total")}
         </Text>
 
-        {isLoading ? (
+        {assets.isLoading || disconnected ? (
           <Skeleton
-            enableAnimation={!disabledAnimation}
+            enableAnimation={!disconnected}
             sx={{
               width: [97, 208],
               height: [27, 42],
             }}
           />
         ) : (
-          totalUsd && (
-            <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
-              <Text
-                font="ChakraPetch"
-                fw={900}
-                fs={[19, 42]}
-                sx={{ display: "inline-block" }}
-              >
-                $
-              </Text>
-              <Trans
-                t={t}
-                i18nKey="wallet.assets.header.value"
-                tOptions={{
-                  ...separateBalance(totalUsd, {
-                    type: "dollar",
-                  }),
+          <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
+            <Text
+              font="ChakraPetch"
+              fw={900}
+              fs={[19, 42]}
+              sx={{ display: "inline-block" }}
+            >
+              $
+            </Text>
+            <Trans
+              t={t}
+              i18nKey="wallet.assets.header.value"
+              tOptions={{
+                ...separateBalance(totalUsd, {
+                  type: "dollar",
+                }),
+              }}
+            >
+              <span
+                sx={{
+                  fontSize: [19, 26],
                 }}
-              >
-                <span
-                  sx={{
-                    fontSize: [19, 26],
-                  }}
-                  css={css`
-                    color: rgba(${theme.rgbColors.white}, 0.4);
-                  `}
-                />
-              </Trans>
-            </Heading>
-          )
+                css={css`
+                  color: rgba(${theme.rgbColors.white}, 0.4);
+                `}
+              />
+            </Trans>
+          </Heading>
         )}
       </div>
       <Separator
@@ -135,48 +133,46 @@ export const WalletAssetsHeader: FC<WalletAssetsHeaderProps> = ({
           }}
         >
           <Text color="brightBlue300" sx={{ fontSize: [14, 16], mb: [0, 14] }}>
-            {t("wallet.assets.header.transferable")}
+            {t("wallet.assets.header.positions.total")}
           </Text>
 
-          {isLoading ? (
+          {positions.isLoading || disconnected ? (
             <Skeleton
               sx={{
                 width: [97, 168],
                 height: [27, 42],
               }}
-              enableAnimation={!disabledAnimation}
+              enableAnimation={!disconnected}
             />
           ) : (
-            transferableUsd && (
-              <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
-                <Text
-                  font="ChakraPetch"
-                  fw={900}
-                  fs={[19, 42]}
-                  sx={{ display: "inline-block" }}
-                >
-                  $
-                </Text>
-                <Trans
-                  t={t}
-                  i18nKey="wallet.assets.header.value"
-                  tOptions={{
-                    ...separateBalance(transferableUsd, {
-                      type: "dollar",
-                    }),
+            <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
+              <Text
+                font="ChakraPetch"
+                fw={900}
+                fs={[19, 42]}
+                sx={{ display: "inline-block" }}
+              >
+                $
+              </Text>
+              <Trans
+                t={t}
+                i18nKey="wallet.assets.header.value"
+                tOptions={{
+                  ...separateBalance(amount, {
+                    type: "dollar",
+                  }),
+                }}
+              >
+                <span
+                  sx={{
+                    fontSize: [19, 26],
                   }}
-                >
-                  <span
-                    sx={{
-                      fontSize: [19, 26],
-                    }}
-                    css={css`
-                      color: rgba(${theme.rgbColors.white}, 0.4);
-                    `}
-                  />
-                </Trans>
-              </Heading>
-            )
+                  css={css`
+                    color: rgba(${theme.rgbColors.white}, 0.4);
+                  `}
+                />
+              </Trans>
+            </Heading>
           )}
         </div>
       </div>
