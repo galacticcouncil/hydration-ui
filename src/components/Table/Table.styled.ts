@@ -97,6 +97,8 @@ export const TablePlaceholderContent = styled.div`
 `
 
 export const TableRow = styled.tr<{ isOdd?: boolean; isSub?: boolean }>`
+  transition: ${theme.transitions.slow};
+
   :hover {
     background: rgba(${theme.rgbColors.white}, 0.06);
   }

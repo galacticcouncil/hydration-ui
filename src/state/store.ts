@@ -25,6 +25,7 @@ export interface TransactionInput {
   tx: SubmittableExtrinsic
   overrides?: {
     fee: BigNumber
+    currencyId?: string
   }
 }
 
