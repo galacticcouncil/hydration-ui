@@ -29,10 +29,12 @@ type SearchGenerics = MakeGenerics<{
   Search: z.infer<typeof TradeAppSearch>
 }>
 
+const chartEnabled = import.meta.env.VITE_FF_CHART_ENABLED === "true"
+const chartDatasourceId = import.meta.env.VITE_FF_CHART_DATASOURCE
+
 export function TradePage() {
   const { account } = useAccountStore()
 
-  const ref = React.useRef<Apps.TradeApp>(null)
   const rawSearch = useSearch<SearchGenerics>()
   const search = TradeAppSearch.safeParse(rawSearch)
 
@@ -40,7 +42,12 @@ export function TradePage() {
     <Page>
       <SContainer>
         <TradeApp
-          ref={ref}
+          ref={(r) => {
+            if (chartEnabled && r) {
+              r.setAttribute("chart", "")
+              r.setAttribute("chartDatasourceId", chartDatasourceId)
+            }
+          }}
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}
