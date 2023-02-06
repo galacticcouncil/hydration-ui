@@ -18,6 +18,7 @@ import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { theme } from "theme"
 import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
 import { useApiIds } from "api/consts"
+import { css } from "@emotion/react"
 
 export const AssetSelect = (props: {
   name: string
@@ -103,7 +104,15 @@ export const AssetSelect = (props: {
           </div>
         </div>
 
-        <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
+        <div
+          sx={{
+            flex: ["column", "row"],
+            align: ["flex-start", "center"],
+            justify: "space-between",
+            gap: [12, 0],
+            mt: [16, 0],
+          }}
+        >
           <SSelectAssetButton
             size="small"
             onClick={(e) => {
@@ -131,6 +140,7 @@ export const AssetSelect = (props: {
             )}
             <Icon icon={<ChevronDown />} />
           </SSelectAssetButton>
+
           <AssetInput
             value={props.value}
             name={props.name}
@@ -141,6 +151,11 @@ export const AssetSelect = (props: {
             placeholder="0.00"
             unit={props.assetSymbol}
             error={props.error}
+            css={css`
+              & > label {
+                padding: 0;
+              }
+            `}
           />
         </div>
       </SContainer>
