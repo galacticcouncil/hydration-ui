@@ -9,6 +9,7 @@ export type ToastVariant = "info" | "success" | "error" | "progress"
 
 type ToastParams = {
   id?: string
+  link?: string
   title: ReactElement
   actions?: ReactNode
   persist?: boolean

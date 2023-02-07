@@ -1,8 +1,9 @@
 import { ReactNode } from "react"
-import { SContainer, SIcon, STitle } from "components/Toast/Toast.styled"
+import { SContainer, SIcon, STitle, SLink } from "components/Toast/Toast.styled"
 import { ReactComponent as SuccessIcon } from "assets/icons/SuccessIcon.svg"
 import { ReactComponent as FailIcon } from "assets/icons/FailIcon.svg"
 import { ReactComponent as InfoIcon } from "assets/icons/InfoIcon.svg"
+import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
 import { Text } from "components/Typography/Text/Text"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { Maybe, useNow } from "utils/helpers"
@@ -13,6 +14,7 @@ import { ToastVariant } from "state/toasts"
 export function ToastContent(props: {
   variant: Maybe<ToastVariant>
   title?: string | ReactNode
+  link?: string
   actions?: ReactNode
   meta?: ReactNode
   dateCreated?: Date
@@ -22,7 +24,6 @@ export function ToastContent(props: {
   const { t } = useTranslation()
 
   useNow(props.dateCreated != null)
-
   return (
     <SContainer variant={props.variant ?? "info"} onClick={props.onClick}>
       <SIcon>
@@ -58,10 +59,17 @@ export function ToastContent(props: {
               {t("toast.date", { value: props.dateCreated })}
             </Text>
           )}
-
           {props.meta}
         </div>
       </div>
+
+      <SLink variant={props.variant ?? "info"}>
+        {props.link && (
+          <a href={props.link} target="_blank" rel="noreferrer">
+            <LinkIcon />
+          </a>
+        )}
+      </SLink>
       {props.children}
     </SContainer>
   )

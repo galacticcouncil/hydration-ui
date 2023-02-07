@@ -52,6 +52,7 @@ export const ReviewTransaction: React.FC<Transaction> = (props) => {
       {minimizeModal && (
         <ReviewTransactionToast
           id={props.id}
+          hash={props.hash}
           mutation={sendTx}
           onReview={onReview}
           onClose={handleClose}

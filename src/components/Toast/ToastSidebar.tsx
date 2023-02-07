@@ -106,6 +106,7 @@ export function ToastSidebar() {
                                 }}
                               />
                             }
+                            link={toast.link}
                             actions={toast.actions}
                             dateCreated={
                               typeof toast.dateCreated === "string"
