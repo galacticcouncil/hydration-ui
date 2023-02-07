@@ -106,7 +106,6 @@ export function ToastSidebar() {
                                 }}
                               />
                             }
-                            link={toast.link}
                             actions={toast.actions}
                             dateCreated={
                               typeof toast.dateCreated === "string"
@@ -129,6 +128,7 @@ export function ToastSidebar() {
                       {completedToasts.map((toast) => (
                         <ToastContent
                           key={toast.id}
+                          link={toast.link}
                           variant={toast.variant}
                           title={
                             <div
