@@ -68,12 +68,7 @@ export async function getTransactionLinkFromHash(
   txIndex: string,
 ) {
   try {
-    console.log(blockHash)
-
     const { block } = await api.rpc.chain.getBlock(blockHash)
-
-    console.log(block)
-
     const blockNumber = block.header.number.toString()
 
     if (blockNumber) {
@@ -82,8 +77,6 @@ export async function getTransactionLinkFromHash(
 
     return undefined
   } catch (err) {
-    console.log(err)
-
     return undefined
   }
 }
