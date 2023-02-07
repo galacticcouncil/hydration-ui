@@ -2017,10 +2017,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^1.0.62":
-  version "1.0.62"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.0.62.tgz#a0f6576fb1b97af08fc55ec187dc11193e0b28e4"
-  integrity sha512-yIEKhJSX6kU5ICHsG2Kys7BeFNwOQ3OroT16S6TLFK3i1uHO8y6TXLI/NrUikzUwgnJ/rNLnBP2V695tz9qkMA==
+"@galacticcouncil/ui@^1.0.63":
+  version "1.0.63"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.0.63.tgz#fa2fe3d44a5b5b51d4718c1ff7ae7ff15ad1d7f0"
+  integrity sha512-t8IUeBU6ag9fanv2AYUvg57kJ6g9T2r7J9DDaoJSoZW/vnVmq4iKhotxRO3bIDIWSF56E45tZCfHIpINuNvAIg==
   dependencies:
     "@lit/reactive-element" "^1.0.0"
     imask "^6.4.3"
