@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next"
 import { UseMutationResult } from "@tanstack/react-query"
 import { useToast } from "state/toasts"
 import { ToastMessage } from "state/store"
-import { useTransactionLink } from "../../api/transaction"
 
 export function ReviewTransactionToast<
   TData = unknown,
@@ -13,6 +12,7 @@ export function ReviewTransactionToast<
 >(props: {
   id: string
   mutation: UseMutationResult<TData, TError, TVariables, TContext>
+  link?: string
   onReview?: () => void
   onClose?: () => void
   toastMessage?: ToastMessage
@@ -39,7 +39,7 @@ export function ReviewTransactionToast<
         title: props.toastMessage?.onSuccess ?? (
           <p>{t("liquidity.reviewTransaction.toast.success")}</p>
         ),
-        link: "test"
+        link: props.link,
       })
 
       closeRef.current?.()
@@ -65,7 +65,7 @@ export function ReviewTransactionToast<
     return () => {
       if (toRemoveId) toastRef.current.remove(toRemoveId)
     }
-  }, [t, props.toastMessage, isError, isSuccess, isLoading])
+  }, [t, props.toastMessage, isError, isSuccess, isLoading, props.link])
 
   return null
 }
