@@ -1947,10 +1947,10 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
-"@galacticcouncil/apps@^1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.1.2.tgz#397dff48ec11cb23ce991a6add22e4300f626de4"
-  integrity sha512-WS/hPuMUoLy7efHHxQBzr8BhNyPdOljYpx6v6KRNQ/lw9Gpli/O83OERslz3jGuvrbw/GvmDAMqWWaak1AtDug==
+"@galacticcouncil/apps@^1.1.6":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.1.6.tgz#da149e5bf9f2a6343f7d9e2c0367192a15f94301"
+  integrity sha512-joqNQSEA7ZuB7n80x0+34kUqqwl9AETQz+pIiIRMcO/CTG9pAqWTvmuTePfX+naU6BCgtrmIehoRVYiqvm6K0g==
   dependencies:
     "@talismn/connect-wallets" "^1.2.1"
     "@thi.ng/atom" "^5.1.3"
