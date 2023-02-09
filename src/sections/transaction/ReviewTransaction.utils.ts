@@ -6,6 +6,7 @@ import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { useMutation } from "@tanstack/react-query"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useMountedState } from "react-use"
+import { useTransactionLink } from "../../api/transaction"
 
 type TxMethod = AnyJson & {
   method: string
@@ -61,35 +62,46 @@ export function getTransactionJSON(tx: SubmittableExtrinsic<"promise">) {
 export const useSendTransactionMutation = () => {
   const api = useApiPromise()
   const isMounted = useMountedState()
+  const link = useTransactionLink()
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
 
   const sendTx = useMutation(async (sign: SubmittableExtrinsic<"promise">) => {
-    return await new Promise<ISubmittableResult>(async (resolve, reject) => {
-      const unsubscribe = await sign.send((result) => {
-        if (!result || !result.status) return
-        if (isMounted()) setTxState(result.status.type)
-        if (result.isCompleted) {
-          if (result.dispatchError) {
-            let errorMessage = result.dispatchError.toString()
+    return await new Promise<ISubmittableResult & { transactionLink?: string }>(
+      async (resolve, reject) => {
+        const unsubscribe = await sign.send(async (result) => {
+          if (!result || !result.status) return
+          if (isMounted()) setTxState(result.status.type)
+          if (result.isCompleted) {
+            if (result.dispatchError) {
+              let errorMessage = result.dispatchError.toString()
 
-            if (result.dispatchError.isModule) {
-              const decoded = api.registry.findMetaError(
-                result.dispatchError.asModule,
-              )
-              errorMessage = `${decoded.section}.${
-                decoded.method
-              }: ${decoded.docs.join(" ")}`
+              if (result.dispatchError.isModule) {
+                const decoded = api.registry.findMetaError(
+                  result.dispatchError.asModule,
+                )
+                errorMessage = `${decoded.section}.${
+                  decoded.method
+                }: ${decoded.docs.join(" ")}`
+              }
+
+              reject(new Error(errorMessage))
+            } else {
+              const transactionLink = await link.mutateAsync({
+                blockHash: result.status.asInBlock.toString(),
+                txIndex: result.txIndex?.toString(),
+              })
+
+              resolve({
+                transactionLink,
+                ...result,
+              })
             }
 
-            reject(new Error(errorMessage))
-          } else {
-            resolve(result)
+            unsubscribe()
           }
-
-          unsubscribe()
-        }
-      })
-    })
+        })
+      },
+    )
   })
 
   return {

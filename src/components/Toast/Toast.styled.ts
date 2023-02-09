@@ -17,7 +17,7 @@ export const SRoot = styled(Root)`
 
 export const SContainer = styled.div<{ variant: ToastVariant }>`
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
   grid-column-gap: 14px;
 
   position: relative;
@@ -35,6 +35,24 @@ export const SIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`
+
+export const SLink = styled.div<{ variant: ToastVariant }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ variant }) => {
+    if (variant === "progress") {
+      return theme.colors.white
+    }
+
+    return `rgba(${theme.rgbColors.white}, 0.6)`
+  }};
 
   svg {
     width: 16px;
@@ -76,6 +94,8 @@ export const SClose = styled(Close)`
   cursor: pointer;
 
   padding: 0;
+
+  transition: ${theme.transitions.slow};
 
   svg {
     width: 14px;

@@ -21,6 +21,8 @@ export const SSwitch = styled(Switch, {
 
   cursor: pointer;
 
+  transition: ${theme.transitions.slow};
+
   ${(p) =>
     p.size === "small"
       ? css`

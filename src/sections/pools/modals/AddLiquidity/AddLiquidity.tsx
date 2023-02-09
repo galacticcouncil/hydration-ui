@@ -164,6 +164,22 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
                   } catch {}
                   return t("liquidity.add.modal.validation.notEnoughBalance")
                 },
+                minPoolLiquidity: (value) => {
+                  try {
+                    if (assetMeta?.decimals == null)
+                      throw new Error("Missing asset meta")
+
+                    const minimumPoolLiquidity =
+                      api.consts.omnipool.minimumPoolLiquidity.toBigNumber()
+
+                    const amount = BigNumber(value).multipliedBy(
+                      BN_10.pow(assetMeta?.decimals.toNumber()),
+                    )
+
+                    if (amount.gte(minimumPoolLiquidity)) return true
+                  } catch {}
+                  return t("liquidity.add.modal.validation.minPoolLiquidity")
+                },
               },
             }}
             render={({

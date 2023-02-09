@@ -1,6 +1,4 @@
 import { useState } from "react"
-import { Spacer } from "components/Spacer/Spacer"
-import { WalletAssetsHeader } from "../WalletAssetsHeader"
 import { WalletAssetsTable } from "./WalletAssetsTable"
 import { useAssetsTableData } from "./data/WalletAssetsTableData.utils"
 import { WalletAssetsTableSkeleton } from "./skeleton/WalletAssetsTableSkeleton"
@@ -10,22 +8,13 @@ export const WalletAssetsTableWrapper = () => {
 
   const assetsTable = useAssetsTableData(showAll)
 
+  if (assetsTable.isLoading) return <WalletAssetsTableSkeleton />
+
   return (
-    <>
-      <WalletAssetsHeader
-        isLoading={assetsTable.isLoading}
-        data={assetsTable.data}
-      />
-      {assetsTable.isLoading ? (
-        <WalletAssetsTableSkeleton />
-      ) : (
-        <WalletAssetsTable
-          data={assetsTable.data}
-          showAll={showAll}
-          setShowAll={setShowAll}
-        />
-      )}
-      <Spacer axis="vertical" size={20} />
-    </>
+    <WalletAssetsTable
+      data={assetsTable.data}
+      showAll={showAll}
+      setShowAll={setShowAll}
+    />
   )
 }

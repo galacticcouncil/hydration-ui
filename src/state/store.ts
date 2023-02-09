@@ -25,11 +25,11 @@ export interface TransactionInput {
   tx: SubmittableExtrinsic
   overrides?: {
     fee: BigNumber
+    currencyId?: string
   }
 }
 
 export interface Transaction extends TransactionInput {
-  hash: string
   id: string
   onSuccess?: (result: ISubmittableResult) => void
   onSubmitted?: () => void
@@ -99,13 +99,11 @@ export const useAccountStore = create(
 export const useStore = create<Store>((set) => ({
   createTransaction: (transaction, options) => {
     return new Promise<ISubmittableResult>((resolve, reject) => {
-      const hash = transaction.tx.hash.toString()
       set((store) => {
         return {
           transactions: [
             {
               ...transaction,
-              hash,
               id: uuid(),
               toastMessage: {
                 onLoading: options?.toast?.onLoading,

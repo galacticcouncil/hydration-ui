@@ -1,6 +1,7 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 import { ReactComponent as BellIcon } from "assets/icons/BellIcon.svg"
+import { ReactComponent as Questionmark } from "assets/icons/Questionmark.svg"
 
 export const SHeader = styled.header`
   position: fixed;
@@ -25,14 +26,48 @@ export const SHeader = styled.header`
 `
 
 export const SBellIcon = styled(BellIcon)`
-  color: #d9d9d9;
+  color: ${theme.colors.brightBlue100};
+
+  width: 35px;
+  height: 35px;
+
+  padding: 6px;
+
+  border-radius: 50%;
+
+  top: 3px;
+  left: 2px;
+
+  transition: ${theme.transitions.slow};
+
+  :hover {
+    color: ${theme.colors.white};
+    cursor: pointer;
+
+    background: rgba(${theme.rgbColors.alpha0}, 0.06);
+
+    transform: rotate(30deg);
+  }
+`
+
+export const SQuestionmark = styled(Questionmark)`
+  color: ${theme.colors.brightBlue100};
 
   top: 8px;
 
-  margin: 0 8px;
+  padding: 9px;
+
+  width: 35px;
+  height: 35px;
+
+  border-radius: 50%;
+
+  transition: ${theme.transitions.slow};
 
   :hover {
-    color: ${theme.colors.brightBlue400};
+    color: ${theme.colors.white};
     cursor: pointer;
+
+    background: rgba(${theme.rgbColors.alpha0}, 0.06);
   }
 `

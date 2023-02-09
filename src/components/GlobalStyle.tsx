@@ -1,6 +1,7 @@
 import ChakraPetch from "assets/fonts/ChakraPetch/ChakraPetch.ttf"
 import ChakraPetchBold from "assets/fonts/ChakraPetch/ChakraPetchBold.ttf"
 import FontOver from "assets/fonts/FontOver/FontOver.ttf"
+import SatoshiVariable from "assets/fonts/SatoshiVariable/SatoshiVariable.ttf"
 
 import { theme } from "theme"
 
@@ -174,7 +175,14 @@ export const GlobalStyle = `
     url(${FontOver}) format("truetype");
     font-display: auto;
   };
- 
+
+  @font-face {
+    font-family: 'SatoshiVariable';
+    src: local("SatoshiVariable"),
+    url(${SatoshiVariable}) format("truetype");
+    font-display: auto;
+  };
+
   ${normalize}
   
   html { 

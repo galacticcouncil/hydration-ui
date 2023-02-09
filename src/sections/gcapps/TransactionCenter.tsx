@@ -4,6 +4,7 @@ import type { Notification } from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
 import { useToast } from "state/toasts"
 import type { TemplateResult } from "lit-html"
+import { useTransactionLink } from "../../api/transaction"
 
 const TransactionCenter = createComponent({
   tagName: "gc-transaction-center",
@@ -44,20 +45,30 @@ const ToastTitle = ({ message }: { message: Notification["message"] }) => {
   )
 }
 
-const handleNotification = (e: CustomEvent, toast: any): void => {
+const handleNotification = async (
+  e: CustomEvent<Notification>,
+  toast: any,
+  link: any,
+): Promise<void> => {
   if (e.detail.toast) {
     const toastVariant = e.detail.type || "info"
     const existingToast = toast.toasts.find(
       (toast: any) => toast.id === e.detail.id,
     )
-
     if (existingToast) {
       // remove if there is a progrees toast
       toast.remove(e.detail.id)
     }
+
+    const transactionLink = await link({
+      blockHash: e.detail.meta?.blockHash,
+      txIndex: e.detail.meta?.txIndex,
+    })
+
     toast.add(toastVariant, {
       title: <ToastTitle message={e.detail.message} />,
       id: e.detail.id,
+      link: transactionLink,
     })
   } else {
     toast.remove(e.detail.id)
@@ -70,8 +81,12 @@ type TransactionCenterProps = {
 
 export const GcTransactionCenter = ({ children }: TransactionCenterProps) => {
   const toast = useToast()
+  const { mutateAsync: link } = useTransactionLink()
+
   return (
-    <TransactionCenter onNotificationNew={(e) => handleNotification(e, toast)}>
+    <TransactionCenter
+      onNotificationNew={(e) => handleNotification(e, toast, link)}
+    >
       {children}
     </TransactionCenter>
   )

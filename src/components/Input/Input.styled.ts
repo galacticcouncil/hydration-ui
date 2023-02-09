@@ -45,6 +45,8 @@ export const SInput = styled.input<{ error?: string; unit?: string }>`
 
   padding: 20px 18px;
 
+  transition: ${theme.transitions.slow};
+
   ::placeholder {
     color: rgba(114, 131, 165, 0.6);
   }
