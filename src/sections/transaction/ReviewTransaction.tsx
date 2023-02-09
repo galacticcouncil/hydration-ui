@@ -53,6 +53,7 @@ export const ReviewTransaction: React.FC<Transaction> = (props) => {
         <ReviewTransactionToast
           id={props.id}
           mutation={sendTx}
+          link={sendTx.data?.transactionLink}
           onReview={onReview}
           onClose={handleClose}
           toastMessage={props.toastMessage}
@@ -77,7 +78,6 @@ export const ReviewTransaction: React.FC<Transaction> = (props) => {
           <ReviewTransactionForm
             tx={props.tx}
             overrides={props.overrides}
-            hash={props.hash}
             title={props.title}
             onCancel={handleClose}
             onSigned={(signed) => {
