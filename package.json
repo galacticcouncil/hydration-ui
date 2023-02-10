@@ -13,7 +13,7 @@
     "@galacticcouncil/sdk": "^0.0.6",
     "@galacticcouncil/ui": "^1.0.65",
     "@galacticcouncil/bridge": "^0.0.1-rc29",
-    "@galacticcouncil/apps": "^1.1.7",
+    "@galacticcouncil/apps": "^1.1.8",
     "@lit-labs/react": "^1.1.0",
     "@polkadot/api": "^9.9.1",
     "@polkadot/extension-inject": "^0.44.5",
