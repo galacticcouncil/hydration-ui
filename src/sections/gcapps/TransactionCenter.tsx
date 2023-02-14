@@ -2,9 +2,9 @@ import React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import type { Notification } from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
-import { useToast } from "state/toasts"
 import type { TemplateResult } from "lit-html"
 import { useTransactionLink } from "../../api/transaction"
+import { useToastStorage } from "components/AppProviders/ToastContext"
 
 const TransactionCenter = createComponent({
   tagName: "gc-transaction-center",
@@ -80,7 +80,7 @@ type TransactionCenterProps = {
 }
 
 export const GcTransactionCenter = ({ children }: TransactionCenterProps) => {
-  const toast = useToast()
+  const toast = useToastStorage()
   const { mutateAsync: link } = useTransactionLink()
 
   return (

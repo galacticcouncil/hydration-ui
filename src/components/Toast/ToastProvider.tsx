@@ -1,14 +1,14 @@
 import { FC, PropsWithChildren, useEffect, useRef, useState } from "react"
 import { ToastViewport } from "components/Toast/ToastViewport"
 import { Provider } from "@radix-ui/react-toast"
-import { useToast } from "state/toasts"
 import { Toast } from "components/Toast/Toast"
 import { AnimatePresence } from "framer-motion"
 
 import { ToastSidebar } from "./ToastSidebar"
+import { useToastStorage } from "components/AppProviders/ToastContext"
 
 export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
-  const { toasts, hide, sidebar, setSidebar } = useToast()
+  const { toasts, hide, sidebar, setSidebar } = useToastStorage()
 
   const activeToasts = toasts.filter((i) => !i.hidden)
   const toast = activeToasts[0]
@@ -31,7 +31,6 @@ export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
       }
       lastToastId.current = currId
     }
-
     lastToastUpdate.current = now
   }, [currId])
 
@@ -42,16 +41,14 @@ export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
         <AnimatePresence>
           {!sidebar && toast && (
             <Toast
+              id={toast.id}
               index={1 + toastSeenInGroupCount}
               link={toast.link}
               count={activeToasts.length + toastSeenInGroupCount}
-              key={toast.id}
               variant={toast.variant}
               title={toast.title}
-              actions={toast.actions}
               onClick={() => setSidebar(true)}
               onClose={() => hide(toast.id)}
-              persist={toast.persist}
               dateCreated={new Date(toast.dateCreated)}
             />
           )}

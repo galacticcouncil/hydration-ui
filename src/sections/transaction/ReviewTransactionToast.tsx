@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { UseMutationResult } from "@tanstack/react-query"
-import { useToast } from "state/toasts"
 import { ToastMessage } from "state/store"
+import { useToastStorage } from "../../components/AppProviders/ToastContext"
 
 export function ReviewTransactionToast<
   TData = unknown,
@@ -17,7 +17,7 @@ export function ReviewTransactionToast<
   onClose?: () => void
   toastMessage?: ToastMessage
 }) {
-  const toast = useToast()
+  const toast = useToastStorage()
   const { t } = useTranslation()
 
   const { isError, isSuccess, isLoading } = props.mutation

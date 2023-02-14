@@ -11,11 +11,11 @@ import {
   SidebarBody,
 } from "./ToastSidebar.styled"
 import { ToastContent } from "./ToastContent"
-import { useToast } from "state/toasts"
 import { useTranslation } from "react-i18next"
 import { RemoveScroll } from "react-remove-scroll"
 import { Heading } from "components/Typography/Heading/Heading"
 import { ReactComponent as NoActivities } from "assets/icons/NoActivities.svg"
+import { useToastStorage } from "components/AppProviders/ToastContext"
 
 const ToastGroupHeader = (props: { children?: ReactNode }) => (
   <Text
@@ -30,7 +30,7 @@ const ToastGroupHeader = (props: { children?: ReactNode }) => (
 )
 
 export function ToastSidebar() {
-  const store = useToast()
+  const store = useToastStorage()
   const onClose = () => store.setSidebar(false)
 
   const sortedToasts = store.toasts.sort(
@@ -97,6 +97,7 @@ export function ToastSidebar() {
                       <div sx={{ flex: "column", gap: 6, p: 8 }}>
                         {pendingToasts.map((toast) => (
                           <ToastContent
+                            id={toast.id}
                             key={toast.id}
                             variant={toast.variant}
                             title={
@@ -106,7 +107,6 @@ export function ToastSidebar() {
                                 }}
                               />
                             }
-                            actions={toast.actions}
                             dateCreated={
                               typeof toast.dateCreated === "string"
                                 ? new Date(toast.dateCreated)
@@ -127,6 +127,7 @@ export function ToastSidebar() {
                     <div sx={{ flex: "column", gap: 6, p: 8 }}>
                       {completedToasts.map((toast) => (
                         <ToastContent
+                          id={toast.id}
                           key={toast.id}
                           link={toast.link}
                           variant={toast.variant}
@@ -135,7 +136,6 @@ export function ToastSidebar() {
                               dangerouslySetInnerHTML={{ __html: toast.title }}
                             />
                           }
-                          actions={toast.actions}
                           dateCreated={
                             typeof toast.dateCreated === "string"
                               ? new Date(toast.dateCreated)
