@@ -184,8 +184,6 @@ export const useUsersTotalInPools = () => {
       return valueUSD
     })
 
-    console.table(totals.toString())
-
     return totals.reduce((acc, total) => acc.plus(total), BN_0)
   }, [
     uniques.data,
