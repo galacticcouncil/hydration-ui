@@ -20,7 +20,7 @@ export const FarmingPositionWrapper = ({ positions }: { positions: any }) => {
       </div>
 
       <div sx={{ flex: "column", gap: 16 }}>
-        {positions.data.map((position, i) => (
+        {positions.data.map((position: any, i: number) => (
           <FarmingPosition key={i} index={i + 1} />
         ))}
       </div>
