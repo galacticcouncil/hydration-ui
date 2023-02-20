@@ -1,0 +1,36 @@
+import styled from "@emotion/styled"
+import { theme } from "theme"
+
+export const SContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  align-self: center;
+
+  background: linear-gradient(
+    90deg,
+    rgba(63, 197, 255, 0.2) 1.67%,
+    rgba(198, 209, 219, 0.09) 101.96%
+  );
+
+  border-radius: 4px;
+
+  padding: 10px 12px;
+
+  height: fit-content;
+`
+
+export const SJoinButton = styled.button`
+  cursor: pointer;
+
+  border: none;
+  border-radius: 4px;
+
+  transition: ${theme.transitions.slow};
+
+  background: ${theme.colors.brightBlue300};
+
+  padding: 9px 45px;
+`
