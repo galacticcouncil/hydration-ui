@@ -62,7 +62,7 @@
   "liquidity.asset.claim.button": "Claim all",
   "liquidity.asset.claim.total": "Total locked {{ locked, bignumber(numberPrefix: '$'; type: 'dollar') }}",
   "liquidity.asset.claim.claimable": "{{ claimable, bignumber(numberPrefix: '$'; type: 'dollar') }} claimable",
-  "liquidity.asset.positions.title": "Liquidity positions",
+  "liquidity.asset.positions.title": "Liquidity Positions",
   "liquidity.asset.positions.position.amount": "Amount",
   "liquidity.asset.positions.position.title": "Liquidity position #{{ index }}",
   "liquidity.asset.positions.position.shares": "{{ shares, bignumber(type: 'token') }} asset shares",

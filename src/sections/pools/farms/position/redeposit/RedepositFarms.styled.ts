@@ -40,4 +40,8 @@ export const SJoinButton = styled.button`
   padding: 9px 0;
 
   width: 118px;
+
+  &:hover {
+    opacity: 0.8;
+  }
 `
