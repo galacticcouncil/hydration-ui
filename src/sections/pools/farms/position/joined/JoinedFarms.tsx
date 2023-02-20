@@ -36,18 +36,39 @@ export const JoinedFarms = ({ farms = ["", ""] }) => {
 
     if (!isLastElement)
       acc.push(
-        <SSeparator key={i} sx={{ height: 35 }} orientation="vertical" />,
+        <SSeparator
+          key={`separator_${i}`}
+          sx={{ height: 35 }}
+          orientation="vertical"
+        />,
       )
 
     return acc
   }, [] as ReactElement[])
 
   return (
-    <div sx={{ flex: "column", gap: 6 }}>
+    <div
+      sx={{
+        flex: "column",
+        gap: 6,
+        pb: [12, 0],
+        justify: "space-between",
+      }}
+    >
       <Text color="basic500" fs={14} lh={16} fw={400}>
         {t("farms.positions.labels.joinedFarms.title")}
       </Text>
-      <div sx={{ flex: "row", gap: 35 }}>{assetAprs}</div>
+      <div
+        sx={{
+          flex: "row",
+          gap: ["10px 10px", "10px 35px"],
+          width: "100%",
+          flexWrap: "wrap",
+          justify: "space-between",
+        }}
+      >
+        {assetAprs}
+      </div>
     </div>
   )
 }

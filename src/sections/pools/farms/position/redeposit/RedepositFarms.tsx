@@ -37,7 +37,7 @@ export const RedepositFarms = ({ farms = ["", ""] }) => {
       </Text>
       {farmComponents}
       <SJoinButton>
-        <Text fs={13} color="basic900" tTransform="uppercase">
+        <Text fs={13} color="basic900" tTransform="uppercase" tAlign="center">
           {t("farms.positions.join.button.label")}
         </Text>
       </SJoinButton>

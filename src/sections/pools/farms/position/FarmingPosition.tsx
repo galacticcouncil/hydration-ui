@@ -9,14 +9,21 @@ import { Button } from "components/Button/Button"
 import { theme } from "theme"
 import { RedepositFarms } from "./redeposit/RedepositFarms"
 import { JoinedFarms } from "./joined/JoinedFarms"
+import { useMedia } from "react-use"
 
 export const FarmingPosition = ({ index }: { index: number }) => {
   const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
     <SContainer>
       <div
-        sx={{ flex: "row", justify: "space-between", align: "center", py: 10 }}
+        sx={{
+          flex: "row",
+          justify: "space-between",
+          align: "center",
+          py: [0, 10],
+        }}
       >
         <Text fw={[500, 400]}>
           {t("farms.positions.position.title", { index })}
@@ -32,25 +39,31 @@ export const FarmingPosition = ({ index }: { index: number }) => {
           justify: "space-between",
           align: "center",
           gap: 40,
-          py: 10,
+          py: [0, 10],
         }}
       >
-        <div sx={{ flex: "row", justify: "space-between", flexGrow: 1 }}>
-          <SValueContainer>
+        <div
+          sx={{
+            flex: ["column", "row"],
+            justify: "space-between",
+            flexGrow: 1,
+          }}
+        >
+          <SValueContainer sx={{ pt: 0 }}>
             <Text color="basic500" fs={14} lh={16} fw={400}>
               {t("farms.positions.labels.enterDate")}
             </Text>
             <Text>2.02.2022</Text>
           </SValueContainer>
-          <SSeparator orientation="vertical" />
+          <SSeparator orientation={isDesktop ? "vertical" : "horizontal"} />
           <SValueContainer>
             <Text color="basic500" fs={14} lh={16} fw={400}>
               {t("farms.positions.labels.lockedShares")}
             </Text>
             <Text>2 855.222</Text>
           </SValueContainer>
-          <SSeparator orientation="vertical" />
-          <SValueContainer sx={{ width: 150 }}>
+          <SSeparator orientation={isDesktop ? "vertical" : "horizontal"} />
+          <SValueContainer sx={{ width: ["100%", 150] }}>
             <Text color="basic500" fs={14} lh={16} fw={400}>
               {t("farms.positions.labels.currentValue")}
             </Text>
@@ -67,8 +80,10 @@ export const FarmingPosition = ({ index }: { index: number }) => {
           </SValueContainer>
         </div>
       </div>
-      <SSeparator />
-      <div sx={{ flex: "row", justify: "space-between", pt: 10 }}>
+      <SSeparator sx={{ display: ["none", "inherit"] }} />
+      <div
+        sx={{ flex: ["column", "row"], justify: "space-between", pt: [0, 10] }}
+      >
         <JoinedFarms />
         <RedepositFarms />
       </div>
