@@ -14,6 +14,9 @@ import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { useState } from "react"
 import { RemoveLiquidity } from "../../modals/RemoveLiquidity/RemoveLiquidity"
 import { useAssetMeta } from "../../../../api/assetMeta"
+import { Button } from "components/Button/Button"
+import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
+import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 
 type Props = {
   position: HydraPositionsTableData
@@ -24,6 +27,7 @@ type Props = {
 export const LiquidityPosition = ({ position, index, onSuccess }: Props) => {
   const { t } = useTranslation()
   const [openRemove, setOpenRemove] = useState(false)
+  const [joinFarm, setJoinFarm] = useState(false)
 
   const meta = useAssetMeta(position.assetId)
 
@@ -52,26 +56,48 @@ export const LiquidityPosition = ({ position, index, onSuccess }: Props) => {
             </Text>
           </div>
           <Separator orientation="vertical" />
-          <div sx={{ flex: "column", gap: 2, align: "end" }}>
-            <WalletAssetsHydraPositionsData
-              symbol={position.symbol}
-              value={position.value}
-              lrna={position.lrna}
-            />
-            <DollarAssetValue
-              value={position.valueUSD}
-              wrapper={(children) => (
-                <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
-                  {children}
-                </Text>
-              )}
-            >
-              {t("value.usd", { amount: position.valueUSD })}
-            </DollarAssetValue>
+          <div sx={{ flex: "column", gap: 6, align: "end" }}>
+            <Text fs={[14, 14]} color="whiteish500">
+              {t("liquidity.asset.positions.position.currentValue")}
+            </Text>
+            <div sx={{ flex: "column", align: "end" }}>
+              <WalletAssetsHydraPositionsData
+                symbol={position.symbol}
+                value={position.value}
+                lrna={position.lrna}
+              />
+              <DollarAssetValue
+                value={position.valueUSD}
+                wrapper={(children) => (
+                  <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                    {children}
+                  </Text>
+                )}
+              >
+                {t("value.usd", { amount: position.valueUSD })}
+              </DollarAssetValue>
+            </div>
           </div>
         </div>
       </div>
-      <div sx={{ flex: "row", justify: "end" }}>
+      <div
+        sx={{
+          flex: "column",
+          align: "center",
+          gap: 8,
+        }}
+      >
+        <Button
+          variant="primary"
+          size="small"
+          sx={{ width: ["100%", 220] }}
+          onClick={() => {
+            setJoinFarm(true)
+          }}
+        >
+          <Icon size={16} icon={<FPIcon />} />
+          {t("liquidity.asset.actions.joinFarms")}
+        </Button>
         <SButton
           variant="primary"
           size="small"
@@ -92,6 +118,9 @@ export const LiquidityPosition = ({ position, index, onSuccess }: Props) => {
           position={position}
           onSuccess={onSuccess}
         />
+      )}
+      {joinFarm && (
+        <JoinFarmModal isOpen={joinFarm} onClose={() => setJoinFarm(false)} />
       )}
     </SContainer>
   )
