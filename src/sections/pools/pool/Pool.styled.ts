@@ -78,6 +78,8 @@ export const SGridContainer = styled.div`
 
 export const SPositions = styled.div`
   background: rgba(${theme.rgbColors.darkBlue900}, 0.4);
+  width: 100%;
+  padding: 20px 12px;
 
   @media (${theme.viewport.gte.sm}) {
     padding: 20px 30px;

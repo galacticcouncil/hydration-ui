@@ -62,15 +62,13 @@
   "liquidity.asset.claim.button": "Claim all",
   "liquidity.asset.claim.total": "Total locked {{ locked, bignumber(numberPrefix: '$'; type: 'dollar') }}",
   "liquidity.asset.claim.claimable": "{{ claimable, bignumber(numberPrefix: '$'; type: 'dollar') }} claimable",
-  "liquidity.asset.positions.title": "Your liquidity positions",
+  "liquidity.asset.positions.title": "Liquidity Positions",
   "liquidity.asset.positions.position.amount": "Amount",
   "liquidity.asset.positions.position.title": "Liquidity position #{{ index }}",
   "liquidity.asset.positions.position.shares": "{{ shares, bignumber(type: 'token') }} asset shares",
   "liquidity.asset.capacity": "<0>Current capacity for this asset:</0> <1>{{ filled, compact }} / {{ capacity, compact }} {{ symbol }}</1>",
-
   "liquidity.positions.modal.title": "Your positions",
   "liquidity.positions.modal.nftPositions": "NFT Liquidity Positions",
-
   "liquidity.add.modal.title": "Add liquidity",
   "liquidity.add.modal.row.transactionCostValue": "≈ {{ amount, bignumber }} {{ symbol }}",
   "liquidity.add.modal.confirmButton": "Add liquidity",
@@ -214,5 +212,14 @@
   "wallet.assets.hydraPositions.actions.transfer": "Transfer",
   "wallet.assets.hydraPositions.actions.details": "Details",
   "wallet.assets.hydraPositions.details.amount": "Provided liquidity",
-  "wallet.assets.hydraPositions.details.shares": "Amount of liquidity shares"
+  "wallet.assets.hydraPositions.details.shares": "Amount of liquidity shares",
+  "farms.positions.header.title": "Your Farming Positions",
+  "farms.positions.joinedFarms.button.label": "Details",
+  "farms.positions.join.button.label": "Join",
+  "farms.positions.position.title": "Your Farming Position #{{index}}",
+  "farms.positions.labels.joinedFarms.title": "Your Current Estimated APR",
+  "farms.positions.labels.enterDate": "Enter Date",
+  "farms.positions.labels.lockedShares": "Locked Shares",
+  "farms.positions.labels.currentValue": "Current Value",
+  "farms.positions.redeposit.openFarms": "Open<br/>Farms"
 }

@@ -63,6 +63,7 @@ const colors = {
   primaryA15: "#4CD5F3",
   primaryA20: "#25CBFF",
   primaryA06: "#DAFFEE",
+  primaryA15Blue: "#546380",
 } as const
 
 const gradients = {

@@ -20,8 +20,8 @@ export const SContainer = styled.div`
     grid-template-columns: 3fr 2fr;
     grid-column-gap: 16px;
     padding: 22px 44px;
-    border: none;
-    background: rgba(${theme.rgbColors.darkBlue401}, 0.8);
+    border: 1px solid rgba(114, 131, 165, 0.6);
+    background: rgba(${theme.rgbColors.primaryA15Blue}, 0.35);
   }
 `
 
