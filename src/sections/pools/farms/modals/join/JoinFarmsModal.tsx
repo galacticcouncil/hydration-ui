@@ -10,11 +10,7 @@ import { useTranslation } from "react-i18next"
 
 const dummyData = [
   {
-    depositNft: {
-      deposit: {
-        shares: BN(22222222222222222),
-      },
-    },
+    depositNft: undefined,
     farm: {
       assetId: "1",
       distributedRewards: BN(67788889389433788),
@@ -48,7 +44,11 @@ export const JoinFarmModal = ({ isOpen, onClose }: JoinFarmModalProps) => {
     null,
   )
   return (
-    <Modal open={isOpen} onClose={onClose}>
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      title={t("farms.modal.title", { assetSymbol: "HDX" })}
+    >
       {/*Show Farm details alowng with loyalty graph */}
       {selectedYieldFarm ? (
         <div>FarmDetails</div>
