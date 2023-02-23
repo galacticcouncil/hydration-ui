@@ -48,6 +48,7 @@
   "liquidity.header.title": "Liquidity",
   "liquidity.header.switch": "My liquidity positions",
   "liquidity.header.totalLocked": "Total value locked",
+  "liquidity.header.24hours": "24h Volume",
   "liquidity.asset.title": "Asset",
   "liquidity.asset.details.fee": "Trade fee",
   "liquidity.asset.details.total": "Total value locked",

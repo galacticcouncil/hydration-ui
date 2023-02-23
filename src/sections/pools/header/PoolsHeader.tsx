@@ -6,6 +6,7 @@ import { Text } from "components/Typography/Text/Text"
 // import { Separator } from "components/Separator/Separator"
 import { PoolsHeaderTotal } from "sections/pools/header/PoolsHeaderTotal"
 import { Heading } from "components/Typography/Heading/Heading"
+import { PoolsHeaderVolume } from "./PoolsHeaderVolume"
 
 type Props = {
   showMyPositions: boolean
@@ -46,6 +47,15 @@ export const PoolsHeader: FC<Props> = ({
           </Text>
           <div sx={{ flex: "row", align: "baseline" }}>
             <PoolsHeaderTotal variant="pools" myPositions={showMyPositions} />
+          </div>
+        </div>
+
+        <div sx={{ flex: ["row", "column"], justify: "space-between" }}>
+          <Text color="brightBlue300" sx={{ mb: 14 }}>
+            {t("liquidity.header.24hours")}
+          </Text>
+          <div sx={{ flex: "row", align: "baseline" }}>
+            <PoolsHeaderVolume myPositions={showMyPositions} variant="pools" />
           </div>
         </div>
       </div>
