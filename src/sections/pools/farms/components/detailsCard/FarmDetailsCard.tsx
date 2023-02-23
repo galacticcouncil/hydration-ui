@@ -14,8 +14,10 @@ import { Icon } from "components/Icon/Icon"
 type FarmDetailsCardProps = {
   depositNft: any
   farm: any
-  onSelect: (id: string) => void
+  onSelect?: (id: string) => void
 }
+
+export type CardVariant = "button" | "div"
 
 export const FarmDetailsCard = ({
   depositNft,
@@ -26,11 +28,20 @@ export const FarmDetailsCard = ({
 
   const asset = useAsset(farm.assetId)
 
+  const variant = onSelect ? "button" : "div"
+
   return (
-    <SContainer onClick={() => onSelect(farm.assetId)}>
-      <div css={{ gridArea: "tag" }}>
-        {depositNft && <Tag>{t("farms.details.card.tag.label")}</Tag>}
-      </div>
+    <SContainer
+      as={variant}
+      variant={variant}
+      onClick={() => onSelect?.(farm.assetId)}
+      isJoined={!!depositNft}
+    >
+      {depositNft && (
+        <div css={{ gridArea: "tag" }}>
+          <Tag>{t("farms.details.card.tag.label")}</Tag>
+        </div>
+      )}
       <div
         sx={{
           flex: ["row", "column"],
@@ -101,6 +112,7 @@ export const FarmDetailsCard = ({
                 fs={14}
                 tAlign="right"
                 font="ChakraPetchBold"
+                gradient="pinkLightBlue"
                 sx={{ width: "fit-content" }}
                 css={{ justifySelf: "end" }}
               >
@@ -114,7 +126,11 @@ export const FarmDetailsCard = ({
               <Text fs={14} lh={18}>
                 {t("farms.details.card.currentApr.label")}
               </Text>
-              <GradientText fs={14} font="ChakraPetchBold">
+              <GradientText
+                fs={14}
+                font="ChakraPetchBold"
+                gradient="pinkLightBlue"
+              >
                 {t("value.percentage", {
                   value: BN(33),
                 })}
@@ -128,7 +144,7 @@ export const FarmDetailsCard = ({
           })}
         </Text>
       </div>
-      {true && (
+      {onSelect && (
         <SIcon
           sx={{ color: "iconGray", height: "100%", align: "center" }}
           icon={<ChevronDown />}

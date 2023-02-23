@@ -7,10 +7,11 @@ import { Button } from "components/Button/Button"
 import { SJoinFarmContainer } from "./JoinFarmsModal.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import { FarmDetailsModal } from "../details/FarmDetailsModal"
 
 const dummyData = [
   {
-    depositNft: undefined,
+    depositNft: { deposit: { shares: BN(67788889389433788) } },
     farm: {
       assetId: "1",
       distributedRewards: BN(67788889389433788),
@@ -47,17 +48,17 @@ export const JoinFarmModal = ({ isOpen, onClose }: JoinFarmModalProps) => {
     <Modal
       open={isOpen}
       onClose={onClose}
-      title={t("farms.modal.title", { assetSymbol: "HDX" })}
+      title={t("farms.modal.join.title", { assetSymbol: "HDX" })}
     >
-      {/*Show Farm details alowng with loyalty graph */}
       {selectedYieldFarm ? (
-        <div>FarmDetails</div>
+        <FarmDetailsModal onBack={() => setSelectedYieldFarm(null)} />
       ) : (
         <div>
           <div sx={{ flex: "column", gap: 8, mt: 24 }}>
-            {dummyData.map((el) => {
+            {dummyData.map((el, i) => {
               return (
                 <FarmDetailsCard
+                  key={i}
                   farm={el.farm}
                   depositNft={el.depositNft}
                   onSelect={setSelectedYieldFarm}

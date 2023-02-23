@@ -20,11 +20,15 @@ export const RedepositFarms = ({ farms = ["", ""] }) => {
   const farmComponents = farms.reduce((acc, apr, i) => {
     const isLastElement = i + 1 === farms.length
 
-    acc.push(<RedepositFarm key={i} />)
+    acc.push(<RedepositFarm key={`farm_${i}`} />)
 
     if (!isLastElement)
       acc.push(
-        <SSeparator key={i} sx={{ height: 35 }} orientation="vertical" />,
+        <SSeparator
+          key={`separator_${i}`}
+          sx={{ height: 35 }}
+          orientation="vertical"
+        />,
       )
 
     return acc
