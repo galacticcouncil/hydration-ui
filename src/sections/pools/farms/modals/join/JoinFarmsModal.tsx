@@ -37,9 +37,14 @@ const dummyData = [
 type JoinFarmModalProps = {
   isOpen: boolean
   onClose: () => void
+  isRedeposit?: boolean
 }
 
-export const JoinFarmModal = ({ isOpen, onClose }: JoinFarmModalProps) => {
+export const JoinFarmModal = ({
+  isOpen,
+  onClose,
+  isRedeposit,
+}: JoinFarmModalProps) => {
   const { t } = useTranslation()
   const [selectedYieldFarm, setSelectedYieldFarm] = useState<string | null>(
     null,
@@ -50,6 +55,11 @@ export const JoinFarmModal = ({ isOpen, onClose }: JoinFarmModalProps) => {
       onClose={onClose}
       title={t("farms.modal.join.title", { assetSymbol: "HDX" })}
     >
+      {isRedeposit && (
+        <Text color="basic400">
+          {t("farms.modal.join.description", { assets: "HDX" })}
+        </Text>
+      )}
       {selectedYieldFarm ? (
         <FarmDetailsModal onBack={() => setSelectedYieldFarm(null)} />
       ) : (
