@@ -3,8 +3,9 @@ import { SContainer, SJoinButton } from "./RedepositFarms.styled"
 import { Trans, useTranslation } from "react-i18next"
 import { Icon } from "components/Icon/Icon"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
-import { ReactElement } from "react"
+import { ReactElement, useState } from "react"
 import { SSeparator } from "../FarmingPosition.styled"
+import { JoinFarmModal } from "../../modals/join/JoinFarmsModal"
 
 const RedepositFarm = () => {
   return (
@@ -17,14 +18,20 @@ const RedepositFarm = () => {
 export const RedepositFarms = ({ farms = ["", ""] }) => {
   const { t } = useTranslation()
 
+  const [joinFarm, setJoinFarm] = useState(false)
+
   const farmComponents = farms.reduce((acc, apr, i) => {
     const isLastElement = i + 1 === farms.length
 
-    acc.push(<RedepositFarm key={i} />)
+    acc.push(<RedepositFarm key={`farm_${i}`} />)
 
     if (!isLastElement)
       acc.push(
-        <SSeparator key={i} sx={{ height: 35 }} orientation="vertical" />,
+        <SSeparator
+          key={`separator_${i}`}
+          sx={{ height: 35 }}
+          orientation="vertical"
+        />,
       )
 
     return acc
@@ -36,11 +43,18 @@ export const RedepositFarms = ({ farms = ["", ""] }) => {
         <Trans t={t} i18nKey="farms.positions.redeposit.openFarms" />
       </Text>
       {farmComponents}
-      <SJoinButton>
+      <SJoinButton onClick={() => setJoinFarm(true)}>
         <Text fs={13} color="basic900" tTransform="uppercase" tAlign="center">
           {t("farms.positions.join.button.label")}
         </Text>
       </SJoinButton>
+      {joinFarm && (
+        <JoinFarmModal
+          isOpen={joinFarm}
+          onClose={() => setJoinFarm(false)}
+          isRedeposit
+        />
+      )}
     </SContainer>
   )
 }
