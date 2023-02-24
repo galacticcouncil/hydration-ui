@@ -55,6 +55,7 @@ const colors = {
   green100: "#03EF97",
   green600: "#30FFB1",
   iconGray: "#BDCCD4",
+  neutralGray100: "#E5ECF1",
   neutralGray500: "#787E82",
   graySoft: "#EBEBEB",
   whiteish500: "#878C9E",

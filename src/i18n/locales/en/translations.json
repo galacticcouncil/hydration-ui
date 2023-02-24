@@ -1,4 +1,5 @@
 {
+  "and": "and",
   "toast.close": "Close",
   "toast.counter": "{{ index }} of {{ count }}",
   "toast.date": "{{ value, relativetime }}",
@@ -241,5 +242,12 @@
   "farms.modal.details.loyaltyRewards.label": "Loyalty Rewards",
   "farms.modal.details.description": "You’ll receive addition APR by remaining in farm for longer period of time. The longer you keep farming the bigger the reward will be.",
   "farms.modal.details.loyalty.x": "Days",
-  "farms.modal.details.loyalty.y": "Reward APR%"
+  "farms.modal.details.loyalty.y": "Reward APR%",
+  "farms.modal.joinedFarms.joined.label": "Your farm positions",
+  "farms.modal.joinedFarms.available.label": "Available farms",
+  "farms.modal.joinedFarms.button.exit.label": "Exit All Farms",
+  "farms.modal.joinedFarms.button.joinAll.label": "Join All Free Farms",
+  "farms.claimCard.title": "Claimable Now",
+  "farms.claimCard.button.label": "Claim All",
+  "farms.claimCard.claim.asset": "{{num}}<0>{{denom}} {{symbol}}</0>"
 }
