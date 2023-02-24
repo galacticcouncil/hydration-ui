@@ -8,6 +8,9 @@ import { SJoinFarmContainer } from "./JoinFarmsModal.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { FarmDetailsModal } from "../details/FarmDetailsModal"
+import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
+import { useFarms } from "api/farms"
+import { u32 } from "@polkadot/types"
 
 const dummyData = [
   {
@@ -37,6 +40,7 @@ const dummyData = [
 type JoinFarmModalProps = {
   isOpen: boolean
   onClose: () => void
+  position: HydraPositionsTableData
   isRedeposit?: boolean
 }
 
@@ -44,11 +48,21 @@ export const JoinFarmModal = ({
   isOpen,
   onClose,
   isRedeposit,
+  position,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
-  const [selectedYieldFarm, setSelectedYieldFarm] = useState<string | null>(
-    null,
+  const [selectedFarmId, setSelectedFarmId] = useState<{
+    yieldFarmId: u32
+    globalFarmId: u32
+  } | null>(null)
+  const farms = useFarms(position.id)
+
+  const selectedFarm = farms.data?.find(
+    (farm) =>
+      farm.globalFarm.id.eq(selectedFarmId?.globalFarmId) &&
+      farm.yieldFarm.id.eq(selectedFarmId?.yieldFarmId),
   )
+
   return (
     <Modal
       open={isOpen}
@@ -60,18 +74,26 @@ export const JoinFarmModal = ({
           {t("farms.modal.join.description", { assets: "HDX" })}
         </Text>
       )}
-      {selectedYieldFarm ? (
-        <FarmDetailsModal onBack={() => setSelectedYieldFarm(null)} />
+      {selectedFarm ? (
+        <FarmDetailsModal
+          farm={selectedFarm}
+          onBack={() => setSelectedFarmId(null)}
+        />
       ) : (
         <div>
           <div sx={{ flex: "column", gap: 8, mt: 24 }}>
-            {dummyData.map((el, i) => {
+            {farms.data?.map((farm, i) => {
               return (
                 <FarmDetailsCard
                   key={i}
-                  farm={el.farm}
-                  depositNft={el.depositNft}
-                  onSelect={setSelectedYieldFarm}
+                  farm={farm}
+                  depositNft={undefined}
+                  onSelect={() =>
+                    setSelectedFarmId({
+                      globalFarmId: farm.globalFarm.id,
+                      yieldFarmId: farm.yieldFarm.id,
+                    })
+                  }
                 />
               )
             })}

@@ -16,7 +16,6 @@ export const LiquidityPositionWrapper = ({
   const { t } = useTranslation()
 
   if (!positions.data.length) return null
-
   return (
     <SPositions>
       <div sx={{ flex: "row", align: "center", gap: 8, mb: 20 }}>

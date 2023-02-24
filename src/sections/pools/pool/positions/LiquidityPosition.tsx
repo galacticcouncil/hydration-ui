@@ -120,7 +120,11 @@ export const LiquidityPosition = ({ position, index, onSuccess }: Props) => {
         />
       )}
       {joinFarm && (
-        <JoinFarmModal isOpen={joinFarm} onClose={() => setJoinFarm(false)} />
+        <JoinFarmModal
+          isOpen={joinFarm}
+          onClose={() => setJoinFarm(false)}
+          position={position}
+        />
       )}
     </SContainer>
   )

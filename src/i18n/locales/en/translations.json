@@ -229,7 +229,7 @@
   "farms.details.card.distribution": "<0>{{ distributed, compact }}</0> <1>from</1> <0>{{ max, compact }} Distributed</0>",
   "farms.details.card.capacity": "{{ capacity, bignumber(type: 'percentage') }}% full",
   "farms.details.card.lockedShares.label": "Locked Shares",
-  "farms.details.card.currentApr.label": "Your current extimated APR",
+  "farms.details.card.currentApr.label": "Your current estimated APR",
   "farms.details.card.lockedShares.value": "{{ value, compact }} Shares",
   "farms.details.card.end.value": "Expected end {{ end, d. M. yyyy }}",
   "farms.modal.join.title": "All {{assetSymbol}} farms",
