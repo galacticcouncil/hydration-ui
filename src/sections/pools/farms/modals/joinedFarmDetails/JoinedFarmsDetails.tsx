@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 import { FarmDetailsModal } from "../details/FarmDetailsModal"
 import { FarmDetailsCard } from "../../components/detailsCard/FarmDetailsCard"
 import { ClaimeRewardsCard } from "../../components/claimableCard/ClaimeRewardsCard"
+import { useFarms } from "api/farms"
 
 type JoinedFarmsDetailsProps = {
   isOpen: boolean
@@ -25,6 +26,11 @@ export const JoinedFarmsDetails = ({
     null,
   )
 
+  // test data
+  const farms = useFarms("6")
+  const farm = farms.data?.[0]
+
+  if (!farm) return null
   return (
     <Modal
       open={isOpen}
@@ -32,7 +38,10 @@ export const JoinedFarmsDetails = ({
       title={t("farms.modal.join.title", { assetSymbol: "HDX" })}
     >
       {selectedYieldFarm ? (
-        <FarmDetailsModal onBack={() => setSelectedYieldFarm(null)} />
+        <FarmDetailsModal
+          farm={farm}
+          onBack={() => setSelectedYieldFarm(null)}
+        />
       ) : (
         <div sx={{ flex: "column" }}>
           <Text color="neutralGray100" sx={{ mb: 18, mt: 20 }}>
@@ -44,9 +53,9 @@ export const JoinedFarmsDetails = ({
               return (
                 <FarmDetailsCard
                   key={i}
-                  farm={el.farm}
+                  farm={farm}
                   depositNft={el.depositNft}
-                  onSelect={setSelectedYieldFarm}
+                  onSelect={() => setSelectedYieldFarm("1")}
                 />
               )
             })}
@@ -66,9 +75,9 @@ export const JoinedFarmsDetails = ({
               return (
                 <FarmDetailsCard
                   key={i}
-                  farm={el.farm}
+                  farm={farm}
                   depositNft={el.depositNft}
-                  onSelect={setSelectedYieldFarm}
+                  onSelect={() => setSelectedYieldFarm("1")}
                 />
               )
             })}
