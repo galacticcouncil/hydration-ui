@@ -1,8 +1,4 @@
-import {
-  getVolumeAssetTotalValue,
-  useTradeVolume,
-  useTradeVolumes,
-} from "api/volume"
+import { getVolumeAssetTotalValue, useTradeVolumes } from "api/volume"
 import { useMemo } from "react"
 import { BN_0, BN_10 } from "utils/constants"
 import { useSpotPrice, useSpotPrices } from "api/spotPrice"
@@ -12,19 +8,23 @@ import { u32 } from "@polkadot/types-codec"
 import { normalizeId } from "../../../../utils/helpers"
 
 export function usePoolDetailsTradeVolume(assetId: u32) {
-  const volume = useTradeVolume(assetId)
+  const volumes = useTradeVolumes([assetId])
 
   const assetTotalValue = useMemo(() => {
-    if (!volume.data) return
+    const volume = volumes.find(
+      (volume) => volume.data?.assetId === normalizeId(assetId),
+    )
+
+    if (!volume?.data) return
     const sums = getVolumeAssetTotalValue(volume.data)
     return sums?.[assetId.toString()]
-  }, [volume.data, assetId])
+  }, [volumes, assetId])
 
   const apiIds = useApiIds()
   const assetMeta = useAssetMeta(assetId)
   const spotPrice = useSpotPrice(assetId, apiIds.data?.usdId)
 
-  const queries = [volume, apiIds, assetMeta, spotPrice]
+  const queries = [...volumes, apiIds, assetMeta, spotPrice]
   const isLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
@@ -64,9 +64,7 @@ export function usePoolsDetailsTradeVolumes(assetIds: u32[]) {
         (spot) => spot.data?.tokenIn === normalizeId(assetId),
       )?.data?.spotPrice
 
-      if (!volume?.data) return acc
-
-      const assetTotalValue = getVolumeAssetTotalValue(volume.data)?.[
+      const assetTotalValue = getVolumeAssetTotalValue(volume?.data)?.[
         assetId.toString()
       ]
 

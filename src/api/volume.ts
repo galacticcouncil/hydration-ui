@@ -1,4 +1,4 @@
-import { useQueries, useQuery } from "@tanstack/react-query"
+import { useQueries } from "@tanstack/react-query"
 import { addDays } from "date-fns"
 import { gql, request } from "graphql-request"
 import { Maybe, normalizeId, undefinedNoop } from "utils/helpers"
@@ -66,14 +66,6 @@ export const getTradeVolume = async (assetId: u32) => {
   )
 }
 
-export function useTradeVolume(assetId: Maybe<u32>) {
-  return useQuery(
-    QUERY_KEYS.tradeVolume(assetId),
-    assetId != null ? async () => getTradeVolume(assetId) : undefinedNoop,
-    { enabled: !!assetId },
-  )
-}
-
 export function useTradeVolumes(assetIds: Maybe<u32>[]) {
   return useQueries({
     queries: assetIds.map((assetId) => ({
@@ -94,8 +86,9 @@ export function useTradeVolumes(assetIds: Maybe<u32>[]) {
 }
 
 export function getVolumeAssetTotalValue(
-  volume: Awaited<ReturnType<typeof getTradeVolume>>,
+  volume?: Awaited<ReturnType<typeof getTradeVolume>>,
 ) {
+  if (!volume) return
   // Assuming trade volume is the aggregate amount being
   // sent between user account and pair account
 

@@ -1,9 +1,6 @@
-import { useOmnipoolAssets, useOmnipoolPositions } from "../../../api/omnipool"
+import { useOmnipoolAssets } from "../../../api/omnipool"
 import { usePoolsDetailsTradeVolumes } from "../pool/details/PoolDetails.utils"
-import { useAccountStore } from "../../../state/store"
-import { useApiIds } from "../../../api/consts"
-import { useUniques } from "../../../api/uniques"
-import { isNotNil } from "../../../utils/helpers"
+import { useOmnipoolPools } from "../PoolsPage.utils"
 
 export function useTotalVolumesInPools() {
   const assets = useOmnipoolAssets()
@@ -21,20 +18,12 @@ export function useTotalVolumesInPools() {
 }
 
 export function useTotalVolumesInPoolsUser() {
-  const { account } = useAccountStore()
-  const apiIds = useApiIds()
-  const uniques = useUniques(
-    account?.address ?? "",
-    apiIds.data?.omnipoolCollectionId ?? "",
-  )
-  const positions = useOmnipoolPositions(
-    uniques.data?.map((u) => u.itemId) ?? [],
-  )
-  const assetIds = positions.map((p) => p.data?.assetId).filter(isNotNil) ?? []
+  const pools = useOmnipoolPools(true)
+  const assetIds = pools.data?.map((pool) => pool.id) ?? []
 
   const totalVolume = usePoolsDetailsTradeVolumes(assetIds)
 
-  const queries = [uniques, ...positions, totalVolume]
+  const queries = [pools, totalVolume]
   const isLoading = queries.some((query) => query.isLoading)
 
   return {
