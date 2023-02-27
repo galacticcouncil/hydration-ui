@@ -1,5 +1,4 @@
 import { useState } from "react"
-
 import { Modal } from "components/Modal/Modal"
 import { FarmDetailsCard } from "../../components/detailsCard/FarmDetailsCard"
 import { Button } from "components/Button/Button"
@@ -46,17 +45,35 @@ export const JoinFarmModal = ({
   const { createTransaction } = useStore()
   const api = useApiPromise()
   const joinFarm = useMutation(async () => {
-    const farm = farms.data?.[0]
+    const [firstFarm, ...restFarm] = farms.data ?? []
+    if (firstFarm == null) throw new Error("Missing farm")
 
-    // TODO: add to multiple farms at once
-    if (farm == null) throw new Error("Farm not found")
-    await createTransaction({
+    // TODO: add error handling and better toast descriptions
+    const firstDeposit = await createTransaction({
       tx: api.tx.omnipoolLiquidityMining.depositShares(
-        farm.globalFarm.id,
-        farm.yieldFarm.id,
+        firstFarm.globalFarm.id,
+        firstFarm.yieldFarm.id,
         position.id,
       ),
     })
+
+    for (const record of firstDeposit.events) {
+      if (api.events.omnipoolLiquidityMining.SharesDeposited.is(record.event)) {
+        const depositId = record.event.data.depositId
+
+        const txs = restFarm.map((farm) =>
+          api.tx.omnipoolLiquidityMining.redepositShares(
+            farm.globalFarm.id,
+            farm.yieldFarm.id,
+            depositId,
+          ),
+        )
+
+        await createTransaction({
+          tx: txs.length > 1 ? api.tx.utility.batch(txs) : txs[0],
+        })
+      }
+    }
   })
 
   return (
