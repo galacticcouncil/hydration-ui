@@ -5,18 +5,20 @@ import { LiquidityPosition } from "./LiquidityPosition"
 import { usePoolPositions } from "../Pool.utils"
 import { ReactComponent as LPIcon } from "assets/icons/LPIcon.svg"
 import { Icon } from "components/Icon/Icon"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 
 type Positions = ReturnType<typeof usePoolPositions>
 
 export const LiquidityPositionWrapper = ({
   positions,
+  pool,
 }: {
+  pool: OmnipoolPool
   positions: Positions
 }) => {
   const { t } = useTranslation()
 
   if (!positions.data.length) return null
-
   return (
     <SPositions>
       <div sx={{ flex: "row", align: "center", gap: 8, mb: 20 }}>
@@ -28,6 +30,7 @@ export const LiquidityPositionWrapper = ({
       <div sx={{ flex: "column", gap: 16 }}>
         {positions.data.map((position, i) => (
           <LiquidityPosition
+            pool={pool}
             key={`${i}-${position.assetId}`}
             position={position}
             index={i + 1}

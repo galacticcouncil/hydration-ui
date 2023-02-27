@@ -17,14 +17,21 @@ import { useAssetMeta } from "../../../../api/assetMeta"
 import { Button } from "components/Button/Button"
 import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 
 type Props = {
+  pool: OmnipoolPool
   position: HydraPositionsTableData
   onSuccess: () => void
   index: number
 }
 
-export const LiquidityPosition = ({ position, index, onSuccess }: Props) => {
+export const LiquidityPosition = ({
+  pool,
+  position,
+  index,
+  onSuccess,
+}: Props) => {
   const { t } = useTranslation()
   const [openRemove, setOpenRemove] = useState(false)
   const [joinFarm, setJoinFarm] = useState(false)
@@ -120,7 +127,12 @@ export const LiquidityPosition = ({ position, index, onSuccess }: Props) => {
         />
       )}
       {joinFarm && (
-        <JoinFarmModal isOpen={joinFarm} onClose={() => setJoinFarm(false)} />
+        <JoinFarmModal
+          pool={pool}
+          position={position}
+          isOpen={joinFarm}
+          onClose={() => setJoinFarm(false)}
+        />
       )}
     </SContainer>
   )

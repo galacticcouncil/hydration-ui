@@ -10,11 +10,19 @@ import BN from "bignumber.js"
 import { addSeconds } from "date-fns"
 import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
 import { Icon } from "components/Icon/Icon"
+import {
+  PalletLiquidityMiningGlobalFarmData,
+  PalletLiquidityMiningYieldFarmData,
+} from "@polkadot/types/lookup"
+import { useFarmApr } from "api/farms"
 
 type FarmDetailsCardProps = {
   depositNft: any
-  farm: any
-  onSelect?: (id: string) => void
+  farm: {
+    globalFarm: PalletLiquidityMiningGlobalFarmData
+    yieldFarm: PalletLiquidityMiningYieldFarmData
+  }
+  onSelect?: () => void
 }
 
 export type CardVariant = "button" | "div"
@@ -26,15 +34,17 @@ export const FarmDetailsCard = ({
 }: FarmDetailsCardProps) => {
   const { t } = useTranslation()
 
-  const asset = useAsset(farm.assetId)
+  const asset = useAsset(farm.globalFarm.rewardCurrency)
+  const apr = useFarmApr(farm)
 
   const variant = onSelect ? "button" : "div"
 
+  if (apr.data == null) return null
   return (
     <SContainer
       as={variant}
       variant={variant}
-      onClick={() => onSelect?.(farm.assetId)}
+      onClick={() => onSelect?.()}
       isJoined={!!depositNft}
     >
       {depositNft && (
@@ -57,17 +67,14 @@ export const FarmDetailsCard = ({
           </Text>
         </div>
         <Text fs={19} lh={28} fw={400} font="FontOver">
-          {t("value.APR.range", {
-            from: farm.minApr,
-            to: farm.apr,
-          })}
+          {t("value.APR", { apr: apr.data?.apr })}
         </Text>
       </div>
       <div sx={{ flex: "column" }} css={{ gridArea: "details" }}>
         <SRow>
           <FillBar
-            percentage={farm.distributedRewards
-              .div(farm.maxRewards)
+            percentage={apr.data.distributedRewards
+              .div(apr.data.maxRewards)
               .times(100)
               .toNumber()}
           />
@@ -77,10 +84,10 @@ export const FarmDetailsCard = ({
               i18nKey="farms.details.card.distribution"
               tOptions={{
                 distributed: getFloatingPointAmount(
-                  farm.distributedRewards,
+                  apr.data.distributedRewards,
                   12,
                 ),
-                max: getFloatingPointAmount(farm.maxRewards, 12),
+                max: getFloatingPointAmount(apr.data.maxRewards, 12),
               }}
             >
               <Text as="span" fs={14} color="basic100" />
@@ -90,15 +97,15 @@ export const FarmDetailsCard = ({
         </SRow>
         <SRow css={{ border: depositNft ? undefined : "none" }}>
           <FillBar
-            percentage={farm.distributedRewards
-              .div(farm.maxRewards)
+            percentage={apr.data.distributedRewards
+              .div(apr.data.maxRewards)
               .times(100)
               .toNumber()}
             variant="secondary"
           />
           <Text fs={14} color="basic100" tAlign="right">
             {t("farms.details.card.capacity", {
-              capacity: farm.fullness.times(100),
+              capacity: apr.data.fullness.times(100),
             })}
           </Text>
         </SRow>
@@ -131,9 +138,7 @@ export const FarmDetailsCard = ({
                 font="ChakraPetchBold"
                 gradient="pinkLightBlue"
               >
-                {t("value.percentage", {
-                  value: BN(33),
-                })}
+                {t("value.percentage", { value: BN(33) })}
               </GradientText>
             </div>
           </>
