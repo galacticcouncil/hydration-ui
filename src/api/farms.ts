@@ -11,7 +11,7 @@ import { secondsInYear } from "date-fns"
 import { useApiPromise } from "utils/api"
 import { BLOCK_TIME, BN_QUINTILL } from "utils/constants"
 import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
-import { QUERY_KEYS, QUERY_KEY_PREFIX } from "utils/queryKeys"
+import { QUERY_KEYS } from "utils/queryKeys"
 import { useBestNumber } from "./chain"
 
 export function useActiveYieldFarms(poolId: Maybe<u32 | string>) {
