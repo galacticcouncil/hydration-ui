@@ -12,18 +12,82 @@ import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/W
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { useState } from "react"
-import { RemoveLiquidity } from "../../modals/RemoveLiquidity/RemoveLiquidity"
-import { useAssetMeta } from "../../../../api/assetMeta"
+import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
+import { useAssetMeta } from "api/assetMeta"
 import { Button } from "components/Button/Button"
 import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { useFarms } from "api/farms"
 
 type Props = {
   pool: OmnipoolPool
   position: HydraPositionsTableData
   onSuccess: () => void
   index: number
+}
+
+function LiquidityPositionJoinFarmButton(props: {
+  pool: OmnipoolPool
+  position: HydraPositionsTableData
+  onSuccess: () => void
+}) {
+  const { t } = useTranslation()
+  const [joinFarm, setJoinFarm] = useState(false)
+  const farms = useFarms(props.pool.id)
+  return (
+    <>
+      <Button
+        variant="primary"
+        size="small"
+        disabled={!farms.data?.length}
+        sx={{ width: ["100%", 220] }}
+        onClick={() => setJoinFarm(true)}
+      >
+        <Icon size={16} icon={<FPIcon />} />
+        {t("liquidity.asset.actions.joinFarms")}
+      </Button>
+
+      {joinFarm && (
+        <JoinFarmModal
+          isOpen={joinFarm}
+          pool={props.pool}
+          position={props.position}
+          onClose={() => setJoinFarm(false)}
+        />
+      )}
+    </>
+  )
+}
+
+function LiquidityPositionRemoveLiquidity(props: {
+  position: HydraPositionsTableData
+  onSuccess: () => void
+}) {
+  const { t } = useTranslation()
+  const [openRemove, setOpenRemove] = useState(false)
+  return (
+    <>
+      <SButton
+        variant="primary"
+        size="small"
+        onClick={() => setOpenRemove(true)}
+      >
+        <div sx={{ flex: "row", align: "center", justify: "center" }}>
+          <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
+          {t("liquidity.asset.actions.removeLiquidity")}
+        </div>
+      </SButton>
+      {openRemove && (
+        <RemoveLiquidity
+          isOpen={openRemove}
+          onClose={() => setOpenRemove(false)}
+          position={props.position}
+          onSuccess={props.onSuccess}
+        />
+      )}
+    </>
+  )
 }
 
 export const LiquidityPosition = ({
@@ -33,9 +97,6 @@ export const LiquidityPosition = ({
   onSuccess,
 }: Props) => {
   const { t } = useTranslation()
-  const [openRemove, setOpenRemove] = useState(false)
-  const [joinFarm, setJoinFarm] = useState(false)
-
   const meta = useAssetMeta(position.assetId)
 
   return (
@@ -94,46 +155,16 @@ export const LiquidityPosition = ({
           gap: 8,
         }}
       >
-        <Button
-          variant="primary"
-          size="small"
-          sx={{ width: ["100%", 220] }}
-          onClick={() => {
-            setJoinFarm(true)
-          }}
-        >
-          <Icon size={16} icon={<FPIcon />} />
-          {t("liquidity.asset.actions.joinFarms")}
-        </Button>
-        <SButton
-          variant="primary"
-          size="small"
-          onClick={() => {
-            setOpenRemove(true)
-          }}
-        >
-          <div sx={{ flex: "row", align: "center", justify: "center" }}>
-            <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
-            {t("liquidity.asset.actions.removeLiquidity")}
-          </div>
-        </SButton>
-      </div>
-      {openRemove && (
-        <RemoveLiquidity
-          isOpen={openRemove}
-          onClose={() => setOpenRemove(false)}
+        <LiquidityPositionJoinFarmButton
+          pool={pool}
           position={position}
           onSuccess={onSuccess}
         />
-      )}
-      {joinFarm && (
-        <JoinFarmModal
-          pool={pool}
+        <LiquidityPositionRemoveLiquidity
           position={position}
-          isOpen={joinFarm}
-          onClose={() => setJoinFarm(false)}
+          onSuccess={onSuccess}
         />
-      )}
+      </div>
     </SContainer>
   )
 }
