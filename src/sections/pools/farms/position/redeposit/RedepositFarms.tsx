@@ -18,7 +18,7 @@ const RedepositFarm = () => {
 export const RedepositFarms = ({ farms = ["", ""] }) => {
   const { t } = useTranslation()
 
-  const [joinFarm, setJoinFarm] = useState(false)
+  const [, setJoinFarm] = useState(false)
 
   const farmComponents = farms.reduce((acc, apr, i) => {
     const isLastElement = i + 1 === farms.length

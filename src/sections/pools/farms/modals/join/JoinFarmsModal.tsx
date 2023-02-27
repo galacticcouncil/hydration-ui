@@ -82,11 +82,6 @@ export const JoinFarmModal = ({
       onClose={onClose}
       title={t("farms.modal.join.title", { assetSymbol: "HDX" })}
     >
-      {isRedeposit && (
-        <Text color="basic400">
-          {t("farms.modal.join.description", { assets: "HDX" })}
-        </Text>
-      )}
       {selectedFarm ? (
         <FarmDetailsModal
           farm={selectedFarm}
@@ -94,6 +89,11 @@ export const JoinFarmModal = ({
         />
       ) : (
         <div>
+          {isRedeposit && (
+            <Text color="basic400">
+              {t("farms.modal.join.description", { assets: "HDX" })}
+            </Text>
+          )}
           <div sx={{ flex: "column", gap: 8, mt: 24 }}>
             {farms.data?.map((farm, i) => {
               return (
