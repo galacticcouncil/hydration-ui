@@ -47,7 +47,7 @@ export const Pool = ({ pool }: Props) => {
               transition={{ duration: 0.5, ease: "easeInOut" }}
               css={{ overflow: "hidden" }}
             >
-              <LiquidityPositionWrapper positions={positions} />
+              <LiquidityPositionWrapper pool={pool} positions={positions} />
               <FarmingPositionWrapper positions={{ data: [""] }} />
             </motion.div>
           )}

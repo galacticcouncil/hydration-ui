@@ -1,4 +1,3 @@
-import BN from "bignumber.js"
 import { useState } from "react"
 
 import { Modal } from "components/Modal/Modal"
@@ -11,35 +10,15 @@ import { FarmDetailsModal } from "../details/FarmDetailsModal"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { useFarms } from "api/farms"
 import { u32 } from "@polkadot/types"
-
-const dummyData = [
-  {
-    depositNft: { deposit: { shares: BN(67788889389433788) } },
-    farm: {
-      assetId: "1",
-      distributedRewards: BN(67788889389433788),
-      maxRewards: BN(234455677889856658),
-      fullness: BN(0.5),
-      minApr: BN(0.5),
-      apr: BN(0.9),
-    },
-  },
-  {
-    depositNft: undefined,
-    farm: {
-      assetId: "0",
-      distributedRewards: BN(2345231478222228),
-      maxRewards: BN(11123445522222888),
-      fullness: BN(0.3),
-      minApr: BN(0.5),
-      apr: BN(0.9),
-    },
-  },
-]
+import { useMutation } from "@tanstack/react-query"
+import { useStore } from "state/store"
+import { useApiPromise } from "utils/api"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 
 type JoinFarmModalProps = {
   isOpen: boolean
   onClose: () => void
+  pool: OmnipoolPool
   position: HydraPositionsTableData
   isRedeposit?: boolean
 }
@@ -48,6 +27,7 @@ export const JoinFarmModal = ({
   isOpen,
   onClose,
   isRedeposit,
+  pool,
   position,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
@@ -55,13 +35,29 @@ export const JoinFarmModal = ({
     yieldFarmId: u32
     globalFarmId: u32
   } | null>(null)
-  const farms = useFarms(position.id)
+  const farms = useFarms(pool.id)
 
   const selectedFarm = farms.data?.find(
     (farm) =>
       farm.globalFarm.id.eq(selectedFarmId?.globalFarmId) &&
       farm.yieldFarm.id.eq(selectedFarmId?.yieldFarmId),
   )
+
+  const { createTransaction } = useStore()
+  const api = useApiPromise()
+  const joinFarm = useMutation(async () => {
+    const farm = farms.data?.[0]
+
+    // TODO: add to multiple farms at once
+    if (farm == null) throw new Error("Farm not found")
+    await createTransaction({
+      tx: api.tx.omnipoolLiquidityMining.depositShares(
+        farm.globalFarm.id,
+        farm.yieldFarm.id,
+        position.id,
+      ),
+    })
+  })
 
   return (
     <Modal
@@ -112,10 +108,18 @@ export const JoinFarmModal = ({
                 <Text color="basic500">{t("farms.modal.footer.desc")}</Text>
               </div>
               <Text color="pink600" fs={24} css={{ whiteSpace: "nowrap" }}>
-                21 855
+                {t("value.token", {
+                  value: position.providedAmount,
+                  fixedPointScale: 12,
+                })}
               </Text>
             </div>
-            <Button fullWidth variant="primary">
+            <Button
+              fullWidth
+              variant="primary"
+              onClick={() => joinFarm.mutate()}
+              isLoading={joinFarm.isLoading}
+            >
               {t("farms.modal.join.button.label")}
             </Button>
           </SJoinFarmContainer>

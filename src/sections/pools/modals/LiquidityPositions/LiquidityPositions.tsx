@@ -32,7 +32,7 @@ export const LiquidityPositions: FC<Props> = ({ isOpen, pool, onClose }) => {
           m: "20px -20px -36px",
         }}
       >
-        <LiquidityPositionWrapper positions={positions} />
+        <LiquidityPositionWrapper pool={pool} positions={positions} />
         <FarmingPositionWrapper positions={{ data: [""] }} />
       </div>
     </Modal>
