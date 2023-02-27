@@ -71,9 +71,11 @@ export const JoinFarmModal = ({
           ),
         )
 
-        await createTransaction({
-          tx: txs.length > 1 ? api.tx.utility.batch(txs) : txs[0],
-        })
+        if (txs.length > 0) {
+          await createTransaction({
+            tx: txs.length > 1 ? api.tx.utility.batch(txs) : txs[0],
+          })
+        }
       }
     }
   })
