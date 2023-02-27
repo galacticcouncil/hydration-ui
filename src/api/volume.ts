@@ -42,6 +42,10 @@ export const getTradeVolume = (assetId: u32) => async () => {
           where: {
             args_jsonContains: { assetIn: $assetIn }
             block: { timestamp_gte: $after }
+            OR: {
+              args_jsonContains: { assetOut: $assetIn }
+              block: { timestamp_gte: $after }
+            }
             AND: {
               name_eq: "Omnipool.SellExecuted"
               OR: { name_eq: "Omnipool.BuyExecuted" }

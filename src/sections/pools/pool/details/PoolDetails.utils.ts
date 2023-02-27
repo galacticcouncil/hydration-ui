@@ -2,15 +2,15 @@ import { useTradeVolume } from "api/volume"
 import { useMemo } from "react"
 import BN from "bignumber.js"
 import { BN_0, BN_10 } from "utils/constants"
-import { useSpotPrices } from "api/spotPrice"
-import { useAssetMetaList } from "api/assetMeta"
+import { useSpotPrice } from "api/spotPrice"
+import { useAssetMeta } from "api/assetMeta"
 import { useApiIds } from "api/consts"
 import { u32 } from "@polkadot/types-codec"
 
 export function usePoolDetailsTradeVolume(assetId: u32) {
   const volume = useTradeVolume(assetId)
 
-  const values = useMemo(() => {
+  const assetTotalValue = useMemo(() => {
     // Assuming trade volume is the aggregate amount being
     // sent between user account and pair account
     const sums =
@@ -36,40 +36,28 @@ export function usePoolDetailsTradeVolume(assetId: u32) {
         return memo
       }, {}) ?? {}
 
-    return { assets: Object.keys(sums), sums }
-  }, [volume.data])
+    return sums[assetId.toString()]
+  }, [volume.data, assetId])
 
   const apiIds = useApiIds()
-  const assets = useAssetMetaList(values.assets)
-  const spotPrices = useSpotPrices(values.assets, apiIds.data?.usdId)
+  const assetMeta = useAssetMeta(assetId)
+  const spotPrice = useSpotPrice(assetId, apiIds.data?.usdId)
 
-  const queries = [volume, apiIds, assets, ...spotPrices]
+  const queries = [volume, apiIds, assetMeta, spotPrice]
   const isLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
-    if (volume.isLoading) return null
-
-    const combinedAssets = spotPrices.map((spotPrice) => {
-      const asset = assets.data?.find((a) => a.id === spotPrice.data?.tokenIn)
-      if (asset == null || spotPrice.data == null) return null
-      return {
-        spotPrice: spotPrice.data,
-        asset: asset,
-      }
-    })
-
     let result = BN_0
-    for (const item of combinedAssets) {
-      if (item == null) continue
+    if (!assetMeta.data || !spotPrice.data || !assetTotalValue) return result
 
-      const sum = values.sums[item.spotPrice.tokenIn]
-      const sumScale = sum.dividedBy(BN_10.pow(item.asset.decimals.toNumber()))
+    const assetScale = assetTotalValue.dividedBy(
+      BN_10.pow(assetMeta.data?.decimals.toNumber()),
+    )
 
-      result = result.plus(sumScale.multipliedBy(item.spotPrice.spotPrice))
-    }
+    result = assetScale.multipliedBy(spotPrice.data.spotPrice)
 
     return result
-  }, [volume.isLoading, assets, spotPrices, values.sums])
+  }, [assetTotalValue, spotPrice, assetMeta])
 
   return { data, isLoading }
 }
