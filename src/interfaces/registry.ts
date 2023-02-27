@@ -124,6 +124,9 @@ import type {
   PalletDemocracyVotePriorLock,
   PalletDemocracyVoteThreshold,
   PalletDemocracyVoteVoting,
+  PalletDusterCall,
+  PalletDusterError,
+  PalletDusterEvent,
   PalletElectionsPhragmenCall,
   PalletElectionsPhragmenError,
   PalletElectionsPhragmenEvent,
@@ -141,6 +144,16 @@ import type {
   PalletIdentityJudgement,
   PalletIdentityRegistrarInfo,
   PalletIdentityRegistration,
+  PalletLiquidityMiningCall,
+  PalletLiquidityMiningDepositData,
+  PalletLiquidityMiningError,
+  PalletLiquidityMiningEvent,
+  PalletLiquidityMiningFarmState,
+  PalletLiquidityMiningGlobalFarmData,
+  PalletLiquidityMiningInconsistentStateError,
+  PalletLiquidityMiningLoyaltyCurve,
+  PalletLiquidityMiningYieldFarmData,
+  PalletLiquidityMiningYieldFarmEntry,
   PalletMultisigCall,
   PalletMultisigError,
   PalletMultisigEvent,
@@ -150,6 +163,10 @@ import type {
   PalletOmnipoolCall,
   PalletOmnipoolError,
   PalletOmnipoolEvent,
+  PalletOmnipoolLiquidityMiningCall,
+  PalletOmnipoolLiquidityMiningError,
+  PalletOmnipoolLiquidityMiningEvent,
+  PalletOmnipoolLiquidityMiningInconsistentStateError,
   PalletOmnipoolPosition,
   PalletOmnipoolSimpleImbalance,
   PalletOmnipoolTradability,
@@ -181,6 +198,7 @@ import type {
   PalletTipsEvent,
   PalletTipsOpenTip,
   PalletTransactionMultiPaymentCall,
+  PalletTransactionMultiPaymentCurrencyBalanceCheck,
   PalletTransactionMultiPaymentError,
   PalletTransactionMultiPaymentEvent,
   PalletTransactionPauseCall,
@@ -400,6 +418,9 @@ declare module "@polkadot/types/types/registry" {
     PalletDemocracyVotePriorLock: PalletDemocracyVotePriorLock
     PalletDemocracyVoteThreshold: PalletDemocracyVoteThreshold
     PalletDemocracyVoteVoting: PalletDemocracyVoteVoting
+    PalletDusterCall: PalletDusterCall
+    PalletDusterError: PalletDusterError
+    PalletDusterEvent: PalletDusterEvent
     PalletElectionsPhragmenCall: PalletElectionsPhragmenCall
     PalletElectionsPhragmenError: PalletElectionsPhragmenError
     PalletElectionsPhragmenEvent: PalletElectionsPhragmenEvent
@@ -417,6 +438,16 @@ declare module "@polkadot/types/types/registry" {
     PalletIdentityJudgement: PalletIdentityJudgement
     PalletIdentityRegistrarInfo: PalletIdentityRegistrarInfo
     PalletIdentityRegistration: PalletIdentityRegistration
+    PalletLiquidityMiningCall: PalletLiquidityMiningCall
+    PalletLiquidityMiningDepositData: PalletLiquidityMiningDepositData
+    PalletLiquidityMiningError: PalletLiquidityMiningError
+    PalletLiquidityMiningEvent: PalletLiquidityMiningEvent
+    PalletLiquidityMiningFarmState: PalletLiquidityMiningFarmState
+    PalletLiquidityMiningGlobalFarmData: PalletLiquidityMiningGlobalFarmData
+    PalletLiquidityMiningInconsistentStateError: PalletLiquidityMiningInconsistentStateError
+    PalletLiquidityMiningLoyaltyCurve: PalletLiquidityMiningLoyaltyCurve
+    PalletLiquidityMiningYieldFarmData: PalletLiquidityMiningYieldFarmData
+    PalletLiquidityMiningYieldFarmEntry: PalletLiquidityMiningYieldFarmEntry
     PalletMultisigCall: PalletMultisigCall
     PalletMultisigError: PalletMultisigError
     PalletMultisigEvent: PalletMultisigEvent
@@ -426,6 +457,10 @@ declare module "@polkadot/types/types/registry" {
     PalletOmnipoolCall: PalletOmnipoolCall
     PalletOmnipoolError: PalletOmnipoolError
     PalletOmnipoolEvent: PalletOmnipoolEvent
+    PalletOmnipoolLiquidityMiningCall: PalletOmnipoolLiquidityMiningCall
+    PalletOmnipoolLiquidityMiningError: PalletOmnipoolLiquidityMiningError
+    PalletOmnipoolLiquidityMiningEvent: PalletOmnipoolLiquidityMiningEvent
+    PalletOmnipoolLiquidityMiningInconsistentStateError: PalletOmnipoolLiquidityMiningInconsistentStateError
     PalletOmnipoolPosition: PalletOmnipoolPosition
     PalletOmnipoolSimpleImbalance: PalletOmnipoolSimpleImbalance
     PalletOmnipoolTradability: PalletOmnipoolTradability
@@ -457,6 +492,7 @@ declare module "@polkadot/types/types/registry" {
     PalletTipsEvent: PalletTipsEvent
     PalletTipsOpenTip: PalletTipsOpenTip
     PalletTransactionMultiPaymentCall: PalletTransactionMultiPaymentCall
+    PalletTransactionMultiPaymentCurrencyBalanceCheck: PalletTransactionMultiPaymentCurrencyBalanceCheck
     PalletTransactionMultiPaymentError: PalletTransactionMultiPaymentError
     PalletTransactionMultiPaymentEvent: PalletTransactionMultiPaymentEvent
     PalletTransactionPauseCall: PalletTransactionPauseCall

@@ -7,6 +7,7 @@ import { Text } from "components/Typography/Text/Text"
 import { SLoyaltyRewardsContainer } from "./FarmDetailsModal.styled"
 import { Spacer } from "components/Spacer/Spacer"
 import { LoyaltyGraph } from "../../components/loyaltyGraph/LoyaltyGraph"
+import { Farm } from "api/farms"
 
 const dummyData = {
   farm: {
@@ -24,10 +25,11 @@ const dummyData = {
 }
 
 type FarmDetailsModalProps = {
+  farm: Farm
   onBack: () => void
 }
 
-export const FarmDetailsModal = ({ onBack }: FarmDetailsModalProps) => {
+export const FarmDetailsModal = ({ farm, onBack }: FarmDetailsModalProps) => {
   const { t } = useTranslation()
 
   return (
@@ -43,17 +45,7 @@ export const FarmDetailsModal = ({ onBack }: FarmDetailsModalProps) => {
 
       <Spacer size={16} />
 
-      <FarmDetailsCard
-        depositNft={undefined}
-        farm={{
-          assetId: "0",
-          distributedRewards: BN(2345231478222228),
-          maxRewards: BN(11123445522222888),
-          fullness: BN(0.3),
-          minApr: BN(0.5),
-          apr: BN(0.9),
-        }}
-      />
+      <FarmDetailsCard depositNft={undefined} farm={farm} />
 
       <SLoyaltyRewardsContainer>
         <Text

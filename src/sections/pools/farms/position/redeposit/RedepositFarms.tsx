@@ -5,7 +5,7 @@ import { Icon } from "components/Icon/Icon"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { ReactElement, useState } from "react"
 import { SSeparator } from "../FarmingPosition.styled"
-import { JoinFarmModal } from "../../modals/join/JoinFarmsModal"
+// import { JoinFarmModal } from "../../modals/join/JoinFarmsModal"
 
 const RedepositFarm = () => {
   return (
@@ -48,13 +48,13 @@ export const RedepositFarms = ({ farms = ["", ""] }) => {
           {t("farms.positions.join.button.label")}
         </Text>
       </SJoinButton>
-      {joinFarm && (
+      {/* {joinFarm && (
         <JoinFarmModal
           isOpen={joinFarm}
           onClose={() => setJoinFarm(false)}
           isRedeposit
         />
-      )}
+      )} */}
     </SContainer>
   )
 }
