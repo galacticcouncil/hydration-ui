@@ -8,15 +8,15 @@ import { usePoolDetailsTradeVolume } from "sections/pools/pool/details/PoolDetai
 import { BN_NAN } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 
-type PoolValueProps = { pool: OmnipoolPool }
+type PoolValueProps = { pool: OmnipoolPool; className?: string }
 
-export const PoolValue = ({ pool }: PoolValueProps) => {
+export const PoolValue = ({ pool, className }: PoolValueProps) => {
   const { t } = useTranslation()
 
   const { data, isLoading } = usePoolDetailsTradeVolume(pool.id)
 
   return (
-    <div sx={{ flex: "column", justify: "end" }}>
+    <div sx={{ flex: "column", justify: "end" }} className={className}>
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div sx={{ flex: "column", gap: 10 }}>
           <Text fs={13} color="basic400">

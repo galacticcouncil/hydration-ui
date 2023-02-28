@@ -25,18 +25,19 @@ export const Pool = ({ pool }: Props) => {
   return (
     <SContainer id={pool.id.toString()}>
       <SGridContainer>
-        <PoolDetails pool={pool} />
-        <PoolIncentives />
-        <PoolValue pool={pool} />
+        <PoolDetails pool={pool} css={{ gridArea: "details" }} />
+        <PoolIncentives poolId={pool.id} css={{ gridArea: "incentives" }} />
+        <PoolValue pool={pool} css={{ gridArea: "values" }} />
         <PoolActions
           pool={pool}
           refetch={positions.refetch}
           canExpand={!positions.isLoading && !!positions.data?.length}
           isExpanded={isExpanded}
           onExpandClick={() => setIsExpanded((prev) => !prev)}
+          css={{ gridArea: "actions" }}
         />
+        <PoolCapacity pool={pool} css={{ gridArea: "capacity" }} />
       </SGridContainer>
-      <PoolCapacity pool={pool} />
       {isDesktop && !!positions.data?.length && (
         <AnimatePresence>
           {isExpanded && (
