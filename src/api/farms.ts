@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import { secondsInYear } from "date-fns"
 import { useApiPromise } from "utils/api"
-import { BLOCK_TIME, BN_QUINTILL } from "utils/constants"
+import { BLOCK_TIME, BN_0, BN_1, BN_QUINTILL } from "utils/constants"
 import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useBestNumber } from "./chain"
@@ -147,6 +147,8 @@ export interface Farm {
   yieldFarm: PalletLiquidityMiningYieldFarmData
 }
 
+export type FarmAprs = ReturnType<typeof useFarmAprs>
+
 export const useFarms = (poolId: u32 | string) => {
   const activeYieldFarms = useActiveYieldFarms(poolId)
   const globalFarms = useGlobalFarms(activeYieldFarms.data)
@@ -198,6 +200,13 @@ function getFarmApr(
 ) {
   const { globalFarm, yieldFarm } = farm
 
+  const loyaltyFactor = yieldFarm.loyaltyCurve.isNone
+    ? BN_1
+    : yieldFarm.loyaltyCurve
+        .unwrap()
+        .initialRewardPercentage.toBigNumber()
+        .div(BN_QUINTILL)
+
   const totalSharesZ = globalFarm.totalSharesZ.toBigNumber()
   const plannedYieldingPeriods = globalFarm.plannedYieldingPeriods.toBigNumber()
   const yieldPerPeriod = globalFarm.yieldPerPeriod
@@ -233,11 +242,7 @@ function getFarmApr(
   // multiply by 100 since APR should be a percentage
   apr = apr.times(100)
 
-  // all of the APR calculations are using only half of the position -
-  // this is correct in terms of inputs but for the user,
-  // they are not depositing only half of the position, they are depositing 2 assets
-  apr = apr.div(2)
-
+  const minApr = apr.times(loyaltyFactor)
   // max distribution of rewards
   // https://www.notion.so/Screen-elements-mapping-Farms-baee6acc456542ca8d2cccd1cc1548ae?p=4a2f16a9f2454095945dbd9ce0eb1b6b&pm=s
   const distributedRewards = globalFarm.pendingRewards
@@ -265,6 +270,7 @@ function getFarmApr(
 
   return {
     apr,
+    minApr,
     distributedRewards,
     maxRewards,
     fullness,
@@ -283,4 +289,30 @@ export const useFarmApr = (farm: {
   return useQueryReduce([bestNumber] as const, (bestNumber) => {
     return getFarmApr(bestNumber, farm)
   })
+}
+
+export const useFarmAprs = (
+  farms: {
+    globalFarm: PalletLiquidityMiningGlobalFarmData
+    yieldFarm: PalletLiquidityMiningYieldFarmData
+  }[],
+) => {
+  const bestNumber = useBestNumber()
+
+  return useQueryReduce([bestNumber] as const, (bestNumber) => {
+    return farms.map((farm) => getFarmApr(bestNumber, farm))
+  })
+}
+
+export const getMinAndMaxAPR = (farms: FarmAprs) => {
+  const aprs = farms.data ? farms.data.map(({ apr }) => apr) : [BN_0]
+  const minAprs = farms.data ? farms.data.map(({ minApr }) => minApr) : [BN_0]
+
+  const minApr = BigNumber.minimum(...minAprs)
+  const maxApr = BigNumber.maximum(...aprs)
+
+  return {
+    minApr,
+    maxApr,
+  }
 }
