@@ -13,6 +13,7 @@ import { usePoolPositions } from "sections/pools/pool/Pool.utils"
 import { PoolCapacity } from "sections/pools/pool/capacity/PoolCapacity"
 import { LiquidityPositionWrapper } from "./positions/LiquidityPositionWrapper"
 import { FarmingPositionWrapper } from "../farms/FarmingPositionWrapper"
+import { useDeposits } from "api/deposits"
 
 type Props = { pool: OmnipoolPool }
 
@@ -21,6 +22,10 @@ export const Pool = ({ pool }: Props) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const positions = usePoolPositions(pool)
+  const accountDeposits = useDeposits(pool.id)
+
+  const hasExpandContent =
+    !!positions.data?.length || !!accountDeposits.data?.length
 
   return (
     <SContainer id={pool.id.toString()}>
@@ -31,13 +36,13 @@ export const Pool = ({ pool }: Props) => {
         <PoolActions
           pool={pool}
           refetch={positions.refetch}
-          canExpand={!positions.isLoading && !!positions.data?.length}
+          canExpand={!positions.isLoading && hasExpandContent}
           isExpanded={isExpanded}
           onExpandClick={() => setIsExpanded((prev) => !prev)}
         />
       </SGridContainer>
       <PoolCapacity pool={pool} />
-      {isDesktop && !!positions.data?.length && (
+      {isDesktop && hasExpandContent && (
         <AnimatePresence>
           {isExpanded && (
             <motion.div
@@ -48,7 +53,7 @@ export const Pool = ({ pool }: Props) => {
               css={{ overflow: "hidden" }}
             >
               <LiquidityPositionWrapper pool={pool} positions={positions} />
-              <FarmingPositionWrapper positions={{ data: [""] }} />
+              <FarmingPositionWrapper deposits={accountDeposits.data} />
             </motion.div>
           )}
         </AnimatePresence>

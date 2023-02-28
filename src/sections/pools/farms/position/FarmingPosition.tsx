@@ -13,6 +13,10 @@ import { useMedia } from "react-use"
 import { useState } from "react"
 import { JoinedFarmsDetails } from "../modals/joinedFarmDetails/JoinedFarmsDetails"
 import BN from "bignumber.js"
+import { u128 } from "@polkadot/types"
+import { PalletLiquidityMiningDepositData } from "@polkadot/types/lookup"
+import { useEnteredDate } from "utils/block"
+import { BN_0 } from "utils/constants"
 
 const dummyData = {
   joinedFarms: [
@@ -53,12 +57,29 @@ const dummyData = {
     },
   ],
 }
-export const FarmingPosition = ({ index }: { index: number }) => {
+export const FarmingPosition = ({
+  index,
+  deposit,
+  depositId,
+}: {
+  index: number
+  depositId: u128
+  deposit: PalletLiquidityMiningDepositData
+}) => {
   const { t } = useTranslation()
 
   const [farmDetails, setFarmDetails] = useState(false)
-
   const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const enteredDate = useEnteredDate(
+    deposit.yieldFarmEntries.reduce(
+      (acc, curr) =>
+        acc.lt(curr.enteredAt.toBigNumber())
+          ? curr.enteredAt.toBigNumber()
+          : acc,
+      BN_0,
+    ),
+  )
 
   return (
     <SContainer>
@@ -102,14 +123,18 @@ export const FarmingPosition = ({ index }: { index: number }) => {
             <Text color="basic500" fs={14} lh={16} fw={400}>
               {t("farms.positions.labels.enterDate")}
             </Text>
-            <Text>2.02.2022</Text>
+            <Text>
+              {t("farms.positions.labels.enterDate.value", {
+                date: enteredDate.data,
+              })}
+            </Text>
           </SValueContainer>
           <SSeparator orientation={isDesktop ? "vertical" : "horizontal"} />
           <SValueContainer>
             <Text color="basic500" fs={14} lh={16} fw={400}>
               {t("farms.positions.labels.lockedShares")}
             </Text>
-            <Text>2 855.222</Text>
+            <Text>{t("value", { value: deposit.shares })}</Text>
           </SValueContainer>
           <SSeparator orientation={isDesktop ? "vertical" : "horizontal"} />
           <SValueContainer sx={{ width: ["100%", 150] }}>

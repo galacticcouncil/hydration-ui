@@ -4,11 +4,23 @@ import { useTranslation } from "react-i18next"
 import { FarmingPosition } from "./position/FarmingPosition"
 import { Icon } from "components/Icon/Icon"
 import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
+import { u128 } from "@polkadot/types"
+import { PalletLiquidityMiningDepositData } from "@polkadot/types/lookup"
+import { Maybe } from "utils/helpers"
 
-export const FarmingPositionWrapper = ({ positions }: { positions: any }) => {
+export const FarmingPositionWrapper = ({
+  deposits,
+}: {
+  deposits: Maybe<
+    {
+      id: u128
+      deposit: PalletLiquidityMiningDepositData
+    }[]
+  >
+}) => {
   const { t } = useTranslation()
 
-  if (!positions.data.length) return null
+  if (!deposits?.length) return null
 
   return (
     <SPositions>
@@ -20,8 +32,13 @@ export const FarmingPositionWrapper = ({ positions }: { positions: any }) => {
       </div>
 
       <div sx={{ flex: "column", gap: 16 }}>
-        {positions.data.map((position: any, i: number) => (
-          <FarmingPosition key={i} index={i + 1} />
+        {deposits?.map((item, i) => (
+          <FarmingPosition
+            key={i}
+            index={i + 1}
+            deposit={item.deposit}
+            depositId={item.id}
+          />
         ))}
       </div>
     </SPositions>
