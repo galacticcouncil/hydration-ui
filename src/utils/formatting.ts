@@ -185,6 +185,14 @@ export function formatBigNumber(
     return num.toFormat(0, fmtConfig)
   }
 
+  if (
+    options?.type === "percentage" &&
+    options.decimalPlaces === "0" &&
+    num.gt(1)
+  ) {
+    return num.toFormat(0, BigNumber.ROUND_HALF_UP, fmtConfig)
+  }
+
   /* If the percentage number is bigger than 99.99% (2 digits) don’t show any decimals */
   if (options?.type === "percentage" && num.gt(99.99)) {
     return num.toFormat(0, BigNumber.ROUND_HALF_UP, fmtConfig)
