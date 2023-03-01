@@ -33,7 +33,9 @@ export const LiquidityPositions: FC<Props> = ({ isOpen, pool, onClose }) => {
         }}
       >
         <LiquidityPositionWrapper pool={pool} positions={positions} />
-        <FarmingPositionWrapper positions={{ data: [""] }} />
+        {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
+          <FarmingPositionWrapper positions={{ data: [""] }} />
+        )}
       </div>
     </Modal>
   )

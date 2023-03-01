@@ -94,17 +94,19 @@ export const LiquidityPosition = ({
           gap: 8,
         }}
       >
-        <Button
-          variant="primary"
-          size="small"
-          sx={{ width: ["100%", 220] }}
-          onClick={() => {
-            setJoinFarm(true)
-          }}
-        >
-          <Icon size={16} icon={<FPIcon />} />
-          {t("liquidity.asset.actions.joinFarms")}
-        </Button>
+        {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
+          <Button
+            variant="primary"
+            size="small"
+            sx={{ width: ["100%", 220] }}
+            onClick={() => {
+              setJoinFarm(true)
+            }}
+          >
+            <Icon size={16} icon={<FPIcon />} />
+            {t("liquidity.asset.actions.joinFarms")}
+          </Button>
+        )}
         <SButton
           variant="primary"
           size="small"
@@ -126,7 +128,7 @@ export const LiquidityPosition = ({
           onSuccess={onSuccess}
         />
       )}
-      {joinFarm && (
+      {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && joinFarm && (
         <JoinFarmModal
           pool={pool}
           position={position}
