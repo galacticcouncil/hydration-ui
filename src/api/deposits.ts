@@ -7,6 +7,8 @@ import { useApiPromise } from "utils/api"
 import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 
+const DEPOSIT_NFT_COLLECTION_ID = "2584"
+
 export type DepositNftType = Awaited<
   ReturnType<ReturnType<typeof getDeposits>>
 >[number]
@@ -24,7 +26,10 @@ export const useAccountDepositIds = (
 
 const getAccountDepositIds =
   (api: ApiPromise, accountId: AccountId32 | string) => async () => {
-    const res = await api.query.uniques.account.entries(accountId, "1337")
+    const res = await api.query.uniques.account.entries(
+      accountId,
+      DEPOSIT_NFT_COLLECTION_ID,
+    )
     const nfts = res.map(([storageKey]) => {
       const [owner, classId, instanceId] = storageKey.args
       return { owner, classId, instanceId }
