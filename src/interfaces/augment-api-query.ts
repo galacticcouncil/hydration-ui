@@ -1373,34 +1373,6 @@ declare module "@polkadot/api-base/types/storage" {
        **/
       [key: string]: QueryableStorageEntry<ApiType>
     }
-    scheduler: {
-      /**
-       * Items to be executed, indexed by the block number that they should be executed on.
-       **/
-      agenda: AugmentedQuery<
-        ApiType,
-        (
-          arg: u32 | AnyNumber | Uint8Array,
-        ) => Observable<Vec<Option<PalletSchedulerScheduledV3>>>,
-        [u32]
-      > &
-        QueryableStorageEntry<ApiType, [u32]>
-      /**
-       * Lookup from identity to the block number and index of the task.
-       **/
-      lookup: AugmentedQuery<
-        ApiType,
-        (
-          arg: Bytes | string | Uint8Array,
-        ) => Observable<Option<ITuple<[u32, u32]>>>,
-        [Bytes]
-      > &
-        QueryableStorageEntry<ApiType, [Bytes]>
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>
-    }
     session: {
       /**
        * Current index of the session.
@@ -1474,6 +1446,34 @@ declare module "@polkadot/api-base/types/storage" {
         []
       > &
         QueryableStorageEntry<ApiType, []>
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>
+    }
+    scheduler: {
+      /**
+       * Items to be executed, indexed by the block number that they should be executed on.
+       **/
+      agenda: AugmentedQuery<
+        ApiType,
+        (
+          arg: u32 | AnyNumber | Uint8Array,
+        ) => Observable<Vec<Option<PalletSchedulerScheduledV3>>>,
+        [u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32]>
+      /**
+       * Lookup from identity to the block number and index of the task.
+       **/
+      lookup: AugmentedQuery<
+        ApiType,
+        (
+          arg: Bytes | string | Uint8Array,
+        ) => Observable<Option<ITuple<[u32, u32]>>>,
+        [Bytes]
+      > &
+        QueryableStorageEntry<ApiType, [Bytes]>
       /**
        * Generic query
        **/
