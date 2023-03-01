@@ -9,7 +9,10 @@ import { BN_0, BN_10, BN_NAN } from "utils/constants"
 import { useUniques } from "api/uniques"
 import { useAccountStore } from "state/store"
 import BN from "bignumber.js"
-import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
+import {
+  calculate_liquidity_out,
+  calculate_liquidity_lrna_out,
+} from "@galacticcouncil/math-omnipool"
 import { isNotNil } from "utils/helpers"
 
 export const useTotalInPools = () => {
@@ -76,10 +79,17 @@ export const useUsersTotalInPools = () => {
   )
   const assetIds =
     positions.map((p) => p.data?.assetId.toString()).filter(isNotNil) ?? []
-  const metas = useAssetMetaList([apiIds.data?.usdId.toString(), ...assetIds])
+  const metas = useAssetMetaList([
+    apiIds.data?.usdId.toString(),
+    apiIds.data?.hubId,
+    ...assetIds,
+  ])
   const omnipoolAssets = useOmnipoolAssets()
   const omnipoolBalances = useTokensBalances(assetIds, OMNIPOOL_ACCOUNT_ADDRESS)
-  const spotPrices = useSpotPrices(assetIds, apiIds.data?.usdId)
+  const spotPrices = useSpotPrices(
+    [apiIds.data?.hubId, ...assetIds],
+    apiIds.data?.usdId,
+  )
 
   const queries = [
     apiIds,
@@ -112,6 +122,11 @@ export const useUsersTotalInPools = () => {
       const meta = metas.data.find(
         (m) => m.id.toString() === position.assetId.toString(),
       )
+
+      const lrnaMeta = metas.data.find(
+        (m) => m.id.toString() === apiIds.data.hubId,
+      )
+
       const omnipoolAsset = omnipoolAssets.data.find(
         (a) => a.id.toString() === position.assetId.toString(),
       )
@@ -138,15 +153,33 @@ export const useUsersTotalInPools = () => {
       ]
 
       const liquidityOutResult = calculate_liquidity_out.apply(this, params)
+      const lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
+
       if (liquidityOutResult === "-1") return BN_0
+
+      const lrnaSp = spotPrices.find(
+        (sp) => sp.data?.tokenIn === apiIds.data.hubId,
+      )
+
+      const lrnaDp = BN_10.pow(lrnaMeta?.decimals.toNumber() ?? 12)
+
+      const lrna =
+        lernaOutResult !== "-1" ? new BN(lernaOutResult).div(lrnaDp) : BN_0
 
       const valueSp = spotPrices.find((sp) => sp.data?.tokenIn === id)
       const valueDp = BN_10.pow(meta.decimals.toBigNumber())
+
       const value = new BN(liquidityOutResult).div(valueDp)
 
       if (!valueSp?.data?.spotPrice) return BN_0
 
-      const valueUSD = value.times(valueSp.data.spotPrice)
+      let valueUSD = value.times(valueSp.data.spotPrice)
+
+      if (lrna.gt(0)) {
+        valueUSD = !lrnaSp?.data
+          ? BN_NAN
+          : valueUSD.plus(lrna.times(lrnaSp.data.spotPrice))
+      }
 
       return valueUSD
     })
