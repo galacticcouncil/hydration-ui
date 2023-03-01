@@ -13,7 +13,7 @@ import { useSpotPrices } from "api/spotPrice"
 import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
-} from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
+} from "@galacticcouncil/math-omnipool"
 import { useApiIds } from "api/consts"
 import { useAssetDetailsList } from "api/assetDetails"
 import { isNotNil } from "utils/helpers"

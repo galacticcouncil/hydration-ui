@@ -35,7 +35,7 @@ export const LiquidityPositions: FC<Props> = ({ isOpen, pool, onClose }) => {
         }}
       >
         <LiquidityPositionWrapper pool={pool} positions={positions} />
-        <FarmingPositionWrapper deposits={accountDeposits.data} />
+        <FarmingPositionWrapper pool={pool} deposits={accountDeposits.data} />
       </div>
     </Modal>
   )

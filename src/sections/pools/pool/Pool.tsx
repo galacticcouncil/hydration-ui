@@ -13,7 +13,7 @@ import { usePoolPositions } from "sections/pools/pool/Pool.utils"
 import { PoolCapacity } from "sections/pools/pool/capacity/PoolCapacity"
 import { LiquidityPositionWrapper } from "./positions/LiquidityPositionWrapper"
 import { FarmingPositionWrapper } from "../farms/FarmingPositionWrapper"
-import { useDeposits } from "api/deposits"
+import { useAccountDeposits } from "api/deposits"
 
 type Props = { pool: OmnipoolPool }
 
@@ -22,7 +22,7 @@ export const Pool = ({ pool }: Props) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const positions = usePoolPositions(pool)
-  const accountDeposits = useDeposits(pool.id)
+  const accountDeposits = useAccountDeposits(pool.id)
 
   const hasExpandContent =
     !!positions.data?.length || !!accountDeposits.data?.length
@@ -54,7 +54,10 @@ export const Pool = ({ pool }: Props) => {
               css={{ overflow: "hidden" }}
             >
               <LiquidityPositionWrapper pool={pool} positions={positions} />
-              <FarmingPositionWrapper deposits={accountDeposits.data} />
+              <FarmingPositionWrapper
+                pool={pool}
+                deposits={accountDeposits.data}
+              />
             </motion.div>
           )}
         </AnimatePresence>

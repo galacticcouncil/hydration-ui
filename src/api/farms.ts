@@ -207,6 +207,7 @@ function getFarmApr(
         .initialRewardPercentage.toBigNumber()
         .div(BN_QUINTILL)
 
+  const loyaltyCurve = yieldFarm.loyaltyCurve.unwrapOr(null)
   const totalSharesZ = globalFarm.totalSharesZ.toBigNumber()
   const plannedYieldingPeriods = globalFarm.plannedYieldingPeriods.toBigNumber()
   const yieldPerPeriod = globalFarm.yieldPerPeriod
@@ -276,7 +277,8 @@ function getFarmApr(
     fullness,
     estimatedEndBlock: estimatedEndBlock,
     assetId: globalFarm.rewardCurrency,
-    ...farm,
+    currentPeriod,
+    loyaltyCurve,
   }
 }
 

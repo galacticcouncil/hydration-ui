@@ -7,6 +7,10 @@ import { useApiPromise } from "utils/api"
 import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 
+export type DepositNftType = Awaited<
+  ReturnType<ReturnType<typeof getDeposits>>
+>[number]
+
 export const useAccountDepositIds = (
   accountId: Maybe<AccountId32 | string>,
 ) => {

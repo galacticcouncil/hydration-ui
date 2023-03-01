@@ -9,7 +9,7 @@ import { BN_0, BN_10, BN_NAN } from "utils/constants"
 import { useUniques } from "api/uniques"
 import { useAccountStore } from "state/store"
 import BN from "bignumber.js"
-import { calculate_liquidity_out } from "@galacticcouncil/math/build/omnipool/bundler"
+import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
 import { isNotNil } from "utils/helpers"
 
 export const useTotalInPools = () => {

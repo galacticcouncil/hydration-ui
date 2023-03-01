@@ -12,67 +12,51 @@ import { JoinedFarms } from "./joined/JoinedFarms"
 import { useMedia } from "react-use"
 import { useState } from "react"
 import { JoinedFarmsDetails } from "../modals/joinedFarmDetails/JoinedFarmsDetails"
-import BN from "bignumber.js"
-import { u128 } from "@polkadot/types"
-import { PalletLiquidityMiningDepositData } from "@polkadot/types/lookup"
 import { useEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { DepositNftType } from "api/deposits"
 
-const dummyData = {
-  joinedFarms: [
-    {
-      depositNft: { deposit: { shares: BN(67788889389433788) } },
-      farm: {
-        assetId: "1",
-        distributedRewards: BN(67788889389433788),
-        maxRewards: BN(234455677889856658),
-        fullness: BN(0.5),
-        minApr: BN(0.5),
-        apr: BN(0.9),
-      },
-    },
-    {
-      depositNft: { deposit: { shares: BN(677888838943388) } },
-      farm: {
-        assetId: "0",
-        distributedRewards: BN(2345231478222228),
-        maxRewards: BN(11123445522222888),
-        fullness: BN(0.3),
-        minApr: BN(0.5),
-        apr: BN(0.9),
-      },
-    },
-  ],
-  availableFarms: [
-    {
-      depositNft: undefined,
-      farm: {
-        assetId: "2",
-        distributedRewards: BN(2345231478222228),
-        maxRewards: BN(11123445522222888),
-        fullness: BN(0.3),
-        minApr: BN(0.5),
-        apr: BN(0.9),
-      },
-    },
-  ],
+function FarmingPositionDetailsButton(props: {
+  pool: OmnipoolPool
+  depositNft: DepositNftType
+}) {
+  const { t } = useTranslation()
+  const [farmDetails, setFarmDetails] = useState(false)
+
+  return (
+    <>
+      <Button size="small" sx={{ ml: 14 }} onClick={() => setFarmDetails(true)}>
+        {t("farms.positions.joinedFarms.button.label")}
+      </Button>
+
+      {farmDetails && (
+        <JoinedFarmsDetails
+          pool={props.pool}
+          depositNft={props.depositNft}
+          isOpen={farmDetails}
+          onClose={() => setFarmDetails(false)}
+        />
+      )}
+    </>
+  )
 }
+
 export const FarmingPosition = ({
   index,
-  deposit,
-  depositId,
+  pool,
+  depositNft,
 }: {
   index: number
-  depositId: u128
-  deposit: PalletLiquidityMiningDepositData
+  pool: OmnipoolPool
+  depositNft: DepositNftType
 }) => {
   const { t } = useTranslation()
-
-  const [farmDetails, setFarmDetails] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
+  // use latest entry date
   const enteredDate = useEnteredDate(
-    deposit.yieldFarmEntries.reduce(
+    depositNft.deposit.yieldFarmEntries.reduce(
       (acc, curr) =>
         acc.lt(curr.enteredAt.toBigNumber())
           ? curr.enteredAt.toBigNumber()
@@ -94,13 +78,7 @@ export const FarmingPosition = ({
         <Text fw={[500, 400]}>
           {t("farms.positions.position.title", { index })}
         </Text>
-        <Button
-          size="small"
-          sx={{ ml: 14 }}
-          onClick={() => setFarmDetails(true)}
-        >
-          {t("farms.positions.joinedFarms.button.label")}
-        </Button>
+        <FarmingPositionDetailsButton pool={pool} depositNft={depositNft} />
       </div>
       <SSeparator />
       <div
@@ -134,7 +112,7 @@ export const FarmingPosition = ({
             <Text color="basic500" fs={14} lh={16} fw={400}>
               {t("farms.positions.labels.lockedShares")}
             </Text>
-            <Text>{t("value", { value: deposit.shares })}</Text>
+            <Text>{t("value", { value: depositNft.deposit.shares })}</Text>
           </SValueContainer>
           <SSeparator orientation={isDesktop ? "vertical" : "horizontal"} />
           <SValueContainer sx={{ width: ["100%", 150] }}>
@@ -161,14 +139,6 @@ export const FarmingPosition = ({
         <JoinedFarms />
         <RedepositFarms />
       </div>
-      {farmDetails && (
-        <JoinedFarmsDetails
-          joinedFarms={dummyData.joinedFarms}
-          availableFarms={dummyData.availableFarms}
-          isOpen={farmDetails}
-          onClose={() => setFarmDetails(false)}
-        />
-      )}
     </SContainer>
   )
 }
