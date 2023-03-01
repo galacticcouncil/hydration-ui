@@ -89,6 +89,7 @@ export const JoinFarmModal = ({
       {selectedFarm ? (
         <FarmDetailsModal
           farm={selectedFarm}
+          depositNft={undefined}
           onBack={() => setSelectedFarmId(null)}
         />
       ) : (

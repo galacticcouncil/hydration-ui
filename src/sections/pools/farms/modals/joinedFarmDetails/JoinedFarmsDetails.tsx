@@ -60,6 +60,7 @@ export const JoinedFarmsDetails = ({
       {selectedFarm ? (
         <FarmDetailsModal
           farm={selectedFarm}
+          depositNft={depositNft}
           onBack={() => setSelectedFarmIds(null)}
         />
       ) : (
