@@ -155,11 +155,13 @@ export const LiquidityPosition = ({
           gap: 8,
         }}
       >
-        <LiquidityPositionJoinFarmButton
-          pool={pool}
-          position={position}
-          onSuccess={onSuccess}
-        />
+        {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
+          <LiquidityPositionJoinFarmButton
+            pool={pool}
+            position={position}
+            onSuccess={onSuccess}
+          />
+        )}
         <LiquidityPositionRemoveLiquidity
           position={position}
           onSuccess={onSuccess}

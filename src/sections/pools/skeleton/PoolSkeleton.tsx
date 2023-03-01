@@ -29,7 +29,10 @@ export const PoolSkeleton = ({
   return (
     <SContainer css={{ opacity: length <= index + 1 ? 0.7 : 1 }}>
       <SGridContainer>
-        <div sx={{ flex: "column", width: ["auto", 300] }}>
+        <div
+          sx={{ flex: "column", width: ["auto", 300] }}
+          css={{ gridArea: "details" }}
+        >
           <div sx={{ flex: "row", justify: "space-between" }}>
             <div sx={{ flex: "column", gap: 10 }}>
               <Text fs={13} color="basic400">
@@ -61,46 +64,52 @@ export const PoolSkeleton = ({
               </Text>
             </div>
           </div>
+
           <Separator sx={{ mt: [18, 34] }} />
         </div>
 
-        <div sx={{ minWidth: 200 }}>
-          <Text fs={13} color="basic400" sx={{ mb: [0, 16] }}>
-            {t("liquidity.asset.incentives.title")}
-          </Text>
-          {[...Array(isDesktop ? FARM_AMOUNT : 1)].map((_, farmIndex) => {
-            return (
-              <div
-                key={`${index}_${farmIndex}`}
-                sx={{
-                  flex: "row",
-                  justify: "space-between",
-                  align: "center",
-                  py: 12,
-                }}
-                css={{
-                  " &:not(:last-child)": {
-                    borderBottom: `1px solid rgba(${theme.rgbColors.primaryA15}, 0.06)`,
-                  },
-                }}
-              >
-                <div sx={{ flex: "row", gap: 8, align: "center" }}>
-                  <Skeleton circle width={32} height={32} />
-                  <Skeleton width={78} height={15} />
+        {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
+          <div sx={{ minWidth: 200 }} css={{ gridArea: "incentives" }}>
+            <Text fs={13} color="basic400" sx={{ mb: [0, 16] }}>
+              {t("liquidity.asset.incentives.title")}
+            </Text>
+            {[...Array(isDesktop ? FARM_AMOUNT : 1)].map((_, farmIndex) => {
+              return (
+                <div
+                  key={`${index}_${farmIndex}`}
+                  sx={{
+                    flex: "row",
+                    justify: "space-between",
+                    align: "center",
+                    py: 12,
+                  }}
+                  css={{
+                    " &:not(:last-child)": {
+                      borderBottom: `1px solid rgba(${theme.rgbColors.primaryA15}, 0.06)`,
+                    },
+                  }}
+                >
+                  <div sx={{ flex: "row", gap: 8, align: "center" }}>
+                    <Skeleton circle width={32} height={32} />
+                    <Skeleton width={78} height={15} />
+                  </div>
+                  <div>
+                    <Skeleton
+                      width={isDesktop ? 78 : 118}
+                      height={isDesktop ? 15 : 21}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Skeleton
-                    width={isDesktop ? 78 : 118}
-                    height={isDesktop ? 15 : 21}
-                  />
-                </div>
-              </div>
-            )
-          })}
-          <Separator sx={{ mt: 18, display: ["inherit", "none"] }} />
-        </div>
+              )
+            })}
+            <Separator sx={{ mt: 18, display: ["inherit", "none"] }} />
+          </div>
+        )}
 
-        <div sx={{ flex: "column", width: ["auto", 300], justify: "end" }}>
+        <div
+          sx={{ flex: "column", width: ["auto", 300], justify: "end" }}
+          css={{ gridArea: "values" }}
+        >
           <div sx={{ flex: "row", justify: "space-between" }}>
             <div sx={{ flex: "column", gap: 10 }}>
               <Text fs={13} color="basic400">
@@ -122,7 +131,7 @@ export const PoolSkeleton = ({
         </div>
 
         {isDesktop && (
-          <SActionsContainer>
+          <SActionsContainer css={{ gridArea: "actions" }}>
             <Button fullWidth size="small" disabled>
               <div sx={{ flex: "row", align: "center", justify: "center" }}>
                 <Icon icon={<PlusIcon />} sx={{ mr: 8 }} />

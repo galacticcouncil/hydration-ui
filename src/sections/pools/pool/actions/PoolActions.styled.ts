@@ -46,6 +46,7 @@ export const SActionsContainer = styled.div`
 
   @media (${theme.viewport.gte.sm}) {
     margin: 0;
+    margin-left: auto;
     width: 340px;
 
     background: inherit;

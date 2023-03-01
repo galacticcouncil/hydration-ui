@@ -31,7 +31,11 @@ export const Pool = ({ pool }: Props) => {
     <SContainer id={pool.id.toString()}>
       <SGridContainer>
         <PoolDetails pool={pool} css={{ gridArea: "details" }} />
-        <PoolIncentives poolId={pool.id} css={{ gridArea: "incentives" }} />
+        {import.meta.env.VITE_FF_FARMS_ENABLED === "true" ? (
+          <PoolIncentives poolId={pool.id} css={{ gridArea: "incentives" }} />
+        ) : (
+          <div css={{ gridArea: "incentives" }} />
+        )}
         <PoolValue pool={pool} css={{ gridArea: "values" }} />
         <PoolActions
           pool={pool}
@@ -54,10 +58,12 @@ export const Pool = ({ pool }: Props) => {
               css={{ overflow: "hidden" }}
             >
               <LiquidityPositionWrapper pool={pool} positions={positions} />
-              <FarmingPositionWrapper
-                pool={pool}
-                deposits={accountDeposits.data}
-              />
+              {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
+                <FarmingPositionWrapper
+                  pool={pool}
+                  deposits={accountDeposits.data}
+                />
+              )}
             </motion.div>
           )}
         </AnimatePresence>
