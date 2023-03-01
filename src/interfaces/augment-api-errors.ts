@@ -394,6 +394,36 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
+    duster: {
+      /**
+       * Account is excluded from dusting.
+       **/
+      AccountBlacklisted: AugmentedError<ApiType>
+      /**
+       * Account is not present in the non-dustable list.
+       **/
+      AccountNotBlacklisted: AugmentedError<ApiType>
+      /**
+       * The balance is sufficient to keep account open.
+       **/
+      BalanceSufficient: AugmentedError<ApiType>
+      /**
+       * Dust account is not set.
+       **/
+      DustAccountNotSet: AugmentedError<ApiType>
+      /**
+       * Reserve account is not set.
+       **/
+      ReserveAccountNotSet: AugmentedError<ApiType>
+      /**
+       * The balance is zero.
+       **/
+      ZeroBalance: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
     elections: {
       /**
        * Duplicated candidate submission.
@@ -744,6 +774,153 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
+    omnipoolLiquidityMining: {
+      /**
+       * Asset is not in the omnipool.
+       **/
+      AssetNotFound: AugmentedError<ApiType>
+      /**
+       * Signed account is not owner of the deposit.
+       **/
+      Forbidden: AugmentedError<ApiType>
+      /**
+       * Action cannot be completed because unexpected error has occurred. This should be reported
+       * to protocol maintainers.
+       **/
+      InconsistentState: AugmentedError<ApiType>
+      /**
+       * Rewards to claim are 0.
+       **/
+      ZeroClaimedRewards: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
+    omnipoolWarehouseLM: {
+      /**
+       * Multiple claims in the same period is not allowed.
+       **/
+      DoubleClaimInPeriod: AugmentedError<ApiType>
+      /**
+       * Trying to lock LP shares into already locked yield farm.
+       **/
+      DoubleLock: AugmentedError<ApiType>
+      /**
+       * Account creation from id failed.
+       **/
+      ErrorGetAccountId: AugmentedError<ApiType>
+      /**
+       * Account is not allowed to perform action.
+       **/
+      Forbidden: AugmentedError<ApiType>
+      /**
+       * Max number of yield farms in global farm was reached. Global farm can't accept new
+       * yield farms until some yield farm is not removed from storage.
+       **/
+      GlobalFarmIsFull: AugmentedError<ApiType>
+      /**
+       * One or more yield farms exist in global farm.
+       **/
+      GlobalFarmIsNotEmpty: AugmentedError<ApiType>
+      /**
+       * Global farm does not exist.
+       **/
+      GlobalFarmNotFound: AugmentedError<ApiType>
+      /**
+       * `incentivized_asset` is not registered in asset registry.
+       **/
+      IncentivizedAssetNotRegistered: AugmentedError<ApiType>
+      /**
+       * Action cannot be completed because unexpected error has occurred. This should be reported
+       * to protocol maintainers.
+       **/
+      InconsistentState: AugmentedError<ApiType>
+      /**
+       * Reward currency balance is not sufficient.
+       **/
+      InsufficientRewardCurrencyBalance: AugmentedError<ApiType>
+      /**
+       * Blocks per period can't be 0.
+       **/
+      InvalidBlocksPerPeriod: AugmentedError<ApiType>
+      /**
+       * LP shares amount is not valid.
+       **/
+      InvalidDepositAmount: AugmentedError<ApiType>
+      /**
+       * Loyalty curve's initial reward percentage is not valid. Valid range is: [0, 1).
+       **/
+      InvalidInitialRewardPercentage: AugmentedError<ApiType>
+      /**
+       * Invalid min. deposit was set for global farm.
+       **/
+      InvalidMinDeposit: AugmentedError<ApiType>
+      /**
+       * Yield farm multiplier can't be 0.
+       **/
+      InvalidMultiplier: AugmentedError<ApiType>
+      /**
+       * Planned yielding periods is less than `MinPlannedYieldingPeriods`.
+       **/
+      InvalidPlannedYieldingPeriods: AugmentedError<ApiType>
+      /**
+       * Price adjustment multiplier can't be 0.
+       **/
+      InvalidPriceAdjustment: AugmentedError<ApiType>
+      /**
+       * Total rewards is less than `MinTotalFarmRewards`.
+       **/
+      InvalidTotalRewards: AugmentedError<ApiType>
+      /**
+       * Yield per period can't be 0.
+       **/
+      InvalidYieldPerPeriod: AugmentedError<ApiType>
+      /**
+       * Liquidity mining is canceled.
+       **/
+      LiquidityMiningCanceled: AugmentedError<ApiType>
+      /**
+       * Liquidity mining is not canceled.
+       **/
+      LiquidityMiningIsActive: AugmentedError<ApiType>
+      /**
+       * Liquidity mining is in `active` or `terminated` state and action cannot be completed.
+       **/
+      LiquidityMiningIsNotStopped: AugmentedError<ApiType>
+      /**
+       * Maximum number of locks reached for deposit.
+       **/
+      MaxEntriesPerDeposit: AugmentedError<ApiType>
+      /**
+       * Farm's `incentivized_asset` is missing in provided asset pair.
+       **/
+      MissingIncentivizedAsset: AugmentedError<ApiType>
+      /**
+       * `reward_currency` is not registered in asset registry.
+       **/
+      RewardCurrencyNotRegistered: AugmentedError<ApiType>
+      /**
+       * Yield farm with given `amm_pool_id` already exists in global farm.
+       **/
+      YieldFarmAlreadyExists: AugmentedError<ApiType>
+      /**
+       * Yield farm entry doesn't exist for given deposit.
+       **/
+      YieldFarmEntryNotFound: AugmentedError<ApiType>
+      /**
+       * Yield farm does not exist.
+       **/
+      YieldFarmNotFound: AugmentedError<ApiType>
+      /**
+       * Value of deposited shares amount in reward currency can't be 0.
+       **/
+      ZeroValuedShares: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
     ormlXcm: {
       /**
        * The version of the `Versioned` value used is not able to be
@@ -939,6 +1116,28 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
+    scheduler: {
+      /**
+       * Failed to schedule a call
+       **/
+      FailedToSchedule: AugmentedError<ApiType>
+      /**
+       * Cannot find the scheduled call.
+       **/
+      NotFound: AugmentedError<ApiType>
+      /**
+       * Reschedule failed because it does not change scheduled time.
+       **/
+      RescheduleNoChange: AugmentedError<ApiType>
+      /**
+       * Given target block number is in the past.
+       **/
+      TargetBlockNumberInPast: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
     session: {
       /**
        * Registered duplicate key.
@@ -960,28 +1159,6 @@ declare module "@polkadot/api-base/types/errors" {
        * No keys are associated with this account.
        **/
       NoKeys: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
-    scheduler: {
-      /**
-       * Failed to schedule a call
-       **/
-      FailedToSchedule: AugmentedError<ApiType>
-      /**
-       * Cannot find the scheduled call.
-       **/
-      NotFound: AugmentedError<ApiType>
-      /**
-       * Reschedule failed because it does not change scheduled time.
-       **/
-      RescheduleNoChange: AugmentedError<ApiType>
-      /**
-       * Given target block number is in the past.
-       **/
-      TargetBlockNumberInPast: AugmentedError<ApiType>
       /**
        * Generic error
        **/

@@ -1,11 +1,10 @@
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal } from "components/Modal/Modal"
-import { LiquidityPosition } from "../../pool/positions/LiquidityPosition"
 import { usePoolPositions } from "../../pool/Pool.utils"
 import { OmnipoolPool } from "../../PoolsPage.utils"
-import { Text } from "components/Typography/Text/Text"
-import { ReactComponent as ListActionsIcon } from "assets/icons/ListActionsIcon.svg"
+import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
+import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
 
 interface Props {
   isOpen: boolean
@@ -23,37 +22,20 @@ export const LiquidityPositions: FC<Props> = ({ isOpen, pool, onClose }) => {
       withoutOutsideClose
       title={t("liquidity.positions.modal.title")}
       isDrawer
-      onClose={() => {
-        onClose()
-      }}
+      onClose={onClose}
     >
       <div
         sx={{
-          flex: "row",
-          mt: 20,
-          mb: 17,
+          flex: "column",
           gap: 8,
           align: "center",
+          m: "20px -20px -36px",
         }}
       >
-        <ListActionsIcon
-          sx={{
-            color: "pink600",
-          }}
-        />
-        <Text color="pink600" fs={17} fw={500}>
-          {t("liquidity.positions.modal.nftPositions")}
-        </Text>
-      </div>
-      <div sx={{ flex: "column", gap: 16 }}>
-        {positions.data.map((position, i) => (
-          <LiquidityPosition
-            key={`${i}-${position.assetId}`}
-            position={position}
-            index={i + 1}
-            onSuccess={positions.refetch}
-          />
-        ))}
+        <LiquidityPositionWrapper pool={pool} positions={positions} />
+        {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
+          <FarmingPositionWrapper positions={{ data: [""] }} />
+        )}
       </div>
     </Modal>
   )

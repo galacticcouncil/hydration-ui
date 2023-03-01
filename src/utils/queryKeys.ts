@@ -37,26 +37,34 @@ export const QUERY_KEYS = {
     "depositIds",
     accountId?.toString(),
   ],
-  globalFarms: (ids: u32[]) => [
+  globalFarms: (ids: Maybe<{ globalFarmId: u32 }[]>) => [
     QUERY_KEY_PREFIX,
     "globalFarms",
-    ...ids.map((i) => i.toString()),
+    ids?.map((i) => i.globalFarmId.toString()),
   ],
-  yieldFarms: (ids: Record<string, any>) => [
-    QUERY_KEY_PREFIX,
-    "yieldFarms",
-    ids,
-  ],
-  activeYieldFarms: (poolId: AccountId32 | string) => [
+  yieldFarms: (
+    ids: Maybe<
+      {
+        poolId: u32 | string
+        globalFarmId: u32 | string
+        yieldFarmId: u32 | string
+      }[]
+    >,
+  ) => [QUERY_KEY_PREFIX, "yieldFarms", ids],
+  activeYieldFarms: (poolId: Maybe<u32 | string>) => [
     QUERY_KEY_PREFIX,
     "activeYieldFarms",
-    poolId.toString(),
+    poolId?.toString(),
   ],
-  globalFarm: (id: u32) => [QUERY_KEY_PREFIX, "globalFarm", id.toString()],
+  globalFarm: (id: Maybe<u32 | string>) => [
+    QUERY_KEY_PREFIX,
+    "globalFarm",
+    id?.toString(),
+  ],
   yieldFarm: (ids: {
-    poolId: AccountId32 | string
-    globalFarmId: u32 | string
-    yieldFarmId: u32 | string
+    poolId: Maybe<u32 | string>
+    globalFarmId: Maybe<u32 | string>
+    yieldFarmId: Maybe<u32 | string>
   }) => [QUERY_KEY_PREFIX, "yieldFarm", ids],
   activeYieldFarm: (id: string) => [QUERY_KEY_PREFIX, "activeYieldFarm", id],
   totalLiquidity: (id: Maybe<AccountId32 | string>) => [
@@ -120,11 +128,13 @@ export const QUERY_KEYS = {
     plannedYieldingPeriods: u32,
     initialRewardPercentage: Maybe<u128>,
     scaleCoef: Maybe<u32>,
+    periodsInFarm: Maybe<string>,
   ) => [
     "mathLoyaltyRates",
     plannedYieldingPeriods,
     initialRewardPercentage?.toString(),
     scaleCoef?.toString(),
+    periodsInFarm,
   ],
   tradeVolume: (poolId: Maybe<string | u32>) => [
     QUERY_KEY_PREFIX,
