@@ -1665,21 +1665,6 @@ declare module "@polkadot/api-base/types/events" {
        **/
       [key: string]: AugmentedEvent<ApiType>
     }
-    session: {
-      /**
-       * New session has happened. Note that the argument is the session index, not the
-       * block number as the type might suggest.
-       **/
-      NewSession: AugmentedEvent<
-        ApiType,
-        [sessionIndex: u32],
-        { sessionIndex: u32 }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
     scheduler: {
       /**
        * The call for the provided hash was not found so the task has been aborted.
@@ -1728,6 +1713,21 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [when: u32, index: u32],
         { when: u32; index: u32 }
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    session: {
+      /**
+       * New session has happened. Note that the argument is the session index, not the
+       * block number as the type might suggest.
+       **/
+      NewSession: AugmentedEvent<
+        ApiType,
+        [sessionIndex: u32],
+        { sessionIndex: u32 }
       >
       /**
        * Generic event
