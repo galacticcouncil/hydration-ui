@@ -1,156 +1,195 @@
 ```js
-await Promise.all([
-  api.query.xykWarehouseLM.globalFarm(10),
-  api.query.xykWarehouseLM.globalFarm(12),
-  api.query.xykWarehouseLM.yieldFarm(
-    "bXjaGnLVKE3auHRwYWn6eGQSTcRLwrMVX7paepZhb6tgy28tY",
-    10,
-    14,
-  ),
-  api.query.xykWarehouseLM.yieldFarm(
-    "bXjaGnLVKE3auHRwYWn6eGQSTcRLwrMVX7paepZhb6tgy28tY",
-    12,
-    15,
-  ),
-  api.query.system.account(
-    "5EYCAe5diR59yJu1zi5jdbXWTzCk5nbR65wdmsWerp64Meis",
-  ),
-  api.query.system.account(
-    "5EYCAe5diR59yJu1zi8T3ryPavxifKcASoLjHJP1V4qM3zvk",
-  ),
-  api.query.tokens.accounts(
-    "5EYCAe5diR59yJu1zi5jdbXWTzCk5nbR65wdmsWerp64Meis",
-    4,
-  ),
-  api.query.tokens.accounts(
-    "5EYCAe5diR59yJu1zi8zXv4ZovK7aRouv9DkPBkgQiaob13o",
-    4,
-  ),
-  api.query.xykWarehouseLM.deposit(5),
-]),
+useQueryReduce(
+  [userDeposits, farms, accountBalances, assetList, bestNumberQuery] as const,
+  (userDeposits, farms, accountBalances, assetList, bestNumberQuery) => {
+    const deposits = depositNft != null ? [depositNft] : userDeposits ?? []
 
-// "5EYCAe5diR59yJu1zi5jdbXWTzCk5nbR65wdmsWerp64Meis" 0 (pot)
-// "5EYCAe5diR59yJu1zi8T3ryPavxifKcASoLjHJP1V4qM3zvk" 0 (global farm)
-// "5EYCAe5diR59yJu1zi5jdbXWTzCk5nbR65wdmsWerp64Meis" 4 (pot)
-// "5EYCAe5diR59yJu1zi8zXv4ZovK7aRouv9DkPBkgQiaob13o" 4 (global farm)
+    for (const record of deposits) {
+      for (const farmEntry of record.deposit.yieldFarmEntries) {
+        const farm = farms?.find(
+          (i) =>
+            i.globalFarm.id.eq(farmEntry.globalFarmId) &&
+            i.yieldFarm.id.eq(farmEntry.yieldFarmId),
+        )
 
-const result = [
-  {
-    id: 10,
-    owner: "bXhmisFH9dL7obCbbNLXqZbsGvANArBQWeFSrJ2ZMQ3uK3tXg",
-    updatedAt: 1560649,
-    totalSharesZ: "0x0000000000000015bfc66805b7497cb0",
-    accumulatedRpz: "0x0000000000000000001e209208975110",
-    rewardCurrency: 0,
-    accumulatedRewards: 3075389218210,
-    paidAccumulatedRewards: "0x000000000000000000a97b9ce8510501",
-    yieldPerPeriod: 304414003044,
-    plannedYieldingPeriods: 151200,
-    blocksPerPeriod: 2,
-    incentivizedAsset: 0,
-    maxRewardPerPeriod: 760582010582010,
-    minDeposit: 1000,
-    liveYieldFarmsCount: 2,
-    totalYieldFarmsCount: 2,
-    priceAdjustment: "0x00000000000000000de0b6b3a7640000",
-    state: "Active",
-  },
-  {
-    id: 12,
-    owner: "bXhmisFH9dL7obCbbNLXqZbsGvANArBQWeFSrJ2ZMQ3uK3tXg",
-    updatedAt: 1560635,
-    totalSharesZ: 2134366411045150,
-    accumulatedRpz: "0x00000000000000000019f61f44eb77c9",
-    rewardCurrency: 4,
-    accumulatedRewards: 15533733441408,
-    paidAccumulatedRewards: 6226268888,
-    yieldPerPeriod: 262557077625,
-    plannedYieldingPeriods: 151200,
-    blocksPerPeriod: 2,
-    incentivizedAsset: 4,
-    maxRewardPerPeriod: 59523809523,
-    minDeposit: 1000,
-    liveYieldFarmsCount: 2,
-    totalYieldFarmsCount: 2,
-    priceAdjustment: "0x00000000000000000de0b6b3a7640000",
-    state: "Active",
-  },
-  {
-    id: 14,
-    updatedAt: 1560633,
-    totalShares: "0x000000000000000006de55f7818e8cc1",
-    totalValuedShares: "0x000000000000000008c33d5e7e6228fd",
-    accumulatedRpvs: "0x0000000000000000001e1c2400c65aa8",
-    accumulatedRpz: "0x0000000000000000001e1c2400c65ad1",
-    loyaltyCurve: {
-      initialRewardPercentage: "0x000000000000000006f05b59d3b20000",
-      scaleCoef: 50000,
-    },
-    multiplier: "0x00000000000000000de0b6b3a7640000",
-    state: "Active",
-    entriesCount: 3,
-    leftToDistribute: 360825852820805,
-  },
-  {
-    id: 15,
-    updatedAt: 1560635,
-    totalShares: "0x000000000000000006dac878dcc80cc1",
-    totalValuedShares: 8638361715185,
-    accumulatedRpvs: "0x00000000000000000019f61f44df5fe7",
-    accumulatedRpz: "0x00000000000000000019f61f44eb77c9",
-    loyaltyCurve: {
-      initialRewardPercentage: "0x000000000000000006f05b59d3b20000",
-      scaleCoef: 50000,
-    },
-    multiplier: "0x00000000000000000de0b6b3a7640000",
-    state: "Active",
-    entriesCount: 2,
-    leftToDistribute: 6226268888,
-  },
-  {
-    nonce: 0,
-    consumers: 0,
-    providers: 3,
-    sufficients: 0,
-    data: { free: 45648785307383066, reserved: 0, miscFrozen: 0, feeFrozen: 0 },
-  },
-  {
-    nonce: 0,
-    consumers: 0,
-    providers: 1,
-    sufficients: 0,
-    data: {
-      free: 114952291739703942493,
-      reserved: 0,
-      miscFrozen: 0,
-      feeFrozen: 0,
-    },
-  },
-  { free: 15539959710296, reserved: 0, frozen: 0 },
-  { free: 8984460040289704, reserved: 0, frozen: 0 },
-  {
-    shares: "0x0000000000000000008e1bc9bf040000",
-    ammPoolId: "bXjaGnLVKE3auHRwYWn6eGQSTcRLwrMVX7paepZhb6tgy28tY",
-    yieldFarmEntries: [
-      {
-        globalFarmId: 10,
-        yieldFarmId: 14,
-        valuedShares: "0x000000000000000000944bf43bacbc41",
-        accumulatedRpvs: 0,
-        accumulatedClaimedRewards: 0,
-        enteredAt: 1532800,
-        updatedAt: 1532800,
+        if (farm == null) continue
+
+        console.log(`
+const accountResolver = getAccountResolver(registry)
+
+const multiCurrency = new MultiCurrencyContainer(
+[
+  ${accountAddresses
+    .map(
+      ([address, assetId]) => `[
+    new GenericAccountId32(
+      registry,
+      decodeAddress("${encodeAddress(address, HYDRA_ADDRESS_PREFIX)}"),
+    ),
+    new U32(registry, "${assetId.toHex()}"),
+  ],`,
+    )
+    .join("\n    ")
+    .trimStart()}
+],
+[
+  ${(accountBalances ?? [])
+    .map(
+      (balances) => `{
+    free: new BN("${balances.free.toString()}"),
+    reserved: new BN("${balances.reserved.toString()}"),
+    frozen: new BN("${balances.frozen.toString()}"),
+  },`,
+    )
+    .join("\n    ")
+    .trimStart()}
+],
+)
+
+const entries = createMutableFarmEntries([{
+globalFarm: createStruct<PalletLiquidityMiningGlobalFarmData>(registry, {
+  id: [U32, new U32(registry, "${farm.globalFarm.id.toString()}")],
+  owner: [
+    GenericAccountId,
+    decodeAddress("${encodeAddress(
+      farm.globalFarm.owner,
+      HYDRA_ADDRESS_PREFIX,
+    )}"),
+  ],
+  updatedAt: [U32, new U32(registry, "${farm.globalFarm.updatedAt.toString()}")],
+  totalSharesZ: [
+    U128,
+    new U128(registry, "${farm.globalFarm.totalSharesZ.toString()}"),
+  ],
+  accumulatedRpz: [
+    U128,
+    new U128(registry, "${farm.globalFarm.accumulatedRpz.toString()}"),
+  ],
+  rewardCurrency: [U32, new U32(registry, "${farm.globalFarm.rewardCurrency.toString()}")],
+  pendingRewards: [U128, new U128(registry, "${farm.globalFarm.pendingRewards.toString()}")],
+  accumulatedPaidRewards: [
+    U128,
+    new U128(registry, "${farm.globalFarm.accumulatedPaidRewards.toString()}"),
+  ],
+  yieldPerPeriod: [UInt, new UInt(registry, "${farm.globalFarm.yieldPerPeriod.toString()}")],
+  plannedYieldingPeriods: [U32, new U32(registry, "${farm.globalFarm.plannedYieldingPeriods.toString()}")],
+  blocksPerPeriod: [U32, new U32(registry, "${farm.globalFarm.blocksPerPeriod.toString()}")],
+  incentivizedAsset: [U32, new U32(registry, "${farm.globalFarm.incentivizedAsset.toString()}")],
+  maxRewardPerPeriod: [U128, new U128(registry, "${farm.globalFarm.maxRewardPerPeriod.toString()}")],
+  minDeposit: [U128, new U128(registry, "${farm.globalFarm.minDeposit.toString()}")],
+  liveYieldFarmsCount: [U32, new U32(registry, "${farm.globalFarm.liveYieldFarmsCount.toString()}")],
+  totalYieldFarmsCount: [U32, new U32(registry, "${farm.globalFarm.totalYieldFarmsCount.toString()}")],
+  priceAdjustment: [
+    U128,
+    new U128(registry, "${farm.globalFarm.priceAdjustment.toString()}"),
+  ],
+  state: [
+    Enum,
+    createEnum<PalletLiquidityMiningFarmState>(registry, {
+      Active: [Text, new Text(registry, "Active")],
+      Stopped: [Text],
+      Terminated: [Text],
+    }),
+  ],
+}),
+
+yieldFarm: createStruct<PalletLiquidityMiningYieldFarmData>(registry, {
+  id: [U32, new U32(registry, "${farm.yieldFarm.id.toString()}")],
+  updatedAt: [U32, new U32(registry, "${farm.yieldFarm.updatedAt.toString()}")],
+  totalShares: [
+    U128,
+    new U128(registry, "${farm.yieldFarm.totalShares.toString()}"),
+  ],
+  totalValuedShares: [
+    U128,
+    new U128(registry, "${farm.yieldFarm.totalValuedShares.toString()}"),
+  ],
+  accumulatedRpvs: [
+    U128,
+    new U128(registry, "${farm.yieldFarm.accumulatedRpvs.toString()}"),
+  ],
+  accumulatedRpz: [
+    U128,
+    new U128(registry, "${farm.yieldFarm.accumulatedRpz.toString()}"),
+  ],
+  loyaltyCurve: [
+    Option,
+    new Option(
+      registry,
+      Struct,
+      ${
+        farm.yieldFarm.loyaltyCurve.isNone
+          ? "undefined"
+          : `createStruct<PalletLiquidityMiningLoyaltyCurve>(registry, {
+        initialRewardPercentage: [
+          U128,
+          new U128(registry, "${farm.yieldFarm.loyaltyCurve
+            .unwrap()
+            .initialRewardPercentage.toString()}"),
+        ],
+        scaleCoef: [U32, new U32(registry, "${farm.yieldFarm.loyaltyCurve
+          .unwrap()
+          .scaleCoef.toString()}")],
+      })`
       },
-      {
-        globalFarmId: 12,
-        yieldFarmId: 15,
-        valuedShares: 852039496445,
-        accumulatedRpvs: 0,
-        accumulatedClaimedRewards: 0,
-        enteredAt: 1532803,
-        updatedAt: 1532803,
-      },
-    ],
+    ),
+  ],
+  multiplier: [
+    U128,
+    new U128(registry, "${farm.yieldFarm.multiplier.toString()}"),
+  ],
+  entriesCount: [U64, new U64(registry, "${farm.yieldFarm.entriesCount.toString()}")],
+  totalStopped: [U32, new U32(registry, "${farm.yieldFarm.totalStopped.toString()}")],
+  leftToDistribute: [U128, new U128(registry, "${farm.yieldFarm.leftToDistribute.toString()}")],
+  state: [
+    Enum,
+    createEnum<PalletLiquidityMiningFarmState>(registry, {
+      Active: [Text, new Text(registry, "Active")],
+      Stopped: [Text],
+      Terminated: [Text],
+    }),
+  ],
+}),
+}])
+
+const simulator = new OmnipoolLiquidityMiningClaimSim(
+accountResolver,
+multiCurrency,
+[
+  ${assetList
+    .map(
+      (asset) => `
+  {
+    id: "${asset.id.toString()}",
+    existentialDeposit: new BigNumber("${asset.existentialDeposit.toString()}"),
+  }`,
+    )
+    .join("\n    ")
+    .trimStart()}
+],
+)
+
+const result = simulator.claim_rewards(
+entries.globalFarms["${farmEntry.globalFarmId.toString()}"],
+entries.yieldFarms["${farmEntry.yieldFarmId.toString()}"],
+createStruct<PalletLiquidityMiningYieldFarmEntry>(registry, {
+  globalFarmId: [U32, new U32(registry, "${farmEntry.globalFarmId.toString()}")],
+  yieldFarmId: [U32, new U32(registry, "${farmEntry.yieldFarmId.toString()}")],
+  valuedShares: [
+    U128,
+    new U128(registry, "${farmEntry.valuedShares.toString()}"),
+  ],
+  stoppedAtCreation: [U32, new U32(registry, "${farmEntry.stoppedAtCreation.toString()}")],
+  accumulatedRpvs: [U128, new U128(registry, "${farmEntry.accumulatedRpvs.toString()}")],
+  accumulatedClaimedRewards: [U128, new U128(registry, "${farmEntry.accumulatedClaimedRewards.toString()}")],
+  enteredAt: [U32, new U32(registry, "${farmEntry.enteredAt.toString()}")],
+  updatedAt: [U32, new U32(registry, "${farmEntry.updatedAt.toString()}")],
+}),
+new BigNumber("${bestNumberQuery.relaychainBlockNumber.toString()}"),
+)
+`)
+      }
+    }
   },
-]
+).data
 ```

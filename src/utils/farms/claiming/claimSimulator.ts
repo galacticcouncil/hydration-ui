@@ -187,7 +187,10 @@ export class OmnipoolLiquidityMiningClaimSim {
     periods: BN,
     loyaltyCurve: Option<PalletLiquidityMiningLoyaltyCurve>,
   ) {
-    let loyaltyMultiplier = BN_1.toString()
+    let loyaltyMultiplier = BN_1.multipliedBy(BN_QUINTILL)
+      .integerValue(BN.ROUND_FLOOR)
+      .toString()
+
     if (!loyaltyCurve.isNone) {
       const { initialRewardPercentage, scaleCoef } = loyaltyCurve.unwrap()
 
