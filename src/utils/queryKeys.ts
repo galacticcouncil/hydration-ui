@@ -19,6 +19,9 @@ export const QUERY_KEYS = {
     "accountBalances",
     id?.toString(),
   ],
+  accountAssetBalances: (
+    pairs: Array<[address: AccountId32 | string, assetId: u32 | string]>,
+  ) => [QUERY_KEY_PREFIX, "accountAssetBalances", pairs],
   pools: [QUERY_KEY_PREFIX, "pools"],
   poolShareToken: (poolId: AccountId32 | string) => [
     QUERY_KEY_PREFIX,
@@ -31,7 +34,11 @@ export const QUERY_KEYS = {
     address.toString(),
   ],
   deposit: (id: Maybe<u128>) => [QUERY_KEY_PREFIX, "deposit", id?.toString()],
-  deposits: (poolId?: string) => [QUERY_KEY_PREFIX, "deposits", poolId],
+  deposits: (poolId: Maybe<u32 | string>) => [
+    QUERY_KEY_PREFIX,
+    "deposits",
+    poolId?.toString(),
+  ],
   accountDepositIds: (accountId: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "depositIds",

@@ -12,7 +12,7 @@ import BN from "bignumber.js"
 import {
   calculate_liquidity_out,
   calculate_liquidity_lrna_out,
-} from "@galacticcouncil/math/build/omnipool/bundler"
+} from "@galacticcouncil/math-omnipool"
 import { isNotNil } from "utils/helpers"
 
 export const useTotalInPools = () => {

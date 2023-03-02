@@ -44,7 +44,7 @@ export const getTokenBalance =
       }
     }
 
-    const res = (await api.query.tokens.accounts(account, id)) as any
+    const res = await api.query.tokens.accounts(account, id)
 
     const freeBalance = new BigNumber(res.free.toHex())
     const reservedBalance = new BigNumber(res.reserved.toHex())

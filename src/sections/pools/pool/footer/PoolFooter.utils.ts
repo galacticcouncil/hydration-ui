@@ -15,7 +15,7 @@ import { useSpotPrices } from "api/spotPrice"
 import { useMemo } from "react"
 import { BN_0, BN_10, BN_NAN } from "utils/constants"
 import BN from "bignumber.js"
-import { calculate_liquidity_out } from "@galacticcouncil/math/build/omnipool/bundler"
+import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
 
 export const useUsersTotalInPool = (pool: OmnipoolPool) => {
   const { account } = useAccountStore()

@@ -4,12 +4,19 @@ import { useTranslation } from "react-i18next"
 import { FarmingPosition } from "./position/FarmingPosition"
 import { Icon } from "components/Icon/Icon"
 import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
+import { Maybe } from "utils/helpers"
+import { OmnipoolPool } from "../PoolsPage.utils"
+import { DepositNftType } from "api/deposits"
 
-export const FarmingPositionWrapper = ({ positions }: { positions: any }) => {
+interface Props {
+  pool: OmnipoolPool
+  deposits: Maybe<DepositNftType[]>
+}
+
+export const FarmingPositionWrapper = ({ pool, deposits }: Props) => {
   const { t } = useTranslation()
 
-  if (!positions.data.length) return null
-
+  if (!deposits?.length) return null
   return (
     <SPositions>
       <div sx={{ flex: "row", align: "center", gap: 8, mb: 20 }}>
@@ -20,8 +27,13 @@ export const FarmingPositionWrapper = ({ positions }: { positions: any }) => {
       </div>
 
       <div sx={{ flex: "column", gap: 16 }}>
-        {positions.data.map((position: any, i: number) => (
-          <FarmingPosition key={i} index={i + 1} />
+        {deposits?.map((item, i) => (
+          <FarmingPosition
+            key={i}
+            pool={pool}
+            index={i + 1}
+            depositNft={item}
+          />
         ))}
       </div>
     </SPositions>

@@ -12,53 +12,58 @@ import { JoinedFarms } from "./joined/JoinedFarms"
 import { useMedia } from "react-use"
 import { useState } from "react"
 import { JoinedFarmsDetails } from "../modals/joinedFarmDetails/JoinedFarmsDetails"
-import BN from "bignumber.js"
+import { useEnteredDate } from "utils/block"
+import { BN_0 } from "utils/constants"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { DepositNftType } from "api/deposits"
 
-const dummyData = {
-  joinedFarms: [
-    {
-      depositNft: { deposit: { shares: BN(67788889389433788) } },
-      farm: {
-        assetId: "1",
-        distributedRewards: BN(67788889389433788),
-        maxRewards: BN(234455677889856658),
-        fullness: BN(0.5),
-        minApr: BN(0.5),
-        apr: BN(0.9),
-      },
-    },
-    {
-      depositNft: { deposit: { shares: BN(677888838943388) } },
-      farm: {
-        assetId: "0",
-        distributedRewards: BN(2345231478222228),
-        maxRewards: BN(11123445522222888),
-        fullness: BN(0.3),
-        minApr: BN(0.5),
-        apr: BN(0.9),
-      },
-    },
-  ],
-  availableFarms: [
-    {
-      depositNft: undefined,
-      farm: {
-        assetId: "2",
-        distributedRewards: BN(2345231478222228),
-        maxRewards: BN(11123445522222888),
-        fullness: BN(0.3),
-        minApr: BN(0.5),
-        apr: BN(0.9),
-      },
-    },
-  ],
-}
-export const FarmingPosition = ({ index }: { index: number }) => {
+function FarmingPositionDetailsButton(props: {
+  pool: OmnipoolPool
+  depositNft: DepositNftType
+}) {
   const { t } = useTranslation()
-
   const [farmDetails, setFarmDetails] = useState(false)
 
+  return (
+    <>
+      <Button size="small" sx={{ ml: 14 }} onClick={() => setFarmDetails(true)}>
+        {t("farms.positions.joinedFarms.button.label")}
+      </Button>
+
+      {farmDetails && (
+        <JoinedFarmsDetails
+          pool={props.pool}
+          depositNft={props.depositNft}
+          isOpen={farmDetails}
+          onClose={() => setFarmDetails(false)}
+        />
+      )}
+    </>
+  )
+}
+
+export const FarmingPosition = ({
+  index,
+  pool,
+  depositNft,
+}: {
+  index: number
+  pool: OmnipoolPool
+  depositNft: DepositNftType
+}) => {
+  const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  // use latest entry date
+  const enteredDate = useEnteredDate(
+    depositNft.deposit.yieldFarmEntries.reduce(
+      (acc, curr) =>
+        acc.lt(curr.enteredAt.toBigNumber())
+          ? curr.enteredAt.toBigNumber()
+          : acc,
+      BN_0,
+    ),
+  )
 
   return (
     <SContainer>
@@ -73,13 +78,7 @@ export const FarmingPosition = ({ index }: { index: number }) => {
         <Text fw={[500, 400]}>
           {t("farms.positions.position.title", { index })}
         </Text>
-        <Button
-          size="small"
-          sx={{ ml: 14 }}
-          onClick={() => setFarmDetails(true)}
-        >
-          {t("farms.positions.joinedFarms.button.label")}
-        </Button>
+        <FarmingPositionDetailsButton pool={pool} depositNft={depositNft} />
       </div>
       <SSeparator />
       <div
@@ -102,14 +101,18 @@ export const FarmingPosition = ({ index }: { index: number }) => {
             <Text color="basic500" fs={14} lh={16} fw={400}>
               {t("farms.positions.labels.enterDate")}
             </Text>
-            <Text>2.02.2022</Text>
+            <Text>
+              {t("farms.positions.labels.enterDate.value", {
+                date: enteredDate.data,
+              })}
+            </Text>
           </SValueContainer>
           <SSeparator orientation={isDesktop ? "vertical" : "horizontal"} />
           <SValueContainer>
             <Text color="basic500" fs={14} lh={16} fw={400}>
               {t("farms.positions.labels.lockedShares")}
             </Text>
-            <Text>2 855.222</Text>
+            <Text>{t("value", { value: depositNft.deposit.shares })}</Text>
           </SValueContainer>
           <SSeparator orientation={isDesktop ? "vertical" : "horizontal"} />
           <SValueContainer sx={{ width: ["100%", 150] }}>
@@ -136,14 +139,6 @@ export const FarmingPosition = ({ index }: { index: number }) => {
         <JoinedFarms />
         <RedepositFarms />
       </div>
-      {farmDetails && (
-        <JoinedFarmsDetails
-          joinedFarms={dummyData.joinedFarms}
-          availableFarms={dummyData.availableFarms}
-          isOpen={farmDetails}
-          onClose={() => setFarmDetails(false)}
-        />
-      )}
     </SContainer>
   )
 }

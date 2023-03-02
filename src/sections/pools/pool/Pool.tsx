@@ -13,6 +13,7 @@ import { usePoolPositions } from "sections/pools/pool/Pool.utils"
 import { PoolCapacity } from "sections/pools/pool/capacity/PoolCapacity"
 import { LiquidityPositionWrapper } from "./positions/LiquidityPositionWrapper"
 import { FarmingPositionWrapper } from "../farms/FarmingPositionWrapper"
+import { useAccountDeposits } from "api/deposits"
 
 type Props = { pool: OmnipoolPool }
 
@@ -21,6 +22,10 @@ export const Pool = ({ pool }: Props) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const positions = usePoolPositions(pool)
+  const accountDeposits = useAccountDeposits(pool.id)
+
+  const hasExpandContent =
+    !!positions.data?.length || !!accountDeposits.data?.length
 
   return (
     <SContainer id={pool.id.toString()}>
@@ -35,14 +40,14 @@ export const Pool = ({ pool }: Props) => {
         <PoolActions
           pool={pool}
           refetch={positions.refetch}
-          canExpand={!positions.isLoading && !!positions.data?.length}
+          canExpand={!positions.isLoading && hasExpandContent}
           isExpanded={isExpanded}
           onExpandClick={() => setIsExpanded((prev) => !prev)}
           css={{ gridArea: "actions" }}
         />
         <PoolCapacity pool={pool} css={{ gridArea: "capacity" }} />
       </SGridContainer>
-      {isDesktop && !!positions.data?.length && (
+      {isDesktop && hasExpandContent && (
         <AnimatePresence>
           {isExpanded && (
             <motion.div
@@ -54,7 +59,10 @@ export const Pool = ({ pool }: Props) => {
             >
               <LiquidityPositionWrapper pool={pool} positions={positions} />
               {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
-                <FarmingPositionWrapper positions={{ data: [""] }} />
+                <FarmingPositionWrapper
+                  pool={pool}
+                  deposits={accountDeposits.data}
+                />
               )}
             </motion.div>
           )}
