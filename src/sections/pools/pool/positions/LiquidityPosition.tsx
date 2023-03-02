@@ -18,6 +18,7 @@ import { Button } from "components/Button/Button"
 import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { useAccountStore } from "state/store"
 
 type Props = {
   pool: OmnipoolPool
@@ -33,6 +34,7 @@ export const LiquidityPosition = ({
   onSuccess,
 }: Props) => {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
   const [openRemove, setOpenRemove] = useState(false)
   const [joinFarm, setJoinFarm] = useState(false)
 
@@ -110,6 +112,7 @@ export const LiquidityPosition = ({
         <SButton
           variant="primary"
           size="small"
+          disabled={account?.isExternalWalletConnected}
           onClick={() => {
             setOpenRemove(true)
           }}

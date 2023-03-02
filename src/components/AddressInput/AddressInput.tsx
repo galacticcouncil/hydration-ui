@@ -15,7 +15,7 @@ type InputProps = {
   type?: InputHTMLAttributes<HTMLInputElement>["type"]
 
   name: string
-  label: string
+  label?: string
   error?: string
   placeholder?: string
   withLabel?: boolean
@@ -34,7 +34,7 @@ export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
     )
 
     return (
-      <SInputWrapper disabled={props.disabled}>
+      <SInputWrapper disabled={props.disabled} className={props.className}>
         <div sx={{ flex: "column", width: "calc(100% - 34px)" }}>
           <SInput
             ref={ref}

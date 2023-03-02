@@ -1,10 +1,11 @@
 import { SItem, SList } from "components/Layout/Header/menu/HeaderMenu.styled"
 import { useTranslation } from "react-i18next"
-import { Link } from "@tanstack/react-location"
+import { Link, useSearch } from "@tanstack/react-location"
 import { MENU_ITEMS } from "utils/navigation"
 
 export const HeaderMenu = () => {
   const { t } = useTranslation("translation")
+  const { account } = useSearch()
 
   return (
     <SList>
@@ -22,7 +23,11 @@ export const HeaderMenu = () => {
         }
 
         return (
-          <Link to={item.href} key={i}>
+          <Link
+            to={item.href}
+            search={account ? { account } : undefined}
+            key={i}
+          >
             {({ isActive }) => (
               <SItem isActive={isActive}>{t(item.translationKey)}</SItem>
             )}

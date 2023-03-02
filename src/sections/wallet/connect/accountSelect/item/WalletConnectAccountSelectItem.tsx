@@ -8,6 +8,7 @@ import { SSelectItem } from "./WalletConnectAccountSelectItem.styled"
 import { WalletConnectAccountSelectAddress } from "sections/wallet/connect/accountSelect/item/address/WalletConnectAccountSelectAddress"
 import { FC } from "react"
 import { useAssetMeta } from "api/assetMeta"
+import { externalWallet } from "state/store"
 
 type Props = {
   isActive: boolean
@@ -53,16 +54,20 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
       </div>
 
       <div sx={{ flex: "column", mt: 12, gap: 12 }}>
-        <WalletConnectAccountSelectAddress
-          name={t("walletConnect.accountSelect.asset.network")}
-          address={hydraAddress}
-          theme="substrate"
-          isActive={isActive}
-        />
-        <Separator
-          opacity={isActive ? 0.3 : 1}
-          css={{ background: "var(--secondary-color)" }}
-        />
+        {provider !== externalWallet.provider && (
+          <>
+            <WalletConnectAccountSelectAddress
+              name={t("walletConnect.accountSelect.asset.network")}
+              address={hydraAddress}
+              theme="substrate"
+              isActive={isActive}
+            />
+            <Separator
+              opacity={isActive ? 0.3 : 1}
+              css={{ background: "var(--secondary-color)" }}
+            />
+          </>
+        )}
         <WalletConnectAccountSelectAddress
           name={t("walletConnect.accountSelect.substrate.address")}
           address={polkadotAddress}
