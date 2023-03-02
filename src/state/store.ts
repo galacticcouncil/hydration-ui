@@ -69,17 +69,18 @@ export const useAccountStore = create(
           const value = window.localStorage.getItem(name)
           if (value == null) return value
 
-          // check if there is an external account address within URL
-          const search = window.location.hash.split("?").pop()
-          const externalWalletAddress = new URLSearchParams(search).get(
-            "account",
-          )
+          let externalWalletAddress: string | null = null
+          if (import.meta.env.VITE_FF_EXTERNAL_WALLET_ENABLED === "true") {
+            // check if there is an external account address within URL
+            const search = window.location.hash.split("?").pop()
+            externalWalletAddress = new URLSearchParams(search).get("account")
+          }
 
           try {
             const { state } = JSON.parse(value)
 
             // if there is an external account set it as a user wallet account
-            if (externalWalletAddress) {
+            if (!!externalWalletAddress) {
               const parsedAccount = JSON.parse(value)
 
               const externalAccount = {

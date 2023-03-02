@@ -30,12 +30,16 @@ export const WalletConnectProviderSelect = ({
             onConnect={onWalletSelect}
             onDownload={(wallet) => window.open(wallet.installUrl, "_blank")}
           />
-          <Text sx={{ py: 4 }} fs={14} color="basic400" tAlign="center">
-            {t("or")}
-          </Text>
-          <ExternalWalletConnectProviderButton
-            onClick={() => setAddExternalWallet(true)}
-          />
+          {import.meta.env.VITE_FF_EXTERNAL_WALLET_ENABLED === "true" && (
+            <>
+              <Text sx={{ py: 4 }} fs={14} color="basic400" tAlign="center">
+                {t("or")}
+              </Text>
+              <ExternalWalletConnectProviderButton
+                onClick={() => setAddExternalWallet(true)}
+              />
+            </>
+          )}
         </>
       ) : (
         <ExternalWalletConnectModal
