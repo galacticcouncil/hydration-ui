@@ -1,49 +1,30 @@
-import { useTradeVolume } from "api/volume"
+import { getVolumeAssetTotalValue, useTradeVolumes } from "api/volume"
 import { useMemo } from "react"
-import BN from "bignumber.js"
 import { BN_0, BN_10 } from "utils/constants"
-import { useSpotPrice } from "api/spotPrice"
-import { useAssetMeta } from "api/assetMeta"
+import { useSpotPrice, useSpotPrices } from "api/spotPrice"
+import { useAssetMeta, useAssetMetaList } from "api/assetMeta"
 import { useApiIds } from "api/consts"
 import { u32 } from "@polkadot/types-codec"
+import { normalizeId } from "../../../../utils/helpers"
 
 export function usePoolDetailsTradeVolume(assetId: u32) {
-  const volume = useTradeVolume(assetId)
+  const volumes = useTradeVolumes([assetId])
 
   const assetTotalValue = useMemo(() => {
-    // Assuming trade volume is the aggregate amount being
-    // sent between user account and pair account
-    const sums =
-      volume.data?.events.reduce<Record<string, BN>>((memo, item) => {
-        const assetIn = item.args.assetIn.toString()
-        const assetOut = item.args.assetOut.toString()
-        const amountIn = new BN(item.args.amountIn)
-        const amountOut = new BN(item.args.amountOut)
+    const volume = volumes.find(
+      (volume) => volume.data?.assetId === normalizeId(assetId),
+    )
 
-        if (memo[assetIn] == null) memo[assetIn] = BN_0
-        if (memo[assetOut] == null) memo[assetOut] = BN_0
-
-        if (item.name === "Omnipool.BuyExecuted") {
-          memo[assetIn] = memo[assetIn].plus(amountIn)
-          memo[assetOut] = memo[assetOut].plus(amountOut)
-        }
-
-        if (item.name === "Omnipool.SellExecuted") {
-          memo[assetIn] = memo[assetIn].plus(amountIn)
-          memo[assetOut] = memo[assetOut].plus(amountOut)
-        }
-
-        return memo
-      }, {}) ?? {}
-
-    return sums[assetId.toString()]
-  }, [volume.data, assetId])
+    if (!volume?.data) return
+    const sums = getVolumeAssetTotalValue(volume.data)
+    return sums?.[assetId.toString()]
+  }, [volumes, assetId])
 
   const apiIds = useApiIds()
   const assetMeta = useAssetMeta(assetId)
   const spotPrice = useSpotPrice(assetId, apiIds.data?.usdId)
 
-  const queries = [volume, apiIds, assetMeta, spotPrice]
+  const queries = [...volumes, apiIds, assetMeta, spotPrice]
   const isLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
@@ -60,4 +41,42 @@ export function usePoolDetailsTradeVolume(assetId: u32) {
   }, [assetTotalValue, spotPrice, assetMeta])
 
   return { data, isLoading }
+}
+
+export function usePoolsDetailsTradeVolumes(assetIds: u32[]) {
+  const apiIds = useApiIds()
+  const volumes = useTradeVolumes(assetIds)
+  const assetMetas = useAssetMetaList(assetIds)
+  const spotPrices = useSpotPrices(assetIds, apiIds.data?.usdId)
+
+  const queries = [apiIds, ...volumes, assetMetas, ...spotPrices]
+  const isLoading = queries.some((q) => q.isInitialLoading)
+
+  const data = useMemo(() => {
+    return assetIds.reduce((acc, assetId) => {
+      const volume = volumes.find(
+        (volume) => volume.data?.assetId === normalizeId(assetId),
+      )
+      const assetMeta = assetMetas.data?.find(
+        (meta) => meta.id === assetId.toString(),
+      )
+      const spotPrice = spotPrices.find(
+        (spot) => spot.data?.tokenIn === normalizeId(assetId),
+      )?.data?.spotPrice
+
+      const assetTotalValue = getVolumeAssetTotalValue(volume?.data)?.[
+        assetId.toString()
+      ]
+
+      if (!assetMeta || !spotPrice || !assetTotalValue) return acc
+
+      const assetScale = assetTotalValue.dividedBy(
+        BN_10.pow(assetMeta.decimals.toNumber()),
+      )
+
+      return acc.plus(assetScale.multipliedBy(spotPrice))
+    }, BN_0)
+  }, [volumes, assetMetas, spotPrices, assetIds])
+
+  return { isLoading, data }
 }

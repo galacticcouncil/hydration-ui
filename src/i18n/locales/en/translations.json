@@ -50,6 +50,7 @@
   "liquidity.header.title": "Liquidity",
   "liquidity.header.switch": "My liquidity positions",
   "liquidity.header.totalLocked": "Value in Omnipool",
+  "liquidity.header.24hours": "24h Volume",
   "liquidity.asset.title": "Asset",
   "liquidity.asset.details.fee": "Trade fee",
   "liquidity.asset.details.total": "Value in Omnipool",
