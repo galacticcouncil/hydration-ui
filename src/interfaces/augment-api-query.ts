@@ -68,6 +68,9 @@ import type {
   PalletGenesisHistoryChain,
   PalletIdentityRegistrarInfo,
   PalletIdentityRegistration,
+  PalletLiquidityMiningDepositData,
+  PalletLiquidityMiningGlobalFarmData,
+  PalletLiquidityMiningYieldFarmData,
   PalletMultisigMultisig,
   PalletOmnipoolAssetState,
   PalletOmnipoolPosition,
@@ -597,6 +600,39 @@ declare module "@polkadot/api-base/types/storage" {
        **/
       [key: string]: QueryableStorageEntry<ApiType>
     }
+    duster: {
+      /**
+       * Accounts excluded from dusting.
+       **/
+      accountBlacklist: AugmentedQuery<
+        ApiType,
+        (arg: AccountId32 | string | Uint8Array) => Observable<Option<Null>>,
+        [AccountId32]
+      > &
+        QueryableStorageEntry<ApiType, [AccountId32]>
+      /**
+       * Account to send dust to.
+       **/
+      dustAccount: AugmentedQuery<
+        ApiType,
+        () => Observable<Option<AccountId32>>,
+        []
+      > &
+        QueryableStorageEntry<ApiType, []>
+      /**
+       * Account to take reward from.
+       **/
+      rewardAccount: AugmentedQuery<
+        ApiType,
+        () => Observable<Option<AccountId32>>,
+        []
+      > &
+        QueryableStorageEntry<ApiType, []>
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>
+    }
     elections: {
       /**
        * The present candidate list. A current member or runner-up can never enter this vector
@@ -835,6 +871,83 @@ declare module "@polkadot/api-base/types/storage" {
         [u128]
       > &
         QueryableStorageEntry<ApiType, [u128]>
+      /**
+       * TVL cap
+       **/
+      tvlCap: AugmentedQuery<ApiType, () => Observable<u128>, []> &
+        QueryableStorageEntry<ApiType, []>
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>
+    }
+    omnipoolLiquidityMining: {
+      /**
+       * Map of omnipool position's ids to LM's deposit ids.
+       **/
+      omniPositionId: AugmentedQuery<
+        ApiType,
+        (arg: u128 | AnyNumber | Uint8Array) => Observable<Option<u128>>,
+        [u128]
+      > &
+        QueryableStorageEntry<ApiType, [u128]>
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>
+    }
+    omnipoolWarehouseLM: {
+      /**
+       * Active(farms able to receive LP shares deposits) yield farms.
+       **/
+      activeYieldFarm: AugmentedQuery<
+        ApiType,
+        (
+          arg1: u32 | AnyNumber | Uint8Array,
+          arg2: u32 | AnyNumber | Uint8Array,
+        ) => Observable<Option<u32>>,
+        [u32, u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32, u32]>
+      /**
+       * Deposit details.
+       **/
+      deposit: AugmentedQuery<
+        ApiType,
+        (
+          arg: u128 | AnyNumber | Uint8Array,
+        ) => Observable<Option<PalletLiquidityMiningDepositData>>,
+        [u128]
+      > &
+        QueryableStorageEntry<ApiType, [u128]>
+      depositSequencer: AugmentedQuery<ApiType, () => Observable<u128>, []> &
+        QueryableStorageEntry<ApiType, []>
+      /**
+       * Id sequencer for `GlobalFarm` and `YieldFarm`.
+       **/
+      farmSequencer: AugmentedQuery<ApiType, () => Observable<u32>, []> &
+        QueryableStorageEntry<ApiType, []>
+      globalFarm: AugmentedQuery<
+        ApiType,
+        (
+          arg: u32 | AnyNumber | Uint8Array,
+        ) => Observable<Option<PalletLiquidityMiningGlobalFarmData>>,
+        [u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32]>
+      /**
+       * Yield farm details.
+       **/
+      yieldFarm: AugmentedQuery<
+        ApiType,
+        (
+          arg1: u32 | AnyNumber | Uint8Array,
+          arg2: u32 | AnyNumber | Uint8Array,
+          arg3: u32 | AnyNumber | Uint8Array,
+        ) => Observable<Option<PalletLiquidityMiningYieldFarmData>>,
+        [u32, u32, u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32, u32, u32]>
       /**
        * Generic query
        **/
@@ -1260,6 +1373,34 @@ declare module "@polkadot/api-base/types/storage" {
        **/
       [key: string]: QueryableStorageEntry<ApiType>
     }
+    scheduler: {
+      /**
+       * Items to be executed, indexed by the block number that they should be executed on.
+       **/
+      agenda: AugmentedQuery<
+        ApiType,
+        (
+          arg: u32 | AnyNumber | Uint8Array,
+        ) => Observable<Vec<Option<PalletSchedulerScheduledV3>>>,
+        [u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32]>
+      /**
+       * Lookup from identity to the block number and index of the task.
+       **/
+      lookup: AugmentedQuery<
+        ApiType,
+        (
+          arg: Bytes | string | Uint8Array,
+        ) => Observable<Option<ITuple<[u32, u32]>>>,
+        [Bytes]
+      > &
+        QueryableStorageEntry<ApiType, [Bytes]>
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>
+    }
     session: {
       /**
        * Current index of the session.
@@ -1333,34 +1474,6 @@ declare module "@polkadot/api-base/types/storage" {
         []
       > &
         QueryableStorageEntry<ApiType, []>
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>
-    }
-    scheduler: {
-      /**
-       * Items to be executed, indexed by the block number that they should be executed on.
-       **/
-      agenda: AugmentedQuery<
-        ApiType,
-        (
-          arg: u32 | AnyNumber | Uint8Array,
-        ) => Observable<Vec<Option<PalletSchedulerScheduledV3>>>,
-        [u32]
-      > &
-        QueryableStorageEntry<ApiType, [u32]>
-      /**
-       * Lookup from identity to the block number and index of the task.
-       **/
-      lookup: AugmentedQuery<
-        ApiType,
-        (
-          arg: Bytes | string | Uint8Array,
-        ) => Observable<Option<ITuple<[u32, u32]>>>,
-        [Bytes]
-      > &
-        QueryableStorageEntry<ApiType, [Bytes]>
       /**
        * Generic query
        **/

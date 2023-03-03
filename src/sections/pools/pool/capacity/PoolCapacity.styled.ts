@@ -2,12 +2,15 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SContainer = styled.div`
+  margin: -20px;
+  padding: 20px 15px;
+  background: rgba(10, 12, 22, 0.69);
+
   position: relative;
-  padding: 0 20px 20px;
   text-align: center;
 
-  @media ${theme.viewport.gte.md} {
-    padding: 0 30px 20px;
+  @media (${theme.viewport.gte.sm}) {
+    background: inherit;
   }
 `
 

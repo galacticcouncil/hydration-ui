@@ -12,19 +12,91 @@ import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/W
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { useState } from "react"
-import { RemoveLiquidity } from "../../modals/RemoveLiquidity/RemoveLiquidity"
-import { useAssetMeta } from "../../../../api/assetMeta"
+import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
+import { useAssetMeta } from "api/assetMeta"
+import { Button } from "components/Button/Button"
+import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
+import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { useFarms } from "api/farms"
 
 type Props = {
+  pool: OmnipoolPool
   position: HydraPositionsTableData
   onSuccess: () => void
   index: number
 }
 
-export const LiquidityPosition = ({ position, index, onSuccess }: Props) => {
+function LiquidityPositionJoinFarmButton(props: {
+  pool: OmnipoolPool
+  position: HydraPositionsTableData
+  onSuccess: () => void
+}) {
+  const { t } = useTranslation()
+  const [joinFarm, setJoinFarm] = useState(false)
+  const farms = useFarms(props.pool.id)
+  return (
+    <>
+      <Button
+        variant="primary"
+        size="small"
+        disabled={!farms.data?.length}
+        sx={{ width: ["100%", 220] }}
+        onClick={() => setJoinFarm(true)}
+      >
+        <Icon size={16} icon={<FPIcon />} />
+        {t("liquidity.asset.actions.joinFarms")}
+      </Button>
+
+      {joinFarm && (
+        <JoinFarmModal
+          isOpen={joinFarm}
+          pool={props.pool}
+          position={props.position}
+          onClose={() => setJoinFarm(false)}
+        />
+      )}
+    </>
+  )
+}
+
+function LiquidityPositionRemoveLiquidity(props: {
+  position: HydraPositionsTableData
+  onSuccess: () => void
+}) {
   const { t } = useTranslation()
   const [openRemove, setOpenRemove] = useState(false)
+  return (
+    <>
+      <SButton
+        variant="primary"
+        size="small"
+        onClick={() => setOpenRemove(true)}
+      >
+        <div sx={{ flex: "row", align: "center", justify: "center" }}>
+          <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
+          {t("liquidity.asset.actions.removeLiquidity")}
+        </div>
+      </SButton>
+      {openRemove && (
+        <RemoveLiquidity
+          isOpen={openRemove}
+          onClose={() => setOpenRemove(false)}
+          position={props.position}
+          onSuccess={props.onSuccess}
+        />
+      )}
+    </>
+  )
+}
 
+export const LiquidityPosition = ({
+  pool,
+  position,
+  index,
+  onSuccess,
+}: Props) => {
+  const { t } = useTranslation()
   const meta = useAssetMeta(position.assetId)
 
   return (
@@ -52,47 +124,49 @@ export const LiquidityPosition = ({ position, index, onSuccess }: Props) => {
             </Text>
           </div>
           <Separator orientation="vertical" />
-          <div sx={{ flex: "column", gap: 2, align: "end" }}>
-            <WalletAssetsHydraPositionsData
-              symbol={position.symbol}
-              value={position.value}
-              lrna={position.lrna}
-            />
-            <DollarAssetValue
-              value={position.valueUSD}
-              wrapper={(children) => (
-                <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
-                  {children}
-                </Text>
-              )}
-            >
-              {t("value.usd", { amount: position.valueUSD })}
-            </DollarAssetValue>
+          <div sx={{ flex: "column", gap: 6, align: "end" }}>
+            <Text fs={[14, 14]} color="whiteish500">
+              {t("liquidity.asset.positions.position.currentValue")}
+            </Text>
+            <div sx={{ flex: "column", align: "end" }}>
+              <WalletAssetsHydraPositionsData
+                symbol={position.symbol}
+                value={position.value}
+                lrna={position.lrna}
+              />
+              <DollarAssetValue
+                value={position.valueUSD}
+                wrapper={(children) => (
+                  <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                    {children}
+                  </Text>
+                )}
+              >
+                {t("value.usd", { amount: position.valueUSD })}
+              </DollarAssetValue>
+            </div>
           </div>
         </div>
       </div>
-      <div sx={{ flex: "row", justify: "end" }}>
-        <SButton
-          variant="primary"
-          size="small"
-          onClick={() => {
-            setOpenRemove(true)
-          }}
-        >
-          <div sx={{ flex: "row", align: "center", justify: "center" }}>
-            <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
-            {t("liquidity.asset.actions.removeLiquidity")}
-          </div>
-        </SButton>
-      </div>
-      {openRemove && (
-        <RemoveLiquidity
-          isOpen={openRemove}
-          onClose={() => setOpenRemove(false)}
+      <div
+        sx={{
+          flex: "column",
+          align: "center",
+          gap: 8,
+        }}
+      >
+        {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
+          <LiquidityPositionJoinFarmButton
+            pool={pool}
+            position={position}
+            onSuccess={onSuccess}
+          />
+        )}
+        <LiquidityPositionRemoveLiquidity
           position={position}
           onSuccess={onSuccess}
         />
-      )}
+      </div>
     </SContainer>
   )
 }

@@ -242,6 +242,11 @@ export const GlobalStyle = `
     height: 6px;
   }
 
+  &::-webkit-scrollbar:horizontal{
+    width: 0px;
+    height: 0px;
+  }
+
   &::-webkit-scrollbar-thumb:vertical {
     background: transparent url("/images/Scrollbar.svg") no-repeat;
     background-position: bottom;

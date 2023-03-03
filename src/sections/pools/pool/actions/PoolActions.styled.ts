@@ -39,10 +39,16 @@ export const SActionsContainer = styled.div`
   align-items: center;
   gap: 15px;
 
-  margin: 24px 0px;
+  margin: 0 -20px;
+  padding: 0 20px;
+
+  background: rgba(${theme.rgbColors.gray}, 0.69);
 
   @media (${theme.viewport.gte.sm}) {
     margin: 0;
+    margin-left: auto;
     width: 340px;
+
+    background: inherit;
   }
 `

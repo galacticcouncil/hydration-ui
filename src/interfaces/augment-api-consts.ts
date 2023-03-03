@@ -161,6 +161,20 @@ declare module "@polkadot/api-base/types/consts" {
        **/
       [key: string]: Codec
     }
+    duster: {
+      /**
+       * Native Asset Id
+       **/
+      nativeCurrencyId: u32 & AugmentedConst<ApiType>
+      /**
+       * Reward amount
+       **/
+      reward: u128 & AugmentedConst<ApiType>
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec
+    }
     elections: {
       /**
        * How much should be locked up in order to submit one's candidacy.
@@ -335,9 +349,43 @@ declare module "@polkadot/api-base/types/consts" {
        **/
       stableCoinAssetId: u32 & AugmentedConst<ApiType>
       /**
-       * TVL cap
+       * Generic const
        **/
-      tvlCap: u128 & AugmentedConst<ApiType>
+      [key: string]: Codec
+    }
+    omnipoolLiquidityMining: {
+      /**
+       * NFT collection id for liquidity mining's deposit nfts.
+       **/
+      nftCollectionId: u128 & AugmentedConst<ApiType>
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec
+    }
+    omnipoolWarehouseLM: {
+      /**
+       * Maximum number of yield farms same LP shares can be re/deposited into. This value always
+       * MUST BE >= 1.
+       **/
+      maxFarmEntriesPerDeposit: u32 & AugmentedConst<ApiType>
+      /**
+       * Max number of yield farms can exist in global farm. This includes all farms in the
+       * storage(active, stopped, deleted).
+       **/
+      maxYieldFarmsPerGlobalFarm: u32 & AugmentedConst<ApiType>
+      /**
+       * Minimum number of periods to run liquidity mining program.
+       **/
+      minPlannedYieldingPeriods: u32 & AugmentedConst<ApiType>
+      /**
+       * Minimum total rewards to distribute from global farm during liquidity mining.
+       **/
+      minTotalFarmRewards: u128 & AugmentedConst<ApiType>
+      /**
+       * Pallet id.
+       **/
+      palletId: FrameSupportPalletId & AugmentedConst<ApiType>
       /**
        * Generic const
        **/
