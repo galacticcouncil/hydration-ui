@@ -7,86 +7,80 @@ import { u32 } from "@polkadot/types-codec"
 import BN from "bignumber.js"
 import { BN_0 } from "../utils/constants"
 
-export const getTradeVolume = async (assetId: u32) => {
+export const getTradeVolume = (assetId: u32) => async () => {
   const assetIn = assetId.toNumber()
   const after = addDays(new Date(), -1).toISOString()
 
   // This is being typed manually, as GraphQL schema does not
   // describe the event arguments at all
-  return await request<{
-    events: Array<
-      | {
-          name: "Omnipool.SellExecuted"
-          args: {
-            who: string
-            assetIn: number
-            assetOut: number
-            amountIn: string
-            amountOut: string
+  return {
+    assetId: normalizeId(assetId),
+    ...(await request<{
+      events: Array<
+        | {
+            name: "Omnipool.SellExecuted"
+            args: {
+              who: string
+              assetIn: number
+              assetOut: number
+              amountIn: string
+              amountOut: string
+            }
           }
-        }
-      | {
-          name: "Omnipool.BuyExecuted"
-          args: {
-            who: string
-            assetIn: number
-            assetOut: number
-            amountIn: string
-            amountOut: string
+        | {
+            name: "Omnipool.BuyExecuted"
+            args: {
+              who: string
+              assetIn: number
+              assetOut: number
+              amountIn: string
+              amountOut: string
+            }
           }
-        }
-    >
-  }>(
-    import.meta.env.VITE_INDEXER_URL,
-    gql`
-      query TradeVolume($assetIn: Int!, $after: DateTime!) {
-        events(
-          where: {
-            args_jsonContains: { assetIn: $assetIn }
-            block: { timestamp_gte: $after }
-            OR: {
-              args_jsonContains: { assetOut: $assetIn }
+      >
+    }>(
+      import.meta.env.VITE_INDEXER_URL,
+      gql`
+        query TradeVolume($assetIn: Int!, $after: DateTime!) {
+          events(
+            where: {
+              args_jsonContains: { assetIn: $assetIn }
               block: { timestamp_gte: $after }
+              OR: {
+                args_jsonContains: { assetOut: $assetIn }
+                block: { timestamp_gte: $after }
+              }
+              AND: {
+                name_eq: "Omnipool.SellExecuted"
+                OR: { name_eq: "Omnipool.BuyExecuted" }
+              }
             }
-            AND: {
-              name_eq: "Omnipool.SellExecuted"
-              OR: { name_eq: "Omnipool.BuyExecuted" }
+          ) {
+            name
+            args
+            block {
+              timestamp
             }
-          }
-        ) {
-          name
-          args
-          block {
-            timestamp
           }
         }
-      }
-    `,
-    { assetIn, after },
-  )
+      `,
+      { assetIn, after },
+    )),
+  }
 }
 
 export function useTradeVolumes(assetIds: Maybe<u32>[]) {
   return useQueries({
     queries: assetIds.map((assetId) => ({
       queryKey: QUERY_KEYS.tradeVolume(assetId),
-      queryFn:
-        assetId != null
-          ? async () => {
-              const volume = await getTradeVolume(assetId)
-              return {
-                assetId: normalizeId(assetId),
-                ...volume,
-              }
-            }
-          : undefinedNoop,
+      queryFn: assetId != null ? getTradeVolume(assetId) : undefinedNoop,
       enabled: !!assetId,
     })),
   })
 }
 
 export function getVolumeAssetTotalValue(
-  volume?: Awaited<ReturnType<typeof getTradeVolume>>,
+  volume?: Awaited<ReturnType<ReturnType<typeof getTradeVolume>>>,
 ) {
   if (!volume) return
   // Assuming trade volume is the aggregate amount being
