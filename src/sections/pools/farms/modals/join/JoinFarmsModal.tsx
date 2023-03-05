@@ -13,6 +13,7 @@ import { useMutation } from "@tanstack/react-query"
 import { useStore } from "state/store"
 import { useApiPromise } from "utils/api"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { useAssetMeta } from "api/assetMeta"
 
 type JoinFarmModalProps = {
   isOpen: boolean
@@ -35,6 +36,7 @@ export const JoinFarmModal = ({
     globalFarmId: u32
   } | null>(null)
   const farms = useFarms(pool.id)
+  const meta = useAssetMeta(position.assetId)
 
   const selectedFarm = farms.data?.find(
     (farm) =>
@@ -69,9 +71,11 @@ export const JoinFarmModal = ({
           ),
         )
 
-        await createTransaction({
-          tx: txs.length > 1 ? api.tx.utility.batch(txs) : txs[0],
-        })
+        if (txs.length > 0) {
+          await createTransaction({
+            tx: txs.length > 1 ? api.tx.utility.batch(txs) : txs[0],
+          })
+        }
       }
     }
   })
@@ -85,6 +89,7 @@ export const JoinFarmModal = ({
       {selectedFarm ? (
         <FarmDetailsModal
           farm={selectedFarm}
+          depositNft={undefined}
           onBack={() => setSelectedFarmId(null)}
         />
       ) : (
@@ -126,8 +131,8 @@ export const JoinFarmModal = ({
               </div>
               <Text color="pink600" fs={24} css={{ whiteSpace: "nowrap" }}>
                 {t("value.token", {
-                  value: position.providedAmount,
-                  fixedPointScale: 12,
+                  value: position.shares,
+                  fixedPointScale: meta.data?.decimals ?? 12,
                 })}
               </Text>
             </div>

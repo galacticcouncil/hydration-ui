@@ -12,12 +12,13 @@ import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/W
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { useState } from "react"
-import { RemoveLiquidity } from "../../modals/RemoveLiquidity/RemoveLiquidity"
-import { useAssetMeta } from "../../../../api/assetMeta"
+import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
+import { useAssetMeta } from "api/assetMeta"
 import { Button } from "components/Button/Button"
 import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { useFarms } from "api/farms"
 import { useAccountStore } from "state/store"
 
 type Props = {
@@ -27,6 +28,72 @@ type Props = {
   index: number
 }
 
+function LiquidityPositionJoinFarmButton(props: {
+  pool: OmnipoolPool
+  position: HydraPositionsTableData
+  onSuccess: () => void
+}) {
+  const { t } = useTranslation()
+  const { account } = useAccountStore()
+  const [joinFarm, setJoinFarm] = useState(false)
+  const farms = useFarms(props.pool.id)
+  return (
+    <>
+      <Button
+        variant="primary"
+        size="small"
+        disabled={!farms.data?.length || account?.isExternalWalletConnected}
+        sx={{ width: ["100%", 220] }}
+        onClick={() => setJoinFarm(true)}
+      >
+        <Icon size={16} icon={<FPIcon />} />
+        {t("liquidity.asset.actions.joinFarms")}
+      </Button>
+
+      {joinFarm && (
+        <JoinFarmModal
+          isOpen={joinFarm}
+          pool={props.pool}
+          position={props.position}
+          onClose={() => setJoinFarm(false)}
+        />
+      )}
+    </>
+  )
+}
+
+function LiquidityPositionRemoveLiquidity(props: {
+  position: HydraPositionsTableData
+  onSuccess: () => void
+}) {
+  const { t } = useTranslation()
+  const { account } = useAccountStore()
+  const [openRemove, setOpenRemove] = useState(false)
+  return (
+    <>
+      <SButton
+        variant="primary"
+        size="small"
+        onClick={() => setOpenRemove(true)}
+        disabled={account?.isExternalWalletConnected}
+      >
+        <div sx={{ flex: "row", align: "center", justify: "center" }}>
+          <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
+          {t("liquidity.asset.actions.removeLiquidity")}
+        </div>
+      </SButton>
+      {openRemove && (
+        <RemoveLiquidity
+          isOpen={openRemove}
+          onClose={() => setOpenRemove(false)}
+          position={props.position}
+          onSuccess={props.onSuccess}
+        />
+      )}
+    </>
+  )
+}
+
 export const LiquidityPosition = ({
   pool,
   position,
@@ -34,10 +101,6 @@ export const LiquidityPosition = ({
   onSuccess,
 }: Props) => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
-  const [openRemove, setOpenRemove] = useState(false)
-  const [joinFarm, setJoinFarm] = useState(false)
-
   const meta = useAssetMeta(position.assetId)
 
   return (
@@ -97,48 +160,17 @@ export const LiquidityPosition = ({
         }}
       >
         {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
-          <Button
-            variant="primary"
-            size="small"
-            sx={{ width: ["100%", 220] }}
-            onClick={() => {
-              setJoinFarm(true)
-            }}
-          >
-            <Icon size={16} icon={<FPIcon />} />
-            {t("liquidity.asset.actions.joinFarms")}
-          </Button>
+          <LiquidityPositionJoinFarmButton
+            pool={pool}
+            position={position}
+            onSuccess={onSuccess}
+          />
         )}
-        <SButton
-          variant="primary"
-          size="small"
-          disabled={account?.isExternalWalletConnected}
-          onClick={() => {
-            setOpenRemove(true)
-          }}
-        >
-          <div sx={{ flex: "row", align: "center", justify: "center" }}>
-            <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
-            {t("liquidity.asset.actions.removeLiquidity")}
-          </div>
-        </SButton>
-      </div>
-      {openRemove && (
-        <RemoveLiquidity
-          isOpen={openRemove}
-          onClose={() => setOpenRemove(false)}
+        <LiquidityPositionRemoveLiquidity
           position={position}
           onSuccess={onSuccess}
         />
-      )}
-      {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && joinFarm && (
-        <JoinFarmModal
-          pool={pool}
-          position={position}
-          isOpen={joinFarm}
-          onClose={() => setJoinFarm(false)}
-        />
-      )}
+      </div>
     </SContainer>
   )
 }

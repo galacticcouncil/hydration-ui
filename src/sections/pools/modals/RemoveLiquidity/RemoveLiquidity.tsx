@@ -15,7 +15,7 @@ import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/W
 import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
-} from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
+} from "@galacticcouncil/math-omnipool"
 import { useOmnipoolAssets } from "../../../../api/omnipool"
 import { useTokenBalance } from "../../../../api/balances"
 import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "../../../../utils/api"

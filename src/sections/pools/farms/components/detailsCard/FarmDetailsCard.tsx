@@ -6,7 +6,6 @@ import { SContainer, SIcon, SRow } from "./FarmDetailsCard.styled"
 import { FillBar } from "components/FillBar/FillBar"
 import { getFloatingPointAmount } from "utils/balance"
 import { GradientText } from "components/Typography/GradientText/GradientText"
-import BN from "bignumber.js"
 import { addSeconds } from "date-fns"
 import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
 import { Icon } from "components/Icon/Icon"
@@ -15,9 +14,14 @@ import {
   PalletLiquidityMiningYieldFarmData,
 } from "@polkadot/types/lookup"
 import { useFarmApr } from "api/farms"
+import { DepositNftType } from "api/deposits"
+import { useBestNumber } from "api/chain"
+import { BLOCK_TIME, BN_0, BN_1 } from "utils/constants"
+import { useMemo } from "react"
+import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 
 type FarmDetailsCardProps = {
-  depositNft: any
+  depositNft?: DepositNftType
   farm: {
     globalFarm: PalletLiquidityMiningGlobalFarmData
     yieldFarm: PalletLiquidityMiningYieldFarmData
@@ -38,6 +42,39 @@ export const FarmDetailsCard = ({
   const apr = useFarmApr(farm)
 
   const variant = onSelect ? "button" : "div"
+
+  const bestNumber = useBestNumber()
+  const secondsDurationToEnd =
+    bestNumber.data != null
+      ? apr.data?.estimatedEndBlock
+          .minus(bestNumber.data?.relaychainBlockNumber.toBigNumber())
+          .times(BLOCK_TIME)
+          .toNumber()
+      : undefined
+
+  const currentApr = useMemo(() => {
+    if (depositNft && apr.data != null) {
+      const depositYield = depositNft.deposit.yieldFarmEntries.find(
+        (entry) =>
+          entry.yieldFarmId.eq(farm.yieldFarm.id) &&
+          entry.globalFarmId.eq(farm.globalFarm.id),
+      )
+
+      if (!depositYield) return BN_0
+      const currentLoyaltyFactor =
+        apr.data.loyaltyCurve != null
+          ? getCurrentLoyaltyFactor(
+              apr.data.loyaltyCurve,
+              apr.data.currentPeriod.minus(
+                depositYield?.enteredAt.toBigNumber(),
+              ),
+            )
+          : BN_1
+
+      return apr.data.apr.times(currentLoyaltyFactor)
+    }
+    return BN_0
+  }, [depositNft, farm.globalFarm.id, farm.yieldFarm.id, apr.data])
 
   if (apr.data == null) return null
   return (
@@ -138,15 +175,16 @@ export const FarmDetailsCard = ({
                 font="ChakraPetchBold"
                 gradient="pinkLightBlue"
               >
-                {t("value.percentage", { value: BN(33) })}
+                {t("value.percentage", { value: currentApr })}
               </GradientText>
             </div>
           </>
         )}
         <Text fs={12} lh={16} fw={400} color="basic500">
-          {t("farms.details.card.end.value", {
-            end: addSeconds(new Date(), BN(333333444).toNumber()),
-          })}
+          {secondsDurationToEnd != null &&
+            t("farms.details.card.end.value", {
+              end: addSeconds(new Date(), secondsDurationToEnd),
+            })}
         </Text>
       </div>
       {onSelect && (

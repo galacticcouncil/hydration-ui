@@ -2,6 +2,8 @@ import { UseQueryResult } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 import { UseFormReturn } from "react-hook-form"
 import { u32 } from "@polkadot/types-codec"
+import { u8aConcat } from "@polkadot/util"
+import { U8aLike } from "@polkadot/util/types"
 
 export const noop = () => {}
 export const undefinedNoop = () => undefined
@@ -19,6 +21,10 @@ export function isRecord<Key extends string, Value>(
 
 export function keys<O extends object>(o: O) {
   return Object.keys(o) as (keyof O)[]
+}
+
+export function padEndU8a(value: U8aLike, length: number) {
+  return u8aConcat(value, Array(Math.max(0, length - value.length)).fill(0))
 }
 
 /**

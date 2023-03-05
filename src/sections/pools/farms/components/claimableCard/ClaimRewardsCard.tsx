@@ -1,5 +1,5 @@
 import { Trans, useTranslation } from "react-i18next"
-import { SContainer } from "./ClaimeRewardsCard.styled"
+import { SContainer } from "./ClaimRewardsCard.styled"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 import { Button } from "components/Button/Button"
@@ -8,42 +8,38 @@ import { css } from "@emotion/react"
 import { Separator } from "components/Separator/Separator"
 import { useAssetMetaList } from "api/assetMeta"
 import { separateBalance } from "utils/balance"
-import BN from "bignumber.js"
+import { useClaimableAmount, useClaimAllMutation } from "utils/farms/claiming"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { DepositNftType } from "api/deposits"
 
-const claimable: { data: { assets: Record<string, BN>; usd: BN } } = {
-  data: {
-    usd: BN(123144562223378),
-    assets: {
-      "0": BN(2234343213213),
-      "1": BN(2352313493213),
-    },
-  },
-}
-
-export const ClaimeRewardsCard = () => {
+export const ClaimRewardsCard = (props: {
+  pool: OmnipoolPool
+  depositNft: DepositNftType
+}) => {
   const { t } = useTranslation()
 
-  const assetsMeta = useAssetMetaList(["0", "1"])
+  const claimable = useClaimableAmount(props.pool)
+  const assetsMeta = useAssetMetaList(Object.keys(claimable.data?.assets || {}))
 
-  const { claimableAssets } = useMemo(() => {
-    if (!assetsMeta.data) return { claimableAssets: [], toastValue: undefined }
+  const claimableAssets = useMemo(() => {
+    const claimableAssets = []
 
-    let claimableAssets = []
+    if (assetsMeta.data) {
+      for (let key in claimable.data?.assets) {
+        const asset = assetsMeta.data?.find((meta) => meta.id === key)
+        const balance = separateBalance(claimable.data?.assets[key], {
+          fixedPointScale: asset?.decimals ?? 12,
+          type: "token",
+        })
 
-    for (let key in claimable.data?.assets) {
-      const { decimals, symbol } =
-        assetsMeta.data?.find((meta) => meta.id === key) || {}
-
-      const balance = separateBalance(claimable.data?.assets[key], {
-        fixedPointScale: decimals || 12,
-        type: "token",
-      })
-
-      claimableAssets.push({ ...balance, symbol })
+        claimableAssets.push({ ...balance, symbol: asset?.symbol })
+      }
     }
 
-    return { claimableAssets }
-  }, [assetsMeta.data])
+    return claimableAssets
+  }, [assetsMeta.data, claimable.data?.assets])
+
+  const claimAll = useClaimAllMutation(props.pool.id, props.depositNft)
 
   return (
     <SContainer>
@@ -90,6 +86,8 @@ export const ClaimeRewardsCard = () => {
       <Button
         variant="primary"
         sx={{ height: "fit-content", width: ["100%", 168] }}
+        onClick={() => claimAll.mutate()}
+        isLoading={claimAll.isLoading}
       >
         {t("farms.claimCard.button.label")}
       </Button>
