@@ -1,8 +1,5 @@
 import { expose } from "comlink"
 
-// If 99% and more, exit the loop prematurely
-const EPS = 1
-
 export const worker = {
   getLoyaltyFactor(
     plannedYieldingPeriods: number,
@@ -14,7 +11,7 @@ export const worker = {
     const result = []
 
     for (let periods = 0; periods <= plannedYieldingPeriods; periods++) {
-      //reduce the number of periods by taking one period each 3000 periods
+      //reduce the number of periods by taking one period each axisScale periods
       if (
         periods % axisScale !== 0 &&
         periods !== periodsInFarm &&
@@ -34,10 +31,6 @@ export const worker = {
         ? periods === periodsInFarm ||
           (periods === plannedYieldingPeriods && periods < periodsInFarm)
         : false
-
-      if (Math.abs(100 - rate) < EPS) {
-        break
-      }
 
       result.push({
         rate,

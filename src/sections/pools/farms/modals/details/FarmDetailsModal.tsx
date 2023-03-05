@@ -8,24 +8,30 @@ import { Spacer } from "components/Spacer/Spacer"
 import { LoyaltyGraph } from "../../components/loyaltyGraph/LoyaltyGraph"
 import { Farm } from "api/farms"
 import { DepositNftType } from "api/deposits"
-import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
+import { u32 } from "@polkadot/types"
+import { BN_0 } from "utils/constants"
 
 type FarmDetailsModalProps = {
+  poolId: u32
   farm: Farm
   depositNft: DepositNftType | undefined
-  position?: PalletLiquidityMiningYieldFarmEntry
   onBack: () => void
 }
 
 export const FarmDetailsModal = ({
   farm,
+  poolId,
   depositNft,
-  position,
   onBack,
 }: FarmDetailsModalProps) => {
   const { t } = useTranslation()
 
   const loyaltyCurve = farm.yieldFarm.loyaltyCurve.unwrapOr(null)
+  const enteredDate = depositNft?.deposit.yieldFarmEntries.reduce(
+    (acc, curr) =>
+      acc.lt(curr.enteredAt.toBigNumber()) ? curr.enteredAt.toBigNumber() : acc,
+    BN_0,
+  )
 
   return (
     <>
@@ -40,7 +46,7 @@ export const FarmDetailsModal = ({
 
       <Spacer size={16} />
 
-      <FarmDetailsCard depositNft={depositNft} farm={farm} />
+      <FarmDetailsCard poolId={poolId} depositNft={depositNft} farm={farm} />
 
       {loyaltyCurve && (
         <SLoyaltyRewardsContainer>
@@ -57,7 +63,7 @@ export const FarmDetailsModal = ({
           <LoyaltyGraph
             farm={farm}
             loyaltyCurve={loyaltyCurve}
-            enteredAt={position?.enteredAt.toBigNumber()}
+            enteredAt={enteredDate}
           />
         </SLoyaltyRewardsContainer>
       )}

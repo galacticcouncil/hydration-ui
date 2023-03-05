@@ -45,6 +45,7 @@ function JoinedFarmsDetailsRedeposit(props: {
         {availableFarms?.map((farm, i) => (
           <FarmDetailsCard
             key={i}
+            poolId={props.pool.id}
             farm={farm}
             depositNft={props.depositNft}
             onSelect={() =>
@@ -94,6 +95,7 @@ function JoinedFarmsDetailsPositions(props: {
         {joinedFarms?.map((farm, i) => (
           <FarmDetailsCard
             key={i}
+            poolId={props.pool.id}
             farm={farm}
             depositNft={props.depositNft}
             onSelect={() =>
@@ -148,6 +150,7 @@ export const JoinedFarmsDetails = (props: {
     >
       {selectedFarm ? (
         <FarmDetailsModal
+          poolId={props.pool.id}
           farm={selectedFarm}
           depositNft={props.depositNft}
           onBack={() => setSelectedFarmIds(null)}

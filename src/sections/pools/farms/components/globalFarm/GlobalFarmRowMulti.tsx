@@ -16,15 +16,17 @@ export const GlobalFarmRowMulti = ({ farms }: { farms: Farm[] }) => {
   const { t } = useTranslation()
   const farmAprs = useFarmAprs(farms)
 
+  if (!farmAprs.data) return null
+
   return (
     <div sx={{ flex: "row", justify: "space-between", gap: 4 }}>
       <div sx={{ flex: "row" }}>
         <MultipleIcons
-          icons={farms.map((farm) => ({
+          icons={farmAprs.data.map((farm) => ({
             icon: (
               <FarmAssetIcon
-                key={farm.globalFarm.id.toString()}
-                assetId={farm.globalFarm.id}
+                key={farm.assetId.toString()}
+                assetId={farm.assetId}
               />
             ),
           }))}

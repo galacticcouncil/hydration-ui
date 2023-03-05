@@ -56,6 +56,14 @@ export const useDeposits = (poolId: u32 | string) => {
   const api = useApiPromise()
   return useQuery(QUERY_KEYS.deposits(poolId), getDeposits(api, poolId))
 }
+export const useOmniPositionId = (positionId: u32 | string) => {
+  const api = useApiPromise()
+
+  return useQuery(
+    QUERY_KEYS.omniPositionId(positionId),
+    getOmniPositionId(api, positionId),
+  )
+}
 
 const getDeposits = (api: ApiPromise, poolId: u32 | string) => async () => {
   const res = await api.query.omnipoolWarehouseLM.deposit.entries()
@@ -66,6 +74,12 @@ const getDeposits = (api: ApiPromise, poolId: u32 | string) => async () => {
     }))
     .filter((item) => item.deposit.ammPoolId.toString() === poolId.toString())
 }
+
+const getOmniPositionId =
+  (api: ApiPromise, poolId: u32 | string) => async () => {
+    const res = await api.query.omnipoolLiquidityMining.omniPositionId(poolId)
+    return res
+  }
 
 export const useAccountDeposits = (poolId: u32) => {
   const { account } = useAccountStore()

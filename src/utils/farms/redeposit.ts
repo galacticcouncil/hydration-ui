@@ -4,6 +4,10 @@ import { Farm } from "api/farms"
 import { useStore } from "state/store"
 import { useApiPromise } from "utils/api"
 
+export type FarmRedepositMutationType = ReturnType<
+  typeof useFarmRedepositMutation
+>
+
 export const useFarmRedepositMutation = (
   availableYieldFarms: Farm[] | undefined,
   depositNfts: DepositNftType[],
@@ -28,9 +32,9 @@ export const useFarmRedepositMutation = (
       .flat(2)
 
     if (txs.length > 1) {
-      return await createTransaction({ tx: api.tx.utility.batchAll(txs) })
+      await createTransaction({ tx: api.tx.utility.batchAll(txs) })
     } else {
-      return await createTransaction({ tx: txs[0] })
+      await createTransaction({ tx: txs[0] })
     }
   })
 }

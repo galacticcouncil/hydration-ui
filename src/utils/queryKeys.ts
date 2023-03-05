@@ -14,6 +14,11 @@ export const QUERY_KEYS = {
     "assetsTable",
     id?.toString(),
   ],
+  omniPositionId: (id: u32 | string) => [
+    QUERY_KEY_PREFIX,
+    "omniPositionId",
+    id?.toString(),
+  ],
   accountBalances: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "accountBalances",
@@ -183,7 +188,11 @@ export const QUERY_KEYS = {
     id?.toString(),
   ],
   omnipoolPositions: [QUERY_KEY_PREFIX, "omnipoolPositions"],
-  omnipoolPosition: (id: u128) => [QUERY_KEY_PREFIX, "omnipoolPosition", id],
+  omnipoolPosition: (id: u128 | undefined) => [
+    QUERY_KEY_PREFIX,
+    "omnipoolPosition",
+    id?.toString(),
+  ],
   provider: (url: string) => ["provider", url],
   math: ["@galacticcouncil/math"],
   existentialDeposit: [QUERY_KEY_PREFIX, "existentialDeposit"],

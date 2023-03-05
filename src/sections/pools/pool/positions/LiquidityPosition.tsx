@@ -19,6 +19,7 @@ import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useFarms } from "api/farms"
+import { useFarmDepositMutation } from "utils/farms/deposit"
 
 type Props = {
   pool: OmnipoolPool
@@ -35,6 +36,12 @@ function LiquidityPositionJoinFarmButton(props: {
   const { t } = useTranslation()
   const [joinFarm, setJoinFarm] = useState(false)
   const farms = useFarms(props.pool.id)
+
+  const joinFarmMutation = useFarmDepositMutation(
+    props.pool.id,
+    props.position.id,
+  )
+
   return (
     <>
       <Button
@@ -51,9 +58,10 @@ function LiquidityPositionJoinFarmButton(props: {
       {joinFarm && (
         <JoinFarmModal
           isOpen={joinFarm}
-          pool={props.pool}
-          position={props.position}
+          poolId={props.pool.id}
+          shares={props.position.shares}
           onClose={() => setJoinFarm(false)}
+          mutation={joinFarmMutation}
         />
       )}
     </>

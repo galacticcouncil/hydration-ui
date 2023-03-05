@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import { secondsInYear } from "date-fns"
 import { useApiPromise } from "utils/api"
-import { BLOCK_TIME, BN_0, BN_1, BN_QUINTILL } from "utils/constants"
+import { BLOCK_TIME, BN_0, BN_QUINTILL } from "utils/constants"
 import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useBestNumber } from "./chain"
@@ -201,7 +201,7 @@ function getFarmApr(
   const { globalFarm, yieldFarm } = farm
 
   const loyaltyFactor = yieldFarm.loyaltyCurve.isNone
-    ? BN_1
+    ? null
     : yieldFarm.loyaltyCurve
         .unwrap()
         .initialRewardPercentage.toBigNumber()
@@ -243,7 +243,7 @@ function getFarmApr(
   // multiply by 100 since APR should be a percentage
   apr = apr.times(100)
 
-  const minApr = apr.times(loyaltyFactor)
+  const minApr = loyaltyFactor ? apr.times(loyaltyFactor) : null
   // max distribution of rewards
   // https://www.notion.so/Screen-elements-mapping-Farms-baee6acc456542ca8d2cccd1cc1548ae?p=4a2f16a9f2454095945dbd9ce0eb1b6b&pm=s
   const distributedRewards = globalFarm.pendingRewards
@@ -308,7 +308,9 @@ export const useFarmAprs = (
 
 export const getMinAndMaxAPR = (farms: FarmAprs) => {
   const aprs = farms.data ? farms.data.map(({ apr }) => apr) : [BN_0]
-  const minAprs = farms.data ? farms.data.map(({ minApr }) => minApr) : [BN_0]
+  const minAprs = farms.data
+    ? farms.data.map(({ minApr, apr }) => (minApr ? minApr : apr))
+    : [BN_0]
 
   const minApr = BigNumber.minimum(...minAprs)
   const maxApr = BigNumber.maximum(...aprs)

@@ -2,16 +2,40 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SSeparator } from "../FarmingPosition.styled"
 import { ReactElement } from "react"
-import { BN_1 } from "utils/constants"
 import { Icon } from "components/Icon/Icon"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { useAssetMeta } from "api/assetMeta"
+import { useFarmApr, useFarms } from "api/farms"
+import { DepositNftType } from "api/deposits"
+import { u32 } from "@polkadot/types"
+import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
+import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 
-export const DepositedYieldFarm = ({ id }: { id: string }) => {
+type DepositedYieldFarmProps = {
+  activeYieldFarm: NonNullable<ReturnType<typeof useFarms>["data"]>[0]
+  joinedYieldFarm?: PalletLiquidityMiningYieldFarmEntry
+}
+
+export const DepositedYieldFarm = ({
+  activeYieldFarm,
+  joinedYieldFarm,
+}: DepositedYieldFarmProps) => {
   const { t } = useTranslation()
-  const { data: assetMeta } = useAssetMeta(id)
 
-  if (!assetMeta) return null
+  const { data: farmApr } = useFarmApr(activeYieldFarm)
+  const { data: assetMeta } = useAssetMeta(farmApr?.assetId)
+
+  if (!assetMeta || !farmApr || !joinedYieldFarm) return null
+
+  const currentPeriodInFarm = farmApr.currentPeriod.minus(
+    joinedYieldFarm.enteredAt.toBigNumber(),
+  )
+
+  const currentApr = farmApr.loyaltyCurve
+    ? farmApr.apr.times(
+        getCurrentLoyaltyFactor(farmApr.loyaltyCurve, currentPeriodInFarm),
+      )
+    : farmApr.apr
 
   return (
     <div sx={{ flex: "row", align: "center", gap: 6 }}>
@@ -19,32 +43,59 @@ export const DepositedYieldFarm = ({ id }: { id: string }) => {
       <Text>{assetMeta.symbol}</Text>
       <Text color="brightBlue200">
         {t("value.APR", {
-          apr: BN_1,
+          apr: currentApr,
         })}
       </Text>
     </div>
   )
 }
 
-export const JoinedFarms = ({ farms = ["", ""] }) => {
+type JoinedFarmsProps = { depositNft: DepositNftType; poolId: u32 }
+
+export const JoinedFarms = ({ depositNft, poolId }: JoinedFarmsProps) => {
   const { t } = useTranslation()
 
-  const assetAprs = farms.reduce((acc, apr, i) => {
-    const isLastElement = i + 1 === farms.length
+  const farms = useFarms(poolId)
 
-    acc.push(<DepositedYieldFarm key={i} id={"0"} />)
+  const activeYieldFarms =
+    farms.data?.filter((i) =>
+      depositNft.deposit.yieldFarmEntries.some(
+        (entry) =>
+          entry.globalFarmId.eq(i.globalFarm.id) &&
+          entry.yieldFarmId.eq(i.yieldFarm.id),
+      ),
+    ) ?? []
 
-    if (!isLastElement)
+  const joinedFarmComponents = activeYieldFarms.reduce(
+    (acc, activeYieldFarm, i) => {
+      const isLastElement = i + 1 === activeYieldFarms.length
+      const joinedYieldFarm = depositNft.deposit.yieldFarmEntries.find(
+        (nft) =>
+          nft.yieldFarmId.toString() ===
+          activeYieldFarm.yieldFarm.id.toString(),
+      )
+
       acc.push(
-        <SSeparator
-          key={`separator_${i}`}
-          sx={{ height: 35 }}
-          orientation="vertical"
+        <DepositedYieldFarm
+          key={i}
+          activeYieldFarm={activeYieldFarm}
+          joinedYieldFarm={joinedYieldFarm}
         />,
       )
 
-    return acc
-  }, [] as ReactElement[])
+      if (!isLastElement)
+        acc.push(
+          <SSeparator
+            key={`separator_${i}`}
+            sx={{ height: 35 }}
+            orientation="vertical"
+          />,
+        )
+
+      return acc
+    },
+    [] as ReactElement[],
+  )
 
   return (
     <div
@@ -67,7 +118,7 @@ export const JoinedFarms = ({ farms = ["", ""] }) => {
           justify: "space-between",
         }}
       >
-        {assetAprs}
+        {joinedFarmComponents}
       </div>
     </div>
   )
