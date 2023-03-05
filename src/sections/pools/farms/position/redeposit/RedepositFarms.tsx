@@ -5,6 +5,7 @@ import { Icon } from "components/Icon/Icon"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { ReactElement, useState } from "react"
 import { SSeparator } from "../FarmingPosition.styled"
+import { useAccountStore } from "state/store"
 // import { JoinFarmModal } from "../../modals/join/JoinFarmsModal"
 
 const RedepositFarm = () => {
@@ -17,6 +18,7 @@ const RedepositFarm = () => {
 
 export const RedepositFarms = ({ farms = ["", ""] }) => {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
 
   const [, setJoinFarm] = useState(false)
 
@@ -43,7 +45,10 @@ export const RedepositFarms = ({ farms = ["", ""] }) => {
         <Trans t={t} i18nKey="farms.positions.redeposit.openFarms" />
       </Text>
       {farmComponents}
-      <SJoinButton onClick={() => setJoinFarm(true)}>
+      <SJoinButton
+        onClick={() => setJoinFarm(true)}
+        disabled={account?.isExternalWalletConnected}
+      >
         <Text fs={13} color="basic900" tTransform="uppercase" tAlign="center">
           {t("farms.positions.join.button.label")}
         </Text>

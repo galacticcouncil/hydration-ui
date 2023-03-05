@@ -11,12 +11,14 @@ import { separateBalance } from "utils/balance"
 import { useClaimableAmount, useClaimAllMutation } from "utils/farms/claiming"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { DepositNftType } from "api/deposits"
+import { useAccountStore } from "state/store"
 
 export const ClaimRewardsCard = (props: {
   pool: OmnipoolPool
   depositNft: DepositNftType
 }) => {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
 
   const claimable = useClaimableAmount(props.pool)
   const assetsMeta = useAssetMetaList(Object.keys(claimable.data?.assets || {}))
@@ -86,6 +88,7 @@ export const ClaimRewardsCard = (props: {
       <Button
         variant="primary"
         sx={{ height: "fit-content", width: ["100%", 168] }}
+        disabled={account?.isExternalWalletConnected}
         onClick={() => claimAll.mutate()}
         isLoading={claimAll.isLoading}
       >
