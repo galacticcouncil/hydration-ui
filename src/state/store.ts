@@ -7,6 +7,7 @@ import { POLKADOT_APP_NAME } from "utils/api"
 import { v4 as uuid } from "uuid"
 import { ReactElement } from "react"
 import BigNumber from "bignumber.js"
+import { safeConvertAddressSS58 } from "utils/formatting"
 
 export interface ToastMessage {
   onLoading?: ReactElement
@@ -80,7 +81,11 @@ export const useAccountStore = create(
             const { state } = JSON.parse(value)
 
             // if there is an external account set it as a user wallet account
-            if (!!externalWalletAddress) {
+
+            if (
+              !!externalWalletAddress &&
+              safeConvertAddressSS58(externalWalletAddress, 0)
+            ) {
               const parsedAccount = JSON.parse(value)
 
               const externalAccount = {
