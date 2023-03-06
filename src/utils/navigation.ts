@@ -7,6 +7,7 @@ export const LINKS = {
   walletTransactions: "/wallet/transactions",
   walletVesting: "/wallet/vesting",
   cross_chain: "/cross-chain",
+  otc: "/otc",
 }
 
 export const EXTERNAL_LINKS = {
@@ -55,6 +56,15 @@ export const MENU_ITEMS = [
     external: false,
     mobVisible: false,
     mobOrder: 3,
+  },
+  {
+    key: "otc",
+    translationKey: "header.otc",
+    href: LINKS.otc,
+    enabled: true,
+    external: false,
+    mobVisible: false,
+    mobOrder: 4,
   },
 ] as const
 
