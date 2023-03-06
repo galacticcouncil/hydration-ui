@@ -148,3 +148,18 @@ export const TableData = styled.td<{ isExpanded?: boolean }>`
     padding: 24px 32px;
   }
 `
+
+export const TableDataBasic = styled.td<{}>`
+  padding: 16px;
+  padding-right: 0;
+  text-align: start;
+
+  &:last-of-type {
+    width: 200px;
+    text-align: end;
+  }
+
+  @media ${theme.viewport.gte.sm} {
+    padding: 24px 32px;
+  }
+`
