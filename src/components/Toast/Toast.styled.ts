@@ -141,6 +141,9 @@ const variantBg: Record<ToastVariant, SerializedStyles> = {
   progress: css`
     background: rgba(${theme.rgbColors.primaryA20}, 0.2);
   `,
+  unknown: css`
+    background: rgba(${theme.rgbColors.primaryA15Blue}, 0.35);
+  `,
 }
 
 export const Shadow = styled.div<{ variant: ToastVariant }>`
@@ -164,6 +167,7 @@ const variantProgressBarBg: Record<ToastVariant, string> = {
   info: theme.colors.brightBlue700,
   error: theme.colors.red700,
   progress: theme.colors.brightBlue700,
+  unknown: theme.colors.brightBlue700,
 }
 
 export const ToastContentWrapper = styled.div`

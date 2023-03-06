@@ -2,14 +2,14 @@ import { Text } from "components/Typography/Text/Text"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { useTranslation } from "react-i18next"
 import { Button } from "components/Button/Button"
-import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { ReviewTransactionProgress } from "./ReviewTransactionProgress"
 import { Spacer } from "components/Spacer/Spacer"
 import { Heading } from "components/Typography/Heading/Heading"
+import { ExtendedExtrinsicStatus } from "./ReviewTransaction.utils"
 
 type Props = {
   onClose: () => void
-  txState: ExtrinsicStatus["type"] | null
+  txState: ExtendedExtrinsicStatus | null
 }
 
 export const ReviewTransactionPending = ({ onClose, txState }: Props) => {

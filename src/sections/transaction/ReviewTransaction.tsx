@@ -53,6 +53,7 @@ export const ReviewTransaction: React.FC<Transaction> = (props) => {
         <ReviewTransactionToast
           id={props.id}
           mutation={sendTx}
+          txState={sendTx.txState}
           link={sendTx.data?.transactionLink}
           onReview={onReview}
           onClose={handleClose}

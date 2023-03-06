@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { UseMutationResult } from "@tanstack/react-query"
 import { useToast } from "state/toasts"
 import { ToastMessage } from "state/store"
+import { ExtendedExtrinsicStatus } from "./ReviewTransaction.utils"
 
 export function ReviewTransactionToast<
   TData = unknown,
@@ -12,6 +13,7 @@ export function ReviewTransactionToast<
 >(props: {
   id: string
   mutation: UseMutationResult<TData, TError, TVariables, TContext>
+  txState: ExtendedExtrinsicStatus | null
   link?: string
   onReview?: () => void
   onClose?: () => void
@@ -46,7 +48,17 @@ export function ReviewTransactionToast<
     }
 
     let toRemoveId: string | undefined = undefined
+
     if (isError) {
+      if (props.txState === "Unknown") {
+        toastRef.current.unknown({
+          title: props.toastMessage?.onError ?? (
+            <p>{t("liquidity.reviewTransaction.toast.unknown")}</p>
+          ),
+        })
+        return
+      }
+
       toastRef.current.error({
         title: props.toastMessage?.onError ?? (
           <p>{t("liquidity.reviewTransaction.toast.error")}</p>

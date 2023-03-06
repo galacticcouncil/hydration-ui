@@ -117,6 +117,7 @@
   "liquidity.reviewTransaction.toast.pending": "Submitting transaction...",
   "liquidity.reviewTransaction.toast.success": "Transaction successful.",
   "liquidity.reviewTransaction.toast.error": "Transaction failed.",
+  "liquidity.reviewTransaction.toast.unknown": "Transaction status unknown.",
   "transaction.mortal.expire": "{{ date, dd/MM/yyyy hh:mm:ss }}",
   "transaction.immortal.expire": "Never",
   "walletConnect.provider.title": "Connect wallet",
