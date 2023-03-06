@@ -18,7 +18,7 @@ export const ClaimRewardsCard = (props: {
 }) => {
   const { t } = useTranslation()
 
-  const claimable = useClaimableAmount(props.pool)
+  const claimable = useClaimableAmount(props.pool, props.depositNft)
   const assetsMeta = useAssetMetaList(Object.keys(claimable.data?.assets || {}))
 
   const claimableAssets = useMemo(() => {
