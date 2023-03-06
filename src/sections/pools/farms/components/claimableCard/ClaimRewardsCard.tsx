@@ -11,6 +11,8 @@ import { separateBalance } from "utils/balance"
 import { useClaimableAmount, useClaimAllMutation } from "utils/farms/claiming"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { DepositNftType } from "api/deposits"
+import { TOAST_MESSAGES } from "state/toasts"
+import { ToastMessage } from "state/store"
 
 export const ClaimRewardsCard = (props: {
   pool: OmnipoolPool
@@ -21,7 +23,7 @@ export const ClaimRewardsCard = (props: {
   const claimable = useClaimableAmount(props.pool)
   const assetsMeta = useAssetMetaList(Object.keys(claimable.data?.assets || {}))
 
-  const claimableAssets = useMemo(() => {
+  const { claimableAssets, toastValue } = useMemo(() => {
     const claimableAssets = []
 
     if (assetsMeta.data) {
@@ -36,10 +38,35 @@ export const ClaimRewardsCard = (props: {
       }
     }
 
-    return claimableAssets
-  }, [assetsMeta.data, claimable.data?.assets])
+    const toastValue = claimableAssets.map((asset, index) => {
+      return (
+        <Fragment key={index}>
+          {index > 0 && <span> {t("and")} </span>}
+          <Trans t={t} i18nKey="farms.claimCard.toast.asset" tOptions={asset}>
+            <span />
+            <span className="highlight" />
+          </Trans>
+        </Fragment>
+      )
+    })
 
-  const claimAll = useClaimAllMutation(props.pool.id, props.depositNft)
+    return { claimableAssets, toastValue }
+  }, [assetsMeta.data, claimable.data?.assets, t])
+
+  const toast = TOAST_MESSAGES.reduce((memo, type) => {
+    const msType = type === "onError" ? "onLoading" : type
+    memo[type] = (
+      <>
+        <Trans i18nKey={`farms.claimCard.toast.${msType}`}>
+          <span />
+        </Trans>
+        {toastValue}
+      </>
+    )
+    return memo
+  }, {} as ToastMessage)
+
+  const claimAll = useClaimAllMutation(props.pool.id, props.depositNft, toast)
 
   return (
     <SContainer>
@@ -80,6 +107,7 @@ export const ClaimRewardsCard = (props: {
           {t("value.usd", {
             amount: claimable.data?.usd,
             fixedPointScale: 12,
+            type: "token",
           })}
         </Text>
       </div>

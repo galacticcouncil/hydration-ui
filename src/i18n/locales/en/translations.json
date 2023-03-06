@@ -237,6 +237,8 @@
   "farms.modal.join.title": "All {{assetSymbol}} farms",
   "farms.modal.join.description": "You can join {{assets}} Farm with same amount you’ve deposited on other farms. This amount cannot be edited.",
   "farms.modal.join.button.label": "Join Farm",
+  "farms.modal.join.toast.onLoading": "<0>Lock </0><1>{{ amount, bignumber(type: 'token') }}</1> <0>Shares to farm</0>",
+  "farms.modal.join.toast.onSuccess": "<0>You locked </0><1>{{ amount, bignumber(type: 'token') }}</1> <0>Shares to farm</0>",
   "farms.modal.footer.title": "Available Pool Shares",
   "farms.modal.footer.desc": "Hydra supports joining farms with 100% of pool shares from liquidity positions.",
   "farms.modal.details.title": "Farm Details",
@@ -247,8 +249,13 @@
   "farms.modal.joinedFarms.joined.label": "Your farm positions",
   "farms.modal.joinedFarms.available.label": "Available farms",
   "farms.modal.joinedFarms.button.exit.label": "Exit All Farms",
+  "farms.modal.exit.toast.onLoading": "<0>Withdrawing </0><1>{{ amount, bignumber(type: 'token') }}</1> <0>Shares from farm</0>",
+  "farms.modal.exit.toast.onSuccess": "<0>You withdrawed </0><1>{{ amount, bignumber(type: 'token') }}</1> <0>Shares from farm</0>",
   "farms.modal.joinedFarms.button.joinAll.label": "Join All Free Farms",
   "farms.claimCard.title": "Claimable Now",
   "farms.claimCard.button.label": "Claim All",
-  "farms.claimCard.claim.asset": "{{num}}<0>{{denom}} {{symbol}}</0>"
+  "farms.claimCard.claim.asset": "{{num}}<0>{{denom}} {{symbol}}</0>",
+  "farms.claimCard.toast.onLoading": "<0>Claiming farming rewards of </0>",
+  "farms.claimCard.toast.onSuccess": "<0>Claimed farming rewards of </0>",
+  "farms.claimCard.toast.asset": "<1>{{num}}{{denom}} {{symbol}}</1>"
 }

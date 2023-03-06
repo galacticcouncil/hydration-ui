@@ -11,6 +11,8 @@ import { useFarmApr, useFarms } from "api/farms"
 import { useAssetMeta } from "api/assetMeta"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { JoinFarmModal } from "../../modals/join/JoinFarmsModal"
+import { TOAST_MESSAGES } from "state/toasts"
+import { ToastMessage } from "state/store"
 
 type RedepositFarmProps = {
   availableYieldFarm: NonNullable<ReturnType<typeof useFarms>["data"]>[0]
@@ -36,6 +38,7 @@ export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
   const [joinFarm, setJoinFarm] = useState(false)
 
   const farms = useFarms(poolId)
+  const meta = useAssetMeta(poolId)
 
   let availableYieldFarms =
     farms.data?.filter(
@@ -47,7 +50,29 @@ export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
         ),
     ) ?? []
 
-  const redeposit = useFarmRedepositMutation(availableYieldFarms, [depositNft])
+  const toast = TOAST_MESSAGES.reduce((memo, type) => {
+    const msType = type === "onError" ? "onLoading" : type
+    memo[type] = (
+      <Trans
+        t={t}
+        i18nKey={`farms.modal.join.toast.${msType}`}
+        tOptions={{
+          amount: depositNft.deposit.shares.toBigNumber(),
+          fixedPointScale: meta.data?.decimals ?? 12,
+        }}
+      >
+        <span />
+        <span className="highlight" />
+      </Trans>
+    )
+    return memo
+  }, {} as ToastMessage)
+
+  const redeposit = useFarmRedepositMutation(
+    availableYieldFarms,
+    [depositNft],
+    toast,
+  )
 
   if (!availableYieldFarms.length) return null
 
