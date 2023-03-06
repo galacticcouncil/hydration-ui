@@ -1,12 +1,13 @@
 import { Button, ButtonProps } from "../Button/Button"
 import { FC, ReactNode } from "react"
-import { Link } from "@tanstack/react-location"
+import { Link, Search } from "@tanstack/react-location"
 
 type TabLinkProps = ButtonProps & {
   to: string
   icon?: ReactNode
   isActive?: boolean
   fullWidth?: boolean
+  search?: Search<unknown>
 }
 
 export const TabLink: FC<TabLinkProps> = ({
@@ -14,8 +15,9 @@ export const TabLink: FC<TabLinkProps> = ({
   children,
   icon,
   fullWidth,
+  search,
 }) => (
-  <Link to={to} sx={{ width: fullWidth ? "100%" : "auto" }}>
+  <Link to={to} search={search} sx={{ width: fullWidth ? "100%" : "auto" }}>
     {({ isActive }) => (
       <Button
         variant="outline"

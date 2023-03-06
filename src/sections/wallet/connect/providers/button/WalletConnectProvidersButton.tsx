@@ -25,7 +25,7 @@ export const WalletConnectProvidersButton = ({
   if (!walletMeta) return null
 
   return (
-    <SWalletButton onClick={onClick} variant={wallet.extensionName}>
+    <SWalletButton onClick={onClick}>
       <img
         src={walletMeta.logo.src}
         alt={walletMeta.logo.alt}

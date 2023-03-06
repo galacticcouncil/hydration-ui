@@ -50,15 +50,17 @@ const WalletActiveButton = (props: {
           }}
         >
           <div>
-            <AccountAvatar
-              size={32}
-              theme="substrate"
-              address={hydraAddress}
-              css={{
-                pointerEvents: "none",
-                marginRight: -8,
-              }}
-            />
+            {!props.account.isExternalWalletConnected && (
+              <AccountAvatar
+                size={32}
+                theme="substrate"
+                address={hydraAddress}
+                css={{
+                  pointerEvents: "none",
+                  marginRight: -8,
+                }}
+              />
+            )}
             <AccountAvatar
               size={32}
               theme={props.account.provider}

@@ -24,11 +24,15 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
   provider,
   setAccount,
 }) => {
-  const hydraAddress = encodeAddress(
-    decodeAddress(address),
-    HYDRA_ADDRESS_PREFIX,
-  )
-  const polkadotAddress = address
+  const isHydraAddress = address[0] === "7"
+  const hydraAddress = isHydraAddress
+    ? address
+    : encodeAddress(decodeAddress(address), HYDRA_ADDRESS_PREFIX)
+
+  const polkadotAddress = isHydraAddress
+    ? encodeAddress(decodeAddress(address))
+    : address
+
   const { data } = useTokenBalance(NATIVE_ASSET_ID, polkadotAddress)
   const { data: meta } = useAssetMeta(NATIVE_ASSET_ID)
 

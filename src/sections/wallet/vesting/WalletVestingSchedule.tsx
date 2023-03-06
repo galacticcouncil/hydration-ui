@@ -112,7 +112,7 @@ export const WalletVestingSchedule = () => {
               variant="gradient"
               transform="uppercase"
               onClick={handleClaim}
-              disabled={!isClaimAllowed}
+              disabled={!isClaimAllowed || account?.isExternalWalletConnected}
             >
               {t("wallet.vesting.claim_assets")}
             </SClaimButton>

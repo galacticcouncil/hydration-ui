@@ -7,6 +7,7 @@ import { POLKADOT_APP_NAME } from "utils/api"
 import { v4 as uuid } from "uuid"
 import { ReactElement } from "react"
 import BigNumber from "bignumber.js"
+import { safeConvertAddressSS58 } from "utils/formatting"
 
 export interface ToastMessage {
   onLoading?: ReactElement
@@ -18,6 +19,7 @@ export interface Account {
   name: string
   address: string
   provider: string
+  isExternalWalletConnected: boolean
 }
 
 export interface TransactionInput {
@@ -50,6 +52,8 @@ interface Store {
   cancelTransaction: (hash: string) => void
 }
 
+export const externalWallet = { provider: "external", name: "ExternalAccount" }
+
 export const useAccountStore = create(
   persist<{
     account?: Account
@@ -66,8 +70,37 @@ export const useAccountStore = create(
           const value = window.localStorage.getItem(name)
           if (value == null) return value
 
+          let externalWalletAddress: string | null = null
+          if (import.meta.env.VITE_FF_EXTERNAL_WALLET_ENABLED === "true") {
+            // check if there is an external account address within URL
+            const search = window.location.hash.split("?").pop()
+            externalWalletAddress = new URLSearchParams(search).get("account")
+          }
+
           try {
             const { state } = JSON.parse(value)
+
+            // if there is an external account set it as a user wallet account
+
+            if (
+              !!externalWalletAddress &&
+              safeConvertAddressSS58(externalWalletAddress, 0)
+            ) {
+              const parsedAccount = JSON.parse(value)
+
+              const externalAccount = {
+                name: externalWallet.name,
+                address: externalWalletAddress,
+                provider: externalWallet.provider,
+                isExternalWalletConnected: true,
+              }
+
+              return JSON.stringify({
+                ...parsedAccount,
+                state: { account: externalAccount },
+              })
+            }
+
             if (state.account?.provider == null) return null
 
             const wallet = getWalletBySource(state.account.provider)

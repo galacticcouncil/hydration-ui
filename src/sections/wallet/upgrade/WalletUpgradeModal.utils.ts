@@ -64,7 +64,9 @@ export const useUpdateMetadataMutation = () => {
         needsUpdate: !window.walletExtension?.isNovaWallet && needsUpdate,
       }
     },
-    { enabled: account != null },
+    {
+      enabled: account != null && !account?.isExternalWalletConnected,
+    },
   )
 
   const mutation = useMutation(async () => {

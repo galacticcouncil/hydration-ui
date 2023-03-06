@@ -27,10 +27,6 @@ export const routes = [
         element: <WalletPage />,
       },
       {
-        path: "transactions",
-        element: <WalletPage />,
-      },
-      {
         path: "vesting",
         element: <WalletPage />,
       },
@@ -43,5 +39,9 @@ export const routes = [
   {
     path: "cross-chain",
     element: <XcmPage />,
+  },
+  {
+    path: "*",
+    element: <Navigate to="/trade" />,
   },
 ]

@@ -14,6 +14,7 @@ import { SActionButtonsContainer } from "./WalletAssetsTable.styled"
 import { useSetAsFeePayment } from "api/payments"
 import { Link } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
+import { useAccountStore } from "state/store"
 
 type Props = {
   row?: AssetsTableData
@@ -27,7 +28,7 @@ export const WalletAssetsTableActionsMob = ({
   onTransferClick,
 }: Props) => {
   const { t } = useTranslation()
-
+  const { account } = useAccountStore()
   const setFeeAsPayment = useSetAsFeePayment()
 
   if (!row) return null
@@ -98,7 +99,7 @@ export const WalletAssetsTableActionsMob = ({
               <Link
                 to={LINKS.trade}
                 search={{ assetOut: row.id }}
-                disabled={!canBuy}
+                disabled={!canBuy || account?.isExternalWalletConnected}
                 sx={{ width: "100%" }}
               >
                 <Button sx={{ width: "100%" }} size="small" disabled={!canBuy}>
@@ -109,7 +110,7 @@ export const WalletAssetsTableActionsMob = ({
               <Link
                 to={LINKS.trade}
                 search={{ assetIn: row.id }}
-                disabled={!canSell}
+                disabled={!canSell || account?.isExternalWalletConnected}
                 sx={{ width: "100%" }}
               >
                 <Button sx={{ width: "100%" }} size="small" disabled={!canSell}>
@@ -121,6 +122,7 @@ export const WalletAssetsTableActionsMob = ({
             <Button
               sx={{ width: "100%" }}
               size="small"
+              disabled={account?.isExternalWalletConnected}
               onClick={() => onTransferClick(row.id)}
             >
               <TransferIcon />
@@ -130,7 +132,10 @@ export const WalletAssetsTableActionsMob = ({
               sx={{ width: "100%" }}
               size="small"
               onClick={() => setFeeAsPayment(row.id)}
-              disabled={!row.couldBeSetAsPaymentFee}
+              disabled={
+                !row.couldBeSetAsPaymentFee ||
+                account?.isExternalWalletConnected
+              }
             >
               <DollarIcon />
               {t("wallet.assets.table.actions.payment.asset")}
