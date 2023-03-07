@@ -15,6 +15,7 @@ import { useFarmExitAllMutation } from "utils/farms/exit"
 import { ToastMessage } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useAssetMeta } from "api/assetMeta"
+import { useAccountStore } from "state/store"
 
 function isFarmJoined(depositNft: DepositNftType, farm: Farm) {
   return depositNft.deposit.yieldFarmEntries.find(
@@ -30,6 +31,7 @@ function JoinedFarmsDetailsRedeposit(props: {
   onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
 }) {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
   const farms = useFarms(props.pool.id)
   const meta = useAssetMeta(props.pool.id)
 
@@ -87,6 +89,7 @@ function JoinedFarmsDetailsRedeposit(props: {
           variant="primary"
           sx={{ mt: 16 }}
           onClick={() => redeposit.mutate()}
+          disabled={account?.isExternalWalletConnected}
           isLoading={redeposit.isLoading}
         >
           {t("farms.modal.joinedFarms.button.joinAll.label")}
@@ -102,6 +105,7 @@ function JoinedFarmsDetailsPositions(props: {
   onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
 }) {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
   const farms = useFarms(props.pool.id)
   const meta = useAssetMeta(props.pool.id)
   const joinedFarms = farms.data?.filter((farm) =>
@@ -158,6 +162,7 @@ function JoinedFarmsDetailsPositions(props: {
         css={{ alignSelf: "center" }}
         onClick={() => exit.mutate()}
         isLoading={exit.isLoading}
+        disabled={account?.isExternalWalletConnected}
       >
         {t("farms.modal.joinedFarms.button.exit.label")}
       </Button>

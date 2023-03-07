@@ -3,7 +3,8 @@ import { Text } from "components/Typography/Text/Text"
 import { ButtonTransparent } from "components/Button/Button"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { ReactComponent as LogoutIcon } from "assets/icons/LogoutIcon.svg"
-import { Account } from "state/store"
+import { ReactComponent as ExternalWalletIcon } from "assets/icons/ExternalWalletIcon.svg"
+import { Account, externalWallet } from "state/store"
 import { useTranslation } from "react-i18next"
 import {
   SContainer,
@@ -14,6 +15,7 @@ import {
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { useMedia } from "react-use"
 import { getWalletMeta } from "./WalletConnectModal.utils"
+import { Icon } from "components/Icon/Icon"
 
 export function WalletConnectActiveFooter(props: {
   account: Account | undefined
@@ -45,15 +47,26 @@ export function WalletConnectActiveFooter(props: {
       <SSwitchButton onClick={props.onSwitch}>
         <div sx={{ flex: "row", gap: 22, align: "center" }}>
           <div sx={{ flex: "row", gap: 12, align: "center" }}>
-            <img
-              src={walletMeta?.logo.src}
-              alt={walletMeta?.logo.alt}
-              width={30}
-              height={30}
-            />
-            <Text fs={14} fw={600} css={{ color: theme.colors.basic500 }}>
-              {walletMeta?.title}
-            </Text>
+            {props.provider === externalWallet.provider ? (
+              <>
+                <Icon icon={<ExternalWalletIcon />} />
+                <Text fs={14} fw={600} css={{ color: theme.colors.basic500 }}>
+                  {t("walletConnect.externalWallet")}
+                </Text>
+              </>
+            ) : (
+              <>
+                <img
+                  src={walletMeta?.logo.src}
+                  alt={walletMeta?.logo.alt}
+                  width={30}
+                  height={30}
+                />
+                <Text fs={14} fw={600} css={{ color: theme.colors.basic500 }}>
+                  {walletMeta?.title}
+                </Text>
+              </>
+            )}
           </div>
           <SSwitchText fs={14} fw={500}>
             <span>{t("walletConnect.switch")}</span>

@@ -13,14 +13,16 @@ import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { DepositNftType } from "api/deposits"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
+import { useAccountStore } from "state/store"
 
 export const ClaimRewardsCard = (props: {
   pool: OmnipoolPool
   depositNft: DepositNftType
 }) => {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
 
-  const claimable = useClaimableAmount(props.pool)
+  const claimable = useClaimableAmount(props.pool, props.depositNft)
   const assetsMeta = useAssetMetaList(Object.keys(claimable.data?.assets || {}))
 
   const { claimableAssets, toastValue } = useMemo(() => {
@@ -114,6 +116,7 @@ export const ClaimRewardsCard = (props: {
       <Button
         variant="primary"
         sx={{ height: "fit-content", width: ["100%", 168] }}
+        disabled={account?.isExternalWalletConnected}
         onClick={() => claimAll.mutate()}
         isLoading={claimAll.isLoading}
       >

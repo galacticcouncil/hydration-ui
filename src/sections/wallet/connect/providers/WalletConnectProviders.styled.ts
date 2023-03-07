@@ -1,9 +1,7 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SWalletButton = styled.button<{
-  variant: string
-}>`
+export const SWalletButton = styled.button`
   display: flex;
   align-items: center;
 

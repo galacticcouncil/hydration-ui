@@ -46,7 +46,7 @@ export const PoolActions = ({
       <Button
         fullWidth
         size="small"
-        disabled={!account}
+        disabled={!account || account.isExternalWalletConnected}
         onClick={() => {
           setOpenAdd(true)
         }}

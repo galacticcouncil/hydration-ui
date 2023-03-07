@@ -41,7 +41,7 @@ export const MENU_ITEMS = [
   {
     key: "wallet",
     translationKey: "header.wallet",
-    href: LINKS.wallet,
+    href: LINKS.walletAssets,
     enabled: true,
     external: false,
     mobVisible: true,

@@ -13,6 +13,7 @@ import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { JoinFarmModal } from "../../modals/join/JoinFarmsModal"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
+import { useAccountStore } from "state/store"
 
 type RedepositFarmProps = {
   availableYieldFarm: NonNullable<ReturnType<typeof useFarms>["data"]>[0]
@@ -35,6 +36,7 @@ type RedepositFarmsProps = {
 
 export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
   const [joinFarm, setJoinFarm] = useState(false)
 
   const farms = useFarms(poolId)
@@ -107,7 +109,10 @@ export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
         <Trans t={t} i18nKey="farms.positions.redeposit.openFarms" />
       </Text>
       {farmComponents}
-      <SJoinButton onClick={() => setJoinFarm(true)}>
+      <SJoinButton
+        onClick={() => setJoinFarm(true)}
+        disabled={account?.isExternalWalletConnected}
+      >
         <Text fs={13} color="basic900" tTransform="uppercase" tAlign="center">
           {t("farms.positions.join.button.label")}
         </Text>
