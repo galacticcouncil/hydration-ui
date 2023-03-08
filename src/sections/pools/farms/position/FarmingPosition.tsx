@@ -60,7 +60,8 @@ export const FarmingPosition = ({
 
   const meta = useAssetMeta(pool.id)
 
-  const position = useDepositShare(pool.id, depositNft.id.toString())
+  const position = useDepositShare(pool.id, [depositNft.id.toString()])
+    .data?.[0]
 
   // use latest entry date
   const enteredDate = useEnteredDate(
@@ -133,22 +134,22 @@ export const FarmingPosition = ({
             <Text color="basic500" fs={14} lh={16} fw={400}>
               {t("farms.positions.labels.currentValue")}
             </Text>
-            {position.data && (
+            {position && (
               <div>
                 <WalletAssetsHydraPositionsData
-                  symbol={position.data.symbol}
-                  value={position.data.value}
-                  lrna={position.data.lrna}
+                  symbol={position.symbol}
+                  value={position.value}
+                  lrna={position.lrna}
                 />
                 <DollarAssetValue
-                  value={position.data.valueUSD}
+                  value={position.valueUSD}
                   wrapper={(children) => (
                     <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
                       {children}
                     </Text>
                   )}
                 >
-                  {t("value.usd", { amount: position.data.valueUSD })}
+                  {t("value.usd", { amount: position.valueUSD })}
                 </DollarAssetValue>
               </div>
             )}

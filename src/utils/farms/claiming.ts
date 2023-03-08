@@ -58,8 +58,22 @@ export const useClaimableAmount = (
   const accountBalances = useAccountAssetBalances(accountAddresses)
 
   return useQueryReduce(
-    [bestNumberQuery, userDeposits, farms, assetList, accountBalances] as const,
-    (bestNumberQuery, userDeposits, farms, assetList, accountBalances) => {
+    [
+      bestNumberQuery,
+      userDeposits,
+      farms,
+      assetList,
+      accountBalances,
+      ...usdSpotPrices,
+    ] as const,
+    (
+      bestNumberQuery,
+      userDeposits,
+      farms,
+      assetList,
+      accountBalances,
+      ...usdSpotPrices
+    ) => {
       const deposits = depositNft != null ? [depositNft] : userDeposits ?? []
       const bestNumber = bestNumberQuery
 
@@ -94,8 +108,8 @@ export const useClaimableAmount = (
             )
 
             const usd = usdSpotPrices.find(
-              (spot) => spot.data?.tokenIn === reward?.assetId,
-            )?.data
+              (spot) => spot?.tokenIn === reward?.assetId,
+            )
 
             if (!reward || !usd) return null
             return {
