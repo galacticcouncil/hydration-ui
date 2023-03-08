@@ -22,7 +22,9 @@ export const GlobalFarmRow = ({
       <div sx={{ flex: "row", justify: "space-between" }}>
         <Text>{asset.symbol}</Text>
         <Text color="brightBlue200">
-          {t("value.APR.range", { from: apr.minApr, to: apr.apr })}
+          {apr.minApr
+            ? t("value.APR.range", { from: apr.minApr, to: apr.apr })
+            : t("value.APR", { apr: apr.apr })}
         </Text>
       </div>
       {!isLastElement && <Separator />}

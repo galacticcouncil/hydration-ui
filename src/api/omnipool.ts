@@ -4,6 +4,7 @@ import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u128, u32 } from "@polkadot/types-codec"
 import { ITuple } from "@polkadot/types-codec/types"
+import { undefinedNoop } from "utils/helpers"
 
 export const useOmnipoolAsset = (id: u32 | string) => {
   const api = useApiPromise()
@@ -50,6 +51,16 @@ export const useOmnipoolPositions = (itemIds: u128[]) => {
       enabled: !!itemIds.length,
     })),
   })
+}
+
+export const useOmnipoolPosition = (itemId: u128 | undefined) => {
+  const api = useApiPromise()
+
+  return useQuery(
+    QUERY_KEYS.omnipoolPosition(itemId),
+    itemId != null ? getOmnipoolPosition(api, itemId) : undefinedNoop,
+    { enabled: itemId != null },
+  )
 }
 
 export const useOmnipoolFee = () => {

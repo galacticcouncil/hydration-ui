@@ -3,7 +3,7 @@ import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { ReactComponent as MinusIcon } from "assets/icons/MinusIcon.svg"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import {
   SButton,
   SContainer,
@@ -19,6 +19,9 @@ import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useFarms } from "api/farms"
+import { useFarmDepositMutation } from "utils/farms/deposit"
+import { TOAST_MESSAGES } from "state/toasts"
+import { ToastMessage } from "state/store"
 import { useAccountStore } from "state/store"
 
 type Props = {
@@ -37,6 +40,32 @@ function LiquidityPositionJoinFarmButton(props: {
   const { account } = useAccountStore()
   const [joinFarm, setJoinFarm] = useState(false)
   const farms = useFarms(props.pool.id)
+  const meta = useAssetMeta(props.pool.id)
+
+  const toast = TOAST_MESSAGES.reduce((memo, type) => {
+    const msType = type === "onError" ? "onLoading" : type
+    memo[type] = (
+      <Trans
+        t={t}
+        i18nKey={`farms.modal.join.toast.${msType}`}
+        tOptions={{
+          amount: props.position.shares,
+          fixedPointScale: meta.data?.decimals ?? 12,
+        }}
+      >
+        <span />
+        <span className="highlight" />
+      </Trans>
+    )
+    return memo
+  }, {} as ToastMessage)
+
+  const joinFarmMutation = useFarmDepositMutation(
+    props.pool.id,
+    props.position.id,
+    toast,
+  )
+
   return (
     <>
       <Button
@@ -53,9 +82,10 @@ function LiquidityPositionJoinFarmButton(props: {
       {joinFarm && (
         <JoinFarmModal
           isOpen={joinFarm}
-          pool={props.pool}
-          position={props.position}
+          poolId={props.pool.id}
+          shares={props.position.shares}
           onClose={() => setJoinFarm(false)}
+          mutation={joinFarmMutation}
         />
       )}
     </>
