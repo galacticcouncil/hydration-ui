@@ -14,7 +14,7 @@ export const QUERY_KEYS = {
     "assetsTable",
     id?.toString(),
   ],
-  omniPositionId: (id: u32 | string) => [
+  omniPositionId: (id: u128 | string) => [
     QUERY_KEY_PREFIX,
     "omniPositionId",
     id?.toString(),
