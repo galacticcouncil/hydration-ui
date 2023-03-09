@@ -75,7 +75,6 @@ function JoinedFarmsDetailsRedeposit(props: {
             key={i}
             poolId={props.pool.id}
             farm={farm}
-            depositNft={props.depositNft}
             onSelect={() =>
               props.onSelect({
                 globalFarm: farm.globalFarm.id,
@@ -102,7 +101,11 @@ function JoinedFarmsDetailsRedeposit(props: {
 function JoinedFarmsDetailsPositions(props: {
   pool: OmnipoolPool
   depositNft: DepositNftType
-  onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
+  onSelect: (value: {
+    globalFarm: u32
+    yieldFarm: u32
+    depositNft: DepositNftType
+  }) => void
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -151,6 +154,7 @@ function JoinedFarmsDetailsPositions(props: {
               props.onSelect({
                 globalFarm: farm.globalFarm.id,
                 yieldFarm: farm.yieldFarm.id,
+                depositNft: props.depositNft,
               })
             }
           />
@@ -180,6 +184,7 @@ export const JoinedFarmsDetails = (props: {
   const [selectedFarmIds, setSelectedFarmIds] = useState<{
     globalFarm: u32
     yieldFarm: u32
+    depositNft?: DepositNftType
   } | null>(null)
 
   const farms = useFarms(props.pool.id)
@@ -200,9 +205,9 @@ export const JoinedFarmsDetails = (props: {
     >
       {selectedFarm ? (
         <FarmDetailsModal
-          poolId={props.pool.id}
+          pool={props.pool}
           farm={selectedFarm}
-          depositNft={props.depositNft}
+          depositNft={selectedFarmIds?.depositNft}
           onBack={() => setSelectedFarmIds(null)}
         />
       ) : (

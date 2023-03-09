@@ -112,28 +112,41 @@ export const useClaimableAmount = (
             )
 
             if (!reward || !usd) return null
+
             return {
               usd: reward.value.multipliedBy(usd.spotPrice),
-              asset: { id: reward?.assetId, value: reward.value },
+              asset: {
+                id: reward?.assetId,
+                value: reward.value,
+                yieldFarmId: aprEntry.yieldFarm.id.toString(),
+              },
             }
           }),
         )
         .flat(2)
         .reduce<{
           usd: BigNumber
+          depositRewards: Array<{
+            assetId: string
+            yieldFarmId: string
+            value: BigNumber
+          }>
           assets: Record<string, BigNumber>
         }>(
           (memo, item) => {
             if (item == null) return memo
-            const { id, value } = item.asset
+            const { id, value, yieldFarmId } = item.asset
+
             memo.usd = memo.usd.plus(item.usd)
+
+            memo.depositRewards.push({ yieldFarmId, assetId: id, value })
             !memo.assets[id]
               ? (memo.assets[id] = value)
               : (memo.assets[id] = memo.assets[id].plus(value))
 
             return memo
           },
-          { usd: BN_0, assets: {} },
+          { usd: BN_0, assets: {}, depositRewards: [] },
         )
     },
   )

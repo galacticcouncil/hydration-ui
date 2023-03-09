@@ -79,10 +79,11 @@ function LiquidityPositionJoinFarmButton(props: {
         {t("liquidity.asset.actions.joinFarms")}
       </Button>
 
-      {joinFarm && (
+      {joinFarm && farms.data && (
         <JoinFarmModal
+          farms={farms.data}
           isOpen={joinFarm}
-          poolId={props.pool.id}
+          pool={props.pool}
           shares={props.position.shares}
           onClose={() => setJoinFarm(false)}
           mutation={joinFarmMutation}

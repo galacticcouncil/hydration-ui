@@ -6,7 +6,6 @@ import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { ReactElement, useState } from "react"
 import { SSeparator } from "../FarmingPosition.styled"
 import { DepositNftType } from "api/deposits"
-import { u32 } from "@polkadot/types"
 import { useFarmApr, useFarms } from "api/farms"
 import { useAssetMeta } from "api/assetMeta"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
@@ -14,6 +13,7 @@ import { JoinFarmModal } from "../../modals/join/JoinFarmsModal"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import { useAccountStore } from "state/store"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 
 type RedepositFarmProps = {
   availableYieldFarm: NonNullable<ReturnType<typeof useFarms>["data"]>[0]
@@ -31,16 +31,16 @@ const RedepositFarm = ({ availableYieldFarm }: RedepositFarmProps) => {
 
 type RedepositFarmsProps = {
   depositNft: DepositNftType
-  poolId: u32
+  pool: OmnipoolPool
 }
 
-export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
+export const RedepositFarms = ({ depositNft, pool }: RedepositFarmsProps) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const [joinFarm, setJoinFarm] = useState(false)
 
-  const farms = useFarms(poolId)
-  const meta = useAssetMeta(poolId)
+  const farms = useFarms(pool.id)
+  const meta = useAssetMeta(pool.id)
 
   let availableYieldFarms =
     farms.data?.filter(
@@ -119,8 +119,9 @@ export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
       </SJoinButton>
       {joinFarm && (
         <JoinFarmModal
+          farms={availableYieldFarms}
           isOpen={joinFarm}
-          poolId={poolId}
+          pool={pool}
           shares={depositNft.deposit.shares.toBigNumber()}
           mutation={redeposit}
           onClose={() => setJoinFarm(false)}
