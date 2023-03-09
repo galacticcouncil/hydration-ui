@@ -95,7 +95,7 @@ export const AssetSelect = (props: {
                   const value = getFloatingPointAmount(
                     props.balance,
                     props.decimals,
-                  ).toFixed(4)
+                  ).toString()
                   props.onChange(value)
                   props.onBlur?.(value)
                 }
