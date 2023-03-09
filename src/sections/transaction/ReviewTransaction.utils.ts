@@ -70,13 +70,19 @@ export const useSendTransactionMutation = () => {
   const sendTx = useMutation(async (sign: SubmittableExtrinsic<"promise">) => {
     return await new Promise<ISubmittableResult & { transactionLink?: string }>(
       async (resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new UnknownTransactionState())
-        }, 60000)
-
         const unsubscribe = await sign.send(async (result) => {
           if (!result || !result.status) return
-          if (isMounted()) setTxState(result.status.type)
+
+          const timeout = setTimeout(() => {
+            clearTimeout(timeout)
+            reject(new UnknownTransactionState())
+          }, 60000)
+
+          if (isMounted()) {
+            setTxState(result.status.type)
+          } else {
+            clearTimeout(timeout)
+          }
 
           if (result.isCompleted) {
             if (result.dispatchError) {
