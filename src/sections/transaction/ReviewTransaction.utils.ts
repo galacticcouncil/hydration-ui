@@ -73,6 +73,11 @@ export const useSendTransactionMutation = () => {
         const unsubscribe = await sign.send(async (result) => {
           if (!result || !result.status) return
           if (isMounted()) setTxState(result.status.type)
+
+          const timeout = setTimeout(() => {
+            reject(new UnknownTransactionState())
+          }, 60000)
+
           if (result.isCompleted) {
             if (result.dispatchError) {
               let errorMessage = result.dispatchError.toString()
@@ -86,6 +91,7 @@ export const useSendTransactionMutation = () => {
                 }: ${decoded.docs.join(" ")}`
               }
 
+              clearTimeout(timeout)
               reject(new Error(errorMessage))
             } else {
               const transactionLink = await link.mutateAsync({
@@ -93,6 +99,7 @@ export const useSendTransactionMutation = () => {
                 txIndex: result.txIndex?.toString(),
               })
 
+              clearTimeout(timeout)
               resolve({
                 transactionLink,
                 ...result,
@@ -102,9 +109,6 @@ export const useSendTransactionMutation = () => {
             unsubscribe()
           }
 
-          setTimeout(() => {
-            reject(new UnknownTransactionState())
-          }, 60000)
         })
       },
     )
