@@ -5,11 +5,11 @@ import { Button } from "components/Button/Button"
 import { ReviewTransactionProgress } from "./ReviewTransactionProgress"
 import { Spacer } from "components/Spacer/Spacer"
 import { Heading } from "components/Typography/Heading/Heading"
-import { ExtendedExtrinsicStatus } from "./ReviewTransaction.utils"
+import { ExtrinsicStatus } from "@polkadot/types/interfaces/author"
 
 type Props = {
   onClose: () => void
-  txState: ExtendedExtrinsicStatus | null
+  txState: ExtrinsicStatus["type"] | null
 }
 
 export const ReviewTransactionPending = ({ onClose, txState }: Props) => {

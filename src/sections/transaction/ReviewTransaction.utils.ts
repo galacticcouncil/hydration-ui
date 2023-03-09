@@ -59,13 +59,13 @@ export function getTransactionJSON(tx: SubmittableExtrinsic<"promise">) {
   return { method, args }
 }
 
-export type ExtendedExtrinsicStatus = ExtrinsicStatus["type"] | "Unknown"
+export class UnknownTransactionState extends Error {}
 
 export const useSendTransactionMutation = () => {
   const api = useApiPromise()
   const isMounted = useMountedState()
   const link = useTransactionLink()
-  const [txState, setTxState] = useState<ExtendedExtrinsicStatus | null>(null)
+  const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
 
   const sendTx = useMutation(async (sign: SubmittableExtrinsic<"promise">) => {
     return await new Promise<ISubmittableResult & { transactionLink?: string }>(
@@ -103,8 +103,7 @@ export const useSendTransactionMutation = () => {
           }
 
           setTimeout(() => {
-            setTxState("Unknown")
-            reject()
+            reject(new UnknownTransactionState())
           }, 60000)
         })
       },
