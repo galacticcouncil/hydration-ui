@@ -2,6 +2,8 @@ import { UseQueryResult } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 import { UseFormReturn } from "react-hook-form"
 import { u32 } from "@polkadot/types-codec"
+import { u8aConcat } from "@polkadot/util"
+import { U8aLike } from "@polkadot/util/types"
 
 export const noop = () => {}
 export const undefinedNoop = () => undefined
@@ -19,6 +21,10 @@ export function isRecord<Key extends string, Value>(
 
 export function keys<O extends object>(o: O) {
   return Object.keys(o) as (keyof O)[]
+}
+
+export function padEndU8a(value: U8aLike, length: number) {
+  return u8aConcat(value, Array(Math.max(0, length - value.length)).fill(0))
 }
 
 /**
@@ -80,4 +86,76 @@ export function isNil<T>(val: T | null | undefined): val is null | undefined {
 
 export function isNotNil<T>(val: T | null | undefined): val is T {
   return !isNil(val)
+}
+
+const validKeys = [
+  "data",
+  "isError",
+  "isFetching",
+  "isLoading",
+  "isLoadingError",
+  "isInitialLoading",
+  "isPaused",
+  "isPlaceholderData",
+  "isPreviousData",
+  "isRefetchError",
+  "isRefetching",
+  "isStale",
+  "isSuccess",
+  "isFetched",
+  "isFetchedAfterMount",
+] as const
+
+type UseQueryReduceResult<T> = Pick<UseQueryResult<T>, typeof validKeys[number]>
+
+type TupleQueryResult<Tuple extends readonly unknown[]> = {
+  [P in keyof Tuple]: UseQueryReduceResult<Tuple[P]> | UseQueryResult<Tuple[P]>
+}
+
+export function useQueryReduce<Tuple extends readonly unknown[], Combined>(
+  list: TupleQueryResult<Tuple>,
+  second: (...args: [...Tuple]) => Combined,
+) {
+  const trackedItem = {} as UseQueryReduceResult<Combined>
+
+  for (const key of validKeys) {
+    Object.defineProperty(trackedItem, key, {
+      configurable: false,
+      enumerable: true,
+      get: () => {
+        switch (key) {
+          case "data": {
+            const data = list.map((i) => i.data) as [...Tuple]
+            if (data.some((x) => typeof x === "undefined")) return undefined
+            return second(...data)
+          }
+          case "isError":
+          case "isFetching":
+          case "isLoading":
+          case "isLoadingError":
+          case "isInitialLoading":
+          case "isPaused":
+          case "isPlaceholderData":
+          case "isPreviousData":
+          case "isRefetchError":
+          case "isRefetching":
+          case "isStale": {
+            const result = list.map((i) => i[key])
+            return result.some((i) => i)
+          }
+          case "isSuccess":
+          case "isFetched":
+          case "isFetchedAfterMount": {
+            const result = list.map((i) => i[key])
+            return result.every((i) => i)
+          }
+          default: {
+            return undefined
+          }
+        }
+      },
+    })
+  }
+
+  return trackedItem
 }

@@ -13,7 +13,7 @@ import { useSpotPrices } from "api/spotPrice"
 import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
-} from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
+} from "@galacticcouncil/math-omnipool"
 import { useApiIds } from "api/consts"
 import { useAssetDetailsList } from "api/assetDetails"
 import { isNotNil } from "utils/helpers"
@@ -114,31 +114,6 @@ export const useHydraPositionsData = () => {
           ]
           lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
           liquidityOutResult = calculate_liquidity_out.apply(this, params)
-
-          // console.table([
-          //   ["position asset id", "", id],
-          //   [
-          //     "omnipool balance",
-          //     "asset_reserve",
-          //     omnipoolBalance.data.balance.toString(),
-          //   ],
-          //   [
-          //     "asset hub reserve",
-          //     "asset_hub_reserve",
-          //     omnipoolAsset.data.hubReserve.toString(),
-          //   ],
-          //   [
-          //     "asset shares",
-          //     "asset_shares",
-          //     omnipoolAsset.data.shares.toString(),
-          //   ],
-          //   ["position amount", "position_amount", position.amount.toString()],
-          //   ["position shares", "position_shares", position.shares.toString()],
-          //   ["position price", "position_price", positionPrice.toFixed(0)],
-          //   ["position shares", "shares_to_remove", position.shares.toString()],
-          //   ["calculate_liquidity_out", "", liquidityOutResult],
-          //   ["calculate_liquidity_lrna_out", "", lernaOutResult],
-          // ])
         }
 
         const lrnaSp = spotPrices.find(

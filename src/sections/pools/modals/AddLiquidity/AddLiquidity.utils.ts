@@ -2,7 +2,7 @@ import {
   calculate_liquidity_hub_in,
   calculate_shares,
   verify_asset_cap,
-} from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
+} from "@galacticcouncil/math-omnipool"
 import { u32 } from "@polkadot/types"
 import { useAssetMeta } from "api/assetMeta"
 import { useTokenBalance } from "api/balances"

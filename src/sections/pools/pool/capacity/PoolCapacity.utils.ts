@@ -9,7 +9,7 @@ import BN from "bignumber.js"
 import {
   calculate_cap_difference,
   calculate_tvl_cap_difference,
-} from "@galacticcouncil/math/build/omnipool/bundler"
+} from "@galacticcouncil/math-omnipool"
 import { useAssetMeta } from "api/assetMeta"
 import { getFloatingPointAmount } from "utils/balance"
 

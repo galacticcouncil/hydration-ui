@@ -130,7 +130,12 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
     }
 
     :active {
+      transform: translate3d(-3px, -3px, -1px);
       box-shadow: 0px 13px 40px -12px rgba(246, 41, 124, 0.45);
+    }
+
+    :active:before {
+      transform: translate3d(3px, 3px, -1px);
     }
   `,
   secondary: css`

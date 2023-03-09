@@ -7,9 +7,10 @@ import { POLKADOT_APP_NAME } from "utils/api"
 import { WalletConnectConfirmPending } from "sections/wallet/connect/confirmPending/WalletConnectConfirmPending"
 import { WalletConnectProviderSelect } from "sections/wallet/connect/providerSelect/WalletConnectProviderSelect"
 import { WalletConnectAccountSelect } from "sections/wallet/connect/accountSelect/WalletConnectAccountSelect"
-import { useAccountStore } from "state/store"
+import { externalWallet, useAccountStore } from "state/store"
 import { WalletConnectActiveFooter } from "./WalletConnectActiveFooter"
 import { Wallet } from "@talismn/connect-wallets"
+import { useNavigate } from "@tanstack/react-location"
 
 type Props = {
   isOpen: boolean
@@ -29,6 +30,7 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
   )
 
   const { account, setAccount } = useAccountStore()
+  const navigate = useNavigate()
   const activeProvider = userSelectedProvider ?? account?.provider
 
   const modalProps = userSelectedProvider
@@ -48,7 +50,7 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
       {...modalProps}
     >
       {activeProvider ? (
-        mutate.isLoading ? (
+        activeProvider !== externalWallet.provider && mutate.isLoading ? (
           <WalletConnectConfirmPending provider={activeProvider} />
         ) : (
           <>
@@ -68,8 +70,16 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
                 setUserSelectedProvider(null)
                 setAccount(undefined)
                 onClose()
+                navigate({
+                  search: undefined,
+                  fromCurrent: true,
+                })
               }}
               onSwitch={() => {
+                navigate({
+                  search: undefined,
+                  fromCurrent: true,
+                })
                 setUserSelectedProvider(null)
                 setAccount(undefined)
               }}
@@ -82,6 +92,7 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
             setUserSelectedProvider(wallet.extensionName)
             mutate.mutate(wallet)
           }}
+          onClose={onClose}
         />
       )}
     </Modal>

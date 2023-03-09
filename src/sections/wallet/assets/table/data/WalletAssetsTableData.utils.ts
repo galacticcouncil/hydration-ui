@@ -17,7 +17,7 @@ import {
   is_sell_allowed,
   is_add_liquidity_allowed,
   is_remove_liquidity_allowed,
-} from "@galacticcouncil/math/build/omnipool/bundler/hydra_dx_wasm"
+} from "@galacticcouncil/math-omnipool"
 
 export const useAssetsTableData = (isAllAssets: boolean) => {
   const myTableData = useAssetTable()
