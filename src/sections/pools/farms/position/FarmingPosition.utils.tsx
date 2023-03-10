@@ -15,7 +15,7 @@ import BN from "bignumber.js"
 import { useQueryReduce } from "utils/helpers"
 import { isNotNil } from "utils/helpers"
 
-export const useDepositShare = (poolId: u32, depositNftId: string[]) => {
+export const useDepositShare = (poolId: u32, depositNftIds: string[]) => {
   const apiIds = useApiIds()
   const omnipoolBalance = useTokenBalance(poolId, OMNIPOOL_ACCOUNT_ADDRESS)
   const omnipoolAsset = useOmnipoolAsset(poolId)
@@ -23,7 +23,7 @@ export const useDepositShare = (poolId: u32, depositNftId: string[]) => {
   const meta = useAssetMeta(poolId)
   const lrnaMeta = useAssetMeta(apiIds.data?.hubId)
 
-  const positionIds = useOmniPositionIds(depositNftId)
+  const positionIds = useOmniPositionIds(depositNftIds)
 
   const positions = useOmnipoolPositions(
     positionIds.map((pos) => pos.data?.value),

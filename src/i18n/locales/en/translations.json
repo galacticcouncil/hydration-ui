@@ -263,7 +263,7 @@
   "farms.modal.exit.toast.onSuccess": "<0>You withdrawed </0><1>{{ amount, bignumber(type: 'token') }}</1> <0>Shares from farm</0>",
   "farms.modal.joinedFarms.button.joinAll.label": "Join All Free Farms",
   "farms.claimCard.title": "Claimable Now",
-  "farms.claimCard.smallValue": "Claimable  below 0.01$",
+  "farms.claimCard.smallValue": "Claimable below 0.01$",
   "farms.claimCard.button.label": "Claim All",
   "farms.claimCard.claim.asset": "{{num}}<0>{{denom}} {{symbol}}</0>",
   "farms.claimCard.toast.onLoading": "<0>Claiming farming rewards of </0>",

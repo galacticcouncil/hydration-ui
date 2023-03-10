@@ -29,7 +29,7 @@ export const PoolFooter = ({ pool }: Props) => {
         {t("value", {
           value: claimable.data?.usd,
           type: "token",
-          suffixPrefix: "$",
+          numberPrefix: "$",
           fixedPointScale: 12,
         })}
       </>
