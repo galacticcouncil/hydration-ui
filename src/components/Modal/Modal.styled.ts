@@ -137,7 +137,9 @@ export const ModalBody = styled.div<{ isDrawer?: boolean }>`
   display: flex;
   flex-direction: column;
 
-  padding: 0 20px 36px;
+  --modal-body-padding-x: 20px;
+
+  padding: 0 var(--modal-body-padding-x) 36px;
   overflow-y: auto;
 
   ${({ isDrawer }) =>
@@ -146,7 +148,8 @@ export const ModalBody = styled.div<{ isDrawer?: boolean }>`
       : "height: calc(100vh - var(--mobile-modal-header-height));"}
 
   @media ${theme.viewport.gte.sm} {
-    padding: 0 30px 30px;
+    --modal-body-padding-x: 30px;
+    padding-bottom: 30px;
     max-height: 80vh;
     height: auto;
   }
