@@ -149,6 +149,8 @@ export interface Farm {
 
 export type FarmAprs = ReturnType<typeof useFarmAprs>
 
+export type FarmQueryType = ReturnType<typeof useFarms>
+
 export const useFarms = (poolId: u32 | string) => {
   const activeYieldFarms = useActiveYieldFarms(poolId)
   const globalFarms = useGlobalFarms(activeYieldFarms.data)

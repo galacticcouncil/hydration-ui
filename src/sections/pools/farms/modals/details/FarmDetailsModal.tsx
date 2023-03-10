@@ -8,11 +8,12 @@ import { Spacer } from "components/Spacer/Spacer"
 import { LoyaltyGraph } from "../../components/loyaltyGraph/LoyaltyGraph"
 import { Farm } from "api/farms"
 import { DepositNftType } from "api/deposits"
-import { u32 } from "@polkadot/types"
 import { BN_0 } from "utils/constants"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { FarmDetailsModalValues } from "./FarmDetailsModalValues"
 
 type FarmDetailsModalProps = {
-  poolId: u32
+  pool: OmnipoolPool
   farm: Farm
   depositNft: DepositNftType | undefined
   onBack: () => void
@@ -20,14 +21,14 @@ type FarmDetailsModalProps = {
 
 export const FarmDetailsModal = ({
   farm,
-  poolId,
   depositNft,
   onBack,
+  pool,
 }: FarmDetailsModalProps) => {
   const { t } = useTranslation()
 
   const loyaltyCurve = farm.yieldFarm.loyaltyCurve.unwrapOr(null)
-  const enteredDate = depositNft?.deposit.yieldFarmEntries.reduce(
+  const enteredBlock = depositNft?.deposit.yieldFarmEntries.reduce(
     (acc, curr) =>
       acc.lt(curr.enteredAt.toBigNumber()) ? curr.enteredAt.toBigNumber() : acc,
     BN_0,
@@ -46,7 +47,7 @@ export const FarmDetailsModal = ({
 
       <Spacer size={16} />
 
-      <FarmDetailsCard poolId={poolId} depositNft={depositNft} farm={farm} />
+      <FarmDetailsCard poolId={pool.id} depositNft={depositNft} farm={farm} />
 
       {loyaltyCurve && (
         <SLoyaltyRewardsContainer>
@@ -63,14 +64,23 @@ export const FarmDetailsModal = ({
           <LoyaltyGraph
             farm={farm}
             loyaltyCurve={loyaltyCurve}
-            enteredAt={enteredDate}
+            enteredAt={enteredBlock}
           />
         </SLoyaltyRewardsContainer>
       )}
 
-      <Text sx={{ py: 30 }} color="basic400" tAlign="center">
-        {t("farms.modal.details.description")}
-      </Text>
+      {depositNft && enteredBlock ? (
+        <FarmDetailsModalValues
+          yieldFarmId={farm.yieldFarm.id.toString()}
+          depositNft={depositNft}
+          pool={pool}
+          enteredBlock={enteredBlock}
+        />
+      ) : (
+        <Text sx={{ py: 30 }} color="basic400" tAlign="center">
+          {t("farms.modal.details.description")}
+        </Text>
+      )}
     </>
   )
 }
