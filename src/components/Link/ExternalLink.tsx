@@ -15,9 +15,10 @@ export const ExternalLink: FC<PropsWithChildren<Props>> = ({
   href,
   className,
   children,
+  onClick,
 }) => {
   return (
-    <SExternalLink href={href} className={className}>
+    <SExternalLink href={href} className={className} onClick={onClick}>
       {children} <ExternalLinkAdornment />
     </SExternalLink>
   )
