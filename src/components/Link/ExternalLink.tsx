@@ -9,7 +9,7 @@ const ExternalLinkAdornment = () => (
   </SExternalLinkAdornment>
 )
 
-type Props = { href: string } & ComponentProps<typeof SExternalLink>
+type Props = { href?: string } & ComponentProps<typeof SExternalLink>
 
 export const ExternalLink: FC<PropsWithChildren<Props>> = ({
   href,

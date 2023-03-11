@@ -24,13 +24,7 @@ export const DepegWarningModal = (props: { onClose: () => void }) => {
           {t("depeg.modal.description")}
         </Text>
 
-        <div sx={{ flex: "row", justify: "space-between", mt: 32 }}>
-          <ExternalLink
-            href="https://www.coingecko.com/en/coins/dai"
-            css={{ color: "#85D1FF" }}
-          >
-            {t("depeg.modal.more.info")}
-          </ExternalLink>
+        <div sx={{ flex: "row", justify: "center", mt: 32 }}>
           <ExternalLink
             sx={{ color: "pink600" }}
             href="https://www.coingecko.com/en/coins/dai"
@@ -46,6 +40,7 @@ export const DepegWarningModal = (props: { onClose: () => void }) => {
           width: 100%;
           position: fixed;
           bottom: 60px;
+          cursor: pointer;
           left: 0;
           right: 0;
 
@@ -113,11 +108,7 @@ export const DepegWarningModal = (props: { onClose: () => void }) => {
           </svg>
 
           <Text>{t("depeg.modal.description")}</Text>
-          <ExternalLink
-            href="https://www.coingecko.com/en/coins/dai"
-            css={{ whiteSpace: "nowrap" }}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <ExternalLink css={{ whiteSpace: "nowrap" }}>
             {t("depeg.modal.more.info")}
           </ExternalLink>
         </div>
