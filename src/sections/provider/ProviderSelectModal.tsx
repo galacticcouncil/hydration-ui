@@ -1,103 +1,24 @@
-import { css } from "@emotion/react"
-import styled from "@emotion/styled"
-
-import { useProviderRpcUrlStore } from "api/provider"
+import { PROVIDERS, useProviderRpcUrlStore } from "api/provider"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
-import { Fragment, useState } from "react"
+import { Fragment, useEffect, useState } from "react"
 import { theme } from "theme"
 
 import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRightIcon.svg"
-
-const SCircle = styled.span`
-  display: block;
-  width: 16px;
-  height: 16px;
-
-  border-radius: 9999px;
-  background: ${theme.colors.basic900};
-  border: 1px solid rgba(${theme.rgbColors.alpha0}, 0.3);
-
-  transition: all ${theme.transitions.default};
-`
-
-const SItem = styled.div<{ isActive?: boolean }>`
-  display: grid;
-  grid-template-columns: 1fr 1fr 3fr;
-  grid-gap: 24px;
-
-  padding: 14px var(--modal-body-padding-x);
-  cursor: pointer;
-
-  &:hover ${SCircle} {
-    background: ${theme.colors.basic800};
-  }
-
-  ${(props) => {
-    if (props.isActive) {
-      return css`
-        ${SCircle} {
-          border-color: ${theme.colors.pink600};
-        }
-
-        &:hover ${SCircle} {
-          background: ${theme.colors.basic800};
-        }
-      `
-    }
-
-    return null
-  }}
-`
-
-const SHeader = styled(SItem)`
-  background: rgba(${theme.rgbColors.primaryA06}, 0.06);
-  color: ${theme.colors.basic700};
-
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-
-  padding: 6px var(--modal-body-padding-x);
-`
-
-const SContainer = styled.div`
-  margin: 0 calc(-1 * var(--modal-body-padding-x));
-  margin-top: 20px;
-`
-
-function ProviderStatus(props: { status: "online" | "offline" | "slow" }) {
-  const color =
-    props.status === "online"
-      ? "#00FFA0"
-      : props.status === "offline"
-      ? "#FF4B4B"
-      : props.status === "slow"
-      ? "#F5A855"
-      : undefined
-  return (
-    <Text
-      fs={9}
-      lh={9}
-      sx={{ flex: "row", gap: 4, align: "center" }}
-      css={{
-        letterSpacing: "1px",
-        color,
-      }}
-    >
-      <span>214244</span>
-      <span
-        sx={{ width: 6, height: 6, display: "block" }}
-        css={{
-          background: `currentColor`,
-          borderRadius: "9999px",
-        }}
-      />
-    </Text>
-  )
-}
+import { ProviderStatus } from "./ProviderStatus"
+import {
+  SItem,
+  SCircle,
+  SContainer,
+  SHeader,
+  SButton,
+} from "./ProviderSelectModal.styled"
+import { useTranslation } from "react-i18next"
+import { useBestNumber } from "api/chain"
+import { ApiPromise, WsProvider } from "@polkadot/api"
+import { u32 } from "@polkadot/types"
 
 function ProviderSelectItem(props: {
   name: string
@@ -105,6 +26,40 @@ function ProviderSelectItem(props: {
   isActive?: boolean
   onClick: () => void
 }) {
+  const [relaychainBlockNumber, setRelaychainBlockNumber] = useState<
+    u32 | undefined
+  >(undefined)
+
+  useEffect(() => {
+    const rpc = props.url
+    const provider = new WsProvider(rpc)
+
+    let cancel: () => void
+
+    async function load() {
+      const api = await ApiPromise.create({ provider })
+
+      async function onNewBlock() {
+        setRelaychainBlockNumber(
+          (await api.query.parachainSystem.validationData()).unwrap()
+            .relayParentNumber,
+        )
+      }
+
+      api.on("connected", onNewBlock)
+      api.rpc.chain
+        .subscribeNewHeads(onNewBlock)
+        .then((newCancel) => (cancel = newCancel))
+    }
+
+    load()
+
+    return () => {
+      cancel?.()
+      provider.disconnect()
+    }
+  }, [props.url])
+
   return (
     <SItem isActive={props.isActive} onClick={props.onClick}>
       <Text
@@ -113,7 +68,10 @@ function ProviderSelectItem(props: {
       >
         {props.name}
       </Text>
-      <ProviderStatus status="online" />
+      <ProviderStatus
+        status="online"
+        relaychainBlockNumber={relaychainBlockNumber}
+      />
       <div
         sx={{
           textAlign: "right",
@@ -140,28 +98,28 @@ function ProviderSelectItem(props: {
   )
 }
 
-const PROVIDERS = [
-  { name: "Mainnet", url: "wss://rpc.hydradx.cloud" },
-  { name: "Rococo", url: "wss://hydradx-rococo-rpc.play.hydration.cloud" },
-  { name: "Testnet", url: "wss://mining-rpc.hydradx.io" },
-]
-
 export function ProviderSelectModal(props: {
   open: boolean
   onClose: () => void
 }) {
   const preference = useProviderRpcUrlStore()
-  const [userRpcUrl, setUserRpcUrl] = useState(
-    preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL,
-  )
+  const activeRpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const [userRpcUrl, setUserRpcUrl] = useState(activeRpcUrl)
+  const { t } = useTranslation()
 
   return (
-    <Modal open={props.open} onClose={props.onClose} title="Change RPC">
+    <Modal
+      open={props.open}
+      onClose={props.onClose}
+      title={t("rpc.change.modal.title")}
+    >
       <SContainer>
         <SHeader>
-          <div>Name</div>
-          <div>Status</div>
-          <div sx={{ textAlign: "right" }}>RPC Address</div>
+          <div>{t("rpc.change.modal.column.name")}</div>
+          <div>{t("rpc.change.modal.column.status")}</div>
+          <div sx={{ textAlign: "right" }}>
+            {t("rpc.change.modal.column.rpc")}
+          </div>
         </SHeader>
 
         {PROVIDERS.map((provider, index) => {
@@ -186,32 +144,19 @@ export function ProviderSelectModal(props: {
         sx={{ mt: 64 }}
         onClick={() => {
           preference.setRpcUrl(userRpcUrl)
-          window.location.reload()
+
+          if (activeRpcUrl !== userRpcUrl) {
+            window.location.reload()
+          } else {
+            props.onClose()
+          }
         }}
       >
-        Save
+        {t("rpc.change.modal.save")}
       </Button>
     </Modal>
   )
 }
-
-const SwitchButton = styled.button`
-  all: unset;
-
-  position: fixed;
-  bottom: 4px;
-  right: 4px;
-
-  color: ${theme.colors.white};
-
-  display: flex;
-  align-items: center;
-  font-size: 11px;
-
-  cursor: pointer;
-
-  gap: 12px;
-`
 
 export function ProviderSelectButton() {
   const [open, setOpen] = useState(false)
@@ -219,10 +164,15 @@ export function ProviderSelectButton() {
 
   const rpcUrl = store.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
   const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+  const number = useBestNumber()
+
   return (
     <>
-      <SwitchButton onClick={() => setOpen(true)}>
-        <ProviderStatus status="online" />
+      <SButton onClick={() => setOpen(true)}>
+        <ProviderStatus
+          relaychainBlockNumber={number.data?.relaychainBlockNumber}
+          status="online"
+        />
 
         <span
           sx={{ display: "block", width: 1, height: 14, bg: "darkBlue400" }}
@@ -232,7 +182,7 @@ export function ProviderSelectButton() {
           <span>{selectedProvider?.name}</span>
           <ChevronRightIcon sx={{ color: "brightBlue300" }} />
         </span>
-      </SwitchButton>
+      </SButton>
       {open && (
         <ProviderSelectModal open={open} onClose={() => setOpen(false)} />
       )}
