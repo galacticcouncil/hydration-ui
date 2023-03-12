@@ -13,6 +13,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { isNotNil } from "utils/helpers"
 import { useSetAsFeePayment } from "api/payments"
+import { useAccountStore } from "state/store"
 
 type Props = {
   toggleExpanded: () => void
@@ -28,6 +29,7 @@ type Props = {
 export const WalletAssetsTableActions = (props: Props) => {
   const { t } = useTranslation()
   const setFeeAsPayment = useSetAsFeePayment()
+  const { account } = useAccountStore()
 
   const actionItems = [
     /*{
@@ -62,23 +64,31 @@ export const WalletAssetsTableActions = (props: Props) => {
         <TableAction
           icon={<BuyIcon />}
           onClick={props.onBuyClick}
-          disabled={props.onBuyClick == null}
+          disabled={
+            props.onBuyClick == null || account?.isExternalWalletConnected
+          }
         >
           {t("wallet.assets.table.actions.buy")}
         </TableAction>
         <TableAction
           icon={<SellIcon />}
           onClick={props.onSellClick}
-          disabled={props.onSellClick == null}
+          disabled={
+            props.onSellClick == null || account?.isExternalWalletConnected
+          }
         >
           {t("wallet.assets.table.actions.sell")}
         </TableAction>
-        <TableAction icon={<TransferIcon />} onClick={props.onTransferClick}>
+        <TableAction
+          icon={<TransferIcon />}
+          onClick={props.onTransferClick}
+          disabled={account?.isExternalWalletConnected}
+        >
           {t("wallet.assets.table.actions.transfer")}
         </TableAction>
 
         <Dropdown
-          items={actionItems}
+          items={account?.isExternalWalletConnected ? [] : actionItems}
           onSelect={(item) => {
             if (item === "setAsFeePayment") {
               setFeeAsPayment(props.id, {

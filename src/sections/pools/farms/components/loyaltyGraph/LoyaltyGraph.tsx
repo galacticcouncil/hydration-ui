@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next"
-//import { AprFarm } from "utils/farms/apr"
 import { Graph } from "components/Graph/Graph"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { useLoyaltyRates } from "./LoyaltyGraph.utils"
@@ -23,6 +22,7 @@ export function LoyaltyGraph({
 
   const rates = useLoyaltyRates(
     farm,
+    apr.data?.apr,
     loyaltyCurve,
     enteredAt && apr.data != null
       ? apr.data.currentPeriod.minus(enteredAt)

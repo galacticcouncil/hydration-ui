@@ -2,7 +2,7 @@ import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { ClaimRewardsCard } from "sections/pools/farms/components/claimableCard/ClaimRewardsCard"
@@ -12,6 +12,10 @@ import { DepositNftType } from "api/deposits"
 import { u32 } from "@polkadot/types"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { useFarmExitAllMutation } from "utils/farms/exit"
+import { ToastMessage } from "state/store"
+import { TOAST_MESSAGES } from "state/toasts"
+import { useAssetMeta } from "api/assetMeta"
+import { useAccountStore } from "state/store"
 
 function isFarmJoined(depositNft: DepositNftType, farm: Farm) {
   return depositNft.deposit.yieldFarmEntries.find(
@@ -27,13 +31,37 @@ function JoinedFarmsDetailsRedeposit(props: {
   onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
 }) {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
   const farms = useFarms(props.pool.id)
+  const meta = useAssetMeta(props.pool.id)
 
   const availableFarms = farms.data?.filter(
     (farm) => !isFarmJoined(props.depositNft, farm),
   )
 
-  const redeposit = useFarmRedepositMutation(availableFarms, [props.depositNft])
+  const toast = TOAST_MESSAGES.reduce((memo, type) => {
+    const msType = type === "onError" ? "onLoading" : type
+    memo[type] = (
+      <Trans
+        t={t}
+        i18nKey={`farms.modal.join.toast.${msType}`}
+        tOptions={{
+          amount: props.depositNft.deposit.shares.toBigNumber(),
+          fixedPointScale: meta.data?.decimals ?? 12,
+        }}
+      >
+        <span />
+        <span className="highlight" />
+      </Trans>
+    )
+    return memo
+  }, {} as ToastMessage)
+
+  const redeposit = useFarmRedepositMutation(
+    availableFarms,
+    [props.depositNft],
+    toast,
+  )
 
   if (!availableFarms?.length) return null
   return (
@@ -45,8 +73,8 @@ function JoinedFarmsDetailsRedeposit(props: {
         {availableFarms?.map((farm, i) => (
           <FarmDetailsCard
             key={i}
+            poolId={props.pool.id}
             farm={farm}
-            depositNft={props.depositNft}
             onSelect={() =>
               props.onSelect({
                 globalFarm: farm.globalFarm.id,
@@ -60,6 +88,7 @@ function JoinedFarmsDetailsRedeposit(props: {
           variant="primary"
           sx={{ mt: 16 }}
           onClick={() => redeposit.mutate()}
+          disabled={account?.isExternalWalletConnected}
           isLoading={redeposit.isLoading}
         >
           {t("farms.modal.joinedFarms.button.joinAll.label")}
@@ -72,15 +101,39 @@ function JoinedFarmsDetailsRedeposit(props: {
 function JoinedFarmsDetailsPositions(props: {
   pool: OmnipoolPool
   depositNft: DepositNftType
-  onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
+  onSelect: (value: {
+    globalFarm: u32
+    yieldFarm: u32
+    depositNft: DepositNftType
+  }) => void
 }) {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
   const farms = useFarms(props.pool.id)
+  const meta = useAssetMeta(props.pool.id)
   const joinedFarms = farms.data?.filter((farm) =>
     isFarmJoined(props.depositNft, farm),
   )
 
-  const exit = useFarmExitAllMutation([props.depositNft])
+  const toast = TOAST_MESSAGES.reduce((memo, type) => {
+    const msType = type === "onError" ? "onLoading" : type
+    memo[type] = (
+      <Trans
+        t={t}
+        i18nKey={`farms.modal.exit.toast.${msType}`}
+        tOptions={{
+          amount: props.depositNft.deposit.shares.toBigNumber(),
+          fixedPointScale: meta.data?.decimals ?? 12,
+        }}
+      >
+        <span />
+        <span className="highlight" />
+      </Trans>
+    )
+    return memo
+  }, {} as ToastMessage)
+
+  const exit = useFarmExitAllMutation([props.depositNft], toast)
 
   return (
     <>
@@ -94,12 +147,14 @@ function JoinedFarmsDetailsPositions(props: {
         {joinedFarms?.map((farm, i) => (
           <FarmDetailsCard
             key={i}
+            poolId={props.pool.id}
             farm={farm}
             depositNft={props.depositNft}
             onSelect={() =>
               props.onSelect({
                 globalFarm: farm.globalFarm.id,
                 yieldFarm: farm.yieldFarm.id,
+                depositNft: props.depositNft,
               })
             }
           />
@@ -111,6 +166,7 @@ function JoinedFarmsDetailsPositions(props: {
         css={{ alignSelf: "center" }}
         onClick={() => exit.mutate()}
         isLoading={exit.isLoading}
+        disabled={account?.isExternalWalletConnected}
       >
         {t("farms.modal.joinedFarms.button.exit.label")}
       </Button>
@@ -128,6 +184,7 @@ export const JoinedFarmsDetails = (props: {
   const [selectedFarmIds, setSelectedFarmIds] = useState<{
     globalFarm: u32
     yieldFarm: u32
+    depositNft?: DepositNftType
   } | null>(null)
 
   const farms = useFarms(props.pool.id)
@@ -148,8 +205,9 @@ export const JoinedFarmsDetails = (props: {
     >
       {selectedFarm ? (
         <FarmDetailsModal
+          pool={props.pool}
           farm={selectedFarm}
-          depositNft={props.depositNft}
+          depositNft={selectedFarmIds?.depositNft}
           onBack={() => setSelectedFarmIds(null)}
         />
       ) : (

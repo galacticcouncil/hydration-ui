@@ -6,21 +6,24 @@ import { SJoinFarmContainer } from "./JoinFarmsModal.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { FarmDetailsModal } from "../details/FarmDetailsModal"
-import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { useFarms } from "api/farms"
+import { Farm } from "api/farms"
 import { u32 } from "@polkadot/types"
-import { useMutation } from "@tanstack/react-query"
-import { useStore } from "state/store"
-import { useApiPromise } from "utils/api"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useAssetMeta } from "api/assetMeta"
+import { FarmDepositMutationType } from "utils/farms/deposit"
+import { FarmRedepositMutationType } from "utils/farms/redeposit"
+import BigNumber from "bignumber.js"
+import { DepositNftType } from "api/deposits"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 
 type JoinFarmModalProps = {
   isOpen: boolean
   onClose: () => void
   pool: OmnipoolPool
-  position: HydraPositionsTableData
+  shares: BigNumber
+  farms: Farm[]
   isRedeposit?: boolean
+  mutation: FarmDepositMutationType | FarmRedepositMutationType
+  depositNft?: DepositNftType
 }
 
 export const JoinFarmModal = ({
@@ -28,57 +31,23 @@ export const JoinFarmModal = ({
   onClose,
   isRedeposit,
   pool,
-  position,
+  mutation,
+  shares,
+  depositNft,
+  farms,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
   const [selectedFarmId, setSelectedFarmId] = useState<{
     yieldFarmId: u32
     globalFarmId: u32
   } | null>(null)
-  const farms = useFarms(pool.id)
-  const meta = useAssetMeta(position.assetId)
+  const meta = useAssetMeta(pool.id)
 
-  const selectedFarm = farms.data?.find(
+  const selectedFarm = farms.find(
     (farm) =>
       farm.globalFarm.id.eq(selectedFarmId?.globalFarmId) &&
       farm.yieldFarm.id.eq(selectedFarmId?.yieldFarmId),
   )
-
-  const { createTransaction } = useStore()
-  const api = useApiPromise()
-  const joinFarm = useMutation(async () => {
-    const [firstFarm, ...restFarm] = farms.data ?? []
-    if (firstFarm == null) throw new Error("Missing farm")
-
-    // TODO: add error handling and better toast descriptions
-    const firstDeposit = await createTransaction({
-      tx: api.tx.omnipoolLiquidityMining.depositShares(
-        firstFarm.globalFarm.id,
-        firstFarm.yieldFarm.id,
-        position.id,
-      ),
-    })
-
-    for (const record of firstDeposit.events) {
-      if (api.events.omnipoolLiquidityMining.SharesDeposited.is(record.event)) {
-        const depositId = record.event.data.depositId
-
-        const txs = restFarm.map((farm) =>
-          api.tx.omnipoolLiquidityMining.redepositShares(
-            farm.globalFarm.id,
-            farm.yieldFarm.id,
-            depositId,
-          ),
-        )
-
-        if (txs.length > 0) {
-          await createTransaction({
-            tx: txs.length > 1 ? api.tx.utility.batch(txs) : txs[0],
-          })
-        }
-      }
-    }
-  })
 
   return (
     <Modal
@@ -88,8 +57,9 @@ export const JoinFarmModal = ({
     >
       {selectedFarm ? (
         <FarmDetailsModal
+          pool={pool}
           farm={selectedFarm}
-          depositNft={undefined}
+          depositNft={depositNft}
           onBack={() => setSelectedFarmId(null)}
         />
       ) : (
@@ -100,12 +70,13 @@ export const JoinFarmModal = ({
             </Text>
           )}
           <div sx={{ flex: "column", gap: 8, mt: 24 }}>
-            {farms.data?.map((farm, i) => {
+            {farms.map((farm, i) => {
               return (
                 <FarmDetailsCard
                   key={i}
+                  poolId={pool.id}
                   farm={farm}
-                  depositNft={undefined}
+                  depositNft={depositNft}
                   onSelect={() =>
                     setSelectedFarmId({
                       globalFarmId: farm.globalFarm.id,
@@ -131,7 +102,7 @@ export const JoinFarmModal = ({
               </div>
               <Text color="pink600" fs={24} css={{ whiteSpace: "nowrap" }}>
                 {t("value.token", {
-                  value: position.shares,
+                  value: shares,
                   fixedPointScale: meta.data?.decimals ?? 12,
                 })}
               </Text>
@@ -139,8 +110,8 @@ export const JoinFarmModal = ({
             <Button
               fullWidth
               variant="primary"
-              onClick={() => joinFarm.mutate()}
-              isLoading={joinFarm.isLoading}
+              onClick={() => mutation.mutate()}
+              isLoading={mutation.isLoading}
             >
               {t("farms.modal.join.button.label")}
             </Button>

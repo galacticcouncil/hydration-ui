@@ -1,7 +1,7 @@
 import { ApiPromise } from "@polkadot/api"
 import { u128, u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { useAccountStore } from "state/store"
 import { useApiPromise } from "utils/api"
 import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
@@ -56,6 +56,26 @@ export const useDeposits = (poolId: u32 | string) => {
   const api = useApiPromise()
   return useQuery(QUERY_KEYS.deposits(poolId), getDeposits(api, poolId))
 }
+export const useOmniPositionId = (positionId: u128 | string) => {
+  const api = useApiPromise()
+
+  return useQuery(
+    QUERY_KEYS.omniPositionId(positionId),
+    getOmniPositionId(api, positionId),
+  )
+}
+
+export const useOmniPositionIds = (positionIds: Array<u32 | string>) => {
+  const api = useApiPromise()
+
+  return useQueries({
+    queries: positionIds.map((id) => ({
+      queryKey: QUERY_KEYS.omniPositionId(id.toString()),
+      queryFn: getOmniPositionId(api, id.toString()),
+      enabled: !!positionIds.length,
+    })),
+  })
+}
 
 const getDeposits = (api: ApiPromise, poolId: u32 | string) => async () => {
   const res = await api.query.omnipoolWarehouseLM.deposit.entries()
@@ -66,6 +86,12 @@ const getDeposits = (api: ApiPromise, poolId: u32 | string) => async () => {
     }))
     .filter((item) => item.deposit.ammPoolId.toString() === poolId.toString())
 }
+
+const getOmniPositionId =
+  (api: ApiPromise, poolId: u128 | string) => async () => {
+    const res = await api.query.omnipoolLiquidityMining.omniPositionId(poolId)
+    return res
+  }
 
 export const useAccountDeposits = (poolId: u32) => {
   const { account } = useAccountStore()

@@ -3,7 +3,7 @@ import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { ReactComponent as MinusIcon } from "assets/icons/MinusIcon.svg"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import {
   SButton,
   SContainer,
@@ -19,6 +19,10 @@ import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useFarms } from "api/farms"
+import { useFarmDepositMutation } from "utils/farms/deposit"
+import { TOAST_MESSAGES } from "state/toasts"
+import { ToastMessage } from "state/store"
+import { useAccountStore } from "state/store"
 
 type Props = {
   pool: OmnipoolPool
@@ -33,14 +37,41 @@ function LiquidityPositionJoinFarmButton(props: {
   onSuccess: () => void
 }) {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
   const [joinFarm, setJoinFarm] = useState(false)
   const farms = useFarms(props.pool.id)
+  const meta = useAssetMeta(props.pool.id)
+
+  const toast = TOAST_MESSAGES.reduce((memo, type) => {
+    const msType = type === "onError" ? "onLoading" : type
+    memo[type] = (
+      <Trans
+        t={t}
+        i18nKey={`farms.modal.join.toast.${msType}`}
+        tOptions={{
+          amount: props.position.shares,
+          fixedPointScale: meta.data?.decimals ?? 12,
+        }}
+      >
+        <span />
+        <span className="highlight" />
+      </Trans>
+    )
+    return memo
+  }, {} as ToastMessage)
+
+  const joinFarmMutation = useFarmDepositMutation(
+    props.pool.id,
+    props.position.id,
+    toast,
+  )
+
   return (
     <>
       <Button
         variant="primary"
         size="small"
-        disabled={!farms.data?.length}
+        disabled={!farms.data?.length || account?.isExternalWalletConnected}
         sx={{ width: ["100%", 220] }}
         onClick={() => setJoinFarm(true)}
       >
@@ -48,12 +79,14 @@ function LiquidityPositionJoinFarmButton(props: {
         {t("liquidity.asset.actions.joinFarms")}
       </Button>
 
-      {joinFarm && (
+      {joinFarm && farms.data && (
         <JoinFarmModal
+          farms={farms.data}
           isOpen={joinFarm}
           pool={props.pool}
-          position={props.position}
+          shares={props.position.shares}
           onClose={() => setJoinFarm(false)}
+          mutation={joinFarmMutation}
         />
       )}
     </>
@@ -65,6 +98,7 @@ function LiquidityPositionRemoveLiquidity(props: {
   onSuccess: () => void
 }) {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
   const [openRemove, setOpenRemove] = useState(false)
   return (
     <>
@@ -72,6 +106,7 @@ function LiquidityPositionRemoveLiquidity(props: {
         variant="primary"
         size="small"
         onClick={() => setOpenRemove(true)}
+        disabled={account?.isExternalWalletConnected}
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />

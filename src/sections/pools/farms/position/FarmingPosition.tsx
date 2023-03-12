@@ -16,6 +16,10 @@ import { useEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { DepositNftType } from "api/deposits"
+import { useAssetMeta } from "api/assetMeta"
+import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
+import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
+import { useDepositShare } from "./FarmingPosition.utils"
 
 function FarmingPositionDetailsButton(props: {
   pool: OmnipoolPool
@@ -53,6 +57,11 @@ export const FarmingPosition = ({
 }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const meta = useAssetMeta(pool.id)
+
+  const position = useDepositShare(pool.id, [depositNft.id.toString()])
+    .data?.[0]
 
   // use latest entry date
   const enteredDate = useEnteredDate(
@@ -112,23 +121,38 @@ export const FarmingPosition = ({
             <Text color="basic500" fs={14} lh={16} fw={400}>
               {t("farms.positions.labels.lockedShares")}
             </Text>
-            <Text>{t("value", { value: depositNft.deposit.shares })}</Text>
+            <Text>
+              {t("value", {
+                value: depositNft.deposit.shares,
+                fixedPointScale: meta.data?.decimals ?? 12,
+                type: "token",
+              })}
+            </Text>
           </SValueContainer>
           <SSeparator orientation={isDesktop ? "vertical" : "horizontal"} />
           <SValueContainer sx={{ width: ["100%", 150] }}>
             <Text color="basic500" fs={14} lh={16} fw={400}>
               {t("farms.positions.labels.currentValue")}
             </Text>
-            <div>
-              <Text>0.333 BTC</Text>
-              <Text
-                fs={11}
-                lh={15}
-                css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
-              >
-                2 3334$
-              </Text>
-            </div>
+            {position && (
+              <div>
+                <WalletAssetsHydraPositionsData
+                  symbol={position.symbol}
+                  value={position.value}
+                  lrna={position.lrna}
+                />
+                <DollarAssetValue
+                  value={position.valueUSD}
+                  wrapper={(children) => (
+                    <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                      {children}
+                    </Text>
+                  )}
+                >
+                  {t("value.usd", { amount: position.valueUSD })}
+                </DollarAssetValue>
+              </div>
+            )}
           </SValueContainer>
         </div>
       </div>
@@ -136,8 +160,8 @@ export const FarmingPosition = ({
       <div
         sx={{ flex: ["column", "row"], justify: "space-between", pt: [0, 10] }}
       >
-        <JoinedFarms />
-        <RedepositFarms />
+        <JoinedFarms poolId={pool.id} depositNft={depositNft} />
+        <RedepositFarms pool={pool} depositNft={depositNft} />
       </div>
     </SContainer>
   )

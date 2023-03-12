@@ -15,3 +15,5 @@ export const usePoolPositions = (pool: OmnipoolPool) => {
 
   return { data, isLoading: positions.isLoading, refetch: positions.refetch }
 }
+
+export type Positions = ReturnType<typeof usePoolPositions>
