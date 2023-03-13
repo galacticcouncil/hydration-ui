@@ -66,11 +66,6 @@ export const SContainer = styled.div`
 
 export const SButton = styled.button`
   all: unset;
-
-  position: fixed;
-  bottom: 4px;
-  right: 4px;
-
   color: ${theme.colors.white};
 
   display: flex;
@@ -80,4 +75,12 @@ export const SButton = styled.button`
   cursor: pointer;
 
   gap: 12px;
+
+  @media ${theme.viewport.gte.sm} {
+    position: fixed;
+    bottom: 4px;
+    right: 4px;
+
+    justify-content: center;
+  }
 `
