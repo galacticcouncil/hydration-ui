@@ -39,7 +39,8 @@ export const QUERY_KEYS = {
     address.toString(),
   ],
   deposit: (id: Maybe<u128>) => [QUERY_KEY_PREFIX, "deposit", id?.toString()],
-  deposits: (poolId: Maybe<u32 | string>) => [
+  allDeposits: () => [QUERY_KEY_PREFIX, "deposits"],
+  poolDeposits: (poolId: Maybe<u32 | string>) => [
     QUERY_KEY_PREFIX,
     "deposits",
     poolId?.toString(),

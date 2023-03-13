@@ -47,7 +47,7 @@ export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
           </Text>
         </div>
       </div>
-      <Separator sx={{ mt: [18, 34] }} />
+      <Separator sx={{ mt: [18, 20] }} />
     </div>
   )
 }

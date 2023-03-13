@@ -55,6 +55,8 @@
   "liquidity.header.title": "Liquidity",
   "liquidity.header.switch": "My liquidity positions",
   "liquidity.header.totalLocked": "Value in Omnipool",
+  "liquidity.header.totalInFarms": "Total in Farms",
+  "liquidity.header.value": "{{num}}<0>{{denom}}</0>",
   "liquidity.header.24hours": "24h Volume",
   "liquidity.asset.title": "Asset",
   "liquidity.asset.details.fee": "Trade fee",
