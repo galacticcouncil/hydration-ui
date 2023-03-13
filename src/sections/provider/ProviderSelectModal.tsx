@@ -20,7 +20,10 @@ import { useBestNumber } from "api/chain"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { u32, u64 } from "@polkadot/types"
 
-function ProviderSelectItemExternal(props: { url: string }) {
+function ProviderSelectItemExternal(props: {
+  url: string
+  className?: string
+}) {
   const [bestNumberState, setBestNumberState] = useState<
     { relaychainBlockNumber: u32; timestamp: u64 } | undefined
   >(undefined)
@@ -66,15 +69,17 @@ function ProviderSelectItemExternal(props: { url: string }) {
         <ProviderStatus
           timestamp={bestNumberState.timestamp}
           relaychainBlockNumber={bestNumberState.relaychainBlockNumber}
+          className={props.className}
+          side="left"
         />
       ) : (
-        <span />
+        <span className={props.className} />
       )}
     </>
   )
 }
 
-function ProviderSelectItemLive() {
+function ProviderSelectItemLive(props: { className?: string }) {
   const number = useBestNumber()
 
   return (
@@ -83,9 +88,11 @@ function ProviderSelectItemLive() {
         <ProviderStatus
           timestamp={number.data.timestamp}
           relaychainBlockNumber={number.data?.relaychainBlockNumber}
+          className={props.className}
+          side="left"
         />
       ) : (
-        <span />
+        <span className={props.className} />
       )}
     </>
   )
@@ -106,16 +113,23 @@ function ProviderSelectItem(props: {
     <SItem isActive={props.isActive} onClick={props.onClick}>
       <Text
         color={props.isActive ? "pink600" : "white"}
-        css={{ transition: `all ${theme.transitions.default}` }}
+        css={{
+          gridArea: "name",
+          transition: `all ${theme.transitions.default}`,
+        }}
       >
         {props.name}
       </Text>
       {isLive ? (
-        <ProviderSelectItemLive />
+        <ProviderSelectItemLive css={{ gridArea: "status" }} />
       ) : (
-        <ProviderSelectItemExternal url={props.url} />
+        <ProviderSelectItemExternal
+          url={props.url}
+          css={{ gridArea: "status" }}
+        />
       )}
       <div
+        css={{ gridArea: "url" }}
         sx={{
           textAlign: "right",
           flex: "row",
@@ -132,7 +146,7 @@ function ProviderSelectItem(props: {
           color={props.isActive ? "pink600" : "basic600"}
           css={{ transition: `all ${theme.transitions.default}` }}
         >
-          {props.url.replaceAll("wss://", "")}
+          {new URL(props.url).hostname}
         </Text>
 
         <SCircle />
@@ -155,12 +169,17 @@ export function ProviderSelectModal(props: {
       open={props.open}
       onClose={props.onClose}
       title={t("rpc.change.modal.title")}
+      width={720}
     >
       <SContainer>
         <SHeader>
-          <div>{t("rpc.change.modal.column.name")}</div>
-          <div>{t("rpc.change.modal.column.status")}</div>
-          <div sx={{ textAlign: "right" }}>
+          <div css={{ gridArea: "name" }}>
+            {t("rpc.change.modal.column.name")}
+          </div>
+          <div css={{ gridArea: "status" }}>
+            {t("rpc.change.modal.column.status")}
+          </div>
+          <div css={{ gridArea: "url" }} sx={{ textAlign: "right" }}>
             {t("rpc.change.modal.column.rpc")}
           </div>
         </SHeader>

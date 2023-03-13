@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Maybe } from "utils/helpers"
 import { motion, useAnimationControls } from "framer-motion"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 
 function useElapsedTimeStatus(time: Maybe<u64>) {
   const [now, setNow] = useState(Date.now())
@@ -90,6 +91,8 @@ function ProviderStatusSuccess() {
 export function ProviderStatus(props: {
   timestamp: Maybe<u64>
   relaychainBlockNumber: Maybe<u32>
+  className?: string
+  side?: "left" | "top" | "bottom" | "right"
 }) {
   const { t } = useTranslation()
 
@@ -104,40 +107,45 @@ export function ProviderStatus(props: {
       ? "#F5A855"
       : undefined
 
+  const statusText = status != null ? t(`rpc.status.${status}`) : ""
+
   return (
-    <Text
-      fs={9}
-      lh={9}
-      sx={{ flex: "row", gap: 4, align: "center" }}
-      css={{ letterSpacing: "1px", color }}
-    >
-      <span>{t("value", { value: props.relaychainBlockNumber })}</span>
+    <InfoTooltip text={statusText} type="default" side={props.side}>
+      <Text
+        fs={9}
+        lh={9}
+        sx={{ flex: "row", gap: 4, align: "center" }}
+        css={{ letterSpacing: "1px", color }}
+        className={props.className}
+      >
+        <span>{t("value", { value: props.relaychainBlockNumber })}</span>
 
-      {status === "online" && (
-        <ProviderStatusSuccess key={props.timestamp?.toNumber() ?? 0} />
-      )}
+        {status === "online" && (
+          <ProviderStatusSuccess key={props.timestamp?.toNumber() ?? 0} />
+        )}
 
-      {status === "offline" && (
-        <span
-          sx={{ width: 7, height: 7, display: "block" }}
-          css={{ background: `currentColor` }}
-        />
-      )}
-
-      {status === "slow" && (
-        <svg
-          width="9"
-          height="7"
-          viewBox="0 0 9 7"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M4.49999 0L8.3971 6.75H0.602875L4.49999 0Z"
-            fill="currentColor"
+        {status === "offline" && (
+          <span
+            sx={{ width: 7, height: 7, display: "block" }}
+            css={{ background: `currentColor` }}
           />
-        </svg>
-      )}
-    </Text>
+        )}
+
+        {status === "slow" && (
+          <svg
+            width="9"
+            height="7"
+            viewBox="0 0 9 7"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M4.49999 0L8.3971 6.75H0.602875L4.49999 0Z"
+              fill="currentColor"
+            />
+          </svg>
+        )}
+      </Text>
+    </InfoTooltip>
   )
 }

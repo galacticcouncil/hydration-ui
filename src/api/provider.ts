@@ -6,9 +6,31 @@ import create from "zustand"
 import { persist } from "zustand/middleware"
 
 export const PROVIDERS = [
-  { name: "Mainnet", url: "wss://rpc.hydradx.cloud" },
-  { name: "Rococo", url: "wss://hydradx-rococo-rpc.play.hydration.cloud" },
-  { name: "Testnet", url: "wss://mining-rpc.hydradx.io" },
+  {
+    name: "Mainnet via GC",
+    url: "wss://rpc.hydradx.cloud",
+    indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
+  },
+  {
+    name: "Mainnet via Dwellir",
+    url: "wss://hydradx-rpc.dwellir.com",
+    indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
+  },
+  {
+    name: "Mainnet via ZeePrime",
+    url: "wss://rpc-lb.data6.zp-labs.net:8443/hydradx/ws/?token=2ZGuGivPJJAxXiT1hR1Yg2MXGjMrhEBYFjgbdPi",
+    indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
+  },
+  {
+    name: "Rococo via GC",
+    url: "wss://hydradx-rococo-rpc.play.hydration.cloud",
+    indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",
+  },
+  {
+    name: "Testnet",
+    url: "wss://mining-rpc.hydradx.io",
+    indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",
+  },
 ]
 
 export const useProviderRpcUrlStore = create(
