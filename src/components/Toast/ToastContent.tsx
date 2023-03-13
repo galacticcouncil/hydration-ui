@@ -4,6 +4,7 @@ import { ReactComponent as SuccessIcon } from "assets/icons/SuccessIcon.svg"
 import { ReactComponent as FailIcon } from "assets/icons/FailIcon.svg"
 import { ReactComponent as InfoIcon } from "assets/icons/InfoIcon.svg"
 import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
+import { ReactComponent as UnknownIcon } from "assets/icons/Unknown.svg"
 import { Text } from "components/Typography/Text/Text"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { Maybe, useNow } from "utils/helpers"
@@ -33,6 +34,8 @@ export function ToastContent(props: {
           <FailIcon />
         ) : props.variant === "progress" ? (
           <Spinner width={28} height={28} />
+        ) : props.variant === "unknown" ? (
+          <UnknownIcon color={theme.colors.darkBlue200} />
         ) : (
           <InfoIcon />
         )}
