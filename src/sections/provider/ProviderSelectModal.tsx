@@ -18,16 +18,11 @@ import {
 import { useTranslation } from "react-i18next"
 import { useBestNumber } from "api/chain"
 import { ApiPromise, WsProvider } from "@polkadot/api"
-import { u32 } from "@polkadot/types"
+import { u32, u64 } from "@polkadot/types"
 
-function ProviderSelectItem(props: {
-  name: string
-  url: string
-  isActive?: boolean
-  onClick: () => void
-}) {
-  const [relaychainBlockNumber, setRelaychainBlockNumber] = useState<
-    u32 | undefined
+function ProviderSelectItemExternal(props: { url: string }) {
+  const [bestNumberState, setBestNumberState] = useState<
+    { relaychainBlockNumber: u32; timestamp: u64 } | undefined
   >(undefined)
 
   useEffect(() => {
@@ -40,10 +35,15 @@ function ProviderSelectItem(props: {
       const api = await ApiPromise.create({ provider })
 
       async function onNewBlock() {
-        setRelaychainBlockNumber(
-          (await api.query.parachainSystem.validationData()).unwrap()
-            .relayParentNumber,
-        )
+        const [relay, timestamp] = await Promise.all([
+          api.query.parachainSystem.validationData(),
+          api.query.timestamp.now(),
+        ])
+
+        setBestNumberState({
+          relaychainBlockNumber: relay.unwrap().relayParentNumber,
+          timestamp: timestamp,
+        })
       }
 
       api.on("connected", onNewBlock)
@@ -61,6 +61,48 @@ function ProviderSelectItem(props: {
   }, [props.url])
 
   return (
+    <>
+      {bestNumberState != null ? (
+        <ProviderStatus
+          timestamp={bestNumberState.timestamp}
+          relaychainBlockNumber={bestNumberState.relaychainBlockNumber}
+        />
+      ) : (
+        <span />
+      )}
+    </>
+  )
+}
+
+function ProviderSelectItemLive() {
+  const number = useBestNumber()
+
+  return (
+    <>
+      {number.data?.relaychainBlockNumber != null ? (
+        <ProviderStatus
+          timestamp={number.data.timestamp}
+          relaychainBlockNumber={number.data?.relaychainBlockNumber}
+        />
+      ) : (
+        <span />
+      )}
+    </>
+  )
+}
+
+function ProviderSelectItem(props: {
+  name: string
+  url: string
+  isActive?: boolean
+  onClick: () => void
+}) {
+  const store = useProviderRpcUrlStore()
+  const rpcUrl = store.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+
+  const isLive = props.url === rpcUrl
+
+  return (
     <SItem isActive={props.isActive} onClick={props.onClick}>
       <Text
         color={props.isActive ? "pink600" : "white"}
@@ -68,10 +110,11 @@ function ProviderSelectItem(props: {
       >
         {props.name}
       </Text>
-      <ProviderStatus
-        status="online"
-        relaychainBlockNumber={relaychainBlockNumber}
-      />
+      {isLive ? (
+        <ProviderSelectItemLive />
+      ) : (
+        <ProviderSelectItemExternal url={props.url} />
+      )}
       <div
         sx={{
           textAlign: "right",
@@ -171,7 +214,7 @@ export function ProviderSelectButton() {
       <SButton onClick={() => setOpen(true)}>
         <ProviderStatus
           relaychainBlockNumber={number.data?.relaychainBlockNumber}
-          status="online"
+          timestamp={number.data?.timestamp}
         />
 
         <span
