@@ -52,7 +52,7 @@ function ProviderStatusSuccess() {
   }, [controls, circ])
 
   return (
-    <div css={{ position: "relative" }}>
+    <span css={{ position: "relative" }}>
       <span
         sx={{ width: 7, height: 7, display: "block" }}
         css={{
@@ -84,7 +84,7 @@ function ProviderStatusSuccess() {
           animate={controls}
         />
       </svg>
-    </div>
+    </span>
   )
 }
 

@@ -230,7 +230,7 @@ export function ProviderSelectButton() {
 
   return (
     <>
-      <SButton onClick={() => setOpen(true)}>
+      <SButton tabIndex={0} role="button" onClick={() => setOpen(true)}>
         <ProviderStatus
           relaychainBlockNumber={number.data?.relaychainBlockNumber}
           timestamp={number.data?.timestamp}

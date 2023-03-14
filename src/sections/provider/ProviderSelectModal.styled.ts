@@ -64,8 +64,7 @@ export const SContainer = styled.div`
   margin-top: 20px;
 `
 
-export const SButton = styled.button`
-  all: unset;
+export const SButton = styled.div`
   color: ${theme.colors.white};
 
   display: flex;
