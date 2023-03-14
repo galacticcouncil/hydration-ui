@@ -17,18 +17,19 @@ export const SLink = styled.a`
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 5px;
 
   width: fit-content;
 
   font-size: 12px;
-  line-height: 22px;
+  line-height: 16px;
 
   color: ${theme.colors.brightBlue300};
 
   border-bottom: 1px solid ${theme.colors.brightBlue300};
 
   cursor: pointer;
+
+  margin-top: 8px;
 
   &:hover {
     opacity: 0.8;
