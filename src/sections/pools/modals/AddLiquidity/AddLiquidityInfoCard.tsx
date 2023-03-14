@@ -11,7 +11,7 @@ export const PoolAddLiquidityInformationCard = () => {
     <SCardContainer>
       <Icon size={24} icon={<InfoIcon />} />
       <div sx={{ flex: "column", gap: 8 }}>
-        <Text fs={13} lh={16} css={{}}>
+        <Text fs={13} lh={16}>
           {t("liquidity.add.modal.information.text")}
         </Text>
         <SLink href="https://docs.hydradx.io/howto_lp/" target="_blank">
