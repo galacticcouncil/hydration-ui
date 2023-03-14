@@ -32,10 +32,9 @@ export const FarmDetailsModalValues = ({
   const meta = useAssetMeta(depositReward?.assetId)
   const entered = useEnteredDate(enteredBlock)
 
-  const position = useDepositShare(pool.id, [depositNft.id.toString()])
-    .data?.[0]
+  const position = useDepositShare(pool.id, depositNft.id.toString())
 
-  if (!position) return null
+  if (!position.data) return null
 
   return (
     <div sx={{ p: "22px 12px 0" }}>
@@ -56,9 +55,9 @@ export const FarmDetailsModalValues = ({
         </Text>
         <WalletAssetsHydraPositionsData
           fontSize={14}
-          symbol={position.symbol}
-          value={position.value}
-          lrna={position.lrna}
+          symbol={position.data.symbol}
+          value={position.data.value}
+          lrna={position.data.lrna}
         />
       </div>
       <Separator />
