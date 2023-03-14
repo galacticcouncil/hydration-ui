@@ -92,6 +92,8 @@
   "liquidity.add.modal.row.spotPrice": "{{ firstAmount, bignumber(type: 'token') }} {{ firstCurrency }} ≈ {{ secondAmount, bignumber(type: 'dollar'; numberSuffix: '$') }}",
   "liquidity.add.modal.validation.notEnoughBalance": "Insufficient balance on your account.",
   "liquidity.add.modal.validation.minPoolLiquidity": "Provided liquidity is below minimum allowed limit.",
+  "liquidity.add.modal.information.text": "Providing liquidity will generate rewards through generating fees, but is also exposed to certain risks. Please be aware. ",
+  "liquidity.add.modal.information.linkText": "Learn more about risks?",
   "liquidity.add.modal.toast.onLoading": "<0>Adding liquidity (</0><1>{{value}} {{symbol}}</1><0>) in exchange for </0><1>{{shares, bignumber(type: 'token')}}</1><0> asset shares.</0>",
   "liquidity.add.modal.toast.onSuccess": "<0>Added liquidity (</0><1>{{value}} {{symbol}}</1><0>) in exchange for </0><1>{{shares, bignumber(type: 'token')}}</1><0> asset shares.</0>",
   "liquidity.remove.modal.title": "Remove liquidity",
