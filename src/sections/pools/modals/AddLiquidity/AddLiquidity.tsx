@@ -16,6 +16,7 @@ import { FormValues } from "utils/helpers"
 import { useAddLiquidity, useVerifyCap } from "./AddLiquidity.utils"
 import { getFixedPointAmount } from "utils/balance"
 import { AddLiquidityLimitWarning } from "sections/pools/modals/AddLiquidity/AddLiquidityLimitWarning"
+import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
 
 type Props = {
   pool: OmnipoolPool
@@ -272,9 +273,11 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
 
           {isWithinLimit.data === false && <AddLiquidityLimitWarning />}
 
+          <PoolAddLiquidityInformationCard />
+
           <Separator
             color="darkBlue401"
-            sx={{ mx: "-30px", mb: 20, width: "auto" }}
+            sx={{ mx: "-30px", my: 20, width: "auto" }}
           />
         </div>
         <Button
