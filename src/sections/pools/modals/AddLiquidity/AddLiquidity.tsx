@@ -277,11 +277,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
             sx={{ mx: "-30px", mb: 20, width: "auto" }}
           />
         </div>
-        <Button
-          variant="primary"
-          type="submit"
-          disabled={true}
-        >
+        <Button variant="primary" type="submit" disabled={true}>
           {t("liquidity.add.modal.confirmButton")}
         </Button>
       </form>
