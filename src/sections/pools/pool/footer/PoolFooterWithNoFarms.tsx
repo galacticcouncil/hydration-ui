@@ -12,7 +12,7 @@ export const PoolFooterWithNoFarms = ({ pool }: Props) => {
 
   const locked = useUsersTotalInPool(pool)
 
-  if (!locked.data || locked.data.isZero()) return null
+  if (!locked.data || locked.data.isZero() || !locked.isLoading) return null
 
   return (
     <SContainer>
