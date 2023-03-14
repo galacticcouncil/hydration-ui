@@ -40,7 +40,7 @@ const getAccountDepositIds =
 
 export const useAllDeposits = () => {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.allDeposits(), getDeposits(api))
+  return useQuery(QUERY_KEYS.allDeposits, getDeposits(api))
 }
 
 export const usePoolDeposits = (poolId: u32 | string) => {
