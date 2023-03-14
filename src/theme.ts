@@ -53,6 +53,7 @@ const colors = {
   red400: "#F87171",
   red700: "#FF0000",
   green100: "#03EF97",
+  green400: "#01F397",
   green600: "#30FFB1",
   iconGray: "#BDCCD4",
   neutralGray100: "#E5ECF1",

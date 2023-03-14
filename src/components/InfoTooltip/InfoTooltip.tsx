@@ -9,6 +9,7 @@ type InfoTooltipProps = {
   textOnClick?: ReactNode
   children: ReactNode
   type?: "default" | "black"
+  side?: Tooltip.TooltipContentProps["side"]
 }
 
 export function InfoTooltip({
@@ -16,9 +17,13 @@ export function InfoTooltip({
   textOnClick,
   children,
   type = "default",
+  side = "bottom",
 }: InfoTooltipProps) {
   const [open, setOpen] = useState(false)
-  const [content, setContent] = useState(text)
+  const [content, setContent] = useState<ReactNode | null>(
+    textOnClick != null ? text : null,
+  )
+
   return (
     <Tooltip.Root
       delayDuration={0}
@@ -47,14 +52,14 @@ export function InfoTooltip({
       <Tooltip.Portal>
         <SContent
           type={type}
-          side="bottom"
+          side={side}
           align="start"
           sideOffset={3}
           alignOffset={-10}
           collisionPadding={12}
         >
           <Text fs={11} fw={500}>
-            {content}
+            {textOnClick != null ? content : text}
           </Text>
           {type === "default" && (
             <Tooltip.Arrow
