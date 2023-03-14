@@ -10,7 +10,7 @@ export const PoolAddLiquidityInformationCard = () => {
   return (
     <SCardContainer>
       <Icon size={24} icon={<InfoIcon />} />
-      <div>
+      <div sx={{ flex: "column", gap: 8 }}>
         <Text fs={13} lh={16} css={{}}>
           {t("liquidity.add.modal.information.text")}
         </Text>

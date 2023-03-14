@@ -277,7 +277,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
 
           <Separator
             color="darkBlue401"
-            sx={{ mx: "-30px", mb: 20, width: "auto" }}
+            sx={{ mx: "-30px", my: 20, width: "auto" }}
           />
         </div>
         <Button
