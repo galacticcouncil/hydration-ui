@@ -6,7 +6,7 @@ import { useEffectOnce, useLocalStorage } from "react-use"
 import { useAccountStore } from "./store"
 
 export const TOAST_MESSAGES = ["onLoading", "onSuccess", "onError"] as const
-export type ToastVariant = "info" | "success" | "error" | "progress"
+export type ToastVariant = "info" | "success" | "error" | "progress" | "unknown"
 export type ToastMessageType = typeof TOAST_MESSAGES[number]
 
 type ToastParams = {
@@ -102,7 +102,11 @@ const useToastsStore = create<ToastStore>((set) => ({
     })),
   syncActivities: (activities) =>
     set({
-      toasts: activities.map((activity) => ({ ...activity, hidden: true })),
+      toasts: activities.map((activity) => ({
+        ...activity,
+        variant: activity.variant === "progress" ? "unknown" : activity.variant,
+        hidden: true,
+      })),
     }),
 }))
 
@@ -124,6 +128,7 @@ export const useToast = () => {
   const success = (toast: ToastParams) => add("success", toast)
   const error = (toast: ToastParams) => add("error", toast)
   const loading = (toast: ToastParams) => add("progress", toast)
+  const unknown = (toast: ToastParams) => add("unknown", toast)
 
-  return { ...store, add, info, success, error, loading }
+  return { ...store, add, info, success, error, loading, unknown }
 }

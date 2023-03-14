@@ -14,6 +14,10 @@ import { theme } from "theme"
 import { useMedia } from "react-use"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { css } from "@emotion/react"
+import { useDepegStore, DepegWarningModal } from "./DepegWarningModal"
+
+const depegEnabled = import.meta.env.VITE_FF_DEPEG_WARNING === "true"
 
 export const Header = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -24,55 +28,75 @@ export const Header = () => {
   const loadingToasts = toasts.filter((toast) => toast.variant === "progress")
   const isLoadingToast = !!loadingToasts.length
 
+  const depeg = useDepegStore()
+
   return (
-    <SHeader>
-      <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
-        <div sx={{ flex: "row", align: "center" }}>
-          <Icon
-            icon={
-              isDesktop && !isMediumMedia ? <HydraLogoFull /> : <HydraLogo />
-            }
-          />
-          {isDesktop && <HeaderMenu />}
-        </div>
-        <div sx={{ flex: "row", align: "center", gap: [12, 24] }}>
-          <div sx={{ flex: "row" }}>
-            <InfoTooltip text={t("header.documentation.tooltip")} type="black">
-              <a
-                href="https://docs.hydradx.io/"
-                target="blank"
-                rel="noreferrer"
-              >
-                <SQuestionmark />
-              </a>
-            </InfoTooltip>
-            <InfoTooltip
-              text={
-                isLoadingToast
-                  ? t("header.notification.pending.tooltip", {
-                      number: loadingToasts.length,
-                    })
-                  : t("header.notification.tooltip")
+    <>
+      {depeg.depegOpen && depegEnabled && (
+        <DepegWarningModal onClose={() => depeg.setDepegOpen(false)} />
+      )}
+      <SHeader
+        css={
+          depeg.depegOpen && depegEnabled
+            ? css`
+                @media ${theme.viewport.gte.md} {
+                  top: 40px;
+                }
+              `
+            : undefined
+        }
+      >
+        <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
+          <div sx={{ flex: "row", align: "center" }}>
+            <Icon
+              icon={
+                isDesktop && !isMediumMedia ? <HydraLogoFull /> : <HydraLogo />
               }
-              type={isLoadingToast ? "default" : "black"}
-            >
-              <div css={{ position: "relative" }}>
-                {isLoadingToast && <Spinner width={40} height={40} />}
-                <SBellIcon
-                  onClick={() => setSidebar(true)}
-                  aria-label={t("toast.sidebar.title")}
-                  css={
-                    isLoadingToast && {
-                      position: "absolute",
-                    }
-                  }
-                />
-              </div>
-            </InfoTooltip>
+            />
+            {isDesktop && <HeaderMenu />}
           </div>
-          <WalletConnectButton />
+          <div sx={{ flex: "row", align: "center", gap: [12, 24] }}>
+            <div sx={{ flex: "row" }}>
+              <InfoTooltip
+                text={t("header.documentation.tooltip")}
+                type="black"
+              >
+                <a
+                  href="https://docs.hydradx.io/"
+                  target="blank"
+                  rel="noreferrer"
+                >
+                  <SQuestionmark />
+                </a>
+              </InfoTooltip>
+              <InfoTooltip
+                text={
+                  isLoadingToast
+                    ? t("header.notification.pending.tooltip", {
+                        number: loadingToasts.length,
+                      })
+                    : t("header.notification.tooltip")
+                }
+                type={isLoadingToast ? "default" : "black"}
+              >
+                <div css={{ position: "relative" }}>
+                  {isLoadingToast && <Spinner width={40} height={40} />}
+                  <SBellIcon
+                    onClick={() => setSidebar(true)}
+                    aria-label={t("toast.sidebar.title")}
+                    css={
+                      isLoadingToast && {
+                        position: "absolute",
+                      }
+                    }
+                  />
+                </div>
+              </InfoTooltip>
+            </div>
+            <WalletConnectButton />
+          </div>
         </div>
-      </div>
-    </SHeader>
+      </SHeader>
+    </>
   )
 }

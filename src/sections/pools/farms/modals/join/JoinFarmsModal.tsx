@@ -6,19 +6,21 @@ import { SJoinFarmContainer } from "./JoinFarmsModal.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { FarmDetailsModal } from "../details/FarmDetailsModal"
-import { useFarms } from "api/farms"
+import { Farm } from "api/farms"
 import { u32 } from "@polkadot/types"
 import { useAssetMeta } from "api/assetMeta"
 import { FarmDepositMutationType } from "utils/farms/deposit"
 import { FarmRedepositMutationType } from "utils/farms/redeposit"
 import BigNumber from "bignumber.js"
 import { DepositNftType } from "api/deposits"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 
 type JoinFarmModalProps = {
   isOpen: boolean
   onClose: () => void
-  poolId: u32
+  pool: OmnipoolPool
   shares: BigNumber
+  farms: Farm[]
   isRedeposit?: boolean
   mutation: FarmDepositMutationType | FarmRedepositMutationType
   depositNft?: DepositNftType
@@ -28,20 +30,20 @@ export const JoinFarmModal = ({
   isOpen,
   onClose,
   isRedeposit,
-  poolId,
+  pool,
   mutation,
   shares,
   depositNft,
+  farms,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
   const [selectedFarmId, setSelectedFarmId] = useState<{
     yieldFarmId: u32
     globalFarmId: u32
   } | null>(null)
-  const farms = useFarms(poolId)
-  const meta = useAssetMeta(poolId)
+  const meta = useAssetMeta(pool.id)
 
-  const selectedFarm = farms.data?.find(
+  const selectedFarm = farms.find(
     (farm) =>
       farm.globalFarm.id.eq(selectedFarmId?.globalFarmId) &&
       farm.yieldFarm.id.eq(selectedFarmId?.yieldFarmId),
@@ -55,7 +57,7 @@ export const JoinFarmModal = ({
     >
       {selectedFarm ? (
         <FarmDetailsModal
-          poolId={poolId}
+          pool={pool}
           farm={selectedFarm}
           depositNft={depositNft}
           onBack={() => setSelectedFarmId(null)}
@@ -68,11 +70,11 @@ export const JoinFarmModal = ({
             </Text>
           )}
           <div sx={{ flex: "column", gap: 8, mt: 24 }}>
-            {farms.data?.map((farm, i) => {
+            {farms.map((farm, i) => {
               return (
                 <FarmDetailsCard
                   key={i}
-                  poolId={poolId}
+                  poolId={pool.id}
                   farm={farm}
                   depositNft={depositNft}
                   onSelect={() =>

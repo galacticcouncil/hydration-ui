@@ -116,7 +116,10 @@ export const ClaimRewardsCard = (props: {
       <Button
         variant="primary"
         sx={{ height: "fit-content", width: ["100%", 168] }}
-        disabled={account?.isExternalWalletConnected}
+        disabled={
+          account?.isExternalWalletConnected ||
+          (claimable.data && claimable.data.usd.isZero())
+        }
         onClick={() => claimAll.mutate()}
         isLoading={claimAll.isLoading}
       >

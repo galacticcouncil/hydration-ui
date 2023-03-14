@@ -41,14 +41,14 @@ export const getOmnipoolAssets = (api: ApiPromise) => async () => {
   return data
 }
 
-export const useOmnipoolPositions = (itemIds: u128[]) => {
+export const useOmnipoolPositions = (itemIds: Array<u128 | undefined>) => {
   const api = useApiPromise()
 
   return useQueries({
     queries: itemIds.map((id) => ({
       queryKey: QUERY_KEYS.omnipoolPosition(id),
-      queryFn: getOmnipoolPosition(api, id),
-      enabled: !!itemIds.length,
+      queryFn: id != null ? getOmnipoolPosition(api, id) : undefinedNoop,
+      enabled: !!id,
     })),
   })
 }

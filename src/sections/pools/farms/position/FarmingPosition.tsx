@@ -160,7 +160,7 @@ export const FarmingPosition = ({
         sx={{ flex: ["column", "row"], justify: "space-between", pt: [0, 10] }}
       >
         <JoinedFarms poolId={pool.id} depositNft={depositNft} />
-        <RedepositFarms poolId={pool.id} depositNft={depositNft} />
+        <RedepositFarms pool={pool} depositNft={depositNft} />
       </div>
     </SContainer>
   )
