@@ -43,12 +43,13 @@ export const useAllDeposits = () => {
   return useQuery(QUERY_KEYS.allDeposits, getDeposits(api))
 }
 
-export const usePoolDeposits = (poolId: u32 | string) => {
+export const usePoolDeposits = (poolId?: u32 | string) => {
   const api = useApiPromise()
   return useQuery(QUERY_KEYS.poolDeposits(poolId), getDeposits(api), {
+    enabled: !!poolId,
     select: (data) =>
       data.filter(
-        (item) => item.deposit.ammPoolId.toString() === poolId.toString(),
+        (item) => item.deposit.ammPoolId.toString() === poolId?.toString(),
       ),
   })
 }
@@ -90,7 +91,7 @@ const getOmniPositionId =
     return { depositionId, value: res.value }
   }
 
-export const useAccountDeposits = (poolId: u32) => {
+export const useAccountDeposits = (poolId?: u32) => {
   const { account } = useAccountStore()
   const accountDepositIds = useAccountDepositIds(account?.address)
   const deposits = usePoolDeposits(poolId)

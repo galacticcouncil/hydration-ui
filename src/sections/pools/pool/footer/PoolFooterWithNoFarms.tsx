@@ -12,14 +12,14 @@ export const PoolFooterWithNoFarms = ({ pool }: Props) => {
 
   const locked = useUsersTotalInPool(pool)
 
-  if (!locked.data || locked.data.isZero() || !locked.isLoading) return null
+  if ((!locked.data || locked.data.isZero()) && !locked.isLoading) return null
 
   return (
     <SContainer>
       <div>
         <Text fs={16}>
           {locked.isLoading ? (
-            <Skeleton />
+            <Skeleton width={90} />
           ) : (
             t("liquidity.asset.claim.total", { locked: locked.data })
           )}

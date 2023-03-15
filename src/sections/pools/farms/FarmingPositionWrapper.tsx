@@ -7,6 +7,9 @@ import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
 import { Maybe } from "utils/helpers"
 import { OmnipoolPool } from "../PoolsPage.utils"
 import { DepositNftType } from "api/deposits"
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import { ClaimRewardsCard } from "./components/claimableCard/ClaimRewardsCard"
 
 interface Props {
   pool: OmnipoolPool
@@ -15,6 +18,7 @@ interface Props {
 
 export const FarmingPositionWrapper = ({ pool, deposits }: Props) => {
   const { t } = useTranslation()
+  const isDektop = useMedia(theme.viewport.gte.sm)
 
   if (!deposits?.length) return null
   return (
@@ -25,6 +29,8 @@ export const FarmingPositionWrapper = ({ pool, deposits }: Props) => {
           {t("farms.positions.header.title")}
         </Text>
       </div>
+
+      {!isDektop && <ClaimRewardsCard pool={pool} />}
 
       <div sx={{ flex: "column", gap: 16 }}>
         {deposits?.map((item, i) => (

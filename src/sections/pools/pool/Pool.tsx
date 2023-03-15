@@ -25,7 +25,7 @@ export const Pool = ({ pool }: Props) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const positions = usePoolPositions(pool)
-  const accountDeposits = useAccountDeposits(pool.id)
+  const accountDeposits = useAccountDeposits(enabledFarms ? pool.id : undefined)
 
   const hasExpandContent =
     !!positions.data?.length || !!accountDeposits.data?.length
