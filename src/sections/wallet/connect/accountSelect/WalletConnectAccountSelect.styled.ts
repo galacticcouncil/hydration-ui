@@ -17,7 +17,7 @@ export const SContainer = styled.div`
   }
 
   @media ${theme.viewport.gte.sm} {
-    max-height: 465px;
+    max-height: 80vh;
 
     margin-right: -18px;
 
