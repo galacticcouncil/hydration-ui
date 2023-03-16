@@ -7,7 +7,6 @@ import {
 import { routes } from "./routes"
 import { TestnetModal } from "sections/testnet/TestnetModal"
 import { useEffect } from "react"
-import { WalletUpgradeModal } from "sections/wallet/upgrade/WalletUpgradeModal"
 
 const history = createHashHistory()
 const location = new ReactLocation({ history })
@@ -38,8 +37,6 @@ export const App = () => {
           onBack={() => (window.location.href = "https://bsx.fi/")}
         />
       )}
-
-      <WalletUpgradeModal />
     </AppProviders>
   )
 }
