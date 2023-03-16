@@ -185,7 +185,7 @@ export const useAllUserDepositShare = () => {
 export const useDepositShare = (poolId: u32, depositNftId: string) => {
   const deposits = useAllUserDepositShare()
 
-  const deposit = deposits.data[poolId.toString()].find(
+  const deposit = deposits.data[poolId.toString()]?.find(
     (deposit) => deposit.depositId === depositNftId,
   )
 

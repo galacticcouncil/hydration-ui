@@ -17,7 +17,7 @@ import { useAccountStore } from "state/store"
 
 export const ClaimRewardsCard = (props: {
   pool: OmnipoolPool
-  depositNft: DepositNftType
+  depositNft?: DepositNftType
 }) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
