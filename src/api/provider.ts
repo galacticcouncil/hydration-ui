@@ -10,26 +10,31 @@ export const PROVIDERS = [
     name: "Mainnet via GC",
     url: "wss://rpc.hydradx.cloud",
     indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
+    env: "production",
   },
   {
     name: "Mainnet via Dwellir",
     url: "wss://hydradx-rpc.dwellir.com",
     indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
+    env: "production",
   },
   {
     name: "Mainnet via ZeePrime",
     url: "wss://rpc-lb.data6.zp-labs.net:8443/hydradx/ws/?token=2ZGuGivPJJAxXiT1hR1Yg2MXGjMrhEBYFjgbdPi",
     indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
+    env: "production",
   },
   {
     name: "Rococo via GC",
     url: "wss://hydradx-rococo-rpc.play.hydration.cloud",
     indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",
+    env: ["rococo", "development"],
   },
   {
     name: "Testnet",
     url: "wss://mining-rpc.hydradx.io",
     indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",
+    env: "development",
   },
 ]
 
