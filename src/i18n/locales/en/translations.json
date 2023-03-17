@@ -92,7 +92,7 @@
   "liquidity.positions.modal.nftPositions": "NFT Liquidity Positions",
   "liquidity.add.modal.title": "Add liquidity",
   "liquidity.add.modal.row.transactionCostValue": "≈ {{ amount, bignumber }} {{ symbol }}",
-  "liquidity.add.modal.confirmButton": "Add liquidity",
+  "liquidity.add.modal.confirmButton": "Mint Liquidity Position",
   "liquidity.add.modal.positionDetails": "Position details",
   "liquidity.add.modal.lpFee": "LP fee:",
   "liquidity.add.modal.receive": "Received amount of asset shares:",

@@ -168,7 +168,7 @@ export const ModalHeader = styled.div`
 
   @media ${theme.viewport.gte.sm} {
     min-height: fit-content;
-    padding: 8px;
+    padding: 13px;
     justify-content: space-between;
   }
 `

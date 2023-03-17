@@ -10,11 +10,13 @@ import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import { getFloatingPointAmount } from "utils/balance"
+import { useAccountStore } from "state/store"
 
 type Props = { pool: OmnipoolPool }
 
 export const PoolFooter = ({ pool }: Props) => {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
 
   const claimable = useClaimableAmount(pool)
   const footerValues = useFooterValues(pool)
@@ -74,7 +76,10 @@ export const PoolFooter = ({ pool }: Props) => {
               size="small"
               sx={{ p: "12px 21px" }}
               isLoading={claimAll.isLoading}
-              disabled={claimable.data.usd.isZero()}
+              disabled={
+                claimable.data.usd.isZero() ||
+                account?.isExternalWalletConnected
+              }
               onClick={() => claimAll.mutate()}
             >
               <WalletIcon />

@@ -23,7 +23,6 @@ export const LiquidityPositions: FC<Props> = ({ isOpen, pool, onClose }) => {
       open={isOpen}
       withoutOutsideClose
       title={t("liquidity.positions.modal.title")}
-      isDrawer
       onClose={onClose}
     >
       <div

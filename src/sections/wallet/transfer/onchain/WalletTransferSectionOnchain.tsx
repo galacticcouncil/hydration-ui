@@ -27,6 +27,7 @@ import { usePaymentInfo } from "api/transaction"
 import { Spacer } from "components/Spacer/Spacer"
 import { useAccountCurrency } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
+import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 
 export function WalletTransferSectionOnchain(props: {
   initialAsset: u32 | string
@@ -34,6 +35,13 @@ export function WalletTransferSectionOnchain(props: {
 }) {
   const { t } = useTranslation()
   const [asset, setAsset] = useState(props.initialAsset)
+  const {
+    openModal,
+    modal,
+    isOpen: isOpenSelectAssetModal,
+  } = useAssetsModal({
+    onSelect: setAsset,
+  })
 
   const api = useApiPromise()
   const { createTransaction } = useStore()
@@ -132,151 +140,154 @@ export function WalletTransferSectionOnchain(props: {
       />
 
       <Spacer size={[13, 26]} />
-
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        autoComplete="off"
-        sx={{ flex: "column", justify: "space-between", height: "100%" }}
-      >
-        <div sx={{ flex: "column" }}>
-          <Controller
-            name="dest"
-            control={form.control}
-            rules={{
-              required: t("wallet.assets.transfer.error.required"),
-              validate: {
-                validAddress: (value) =>
-                  safeConvertAddressSS58(value, 0) != null ||
-                  t("wallet.assets.transfer.error.validAddress"),
-                notSame: (value) => {
-                  if (!account?.address) return true
-                  const from = safeConvertAddressSS58(
-                    account.address.toString(),
-                    0,
-                  )
-                  const to = safeConvertAddressSS58(value, 0)
-                  if (from != null && to != null && from === to) {
-                    return t("wallet.assets.transfer.error.notSame")
-                  }
-                  return true
+      {isOpenSelectAssetModal ? (
+        modal
+      ) : (
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          autoComplete="off"
+          sx={{ flex: "column", justify: "space-between", height: "100%" }}
+        >
+          <div sx={{ flex: "column" }}>
+            <Controller
+              name="dest"
+              control={form.control}
+              rules={{
+                required: t("wallet.assets.transfer.error.required"),
+                validate: {
+                  validAddress: (value) =>
+                    safeConvertAddressSS58(value, 0) != null ||
+                    t("wallet.assets.transfer.error.validAddress"),
+                  notSame: (value) => {
+                    if (!account?.address) return true
+                    const from = safeConvertAddressSS58(
+                      account.address.toString(),
+                      0,
+                    )
+                    const to = safeConvertAddressSS58(value, 0)
+                    if (from != null && to != null && from === to) {
+                      return t("wallet.assets.transfer.error.notSame")
+                    }
+                    return true
+                  },
                 },
-              },
-            }}
-            render={({
-              field: { name, onChange, value, onBlur },
-              fieldState: { error },
-            }) => {
-              const rightIcon = value ? (
-                <CloseIcon
-                  icon={<CrossIcon />}
-                  onClick={() => onChange("")}
-                  name={t("modal.closeButton.name")}
-                />
-              ) : (
-                <PasteAddressIcon
-                  onClick={async () => {
-                    const text = await navigator.clipboard.readText()
-                    onChange(text)
-                  }}
-                />
-              )
+              }}
+              render={({
+                field: { name, onChange, value, onBlur },
+                fieldState: { error },
+              }) => {
+                const rightIcon = value ? (
+                  <CloseIcon
+                    icon={<CrossIcon />}
+                    onClick={() => onChange("")}
+                    name={t("modal.closeButton.name")}
+                  />
+                ) : (
+                  <PasteAddressIcon
+                    onClick={async () => {
+                      const text = await navigator.clipboard.readText()
+                      onChange(text)
+                    }}
+                  />
+                )
 
-              return (
-                <WalletTransferAccountInput
-                  label={t("wallet.assets.transfer.dest.label")}
+                return (
+                  <WalletTransferAccountInput
+                    label={t("wallet.assets.transfer.dest.label")}
+                    name={name}
+                    value={value}
+                    onChange={onChange}
+                    placeholder={t("wallet.assets.transfer.dest.placeholder")}
+                    rightIcon={rightIcon}
+                    onBlur={onBlur}
+                    error={error?.message}
+                  />
+                )
+              }}
+            />
+
+            <Controller
+              name="amount"
+              control={form.control}
+              rules={{
+                required: t("wallet.assets.transfer.error.required"),
+                validate: {
+                  validNumber: (value) => {
+                    try {
+                      if (!new BigNumber(value).isNaN()) return true
+                    } catch {}
+                    return t("error.validNumber")
+                  },
+                  positive: (value) =>
+                    new BigNumber(value).gt(0) || t("error.positive"),
+                },
+              }}
+              render={({
+                field: { name, value, onChange },
+                fieldState: { error },
+              }) => (
+                <WalletTransferAssetSelect
+                  title={
+                    isDesktop
+                      ? t("wallet.assets.transfer.asset.label")
+                      : t("wallet.assets.transfer.asset.label_mob")
+                  }
                   name={name}
                   value={value}
                   onChange={onChange}
-                  placeholder={t("wallet.assets.transfer.dest.placeholder")}
-                  rightIcon={rightIcon}
-                  onBlur={onBlur}
+                  asset={asset}
                   error={error?.message}
+                  onAssetOpen={openModal}
                 />
-              )
-            }}
-          />
-
-          <Controller
-            name="amount"
-            control={form.control}
-            rules={{
-              required: t("wallet.assets.transfer.error.required"),
-              validate: {
-                validNumber: (value) => {
-                  try {
-                    if (!new BigNumber(value).isNaN()) return true
-                  } catch {}
-                  return t("error.validNumber")
-                },
-                positive: (value) =>
-                  new BigNumber(value).gt(0) || t("error.positive"),
-              },
-            }}
-            render={({
-              field: { name, value, onChange },
-              fieldState: { error },
-            }) => (
-              <WalletTransferAssetSelect
-                title={
-                  isDesktop
-                    ? t("wallet.assets.transfer.asset.label")
-                    : t("wallet.assets.transfer.asset.label_mob")
-                }
-                name={name}
-                value={value}
-                onChange={onChange}
-                asset={asset}
-                onAssetChange={setAsset}
-                error={error?.message}
-              />
-            )}
-          />
-          {asset !== "0" && (
-            <Alert variant="warning" css={{ marginTop: 22 }}>
-              {t("wallet.assets.transfer.warning.nonNative")}
-            </Alert>
-          )}
-          <div
-            sx={{
-              mt: 18,
-              flex: "row",
-              justify: "space-between",
-            }}
-          >
-            <Text fs={13} color="darkBlue300">
-              {t("wallet.assets.transfer.transaction_cost")}
-            </Text>
-            <div sx={{ flex: "row", align: "center", gap: 4 }}>
-              {paymentInfoData?.partialFee != null && (
-                <Text fs={14}>
-                  {t("liquidity.add.modal.row.transactionCostValue", {
-                    amount: new BigNumber(
-                      paymentInfoData.partialFee.toHex(),
-                    ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
-                    symbol: accountCurrencyMeta.data?.symbol,
-                    fixedPointScale: 12,
-                  })}
-                </Text>
               )}
+            />
+            {asset !== "0" && (
+              <Alert variant="warning" css={{ marginTop: 22 }}>
+                {t("wallet.assets.transfer.warning.nonNative")}
+              </Alert>
+            )}
+            <div
+              sx={{
+                mt: 18,
+                flex: "row",
+                justify: "space-between",
+              }}
+            >
+              <Text fs={13} color="darkBlue300">
+                {t("wallet.assets.transfer.transaction_cost")}
+              </Text>
+              <div sx={{ flex: "row", align: "center", gap: 4 }}>
+                {paymentInfoData?.partialFee != null && (
+                  <Text fs={14}>
+                    {t("liquidity.add.modal.row.transactionCostValue", {
+                      amount: new BigNumber(
+                        paymentInfoData.partialFee.toHex(),
+                      ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
+                      symbol: accountCurrencyMeta.data?.symbol,
+                      fixedPointScale: 12,
+                    })}
+                  </Text>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-        <div>
-          <Separator color="darkBlue401" sx={{ mt: 31 }} />
-          <div sx={{ flex: "row", justify: "space-between", mt: 20 }}>
-            <Button onClick={props.onClose}>
-              {t("wallet.assets.transfer.cancel")}
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={!form.formState.isDirty}
-            >
-              {t("wallet.assets.transfer.submit")}
-            </Button>
+          <div>
+            <Separator color="darkBlue401" sx={{ mt: 31 }} />
+            <div sx={{ flex: "row", justify: "space-between", mt: 20 }}>
+              <Button onClick={props.onClose}>
+                {t("wallet.assets.transfer.cancel")}
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={!form.formState.isDirty}
+              >
+                {t("wallet.assets.transfer.submit")}
+              </Button>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      )}
     </>
   )
 }
