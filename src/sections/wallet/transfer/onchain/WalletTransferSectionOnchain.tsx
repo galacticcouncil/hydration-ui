@@ -18,7 +18,6 @@ import {
   CloseIcon,
   PasteAddressIcon,
 } from "./WalletTransferSectionOnchain.styled"
-import { Text } from "components/Typography/Text/Text"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
@@ -28,6 +27,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { useAccountCurrency } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
+import { SummaryRow } from "components/Summary/SummaryRow"
 
 export function WalletTransferSectionOnchain(props: {
   initialAsset: u32 | string
@@ -246,30 +246,21 @@ export function WalletTransferSectionOnchain(props: {
                 {t("wallet.assets.transfer.warning.nonNative")}
               </Alert>
             )}
-            <div
-              sx={{
-                mt: 18,
-                flex: "row",
-                justify: "space-between",
-              }}
-            >
-              <Text fs={13} color="darkBlue300">
-                {t("wallet.assets.transfer.transaction_cost")}
-              </Text>
-              <div sx={{ flex: "row", align: "center", gap: 4 }}>
-                {paymentInfoData?.partialFee != null && (
-                  <Text fs={14}>
-                    {t("liquidity.add.modal.row.transactionCostValue", {
+            <Spacer size={15} />
+            <SummaryRow
+              label={t("wallet.assets.transfer.transaction_cost")}
+              content={
+                paymentInfoData?.partialFee != null
+                  ? t("liquidity.add.modal.row.transactionCostValue", {
                       amount: new BigNumber(
                         paymentInfoData.partialFee.toHex(),
                       ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
                       symbol: accountCurrencyMeta.data?.symbol,
                       fixedPointScale: 12,
-                    })}
-                  </Text>
-                )}
-              </div>
-            </div>
+                    })
+                  : ""
+              }
+            />
           </div>
           <div>
             <Separator color="darkBlue401" sx={{ mt: 31 }} />

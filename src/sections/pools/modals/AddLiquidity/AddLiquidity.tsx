@@ -18,6 +18,9 @@ import { getFixedPointAmount } from "utils/balance"
 import { AddLiquidityLimitWarning } from "sections/pools/modals/AddLiquidity/AddLiquidityLimitWarning"
 import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
+import { Summary } from "components/Summary/Summary"
+import { SummaryRow } from "components/Summary/SummaryRow"
+import { Spacer } from "components/Spacer/Spacer"
 
 type Props = {
   pool: OmnipoolPool
@@ -210,23 +213,12 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
                 />
               )}
             />
-            <div
-              sx={{
-                flex: "row",
-                justify: "space-between",
-                align: "center",
-                mt: 20,
-                mb: 37,
-              }}
-            >
-              <Text color="basic300" fs={14}>
-                {t("liquidity.add.modal.lpFee")}
-              </Text>
-              <Text fs={14} color="white">
-                {t("value.percentage", { value: omnipoolFee?.fee })}
-              </Text>
-            </div>
-
+            <Spacer size={15} />
+            <SummaryRow
+              label={t("liquidity.add.modal.lpFee")}
+              content={t("value.percentage", { value: omnipoolFee?.fee })}
+            />
+            <Spacer size={35} />
             <Text
               color="pink500"
               fs={15}
@@ -235,49 +227,26 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
             >
               {t("liquidity.add.modal.positionDetails")}
             </Text>
-
-            <div
-              sx={{
-                flex: "row",
-                justify: "space-between",
-                align: "center",
-                mt: 9,
-                mb: 4,
-              }}
-            >
-              <Text color="darkBlue300" fs={14}>
-                {t("liquidity.remove.modal.price")}
-              </Text>
-              <Text fs={14} color="white">
-                {t("liquidity.add.modal.row.spotPrice", {
-                  firstAmount: 1,
-                  firstCurrency: assetMeta?.symbol,
-                  secondAmount: spotPrice?.spotPrice,
-                })}
-              </Text>
-            </div>
-            <Separator color="darkBlue401" />
-            <div
-              sx={{
-                flex: "row",
-                justify: "space-between",
-                align: "center",
-                mt: 8,
-                mb: 4,
-              }}
-            >
-              <Text color="darkBlue300" fs={14}>
-                {t("liquidity.add.modal.receive")}
-              </Text>
-              <Text fs={14} color="white">
-                {t("value", {
-                  value: calculatedShares,
-                  fixedPointScale: assetMeta?.decimals.toString(),
-                  type: "token",
-                })}
-              </Text>
-            </div>
-            <Separator color="darkBlue401" />
+            <Summary
+              rows={[
+                {
+                  label: t("liquidity.remove.modal.price"),
+                  content: t("liquidity.add.modal.row.spotPrice", {
+                    firstAmount: 1,
+                    firstCurrency: assetMeta?.symbol,
+                    secondAmount: spotPrice?.spotPrice,
+                  }),
+                },
+                {
+                  label: t("liquidity.add.modal.receive"),
+                  content: t("value", {
+                    value: calculatedShares,
+                    fixedPointScale: assetMeta?.decimals.toString(),
+                    type: "token",
+                  }),
+                },
+              ]}
+            />
             <Text
               color="warningOrange200"
               fs={14}

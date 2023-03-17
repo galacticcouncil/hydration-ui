@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
-import { SDetailRow } from "./ReviewTransaction.styled"
 import { Button } from "components/Button/Button"
 import { TransactionCode } from "components/TransactionCode/TransactionCode"
 import { Transaction, useAccountStore } from "state/store"
@@ -17,6 +16,8 @@ import { useSpotPrice } from "api/spotPrice"
 import { NATIVE_ASSET_ID } from "utils/api"
 import BigNumber from "bignumber.js"
 import { BN_1 } from "utils/constants"
+import { Summary } from "components/Summary/Summary"
+import { Spacer } from "components/Spacer/Spacer"
 
 export const ReviewTransactionForm = (
   props: {
@@ -79,52 +80,37 @@ export const ReviewTransactionForm = (
         <div sx={{ mt: 16 }}>
           {json && <TransactionCode name={json.method} src={json.args} />}
         </div>
-        <div sx={{ mt: 10 }}>
-          <SDetailRow>
-            <Text color="darkBlue200">
-              {t("liquidity.reviewTransaction.modal.detail.cost")}
-            </Text>
-            <div sx={{ flex: "column", align: "end" }}>
-              {paymentInfoData && (
-                <>
-                  <Text color="white">
-                    {t("liquidity.add.modal.row.transactionCostValue", {
-                      amount: (
-                        props.overrides?.fee ??
-                        new BigNumber(paymentInfoData.partialFee.toHex())
-                      ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
-                      symbol: feeMeta.data?.symbol,
-                      fixedPointScale: 12,
-                      type: "token",
-                    })}
-                  </Text>
-                  <Text color="brightBlue200" fs={12}>
-                    {/* TODO */}
-                    {/* 2% */}
-                  </Text>
-                </>
-              )}
-            </div>
-          </SDetailRow>
-          <SDetailRow>
-            <Text color="darkBlue200">
-              {t("liquidity.reviewTransaction.modal.detail.lifetime")}
-            </Text>
-            <Text color="white">
-              {props.tx.era.isMortalEra
+        <Spacer size={15} />
+        <Summary
+          rows={[
+            {
+              label: t("liquidity.reviewTransaction.modal.detail.cost"),
+              content: paymentInfoData
+                ? t("liquidity.add.modal.row.transactionCostValue", {
+                    amount: (
+                      props.overrides?.fee ??
+                      new BigNumber(paymentInfoData.partialFee.toHex())
+                    ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
+                    symbol: feeMeta.data?.symbol,
+                    fixedPointScale: 12,
+                    type: "token",
+                  })
+                : "",
+            },
+            {
+              label: t("liquidity.reviewTransaction.modal.detail.lifetime"),
+              content: props.tx.era.isMortalEra
                 ? t("transaction.mortal.expire", {
                     date: era?.deathDate,
                   })
-                : t("transaction.immortal.expire")}
-            </Text>
-          </SDetailRow>
-          <SDetailRow>
-            <Text color="darkBlue200">
-              {t("liquidity.reviewTransaction.modal.detail.nonce")}
-            </Text>
-            <Text color="white">{nonce.data?.toString()}</Text>
-          </SDetailRow>
-        </div>
+                : t("transaction.immortal.expire"),
+            },
+            {
+              label: t("liquidity.reviewTransaction.modal.detail.nonce"),
+              content: nonce.data?.toString(),
+            },
+          ]}
+        />
       </div>
       <div
         sx={{ mt: 24, flex: "row", justify: "space-between", align: "start" }}
