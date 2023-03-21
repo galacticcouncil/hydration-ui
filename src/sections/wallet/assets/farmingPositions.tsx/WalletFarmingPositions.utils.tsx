@@ -8,17 +8,18 @@ import {
 import { useAssetDetailsList } from "api/assetDetails"
 import { useAssetMetaList } from "api/assetMeta"
 import { useBestNumber } from "api/chain"
-import { useApiIds } from "api/consts"
 import { useAccountDepositIds, useAllDeposits } from "api/deposits"
-import { useSpotPrices } from "api/spotPrice"
+import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
 import { isAfter } from "date-fns"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { useAccountStore } from "state/store"
 import { getFloatingPointAmount } from "utils/balance"
 import { getEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
+import { WalletAssetsHydraPositionsData } from "../hydraPositions/data/WalletAssetsHydraPositionsData"
 import { WalletAssetsTableName } from "../table/data/WalletAssetsTableData"
 
 export const useFarmingPositionsTable = (data: any[]) => {
@@ -59,7 +60,25 @@ export const useFarmingPositionsTable = (data: any[]) => {
       id: "value",
       header: t("wallet.assets.farmingPositions.header.value"),
       sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
-      cell: ({ row }) => "TODO: " + row.original.value,
+      cell: ({ row }) => (
+        <div>
+          <WalletAssetsHydraPositionsData
+            symbol={row.original.position.symbol}
+            value={row.original.position.value}
+            lrna={row.original.position.lrna}
+          />
+          <DollarAssetValue
+            value={row.original.position.valueUSD}
+            wrapper={(children) => (
+              <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                {children}
+              </Text>
+            )}
+          >
+            {t("value.usd", { amount: row.original.position.valueUSD })}
+          </DollarAssetValue>
+        </div>
+      ),
     }),
   ]
 
@@ -79,6 +98,7 @@ export const useFarmingPositionsData = () => {
   const { account } = useAccountStore()
   const allDeposits = useAllDeposits()
   const accountDepositIds = useAccountDepositIds(account?.address)
+  const accountDepositsShare = useAllUserDepositShare()
 
   const accountDeposits = useMemo(
     () =>
@@ -98,27 +118,23 @@ export const useFarmingPositionsData = () => {
 
   const bestNumber = useBestNumber()
 
-  const apiIds = useApiIds()
-  const spotPrices = useSpotPrices(tokens ?? [], apiIds.data?.usdId)
-
   const queries = [
     allDeposits,
     accountDepositIds,
+    accountDepositsShare,
     assetMetas,
     assetDetails,
     bestNumber,
-    apiIds,
-    ...spotPrices,
   ]
-  const isLoading = queries.some((q) => q.isInitialLoading)
+  const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
     if (
       !accountDeposits ||
+      !accountDepositsShare.data ||
       !assetMetas.data ||
       !assetDetails.data ||
-      !bestNumber.data ||
-      spotPrices.some((q) => !q.data)
+      !bestNumber.data
     )
       return []
 
@@ -126,35 +142,36 @@ export const useFarmingPositionsData = () => {
       const id = deposit.deposit.ammPoolId.toString()
       const meta = assetMetas.data.find((am) => am.id === id)
       const details = assetDetails.data.find((ad) => ad.id === id)
-      const latestEnteredAt = deposit.deposit.yieldFarmEntries.reduce(
+      const latestEnteredAtBlock = deposit.deposit.yieldFarmEntries.reduce(
         (acc, curr) =>
           acc.lt(curr.enteredAt.toBigNumber())
             ? curr.enteredAt.toBigNumber()
             : acc,
         BN_0,
       )
-      const spotPrice = spotPrices.find((sp) => sp.data?.tokenIn === id)?.data
-        ?.spotPrice
 
       const symbol = meta?.symbol
       const name = details?.name
       const date = getEnteredDate(
-        latestEnteredAt,
+        latestEnteredAtBlock,
         bestNumber.data.relaychainBlockNumber.toBigNumber(),
       )
       const shares = getFloatingPointAmount(
         deposit.deposit.shares.toBigNumber(),
         meta?.decimals.toNumber() ?? 12,
       )
+      const position = accountDepositsShare.data[id]?.find(
+        (d) => d.depositId?.toString() === deposit.id.toString(),
+      )
 
-      return { symbol, name, date, shares }
+      return { symbol, name, date, shares, position }
     })
   }, [
     accountDeposits,
+    accountDepositsShare.data,
     assetMetas.data,
     assetDetails.data,
     bestNumber.data,
-    spotPrices,
   ])
 
   return { data, isLoading }
