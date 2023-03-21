@@ -1,9 +1,10 @@
+import { Spacer } from "components/Spacer/Spacer"
 import { WalletAssetsTablePlaceholder } from "sections/wallet/assets/table/placeholder/WalletAssetsTablePlaceholder"
 import { useAccountStore } from "state/store"
-import { WalletAssetsHeader } from "./WalletAssetsHeader"
-import { WalletAssetsTableWrapper } from "./table/WalletAssetsTableWrapper"
+import { WalletFarmingPositionsWrapper } from "./farmingPositions.tsx/wrapper/WalletFarmingPositionsWrapper"
 import { WalletAssetsPositionsWrapper } from "./hydraPositions/WalletAssetsPositionsWrapper"
-import { Spacer } from "components/Spacer/Spacer"
+import { WalletAssetsTableWrapper } from "./table/WalletAssetsTableWrapper"
+import { WalletAssetsHeader } from "./WalletAssetsHeader"
 
 export const WalletAssets = () => {
   const { account } = useAccountStore()
@@ -18,9 +19,16 @@ export const WalletAssets = () => {
       ) : (
         <>
           <WalletAssetsHeader />
+
           <WalletAssetsTableWrapper />
+
           <Spacer axis="vertical" size={20} />
+
           <WalletAssetsPositionsWrapper />
+
+          <Spacer axis="vertical" size={20} />
+
+          <WalletFarmingPositionsWrapper />
         </>
       )}
     </div>

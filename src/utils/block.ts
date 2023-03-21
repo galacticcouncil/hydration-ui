@@ -1,32 +1,35 @@
-import BigNumber from "bignumber.js"
-import { BLOCK_TIME } from "./constants"
-import { addSeconds, subSeconds } from "date-fns"
-import { useQueryReduce } from "./helpers"
 import { useBestNumber } from "api/chain"
+import BN from "bignumber.js"
+import { addSeconds, subSeconds } from "date-fns"
+import { BLOCK_TIME } from "./constants"
+import { useQueryReduce } from "./helpers"
 
-export const getExpectedBlockDate = (
-  currentBlock: BigNumber,
-  blockNumber: BigNumber,
-) => {
+export const getExpectedBlockDate = (currentBlock: BN, blockNumber: BN) => {
   const currentDate = new Date()
   const expectedSeconds = blockNumber.minus(currentBlock).div(BLOCK_TIME)
   return addSeconds(currentDate, expectedSeconds.toNumber())
 }
 
-export const useEnteredDate = (enteredAtBlock: BigNumber) => {
+export const useEnteredDate = (enteredAtBlock: BN) => {
   const bestNumber = useBestNumber()
 
-  return useQueryReduce([bestNumber] as const, (bestNumber) => {
-    const currentBlock = bestNumber.relaychainBlockNumber.toBigNumber()
-    const blockRange = currentBlock.minus(enteredAtBlock)
-    const blockRangeSeconds = blockRange.times(BLOCK_TIME)
+  return useQueryReduce([bestNumber] as const, (bestNumber) =>
+    getEnteredDate(
+      enteredAtBlock,
+      bestNumber.relaychainBlockNumber.toBigNumber(),
+    ),
+  )
+}
 
-    const currentDateSeconds = new BigNumber(Date.now())
-    const enteredAtDateSeconds = currentDateSeconds.minus(blockRangeSeconds)
+export const getEnteredDate = (enteredAtBlock: BN, currentBlock: BN) => {
+  const blockRange = currentBlock.minus(enteredAtBlock)
+  const blockRangeSeconds = blockRange.times(BLOCK_TIME)
 
-    const rangeSeconds = currentDateSeconds.minus(enteredAtDateSeconds)
-    const enteredAtDate = subSeconds(Date.now(), rangeSeconds.toNumber())
+  const currentDateSeconds = new BN(Date.now())
+  const enteredAtDateSeconds = currentDateSeconds.minus(blockRangeSeconds)
 
-    return enteredAtDate
-  })
+  const rangeSeconds = currentDateSeconds.minus(enteredAtDateSeconds)
+  const enteredAtDate = subSeconds(Date.now(), rangeSeconds.toNumber())
+
+  return enteredAtDate
 }
