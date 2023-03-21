@@ -4,6 +4,7 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
+  VisibilityState,
 } from "@tanstack/react-table"
 import { useAssetDetailsList } from "api/assetDetails"
 import { useAssetMetaList } from "api/assetMeta"
@@ -15,8 +16,10 @@ import { Text } from "components/Typography/Text/Text"
 import { isAfter } from "date-fns"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useMedia } from "react-use"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { useAccountStore } from "state/store"
+import { theme } from "theme"
 import { getFloatingPointAmount } from "utils/balance"
 import { getEnteredDate } from "utils/block"
 import { BN_0, BN_NAN } from "utils/constants"
@@ -28,10 +31,20 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
   const { accessor } = createColumnHelper<FarmingPositionsTableData>()
   const [sorting, onSortingChange] = useState<SortingState>([])
 
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const columnVisibility: VisibilityState = {
+    symbol: true,
+    date: isDesktop,
+    shares: isDesktop,
+    position: true,
+  }
+
   const columns = [
     accessor("symbol", {
       id: "name",
-      header: t("wallet.assets.farmingPositions.header.name"),
+      header: isDesktop
+        ? t("wallet.assets.farmingPositions.header.name")
+        : t("selectAssets.asset"),
       sortingFn: (a, b) => a.original.symbol.localeCompare(b.original.symbol),
       cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
     }),
@@ -63,7 +76,7 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
       sortingFn: (a, b) =>
         a.original.position.valueUSD.gt(b.original.position.valueUSD) ? 1 : -1,
       cell: ({ row }) => (
-        <div>
+        <div sx={{ flex: "column", align: ["end", "start"], gap: 2 }}>
           <WalletAssetsHydraPositionsData
             symbol={row.original.position.symbol}
             value={row.original.position.value}
@@ -87,7 +100,7 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
   const table = useReactTable({
     data,
     columns,
-    state: { sorting },
+    state: { sorting, columnVisibility },
     onSortingChange,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
