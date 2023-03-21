@@ -6,6 +6,8 @@ import { WalletAssetsPositionsWrapper } from "./hydraPositions/WalletAssetsPosit
 import { WalletAssetsTableWrapper } from "./table/WalletAssetsTableWrapper"
 import { WalletAssetsHeader } from "./WalletAssetsHeader"
 
+const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
+
 export const WalletAssets = () => {
   const { account } = useAccountStore()
 
@@ -28,7 +30,7 @@ export const WalletAssets = () => {
 
           <Spacer axis="vertical" size={20} />
 
-          <WalletFarmingPositionsWrapper />
+          {enabledFarms && <WalletFarmingPositionsWrapper />}
         </>
       )}
     </div>
