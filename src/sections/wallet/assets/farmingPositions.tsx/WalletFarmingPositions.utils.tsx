@@ -11,6 +11,7 @@ import { useAssetMetaList } from "api/assetMeta"
 import { useBestNumber } from "api/chain"
 import { useAccountDepositIds, useAllDeposits } from "api/deposits"
 import BN from "bignumber.js"
+import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
 import { isAfter } from "date-fns"
@@ -166,8 +167,8 @@ export const useFarmingPositionsData = () => {
         BN_0,
       )
 
-      const symbol = meta?.symbol ?? ""
-      const name = details?.name ?? ""
+      const symbol = meta?.symbol ?? "N/A"
+      const name = details?.name || getAssetName(meta?.symbol)
       const date = getEnteredDate(
         latestEnteredAtBlock,
         bestNumber.data.relaychainBlockNumber.toBigNumber(),
