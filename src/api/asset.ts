@@ -8,6 +8,8 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import type { TradeRouter } from "@galacticcouncil/sdk"
 
+export type UseAssetModel = ReturnType<typeof useAsset>["data"]
+
 export const useAsset = (id: Maybe<u32 | string>) => {
   const detail = useAssetDetails(id)
   const meta = useAssetMeta(id)
