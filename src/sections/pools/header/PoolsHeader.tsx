@@ -1,27 +1,27 @@
-import { Switch } from "components/Switch/Switch"
-import { FC } from "react"
-import { useTranslation } from "react-i18next"
-import { useAccountStore } from "state/store"
-import { Text } from "components/Typography/Text/Text"
-// import { Separator } from "components/Separator/Separator"
-import { PoolsHeaderTotal } from "sections/pools/header/PoolsHeaderTotal"
-import { Heading } from "components/Typography/Heading/Heading"
-import { PoolsHeaderVolume } from "./PoolsHeaderVolume"
 import { Separator } from "components/Separator/Separator"
+import { Switch } from "components/Switch/Switch"
+import { Heading } from "components/Typography/Heading/Heading"
+import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
+import { PoolsHeaderTotal } from "sections/pools/header/PoolsHeaderTotal"
+import { useAccountStore } from "state/store"
 import { theme } from "theme"
+import { PoolsHeaderVolume } from "./PoolsHeaderVolume"
 
 type Props = {
-  showMyPositions: boolean
-  onShowMyPositionsChange: (value: boolean) => void
+  myPositions: boolean
+  onMyPositionsChange: (value: boolean) => void
+  disableMyPositions: boolean
 }
 
 const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
-export const PoolsHeader: FC<Props> = ({
-  showMyPositions,
-  onShowMyPositionsChange,
-}) => {
+export const PoolsHeader = ({
+  myPositions,
+  onMyPositionsChange,
+  disableMyPositions,
+}: Props) => {
   const { t } = useTranslation()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -36,8 +36,9 @@ export const PoolsHeader: FC<Props> = ({
         </Heading>
         {!!account && (
           <Switch
-            value={showMyPositions}
-            onCheckedChange={onShowMyPositionsChange}
+            value={myPositions}
+            onCheckedChange={onMyPositionsChange}
+            disabled={disableMyPositions}
             size="small"
             name="my-positions"
             label={t("liquidity.header.switch")}
@@ -59,7 +60,7 @@ export const PoolsHeader: FC<Props> = ({
             {t("liquidity.header.totalLocked")}
           </Text>
           <div sx={{ flex: "row", align: "baseline" }}>
-            <PoolsHeaderTotal variant="pools" myPositions={showMyPositions} />
+            <PoolsHeaderTotal variant="pools" myPositions={myPositions} />
           </div>
         </div>
         <Separator
@@ -77,10 +78,7 @@ export const PoolsHeader: FC<Props> = ({
                 {t("liquidity.header.totalInFarms")}
               </Text>
               <div sx={{ flex: "row", align: "baseline" }}>
-                <PoolsHeaderTotal
-                  variant="farms"
-                  myPositions={showMyPositions}
-                />
+                <PoolsHeaderTotal variant="farms" myPositions={myPositions} />
               </div>
             </div>
             <Separator
@@ -98,7 +96,7 @@ export const PoolsHeader: FC<Props> = ({
             {t("liquidity.header.24hours")}
           </Text>
           <div sx={{ flex: "row", align: "baseline" }}>
-            <PoolsHeaderVolume myPositions={showMyPositions} variant="pools" />
+            <PoolsHeaderVolume myPositions={myPositions} variant="pools" />
           </div>
         </div>
       </div>
