@@ -16,6 +16,7 @@ import { isAfter } from "date-fns"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
+import { getFloatingPointAmount } from "utils/balance"
 import { getEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
 import { WalletAssetsTableName } from "../table/data/WalletAssetsTableData"
@@ -48,7 +49,11 @@ export const useFarmingPositionsTable = (data: any[]) => {
       id: "shares",
       header: t("wallet.assets.farmingPositions.header.shares"),
       sortingFn: (a, b) => (a.original.shares.gt(b.original.shares) ? 1 : -1),
-      cell: ({ row }) => "TODO: " + row.original.shares,
+      cell: ({ row }) => (
+        <Text fs={16} fw={500} color="white">
+          {t("value.token", { value: row.original.shares })}
+        </Text>
+      ),
     }),
     accessor("value", {
       id: "value",
@@ -137,8 +142,12 @@ export const useFarmingPositionsData = () => {
         latestEnteredAt,
         bestNumber.data.relaychainBlockNumber.toBigNumber(),
       )
+      const shares = getFloatingPointAmount(
+        deposit.deposit.shares.toBigNumber(),
+        meta?.decimals.toNumber() ?? 12,
+      )
 
-      return { symbol, name, date }
+      return { symbol, name, date, shares }
     })
   }, [
     accountDeposits,
