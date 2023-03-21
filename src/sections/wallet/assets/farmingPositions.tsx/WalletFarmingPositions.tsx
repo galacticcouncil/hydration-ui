@@ -12,11 +12,13 @@ import {
 import { Text } from "components/Typography/Text/Text"
 import { Fragment } from "react"
 import { useTranslation } from "react-i18next"
-import { EmptyState } from "../hydraPositions/EmptyState"
 import { assetsTableStyles } from "../table/WalletAssetsTable.styled"
-import { useFarmingPositionsTable } from "./WalletFarmingPositions.utils"
+import {
+  FarmingPositionsTableData,
+  useFarmingPositionsTable,
+} from "./WalletFarmingPositions.utils"
 
-type Props = { data: any[] }
+type Props = { data: FarmingPositionsTableData[] }
 
 export const WalletFarmingPositions = ({ data }: Props) => {
   const { t } = useTranslation()
@@ -56,24 +58,17 @@ export const WalletFarmingPositions = ({ data }: Props) => {
           ))}
         </TableHeaderContent>
         <TableBodyContent>
-          {table.options.data.length ? (
-            table.getRowModel().rows.map((row, i) => (
-              <Fragment key={row.id}>
-                <TableRow isOdd={!(i % 2)} onClick={() => row.toggleSelected()}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableData key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableData>
-                  ))}
-                </TableRow>
-              </Fragment>
-            ))
-          ) : (
-            <EmptyState />
-          )}
+          {table.getRowModel().rows.map((row, i) => (
+            <Fragment key={row.id}>
+              <TableRow isOdd={!(i % 2)} onClick={() => row.toggleSelected()}>
+                {row.getVisibleCells().map((cell) => (
+                  <TableData key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableData>
+                ))}
+              </TableRow>
+            </Fragment>
+          ))}
         </TableBodyContent>
       </Table>
     </TableContainer>

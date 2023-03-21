@@ -9,6 +9,7 @@ import { useAssetDetailsList } from "api/assetDetails"
 import { useAssetMetaList } from "api/assetMeta"
 import { useBestNumber } from "api/chain"
 import { useAccountDepositIds, useAllDeposits } from "api/deposits"
+import BN from "bignumber.js"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
 import { isAfter } from "date-fns"
@@ -18,13 +19,13 @@ import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPos
 import { useAccountStore } from "state/store"
 import { getFloatingPointAmount } from "utils/balance"
 import { getEnteredDate } from "utils/block"
-import { BN_0 } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import { WalletAssetsHydraPositionsData } from "../hydraPositions/data/WalletAssetsHydraPositionsData"
 import { WalletAssetsTableName } from "../table/data/WalletAssetsTableData"
 
-export const useFarmingPositionsTable = (data: any[]) => {
+export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
   const { t } = useTranslation()
-  const { accessor } = createColumnHelper<any>()
+  const { accessor } = createColumnHelper<FarmingPositionsTableData>()
   const [sorting, onSortingChange] = useState<SortingState>([])
 
   const columns = [
@@ -56,10 +57,11 @@ export const useFarmingPositionsTable = (data: any[]) => {
         </Text>
       ),
     }),
-    accessor("value", {
+    accessor("position", {
       id: "value",
       header: t("wallet.assets.farmingPositions.header.value"),
-      sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
+      sortingFn: (a, b) =>
+        a.original.position.valueUSD.gt(b.original.position.valueUSD) ? 1 : -1,
       cell: ({ row }) => (
         <div>
           <WalletAssetsHydraPositionsData
@@ -138,10 +140,11 @@ export const useFarmingPositionsData = () => {
     )
       return []
 
-    return accountDeposits.map((deposit) => {
-      const id = deposit.deposit.ammPoolId.toString()
-      const meta = assetMetas.data.find((am) => am.id === id)
-      const details = assetDetails.data.find((ad) => ad.id === id)
+    const rows: FarmingPositionsTableData[] = accountDeposits.map((deposit) => {
+      const id = deposit.id.toString()
+      const assetId = deposit.deposit.ammPoolId.toString()
+      const meta = assetMetas.data.find((am) => am.id === assetId)
+      const details = assetDetails.data.find((ad) => ad.id === assetId)
       const latestEnteredAtBlock = deposit.deposit.yieldFarmEntries.reduce(
         (acc, curr) =>
           acc.lt(curr.enteredAt.toBigNumber())
@@ -150,8 +153,8 @@ export const useFarmingPositionsData = () => {
         BN_0,
       )
 
-      const symbol = meta?.symbol
-      const name = details?.name
+      const symbol = meta?.symbol ?? ""
+      const name = details?.name ?? ""
       const date = getEnteredDate(
         latestEnteredAtBlock,
         bestNumber.data.relaychainBlockNumber.toBigNumber(),
@@ -160,12 +163,14 @@ export const useFarmingPositionsData = () => {
         deposit.deposit.shares.toBigNumber(),
         meta?.decimals.toNumber() ?? 12,
       )
-      const position = accountDepositsShare.data[id]?.find(
+      const position = accountDepositsShare.data[assetId]?.find(
         (d) => d.depositId?.toString() === deposit.id.toString(),
-      )
+      ) ?? { symbol, value: BN_NAN, valueUSD: BN_NAN, lrna: BN_NAN }
 
-      return { symbol, name, date, shares, position }
+      return { id, symbol, name, date, shares, position }
     })
+
+    return rows
   }, [
     accountDeposits,
     accountDepositsShare.data,
@@ -175,4 +180,18 @@ export const useFarmingPositionsData = () => {
   ])
 
   return { data, isLoading }
+}
+
+export type FarmingPositionsTableData = {
+  id: string
+  symbol: string
+  name: string
+  date: Date
+  shares: BN
+  position: {
+    symbol: string
+    value: BN
+    valueUSD: BN
+    lrna: BN
+  }
 }
