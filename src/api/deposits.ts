@@ -106,3 +106,20 @@ export const useAccountDeposits = (poolId?: u32) => {
     },
   )
 }
+
+export const useUserDeposits = () => {
+  const { account } = useAccountStore()
+  const accountDepositIds = useAccountDepositIds(account?.address)
+  const deposits = useAllDeposits()
+
+  return useQueryReduce(
+    [accountDepositIds, deposits] as const,
+    (accountDepositIds, deposits) => {
+      return deposits.filter((deposit) =>
+        accountDepositIds?.some(
+          (id) => id.instanceId.toString() === deposit.id.toString(),
+        ),
+      )
+    },
+  )
+}

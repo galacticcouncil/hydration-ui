@@ -3,7 +3,7 @@ import { useAssetDetailsList } from "api/assetDetails"
 import { useAssetMetaList } from "api/assetMeta"
 import { useTokensBalances } from "api/balances"
 import { useApiIds } from "api/consts"
-import { useAccountDepositIds } from "api/deposits"
+import { useUserDeposits } from "api/deposits"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
 import { useUniques } from "api/uniques"
@@ -38,7 +38,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
   const positions = useOmnipoolPositions(
     uniques.data?.map((u) => u.itemId) ?? [],
   )
-  const depositIds = useAccountDepositIds(account?.address)
+  const userDeposits = useUserDeposits()
 
   const queries = [
     assets,
@@ -47,7 +47,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     apiIds,
     uniques,
     assetsTradability,
-    depositIds,
+    userDeposits,
     ...positions,
     ...spotPrices,
     ...balances,
@@ -61,7 +61,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
       !metas.data ||
       !apiIds.data ||
       !assetsTradability.data ||
-      !depositIds.data ||
+      !userDeposits.data ||
       spotPrices.some((q) => !q.data) ||
       balances.some((q) => !q.data) ||
       positions.some((q) => !q.data)
@@ -106,7 +106,9 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
         const hasPositions = positions.some(
           (p) => p.data?.assetId.toString() === id.toString(),
         )
-        const hasDeposits = !!depositIds.data?.length
+        const hasDeposits = userDeposits.data?.some(
+          (deposit) => deposit.deposit.ammPoolId.toString() === id.toString(),
+        )
 
         return {
           id,
@@ -132,7 +134,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     balances,
     positions,
     assetsTradability.data,
-    depositIds.data,
+    userDeposits.data,
   ])
 
   const data = useMemo(
@@ -144,7 +146,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
   )
 
   const hasPositionsOrDeposits = useMemo(
-    () => !pools?.every((row) => !row.hasDeposits && !row.hasPositions),
+    () => pools?.some((pool) => pool.hasPositions || pool.hasDeposits),
     [pools],
   )
 
