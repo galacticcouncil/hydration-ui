@@ -107,9 +107,13 @@ export const useAccountDeposits = (poolId?: u32) => {
   )
 }
 
+const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
+
 export const useUserDeposits = () => {
   const { account } = useAccountStore()
-  const accountDepositIds = useAccountDepositIds(account?.address)
+  const accountDepositIds = useAccountDepositIds(
+    enabledFarms ? account?.address : undefined,
+  )
   const deposits = useAllDeposits()
 
   return useQueryReduce(
