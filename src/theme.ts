@@ -42,6 +42,7 @@ const colors = {
   basic500: "#878C9E",
   basic600: "#676C80",
   basic700: "#5D6175",
+  basic750: "#444559",
   basic800: "#26282F",
   basic900: "#00041D",
   warning100: "#FFE2C3",

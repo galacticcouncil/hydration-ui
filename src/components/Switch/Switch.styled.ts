@@ -110,6 +110,6 @@ export const SThumb = styled(SwitchThumb)<{
   ${(p) =>
     p.disabled &&
     css`
-      background: ${theme.colors.basic800};
+      background: ${theme.colors.basic750};
     `}
 `
