@@ -1,9 +1,12 @@
 import { useMemo } from "react"
-import { useOrderData } from "api/otc"
+import { useOrderData, useOrdersState } from "api/otc"
 import BN from "bignumber.js"
 
 export const useOrderTableData = () => {
   const ordersTableData = useOrderData()
+  const orderIds = ordersTableData.data?.map((order) => order.id)
+  const ordersState = useOrdersState(orderIds || [])
+  console.log(ordersState)
 
   const data = useMemo(() => {
     if (!ordersTableData.data) return []
@@ -17,14 +20,17 @@ export const useOrderTableData = () => {
         id: order.id,
         owner: order.owner,
         offering: {
-          amount: amountIn,
-          asset: order.assetIn?.symbol,
+          amount: amountOut,
+          asset: order.assetOut?.id,
+          symbol: order.assetOut?.symbol,
         },
         accepting: {
-          amount: amountOut,
-          asset: order.assetOut?.symbol,
+          amount: amountIn,
+          asset: order.assetIn?.id,
+          symbol: order.assetIn?.symbol,
         },
-        price: amountOut.div(amountIn),
+        price: amountIn.div(amountOut),
+        partiallyFillable: order.partiallyFillable,
       } as OffersTableData
     })
   }, [ordersTableData])
@@ -39,9 +45,11 @@ export type OffersTableData = {
   accepting: OfferingPair
   price: BN
   filled: string
+  partiallyFillable: boolean
 }
 
 export type OfferingPair = {
   amount: BN
   asset: string
+  symbol: string
 }

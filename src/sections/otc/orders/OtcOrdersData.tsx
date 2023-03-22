@@ -4,7 +4,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SIcon } from "sections/wallet/assets/table/data/WalletAssetsTableData.styled"
 import { theme } from "theme"
-import { OfferingPair } from "./OtcOffersData.utils"
+import { OfferingPair } from "./OtcOrdersData.utils"
 
 export const OrderAssetColumn = (props: {
   pair: OfferingPair
@@ -15,7 +15,7 @@ export const OrderAssetColumn = (props: {
   return (
     <div>
       <div sx={{ flex: "row", gap: 8, align: "center" }}>
-        <SIcon large={props.large}>{getAssetLogo(props.pair.asset)}</SIcon>
+        <SIcon large={props.large}>{getAssetLogo(props.pair.symbol)}</SIcon>
         <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
           {t("value.token", { value: props.pair.amount })}
         </Text>
@@ -25,7 +25,7 @@ export const OrderAssetColumn = (props: {
           fw={500}
           css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
         >
-          {props.pair.asset}
+          {props.pair.symbol}
         </Text>
       </div>
     </div>

@@ -6,20 +6,22 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { ReactComponent as FillIcon } from "assets/icons/Fill.svg"
+import { ReactComponent as PauseIcon } from "assets/icons/PauseIcon.svg"
 import { TableAction } from "components/Table/Table"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { useAccountStore } from "state/store"
 import { theme } from "theme"
 import { safeConvertAddressSS58 } from "utils/formatting"
-import { OrderAssetColumn, OrderPriceColumn } from "./OtcOffersData"
-import { OffersTableData } from "./OtcOffersData.utils"
+import { OrderCapacity } from "./capacity/OrderCapacity"
+import { OrderAssetColumn, OrderPriceColumn } from "./OtcOrdersData"
+import { OffersTableData } from "./OtcOrdersData.utils"
 
 export const useOffersTable = (
   data: OffersTableData[],
   actions: {
-    onFill: (assetId: string) => void
-    onClose: (assetId: string) => void
+    onFill: (data: OffersTableData) => void
+    onClose: (data: OffersTableData) => void
   },
 ) => {
   const { t } = useTranslation()
@@ -53,8 +55,8 @@ export const useOffersTable = (
       header: t("otc.offers.table.header.price"),
       cell: ({ row }) => (
         <OrderPriceColumn
-          assetIn={row.original.offering.asset}
-          assetOut={row.original.accepting.asset}
+          assetIn={row.original.offering.symbol}
+          assetOut={row.original.accepting.symbol}
           price={row.original.price}
         />
       ),
@@ -62,7 +64,7 @@ export const useOffersTable = (
     accessor("filled", {
       id: "filled",
       header: t("otc.offers.table.header.filled"),
-      //cell: ({ row }) => (),
+      cell: ({ row }) => <OrderCapacity filled={25} />,
     }),
     display({
       id: "actions",
@@ -72,9 +74,10 @@ export const useOffersTable = (
         if (orderOwner === userAddress) {
           return (
             <TableAction
-              icon={<FillIcon sx={{ mr: 10 }} />}
-              onClick={() => console.log("sdsd")}
+              icon={<PauseIcon sx={{ mr: 10 }} />}
+              onClick={() => actions.onClose(row.original)}
               disabled={false}
+              variant={"error"}
             >
               {t("otc.offers.table.actions.close")}
             </TableAction>
@@ -83,7 +86,7 @@ export const useOffersTable = (
           return (
             <TableAction
               icon={<FillIcon sx={{ mr: 10 }} />}
-              onClick={() => console.log("sdsd")}
+              onClick={() => actions.onFill(row.original)}
               disabled={false}
             >
               {t("otc.offers.table.actions.fill")}

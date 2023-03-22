@@ -12,8 +12,9 @@ import { Fragment, useState } from "react"
 import { useMedia } from "react-use"
 
 import { theme } from "theme"
-import { useOffersTable } from "./OtcOffers.utils"
-import { OffersTableData } from "./OtcOffersData.utils"
+import { FillOrder } from "../modals/FillOrder"
+import { useOffersTable } from "./OtcOrders.utils"
+import { OffersTableData } from "./OtcOrdersData.utils"
 
 type Props = {
   data: OffersTableData[]
@@ -22,8 +23,15 @@ type Props = {
 export const OtcOffersTable = ({ data }: Props) => {
   const [row, setRow] = useState<OffersTableData | undefined>(undefined)
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const [fillOrder, setFillOrder] = useState<string | null>(null)
-  const [closeOrder, setCloseOrder] = useState<string | null>(null)
+  const [fillOrder, setFillOrder] = useState<OffersTableData | undefined>(
+    undefined,
+  )
+  const [closeOrder, setCloseOrder] = useState<OffersTableData | undefined>(
+    undefined,
+  )
+
+  // const [fillOrder, setFillOrder] = useState<string | null>(null)
+  // const [closeOrder, setCloseOrder] = useState<string | null>(null)
 
   const table = useOffersTable(data, {
     onFill: setFillOrder,
@@ -67,7 +75,19 @@ export const OtcOffersTable = ({ data }: Props) => {
           ))}
         </TableBodyContent>
       </Table>
-      {fillOrder && <div></div>}
+      {fillOrder && (
+        <FillOrder
+          orderId={fillOrder.id}
+          assetIn={fillOrder.accepting.asset}
+          assetOut={fillOrder.offering.asset}
+          amountIn={fillOrder.accepting.amount}
+          amountOut={fillOrder.offering.amount}
+          partiallyFillable={fillOrder.partiallyFillable}
+          isOpen={fillOrder !== undefined}
+          onClose={() => setFillOrder(undefined)}
+          onSuccess={() => {}}
+        />
+      )}
       {closeOrder && <div></div>}
     </TableContainer>
   )
