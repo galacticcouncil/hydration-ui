@@ -12,7 +12,7 @@ import { WalletAssetsHeaderValue } from "./WalletAssetsHeaderValue"
 
 type Props = { disconnected?: boolean }
 
-export const WalletAssetsHeaderNew = ({ disconnected }: Props) => {
+export const WalletAssetsHeader = ({ disconnected }: Props) => {
   return (
     <div
       sx={{ flex: ["column", "row"], align: ["start", "center"], mb: [20, 56] }}
