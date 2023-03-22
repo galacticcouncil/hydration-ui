@@ -113,7 +113,7 @@ export const JoinFarmModal = ({
               onClick={() => mutation.mutate()}
               isLoading={mutation.isLoading}
             >
-              {t("farms.modal.join.button.label")}
+              {t("farms.modal.join.button.label", { count: farms.length })}
             </Button>
           </SJoinFarmContainer>
         </div>

@@ -103,7 +103,7 @@ function LiquidityPositionRemoveLiquidity(props: {
   return (
     <>
       <SButton
-        variant="primary"
+        variant="secondary"
         size="small"
         onClick={() => setOpenRemove(true)}
         disabled={account?.isExternalWalletConnected}

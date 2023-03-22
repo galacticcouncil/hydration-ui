@@ -37,5 +37,6 @@ export const useAssetsModal = ({
   return {
     openModal,
     modal,
+    isOpen,
   }
 }

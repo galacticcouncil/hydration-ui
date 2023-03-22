@@ -106,10 +106,10 @@ export const ClaimRewardsCard = (props: {
           sx={{ mt: 6 }}
           css={{ color: `rgba(${theme.rgbColors.white}, 0.4)` }}
         >
-          {t("value.usd", {
-            amount: claimable.data?.usd,
+          {t("farms.claimCard.claim.usd", {
+            value: claimable.data?.usd,
+            numberPrefix: "$",
             fixedPointScale: 12,
-            type: "token",
           })}
         </Text>
       </div>
