@@ -151,7 +151,7 @@
   "walletConnect.pending.description": "Please authorize your {{name}} wallet extension to connect to HydraDX.",
   "walletConnect.logout": "Log out",
   "walletConnect.switch": "Switch",
-  "walletConnect.externalWallet": "External Wallet",
+  "walletConnect.externalWallet": "View as Wallet",
   "walletConnect.externalWallet.modal.title": "Add External Account",
   "walletConnect.externalWallet.modal.desc": "Paste link to account you would like to monitor.",
   "walletConnect.externalWallet.modal.input.placeholder": "Account address here",
