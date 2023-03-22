@@ -1,8 +1,8 @@
-import { Switch, SwitchThumb } from "@radix-ui/react-switch"
-import styled from "@emotion/styled"
-import { css } from "@emotion/react"
-import { theme } from "theme"
 import isPropValid from "@emotion/is-prop-valid"
+import { css } from "@emotion/react"
+import styled from "@emotion/styled"
+import { Switch, SwitchThumb } from "@radix-ui/react-switch"
+import { theme } from "theme"
 
 export const SSwitch = styled(Switch, {
   shouldForwardProp: (prop) => isPropValid(prop) && prop !== "withLabel",
@@ -38,6 +38,7 @@ export const SSwitch = styled(Switch, {
     if (p.disabled) {
       return css`
         pointer-events: none;
+        border-color: ${theme.colors.primaryA15Blue};
       `
     }
 
