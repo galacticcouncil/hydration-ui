@@ -4,7 +4,10 @@ import { useAccountStore } from "state/store"
 import { WalletFarmingPositionsWrapper } from "./farmingPositions.tsx/wrapper/WalletFarmingPositionsWrapper"
 import { WalletAssetsPositionsWrapper } from "./hydraPositions/WalletAssetsPositionsWrapper"
 import { WalletAssetsTableWrapper } from "./table/WalletAssetsTableWrapper"
-import { WalletAssetsHeader } from "./WalletAssetsHeader"
+import {
+  WalletAssetsHeader,
+  WalletAssetsHeaderNew,
+} from "./header/WalletAssetsHeader"
 
 const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
@@ -20,7 +23,7 @@ export const WalletAssets = () => {
         </>
       ) : (
         <>
-          <WalletAssetsHeader />
+          <WalletAssetsHeaderNew />
 
           <WalletAssetsTableWrapper />
 
