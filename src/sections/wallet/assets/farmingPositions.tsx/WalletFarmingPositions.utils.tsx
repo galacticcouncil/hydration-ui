@@ -10,7 +10,6 @@ import { useAssetDetailsList } from "api/assetDetails"
 import { useAssetMetaList } from "api/assetMeta"
 import { useBestNumber } from "api/chain"
 import { useAccountDepositIds, useAllDeposits } from "api/deposits"
-import BN from "bignumber.js"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
@@ -154,7 +153,7 @@ export const useFarmingPositionsData = () => {
     )
       return []
 
-    const rows: FarmingPositionsTableData[] = accountDeposits.map((deposit) => {
+    const rows = accountDeposits.map((deposit) => {
       const id = deposit.id.toString()
       const assetId = deposit.deposit.ammPoolId.toString()
       const meta = assetMetas.data.find((am) => am.id === assetId)
@@ -196,16 +195,6 @@ export const useFarmingPositionsData = () => {
   return { data, isLoading }
 }
 
-export type FarmingPositionsTableData = {
-  id: string
-  symbol: string
-  name: string
-  date: Date
-  shares: BN
-  position: {
-    symbol: string
-    value: BN
-    valueUSD: BN
-    lrna: BN
-  }
-}
+export type FarmingPositionsTableData = NonNullable<
+  ReturnType<typeof useFarmingPositionsData>["data"]
+>[number]
