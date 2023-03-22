@@ -38,7 +38,7 @@ export const SSwitch = styled(Switch, {
     if (p.disabled) {
       return css`
         pointer-events: none;
-        border-color: ${theme.colors.primaryA15Blue};
+        border-color: rgba(${theme.rgbColors.primaryA15Blue}, 0.35);
       `
     }
 
