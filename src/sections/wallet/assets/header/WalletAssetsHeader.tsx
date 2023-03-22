@@ -10,6 +10,8 @@ import { useHydraPositionsData } from "../hydraPositions/data/WalletAssetsHydraP
 import { useAssetsTableData } from "../table/data/WalletAssetsTableData.utils"
 import { WalletAssetsHeaderValue } from "./WalletAssetsHeaderValue"
 
+const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
+
 type Props = { disconnected?: boolean }
 
 export const WalletAssetsHeader = ({ disconnected }: Props) => {
@@ -20,8 +22,12 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
       <WalletAssetsHeaderBalance disconnected={disconnected} />
       <HeaderSeparator />
       <WalletAssetsHeaderOmnipool disconnected={disconnected} />
-      <HeaderSeparator />
-      <WalletAssetsHeaderFarms disconnected={disconnected} />
+      {enabledFarms && (
+        <>
+          <HeaderSeparator />
+          <WalletAssetsHeaderFarms disconnected={disconnected} />
+        </>
+      )}
     </div>
   )
 }
