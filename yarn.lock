@@ -5711,9 +5711,9 @@
     svg-parser "^2.0.4"
 
 "@talismn/connect-wallets@^1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@talismn/connect-wallets/-/connect-wallets-1.2.1.tgz#ceba2ad1e8771c8d4acaa6a61bd2da1dfbf055f7"
-  integrity sha512-jeLQjXxBcSb4xgcLOHlcp0EFSqsFIi8yicLB+YiqGHbExgb+bSEAShkmif/MtZ4JWa/XD58aoy3HHo4VxxWqnw==
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@talismn/connect-wallets/-/connect-wallets-1.2.3.tgz#4aa91f2c554d692e9f49472f74dcc96fca319df5"
+  integrity sha512-6hLYeDnMjrlsNLF6a9e7ngxKMkKW3uTC2IbBjtTPq9fxA1VvApmxR8egboPzU7sgFQEuUFP36KN1hFAtfRIVhw==
 
 "@tanstack/query-core@4.20.4":
   version "4.20.4"

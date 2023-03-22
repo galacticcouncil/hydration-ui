@@ -184,7 +184,11 @@ export function ProviderSelectModal(props: {
           </div>
         </SHeader>
 
-        {PROVIDERS.map((provider, index) => {
+        {PROVIDERS.filter((provider) =>
+          typeof provider.env === "string"
+            ? provider.env === import.meta.env.VITE_ENV
+            : provider.env.includes(import.meta.env.VITE_ENV),
+        ).map((provider, index) => {
           return (
             <Fragment key={provider.url}>
               <ProviderSelectItem
