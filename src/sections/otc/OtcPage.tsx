@@ -1,26 +1,26 @@
 import { Page } from "components/Layout/Page/Page"
 import { OtcHeader } from "sections/otc/header/OtcHeader"
-import { OtcOffersTable } from "sections/otc/offers/OtcOffers"
+import { OtcOrderTable } from "sections/otc/orders/OtcOrders"
 
 import { useState } from "react"
-import { useOrderTableData } from "./offers/OtcOffersData.utils"
+import { useOrdersTableData } from "./orders/OtcOrdersData.utils"
 
 export const OtcPage = () => {
-  const [filter, setFilter] = useState({ showMyOffers: false })
-  const order = useOrderTableData()
+  const [filter, setFilter] = useState({ showMyOrders: false })
+  const order = useOrdersTableData()
 
   return (
     <Page>
       <OtcHeader
-        showMyOffers={filter.showMyOffers}
-        onShowMyOffersChange={(value) =>
+        showMyOrders={filter.showMyOrders}
+        onShowMyOrdersChange={(value) =>
           setFilter((prev) => ({
             ...prev,
-            showMyOffers: value,
+            showMyOrders: value,
           }))
         }
       />
-      <OtcOffersTable data={order.data} />
+      <OtcOrderTable data={order.data} />
     </Page>
   )
 }

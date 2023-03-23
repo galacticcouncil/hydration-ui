@@ -50,7 +50,7 @@ export const useOrdersData = () => {
   })
 }
 
-export const getOrdersState = (orderId: number) => async () => {
+export const getOrderState = (orderId: number) => async () => {
   return {
     orderId: orderId,
     ...(await request<{
@@ -88,10 +88,17 @@ export const getOrdersState = (orderId: number) => async () => {
 export function useOrdersState(orderIds: Maybe<string>[]) {
   return useQueries({
     queries: orderIds.map((orderId) => ({
-      queryKey: QUERY_KEYS.otcOrderState(orderId),
+      queryKey: QUERY_KEYS.otcOrdersState(orderId),
       queryFn:
-        orderId != null ? getOrdersState(parseInt(orderId)) : undefinedNoop,
+        orderId != null ? getOrderState(parseInt(orderId)) : undefinedNoop,
       enabled: !!orderId,
     })),
   })
+}
+
+export function getOrderStateValue(
+  state?: Awaited<ReturnType<ReturnType<typeof getOrderState>>>,
+) {
+  if (!state) return
+  return state.events[0].args
 }

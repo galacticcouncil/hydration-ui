@@ -192,6 +192,11 @@ export const QUERY_KEYS = {
   omnipoolPosition: (id: u128) => [QUERY_KEY_PREFIX, "omnipoolPosition", id],
   otcOrders: [QUERY_KEY_PREFIX, "otcOrders"],
   otcOrdersTable: [QUERY_KEY_PREFIX, "otcOrdersTable"],
+  otcOrdersState: (orderId: Maybe<string | u32>) => [
+    QUERY_KEY_PREFIX,
+    "otcOrdersState",
+    orderId?.toString(),
+  ],
   provider: (url: string) => ["provider", url],
   math: ["@galacticcouncil/math"],
   existentialDeposit: [QUERY_KEY_PREFIX, "existentialDeposit"],

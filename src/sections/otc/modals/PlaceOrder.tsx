@@ -13,12 +13,15 @@ import { useApiPromise } from "utils/api"
 import { BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { useAccountStore, useStore } from "../../../state/store"
-import { OrderAssetPrice } from "./cmp/AssetPrice"
 import { OrderAssetSelect } from "./cmp/AssetSelect"
+import { OrderAssetRate } from "./cmp/AssetXRate"
+import { PartialOrderToggle } from "./cmp/PartialOrderToggle"
+
+import { Separator } from "components/Separator/Separator"
 
 type PlaceOrderProps = {
-  assetIn: u32 | string
   assetOut: u32 | string
+  assetIn: u32 | string
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
@@ -26,27 +29,27 @@ type PlaceOrderProps = {
 
 export const PlaceOrder = ({
   isOpen,
-  assetIn,
   assetOut,
+  assetIn,
   onClose,
   onSuccess,
 }: PlaceOrderProps) => {
   const { t } = useTranslation()
-  const [aIn, setAIn] = useState(assetIn)
   const [aOut, setAOut] = useState(assetOut)
-  const [price, setPrice] = useState<string | null>()
+  const [aIn, setAIn] = useState(assetIn)
 
   const form = useForm<{
-    amountIn: string
     amountOut: string
+    amountIn: string
+    price: string
     partiallyFillable: boolean
   }>({
     defaultValues: { partiallyFillable: false },
   })
 
   const api = useApiPromise()
-  const assetInMeta = useAssetMeta(aIn)
   const assetOutMeta = useAssetMeta(aOut)
+  const assetInMeta = useAssetMeta(aIn)
   const { account } = useAccountStore()
   const accountCurrency = useAccountCurrency(account?.address)
   const accountCurrencyMeta = useAssetMeta(accountCurrency.data)
@@ -56,27 +59,37 @@ export const PlaceOrder = ({
     api.tx.otc.placeOrder(aIn, aOut, "0", "0", false),
   )
 
-  const handlePriceChange = () => {
-    const { amountIn, amountOut } = form.getValues()
+  const handleAssetChange = () => {
+    const { amountOut, amountIn } = form.getValues()
     if (amountIn && amountOut) {
-      const price = new BigNumber(amountOut).div(new BigNumber(amountIn))
-      setPrice(price.toFixed())
-    } else {
-      setPrice(null)
+      const price = new BigNumber(amountIn).div(new BigNumber(amountOut))
+      form.setValue("price", price.toFixed())
+    }
+  }
+
+  const handlePriceChange = () => {
+    const { amountOut, price } = form.getValues()
+    if (amountOut && price) {
+      const amountIn = new BigNumber(amountOut).multipliedBy(
+        new BigNumber(price),
+      )
+      form.setValue("amountIn", amountIn.toFixed())
     }
   }
 
   const handleSubmit = async (values: FormValues<typeof form>) => {
-    if (assetInMeta.data?.decimals == null)
-      throw new Error("Missing assetIn meta")
     if (assetOutMeta.data?.decimals == null)
       throw new Error("Missing assetOut meta")
 
-    const amountInBN = new BigNumber(values.amountIn).multipliedBy(
-      BN_10.pow(assetInMeta.data?.decimals.toString()),
-    )
+    if (assetInMeta.data?.decimals == null)
+      throw new Error("Missing assetIn meta")
+
     const amountOutBN = new BigNumber(values.amountOut).multipliedBy(
       BN_10.pow(assetOutMeta.data?.decimals.toString()),
+    )
+
+    const amountInBN = new BigNumber(values.amountIn).multipliedBy(
+      BN_10.pow(assetInMeta.data?.decimals.toString()),
     )
 
     await createTransaction(
@@ -86,7 +99,7 @@ export const PlaceOrder = ({
           aOut,
           amountInBN.toFixed(),
           amountOutBN.toFixed(),
-          false,
+          values.partiallyFillable,
         ),
       },
       {
@@ -144,32 +157,6 @@ export const PlaceOrder = ({
         }}
       >
         <Controller
-          name="amountIn"
-          control={form.control}
-          render={({
-            field: { name, value, onChange },
-            fieldState: { error },
-          }) => (
-            <OrderAssetSelect
-              title={t("otc.order.place.offer")}
-              name={name}
-              value={value}
-              onChange={(e) => {
-                onChange(e)
-                handlePriceChange()
-              }}
-              asset={aIn}
-              onAssetChange={setAIn}
-              error={error?.message}
-            />
-          )}
-        />
-        <OrderAssetPrice
-          inputAsset={assetInMeta.data?.symbol}
-          outputAsset={assetOutMeta.data?.symbol}
-          price={price!}
-        />
-        <Controller
           name="amountOut"
           control={form.control}
           render={({
@@ -177,12 +164,12 @@ export const PlaceOrder = ({
             fieldState: { error },
           }) => (
             <OrderAssetSelect
-              title={t("otc.order.place.accept")}
+              title={t("otc.order.place.offerTitle")}
               name={name}
               value={value}
               onChange={(e) => {
                 onChange(e)
-                handlePriceChange()
+                handleAssetChange()
               }}
               asset={aOut}
               onAssetChange={setAOut}
@@ -190,9 +177,79 @@ export const PlaceOrder = ({
             />
           )}
         />
+        <Controller
+          name="price"
+          control={form.control}
+          render={({
+            field: { name, value, onChange },
+            fieldState: { error },
+          }) => (
+            <OrderAssetRate
+              inputAsset={assetOutMeta.data?.symbol}
+              outputAsset={assetInMeta.data?.symbol}
+              price={value!}
+              onChange={(e) => {
+                onChange(e)
+                handlePriceChange()
+              }}
+            />
+          )}
+        />
+        <Controller
+          name="amountIn"
+          control={form.control}
+          render={({
+            field: { name, value, onChange },
+            fieldState: { error },
+          }) => (
+            <OrderAssetSelect
+              title={t("otc.order.place.getTitle")}
+              name={name}
+              value={value}
+              onChange={(e) => {
+                onChange(e)
+                handleAssetChange()
+              }}
+              asset={aIn}
+              onAssetChange={setAIn}
+              error={error?.message}
+            />
+          )}
+        />
+
         <div
           sx={{
-            mt: 18,
+            mt: 10,
+            mb: 10,
+            flex: "row",
+            justify: "space-between",
+            align: "center",
+          }}
+        >
+          <div>
+            <Text fs={13} color="white">
+              {t("otc.order.place.partial")}
+            </Text>
+            <Text fs={13} color="darkBlue300">
+              {t("otc.order.place.partialDesc")}
+            </Text>
+          </div>
+
+          <Controller
+            name="partiallyFillable"
+            control={form.control}
+            render={({ field: { value, onChange } }) => (
+              <PartialOrderToggle
+                partial={value}
+                onChange={(e) => onChange(e)}
+              />
+            )}
+          />
+        </div>
+        <Separator color="darkBlue401" />
+        <div
+          sx={{
+            mt: 14,
             flex: "row",
             justify: "space-between",
           }}

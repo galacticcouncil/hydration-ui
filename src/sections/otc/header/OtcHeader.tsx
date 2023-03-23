@@ -11,13 +11,13 @@ import { OtcHeaderTotal } from "sections/otc/header/OtcHeaderTotal"
 import { PlaceOrder } from "../modals/PlaceOrder"
 
 type Props = {
-  showMyOffers: boolean
-  onShowMyOffersChange: (value: boolean) => void
+  showMyOrders: boolean
+  onShowMyOrdersChange: (value: boolean) => void
 }
 
 export const OtcHeader: FC<Props> = ({
-  showMyOffers,
-  onShowMyOffersChange,
+  showMyOrders,
+  onShowMyOrdersChange,
 }) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
@@ -31,8 +31,8 @@ export const OtcHeader: FC<Props> = ({
         </Heading>
         {!!account && (
           <Switch
-            value={showMyOffers}
-            onCheckedChange={onShowMyOffersChange}
+            value={showMyOrders}
+            onCheckedChange={onShowMyOrdersChange}
             size="small"
             name="my-offers"
             label={t("otc.header.switch")}
@@ -48,7 +48,7 @@ export const OtcHeader: FC<Props> = ({
             {t("otc.header.totalValue")}
           </Text>
           <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
-            <OtcHeaderTotal myOffers={showMyOffers} />
+            <OtcHeaderTotal myOffers={showMyOrders} />
             <Button
               size="medium"
               variant="primary"
@@ -57,7 +57,7 @@ export const OtcHeader: FC<Props> = ({
             >
               <div sx={{ flex: "row", align: "center" }}>
                 <Icon icon={<PlusIcon />} sx={{ mr: 8, height: 16 }} />
-                {t("otc.header.createOffer")}
+                {t("otc.header.placeOrder")}
               </div>
             </Button>
           </div>
@@ -66,8 +66,8 @@ export const OtcHeader: FC<Props> = ({
 
       {openAdd && (
         <PlaceOrder
-          assetIn={"0"}
           assetOut={"2"}
+          assetIn={"0"}
           isOpen={openAdd}
           onClose={() => setOpenAdd(false)}
           onSuccess={() => {}}
