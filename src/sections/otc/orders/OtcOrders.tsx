@@ -13,33 +13,36 @@ import { useMedia } from "react-use"
 
 import { theme } from "theme"
 import { FillOrder } from "../modals/FillOrder"
-import { useOffersTable } from "./OtcOrders.utils"
-import { OffersTableData } from "./OtcOrdersData.utils"
+import { ordersTableStyles } from "./OtcOrders.styled"
+import { useOrdersTable } from "./OtcOrders.utils"
+import { OrderTableData } from "./OtcOrdersData.utils"
 
 type Props = {
-  data: OffersTableData[]
+  data: OrderTableData[]
 }
 
-export const OtcOffersTable = ({ data }: Props) => {
-  const [row, setRow] = useState<OffersTableData | undefined>(undefined)
+export const OtcOrderTable = ({ data }: Props) => {
+  const [row, setRow] = useState<OrderTableData | undefined>(undefined)
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const [fillOrder, setFillOrder] = useState<OffersTableData | undefined>(
+  const [fillOrder, setFillOrder] = useState<OrderTableData | undefined>(
     undefined,
   )
-  const [closeOrder, setCloseOrder] = useState<OffersTableData | undefined>(
+  const [closeOrder, setCloseOrder] = useState<OrderTableData | undefined>(
     undefined,
   )
 
   // const [fillOrder, setFillOrder] = useState<string | null>(null)
   // const [closeOrder, setCloseOrder] = useState<string | null>(null)
 
-  const table = useOffersTable(data, {
+  const table = useOrdersTable(data, {
     onFill: setFillOrder,
     onClose: setCloseOrder,
   })
 
+  console.log(fillOrder)
+
   return (
-    <TableContainer>
+    <TableContainer css={ordersTableStyles}>
       <Table>
         <TableHeaderContent>
           {table.getHeaderGroups().map((hg) => (
@@ -83,7 +86,7 @@ export const OtcOffersTable = ({ data }: Props) => {
           amountIn={fillOrder.accepting.amount}
           amountOut={fillOrder.offering.amount}
           partiallyFillable={fillOrder.partiallyFillable}
-          isOpen={fillOrder !== undefined}
+          isOpen={true}
           onClose={() => setFillOrder(undefined)}
           onSuccess={() => {}}
         />

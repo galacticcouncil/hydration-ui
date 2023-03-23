@@ -14,30 +14,55 @@ import { useAccountStore } from "state/store"
 import { theme } from "theme"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { OrderCapacity } from "./capacity/OrderCapacity"
-import { OrderAssetColumn, OrderPriceColumn } from "./OtcOrdersData"
-import { OffersTableData } from "./OtcOrdersData.utils"
+import {
+  OrderAssetColumn,
+  OrderPairColumn,
+  OrderPriceColumn,
+} from "./OtcOrdersData"
+import { OrderTableData } from "./OtcOrdersData.utils"
 
-export const useOffersTable = (
-  data: OffersTableData[],
+export const useOrdersTable = (
+  data: OrderTableData[],
   actions: {
-    onFill: (data: OffersTableData) => void
-    onClose: (data: OffersTableData) => void
+    onFill: (data: OrderTableData) => void
+    onClose: (data: OrderTableData) => void
   },
 ) => {
   const { t } = useTranslation()
-  const { accessor, display } = createColumnHelper<OffersTableData>()
+  const { accessor, display } = createColumnHelper<OrderTableData>()
 
   const { account } = useAccountStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
-    offering: true,
-    accepting: true,
+    pair: true,
     price: true,
+    offering: isDesktop,
+    accepting: isDesktop,
     filled: isDesktop,
-    actions: true,
+    actions: isDesktop,
   }
 
   const columns = [
+    accessor("id", {
+      id: "pair",
+      header: "Assets",
+      cell: ({ row }) => (
+        <OrderPairColumn
+          offering={row.original.offering}
+          accepting={row.original.accepting}
+        />
+      ),
+    }),
+    accessor("price", {
+      id: "price",
+      header: t("otc.offers.table.header.price"),
+      cell: ({ row }) => (
+        <OrderPriceColumn
+          symbol={row.original.accepting.symbol}
+          price={row.original.price}
+        />
+      ),
+    }),
     accessor("offering", {
       id: "offering",
       header: isDesktop
@@ -46,25 +71,14 @@ export const useOffersTable = (
       cell: ({ row }) => <OrderAssetColumn pair={row.original.offering} />,
     }),
     accessor("accepting", {
-      id: "transferable",
+      id: "accepting",
       header: t("otc.offers.table.header.accepting"),
       cell: ({ row }) => <OrderAssetColumn pair={row.original.accepting} />,
-    }),
-    accessor("price", {
-      id: "price",
-      header: t("otc.offers.table.header.price"),
-      cell: ({ row }) => (
-        <OrderPriceColumn
-          assetIn={row.original.offering.symbol}
-          assetOut={row.original.accepting.symbol}
-          price={row.original.price}
-        />
-      ),
     }),
     accessor("filled", {
       id: "filled",
       header: t("otc.offers.table.header.filled"),
-      cell: ({ row }) => <OrderCapacity filled={25} />,
+      cell: ({ row }) => <OrderCapacity offering={row.original.offering} />,
     }),
     display({
       id: "actions",
@@ -86,7 +100,10 @@ export const useOffersTable = (
           return (
             <TableAction
               icon={<FillIcon sx={{ mr: 10 }} />}
-              onClick={() => actions.onFill(row.original)}
+              onClick={() => {
+                console.log("fiil-clicked")
+                actions.onFill(row.original)
+              }}
               disabled={false}
             >
               {t("otc.offers.table.actions.fill")}

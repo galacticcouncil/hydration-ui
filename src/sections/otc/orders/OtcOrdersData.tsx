@@ -1,10 +1,37 @@
 import BN from "bignumber.js"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { SIcon } from "sections/wallet/assets/table/data/WalletAssetsTableData.styled"
 import { theme } from "theme"
 import { OfferingPair } from "./OtcOrdersData.utils"
+
+export const OrderPairColumn = (props: {
+  offering: OfferingPair
+  accepting: OfferingPair
+}) => {
+  return (
+    <div>
+      <div sx={{ flex: "row", gap: 4, align: "center" }}>
+        <MultipleIcons
+          icons={[
+            { icon: getAssetLogo(props.offering.symbol) },
+            { icon: getAssetLogo(props.accepting.symbol) },
+          ]}
+        />
+        <Text
+          fs={[14, 16]}
+          lh={[16, 16]}
+          fw={500}
+          sx={{ ml: 8 }}
+          color="basic400"
+        >
+          {props.offering.symbol} / {props.accepting.symbol}
+        </Text>
+      </div>
+    </div>
+  )
+}
 
 export const OrderAssetColumn = (props: {
   pair: OfferingPair
@@ -14,17 +41,11 @@ export const OrderAssetColumn = (props: {
 
   return (
     <div>
-      <div sx={{ flex: "row", gap: 8, align: "center" }}>
-        <SIcon large={props.large}>{getAssetLogo(props.pair.symbol)}</SIcon>
+      <div sx={{ flex: "row", gap: 4, align: "center" }}>
         <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
           {t("value.token", { value: props.pair.amount })}
         </Text>
-        <Text
-          fs={[14, 16]}
-          lh={[16, 16]}
-          fw={500}
-          css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
-        >
+        <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
           {props.pair.symbol}
         </Text>
       </div>
@@ -32,23 +53,13 @@ export const OrderAssetColumn = (props: {
   )
 }
 
-export const OrderPriceColumn = (props: {
-  assetIn: string
-  assetOut: string
-  price: BN
-}) => {
+export const OrderPriceColumn = (props: { symbol: string; price: BN }) => {
   const { t } = useTranslation()
 
   return (
-    <div sx={{ flex: "row", gap: 8, align: "center" }}>
-      <Text
-        fs={[13, 15]}
-        lh={[16, 16]}
-        fw={500}
-        css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
-      >
-        1 {props.assetIn} / {t("value.token", { value: props.price })}{" "}
-        {props.assetOut}
+    <div sx={{ flex: "row", gap: 8,  align: ["end", "start"]}}>
+      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
+        {t("value.token", { value: props.price })} {props.symbol}
       </Text>
     </div>
   )
