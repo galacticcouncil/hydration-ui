@@ -13,6 +13,8 @@ import { useMedia } from "react-use"
 
 import { theme } from "theme"
 import { FillOrder } from "../modals/FillOrder"
+import { PartialFillOrder } from "../modals/PartialFillOrder"
+import { CancelOrder } from "../modals/CancelOrder"
 import { ordersTableStyles } from "./OtcOrders.styled"
 import { useOrdersTable } from "./OtcOrders.utils"
 import { OrderTableData } from "./OtcOrdersData.utils"
@@ -30,9 +32,6 @@ export const OtcOrderTable = ({ data }: Props) => {
   const [closeOrder, setCloseOrder] = useState<OrderTableData | undefined>(
     undefined,
   )
-
-  // const [fillOrder, setFillOrder] = useState<string | null>(null)
-  // const [closeOrder, setCloseOrder] = useState<string | null>(null)
 
   const table = useOrdersTable(data, {
     onFill: setFillOrder,
@@ -78,20 +77,32 @@ export const OtcOrderTable = ({ data }: Props) => {
           ))}
         </TableBodyContent>
       </Table>
-      {fillOrder && (
-        <FillOrder
+      {fillOrder && fillOrder.partiallyFillable && (
+        <PartialFillOrder
           orderId={fillOrder.id}
-          assetIn={fillOrder.accepting.asset}
-          assetOut={fillOrder.offering.asset}
-          amountIn={fillOrder.accepting.amount}
-          amountOut={fillOrder.offering.amount}
-          partiallyFillable={fillOrder.partiallyFillable}
-          isOpen={true}
+          accepting={fillOrder.accepting}
+          offering={fillOrder.offering}
           onClose={() => setFillOrder(undefined)}
           onSuccess={() => {}}
         />
       )}
-      {closeOrder && <div></div>}
+      {fillOrder && !fillOrder.partiallyFillable && (
+        <FillOrder
+          orderId={fillOrder.id}
+          accepting={fillOrder.accepting}
+          offering={fillOrder.offering}
+          onClose={() => setFillOrder(undefined)}
+          onSuccess={() => {}}
+        />
+      )}
+      {closeOrder && (
+        <CancelOrder
+          orderId={closeOrder.id}
+          offering={closeOrder.offering}
+          onClose={() => setCloseOrder(undefined)}
+          onSuccess={() => {}}
+        />
+      )}
     </TableContainer>
   )
 }

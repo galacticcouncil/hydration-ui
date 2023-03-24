@@ -17,6 +17,7 @@ export const TableAction = (props: {
       size="small"
       variant={props.variant}
       sx={{ p: "9px 12px" }}
+      css={{ whiteSpace: "nowrap" }}
       onClick={(e) => {
         e.stopPropagation()
         e.preventDefault()

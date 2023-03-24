@@ -1,28 +1,24 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SContainer = styled.div<{ padding: boolean }>`
-  
-  padding && margin: -20px;
-  padding && padding: 20px 15px;
-  font-family: 'ChakraPetch';
+export const SContainer = styled.div<{ modal: boolean }>`
+  font-family: "ChakraPetch";
   background: rgba(10, 12, 22, 0.69);
 
   position: relative;
   text-align: center;
-
-  width: 170px;
+  margin: ${(p) => (p.modal ? "0 0 20px" : "0 -20px")};
 
   @media (${theme.viewport.gte.sm}) {
     background: inherit;
   }
 `
 
-export const SBarContainer = styled.div`
+export const SBarContainer = styled.div<{ modal: boolean }>`
   position: relative;
 
   width: 100%;
-  height: 7px;
+  height: ${(p) => (p.modal ? "11px" : "7px")};
 
   border-radius: 2px;
   background-color: rgba(84, 99, 128, 0.35);
@@ -41,5 +37,5 @@ export const SBar = styled.div<{ filled: string; width: number }>`
     ${theme.colors.pink600} 0%,
     ${theme.colors.brightBlue600} 100%
   );
-  background-size: ${(p) => p.width}px;
+  background-size: ${(p) => p.width + 30}px;
 `

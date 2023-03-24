@@ -8,12 +8,13 @@ import {
 import { ReactComponent as FillIcon } from "assets/icons/Fill.svg"
 import { ReactComponent as PauseIcon } from "assets/icons/PauseIcon.svg"
 import { TableAction } from "components/Table/Table"
+import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { useAccountStore } from "state/store"
 import { theme } from "theme"
 import { safeConvertAddressSS58 } from "utils/formatting"
-import { OrderCapacity } from "./capacity/OrderCapacity"
+import { OrderCapacity } from "../capacity/OrderCapacity"
 import {
   OrderAssetColumn,
   OrderPairColumn,
@@ -77,8 +78,28 @@ export const useOrdersTable = (
     }),
     accessor("filled", {
       id: "filled",
-      header: t("otc.offers.table.header.filled"),
-      cell: ({ row }) => <OrderCapacity offering={row.original.offering} />,
+      header: () => (
+        <div
+          style={{
+            textAlign: "center",
+            width: "100%",
+          }}
+        >
+          {t("otc.offers.table.header.status")}
+        </div>
+      ),
+      cell: ({ row }) =>
+        row.original.offering.initial && row.original.partiallyFillable ? (
+          <OrderCapacity
+            total={row.original.offering.initial}
+            free={row.original.offering.amount}
+            symbol={row.original.offering.symbol}
+          />
+        ) : (
+          <Text fs={12} fw={400} color="basic400" tAlign={"center"} as="div">
+            N / A
+          </Text>
+        ),
     }),
     display({
       id: "actions",
@@ -88,7 +109,7 @@ export const useOrdersTable = (
         if (orderOwner === userAddress) {
           return (
             <TableAction
-              icon={<PauseIcon sx={{ mr: 10 }} />}
+              icon={<PauseIcon />}
               onClick={() => actions.onClose(row.original)}
               disabled={false}
               variant={"error"}
@@ -99,7 +120,7 @@ export const useOrdersTable = (
         } else {
           return (
             <TableAction
-              icon={<FillIcon sx={{ mr: 10 }} />}
+              icon={<FillIcon sx={{ mr: 4 }} />}
               onClick={() => {
                 console.log("fiil-clicked")
                 actions.onFill(row.original)

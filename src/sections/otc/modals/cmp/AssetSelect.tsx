@@ -6,6 +6,7 @@ import { useAsset } from "api/asset"
 import { useTokenBalance } from "api/balances"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccountStore } from "state/store"
+import BN from "bignumber.js"
 
 export const UigcAssetTransfer = createComponent({
   tagName: "uigc-asset-transfer",
@@ -20,6 +21,12 @@ export const UigcAssetTransfer = createComponent({
 export const UigcAssetBalance = createComponent({
   tagName: "uigc-asset-balance",
   elementClass: UI.AssetBalance,
+  react: React,
+})
+
+export const UigcButton = createComponent({
+  tagName: "uigc-button",
+  elementClass: UI.Button,
   react: React,
 })
 
@@ -71,11 +78,13 @@ export function OrderAssetSelect(props: {
 }
 
 export function OrderAssetPay(props: {
-  name: string
-  value: string
+  name?: string
   title?: string
+  value: string
   asset: string | u32
+  onChange?: (value: string) => void
   error?: string
+  readonly?: boolean
 }) {
   const { account } = useAccountStore()
   const asset = useAsset(props.asset)
@@ -91,32 +100,10 @@ export function OrderAssetPay(props: {
 
   return (
     <UigcAssetTransfer
-      id={props.name}
-      title={props.title}
-      asset={asset.data?.symbol}
-      amount={props.value}
-      error={props.error}
-      selectable={false}
-      readonly={true}
-    >
-      <UigcAssetBalance slot="balance" balance={blnc} visible={false} />
-    </UigcAssetTransfer>
-  )
-}
-
-export function OrderAssetGet(props: {
-  name: string
-  value: string
-  title?: string
-  asset: string | u32
-  onChange: (value: string) => void
-  error?: string
-  readonly?: boolean
-}) {
-  const asset = useAsset(props.asset)
-  return (
-    <UigcAssetTransfer
-      onAssetInputChanged={(e) => props.onChange(e.detail.value)}
+      ref={(el) => el && props.readonly && el.setAttribute("readonly", "")}
+      onAssetInputChanged={(e) =>
+        props.onChange && props.onChange(e.detail.value)
+      }
       id={props.name}
       title={props.title}
       asset={asset.data?.symbol}
@@ -124,6 +111,66 @@ export function OrderAssetGet(props: {
       error={props.error}
       selectable={false}
       readonly={props.readonly || false}
-    ></UigcAssetTransfer>
+    >
+      <UigcAssetBalance slot="balance" balance={blnc} visible={false} />
+    </UigcAssetTransfer>
+  )
+}
+
+function getPercentageValue(value: BN, pct: number): BN {
+  return value.div(100).multipliedBy(new BN(pct))
+}
+
+const OrderAssetPctBtn = (
+  pct: number,
+  remaining: BN,
+  onClick: (value: string) => void,
+) => (
+  <UigcButton
+    slot="button"
+    onClick={() => {
+      const res = getPercentageValue(remaining, pct)
+      onClick(res.toFixed())
+    }}
+    {...{ variant: "max", size: "micro", nowrap: true }}
+  >
+    {pct + "%"}
+  </UigcButton>
+)
+
+export function OrderAssetGet(props: {
+  name?: string
+  title?: string
+  value: string
+  remaining: BN
+  asset: string | u32
+  onChange?: (value: string) => void
+  error?: string
+  readonly?: boolean
+}) {
+  const asset = useAsset(props.asset)
+  return (
+    <UigcAssetTransfer
+      ref={(el) => el && props.readonly && el.setAttribute("readonly", "")}
+      onAssetInputChanged={(e) =>
+        props.onChange && props.onChange(e.detail.value)
+      }
+      id={props.name}
+      title={props.title}
+      asset={asset.data?.symbol}
+      amount={props.value}
+      error={props.error}
+      selectable={false}
+      readonly={props.readonly || false}
+    >
+      {props.onChange && (
+        <div slot="balance" sx={{ display: "flex", justify: "end", gap: 2 }}>
+          {OrderAssetPctBtn(25, props.remaining, props.onChange)}
+          {OrderAssetPctBtn(50, props.remaining, props.onChange)}
+          {OrderAssetPctBtn(75, props.remaining, props.onChange)}
+          {OrderAssetPctBtn(100, props.remaining, props.onChange)}
+        </div>
+      )}
+    </UigcAssetTransfer>
   )
 }

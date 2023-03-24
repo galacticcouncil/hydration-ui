@@ -3,7 +3,6 @@ import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { theme } from "theme"
 import { OfferingPair } from "./OtcOrdersData.utils"
 
 export const OrderPairColumn = (props: {
