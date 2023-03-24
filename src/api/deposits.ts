@@ -106,3 +106,24 @@ export const useAccountDeposits = (poolId?: u32) => {
     },
   )
 }
+
+const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
+
+export const useUserDeposits = () => {
+  const { account } = useAccountStore()
+  const accountDepositIds = useAccountDepositIds(
+    enabledFarms ? account?.address : undefined,
+  )
+  const deposits = useAllDeposits()
+
+  return useQueryReduce(
+    [accountDepositIds, deposits] as const,
+    (accountDepositIds, deposits) => {
+      return deposits.filter((deposit) =>
+        accountDepositIds?.some(
+          (id) => id.instanceId.toString() === deposit.id.toString(),
+        ),
+      )
+    },
+  )
+}
