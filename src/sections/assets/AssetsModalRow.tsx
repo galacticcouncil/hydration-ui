@@ -1,6 +1,6 @@
 import { u32 } from "@polkadot/types"
 import { FC, useMemo } from "react"
-import { useAsset } from "api/asset"
+import { UseAssetModel, useAsset } from "api/asset"
 import { useTokenBalance } from "api/balances"
 import { useAccountStore } from "state/store"
 import { Icon } from "components/Icon/Icon"
@@ -16,7 +16,7 @@ import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 
 interface AssetsModalRowProps {
   id: Maybe<u32 | string>
-  onClick?: () => void
+  onClick?: (asset: NonNullable<UseAssetModel>) => void
 }
 
 export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
@@ -34,20 +34,22 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
     return BN_NAN
   }, [balance, spotPrice])
 
+  if (!asset.data) return null
+
   return (
-    <SAssetRow onClick={onClick}>
+    <SAssetRow onClick={() => asset.data && onClick?.(asset.data)}>
       <div
         sx={{
           display: "flex",
         }}
       >
-        <Icon icon={asset.data?.icon} sx={{ mr: 10 }} />
+        <Icon icon={asset.data.icon} sx={{ mr: 10 }} />
         <div sx={{ mr: 6 }}>
           <Text fw={700} color="white" fs={16} lh={22}>
             {asset.data?.symbol}
           </Text>
           <Text color="whiteish500" fs={12} lh={16}>
-            {asset.data?.name || getAssetName(asset.data?.symbol)}
+            {asset.data.name || getAssetName(asset.data.symbol)}
           </Text>
         </div>
       </div>
@@ -58,7 +60,7 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
           align: "end",
         }}
       >
-        {balance.data && asset.data && (
+        {balance.data && (
           <>
             <Trans
               t={t}

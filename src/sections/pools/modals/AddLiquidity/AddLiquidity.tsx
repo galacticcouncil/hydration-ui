@@ -37,7 +37,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
     modal,
     isOpen: isOpenSelectAssetModal,
   } = useAssetsModal({
-    onSelect: setAssetId,
+    onSelect: (asset) => setAssetId(asset.id),
   })
 
   const { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance } =

@@ -40,7 +40,7 @@ export function WalletTransferSectionOnchain(props: {
     modal,
     isOpen: isOpenSelectAssetModal,
   } = useAssetsModal({
-    onSelect: setAsset,
+    onSelect: (asset) => setAsset(asset.id),
   })
 
   const api = useApiPromise()
