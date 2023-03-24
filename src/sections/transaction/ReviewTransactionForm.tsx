@@ -84,7 +84,7 @@ export const ReviewTransactionForm = (
     modal,
     isOpen: isOpenSelectAssetModal,
   } = useAssetsModal({
-    title: "Select payment asset",
+    title: t("liquidity.reviewTransaction.modal.selectAsset"),
     hideInactiveAssets: true,
     allowedAssets:
       acceptedFeeAssets
