@@ -2,12 +2,10 @@ import { Text } from "components/Typography/Text/Text"
 import { SPositions } from "../Pool.styled"
 import { useTranslation } from "react-i18next"
 import { LiquidityPosition } from "./LiquidityPosition"
-import { usePoolPositions } from "../Pool.utils"
+import { Positions } from "../Pool.utils"
 import { ReactComponent as LPIcon } from "assets/icons/LPIcon.svg"
 import { Icon } from "components/Icon/Icon"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
-
-type Positions = ReturnType<typeof usePoolPositions>
 
 export const LiquidityPositionWrapper = ({
   positions,

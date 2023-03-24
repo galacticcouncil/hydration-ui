@@ -1,12 +1,17 @@
 import { useMutation } from "@tanstack/react-query"
 import { DepositNftType } from "api/deposits"
 import { Farm } from "api/farms"
-import { useStore } from "state/store"
+import { ToastMessage, useStore } from "state/store"
 import { useApiPromise } from "utils/api"
+
+export type FarmRedepositMutationType = ReturnType<
+  typeof useFarmRedepositMutation
+>
 
 export const useFarmRedepositMutation = (
   availableYieldFarms: Farm[] | undefined,
   depositNfts: DepositNftType[],
+  toast: ToastMessage,
 ) => {
   const api = useApiPromise()
   const { createTransaction } = useStore()
@@ -28,9 +33,9 @@ export const useFarmRedepositMutation = (
       .flat(2)
 
     if (txs.length > 1) {
-      return await createTransaction({ tx: api.tx.utility.batchAll(txs) })
+      await createTransaction({ tx: api.tx.utility.batchAll(txs) }, { toast })
     } else {
-      return await createTransaction({ tx: txs[0] })
+      await createTransaction({ tx: txs[0] }, { toast })
     }
   })
 }

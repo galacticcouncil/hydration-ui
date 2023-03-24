@@ -14,6 +14,11 @@ export const QUERY_KEYS = {
     "assetsTable",
     id?.toString(),
   ],
+  omniPositionId: (id: u128 | string) => [
+    QUERY_KEY_PREFIX,
+    "omniPositionId",
+    id?.toString(),
+  ],
   accountBalances: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "accountBalances",
@@ -34,7 +39,8 @@ export const QUERY_KEYS = {
     address.toString(),
   ],
   deposit: (id: Maybe<u128>) => [QUERY_KEY_PREFIX, "deposit", id?.toString()],
-  deposits: (poolId: Maybe<u32 | string>) => [
+  allDeposits: [QUERY_KEY_PREFIX, "deposits"],
+  poolDeposits: (poolId: Maybe<u32 | string>) => [
     QUERY_KEY_PREFIX,
     "deposits",
     poolId?.toString(),
@@ -189,7 +195,11 @@ export const QUERY_KEYS = {
     id?.toString(),
   ],
   omnipoolPositions: [QUERY_KEY_PREFIX, "omnipoolPositions"],
-  omnipoolPosition: (id: u128) => [QUERY_KEY_PREFIX, "omnipoolPosition", id],
+  omnipoolPosition: (id: u128 | undefined) => [
+    QUERY_KEY_PREFIX,
+    "omnipoolPosition",
+    id?.toString(),
+  ],
   otcOrders: [QUERY_KEY_PREFIX, "otcOrders"],
   otcOrdersTable: [QUERY_KEY_PREFIX, "otcOrdersTable"],
   otcOrdersState: (orderId: Maybe<string | u32>) => [

@@ -16,11 +16,14 @@ import {
 import { useFarmApr } from "api/farms"
 import { DepositNftType } from "api/deposits"
 import { useBestNumber } from "api/chain"
-import { BLOCK_TIME, BN_0, BN_1 } from "utils/constants"
+import { BLOCK_TIME, BN_0 } from "utils/constants"
 import { useMemo } from "react"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
+import { useAssetMeta } from "../../../../../api/assetMeta"
+import { u32 } from "@polkadot/types"
 
 type FarmDetailsCardProps = {
+  poolId: u32
   depositNft?: DepositNftType
   farm: {
     globalFarm: PalletLiquidityMiningGlobalFarmData
@@ -32,6 +35,7 @@ type FarmDetailsCardProps = {
 export type CardVariant = "button" | "div"
 
 export const FarmDetailsCard = ({
+  poolId,
   depositNft,
   farm,
   onSelect,
@@ -40,6 +44,7 @@ export const FarmDetailsCard = ({
 
   const asset = useAsset(farm.globalFarm.rewardCurrency)
   const apr = useFarmApr(farm)
+  const assetMeta = useAssetMeta(poolId)
 
   const variant = onSelect ? "button" : "div"
 
@@ -61,15 +66,12 @@ export const FarmDetailsCard = ({
       )
 
       if (!depositYield) return BN_0
-      const currentLoyaltyFactor =
-        apr.data.loyaltyCurve != null
-          ? getCurrentLoyaltyFactor(
-              apr.data.loyaltyCurve,
-              apr.data.currentPeriod.minus(
-                depositYield?.enteredAt.toBigNumber(),
-              ),
-            )
-          : BN_1
+      if (!apr.data.loyaltyCurve) return apr.data.apr
+
+      const currentLoyaltyFactor = getCurrentLoyaltyFactor(
+        apr.data.loyaltyCurve,
+        apr.data.currentPeriod.minus(depositYield?.enteredAt.toBigNumber()),
+      )
 
       return apr.data.apr.times(currentLoyaltyFactor)
     }
@@ -77,6 +79,7 @@ export const FarmDetailsCard = ({
   }, [depositNft, farm.globalFarm.id, farm.yieldFarm.id, apr.data])
 
   if (apr.data == null) return null
+
   return (
     <SContainer
       as={variant}
@@ -104,7 +107,9 @@ export const FarmDetailsCard = ({
           </Text>
         </div>
         <Text fs={19} lh={28} fw={400} font="FontOver">
-          {t("value.APR", { apr: apr.data?.apr })}
+          {apr.data.minApr
+            ? t("value.APR.range", { from: apr.data.minApr, to: apr.data?.apr })
+            : t("value.APR", { apr: apr.data?.apr })}
         </Text>
       </div>
       <div sx={{ flex: "column" }} css={{ gridArea: "details" }}>
@@ -161,7 +166,10 @@ export const FarmDetailsCard = ({
                 css={{ justifySelf: "end" }}
               >
                 {t("farms.details.card.lockedShares.value", {
-                  value: getFloatingPointAmount(depositNft.deposit.shares, 12),
+                  value: getFloatingPointAmount(
+                    depositNft.deposit.shares,
+                    assetMeta?.data?.decimals.toNumber() ?? 12,
+                  ),
                 })}
               </GradientText>
             </SRow>
@@ -175,7 +183,7 @@ export const FarmDetailsCard = ({
                 font="ChakraPetchBold"
                 gradient="pinkLightBlue"
               >
-                {t("value.percentage", { value: currentApr })}
+                {t("value.APR", { apr: currentApr })}
               </GradientText>
             </div>
           </>

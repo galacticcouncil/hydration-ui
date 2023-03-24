@@ -1,19 +1,20 @@
-import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
-import { useMemo } from "react"
-import { useAssetMetaList } from "api/assetMeta"
-import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
-import BN from "bignumber.js"
 import { u32 } from "@polkadot/types-codec"
-import { useTokensBalances } from "api/balances"
-import { useSpotPrices } from "api/spotPrice"
-import { getFloatingPointAmount } from "utils/balance"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { useApiIds } from "api/consts"
 import { useAssetDetailsList } from "api/assetDetails"
-import { getAssetName } from "components/AssetIcon/AssetIcon"
+import { useAssetMetaList } from "api/assetMeta"
+import { useTokensBalances } from "api/balances"
+import { useApiIds } from "api/consts"
+import { useUserDeposits } from "api/deposits"
+import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
+import { useSpotPrices } from "api/spotPrice"
 import { useUniques } from "api/uniques"
-import { useAccountStore } from "state/store"
+import BN from "bignumber.js"
+import { getAssetName } from "components/AssetIcon/AssetIcon"
+import { useMemo } from "react"
 import { useAssetsTradability } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
+import { useAccountStore } from "state/store"
+import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
+import { getFloatingPointAmount } from "utils/balance"
+import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
 
 export const useOmnipoolPools = (withPositions?: boolean) => {
   const { account } = useAccountStore()
@@ -37,6 +38,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
   const positions = useOmnipoolPositions(
     uniques.data?.map((u) => u.itemId) ?? [],
   )
+  const userDeposits = useUserDeposits()
 
   const queries = [
     assets,
@@ -45,6 +47,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     apiIds,
     uniques,
     assetsTradability,
+    userDeposits,
     ...positions,
     ...spotPrices,
     ...balances,
@@ -58,6 +61,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
       !metas.data ||
       !apiIds.data ||
       !assetsTradability.data ||
+      !userDeposits.data ||
       spotPrices.some((q) => !q.data) ||
       balances.some((q) => !q.data) ||
       positions.some((q) => !q.data)
@@ -102,6 +106,9 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
         const hasPositions = positions.some(
           (p) => p.data?.assetId.toString() === id.toString(),
         )
+        const hasDeposits = userDeposits.data?.some(
+          (deposit) => deposit.deposit.ammPoolId.toString() === id.toString(),
+        )
 
         return {
           id,
@@ -112,6 +119,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
           totalUSD,
           tradability,
           hasPositions,
+          hasDeposits,
         }
       })
       .filter((x): x is OmnipoolPool => x !== null)
@@ -126,14 +134,23 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     balances,
     positions,
     assetsTradability.data,
+    userDeposits.data,
   ])
 
   const data = useMemo(
-    () => (withPositions ? pools?.filter((pool) => pool.hasPositions) : pools),
+    () =>
+      withPositions
+        ? pools?.filter((pool) => pool.hasPositions || pool.hasDeposits)
+        : pools,
     [pools, withPositions],
   )
 
-  return { data, isLoading: isInitialLoading }
+  const hasPositionsOrDeposits = useMemo(
+    () => pools?.some((pool) => pool.hasPositions || pool.hasDeposits),
+    [pools],
+  )
+
+  return { data, hasPositionsOrDeposits, isLoading: isInitialLoading }
 }
 
 export type OmnipoolPool = {
@@ -150,4 +167,5 @@ export type OmnipoolPool = {
     canRemoveLiquidity: boolean
   }
   hasPositions: boolean
+  hasDeposits: boolean
 }

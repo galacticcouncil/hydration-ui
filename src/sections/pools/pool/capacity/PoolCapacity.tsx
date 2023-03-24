@@ -16,6 +16,7 @@ export const PoolCapacity = ({ pool, className }: Props) => {
 
   const isError = capacity.data.capacity.isNaN()
   const filled = isError ? "0" : capacity.data.filledPercent.toFixed(2)
+  const isFull = capacity.data.filledPercent.eq(100)
 
   return (
     <SContainer ref={ref} className={className}>
@@ -24,20 +25,29 @@ export const PoolCapacity = ({ pool, className }: Props) => {
         {!isError && (
           <div>
             <Trans
-              i18nKey="liquidity.asset.capacity"
+              i18nKey={
+                isFull
+                  ? "liquidity.asset.capacity.full"
+                  : "liquidity.asset.capacity"
+              }
               tOptions={{
                 symbol: capacity.data.symbol,
                 filled: capacity.data.filled,
                 capacity: capacity.data.capacity,
               }}
             >
-              <Text fs={11} fw={500} color="basic400" as="span" />
+              <Text
+                fs={11}
+                fw={500}
+                color={isFull ? "pink600" : "basic400"}
+                as="span"
+              />
               <Text fs={11} fw={500} color="brightBlue100" as="span" />
             </Trans>
           </div>
         )}
         <SBarContainer>
-          <SBar filled={filled} width={width} />
+          <SBar filled={filled} width={width} isFull={isFull} />
         </SBarContainer>
       </div>
     </SContainer>

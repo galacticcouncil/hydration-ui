@@ -11,11 +11,13 @@ import { separateBalance } from "utils/balance"
 import { useClaimableAmount, useClaimAllMutation } from "utils/farms/claiming"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { DepositNftType } from "api/deposits"
+import { TOAST_MESSAGES } from "state/toasts"
+import { ToastMessage } from "state/store"
 import { useAccountStore } from "state/store"
 
 export const ClaimRewardsCard = (props: {
   pool: OmnipoolPool
-  depositNft: DepositNftType
+  depositNft?: DepositNftType
 }) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -23,7 +25,7 @@ export const ClaimRewardsCard = (props: {
   const claimable = useClaimableAmount(props.pool, props.depositNft)
   const assetsMeta = useAssetMetaList(Object.keys(claimable.data?.assets || {}))
 
-  const claimableAssets = useMemo(() => {
+  const { claimableAssets, toastValue } = useMemo(() => {
     const claimableAssets = []
 
     if (assetsMeta.data) {
@@ -38,10 +40,35 @@ export const ClaimRewardsCard = (props: {
       }
     }
 
-    return claimableAssets
-  }, [assetsMeta.data, claimable.data?.assets])
+    const toastValue = claimableAssets.map((asset, index) => {
+      return (
+        <Fragment key={index}>
+          {index > 0 && <span> {t("and")} </span>}
+          <Trans t={t} i18nKey="farms.claimCard.toast.asset" tOptions={asset}>
+            <span />
+            <span className="highlight" />
+          </Trans>
+        </Fragment>
+      )
+    })
 
-  const claimAll = useClaimAllMutation(props.pool.id, props.depositNft)
+    return { claimableAssets, toastValue }
+  }, [assetsMeta.data, claimable.data?.assets, t])
+
+  const toast = TOAST_MESSAGES.reduce((memo, type) => {
+    const msType = type === "onError" ? "onLoading" : type
+    memo[type] = (
+      <>
+        <Trans i18nKey={`farms.claimCard.toast.${msType}`}>
+          <span />
+        </Trans>
+        {toastValue}
+      </>
+    )
+    return memo
+  }, {} as ToastMessage)
+
+  const claimAll = useClaimAllMutation(props.pool.id, props.depositNft, toast)
 
   return (
     <SContainer>
@@ -79,8 +106,9 @@ export const ClaimRewardsCard = (props: {
           sx={{ mt: 6 }}
           css={{ color: `rgba(${theme.rgbColors.white}, 0.4)` }}
         >
-          {t("value.usd", {
-            amount: claimable.data?.usd,
+          {t("farms.claimCard.claim.usd", {
+            value: claimable.data?.usd,
+            numberPrefix: "$",
             fixedPointScale: 12,
           })}
         </Text>
@@ -88,7 +116,10 @@ export const ClaimRewardsCard = (props: {
       <Button
         variant="primary"
         sx={{ height: "fit-content", width: ["100%", 168] }}
-        disabled={account?.isExternalWalletConnected}
+        disabled={
+          account?.isExternalWalletConnected ||
+          (claimable.data && claimable.data.usd.isZero())
+        }
         onClick={() => claimAll.mutate()}
         isLoading={claimAll.isLoading}
       >

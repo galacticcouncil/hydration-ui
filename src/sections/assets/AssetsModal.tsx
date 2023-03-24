@@ -1,4 +1,4 @@
-import { Modal } from "../../components/Modal/Modal"
+import { ModalMeta } from "../../components/Modal/Modal"
 import { FC } from "react"
 import { AssetsModalRow } from "./AssetsModalRow"
 import { SAssetsModalHeader } from "./AssetsModal.styled"
@@ -8,17 +8,23 @@ import { useTranslation } from "react-i18next"
 import { Maybe } from "utils/helpers"
 import { useAccountStore } from "state/store"
 import { useAssetAccountDetails } from "api/assetDetails"
+import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
+import { UseAssetModel } from "api/asset"
 
 interface AssetsModalProps {
   allowedAssets?: Maybe<u32 | string>[]
-  onSelect?: (id: u32 | string) => void
+  onSelect?: (asset: NonNullable<UseAssetModel>) => void
   onClose: () => void
+  title?: string
+  hideInactiveAssets?: boolean
 }
 
 export const AssetsModal: FC<AssetsModalProps> = ({
   onClose,
   allowedAssets,
   onSelect,
+  title,
+  hideInactiveAssets,
 }) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -36,7 +42,16 @@ export const AssetsModal: FC<AssetsModalProps> = ({
       : []) ?? []
 
   return (
-    <Modal open={true} onClose={onClose}>
+    <>
+      <ModalMeta
+        withoutOutsideClose
+        titleHeader={title ?? t("selectAsset.title")}
+        secondaryIcon={{
+          icon: <ChevronRight css={{ transform: "rotate(180deg)" }} />,
+          name: "Back",
+          onClick: onClose,
+        }}
+      />
       {!!mainAssets?.length && (
         <>
           <SAssetsModalHeader sx={{ m: ["0 -40px", "0 -40px"] }}>
@@ -51,12 +66,12 @@ export const AssetsModal: FC<AssetsModalProps> = ({
             <AssetsModalRow
               key={asset.id}
               id={asset.id}
-              onClick={() => onSelect?.(asset.id)}
+              onClick={(assetData) => onSelect?.(assetData)}
             />
           ))}
         </>
       )}
-      {!!otherAssets?.length && (
+      {!hideInactiveAssets && !!otherAssets?.length && (
         <>
           <SAssetsModalHeader shadowed sx={{ m: ["0 -40px", "0 -40px"] }}>
             <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
@@ -64,14 +79,10 @@ export const AssetsModal: FC<AssetsModalProps> = ({
             </Text>
           </SAssetsModalHeader>
           {otherAssets?.map((asset) => (
-            <AssetsModalRow
-              key={asset.id}
-              id={asset.id}
-              onClick={() => onSelect?.(asset.id)}
-            />
+            <AssetsModalRow key={asset.id} id={asset.id} />
           ))}
         </>
       )}
-    </Modal>
+    </>
   )
 }

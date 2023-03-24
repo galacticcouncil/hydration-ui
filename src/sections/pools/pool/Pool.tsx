@@ -14,15 +14,18 @@ import { PoolCapacity } from "sections/pools/pool/capacity/PoolCapacity"
 import { LiquidityPositionWrapper } from "./positions/LiquidityPositionWrapper"
 import { FarmingPositionWrapper } from "../farms/FarmingPositionWrapper"
 import { useAccountDeposits } from "api/deposits"
+import { PoolFooterWithNoFarms } from "./footer/PoolFooterWithNoFarms"
 
 type Props = { pool: OmnipoolPool }
+
+const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
 export const Pool = ({ pool }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const positions = usePoolPositions(pool)
-  const accountDeposits = useAccountDeposits(pool.id)
+  const accountDeposits = useAccountDeposits(enabledFarms ? pool.id : undefined)
 
   const hasExpandContent =
     !!positions.data?.length || !!accountDeposits.data?.length
@@ -31,7 +34,7 @@ export const Pool = ({ pool }: Props) => {
     <SContainer id={pool.id.toString()}>
       <SGridContainer>
         <PoolDetails pool={pool} css={{ gridArea: "details" }} />
-        {import.meta.env.VITE_FF_FARMS_ENABLED === "true" ? (
+        {enabledFarms ? (
           <PoolIncentives poolId={pool.id} css={{ gridArea: "incentives" }} />
         ) : (
           <div css={{ gridArea: "incentives" }} />
@@ -58,7 +61,7 @@ export const Pool = ({ pool }: Props) => {
               css={{ overflow: "hidden" }}
             >
               <LiquidityPositionWrapper pool={pool} positions={positions} />
-              {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
+              {enabledFarms && (
                 <FarmingPositionWrapper
                   pool={pool}
                   deposits={accountDeposits.data}
@@ -68,7 +71,12 @@ export const Pool = ({ pool }: Props) => {
           )}
         </AnimatePresence>
       )}
-      {isDesktop && pool.hasPositions && <PoolFooter pool={pool} />}
+      {isDesktop &&
+        (enabledFarms ? (
+          <PoolFooter pool={pool} />
+        ) : (
+          <PoolFooterWithNoFarms pool={pool} />
+        ))}
     </SContainer>
   )
 }

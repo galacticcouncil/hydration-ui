@@ -10,6 +10,7 @@ import { ReviewTransactionError } from "./ReviewTransactionError"
 import { ReviewTransactionForm } from "./ReviewTransactionForm"
 import { ReviewTransactionToast } from "./ReviewTransactionToast"
 import { useSendTransactionMutation } from "./ReviewTransaction.utils"
+import { WalletUpgradeModal } from "sections/wallet/upgrade/WalletUpgradeModal"
 
 export const ReviewTransaction: React.FC<Transaction> = (props) => {
   const { t } = useTranslation()
@@ -65,6 +66,7 @@ export const ReviewTransaction: React.FC<Transaction> = (props) => {
         withoutOutsideClose
         {...modalProps}
       >
+        <WalletUpgradeModal />
         {sendTx.isLoading ? (
           <ReviewTransactionPending
             txState={sendTx.txState}

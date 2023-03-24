@@ -13,7 +13,9 @@ export const ExternalWalletConnectProviderButton = ({
   const { t } = useTranslation()
   return (
     <SWalletButton sx={{ mt: 8 }} onClick={onClick}>
-      <Icon icon={<ExternalWalletIcon />} />
+      <div sx={{ bg: "basic900", p: 7 }} css={{ borderRadius: "9999px" }}>
+        <Icon icon={<ExternalWalletIcon />} />
+      </div>
       <Text fs={18} css={{ flexGrow: 1 }}>
         {t("walletConnect.externalWallet")}
       </Text>
