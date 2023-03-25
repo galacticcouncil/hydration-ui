@@ -10,13 +10,15 @@ type LoyaltyGraphProps = {
   farm: Farm
   loyaltyCurve: PalletLiquidityMiningLoyaltyCurve
   enteredAt?: BigNumber
+  currentBlock: number
 }
 
-export function LoyaltyGraph({
+export const LoyaltyGraph = ({
   farm,
   loyaltyCurve,
   enteredAt,
-}: LoyaltyGraphProps) {
+  currentBlock,
+}: LoyaltyGraphProps) => {
   const { t } = useTranslation()
   const apr = useFarmApr(farm)
 
@@ -24,9 +26,7 @@ export function LoyaltyGraph({
     farm,
     apr.data?.apr,
     loyaltyCurve,
-    enteredAt && apr.data != null
-      ? apr.data.currentPeriod.minus(enteredAt)
-      : undefined,
+    enteredAt ? BigNumber(currentBlock).minus(enteredAt) : undefined,
   )
 
   return (

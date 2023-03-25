@@ -51,6 +51,7 @@ export const JoinFarmModal = ({
 
   return (
     <Modal
+      withoutOutsideClose
       open={isOpen}
       onClose={onClose}
       title={t("farms.modal.join.title", { assetSymbol: "HDX" })}

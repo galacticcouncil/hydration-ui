@@ -16,6 +16,7 @@ import { ToastMessage } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useAssetMeta } from "api/assetMeta"
 import { useAccountStore } from "state/store"
+import { useBestNumber } from "api/chain"
 
 function isFarmJoined(depositNft: DepositNftType, farm: Farm) {
   return depositNft.deposit.yieldFarmEntries.find(
@@ -187,6 +188,8 @@ export const JoinedFarmsDetails = (props: {
     depositNft?: DepositNftType
   } | null>(null)
 
+  const bestNumber = useBestNumber()
+
   const farms = useFarms(props.pool.id)
   const selectedFarm =
     selectedFarmIds != null
@@ -196,6 +199,12 @@ export const JoinedFarmsDetails = (props: {
             farm.yieldFarm.id.eq(selectedFarmIds.yieldFarm),
         )
       : undefined
+
+  const currentBlock = bestNumber.data?.relaychainBlockNumber
+    .toBigNumber()
+    .dividedToIntegerBy(
+      selectedFarm?.globalFarm.blocksPerPeriod.toNumber() ?? 1,
+    )
 
   return (
     <Modal
@@ -209,6 +218,7 @@ export const JoinedFarmsDetails = (props: {
           farm={selectedFarm}
           depositNft={selectedFarmIds?.depositNft}
           onBack={() => setSelectedFarmIds(null)}
+          currentBlock={currentBlock?.toNumber()}
         />
       ) : (
         <div sx={{ flex: "column" }}>
