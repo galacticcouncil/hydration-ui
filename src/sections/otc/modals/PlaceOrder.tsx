@@ -18,6 +18,7 @@ import { OrderAssetRate } from "./cmp/AssetXRate"
 import { PartialOrderToggle } from "./cmp/PartialOrderToggle"
 
 import { Separator } from "components/Separator/Separator"
+import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 
 type PlaceOrderProps = {
   assetOut: u32 | string
@@ -58,6 +59,14 @@ export const PlaceOrder = ({
   const { data: paymentInfoData } = usePaymentInfo(
     api.tx.otc.placeOrder(aIn, aOut, "0", "0", false),
   )
+
+  const assetOutModal = useAssetsModal({
+    onSelect: (asset) => setAOut(asset.id),
+  })
+
+  const assetInModal = useAssetsModal({
+    onSelect: (asset) => setAIn(asset.id),
+  })
 
   const handleAssetChange = () => {
     const { amountOut, amountIn } = form.getValues()
@@ -135,143 +144,154 @@ export const PlaceOrder = ({
   }
 
   return (
-    <Modal
-      open={isOpen}
-      withoutOutsideClose
-      title={t("otc.order.place.title")}
-      onClose={() => {
-        onClose()
-        form.reset()
-      }}
-    >
-      <Text fs={16} color="basic400" sx={{ mt: 10, mb: 22 }}>
-        {t("otc.order.place.desc")}
-      </Text>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        autoComplete="off"
-        sx={{
-          flex: "column",
-          justify: "space-between",
+    <>
+      {assetOutModal.isOpen && (
+        <Modal open={true} onClose={onClose}>
+          {assetOutModal.modal}
+        </Modal>
+      )}
+      {assetInModal.isOpen && (
+        <Modal open={true} onClose={onClose}>
+          {assetInModal.modal}
+        </Modal>
+      )}
+      <Modal
+        open={isOpen}
+        withoutOutsideClose
+        title={t("otc.order.place.title")}
+        onClose={() => {
+          onClose()
+          form.reset()
         }}
       >
-        <Controller
-          name="amountOut"
-          control={form.control}
-          render={({
-            field: { name, value, onChange },
-            fieldState: { error },
-          }) => (
-            <OrderAssetSelect
-              title={t("otc.order.place.offerTitle")}
-              name={name}
-              value={value}
-              onChange={(e) => {
-                onChange(e)
-                handleAssetChange()
-              }}
-              asset={aOut}
-              onAssetChange={setAOut}
-              error={error?.message}
-            />
-          )}
-        />
-        <Controller
-          name="price"
-          control={form.control}
-          render={({
-            field: { name, value, onChange },
-            fieldState: { error },
-          }) => (
-            <OrderAssetRate
-              inputAsset={assetOutMeta.data?.symbol}
-              outputAsset={assetInMeta.data?.symbol}
-              price={value!}
-              onChange={(e) => {
-                onChange(e)
-                handlePriceChange()
-              }}
-            />
-          )}
-        />
-        <Controller
-          name="amountIn"
-          control={form.control}
-          render={({
-            field: { name, value, onChange },
-            fieldState: { error },
-          }) => (
-            <OrderAssetSelect
-              title={t("otc.order.place.getTitle")}
-              name={name}
-              value={value}
-              onChange={(e) => {
-                onChange(e)
-                handleAssetChange()
-              }}
-              asset={aIn}
-              onAssetChange={setAIn}
-              error={error?.message}
-            />
-          )}
-        />
-
-        <div
+        <Text fs={16} color="basic400" sx={{ mt: 10, mb: 22 }}>
+          {t("otc.order.place.desc")}
+        </Text>
+        <form
+          onSubmit={form.handleSubmit(handleSubmit)}
+          autoComplete="off"
           sx={{
-            mt: 10,
-            mb: 10,
-            flex: "row",
+            flex: "column",
             justify: "space-between",
-            align: "center",
           }}
         >
-          <div>
-            <Text fs={13} color="white">
-              {t("otc.order.place.partial")}
-            </Text>
-            <Text fs={13} color="darkBlue300">
-              {t("otc.order.place.partialDesc")}
-            </Text>
-          </div>
-
           <Controller
-            name="partiallyFillable"
+            name="amountOut"
             control={form.control}
-            render={({ field: { value, onChange } }) => (
-              <PartialOrderToggle
-                partial={value}
-                onChange={(e) => onChange(e)}
+            render={({
+              field: { name, value, onChange },
+              fieldState: { error },
+            }) => (
+              <OrderAssetSelect
+                title={t("otc.order.place.offerTitle")}
+                name={name}
+                value={value}
+                onChange={(e) => {
+                  onChange(e)
+                  handleAssetChange()
+                }}
+                onOpen={assetOutModal.openModal}
+                asset={aOut}
+                error={error?.message}
               />
             )}
           />
-        </div>
-        <Separator color="darkBlue401" />
-        <div
-          sx={{
-            mt: 14,
-            flex: "row",
-            justify: "space-between",
-          }}
-        >
-          <Text fs={13} color="darkBlue300">
-            {t("otc.order.place.fee")}
-          </Text>
-          <div sx={{ flex: "row", align: "center", gap: 4 }}>
-            {paymentInfoData?.partialFee != null && (
-              <Text fs={14}>
-                {t("otc.order.place.feeValue", {
-                  amount: new BigNumber(paymentInfoData.partialFee.toHex()),
-                  symbol: accountCurrencyMeta.data?.symbol,
-                  fixedPointScale: accountCurrencyMeta.data?.decimals,
-                })}
-              </Text>
+          <Controller
+            name="price"
+            control={form.control}
+            render={({
+              field: { value, onChange },
+            }) => (
+              <OrderAssetRate
+                inputAsset={assetOutMeta.data?.symbol}
+                outputAsset={assetInMeta.data?.symbol}
+                price={value!}
+                onChange={(e) => {
+                  onChange(e)
+                  handlePriceChange()
+                }}
+              />
             )}
+          />
+          <Controller
+            name="amountIn"
+            control={form.control}
+            render={({
+              field: { name, value, onChange },
+              fieldState: { error },
+            }) => (
+              <OrderAssetSelect
+                title={t("otc.order.place.getTitle")}
+                name={name}
+                value={value}
+                onChange={(e) => {
+                  onChange(e)
+                  handleAssetChange()
+                }}
+                onOpen={assetInModal.openModal}
+                asset={aIn}
+                error={error?.message}
+              />
+            )}
+          />
+
+          <div
+            sx={{
+              mt: 10,
+              mb: 10,
+              flex: "row",
+              justify: "space-between",
+              align: "center",
+            }}
+          >
+            <div>
+              <Text fs={13} color="white">
+                {t("otc.order.place.partial")}
+              </Text>
+              <Text fs={13} color="darkBlue300">
+                {t("otc.order.place.partialDesc")}
+              </Text>
+            </div>
+
+            <Controller
+              name="partiallyFillable"
+              control={form.control}
+              render={({ field: { value, onChange } }) => (
+                <PartialOrderToggle
+                  partial={value}
+                  onChange={(e) => onChange(e)}
+                />
+              )}
+            />
           </div>
-        </div>
-        <Button sx={{ mt: 20 }} variant="primary">
-          {t("otc.order.place.confirm")}
-        </Button>
-      </form>
-    </Modal>
+          <Separator color="darkBlue401" />
+          <div
+            sx={{
+              mt: 14,
+              flex: "row",
+              justify: "space-between",
+            }}
+          >
+            <Text fs={13} color="darkBlue300">
+              {t("otc.order.place.fee")}
+            </Text>
+            <div sx={{ flex: "row", align: "center", gap: 4 }}>
+              {paymentInfoData?.partialFee != null && (
+                <Text fs={14}>
+                  {t("otc.order.place.feeValue", {
+                    amount: new BigNumber(paymentInfoData.partialFee.toHex()),
+                    symbol: accountCurrencyMeta.data?.symbol,
+                    fixedPointScale: accountCurrencyMeta.data?.decimals,
+                  })}
+                </Text>
+              )}
+            </div>
+          </div>
+          <Button sx={{ mt: 20 }} variant="primary">
+            {t("otc.order.place.confirm")}
+          </Button>
+        </form>
+      </Modal>
+    </>
   )
 }

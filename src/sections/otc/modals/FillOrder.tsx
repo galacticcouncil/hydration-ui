@@ -103,7 +103,6 @@ export const FillOrder = ({
       <Text fs={16} color="basic400" sx={{ mt: 10, mb: 22 }}>
         {t("otc.order.fill.desc")}
       </Text>
-
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         autoComplete="off"

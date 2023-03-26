@@ -4,7 +4,6 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { u32 } from "@polkadot/types"
 import { useAsset } from "api/asset"
 import { useTokenBalance } from "api/balances"
-import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccountStore } from "state/store"
 import BN from "bignumber.js"
 
@@ -36,16 +35,12 @@ export function OrderAssetSelect(props: {
   title?: string
   asset: string | u32
   onChange: (value: string) => void
-  onAssetChange: (asset: u32 | string) => void
+  onOpen: () => void
   error?: string
 }) {
   const { account } = useAccountStore()
   const asset = useAsset(props.asset)
   const balance = useTokenBalance(props.asset, account?.address)
-
-  const { openModal, modal } = useAssetsModal({
-    onSelect: props.onAssetChange,
-  })
 
   const assetBalance = balance.data?.balance
   const assetDecimals = asset.data?.decimals
@@ -56,24 +51,21 @@ export function OrderAssetSelect(props: {
   }
 
   return (
-    <>
-      {modal}
-      <UigcAssetTransfer
-        onAssetInputChanged={(e) => props.onChange(e.detail.value)}
-        onAssetSelectorClicked={openModal}
-        id={props.name}
-        title={props.title}
-        asset={asset.data?.symbol}
-        amount={props.value}
-        error={props.error}
-      >
-        <UigcAssetBalance
-          slot="balance"
-          balance={blnc}
-          onMaxClick={() => props.onChange(blnc)}
-        />
-      </UigcAssetTransfer>
-    </>
+    <UigcAssetTransfer
+      onAssetInputChanged={(e) => props.onChange(e.detail.value)}
+      onAssetSelectorClicked={props.onOpen}
+      id={props.name}
+      title={props.title}
+      asset={asset.data?.symbol}
+      amount={props.value}
+      error={props.error}
+    >
+      <UigcAssetBalance
+        slot="balance"
+        balance={blnc}
+        onMaxClick={() => props.onChange(blnc)}
+      />
+    </UigcAssetTransfer>
   )
 }
 
