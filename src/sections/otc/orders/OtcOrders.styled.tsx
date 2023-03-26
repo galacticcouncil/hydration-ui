@@ -2,7 +2,7 @@ import { theme } from "theme"
 import { css } from "@emotion/react"
 
 export const ordersTableStyles = css`
-  th {
+  th, td {
     &:nth-last-of-type(2) {
       > div {
         justify-content: flex-end;

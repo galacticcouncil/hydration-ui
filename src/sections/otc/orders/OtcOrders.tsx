@@ -4,7 +4,7 @@ import {
   Table,
   TableBodyContent,
   TableContainer,
-  TableDataBasic,
+  TableData,
   TableHeaderContent,
   TableRow,
 } from "components/Table/Table.styled"
@@ -18,6 +18,7 @@ import { CancelOrder } from "../modals/CancelOrder"
 import { ordersTableStyles } from "./OtcOrders.styled"
 import { useOrdersTable } from "./OtcOrders.utils"
 import { OrderTableData } from "./OtcOrdersData.utils"
+import { OtcOrderActionsMob } from "./actions/OtcOrderActionsMob"
 
 type Props = {
   data: OrderTableData[]
@@ -37,8 +38,6 @@ export const OtcOrderTable = ({ data }: Props) => {
     onFill: setFillOrder,
     onClose: setCloseOrder,
   })
-
-  console.log(fillOrder)
 
   return (
     <TableContainer css={ordersTableStyles}>
@@ -68,9 +67,9 @@ export const OtcOrderTable = ({ data }: Props) => {
                 }}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableDataBasic key={cell.id}>
+                  <TableData key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableDataBasic>
+                  </TableData>
                 ))}
               </TableRow>
             </Fragment>
@@ -101,6 +100,14 @@ export const OtcOrderTable = ({ data }: Props) => {
           offering={closeOrder.offering}
           onClose={() => setCloseOrder(undefined)}
           onSuccess={() => {}}
+        />
+      )}
+      {!isDesktop && (
+        <OtcOrderActionsMob
+          row={row}
+          onClose={() => setRow(undefined)}
+          onCloseOrder={setCloseOrder}
+          onFillOrder={setFillOrder}
         />
       )}
     </TableContainer>
