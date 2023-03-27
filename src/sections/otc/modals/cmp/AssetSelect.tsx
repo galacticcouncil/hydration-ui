@@ -33,7 +33,7 @@ export function OrderAssetSelect(props: {
   name: string
   value: string
   title?: string
-  asset: string | u32
+  asset?: string | u32
   onChange: (value: string) => void
   onOpen: () => void
   error?: string

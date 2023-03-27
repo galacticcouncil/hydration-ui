@@ -21,8 +21,8 @@ import { Separator } from "components/Separator/Separator"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 
 type PlaceOrderProps = {
-  assetOut: u32 | string
-  assetIn: u32 | string
+  assetOut?: u32 | string
+  assetIn?: u32 | string
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
