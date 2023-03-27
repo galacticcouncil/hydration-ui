@@ -39,7 +39,7 @@ export const CancelOrder = ({
           onLoading: (
             <Trans
               t={t}
-              i18nKey="otc.order.place.toast.onLoading"
+              i18nKey="otc.order.close.toast.onLoading"
               tOptions={{}}
             >
               <span />
@@ -49,7 +49,7 @@ export const CancelOrder = ({
           onSuccess: (
             <Trans
               t={t}
-              i18nKey="otc.order.place.toast.onSuccess"
+              i18nKey="otc.order.close.toast.onSuccess"
               tOptions={{}}
             >
               <span />
@@ -78,9 +78,6 @@ export const CancelOrder = ({
           sx={{ mt: 10, mb: 10, textAlign: "center" }}
         >
           {t("otc.order.close.title")}
-        </Text>
-        <Text fs={16} color="basic400" sx={{ textAlign: "center" }}>
-          {t("otc.order.close.desc")}
         </Text>
         {offering.initial && (
           <Text fs={16} color="basic400" sx={{ textAlign: "center" }}>

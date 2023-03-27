@@ -68,7 +68,7 @@ export const FillOrder = ({
           onLoading: (
             <Trans
               t={t}
-              i18nKey="otc.order.place.toast.onLoading"
+              i18nKey="otc.order.fill.toast.onLoading"
               tOptions={{}}
             >
               <span />
@@ -78,7 +78,7 @@ export const FillOrder = ({
           onSuccess: (
             <Trans
               t={t}
-              i18nKey="otc.order.place.toast.onSuccess"
+              i18nKey="otc.order.fill.toast.onSuccess"
               tOptions={{}}
             >
               <span />
