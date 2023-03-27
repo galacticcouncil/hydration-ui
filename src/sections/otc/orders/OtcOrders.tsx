@@ -8,7 +8,7 @@ import {
   TableHeaderContent,
   TableRow,
 } from "components/Table/Table.styled"
-import { Fragment, useState } from "react"
+import { Fragment, useMemo, useState } from "react"
 import { useMedia } from "react-use"
 
 import { theme } from "theme"
@@ -19,12 +19,17 @@ import { ordersTableStyles } from "./OtcOrders.styled"
 import { useOrdersTable } from "./OtcOrders.utils"
 import { OrderTableData } from "./OtcOrdersData.utils"
 import { OtcOrderActionsMob } from "./actions/OtcOrderActionsMob"
+import { safeConvertAddressSS58 } from "utils/formatting"
+import { useAccountStore } from "state/store"
+import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 
 type Props = {
   data: OrderTableData[]
+  showMyOrders: boolean
+  visibility: string
 }
 
-export const OtcOrderTable = ({ data }: Props) => {
+export const OtcOrderTable = ({ data, showMyOrders, visibility }: Props) => {
   const [row, setRow] = useState<OrderTableData | undefined>(undefined)
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [fillOrder, setFillOrder] = useState<OrderTableData | undefined>(
@@ -34,7 +39,26 @@ export const OtcOrderTable = ({ data }: Props) => {
     undefined,
   )
 
-  const table = useOrdersTable(data, {
+  const { account } = useAccountStore()
+  const userAddress = safeConvertAddressSS58(
+    account?.address,
+    HYDRA_ADDRESS_PREFIX,
+  )
+
+  const filteredData = useMemo(() => {
+    let res: OrderTableData[] = data
+    switch (visibility) {
+      case "partial":
+        res = data.filter((row) => row.partiallyFillable)
+        break
+      case "full":
+        res = data.filter((row) => !row.partiallyFillable)
+        break
+    }
+    return showMyOrders ? res.filter((row) => row.owner === userAddress) : res
+  }, [data, userAddress, showMyOrders, visibility])
+
+  const table = useOrdersTable(filteredData, {
     onFill: setFillOrder,
     onClose: setCloseOrder,
   })

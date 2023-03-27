@@ -16,6 +16,7 @@ import { OrderTableData } from "../OtcOrdersData.utils"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { OrderCapacity } from "sections/otc/capacity/OrderCapacity"
 import { SActionButtonsContainer } from "./OtcOrderActions.styled"
+import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 
 type Props = {
   row?: OrderTableData
@@ -35,7 +36,7 @@ export const OtcOrderActionsMob = ({
 
   if (!row) return null
 
-  const userAddress = safeConvertAddressSS58(account?.address, 63)
+  const userAddress = safeConvertAddressSS58(account?.address, HYDRA_ADDRESS_PREFIX)
   const orderOwner = row.owner
 
   return (

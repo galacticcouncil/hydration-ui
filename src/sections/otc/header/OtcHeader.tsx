@@ -6,26 +6,35 @@ import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { Switch } from "components/Switch/Switch"
 import { Heading } from "components/Typography/Heading/Heading"
-import { Text } from "components/Typography/Text/Text"
-import { OtcHeaderTotal } from "sections/otc/header/OtcHeaderTotal"
 import { PlaceOrder } from "../modals/PlaceOrder"
+import { Separator } from "components/Separator/Separator"
+import { SHeader, STabs } from "./OtcHeader.styled"
+import { Tab } from "./OtcHeaderTab"
 
 type Props = {
   showMyOrders: boolean
+  visibility: string
   onShowMyOrdersChange: (value: boolean) => void
+  onVisibilityChange: (value: string) => void
 }
 
 export const OtcHeader: FC<Props> = ({
   showMyOrders,
+  visibility,
   onShowMyOrdersChange,
+  onVisibilityChange,
 }) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
   const { account } = useAccountStore()
 
+  const onOptionChange = (e: { target: { value: string } }) => {
+    onVisibilityChange(e.target.value)
+  }
+
   return (
     <>
-      <div sx={{ flex: "row", justify: "space-between", mb: 43 }}>
+      <SHeader sx={{ flex: "row", justify: "space-between" }}>
         <Heading fs={20} lh={26} fw={500}>
           {t("otc.header.title")}
         </Heading>
@@ -38,36 +47,55 @@ export const OtcHeader: FC<Props> = ({
             label={t("otc.header.switch")}
           />
         )}
-      </div>
+      </SHeader>
+      <Separator
+        color="white"
+        opacity={0.12}
+        sx={{ display: ["none", "inherit"] }}
+      />
       <div
-        sx={{ flex: ["column", "row"], mb: 40 }}
-        css={{ "> *:not([role='separator'])": { flex: 1 } }}
+        sx={{
+          flex: ["row-reverse", "row"],
+          align: "baseline",
+          justify: "space-between",
+          mt: [20, 32],
+          mb: 20,
+        }}
       >
-        <div sx={{ flex: ["row", "column"], justify: "space-between" }}>
-          <Text color="brightBlue300" sx={{ mb: 14 }}>
-            {t("otc.header.totalValue")}
-          </Text>
-          <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
-            <OtcHeaderTotal myOffers={showMyOrders} />
-            <Button
-              size="medium"
-              variant="primary"
-              sx={{ mt: "-20px" }}
-              onClick={() => setOpenAdd(true)}
-            >
-              <div sx={{ flex: "row", align: "center" }}>
-                <Icon icon={<PlusIcon />} sx={{ mr: 8, height: 16 }} />
-                {t("otc.header.placeOrder")}
-              </div>
-            </Button>
+        <STabs>
+          <Tab
+            value={"all"}
+            active={visibility}
+            label={"All"}
+            onChange={onOptionChange}
+          />
+          <Tab
+            value={"partial"}
+            active={visibility}
+            label={"Partially fillable"}
+            onChange={onOptionChange}
+          />
+          <Tab
+            value={"full"}
+            active={visibility}
+            label={"Fillable"}
+            onChange={onOptionChange}
+          />
+        </STabs>
+        <Button
+          size="medium"
+          variant="primary"
+          onClick={() => setOpenAdd(true)}
+        >
+          <div sx={{ flex: "row", align: "center" }}>
+            <Icon icon={<PlusIcon />} sx={{ mr: 8, height: 16 }} />
+            {t("otc.header.placeOrder")}
           </div>
-        </div>
+        </Button>
       </div>
 
       {openAdd && (
         <PlaceOrder
-          assetOut={"2"}
-          assetIn={"0"}
           isOpen={openAdd}
           onClose={() => setOpenAdd(false)}
           onSuccess={() => {}}
