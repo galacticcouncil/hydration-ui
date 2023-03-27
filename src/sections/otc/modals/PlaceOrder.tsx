@@ -66,6 +66,7 @@ export const PlaceOrder = ({
 
   const assetInModal = useAssetsModal({
     onSelect: (asset) => setAIn(asset.id),
+    allAssets: true,
   })
 
   const handleAssetChange = () => {

@@ -7,7 +7,7 @@ import { Text } from "../../components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { Maybe } from "utils/helpers"
 import { useAccountStore } from "state/store"
-import { useAssetAccountDetails } from "api/assetDetails"
+import { useAssetAccountDetails, useAssetDetailsList } from "api/assetDetails"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { UseAssetModel } from "api/asset"
 
@@ -17,6 +17,7 @@ interface AssetsModalProps {
   onClose: () => void
   title?: string
   hideInactiveAssets?: boolean
+  allAssets?: boolean
 }
 
 export const AssetsModal: FC<AssetsModalProps> = ({
@@ -25,20 +26,24 @@ export const AssetsModal: FC<AssetsModalProps> = ({
   onSelect,
   title,
   hideInactiveAssets,
+  allAssets,
 }) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
 
   const assetsRows = useAssetAccountDetails(account?.address)
+  const assetsRowsAll = useAssetDetailsList(allAssets ? undefined : [])
+
+  const assets = allAssets ? assetsRowsAll : assetsRows
 
   const mainAssets =
     (allowedAssets != null
-      ? assetsRows.data?.filter((asset) => allowedAssets.includes(asset.id))
-      : assetsRows.data) ?? []
+      ? assets.data?.filter((asset) => allowedAssets.includes(asset.id))
+      : assets.data) ?? []
 
   const otherAssets =
     (allowedAssets != null
-      ? assetsRows.data?.filter((asset) => !allowedAssets?.includes(asset.id))
+      ? assets.data?.filter((asset) => !allowedAssets?.includes(asset.id))
       : []) ?? []
 
   return (

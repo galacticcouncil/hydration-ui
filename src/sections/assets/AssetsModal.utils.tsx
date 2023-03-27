@@ -9,6 +9,7 @@ interface useAssetsModalProps {
   allowedAssets?: Maybe<u32 | string>[]
   title?: string
   hideInactiveAssets?: boolean
+  allAssets?: boolean
 }
 
 export const useAssetsModal = ({
@@ -16,6 +17,7 @@ export const useAssetsModal = ({
   allowedAssets,
   title,
   hideInactiveAssets,
+  allAssets,
 }: useAssetsModalProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -38,6 +40,7 @@ export const useAssetsModal = ({
       onSelect={handleSelect}
       allowedAssets={allowedAssets}
       hideInactiveAssets={hideInactiveAssets}
+      allAssets={allAssets}
     />
   ) : null
 
