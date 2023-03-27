@@ -21,7 +21,7 @@ export const useAccountDepositIds = (
   return useQuery(
     QUERY_KEYS.accountDepositIds(accountId),
     accountId != null ? getAccountDepositIds(api, accountId) : undefinedNoop,
-    { enabled: !!accountId || enabledFarms },
+    { enabled: !!accountId && enabledFarms },
   )
 }
 
