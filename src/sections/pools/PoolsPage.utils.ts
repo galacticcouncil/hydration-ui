@@ -132,7 +132,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     balances,
     positions,
     assetsTradability.data,
-    userDeposits.data,
+    // userDeposits.data,
   ])
 
   const data = useMemo(
