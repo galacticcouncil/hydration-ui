@@ -43,21 +43,24 @@ export const OtcOrderActions = (props: Props) => {
             onClick={() => props.onClose(props.data)}
             disabled={false}
             variant={"error"}
-          >
-            {t("otc.offers.table.actions.close")}
-          </TableAction>
+            children={
+              <span sx={{ width: "80px", textAlign: "center" }}>
+                {t("otc.offers.table.actions.close")}
+              </span>
+            }
+          ></TableAction>
         )}
         {orderOwner !== userAddress && (
           <TableAction
             icon={<FillIcon sx={{ mr: 4 }} />}
-            onClick={() => {
-              console.log("fiil-clicked")
-              props.onFill(props.data)
-            }}
+            onClick={() => props.onFill(props.data)}
             disabled={false}
-          >
-            {t("otc.offers.table.actions.fill")}
-          </TableAction>
+            children={
+              <span sx={{ width: "80px" }}>
+                {t("otc.offers.table.actions.fill")}
+              </span>
+            }
+          ></TableAction>
         )}
       </div>
     </>
