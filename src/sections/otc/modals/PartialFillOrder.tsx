@@ -101,21 +101,13 @@ export const PartialFillOrder = ({
         },
         toast: {
           onLoading: (
-            <Trans
-              t={t}
-              i18nKey="otc.order.fill.toast.onLoading"
-              tOptions={{}}
-            >
+            <Trans t={t} i18nKey="otc.order.fill.toast.onLoading" tOptions={{}}>
               <span />
               <span className="highlight" />
             </Trans>
           ),
           onSuccess: (
-            <Trans
-              t={t}
-              i18nKey="otc.order.fill.toast.onSuccess"
-              tOptions={{}}
-            >
+            <Trans t={t} i18nKey="otc.order.fill.toast.onSuccess" tOptions={{}}>
               <span />
               <span className="highlight" />
             </Trans>

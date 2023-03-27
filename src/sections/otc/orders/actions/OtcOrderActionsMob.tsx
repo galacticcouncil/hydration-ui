@@ -36,7 +36,10 @@ export const OtcOrderActionsMob = ({
 
   if (!row) return null
 
-  const userAddress = safeConvertAddressSS58(account?.address, HYDRA_ADDRESS_PREFIX)
+  const userAddress = safeConvertAddressSS58(
+    account?.address,
+    HYDRA_ADDRESS_PREFIX,
+  )
   const orderOwner = row.owner
 
   return (

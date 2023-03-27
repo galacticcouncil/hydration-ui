@@ -40,13 +40,15 @@ export const useOrdersData = () => {
     const orders = await getOrders(api)()
     const allAssets = await getAssetsTableDetails(api)()
 
-    return orders.map((order) => {
-      return {
-        ...order,
-        assetIn: allAssets.find((ass) => order.assetIn === ass?.id)!,
-        assetOut: allAssets.find((ass) => order.assetOut === ass?.id)!,
-      }
-    })
+    return orders
+      .filter((order) => order.amountIn && order.amountOut)
+      .map((order) => {
+        return {
+          ...order,
+          assetIn: allAssets.find((ass) => order.assetIn === ass.id),
+          assetOut: allAssets.find((ass) => order.assetOut === ass.id),
+        }
+      })
   })
 }
 

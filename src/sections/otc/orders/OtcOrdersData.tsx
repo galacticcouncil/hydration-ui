@@ -56,7 +56,7 @@ export const OrderPriceColumn = (props: { symbol: string; price: BN }) => {
   const { t } = useTranslation()
 
   return (
-    <div sx={{ flex: "row", gap: 8,  align: ["end", "start"]}}>
+    <div sx={{ flex: "row", gap: 8, align: ["end", "start"] }}>
       <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
         {t("value.token", { value: props.price })} {props.symbol}
       </Text>

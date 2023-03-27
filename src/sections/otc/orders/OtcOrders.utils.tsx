@@ -88,7 +88,7 @@ export const useOrdersTable = (
           <div
             style={{
               textAlign: "center",
-              margin: "0 -20px",    
+              margin: "0 -20px",
             }}
           >
             <OrderCapacity

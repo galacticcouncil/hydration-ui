@@ -57,7 +57,7 @@ export const PlaceOrder = ({
   const { createTransaction } = useStore()
 
   const { data: paymentInfoData } = usePaymentInfo(
-    api.tx.otc.placeOrder(aIn, aOut, "0", "0", false),
+    api.tx.otc.placeOrder(0, 2, "0", "0", false),
   )
 
   const assetOutModal = useAssetsModal({
@@ -88,6 +88,10 @@ export const PlaceOrder = ({
   }
 
   const handleSubmit = async (values: FormValues<typeof form>) => {
+    if (!aIn || !aOut) {
+      throw new Error("Trade pair not specified")
+    }
+
     if (assetOutMeta.data?.decimals == null)
       throw new Error("Missing assetOut meta")
 
@@ -200,9 +204,7 @@ export const PlaceOrder = ({
           <Controller
             name="price"
             control={form.control}
-            render={({
-              field: { value, onChange },
-            }) => (
+            render={({ field: { value, onChange } }) => (
               <OrderAssetRate
                 inputAsset={assetOutMeta.data?.symbol}
                 outputAsset={assetInMeta.data?.symbol}
