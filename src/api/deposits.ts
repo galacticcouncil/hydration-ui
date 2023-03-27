@@ -8,7 +8,6 @@ import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 const DEPOSIT_NFT_COLLECTION_ID = "2584"
-const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
 export type DepositNftType = Awaited<
   ReturnType<ReturnType<typeof getDeposits>>
@@ -21,7 +20,7 @@ export const useAccountDepositIds = (
   return useQuery(
     QUERY_KEYS.accountDepositIds(accountId),
     accountId != null ? getAccountDepositIds(api, accountId) : undefinedNoop,
-    { enabled: !!accountId && enabledFarms },
+    { enabled: !!accountId },
   )
 }
 
@@ -41,9 +40,7 @@ const getAccountDepositIds =
 
 export const useAllDeposits = () => {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.allDeposits, getDeposits(api), {
-    enabled: enabledFarms,
-  })
+  return useQuery(QUERY_KEYS.allDeposits, getDeposits(api))
 }
 
 export const usePoolDeposits = (poolId?: u32 | string) => {
@@ -110,12 +107,13 @@ export const useAccountDeposits = (poolId?: u32) => {
   )
 }
 
+const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 export const useUserDeposits = () => {
   const { account } = useAccountStore()
   const accountDepositIds = useAccountDepositIds(account?.address)
   const deposits = useAllDeposits()
 
-  return useQueryReduce(
+  const query = useQueryReduce(
     [accountDepositIds, deposits] as const,
     (accountDepositIds, deposits) => {
       return deposits.filter((deposit) =>
@@ -125,4 +123,13 @@ export const useUserDeposits = () => {
       )
     },
   )
+
+  if (!enabledFarms)
+    return {
+      isLoading: false,
+      isInitialLoading: false,
+      data: [] as DepositNftType[],
+    }
+
+  return query
 }
