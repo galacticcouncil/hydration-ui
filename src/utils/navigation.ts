@@ -19,6 +19,7 @@ export const EXTERNAL_LINKS = {
 
 const isPoolsPageEnabled = import.meta.env.VITE_FF_POOLS_ENABLED === "true"
 const isXcmPageEnabled = import.meta.env.VITE_FF_XCM_ENABLED === "true"
+const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 
 export const MENU_ITEMS = [
   {
@@ -61,7 +62,7 @@ export const MENU_ITEMS = [
     key: "otc",
     translationKey: "header.otc",
     href: LINKS.otc,
-    enabled: true,
+    enabled: isOtcPageEnabled,
     external: false,
     mobVisible: false,
     mobOrder: 4,
