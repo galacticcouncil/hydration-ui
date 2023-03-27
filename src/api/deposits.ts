@@ -113,14 +113,7 @@ export const useUserDeposits = () => {
   const accountDepositIds = useAccountDepositIds(account?.address)
   const deposits = useAllDeposits()
 
-  if (!enabledFarms)
-    return {
-      isLoading: false,
-      isInitialLoading: false,
-      data: [] as DepositNftType[],
-    }
-
-  return useQueryReduce(
+  const query = useQueryReduce(
     [accountDepositIds, deposits] as const,
     (accountDepositIds, deposits) => {
       return deposits.filter((deposit) =>
@@ -130,4 +123,13 @@ export const useUserDeposits = () => {
       )
     },
   )
+
+  if (!enabledFarms)
+    return {
+      isLoading: false,
+      isInitialLoading: false,
+      data: [] as DepositNftType[],
+    }
+
+  return query
 }
