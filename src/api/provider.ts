@@ -10,7 +10,7 @@ export const PROVIDERS = [
     name: "Mainnet via GC",
     url: "wss://rpc.hydradx.cloud",
     indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
-    env: "development",
+    env: "production",
   },
   {
     name: "Mainnet via Dwellir",
