@@ -55,6 +55,14 @@ import type {
   FrameSystemLimitsBlockWeights,
   FrameSystemLimitsWeightsPerClass,
   FrameSystemPhase,
+  HydraDxMathRatio,
+  HydradxRuntimeAssetLocation,
+  HydradxRuntimeOpaqueSessionKeys,
+  HydradxRuntimeOriginCaller,
+  HydradxRuntimeRuntime,
+  HydradxTraitsOracleLiquidity,
+  HydradxTraitsOracleOraclePeriod,
+  HydradxTraitsOracleVolume,
   OrmlTokensAccountData,
   OrmlTokensBalanceLock,
   OrmlTokensModuleCall,
@@ -80,6 +88,7 @@ import type {
   PalletAssetRegistryCall,
   PalletAssetRegistryError,
   PalletAssetRegistryEvent,
+  PalletAssetRegistryMetadata,
   PalletAuthorshipCall,
   PalletAuthorshipError,
   PalletAuthorshipUncleEntryItem,
@@ -91,6 +100,11 @@ import type {
   PalletBalancesReasons,
   PalletBalancesReleases,
   PalletBalancesReserveData,
+  PalletCircuitBreakerCall,
+  PalletCircuitBreakerError,
+  PalletCircuitBreakerEvent,
+  PalletCircuitBreakerLiquidityLimit,
+  PalletCircuitBreakerTradeVolumeLimit,
   PalletClaimsCall,
   PalletClaimsEcdsaSignature,
   PalletClaimsError,
@@ -133,6 +147,10 @@ import type {
   PalletElectionsPhragmenRenouncing,
   PalletElectionsPhragmenSeatHolder,
   PalletElectionsPhragmenVoter,
+  PalletEmaOracleCall,
+  PalletEmaOracleError,
+  PalletEmaOracleEvent,
+  PalletEmaOracleOracleEntry,
   PalletGenesisHistoryCall,
   PalletGenesisHistoryChain,
   PalletIdentityBitFlags,
@@ -170,6 +188,10 @@ import type {
   PalletOmnipoolPosition,
   PalletOmnipoolSimpleImbalance,
   PalletOmnipoolTradability,
+  PalletOtcCall,
+  PalletOtcError,
+  PalletOtcEvent,
+  PalletOtcOrder,
   PalletPreimageCall,
   PalletPreimageError,
   PalletPreimageEvent,
@@ -189,9 +211,6 @@ import type {
   PalletSessionCall,
   PalletSessionError,
   PalletSessionEvent,
-  PalletSudoCall,
-  PalletSudoError,
-  PalletSudoEvent,
   PalletTimestampCall,
   PalletTipsCall,
   PalletTipsError,
@@ -256,10 +275,6 @@ import type {
   SpRuntimeTransactionalError,
   SpTrieStorageProof,
   SpVersionRuntimeVersion,
-  TestingHydradxRuntimeAssetLocation,
-  TestingHydradxRuntimeOpaqueSessionKeys,
-  TestingHydradxRuntimeOriginCaller,
-  TestingHydradxRuntimeRuntime,
   XcmDoubleEncoded,
   XcmV0Junction,
   XcmV0JunctionBodyId,
@@ -349,6 +364,14 @@ declare module "@polkadot/types/types/registry" {
     FrameSystemLimitsBlockWeights: FrameSystemLimitsBlockWeights
     FrameSystemLimitsWeightsPerClass: FrameSystemLimitsWeightsPerClass
     FrameSystemPhase: FrameSystemPhase
+    HydraDxMathRatio: HydraDxMathRatio
+    HydradxRuntimeAssetLocation: HydradxRuntimeAssetLocation
+    HydradxRuntimeOpaqueSessionKeys: HydradxRuntimeOpaqueSessionKeys
+    HydradxRuntimeOriginCaller: HydradxRuntimeOriginCaller
+    HydradxRuntimeRuntime: HydradxRuntimeRuntime
+    HydradxTraitsOracleLiquidity: HydradxTraitsOracleLiquidity
+    HydradxTraitsOracleOraclePeriod: HydradxTraitsOracleOraclePeriod
+    HydradxTraitsOracleVolume: HydradxTraitsOracleVolume
     OrmlTokensAccountData: OrmlTokensAccountData
     OrmlTokensBalanceLock: OrmlTokensBalanceLock
     OrmlTokensModuleCall: OrmlTokensModuleCall
@@ -374,6 +397,7 @@ declare module "@polkadot/types/types/registry" {
     PalletAssetRegistryCall: PalletAssetRegistryCall
     PalletAssetRegistryError: PalletAssetRegistryError
     PalletAssetRegistryEvent: PalletAssetRegistryEvent
+    PalletAssetRegistryMetadata: PalletAssetRegistryMetadata
     PalletAuthorshipCall: PalletAuthorshipCall
     PalletAuthorshipError: PalletAuthorshipError
     PalletAuthorshipUncleEntryItem: PalletAuthorshipUncleEntryItem
@@ -385,6 +409,11 @@ declare module "@polkadot/types/types/registry" {
     PalletBalancesReasons: PalletBalancesReasons
     PalletBalancesReleases: PalletBalancesReleases
     PalletBalancesReserveData: PalletBalancesReserveData
+    PalletCircuitBreakerCall: PalletCircuitBreakerCall
+    PalletCircuitBreakerError: PalletCircuitBreakerError
+    PalletCircuitBreakerEvent: PalletCircuitBreakerEvent
+    PalletCircuitBreakerLiquidityLimit: PalletCircuitBreakerLiquidityLimit
+    PalletCircuitBreakerTradeVolumeLimit: PalletCircuitBreakerTradeVolumeLimit
     PalletClaimsCall: PalletClaimsCall
     PalletClaimsEcdsaSignature: PalletClaimsEcdsaSignature
     PalletClaimsError: PalletClaimsError
@@ -427,6 +456,10 @@ declare module "@polkadot/types/types/registry" {
     PalletElectionsPhragmenRenouncing: PalletElectionsPhragmenRenouncing
     PalletElectionsPhragmenSeatHolder: PalletElectionsPhragmenSeatHolder
     PalletElectionsPhragmenVoter: PalletElectionsPhragmenVoter
+    PalletEmaOracleCall: PalletEmaOracleCall
+    PalletEmaOracleError: PalletEmaOracleError
+    PalletEmaOracleEvent: PalletEmaOracleEvent
+    PalletEmaOracleOracleEntry: PalletEmaOracleOracleEntry
     PalletGenesisHistoryCall: PalletGenesisHistoryCall
     PalletGenesisHistoryChain: PalletGenesisHistoryChain
     PalletIdentityBitFlags: PalletIdentityBitFlags
@@ -464,6 +497,10 @@ declare module "@polkadot/types/types/registry" {
     PalletOmnipoolPosition: PalletOmnipoolPosition
     PalletOmnipoolSimpleImbalance: PalletOmnipoolSimpleImbalance
     PalletOmnipoolTradability: PalletOmnipoolTradability
+    PalletOtcCall: PalletOtcCall
+    PalletOtcError: PalletOtcError
+    PalletOtcEvent: PalletOtcEvent
+    PalletOtcOrder: PalletOtcOrder
     PalletPreimageCall: PalletPreimageCall
     PalletPreimageError: PalletPreimageError
     PalletPreimageEvent: PalletPreimageEvent
@@ -483,9 +520,6 @@ declare module "@polkadot/types/types/registry" {
     PalletSessionCall: PalletSessionCall
     PalletSessionError: PalletSessionError
     PalletSessionEvent: PalletSessionEvent
-    PalletSudoCall: PalletSudoCall
-    PalletSudoError: PalletSudoError
-    PalletSudoEvent: PalletSudoEvent
     PalletTimestampCall: PalletTimestampCall
     PalletTipsCall: PalletTipsCall
     PalletTipsError: PalletTipsError
@@ -550,10 +584,6 @@ declare module "@polkadot/types/types/registry" {
     SpRuntimeTransactionalError: SpRuntimeTransactionalError
     SpTrieStorageProof: SpTrieStorageProof
     SpVersionRuntimeVersion: SpVersionRuntimeVersion
-    TestingHydradxRuntimeAssetLocation: TestingHydradxRuntimeAssetLocation
-    TestingHydradxRuntimeOpaqueSessionKeys: TestingHydradxRuntimeOpaqueSessionKeys
-    TestingHydradxRuntimeOriginCaller: TestingHydradxRuntimeOriginCaller
-    TestingHydradxRuntimeRuntime: TestingHydradxRuntimeRuntime
     XcmDoubleEncoded: XcmDoubleEncoded
     XcmV0Junction: XcmV0Junction
     XcmV0JunctionBodyId: XcmV0JunctionBodyId
