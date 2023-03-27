@@ -49,7 +49,7 @@ export const useAllDeposits = () => {
 export const usePoolDeposits = (poolId?: u32 | string) => {
   const api = useApiPromise()
   return useQuery(QUERY_KEYS.poolDeposits(poolId), getDeposits(api), {
-    enabled: !!poolId,
+    enabled: !!poolId && enabledFarms,
     select: (data) =>
       data.filter(
         (item) => item.deposit.ammPoolId.toString() === poolId?.toString(),
@@ -63,6 +63,7 @@ export const useOmniPositionId = (positionId: u128 | string) => {
   return useQuery(
     QUERY_KEYS.omniPositionId(positionId),
     getOmniPositionId(api, positionId),
+    { enabled: enabledFarms },
   )
 }
 
@@ -73,7 +74,7 @@ export const useOmniPositionIds = (positionIds: Array<u32 | string>) => {
     queries: positionIds.map((id) => ({
       queryKey: QUERY_KEYS.omniPositionId(id.toString()),
       queryFn: getOmniPositionId(api, id.toString()),
-      enabled: !!positionIds.length,
+      enabled: !!positionIds.length && enabledFarms,
     })),
   })
 }
