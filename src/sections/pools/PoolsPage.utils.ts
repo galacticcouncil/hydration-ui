@@ -38,7 +38,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
   const positions = useOmnipoolPositions(
     uniques.data?.map((u) => u.itemId) ?? [],
   )
-  const userDeposits = useUserDeposits()
+  // const userDeposits = useUserDeposits()
 
   const queries = [
     assets,
@@ -47,7 +47,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     apiIds,
     uniques,
     assetsTradability,
-    userDeposits,
+    // userDeposits,
     ...positions,
     ...spotPrices,
     ...balances,
@@ -61,7 +61,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
       !metas.data ||
       !apiIds.data ||
       !assetsTradability.data ||
-      !userDeposits.data ||
+      // !userDeposits.data ||
       spotPrices.some((q) => !q.data) ||
       balances.some((q) => !q.data) ||
       positions.some((q) => !q.data)
@@ -106,9 +106,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
         const hasPositions = positions.some(
           (p) => p.data?.assetId.toString() === id.toString(),
         )
-        const hasDeposits = userDeposits.data?.some(
-          (deposit) => deposit.deposit.ammPoolId.toString() === id.toString(),
-        )
+        const hasDeposits = false
 
         return {
           id,
