@@ -86,6 +86,7 @@ export const OtcHeader: FC<Props> = ({
           size="medium"
           variant="primary"
           onClick={() => setOpenAdd(true)}
+          disabled={!account}
         >
           <div sx={{ flex: "row", align: "center" }}>
             <Icon icon={<PlusIcon />} sx={{ mr: 8, height: 16 }} />

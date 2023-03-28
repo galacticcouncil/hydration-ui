@@ -87,7 +87,6 @@ export const OtcOrderActionsMob = ({
                 total={row.offering.initial}
                 free={row.offering.amount}
                 symbol={row.offering.symbol}
-                //modal={true}
               />
             ) : (
               <Text
@@ -101,36 +100,13 @@ export const OtcOrderActionsMob = ({
                 N / A
               </Text>
             )}
-
-            {/*  <div sx={{ flex: "column", gap: 4, pt: 20, pb: 30 }}>
-              <Text fs={14} lh={16} color="whiteish500">
-                {t("wallet.assets.table.details.lockedDemocracy")}
-              </Text>
-              <Text fs={14} lh={14} color="white">
-                {t("value", { value: row.lockedDemocracy })}
-              </Text>
-              <Text fs={12} lh={17} color="whiteish500">
-                {t("value.usd", { amount: row.lockedDemocracyUSD })}
-              </Text>
-            </div>
-            <div sx={{ flex: "column", gap: 4, pt: 20, pb: 30 }}>
-              <Text fs={14} lh={16} color="whiteish500">
-                {t("wallet.assets.table.details.lockedVesting")}
-              </Text>
-              <Text fs={14} lh={14} color="white">
-                {t("value", { value: row.lockedVesting })}
-              </Text>
-              <Text fs={12} lh={17} color="whiteish500">
-                {t("value.usd", { amount: row.lockedVestingUSD })}
-              </Text>
-            </div> */}
           </div>
           <div sx={{ flex: "column", gap: 12 }}>
             {orderOwner === userAddress && (
               <Button
                 sx={{ width: "100%" }}
                 onClick={() => onCloseOrder(row)}
-                disabled={false}
+                disabled={!account}
                 variant={"error"}
               >
                 <PauseIcon />
@@ -141,7 +117,7 @@ export const OtcOrderActionsMob = ({
               <Button
                 sx={{ width: "100%" }}
                 onClick={() => onFillOrder(row)}
-                disabled={false}
+                disabled={!account}
               >
                 <FillIcon sx={{ mr: 4 }} />
                 {t("otc.offers.table.actions.fill")}

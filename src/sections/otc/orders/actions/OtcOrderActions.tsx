@@ -41,7 +41,7 @@ export const OtcOrderActions = (props: Props) => {
           <TableAction
             icon={<PauseIcon />}
             onClick={() => props.onClose(props.data)}
-            disabled={false}
+            disabled={!account}
             variant={"error"}
             children={
               <span sx={{ width: "80px", textAlign: "center" }}>
@@ -54,7 +54,7 @@ export const OtcOrderActions = (props: Props) => {
           <TableAction
             icon={<FillIcon sx={{ mr: 4 }} />}
             onClick={() => props.onFill(props.data)}
-            disabled={false}
+            disabled={!account}
             children={
               <span sx={{ width: "80px" }}>
                 {t("otc.offers.table.actions.fill")}
