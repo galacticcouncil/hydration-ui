@@ -41,8 +41,12 @@ import type {
   CommonRuntimeProxyType,
   CumulusPrimitivesParachainInherentParachainInherentData,
   FrameSupportScheduleMaybeHashed,
+  HydradxRuntimeAssetLocation,
+  HydradxRuntimeOpaqueSessionKeys,
+  HydradxRuntimeOriginCaller,
   OrmlVestingVestingSchedule,
   PalletAssetRegistryAssetType,
+  PalletAssetRegistryMetadata,
   PalletClaimsEcdsaSignature,
   PalletDemocracyConviction,
   PalletDemocracyVoteAccountVote,
@@ -55,9 +59,6 @@ import type {
   PalletOmnipoolTradability,
   PalletUniquesDestroyWitness,
   SpRuntimeHeader,
-  TestingHydradxRuntimeAssetLocation,
-  TestingHydradxRuntimeOpaqueSessionKeys,
-  TestingHydradxRuntimeOriginCaller,
   XcmV1MultiLocation,
   XcmV2WeightLimit,
   XcmVersionedMultiAsset,
@@ -96,8 +97,30 @@ declare module "@polkadot/api-base/types/submittable" {
             | string
             | Uint8Array,
           existentialDeposit: u128 | AnyNumber | Uint8Array,
+          assetId: Option<u32> | null | Uint8Array | u32 | AnyNumber,
+          metadata:
+            | Option<PalletAssetRegistryMetadata>
+            | null
+            | Uint8Array
+            | PalletAssetRegistryMetadata
+            | { symbol?: any; decimals?: any }
+            | string,
+          location:
+            | Option<HydradxRuntimeAssetLocation>
+            | null
+            | Uint8Array
+            | HydradxRuntimeAssetLocation
+            | { parents?: any; interior?: any }
+            | string,
         ) => SubmittableExtrinsic<ApiType>,
-        [Bytes, PalletAssetRegistryAssetType, u128]
+        [
+          Bytes,
+          PalletAssetRegistryAssetType,
+          u128,
+          Option<u32>,
+          Option<PalletAssetRegistryMetadata>,
+          Option<HydradxRuntimeAssetLocation>,
+        ]
       >
       /**
        * Set asset native location.
@@ -112,12 +135,12 @@ declare module "@polkadot/api-base/types/submittable" {
         (
           assetId: u32 | AnyNumber | Uint8Array,
           location:
-            | TestingHydradxRuntimeAssetLocation
+            | HydradxRuntimeAssetLocation
             | { parents?: any; interior?: any }
             | string
             | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [u32, TestingHydradxRuntimeAssetLocation]
+        [u32, HydradxRuntimeAssetLocation]
       >
       /**
        * Set metadata for an asset.
@@ -316,6 +339,78 @@ declare module "@polkadot/api-base/types/submittable" {
           value: Compact<u128> | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
         [AccountId32, Compact<u128>]
+      >
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>
+    }
+    circuitBreaker: {
+      /**
+       * Set add liquidity limit for an asset.
+       *
+       * Parameters:
+       * - `origin`: The dispatch origin for this call. Must be `TechnicalOrigin`
+       * - `asset_id`: The identifier of an asset
+       * - `liquidity_limit`: Optional add liquidity limit represented as a percentage
+       *
+       * Emits `AddLiquidityLimitChanged` event when successful.
+       *
+       **/
+      setAddLiquidityLimit: AugmentedSubmittable<
+        (
+          assetId: u32 | AnyNumber | Uint8Array,
+          liquidityLimit:
+            | Option<ITuple<[u32, u32]>>
+            | null
+            | Uint8Array
+            | ITuple<[u32, u32]>
+            | [u32 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array],
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, Option<ITuple<[u32, u32]>>]
+      >
+      /**
+       * Set remove liquidity limit for an asset.
+       *
+       * Parameters:
+       * - `origin`: The dispatch origin for this call. Must be `TechnicalOrigin`
+       * - `asset_id`: The identifier of an asset
+       * - `liquidity_limit`: Optional remove liquidity limit represented as a percentage
+       *
+       * Emits `RemoveLiquidityLimitChanged` event when successful.
+       *
+       **/
+      setRemoveLiquidityLimit: AugmentedSubmittable<
+        (
+          assetId: u32 | AnyNumber | Uint8Array,
+          liquidityLimit:
+            | Option<ITuple<[u32, u32]>>
+            | null
+            | Uint8Array
+            | ITuple<[u32, u32]>
+            | [u32 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array],
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, Option<ITuple<[u32, u32]>>]
+      >
+      /**
+       * Set trade volume limit for an asset.
+       *
+       * Parameters:
+       * - `origin`: The dispatch origin for this call. Must be `TechnicalOrigin`
+       * - `asset_id`: The identifier of an asset
+       * - `trade_volume_limit`: New trade volume limit represented as a percentage
+       *
+       * Emits `TradeVolumeLimitChanged` event when successful.
+       *
+       **/
+      setTradeVolumeLimit: AugmentedSubmittable<
+        (
+          assetId: u32 | AnyNumber | Uint8Array,
+          tradeVolumeLimit:
+            | ITuple<[u32, u32]>
+            | [u32 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array],
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, ITuple<[u32, u32]>]
       >
       /**
        * Generic tx
@@ -1321,6 +1416,12 @@ declare module "@polkadot/api-base/types/submittable" {
         ) => SubmittableExtrinsic<ApiType>,
         [Vec<AccountId32>, Compact<u128>]
       >
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>
+    }
+    emaOracle: {
       /**
        * Generic tx
        **/
@@ -2608,6 +2709,100 @@ declare module "@polkadot/api-base/types/submittable" {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>
     }
+    otc: {
+      /**
+       * Cancel an open OTC order
+       *
+       * Parameters:
+       * - `order_id`: ID of the order
+       * - `asset`: Asset which is being filled
+       * - `amount`: Amount which is being filled
+       *
+       * Validations:
+       * - caller is order owner
+       *
+       * Emits `Cancelled` event when successful.
+       **/
+      cancelOrder: AugmentedSubmittable<
+        (
+          orderId: u32 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32]
+      >
+      /**
+       * Fill an OTC order (completely)
+       *
+       * Parameters:
+       * - `order_id`: ID of the order
+       *
+       * Events:
+       * `Filled` event when successful.
+       **/
+      fillOrder: AugmentedSubmittable<
+        (
+          orderId: u32 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32]
+      >
+      /**
+       * Fill an OTC order (partially)
+       *
+       * Parameters:
+       * - `order_id`: ID of the order
+       * - `amount_in`: Amount with which the order is being filled
+       *
+       * Validations:
+       * - order must be partially_fillable
+       * - after the partial_fill, the remaining order.amount_in must be higher than the existential deposit
+       * of asset_in multiplied by ExistentialDepositMultiplier
+       * - after the partial_fill, the remaining order.amount_out must be higher than the existential deposit
+       * of asset_out multiplied by ExistentialDepositMultiplier
+       *
+       * Events:
+       * `PartiallyFilled` event when successful.
+       **/
+      partialFillOrder: AugmentedSubmittable<
+        (
+          orderId: u32 | AnyNumber | Uint8Array,
+          amountIn: u128 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u128]
+      >
+      /**
+       * Create a new OTC order
+       *
+       * Parameters:
+       * - `asset_in`: Asset which is being bought
+       * - `asset_out`: Asset which is being sold
+       * - `amount_in`: Amount that the order is seeking to buy
+       * - `amount_out`: Amount that the order is selling
+       * - `partially_fillable`: Flag indicating whether users can fill the order partially
+       *
+       * Validations:
+       * - asset_in must be registered
+       * - amount_in must be higher than the existential deposit of asset_in multiplied by
+       * ExistentialDepositMultiplier
+       * - amount_out must be higher than the existential deposit of asset_out multiplied by
+       * ExistentialDepositMultiplier
+       *
+       * Events:
+       * - `Placed` event when successful.
+       **/
+      placeOrder: AugmentedSubmittable<
+        (
+          assetIn: u32 | AnyNumber | Uint8Array,
+          assetOut: u32 | AnyNumber | Uint8Array,
+          amountIn: u128 | AnyNumber | Uint8Array,
+          amountOut: u128 | AnyNumber | Uint8Array,
+          partiallyFillable: bool | boolean | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u32, u128, u128, bool]
+      >
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>
+    }
     parachainInfo: {
       /**
        * Generic tx
@@ -3510,94 +3705,13 @@ declare module "@polkadot/api-base/types/submittable" {
       setKeys: AugmentedSubmittable<
         (
           keys:
-            | TestingHydradxRuntimeOpaqueSessionKeys
+            | HydradxRuntimeOpaqueSessionKeys
             | { aura?: any }
             | string
             | Uint8Array,
           proof: Bytes | string | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [TestingHydradxRuntimeOpaqueSessionKeys, Bytes]
-      >
-      /**
-       * Generic tx
-       **/
-      [key: string]: SubmittableExtrinsicFunction<ApiType>
-    }
-    sudo: {
-      /**
-       * Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
-       * key.
-       *
-       * The dispatch origin for this call must be _Signed_.
-       *
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB change.
-       * # </weight>
-       **/
-      setKey: AugmentedSubmittable<
-        (
-          updated: AccountId32 | string | Uint8Array,
-        ) => SubmittableExtrinsic<ApiType>,
-        [AccountId32]
-      >
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Root` origin.
-       *
-       * The dispatch origin for this call must be _Signed_.
-       *
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB write (event).
-       * - Weight of derivative `call` execution + 10,000.
-       * # </weight>
-       **/
-      sudo: AugmentedSubmittable<
-        (
-          call: Call | IMethod | string | Uint8Array,
-        ) => SubmittableExtrinsic<ApiType>,
-        [Call]
-      >
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Signed` origin from
-       * a given account.
-       *
-       * The dispatch origin for this call must be _Signed_.
-       *
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB write (event).
-       * - Weight of derivative `call` execution + 10,000.
-       * # </weight>
-       **/
-      sudoAs: AugmentedSubmittable<
-        (
-          who: AccountId32 | string | Uint8Array,
-          call: Call | IMethod | string | Uint8Array,
-        ) => SubmittableExtrinsic<ApiType>,
-        [AccountId32, Call]
-      >
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Root` origin.
-       * This function does not check the weight of the call, and instead allows the
-       * Sudo user to specify the weight of the call.
-       *
-       * The dispatch origin for this call must be _Signed_.
-       *
-       * # <weight>
-       * - O(1).
-       * - The weight of this call is defined by the caller.
-       * # </weight>
-       **/
-      sudoUncheckedWeight: AugmentedSubmittable<
-        (
-          call: Call | IMethod | string | Uint8Array,
-          weight: Weight | AnyNumber | Uint8Array,
-        ) => SubmittableExtrinsic<ApiType>,
-        [Call, Weight]
+        [HydradxRuntimeOpaqueSessionKeys, Bytes]
       >
       /**
        * Generic tx
@@ -5049,7 +5163,7 @@ declare module "@polkadot/api-base/types/submittable" {
       dispatchAs: AugmentedSubmittable<
         (
           asOrigin:
-            | TestingHydradxRuntimeOriginCaller
+            | HydradxRuntimeOriginCaller
             | { system: any }
             | { Void: any }
             | { Council: any }
@@ -5060,7 +5174,7 @@ declare module "@polkadot/api-base/types/submittable" {
             | Uint8Array,
           call: Call | IMethod | string | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [TestingHydradxRuntimeOriginCaller, Call]
+        [HydradxRuntimeOriginCaller, Call]
       >
       /**
        * Send a batch of dispatch calls.

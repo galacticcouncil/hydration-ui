@@ -37,6 +37,10 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       NoIdAvailable: AugmentedError<ApiType>
       /**
+       * Selected asset id is out of reserved range.
+       **/
+      NotInReservedRange: AugmentedError<ApiType>
+      /**
        * Invalid asset name or symbol.
        **/
       TooLong: AugmentedError<ApiType>
@@ -112,6 +116,36 @@ declare module "@polkadot/api-base/types/errors" {
        * Vesting balance too high to send value
        **/
       VestingBalance: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
+    circuitBreaker: {
+      /**
+       * Invalid value for a limit. Limit must be non-zero.
+       **/
+      InvalidLimitValue: AugmentedError<ApiType>
+      /**
+       * Allowed liquidity limit is not stored for asset
+       **/
+      LiquidityLimitNotStoredForAsset: AugmentedError<ApiType>
+      /**
+       * Maximum pool's liquidity limit per block has been reached
+       **/
+      MaxLiquidityLimitPerBlockReached: AugmentedError<ApiType>
+      /**
+       * Asset is not allowed to have a limit
+       **/
+      NotAllowed: AugmentedError<ApiType>
+      /**
+       * Token trade influx per block has been reached
+       **/
+      TokenInfluxLimitReached: AugmentedError<ApiType>
+      /**
+       * Token trade outflow per block has been reached
+       **/
+      TokenOutflowLimitReached: AugmentedError<ApiType>
       /**
        * Generic error
        **/
@@ -498,6 +532,14 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       [key: string]: AugmentedError<ApiType>
     }
+    emaOracle: {
+      OnTradeValueZero: AugmentedError<ApiType>
+      TooManyUniqueEntries: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
     identity: {
       /**
        * Account ID is already named.
@@ -758,6 +800,10 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       PositiveImbalance: AugmentedError<ApiType>
       /**
+       * Max allowed price difference has been exceeded.
+       **/
+      PriceDifferenceTooHigh: AugmentedError<ApiType>
+      /**
        * Sell or buy with same asset ids is not allowed.
        **/
       SameAssetTradeNotAllowed: AugmentedError<ApiType>
@@ -937,6 +983,42 @@ declare module "@polkadot/api-base/types/errors" {
        * reachable.
        **/
       Unreachable: AugmentedError<ApiType>
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>
+    }
+    otc: {
+      /**
+       * Asset does not exist in registry
+       **/
+      AssetNotRegistered: AugmentedError<ApiType>
+      /**
+       * The caller does not have permission to complete the action
+       **/
+      Forbidden: AugmentedError<ApiType>
+      /**
+       * Error with math calculations
+       **/
+      MathError: AugmentedError<ApiType>
+      /**
+       * Order amount_in and amount_out must at all times be greater than the existential deposit
+       * for the asset multiplied by the ExistentialDepositMultiplier.
+       * A fill order may not leave behind amounts smaller than this.
+       **/
+      OrderAmountTooSmall: AugmentedError<ApiType>
+      /**
+       * Size of order ID exceeds the bound
+       **/
+      OrderIdOutOfBound: AugmentedError<ApiType>
+      /**
+       * Order cannot be found
+       **/
+      OrderNotFound: AugmentedError<ApiType>
+      /**
+       * Cannot partially fill an order which is not partially fillable
+       **/
+      OrderNotPartiallyFillable: AugmentedError<ApiType>
       /**
        * Generic error
        **/
@@ -1159,16 +1241,6 @@ declare module "@polkadot/api-base/types/errors" {
        * No keys are associated with this account.
        **/
       NoKeys: AugmentedError<ApiType>
-      /**
-       * Generic error
-       **/
-      [key: string]: AugmentedError<ApiType>
-    }
-    sudo: {
-      /**
-       * Sender must be the Sudo account
-       **/
-      RequireSudo: AugmentedError<ApiType>
       /**
        * Generic error
        **/

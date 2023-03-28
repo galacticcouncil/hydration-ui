@@ -2057,10 +2057,10 @@
     "@floating-ui/dom" "^0.5.3"
     use-isomorphic-layout-effect "^1.1.1"
 
-"@galacticcouncil/apps@^1.1.8":
-  version "1.1.8"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.1.8.tgz#aa4997d74df1ec3c68cb6881e7cefca9ed7b0e44"
-  integrity sha512-60zcfHkcoTYHJVA7eIvSGEO65HMXa1MZvU0yfRM3DN7Ia7ud9sERln5ItMnnjWE8rIjIp6GDA/UG9aMRmFqCNw==
+"@galacticcouncil/apps@^1.1.15":
+  version "1.1.15"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.1.15.tgz#548132e35ab39a1c14dd2ef1a24626495c4ba587"
+  integrity sha512-9guYofVCuweFRG+8SoTrch40XISgo8p/UUc7PbaIJDkHZ7BTaaaYo36+XOPvnN63Ab3RLmhJjUEoCtuGbgCeHA==
   dependencies:
     "@talismn/connect-wallets" "^1.2.1"
     "@thi.ng/atom" "^5.1.3"
@@ -2071,10 +2071,10 @@
     lightweight-charts "^3.8.0"
     short-uuid "^4.2.0"
 
-"@galacticcouncil/bridge@^0.0.1-rc33":
-  version "0.0.1-rc33"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.1-rc33.tgz#737b997a369dc12ca5726589849fc9a26065ae8a"
-  integrity sha512-yClFa4SHBpVo14nSO6exf+3ksNWpYtVhclPV2p1kf/TCYozmm7rqhRavfT2mMp36sSabMwJ4e8gfDBFvLcgJ1Q==
+"@galacticcouncil/bridge@^0.0.1-rc42":
+  version "0.0.1-rc42"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.1-rc42.tgz#f53b306e96f4cdc92f2ee4d639420b9a59ae4068"
+  integrity sha512-/gDQ0+98ha9BcIzFY4L0iCCm27aTfqE9vp3IjJBR9BQ4R9jM1uJo+zGRlgWC2xhaTKSQiU7Wnv4ScOpTyhqYWQ==
   dependencies:
     "@acala-network/api" "4.1.8-9"
     "@acala-network/sdk" "4.1.8-9"
@@ -2122,10 +2122,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.0.8.tgz#45fa4145e756e4468dbf8d379c276c7282c3cd14"
   integrity sha512-tydSUOBNLxe5ej6gxOf6QtC71xP/QOqbl8v0lES16tO9UxRIP7We+UW9mt277kYAYX9u6nItU7fnntz4C7YGkA==
 
-"@galacticcouncil/sdk@^0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-0.0.6.tgz#1feea098c4e06acbd57ddf8f8f9fe7058ce90a87"
-  integrity sha512-ksIhLB+G+SHgaKTVmE5+mIm9MgVFKF+wbBvG4efyabPcXlETpVfQf1QXrBp75AEv1eF63Jp3NcDpXZTS1zfcQA==
+"@galacticcouncil/sdk@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-0.1.0.tgz#c9b9d8e7612ad3fef1c4a4248834bbbf746bca78"
+  integrity sha512-8TGiSMuXzUA6jdKR3EcUE3KcttszHaZXbWOkwaloQEBbkxbi4Zb6RGInmXB+Pw5PhEKE107/wx8slucNgyE35Q==
   dependencies:
     "@galacticcouncil/math-lbp" "^0.0.7"
     "@galacticcouncil/math-omnipool" "^0.0.7"
@@ -2133,10 +2133,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^1.0.65":
-  version "1.0.65"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.0.65.tgz#a6d1227198f865b47ed83b48258e3a8c8c524929"
-  integrity sha512-aI6ZZlD8HoPmHp3+kM7Y4dj8WRcrd1FODWnZpoz7Qr/VjKZY5aycUDMZ1Ii8ZtU2LbHSxGadb5SjdvgozYWIBw==
+"@galacticcouncil/ui@^1.1.5":
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.1.5.tgz#5455f2b6d1457218fbd2b2187def53d35706d931"
+  integrity sha512-ooxbJFJYVtAtqT85JMtfrBGZ+2xwwbo2AOHP7G02HpLRWpUOcJUacaqfVnNoVpLBLMIDBfiCwhsGSFvwgrXouQ==
   dependencies:
     "@lit/reactive-element" "^1.0.0"
     imask "^6.4.3"

@@ -95,6 +95,12 @@ export const QUERY_KEYS = {
     "totalLiquidities",
     ...ids,
   ],
+  reserves: (id: Maybe<string | u32>, address: Maybe<AccountId32 | string>) => [
+    QUERY_KEY_PREFIX,
+    "reserves",
+    id?.toString(),
+    address,
+  ],
   tokenBalance: (
     id: Maybe<string | u32>,
     address: Maybe<AccountId32 | string>,
@@ -193,6 +199,13 @@ export const QUERY_KEYS = {
     QUERY_KEY_PREFIX,
     "omnipoolPosition",
     id?.toString(),
+  ],
+  otcOrders: [QUERY_KEY_PREFIX, "otcOrders"],
+  otcOrdersTable: [QUERY_KEY_PREFIX, "otcOrdersTable"],
+  otcOrdersState: (orderId: Maybe<string | u32>) => [
+    QUERY_KEY_PREFIX,
+    "otcOrdersState",
+    orderId?.toString(),
   ],
   provider: (url: string) => ["provider", url],
   math: ["@galacticcouncil/math"],

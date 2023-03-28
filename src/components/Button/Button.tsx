@@ -5,6 +5,7 @@ import { SButton, SButtonTransparent, SContent } from "./Button.styled"
 export type ButtonVariant =
   | "primary"
   | "secondary"
+  | "error"
   | "gradient"
   | "outline"
   | "transparent"

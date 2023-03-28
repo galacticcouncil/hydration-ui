@@ -157,6 +157,25 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
       border: 1px solid ${theme.colors.brightBlue100};
     }
   `,
+  error: css`
+    border-radius: 4px;
+    background: rgba(${theme.rgbColors.red100}, 0.25);
+    color: ${theme.colors.red400};
+    border: 1px solid ${theme.colors.red400};
+    box-shadow: unset;
+
+    :hover {
+      background: rgba(${theme.rgbColors.red100}, 0.5);
+      color: ${theme.colors.red400};
+      border: 1px solid ${theme.colors.red400};
+    }
+
+    :active {
+      background: ${theme.colors.red100};
+      color: ${theme.colors.red400};
+      border: 1px solid ${theme.colors.red400};
+    }
+  `,
   gradient: css`
     background: ${theme.gradients.pinkLightPink};
     color: ${theme.colors.white};

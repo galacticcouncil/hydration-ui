@@ -7,14 +7,14 @@
     "@emotion/is-prop-valid": "^1.2.0",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
-    "@galacticcouncil/apps": "^1.1.8",
-    "@galacticcouncil/bridge": "^0.0.1-rc33",
+    "@galacticcouncil/apps": "^1.1.15",
+    "@galacticcouncil/bridge": "^0.0.1-rc42",
     "@galacticcouncil/math-omnipool": "^0.0.8",
     "@galacticcouncil/math-lbp": "^0.0.8",
     "@galacticcouncil/math-liquidity-mining": "^0.0.8",
     "@galacticcouncil/math-xyk": "^0.0.8",
-    "@galacticcouncil/sdk": "^0.0.6",
-    "@galacticcouncil/ui": "^1.0.65",
+    "@galacticcouncil/sdk": "^0.1.0",
+    "@galacticcouncil/ui": "^1.1.5",
     "@lit-labs/react": "^1.1.0",
     "@polkadot/api": "^9.9.1",
     "@polkadot/extension-inject": "^0.44.5",
@@ -91,9 +91,9 @@
     "fix:eslint": "eslint --fix src",
     "fix:prettier": "prettier --write \"src/**/*.{ts,tsx,json}\"",
     "generate": "yarn generate:defs && yarn generate:meta && yarn fix:prettier",
-    "generate:info": "ts-node --skip-project node_modules/.bin/polkadot-types-chain-info --ws wss://hydradx-devnet-rpc.play.hydration.cloud",
-    "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package interfaces --input ./src/interfaces --endpoint wss://hydradx-devnet-rpc.play.hydration.cloud",
-    "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package interfaces --endpoint wss://hydradx-devnet-rpc.play.hydration.cloud --output ./src/interfaces"
+    "generate:info": "ts-node --skip-project node_modules/.bin/polkadot-types-chain-info --ws wss://rococo-hydradx-rpc.hydration.dev",
+    "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package interfaces --input ./src/interfaces --endpoint wss://rococo-hydradx-rpc.hydration.dev",
+    "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package interfaces --endpoint wss://rococo-hydradx-rpc.hydration.dev --output ./src/interfaces"
   },
   "eslintConfig": {
     "extends": [
