@@ -102,5 +102,6 @@ export function getOrderStateValue(
   state?: Awaited<ReturnType<ReturnType<typeof getOrderState>>>,
 ) {
   if (!state) return
+  if (state.events.length === 0) return
   return state.events[0].args
 }
