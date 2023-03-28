@@ -34,15 +34,14 @@ export function OrderAssetSelect(props: {
   value: string
   title?: string
   asset?: string | u32
+  balance?: BN | undefined
   onChange: (value: string) => void
   onOpen: () => void
   error?: string
 }) {
-  const { account } = useAccountStore()
   const asset = useAsset(props.asset)
-  const balance = useTokenBalance(props.asset, account?.address)
 
-  const assetBalance = balance.data?.balance
+  const assetBalance = props.balance
   const assetDecimals = asset.data?.decimals
 
   let blnc: string = ""
@@ -52,13 +51,23 @@ export function OrderAssetSelect(props: {
 
   return (
     <UigcAssetTransfer
+      ref={(el) => {
+        if (!el) {
+          return
+        }
+
+        if (props.error) {
+          el.setAttribute("error", props.error)
+        } else {
+          el.removeAttribute("error")
+        }
+      }}
       onAssetInputChanged={(e) => props.onChange(e.detail.value)}
       onAssetSelectorClicked={props.onOpen}
       id={props.name}
       title={props.title}
       asset={asset.data?.symbol}
       amount={props.value}
-      error={props.error}
     >
       <UigcAssetBalance
         slot="balance"

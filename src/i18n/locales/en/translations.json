@@ -155,6 +155,7 @@
   "otc.order.place.fee": "Trade Fee",
   "otc.order.place.feeValue": "≈ {{ amount, bignumber }} {{ symbol }}",
   "otc.order.place.confirm": "Create new order",
+  "otc.order.place.validation.notEnoughBalance": "Insufficient balance on your account.",
   "otc.order.place.toast.onLoading": "Placing new order",
   "otc.order.place.toast.onSuccess": "New order in place",
   "otc.order.fill.title": "Fill order",

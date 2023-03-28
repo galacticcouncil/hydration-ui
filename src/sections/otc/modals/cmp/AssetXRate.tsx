@@ -2,6 +2,8 @@ import * as React from "react"
 import * as UI from "@galacticcouncil/ui"
 import { createComponent, EventName } from "@lit-labs/react"
 import { useTranslation } from "react-i18next"
+import { useSpotPrice } from "api/spotPrice"
+import { useAssetMeta } from "api/assetMeta"
 
 export const UigcAssetXRate = createComponent({
   tagName: "uigc-asset-x-rate",
@@ -25,20 +27,31 @@ export function OrderAssetRate(props: {
   onChange: (value: string) => void
 }) {
   const { t } = useTranslation()
+
+  const inputMeta = useAssetMeta(props.inputAsset)
+  const outputMeta = useAssetMeta(props.outputAsset)
+
+  const sp = useSpotPrice(props.inputAsset, props.outputAsset)
+  const spotPrice = sp.data?.spotPrice
+
   return (
     <UigcAssetXRate
-      sx={{ pt: 10, pb: 10 }}
       onAssetInputChanged={(e) => props.onChange(e.detail.value)}
-      title={t("otc.order.place.price", { symbol: props.inputAsset })}
-      asset={props.outputAsset}
+      title={t("otc.order.place.price", { symbol: inputMeta.data?.symbol })}
+      asset={outputMeta.data?.symbol}
       amount={props.price}
     >
-      <UigcButton
-        slot="button"
-        {...{ variant: "max", size: "micro", nowrap: true }}
-      >
-        Last omnipool price
-      </UigcButton>
+      {!spotPrice?.isNaN() && (
+        <UigcButton
+          slot="button"
+          onClick={() =>
+            spotPrice ? props.onChange(spotPrice.toFixed()) : "0"
+          }
+          {...{ variant: "max", size: "micro", nowrap: true }}
+        >
+          Last omnipool price
+        </UigcButton>
+      )}
     </UigcAssetXRate>
   )
 }

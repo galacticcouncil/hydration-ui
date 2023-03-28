@@ -6,7 +6,7 @@ import { usePaymentInfo } from "api/transaction"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useApiPromise } from "utils/api"
@@ -19,6 +19,7 @@ import { PartialOrderToggle } from "./cmp/PartialOrderToggle"
 
 import { Separator } from "components/Separator/Separator"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
+import { useTokenBalance } from "api/balances"
 
 type PlaceOrderProps = {
   assetOut?: u32 | string
@@ -36,6 +37,8 @@ export const PlaceOrder = ({
   onSuccess,
 }: PlaceOrderProps) => {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
+
   const [aOut, setAOut] = useState(assetOut)
   const [aIn, setAIn] = useState(assetIn)
 
@@ -48,10 +51,17 @@ export const PlaceOrder = ({
     defaultValues: { partiallyFillable: false },
   })
 
+  useEffect(() => {
+    console.log("trigger validation")
+    form.trigger()
+  }, [form])
+
   const api = useApiPromise()
   const assetOutMeta = useAssetMeta(aOut)
+  const assetOutBalance = useTokenBalance(aOut, account?.address)
   const assetInMeta = useAssetMeta(aIn)
-  const { account } = useAccountStore()
+  const assetInBalance = useTokenBalance(aIn, account?.address)
+
   const accountCurrency = useAccountCurrency(account?.address)
   const accountCurrencyMeta = useAssetMeta(accountCurrency.data)
   const { createTransaction } = useStore()
@@ -75,6 +85,7 @@ export const PlaceOrder = ({
       const price = new BigNumber(amountIn).div(new BigNumber(amountOut))
       form.setValue("price", price.toFixed())
     }
+    form.trigger()
   }
 
   const handlePriceChange = () => {
@@ -183,6 +194,25 @@ export const PlaceOrder = ({
           <Controller
             name="amountOut"
             control={form.control}
+            rules={{
+              required: true,
+              validate: {
+                maxBalance: (value) => {
+                  const balance = assetOutBalance.data?.balance
+                  const decimals = assetOutMeta.data?.decimals.toString()
+                  if (
+                    balance &&
+                    decimals &&
+                    balance.gte(
+                      new BigNumber(value).multipliedBy(BN_10.pow(decimals)),
+                    )
+                  ) {
+                    return true
+                  }
+                  return t("otc.order.place.validation.notEnoughBalance")
+                },
+              },
+            }}
             render={({
               field: { name, value, onChange },
               fieldState: { error },
@@ -197,28 +227,37 @@ export const PlaceOrder = ({
                 }}
                 onOpen={assetOutModal.openModal}
                 asset={aOut}
+                balance={assetOutBalance.data?.balance}
                 error={error?.message}
               />
             )}
           />
-          <Controller
-            name="price"
-            control={form.control}
-            render={({ field: { value, onChange } }) => (
-              <OrderAssetRate
-                inputAsset={assetOutMeta.data?.symbol}
-                outputAsset={assetInMeta.data?.symbol}
-                price={value!}
-                onChange={(e) => {
-                  onChange(e)
-                  handlePriceChange()
-                }}
+          <div sx={{ pt: 10, pb: 10 }}>
+            {assetOutMeta.data && assetInMeta.data && (
+              <Controller
+                name="price"
+                control={form.control}
+                render={({ field: { value, onChange } }) => (
+                  <OrderAssetRate
+                    inputAsset={assetOutMeta.data?.id}
+                    outputAsset={assetInMeta.data?.id}
+                    price={value!}
+                    onChange={(e) => {
+                      onChange(e)
+                      handlePriceChange()
+                    }}
+                  />
+                )}
               />
             )}
-          />
+          </div>
+
           <Controller
             name="amountIn"
             control={form.control}
+            rules={{
+              required: true,
+            }}
             render={({
               field: { name, value, onChange },
               fieldState: { error },
@@ -233,6 +272,7 @@ export const PlaceOrder = ({
                 }}
                 onOpen={assetInModal.openModal}
                 asset={aIn}
+                balance={assetInBalance.data?.balance}
                 error={error?.message}
               />
             )}
@@ -290,7 +330,11 @@ export const PlaceOrder = ({
               )}
             </div>
           </div>
-          <Button sx={{ mt: 20 }} variant="primary">
+          <Button
+            sx={{ mt: 20 }}
+            variant="primary"
+            disabled={!form.formState.isValid}
+          >
             {t("otc.order.place.confirm")}
           </Button>
         </form>
