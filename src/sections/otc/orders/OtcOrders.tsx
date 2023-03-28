@@ -47,13 +47,8 @@ export const OtcOrderTable = ({ data, showMyOrders, visibility }: Props) => {
 
   const filteredData = useMemo(() => {
     let res: OrderTableData[] = data
-    switch (visibility) {
-      case "partial":
-        res = data.filter((row) => row.partiallyFillable)
-        break
-      case "full":
-        res = data.filter((row) => !row.partiallyFillable)
-        break
+    if (visibility === "partial") {
+      res = data.filter((row) => row.partiallyFillable)
     }
     return showMyOrders ? res.filter((row) => row.owner === userAddress) : res
   }, [data, userAddress, showMyOrders, visibility])

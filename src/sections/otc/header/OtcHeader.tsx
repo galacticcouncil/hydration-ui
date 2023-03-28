@@ -75,12 +75,6 @@ export const OtcHeader: FC<Props> = ({
             label={"Partially fillable"}
             onChange={onOptionChange}
           />
-          <Tab
-            value={"full"}
-            active={visibility}
-            label={"Fillable"}
-            onChange={onOptionChange}
-          />
         </STabs>
         <Button
           size="medium"
