@@ -164,6 +164,8 @@
   "otc.order.fill.payTitle": "Pay with",
   "otc.order.fill.getTitle": "You get",
   "otc.order.fill.confirm": "Fill order",
+  "otc.order.fill.validation.notEnoughBalance": "Insufficient balance on your account to fill order of this size.",
+  "otc.order.fill.validation.orderTooBig": "Entered amount exceeds the maximum capacity of this order.",
   "otc.order.fill.toast.onLoading": "Processing the order",
   "otc.order.fill.toast.onSuccess": "Order succesfull",
   "otc.order.close.title": "Sure you want to stop your trade?",

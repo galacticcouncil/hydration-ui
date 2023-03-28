@@ -5,7 +5,7 @@ import { usePaymentInfo } from "api/transaction"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useApiPromise } from "utils/api"
 import { FormValues } from "utils/helpers"
@@ -13,6 +13,9 @@ import { useAccountStore, useStore } from "../../../state/store"
 import { OrderAssetPrice } from "./cmp/AssetPrice"
 import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
 import { OfferingPair } from "../orders/OtcOrdersData.utils"
+import { useTokenBalance } from "api/balances"
+import { BN_10 } from "utils/constants"
+import { useEffect } from "react"
 
 type PlaceOrderProps = {
   orderId: string
@@ -30,21 +33,24 @@ export const FillOrder = ({
   onSuccess,
 }: PlaceOrderProps) => {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
 
   const form = useForm<{
     amountIn: string
-    amountOut: string
-    free: BigNumber
   }>({
     defaultValues: {
-      free: offering.amount,
+      amountIn: accepting.amount.toFixed(),
     },
   })
 
+  useEffect(() => {
+    form.trigger()
+  }, [form])
+
   const api = useApiPromise()
   const assetInMeta = useAssetMeta(accepting.asset)
+  const assetInBalance = useTokenBalance(accepting.asset, account?.address)
   const assetOutMeta = useAssetMeta(offering.asset)
-  const { account } = useAccountStore()
   const accountCurrency = useAccountCurrency(account?.address)
   const accountCurrencyMeta = useAssetMeta(accountCurrency.data)
   const { createTransaction } = useStore()
@@ -103,11 +109,37 @@ export const FillOrder = ({
           justify: "space-between",
         }}
       >
-        <OrderAssetPay
-          title={t("otc.order.fill.payTitle")}
-          value={accepting.amount.toFixed()}
-          asset={accepting.asset}
-          readonly={true}
+        <Controller
+          name="amountIn"
+          control={form.control}
+          rules={{
+            validate: {
+              maxBalance: (value) => {
+                const balance = assetInBalance.data?.balance
+                const decimals = assetInMeta.data?.decimals.toString()
+                if (
+                  balance &&
+                  decimals &&
+                  balance.gte(
+                    new BigNumber(value).multipliedBy(BN_10.pow(decimals)),
+                  )
+                ) {
+                  return true
+                }
+                return t("otc.order.fill.validation.notEnoughBalance")
+              },
+            },
+          }}
+          render={({ field: { value }, fieldState: { error } }) => (
+            <OrderAssetPay
+              title={t("otc.order.fill.payTitle")}
+              value={value}
+              asset={accepting.asset}
+              balance={assetInBalance.data?.balance}
+              readonly={true}
+              error={error?.message}
+            />
+          )}
         />
         <OrderAssetPrice
           inputAsset={assetOutMeta.data?.symbol}
@@ -143,7 +175,11 @@ export const FillOrder = ({
             )}
           </div>
         </div>
-        <Button sx={{ mt: 20 }} variant="primary">
+        <Button
+          sx={{ mt: 20 }}
+          variant="primary"
+          disabled={!form.formState.isValid}
+        >
           {t("otc.order.fill.confirm")}
         </Button>
       </form>

@@ -3,8 +3,6 @@ import * as UI from "@galacticcouncil/ui"
 import { createComponent, EventName } from "@lit-labs/react"
 import { u32 } from "@polkadot/types"
 import { useAsset } from "api/asset"
-import { useTokenBalance } from "api/balances"
-import { useAccountStore } from "state/store"
 import BN from "bignumber.js"
 
 export const UigcAssetTransfer = createComponent({
@@ -83,15 +81,14 @@ export function OrderAssetPay(props: {
   title?: string
   value: string
   asset: string | u32
+  balance?: BN | undefined
   onChange?: (value: string) => void
   error?: string
   readonly?: boolean
 }) {
-  const { account } = useAccountStore()
   const asset = useAsset(props.asset)
-  const balance = useTokenBalance(props.asset, account?.address)
 
-  const assetBalance = balance.data?.balance
+  const assetBalance = props.balance
   const assetDecimals = asset.data?.decimals
 
   let blnc: string = ""
@@ -101,7 +98,17 @@ export function OrderAssetPay(props: {
 
   return (
     <UigcAssetTransfer
-      ref={(el) => el && props.readonly && el.setAttribute("readonly", "")}
+      ref={(el) => {
+        if (!el) {
+          return
+        }
+        props.readonly && el.setAttribute("readonly", "")
+        if (props.error) {
+          el.setAttribute("error", props.error)
+        } else {
+          el.removeAttribute("error")
+        }
+      }}
       onAssetInputChanged={(e) =>
         props.onChange && props.onChange(e.detail.value)
       }
@@ -109,7 +116,6 @@ export function OrderAssetPay(props: {
       title={props.title}
       asset={asset.data?.symbol}
       amount={props.value}
-      error={props.error}
       selectable={false}
       readonly={props.readonly || false}
     >
@@ -152,7 +158,18 @@ export function OrderAssetGet(props: {
   const asset = useAsset(props.asset)
   return (
     <UigcAssetTransfer
-      ref={(el) => el && props.readonly && el.setAttribute("readonly", "")}
+      ref={(el) => {
+        if (!el) {
+          return
+        }
+        props.readonly && el.setAttribute("readonly", "")
+
+        if (props.error) {
+          el.setAttribute("error", props.error)
+        } else {
+          el.removeAttribute("error")
+        }
+      }}
       onAssetInputChanged={(e) =>
         props.onChange && props.onChange(e.detail.value)
       }
@@ -160,7 +177,6 @@ export function OrderAssetGet(props: {
       title={props.title}
       asset={asset.data?.symbol}
       amount={props.value}
-      error={props.error}
       selectable={false}
       readonly={props.readonly || false}
     >

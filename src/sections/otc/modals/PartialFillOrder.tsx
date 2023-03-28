@@ -15,6 +15,8 @@ import { OrderAssetPrice } from "./cmp/AssetPrice"
 import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
 import { OrderCapacity } from "../capacity/OrderCapacity"
 import { OfferingPair } from "../orders/OtcOrdersData.utils"
+import { useEffect } from "react"
+import { useTokenBalance } from "api/balances"
 
 type PlaceOrderProps = {
   orderId: string
@@ -32,6 +34,7 @@ export const PartialFillOrder = ({
   onSuccess,
 }: PlaceOrderProps) => {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
 
   const form = useForm<{
     amountIn: string
@@ -43,10 +46,14 @@ export const PartialFillOrder = ({
     },
   })
 
+  useEffect(() => {
+    form.trigger()
+  }, [form])
+
   const api = useApiPromise()
   const assetInMeta = useAssetMeta(accepting.asset)
+  const assetInBalance = useTokenBalance(accepting.asset, account?.address)
   const assetOutMeta = useAssetMeta(offering.asset)
-  const { account } = useAccountStore()
   const accountCurrency = useAccountCurrency(account?.address)
   const accountCurrencyMeta = useAssetMeta(accountCurrency.data)
   const { createTransaction } = useStore()
@@ -59,12 +66,14 @@ export const PartialFillOrder = ({
     const { amountOut } = form.getValues()
     const amountIn = new BigNumber(amountOut).multipliedBy(price)
     form.setValue("amountIn", amountIn.toFixed())
+    form.trigger()
   }
 
   const handleYouGetChange = () => {
     const { amountIn } = form.getValues()
     const amountOut = new BigNumber(amountIn).div(price)
     form.setValue("amountOut", amountOut.toFixed())
+    form.trigger()
   }
 
   const handleFreeChange = () => {
@@ -127,9 +136,6 @@ export const PartialFillOrder = ({
         form.reset()
       }}
     >
-      {/*  <Text fs={16} color="basic400" sx={{ mt: 10, mb: 12 }}>
-        {t("otc.order.fill.desc")}
-      </Text> */}
       <div
         sx={{
           flex: "row",
@@ -172,6 +178,25 @@ export const PartialFillOrder = ({
         <Controller
           name="amountIn"
           control={form.control}
+          rules={{
+            required: true,
+            validate: {
+              maxBalance: (value) => {
+                const balance = assetInBalance.data?.balance
+                const decimals = assetInMeta.data?.decimals.toString()
+                if (
+                  balance &&
+                  decimals &&
+                  balance.gte(
+                    new BigNumber(value).multipliedBy(BN_10.pow(decimals)),
+                  )
+                ) {
+                  return true
+                }
+                return t("otc.order.fill.validation.notEnoughBalance")
+              },
+            },
+          }}
           render={({
             field: { name, value, onChange },
             fieldState: { error },
@@ -186,6 +211,7 @@ export const PartialFillOrder = ({
                 handleFreeChange()
               }}
               asset={accepting.asset}
+              balance={assetInBalance.data?.balance}
               error={error?.message}
             />
           )}
@@ -198,6 +224,17 @@ export const PartialFillOrder = ({
         <Controller
           name="amountOut"
           control={form.control}
+          rules={{
+            required: true,
+            validate: {
+              orderTooBig: (value) => {
+                if (offering.amount.gte(new BigNumber(value))) {
+                  return true
+                }
+                return t("otc.order.fill.validation.orderTooBig")
+              },
+            },
+          }}
           render={({
             field: { name, value, onChange },
             fieldState: { error },
@@ -239,7 +276,11 @@ export const PartialFillOrder = ({
             )}
           </div>
         </div>
-        <Button sx={{ mt: 20 }} variant="primary">
+        <Button
+          sx={{ mt: 20 }}
+          variant="primary"
+          disabled={!form.formState.isValid}
+        >
           {t("otc.order.fill.confirm")}
         </Button>
       </form>

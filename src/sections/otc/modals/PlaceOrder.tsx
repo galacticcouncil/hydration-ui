@@ -52,7 +52,6 @@ export const PlaceOrder = ({
   })
 
   useEffect(() => {
-    console.log("trigger validation")
     form.trigger()
   }, [form])
 
