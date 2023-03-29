@@ -53,7 +53,11 @@ export const OtcOrderActionsMob = ({
             pb: 30,
           }}
         >
-          <OrderPairColumn accepting={row.accepting} offering={row.offering} />
+          <OrderPairColumn
+            accepting={row.accepting}
+            offering={row.offering}
+            pol={row.pol}
+          />
           <OrderPriceColumn symbol={row.accepting.symbol} price={row.price} />
         </div>
         <Separator
