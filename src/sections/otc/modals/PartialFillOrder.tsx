@@ -85,9 +85,7 @@ export const PartialFillOrder = ({
     }
 
     const aIn = new BigNumber(amountIn)
-    const free = aIn.gt(accepting.amount)
-      ? BN_0
-      : accepting.amount.minus(aIn)
+    const free = aIn.gt(accepting.amount) ? BN_0 : accepting.amount.minus(aIn)
     form.setValue("free", free)
   }
 
