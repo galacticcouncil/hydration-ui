@@ -72,13 +72,27 @@ export const FillOrder = ({
         },
         toast: {
           onLoading: (
-            <Trans t={t} i18nKey="otc.order.fill.toast.onLoading" tOptions={{}}>
+            <Trans
+              t={t}
+              i18nKey="otc.order.fill.toast.onLoading"
+              tOptions={{
+                amount: offering.amount,
+                symbol: offering.symbol,
+              }}
+            >
               <span />
               <span className="highlight" />
             </Trans>
           ),
           onSuccess: (
-            <Trans t={t} i18nKey="otc.order.fill.toast.onSuccess" tOptions={{}}>
+            <Trans
+              t={t}
+              i18nKey="otc.order.fill.toast.onSuccess"
+              tOptions={{
+                amount: offering.amount,
+                symbol: offering.symbol,
+              }}
+            >
               <span />
               <span className="highlight" />
             </Trans>

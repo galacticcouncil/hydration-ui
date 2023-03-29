@@ -137,7 +137,10 @@ export const PlaceOrder = ({
             <Trans
               t={t}
               i18nKey="otc.order.place.toast.onLoading"
-              tOptions={{}}
+              tOptions={{
+                amount: values.amountOut,
+                symbol: assetOutMeta.data?.symbol,
+              }}
             >
               <span />
               <span className="highlight" />
@@ -147,7 +150,10 @@ export const PlaceOrder = ({
             <Trans
               t={t}
               i18nKey="otc.order.place.toast.onSuccess"
-              tOptions={{}}
+              tOptions={{
+                amount: values.amountOut,
+                symbol: assetOutMeta.data?.symbol,
+              }}
             >
               <span />
               <span className="highlight" />

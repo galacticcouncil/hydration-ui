@@ -45,7 +45,7 @@ export const OtcOrderActions = (props: Props) => {
             variant={"error"}
             children={
               <span sx={{ width: "80px", textAlign: "center" }}>
-                {t("otc.offers.table.actions.close")}
+                {t("otc.offers.table.actions.cancel")}
               </span>
             }
           ></TableAction>

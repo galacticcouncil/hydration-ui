@@ -39,8 +39,11 @@ export const CancelOrder = ({
           onLoading: (
             <Trans
               t={t}
-              i18nKey="otc.order.close.toast.onLoading"
-              tOptions={{}}
+              i18nKey="otc.order.cancel.toast.onLoading"
+              tOptions={{
+                amount: offering.amount,
+                symbol: offering.symbol,
+              }}
             >
               <span />
               <span className="highlight" />
@@ -49,7 +52,7 @@ export const CancelOrder = ({
           onSuccess: (
             <Trans
               t={t}
-              i18nKey="otc.order.close.toast.onSuccess"
+              i18nKey="otc.order.cancel.toast.onSuccess"
               tOptions={{}}
             >
               <span />
@@ -77,11 +80,11 @@ export const CancelOrder = ({
           as="div"
           sx={{ mt: 10, mb: 10, textAlign: "center" }}
         >
-          {t("otc.order.close.title")}
+          {t("otc.order.cancel.title")}
         </Text>
         {offering.initial && (
           <Text fs={16} color="basic400" sx={{ textAlign: "center" }}>
-            {t("otc.order.close.recap", {
+            {t("otc.order.cancel.recap", {
               sold: offering.initial.minus(offering.amount),
               total: offering.initial,
               symbol: offering.symbol,
@@ -93,7 +96,7 @@ export const CancelOrder = ({
             Back
           </Button>
           <Button variant="primary" onClick={handleClose}>
-            Yes, stop
+            {t("otc.order.cancel.confirm")}
           </Button>
         </div>
       </SContainer>
