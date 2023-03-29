@@ -43,7 +43,7 @@ export const PartialFillOrder = ({
     free: BigNumber
   }>({
     defaultValues: {
-      free: offering.amount,
+      free: accepting.amount,
     },
   })
 
@@ -80,14 +80,14 @@ export const PartialFillOrder = ({
   const handleFreeChange = () => {
     const { amountOut, amountIn } = form.getValues()
     if (!amountOut || !amountIn) {
-      form.setValue("free", offering.amount)
+      form.setValue("free", accepting.amount)
       return
     }
 
-    const aOut = new BigNumber(amountOut)
-    const free = aOut.gt(offering.amount)
+    const aIn = new BigNumber(amountIn)
+    const free = aIn.gt(accepting.amount)
       ? BN_0
-      : offering.amount.minus(new BigNumber(amountOut))
+      : accepting.amount.minus(aIn)
     form.setValue("free", free)
   }
 
@@ -147,12 +147,12 @@ export const PartialFillOrder = ({
         }}
       >
         <Text fs={16} color="basic500">
-          {"Available amount:"}
+          {"Remaining amount:"}
         </Text>
         <Text fs={24} color="white" font="FontOver" as="div">
           {t("otc.order.fill.remaining", {
-            remaining: offering.amount,
-            symbol: offering.symbol,
+            remaining: accepting.amount,
+            symbol: accepting.symbol,
           })}
         </Text>
       </div>
@@ -170,9 +170,9 @@ export const PartialFillOrder = ({
           control={form.control}
           render={({ field: { value } }) => (
             <OrderCapacity
-              total={offering.amount}
+              total={accepting.amount}
               free={value}
-              symbol={offering.symbol}
+              symbol={accepting.symbol}
               modal={true}
             />
           )}
