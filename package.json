@@ -7,7 +7,7 @@
     "@emotion/is-prop-valid": "^1.2.0",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
-    "@galacticcouncil/apps": "^1.1.15",
+    "@galacticcouncil/apps": "^1.1.16",
     "@galacticcouncil/bridge": "^0.0.1-rc42",
     "@galacticcouncil/math-omnipool": "^0.0.8",
     "@galacticcouncil/math-lbp": "^0.0.8",
