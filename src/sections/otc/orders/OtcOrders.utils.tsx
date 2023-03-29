@@ -46,6 +46,7 @@ export const useOrdersTable = (
         <OrderPairColumn
           offering={row.original.offering}
           accepting={row.original.accepting}
+          pol={row.original.pol}
         />
       ),
     }),
