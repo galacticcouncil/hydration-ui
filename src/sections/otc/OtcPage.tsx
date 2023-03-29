@@ -8,7 +8,7 @@ import { useOrdersTableData } from "./orders/OtcOrdersData.utils"
 export const OtcPage = () => {
   const [filter, setFilter] = useState({
     showMyOrders: false,
-    visibility: "all",
+    showPartial: false,
   })
   const order = useOrdersTableData()
 
@@ -16,24 +16,24 @@ export const OtcPage = () => {
     <Page>
       <OtcHeader
         showMyOrders={filter.showMyOrders}
-        visibility={filter.visibility}
+        showPartial={filter.showPartial}
         onShowMyOrdersChange={(value) =>
           setFilter((prev) => ({
             ...prev,
             showMyOrders: value,
           }))
         }
-        onVisibilityChange={(value) =>
+        onShowPartialChange={(value) =>
           setFilter((prev) => ({
             ...prev,
-            visibility: value,
+            showPartial: value,
           }))
         }
       />
       <OtcOrderTable
         data={order.data}
         showMyOrders={filter.showMyOrders}
-        visibility={filter.visibility}
+        showPartial={filter.showPartial}
       />
     </Page>
   )

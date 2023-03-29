@@ -26,10 +26,10 @@ import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 type Props = {
   data: OrderTableData[]
   showMyOrders: boolean
-  visibility: string
+  showPartial: boolean
 }
 
-export const OtcOrderTable = ({ data, showMyOrders, visibility }: Props) => {
+export const OtcOrderTable = ({ data, showMyOrders, showPartial }: Props) => {
   const [row, setRow] = useState<OrderTableData | undefined>(undefined)
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [fillOrder, setFillOrder] = useState<OrderTableData | undefined>(
@@ -47,11 +47,15 @@ export const OtcOrderTable = ({ data, showMyOrders, visibility }: Props) => {
 
   const filteredData = useMemo(() => {
     let res: OrderTableData[] = data
-    if (visibility === "partial") {
-      res = data.filter((row) => row.partiallyFillable)
+
+    if (showPartial) {
+      res = res.filter((o) => o.partiallyFillable)
     }
-    return showMyOrders ? res.filter((row) => row.owner === userAddress) : res
-  }, [data, userAddress, showMyOrders, visibility])
+    if (showMyOrders) {
+      res = res.filter((o) => o.owner === userAddress)
+    }
+    return res.sort((a, b) => Number(b.pol) - Number(a.pol))
+  }, [data, userAddress, showMyOrders, showPartial])
 
   const table = useOrdersTable(filteredData, {
     onFill: setFillOrder,
