@@ -121,6 +121,10 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
 
   ${({ canSort }) => canSort && "cursor:pointer;"}
 
+  &:last-of-type {
+    padding-right: 16px;
+  }
+
   @media ${theme.viewport.gte.sm} {
     padding: 24px 32px;
 

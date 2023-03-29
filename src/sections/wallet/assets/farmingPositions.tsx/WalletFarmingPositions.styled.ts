@@ -7,7 +7,6 @@ export const STableContainer = styled(TableContainer)`
     &:last-of-type {
       > div {
         justify-content: flex-end;
-        padding-right: 48px; // add extra padding because there's no actions column
       }
     }
 
@@ -15,7 +14,6 @@ export const STableContainer = styled(TableContainer)`
       &:last-of-type {
         > div {
           justify-content: flex-start;
-          padding-right: 0;
         }
       }
     }
@@ -26,6 +24,6 @@ export const STableData = styled(TableData)`
   // remove column shrinking because there's no actions column
   &:last-of-type {
     width: unset;
-    padding-right: 48px;
+    padding-right: 16px;
   }
 `
