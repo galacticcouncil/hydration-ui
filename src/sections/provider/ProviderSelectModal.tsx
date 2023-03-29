@@ -14,11 +14,13 @@ import {
   SContainer,
   SHeader,
   SButton,
+  SName,
 } from "./ProviderSelectModal.styled"
 import { useTranslation } from "react-i18next"
 import { useBestNumber } from "api/chain"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { u32, u64 } from "@polkadot/types"
+import { SSeparator } from "components/Separator/Separator.styled"
 
 function ProviderSelectItemExternal(props: {
   url: string
@@ -234,20 +236,25 @@ export function ProviderSelectButton() {
 
   return (
     <>
-      <SButton tabIndex={0} role="button" onClick={() => setOpen(true)}>
+      <SButton tabIndex={0} onClick={() => setOpen(true)} whileHover="animate">
+        <SName
+          variants={{
+            initial: { width: 0 },
+            animate: { width: "auto" },
+            exit: { width: 0 },
+          }}
+          transition={{ duration: 0.15, ease: "easeInOut" }}
+        >
+          <Text font="ChakraPetch" fs={11} fw={500}>
+            {selectedProvider?.name}
+          </Text>
+          <ChevronRightIcon />
+          <Separator orientation="vertical" sx={{ height: 14, mr: 10 }} />
+        </SName>
         <ProviderStatus
           relaychainBlockNumber={number.data?.relaychainBlockNumber}
           timestamp={number.data?.timestamp}
         />
-
-        <span
-          sx={{ display: "block", width: 1, height: 14, bg: "darkBlue400" }}
-        />
-
-        <span sx={{ display: "flex", align: "center" }}>
-          <span>{selectedProvider?.name}</span>
-          <ChevronRightIcon sx={{ color: "brightBlue300" }} />
-        </span>
       </SButton>
       {open && (
         <ProviderSelectModal open={open} onClose={() => setOpen(false)} />
