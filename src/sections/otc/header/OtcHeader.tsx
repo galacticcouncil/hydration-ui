@@ -13,23 +13,23 @@ import { Tab } from "./OtcHeaderTab"
 
 type Props = {
   showMyOrders: boolean
-  visibility: string
+  showPartial: boolean
   onShowMyOrdersChange: (value: boolean) => void
-  onVisibilityChange: (value: string) => void
+  onShowPartialChange: (value: boolean) => void
 }
 
 export const OtcHeader: FC<Props> = ({
   showMyOrders,
-  visibility,
+  showPartial,
   onShowMyOrdersChange,
-  onVisibilityChange,
+  onShowPartialChange,
 }) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
   const { account } = useAccountStore()
 
   const onOptionChange = (e: { target: { value: string } }) => {
-    onVisibilityChange(e.target.value)
+    onShowPartialChange(e.target.value === "all" ? false : true)
   }
 
   return (
@@ -65,13 +65,13 @@ export const OtcHeader: FC<Props> = ({
         <STabs>
           <Tab
             value={"all"}
-            active={visibility}
+            active={!showPartial}
             label={"All"}
             onChange={onOptionChange}
           />
           <Tab
             value={"partial"}
-            active={visibility}
+            active={showPartial}
             label={"Partially fillable"}
             onChange={onOptionChange}
           />

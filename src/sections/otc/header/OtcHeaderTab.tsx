@@ -1,6 +1,6 @@
 export function Tab(props: {
   value: string
-  active: string
+  active: boolean
   label: string
   onChange: (e: any) => void
 }) {
@@ -11,7 +11,7 @@ export function Tab(props: {
         name="filter"
         value={props.value}
         id={props.value}
-        checked={props.active === props.value}
+        checked={props.active}
         onChange={props.onChange}
       />
       <label htmlFor={props.value}>{props.label}</label>

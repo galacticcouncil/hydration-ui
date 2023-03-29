@@ -46,6 +46,7 @@ export const useOrdersTable = (
         <OrderPairColumn
           offering={row.original.offering}
           accepting={row.original.accepting}
+          pol={row.original.pol}
         />
       ),
     }),
@@ -84,7 +85,7 @@ export const useOrdersTable = (
         </div>
       ),
       cell: ({ row }) =>
-        row.original.offering.initial && row.original.partiallyFillable ? (
+        row.original.accepting.initial && row.original.partiallyFillable ? (
           <div
             style={{
               textAlign: "center",
@@ -92,9 +93,9 @@ export const useOrdersTable = (
             }}
           >
             <OrderCapacity
-              total={row.original.offering.initial}
-              free={row.original.offering.amount}
-              symbol={row.original.offering.symbol}
+              total={row.original.accepting.initial}
+              free={row.original.accepting.amount}
+              symbol={row.original.accepting.symbol}
             />
           </div>
         ) : (

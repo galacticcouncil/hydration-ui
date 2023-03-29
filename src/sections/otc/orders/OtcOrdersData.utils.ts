@@ -3,6 +3,7 @@ import { useOrdersData, useOrdersState, getOrderStateValue } from "api/otc"
 import BN from "bignumber.js"
 
 export const useOrdersTableData = () => {
+  const treasuryAddr = import.meta.env.VITE_TRSRY_ADDR
   const orders = useOrdersData()
   const orderIds = orders.data?.map((order) => order.id)
   const ordersState = useOrdersState(orderIds || [])
@@ -48,6 +49,7 @@ export const useOrdersTableData = () => {
         },
         price: amountIn.div(amountOut),
         partiallyFillable: order.partiallyFillable,
+        pol: order.owner === treasuryAddr,
       } as OrderTableData
     })
   }, [orders.data])
@@ -67,6 +69,7 @@ export type OrderTableData = {
   price: BN
   filled: string
   partiallyFillable: boolean
+  pol: boolean
 }
 
 export type OfferingPair = {

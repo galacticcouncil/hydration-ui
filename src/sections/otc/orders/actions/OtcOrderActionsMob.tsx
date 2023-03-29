@@ -53,7 +53,11 @@ export const OtcOrderActionsMob = ({
             pb: 30,
           }}
         >
-          <OrderPairColumn accepting={row.accepting} offering={row.offering} />
+          <OrderPairColumn
+            accepting={row.accepting}
+            offering={row.offering}
+            pol={row.pol}
+          />
           <OrderPriceColumn symbol={row.accepting.symbol} price={row.price} />
         </div>
         <Separator
@@ -82,11 +86,11 @@ export const OtcOrderActionsMob = ({
               align: "center",
             }}
           >
-            {row.offering.initial && row.partiallyFillable ? (
+            {row.accepting.initial && row.partiallyFillable ? (
               <OrderCapacity
-                total={row.offering.initial}
-                free={row.offering.amount}
-                symbol={row.offering.symbol}
+                total={row.accepting.initial}
+                free={row.accepting.amount}
+                symbol={row.accepting.symbol}
               />
             ) : (
               <Text

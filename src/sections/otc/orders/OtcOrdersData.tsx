@@ -8,6 +8,7 @@ import { OfferingPair } from "./OtcOrdersData.utils"
 export const OrderPairColumn = (props: {
   offering: OfferingPair
   accepting: OfferingPair
+  pol: boolean
 }) => {
   return (
     <div>
@@ -18,15 +19,28 @@ export const OrderPairColumn = (props: {
             { icon: getAssetLogo(props.accepting.symbol) },
           ]}
         />
-        <Text
-          fs={[14, 16]}
-          lh={[16, 16]}
-          fw={500}
-          sx={{ ml: 8 }}
-          color="basic400"
-        >
-          {props.offering.symbol} / {props.accepting.symbol}
-        </Text>
+        <div sx={{ display: "box", ml: 8 }}>
+          <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="basic400">
+            {props.offering.symbol} / {props.accepting.symbol}
+          </Text>
+          {props.pol && (
+            <span
+              css={{
+                fontSize: 10,
+                fontWeight: 600,
+                border: "1px solid #FC408C",
+                borderRadius: "4px",
+                width: "31px",
+                height: "16px",
+                padding: "1px 6px",
+                color: "#fff",
+                background: "rgba(255, 2, 103, 0.6)",
+              }}
+            >
+              POL
+            </span>
+          )}
+        </div>
       </div>
     </div>
   )

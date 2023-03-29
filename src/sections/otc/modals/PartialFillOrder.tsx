@@ -1,13 +1,12 @@
 import BigNumber from "bignumber.js"
 import { useAssetMeta } from "api/assetMeta"
-import { useAccountCurrency } from "api/payments"
-import { usePaymentInfo } from "api/transaction"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useApiPromise } from "utils/api"
+import { getFixedPointAmount } from "utils/balance"
 import { BN_0, BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { useAccountStore, useStore } from "../../../state/store"
@@ -42,7 +41,7 @@ export const PartialFillOrder = ({
     free: BigNumber
   }>({
     defaultValues: {
-      free: offering.amount,
+      free: accepting.amount,
     },
   })
 
@@ -54,11 +53,8 @@ export const PartialFillOrder = ({
   const assetInMeta = useAssetMeta(accepting.asset)
   const assetInBalance = useTokenBalance(accepting.asset, account?.address)
   const assetOutMeta = useAssetMeta(offering.asset)
-  const accountCurrency = useAccountCurrency(account?.address)
-  const accountCurrencyMeta = useAssetMeta(accountCurrency.data)
-  const { createTransaction } = useStore()
 
-  const { data: paymentInfoData } = usePaymentInfo(api.tx.otc.fillOrder(""))
+  const { createTransaction } = useStore()
 
   const price = accepting.amount.div(offering.amount)
 
@@ -79,14 +75,12 @@ export const PartialFillOrder = ({
   const handleFreeChange = () => {
     const { amountOut, amountIn } = form.getValues()
     if (!amountOut || !amountIn) {
-      form.setValue("free", offering.amount)
+      form.setValue("free", accepting.amount)
       return
     }
 
-    const aOut = new BigNumber(amountOut)
-    const free = aOut.gt(offering.amount)
-      ? BN_0
-      : offering.amount.minus(new BigNumber(amountOut))
+    const aIn = new BigNumber(amountIn)
+    const free = aIn.gt(accepting.amount) ? BN_0 : accepting.amount.minus(aIn)
     form.setValue("free", free)
   }
 
@@ -94,13 +88,14 @@ export const PartialFillOrder = ({
     if (assetInMeta.data?.decimals == null)
       throw new Error("Missing assetIn meta")
 
-    const amountInBN = new BigNumber(values.amountIn).multipliedBy(
-      BN_10.pow(assetInMeta.data?.decimals.toString()),
-    )
+    const amountIn = getFixedPointAmount(
+      values.amountIn,
+      assetInMeta.data.decimals.toString(),
+    ).decimalPlaces(0, 1)
 
     await createTransaction(
       {
-        tx: api.tx.otc.partialFillOrder(orderId, amountInBN.toFixed()),
+        tx: api.tx.otc.partialFillOrder(orderId, amountIn.toFixed()),
       },
       {
         onSuccess,
@@ -145,12 +140,12 @@ export const PartialFillOrder = ({
         }}
       >
         <Text fs={16} color="basic500">
-          {"Available amount:"}
+          {"Remaining amount:"}
         </Text>
         <Text fs={24} color="white" font="FontOver" as="div">
           {t("otc.order.fill.remaining", {
-            remaining: offering.amount,
-            symbol: offering.symbol,
+            remaining: accepting.amount,
+            symbol: accepting.symbol,
           })}
         </Text>
       </div>
@@ -168,9 +163,9 @@ export const PartialFillOrder = ({
           control={form.control}
           render={({ field: { value } }) => (
             <OrderCapacity
-              total={offering.amount}
+              total={accepting.amount}
               free={value}
-              symbol={offering.symbol}
+              symbol={accepting.symbol}
               modal={true}
             />
           )}
@@ -254,28 +249,6 @@ export const PartialFillOrder = ({
             />
           )}
         />
-        <div
-          sx={{
-            mt: 14,
-            flex: "row",
-            justify: "space-between",
-          }}
-        >
-          <Text fs={13} color="darkBlue300">
-            {t("otc.order.place.fee")}
-          </Text>
-          <div sx={{ flex: "row", align: "center", gap: 4 }}>
-            {paymentInfoData?.partialFee != null && (
-              <Text fs={14}>
-                {t("otc.order.place.feeValue", {
-                  amount: new BigNumber(paymentInfoData.partialFee.toHex()),
-                  symbol: accountCurrencyMeta.data?.symbol,
-                  fixedPointScale: accountCurrencyMeta.data?.decimals,
-                })}
-              </Text>
-            )}
-          </div>
-        </div>
         <Button
           sx={{ mt: 20 }}
           variant="primary"
