@@ -1,8 +1,6 @@
 import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 import { useAssetMeta } from "api/assetMeta"
-import { useAccountCurrency } from "api/payments"
-import { usePaymentInfo } from "api/transaction"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
@@ -17,8 +15,6 @@ import { useAccountStore, useStore } from "../../../state/store"
 import { OrderAssetSelect } from "./cmp/AssetSelect"
 import { OrderAssetRate } from "./cmp/AssetXRate"
 import { PartialOrderToggle } from "./cmp/PartialOrderToggle"
-
-import { Separator } from "components/Separator/Separator"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useTokenBalance } from "api/balances"
 
@@ -63,13 +59,7 @@ export const PlaceOrder = ({
   const assetInMeta = useAssetMeta(aIn)
   const assetInBalance = useTokenBalance(aIn, account?.address)
 
-  const accountCurrency = useAccountCurrency(account?.address)
-  const accountCurrencyMeta = useAssetMeta(accountCurrency.data)
   const { createTransaction } = useStore()
-
-  const { data: paymentInfoData } = usePaymentInfo(
-    api.tx.otc.placeOrder(0, 2, "0", "0", false),
-  )
 
   const assetOutModal = useAssetsModal({
     onSelect: (asset) => {
@@ -321,29 +311,6 @@ export const PlaceOrder = ({
                   />
                 )}
               />
-            </div>
-            <Separator color="darkBlue401" />
-            <div
-              sx={{
-                mt: 14,
-                flex: "row",
-                justify: "space-between",
-              }}
-            >
-              <Text fs={13} color="darkBlue300">
-                {t("otc.order.place.fee")}
-              </Text>
-              <div sx={{ flex: "row", align: "center", gap: 4 }}>
-                {paymentInfoData?.partialFee != null && (
-                  <Text fs={14}>
-                    {t("otc.order.place.feeValue", {
-                      amount: new BigNumber(paymentInfoData.partialFee.toHex()),
-                      symbol: accountCurrencyMeta.data?.symbol,
-                      fixedPointScale: accountCurrencyMeta.data?.decimals,
-                    })}
-                  </Text>
-                )}
-              </div>
             </div>
             <Button
               sx={{ mt: 20 }}

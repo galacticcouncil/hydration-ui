@@ -1,7 +1,5 @@
 import BigNumber from "bignumber.js"
 import { useAssetMeta } from "api/assetMeta"
-import { useAccountCurrency } from "api/payments"
-import { usePaymentInfo } from "api/transaction"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
@@ -55,11 +53,8 @@ export const PartialFillOrder = ({
   const assetInMeta = useAssetMeta(accepting.asset)
   const assetInBalance = useTokenBalance(accepting.asset, account?.address)
   const assetOutMeta = useAssetMeta(offering.asset)
-  const accountCurrency = useAccountCurrency(account?.address)
-  const accountCurrencyMeta = useAssetMeta(accountCurrency.data)
-  const { createTransaction } = useStore()
 
-  const { data: paymentInfoData } = usePaymentInfo(api.tx.otc.fillOrder(""))
+  const { createTransaction } = useStore()
 
   const price = accepting.amount.div(offering.amount)
 
@@ -254,28 +249,6 @@ export const PartialFillOrder = ({
             />
           )}
         />
-        <div
-          sx={{
-            mt: 14,
-            flex: "row",
-            justify: "space-between",
-          }}
-        >
-          <Text fs={13} color="darkBlue300">
-            {t("otc.order.place.fee")}
-          </Text>
-          <div sx={{ flex: "row", align: "center", gap: 4 }}>
-            {paymentInfoData?.partialFee != null && (
-              <Text fs={14}>
-                {t("otc.order.place.feeValue", {
-                  amount: new BigNumber(paymentInfoData.partialFee.toHex()),
-                  symbol: accountCurrencyMeta.data?.symbol,
-                  fixedPointScale: accountCurrencyMeta.data?.decimals,
-                })}
-              </Text>
-            )}
-          </div>
-        </div>
         <Button
           sx={{ mt: 20 }}
           variant="primary"
