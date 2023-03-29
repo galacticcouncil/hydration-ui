@@ -8,6 +8,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useApiPromise } from "utils/api"
+import { getFixedPointAmount } from "utils/balance"
 import { BN_0, BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { useAccountStore, useStore } from "../../../state/store"
@@ -94,13 +95,14 @@ export const PartialFillOrder = ({
     if (assetInMeta.data?.decimals == null)
       throw new Error("Missing assetIn meta")
 
-    const amountInBN = new BigNumber(values.amountIn).multipliedBy(
-      BN_10.pow(assetInMeta.data?.decimals.toString()),
-    )
+    const amountIn = getFixedPointAmount(
+      values.amountIn,
+      assetInMeta.data.decimals.toString(),
+    ).decimalPlaces(0, 1)
 
     await createTransaction(
       {
-        tx: api.tx.otc.partialFillOrder(orderId, amountInBN.toFixed()),
+        tx: api.tx.otc.partialFillOrder(orderId, amountIn.toFixed()),
       },
       {
         onSuccess,
