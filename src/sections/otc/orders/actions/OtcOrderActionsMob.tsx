@@ -114,7 +114,7 @@ export const OtcOrderActionsMob = ({
                 variant={"error"}
               >
                 <PauseIcon />
-                {t("otc.offers.table.actions.close")}
+                {t("otc.offers.table.actions.cancel")}
               </Button>
             )}
             {orderOwner !== userAddress && (
