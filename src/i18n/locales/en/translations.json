@@ -142,6 +142,7 @@
   "liquidity.reviewTransaction.toast.error": "Transaction failed.",
   "liquidity.reviewTransaction.toast.unknown": "Transaction status unknown.",
   "otc.header.title": "Over-the-Counter Trading",
+  "otc.header.titleAlt": "OTC Trading",
   "otc.header.switch": "My orders",
   "otc.header.totalValue": "Value in OTC",
   "otc.header.placeOrder": "Place an order",
