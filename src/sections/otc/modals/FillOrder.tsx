@@ -1,21 +1,18 @@
-import BigNumber from "bignumber.js"
 import { useAssetMeta } from "api/assetMeta"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
-import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useApiPromise } from "utils/api"
-import { FormValues } from "utils/helpers"
 import { useAccountStore, useStore } from "../../../state/store"
 import { OrderAssetPrice } from "./cmp/AssetPrice"
 import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
 import { OfferingPair } from "../orders/OtcOrdersData.utils"
 import { useTokenBalance } from "api/balances"
 import { BN_10 } from "utils/constants"
-import { useEffect } from "react"
+import { useState } from "react"
 
-type PlaceOrderProps = {
+type FillOrderProps = {
   orderId: string
   offering: OfferingPair
   accepting: OfferingPair
@@ -29,32 +26,37 @@ export const FillOrder = ({
   accepting,
   onClose,
   onSuccess,
-}: PlaceOrderProps) => {
+}: FillOrderProps) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
-
-  const form = useForm<{
-    amountIn: string
-  }>({
-    defaultValues: {
-      amountIn: accepting.amount.toFixed(),
-    },
-  })
-
-  useEffect(() => {
-    form.trigger()
-  }, [form])
 
   const api = useApiPromise()
   const assetInMeta = useAssetMeta(accepting.asset)
   const assetInBalance = useTokenBalance(accepting.asset, account?.address)
   const assetOutMeta = useAssetMeta(offering.asset)
+  const [error, setError] = useState<string | undefined>(undefined)
 
   const { createTransaction } = useStore()
 
   const price = accepting.amount.div(offering.amount)
 
-  const handleSubmit = async (values: FormValues<typeof form>) => {
+  const handleSubmit = async () => {
+    if (assetInMeta.data?.decimals == null)
+      throw new Error("Missing assetIn meta")
+
+    if (assetInBalance.data?.balance == null)
+      throw new Error("Missing assetIn balance")
+
+    const aInBalance = assetInBalance.data?.balance
+    const aInDecimals = assetInMeta.data?.decimals.toString()
+
+    if (aInBalance.gte(accepting.amount.multipliedBy(BN_10.pow(aInDecimals)))) {
+      setError(undefined)
+    } else {
+      setError(t("otc.order.fill.validation.notEnoughBalance"))
+      return
+    }
+
     await createTransaction(
       {
         tx: api.tx.otc.fillOrder(orderId),
@@ -63,7 +65,6 @@ export const FillOrder = ({
         onSuccess,
         onSubmitted: () => {
           onClose()
-          form.reset()
         },
         toast: {
           onLoading: (
@@ -104,51 +105,26 @@ export const FillOrder = ({
       title={t("otc.order.fill.title")}
       onClose={() => {
         onClose()
-        form.reset()
       }}
     >
       <Text fs={16} color="basic400" sx={{ mt: 10, mb: 22 }}>
         {t("otc.order.fill.desc")}
       </Text>
       <form
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={handleSubmit}
         autoComplete="off"
         sx={{
           flex: "column",
           justify: "space-between",
         }}
       >
-        <Controller
-          name="amountIn"
-          control={form.control}
-          rules={{
-            validate: {
-              maxBalance: (value) => {
-                const balance = assetInBalance.data?.balance
-                const decimals = assetInMeta.data?.decimals.toString()
-                if (
-                  balance &&
-                  decimals &&
-                  balance.gte(
-                    new BigNumber(value).multipliedBy(BN_10.pow(decimals)),
-                  )
-                ) {
-                  return true
-                }
-                return t("otc.order.fill.validation.notEnoughBalance")
-              },
-            },
-          }}
-          render={({ field: { value }, fieldState: { error } }) => (
-            <OrderAssetPay
-              title={t("otc.order.fill.payTitle")}
-              value={value}
-              asset={accepting.asset}
-              balance={assetInBalance.data?.balance}
-              readonly={true}
-              error={error?.message}
-            />
-          )}
+        <OrderAssetPay
+          title={t("otc.order.fill.payTitle")}
+          value={accepting.amount.toFixed()}
+          asset={accepting.asset}
+          balance={assetInBalance.data?.balance}
+          readonly={true}
+          error={error}
         />
         <OrderAssetPrice
           inputAsset={assetOutMeta.data?.symbol}
@@ -162,11 +138,7 @@ export const FillOrder = ({
           asset={offering.asset}
           readonly={true}
         />
-        <Button
-          sx={{ mt: 20 }}
-          variant="primary"
-          disabled={!form.formState.isValid}
-        >
+        <Button sx={{ mt: 20 }} variant="primary">
           {t("otc.order.fill.confirm")}
         </Button>
       </form>
