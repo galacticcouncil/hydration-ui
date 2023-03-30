@@ -17,7 +17,7 @@ import { OfferingPair } from "../orders/OtcOrdersData.utils"
 import { useEffect } from "react"
 import { useTokenBalance } from "api/balances"
 
-type PlaceOrderProps = {
+type FillOrderProps = {
   orderId: string
   offering: OfferingPair
   accepting: OfferingPair
@@ -31,7 +31,7 @@ export const PartialFillOrder = ({
   accepting,
   onClose,
   onSuccess,
-}: PlaceOrderProps) => {
+}: FillOrderProps) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
 
@@ -95,7 +95,9 @@ export const PartialFillOrder = ({
 
     await createTransaction(
       {
-        tx: api.tx.otc.partialFillOrder(orderId, amountIn.toFixed()),
+        tx: values.free.eq(BN_0)
+          ? api.tx.otc.fillOrder(orderId)
+          : api.tx.otc.partialFillOrder(orderId, amountIn.toFixed()),
       },
       {
         onSuccess,
