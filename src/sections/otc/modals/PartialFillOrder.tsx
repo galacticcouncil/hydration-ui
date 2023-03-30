@@ -17,6 +17,8 @@ import { OfferingPair } from "../orders/OtcOrdersData.utils"
 import { useEffect } from "react"
 import { useTokenBalance } from "api/balances"
 
+const FULL_ORDER_PCT_LBOUND = 99
+
 type FillOrderProps = {
   orderId: string
   offering: OfferingPair
@@ -93,11 +95,17 @@ export const PartialFillOrder = ({
       assetInMeta.data.decimals.toString(),
     ).decimalPlaces(0, 1)
 
+    const filledPct = new BigNumber(values.amountIn)
+      .div(accepting.amount)
+      .multipliedBy(100)
+      .toNumber()
+
     await createTransaction(
       {
-        tx: values.free.eq(BN_0)
-          ? api.tx.otc.fillOrder(orderId)
-          : api.tx.otc.partialFillOrder(orderId, amountIn.toFixed()),
+        tx:
+          filledPct > FULL_ORDER_PCT_LBOUND
+            ? api.tx.otc.fillOrder(orderId)
+            : api.tx.otc.partialFillOrder(orderId, amountIn.toFixed()),
       },
       {
         onSuccess,
