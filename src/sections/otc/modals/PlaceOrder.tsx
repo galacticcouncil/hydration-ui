@@ -45,7 +45,7 @@ export const PlaceOrder = ({
     price: string
     partiallyFillable: boolean
   }>({
-    defaultValues: { partiallyFillable: false },
+    defaultValues: { partiallyFillable: true },
     mode: "onChange",
   })
 
