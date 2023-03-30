@@ -52,7 +52,7 @@ export const useOrdersTableData = () => {
         pol: order.owner === treasuryAddr,
       } as OrderTableData
     })
-  }, [orders.data])
+  }, [orders.data, orderIds, treasuryAddr])
 
   return {
     data,

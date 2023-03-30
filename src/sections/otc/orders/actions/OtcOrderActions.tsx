@@ -44,7 +44,7 @@ export const OtcOrderActions = (props: Props) => {
             disabled={!account}
             variant={"error"}
             children={
-              <span sx={{ width: "80px", textAlign: "center" }}>
+              <span sx={{ width: "90px", textAlign: "center" }}>
                 {t("otc.offers.table.actions.cancel")}
               </span>
             }
@@ -56,7 +56,7 @@ export const OtcOrderActions = (props: Props) => {
             onClick={() => props.onFill(props.data)}
             disabled={!account}
             children={
-              <span sx={{ width: "80px" }}>
+              <span sx={{ width: "90px" }}>
                 {t("otc.offers.table.actions.fill")}
               </span>
             }

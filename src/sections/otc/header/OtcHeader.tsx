@@ -1,4 +1,5 @@
 import { FC, useState } from "react"
+import { theme } from "theme"
 import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
 import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
@@ -10,6 +11,7 @@ import { PlaceOrder } from "../modals/PlaceOrder"
 import { Separator } from "components/Separator/Separator"
 import { SHeader, STabs } from "./OtcHeader.styled"
 import { Tab } from "./OtcHeaderTab"
+import { useMedia } from "react-use"
 
 type Props = {
   showMyOrders: boolean
@@ -25,6 +27,7 @@ export const OtcHeader: FC<Props> = ({
   onShowPartialChange,
 }) => {
   const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
   const [openAdd, setOpenAdd] = useState(false)
   const { account } = useAccountStore()
 
@@ -36,7 +39,7 @@ export const OtcHeader: FC<Props> = ({
     <>
       <SHeader sx={{ flex: "row", justify: "space-between" }}>
         <Heading fs={20} lh={26} fw={500}>
-          {t("otc.header.title")}
+          {isDesktop ? t("otc.header.title") : t("otc.header.titleAlt")}
         </Heading>
         {!!account && (
           <Switch
