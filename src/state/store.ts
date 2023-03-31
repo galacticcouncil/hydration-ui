@@ -8,6 +8,7 @@ import { v4 as uuid } from "uuid"
 import { ReactElement } from "react"
 import BigNumber from "bignumber.js"
 import { safeConvertAddressSS58 } from "utils/formatting"
+import { useSendTransactionMutation } from "sections/transaction/ReviewTransaction.utils"
 
 export interface ToastMessage {
   onLoading?: ReactElement
@@ -50,6 +51,7 @@ interface Store {
     },
   ) => Promise<ISubmittableResult>
   cancelTransaction: (hash: string) => void
+  cancelAllTransactions: () => void
 }
 
 export const externalWallet = { provider: "external", name: "ExternalAccount" }
@@ -164,5 +166,8 @@ export const useStore = create<Store>((set) => ({
         (transaction) => transaction.id !== id,
       ),
     }))
+  },
+  cancelAllTransactions: () => {
+    set(() => ({ transactions: undefined }))
   },
 }))

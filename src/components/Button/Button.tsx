@@ -28,7 +28,12 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   return (
-    <SButton variant={variant} size={size} {...props}>
+    <SButton
+      variant={variant}
+      size={size}
+      {...props}
+      disabled={props.disabled || props.isLoading}
+    >
       <SContent>
         {props.isLoading && <Spinner width={16} height={16} />}
         {props.text || props.children}

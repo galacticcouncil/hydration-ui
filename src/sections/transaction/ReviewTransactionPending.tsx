@@ -6,6 +6,7 @@ import { ReviewTransactionProgress } from "./ReviewTransactionProgress"
 import { Spacer } from "components/Spacer/Spacer"
 import { Heading } from "components/Typography/Heading/Heading"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces/author"
+import { ModalMeta } from "components/Modal/Modal"
 
 type Props = {
   onClose: () => void
@@ -14,10 +15,12 @@ type Props = {
 
 export const ReviewTransactionPending = ({ onClose, txState }: Props) => {
   const { t } = useTranslation()
+
   return (
     <div
       sx={{ flex: "column", align: "center", pt: [200, 50], height: "100%" }}
     >
+      <ModalMeta title={undefined} />
       <Spinner css={{ width: 135, height: 135 }} />
       <Heading fs={19} fw={500} tAlign="center" sx={{ mt: 20 }}>
         {t("liquidity.reviewTransaction.modal.pending.title")}
@@ -37,7 +40,7 @@ export const ReviewTransactionPending = ({ onClose, txState }: Props) => {
 
       <Spacer size={40} />
 
-      {txState === "Broadcast" && (
+      {false && txState === "Broadcast" && (
         <ReviewTransactionProgress duration={3} onComplete={onClose} />
       )}
     </div>

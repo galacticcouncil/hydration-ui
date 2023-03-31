@@ -5,6 +5,7 @@ import { css } from "@emotion/react"
 import { useTranslation } from "react-i18next"
 import { SButtons } from "./ReviewTransactionError.styled"
 import { Heading } from "components/Typography/Heading/Heading"
+import { ModalMeta } from "components/Modal/Modal"
 
 export const ReviewTransactionError = (props: {
   onClose: () => void
@@ -14,6 +15,7 @@ export const ReviewTransactionError = (props: {
 
   return (
     <div sx={{ flex: "column", align: "center" }}>
+      <ModalMeta variant="error" />
       <FullFailIcon />
       <Heading fs={19} fw={500} tAlign="center" sx={{ mt: 20 }}>
         {t("liquidity.reviewTransaction.modal.error.title")}

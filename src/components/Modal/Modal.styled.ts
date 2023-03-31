@@ -9,12 +9,12 @@ import { GradientText } from "components/Typography/GradientText/GradientText"
 const fadeInKeyframes = keyframes`
   0% {
     opacity: 0;
-    transform: translate(-50%, -48%) scale(0.96);
+    transform: translate(-50%, 2%) scale(0.96);
   }
 
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, 0) scale(1);
   }
 `
 
@@ -70,16 +70,22 @@ export const ModalWindow = styled(DialogContent, {
       : { top: 0, height: "100%" }}
 
   @media ${theme.viewport.gte.sm} {
-    top: 50%;
+    top: 8%;
     left: 50%;
-    transform: translate(-50%, -50%);
+
+    transform: translateX(-50%);
 
     height: auto;
-    max-width: ${(props) => `${props.maxWidth ?? 610}px`};
+
+    width: 610px;
 
     border-radius: 4px;
 
     animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) ${fadeInKeyframes};
+  }
+
+  @media ${theme.viewport.gte.lg} {
+    top: 10%;
   }
 `
 
@@ -150,8 +156,12 @@ export const ModalBody = styled.div<{ isDrawer?: boolean }>`
   @media ${theme.viewport.gte.sm} {
     --modal-body-padding-x: 30px;
     padding-bottom: 30px;
-    max-height: 80vh;
+    max-height: 75vh;
     height: auto;
+  }
+
+  @media (min-height: 640px) {
+    min-height: 508px;
   }
 
   &::-webkit-scrollbar-track {

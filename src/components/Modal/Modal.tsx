@@ -29,10 +29,11 @@ import { Theme } from "@emotion/react"
 import { Spacer } from "components/Spacer/Spacer"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { useStore } from "state/store"
 
 type Props = {
   open: boolean
-  onClose: () => void
+  onClose?: () => void
   title?: string | undefined
   variant?: "default" | "error" | "success"
   secondaryIcon?: { icon: ReactNode; onClick: () => void; name: string }
@@ -48,7 +49,6 @@ type Props = {
 type PropsOverride = Pick<
   Props,
   | "variant"
-  | "width"
   | "secondaryIcon"
   | "title"
   | "isDrawer"
@@ -68,7 +68,6 @@ export const ModalMeta = (props: PropsOverride) => {
     context({
       title: props.title,
       variant: props.variant,
-      width: props.width,
       secondaryIcon: props.secondaryIcon,
       isDrawer: props.isDrawer,
       withoutOutsideClose: props.withoutOutsideClose,
@@ -82,7 +81,6 @@ export const ModalMeta = (props: PropsOverride) => {
     context,
     props.title,
     props.variant,
-    props.width,
     props.secondaryIcon,
     props.isDrawer,
     props.withoutOutsideClose,
@@ -102,7 +100,7 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
     mergedProps
 
   const visibleHeader = !withoutClose || !!secondaryIcon || titleHeader
-
+  //console.log(propsOverride, props, mergedProps, "mergedProps")
   return (
     <Dialog open={props.open}>
       <DialogPortal>
@@ -141,7 +139,7 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
                     {!mergedProps.withoutClose && (
                       <CloseButton
                         icon={<CrossIcon />}
-                        onClick={props.onClose}
+                        onClick={mergedProps.onClose}
                         name={t("modal.closeButton.name")}
                       />
                     )}
@@ -149,7 +147,7 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
                 ) : (
                   <Spacer size={20} />
                 )}
-                <RemoveScroll enabled={props.open} css={{ flexGrow: 1 }}>
+                <RemoveScroll enabled={props.open}>
                   <ModalBody isDrawer={isDrawer}>
                     {isDesktop ? (
                       <ModalTitle>{title}</ModalTitle>
@@ -158,7 +156,12 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
                         {title}
                       </Text>
                     )}
-                    {props.children}
+                    <div
+                      sx={{ flex: "column" }}
+                      css={{ flexGrow: 1, flexShrink: 1, flexBasis: "auto" }}
+                    >
+                      {mergedProps.children}
+                    </div>
                   </ModalBody>
                   <DialogDescription />
                 </RemoveScroll>
@@ -168,5 +171,25 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
         </ModalContext.Provider>
       </DialogPortal>
     </Dialog>
+  )
+}
+
+export const ModalTransaction = ({
+  children,
+  ...props
+}: PropsWithChildren<Props>) => {
+  const { transactions, cancelAllTransactions } = useStore()
+  const result = {} // useTransactionCenterTest()
+  //const test = useTransactionStore()
+  //console.log(transactions, test, "transactions")
+  const handleClose = () => {
+    cancelAllTransactions()
+    props.onClose?.()
+  }
+
+  return (
+    <Modal {...props} onClose={handleClose} withoutOutsideClose>
+      {transactions?.length ? result?.transactionModals : children}
+    </Modal>
   )
 }

@@ -5,12 +5,14 @@ import { useTranslation } from "react-i18next"
 import { Heading } from "components/Typography/Heading/Heading"
 import { ReviewTransactionProgress } from "./ReviewTransactionProgress"
 import { Spacer } from "components/Spacer/Spacer"
+import { ModalMeta } from "components/Modal/Modal"
 
 export const ReviewTransactionSuccess = (props: { onClose: () => void }) => {
   const { t } = useTranslation()
 
   return (
     <div sx={{ flex: "column", align: "center" }}>
+      <ModalMeta title={undefined} />
       <FullSuccessIcon />
       <Heading fs={19} fw={500} tAlign="center" sx={{ mt: 20 }}>
         {t("liquidity.reviewTransaction.modal.success.title")}

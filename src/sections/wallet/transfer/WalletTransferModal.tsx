@@ -30,6 +30,11 @@ export function WalletTransferModal(props: {
   return (
     <Modal
       open={props.open}
+      title={
+        chain === "onchain"
+          ? t("wallet.assets.transfer.title")
+          : t("wallet.assets.transfer.bridge.title")
+      }
       onClose={props.onClose}
       containerStyles={
         !isDesktop

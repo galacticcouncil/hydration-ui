@@ -1,4 +1,4 @@
-import { Modal } from "components/Modal/Modal"
+import { ModalTransaction } from "components/Modal/Modal"
 import { useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Controller, useForm } from "react-hook-form"
@@ -127,9 +127,8 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   }
 
   return (
-    <Modal
+    <ModalTransaction
       open={isOpen}
-      withoutOutsideClose
       title={t("liquidity.add.modal.title")}
       onClose={() => {
         onClose()
@@ -274,6 +273,6 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
           </Button>
         </form>
       )}
-    </Modal>
+    </ModalTransaction>
   )
 }

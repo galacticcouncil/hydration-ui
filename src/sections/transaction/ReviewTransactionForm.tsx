@@ -1,23 +1,22 @@
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
 import { Button } from "components/Button/Button"
 import { TransactionCode } from "components/TransactionCode/TransactionCode"
 import { Transaction, useAccountStore } from "state/store"
-import { getTransactionJSON } from "./ReviewTransaction.utils"
+import {
+  getTransactionJSON,
+  useSendTransactionMutation,
+} from "./ReviewTransaction.utils"
 import { useNextNonce, usePaymentInfo } from "api/transaction"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { useEra } from "api/era"
 import { useBestNumber } from "api/chain"
-import {
-  useAcceptedCurrencies,
-  useAccountCurrency,
-  useSetAsFeePayment,
-} from "api/payments"
+import { useAcceptedCurrencies, useAccountCurrency } from "api/payments"
 import { useAssetMeta } from "api/assetMeta"
 import { useSpotPrice } from "api/spotPrice"
-import { NATIVE_ASSET_ID } from "utils/api"
+import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import BigNumber from "bignumber.js"
 import { BN_0, BN_1 } from "utils/constants"
 import { Summary } from "components/Summary/Summary"
@@ -26,14 +25,21 @@ import { useTokenBalance } from "api/balances"
 import { getFloatingPointAmount } from "utils/balance"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAssetAccountDetails } from "api/assetDetails"
+import { ModalMeta } from "components/Modal/Modal"
+import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
+import { Spinner } from "components/Spinner/Spinner.styled"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 export const ReviewTransactionForm = (
   props: {
     title?: string
-    onCancel: () => void
+    onCancel?: () => void
+    onBack: () => void
     onSigned: (signed: SubmittableExtrinsic<"promise">) => void
   } & Omit<Transaction, "id">,
 ) => {
+  const api = useApiPromise()
+  const queryClient = useQueryClient()
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const bestNumber = useBestNumber()
@@ -46,8 +52,31 @@ export const ReviewTransactionForm = (
     account?.address,
   )
 
+  const sendAssetPaymentTx = useSendTransactionMutation()
+
+  const signAssetPaymentTx = useMutation(async (tokenId: string) => {
+    const address = account?.address?.toString()
+    const wallet = getWalletBySource(account?.provider)
+
+    if (address == null || wallet == null)
+      throw new Error("Missing active account or wallet")
+
+    const signature = await api.tx.multiTransactionPayment
+      .setCurrency(tokenId)
+      .signAsync(address, {
+        signer: wallet.signer,
+        // defer to polkadot/api to handle nonce w/ regard to mempool
+        nonce: -1,
+      })
+
+    return await sendAssetPaymentTx.mutateAsync(signature).then(() =>
+      queryClient.refetchQueries({
+        queryKey: QUERY_KEYS.accountCurrency(account?.address),
+      }),
+    )
+  })
+
   const feeAssets = useAssetAccountDetails(account?.address)
-  const setFeeAsPayment = useSetAsFeePayment()
 
   const nonce = useNextNonce(account?.address)
   const spotPrice = useSpotPrice(NATIVE_ASSET_ID, feeMeta.data?.id)
@@ -94,45 +123,7 @@ export const ReviewTransactionForm = (
             acceptedFeeAsset.data?.id !== accountCurrency.data,
         )
         .map((acceptedFeeAsset) => acceptedFeeAsset.data?.id) ?? [],
-    onSelect: (asset) =>
-      setFeeAsPayment(asset.id.toString(), {
-        onLoading: (
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
-            tOptions={{
-              asset: asset.symbol,
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
-        ),
-        onSuccess: (
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.table.actions.payment.toast.onSuccess"
-            tOptions={{
-              asset: asset.symbol,
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
-        ),
-        onError: (
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
-            tOptions={{
-              asset: asset.symbol,
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
-        ),
-      }),
+    onSelect: (asset) => signAssetPaymentTx.mutate(asset.id.toString()),
   })
 
   const feePaymentBalance = getFloatingPointAmount(
@@ -158,9 +149,18 @@ export const ReviewTransactionForm = (
       sx={{
         flex: "column",
         justify: "space-between",
-        height: "calc(100% - var(--modal-header-title-height))",
+        flexGrow: 1,
       }}
     >
+      <ModalMeta
+        title={t("liquidity.reviewTransaction.modal.title")}
+        withoutOutsideClose
+        secondaryIcon={{
+          icon: <ChevronRight css={{ transform: "rotate(180deg)" }} />,
+          name: "Back",
+          onClick: props.onBack,
+        }}
+      />
       <div>
         {props.title && (
           <Text color="basic400" fw={400} sx={{ mt: 6 }}>
@@ -191,16 +191,20 @@ export const ReviewTransactionForm = (
                       type: "token",
                     })}
                   </Text>
-                  <div
-                    tabIndex={0}
-                    role="button"
-                    onClick={openModal}
-                    css={{ cursor: "pointer" }}
-                  >
-                    <Text color="brightBlue300">
-                      {t("liquidity.reviewTransaction.modal.edit")}
-                    </Text>
-                  </div>
+                  {sendAssetPaymentTx.isLoading ? (
+                    <Spinner width={14} height={14} />
+                  ) : (
+                    <div
+                      tabIndex={0}
+                      role="button"
+                      onClick={openModal}
+                      css={{ cursor: "pointer" }}
+                    >
+                      <Text color="brightBlue300">
+                        {t("liquidity.reviewTransaction.modal.edit")}
+                      </Text>
+                    </div>
+                  )}
                 </div>
               ) : (
                 ""
@@ -240,7 +244,11 @@ export const ReviewTransactionForm = (
             )}
             variant="primary"
             isLoading={signTx.isLoading}
-            disabled={account == null || !hasFeePaymentBalance}
+            disabled={
+              account == null ||
+              !hasFeePaymentBalance ||
+              sendAssetPaymentTx.isLoading
+            }
             onClick={() => signTx.mutate()}
           />
           {signTx.isLoading && (

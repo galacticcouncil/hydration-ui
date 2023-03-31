@@ -1,4 +1,4 @@
-import { ModalMeta } from "../../components/Modal/Modal"
+import { ModalMeta } from "components/Modal/Modal"
 import { FC } from "react"
 import { AssetsModalRow } from "./AssetsModalRow"
 import { SAssetsModalHeader } from "./AssetsModal.styled"

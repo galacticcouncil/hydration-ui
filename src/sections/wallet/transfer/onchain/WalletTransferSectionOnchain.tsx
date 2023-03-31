@@ -1,6 +1,5 @@
 import { u32 } from "@polkadot/types"
 import { Button } from "components/Button/Button"
-import { ModalMeta } from "components/Modal/Modal"
 import { Separator } from "components/Separator/Separator"
 import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -28,6 +27,7 @@ import { useAccountCurrency } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { SummaryRow } from "components/Summary/SummaryRow"
+import { Transactions } from "sections/transaction/Transactions"
 
 export function WalletTransferSectionOnchain(props: {
   initialAsset: u32 | string
@@ -44,7 +44,7 @@ export function WalletTransferSectionOnchain(props: {
   })
 
   const api = useApiPromise()
-  const { createTransaction } = useStore()
+  const { transactions, createTransaction } = useStore()
 
   const form = useForm<{
     dest: string
@@ -134,13 +134,10 @@ export function WalletTransferSectionOnchain(props: {
 
   return (
     <>
-      <ModalMeta
-        title={t("wallet.assets.transfer.title")}
-        withoutOutsideClose
-      />
-
       <Spacer size={[13, 26]} />
-      {isOpenSelectAssetModal ? (
+      {transactions?.length ? (
+        <Transactions onClose={props.onClose} />
+      ) : isOpenSelectAssetModal ? (
         modal
       ) : (
         <form
