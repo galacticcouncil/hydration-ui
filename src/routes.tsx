@@ -5,6 +5,7 @@ import { TradePage } from "sections/gcapps/trade/TradePage"
 import { XcmPage } from "sections/gcapps/xcm/XcmPage"
 
 import { PoolsPage } from "sections/pools/PoolsPage"
+import { OtcPage } from "sections/otc/OtcPage"
 
 export const routes = [
   {
@@ -39,6 +40,10 @@ export const routes = [
   {
     path: "cross-chain",
     element: <XcmPage />,
+  },
+  {
+    path: "otc",
+    element: <OtcPage />,
   },
   {
     path: "*",

@@ -79,10 +79,11 @@ function LiquidityPositionJoinFarmButton(props: {
         {t("liquidity.asset.actions.joinFarms")}
       </Button>
 
-      {joinFarm && (
+      {joinFarm && farms.data && (
         <JoinFarmModal
+          farms={farms.data}
           isOpen={joinFarm}
-          poolId={props.pool.id}
+          pool={props.pool}
           shares={props.position.shares}
           onClose={() => setJoinFarm(false)}
           mutation={joinFarmMutation}
@@ -102,7 +103,7 @@ function LiquidityPositionRemoveLiquidity(props: {
   return (
     <>
       <SButton
-        variant="primary"
+        variant="secondary"
         size="small"
         onClick={() => setOpenRemove(true)}
         disabled={account?.isExternalWalletConnected}

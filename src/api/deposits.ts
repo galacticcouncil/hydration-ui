@@ -1,7 +1,7 @@
 import { ApiPromise } from "@polkadot/api"
 import { u128, u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { useAccountStore } from "state/store"
 import { useApiPromise } from "utils/api"
 import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
@@ -38,24 +38,22 @@ const getAccountDepositIds =
     return nfts
   }
 
-export const useDeposit = (id: Maybe<u128>) => {
+export const useAllDeposits = () => {
   const api = useApiPromise()
-  return useQuery(
-    QUERY_KEYS.deposit(id),
-    id != null ? getDeposit(api, id) : undefinedNoop,
-    { enabled: !!id },
-  )
+  return useQuery(QUERY_KEYS.allDeposits, getDeposits(api))
 }
 
-const getDeposit = (api: ApiPromise, id: u128) => async () => {
-  const res = await api.query.omnipoolWarehouseLM.deposit(id)
-  return res.unwrap()
+export const usePoolDeposits = (poolId?: u32 | string) => {
+  const api = useApiPromise()
+  return useQuery(QUERY_KEYS.poolDeposits(poolId), getDeposits(api), {
+    enabled: !!poolId,
+    select: (data) =>
+      data.filter(
+        (item) => item.deposit.ammPoolId.toString() === poolId?.toString(),
+      ),
+  })
 }
 
-export const useDeposits = (poolId: u32 | string) => {
-  const api = useApiPromise()
-  return useQuery(QUERY_KEYS.deposits(poolId), getDeposits(api, poolId))
-}
 export const useOmniPositionId = (positionId: u128 | string) => {
   const api = useApiPromise()
 
@@ -65,26 +63,38 @@ export const useOmniPositionId = (positionId: u128 | string) => {
   )
 }
 
-const getDeposits = (api: ApiPromise, poolId: u32 | string) => async () => {
+export const useOmniPositionIds = (positionIds: Array<u32 | string>) => {
+  const api = useApiPromise()
+
+  return useQueries({
+    queries: positionIds.map((id) => ({
+      queryKey: QUERY_KEYS.omniPositionId(id.toString()),
+      queryFn: getOmniPositionId(api, id.toString()),
+      enabled: !!positionIds.length,
+    })),
+  })
+}
+
+const getDeposits = (api: ApiPromise) => async () => {
   const res = await api.query.omnipoolWarehouseLM.deposit.entries()
-  return res
-    .map(([key, value]) => ({
-      id: key.args[0],
-      deposit: value.unwrap(),
-    }))
-    .filter((item) => item.deposit.ammPoolId.toString() === poolId.toString())
+  return res.map(([key, value]) => ({
+    id: key.args[0],
+    deposit: value.unwrap(),
+  }))
 }
 
 const getOmniPositionId =
-  (api: ApiPromise, poolId: u128 | string) => async () => {
-    const res = await api.query.omnipoolLiquidityMining.omniPositionId(poolId)
-    return res
+  (api: ApiPromise, depositionId: u128 | string) => async () => {
+    const res = await api.query.omnipoolLiquidityMining.omniPositionId(
+      depositionId,
+    )
+    return { depositionId, value: res.value }
   }
 
-export const useAccountDeposits = (poolId: u32) => {
+export const useAccountDeposits = (poolId?: u32) => {
   const { account } = useAccountStore()
   const accountDepositIds = useAccountDepositIds(account?.address)
-  const deposits = useDeposits(poolId)
+  const deposits = usePoolDeposits(poolId)
 
   return useQueryReduce(
     [accountDepositIds, deposits] as const,
@@ -95,4 +105,31 @@ export const useAccountDeposits = (poolId: u32) => {
       return deposits.filter((item) => ids.has(item.id.toString()))
     },
   )
+}
+
+const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
+export const useUserDeposits = () => {
+  const { account } = useAccountStore()
+  const accountDepositIds = useAccountDepositIds(account?.address)
+  const deposits = useAllDeposits()
+
+  const query = useQueryReduce(
+    [accountDepositIds, deposits] as const,
+    (accountDepositIds, deposits) => {
+      return deposits.filter((deposit) =>
+        accountDepositIds?.some(
+          (id) => id.instanceId.toString() === deposit.id.toString(),
+        ),
+      )
+    },
+  )
+
+  if (!enabledFarms)
+    return {
+      isLoading: false,
+      isInitialLoading: false,
+      data: [] as DepositNftType[],
+    }
+
+  return query
 }

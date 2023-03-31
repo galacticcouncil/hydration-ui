@@ -16,6 +16,7 @@ import { ToastMessage } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useAssetMeta } from "api/assetMeta"
 import { useAccountStore } from "state/store"
+import { useBestNumber } from "api/chain"
 
 function isFarmJoined(depositNft: DepositNftType, farm: Farm) {
   return depositNft.deposit.yieldFarmEntries.find(
@@ -75,7 +76,6 @@ function JoinedFarmsDetailsRedeposit(props: {
             key={i}
             poolId={props.pool.id}
             farm={farm}
-            depositNft={props.depositNft}
             onSelect={() =>
               props.onSelect({
                 globalFarm: farm.globalFarm.id,
@@ -102,7 +102,11 @@ function JoinedFarmsDetailsRedeposit(props: {
 function JoinedFarmsDetailsPositions(props: {
   pool: OmnipoolPool
   depositNft: DepositNftType
-  onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
+  onSelect: (value: {
+    globalFarm: u32
+    yieldFarm: u32
+    depositNft: DepositNftType
+  }) => void
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -151,6 +155,7 @@ function JoinedFarmsDetailsPositions(props: {
               props.onSelect({
                 globalFarm: farm.globalFarm.id,
                 yieldFarm: farm.yieldFarm.id,
+                depositNft: props.depositNft,
               })
             }
           />
@@ -180,7 +185,10 @@ export const JoinedFarmsDetails = (props: {
   const [selectedFarmIds, setSelectedFarmIds] = useState<{
     globalFarm: u32
     yieldFarm: u32
+    depositNft?: DepositNftType
   } | null>(null)
+
+  const bestNumber = useBestNumber()
 
   const farms = useFarms(props.pool.id)
   const selectedFarm =
@@ -192,6 +200,12 @@ export const JoinedFarmsDetails = (props: {
         )
       : undefined
 
+  const currentBlock = bestNumber.data?.relaychainBlockNumber
+    .toBigNumber()
+    .dividedToIntegerBy(
+      selectedFarm?.globalFarm.blocksPerPeriod.toNumber() ?? 1,
+    )
+
   return (
     <Modal
       open={props.isOpen}
@@ -200,10 +214,11 @@ export const JoinedFarmsDetails = (props: {
     >
       {selectedFarm ? (
         <FarmDetailsModal
-          poolId={props.pool.id}
+          pool={props.pool}
           farm={selectedFarm}
-          depositNft={props.depositNft}
+          depositNft={selectedFarmIds?.depositNft}
           onBack={() => setSelectedFarmIds(null)}
+          currentBlock={currentBlock?.toNumber()}
         />
       ) : (
         <div sx={{ flex: "column" }}>

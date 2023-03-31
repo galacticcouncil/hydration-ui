@@ -17,7 +17,7 @@ import { useAccountStore } from "state/store"
 
 export const ClaimRewardsCard = (props: {
   pool: OmnipoolPool
-  depositNft: DepositNftType
+  depositNft?: DepositNftType
 }) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -106,17 +106,20 @@ export const ClaimRewardsCard = (props: {
           sx={{ mt: 6 }}
           css={{ color: `rgba(${theme.rgbColors.white}, 0.4)` }}
         >
-          {t("value.usd", {
-            amount: claimable.data?.usd,
+          {t("farms.claimCard.claim.usd", {
+            value: claimable.data?.usd,
+            numberPrefix: "$",
             fixedPointScale: 12,
-            type: "token",
           })}
         </Text>
       </div>
       <Button
         variant="primary"
         sx={{ height: "fit-content", width: ["100%", 168] }}
-        disabled={account?.isExternalWalletConnected}
+        disabled={
+          account?.isExternalWalletConnected ||
+          (claimable.data && claimable.data.usd.isZero())
+        }
         onClick={() => claimAll.mutate()}
         isLoading={claimAll.isLoading}
       >

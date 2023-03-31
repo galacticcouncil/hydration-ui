@@ -13,7 +13,19 @@ export const SButtonOpen = styled(IconButton)<{
   align-items: center;
   justify-content: center;
 
-  color: #bdccd4;
+  color: ${theme.colors.white};
+  border-color: ${theme.colors.brightBlue300};
+  background-color: ${({ isActive }) =>
+    isActive
+      ? theme.colors.brightBlue400
+      : `rgba(${theme.rgbColors.primaryA15}, 0.12)`};
+
+  &:hover {
+    color: ${theme.colors.white};
+    background: rgba(${theme.rgbColors.brightBlue500}, 0.9);
+
+    border: 1px solid ${theme.colors.brightBlue100};
+  }
 
   &:disabled,
   &[disabled] {

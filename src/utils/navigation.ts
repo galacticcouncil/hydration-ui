@@ -7,6 +7,7 @@ export const LINKS = {
   walletTransactions: "/wallet/transactions",
   walletVesting: "/wallet/vesting",
   cross_chain: "/cross-chain",
+  otc: "/otc",
 }
 
 export const EXTERNAL_LINKS = {
@@ -18,6 +19,7 @@ export const EXTERNAL_LINKS = {
 
 const isPoolsPageEnabled = import.meta.env.VITE_FF_POOLS_ENABLED === "true"
 const isXcmPageEnabled = import.meta.env.VITE_FF_XCM_ENABLED === "true"
+const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 
 export const MENU_ITEMS = [
   {
@@ -55,6 +57,15 @@ export const MENU_ITEMS = [
     external: false,
     mobVisible: false,
     mobOrder: 3,
+  },
+  {
+    key: "otc",
+    translationKey: "header.otc",
+    href: LINKS.otc,
+    enabled: isOtcPageEnabled,
+    external: false,
+    mobVisible: false,
+    mobOrder: 4,
   },
 ] as const
 

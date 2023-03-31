@@ -1,7 +1,7 @@
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useTokensBalances } from "api/balances"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { useSpotPrices } from "api/spotPrice"
+import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
+import { useSpotPrice, useSpotPrices } from "api/spotPrice"
 import { useApiIds } from "api/consts"
 import { useMemo } from "react"
 import { useAssetMetaList } from "api/assetMeta"
@@ -14,6 +14,11 @@ import {
   calculate_liquidity_lrna_out,
 } from "@galacticcouncil/math-omnipool"
 import { isNotNil } from "utils/helpers"
+import { useOmnipoolPools } from "../PoolsPage.utils"
+import { useQueries } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { FarmIds, getActiveYieldFarms, useYieldFarms } from "api/farms"
+import { getFloatingPointAmount } from "utils/balance"
 
 export const useTotalInPools = () => {
   const apiIds = useApiIds()
@@ -196,4 +201,48 @@ export const useUsersTotalInPools = () => {
   ])
 
   return { data, isLoading }
+}
+
+export const useTotalInFarms = () => {
+  const api = useApiPromise()
+  const pools = useOmnipoolPools()
+
+  const apiIds = useApiIds()
+  const poolIds = pools.data?.map((pool) => pool.id) ?? []
+
+  const activeYieldFarms = useQueries({
+    queries: poolIds.map((id) => ({
+      queryKey: QUERY_KEYS.activeYieldFarms(id),
+      queryFn: getActiveYieldFarms(api, id),
+      enabled: !!pools.data?.length,
+    })),
+  })
+
+  const farmIds = activeYieldFarms
+    .map((farms) => farms.data)
+    .filter((x): x is FarmIds[] => !!x)
+    .reduce((acc, curr) => [...acc, ...curr], [])
+
+  const yieldFarms = useYieldFarms(farmIds)
+
+  const lrnaSpotPrice = useSpotPrice(apiIds.data?.hubId, apiIds.data?.usdId)
+
+  const result = farmIds.reduce((memo, farmId) => {
+    const yieldFarm = yieldFarms.data?.find(
+      (yieldFarm) => yieldFarm.id.toString() === farmId.yieldFarmId.toString(),
+    )
+
+    if (yieldFarm && lrnaSpotPrice?.data) {
+      // totalValuedShares is a lerna asset
+      const resultTest = yieldFarm.totalValuedShares
+        .toBigNumber()
+        .times(lrnaSpotPrice.data?.spotPrice)
+
+      return memo.plus(getFloatingPointAmount(resultTest ?? BN_0, 12))
+    }
+
+    return memo
+  }, BN_0)
+
+  return result
 }

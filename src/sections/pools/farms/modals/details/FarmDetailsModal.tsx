@@ -8,30 +8,38 @@ import { Spacer } from "components/Spacer/Spacer"
 import { LoyaltyGraph } from "../../components/loyaltyGraph/LoyaltyGraph"
 import { Farm } from "api/farms"
 import { DepositNftType } from "api/deposits"
-import { u32 } from "@polkadot/types"
-import { BN_0 } from "utils/constants"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { FarmDetailsModalValues } from "./FarmDetailsModalValues"
+import { useRef } from "react"
 
 type FarmDetailsModalProps = {
-  poolId: u32
+  pool: OmnipoolPool
   farm: Farm
   depositNft: DepositNftType | undefined
   onBack: () => void
+  currentBlock?: number
 }
 
 export const FarmDetailsModal = ({
   farm,
-  poolId,
   depositNft,
   onBack,
+  pool,
+  currentBlock,
 }: FarmDetailsModalProps) => {
   const { t } = useTranslation()
 
   const loyaltyCurve = farm.yieldFarm.loyaltyCurve.unwrapOr(null)
-  const enteredDate = depositNft?.deposit.yieldFarmEntries.reduce(
-    (acc, curr) =>
-      acc.lt(curr.enteredAt.toBigNumber()) ? curr.enteredAt.toBigNumber() : acc,
-    BN_0,
-  )
+
+  const enteredBlock = depositNft?.deposit.yieldFarmEntries
+    .find(
+      (entry) =>
+        entry.yieldFarmId.eq(farm.yieldFarm.id) &&
+        entry.globalFarmId.eq(farm.globalFarm.id),
+    )
+    ?.enteredAt.toBigNumber()
+
+  const currentBlockRef = useRef<number | undefined>(currentBlock)
 
   return (
     <>
@@ -46,9 +54,9 @@ export const FarmDetailsModal = ({
 
       <Spacer size={16} />
 
-      <FarmDetailsCard poolId={poolId} depositNft={depositNft} farm={farm} />
+      <FarmDetailsCard poolId={pool.id} depositNft={depositNft} farm={farm} />
 
-      {loyaltyCurve && (
+      {loyaltyCurve && currentBlockRef.current && (
         <SLoyaltyRewardsContainer>
           <Text
             fs={19}
@@ -63,14 +71,24 @@ export const FarmDetailsModal = ({
           <LoyaltyGraph
             farm={farm}
             loyaltyCurve={loyaltyCurve}
-            enteredAt={enteredDate}
+            enteredAt={enteredBlock}
+            currentBlock={currentBlockRef.current}
           />
         </SLoyaltyRewardsContainer>
       )}
 
-      <Text sx={{ py: 30 }} color="basic400" tAlign="center">
-        {t("farms.modal.details.description")}
-      </Text>
+      {depositNft && enteredBlock ? (
+        <FarmDetailsModalValues
+          yieldFarmId={farm.yieldFarm.id.toString()}
+          depositNft={depositNft}
+          pool={pool}
+          enteredBlock={enteredBlock}
+        />
+      ) : (
+        <Text sx={{ py: 30 }} color="basic400" tAlign="center">
+          {t("farms.modal.details.description")}
+        </Text>
+      )}
     </>
   )
 }

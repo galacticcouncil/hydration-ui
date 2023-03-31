@@ -5,7 +5,7 @@ import { usePoolPositions } from "../../pool/Pool.utils"
 import { OmnipoolPool } from "../../PoolsPage.utils"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
-import { useDeposits } from "api/deposits"
+import { usePoolDeposits } from "api/deposits"
 
 interface Props {
   isOpen: boolean
@@ -15,7 +15,7 @@ interface Props {
 
 export const LiquidityPositions: FC<Props> = ({ isOpen, pool, onClose }) => {
   const positions = usePoolPositions(pool)
-  const accountDeposits = useDeposits(pool.id)
+  const accountDeposits = usePoolDeposits(pool.id)
   const { t } = useTranslation()
 
   return (
@@ -23,7 +23,6 @@ export const LiquidityPositions: FC<Props> = ({ isOpen, pool, onClose }) => {
       open={isOpen}
       withoutOutsideClose
       title={t("liquidity.positions.modal.title")}
-      isDrawer
       onClose={onClose}
     >
       <div

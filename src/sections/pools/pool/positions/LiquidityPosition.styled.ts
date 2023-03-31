@@ -32,6 +32,20 @@ export const SButton = styled(Button)`
   border: 1px solid ${theme.colors.red400};
   color: ${theme.colors.red400};
 
+  &:not(:disabled) {
+    :hover {
+      background: rgba(${theme.rgbColors.redA300}, 0.39);
+      color: ${theme.colors.red400};
+      border: 1px solid ${theme.colors.red300};
+    }
+
+    :active {
+      background: ${theme.colors.red500};
+      color: ${theme.colors.white};
+      border: 1px solid ${theme.colors.red300};
+    }
+  }
+
   @media (${theme.viewport.gte.sm}) {
     max-width: 220px;
   }

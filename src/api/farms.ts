@@ -23,7 +23,7 @@ export function useActiveYieldFarms(poolId: Maybe<u32 | string>) {
   )
 }
 
-const getActiveYieldFarms =
+export const getActiveYieldFarms =
   (api: ApiPromise, poolId: u32 | string) => async () => {
     const res = await api.query.omnipoolWarehouseLM.activeYieldFarm.entries(
       poolId,
@@ -148,6 +148,8 @@ export interface Farm {
 }
 
 export type FarmAprs = ReturnType<typeof useFarmAprs>
+
+export type FarmQueryType = ReturnType<typeof useFarms>
 
 export const useFarms = (poolId: u32 | string) => {
   const activeYieldFarms = useActiveYieldFarms(poolId)
@@ -319,4 +321,10 @@ export const getMinAndMaxAPR = (farms: FarmAprs) => {
     minApr,
     maxApr,
   }
+}
+
+export interface FarmIds {
+  poolId: u32
+  globalFarmId: u32
+  yieldFarmId: u32
 }

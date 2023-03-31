@@ -34,6 +34,7 @@ import type {
   FrameSupportScheduleLookupError,
   FrameSupportTokensMiscBalanceStatus,
   FrameSupportWeightsDispatchInfo,
+  HydradxRuntimeAssetLocation,
   OrmlVestingVestingSchedule,
   PalletAssetRegistryAssetType,
   PalletClaimsEthereumAddress,
@@ -43,7 +44,6 @@ import type {
   PalletMultisigTimepoint,
   PalletOmnipoolTradability,
   SpRuntimeDispatchError,
-  TestingHydradxRuntimeAssetLocation,
   XcmV1MultiAsset,
   XcmV1MultiLocation,
   XcmV1MultiassetMultiAssets,
@@ -65,8 +65,8 @@ declare module "@polkadot/api-base/types/events" {
        **/
       LocationSet: AugmentedEvent<
         ApiType,
-        [assetId: u32, location: TestingHydradxRuntimeAssetLocation],
-        { assetId: u32; location: TestingHydradxRuntimeAssetLocation }
+        [assetId: u32, location: HydradxRuntimeAssetLocation],
+        { assetId: u32; location: HydradxRuntimeAssetLocation }
       >
       /**
        * Metadata set for an asset.
@@ -205,6 +205,36 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [who: AccountId32, amount: u128],
         { who: AccountId32; amount: u128 }
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    circuitBreaker: {
+      /**
+       * Add liquidity limit of an asset was changed.
+       **/
+      AddLiquidityLimitChanged: AugmentedEvent<
+        ApiType,
+        [assetId: u32, liquidityLimit: Option<ITuple<[u32, u32]>>],
+        { assetId: u32; liquidityLimit: Option<ITuple<[u32, u32]>> }
+      >
+      /**
+       * Remove liquidity limit of an asset was changed.
+       **/
+      RemoveLiquidityLimitChanged: AugmentedEvent<
+        ApiType,
+        [assetId: u32, liquidityLimit: Option<ITuple<[u32, u32]>>],
+        { assetId: u32; liquidityLimit: Option<ITuple<[u32, u32]>> }
+      >
+      /**
+       * Trade volume limit of an asset was changed.
+       **/
+      TradeVolumeLimitChanged: AugmentedEvent<
+        ApiType,
+        [assetId: u32, tradeVolumeLimit: ITuple<[u32, u32]>],
+        { assetId: u32; tradeVolumeLimit: ITuple<[u32, u32]> }
       >
       /**
        * Generic event
@@ -713,6 +743,12 @@ declare module "@polkadot/api-base/types/events" {
         [seatHolder: AccountId32, amount: u128],
         { seatHolder: AccountId32; amount: u128 }
       >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    emaOracle: {
       /**
        * Generic event
        **/
@@ -1366,6 +1402,54 @@ declare module "@polkadot/api-base/types/events" {
        **/
       [key: string]: AugmentedEvent<ApiType>
     }
+    otc: {
+      /**
+       * An Order has been cancelled
+       **/
+      Cancelled: AugmentedEvent<ApiType, [orderId: u32], { orderId: u32 }>
+      /**
+       * An Order has been completely filled
+       **/
+      Filled: AugmentedEvent<
+        ApiType,
+        [orderId: u32, who: AccountId32, amountIn: u128, amountOut: u128],
+        { orderId: u32; who: AccountId32; amountIn: u128; amountOut: u128 }
+      >
+      /**
+       * An Order has been partially filled
+       **/
+      PartiallyFilled: AugmentedEvent<
+        ApiType,
+        [orderId: u32, who: AccountId32, amountIn: u128, amountOut: u128],
+        { orderId: u32; who: AccountId32; amountIn: u128; amountOut: u128 }
+      >
+      /**
+       * An Order has been placed
+       **/
+      Placed: AugmentedEvent<
+        ApiType,
+        [
+          orderId: u32,
+          assetIn: u32,
+          assetOut: u32,
+          amountIn: u128,
+          amountOut: u128,
+          partiallyFillable: bool,
+        ],
+        {
+          orderId: u32
+          assetIn: u32
+          assetOut: u32
+          amountIn: u128
+          amountOut: u128
+          partiallyFillable: bool
+        }
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
     parachainSystem: {
       /**
        * Downward messages were processed using the given weight.
@@ -1728,36 +1812,6 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [sessionIndex: u32],
         { sessionIndex: u32 }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
-    sudo: {
-      /**
-       * The \[sudoer\] just switched identity; the old key is supplied if one existed.
-       **/
-      KeyChanged: AugmentedEvent<
-        ApiType,
-        [oldSudoer: Option<AccountId32>],
-        { oldSudoer: Option<AccountId32> }
-      >
-      /**
-       * A sudo just took place. \[result\]
-       **/
-      Sudid: AugmentedEvent<
-        ApiType,
-        [sudoResult: Result<Null, SpRuntimeDispatchError>],
-        { sudoResult: Result<Null, SpRuntimeDispatchError> }
-      >
-      /**
-       * A sudo just took place. \[result\]
-       **/
-      SudoAsDone: AugmentedEvent<
-        ApiType,
-        [sudoResult: Result<Null, SpRuntimeDispatchError>],
-        { sudoResult: Result<Null, SpRuntimeDispatchError> }
       >
       /**
        * Generic event

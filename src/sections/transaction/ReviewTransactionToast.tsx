@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { UseMutationResult } from "@tanstack/react-query"
 import { useToast } from "state/toasts"
 import { ToastMessage } from "state/store"
+import { UnknownTransactionState } from "./ReviewTransaction.utils"
 
 export function ReviewTransactionToast<
   TData = unknown,
@@ -20,7 +21,7 @@ export function ReviewTransactionToast<
   const toast = useToast()
   const { t } = useTranslation()
 
-  const { isError, isSuccess, isLoading } = props.mutation
+  const { isError, isSuccess, isLoading, error } = props.mutation
   const toastRef = useRef<typeof toast>(toast)
   useEffect(() => void (toastRef.current = toast), [toast])
 
@@ -46,12 +47,21 @@ export function ReviewTransactionToast<
     }
 
     let toRemoveId: string | undefined = undefined
+
     if (isError) {
-      toastRef.current.error({
-        title: props.toastMessage?.onError ?? (
-          <p>{t("liquidity.reviewTransaction.toast.error")}</p>
-        ),
-      })
+      if (error instanceof UnknownTransactionState) {
+        toastRef.current.unknown({
+          title: props.toastMessage?.onError ?? (
+            <p>{t("liquidity.reviewTransaction.toast.unknown")}</p>
+          ),
+        })
+      } else {
+        toastRef.current.error({
+          title: props.toastMessage?.onError ?? (
+            <p>{t("liquidity.reviewTransaction.toast.error")}</p>
+          ),
+        })
+      }
     }
 
     if (isLoading) {
@@ -65,7 +75,7 @@ export function ReviewTransactionToast<
     return () => {
       if (toRemoveId) toastRef.current.remove(toRemoveId)
     }
-  }, [t, props.toastMessage, isError, isSuccess, isLoading, props.link])
+  }, [t, props.toastMessage, isError, error, isSuccess, isLoading, props.link])
 
   return null
 }

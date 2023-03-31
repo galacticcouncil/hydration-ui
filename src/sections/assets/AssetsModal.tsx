@@ -1,4 +1,4 @@
-import { Modal } from "../../components/Modal/Modal"
+import { ModalMeta } from "../../components/Modal/Modal"
 import { FC } from "react"
 import { AssetsModalRow } from "./AssetsModalRow"
 import { SAssetsModalHeader } from "./AssetsModal.styled"
@@ -7,36 +7,56 @@ import { Text } from "../../components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { Maybe } from "utils/helpers"
 import { useAccountStore } from "state/store"
-import { useAssetAccountDetails } from "api/assetDetails"
+import { useAssetAccountDetails, useAssetDetailsList } from "api/assetDetails"
+import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
+import { UseAssetModel } from "api/asset"
 
 interface AssetsModalProps {
   allowedAssets?: Maybe<u32 | string>[]
-  onSelect?: (id: u32 | string) => void
+  onSelect?: (asset: NonNullable<UseAssetModel>) => void
   onClose: () => void
+  title?: string
+  hideInactiveAssets?: boolean
+  allAssets?: boolean
 }
 
 export const AssetsModal: FC<AssetsModalProps> = ({
   onClose,
   allowedAssets,
   onSelect,
+  title,
+  hideInactiveAssets,
+  allAssets,
 }) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
 
   const assetsRows = useAssetAccountDetails(account?.address)
+  const assetsRowsAll = useAssetDetailsList(allAssets ? undefined : [])
+
+  const assets = allAssets ? assetsRowsAll : assetsRows
 
   const mainAssets =
     (allowedAssets != null
-      ? assetsRows.data?.filter((asset) => allowedAssets.includes(asset.id))
-      : assetsRows.data) ?? []
+      ? assets.data?.filter((asset) => allowedAssets.includes(asset.id))
+      : assets.data) ?? []
 
   const otherAssets =
     (allowedAssets != null
-      ? assetsRows.data?.filter((asset) => !allowedAssets?.includes(asset.id))
+      ? assets.data?.filter((asset) => !allowedAssets?.includes(asset.id))
       : []) ?? []
 
   return (
-    <Modal open={true} onClose={onClose}>
+    <>
+      <ModalMeta
+        withoutOutsideClose
+        titleHeader={title ?? t("selectAsset.title")}
+        secondaryIcon={{
+          icon: <ChevronRight css={{ transform: "rotate(180deg)" }} />,
+          name: "Back",
+          onClick: onClose,
+        }}
+      />
       {!!mainAssets?.length && (
         <>
           <SAssetsModalHeader sx={{ m: ["0 -40px", "0 -40px"] }}>
@@ -51,12 +71,12 @@ export const AssetsModal: FC<AssetsModalProps> = ({
             <AssetsModalRow
               key={asset.id}
               id={asset.id}
-              onClick={() => onSelect?.(asset.id)}
+              onClick={(assetData) => onSelect?.(assetData)}
             />
           ))}
         </>
       )}
-      {!!otherAssets?.length && (
+      {!hideInactiveAssets && !!otherAssets?.length && (
         <>
           <SAssetsModalHeader shadowed sx={{ m: ["0 -40px", "0 -40px"] }}>
             <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
@@ -64,14 +84,10 @@ export const AssetsModal: FC<AssetsModalProps> = ({
             </Text>
           </SAssetsModalHeader>
           {otherAssets?.map((asset) => (
-            <AssetsModalRow
-              key={asset.id}
-              id={asset.id}
-              onClick={() => onSelect?.(asset.id)}
-            />
+            <AssetsModalRow key={asset.id} id={asset.id} />
           ))}
         </>
       )}
-    </Modal>
+    </>
   )
 }

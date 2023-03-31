@@ -40,7 +40,22 @@ export const SJoinButton = styled.button`
   padding: 9px 0;
 
   width: 118px;
+  &:disabled {
+    cursor: not-allowed;
+    box-shadow: unset;
+    transform: none;
 
+    color: ${theme.colors.darkBlue300};
+    border: 1px solid ${theme.colors.darkBlue300};
+    background: rgba(${theme.rgbColors.alpha0}, 0.06);
+
+    opacity: 0.7;
+
+    &::after,
+    &::before {
+      all: unset;
+    }
+  }
   &:hover {
     opacity: 0.8;
   }

@@ -1,7 +1,7 @@
-diff --git a/node_modules/@galacticcouncil/sdk/dist/types/client/polkadotApi.d.ts b/node_modules/@galacticcouncil/sdk/dist/types/client/polkadotApi.d.ts
-index d73765e..4531fcf 100644
---- a/node_modules/@galacticcouncil/sdk/dist/types/client/polkadotApi.d.ts
-+++ b/node_modules/@galacticcouncil/sdk/dist/types/client/polkadotApi.d.ts
+diff --git a/node_modules/@galacticcouncil/sdk/dist/types/client/PolkadotApi.d.ts b/node_modules/@galacticcouncil/sdk/dist/types/client/PolkadotApi.d.ts
+index 457e725..6091039 100644
+--- a/node_modules/@galacticcouncil/sdk/dist/types/client/PolkadotApi.d.ts
++++ b/node_modules/@galacticcouncil/sdk/dist/types/client/PolkadotApi.d.ts
 @@ -3,7 +3,7 @@ import type { StorageKey } from '@polkadot/types';
  import type { AnyTuple, Codec } from '@polkadot/types/types';
  import type { AssetMetadata } from '@polkadot/types/interfaces';

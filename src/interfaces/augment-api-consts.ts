@@ -16,7 +16,7 @@ import type {
   u64,
   u8,
 } from "@polkadot/types-codec"
-import type { Codec } from "@polkadot/types-codec/types"
+import type { Codec, ITuple } from "@polkadot/types-codec/types"
 import type {
   AccountId32,
   Percent,
@@ -42,6 +42,7 @@ declare module "@polkadot/api-base/types/consts" {
        * Native Asset Id
        **/
       nativeAssetId: u32 & AugmentedConst<ApiType>
+      sequentialIdStartAt: u32 & AugmentedConst<ApiType>
       /**
        * Generic const
        **/
@@ -73,6 +74,32 @@ declare module "@polkadot/api-base/types/consts" {
        * The maximum number of named reserves that can exist on an account.
        **/
       maxReserves: u32 & AugmentedConst<ApiType>
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec
+    }
+    circuitBreaker: {
+      /**
+       * The maximum percentage of a pool's liquidity that can be added in a block.
+       * Represented as an optional non-zero fraction (nominator, denominator) with the max value being 10_000.
+       * If set to None, the limits are not enforced.
+       **/
+      defaultMaxAddLiquidityLimitPerBlock: Option<ITuple<[u32, u32]>> &
+        AugmentedConst<ApiType>
+      /**
+       * The maximum percentage of a pool's liquidity that can be traded in a block.
+       * Represented as a non-zero fraction (nominator, denominator) with the max value being 10_000.
+       **/
+      defaultMaxNetTradeVolumeLimitPerBlock: ITuple<[u32, u32]> &
+        AugmentedConst<ApiType>
+      /**
+       * The maximum percentage of a pool's liquidity that can be removed in a block.
+       * Represented as an optional non-zero fraction (nominator, denominator) with the max value being 10_000.
+       * If set to None, the limits are not enforced.
+       **/
+      defaultMaxRemoveLiquidityLimitPerBlock: Option<ITuple<[u32, u32]>> &
+        AugmentedConst<ApiType>
       /**
        * Generic const
        **/
@@ -224,6 +251,16 @@ declare module "@polkadot/api-base/types/consts" {
        * The amount of bond that need to be locked for each vote (32 bytes).
        **/
       votingBondFactor: u128 & AugmentedConst<ApiType>
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec
+    }
+    emaOracle: {
+      /**
+       * Maximum number of unique oracle entries expected in one block.
+       **/
+      maxUniqueEntries: u32 & AugmentedConst<ApiType>
       /**
        * Generic const
        **/
@@ -386,6 +423,13 @@ declare module "@polkadot/api-base/types/consts" {
        * Pallet id.
        **/
       palletId: FrameSupportPalletId & AugmentedConst<ApiType>
+      /**
+       * Generic const
+       **/
+      [key: string]: Codec
+    }
+    otc: {
+      existentialDepositMultiplier: u8 & AugmentedConst<ApiType>
       /**
        * Generic const
        **/

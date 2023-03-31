@@ -26,6 +26,7 @@ import BN from "bignumber.js"
 import { getFloatingPointAmount } from "utils/balance"
 import { useStore } from "../../../../state/store"
 import BigNumber from "bignumber.js"
+import { Spacer } from "components/Spacer/Spacer"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
@@ -283,17 +284,21 @@ export const RemoveLiquidity = ({
                 type: "token",
               })}
             />
-            <RemoveLiquidityReward
-              name="Lerna"
-              symbol="LRNA"
-              amount={t("value", {
-                value: removeLiquidityValues?.lrna,
-                fixedPointScale: lrnaMeta?.decimals ?? 12,
-                type: "token",
-              })}
-            />
+            {removeLiquidityValues &&
+              !BN(removeLiquidityValues.lrna).isZero() && (
+                <RemoveLiquidityReward
+                  name="Lerna"
+                  symbol="LRNA"
+                  amount={t("value", {
+                    value: removeLiquidityValues?.lrna,
+                    fixedPointScale: lrnaMeta?.decimals ?? 12,
+                    type: "token",
+                  })}
+                />
+              )}
           </STradingPairContainer>
         </div>
+        <Spacer size={20} />
         <Button variant="primary">{t("liquidity.remove.modal.confirm")}</Button>
       </form>
     </Modal>

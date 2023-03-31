@@ -5,8 +5,11 @@ import {
 import { Text } from "../../../components/Typography/Text/Text"
 import Skeleton from "react-loading-skeleton"
 import { Heading } from "../../../components/Typography/Heading/Heading"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import BN from "bignumber.js"
+import { separateBalance } from "utils/balance"
+import { css } from "@emotion/react"
+import { theme } from "theme"
 
 type Props = { myPositions: boolean; variant: "pools" | "farms" }
 
@@ -20,9 +23,9 @@ const PoolsHeaderTotalVolumeData = ({
   const { t } = useTranslation()
 
   return (
-    <Heading as="h3" sx={{ fontSize: [16, 42], fontWeight: 500 }}>
+    <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
       {!isLoading ? (
-        <>
+        <div css={{ whiteSpace: "nowrap" }}>
           <Text
             font="ChakraPetch"
             fw={900}
@@ -31,11 +34,25 @@ const PoolsHeaderTotalVolumeData = ({
           >
             $
           </Text>
-          {t("value", {
-            value,
-            type: "dollar",
-          })}
-        </>
+          <Trans
+            t={t}
+            i18nKey="wallet.assets.header.value"
+            tOptions={{
+              ...separateBalance(value, {
+                type: "dollar",
+              }),
+            }}
+          >
+            <span
+              sx={{
+                fontSize: [19, 26],
+              }}
+              css={css`
+                color: rgba(${theme.rgbColors.white}, 0.4);
+              `}
+            />
+          </Trans>
+        </div>
       ) : (
         <Skeleton width={256} />
       )}

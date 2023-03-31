@@ -1,6 +1,6 @@
 import { Page } from "components/Layout/Page/Page"
-import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { useState } from "react"
+import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
 import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
 import { PoolSkeleton } from "./skeleton/PoolSkeleton"
@@ -8,18 +8,21 @@ import { PoolSkeleton } from "./skeleton/PoolSkeleton"
 export const PoolsPage = () => {
   const [filter, setFilter] = useState({ showMyPositions: false })
 
-  const { data, isLoading } = useOmnipoolPools(filter.showMyPositions)
+  const { data, hasPositionsOrDeposits, isLoading } = useOmnipoolPools(
+    filter.showMyPositions,
+  )
 
   return (
     <Page>
       <PoolsHeader
-        showMyPositions={filter.showMyPositions}
-        onShowMyPositionsChange={(value) =>
+        myPositions={filter.showMyPositions}
+        onMyPositionsChange={(value) =>
           setFilter((prev) => ({
             ...prev,
             showMyPositions: value,
           }))
         }
+        disableMyPositions={!hasPositionsOrDeposits}
       />
       <div sx={{ flex: "column", gap: 20 }}>
         {!isLoading && data
