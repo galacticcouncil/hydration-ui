@@ -21,6 +21,7 @@ import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { Summary } from "components/Summary/Summary"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Spacer } from "components/Spacer/Spacer"
+import { Stepper, fakeSteps } from "components/Stepper/Stepper"
 
 type Props = {
   pool: OmnipoolPool
@@ -134,6 +135,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
         onClose()
         form.reset()
       }}
+      topContent={<Stepper steps={fakeSteps} />}
     >
       {isOpenSelectAssetModal ? (
         modal
