@@ -143,7 +143,7 @@
   "liquidity.reviewTransaction.toast.unknown": "Transaction status unknown.",
   "otc.header.title": "Over-the-Counter Trading",
   "otc.header.titleAlt": "OTC Trading",
-  "otc.header.switch": "My orders",
+  "otc.header.switch": "Show my orders",
   "otc.header.totalValue": "Value in OTC",
   "otc.header.placeOrder": "Place an order",
   "otc.order.place.title": "New order",
