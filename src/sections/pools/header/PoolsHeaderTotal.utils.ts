@@ -244,5 +244,13 @@ export const useTotalInFarms = () => {
     return memo
   }, BN_0)
 
-  return result
+  const isLoading =
+    activeYieldFarms.some((farm) => farm.isLoading) ||
+    yieldFarms.isLoading ||
+    lrnaSpotPrice.isLoading
+
+  return {
+    data: result,
+    isLoading,
+  }
 }

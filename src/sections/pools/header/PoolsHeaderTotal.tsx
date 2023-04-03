@@ -96,34 +96,38 @@ const PoolsHeaderTotalFarms = () => {
 
   return (
     <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
-      <div css={{ whiteSpace: "nowrap" }}>
-        <Text
-          font="ChakraPetch"
-          fw={900}
-          fs={[19, 42]}
-          sx={{ display: "inline-block" }}
-        >
-          $
-        </Text>
-        <Trans
-          t={t}
-          i18nKey="wallet.assets.header.value"
-          tOptions={{
-            ...separateBalance(totalInFarms, {
-              type: "dollar",
-            }),
-          }}
-        >
-          <span
-            sx={{
-              fontSize: [19, 26],
+      {totalInFarms.isLoading ? (
+        <Skeleton width={256} />
+      ) : (
+        <div css={{ whiteSpace: "nowrap" }}>
+          <Text
+            font="ChakraPetch"
+            fw={900}
+            fs={[19, 42]}
+            sx={{ display: "inline-block" }}
+          >
+            $
+          </Text>
+          <Trans
+            t={t}
+            i18nKey="wallet.assets.header.value"
+            tOptions={{
+              ...separateBalance(totalInFarms.data, {
+                type: "dollar",
+              }),
             }}
-            css={css`
-              color: rgba(${theme.rgbColors.white}, 0.4);
-            `}
-          />
-        </Trans>
-      </div>
+          >
+            <span
+              sx={{
+                fontSize: [19, 26],
+              }}
+              css={css`
+                color: rgba(${theme.rgbColors.white}, 0.4);
+              `}
+            />
+          </Trans>
+        </div>
+      )}
     </Heading>
   )
 }
