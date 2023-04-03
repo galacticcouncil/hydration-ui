@@ -62,7 +62,7 @@
   "value.multiAPR": "{{minApr, bignumber(type: 'percentage'; decimalPlaces: 0) }}-{{maxApr, bignumber(type: 'percentage'; decimalPlaces: 0) }}% APR",
   "value.token": "{{ value, bignumber(type: 'token') }}",
   "liquidity.header.title": "Liquidity",
-  "liquidity.header.switch": "My liquidity positions",
+  "liquidity.header.switch": "Show my positions",
   "liquidity.header.totalLocked": "Value in Omnipool",
   "liquidity.header.totalInFarms": "Value in farms",
   "liquidity.header.value": "{{num}}<0>{{denom}}</0>",
