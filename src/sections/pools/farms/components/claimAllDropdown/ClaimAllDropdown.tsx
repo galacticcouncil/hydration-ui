@@ -9,11 +9,12 @@ import { theme } from "theme"
 import { Separator } from "components/Separator/Separator"
 import { Spacer } from "components/Spacer/Spacer"
 import { TOAST_MESSAGES } from "state/toasts"
-import { ToastMessage } from "state/store"
+import { ToastMessage, useAccountStore } from "state/store"
 import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
 
 export const ClaimAllDropdown = () => {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
 
   const claimable = useClaimableAmount()
 
@@ -60,7 +61,11 @@ export const ClaimAllDropdown = () => {
   return (
     <Tooltip.Root delayDuration={0}>
       <SClaimAllButton
-        disabled={claimable.data?.usd.isZero()}
+        disabled={
+          !claimable.data ||
+          claimable.data.usd.isZero() ||
+          account?.isExternalWalletConnected
+        }
         onClick={() => claimAll.mutate()}
       >
         <WalletIcon />
