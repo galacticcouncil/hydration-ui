@@ -45,7 +45,7 @@ export const useAllDeposits = () => {
 
 export const usePoolDeposits = (poolId?: u32 | string) => {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.poolDeposits(poolId), getDeposits(api), {
+  return useQuery(QUERY_KEYS.allDeposits, getDeposits(api), {
     enabled: !!poolId,
     select: (data) =>
       data.filter(
@@ -123,13 +123,6 @@ export const useUserDeposits = () => {
       )
     },
   )
-
-  if (!enabledFarms)
-    return {
-      isLoading: false,
-      isInitialLoading: false,
-      data: [] as DepositNftType[],
-    }
 
   return query
 }

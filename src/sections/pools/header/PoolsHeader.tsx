@@ -8,6 +8,7 @@ import { PoolsHeaderTotal } from "sections/pools/header/PoolsHeaderTotal"
 import { useAccountStore } from "state/store"
 import { theme } from "theme"
 import { PoolsHeaderVolume } from "./PoolsHeaderVolume"
+import { ClaimAllDropdown } from "../farms/components/claimAllDropdown/ClaimAllDropdown"
 
 type Props = {
   myPositions: boolean
@@ -99,6 +100,21 @@ export const PoolsHeader = ({
             <PoolsHeaderVolume myPositions={myPositions} variant="pools" />
           </div>
         </div>
+        {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
+          <>
+            <Separator
+              sx={{
+                mb: [15, 0],
+                height: ["1px", "40px"],
+              }}
+              css={{ background: `rgba(${theme.rgbColors.white}, 0.12)` }}
+              orientation={isDesktop ? "vertical" : "horizontal"}
+            />
+            <div css={{ textAlign: "right" }}>
+              <ClaimAllDropdown />
+            </div>
+          </>
+        )}
       </div>
     </>
   )

@@ -5,7 +5,7 @@ import {
   PalletLiquidityMiningGlobalFarmData,
   PalletLiquidityMiningYieldFarmData,
 } from "@polkadot/types/lookup"
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import { secondsInYear } from "date-fns"
 import { useApiPromise } from "utils/api"
@@ -14,13 +14,17 @@ import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useBestNumber } from "./chain"
 
-export function useActiveYieldFarms(poolId: Maybe<u32 | string>) {
+export function useActiveYieldFarms(poolIds: Array<Maybe<u32 | string>>) {
   const api = useApiPromise()
-  return useQuery(
-    QUERY_KEYS.activeYieldFarms(poolId),
-    poolId != null ? getActiveYieldFarms(api, poolId) : undefinedNoop,
-    { enabled: poolId != null },
-  )
+
+  return useQueries({
+    queries: poolIds.map((poolId) => ({
+      queryKey: QUERY_KEYS.activeYieldFarms(poolId),
+      queryFn:
+        poolId != null ? getActiveYieldFarms(api, poolId) : undefinedNoop,
+      enabled: poolId != null,
+    })),
+  })
 }
 
 export const getActiveYieldFarms =
@@ -151,16 +155,26 @@ export type FarmAprs = ReturnType<typeof useFarmAprs>
 
 export type FarmQueryType = ReturnType<typeof useFarms>
 
-export const useFarms = (poolId: u32 | string) => {
-  const activeYieldFarms = useActiveYieldFarms(poolId)
-  const globalFarms = useGlobalFarms(activeYieldFarms.data)
-  const yieldFarms = useYieldFarms(activeYieldFarms.data)
+export const useFarms = (poolIds: Array<u32 | string>) => {
+  const activeYieldFarms = useActiveYieldFarms(poolIds)
+
+  const data = activeYieldFarms
+    .reduce((acc, farm) => {
+      if (farm.data) acc.push(farm.data)
+      return acc
+    }, [] as Array<Array<FarmIds>>)
+    .flat(2)
+
+  const globalFarms = useGlobalFarms(data)
+  const yieldFarms = useYieldFarms(data)
 
   return useQueryReduce(
-    [activeYieldFarms, globalFarms, yieldFarms] as const,
-    (activeYieldFarms, globalFarms, yieldFarms) => {
+    [globalFarms, yieldFarms, ...activeYieldFarms] as const,
+    (globalFarms, yieldFarms, ...activeYieldFarms) => {
       const farms =
-        activeYieldFarms?.map((af) => {
+        activeYieldFarms.flat(2).map((af) => {
+          if (!af) return undefined
+
           const globalFarm = globalFarms?.find((gf) =>
             af.globalFarmId.eq(gf.id),
           )
