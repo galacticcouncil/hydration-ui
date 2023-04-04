@@ -51,7 +51,9 @@ export const getSpotPrice =
     let spotPrice = BN_NAN
     try {
       const res = await tradeRouter.getBestSpotPrice(tokenIn, tokenOut)
-      spotPrice = res.amount.div(BN_10.pow(res.decimals))
+      if (res) {
+        spotPrice = res.amount.div(BN_10.pow(res.decimals))
+      }
     } catch (e) {}
 
     return { tokenIn, tokenOut, spotPrice }

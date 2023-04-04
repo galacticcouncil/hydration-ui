@@ -1,7 +1,6 @@
 import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
 import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
 import { ReactComponent as DetailsIcon } from "assets/icons/DetailsIcon.svg"
-import { ReactComponent as MoreIcon } from "assets/icons/MoreIcon.svg"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { useState } from "react"
@@ -13,7 +12,6 @@ import {
 import { useAccountStore } from "state/store"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { Modal } from "components/Modal/Modal"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
 import { LiquidityPositions } from "../../modals/LiquidityPositions/LiquidityPositions"
@@ -25,34 +23,32 @@ type PoolActionsProps = {
   isExpanded: boolean
   onExpandClick: () => void
   refetch: () => void
+  className?: string
 }
 
 export const PoolActions = ({
   pool,
+  className,
   canExpand,
   isExpanded,
   onExpandClick,
   refetch,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
-  const [openActions, setOpenActions] = useState(false)
   const [openAdd, setOpenAdd] = useState(false)
   const [openLiquidityPositions, setOpenLiquidityPositions] = useState(false)
   const { account } = useAccountStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const positions = usePoolPositions(pool)
 
-  const closeActionsDrawer = () => setOpenActions(false)
-
   const actionButtons = (
-    <div sx={{ flex: "column", gap: 10, flexGrow: 1 }}>
+    <div sx={{ flex: ["row", "column"], gap: 10, flexGrow: 1 }}>
       <Button
         fullWidth
         size="small"
-        disabled={!account}
+        disabled={!account || account.isExternalWalletConnected}
         onClick={() => {
           setOpenAdd(true)
-          closeActionsDrawer()
         }}
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
@@ -67,7 +63,6 @@ export const PoolActions = ({
           disabled={!account || !positions.data.length}
           onClick={() => {
             setOpenLiquidityPositions(true)
-            closeActionsDrawer()
           }}
         >
           <div sx={{ flex: "row", align: "center", justify: "center" }}>
@@ -81,9 +76,9 @@ export const PoolActions = ({
 
   return (
     <>
-      {isDesktop ? (
-        <SActionsContainer>
-          {actionButtons}
+      <SActionsContainer className={className}>
+        {actionButtons}
+        {isDesktop && (
           <SButtonOpen
             name="Expand"
             icon={<ChevronDown />}
@@ -91,27 +86,8 @@ export const PoolActions = ({
             onClick={onExpandClick}
             disabled={!account || !canExpand}
           />
-        </SActionsContainer>
-      ) : (
-        <>
-          <Modal
-            open={openActions}
-            isDrawer
-            titleDrawer={t("liquidity.asset.actions.header", {
-              tokens: `${pool.symbol}/${pool.symbol}`,
-            })}
-            onClose={closeActionsDrawer}
-          >
-            {actionButtons}
-          </Modal>
-          <Button size="small" onClick={() => setOpenActions(true)}>
-            <div sx={{ flex: "row", align: "center", justify: "center" }}>
-              <Icon icon={<MoreIcon />} sx={{ mr: 8 }} />
-              {t("liquidity.asset.actions.more")}
-            </div>
-          </Button>
-        </>
-      )}
+        )}
+      </SActionsContainer>
       {openAdd && (
         <AddLiquidity
           isOpen={openAdd}

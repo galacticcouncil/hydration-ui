@@ -42,6 +42,7 @@ const colors = {
   basic500: "#878C9E",
   basic600: "#676C80",
   basic700: "#5D6175",
+  basic750: "#444559",
   basic800: "#26282F",
   basic900: "#00041D",
   warning100: "#FFE2C3",
@@ -50,12 +51,18 @@ const colors = {
   warningOrange200: "#FBCD9C",
   error: "#FF8A8A",
   red100: "#EF0303",
+  red300: "#FF9E9E",
+  redA300: "#FF0606",
   red400: "#F87171",
+  red500: "#FF4B4B",
   red700: "#FF0000",
   green100: "#03EF97",
+  green400: "#01F397",
   green600: "#30FFB1",
   iconGray: "#BDCCD4",
+  neutralGray100: "#E5ECF1",
   neutralGray500: "#787E82",
+  gray: "#0A0C16",
   graySoft: "#EBEBEB",
   whiteish500: "#878C9E",
   alpha0: "#9EA7BA",
@@ -63,6 +70,9 @@ const colors = {
   primaryA15: "#4CD5F3",
   primaryA20: "#25CBFF",
   primaryA06: "#DAFFEE",
+  primaryA15Blue: "#546380",
+  graphGradient0: "#FC408C",
+  graphGradient100: "#57B3EB",
 } as const
 
 const gradients = {
@@ -75,6 +85,8 @@ const gradients = {
   pinkLightPink: "linear-gradient(90deg, #FC408C 30%, #EFB0FF 100%)",
   spinner:
     "conic-gradient(from -60.84deg at 50% 50%, rgba(10, 13, 26, 0) 0deg, rgba(10, 13, 26, 0) 134.49deg, #00C2FF 185.07deg, #004DE2 243.24deg, #FC408C 294.78deg, #FC408C 358.13deg, rgba(10, 13, 26, 0) 360deg)",
+  lightGreenOrange:
+    "linear-gradient(90deg, #4FFFB0 1.27%, #B3FF8F 93.06%, #FF984E 199.27%)",
 } as const
 
 const shadows = {

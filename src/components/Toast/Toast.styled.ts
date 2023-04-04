@@ -116,8 +116,6 @@ export const SProgressContainer = styled.div`
 
   height: 2px;
   background: ${theme.colors.basic700};
-
-  transform: rotate(180deg);
 `
 
 export const SProgressBar = styled(motion.div)<{
@@ -140,6 +138,9 @@ const variantBg: Record<ToastVariant, SerializedStyles> = {
   `,
   progress: css`
     background: rgba(${theme.rgbColors.primaryA20}, 0.2);
+  `,
+  unknown: css`
+    background: rgba(${theme.rgbColors.primaryA15Blue}, 0.35);
   `,
 }
 
@@ -164,6 +165,7 @@ const variantProgressBarBg: Record<ToastVariant, string> = {
   info: theme.colors.brightBlue700,
   error: theme.colors.red700,
   progress: theme.colors.brightBlue700,
+  unknown: theme.colors.brightBlue700,
 }
 
 export const ToastContentWrapper = styled.div`

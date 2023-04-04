@@ -8,6 +8,7 @@ import { u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { useAccountStore } from "../state/store"
+import { BN_0 } from "utils/constants"
 
 function calculateFreeBalance(
   free: BigNumber,
@@ -44,13 +45,13 @@ export const getTokenBalance =
       }
     }
 
-    const res = (await api.query.tokens.accounts(account, id)) as any
+    const res = await api.query.tokens.accounts(account, id)
 
     const freeBalance = new BigNumber(res.free.toHex())
     const reservedBalance = new BigNumber(res.reserved.toHex())
     const frozenBalance = new BigNumber(res.frozen.toHex())
     const balance = new BigNumber(
-      calculateFreeBalance(freeBalance, reservedBalance, frozenBalance) ?? NaN,
+      calculateFreeBalance(freeBalance, BN_0, frozenBalance) ?? NaN,
     )
 
     return {

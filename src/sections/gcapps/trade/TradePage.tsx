@@ -7,6 +7,7 @@ import { createComponent } from "@lit-labs/react"
 import { useAccountStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
+import { useProviderRpcUrlStore } from "api/provider"
 
 export const TradeApp = createComponent({
   tagName: "gc-trade-app",
@@ -34,6 +35,8 @@ const chartDatasourceId = import.meta.env.VITE_FF_CHART_DATASOURCE
 
 export function TradePage() {
   const { account } = useAccountStore()
+  const preference = useProviderRpcUrlStore()
+  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
   const rawSearch = useSearch<SearchGenerics>()
   const search = TradeAppSearch.safeParse(rawSearch)
@@ -51,7 +54,7 @@ export function TradePage() {
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}
-          apiAddress={import.meta.env.VITE_PROVIDER_URL}
+          apiAddress={rpcUrl}
           stableCoinAssetId="2"
           assetIn={search.success ? search.data.assetIn : undefined}
           assetOut={search.success ? search.data.assetOut : undefined}

@@ -1,6 +1,6 @@
 import { SortDirection } from "@tanstack/react-table"
 import { ReactComponent as CaretIcon } from "assets/icons/CaretIcon.svg"
-import { Button } from "components/Button/Button"
+import { Button, ButtonVariant } from "components/Button/Button"
 import { TableHeader } from "components/Table/Table.styled"
 import { ReactNode } from "react"
 
@@ -9,12 +9,15 @@ export const TableAction = (props: {
   onClick?: () => void
   children: ReactNode
   disabled?: boolean
+  variant?: ButtonVariant
 }) => {
   return (
     <Button
       disabled={props.disabled}
       size="small"
+      variant={props.variant}
       sx={{ p: "9px 12px" }}
+      css={{ whiteSpace: "nowrap" }}
       onClick={(e) => {
         e.stopPropagation()
         e.preventDefault()

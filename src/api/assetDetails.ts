@@ -15,6 +15,7 @@ import { getApiIds } from "./consts"
 import { getSpotPrice } from "./spotPrice"
 import { getTokenLock } from "./balances"
 import { getHubAssetTradability, getOmnipoolAssets } from "./omnipool"
+import { BN_0 } from "utils/constants"
 
 export const useAssetDetails = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
@@ -142,6 +143,7 @@ const getAssetDetails = (api: ApiPromise) => async () => {
       name: data.unwrap().name.toUtf8(),
       locked: data.unwrap().locked.toPrimitive(),
       assetType: data.unwrap().assetType.type,
+      existentialDeposit: data.unwrap().existentialDeposit.toBigNumber(),
     }
   })
 
@@ -151,6 +153,7 @@ const getAssetDetails = (api: ApiPromise) => async () => {
       locked: false,
       name: system.tokenSymbol.unwrap()[0].toString(),
       assetType: "Token",
+      existentialDeposit: BN_0,
     })
   }
 

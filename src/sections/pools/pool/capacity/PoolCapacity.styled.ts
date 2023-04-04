@@ -2,12 +2,15 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SContainer = styled.div`
+  margin: -20px;
+  padding: 20px 15px;
+  background: rgba(10, 12, 22, 0.69);
+
   position: relative;
-  padding: 0 20px 20px;
   text-align: center;
 
-  @media ${theme.viewport.gte.md} {
-    padding: 0 30px 20px;
+  @media (${theme.viewport.gte.sm}) {
+    background: inherit;
   }
 `
 
@@ -23,7 +26,11 @@ export const SBarContainer = styled.div`
   background-color: ${theme.colors.darkBlue401};
 `
 
-export const SBar = styled.div<{ filled: string; width: number }>`
+export const SBar = styled.div<{
+  filled: string
+  width: number
+  isFull: boolean
+}>`
   position: absolute;
   top: 0;
   left: 0;
@@ -31,10 +38,13 @@ export const SBar = styled.div<{ filled: string; width: number }>`
   right: calc(100% - ${(p) => p.filled}%);
 
   border-radius: 2px;
-  background: linear-gradient(
+  background: ${(p) =>
+    p.isFull
+      ? "linear-gradient(90deg, #532051 0%, #AE2569 55.72%, #F6297C 100%)"
+      : `linear-gradient(
     270deg,
     ${theme.colors.pink600} 0%,
     ${theme.colors.brightBlue600} 100%
-  );
+  )`};
   background-size: ${(p) => p.width}px;
 `

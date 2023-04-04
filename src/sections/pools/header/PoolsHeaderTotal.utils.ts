@@ -1,7 +1,7 @@
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useTokensBalances } from "api/balances"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { useSpotPrices } from "api/spotPrice"
+import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
+import { useSpotPrice, useSpotPrices } from "api/spotPrice"
 import { useApiIds } from "api/consts"
 import { useMemo } from "react"
 import { useAssetMetaList } from "api/assetMeta"
@@ -9,8 +9,16 @@ import { BN_0, BN_10, BN_NAN } from "utils/constants"
 import { useUniques } from "api/uniques"
 import { useAccountStore } from "state/store"
 import BN from "bignumber.js"
-import { calculate_liquidity_out } from "@galacticcouncil/math/build/omnipool/bundler"
+import {
+  calculate_liquidity_out,
+  calculate_liquidity_lrna_out,
+} from "@galacticcouncil/math-omnipool"
 import { isNotNil } from "utils/helpers"
+import { useOmnipoolPools } from "../PoolsPage.utils"
+import { useQueries } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { FarmIds, getActiveYieldFarms, useYieldFarms } from "api/farms"
+import { getFloatingPointAmount } from "utils/balance"
 
 export const useTotalInPools = () => {
   const apiIds = useApiIds()
@@ -76,10 +84,17 @@ export const useUsersTotalInPools = () => {
   )
   const assetIds =
     positions.map((p) => p.data?.assetId.toString()).filter(isNotNil) ?? []
-  const metas = useAssetMetaList([apiIds.data?.usdId.toString(), ...assetIds])
+  const metas = useAssetMetaList([
+    apiIds.data?.usdId.toString(),
+    apiIds.data?.hubId,
+    ...assetIds,
+  ])
   const omnipoolAssets = useOmnipoolAssets()
   const omnipoolBalances = useTokensBalances(assetIds, OMNIPOOL_ACCOUNT_ADDRESS)
-  const spotPrices = useSpotPrices(assetIds, apiIds.data?.usdId)
+  const spotPrices = useSpotPrices(
+    [apiIds.data?.hubId, ...assetIds],
+    apiIds.data?.usdId,
+  )
 
   const queries = [
     apiIds,
@@ -112,6 +127,11 @@ export const useUsersTotalInPools = () => {
       const meta = metas.data.find(
         (m) => m.id.toString() === position.assetId.toString(),
       )
+
+      const lrnaMeta = metas.data.find(
+        (m) => m.id.toString() === apiIds.data.hubId,
+      )
+
       const omnipoolAsset = omnipoolAssets.data.find(
         (a) => a.id.toString() === position.assetId.toString(),
       )
@@ -138,15 +158,33 @@ export const useUsersTotalInPools = () => {
       ]
 
       const liquidityOutResult = calculate_liquidity_out.apply(this, params)
+      const lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
+
       if (liquidityOutResult === "-1") return BN_0
+
+      const lrnaSp = spotPrices.find(
+        (sp) => sp.data?.tokenIn === apiIds.data.hubId,
+      )
+
+      const lrnaDp = BN_10.pow(lrnaMeta?.decimals.toNumber() ?? 12)
+
+      const lrna =
+        lernaOutResult !== "-1" ? new BN(lernaOutResult).div(lrnaDp) : BN_0
 
       const valueSp = spotPrices.find((sp) => sp.data?.tokenIn === id)
       const valueDp = BN_10.pow(meta.decimals.toBigNumber())
+
       const value = new BN(liquidityOutResult).div(valueDp)
 
       if (!valueSp?.data?.spotPrice) return BN_0
 
-      const valueUSD = value.times(valueSp.data.spotPrice)
+      let valueUSD = value.times(valueSp.data.spotPrice)
+
+      if (lrna.gt(0)) {
+        valueUSD = !lrnaSp?.data
+          ? BN_NAN
+          : valueUSD.plus(lrna.times(lrnaSp.data.spotPrice))
+      }
 
       return valueUSD
     })
@@ -163,4 +201,48 @@ export const useUsersTotalInPools = () => {
   ])
 
   return { data, isLoading }
+}
+
+export const useTotalInFarms = () => {
+  const api = useApiPromise()
+  const pools = useOmnipoolPools()
+
+  const apiIds = useApiIds()
+  const poolIds = pools.data?.map((pool) => pool.id) ?? []
+
+  const activeYieldFarms = useQueries({
+    queries: poolIds.map((id) => ({
+      queryKey: QUERY_KEYS.activeYieldFarms(id),
+      queryFn: getActiveYieldFarms(api, id),
+      enabled: !!pools.data?.length,
+    })),
+  })
+
+  const farmIds = activeYieldFarms
+    .map((farms) => farms.data)
+    .filter((x): x is FarmIds[] => !!x)
+    .reduce((acc, curr) => [...acc, ...curr], [])
+
+  const yieldFarms = useYieldFarms(farmIds)
+
+  const lrnaSpotPrice = useSpotPrice(apiIds.data?.hubId, apiIds.data?.usdId)
+
+  const result = farmIds.reduce((memo, farmId) => {
+    const yieldFarm = yieldFarms.data?.find(
+      (yieldFarm) => yieldFarm.id.toString() === farmId.yieldFarmId.toString(),
+    )
+
+    if (yieldFarm && lrnaSpotPrice?.data) {
+      // totalValuedShares is a lerna asset
+      const resultTest = yieldFarm.totalValuedShares
+        .toBigNumber()
+        .times(lrnaSpotPrice.data?.spotPrice)
+
+      return memo.plus(getFloatingPointAmount(resultTest ?? BN_0, 12))
+    }
+
+    return memo
+  }, BN_0)
+
+  return result
 }

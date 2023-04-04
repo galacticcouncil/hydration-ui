@@ -2,15 +2,22 @@ import { useCallback, useState } from "react"
 import { AssetsModal } from "./AssetsModal"
 import { u32 } from "@polkadot/types"
 import { Maybe } from "utils/helpers"
+import { UseAssetModel } from "api/asset"
 
 interface useAssetsModalProps {
-  onSelect?: (id: u32 | string) => void
+  onSelect?: (asset: NonNullable<UseAssetModel>) => void
   allowedAssets?: Maybe<u32 | string>[]
+  title?: string
+  hideInactiveAssets?: boolean
+  allAssets?: boolean
 }
 
 export const useAssetsModal = ({
   onSelect,
   allowedAssets,
+  title,
+  hideInactiveAssets,
+  allAssets,
 }: useAssetsModalProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -19,23 +26,27 @@ export const useAssetsModal = ({
   }, [])
 
   const handleSelect = useCallback(
-    (id: u32 | string) => {
+    (asset: NonNullable<UseAssetModel>) => {
       setIsOpen(false)
-      onSelect?.(id)
+      onSelect?.(asset)
     },
     [onSelect],
   )
 
   const modal = isOpen ? (
     <AssetsModal
+      title={title}
       onClose={() => setIsOpen(false)}
       onSelect={handleSelect}
       allowedAssets={allowedAssets}
+      hideInactiveAssets={hideInactiveAssets}
+      allAssets={allAssets}
     />
   ) : null
 
   return {
     openModal,
     modal,
+    isOpen,
   }
 }

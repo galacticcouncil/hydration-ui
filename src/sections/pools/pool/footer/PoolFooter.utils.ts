@@ -15,7 +15,8 @@ import { useSpotPrices } from "api/spotPrice"
 import { useMemo } from "react"
 import { BN_0, BN_10, BN_NAN } from "utils/constants"
 import BN from "bignumber.js"
-import { calculate_liquidity_out } from "@galacticcouncil/math/build/omnipool/bundler"
+import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
+import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 
 export const useUsersTotalInPool = (pool: OmnipoolPool) => {
   const { account } = useAccountStore()
@@ -122,4 +123,23 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
   ])
 
   return { data, isLoading }
+}
+
+export const useFooterValues = (pool: OmnipoolPool) => {
+  const locked = useUsersTotalInPool(pool)
+
+  const allPoolDeposits = useAllUserDepositShare()
+
+  const poolDeposit = allPoolDeposits.data?.[pool.id.toString()] ?? []
+
+  const totalDepositValueUSD = poolDeposit.reduce(
+    (memo, i) => memo.plus(i.valueUSD),
+    BN_0,
+  )
+
+  return {
+    locked: locked.data?.plus(totalDepositValueUSD ?? BN_0),
+    available: locked.data,
+    isLoading: allPoolDeposits.isLoading || locked.isLoading,
+  }
 }

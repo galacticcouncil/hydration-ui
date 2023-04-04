@@ -6,14 +6,14 @@ import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 
 type PoolDetailsProps = {
   pool: OmnipoolPool
-  onClick?: () => void
+  className?: string
 }
 
-export const PoolDetails = ({ pool, onClick }: PoolDetailsProps) => {
+export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
   const { t } = useTranslation()
 
   return (
-    <div sx={{ flex: "column" }}>
+    <div sx={{ flex: "column" }} className={className}>
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div sx={{ flex: "column", gap: 10 }}>
           <Text fs={13} color="basic400">
@@ -47,7 +47,7 @@ export const PoolDetails = ({ pool, onClick }: PoolDetailsProps) => {
           </Text>
         </div>
       </div>
-      <Separator sx={{ mt: [18, 34] }} />
+      <Separator sx={{ mt: [18, 20] }} />
     </div>
   )
 }

@@ -34,14 +34,19 @@ import type {
   H256,
   Perbill,
   Permill,
+  Perquintill,
   Weight,
 } from "@polkadot/types/interfaces/runtime"
 import type {
   CommonRuntimeProxyType,
   CumulusPrimitivesParachainInherentParachainInherentData,
   FrameSupportScheduleMaybeHashed,
+  HydradxRuntimeAssetLocation,
+  HydradxRuntimeOpaqueSessionKeys,
+  HydradxRuntimeOriginCaller,
   OrmlVestingVestingSchedule,
   PalletAssetRegistryAssetType,
+  PalletAssetRegistryMetadata,
   PalletClaimsEcdsaSignature,
   PalletDemocracyConviction,
   PalletDemocracyVoteAccountVote,
@@ -49,13 +54,11 @@ import type {
   PalletIdentityBitFlags,
   PalletIdentityIdentityInfo,
   PalletIdentityJudgement,
+  PalletLiquidityMiningLoyaltyCurve,
   PalletMultisigTimepoint,
   PalletOmnipoolTradability,
   PalletUniquesDestroyWitness,
   SpRuntimeHeader,
-  TestingHydradxRuntimeAssetLocation,
-  TestingHydradxRuntimeOpaqueSessionKeys,
-  TestingHydradxRuntimeOriginCaller,
   XcmV1MultiLocation,
   XcmV2WeightLimit,
   XcmVersionedMultiAsset,
@@ -94,8 +97,30 @@ declare module "@polkadot/api-base/types/submittable" {
             | string
             | Uint8Array,
           existentialDeposit: u128 | AnyNumber | Uint8Array,
+          assetId: Option<u32> | null | Uint8Array | u32 | AnyNumber,
+          metadata:
+            | Option<PalletAssetRegistryMetadata>
+            | null
+            | Uint8Array
+            | PalletAssetRegistryMetadata
+            | { symbol?: any; decimals?: any }
+            | string,
+          location:
+            | Option<HydradxRuntimeAssetLocation>
+            | null
+            | Uint8Array
+            | HydradxRuntimeAssetLocation
+            | { parents?: any; interior?: any }
+            | string,
         ) => SubmittableExtrinsic<ApiType>,
-        [Bytes, PalletAssetRegistryAssetType, u128]
+        [
+          Bytes,
+          PalletAssetRegistryAssetType,
+          u128,
+          Option<u32>,
+          Option<PalletAssetRegistryMetadata>,
+          Option<HydradxRuntimeAssetLocation>,
+        ]
       >
       /**
        * Set asset native location.
@@ -110,12 +135,12 @@ declare module "@polkadot/api-base/types/submittable" {
         (
           assetId: u32 | AnyNumber | Uint8Array,
           location:
-            | TestingHydradxRuntimeAssetLocation
+            | HydradxRuntimeAssetLocation
             | { parents?: any; interior?: any }
             | string
             | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [u32, TestingHydradxRuntimeAssetLocation]
+        [u32, HydradxRuntimeAssetLocation]
       >
       /**
        * Set metadata for an asset.
@@ -314,6 +339,78 @@ declare module "@polkadot/api-base/types/submittable" {
           value: Compact<u128> | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
         [AccountId32, Compact<u128>]
+      >
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>
+    }
+    circuitBreaker: {
+      /**
+       * Set add liquidity limit for an asset.
+       *
+       * Parameters:
+       * - `origin`: The dispatch origin for this call. Must be `TechnicalOrigin`
+       * - `asset_id`: The identifier of an asset
+       * - `liquidity_limit`: Optional add liquidity limit represented as a percentage
+       *
+       * Emits `AddLiquidityLimitChanged` event when successful.
+       *
+       **/
+      setAddLiquidityLimit: AugmentedSubmittable<
+        (
+          assetId: u32 | AnyNumber | Uint8Array,
+          liquidityLimit:
+            | Option<ITuple<[u32, u32]>>
+            | null
+            | Uint8Array
+            | ITuple<[u32, u32]>
+            | [u32 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array],
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, Option<ITuple<[u32, u32]>>]
+      >
+      /**
+       * Set remove liquidity limit for an asset.
+       *
+       * Parameters:
+       * - `origin`: The dispatch origin for this call. Must be `TechnicalOrigin`
+       * - `asset_id`: The identifier of an asset
+       * - `liquidity_limit`: Optional remove liquidity limit represented as a percentage
+       *
+       * Emits `RemoveLiquidityLimitChanged` event when successful.
+       *
+       **/
+      setRemoveLiquidityLimit: AugmentedSubmittable<
+        (
+          assetId: u32 | AnyNumber | Uint8Array,
+          liquidityLimit:
+            | Option<ITuple<[u32, u32]>>
+            | null
+            | Uint8Array
+            | ITuple<[u32, u32]>
+            | [u32 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array],
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, Option<ITuple<[u32, u32]>>]
+      >
+      /**
+       * Set trade volume limit for an asset.
+       *
+       * Parameters:
+       * - `origin`: The dispatch origin for this call. Must be `TechnicalOrigin`
+       * - `asset_id`: The identifier of an asset
+       * - `trade_volume_limit`: New trade volume limit represented as a percentage
+       *
+       * Emits `TradeVolumeLimitChanged` event when successful.
+       *
+       **/
+      setTradeVolumeLimit: AugmentedSubmittable<
+        (
+          assetId: u32 | AnyNumber | Uint8Array,
+          tradeVolumeLimit:
+            | ITuple<[u32, u32]>
+            | [u32 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array],
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, ITuple<[u32, u32]>]
       >
       /**
        * Generic tx
@@ -1136,6 +1233,46 @@ declare module "@polkadot/api-base/types/submittable" {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>
     }
+    duster: {
+      /**
+       * Add account to list of non-dustable account. Account whihc are excluded from udsting.
+       * If such account should be dusted - `AccountBlacklisted` error is returned.
+       * Only root can perform this action.
+       **/
+      addNondustableAccount: AugmentedSubmittable<
+        (
+          account: AccountId32 | string | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [AccountId32]
+      >
+      /**
+       * Dust specified account.
+       * IF account balance is < min. existential deposit of given currency, and account is allowed to
+       * be dusted, the remaining balance is transferred to selected account (usually treasury).
+       *
+       * Caller is rewarded with chosen reward in native currency.
+       **/
+      dustAccount: AugmentedSubmittable<
+        (
+          account: AccountId32 | string | Uint8Array,
+          currencyId: u32 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [AccountId32, u32]
+      >
+      /**
+       * Remove account from list of non-dustable accounts. That means account can be dusted again.
+       **/
+      removeNondustableAccount: AugmentedSubmittable<
+        (
+          account: AccountId32 | string | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [AccountId32]
+      >
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>
+    }
     elections: {
       /**
        * Clean all voters who are defunct (i.e. they do not serve any purpose at all). The
@@ -1279,6 +1416,12 @@ declare module "@polkadot/api-base/types/submittable" {
         ) => SubmittableExtrinsic<ApiType>,
         [Vec<AccountId32>, Compact<u128>]
       >
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>
+    }
+    emaOracle: {
       /**
        * Generic tx
        **/
@@ -2069,7 +2212,7 @@ declare module "@polkadot/api-base/types/submittable" {
        *
        * Transfer is performed only when asset is not in Omnipool and pool's balance has sufficient amount.
        *
-       * Only `AddTokenOrigin` can perform this operition -same as `add_token`o
+       * Only `AuthorityOrigin` can perform this operition -same as `add_token`o
        *
        * Emits `AssetRefunded`
        **/
@@ -2185,6 +2328,356 @@ declare module "@polkadot/api-base/types/submittable" {
         [u32, Permill]
       >
       /**
+       * Update TVL cap
+       *
+       * Parameters:
+       * - `cap`: new tvl cap
+       *
+       * Emits `TVLCapUpdated` event when successful.
+       *
+       **/
+      setTvlCap: AugmentedSubmittable<
+        (cap: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>,
+        [u128]
+      >
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>
+    }
+    omnipoolLiquidityMining: {
+      /**
+       * Claim rewards from liquidity mining program for deposit represented by the `deposit_id`.
+       *
+       * This function calculate user rewards from liquidity mining and transfer rewards to `origin`
+       * account. Claiming multiple time the same period is not allowed.
+       *
+       * Parameters:
+       * - `origin`: owner of deposit.
+       * - `deposit_id`: id of the deposit to claim rewards for.
+       * - `yield_farm_id`: id of the yield farm to claim rewards from.
+       *
+       * Emits `RewardClaimed` event when successful.
+       *
+       **/
+      claimRewards: AugmentedSubmittable<
+        (
+          depositId: u128 | AnyNumber | Uint8Array,
+          yieldFarmId: u32 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u128, u32]
+      >
+      /**
+       * Create a new liquidity mining program with provided parameters.
+       *
+       * `owner` account has to have at least `total_rewards` balance. These funds will be
+       * transferred from `owner` to farm account.
+       *
+       * The dispatch origin for this call must be `T::CreateOrigin`.
+       * !!!WARN: `T::CreateOrigin` has power over funds of `owner`'s account and it should be
+       * configured to trusted origin e.g Sudo or Governance.
+       *
+       * Parameters:
+       * - `origin`: account allowed to create new liquidity mining program(root, governance).
+       * - `total_rewards`: total rewards planned to distribute. These rewards will be
+       * distributed between all yield farms in the global farm.
+       * - `planned_yielding_periods`: planned number of periods to distribute `total_rewards`.
+       * WARN: THIS IS NOT HARD DEADLINE. Not all rewards have to be distributed in
+       * `planned_yielding_periods`. Rewards are distributed based on the situation in the yield
+       * farms and can be distributed in a longer, though never in a shorter, time frame.
+       * - `blocks_per_period`:  number of blocks in a single period. Min. number of blocks per
+       * period is 1.
+       * - `reward_currency`: payoff currency of rewards.
+       * - `owner`: liq. mining farm owner. This account will be able to manage created
+       * liquidity mining program.
+       * - `yield_per_period`: percentage return on `reward_currency` of all farms.
+       * - `min_deposit`: minimum amount of LP shares to be deposited into the liquidity mining by each user.
+       * - `lrna_price_adjustment`: price adjustment between `[LRNA]` and `reward_currency`.
+       *
+       * Emits `GlobalFarmCreated` when successful.
+       *
+       **/
+      createGlobalFarm: AugmentedSubmittable<
+        (
+          totalRewards: u128 | AnyNumber | Uint8Array,
+          plannedYieldingPeriods: u32 | AnyNumber | Uint8Array,
+          blocksPerPeriod: u32 | AnyNumber | Uint8Array,
+          rewardCurrency: u32 | AnyNumber | Uint8Array,
+          owner: AccountId32 | string | Uint8Array,
+          yieldPerPeriod: Perquintill | AnyNumber | Uint8Array,
+          minDeposit: u128 | AnyNumber | Uint8Array,
+          lrnaPriceAdjustment: u128 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u128, u32, u32, u32, AccountId32, Perquintill, u128, u128]
+      >
+      /**
+       * Create yield farm for given `asset_id` in the omnipool.
+       *
+       * Only farm owner can perform this action.
+       *
+       * Asset with `asset_id` has to be registered in the omnipool.
+       * Yield farm for same `asset_id` can exist only once in the global farm.
+       *
+       * Parameters:
+       * - `origin`: global farm's owner.
+       * - `global_farm_id`: global farm id to which a yield farm will be added.
+       * - `asset_id`: id of a asset in the omnipool. Yield farm will be created
+       * for this asset and user will be able to lock LP shares into this yield farm immediately.
+       * - `multiplier`: yield farm's multiplier.
+       * - `loyalty_curve`: curve to calculate loyalty multiplier to distribute rewards to users
+       * with time incentive. `None` means no loyalty multiplier.
+       *
+       * Emits `YieldFarmCreated` event when successful.
+       *
+       **/
+      createYieldFarm: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          assetId: u32 | AnyNumber | Uint8Array,
+          multiplier: u128 | AnyNumber | Uint8Array,
+          loyaltyCurve:
+            | Option<PalletLiquidityMiningLoyaltyCurve>
+            | null
+            | Uint8Array
+            | PalletLiquidityMiningLoyaltyCurve
+            | { initialRewardPercentage?: any; scaleCoef?: any }
+            | string,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u32, u128, Option<PalletLiquidityMiningLoyaltyCurve>]
+      >
+      /**
+       * Deposit omnipool position(LP shares) to a liquidity mining.
+       *
+       * This function transfers omnipool position from `origin` to pallet's account and mint NFT for
+       * `origin` account. Minted NFT represents deposit in the liquidity mining. User can
+       * deposit omnipool position as a whole(all the LP shares in the position).
+       *
+       * Parameters:
+       * - `origin`: owner of the omnipool position to deposit into the liquidity mining.
+       * - `global_farm_id`: id of global farm to which user wants to deposit LP shares.
+       * - `yield_farm_id`: id of yield farm to deposit to.
+       * - `position_id`: id of the omnipool position to be deposited into the liquidity mining.
+       *
+       * Emits `SharesDeposited` event when successful.
+       *
+       **/
+      depositShares: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          yieldFarmId: u32 | AnyNumber | Uint8Array,
+          positionId: u128 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u32, u128]
+      >
+      /**
+       * Redeposit LP shares in the already locked omnipool position.
+       *
+       * This function create yield farm entry for existing deposit. Amount of redeposited LP
+       * shares is same as amount shares which are already deposited in the deposit.
+       *
+       * This function DOESN'T create new deposit(NFT).
+       *
+       * Parameters:
+       * - `origin`: owner of the deposit to redeposit.
+       * - `global_farm_id`: id of the global farm to which user wants to redeposit LP shares.
+       * - `yield_farm_id`: id of the yield farm to redeposit to.
+       * - `deposit_id`: identifier of the deposit to redeposit.
+       *
+       * Emits `SharesRedeposited` event when successful.
+       *
+       **/
+      redepositShares: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          yieldFarmId: u32 | AnyNumber | Uint8Array,
+          depositId: u128 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u32, u128]
+      >
+      /**
+       * Resume incentivization of the asset represented by yield farm.
+       *
+       * This function resume incentivization of the asset from the `GlobalFarm` and
+       * restore full functionality or the yield farm. Users will be able to deposit,
+       * claim and withdraw again.
+       *
+       * WARN: Yield farm(and users) is NOT rewarded for time it was stopped.
+       *
+       * Only farm owner can perform this action.
+       *
+       * Parameters:
+       * - `origin`: global farm's owner.
+       * - `global_farm_id`: global farm id in which yield farm will be resumed.
+       * - `yield_farm_id`: id of the yield farm to be resumed.
+       * - `asset_id`: id of the asset identifying yield farm in the global farm.
+       * - `multiplier`: yield farm multiplier.
+       *
+       * Emits `YieldFarmResumed` event when successful.
+       *
+       **/
+      resumeYieldFarm: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          yieldFarmId: u32 | AnyNumber | Uint8Array,
+          assetId: u32 | AnyNumber | Uint8Array,
+          multiplier: u128 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u32, u32, u128]
+      >
+      /**
+       * Stop liquidity miming for specific yield farm.
+       *
+       * This function claims rewards from `GlobalFarm` last time and stop yield farm
+       * incentivization from a `GlobalFarm`. Users will be able to only withdraw
+       * shares(with claiming) after calling this function.
+       * `deposit_shares()` and `claim_rewards()` are not allowed on stopped yield farm.
+       *
+       * Only farm owner can perform this action.
+       *
+       * Parameters:
+       * - `origin`: global farm's owner.
+       * - `global_farm_id`: farm id in which yield farm will be canceled.
+       * - `asset_id`: id of the asset identifying yield farm in the global farm.
+       *
+       * Emits `YieldFarmStopped` event when successful.
+       *
+       **/
+      stopYieldFarm: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          assetId: u32 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u32]
+      >
+      /**
+       * Terminate existing liq. mining program.
+       *
+       * Only farm owner can perform this action.
+       *
+       * WARN: To successfully terminate a global farm, farm have to be empty
+       * (all yield farms in the global farm must be terminated).
+       *
+       * Parameters:
+       * - `origin`: global farm's owner.
+       * - `global_farm_id`: id of global farm to be terminated.
+       *
+       * Emits `GlobalFarmTerminated` event when successful.
+       *
+       **/
+      terminateGlobalFarm: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32]
+      >
+      /**
+       * Terminate yield farm.
+       *
+       * This function marks a yield farm as ready to be removed from storage when it's empty. Users will
+       * be able to only withdraw shares(without claiming rewards from yield farm). Unpaid rewards
+       * will be transferred back to global farm and it will be used to distribute to other yield farms.
+       *
+       * Yield farm must be stopped before it can be terminated.
+       *
+       * Only global farm's owner can perform this action. Yield farm stays in the storage until it's
+       * empty(all farm entries are withdrawn). Last withdrawn from yield farm trigger removing from
+       * the storage.
+       *
+       * Parameters:
+       * - `origin`: global farm's owner.
+       * - `global_farm_id`: global farm id in which yield farm should be terminated.
+       * - `yield_farm_id`: id of yield farm to be terminated.
+       * - `asset_id`: id of the asset identifying yield farm.
+       *
+       * Emits `YieldFarmTerminated` event when successful.
+       *
+       **/
+      terminateYieldFarm: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          yieldFarmId: u32 | AnyNumber | Uint8Array,
+          assetId: u32 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u32, u32]
+      >
+      /**
+       * Update global farm's exchange rate between [LRNA] and `incentivized_asset`.
+       *
+       * Only farm's owner can perform this action.
+       *
+       * Parameters:
+       * - `origin`: global farm's owner.
+       * - `global_farm_id`: id of the global farm to update.
+       * - `lrna_price_adjustment`: new value for LRNA price adjustment.
+       *
+       * Emits `GlobalFarmUpdated` event when successful.
+       *
+       **/
+      updateGlobalFarm: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          lrnaPriceAdjustment: u128 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u128]
+      >
+      /**
+       * Update yield farm's multiplier.
+       *
+       * Only farm owner can perform this action.
+       *
+       * Parameters:
+       * - `origin`: global farm's owner.
+       * - `global_farm_id`: global farm id in which yield farm will be updated.
+       * - `asset_id`: id of the asset identifying yield farm in the global farm.
+       * - `multiplier`: new yield farm's multiplier.
+       *
+       * Emits `YieldFarmUpdated` event when successful.
+       *
+       **/
+      updateYieldFarm: AugmentedSubmittable<
+        (
+          globalFarmId: u32 | AnyNumber | Uint8Array,
+          assetId: u32 | AnyNumber | Uint8Array,
+          multiplier: u128 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u32, u128]
+      >
+      /**
+       * This function claim rewards and withdraw LP shares from yield farm. Omnipool position
+       * is transferred to origin only if this is last withdraw in the deposit and deposit is
+       * destroyed. This function claim rewards only if yield farm is not terminated and user
+       * didn't already claim rewards in current period.
+       *
+       * Unclaimable rewards represents rewards which user won't be able to claim because of
+       * exiting early and these rewards will be transferred back to global farm for future
+       * redistribution.
+       *
+       * Parameters:
+       * - `origin`: owner of deposit.
+       * - `deposit_id`: id of the deposit to claim rewards for.
+       * - `yield_farm_id`: id of the yield farm to claim rewards from.
+       *
+       * Emits:
+       * * `RewardClaimed` event if claimed rewards is > 0
+       * * `SharesWithdrawn` event when successful
+       * * `DepositDestroyed` event when this was last withdraw from the deposit and deposit was
+       * destroyed.
+       *
+       **/
+      withdrawShares: AugmentedSubmittable<
+        (
+          depositId: u128 | AnyNumber | Uint8Array,
+          yieldFarmId: u32 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u128, u32]
+      >
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>
+    }
+    omnipoolWarehouseLM: {
+      /**
        * Generic tx
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>
@@ -2210,6 +2703,100 @@ declare module "@polkadot/api-base/types/submittable" {
             | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
         [XcmVersionedMultiLocation, XcmVersionedXcm]
+      >
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>
+    }
+    otc: {
+      /**
+       * Cancel an open OTC order
+       *
+       * Parameters:
+       * - `order_id`: ID of the order
+       * - `asset`: Asset which is being filled
+       * - `amount`: Amount which is being filled
+       *
+       * Validations:
+       * - caller is order owner
+       *
+       * Emits `Cancelled` event when successful.
+       **/
+      cancelOrder: AugmentedSubmittable<
+        (
+          orderId: u32 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32]
+      >
+      /**
+       * Fill an OTC order (completely)
+       *
+       * Parameters:
+       * - `order_id`: ID of the order
+       *
+       * Events:
+       * `Filled` event when successful.
+       **/
+      fillOrder: AugmentedSubmittable<
+        (
+          orderId: u32 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32]
+      >
+      /**
+       * Fill an OTC order (partially)
+       *
+       * Parameters:
+       * - `order_id`: ID of the order
+       * - `amount_in`: Amount with which the order is being filled
+       *
+       * Validations:
+       * - order must be partially_fillable
+       * - after the partial_fill, the remaining order.amount_in must be higher than the existential deposit
+       * of asset_in multiplied by ExistentialDepositMultiplier
+       * - after the partial_fill, the remaining order.amount_out must be higher than the existential deposit
+       * of asset_out multiplied by ExistentialDepositMultiplier
+       *
+       * Events:
+       * `PartiallyFilled` event when successful.
+       **/
+      partialFillOrder: AugmentedSubmittable<
+        (
+          orderId: u32 | AnyNumber | Uint8Array,
+          amountIn: u128 | AnyNumber | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u128]
+      >
+      /**
+       * Create a new OTC order
+       *
+       * Parameters:
+       * - `asset_in`: Asset which is being bought
+       * - `asset_out`: Asset which is being sold
+       * - `amount_in`: Amount that the order is seeking to buy
+       * - `amount_out`: Amount that the order is selling
+       * - `partially_fillable`: Flag indicating whether users can fill the order partially
+       *
+       * Validations:
+       * - asset_in must be registered
+       * - amount_in must be higher than the existential deposit of asset_in multiplied by
+       * ExistentialDepositMultiplier
+       * - amount_out must be higher than the existential deposit of asset_out multiplied by
+       * ExistentialDepositMultiplier
+       *
+       * Events:
+       * - `Placed` event when successful.
+       **/
+      placeOrder: AugmentedSubmittable<
+        (
+          assetIn: u32 | AnyNumber | Uint8Array,
+          assetOut: u32 | AnyNumber | Uint8Array,
+          amountIn: u128 | AnyNumber | Uint8Array,
+          amountOut: u128 | AnyNumber | Uint8Array,
+          partiallyFillable: bool | boolean | Uint8Array,
+        ) => SubmittableExtrinsic<ApiType>,
+        [u32, u32, u128, u128, bool]
       >
       /**
        * Generic tx
@@ -3118,94 +3705,13 @@ declare module "@polkadot/api-base/types/submittable" {
       setKeys: AugmentedSubmittable<
         (
           keys:
-            | TestingHydradxRuntimeOpaqueSessionKeys
+            | HydradxRuntimeOpaqueSessionKeys
             | { aura?: any }
             | string
             | Uint8Array,
           proof: Bytes | string | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [TestingHydradxRuntimeOpaqueSessionKeys, Bytes]
-      >
-      /**
-       * Generic tx
-       **/
-      [key: string]: SubmittableExtrinsicFunction<ApiType>
-    }
-    sudo: {
-      /**
-       * Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
-       * key.
-       *
-       * The dispatch origin for this call must be _Signed_.
-       *
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB change.
-       * # </weight>
-       **/
-      setKey: AugmentedSubmittable<
-        (
-          updated: AccountId32 | string | Uint8Array,
-        ) => SubmittableExtrinsic<ApiType>,
-        [AccountId32]
-      >
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Root` origin.
-       *
-       * The dispatch origin for this call must be _Signed_.
-       *
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB write (event).
-       * - Weight of derivative `call` execution + 10,000.
-       * # </weight>
-       **/
-      sudo: AugmentedSubmittable<
-        (
-          call: Call | IMethod | string | Uint8Array,
-        ) => SubmittableExtrinsic<ApiType>,
-        [Call]
-      >
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Signed` origin from
-       * a given account.
-       *
-       * The dispatch origin for this call must be _Signed_.
-       *
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB write (event).
-       * - Weight of derivative `call` execution + 10,000.
-       * # </weight>
-       **/
-      sudoAs: AugmentedSubmittable<
-        (
-          who: AccountId32 | string | Uint8Array,
-          call: Call | IMethod | string | Uint8Array,
-        ) => SubmittableExtrinsic<ApiType>,
-        [AccountId32, Call]
-      >
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Root` origin.
-       * This function does not check the weight of the call, and instead allows the
-       * Sudo user to specify the weight of the call.
-       *
-       * The dispatch origin for this call must be _Signed_.
-       *
-       * # <weight>
-       * - O(1).
-       * - The weight of this call is defined by the caller.
-       * # </weight>
-       **/
-      sudoUncheckedWeight: AugmentedSubmittable<
-        (
-          call: Call | IMethod | string | Uint8Array,
-          weight: Weight | AnyNumber | Uint8Array,
-        ) => SubmittableExtrinsic<ApiType>,
-        [Call, Weight]
+        [HydradxRuntimeOpaqueSessionKeys, Bytes]
       >
       /**
        * Generic tx
@@ -4657,7 +5163,7 @@ declare module "@polkadot/api-base/types/submittable" {
       dispatchAs: AugmentedSubmittable<
         (
           asOrigin:
-            | TestingHydradxRuntimeOriginCaller
+            | HydradxRuntimeOriginCaller
             | { system: any }
             | { Void: any }
             | { Council: any }
@@ -4668,7 +5174,7 @@ declare module "@polkadot/api-base/types/submittable" {
             | Uint8Array,
           call: Call | IMethod | string | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [TestingHydradxRuntimeOriginCaller, Call]
+        [HydradxRuntimeOriginCaller, Call]
       >
       /**
        * Send a batch of dispatch calls.

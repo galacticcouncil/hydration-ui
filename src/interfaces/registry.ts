@@ -55,6 +55,14 @@ import type {
   FrameSystemLimitsBlockWeights,
   FrameSystemLimitsWeightsPerClass,
   FrameSystemPhase,
+  HydraDxMathRatio,
+  HydradxRuntimeAssetLocation,
+  HydradxRuntimeOpaqueSessionKeys,
+  HydradxRuntimeOriginCaller,
+  HydradxRuntimeRuntime,
+  HydradxTraitsOracleLiquidity,
+  HydradxTraitsOracleOraclePeriod,
+  HydradxTraitsOracleVolume,
   OrmlTokensAccountData,
   OrmlTokensBalanceLock,
   OrmlTokensModuleCall,
@@ -80,6 +88,7 @@ import type {
   PalletAssetRegistryCall,
   PalletAssetRegistryError,
   PalletAssetRegistryEvent,
+  PalletAssetRegistryMetadata,
   PalletAuthorshipCall,
   PalletAuthorshipError,
   PalletAuthorshipUncleEntryItem,
@@ -91,6 +100,11 @@ import type {
   PalletBalancesReasons,
   PalletBalancesReleases,
   PalletBalancesReserveData,
+  PalletCircuitBreakerCall,
+  PalletCircuitBreakerError,
+  PalletCircuitBreakerEvent,
+  PalletCircuitBreakerLiquidityLimit,
+  PalletCircuitBreakerTradeVolumeLimit,
   PalletClaimsCall,
   PalletClaimsEcdsaSignature,
   PalletClaimsError,
@@ -124,12 +138,19 @@ import type {
   PalletDemocracyVotePriorLock,
   PalletDemocracyVoteThreshold,
   PalletDemocracyVoteVoting,
+  PalletDusterCall,
+  PalletDusterError,
+  PalletDusterEvent,
   PalletElectionsPhragmenCall,
   PalletElectionsPhragmenError,
   PalletElectionsPhragmenEvent,
   PalletElectionsPhragmenRenouncing,
   PalletElectionsPhragmenSeatHolder,
   PalletElectionsPhragmenVoter,
+  PalletEmaOracleCall,
+  PalletEmaOracleError,
+  PalletEmaOracleEvent,
+  PalletEmaOracleOracleEntry,
   PalletGenesisHistoryCall,
   PalletGenesisHistoryChain,
   PalletIdentityBitFlags,
@@ -141,6 +162,16 @@ import type {
   PalletIdentityJudgement,
   PalletIdentityRegistrarInfo,
   PalletIdentityRegistration,
+  PalletLiquidityMiningCall,
+  PalletLiquidityMiningDepositData,
+  PalletLiquidityMiningError,
+  PalletLiquidityMiningEvent,
+  PalletLiquidityMiningFarmState,
+  PalletLiquidityMiningGlobalFarmData,
+  PalletLiquidityMiningInconsistentStateError,
+  PalletLiquidityMiningLoyaltyCurve,
+  PalletLiquidityMiningYieldFarmData,
+  PalletLiquidityMiningYieldFarmEntry,
   PalletMultisigCall,
   PalletMultisigError,
   PalletMultisigEvent,
@@ -150,9 +181,17 @@ import type {
   PalletOmnipoolCall,
   PalletOmnipoolError,
   PalletOmnipoolEvent,
+  PalletOmnipoolLiquidityMiningCall,
+  PalletOmnipoolLiquidityMiningError,
+  PalletOmnipoolLiquidityMiningEvent,
+  PalletOmnipoolLiquidityMiningInconsistentStateError,
   PalletOmnipoolPosition,
   PalletOmnipoolSimpleImbalance,
   PalletOmnipoolTradability,
+  PalletOtcCall,
+  PalletOtcError,
+  PalletOtcEvent,
+  PalletOtcOrder,
   PalletPreimageCall,
   PalletPreimageError,
   PalletPreimageEvent,
@@ -172,15 +211,13 @@ import type {
   PalletSessionCall,
   PalletSessionError,
   PalletSessionEvent,
-  PalletSudoCall,
-  PalletSudoError,
-  PalletSudoEvent,
   PalletTimestampCall,
   PalletTipsCall,
   PalletTipsError,
   PalletTipsEvent,
   PalletTipsOpenTip,
   PalletTransactionMultiPaymentCall,
+  PalletTransactionMultiPaymentCurrencyBalanceCheck,
   PalletTransactionMultiPaymentError,
   PalletTransactionMultiPaymentEvent,
   PalletTransactionPauseCall,
@@ -238,10 +275,6 @@ import type {
   SpRuntimeTransactionalError,
   SpTrieStorageProof,
   SpVersionRuntimeVersion,
-  TestingHydradxRuntimeAssetLocation,
-  TestingHydradxRuntimeOpaqueSessionKeys,
-  TestingHydradxRuntimeOriginCaller,
-  TestingHydradxRuntimeRuntime,
   XcmDoubleEncoded,
   XcmV0Junction,
   XcmV0JunctionBodyId,
@@ -331,6 +364,14 @@ declare module "@polkadot/types/types/registry" {
     FrameSystemLimitsBlockWeights: FrameSystemLimitsBlockWeights
     FrameSystemLimitsWeightsPerClass: FrameSystemLimitsWeightsPerClass
     FrameSystemPhase: FrameSystemPhase
+    HydraDxMathRatio: HydraDxMathRatio
+    HydradxRuntimeAssetLocation: HydradxRuntimeAssetLocation
+    HydradxRuntimeOpaqueSessionKeys: HydradxRuntimeOpaqueSessionKeys
+    HydradxRuntimeOriginCaller: HydradxRuntimeOriginCaller
+    HydradxRuntimeRuntime: HydradxRuntimeRuntime
+    HydradxTraitsOracleLiquidity: HydradxTraitsOracleLiquidity
+    HydradxTraitsOracleOraclePeriod: HydradxTraitsOracleOraclePeriod
+    HydradxTraitsOracleVolume: HydradxTraitsOracleVolume
     OrmlTokensAccountData: OrmlTokensAccountData
     OrmlTokensBalanceLock: OrmlTokensBalanceLock
     OrmlTokensModuleCall: OrmlTokensModuleCall
@@ -356,6 +397,7 @@ declare module "@polkadot/types/types/registry" {
     PalletAssetRegistryCall: PalletAssetRegistryCall
     PalletAssetRegistryError: PalletAssetRegistryError
     PalletAssetRegistryEvent: PalletAssetRegistryEvent
+    PalletAssetRegistryMetadata: PalletAssetRegistryMetadata
     PalletAuthorshipCall: PalletAuthorshipCall
     PalletAuthorshipError: PalletAuthorshipError
     PalletAuthorshipUncleEntryItem: PalletAuthorshipUncleEntryItem
@@ -367,6 +409,11 @@ declare module "@polkadot/types/types/registry" {
     PalletBalancesReasons: PalletBalancesReasons
     PalletBalancesReleases: PalletBalancesReleases
     PalletBalancesReserveData: PalletBalancesReserveData
+    PalletCircuitBreakerCall: PalletCircuitBreakerCall
+    PalletCircuitBreakerError: PalletCircuitBreakerError
+    PalletCircuitBreakerEvent: PalletCircuitBreakerEvent
+    PalletCircuitBreakerLiquidityLimit: PalletCircuitBreakerLiquidityLimit
+    PalletCircuitBreakerTradeVolumeLimit: PalletCircuitBreakerTradeVolumeLimit
     PalletClaimsCall: PalletClaimsCall
     PalletClaimsEcdsaSignature: PalletClaimsEcdsaSignature
     PalletClaimsError: PalletClaimsError
@@ -400,12 +447,19 @@ declare module "@polkadot/types/types/registry" {
     PalletDemocracyVotePriorLock: PalletDemocracyVotePriorLock
     PalletDemocracyVoteThreshold: PalletDemocracyVoteThreshold
     PalletDemocracyVoteVoting: PalletDemocracyVoteVoting
+    PalletDusterCall: PalletDusterCall
+    PalletDusterError: PalletDusterError
+    PalletDusterEvent: PalletDusterEvent
     PalletElectionsPhragmenCall: PalletElectionsPhragmenCall
     PalletElectionsPhragmenError: PalletElectionsPhragmenError
     PalletElectionsPhragmenEvent: PalletElectionsPhragmenEvent
     PalletElectionsPhragmenRenouncing: PalletElectionsPhragmenRenouncing
     PalletElectionsPhragmenSeatHolder: PalletElectionsPhragmenSeatHolder
     PalletElectionsPhragmenVoter: PalletElectionsPhragmenVoter
+    PalletEmaOracleCall: PalletEmaOracleCall
+    PalletEmaOracleError: PalletEmaOracleError
+    PalletEmaOracleEvent: PalletEmaOracleEvent
+    PalletEmaOracleOracleEntry: PalletEmaOracleOracleEntry
     PalletGenesisHistoryCall: PalletGenesisHistoryCall
     PalletGenesisHistoryChain: PalletGenesisHistoryChain
     PalletIdentityBitFlags: PalletIdentityBitFlags
@@ -417,6 +471,16 @@ declare module "@polkadot/types/types/registry" {
     PalletIdentityJudgement: PalletIdentityJudgement
     PalletIdentityRegistrarInfo: PalletIdentityRegistrarInfo
     PalletIdentityRegistration: PalletIdentityRegistration
+    PalletLiquidityMiningCall: PalletLiquidityMiningCall
+    PalletLiquidityMiningDepositData: PalletLiquidityMiningDepositData
+    PalletLiquidityMiningError: PalletLiquidityMiningError
+    PalletLiquidityMiningEvent: PalletLiquidityMiningEvent
+    PalletLiquidityMiningFarmState: PalletLiquidityMiningFarmState
+    PalletLiquidityMiningGlobalFarmData: PalletLiquidityMiningGlobalFarmData
+    PalletLiquidityMiningInconsistentStateError: PalletLiquidityMiningInconsistentStateError
+    PalletLiquidityMiningLoyaltyCurve: PalletLiquidityMiningLoyaltyCurve
+    PalletLiquidityMiningYieldFarmData: PalletLiquidityMiningYieldFarmData
+    PalletLiquidityMiningYieldFarmEntry: PalletLiquidityMiningYieldFarmEntry
     PalletMultisigCall: PalletMultisigCall
     PalletMultisigError: PalletMultisigError
     PalletMultisigEvent: PalletMultisigEvent
@@ -426,9 +490,17 @@ declare module "@polkadot/types/types/registry" {
     PalletOmnipoolCall: PalletOmnipoolCall
     PalletOmnipoolError: PalletOmnipoolError
     PalletOmnipoolEvent: PalletOmnipoolEvent
+    PalletOmnipoolLiquidityMiningCall: PalletOmnipoolLiquidityMiningCall
+    PalletOmnipoolLiquidityMiningError: PalletOmnipoolLiquidityMiningError
+    PalletOmnipoolLiquidityMiningEvent: PalletOmnipoolLiquidityMiningEvent
+    PalletOmnipoolLiquidityMiningInconsistentStateError: PalletOmnipoolLiquidityMiningInconsistentStateError
     PalletOmnipoolPosition: PalletOmnipoolPosition
     PalletOmnipoolSimpleImbalance: PalletOmnipoolSimpleImbalance
     PalletOmnipoolTradability: PalletOmnipoolTradability
+    PalletOtcCall: PalletOtcCall
+    PalletOtcError: PalletOtcError
+    PalletOtcEvent: PalletOtcEvent
+    PalletOtcOrder: PalletOtcOrder
     PalletPreimageCall: PalletPreimageCall
     PalletPreimageError: PalletPreimageError
     PalletPreimageEvent: PalletPreimageEvent
@@ -448,15 +520,13 @@ declare module "@polkadot/types/types/registry" {
     PalletSessionCall: PalletSessionCall
     PalletSessionError: PalletSessionError
     PalletSessionEvent: PalletSessionEvent
-    PalletSudoCall: PalletSudoCall
-    PalletSudoError: PalletSudoError
-    PalletSudoEvent: PalletSudoEvent
     PalletTimestampCall: PalletTimestampCall
     PalletTipsCall: PalletTipsCall
     PalletTipsError: PalletTipsError
     PalletTipsEvent: PalletTipsEvent
     PalletTipsOpenTip: PalletTipsOpenTip
     PalletTransactionMultiPaymentCall: PalletTransactionMultiPaymentCall
+    PalletTransactionMultiPaymentCurrencyBalanceCheck: PalletTransactionMultiPaymentCurrencyBalanceCheck
     PalletTransactionMultiPaymentError: PalletTransactionMultiPaymentError
     PalletTransactionMultiPaymentEvent: PalletTransactionMultiPaymentEvent
     PalletTransactionPauseCall: PalletTransactionPauseCall
@@ -514,10 +584,6 @@ declare module "@polkadot/types/types/registry" {
     SpRuntimeTransactionalError: SpRuntimeTransactionalError
     SpTrieStorageProof: SpTrieStorageProof
     SpVersionRuntimeVersion: SpVersionRuntimeVersion
-    TestingHydradxRuntimeAssetLocation: TestingHydradxRuntimeAssetLocation
-    TestingHydradxRuntimeOpaqueSessionKeys: TestingHydradxRuntimeOpaqueSessionKeys
-    TestingHydradxRuntimeOriginCaller: TestingHydradxRuntimeOriginCaller
-    TestingHydradxRuntimeRuntime: TestingHydradxRuntimeRuntime
     XcmDoubleEncoded: XcmDoubleEncoded
     XcmV0Junction: XcmV0Junction
     XcmV0JunctionBodyId: XcmV0JunctionBodyId

@@ -130,7 +130,12 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
     }
 
     :active {
+      transform: translate3d(-3px, -3px, -1px);
       box-shadow: 0px 13px 40px -12px rgba(246, 41, 124, 0.45);
+    }
+
+    :active:before {
+      transform: translate3d(3px, 3px, -1px);
     }
   `,
   secondary: css`
@@ -150,6 +155,25 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
       background: ${theme.colors.brightBlue400};
       color: ${theme.colors.white};
       border: 1px solid ${theme.colors.brightBlue100};
+    }
+  `,
+  error: css`
+    border-radius: 4px;
+    background: rgba(${theme.rgbColors.red100}, 0.25);
+    color: ${theme.colors.red400};
+    border: 1px solid ${theme.colors.red400};
+    box-shadow: unset;
+
+    :hover {
+      background: rgba(${theme.rgbColors.red100}, 0.5);
+      color: ${theme.colors.red400};
+      border: 1px solid ${theme.colors.red400};
+    }
+
+    :active {
+      background: ${theme.colors.red100};
+      color: ${theme.colors.red400};
+      border: 1px solid ${theme.colors.red400};
     }
   `,
   gradient: css`

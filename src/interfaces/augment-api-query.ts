@@ -44,6 +44,9 @@ import type {
   FrameSystemEventRecord,
   FrameSystemLastRuntimeUpgradeInfo,
   FrameSystemPhase,
+  HydradxRuntimeAssetLocation,
+  HydradxRuntimeOpaqueSessionKeys,
+  HydradxTraitsOracleOraclePeriod,
   OrmlTokensAccountData,
   OrmlTokensBalanceLock,
   OrmlTokensReserveData,
@@ -55,6 +58,8 @@ import type {
   PalletBalancesBalanceLock,
   PalletBalancesReleases,
   PalletBalancesReserveData,
+  PalletCircuitBreakerLiquidityLimit,
+  PalletCircuitBreakerTradeVolumeLimit,
   PalletClaimsEthereumAddress,
   PalletCollatorSelectionCandidateInfo,
   PalletCollectiveVotes,
@@ -65,14 +70,19 @@ import type {
   PalletDemocracyVoteVoting,
   PalletElectionsPhragmenSeatHolder,
   PalletElectionsPhragmenVoter,
+  PalletEmaOracleOracleEntry,
   PalletGenesisHistoryChain,
   PalletIdentityRegistrarInfo,
   PalletIdentityRegistration,
+  PalletLiquidityMiningDepositData,
+  PalletLiquidityMiningGlobalFarmData,
+  PalletLiquidityMiningYieldFarmData,
   PalletMultisigMultisig,
   PalletOmnipoolAssetState,
   PalletOmnipoolPosition,
   PalletOmnipoolSimpleImbalance,
   PalletOmnipoolTradability,
+  PalletOtcOrder,
   PalletPreimageRequestStatus,
   PalletProxyAnnouncement,
   PalletProxyProxyDefinition,
@@ -90,11 +100,10 @@ import type {
   PolkadotPrimitivesV2AbridgedHostConfiguration,
   PolkadotPrimitivesV2PersistedValidationData,
   PolkadotPrimitivesV2UpgradeRestriction,
+  SpConsensusAuraSr25519AppSr25519Public,
   SpCoreCryptoKeyTypeId,
   SpRuntimeDigest,
   SpTrieStorageProof,
-  TestingHydradxRuntimeAssetLocation,
-  TestingHydradxRuntimeOpaqueSessionKeys,
   XcmV1MultiLocation,
   XcmVersionedMultiLocation,
 } from "@polkadot/types/lookup"
@@ -159,18 +168,59 @@ declare module "@polkadot/api-base/types/storage" {
         ApiType,
         (
           arg:
-            | TestingHydradxRuntimeAssetLocation
+            | HydradxRuntimeAssetLocation
             | { parents?: any; interior?: any }
             | string
             | Uint8Array,
         ) => Observable<Option<u32>>,
-        [TestingHydradxRuntimeAssetLocation]
+        [HydradxRuntimeAssetLocation]
       > &
-        QueryableStorageEntry<ApiType, [TestingHydradxRuntimeAssetLocation]>
+        QueryableStorageEntry<ApiType, [HydradxRuntimeAssetLocation]>
       /**
        * Next available asset id. This is sequential id assigned for each new registered asset.
        **/
       nextAssetId: AugmentedQuery<ApiType, () => Observable<u32>, []> &
+        QueryableStorageEntry<ApiType, []>
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>
+    }
+    aura: {
+      /**
+       * The current authority set.
+       **/
+      authorities: AugmentedQuery<
+        ApiType,
+        () => Observable<Vec<SpConsensusAuraSr25519AppSr25519Public>>,
+        []
+      > &
+        QueryableStorageEntry<ApiType, []>
+      /**
+       * The current slot of this block.
+       *
+       * This will be set in `on_initialize`.
+       **/
+      currentSlot: AugmentedQuery<ApiType, () => Observable<u64>, []> &
+        QueryableStorageEntry<ApiType, []>
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>
+    }
+    auraExt: {
+      /**
+       * Serves as cache for the authorities.
+       *
+       * The authorities in AuRa are overwritten in `on_initialize` when we switch to a new session,
+       * but we require the old authorities to verify the seal when validating a PoV. This will always
+       * be updated to the latest AuRa authorities in `on_finalize`.
+       **/
+      authorities: AugmentedQuery<
+        ApiType,
+        () => Observable<Vec<SpConsensusAuraSr25519AppSr25519Public>>,
+        []
+      > &
         QueryableStorageEntry<ApiType, []>
       /**
        * Generic query
@@ -280,6 +330,79 @@ declare module "@polkadot/api-base/types/storage" {
        **/
       totalIssuance: AugmentedQuery<ApiType, () => Observable<u128>, []> &
         QueryableStorageEntry<ApiType, []>
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>
+    }
+    circuitBreaker: {
+      /**
+       * Add liquidity volumes per asset
+       **/
+      allowedAddLiquidityAmountPerAsset: AugmentedQuery<
+        ApiType,
+        (
+          arg: u32 | AnyNumber | Uint8Array,
+        ) => Observable<Option<PalletCircuitBreakerLiquidityLimit>>,
+        [u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32]>
+      /**
+       * Remove liquidity volumes per asset
+       **/
+      allowedRemoveLiquidityAmountPerAsset: AugmentedQuery<
+        ApiType,
+        (
+          arg: u32 | AnyNumber | Uint8Array,
+        ) => Observable<Option<PalletCircuitBreakerLiquidityLimit>>,
+        [u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32]>
+      /**
+       * Trade volumes per asset
+       **/
+      allowedTradeVolumeLimitPerAsset: AugmentedQuery<
+        ApiType,
+        (
+          arg: u32 | AnyNumber | Uint8Array,
+        ) => Observable<Option<PalletCircuitBreakerTradeVolumeLimit>>,
+        [u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32]>
+      /**
+       * Liquidity limits of assets for adding liquidity.
+       * If not set, returns the default limit.
+       **/
+      liquidityAddLimitPerAsset: AugmentedQuery<
+        ApiType,
+        (
+          arg: u32 | AnyNumber | Uint8Array,
+        ) => Observable<Option<ITuple<[u32, u32]>>>,
+        [u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32]>
+      /**
+       * Liquidity limits of assets for removing liquidity.
+       * If not set, returns the default limit.
+       **/
+      liquidityRemoveLimitPerAsset: AugmentedQuery<
+        ApiType,
+        (
+          arg: u32 | AnyNumber | Uint8Array,
+        ) => Observable<Option<ITuple<[u32, u32]>>>,
+        [u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32]>
+      /**
+       * Trade volume limits of assets set by set_trade_volume_limit.
+       * If not set, returns the default limit.
+       **/
+      tradeVolumeLimitPerAsset: AugmentedQuery<
+        ApiType,
+        (arg: u32 | AnyNumber | Uint8Array) => Observable<ITuple<[u32, u32]>>,
+        [u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32]>
       /**
        * Generic query
        **/
@@ -597,6 +720,39 @@ declare module "@polkadot/api-base/types/storage" {
        **/
       [key: string]: QueryableStorageEntry<ApiType>
     }
+    duster: {
+      /**
+       * Accounts excluded from dusting.
+       **/
+      accountBlacklist: AugmentedQuery<
+        ApiType,
+        (arg: AccountId32 | string | Uint8Array) => Observable<Option<Null>>,
+        [AccountId32]
+      > &
+        QueryableStorageEntry<ApiType, [AccountId32]>
+      /**
+       * Account to send dust to.
+       **/
+      dustAccount: AugmentedQuery<
+        ApiType,
+        () => Observable<Option<AccountId32>>,
+        []
+      > &
+        QueryableStorageEntry<ApiType, []>
+      /**
+       * Account to take reward from.
+       **/
+      rewardAccount: AugmentedQuery<
+        ApiType,
+        () => Observable<Option<AccountId32>>,
+        []
+      > &
+        QueryableStorageEntry<ApiType, []>
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>
+    }
     elections: {
       /**
        * The present candidate list. A current member or runner-up can never enter this vector
@@ -653,6 +809,55 @@ declare module "@polkadot/api-base/types/storage" {
         [AccountId32]
       > &
         QueryableStorageEntry<ApiType, [AccountId32]>
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>
+    }
+    emaOracle: {
+      /**
+       * Accumulator for oracle data in current block that will be recorded at the end of the block.
+       **/
+      accumulator: AugmentedQuery<
+        ApiType,
+        () => Observable<
+          BTreeMap<
+            ITuple<[U8aFixed, ITuple<[u32, u32]>]>,
+            PalletEmaOracleOracleEntry
+          >
+        >,
+        []
+      > &
+        QueryableStorageEntry<ApiType, []>
+      /**
+       * Orace storage keyed by data source, involved asset ids and the period length of the oracle.
+       *
+       * Stores the data entry as well as the block number when the oracle was first initialized.
+       **/
+      oracles: AugmentedQuery<
+        ApiType,
+        (
+          arg1: U8aFixed | string | Uint8Array,
+          arg2:
+            | ITuple<[u32, u32]>
+            | [u32 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array],
+          arg3:
+            | HydradxTraitsOracleOraclePeriod
+            | "LastBlock"
+            | "Short"
+            | "TenMinutes"
+            | "Hour"
+            | "Day"
+            | "Week"
+            | number
+            | Uint8Array,
+        ) => Observable<Option<ITuple<[PalletEmaOracleOracleEntry, u32]>>>,
+        [U8aFixed, ITuple<[u32, u32]>, HydradxTraitsOracleOraclePeriod]
+      > &
+        QueryableStorageEntry<
+          ApiType,
+          [U8aFixed, ITuple<[u32, u32]>, HydradxTraitsOracleOraclePeriod]
+        >
       /**
        * Generic query
        **/
@@ -835,6 +1040,102 @@ declare module "@polkadot/api-base/types/storage" {
         [u128]
       > &
         QueryableStorageEntry<ApiType, [u128]>
+      /**
+       * TVL cap
+       **/
+      tvlCap: AugmentedQuery<ApiType, () => Observable<u128>, []> &
+        QueryableStorageEntry<ApiType, []>
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>
+    }
+    omnipoolLiquidityMining: {
+      /**
+       * Map of omnipool position's ids to LM's deposit ids.
+       **/
+      omniPositionId: AugmentedQuery<
+        ApiType,
+        (arg: u128 | AnyNumber | Uint8Array) => Observable<Option<u128>>,
+        [u128]
+      > &
+        QueryableStorageEntry<ApiType, [u128]>
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>
+    }
+    omnipoolWarehouseLM: {
+      /**
+       * Active(farms able to receive LP shares deposits) yield farms.
+       **/
+      activeYieldFarm: AugmentedQuery<
+        ApiType,
+        (
+          arg1: u32 | AnyNumber | Uint8Array,
+          arg2: u32 | AnyNumber | Uint8Array,
+        ) => Observable<Option<u32>>,
+        [u32, u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32, u32]>
+      /**
+       * Deposit details.
+       **/
+      deposit: AugmentedQuery<
+        ApiType,
+        (
+          arg: u128 | AnyNumber | Uint8Array,
+        ) => Observable<Option<PalletLiquidityMiningDepositData>>,
+        [u128]
+      > &
+        QueryableStorageEntry<ApiType, [u128]>
+      depositSequencer: AugmentedQuery<ApiType, () => Observable<u128>, []> &
+        QueryableStorageEntry<ApiType, []>
+      /**
+       * Id sequencer for `GlobalFarm` and `YieldFarm`.
+       **/
+      farmSequencer: AugmentedQuery<ApiType, () => Observable<u32>, []> &
+        QueryableStorageEntry<ApiType, []>
+      globalFarm: AugmentedQuery<
+        ApiType,
+        (
+          arg: u32 | AnyNumber | Uint8Array,
+        ) => Observable<Option<PalletLiquidityMiningGlobalFarmData>>,
+        [u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32]>
+      /**
+       * Yield farm details.
+       **/
+      yieldFarm: AugmentedQuery<
+        ApiType,
+        (
+          arg1: u32 | AnyNumber | Uint8Array,
+          arg2: u32 | AnyNumber | Uint8Array,
+          arg3: u32 | AnyNumber | Uint8Array,
+        ) => Observable<Option<PalletLiquidityMiningYieldFarmData>>,
+        [u32, u32, u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32, u32, u32]>
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>
+    }
+    otc: {
+      /**
+       * ID sequencer for Orders
+       **/
+      nextOrderId: AugmentedQuery<ApiType, () => Observable<u32>, []> &
+        QueryableStorageEntry<ApiType, []>
+      orders: AugmentedQuery<
+        ApiType,
+        (
+          arg: u32 | AnyNumber | Uint8Array,
+        ) => Observable<Option<PalletOtcOrder>>,
+        [u32]
+      > &
+        QueryableStorageEntry<ApiType, [u32]>
       /**
        * Generic query
        **/
@@ -1330,7 +1631,7 @@ declare module "@polkadot/api-base/types/storage" {
         ApiType,
         (
           arg: AccountId32 | string | Uint8Array,
-        ) => Observable<Option<TestingHydradxRuntimeOpaqueSessionKeys>>,
+        ) => Observable<Option<HydradxRuntimeOpaqueSessionKeys>>,
         [AccountId32]
       > &
         QueryableStorageEntry<ApiType, [AccountId32]>
@@ -1347,7 +1648,7 @@ declare module "@polkadot/api-base/types/storage" {
       queuedKeys: AugmentedQuery<
         ApiType,
         () => Observable<
-          Vec<ITuple<[AccountId32, TestingHydradxRuntimeOpaqueSessionKeys]>>
+          Vec<ITuple<[AccountId32, HydradxRuntimeOpaqueSessionKeys]>>
         >,
         []
       > &
@@ -1360,17 +1661,6 @@ declare module "@polkadot/api-base/types/storage" {
         () => Observable<Vec<AccountId32>>,
         []
       > &
-        QueryableStorageEntry<ApiType, []>
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>
-    }
-    sudo: {
-      /**
-       * The `AccountId` of the sudo key.
-       **/
-      key: AugmentedQuery<ApiType, () => Observable<Option<AccountId32>>, []> &
         QueryableStorageEntry<ApiType, []>
       /**
        * Generic query

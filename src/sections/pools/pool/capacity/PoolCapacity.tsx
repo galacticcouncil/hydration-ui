@@ -4,10 +4,11 @@ import { usePoolCapacity } from "sections/pools/pool/capacity/PoolCapacity.utils
 import { useMeasure } from "react-use"
 import { Trans } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
+import { Separator } from "components/Separator/Separator"
 
-type Props = { pool: OmnipoolPool }
+type Props = { pool: OmnipoolPool; className?: string }
 
-export const PoolCapacity = ({ pool }: Props) => {
+export const PoolCapacity = ({ pool, className }: Props) => {
   const capacity = usePoolCapacity(pool)
   const [ref, { width }] = useMeasure<HTMLDivElement>()
 
@@ -15,25 +16,40 @@ export const PoolCapacity = ({ pool }: Props) => {
 
   const isError = capacity.data.capacity.isNaN()
   const filled = isError ? "0" : capacity.data.filledPercent.toFixed(2)
+  const isFull = capacity.data.filledPercent.eq(100)
 
   return (
-    <SContainer ref={ref}>
-      {!isError && (
-        <Trans
-          i18nKey="liquidity.asset.capacity"
-          tOptions={{
-            symbol: capacity.data.symbol,
-            filled: capacity.data.filled,
-            capacity: capacity.data.capacity,
-          }}
-        >
-          <Text fs={11} fw={500} color="basic400" as="span" />
-          <Text fs={11} fw={500} color="brightBlue100" as="span" />
-        </Trans>
-      )}
-      <SBarContainer>
-        <SBar filled={filled} width={width} />
-      </SBarContainer>
+    <SContainer ref={ref} className={className}>
+      <Separator sx={{ mb: 15, display: ["none", "inherit"] }} />
+      <div sx={{ flex: ["column-reverse", "column"] }}>
+        {!isError && (
+          <div>
+            <Trans
+              i18nKey={
+                isFull
+                  ? "liquidity.asset.capacity.full"
+                  : "liquidity.asset.capacity"
+              }
+              tOptions={{
+                symbol: capacity.data.symbol,
+                filled: capacity.data.filled,
+                capacity: capacity.data.capacity,
+              }}
+            >
+              <Text
+                fs={11}
+                fw={500}
+                color={isFull ? "pink600" : "basic400"}
+                as="span"
+              />
+              <Text fs={11} fw={500} color="brightBlue100" as="span" />
+            </Trans>
+          </div>
+        )}
+        <SBarContainer>
+          <SBar filled={filled} width={width} isFull={isFull} />
+        </SBarContainer>
+      </div>
     </SContainer>
   )
 }

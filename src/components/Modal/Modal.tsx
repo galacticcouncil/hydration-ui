@@ -41,7 +41,7 @@ type Props = {
   withoutOutsideClose?: boolean
   width?: number
   isDrawer?: boolean
-  titleDrawer?: string
+  titleHeader?: string
   containerStyles?: Interpolation<Theme>
 }
 
@@ -53,6 +53,7 @@ type PropsOverride = Pick<
   | "title"
   | "isDrawer"
   | "withoutOutsideClose"
+  | "titleHeader"
 >
 
 const ModalContext = createContext<(override: PropsOverride | null) => void>(
@@ -71,6 +72,7 @@ export const ModalMeta = (props: PropsOverride) => {
       secondaryIcon: props.secondaryIcon,
       isDrawer: props.isDrawer,
       withoutOutsideClose: props.withoutOutsideClose,
+      titleHeader: props.titleHeader,
     })
     return () => {
       context(null)
@@ -84,6 +86,7 @@ export const ModalMeta = (props: PropsOverride) => {
     props.secondaryIcon,
     props.isDrawer,
     props.withoutOutsideClose,
+    props.titleHeader,
   ])
 
   return null
@@ -95,10 +98,10 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const mergedProps = { ...props, ...propsOverride }
-  const { isDrawer, titleDrawer, secondaryIcon, title, withoutClose } =
+  const { isDrawer, titleHeader, secondaryIcon, title, withoutClose } =
     mergedProps
 
-  const visibleHeader = !withoutClose || !!secondaryIcon || titleDrawer
+  const visibleHeader = !withoutClose || !!secondaryIcon || titleHeader
 
   return (
     <Dialog open={props.open}>
@@ -121,17 +124,19 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
               <ModalWindowContainer isDrawer={isDrawer}>
                 {visibleHeader ? (
                   <ModalHeader>
-                    {titleDrawer && isDrawer && (
-                      <Text color="white" fs={16} fw={500}>
-                        {titleDrawer}
-                      </Text>
-                    )}
-                    {!!secondaryIcon && (
+                    {secondaryIcon ? (
                       <SecondaryButton
                         icon={secondaryIcon.icon}
                         onClick={secondaryIcon.onClick}
                         name={secondaryIcon.name}
                       />
+                    ) : (
+                      <Spacer size={34} />
+                    )}
+                    {titleHeader && (
+                      <Text color="white" font="FontOver" fs={16} fw={500}>
+                        {titleHeader}
+                      </Text>
                     )}
                     {!mergedProps.withoutClose && (
                       <CloseButton

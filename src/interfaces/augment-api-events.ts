@@ -26,6 +26,7 @@ import type {
   AccountId32,
   H256,
   Permill,
+  Perquintill,
   Weight,
 } from "@polkadot/types/interfaces/runtime"
 import type {
@@ -33,15 +34,16 @@ import type {
   FrameSupportScheduleLookupError,
   FrameSupportTokensMiscBalanceStatus,
   FrameSupportWeightsDispatchInfo,
+  HydradxRuntimeAssetLocation,
   OrmlVestingVestingSchedule,
   PalletAssetRegistryAssetType,
   PalletClaimsEthereumAddress,
   PalletDemocracyVoteAccountVote,
   PalletDemocracyVoteThreshold,
+  PalletLiquidityMiningLoyaltyCurve,
   PalletMultisigTimepoint,
   PalletOmnipoolTradability,
   SpRuntimeDispatchError,
-  TestingHydradxRuntimeAssetLocation,
   XcmV1MultiAsset,
   XcmV1MultiLocation,
   XcmV1MultiassetMultiAssets,
@@ -63,8 +65,8 @@ declare module "@polkadot/api-base/types/events" {
        **/
       LocationSet: AugmentedEvent<
         ApiType,
-        [assetId: u32, location: TestingHydradxRuntimeAssetLocation],
-        { assetId: u32; location: TestingHydradxRuntimeAssetLocation }
+        [assetId: u32, location: HydradxRuntimeAssetLocation],
+        { assetId: u32; location: HydradxRuntimeAssetLocation }
       >
       /**
        * Metadata set for an asset.
@@ -203,6 +205,36 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [who: AccountId32, amount: u128],
         { who: AccountId32; amount: u128 }
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    circuitBreaker: {
+      /**
+       * Add liquidity limit of an asset was changed.
+       **/
+      AddLiquidityLimitChanged: AugmentedEvent<
+        ApiType,
+        [assetId: u32, liquidityLimit: Option<ITuple<[u32, u32]>>],
+        { assetId: u32; liquidityLimit: Option<ITuple<[u32, u32]>> }
+      >
+      /**
+       * Remove liquidity limit of an asset was changed.
+       **/
+      RemoveLiquidityLimitChanged: AugmentedEvent<
+        ApiType,
+        [assetId: u32, liquidityLimit: Option<ITuple<[u32, u32]>>],
+        { assetId: u32; liquidityLimit: Option<ITuple<[u32, u32]>> }
+      >
+      /**
+       * Trade volume limit of an asset was changed.
+       **/
+      TradeVolumeLimitChanged: AugmentedEvent<
+        ApiType,
+        [assetId: u32, tradeVolumeLimit: ITuple<[u32, u32]>],
+        { assetId: u32; tradeVolumeLimit: ITuple<[u32, u32]> }
       >
       /**
        * Generic event
@@ -631,6 +663,28 @@ declare module "@polkadot/api-base/types/events" {
        **/
       [key: string]: AugmentedEvent<ApiType>
     }
+    duster: {
+      /**
+       * Account added to non-dustable list.
+       **/
+      Added: AugmentedEvent<ApiType, [who: AccountId32], { who: AccountId32 }>
+      /**
+       * Account dusted.
+       **/
+      Dusted: AugmentedEvent<
+        ApiType,
+        [who: AccountId32, amount: u128],
+        { who: AccountId32; amount: u128 }
+      >
+      /**
+       * Account removed from non-dustable list.
+       **/
+      Removed: AugmentedEvent<ApiType, [who: AccountId32], { who: AccountId32 }>
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
     elections: {
       /**
        * A candidate was slashed by amount due to failing to obtain a seat as member or
@@ -689,6 +743,12 @@ declare module "@polkadot/api-base/types/events" {
         [seatHolder: AccountId32, amount: u128],
         { seatHolder: AccountId32; amount: u128 }
       >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    emaOracle: {
       /**
        * Generic event
        **/
@@ -1044,6 +1104,286 @@ declare module "@polkadot/api-base/types/events" {
         { assetId: u32; state: PalletOmnipoolTradability }
       >
       /**
+       * TVL cap has been updated.
+       **/
+      TVLCapUpdated: AugmentedEvent<ApiType, [cap: u128], { cap: u128 }>
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    omnipoolLiquidityMining: {
+      /**
+       * All LP shares were unlocked and NFT representing deposit was destroyed.
+       **/
+      DepositDestroyed: AugmentedEvent<
+        ApiType,
+        [who: AccountId32, depositId: u128],
+        { who: AccountId32; depositId: u128 }
+      >
+      /**
+       * New global farm was created.
+       **/
+      GlobalFarmCreated: AugmentedEvent<
+        ApiType,
+        [
+          id: u32,
+          owner: AccountId32,
+          totalRewards: u128,
+          rewardCurrency: u32,
+          yieldPerPeriod: Perquintill,
+          plannedYieldingPeriods: u32,
+          blocksPerPeriod: u32,
+          maxRewardPerPeriod: u128,
+          minDeposit: u128,
+          lrnaPriceAdjustment: u128,
+        ],
+        {
+          id: u32
+          owner: AccountId32
+          totalRewards: u128
+          rewardCurrency: u32
+          yieldPerPeriod: Perquintill
+          plannedYieldingPeriods: u32
+          blocksPerPeriod: u32
+          maxRewardPerPeriod: u128
+          minDeposit: u128
+          lrnaPriceAdjustment: u128
+        }
+      >
+      /**
+       * Global farm was terminated.
+       **/
+      GlobalFarmTerminated: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          who: AccountId32,
+          rewardCurrency: u32,
+          undistributedRewards: u128,
+        ],
+        {
+          globalFarmId: u32
+          who: AccountId32
+          rewardCurrency: u32
+          undistributedRewards: u128
+        }
+      >
+      /**
+       * Global farm's `lrna_price_adjustment` was updated.
+       **/
+      GlobalFarmUpdated: AugmentedEvent<
+        ApiType,
+        [id: u32, lrnaPriceAdjustment: u128],
+        { id: u32; lrnaPriceAdjustment: u128 }
+      >
+      /**
+       * Rewards were claimed.
+       **/
+      RewardClaimed: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          who: AccountId32,
+          claimed: u128,
+          rewardCurrency: u32,
+          depositId: u128,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          who: AccountId32
+          claimed: u128
+          rewardCurrency: u32
+          depositId: u128
+        }
+      >
+      /**
+       * New LP shares(LP position) were deposited.
+       **/
+      SharesDeposited: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          depositId: u128,
+          assetId: u32,
+          who: AccountId32,
+          sharesAmount: u128,
+          positionId: u128,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          depositId: u128
+          assetId: u32
+          who: AccountId32
+          sharesAmount: u128
+          positionId: u128
+        }
+      >
+      /**
+       * Already locked LP shares were redeposited to another yield farm.
+       **/
+      SharesRedeposited: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          depositId: u128,
+          assetId: u32,
+          who: AccountId32,
+          sharesAmount: u128,
+          positionId: u128,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          depositId: u128
+          assetId: u32
+          who: AccountId32
+          sharesAmount: u128
+          positionId: u128
+        }
+      >
+      /**
+       * LP shares were withdrawn.
+       **/
+      SharesWithdrawn: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          who: AccountId32,
+          amount: u128,
+          depositId: u128,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          who: AccountId32
+          amount: u128
+          depositId: u128
+        }
+      >
+      /**
+       * New yield farm was added to the farm.
+       **/
+      YieldFarmCreated: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          assetId: u32,
+          multiplier: u128,
+          loyaltyCurve: Option<PalletLiquidityMiningLoyaltyCurve>,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          assetId: u32
+          multiplier: u128
+          loyaltyCurve: Option<PalletLiquidityMiningLoyaltyCurve>
+        }
+      >
+      /**
+       * Yield farm for `asset_id` was resumed.
+       **/
+      YieldFarmResumed: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          assetId: u32,
+          who: AccountId32,
+          multiplier: u128,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          assetId: u32
+          who: AccountId32
+          multiplier: u128
+        }
+      >
+      /**
+       * Yield farm for `asset_id` was stopped.
+       **/
+      YieldFarmStopped: AugmentedEvent<
+        ApiType,
+        [globalFarmId: u32, yieldFarmId: u32, assetId: u32, who: AccountId32],
+        { globalFarmId: u32; yieldFarmId: u32; assetId: u32; who: AccountId32 }
+      >
+      /**
+       * Yield farm was terminated from the global farm.
+       **/
+      YieldFarmTerminated: AugmentedEvent<
+        ApiType,
+        [globalFarmId: u32, yieldFarmId: u32, assetId: u32, who: AccountId32],
+        { globalFarmId: u32; yieldFarmId: u32; assetId: u32; who: AccountId32 }
+      >
+      /**
+       * Yield farm multiplier was updated.
+       **/
+      YieldFarmUpdated: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          assetId: u32,
+          who: AccountId32,
+          multiplier: u128,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          assetId: u32
+          who: AccountId32
+          multiplier: u128
+        }
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    omnipoolWarehouseLM: {
+      /**
+       * Global farm has no more rewards to distribute in the moment.
+       **/
+      AllRewardsDistributed: AugmentedEvent<
+        ApiType,
+        [globalFarmId: u32],
+        { globalFarmId: u32 }
+      >
+      /**
+       * Global farm accumulated reward per share was updated.
+       **/
+      GlobalFarmAccRPZUpdated: AugmentedEvent<
+        ApiType,
+        [globalFarmId: u32, accumulatedRpz: u128, totalSharesZ: u128],
+        { globalFarmId: u32; accumulatedRpz: u128; totalSharesZ: u128 }
+      >
+      /**
+       * Yield farm accumulated reward per valued share was updated.
+       **/
+      YieldFarmAccRPVSUpdated: AugmentedEvent<
+        ApiType,
+        [
+          globalFarmId: u32,
+          yieldFarmId: u32,
+          accumulatedRpvs: u128,
+          totalValuedShares: u128,
+        ],
+        {
+          globalFarmId: u32
+          yieldFarmId: u32
+          accumulatedRpvs: u128
+          totalValuedShares: u128
+        }
+      >
+      /**
        * Generic event
        **/
       [key: string]: AugmentedEvent<ApiType>
@@ -1056,6 +1396,54 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [to: XcmV1MultiLocation, message: XcmV2Xcm],
         { to: XcmV1MultiLocation; message: XcmV2Xcm }
+      >
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>
+    }
+    otc: {
+      /**
+       * An Order has been cancelled
+       **/
+      Cancelled: AugmentedEvent<ApiType, [orderId: u32], { orderId: u32 }>
+      /**
+       * An Order has been completely filled
+       **/
+      Filled: AugmentedEvent<
+        ApiType,
+        [orderId: u32, who: AccountId32, amountIn: u128, amountOut: u128],
+        { orderId: u32; who: AccountId32; amountIn: u128; amountOut: u128 }
+      >
+      /**
+       * An Order has been partially filled
+       **/
+      PartiallyFilled: AugmentedEvent<
+        ApiType,
+        [orderId: u32, who: AccountId32, amountIn: u128, amountOut: u128],
+        { orderId: u32; who: AccountId32; amountIn: u128; amountOut: u128 }
+      >
+      /**
+       * An Order has been placed
+       **/
+      Placed: AugmentedEvent<
+        ApiType,
+        [
+          orderId: u32,
+          assetIn: u32,
+          assetOut: u32,
+          amountIn: u128,
+          amountOut: u128,
+          partiallyFillable: bool,
+        ],
+        {
+          orderId: u32
+          assetIn: u32
+          assetOut: u32
+          amountIn: u128
+          amountOut: u128
+          partiallyFillable: bool
+        }
       >
       /**
        * Generic event
@@ -1424,36 +1812,6 @@ declare module "@polkadot/api-base/types/events" {
         ApiType,
         [sessionIndex: u32],
         { sessionIndex: u32 }
-      >
-      /**
-       * Generic event
-       **/
-      [key: string]: AugmentedEvent<ApiType>
-    }
-    sudo: {
-      /**
-       * The \[sudoer\] just switched identity; the old key is supplied if one existed.
-       **/
-      KeyChanged: AugmentedEvent<
-        ApiType,
-        [oldSudoer: Option<AccountId32>],
-        { oldSudoer: Option<AccountId32> }
-      >
-      /**
-       * A sudo just took place. \[result\]
-       **/
-      Sudid: AugmentedEvent<
-        ApiType,
-        [sudoResult: Result<Null, SpRuntimeDispatchError>],
-        { sudoResult: Result<Null, SpRuntimeDispatchError> }
-      >
-      /**
-       * A sudo just took place. \[result\]
-       **/
-      SudoAsDone: AugmentedEvent<
-        ApiType,
-        [sudoResult: Result<Null, SpRuntimeDispatchError>],
-        { sudoResult: Result<Null, SpRuntimeDispatchError> }
       >
       /**
        * Generic event
