@@ -23,7 +23,7 @@ export function XcmPage() {
           ref={ref}
           srcChain="polkadot"
           dstChain="hydradx"
-          chains="polkadot,hydradx,acala"
+          chains="polkadot,hydradx,acala,statemint,interlay"
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}
