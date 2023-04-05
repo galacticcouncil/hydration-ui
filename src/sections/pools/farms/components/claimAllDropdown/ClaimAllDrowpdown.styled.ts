@@ -4,7 +4,7 @@ import * as Tooltip from "@radix-ui/react-tooltip"
 import { motion } from "framer-motion"
 import { theme } from "theme"
 
-export const SClaimAllButton = styled(Tooltip.Trigger)`
+export const STriggerButton = styled(Tooltip.Trigger)`
   all: unset;
 
   border-radius: 4px;
@@ -22,6 +22,7 @@ export const SClaimAllButton = styled(Tooltip.Trigger)`
   align-items: center;
   justify-content: center;
   gap: 8px;
+  flex-grow: 1;
 
   cursor: pointer;
 
@@ -31,6 +32,31 @@ export const SClaimAllButton = styled(Tooltip.Trigger)`
   &[data-state="delayed-open"],
   &[data-state="instant-open"] {
     border-radius: 4px 4px 0 0;
+  }
+
+  @media (${theme.viewport.gte.sm}) {
+    flex-grow: 0;
+
+    &[data-state="delayed-open"],
+    &[data-state="instant-open"] {
+      border-radius: 4px 4px 0 0;
+    }
+  }
+`
+
+export const SClaimButton = styled.button`
+  all: unset;
+
+  border-radius: 4px;
+
+  padding: 14px;
+
+  cursor: pointer;
+
+  background: ${theme.colors.pink700};
+
+  &:hover {
+    opacity: 0.8;
   }
 
   ${({ disabled }) =>
@@ -47,7 +73,7 @@ export const SClaimAllButton = styled(Tooltip.Trigger)`
 `
 
 export const SContent = styled(motion.div)`
-  border-radius: 4px 0px 4px 4px;
+  border-radius: 0 0 4px 4px;
 
   box-shadow: 0px 50px 44px rgba(0, 0, 0, 0.54);
 
@@ -60,4 +86,8 @@ export const SContent = styled(motion.div)`
     #111320;
 
   z-index: ${theme.zIndices.toast};
+
+  @media (${theme.viewport.gte.sm}) {
+    border-radius: 4px 0px 4px 4px;
+  }
 `

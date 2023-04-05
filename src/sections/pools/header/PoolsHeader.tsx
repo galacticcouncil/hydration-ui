@@ -110,7 +110,7 @@ export const PoolsHeader = ({
               css={{ background: `rgba(${theme.rgbColors.white}, 0.12)` }}
               orientation={isDesktop ? "vertical" : "horizontal"}
             />
-            <div css={{ textAlign: "right" }}>
+            <div sx={{ flex: "row" }} css={{ textAlign: "right" }}>
               <ClaimAllDropdown />
             </div>
           </>
