@@ -56,6 +56,7 @@ export const ModalWindow = styled(DialogContent, {
 })<{
   maxWidth?: number
   isDrawer?: boolean
+  isTopContent: boolean
 }>`
   position: absolute;
   z-index: ${theme.zIndices.modal};
@@ -70,7 +71,7 @@ export const ModalWindow = styled(DialogContent, {
       : { top: 0, height: "100%" }}
 
   @media ${theme.viewport.gte.sm} {
-    top: 8%;
+    top: ${({ isTopContent }) => (isTopContent ? "10%" : "8%")};
     left: 50%;
 
     transform: translateX(-50%);

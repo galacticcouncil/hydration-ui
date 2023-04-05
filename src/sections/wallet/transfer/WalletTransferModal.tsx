@@ -24,7 +24,7 @@ export function WalletTransferModal(props: {
   const { t } = useTranslation()
   const [chain, setChain] = useState<"onchain" | "crosschain">("onchain")
   const [active, setActive] = useState<typeof CROSSCHAINS[number] | undefined>()
-  console.log(props.open, "open")
+
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
