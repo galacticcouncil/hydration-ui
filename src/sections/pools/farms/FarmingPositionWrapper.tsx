@@ -14,9 +14,10 @@ import { ClaimRewardsCard } from "./components/claimableCard/ClaimRewardsCard"
 interface Props {
   pool: OmnipoolPool
   deposits: Maybe<DepositNftType[]>
+  onClose?: () => void
 }
 
-export const FarmingPositionWrapper = ({ pool, deposits }: Props) => {
+export const FarmingPositionWrapper = ({ pool, deposits, onClose }: Props) => {
   const { t } = useTranslation()
   const isDektop = useMedia(theme.viewport.gte.sm)
 
@@ -30,7 +31,7 @@ export const FarmingPositionWrapper = ({ pool, deposits }: Props) => {
         </Text>
       </div>
 
-      {!isDektop && <ClaimRewardsCard pool={pool} />}
+      {!isDektop && <ClaimRewardsCard pool={pool} onClose={onClose} />}
 
       <div sx={{ flex: "column", gap: 16 }}>
         {deposits?.map((item, i) => (
