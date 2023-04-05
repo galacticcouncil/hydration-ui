@@ -8,7 +8,7 @@ import { Heading } from "components/Typography/Heading/Heading"
 import { ModalMeta } from "components/Modal/Modal"
 
 export const ReviewTransactionError = (props: {
-  onClose: () => void
+  handleOnError: () => void
   onReview: () => void
 }) => {
   const { t } = useTranslation()
@@ -30,7 +30,7 @@ export const ReviewTransactionError = (props: {
             type="button"
             variant="secondary"
             sx={{ mt: 40 }}
-            onClick={props.onClose}
+            onClick={props.handleOnError}
             css={css`
               width: 100%;
               text-align: center;

@@ -11,9 +11,14 @@ import { ModalMeta } from "components/Modal/Modal"
 type Props = {
   onClose: () => void
   txState: ExtrinsicStatus["type"] | null
+  withoutClose: boolean
 }
 
-export const ReviewTransactionPending = ({ onClose, txState }: Props) => {
+export const ReviewTransactionPending = ({
+  onClose,
+  txState,
+  withoutClose,
+}: Props) => {
   const { t } = useTranslation()
 
   return (
@@ -30,17 +35,19 @@ export const ReviewTransactionPending = ({ onClose, txState }: Props) => {
           {t("liquidity.reviewTransaction.modal.pending.description")}
         </Text>
       </div>
-      <Button
-        variant="primary"
-        sx={{ mt: 40, width: [200, "auto"] }}
-        onClick={onClose}
-      >
-        {t("liquidity.reviewTransaction.modal.success.close")}
-      </Button>
+      {!withoutClose && (
+        <Button
+          variant="primary"
+          sx={{ mt: 40, width: [200, "auto"] }}
+          onClick={onClose}
+        >
+          {t("liquidity.reviewTransaction.modal.success.close")}
+        </Button>
+      )}
 
       <Spacer size={40} />
 
-      {false && txState === "Broadcast" && (
+      {!withoutClose && txState === "Broadcast" && (
         <ReviewTransactionProgress duration={3} onComplete={onClose} />
       )}
     </div>

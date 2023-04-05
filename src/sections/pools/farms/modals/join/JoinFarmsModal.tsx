@@ -54,7 +54,7 @@ export const JoinFarmModal = ({
       withoutOutsideClose
       open={isOpen}
       onClose={onClose}
-      title={t("farms.modal.join.title", { assetSymbol: "HDX" })}
+      title={t("farms.modal.join.title", { assetSymbol: meta.data?.symbol })}
     >
       {selectedFarm ? (
         <FarmDetailsModal

@@ -171,11 +171,10 @@ export const RemoveLiquidity = ({
         tx: api.tx.omnipool.removeLiquidity(position.id, value.toFixed(0)),
       },
       {
+        withBack: true,
+        onClose,
         onSuccess,
-        onSubmitted: () => {
-          onClose()
-          form.reset()
-        },
+        onSubmitted: onClose,
         toast: {
           onLoading: (
             <Trans
@@ -229,10 +228,7 @@ export const RemoveLiquidity = ({
       open={isOpen}
       withoutOutsideClose
       title={t("liquidity.remove.modal.title")}
-      onClose={() => {
-        onClose()
-        form.reset()
-      }}
+      onClose={onClose}
     >
       <form
         onSubmit={form.handleSubmit(handleSubmit)}

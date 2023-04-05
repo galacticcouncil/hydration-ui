@@ -29,7 +29,6 @@ import { Theme } from "@emotion/react"
 import { Spacer } from "components/Spacer/Spacer"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { useStore } from "state/store"
 
 type Props = {
   open: boolean
@@ -100,7 +99,7 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
     mergedProps
 
   const visibleHeader = !withoutClose || !!secondaryIcon || titleHeader
-  //console.log(propsOverride, props, mergedProps, "mergedProps")
+
   return (
     <Dialog open={props.open}>
       <DialogPortal>
@@ -171,25 +170,5 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
         </ModalContext.Provider>
       </DialogPortal>
     </Dialog>
-  )
-}
-
-export const ModalTransaction = ({
-  children,
-  ...props
-}: PropsWithChildren<Props>) => {
-  const { transactions, cancelAllTransactions } = useStore()
-  const result = {} // useTransactionCenterTest()
-  //const test = useTransactionStore()
-  //console.log(transactions, test, "transactions")
-  const handleClose = () => {
-    cancelAllTransactions()
-    props.onClose?.()
-  }
-
-  return (
-    <Modal {...props} onClose={handleClose} withoutOutsideClose>
-      {transactions?.length ? result?.transactionModals : children}
-    </Modal>
   )
 }

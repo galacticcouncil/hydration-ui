@@ -27,7 +27,6 @@ import { useAccountCurrency } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { SummaryRow } from "components/Summary/SummaryRow"
-import { Transactions } from "sections/transaction/Transactions"
 
 export function WalletTransferSectionOnchain(props: {
   initialAsset: u32 | string
@@ -44,7 +43,7 @@ export function WalletTransferSectionOnchain(props: {
   })
 
   const api = useApiPromise()
-  const { transactions, createTransaction } = useStore()
+  const { createTransaction } = useStore()
 
   const form = useForm<{
     dest: string
@@ -84,6 +83,7 @@ export function WalletTransferSectionOnchain(props: {
               ),
       },
       {
+        withBack: true,
         toast: {
           onLoading: (
             <Trans
@@ -135,15 +135,13 @@ export function WalletTransferSectionOnchain(props: {
   return (
     <>
       <Spacer size={[13, 26]} />
-      {transactions?.length ? (
-        <Transactions onClose={props.onClose} />
-      ) : isOpenSelectAssetModal ? (
+      {isOpenSelectAssetModal ? (
         modal
       ) : (
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           autoComplete="off"
-          sx={{ flex: "column", justify: "space-between", height: "100%" }}
+          sx={{ flex: "column", justify: "space-between", flexGrow: 1 }}
         >
           <div sx={{ flex: "column" }}>
             <Controller

@@ -30,6 +30,7 @@ function JoinedFarmsDetailsRedeposit(props: {
   pool: OmnipoolPool
   depositNft: DepositNftType
   onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
+  onClose: () => void
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -62,6 +63,7 @@ function JoinedFarmsDetailsRedeposit(props: {
     availableFarms,
     [props.depositNft],
     toast,
+    props.onClose,
   )
 
   if (!availableFarms?.length) return null
@@ -107,6 +109,7 @@ function JoinedFarmsDetailsPositions(props: {
     yieldFarm: u32
     depositNft: DepositNftType
   }) => void
+  onClose: () => void
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -134,7 +137,7 @@ function JoinedFarmsDetailsPositions(props: {
     return memo
   }, {} as ToastMessage)
 
-  const exit = useFarmExitAllMutation([props.depositNft], toast)
+  const exit = useFarmExitAllMutation([props.depositNft], toast, props.onClose)
 
   return (
     <>
@@ -142,7 +145,11 @@ function JoinedFarmsDetailsPositions(props: {
         {t("farms.modal.joinedFarms.joined.label")}
       </Text>
 
-      <ClaimRewardsCard pool={props.pool} depositNft={props.depositNft} />
+      <ClaimRewardsCard
+        pool={props.pool}
+        depositNft={props.depositNft}
+        onClose={props.onClose}
+      />
 
       <div sx={{ flex: "column", gap: 12, mt: 12 }}>
         {joinedFarms?.map((farm, i) => (
@@ -226,12 +233,14 @@ export const JoinedFarmsDetails = (props: {
             pool={props.pool}
             depositNft={props.depositNft}
             onSelect={(value) => setSelectedFarmIds(value)}
+            onClose={props.onClose}
           />
 
           <JoinedFarmsDetailsRedeposit
             pool={props.pool}
             depositNft={props.depositNft}
             onSelect={(value) => setSelectedFarmIds(value)}
+            onClose={props.onClose}
           />
         </div>
       )}

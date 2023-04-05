@@ -1,4 +1,4 @@
-import { ModalTransaction } from "components/Modal/Modal"
+import { Modal } from "components/Modal/Modal"
 import { useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Controller, useForm } from "react-hook-form"
@@ -21,7 +21,6 @@ import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { Summary } from "components/Summary/Summary"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Spacer } from "components/Spacer/Spacer"
-import { Stepper, fakeSteps } from "components/Stepper/Stepper"
 
 type Props = {
   pool: OmnipoolPool
@@ -71,11 +70,10 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
         tx: api.tx.omnipool.addLiquidity(assetId, amount),
       },
       {
+        withBack: true,
+        onClose,
         onSuccess,
-        onSubmitted: () => {
-          onClose()
-          form.reset()
-        },
+        onSubmitted: onClose,
         toast: {
           onLoading: (
             <Trans
@@ -128,14 +126,10 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   }
 
   return (
-    <ModalTransaction
+    <Modal
       open={isOpen}
       title={t("liquidity.add.modal.title")}
-      onClose={() => {
-        onClose()
-        form.reset()
-      }}
-      topContent={<Stepper steps={fakeSteps} />}
+      onClose={onClose}
     >
       {isOpenSelectAssetModal ? (
         modal
@@ -275,6 +269,6 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
           </Button>
         </form>
       )}
-    </ModalTransaction>
+    </Modal>
   )
 }

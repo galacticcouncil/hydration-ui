@@ -7,7 +7,9 @@ import { ReviewTransactionProgress } from "./ReviewTransactionProgress"
 import { Spacer } from "components/Spacer/Spacer"
 import { ModalMeta } from "components/Modal/Modal"
 
-export const ReviewTransactionSuccess = (props: { onClose: () => void }) => {
+export const ReviewTransactionSuccess = (props: {
+  handleOnSuccess: () => void
+}) => {
   const { t } = useTranslation()
 
   return (
@@ -22,14 +24,21 @@ export const ReviewTransactionSuccess = (props: { onClose: () => void }) => {
           {t("liquidity.reviewTransaction.modal.success.description")}
         </Text>
 
-        <Button variant="secondary" sx={{ mt: 40 }} onClick={props.onClose}>
+        <Button
+          variant="secondary"
+          sx={{ mt: 40 }}
+          onClick={props.handleOnSuccess}
+        >
           {t("liquidity.reviewTransaction.modal.success.close")}
         </Button>
       </div>
 
       <Spacer size={40} />
 
-      <ReviewTransactionProgress duration={3} onComplete={props.onClose} />
+      <ReviewTransactionProgress
+        duration={3}
+        onComplete={props.handleOnSuccess}
+      />
     </div>
   )
 }

@@ -8,7 +8,7 @@ import { v4 as uuid } from "uuid"
 import { ReactElement } from "react"
 import BigNumber from "bignumber.js"
 import { safeConvertAddressSS58 } from "utils/formatting"
-import { useSendTransactionMutation } from "sections/transaction/ReviewTransaction.utils"
+import { StepProps } from "components/Stepper/Stepper"
 
 export interface ToastMessage {
   onLoading?: ReactElement
@@ -34,10 +34,16 @@ export interface TransactionInput {
 
 export interface Transaction extends TransactionInput {
   id: string
-  onSuccess?: (result: ISubmittableResult) => void
+  onSuccess?: (
+    result: ISubmittableResult & { transactionLink?: string },
+  ) => void
   onSubmitted?: () => void
-  onError?: () => void
+  onError: () => void
+  onBack: () => void
   toastMessage?: ToastMessage
+  steps?: Array<StepProps>
+  onClose?: () => void
+  withBack?: boolean
 }
 
 interface Store {
@@ -45,14 +51,19 @@ interface Store {
   createTransaction: (
     transaction: TransactionInput,
     options?: {
+      onClose?: () => void
       onSuccess?: () => void
       onSubmitted?: () => void
       toast?: ToastMessage
+      steps?: Array<StepProps>
+      withBack?: boolean
     },
   ) => Promise<ISubmittableResult>
   cancelTransaction: (hash: string) => void
   cancelAllTransactions: () => void
 }
+
+export class BackTransactionAction extends Error {}
 
 export const externalWallet = { provider: "external", name: "ExternalAccount" }
 
@@ -152,7 +163,11 @@ export const useStore = create<Store>((set) => ({
                 resolve(value)
                 options?.onSuccess?.()
               },
+              onClose: options?.onClose,
               onError: () => reject(new Error("Transaction rejected")),
+              onBack: () => reject(new BackTransactionAction()),
+              steps: options?.steps,
+              withBack: options?.withBack,
             },
             ...(store.transactions ?? []),
           ],

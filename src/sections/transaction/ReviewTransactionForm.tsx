@@ -34,9 +34,9 @@ export const ReviewTransactionForm = (
   props: {
     title?: string
     onCancel?: () => void
-    onBack: () => void
+    onBack?: () => void
     onSigned: (signed: SubmittableExtrinsic<"promise">) => void
-  } & Omit<Transaction, "id">,
+  } & Pick<Transaction, "overrides" | "tx">,
 ) => {
   const api = useApiPromise()
   const queryClient = useQueryClient()
@@ -155,11 +155,13 @@ export const ReviewTransactionForm = (
       <ModalMeta
         title={t("liquidity.reviewTransaction.modal.title")}
         withoutOutsideClose
-        secondaryIcon={{
-          icon: <ChevronRight css={{ transform: "rotate(180deg)" }} />,
-          name: "Back",
-          onClick: props.onBack,
-        }}
+        secondaryIcon={
+          props.onBack && {
+            icon: <ChevronRight css={{ transform: "rotate(180deg)" }} />,
+            name: "Back",
+            onClick: props.onBack,
+          }
+        }
       />
       <div>
         {props.title && (

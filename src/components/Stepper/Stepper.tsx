@@ -26,7 +26,7 @@ type StepState = typeof STEP_STATES[number]
 
 type StepperProps = { steps: Array<StepProps> }
 
-type StepProps = {
+export type StepProps = {
   label: string
   state: StepState
 }

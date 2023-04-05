@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import { useApiPromise } from "utils/api"
-import { ToastMessage, useStore } from "state/store"
+import { BackTransactionAction, ToastMessage, useStore } from "state/store"
 import { useMutation } from "@tanstack/react-query"
 import { decodeAddress } from "@polkadot/util-crypto"
 import { u8aToHex } from "@polkadot/util"
@@ -156,6 +156,7 @@ export const useClaimAllMutation = (
   poolId: u32,
   depositNft?: DepositNftType,
   toast?: ToastMessage,
+  onClose?: () => void,
 ) => {
   const api = useApiPromise()
   const { createTransaction } = useStore()
@@ -163,26 +164,32 @@ export const useClaimAllMutation = (
 
   const deposits = depositNft ? [depositNft] : userDeposits.data
 
-  return useMutation(async () => {
-    const txs =
-      deposits
-        ?.map((deposit) =>
-          deposit.deposit.yieldFarmEntries.map((entry) =>
-            api.tx.omnipoolLiquidityMining.claimRewards(
-              deposit.id,
-              entry.yieldFarmId,
+  return useMutation(
+    async () => {
+      const txs =
+        deposits
+          ?.map((deposit) =>
+            deposit.deposit.yieldFarmEntries.map((entry) =>
+              api.tx.omnipoolLiquidityMining.claimRewards(
+                deposit.id,
+                entry.yieldFarmId,
+              ),
             ),
-          ),
-        )
-        .flat(2) ?? []
+          )
+          .flat(2) ?? []
 
-    if (txs.length > 0) {
-      return await createTransaction(
-        { tx: txs.length > 1 ? api.tx.utility.batch(txs) : txs[0] },
-        { toast },
-      )
-    }
-  })
+      if (txs.length > 0) {
+        return await createTransaction(
+          { tx: txs.length > 1 ? api.tx.utility.batch(txs) : txs[0] },
+          { toast, withBack: true },
+        )
+      }
+    },
+    {
+      onError: (error) =>
+        !(error instanceof BackTransactionAction) && onClose?.(),
+    },
+  )
 }
 
 // @ts-expect-error
