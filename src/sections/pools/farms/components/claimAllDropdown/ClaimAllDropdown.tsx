@@ -108,11 +108,7 @@ export const ClaimAllDropdown = () => {
                   )}
                 </div>
               ))}
-              <Text
-                fs={14}
-                sx={{ mt: 6 }}
-                css={{ color: `rgba(${theme.rgbColors.white}, 0.4)` }}
-              >
+              <Text fs={14} sx={{ mt: 6 }}>
                 {t("farms.claimCard.claim.usd", {
                   value: claimable.data?.usd,
                   numberPrefix: "$",
