@@ -17,6 +17,7 @@ import { ToastMessage, useAccountStore } from "state/store"
 import { useMedia } from "react-use"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { Icon } from "components/Icon/Icon"
+import { useAllUserDepositShare } from "../../position/FarmingPosition.utils"
 
 export const ClaimAllDropdown = () => {
   const { t } = useTranslation()
@@ -67,6 +68,10 @@ export const ClaimAllDropdown = () => {
   }, {} as ToastMessage)
 
   const claimAll = useClaimAllMutation(undefined, undefined, toast)
+
+  const depositShares = useAllUserDepositShare()
+
+  if (!Object.keys(depositShares.data).length) return null
 
   const claimAllBox = (
     <SContent
@@ -130,37 +135,53 @@ export const ClaimAllDropdown = () => {
   )
 
   return (
-    <Tooltip.Root
-      delayDuration={0}
-      open={open}
-      onOpenChange={(open) => {
-        isDesktop && setOpen(open)
-      }}
-    >
-      <div sx={{ flex: "column", flexGrow: [1, 0] }}>
-        <STriggerButton
-          onMouseOver={() => setOpen(true)}
-          onClick={() => !isDesktop && setOpen(!open)}
+    <>
+      <Separator
+        sx={{
+          mb: [15, 0],
+          height: ["1px", "40px"],
+        }}
+        css={{ background: `rgba(${theme.rgbColors.white}, 0.12)` }}
+        orientation={isDesktop ? "vertical" : "horizontal"}
+      />
+      <div sx={{ flex: "row" }} css={{ textAlign: "right" }}>
+        <Tooltip.Root
+          delayDuration={0}
+          open={open}
+          onOpenChange={(open) => {
+            isDesktop && setOpen(open)
+          }}
         >
-          <Text fs={13} tTransform="uppercase" css={{ whiteSpace: "nowrap" }}>
-            {t("farms.header.dropdown.label")}
-          </Text>
-          <Icon
-            size={20}
-            icon={
-              <ChevronRight
-                css={{ transform: `rotate(${open ? "270" : "90"}deg)` }}
+          <div sx={{ flex: "column", flexGrow: [1, 0] }}>
+            <STriggerButton
+              onMouseOver={() => setOpen(true)}
+              onClick={() => !isDesktop && setOpen(!open)}
+            >
+              <Text
+                fs={13}
+                tTransform="uppercase"
+                css={{ whiteSpace: "nowrap" }}
+              >
+                {t("farms.header.dropdown.label")}
+              </Text>
+              <Icon
+                size={20}
+                icon={
+                  <ChevronRight
+                    css={{ transform: `rotate(${open ? "270" : "90"}deg)` }}
+                  />
+                }
               />
-            }
-          />
-        </STriggerButton>
-        {open && !isDesktop && claimAllBox}
+            </STriggerButton>
+            {open && !isDesktop && claimAllBox}
+          </div>
+          <Tooltip.Portal>
+            <Tooltip.Content asChild side="bottom" align="end" sideOffset={-2}>
+              {isDesktop && claimAllBox}
+            </Tooltip.Content>
+          </Tooltip.Portal>
+        </Tooltip.Root>
       </div>
-      <Tooltip.Portal>
-        <Tooltip.Content asChild side="bottom" align="end" sideOffset={-2}>
-          {isDesktop && claimAllBox}
-        </Tooltip.Content>
-      </Tooltip.Portal>
-    </Tooltip.Root>
+    </>
   )
 }

@@ -100,21 +100,7 @@ export const PoolsHeader = ({
             <PoolsHeaderVolume myPositions={myPositions} variant="pools" />
           </div>
         </div>
-        {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
-          <>
-            <Separator
-              sx={{
-                mb: [15, 0],
-                height: ["1px", "40px"],
-              }}
-              css={{ background: `rgba(${theme.rgbColors.white}, 0.12)` }}
-              orientation={isDesktop ? "vertical" : "horizontal"}
-            />
-            <div sx={{ flex: "row" }} css={{ textAlign: "right" }}>
-              <ClaimAllDropdown />
-            </div>
-          </>
-        )}
+        {enabledFarms && account?.address && <ClaimAllDropdown />}
       </div>
     </>
   )
