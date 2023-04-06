@@ -65,7 +65,7 @@ export const SContainer = styled.div`
   margin-top: 20px;
 `
 
-export const SButton = styled(motion.button)`
+export const SButton = styled(motion.div)`
   position: relative;
   width: min-content;
 

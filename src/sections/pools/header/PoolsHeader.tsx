@@ -8,6 +8,7 @@ import { PoolsHeaderTotal } from "sections/pools/header/PoolsHeaderTotal"
 import { useAccountStore } from "state/store"
 import { theme } from "theme"
 import { PoolsHeaderVolume } from "./PoolsHeaderVolume"
+import { ClaimAllDropdown } from "../farms/components/claimAllDropdown/ClaimAllDropdown"
 
 type Props = {
   myPositions: boolean
@@ -99,6 +100,7 @@ export const PoolsHeader = ({
             <PoolsHeaderVolume myPositions={myPositions} variant="pools" />
           </div>
         </div>
+        {enabledFarms && account?.address && <ClaimAllDropdown />}
       </div>
     </>
   )

@@ -107,7 +107,6 @@ export const useAccountDeposits = (poolId?: u32) => {
   )
 }
 
-const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 export const useUserDeposits = () => {
   const { account } = useAccountStore()
   const accountDepositIds = useAccountDepositIds(account?.address)
@@ -123,13 +122,6 @@ export const useUserDeposits = () => {
       )
     },
   )
-
-  if (!enabledFarms)
-    return {
-      isLoading: false,
-      isInitialLoading: false,
-      data: [] as DepositNftType[],
-    }
 
   return query
 }

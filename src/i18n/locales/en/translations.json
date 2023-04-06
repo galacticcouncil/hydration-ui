@@ -61,6 +61,7 @@
   "value.APR.range": "{{ from, bignumber(type: 'percentage'; decimalPlaces: 0) }}-{{ to, bignumber(type: 'percentage'; decimalPlaces: 0) }}% APR",
   "value.multiAPR": "{{minApr, bignumber(type: 'percentage'; decimalPlaces: 0) }}-{{maxApr, bignumber(type: 'percentage'; decimalPlaces: 0) }}% APR",
   "value.token": "{{ value, bignumber(type: 'token') }}",
+  "value.tokenWithSymbol": "{{ value, bignumber(type: 'token') }} {{symbol}}",
   "liquidity.header.title": "Liquidity",
   "liquidity.header.switch": "My liquidity positions",
   "liquidity.header.totalLocked": "Value in Omnipool",
@@ -340,5 +341,6 @@
   "farms.claimCard.claim.usd": "Total of ≈ {{ value, bignumber(type: 'token') }}",
   "farms.claimCard.toast.onLoading": "<0>Claiming farming rewards of </0>",
   "farms.claimCard.toast.onSuccess": "<0>Claimed farming rewards of </0>",
-  "farms.claimCard.toast.asset": "<1>{{num}}{{denom}} {{symbol}}</1>"
+  "farms.claimCard.toast.asset": "<1>{{num}}{{denom}} {{symbol}}</1>",
+  "farms.header.dropdown.label": "Check Claimable"
 }

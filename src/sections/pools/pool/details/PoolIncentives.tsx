@@ -19,7 +19,7 @@ export const PoolIncentives = ({
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const farms = useFarms(poolId)
+  const farms = useFarms([poolId])
 
   if (!farms.data?.length) {
     return <div />
