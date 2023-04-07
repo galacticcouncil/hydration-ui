@@ -1,5 +1,4 @@
 import { SBar, SBarContainer, SContainer } from "./OrderCapacity.styled"
-import { useMeasure } from "react-use"
 import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
 import BigNumber from "bignumber.js"
@@ -9,16 +8,19 @@ export const OrderCapacity = (props: {
   free: BigNumber
   symbol?: string
   modal?: boolean
+  roundingMode?: BigNumber.RoundingMode
 }) => {
   const { t } = useTranslation()
-  const [ref, { width }] = useMeasure<HTMLDivElement>()
-  const { modal = false } = props
+  const { modal = false, roundingMode = 1 } = props
 
   const filled = props.total.minus(props.free)
-  const filledPct = filled.div(props.total).multipliedBy(100)
+  const filledPct = filled
+    .div(props.total)
+    .multipliedBy(100)
+    .decimalPlaces(0, roundingMode)
 
   return (
-    <SContainer ref={ref} modal={modal}>
+    <SContainer modal={modal}>
       <div sx={{ flex: "row-reverse", align: "center" }}>
         <Text
           fs={modal ? 13 : 11}
@@ -30,7 +32,7 @@ export const OrderCapacity = (props: {
           {t("otc.order.capacity", { filled: filledPct })}
         </Text>
         <SBarContainer modal={modal}>
-          <SBar filled={filledPct.toFixed()} width={modal ? width : 170} />
+          <SBar filled={filledPct.toFixed()} />
         </SBarContainer>
       </div>
       {!modal && (

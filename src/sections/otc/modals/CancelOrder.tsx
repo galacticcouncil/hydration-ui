@@ -7,7 +7,7 @@ import { useStore } from "../../../state/store"
 import { OfferingPair } from "../orders/OtcOrdersData.utils"
 import { SContainer } from "./CancelOrder.styled"
 
-type PlaceOrderProps = {
+type CancelOrderProps = {
   orderId: string
   offering: OfferingPair
   onClose: () => void
@@ -19,7 +19,7 @@ export const CancelOrder = ({
   offering,
   onClose,
   onSuccess,
-}: PlaceOrderProps) => {
+}: CancelOrderProps) => {
   const { t } = useTranslation()
 
   const api = useApiPromise()
