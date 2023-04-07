@@ -161,7 +161,7 @@
   "otc.order.place.toast.onSuccess": "<0>OTC order placed for </0><1>{{ amount, bignumber }} {{ symbol }}</1>.",
   "otc.order.fill.title": "Fill order",
   "otc.order.fill.desc": "This order is not partially fillable.",
-  "otc.order.fill.remaining": "{{ remaining, bignumber }} {{ symbol }}",
+  "otc.order.fill.remaining": "{{ remaining, bignumber(type: 'token') }} {{ symbol }}",
   "otc.order.fill.payTitle": "Pay with",
   "otc.order.fill.getTitle": "You get",
   "otc.order.fill.confirm": "Fill order",
