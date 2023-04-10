@@ -17,6 +17,7 @@ import { useNavigate } from "@tanstack/react-location"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { SErrorMessage } from "components/AssetInput/AssetInput.styled"
 import { Spacer } from "components/Spacer/Spacer"
+import { useApiPromise } from "utils/api"
 
 type ExternalWalletConnectModalProps = {
   onBack: () => void
@@ -27,6 +28,7 @@ export const ExternalWalletConnectModal = ({
   onBack,
   onClose,
 }: ExternalWalletConnectModalProps) => {
+  const api = useApiPromise()
   const { t } = useTranslation()
   const { setAccount } = useAccountStore()
   const navigate = useNavigate()
@@ -36,11 +38,15 @@ export const ExternalWalletConnectModal = ({
   }>({})
 
   const onSubmit = async (values: FormValues<typeof form>) => {
+    const [delegates] = await api.query.proxy.proxies(values.address)
+    const delegateList = delegates?.map((delegate) => delegate)
+    console.log(delegateList, "delegates")
     setAccount({
       address: values.address,
       name: externalWallet.name,
       provider: externalWallet.provider,
       isExternalWalletConnected: true,
+      delegate: delegateList?.[1]?.delegate.toString(),
     })
     onClose()
     navigate({

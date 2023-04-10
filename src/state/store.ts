@@ -20,6 +20,7 @@ export interface Account {
   address: string
   provider: string
   isExternalWalletConnected: boolean
+  delegate?: string
 }
 
 export interface TransactionInput {
@@ -37,6 +38,7 @@ export interface Transaction extends TransactionInput {
   onSubmitted?: () => void
   onError?: () => void
   toastMessage?: ToastMessage
+  isProxy: boolean
 }
 
 interface Store {
@@ -47,12 +49,15 @@ interface Store {
       onSuccess?: () => void
       onSubmitted?: () => void
       toast?: ToastMessage
+      isProxy?: boolean
     },
   ) => Promise<ISubmittableResult>
   cancelTransaction: (hash: string) => void
 }
 
 export const externalWallet = { provider: "external", name: "ExternalAccount" }
+
+export const PROXY_WALLET_PROVIDER = "polkadot-js"
 
 export const useAccountStore = create(
   persist<{
@@ -93,6 +98,7 @@ export const useAccountStore = create(
                 address: externalWalletAddress,
                 provider: externalWallet.provider,
                 isExternalWalletConnected: true,
+                delegate: parsedAccount.state.account.delegate,
               }
 
               return JSON.stringify({
@@ -151,6 +157,7 @@ export const useStore = create<Store>((set) => ({
                 options?.onSuccess?.()
               },
               onError: () => reject(new Error("Transaction rejected")),
+              isProxy: !!options?.isProxy,
             },
             ...(store.transactions ?? []),
           ],
