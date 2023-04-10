@@ -166,7 +166,7 @@ export const PartialFillOrder = ({
         <Text fs={16} color="basic500">
           {"Remaining amount:"}
         </Text>
-        <Text fs={24} color="white" font="FontOver" as="div">
+        <Text fs={[20, 24]} color="white" font="FontOver" as="div">
           {t("otc.order.fill.remaining", {
             remaining: accepting.amount,
             symbol: accepting.symbol,
@@ -191,6 +191,7 @@ export const PartialFillOrder = ({
               free={value}
               symbol={accepting.symbol}
               modal={true}
+              roundingMode={6}
             />
           )}
         />

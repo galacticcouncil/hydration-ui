@@ -15,7 +15,7 @@ export const useFarmDepositMutation = (
 ) => {
   const { createTransaction } = useStore()
   const api = useApiPromise()
-  const farms = useFarms(poolId)
+  const farms = useFarms([poolId])
 
   return useMutation(async () => {
     const [firstFarm, ...restFarm] = farms.data ?? []
