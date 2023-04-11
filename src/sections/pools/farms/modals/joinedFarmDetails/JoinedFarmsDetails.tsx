@@ -33,7 +33,7 @@ function JoinedFarmsDetailsRedeposit(props: {
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
-  const farms = useFarms(props.pool.id)
+  const farms = useFarms([props.pool.id])
   const meta = useAssetMeta(props.pool.id)
 
   const availableFarms = farms.data?.filter(
@@ -110,7 +110,7 @@ function JoinedFarmsDetailsPositions(props: {
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
-  const farms = useFarms(props.pool.id)
+  const farms = useFarms([props.pool.id])
   const meta = useAssetMeta(props.pool.id)
   const joinedFarms = farms.data?.filter((farm) =>
     isFarmJoined(props.depositNft, farm),
@@ -190,7 +190,7 @@ export const JoinedFarmsDetails = (props: {
 
   const bestNumber = useBestNumber()
 
-  const farms = useFarms(props.pool.id)
+  const farms = useFarms([props.pool.id])
   const selectedFarm =
     selectedFarmIds != null
       ? farms.data?.find(

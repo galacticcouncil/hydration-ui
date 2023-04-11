@@ -120,7 +120,7 @@ export const AssetSelect = (props: {
               props.onSelectAssetClick()
             }}
           >
-            <Icon icon={props.assetIcon} />
+            <Icon icon={props.assetIcon} size={30} />
             {props.assetSymbol && (
               <div sx={{ flex: "column", justify: "space-between" }}>
                 <Text fw={700} lh={16} color="white">

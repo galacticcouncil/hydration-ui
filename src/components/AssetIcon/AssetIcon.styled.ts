@@ -1,6 +1,7 @@
 import { Icon } from "components/Icon/Icon"
 import styled from "@emotion/styled"
 import { theme } from "theme"
+import { css } from "@emotion/react"
 
 export const AssetIconWrapper = styled(Icon)`
   position: relative;
@@ -37,4 +38,9 @@ export const SChainedIcon = styled(Icon)`
     top: 1px;
     left: 1px;
   }
+`
+
+export const assetPlaceholderCss = css`
+  --uigc-bsx-icon-display: none;
+  --uigc-hdx-icon-display: flex;
 `

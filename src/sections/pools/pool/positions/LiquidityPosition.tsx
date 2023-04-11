@@ -39,7 +39,7 @@ function LiquidityPositionJoinFarmButton(props: {
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const [joinFarm, setJoinFarm] = useState(false)
-  const farms = useFarms(props.pool.id)
+  const farms = useFarms([props.pool.id])
   const meta = useAssetMeta(props.pool.id)
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {

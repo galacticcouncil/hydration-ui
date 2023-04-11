@@ -55,7 +55,7 @@ type JoinedFarmsProps = { depositNft: DepositNftType; poolId: u32 }
 export const JoinedFarms = ({ depositNft, poolId }: JoinedFarmsProps) => {
   const { t } = useTranslation()
 
-  const farms = useFarms(poolId)
+  const farms = useFarms([poolId])
 
   const activeYieldFarms =
     farms.data?.filter((i) =>

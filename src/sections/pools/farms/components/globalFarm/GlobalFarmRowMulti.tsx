@@ -4,7 +4,7 @@ import { Farm, useFarmAprs, getMinAndMaxAPR } from "api/farms"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { ReactComponent as PlaceholderIcon } from "assets/icons/tokens/PlaceholderIcon.svg"
+import { ReactComponent as PlaceholderIcon } from "assets/icons/PlaceholderIcon.svg"
 
 const FarmAssetIcon = ({ assetId }: { assetId: u32 }) => {
   const { data: asset } = useAsset(assetId)

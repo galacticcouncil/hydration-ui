@@ -20,7 +20,6 @@ import { useTranslation } from "react-i18next"
 import { useBestNumber } from "api/chain"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { u32, u64 } from "@polkadot/types"
-import { SSeparator } from "components/Separator/Separator.styled"
 
 function ProviderSelectItemExternal(props: {
   url: string
