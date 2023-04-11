@@ -61,7 +61,6 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
       !metas.data ||
       !apiIds.data ||
       !assetsTradability.data ||
-      !userDeposits.data ||
       spotPrices.some((q) => !q.data) ||
       balances.some((q) => !q.data) ||
       positions.some((q) => !q.data)

@@ -39,7 +39,7 @@ export const RedepositFarms = ({ depositNft, pool }: RedepositFarmsProps) => {
   const { account } = useAccountStore()
   const [joinFarm, setJoinFarm] = useState(false)
 
-  const farms = useFarms(pool.id)
+  const farms = useFarms([pool.id])
   const meta = useAssetMeta(pool.id)
 
   let availableYieldFarms =

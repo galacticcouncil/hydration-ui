@@ -91,45 +91,17 @@ const PoolsHeaderTotalPoolsUser = () => {
 }
 
 const PoolsHeaderTotalFarms = () => {
-  const { t } = useTranslation()
   const totalInFarms = useTotalInFarms()
 
   return (
-    <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
-      <div css={{ whiteSpace: "nowrap" }}>
-        <Text
-          font="ChakraPetch"
-          fw={900}
-          fs={[19, 42]}
-          sx={{ display: "inline-block" }}
-        >
-          $
-        </Text>
-        <Trans
-          t={t}
-          i18nKey="wallet.assets.header.value"
-          tOptions={{
-            ...separateBalance(totalInFarms, {
-              type: "dollar",
-            }),
-          }}
-        >
-          <span
-            sx={{
-              fontSize: [19, 26],
-            }}
-            css={css`
-              color: rgba(${theme.rgbColors.white}, 0.4);
-            `}
-          />
-        </Trans>
-      </div>
-    </Heading>
+    <PoolsHeaderTotalData
+      value={totalInFarms.data}
+      isLoading={totalInFarms.isLoading}
+    />
   )
 }
 
 const PoolsHeaderTotalFarmsUser = () => {
-  const { t } = useTranslation()
   const depositShares = useAllUserDepositShare()
 
   const calculatedShares = useMemo(() => {
@@ -144,39 +116,9 @@ const PoolsHeaderTotalFarmsUser = () => {
   }, [depositShares])
 
   return (
-    <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
-      {depositShares.isLoading ? (
-        <Skeleton width={256} />
-      ) : (
-        <div css={{ whiteSpace: "nowrap" }}>
-          <Text
-            font="ChakraPetch"
-            fw={900}
-            fs={[19, 42]}
-            sx={{ display: "inline-block" }}
-          >
-            $
-          </Text>
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.header.value"
-            tOptions={{
-              ...separateBalance(calculatedShares, {
-                type: "dollar",
-              }),
-            }}
-          >
-            <span
-              sx={{
-                fontSize: [19, 26],
-              }}
-              css={css`
-                color: rgba(${theme.rgbColors.white}, 0.4);
-              `}
-            />
-          </Trans>
-        </div>
-      )}
-    </Heading>
+    <PoolsHeaderTotalData
+      value={calculatedShares}
+      isLoading={depositShares.isLoading}
+    />
   )
 }
