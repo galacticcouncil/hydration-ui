@@ -20,7 +20,9 @@ export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
             {t("liquidity.asset.title")}
           </Text>
           <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
-            <div>{getAssetLogo(pool.symbol)}</div>
+            <div sx={{ width: 32, height: 32 }}>
+              {getAssetLogo(pool.symbol)}
+            </div>
             <div sx={{ flex: "column", gap: 2 }}>
               <Text color="white" fs={16}>
                 {pool.symbol}
