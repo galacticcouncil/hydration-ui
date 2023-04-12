@@ -1,3 +1,9 @@
+import { StatsTiles } from "../tiles/StatsTiles"
+
 export const StatsOverview = () => {
-  return <div>Stats Overview</div>
+  return (
+    <div>
+      <StatsTiles />
+    </div>
+  )
 }
