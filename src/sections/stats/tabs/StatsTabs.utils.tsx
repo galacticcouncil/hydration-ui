@@ -1,10 +1,10 @@
-import { ReactComponent as IconLRNA } from "assets/icons/stats/IconLRNA.svg"
-import { ReactComponent as IconOverview } from "assets/icons/stats/IconOverview.svg"
-import { ReactComponent as IconPOL } from "assets/icons/stats/IconPOL.svg"
+import { ReactComponent as ChartIcon } from "assets/icons/ChartIcon.svg"
+import { ReactComponent as LRNAIcon } from "assets/icons/LRNAIcon.svg"
+import { ReactComponent as WalletIcon } from "assets/icons/WalletIcon.svg"
 import { LINKS } from "utils/navigation"
 
 export const STATS_TABS = [
-  { id: "overview", link: LINKS.statsOverview, icon: <IconOverview /> },
-  { id: "POL", link: LINKS.statsPOL, icon: <IconPOL /> },
-  { id: "LRNA", link: LINKS.statsLRNA, icon: <IconLRNA /> },
+  { id: "overview", link: LINKS.statsOverview, icon: <ChartIcon /> },
+  { id: "POL", link: LINKS.statsPOL, icon: <WalletIcon /> },
+  { id: "LRNA", link: LINKS.statsLRNA, icon: <LRNAIcon /> },
 ] as const

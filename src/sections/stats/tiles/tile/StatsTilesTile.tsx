@@ -30,7 +30,7 @@ export const StatsTilesTile = ({ id, link, variant }: Props) => {
       <SIcon>{expanded ? <IconMinus /> : <IconPlus />}</SIcon>
       <STitle>{t(`stats.tiles.${id}.title`)}</STitle>
       <div sx={{ width: "95%" }}>
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
           {!expanded && (
             <motion.div {...propsDesc}>
               <SDescription>{t(`stats.tiles.${id}.description`)}</SDescription>

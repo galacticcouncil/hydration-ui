@@ -1,4 +1,4 @@
-import { useMatchRoute } from "@tanstack/react-location"
+import { Navigate, useMatchRoute } from "@tanstack/react-location"
 import { Page } from "components/Layout/Page/Page"
 import { Spacer } from "components/Spacer/Spacer"
 import { Heading } from "components/Typography/Heading/Heading"
@@ -9,9 +9,13 @@ import { StatsPOL } from "./POL/StatsPOL"
 import { StatsOverview } from "./overview/StatsOverview"
 import { StatsTabs } from "./tabs/StatsTabs"
 
+const pageEnabled = import.meta.env.VITE_FF_STATS_ENABLED === "true"
+
 export const StatsPage = () => {
   const { t } = useTranslation()
   const matchRoute = useMatchRoute()
+
+  if (!pageEnabled) return <Navigate to="/trade" />
 
   return (
     <Page variant="stats">

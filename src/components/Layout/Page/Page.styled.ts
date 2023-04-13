@@ -16,19 +16,7 @@ export const SPage = styled.div<{ variant?: "stats" | "default" }>`
   ${({ variant }) =>
     variant === "stats"
       ? css`
-          background: radial-gradient(
-              59.04% 80.58% at 114.9% 36.2%,
-              rgba(246, 42, 125, 0.59) 0.48%,
-              rgba(246, 42, 125, 0.34) 25%,
-              rgba(6, 9, 23, 0) 100%
-            ),
-            radial-gradient(
-              56.41% 76.99% at -12.28% 29.31%,
-              #00579f 0.48%,
-              #023b6a 25%,
-              rgba(6, 9, 23, 0) 100%
-            ),
-            #060917;
+          background: ${theme.gradients.backgroundStats};
         `
       : css`
           background: ${theme.gradients.background};

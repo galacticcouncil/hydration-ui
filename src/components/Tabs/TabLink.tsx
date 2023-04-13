@@ -16,7 +16,7 @@ export const TabLink = ({ to, children, icon, fullWidth }: Props) => {
   return (
     <Link to={to} search={search} sx={{ width: fullWidth ? "100%" : "auto" }}>
       {({ isActive }) => (
-        <SButton variant="outline" active={isActive}>
+        <SButton variant="outline" active={isActive} fullWidth={fullWidth}>
           {icon}
           {children}
         </SButton>
