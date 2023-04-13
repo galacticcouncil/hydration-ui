@@ -15,6 +15,7 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { CROSSCHAINS } from "./crosschain/WalletTransferSectionCrosschain.utils"
 import { css } from "@emotion/react"
+import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 
 export function WalletTransferModal(props: {
   open: boolean
@@ -24,6 +25,15 @@ export function WalletTransferModal(props: {
   const { t } = useTranslation()
   const [chain, setChain] = useState<"onchain" | "crosschain">("onchain")
   const [active, setActive] = useState<typeof CROSSCHAINS[number] | undefined>()
+  const [asset, setAsset] = useState(props.initialAsset)
+  const {
+    openModal,
+    closeModal,
+    modal,
+    isOpen: isOpenSelectAssetModal,
+  } = useAssetsModal({
+    onSelect: (asset) => setAsset(asset.id),
+  })
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -90,12 +100,19 @@ export function WalletTransferModal(props: {
           />
         </STopContentContainer>
       }
+      secondaryModal={{
+        content: modal,
+        isOpen: isOpenSelectAssetModal,
+        title: t("selectAsset.title"),
+        onBack: closeModal,
+      }}
     >
       <div sx={{ flexGrow: 1, flex: "column" }}>
         {chain === "onchain" && (
           <WalletTransferSectionOnchain
-            initialAsset={props.initialAsset}
             onClose={props.onClose}
+            openSelectAssetModal={openModal}
+            asset={asset}
           />
         )}
 

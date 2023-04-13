@@ -78,7 +78,7 @@ export const ModalWindow = styled(DialogContent, {
 
     height: auto;
 
-    width: 610px;
+    width: ${({ maxWidth }) => maxWidth}px;
 
     border-radius: 4px;
 
@@ -99,9 +99,12 @@ export const ModalWindowContainer = styled.div<{ isDrawer?: boolean }>`
   background: ${theme.colors.darkBlue700};
   box-shadow: ${theme.shadows.modal};
 
+  position: relative;
+
   ${({ isDrawer }) => (isDrawer ? { borderRadius: "20px 20px 0px 0px" } : {})}
 
   @media ${theme.viewport.gte.sm} {
+    overflow: hidden;
     :before {
       content: "";
       position: absolute;
@@ -205,6 +208,5 @@ export const SecondaryButton = styled(IconButton)`
   @media ${theme.viewport.gte.sm} {
     position: relative;
     margin: 0px;
-    margin-right: auto;
   }
 `

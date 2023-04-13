@@ -1,4 +1,3 @@
-import { ModalMeta } from "components/Modal/Modal"
 import { FC } from "react"
 import { AssetsModalRow } from "./AssetsModalRow"
 import { SAssetsModalHeader } from "./AssetsModal.styled"
@@ -8,14 +7,12 @@ import { useTranslation } from "react-i18next"
 import { Maybe } from "utils/helpers"
 import { useAccountStore } from "state/store"
 import { useAssetAccountDetails, useAssetDetailsList } from "api/assetDetails"
-import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { UseAssetModel } from "api/asset"
 
 interface AssetsModalProps {
   allowedAssets?: Maybe<u32 | string>[]
   onSelect?: (asset: NonNullable<UseAssetModel>) => void
   onClose: () => void
-  title?: string
   hideInactiveAssets?: boolean
   allAssets?: boolean
 }
@@ -24,7 +21,6 @@ export const AssetsModal: FC<AssetsModalProps> = ({
   onClose,
   allowedAssets,
   onSelect,
-  title,
   hideInactiveAssets,
   allAssets,
 }) => {
@@ -48,15 +44,6 @@ export const AssetsModal: FC<AssetsModalProps> = ({
 
   return (
     <>
-      <ModalMeta
-        withoutOutsideClose
-        titleHeader={title ?? t("selectAsset.title")}
-        secondaryIcon={{
-          icon: <ChevronRight css={{ transform: "rotate(180deg)" }} />,
-          name: "Back",
-          onClick: onClose,
-        }}
-      />
       {!!mainAssets?.length && (
         <>
           <SAssetsModalHeader sx={{ m: ["0 -40px", "0 -40px"] }}>

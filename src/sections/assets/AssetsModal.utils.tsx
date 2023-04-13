@@ -24,6 +24,9 @@ export const useAssetsModal = ({
   const openModal = useCallback(() => {
     setIsOpen(true)
   }, [])
+  const closeModal = useCallback(() => {
+    setIsOpen(false)
+  }, [])
 
   const handleSelect = useCallback(
     (asset: NonNullable<UseAssetModel>) => {
@@ -46,6 +49,7 @@ export const useAssetsModal = ({
 
   return {
     openModal,
+    closeModal,
     modal,
     isOpen,
   }

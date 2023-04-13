@@ -27,8 +27,12 @@ import { Text } from "components/Typography/Text/Text"
 import { Interpolation } from "@emotion/styled"
 import { Theme } from "@emotion/react"
 import { Spacer } from "components/Spacer/Spacer"
-import { useMedia } from "react-use"
+import { useMeasure, useMedia } from "react-use"
 import { theme } from "theme"
+import { AnimatePresence, motion } from "framer-motion"
+import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
+
+const MODAL_WIDTH = 610
 
 type Props = {
   open: boolean
@@ -43,6 +47,12 @@ type Props = {
   isDrawer?: boolean
   titleHeader?: string
   containerStyles?: Interpolation<Theme>
+  secondaryModal?: {
+    content: ReactNode
+    isOpen: boolean
+    title?: string
+    onBack?: () => void
+  }
 }
 
 type PropsOverride = Pick<
@@ -89,10 +99,38 @@ export const ModalMeta = (props: PropsOverride) => {
   return null
 }
 
+const HeaderAnimation = ({
+  children,
+  direction,
+}: PropsWithChildren<{ direction: "right" | "left" }>) => (
+  <motion.div
+    exit={{
+      x: direction === "left" ? -MODAL_WIDTH : MODAL_WIDTH,
+      opacity: 0,
+    }}
+    initial={{
+      x: direction === "left" ? -MODAL_WIDTH : MODAL_WIDTH,
+      opacity: 0,
+    }}
+    animate={{ x: 0, opacity: 1 }}
+    transition={{ duration: 0.3, ease: "easeInOut" }}
+    sx={{
+      flex: "row",
+      align: "center",
+      gap: 8,
+      justify: "space-between",
+    }}
+  >
+    {children}
+  </motion.div>
+)
+
 export const Modal: FC<PropsWithChildren<Props>> = (props) => {
   const { t } = useTranslation()
   const [propsOverride, setPropsOverride] = useState<PropsOverride | null>(null)
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const [refPrimary, sizePrimary] = useMeasure<HTMLDivElement>()
+  const [refSecondary, sizeSecondary] = useMeasure<HTMLDivElement>()
 
   const mergedProps = { ...props, ...propsOverride }
   const { isDrawer, titleHeader, secondaryIcon, title, withoutClose } =
@@ -110,7 +148,7 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
             <ModalWindow
               isTopContent={!!props.topContent}
               isDrawer={isDrawer}
-              maxWidth={mergedProps.width}
+              maxWidth={MODAL_WIDTH}
               onEscapeKeyDown={!props.withoutClose ? props.onClose : undefined}
               onInteractOutside={
                 props.withoutClose || mergedProps.withoutOutsideClose
@@ -120,51 +158,135 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
             >
               {props.topContent}
               <ModalWindowContainer isDrawer={isDrawer}>
-                {visibleHeader ? (
-                  <ModalHeader>
-                    {secondaryIcon ? (
-                      <SecondaryButton
-                        icon={secondaryIcon.icon}
-                        onClick={secondaryIcon.onClick}
-                        name={secondaryIcon.name}
-                      />
-                    ) : (
-                      <Spacer size={34} />
-                    )}
-                    {titleHeader && (
-                      <Text color="white" font="FontOver" fs={16} fw={500}>
-                        {titleHeader}
-                      </Text>
-                    )}
-                    {!mergedProps.withoutClose && (
-                      <CloseButton
-                        icon={<CrossIcon />}
-                        onClick={mergedProps.onClose}
-                        name={t("modal.closeButton.name")}
-                      />
-                    )}
-                  </ModalHeader>
-                ) : (
-                  <Spacer size={20} />
-                )}
-                <RemoveScroll enabled={props.open}>
-                  <ModalBody isDrawer={isDrawer}>
-                    {isDesktop ? (
-                      <ModalTitle>{title}</ModalTitle>
-                    ) : (
-                      <Text fs={19} font="FontOver">
-                        {title}
-                      </Text>
-                    )}
-                    <div
-                      sx={{ flex: "column" }}
-                      css={{ flexGrow: 1, flexShrink: 1, flexBasis: "auto" }}
+                <AnimatePresence initial={false} mode="popLayout">
+                  {visibleHeader ? (
+                    <ModalHeader>
+                      <AnimatePresence initial={false} mode="popLayout">
+                        {!props.secondaryModal?.isOpen ? (
+                          <HeaderAnimation key="primaryHeader" direction="left">
+                            {secondaryIcon && (
+                              <SecondaryButton
+                                icon={secondaryIcon.icon}
+                                onClick={secondaryIcon.onClick}
+                                name={secondaryIcon.name}
+                              />
+                            )}
+                            {titleHeader && (
+                              <Text
+                                color="white"
+                                font="FontOver"
+                                fs={16}
+                                fw={500}
+                              >
+                                {titleHeader}
+                              </Text>
+                            )}
+                          </HeaderAnimation>
+                        ) : (
+                          <div css={{ overflow: "hidden", flexGrow: 1 }}>
+                            <HeaderAnimation
+                              key="secondaryHeader"
+                              direction="right"
+                            >
+                              {props.secondaryModal.onBack && (
+                                <SecondaryButton
+                                  icon={
+                                    <ChevronRight
+                                      css={{ transform: "rotate(180deg)" }}
+                                    />
+                                  }
+                                  onClick={props.secondaryModal.onBack}
+                                  css={{ position: "initial" }}
+                                  name="Back"
+                                />
+                              )}
+                              {props.secondaryModal.title && (
+                                <Text
+                                  font="FontOver"
+                                  tAlign="center"
+                                  sx={{ flexGrow: 1 }}
+                                >
+                                  {props.secondaryModal.title}
+                                </Text>
+                              )}
+                              <div sx={{ width: [72, 0] }} />
+                            </HeaderAnimation>
+                          </div>
+                        )}
+                      </AnimatePresence>
+                      {!mergedProps.withoutClose && (
+                        <CloseButton
+                          icon={<CrossIcon />}
+                          onClick={mergedProps.onClose}
+                          name={t("modal.closeButton.name")}
+                        />
+                      )}
+                    </ModalHeader>
+                  ) : (
+                    <Spacer size={20} />
+                  )}
+
+                  {!props.secondaryModal?.isOpen ? (
+                    <motion.div
+                      key="primaryContent"
+                      exit={{
+                        x: -MODAL_WIDTH,
+                        height: sizeSecondary.height,
+                        opacity: 0,
+                      }}
+                      initial={{
+                        x: -MODAL_WIDTH,
+                        height: sizeSecondary.height,
+                        opacity: 0,
+                      }}
+                      animate={{ x: 0, height: "auto", opacity: 1 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
-                      {mergedProps.children}
-                    </div>
-                  </ModalBody>
-                  <DialogDescription />
-                </RemoveScroll>
+                      <RemoveScroll enabled={props.open} ref={refPrimary}>
+                        <ModalBody isDrawer={isDrawer}>
+                          {isDesktop ? (
+                            <ModalTitle>{title}</ModalTitle>
+                          ) : (
+                            <Text fs={19} font="FontOver">
+                              {title}
+                            </Text>
+                          )}
+                          <div
+                            sx={{ flex: "column" }}
+                            css={{
+                              flex: "1 auto",
+                            }}
+                          >
+                            {mergedProps.children}
+                          </div>
+                        </ModalBody>
+                        <DialogDescription />
+                      </RemoveScroll>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="secondaryContent"
+                      exit={{
+                        x: MODAL_WIDTH,
+                        height: sizePrimary.height,
+                        opacity: 0,
+                      }}
+                      initial={{
+                        x: MODAL_WIDTH,
+                        height: sizePrimary.height,
+                        opacity: 0,
+                      }}
+                      animate={{ x: 0, height: "auto", opacity: 1 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                      <RemoveScroll enabled={props.open} ref={refSecondary}>
+                        <ModalBody isDrawer={isDrawer}>
+                          {props.secondaryModal?.content}
+                        </ModalBody>
+                      </RemoveScroll>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </ModalWindowContainer>
             </ModalWindow>
           </ModalContainer>

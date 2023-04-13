@@ -3,10 +3,8 @@ import { Spinner } from "components/Spinner/Spinner.styled"
 import { useTranslation } from "react-i18next"
 import { Button } from "components/Button/Button"
 import { ReviewTransactionProgress } from "./ReviewTransactionProgress"
-import { Spacer } from "components/Spacer/Spacer"
 import { Heading } from "components/Typography/Heading/Heading"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces/author"
-import { ModalMeta } from "components/Modal/Modal"
 
 type Props = {
   onClose: () => void
@@ -23,9 +21,13 @@ export const ReviewTransactionPending = ({
 
   return (
     <div
-      sx={{ flex: "column", align: "center", pt: [200, 50], height: "100%" }}
+      sx={{
+        flex: "column",
+        align: "center",
+        justify: "center",
+        flexGrow: 1,
+      }}
     >
-      <ModalMeta title={undefined} />
       <Spinner css={{ width: 135, height: 135 }} />
       <Heading fs={19} fw={500} tAlign="center" sx={{ mt: 20 }}>
         {t("liquidity.reviewTransaction.modal.pending.title")}
@@ -38,14 +40,12 @@ export const ReviewTransactionPending = ({
       {!withoutClose && (
         <Button
           variant="primary"
-          sx={{ mt: 40, width: [200, "auto"] }}
+          sx={{ my: 40, width: [200, "auto"] }}
           onClick={onClose}
         >
           {t("liquidity.reviewTransaction.modal.success.close")}
         </Button>
       )}
-
-      <Spacer size={40} />
 
       {!withoutClose && txState === "Broadcast" && (
         <ReviewTransactionProgress duration={3} onComplete={onClose} />
