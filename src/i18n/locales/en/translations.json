@@ -342,5 +342,22 @@
   "farms.claimCard.toast.onLoading": "<0>Claiming farming rewards of </0>",
   "farms.claimCard.toast.onSuccess": "<0>Claimed farming rewards of </0>",
   "farms.claimCard.toast.asset": "<1>{{num}}{{denom}} {{symbol}}</1>",
-  "farms.header.dropdown.label": "Check Claimable"
+  "farms.header.dropdown.label": "Check Claimable",
+  "stats.title": "Omnipool Stats",
+  "stats.tabs.overview": "Overview",
+  "stats.tabs.POL": "HydraDX POL",
+  "stats.tabs.LRNA": "LRNA",
+  "stats.tiles.link": "Learn more",
+  "stats.tiles.trade.title": "Trade",
+  "stats.tiles.trade.description": "Trade & schedule token transactions.",
+  "stats.tiles.trade.content": "The Omnipool uses LRNA as a \"hub\" token through which all trades are routed, avoiding the segmentation of liquidity inherent to AMMs which require. <0/><0/>LPs to provide liquidity for a pair of tokens. Both transaction fees and partial impermanent loss mitigation.",
+  "stats.tiles.lrna.title": "What is LRNA?",
+  "stats.tiles.lrna.description": "Uncover the mysteries of LRNA tokens from our docs.",
+  "stats.tiles.lrna.content": "TODO",
+  "stats.tiles.risks.title": "Risks of providing liquidity",
+  "stats.tiles.risks.description": "Learn of potential risks like market volatility and impermanent loss.",
+  "stats.tiles.risks.content": "TODO",
+  "stats.tiles.rewards.title": "Liquidity rewards & Farming",
+  "stats.tiles.rewards.description": "Earn up to 5% APR by providing liquidity to Hydra.",
+  "stats.tiles.rewards.content": "TODO"
 }

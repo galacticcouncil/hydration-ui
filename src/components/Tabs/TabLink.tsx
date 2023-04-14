@@ -1,35 +1,26 @@
-import { Button, ButtonProps } from "../Button/Button"
-import { FC, ReactNode } from "react"
-import { Link, Search } from "@tanstack/react-location"
+import { Link, useSearch } from "@tanstack/react-location"
+import { ReactNode } from "react"
+import { ButtonProps } from "../Button/Button"
+import { SButton } from "./TabLink.styled"
 
-type TabLinkProps = ButtonProps & {
+type Props = ButtonProps & {
   to: string
   icon?: ReactNode
   isActive?: boolean
   fullWidth?: boolean
-  search?: Search<unknown>
 }
 
-export const TabLink: FC<TabLinkProps> = ({
-  to,
-  children,
-  icon,
-  fullWidth,
-  search,
-}) => (
-  <Link to={to} search={search} sx={{ width: fullWidth ? "100%" : "auto" }}>
-    {({ isActive }) => (
-      <Button
-        variant="outline"
-        active={isActive}
-        sx={{
-          p: "12px 34px",
-          width: fullWidth ? "100%" : "auto",
-        }}
-      >
-        {icon}
-        {children}
-      </Button>
-    )}
-  </Link>
-)
+export const TabLink = ({ to, children, icon, fullWidth }: Props) => {
+  const search = useSearch()
+
+  return (
+    <Link to={to} search={search} sx={{ width: fullWidth ? "100%" : "auto" }}>
+      {({ isActive }) => (
+        <SButton variant="outline" active={isActive} fullWidth={fullWidth}>
+          {icon}
+          {children}
+        </SButton>
+      )}
+    </Link>
+  )
+}

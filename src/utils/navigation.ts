@@ -8,6 +8,10 @@ export const LINKS = {
   walletVesting: "/wallet/vesting",
   cross_chain: "/cross-chain",
   otc: "/otc",
+  stats: "/stats",
+  statsOverview: "/stats/overview",
+  statsPOL: "/stats/POL",
+  statsLRNA: "/stats/LRNA",
 }
 
 export const EXTERNAL_LINKS = {
