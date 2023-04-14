@@ -30,6 +30,8 @@ import { Spacer } from "components/Spacer/Spacer"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 
+const MODAL_WIDTH = 610
+
 type Props = {
   open: boolean
   onClose: () => void
@@ -112,7 +114,7 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
 
             <ModalWindow
               isDrawer={isDrawer}
-              maxWidth={mergedProps.width}
+              maxWidth={MODAL_WIDTH}
               onEscapeKeyDown={!props.withoutClose ? props.onClose : undefined}
               onInteractOutside={
                 props.withoutClose || mergedProps.withoutOutsideClose

@@ -2,16 +2,16 @@ import styled from "@emotion/styled"
 import { css } from "@emotion/react"
 import { theme } from "theme"
 
-export const SSelectItem = styled.div<{ isActive: boolean }>`
+export const SSelectItem = styled.div<{ isActive: boolean; isProxy: boolean }>`
   --secondary-color: ${({ isActive }) =>
     isActive ? theme.colors.pink600 : theme.colors.brightBlue300};
 
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  background: rgba(${theme.rgbColors.alpha0}, 0.06);
+
   padding: 16px;
   border-radius: 4px;
-  cursor: pointer;
 
   transition: background ${theme.transitions.default};
 
@@ -19,19 +19,17 @@ export const SSelectItem = styled.div<{ isActive: boolean }>`
     margin-right: 12px;
   }
 
-  &:hover {
-    background: rgba(${theme.rgbColors.primaryA15}, 0.12);
-    box-shadow: 4px 4px 0px rgba(102, 181, 255, 0.19);
-  }
-
-  &:active {
-    background: rgba(${theme.rgbColors.primaryA20}, 0.2);
-    box-shadow: 4px 4px 0px #0a0c17;
-  }
-
   position: relative;
 
   ${(p) => {
+    if (p.isProxy) {
+      return css`
+        border: 1px solid rgba(${theme.rgbColors.primaryA0}, 0.35);
+        position: relative;
+        padding: 14px 18px;
+      `
+    }
+
     if (p.isActive) {
       return css`
         &,
@@ -50,5 +48,21 @@ export const SSelectItem = styled.div<{ isActive: boolean }>`
         box-shadow: 4px 4px 0px rgba(243, 102, 255, 0.19);
       `
     }
+
+    return css`
+      background: rgba(${theme.rgbColors.alpha0}, 0.06);
+
+      cursor: pointer;
+
+      &:hover {
+        background: rgba(${theme.rgbColors.primaryA15}, 0.12);
+        box-shadow: 4px 4px 0px rgba(102, 181, 255, 0.19);
+      }
+
+      &:active {
+        background: rgba(${theme.rgbColors.primaryA20}, 0.2);
+        box-shadow: 4px 4px 0px #0a0c17;
+      }
+    `
   }}
 `

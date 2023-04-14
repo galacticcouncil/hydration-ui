@@ -1,5 +1,5 @@
 import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { Separator } from "components/Separator/Separator"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
@@ -14,7 +14,8 @@ type Props = {
   address: string
   name: string
   provider: string
-  setAccount: () => void
+  setAccount?: () => void
+  isProxy?: boolean
 }
 
 export const WalletConnectAccountSelectItem: FC<Props> = ({
@@ -23,6 +24,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
   name,
   provider,
   setAccount,
+  isProxy,
 }) => {
   const isHydraAddress = address[0] === "7"
   const hydraAddress = isHydraAddress
@@ -39,7 +41,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
   const { t } = useTranslation()
 
   return (
-    <SSelectItem isActive={isActive} onClick={setAccount}>
+    <SSelectItem isActive={isActive} isProxy={!!isProxy} onClick={setAccount}>
       <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
         <Text font="ChakraPetchBold">{name}</Text>
         <div sx={{ flex: "row", align: "end", gap: 2 }}>
@@ -50,29 +52,50 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
               type: "token",
             })}
           </Text>
-          <Text fs={14} font="ChakraPetchBold" tTransform="uppercase">
+          <Text color="graySoft" tTransform="uppercase">
             {meta?.symbol}
           </Text>
         </div>
       </div>
 
+      {isProxy && (
+        <>
+          <Separator sx={{ my: 14 }} />
+          <div>
+            <Trans t={t} i18nKey="walletConnect.accountSelect.proxyAccount">
+              <Text
+                color="pink500"
+                fs={14}
+                font="ChakraPetchBold"
+                css={{ display: "inline-block" }}
+              />
+              <Text color="pink500" fs={14} css={{ display: "inline-block" }} />
+            </Trans>
+          </div>
+        </>
+      )}
       <div sx={{ flex: "column", mt: 12, gap: 12 }}>
         <WalletConnectAccountSelectAddress
           name={t("walletConnect.accountSelect.asset.network")}
           address={hydraAddress}
           theme="substrate"
           isActive={isActive}
+          isProxy={isProxy}
         />
-        <Separator
-          opacity={isActive ? 0.3 : 1}
-          css={{ background: "var(--secondary-color)" }}
-        />
-        <WalletConnectAccountSelectAddress
-          name={t("walletConnect.accountSelect.substrate.address")}
-          address={polkadotAddress}
-          theme={provider}
-          isActive={isActive}
-        />
+        {!isProxy && (
+          <>
+            <Separator
+              opacity={isActive ? 0.3 : 1}
+              css={{ background: "var(--secondary-color)" }}
+            />
+            <WalletConnectAccountSelectAddress
+              name={t("walletConnect.accountSelect.substrate.address")}
+              address={polkadotAddress}
+              theme={provider}
+              isActive={isActive}
+            />
+          </>
+        )}
       </div>
     </SSelectItem>
   )
