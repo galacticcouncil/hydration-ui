@@ -98,7 +98,7 @@ export const useAccountStore = create(
                 address: externalWalletAddress,
                 provider: externalWallet.provider,
                 isExternalWalletConnected: true,
-                delegate: parsedAccount.state.account.delegate,
+                delegate: parsedAccount.state.account?.delegate,
               }
 
               return JSON.stringify({

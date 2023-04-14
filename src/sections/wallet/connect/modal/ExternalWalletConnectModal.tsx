@@ -12,12 +12,22 @@ import {
   PasteAddressIcon,
 } from "sections/wallet/transfer/onchain/WalletTransferSectionOnchain.styled"
 import { SContainer } from "sections/wallet/transfer/WalletTransferAccountInput.styled"
-import { externalWallet, useAccountStore } from "state/store"
+import {
+  PROXY_WALLET_PROVIDER,
+  externalWallet,
+  useAccountStore,
+} from "state/store"
 import { useNavigate } from "@tanstack/react-location"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { SErrorMessage } from "components/AssetInput/AssetInput.styled"
 import { Spacer } from "components/Spacer/Spacer"
-import { useApiPromise } from "utils/api"
+import {
+  HYDRA_ADDRESS_PREFIX,
+  POLKADOT_APP_NAME,
+  useApiPromise,
+} from "utils/api"
+import { getWalletBySource } from "@talismn/connect-wallets"
+import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 
 type ExternalWalletConnectModalProps = {
   onBack: () => void
@@ -40,13 +50,42 @@ export const ExternalWalletConnectModal = ({
   const onSubmit = async (values: FormValues<typeof form>) => {
     const [delegates] = await api.query.proxy.proxies(values.address)
     const delegateList = delegates?.map((delegate) => delegate)
-    console.log(delegateList, "delegates")
+    let delegate
+
+    if (!!delegateList.length) {
+      const wallet = getWalletBySource(PROXY_WALLET_PROVIDER)
+
+      if (wallet?.installed) {
+        await wallet?.enable(POLKADOT_APP_NAME)
+
+        const accounts = await wallet?.getAccounts()
+
+        const defaultDelegate = accounts?.find((account) =>
+          delegateList.find(
+            (delegateObj) =>
+              delegateObj.delegate.toString() ===
+              encodeAddress(
+                decodeAddress(account.address),
+                HYDRA_ADDRESS_PREFIX,
+              ),
+          ),
+        )
+
+        if (defaultDelegate) {
+          delegate = encodeAddress(
+            decodeAddress(defaultDelegate?.address),
+            HYDRA_ADDRESS_PREFIX,
+          )
+        }
+      }
+    }
+
     setAccount({
       address: values.address,
       name: externalWallet.name,
       provider: externalWallet.provider,
       isExternalWalletConnected: true,
-      delegate: delegateList?.[1]?.delegate.toString(),
+      delegate,
     })
     onClose()
     navigate({

@@ -2,7 +2,6 @@ import { css } from "@emotion/react"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
-import { shortenAccountAddress } from "utils/formatting"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { useCopyToClipboard } from "react-use"
 import { useTranslation } from "react-i18next"
@@ -14,6 +13,7 @@ type Props = {
   address: string
   onClick?: () => void
   isActive: boolean
+  isProxy?: boolean
 }
 
 export const WalletConnectAccountSelectAddress: FC<Props> = ({
@@ -22,6 +22,7 @@ export const WalletConnectAccountSelectAddress: FC<Props> = ({
   address,
   onClick,
   isActive,
+  isProxy,
 }) => {
   const { t } = useTranslation()
   const [, copy] = useCopyToClipboard()
@@ -32,7 +33,7 @@ export const WalletConnectAccountSelectAddress: FC<Props> = ({
       sx={{ flex: "row", align: "center", gap: 10, justify: "space-between" }}
       css={{ position: "relative" }}
     >
-      <div sx={{ flex: "row" }}>
+      <div sx={{ flex: "row", align: "center" }}>
         <div
           sx={{ p: 5, flex: "row", align: "center" }}
           css={{ borderRadius: "9999px" }}
@@ -47,18 +48,19 @@ export const WalletConnectAccountSelectAddress: FC<Props> = ({
           <Text
             fw={600}
             fs={14}
+            color="basic300"
             css={css`
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
-              color: var(--secondary-color);
+              color: ${isProxy ? undefined : "var(--secondary-color)"};
             `}
           >
-            {shortenAccountAddress(address, 12)}
+            {address}
           </Text>
         </div>
       </div>
-      {isActive && (
+      {isActive && !isProxy && (
         <InfoTooltip
           text={t("wallet.header.copyAddress.hover")}
           textOnClick={t("wallet.header.copyAddress.click")}
