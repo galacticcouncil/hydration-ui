@@ -14,7 +14,7 @@ export const SContainer = styled.div`
   border-radius: 4px;
   padding: 20px;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     display: grid;
     align-items: end;
     grid-template-columns: 3fr 2fr;
@@ -46,7 +46,7 @@ export const SButton = styled(Button)`
     }
   }
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     max-width: 220px;
   }
 `

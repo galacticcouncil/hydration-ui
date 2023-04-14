@@ -155,7 +155,7 @@ export const Shadow = styled.div<{ variant: ToastVariant }>`
   box-shadow: 0px 20px 15px 4px
     ${({ variant }) => variantProgressBarBg[variant]};
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     display: inherit;
   }
 `

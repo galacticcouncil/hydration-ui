@@ -15,7 +15,7 @@ export const SSelectItem = styled.div<{ isActive: boolean }>`
 
   transition: background ${theme.transitions.default};
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     margin-right: 12px;
   }
 
