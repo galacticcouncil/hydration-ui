@@ -60,13 +60,16 @@ export const WalletConnectAccountSelectAddress: FC<Props> = ({
           </Text>
         </div>
       </div>
-      {isActive && !isProxy && (
+      {isActive && (
         <InfoTooltip
           text={t("wallet.header.copyAddress.hover")}
           textOnClick={t("wallet.header.copyAddress.click")}
         >
           <CopyIcon
-            css={{ cursor: "pointer", color: "var(--secondary-color)" }}
+            css={{
+              cursor: "pointer",
+              color: isProxy ? "white" : "var(--secondary-color)",
+            }}
             onClick={() => copy(address.toString())}
           />
         </InfoTooltip>
