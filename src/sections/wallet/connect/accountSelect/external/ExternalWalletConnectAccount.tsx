@@ -18,6 +18,7 @@ import {
   SContainer,
   SGroupContainer,
 } from "./ExternalWalletConnectAccount.styled"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 export const ExternalWalletConnectAccount = ({
   address,
@@ -32,7 +33,7 @@ export const ExternalWalletConnectAccount = ({
     : encodeAddress(decodeAddress(address), HYDRA_ADDRESS_PREFIX)
 
   const externalWalletData = useQuery(
-    ["externalWallet", hydraAddress],
+    QUERY_KEYS.externalWalletKey(hydraAddress),
     async () => {
       const proxies = await api.query.proxy.proxies(hydraAddress)
       const delegates = proxies[0].map((proxy) => proxy.delegate)
@@ -42,7 +43,7 @@ export const ExternalWalletConnectAccount = ({
   )
 
   const accounts = useQuery(
-    ["polkadotAccounts"],
+    QUERY_KEYS.polkadotAccounts,
     async () => {
       const wallet = getWalletBySource(PROXY_WALLET_PROVIDER)
 
