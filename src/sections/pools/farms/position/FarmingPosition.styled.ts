@@ -15,7 +15,7 @@ export const SContainer = styled.div`
 
   border-radius: 4px;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding: 15px 30px;
 
     gap: 4px;
@@ -37,7 +37,7 @@ export const SValueContainer = styled.div`
 
   width: 100%;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     flex-direction: column;
 
     width: auto;

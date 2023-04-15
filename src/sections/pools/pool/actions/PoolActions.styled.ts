@@ -56,7 +56,7 @@ export const SActionsContainer = styled.div`
 
   background: rgba(${theme.rgbColors.gray}, 0.69);
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     margin: 0;
     margin-left: auto;
     width: 340px;

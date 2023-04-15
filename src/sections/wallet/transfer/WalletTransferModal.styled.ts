@@ -10,7 +10,7 @@ export const STopContentContainer = styled.div`
   top: -60px;
   width: 100vw;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     width: 100%;
   }
 `

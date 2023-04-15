@@ -22,7 +22,7 @@ export const SContainer = styled.div`
   height: fit-content;
   width: 100%;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     width: auto;
   }
 `
