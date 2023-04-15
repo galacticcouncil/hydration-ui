@@ -22,20 +22,18 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   fullWidth?: boolean
 }
 
-export const Button: React.FC<ButtonProps> = ({
-  variant = "secondary",
-  size = "medium",
-  ...props
-}) => {
-  return (
-    <SButton variant={variant} size={size} {...props}>
-      <SContent>
-        {props.isLoading && <Spinner width={16} height={16} />}
-        {props.text || props.children}
-      </SContent>
-    </SButton>
-  )
-}
+export const Button = forwardRef(
+  ({ variant = "secondary", size = "medium", ...props }: ButtonProps, ref) => {
+    return (
+      <SButton variant={variant} size={size} {...props}>
+        <SContent>
+          {props.isLoading && <Spinner width={16} height={16} />}
+          {props.text || props.children}
+        </SContent>
+      </SButton>
+    )
+  },
+)
 
 export const ButtonTransparent = forwardRef<
   HTMLButtonElement,
