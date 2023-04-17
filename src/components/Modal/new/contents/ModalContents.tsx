@@ -8,7 +8,7 @@ type Props = {
   direction: number
   onBack?: () => void
   onClose?: () => void
-  contents: { title: string; content: ReactNode }[]
+  contents: { title?: string; content: ReactNode }[]
 }
 
 export const ModalContents = ({

@@ -1,3 +1,4 @@
+import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Content, Overlay } from "@radix-ui/react-dialog"
 import { theme } from "theme"
@@ -11,7 +12,7 @@ export const SOverlay = styled(Overlay)`
   backdrop-filter: blur(16px);
 `
 
-export const SContent = styled(Content)`
+export const SContent = styled(Content)<{ isDrawer?: boolean }>`
   --modal-header-padding-y: 20px;
   --modal-header-padding-x: 24px;
   --modal-header-btn-size: 32px;
@@ -20,16 +21,9 @@ export const SContent = styled(Content)`
   );
 
   position: fixed;
-  top: 10%;
-  left: 50%;
-  transform: translateX(-50%);
+  inset: 0;
   z-index: ${theme.zIndices.modal};
-
   overflow: auto;
-
-  width: 100%;
-  max-width: min(600px, 95vw);
-  max-height: 80%;
 
   padding-top: var(--modal-header-height);
 
@@ -37,7 +31,27 @@ export const SContent = styled(Content)`
   box-shadow: ${theme.shadows.modal};
   border-radius: 4px;
 
+  ${({ isDrawer }) =>
+    isDrawer &&
+    css`
+      top: initial;
+      max-height: 90%;
+      border-radius: 20px 20px 0 0;
+    `}
+
   &:focus {
     outline: none;
+  }
+
+  @media ${theme.viewport.gte.sm} {
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: 100%;
+    max-width: min(600px, 95vw);
+    max-height: 80%;
+
+    border-radius: 4px;
   }
 `

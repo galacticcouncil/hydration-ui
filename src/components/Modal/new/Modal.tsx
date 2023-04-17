@@ -6,14 +6,30 @@ import { SContent, SOverlay } from "./Modal.styled"
 import { usePagination } from "./Modal.utils"
 import { ModalContents } from "./contents/ModalContents"
 
-type Props = { open: boolean; onClose: () => void; children: ReactNode }
+type Props = {
+  open: boolean
+  onClose: () => void
+  isDrawer?: boolean
+  disableClose?: boolean
+  children: ReactNode
+}
 
-export const Modal = ({ open, onClose, children }: Props) => {
+export const Modal = ({
+  open,
+  onClose,
+  isDrawer,
+  disableClose,
+  children,
+}: Props) => {
   return (
     <Root open={open}>
       <Portal>
         <SOverlay />
-        <SContent onEscapeKeyDown={onClose} onInteractOutside={onClose}>
+        <SContent
+          isDrawer={isDrawer}
+          onEscapeKeyDown={disableClose ? onClose : undefined}
+          onInteractOutside={disableClose ? onClose : undefined}
+        >
           {children}
         </SContent>
       </Portal>
@@ -69,7 +85,6 @@ export const ModalTest = ({
             ),
           },
           {
-            title: "Third Title",
             content: (
               <div sx={{ height: 400, bg: "green600", flex: "column" }}>
                 <div sx={{ bg: "black", p: 16, m: "auto", width: "100%" }}>

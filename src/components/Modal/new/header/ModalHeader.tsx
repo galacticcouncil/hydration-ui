@@ -4,7 +4,7 @@ import { Text } from "components/Typography/Text/Text"
 import { SButton, SButtonContainer, SContainer } from "./ModalHeader.styled"
 
 type TitleProps = {
-  title: string
+  title?: string
   direction: number
   page: number
   centered: boolean
