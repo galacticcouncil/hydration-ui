@@ -32,6 +32,8 @@ export const ModalTest = ({
 
   const onBack = () => paginate(-1)
   const onNext = () => paginate(1)
+  const onLast = () => paginate(2)
+  const onFirst = () => paginate(-2)
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -47,7 +49,10 @@ export const ModalTest = ({
               <div sx={{ height: 200, bg: "red700", flex: "column" }}>
                 <div sx={{ bg: "black", p: 16, m: "auto", width: "100%" }}>
                   <Text sx={{ mb: 16 }}>First Content</Text>
-                  <Button onClick={onNext}>Next</Button>
+                  <div sx={{ flex: "row", gap: 16 }}>
+                    <Button onClick={onNext}>Next</Button>
+                    <Button onClick={onLast}>Last</Button>
+                  </div>
                 </div>
               </div>
             ),
@@ -69,6 +74,7 @@ export const ModalTest = ({
               <div sx={{ height: 400, bg: "green600", flex: "column" }}>
                 <div sx={{ bg: "black", p: 16, m: "auto", width: "100%" }}>
                   <Text>Third Content</Text>
+                  <Button onClick={onFirst}>First</Button>
                 </div>
               </div>
             ),
