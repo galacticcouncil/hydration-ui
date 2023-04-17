@@ -66,5 +66,4 @@ export const SErrorMessage = styled.p`
   font-size: 12px;
   line-height: 16px;
   margin-top: 2px;
-  text-transform: capitalize;
 `
