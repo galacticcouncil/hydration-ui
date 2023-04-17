@@ -1,29 +1,26 @@
 import { css } from "@emotion/react"
-import { Text } from "components/Typography/Text/Text"
-import { FC } from "react"
+import { ReactComponent as CopyIcon } from "assets/icons/CopyIcon.svg"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { useCopyToClipboard } from "react-use"
+import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { ReactComponent as CopyIcon } from "assets/icons/CopyIcon.svg"
+import { useCopyToClipboard } from "react-use"
 
 type Props = {
   name: string
   theme: string
   address: string
   onClick?: () => void
-  isActive: boolean
   isProxy?: boolean
 }
 
-export const WalletConnectAccountSelectAddress: FC<Props> = ({
+export const WalletConnectAccountSelectAddress = ({
   name,
   theme,
   address,
   onClick,
-  isActive,
   isProxy,
-}) => {
+}: Props) => {
   const { t } = useTranslation()
   const [, copy] = useCopyToClipboard()
 
@@ -60,20 +57,22 @@ export const WalletConnectAccountSelectAddress: FC<Props> = ({
           </Text>
         </div>
       </div>
-      {isActive && (
-        <InfoTooltip
-          text={t("wallet.header.copyAddress.hover")}
-          textOnClick={t("wallet.header.copyAddress.click")}
-        >
-          <CopyIcon
-            css={{
-              cursor: "pointer",
-              color: isProxy ? "white" : "var(--secondary-color)",
-            }}
-            onClick={() => copy(address.toString())}
-          />
-        </InfoTooltip>
-      )}
+
+      <InfoTooltip
+        text={t("wallet.header.copyAddress.hover")}
+        textOnClick={t("wallet.header.copyAddress.click")}
+      >
+        <CopyIcon
+          css={{
+            cursor: "pointer",
+            color: isProxy ? "white" : "var(--secondary-color)",
+          }}
+          onClick={(e) => {
+            e.stopPropagation()
+            copy(address.toString())
+          }}
+        />
+      </InfoTooltip>
     </div>
   )
 }
