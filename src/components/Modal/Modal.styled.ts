@@ -75,7 +75,7 @@ export const ModalWindow = styled(DialogContent, {
     transform: translate(-50%, -50%);
 
     height: auto;
-    max-width: ${(props) => `${props.maxWidth ?? 610}px`};
+    max-width: ${({ maxWidth }) => maxWidth}px;
 
     border-radius: 4px;
 

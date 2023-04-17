@@ -12,7 +12,7 @@ export const SWalletHeader = styled.div`
 
   background: rgba(0, 5, 35, 0.2);
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     flex-direction: row;
     aligh-items: center;
 

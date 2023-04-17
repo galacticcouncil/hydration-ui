@@ -6,6 +6,7 @@ import { Account } from "state/store"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { SContainer } from "./WalletConnectAccountSelect.styled"
 import { externalWallet } from "state/store"
+import { ExternalWalletConnectAccount } from "./external/ExternalWalletConnectAccount"
 
 type Props = {
   provider: string
@@ -38,20 +39,7 @@ export const WalletConnectAccountSelect = ({
 
       <SContainer>
         {currentAddress && isExternalWallet ? (
-          <WalletConnectAccountSelectItem
-            isActive
-            provider={provider}
-            name={externalWallet.name}
-            address={currentAddress}
-            setAccount={() => {
-              onSelect({
-                name: externalWallet.name,
-                address: currentAddress,
-                provider,
-                isExternalWalletConnected: true,
-              })
-            }}
-          />
+          <ExternalWalletConnectAccount address={currentAddress} />
         ) : (
           accounts.data
             // As Talisman allows Ethereum accounts to be added as well, filter these accounts out

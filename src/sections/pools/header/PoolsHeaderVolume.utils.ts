@@ -11,9 +11,11 @@ export function useTotalVolumesInPools() {
   const queries = [assets, totalVolume]
   const isLoading = queries.some((query) => query.isLoading)
 
+  //the value should be divided by two
+  //because the value is summed by assetIn and assetOut
   return {
     isLoading,
-    value: totalVolume.data,
+    value: totalVolume.data.div(2),
   }
 }
 
@@ -26,8 +28,10 @@ export function useTotalVolumesInPoolsUser() {
   const queries = [pools, totalVolume]
   const isLoading = queries.some((query) => query.isLoading)
 
+  //the value should be divided by two
+  //because the value is summed by assetIn and assetOut
   return {
     isLoading,
-    value: totalVolume.data,
+    value: totalVolume.data.div(2),
   }
 }
