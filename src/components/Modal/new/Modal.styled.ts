@@ -45,6 +45,8 @@ export const SContent = styled(Content)<{ isDrawer?: boolean }>`
 
   @media ${theme.viewport.gte.sm} {
     top: 10%;
+    right: initial;
+    bottom: initial;
     left: 50%;
     transform: translateX(-50%);
 

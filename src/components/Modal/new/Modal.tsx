@@ -27,8 +27,8 @@ export const Modal = ({
         <SOverlay />
         <SContent
           isDrawer={isDrawer}
-          onEscapeKeyDown={disableClose ? onClose : undefined}
-          onInteractOutside={disableClose ? onClose : undefined}
+          onEscapeKeyDown={!disableClose ? onClose : undefined}
+          onInteractOutside={!disableClose ? onClose : undefined}
         >
           {children}
         </SContent>
