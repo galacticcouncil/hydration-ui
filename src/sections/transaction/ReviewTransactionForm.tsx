@@ -2,7 +2,11 @@ import { Trans, useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
 import { Button } from "components/Button/Button"
 import { TransactionCode } from "components/TransactionCode/TransactionCode"
-import { Transaction, useAccountStore } from "state/store"
+import {
+  PROXY_WALLET_PROVIDER,
+  Transaction,
+  useAccountStore,
+} from "state/store"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
 import { useNextNonce, usePaymentInfo } from "api/transaction"
 import { useMutation } from "@tanstack/react-query"
@@ -17,7 +21,7 @@ import {
 } from "api/payments"
 import { useAssetMeta } from "api/assetMeta"
 import { useSpotPrice } from "api/spotPrice"
-import { NATIVE_ASSET_ID } from "utils/api"
+import { NATIVE_ASSET_ID, POLKADOT_APP_NAME } from "utils/api"
 import BigNumber from "bignumber.js"
 import { BN_0, BN_1 } from "utils/constants"
 import { Summary } from "components/Summary/Summary"
@@ -53,11 +57,20 @@ export const ReviewTransactionForm = (
   const spotPrice = useSpotPrice(NATIVE_ASSET_ID, feeMeta.data?.id)
 
   const signTx = useMutation(async () => {
-    const address = account?.address?.toString()
-    const wallet = getWalletBySource(account?.provider)
+    const address = props.isProxy ? account?.delegate : account?.address
+    const provider =
+      account?.provider === "external" && props.isProxy
+        ? PROXY_WALLET_PROVIDER
+        : account?.provider
+
+    const wallet = getWalletBySource(provider)
+
     if (address == null || wallet == null)
       throw new Error("Missing active account or wallet")
 
+    if (props.isProxy) {
+      await wallet.enable(POLKADOT_APP_NAME)
+    }
     const signature = await props.tx.signAsync(address, {
       signer: wallet.signer,
       // defer to polkadot/api to handle nonce w/ regard to mempool

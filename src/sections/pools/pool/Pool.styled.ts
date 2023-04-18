@@ -37,7 +37,7 @@ export const SContainer = styled.div`
     pointer-events: none;
   }
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     margin: unset;
     width: 100%;
   }
@@ -71,7 +71,7 @@ export const SPositions = styled.div`
   width: 100%;
   padding: 20px 12px;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding: 20px 30px;
   }
 `

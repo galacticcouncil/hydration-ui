@@ -8,7 +8,7 @@ export const SContainer = styled.div`
   align-items: center;
   justify-content: space-between;
 
-  @media (${theme.viewport.lt.sm}) {
+  @media ${theme.viewport.lt.sm} {
     padding: 14px 28px;
     height: 100%;
     justify-content: center;

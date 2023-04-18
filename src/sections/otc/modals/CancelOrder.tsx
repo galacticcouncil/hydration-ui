@@ -53,7 +53,10 @@ export const CancelOrder = ({
             <Trans
               t={t}
               i18nKey="otc.order.cancel.toast.onSuccess"
-              tOptions={{}}
+              tOptions={{
+                amount: offering.amount,
+                symbol: offering.symbol,
+              }}
             >
               <span />
               <span className="highlight" />

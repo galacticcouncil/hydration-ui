@@ -228,4 +228,9 @@ export const QUERY_KEYS = {
   ],
   apiIds: [QUERY_KEY_PREFIX, "apiIds"],
   tvlCap: [QUERY_KEY_PREFIX, "tvlCap"],
+  externalWalletKey: (walletAddress: string) => [
+    "externalWallet",
+    walletAddress,
+  ],
+  polkadotAccounts: ["polkadotAccounts"],
 } as const

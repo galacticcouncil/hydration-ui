@@ -9,7 +9,7 @@ export const SContainer = styled.div`
   position: relative;
   text-align: center;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     background: inherit;
   }
 `
