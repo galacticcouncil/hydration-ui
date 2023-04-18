@@ -341,7 +341,7 @@
   "farms.claimCard.claim.usd": "Total of ≈ {{ value, bignumber(type: 'token') }}",
   "farms.claimCard.toast.onLoading": "<0>Claiming farm rewards for</0>",
   "farms.claimCard.toast.onSuccess": "<0>Farm rewards claimed for</0>",
-  "farms.claimCard.toast.asset": "<1>{{num}}{{denom}} {{symbol}}</1>."
+  "farms.claimCard.toast.asset": "<1>{{num}}{{denom}} {{symbol}}</1>.",
   "farms.header.dropdown.label": "Check Claimable",
   "stats.title": "Omnipool Stats",
   "stats.tabs.overview": "Overview",
