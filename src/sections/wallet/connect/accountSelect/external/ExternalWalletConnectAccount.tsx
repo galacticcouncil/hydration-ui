@@ -22,8 +22,10 @@ import { QUERY_KEYS } from "utils/queryKeys"
 
 export const ExternalWalletConnectAccount = ({
   address,
+  onClose,
 }: {
   address: string
+  onClose: () => void
 }) => {
   const api = useApiPromise()
   const { account, setAccount } = useAccountStore()
@@ -83,7 +85,7 @@ export const ExternalWalletConnectAccount = ({
         <WalletConnectAccountSelectItem
           isActive
           provider={externalWallet.provider}
-          name={externalWallet.name}
+          name={externalWallet.proxyName}
           address={hydraAddress}
           isProxy
         />
@@ -107,6 +109,7 @@ export const ExternalWalletConnectAccount = ({
                     ...account,
                     delegate: address,
                   })
+                  onClose()
                 }}
               />
             </SContainer>

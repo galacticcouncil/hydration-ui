@@ -45,12 +45,16 @@ export const ExternalWalletConnectModal = ({
 
   const form = useForm<{
     address: string
+    delegates: boolean
   }>({})
+
+  // means that a user already knows that he doesn't have delegates
+  const isDelegatesError = form.formState.errors.delegates
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     const [delegates] = await api.query.proxy.proxies(values.address)
     const delegateList = delegates?.map((delegate) => delegate)
-    let delegate
+    let isDelegate = false
 
     if (!!delegateList.length) {
       const wallet = getWalletBySource(PROXY_WALLET_PROVIDER)
@@ -60,7 +64,7 @@ export const ExternalWalletConnectModal = ({
 
         const accounts = await wallet?.getAccounts()
 
-        const defaultDelegate = accounts?.find((account) =>
+        isDelegate = accounts?.some((account) =>
           delegateList.find(
             (delegateObj) =>
               delegateObj.delegate.toString() ===
@@ -70,29 +74,34 @@ export const ExternalWalletConnectModal = ({
               ),
           ),
         )
-
-        if (defaultDelegate) {
-          delegate = encodeAddress(
-            decodeAddress(defaultDelegate?.address),
-            HYDRA_ADDRESS_PREFIX,
-          )
-        }
       }
+    }
+
+    if (!!delegateList.length && !isDelegate && !isDelegatesError) {
+      form.setError("delegates", {})
+      return
     }
 
     setAccount({
       address: values.address,
-      name: externalWallet.name,
+      name:
+        delegateList.length && isDelegate
+          ? externalWallet.proxyName
+          : externalWallet.name,
       provider: externalWallet.provider,
       isExternalWalletConnected: true,
-      delegate,
     })
-    onClose()
+
     navigate({
       search: { account: values.address },
       fromCurrent: true,
     })
+
+    if (!delegateList.length || (delegateList.length && isDelegatesError)) {
+      onClose()
+    }
   }
+
   return (
     <>
       <ModalMeta
@@ -129,7 +138,10 @@ export const ExternalWalletConnectModal = ({
             const rightIcon = value ? (
               <CloseIcon
                 icon={<CrossIcon />}
-                onClick={() => onChange("")}
+                onClick={() => {
+                  onChange("")
+                  form.clearErrors("delegates")
+                }}
                 name={t("modal.closeButton.name")}
               />
             ) : (
@@ -137,6 +149,7 @@ export const ExternalWalletConnectModal = ({
                 onClick={async () => {
                   const text = await navigator.clipboard.readText()
                   onChange(text)
+                  form.clearErrors("delegates")
                 }}
               />
             )
@@ -146,7 +159,10 @@ export const ExternalWalletConnectModal = ({
                 <SContainer error={!!error} sx={{ mt: 35 }}>
                   <AddressInput
                     name={name}
-                    onChange={onChange}
+                    onChange={(value) => {
+                      onChange(value)
+                      form.clearErrors("delegates")
+                    }}
                     value={value}
                     placeholder={t(
                       "walletConnect.externalWallet.modal.input.placeholder",
@@ -157,17 +173,39 @@ export const ExternalWalletConnectModal = ({
                   />
                 </SContainer>
                 {error && <SErrorMessage>{error.message}</SErrorMessage>}
-                <Spacer size={35} />
               </>
             )
           }}
         />
+        <Controller
+          control={form.control}
+          name="delegates"
+          render={({ fieldState: { error } }) =>
+            error ? (
+              <>
+                <Spacer size={15} />
+                <Text color="red400" font="ChakraPetchBold" fs={12}>
+                  {t("walletConnect.accountSelect.proxyAccount.error")}
+                </Text>
+                <Spacer size={6} />
+                <Text fw={400} color="red400" fs={12}>
+                  {t("walletConnect.accountSelect.proxyAccount.errorDesc")}
+                </Text>
+              </>
+            ) : (
+              <div />
+            )
+          }
+        />
+        <Spacer size={35} />
         <Button
           disabled={!!form.formState.errors.address}
           variant="primary"
           type="submit"
         >
-          {t("confirm")}
+          {form.formState.errors.delegates
+            ? t("walletConnect.accountSelect.viewAsWallet")
+            : t("confirm")}
         </Button>
       </form>
     </>
