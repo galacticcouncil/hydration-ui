@@ -6,7 +6,7 @@ import * as Apps from "@galacticcouncil/apps"
 import { createComponent } from "@lit-labs/react"
 import { useAccountStore } from "state/store"
 
-import { GcTransactionCenter } from "sections/gcapps/TransactionCenter"
+import { GcTransactionCenter } from "sections/xcm/TransactionCenter"
 
 export const XcmApp = createComponent({
   tagName: "gc-xcm-app",
