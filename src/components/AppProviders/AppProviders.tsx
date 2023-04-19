@@ -16,7 +16,11 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
 
   return (
     <TooltipProvider>
-      <ApiPromiseContext.Provider value={api.data ?? ({} as ApiPromise)}>
+      <ApiPromiseContext.Provider
+        value={
+          api.data && preference._hasHydrated ? api.data : ({} as ApiPromise)
+        }
+      >
         <InvalidateOnBlock>
           <ToastProvider>
             <SkeletonTheme
