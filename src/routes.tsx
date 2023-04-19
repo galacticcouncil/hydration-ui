@@ -1,8 +1,8 @@
 import { WalletPage } from "./sections/wallet/WalletPage"
 
 import { Navigate } from "@tanstack/react-location"
-import { TradePage } from "sections/gcapps/trade/TradePage"
-import { XcmPage } from "sections/gcapps/xcm/XcmPage"
+import { TradePage } from "sections/trade/TradePage"
+import { XcmPage } from "sections/xcm/XcmPage"
 
 import { OtcPage } from "sections/otc/OtcPage"
 import { PoolsPage } from "sections/pools/PoolsPage"

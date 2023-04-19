@@ -6,6 +6,8 @@ import * as Apps from "@galacticcouncil/apps"
 import { createComponent } from "@lit-labs/react"
 import { useAccountStore } from "state/store"
 
+import { GcTransactionCenter } from "sections/xcm/TransactionCenter"
+
 export const XcmApp = createComponent({
   tagName: "gc-xcm-app",
   elementClass: Apps.XcmApp,
@@ -17,18 +19,20 @@ export function XcmPage() {
 
   const ref = React.useRef<Apps.XcmApp>(null)
   return (
-    <Page>
-      <SContainer>
-        <XcmApp
-          ref={ref}
-          srcChain="polkadot"
-          dstChain="hydradx"
-          chains="polkadot,hydradx,acala,statemint,interlay,zeitgeist"
-          accountName={account?.name}
-          accountProvider={account?.provider}
-          accountAddress={account?.address}
-        />
-      </SContainer>
-    </Page>
+    <GcTransactionCenter>
+      <Page>
+        <SContainer>
+          <XcmApp
+            ref={ref}
+            srcChain="polkadot"
+            dstChain="hydradx"
+            chains="polkadot,hydradx,acala,statemint,interlay,zeitgeist"
+            accountName={account?.name}
+            accountProvider={account?.provider}
+            accountAddress={account?.address}
+          />
+        </SContainer>
+      </Page>
+    </GcTransactionCenter>
   )
 }

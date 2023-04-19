@@ -1,18 +1,24 @@
 import { Page } from "components/Layout/Page/Page"
 import { SContainer } from "./TradePage.styled"
 
+import type { TxInfo } from "@galacticcouncil/apps"
+
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
-import { createComponent } from "@lit-labs/react"
-import { useAccountStore } from "state/store"
+import { createComponent, EventName } from "@lit-labs/react"
+import { useAccountStore, useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
 import { useProviderRpcUrlStore } from "api/provider"
+import { useApiPromise } from "utils/api"
 
 export const TradeApp = createComponent({
   tagName: "gc-trade-app",
   elementClass: Apps.TradeApp,
   react: React,
+  events: {
+    onTxNew: "gc:tx:new" as EventName<CustomEvent<TxInfo>>,
+  },
 })
 
 const TradeAppSearch = z.object({
@@ -34,12 +40,50 @@ const chartEnabled = import.meta.env.VITE_FF_CHART_ENABLED === "true"
 const chartDatasourceId = import.meta.env.VITE_FF_CHART_DATASOURCE
 
 export function TradePage() {
+  const api = useApiPromise()
   const { account } = useAccountStore()
+  const { createTransaction } = useStore()
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
   const rawSearch = useSearch<SearchGenerics>()
   const search = TradeAppSearch.safeParse(rawSearch)
+
+  const handleSubmit = async (e: CustomEvent<TxInfo>) => {
+    const { transaction, notification } = e.detail
+    await createTransaction(
+      {
+        tx: api.tx(transaction.hex),
+      },
+      {
+        onSuccess: () => {},
+        onSubmitted: () => {},
+        toast: {
+          onLoading: (
+            <span
+              dangerouslySetInnerHTML={{
+                __html: notification.processing.rawHtml,
+              }}
+            />
+          ),
+          onSuccess: (
+            <span
+              dangerouslySetInnerHTML={{
+                __html: notification.success.rawHtml,
+              }}
+            />
+          ),
+          onError: (
+            <span
+              dangerouslySetInnerHTML={{
+                __html: notification.failure.rawHtml,
+              }}
+            />
+          ),
+        },
+      },
+    )
+  }
 
   return (
     <Page>
@@ -51,6 +95,7 @@ export function TradePage() {
               r.setAttribute("chartDatasourceId", chartDatasourceId)
             }
           }}
+          onTxNew={(e) => handleSubmit(e)}
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}
