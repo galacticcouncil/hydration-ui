@@ -18,6 +18,7 @@ import { useMedia } from "react-use"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { Icon } from "components/Icon/Icon"
 import { useAllUserDepositShare } from "../../position/FarmingPosition.utils"
+import { CustomSeparator } from "sections/pools/header/PoolsHeader"
 
 export const ClaimAllDropdown = () => {
   const { t } = useTranslation()
@@ -136,14 +137,7 @@ export const ClaimAllDropdown = () => {
 
   return (
     <>
-      <Separator
-        sx={{
-          mb: [15, 0],
-          height: ["1px", "40px"],
-        }}
-        css={{ background: `rgba(${theme.rgbColors.white}, 0.12)` }}
-        orientation={isDesktop ? "vertical" : "horizontal"}
-      />
+      <CustomSeparator />
       <div sx={{ flex: "row" }} css={{ textAlign: "right" }}>
         <Tooltip.Root
           delayDuration={0}
@@ -159,13 +153,14 @@ export const ClaimAllDropdown = () => {
             >
               <Text
                 fs={13}
+                lh={13}
                 tTransform="uppercase"
                 css={{ whiteSpace: "nowrap" }}
               >
                 {t("farms.header.dropdown.label")}
               </Text>
               <Icon
-                size={20}
+                size={18}
                 icon={
                   <ChevronRight
                     css={{ transform: `rotate(${open ? "270" : "90"}deg)` }}

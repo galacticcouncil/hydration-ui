@@ -8,15 +8,17 @@ export const InvalidateOnBlock = (props: { children: ReactNode }) => {
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    let cancel: () => void
+    if (Object.keys(api).length) {
+      let cancel: () => void
 
-    api.rpc.chain
-      .subscribeNewHeads(() => {
-        queryClient.invalidateQueries([QUERY_KEY_PREFIX])
-      })
-      .then((newCancel) => (cancel = newCancel))
+      api.rpc.chain
+        .subscribeNewHeads(() => {
+          queryClient.invalidateQueries([QUERY_KEY_PREFIX])
+        })
+        .then((newCancel) => (cancel = newCancel))
 
-    return () => cancel?.()
+      return () => cancel?.()
+    }
   }, [api, queryClient])
 
   return <>{props.children}</>

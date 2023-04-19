@@ -5,23 +5,33 @@ import { WalletVestingSchedule } from "./WalletVestingSchedule"
 import { WalletVestingEmpty } from "./WalletVestingEmpty"
 import { useVestingSchedules } from "../../../api/vesting"
 import { useAccountStore } from "../../../state/store"
+import { Spinner } from "components/Spinner/Spinner.styled"
+import { useApiPromise } from "utils/api"
 
-export const WalletVestingBox = () => {
+const VestingBoxContent = () => {
   const { account } = useAccountStore()
-  const { t } = useTranslation()
   const { data, isLoading } = useVestingSchedules(account?.address)
 
-  const renderContent = () => {
-    if (isLoading) {
-      return null
-    }
-
-    if (data) {
-      return !!data.length ? <WalletVestingSchedule /> : <WalletVestingEmpty />
-    }
-
-    return null
+  if (isLoading) {
+    return (
+      <div
+        sx={{ flex: "row", align: "center", justify: "center", height: 240 }}
+      >
+        <Spinner width={50} height={50} />
+      </div>
+    )
   }
+
+  if (data) {
+    return !!data.length ? <WalletVestingSchedule /> : <WalletVestingEmpty />
+  }
+
+  return <WalletVestingEmpty />
+}
+
+export const WalletVestingBox = () => {
+  const { t } = useTranslation()
+  const api = useApiPromise()
 
   return (
     <div sx={{ flex: "column", flexGrow: 1 }}>
@@ -35,7 +45,11 @@ export const WalletVestingBox = () => {
         >
           {t("wallet.vesting.your_vesting")}
         </Heading>
-        {renderContent()}
+        {Object.keys(api).length ? (
+          <VestingBoxContent />
+        ) : (
+          <WalletVestingEmpty />
+        )}
       </SBox>
       <SMobBackground />
     </div>

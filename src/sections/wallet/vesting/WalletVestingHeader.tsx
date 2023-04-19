@@ -6,13 +6,45 @@ import { useSpotPrice } from "api/spotPrice"
 import { useMemo } from "react"
 import { css } from "@emotion/react"
 import { theme } from "theme"
-import { NATIVE_ASSET_ID } from "utils/api"
+import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import { useAssetMeta } from "../../../api/assetMeta"
 import { SSeparator, STable } from "./WalletVestingHeader.styled"
 import { addDays } from "date-fns"
 import { BN_0, DAY_IN_MILLISECONDS } from "../../../utils/constants"
 import { separateBalance } from "utils/balance"
 import { useApiIds } from "api/consts"
+import Skeleton from "react-loading-skeleton"
+
+export const WalletVestingHeaderContainer = () => {
+  const { t } = useTranslation()
+  const api = useApiPromise()
+
+  return (
+    <div
+      sx={{
+        flex: ["column", "row"],
+        mb: 40,
+        align: "center",
+        justify: "space-between",
+      }}
+    >
+      {Object.keys(api).length ? (
+        <WalletVestingHeader />
+      ) : (
+        <div
+          sx={{
+            flex: ["row", "column"],
+            justify: "space-between",
+            width: "100%",
+          }}
+        >
+          <Text color="brightBlue300">{t("wallet.vesting.total_vested")}</Text>
+          <Skeleton sx={{ height: [19, 34], width: [180, 200] }} />
+        </div>
+      )}
+    </div>
+  )
+}
 
 export const WalletVestingHeader = () => {
   const { t } = useTranslation()
@@ -34,52 +66,50 @@ export const WalletVestingHeader = () => {
   }, [totalVestedValue, spotPrice])
 
   return (
-    <div
-      sx={{
-        flex: ["column", "row"],
-        mb: 40,
-        align: "center",
-        justify: "space-between",
-      }}
-    >
-      <div sx={{ flex: ["column", "row"], width: "100%" }}>
-        <div sx={{ flex: ["row", "column"], justify: "space-between" }}>
-          <Text color="brightBlue300">{t("wallet.vesting.total_vested")}</Text>
-          <div sx={{ flex: "row", align: "start" }}>
-            <Heading as="h3" lh={[25, 42]} sx={{ fontSize: [19, 34] }}>
-              <Trans
-                t={t}
-                i18nKey="wallet.vesting.total_vested.value"
-                tOptions={{
-                  ...separateBalance(totalVestedValue, {
-                    fixedPointScale: nativeAsset?.decimals ?? 12,
-                    type: "token",
-                  }),
-                  symbol: nativeAsset?.symbol,
-                }}
-              >
-                <span
-                  sx={{ fontSize: [19, 21] }}
-                  css={css`
-                    color: rgba(${theme.rgbColors.white}, 0.4);
-                  `}
-                />
-              </Trans>
-            </Heading>
-          </div>
-          <Text
-            sx={{
-              display: ["none", "inherit"],
-            }}
-            css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }}
-          >
-            {t("value.usd", {
-              amount: totalVestedUSD,
-              fixedPointScale: nativeAsset?.decimals ?? 12,
-            })}
-          </Text>
+    <>
+      <div
+        sx={{
+          flex: ["row", "column"],
+          justify: "space-between",
+          width: "100%",
+        }}
+      >
+        <Text color="brightBlue300">{t("wallet.vesting.total_vested")}</Text>
+        <div sx={{ flex: "row", align: "start" }}>
+          <Heading as="h3" lh={[25, 42]} sx={{ fontSize: [19, 34] }}>
+            <Trans
+              t={t}
+              i18nKey="wallet.vesting.total_vested.value"
+              tOptions={{
+                ...separateBalance(totalVestedValue, {
+                  fixedPointScale: nativeAsset?.decimals ?? 12,
+                  type: "token",
+                }),
+                symbol: nativeAsset?.symbol,
+              }}
+            >
+              <span
+                sx={{ fontSize: [19, 21] }}
+                css={css`
+                  color: rgba(${theme.rgbColors.white}, 0.4);
+                `}
+              />
+            </Trans>
+          </Heading>
         </div>
+        <Text
+          sx={{
+            display: ["none", "inherit"],
+          }}
+          css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }}
+        >
+          {t("value.usd", {
+            amount: totalVestedUSD,
+            fixedPointScale: nativeAsset?.decimals ?? 12,
+          })}
+        </Text>
       </div>
+
       {vestingScheduleEnd && (
         <SSeparator sx={{ display: ["none", "inherit"] }} />
       )}
@@ -125,6 +155,6 @@ export const WalletVestingHeader = () => {
           </div>
         </STable>
       )}
-    </div>
+    </>
   )
 }

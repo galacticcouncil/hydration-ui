@@ -1,4 +1,3 @@
-import { Page } from "components/Layout/Page/Page"
 import { OtcHeader } from "sections/otc/header/OtcHeader"
 import { OtcOrderTable } from "sections/otc/orders/OtcOrders"
 
@@ -13,7 +12,7 @@ export const OtcPage = () => {
   const order = useOrdersTableData()
 
   return (
-    <Page>
+    <>
       <OtcHeader
         showMyOrders={filter.showMyOrders}
         showPartial={filter.showPartial}
@@ -35,6 +34,6 @@ export const OtcPage = () => {
         showMyOrders={filter.showMyOrders}
         showPartial={filter.showPartial}
       />
-    </Page>
+    </>
   )
 }

@@ -17,6 +17,7 @@ import {
   OrderPriceColumn,
 } from "./OtcOrdersData"
 import { OrderTableData } from "./OtcOrdersData.utils"
+import Skeleton from "react-loading-skeleton"
 
 export const useOrdersTable = (
   data: OrderTableData[],
@@ -126,3 +127,69 @@ export const useOrdersTable = (
 
   return table
 }
+
+export const useOrdersTableSkeleton = () => {
+  const { t } = useTranslation()
+  const { display } = createColumnHelper()
+
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const columnVisibility: VisibilityState = {
+    pair: true,
+    price: true,
+    offering: isDesktop,
+    accepting: isDesktop,
+    filled: isDesktop,
+    actions: true,
+  }
+
+  const columns = [
+    display({
+      id: "pair",
+      header: "Assets",
+      cell: () => <Skeleton width="100%" height="100%" />,
+    }),
+    display({
+      id: "price",
+      header: t("otc.offers.table.header.price"),
+      cell: () => <Skeleton width="100%" height="100%" />,
+    }),
+    display({
+      id: "offering",
+      header: isDesktop
+        ? t("otc.offers.table.header.offering")
+        : t("selectAssets.asset"),
+      cell: () => <Skeleton width="100%" height="100%" />,
+    }),
+    display({
+      id: "accepting",
+      header: t("otc.offers.table.header.accepting"),
+      cell: () => <Skeleton width="100%" height="100%" />,
+    }),
+    display({
+      id: "filled",
+      header: () => (
+        <div
+          style={{
+            textAlign: "center",
+            width: "100%",
+          }}
+        >
+          {t("otc.offers.table.header.status")}
+        </div>
+      ),
+      cell: () => <Skeleton width="100%" height="100%" />,
+    }),
+  ]
+
+  const table = useReactTable({
+    data: mockData,
+    columns,
+    state: { columnVisibility },
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  })
+
+  return table
+}
+
+const mockData = [1, 2, 3, 4]
