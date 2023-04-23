@@ -1,13 +1,13 @@
 diff --git a/node_modules/@polkadot/types-augment/index.d.ts b/node_modules/@polkadot/types-augment/index.d.ts
-index a3243f5..2438ad1 100644
+index a3243f5..450ee96 100644
 --- a/node_modules/@polkadot/types-augment/index.d.ts
 +++ b/node_modules/@polkadot/types-augment/index.d.ts
 @@ -1,2 +1,2 @@
  import './detectPackage';
 -export * from './bundle';
-+//export * from './bundle';
++export {}
 diff --git a/node_modules/@polkadot/types-augment/index.js b/node_modules/@polkadot/types-augment/index.js
-index cb3c44f..1d571de 100644
+index cb3c44f..24bb042 100644
 --- a/node_modules/@polkadot/types-augment/index.js
 +++ b/node_modules/@polkadot/types-augment/index.js
 @@ -2,4 +2,4 @@
@@ -16,5 +16,5 @@ index cb3c44f..1d571de 100644
  import "./detectPackage.js";
 -export * from "./bundle.js";
 \ No newline at end of file
-+//export * from "./bundle.js";
++export {}
 \ No newline at end of file
