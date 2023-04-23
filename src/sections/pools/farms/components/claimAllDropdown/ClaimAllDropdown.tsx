@@ -94,7 +94,7 @@ export const ClaimAllDropdown = () => {
             <Text fs={19} lh={19} font="FontOver" sx={{ mb: 8 }}>
               {t("value.tokenWithSymbol", {
                 value: claimableAsset.value,
-                fixedPointScale: claimableAsset.decimals,
+                fixedPointScale: claimableAsset.decimals.toString(),
                 symbol: claimableAsset.symbol,
               })}
             </Text>

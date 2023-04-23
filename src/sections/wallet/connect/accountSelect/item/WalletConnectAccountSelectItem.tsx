@@ -48,7 +48,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
           <Text color="basic200" fw={400}>
             {t("value.token", {
               value: data?.balance,
-              fixedPointScale: meta?.decimals,
+              fixedPointScale: meta?.decimals.toString(),
               type: "token",
             })}
           </Text>
