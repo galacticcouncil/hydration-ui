@@ -66,5 +66,5 @@ export const MENU_ITEMS = [
   },
 ] as const
 
-export type TabKeys = typeof MENU_ITEMS[number]["key"]
-export type TabObject = typeof MENU_ITEMS[number]
+export type TabKeys = (typeof MENU_ITEMS)[number]["key"]
+export type TabObject = (typeof MENU_ITEMS)[number]

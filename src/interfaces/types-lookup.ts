@@ -38,7 +38,7 @@ import type {
   Perbill,
   Permill,
   Perquintill,
-  Weight,
+  WeightV1,
 } from "@polkadot/types/interfaces/runtime"
 import type { Event } from "@polkadot/types/interfaces/system"
 
@@ -62,9 +62,9 @@ declare module "@polkadot/types/lookup" {
 
   /** @name FrameSupportWeightsPerDispatchClassWeight (7) */
   interface FrameSupportWeightsPerDispatchClassWeight extends Struct {
-    readonly normal: Weight
-    readonly operational: Weight
-    readonly mandatory: Weight
+    readonly normal: WeightV1
+    readonly operational: WeightV1
+    readonly mandatory: WeightV1
   }
 
   /** @name SpRuntimeDigest (12) */
@@ -134,7 +134,7 @@ declare module "@polkadot/types/lookup" {
 
   /** @name FrameSupportWeightsDispatchInfo (20) */
   interface FrameSupportWeightsDispatchInfo extends Struct {
-    readonly weight: Weight
+    readonly weight: WeightV1
     readonly class: FrameSupportWeightsDispatchClass
     readonly paysFee: FrameSupportWeightsPays
   }
@@ -1780,7 +1780,7 @@ declare module "@polkadot/types/lookup" {
     } & Struct
     readonly isDownwardMessagesProcessed: boolean
     readonly asDownwardMessagesProcessed: {
-      readonly weightUsed: Weight
+      readonly weightUsed: WeightV1
       readonly dmqHead: H256
     } & Struct
     readonly type:
@@ -1839,7 +1839,7 @@ declare module "@polkadot/types/lookup" {
     readonly isNotified: boolean
     readonly asNotified: ITuple<[u64, u8, u8]>
     readonly isNotifyOverweight: boolean
-    readonly asNotifyOverweight: ITuple<[u64, u8, u8, Weight, Weight]>
+    readonly asNotifyOverweight: ITuple<[u64, u8, u8, WeightV1, WeightV1]>
     readonly isNotifyDispatchError: boolean
     readonly asNotifyDispatchError: ITuple<[u64, u8, u8]>
     readonly isNotifyDecodeFailed: boolean
@@ -2428,13 +2428,13 @@ declare module "@polkadot/types/lookup" {
     readonly isSuccess: boolean
     readonly asSuccess: {
       readonly messageHash: Option<H256>
-      readonly weight: Weight
+      readonly weight: WeightV1
     } & Struct
     readonly isFail: boolean
     readonly asFail: {
       readonly messageHash: Option<H256>
       readonly error: XcmV2TraitsError
-      readonly weight: Weight
+      readonly weight: WeightV1
     } & Struct
     readonly isBadVersion: boolean
     readonly asBadVersion: {
@@ -2457,12 +2457,12 @@ declare module "@polkadot/types/lookup" {
       readonly sender: u32
       readonly sentAt: u32
       readonly index: u64
-      readonly required: Weight
+      readonly required: WeightV1
     } & Struct
     readonly isOverweightServiced: boolean
     readonly asOverweightServiced: {
       readonly index: u64
-      readonly used: Weight
+      readonly used: WeightV1
     } & Struct
     readonly type:
       | "Success"
@@ -2493,19 +2493,19 @@ declare module "@polkadot/types/lookup" {
     readonly isWeightExhausted: boolean
     readonly asWeightExhausted: {
       readonly messageId: U8aFixed
-      readonly remainingWeight: Weight
-      readonly requiredWeight: Weight
+      readonly remainingWeight: WeightV1
+      readonly requiredWeight: WeightV1
     } & Struct
     readonly isOverweightEnqueued: boolean
     readonly asOverweightEnqueued: {
       readonly messageId: U8aFixed
       readonly overweightIndex: u64
-      readonly requiredWeight: Weight
+      readonly requiredWeight: WeightV1
     } & Struct
     readonly isOverweightServiced: boolean
     readonly asOverweightServiced: {
       readonly overweightIndex: u64
-      readonly weightUsed: Weight
+      readonly weightUsed: WeightV1
     } & Struct
     readonly type:
       | "InvalidFormat"
@@ -2704,8 +2704,8 @@ declare module "@polkadot/types/lookup" {
 
   /** @name FrameSystemLimitsBlockWeights (156) */
   interface FrameSystemLimitsBlockWeights extends Struct {
-    readonly baseBlock: Weight
-    readonly maxBlock: Weight
+    readonly baseBlock: WeightV1
+    readonly maxBlock: WeightV1
     readonly perClass: FrameSupportWeightsPerDispatchClassWeightsPerClass
   }
 
@@ -2718,10 +2718,10 @@ declare module "@polkadot/types/lookup" {
 
   /** @name FrameSystemLimitsWeightsPerClass (158) */
   interface FrameSystemLimitsWeightsPerClass extends Struct {
-    readonly baseExtrinsic: Weight
-    readonly maxExtrinsic: Option<Weight>
-    readonly maxTotal: Option<Weight>
-    readonly reserved: Option<Weight>
+    readonly baseExtrinsic: WeightV1
+    readonly maxExtrinsic: Option<WeightV1>
+    readonly maxTotal: Option<WeightV1>
+    readonly reserved: Option<WeightV1>
   }
 
   /** @name FrameSystemLimitsBlockLength (160) */
@@ -3370,7 +3370,7 @@ declare module "@polkadot/types/lookup" {
     readonly asClose: {
       readonly proposalHash: H256
       readonly index: Compact<u32>
-      readonly proposalWeightBound: Compact<Weight>
+      readonly proposalWeightBound: Compact<WeightV1>
       readonly lengthBound: Compact<u32>
     } & Struct
     readonly isDisapproveProposal: boolean
@@ -3509,7 +3509,7 @@ declare module "@polkadot/types/lookup" {
       readonly maybeTimepoint: Option<PalletMultisigTimepoint>
       readonly call: WrapperKeepOpaque<Call>
       readonly storeCall: bool
-      readonly maxWeight: Weight
+      readonly maxWeight: WeightV1
     } & Struct
     readonly isApproveAsMulti: boolean
     readonly asApproveAsMulti: {
@@ -3517,7 +3517,7 @@ declare module "@polkadot/types/lookup" {
       readonly otherSignatories: Vec<AccountId32>
       readonly maybeTimepoint: Option<PalletMultisigTimepoint>
       readonly callHash: U8aFixed
-      readonly maxWeight: Weight
+      readonly maxWeight: WeightV1
     } & Struct
     readonly isCancelAsMulti: boolean
     readonly asCancelAsMulti: {
@@ -4268,7 +4268,7 @@ declare module "@polkadot/types/lookup" {
     readonly isExecute: boolean
     readonly asExecute: {
       readonly message: XcmVersionedXcm
-      readonly maxWeight: Weight
+      readonly maxWeight: WeightV1
     } & Struct
     readonly isForceXcmVersion: boolean
     readonly asForceXcmVersion: {
@@ -4621,7 +4621,7 @@ declare module "@polkadot/types/lookup" {
     readonly isServiceOverweight: boolean
     readonly asServiceOverweight: {
       readonly index: u64
-      readonly weightLimit: Weight
+      readonly weightLimit: WeightV1
     } & Struct
     readonly type: "ServiceOverweight"
   }
@@ -6036,9 +6036,9 @@ declare module "@polkadot/types/lookup" {
     readonly suspendThreshold: u32
     readonly dropThreshold: u32
     readonly resumeThreshold: u32
-    readonly thresholdWeight: Weight
-    readonly weightRestrictDecay: Weight
-    readonly xcmpMaxIndividualWeight: Weight
+    readonly thresholdWeight: WeightV1
+    readonly weightRestrictDecay: WeightV1
+    readonly xcmpMaxIndividualWeight: WeightV1
   }
 
   /** @name CumulusPalletXcmpQueueError (485) */
@@ -6058,7 +6058,7 @@ declare module "@polkadot/types/lookup" {
 
   /** @name CumulusPalletDmpQueueConfigData (486) */
   interface CumulusPalletDmpQueueConfigData extends Struct {
-    readonly maxIndividual: Weight
+    readonly maxIndividual: WeightV1
   }
 
   /** @name CumulusPalletDmpQueuePageIndexData (487) */

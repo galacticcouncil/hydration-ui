@@ -123,7 +123,7 @@ export const FarmingPosition = ({
             <Text>
               {t("value", {
                 value: depositNft.deposit.shares,
-                fixedPointScale: meta.data?.decimals ?? 12,
+                fixedPointScale: meta.data?.decimals.toString() ?? 12,
                 type: "token",
               })}
             </Text>

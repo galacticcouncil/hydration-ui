@@ -61,7 +61,7 @@ export const FarmDetailsModalValues = ({
             content: t("farms.modal.details.mined.value", {
               value: depositReward?.value,
               symbol: meta.data?.symbol,
-              fixedPointScale: meta.data?.decimals,
+              fixedPointScale: meta.data?.decimals.toString(),
             }),
           },
         ]}
