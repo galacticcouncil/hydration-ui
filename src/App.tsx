@@ -10,7 +10,7 @@ import { useEffect } from "react"
 
 const history = createBrowserHistory()
 const location = new ReactLocation({ history })
-
+console.log("fixing")
 export const App = () => {
   useEffect(() => {
     const [html] = document.getElementsByTagName("html")
