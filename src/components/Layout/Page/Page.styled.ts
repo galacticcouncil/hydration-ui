@@ -1,7 +1,8 @@
+import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SPage = styled.div`
+export const SPage = styled.div<{ variant?: "stats" | "default" }>`
   --mobile-nav-height: calc(60px + env(safe-area-inset-bottom));
   --nav-height: 65px;
 
@@ -12,7 +13,14 @@ export const SPage = styled.div`
 
   height: 100vh;
 
-  background: ${theme.gradients.background};
+  ${({ variant }) =>
+    variant === "stats"
+      ? css`
+          background: ${theme.gradients.backgroundStats};
+        `
+      : css`
+          background: ${theme.gradients.background};
+        `}
 
   @media ${theme.viewport.gte.sm} {
     --nav-height: 70px;
@@ -20,6 +28,8 @@ export const SPage = styled.div`
 `
 
 export const SPageContent = styled.main`
+  position: relative;
+
   overflow-y: auto;
   padding: 0 12px;
   overflow-x: hidden;
@@ -66,4 +76,17 @@ export const SPageInner = styled.div`
 
     display: block;
   }
+`
+
+export const SPageGrid = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+
+  opacity: 0.06;
+  pointer-events: none;
+
+  background-size: 22px 22px;
+  background-image: linear-gradient(to right, white 1px, transparent 1px),
+    linear-gradient(to bottom, white 1px, transparent 1px);
 `

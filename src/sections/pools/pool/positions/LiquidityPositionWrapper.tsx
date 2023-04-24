@@ -3,7 +3,7 @@ import { SPositions } from "../Pool.styled"
 import { useTranslation } from "react-i18next"
 import { LiquidityPosition } from "./LiquidityPosition"
 import { Positions } from "../Pool.utils"
-import { ReactComponent as LPIcon } from "assets/icons/LPIcon.svg"
+import { ReactComponent as ChartIcon } from "assets/icons/ChartIcon.svg"
 import { Icon } from "components/Icon/Icon"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 
@@ -20,7 +20,7 @@ export const LiquidityPositionWrapper = ({
   return (
     <SPositions>
       <div sx={{ flex: "row", align: "center", gap: 8, mb: 20 }}>
-        <Icon size={13} sx={{ color: "pink600" }} icon={<LPIcon />} />
+        <Icon size={13} sx={{ color: "pink600" }} icon={<ChartIcon />} />
         <Text fs={[16, 16]} color="pink600">
           {t("liquidity.asset.positions.title")}
         </Text>

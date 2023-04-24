@@ -34,7 +34,7 @@ export const STriggerButton = styled(Tooltip.Trigger)`
     border-radius: 4px 4px 0 0;
   }
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     flex-grow: 0;
 
     &[data-state="delayed-open"],
@@ -87,7 +87,7 @@ export const SContent = styled(motion.div)`
 
   z-index: ${theme.zIndices.toast};
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     border-radius: 4px 0px 4px 4px;
   }
 `

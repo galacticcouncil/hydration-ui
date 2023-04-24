@@ -50,7 +50,7 @@ export const TableContainer = styled.div`
 
   background-repeat: no-repeat;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     border-radius: 4px;
 
     margin: unset;

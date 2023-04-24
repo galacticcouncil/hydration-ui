@@ -189,7 +189,7 @@ export const RemoveLiquidity = ({
                 withLrna: lrnaAsBigNumber.isGreaterThan(0)
                   ? t("liquidity.remove.modal.toast.withLrna", {
                       lrna: lrnaAsBigNumber,
-                      fixedPointScale: lrnaMeta.decimals ?? 12,
+                      fixedPointScale: lrnaMeta.decimals.toString() ?? 12,
                     })
                   : "",
               }}
@@ -210,7 +210,7 @@ export const RemoveLiquidity = ({
                 withLrna: lrnaAsBigNumber.isGreaterThan(0)
                   ? t("liquidity.remove.modal.toast.withLrna", {
                       lrna: lrnaAsBigNumber,
-                      fixedPointScale: lrnaMeta.decimals ?? 12,
+                      fixedPointScale: lrnaMeta.decimals.toString() ?? 12,
                     })
                   : "",
               }}
@@ -280,7 +280,7 @@ export const RemoveLiquidity = ({
               symbol={position.symbol}
               amount={t("value", {
                 value: removeLiquidityValues?.token,
-                fixedPointScale: meta?.decimals ?? 12,
+                fixedPointScale: meta?.decimals.toString() ?? 12,
                 type: "token",
               })}
             />
@@ -291,7 +291,7 @@ export const RemoveLiquidity = ({
                   symbol="LRNA"
                   amount={t("value", {
                     value: removeLiquidityValues?.lrna,
-                    fixedPointScale: lrnaMeta?.decimals ?? 12,
+                    fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
                     type: "token",
                   })}
                 />

@@ -86,7 +86,7 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
             >
               {t("value.usd", {
                 amount: totalUSD,
-                fixedPointScale: asset.data.decimals,
+                fixedPointScale: asset.data.decimals.toString(),
               })}
             </DollarAssetValue>
           </>
