@@ -1,14 +1,14 @@
 import { AppProviders } from "components/AppProviders/AppProviders"
 import {
-  createBrowserHistory,
   ReactLocation,
   Router,
+  createHashHistory,
 } from "@tanstack/react-location"
 import { routes } from "./routes"
 import { TestnetModal } from "sections/testnet/TestnetModal"
 import { useEffect } from "react"
 
-const history = createBrowserHistory()
+const history = createHashHistory()
 const location = new ReactLocation({ history })
 console.log("fixing")
 export const App = () => {
