@@ -92,6 +92,7 @@ export const ReviewTransaction = (props: Transaction) => {
         ) : (
           <ReviewTransactionForm
             tx={props.tx}
+            isProxy={props.isProxy}
             overrides={props.overrides}
             title={props.title}
             onCancel={handleOnCloseModal}

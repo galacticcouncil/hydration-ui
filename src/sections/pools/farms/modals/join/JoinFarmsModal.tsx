@@ -99,12 +99,11 @@ export const JoinFarmModal = ({
             >
               <div sx={{ flex: "column", gap: 13 }}>
                 <Text>{t("farms.modal.footer.title")}</Text>
-                <Text color="basic500">{t("farms.modal.footer.desc")}</Text>
               </div>
               <Text color="pink600" fs={24} css={{ whiteSpace: "nowrap" }}>
                 {t("value.token", {
                   value: shares,
-                  fixedPointScale: meta.data?.decimals ?? 12,
+                  fixedPointScale: meta.data?.decimals.toString() ?? 12,
                 })}
               </Text>
             </div>

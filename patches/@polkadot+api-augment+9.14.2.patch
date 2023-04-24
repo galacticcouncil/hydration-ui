@@ -1,0 +1,20 @@
+diff --git a/node_modules/@polkadot/api-augment/index.d.ts b/node_modules/@polkadot/api-augment/index.d.ts
+index a3243f5..450ee96 100644
+--- a/node_modules/@polkadot/api-augment/index.d.ts
++++ b/node_modules/@polkadot/api-augment/index.d.ts
+@@ -1,2 +1,2 @@
+ import './detectPackage';
+-export * from './bundle';
++export {}
+diff --git a/node_modules/@polkadot/api-augment/index.js b/node_modules/@polkadot/api-augment/index.js
+index 2774cd5..7bb9531 100644
+--- a/node_modules/@polkadot/api-augment/index.js
++++ b/node_modules/@polkadot/api-augment/index.js
+@@ -2,4 +2,4 @@
+ // SPDX-License-Identifier: Apache-2.0
+ 
+ import "./detectPackage.js";
+-export * from "./bundle.js";
+\ No newline at end of file
++export {}
+\ No newline at end of file

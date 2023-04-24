@@ -33,7 +33,7 @@ export const ClaimRewardsCard = (props: {
       for (let key in claimable.data?.assets) {
         const asset = assetsMeta.data?.find((meta) => meta.id === key)
         const balance = separateBalance(claimable.data?.assets[key], {
-          fixedPointScale: asset?.decimals ?? 12,
+          fixedPointScale: asset?.decimals.toString() ?? 12,
           type: "token",
         })
 

@@ -49,7 +49,7 @@ export const SMobBackground = styled.div`
 
   flex-grow: 1;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     display: none;
   }
 `

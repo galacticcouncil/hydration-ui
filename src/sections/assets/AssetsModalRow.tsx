@@ -41,9 +41,10 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
       <div
         sx={{
           display: "flex",
+          align: "center",
         }}
       >
-        <Icon icon={asset.data.icon} sx={{ mr: 10 }} />
+        <Icon icon={asset.data.icon} sx={{ mr: 10 }} size={30} />
         <div sx={{ mr: 6 }}>
           <Text fw={700} color="white" fs={16} lh={22}>
             {asset.data?.symbol}
@@ -85,7 +86,7 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
             >
               {t("value.usd", {
                 amount: totalUSD,
-                fixedPointScale: asset.data.decimals,
+                fixedPointScale: asset.data.decimals.toString(),
               })}
             </DollarAssetValue>
           </>

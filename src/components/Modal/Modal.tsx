@@ -34,6 +34,8 @@ import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 
 const MODAL_WIDTH = 610
 
+const MODAL_WIDTH = 610
+
 type Props = {
   open: boolean
   onClose?: () => void

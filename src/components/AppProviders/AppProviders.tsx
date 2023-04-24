@@ -8,7 +8,6 @@ import { LoadingPage } from "sections/loading/LoadingPage"
 import { Transactions } from "sections/transaction/Transactions"
 import { theme } from "theme"
 import { ApiPromiseContext } from "utils/api"
-import { GcTransactionCenter } from "sections/gcapps/TransactionCenter"
 
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   const preference = useProviderRpcUrlStore()
@@ -26,7 +25,7 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
               highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
               borderRadius={4}
             >
-              <GcTransactionCenter>{children}</GcTransactionCenter>
+              {children}
               <Transactions />
             </SkeletonTheme>
           </ToastProvider>

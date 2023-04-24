@@ -155,7 +155,7 @@ export const LiquidityPosition = ({
             <Text fs={[16, 16]}>
               {t("liquidity.asset.positions.position.shares", {
                 shares: position.shares,
-                fixedPointScale: meta.data?.decimals ?? 12,
+                fixedPointScale: meta.data?.decimals.toString() ?? 12,
               })}
             </Text>
           </div>
