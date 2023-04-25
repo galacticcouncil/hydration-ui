@@ -60,7 +60,7 @@ export const MobileNavBar = () => {
         .sort((a, b) => a.mobOrder - b.mobOrder)
         .map((item, index) => {
           if (!item.href && item.subItems?.length) {
-            return <HeaderSubMenu item={item} />
+            return <HeaderSubMenu item={item} key={index} />
           }
 
           if (item.external) {
