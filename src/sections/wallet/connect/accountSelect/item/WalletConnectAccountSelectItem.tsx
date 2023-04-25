@@ -1,13 +1,13 @@
-import { Text } from "components/Typography/Text/Text"
-import { Trans, useTranslation } from "react-i18next"
-import { Separator } from "components/Separator/Separator"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { HYDRA_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
-import { useTokenBalance } from "api/balances"
-import { SSelectItem } from "./WalletConnectAccountSelectItem.styled"
-import { WalletConnectAccountSelectAddress } from "sections/wallet/connect/accountSelect/item/address/WalletConnectAccountSelectAddress"
-import { FC } from "react"
 import { useAssetMeta } from "api/assetMeta"
+import { useTokenBalance } from "api/balances"
+import { Separator } from "components/Separator/Separator"
+import { Text } from "components/Typography/Text/Text"
+import { FC } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { WalletConnectAccountSelectAddress } from "sections/wallet/connect/accountSelect/item/address/WalletConnectAccountSelectAddress"
+import { HYDRA_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
+import { SSelectItem } from "./WalletConnectAccountSelectItem.styled"
 
 type Props = {
   isActive: boolean
@@ -48,7 +48,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
           <Text color="basic200" fw={400}>
             {t("value.token", {
               value: data?.balance,
-              fixedPointScale: meta?.decimals,
+              fixedPointScale: meta?.decimals.toString(),
               type: "token",
             })}
           </Text>
@@ -79,7 +79,6 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
           name={t("walletConnect.accountSelect.asset.network")}
           address={hydraAddress}
           theme="substrate"
-          isActive={isActive}
           isProxy={isProxy}
         />
         {!isProxy && (
@@ -92,7 +91,6 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
               name={t("walletConnect.accountSelect.substrate.address")}
               address={polkadotAddress}
               theme={provider}
-              isActive={isActive}
             />
           </>
         )}

@@ -9,7 +9,7 @@ export const SContainer = styled.div`
   color: ${theme.colors.white};
   background: rgba(${theme.rgbColors.primaryA15}, 0.12);
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     padding: 12px 32px;
   }
 `

@@ -41,7 +41,7 @@ export const SContainer = styled.div`
     pointer-events: none;
   }
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     flex-direction: row;
 
     padding: 34px 30px;

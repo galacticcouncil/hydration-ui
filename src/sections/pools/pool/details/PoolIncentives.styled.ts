@@ -9,7 +9,7 @@ export const SInventivesContainer = styled.div`
 
   background: rgba(${theme.rgbColors.gray}, 0.69);
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     margin-left: 30px;
     padding-top: 0;
 

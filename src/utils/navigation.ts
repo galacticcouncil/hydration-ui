@@ -1,3 +1,11 @@
+import { ReactComponent as PoolsAndFarmsIcon } from "assets/icons/PoolsAndFarms.svg"
+import { ReactComponent as TradeIcon } from "assets/icons/Trade.svg"
+import { ReactComponent as TransferIcon } from "assets/icons/TransferTabIcon.svg"
+import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
+import { ReactComponent as IconDCA } from "assets/icons/navigation/IconDCA.svg"
+import { ReactComponent as IconOTC } from "assets/icons/navigation/IconOTC.svg"
+import { ReactComponent as IconSwap } from "assets/icons/navigation/IconSwap.svg"
+
 export const LINKS = {
   home: "/",
   liquidity: "/liquidity",
@@ -8,37 +16,38 @@ export const LINKS = {
   walletVesting: "/wallet/vesting",
   cross_chain: "/cross-chain",
   otc: "/otc",
+  dca: "/dca",
   stats: "/stats",
   statsOverview: "/stats/overview",
   statsPOL: "/stats/POL",
   statsLRNA: "/stats/LRNA",
 }
 
-export const EXTERNAL_LINKS = {
-  lbp: `${import.meta.env.VITE_DOMAIN_URL}/#/lbp`,
-  swap: `${import.meta.env.VITE_DOMAIN_URL}/#/swap`,
-  wallet: `${import.meta.env.VITE_DOMAIN_URL}/#/wallet`,
-  bridge: `https://docs.bsx.fi/howto_bridge/`,
-} as const
-
 const isPoolsPageEnabled = import.meta.env.VITE_FF_POOLS_ENABLED === "true"
 const isXcmPageEnabled = import.meta.env.VITE_FF_XCM_ENABLED === "true"
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
+const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
 
 export const MENU_ITEMS = [
   {
     key: "trade",
-    translationKey: "header.trade",
-    href: LINKS.trade,
+    href: undefined,
+    Icon: TradeIcon,
+    subItems: [
+      { key: "swap", href: LINKS.trade, Icon: IconSwap, enabled: true },
+      { key: "otc", href: LINKS.otc, Icon: IconOTC, enabled: isOtcPageEnabled },
+      { key: "dca", href: LINKS.dca, Icon: IconDCA, enabled: isDcaPageEnabled },
+    ],
     enabled: true,
     external: false,
     mobVisible: true,
     mobOrder: 0,
   },
   {
-    key: "pools",
-    translationKey: "header.liquidity",
+    key: "liquidity",
     href: LINKS.liquidity,
+    Icon: PoolsAndFarmsIcon,
+    subItems: undefined,
     enabled: isPoolsPageEnabled,
     external: false,
     mobVisible: true,
@@ -46,32 +55,29 @@ export const MENU_ITEMS = [
   },
   {
     key: "wallet",
-    translationKey: "header.wallet",
     href: LINKS.walletAssets,
+    Icon: WalletIcon,
+    subItems: undefined,
     enabled: true,
     external: false,
     mobVisible: true,
     mobOrder: 1,
   },
   {
-    key: "cross-chain",
-    translationKey: "header.xcm",
+    key: "xcm",
     href: LINKS.cross_chain,
+    Icon: TransferIcon,
+    subItems: undefined,
     enabled: isXcmPageEnabled,
     external: false,
     mobVisible: false,
     mobOrder: 3,
   },
-  {
-    key: "otc",
-    translationKey: "header.otc",
-    href: LINKS.otc,
-    enabled: isOtcPageEnabled,
-    external: false,
-    mobVisible: false,
-    mobOrder: 4,
-  },
 ] as const
 
-export type TabKeys = typeof MENU_ITEMS[number]["key"]
-export type TabObject = typeof MENU_ITEMS[number]
+export type TabKey = (typeof MENU_ITEMS)[number]["key"]
+export type TabItem = (typeof MENU_ITEMS)[number]
+export type TabSubItem = (typeof MENU_ITEMS)[number]["subItems"]
+export type TabItemWithSubItems = TabItem & {
+  subItems: NonNullable<TabSubItem>
+}

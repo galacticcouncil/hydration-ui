@@ -10,7 +10,7 @@ export const SContainer = styled.div<{ modal: boolean }>`
   margin: ${(p) => (p.modal ? "0 0 20px" : "0")};
   width: 100%;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     background: inherit;
   }
 `

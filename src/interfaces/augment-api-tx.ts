@@ -35,7 +35,7 @@ import type {
   Perbill,
   Permill,
   Perquintill,
-  Weight,
+  WeightV1,
 } from "@polkadot/types/interfaces/runtime"
 import type {
   CommonRuntimeProxyType,
@@ -521,10 +521,10 @@ declare module "@polkadot/api-base/types/submittable" {
         (
           proposalHash: H256 | string | Uint8Array,
           index: Compact<u32> | AnyNumber | Uint8Array,
-          proposalWeightBound: Compact<Weight> | AnyNumber | Uint8Array,
+          proposalWeightBound: Compact<WeightV1> | AnyNumber | Uint8Array,
           lengthBound: Compact<u32> | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [H256, Compact<u32>, Compact<Weight>, Compact<u32>]
+        [H256, Compact<u32>, Compact<WeightV1>, Compact<u32>]
       >
       /**
        * Disapprove a proposal, close, and remove it from the system, regardless of its current
@@ -1224,9 +1224,9 @@ declare module "@polkadot/api-base/types/submittable" {
       serviceOverweight: AugmentedSubmittable<
         (
           index: u64 | AnyNumber | Uint8Array,
-          weightLimit: Weight | AnyNumber | Uint8Array,
+          weightLimit: WeightV1 | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [u64, Weight]
+        [u64, WeightV1]
       >
       /**
        * Generic tx
@@ -1885,14 +1885,14 @@ declare module "@polkadot/api-base/types/submittable" {
             | { height?: any; index?: any }
             | string,
           callHash: U8aFixed | string | Uint8Array,
-          maxWeight: Weight | AnyNumber | Uint8Array,
+          maxWeight: WeightV1 | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
         [
           u16,
           Vec<AccountId32>,
           Option<PalletMultisigTimepoint>,
           U8aFixed,
-          Weight,
+          WeightV1,
         ]
       >
       /**
@@ -1957,7 +1957,7 @@ declare module "@polkadot/api-base/types/submittable" {
             | string,
           call: WrapperKeepOpaque<Call> | object | string | Uint8Array,
           storeCall: bool | boolean | Uint8Array,
-          maxWeight: Weight | AnyNumber | Uint8Array,
+          maxWeight: WeightV1 | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
         [
           u16,
@@ -1965,7 +1965,7 @@ declare module "@polkadot/api-base/types/submittable" {
           Option<PalletMultisigTimepoint>,
           WrapperKeepOpaque<Call>,
           bool,
-          Weight,
+          WeightV1,
         ]
       >
       /**
@@ -2876,9 +2876,9 @@ declare module "@polkadot/api-base/types/submittable" {
             | { V2: any }
             | string
             | Uint8Array,
-          maxWeight: Weight | AnyNumber | Uint8Array,
+          maxWeight: WeightV1 | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [XcmVersionedXcm, Weight]
+        [XcmVersionedXcm, WeightV1]
       >
       /**
        * Set a safe XCM version (the version that XCM should be encoded with if the most recent
@@ -3863,10 +3863,10 @@ declare module "@polkadot/api-base/types/submittable" {
         (
           proposalHash: H256 | string | Uint8Array,
           index: Compact<u32> | AnyNumber | Uint8Array,
-          proposalWeightBound: Compact<Weight> | AnyNumber | Uint8Array,
+          proposalWeightBound: Compact<WeightV1> | AnyNumber | Uint8Array,
           lengthBound: Compact<u32> | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [H256, Compact<u32>, Compact<Weight>, Compact<u32>]
+        [H256, Compact<u32>, Compact<WeightV1>, Compact<u32>]
       >
       /**
        * Disapprove a proposal, close, and remove it from the system, regardless of its current

@@ -831,7 +831,9 @@ import type {
   PhantomData,
   PreRuntime,
   Releases,
+  RuntimeCall,
   RuntimeDbWeight,
+  RuntimeEvent,
   Seal,
   SealV0,
   SignedBlock,
@@ -852,6 +854,7 @@ import type {
   ValidatorIdOf,
   Weight,
   WeightMultiplier,
+  WeightV0,
   WeightV1,
   WeightV2,
 } from "@polkadot/types/interfaces/runtime"
@@ -2030,10 +2033,12 @@ declare module "@polkadot/types/types/registry" {
     RoundSnapshot: RoundSnapshot
     RoundState: RoundState
     RpcMethods: RpcMethods
+    RuntimeCall: RuntimeCall
     RuntimeDbWeight: RuntimeDbWeight
     RuntimeDispatchInfo: RuntimeDispatchInfo
     RuntimeDispatchInfoV1: RuntimeDispatchInfoV1
     RuntimeDispatchInfoV2: RuntimeDispatchInfoV2
+    RuntimeEvent: RuntimeEvent
     RuntimeVersion: RuntimeVersion
     RuntimeVersionApi: RuntimeVersionApi
     RuntimeVersionPartial: RuntimeVersionPartial
@@ -2308,6 +2313,7 @@ declare module "@polkadot/types/types/registry" {
     WeightMultiplier: WeightMultiplier
     WeightPerClass: WeightPerClass
     WeightToFeeCoefficient: WeightToFeeCoefficient
+    WeightV0: WeightV0
     WeightV1: WeightV1
     WeightV2: WeightV2
     WildFungibility: WildFungibility

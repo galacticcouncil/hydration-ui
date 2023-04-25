@@ -57,6 +57,7 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
             <WalletConnectAccountSelect
               currentAddress={account?.address.toString()}
               provider={activeProvider}
+              onClose={onClose}
               onSelect={(account) => {
                 setUserSelectedProvider(null)
                 setAccount(account)

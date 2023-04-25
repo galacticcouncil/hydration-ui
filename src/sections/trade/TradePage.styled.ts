@@ -5,16 +5,16 @@ export const SContainer = styled.div`
   --scrollbar-url: url("images/Scrollbar.svg");
   margin: -16px -12px;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     margin: unset;
   }
 
-  @media (${theme.viewport.lt.xs}) {
+  @media ${theme.viewport.lt.xs} {
     display: flex;
     flex: 1;
     background: #111320;
 
-    gc-xcm-app {
+    gc-trade-app {
       flex: 1;
     }
   }

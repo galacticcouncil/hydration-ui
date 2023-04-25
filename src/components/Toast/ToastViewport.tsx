@@ -15,7 +15,7 @@ export const ToastViewport = styled(Viewport)`
 
   list-style: none;
 
-  @media (${theme.viewport.gte.sm}) {
+  @media ${theme.viewport.gte.sm} {
     margin-bottom: 0;
   }
 `

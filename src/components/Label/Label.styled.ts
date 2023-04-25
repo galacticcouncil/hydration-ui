@@ -30,7 +30,6 @@ export const SInfoIcon = styled(InfoIcon)`
 
 export const SLabel = styled(Label)<{ error?: string }>`
   color: ${(p) => (p.error ? theme.colors.error : theme.colors.white)};
-  text-transform: capitalize;
 `
 
 export const ErrorMessage = styled.p`
@@ -38,7 +37,6 @@ export const ErrorMessage = styled.p`
   font-size: 12px;
   line-height: 16px;
   margin-top: 2px;
-  text-transform: capitalize;
 `
 
 export const LabelWrapper = styled.div`

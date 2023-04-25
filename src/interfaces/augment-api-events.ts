@@ -27,7 +27,7 @@ import type {
   H256,
   Permill,
   Perquintill,
-  Weight,
+  WeightV1,
 } from "@polkadot/types/interfaces/runtime"
 import type {
   CommonRuntimeProxyType,
@@ -631,16 +631,16 @@ declare module "@polkadot/api-base/types/events" {
        **/
       OverweightEnqueued: AugmentedEvent<
         ApiType,
-        [messageId: U8aFixed, overweightIndex: u64, requiredWeight: Weight],
-        { messageId: U8aFixed; overweightIndex: u64; requiredWeight: Weight }
+        [messageId: U8aFixed, overweightIndex: u64, requiredWeight: WeightV1],
+        { messageId: U8aFixed; overweightIndex: u64; requiredWeight: WeightV1 }
       >
       /**
        * Downward message from the overweight queue was executed.
        **/
       OverweightServiced: AugmentedEvent<
         ApiType,
-        [overweightIndex: u64, weightUsed: Weight],
-        { overweightIndex: u64; weightUsed: Weight }
+        [overweightIndex: u64, weightUsed: WeightV1],
+        { overweightIndex: u64; weightUsed: WeightV1 }
       >
       /**
        * Downward message is unsupported version of XCM.
@@ -655,8 +655,16 @@ declare module "@polkadot/api-base/types/events" {
        **/
       WeightExhausted: AugmentedEvent<
         ApiType,
-        [messageId: U8aFixed, remainingWeight: Weight, requiredWeight: Weight],
-        { messageId: U8aFixed; remainingWeight: Weight; requiredWeight: Weight }
+        [
+          messageId: U8aFixed,
+          remainingWeight: WeightV1,
+          requiredWeight: WeightV1,
+        ],
+        {
+          messageId: U8aFixed
+          remainingWeight: WeightV1
+          requiredWeight: WeightV1
+        }
       >
       /**
        * Generic event
@@ -1456,8 +1464,8 @@ declare module "@polkadot/api-base/types/events" {
        **/
       DownwardMessagesProcessed: AugmentedEvent<
         ApiType,
-        [weightUsed: Weight, dmqHead: H256],
-        { weightUsed: Weight; dmqHead: H256 }
+        [weightUsed: WeightV1, dmqHead: H256],
+        { weightUsed: WeightV1; dmqHead: H256 }
       >
       /**
        * Some downward messages have been received and will be processed.
@@ -1567,7 +1575,10 @@ declare module "@polkadot/api-base/types/events" {
        *
        * \[ id, pallet index, call index, actual weight, max budgeted weight \]
        **/
-      NotifyOverweight: AugmentedEvent<ApiType, [u64, u8, u8, Weight, Weight]>
+      NotifyOverweight: AugmentedEvent<
+        ApiType,
+        [u64, u8, u8, WeightV1, WeightV1]
+      >
       /**
        * A given location which had a version change subscription was dropped owing to an error
        * migrating the location to our new XCM format.
@@ -2628,32 +2639,32 @@ declare module "@polkadot/api-base/types/events" {
        **/
       Fail: AugmentedEvent<
         ApiType,
-        [messageHash: Option<H256>, error: XcmV2TraitsError, weight: Weight],
-        { messageHash: Option<H256>; error: XcmV2TraitsError; weight: Weight }
+        [messageHash: Option<H256>, error: XcmV2TraitsError, weight: WeightV1],
+        { messageHash: Option<H256>; error: XcmV2TraitsError; weight: WeightV1 }
       >
       /**
        * An XCM exceeded the individual message weight budget.
        **/
       OverweightEnqueued: AugmentedEvent<
         ApiType,
-        [sender: u32, sentAt: u32, index: u64, required: Weight],
-        { sender: u32; sentAt: u32; index: u64; required: Weight }
+        [sender: u32, sentAt: u32, index: u64, required: WeightV1],
+        { sender: u32; sentAt: u32; index: u64; required: WeightV1 }
       >
       /**
        * An XCM from the overweight queue was executed with the given actual weight used.
        **/
       OverweightServiced: AugmentedEvent<
         ApiType,
-        [index: u64, used: Weight],
-        { index: u64; used: Weight }
+        [index: u64, used: WeightV1],
+        { index: u64; used: WeightV1 }
       >
       /**
        * Some XCM was executed ok.
        **/
       Success: AugmentedEvent<
         ApiType,
-        [messageHash: Option<H256>, weight: Weight],
-        { messageHash: Option<H256>; weight: Weight }
+        [messageHash: Option<H256>, weight: WeightV1],
+        { messageHash: Option<H256>; weight: WeightV1 }
       >
       /**
        * An upward message was sent to the relay chain.
