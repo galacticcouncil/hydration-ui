@@ -1,4 +1,4 @@
-import { WalletVestingHeaderContainer } from "./WalletVestingHeader"
+import { WalletVestingHeader } from "./WalletVestingHeader"
 import { WalletVestingBox } from "./WalletVestingBox"
 
 export const WalletVesting = () => {
@@ -10,7 +10,7 @@ export const WalletVesting = () => {
         flexGrow: 1,
       }}
     >
-      <WalletVestingHeaderContainer />
+      <WalletVestingHeader />
       <WalletVestingBox />
     </div>
   )

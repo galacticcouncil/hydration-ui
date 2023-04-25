@@ -7,6 +7,7 @@ import { useVestingSchedules } from "../../../api/vesting"
 import { useAccountStore } from "../../../state/store"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { useApiPromise } from "utils/api"
+import { isApiLoaded } from "utils/helpers"
 
 const VestingBoxContent = () => {
   const { account } = useAccountStore()
@@ -45,11 +46,7 @@ export const WalletVestingBox = () => {
         >
           {t("wallet.vesting.your_vesting")}
         </Heading>
-        {Object.keys(api).length ? (
-          <VestingBoxContent />
-        ) : (
-          <WalletVestingEmpty />
-        )}
+        {isApiLoaded(api) ? <VestingBoxContent /> : <WalletVestingEmpty />}
       </SBox>
       <SMobBackground />
     </div>

@@ -14,8 +14,9 @@ import { BN_0, DAY_IN_MILLISECONDS } from "../../../utils/constants"
 import { separateBalance } from "utils/balance"
 import { useApiIds } from "api/consts"
 import Skeleton from "react-loading-skeleton"
+import { isApiLoaded } from "utils/helpers"
 
-export const WalletVestingHeaderContainer = () => {
+export const WalletVestingHeader = () => {
   const { t } = useTranslation()
   const api = useApiPromise()
 
@@ -28,8 +29,8 @@ export const WalletVestingHeaderContainer = () => {
         justify: "space-between",
       }}
     >
-      {Object.keys(api).length ? (
-        <WalletVestingHeader />
+      {isApiLoaded(api) ? (
+        <WalletVestingHeaderContent />
       ) : (
         <div
           sx={{
@@ -46,7 +47,7 @@ export const WalletVestingHeaderContainer = () => {
   )
 }
 
-export const WalletVestingHeader = () => {
+const WalletVestingHeaderContent = () => {
   const { t } = useTranslation()
 
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()

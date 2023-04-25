@@ -18,7 +18,7 @@ import { useMedia } from "react-use"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { Icon } from "components/Icon/Icon"
 import { useAllUserDepositShare } from "../../position/FarmingPosition.utils"
-import { CustomSeparator } from "sections/pools/header/PoolsHeader"
+import { HeaderSeparator } from "sections/pools/header/PoolsHeader"
 
 export const ClaimAllDropdown = () => {
   const { t } = useTranslation()
@@ -137,7 +137,7 @@ export const ClaimAllDropdown = () => {
 
   return (
     <>
-      <CustomSeparator />
+      <HeaderSeparator />
       <div sx={{ flex: "row" }} css={{ textAlign: "right" }}>
         <Tooltip.Root
           delayDuration={0}

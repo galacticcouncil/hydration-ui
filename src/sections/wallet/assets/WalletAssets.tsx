@@ -9,6 +9,7 @@ import { useApiPromise } from "utils/api"
 import { WalletAssetsTableSkeleton } from "./table/skeleton/WalletAssetsTableSkeleton"
 import { WalletAssetsHydraPositionsSkeleton } from "./hydraPositions/skeleton/WalletAssetsHydraPositionsSkeleton"
 import { WalletFarmingPositionsSkeleton } from "./farmingPositions.tsx/skeleton/WalletFarmingPositionsSkeleton"
+import { isApiLoaded } from "utils/helpers"
 
 const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
@@ -16,7 +17,7 @@ export const WalletAssets = () => {
   const { account } = useAccountStore()
   const api = useApiPromise()
 
-  if (!Object.keys(api).length) {
+  if (!isApiLoaded(api)) {
     return (
       <div sx={{ mt: [34, 56] }}>
         <WalletAssetsHeader />

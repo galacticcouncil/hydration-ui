@@ -42,7 +42,7 @@ export const useOrdersTable = (
   const columns = [
     accessor("id", {
       id: "pair",
-      header: "Assets",
+      header: t("otc.offers.table.header.assets"),
       cell: ({ row }) => (
         <OrderPairColumn
           offering={row.original.offering}

@@ -11,6 +11,7 @@ import { ClaimAllDropdown } from "../farms/components/claimAllDropdown/ClaimAllD
 import { useApiPromise } from "../../../utils/api"
 import { Fragment, ReactElement } from "react"
 import Skeleton from "react-loading-skeleton"
+import { isApiLoaded } from "utils/helpers"
 
 type Props = {
   myPositions: boolean
@@ -18,7 +19,7 @@ type Props = {
   disableMyPositions: boolean
 }
 
-export const CustomSeparator = () => {
+export const HeaderSeparator = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   return (
     <Separator
@@ -47,7 +48,7 @@ export const HeaderValues = ({
   }>
 }) => {
   const api = useApiPromise()
-  const isApi = Object.keys(api).length
+  const isApi = isApiLoaded(api)
 
   const headerValues = values.reduce((acc, item, i, array) => {
     const isLastElement = i + 1 === array.length
@@ -82,7 +83,7 @@ export const HeaderValues = ({
       )
 
       if (!isLastElement && !item.withoutSeparator)
-        acc.push(<CustomSeparator key={`${i}_separator`} />)
+        acc.push(<HeaderSeparator key={`${i}_separator`} />)
     }
 
     return acc
