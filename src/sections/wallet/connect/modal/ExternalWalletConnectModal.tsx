@@ -177,26 +177,18 @@ export const ExternalWalletConnectModal = ({
             )
           }}
         />
-        <Controller
-          control={form.control}
-          name="delegates"
-          render={({ fieldState: { error } }) =>
-            error ? (
-              <>
-                <Spacer size={15} />
-                <Text color="red400" font="ChakraPetchBold" fs={12}>
-                  {t("walletConnect.accountSelect.proxyAccount.error")}
-                </Text>
-                <Spacer size={6} />
-                <Text fw={400} color="red400" fs={12}>
-                  {t("walletConnect.accountSelect.proxyAccount.errorDesc")}
-                </Text>
-              </>
-            ) : (
-              <div />
-            )
-          }
-        />
+        {form.formState.errors.delegates ? (
+          <>
+            <Spacer size={15} />
+            <Text color="red400" font="ChakraPetchBold" fs={12}>
+              {t("walletConnect.accountSelect.proxyAccount.error")}
+            </Text>
+            <Spacer size={6} />
+            <Text fw={400} color="red400" fs={12}>
+              {t("walletConnect.accountSelect.proxyAccount.errorDesc")}
+            </Text>
+          </>
+        ) : null}
         <Spacer size={35} />
         <Button
           disabled={!!form.formState.errors.address}
