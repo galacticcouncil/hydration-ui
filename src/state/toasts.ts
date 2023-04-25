@@ -7,7 +7,7 @@ import { useAccountStore } from "./store"
 
 export const TOAST_MESSAGES = ["onLoading", "onSuccess", "onError"] as const
 export type ToastVariant = "info" | "success" | "error" | "progress" | "unknown"
-export type ToastMessageType = (typeof TOAST_MESSAGES)[number]
+export type ToastMessageType = typeof TOAST_MESSAGES[number]
 
 type ToastParams = {
   id?: string

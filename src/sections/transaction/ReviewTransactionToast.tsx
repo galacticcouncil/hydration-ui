@@ -25,10 +25,10 @@ export function ReviewTransactionToast<
   const toastRef = useRef<typeof toast>(toast)
   useEffect(() => void (toastRef.current = toast), [toast])
 
-  const reviewRef = useRef<(typeof props)["onReview"]>(props.onReview)
+  const reviewRef = useRef<typeof props["onReview"]>(props.onReview)
   useEffect(() => void (reviewRef.current = props.onReview), [props.onReview])
 
-  const closeRef = useRef<(typeof props)["onClose"]>(props.onClose)
+  const closeRef = useRef<typeof props["onClose"]>(props.onClose)
   useEffect(() => {
     closeRef.current = props.onClose
   }, [props.onClose, props.id])

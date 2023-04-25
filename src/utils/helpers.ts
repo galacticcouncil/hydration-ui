@@ -106,10 +106,7 @@ const validKeys = [
   "isFetchedAfterMount",
 ] as const
 
-type UseQueryReduceResult<T> = Pick<
-  UseQueryResult<T>,
-  (typeof validKeys)[number]
->
+type UseQueryReduceResult<T> = Pick<UseQueryResult<T>, typeof validKeys[number]>
 
 type TupleQueryResult<Tuple extends readonly unknown[]> = {
   [P in keyof Tuple]: UseQueryReduceResult<Tuple[P]> | UseQueryResult<Tuple[P]>

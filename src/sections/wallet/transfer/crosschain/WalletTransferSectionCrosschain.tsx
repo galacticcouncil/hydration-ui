@@ -4,8 +4,8 @@ import { CROSSCHAINS } from "./WalletTransferSectionCrosschain.utils"
 
 type Props = {
   onClose: () => void
-  active?: (typeof CROSSCHAINS)[number]
-  setActive: (chain: (typeof CROSSCHAINS)[number] | undefined) => void
+  active?: typeof CROSSCHAINS[number]
+  setActive: (chain: typeof CROSSCHAINS[number] | undefined) => void
 }
 export function WalletTransferSectionCrosschain({
   onClose,

@@ -16,7 +16,7 @@ import {
 } from "./StatsTilesTile.styled"
 
 type Props = {
-  id: (typeof STATS_TILES)[number]["id"]
+  id: typeof STATS_TILES[number]["id"]
   link: string
   variant: keyof typeof TILE_COLOR
 }
