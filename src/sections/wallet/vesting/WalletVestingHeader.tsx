@@ -83,7 +83,7 @@ const WalletVestingHeaderContent = () => {
               i18nKey="wallet.vesting.total_vested.value"
               tOptions={{
                 ...separateBalance(totalVestedValue, {
-                  fixedPointScale: nativeAsset?.decimals ?? 12,
+                  fixedPointScale: nativeAsset?.decimals.toString() ?? 12,
                   type: "token",
                 }),
                 symbol: nativeAsset?.symbol,
@@ -106,7 +106,7 @@ const WalletVestingHeaderContent = () => {
         >
           {t("value.usd", {
             amount: totalVestedUSD,
-            fixedPointScale: nativeAsset?.decimals ?? 12,
+            fixedPointScale: nativeAsset?.decimals.toString() ?? 12,
           })}
         </Text>
       </div>

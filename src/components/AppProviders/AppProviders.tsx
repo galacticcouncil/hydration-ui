@@ -7,7 +7,6 @@ import { SkeletonTheme } from "react-loading-skeleton"
 import { Transactions } from "sections/transaction/Transactions"
 import { theme } from "theme"
 import { ApiPromiseContext } from "utils/api"
-import { GcTransactionCenter } from "sections/gcapps/TransactionCenter"
 import { ApiPromise } from "@polkadot/api"
 
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
@@ -28,7 +27,7 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
               highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
               borderRadius={4}
             >
-              <GcTransactionCenter>{children}</GcTransactionCenter>
+              {children}
               <Transactions />
             </SkeletonTheme>
           </ToastProvider>

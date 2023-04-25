@@ -55,7 +55,11 @@ interface Store {
   cancelTransaction: (hash: string) => void
 }
 
-export const externalWallet = { provider: "external", name: "ExternalAccount" }
+export const externalWallet = {
+  provider: "external",
+  name: "External Account",
+  proxyName: "Proxy Account",
+}
 
 export const PROXY_WALLET_PROVIDER = "polkadot-js"
 
@@ -78,7 +82,7 @@ export const useAccountStore = create(
           let externalWalletAddress: string | null = null
           if (import.meta.env.VITE_FF_EXTERNAL_WALLET_ENABLED === "true") {
             // check if there is an external account address within URL
-            const search = window.location.hash.split("?").pop()
+            const search = window.location.href.split("?").pop()
             externalWalletAddress = new URLSearchParams(search).get("account")
           }
 
