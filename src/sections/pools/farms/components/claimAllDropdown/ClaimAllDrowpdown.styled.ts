@@ -16,7 +16,7 @@ export const STriggerButton = styled(Tooltip.Trigger)`
 
   border: 1px solid transparent;
 
-  padding: 14px;
+  padding: 10px 16px;
 
   display: flex;
   align-items: center;

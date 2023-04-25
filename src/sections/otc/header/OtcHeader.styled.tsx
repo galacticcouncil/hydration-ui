@@ -1,3 +1,4 @@
+import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
@@ -22,7 +23,7 @@ export const SHeader = styled.div`
   }
 `
 
-export const STabs = styled.div`
+export const STabs = styled.div<{ disabled: boolean }>`
   font-family: "ChakraPetch";
   font-style: normal;
   font-weight: 500;
@@ -46,16 +47,20 @@ export const STabs = styled.div`
     opacity: 0.6;
   }
 
-  label:hover,
-  input:focus + label {
-    color: #fff;
-    opacity: 1;
-  }
+  ${({ disabled }) =>
+    !disabled &&
+    css`
+      label:hover,
+      input:focus + label {
+        color: #fff;
+        opacity: 1;
+      }
 
-  label:hover::after {
-    background: #fff;
-    opacity: 1;
-  }
+      label:hover::after {
+        background: #fff;
+        opacity: 1;
+      }
+    `}
 
   input:checked + label {
     opacity: 1;

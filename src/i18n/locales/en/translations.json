@@ -185,6 +185,7 @@
   "otc.order.remaining": "{{ filled, bignumber }} / {{ initial, bignumber }} {{ symbol }}",
   "otc.offers.table.header.offering": "Offering",
   "otc.offers.table.header.accepting": "Accepting",
+  "otc.offers.table.header.assets": "Assets",
   "otc.offers.table.header.price": "Price",
   "otc.offers.table.header.status": "Order status",
   "otc.offers.table.actions.fill": "Fill order",

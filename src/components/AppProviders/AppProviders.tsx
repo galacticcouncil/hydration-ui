@@ -4,20 +4,22 @@ import { InvalidateOnBlock } from "components/InvalidateOnBlock"
 import { ToastProvider } from "components/Toast/ToastProvider"
 import { FC, PropsWithChildren } from "react"
 import { SkeletonTheme } from "react-loading-skeleton"
-import { LoadingPage } from "sections/loading/LoadingPage"
 import { Transactions } from "sections/transaction/Transactions"
 import { theme } from "theme"
 import { ApiPromiseContext } from "utils/api"
+import { ApiPromise } from "@polkadot/api"
 
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   const preference = useProviderRpcUrlStore()
   const api = useProvider(preference.rpcUrl)
 
-  if (!preference._hasHydrated || !api.data) return <LoadingPage />
-
   return (
     <TooltipProvider>
-      <ApiPromiseContext.Provider value={api.data}>
+      <ApiPromiseContext.Provider
+        value={
+          api.data && preference._hasHydrated ? api.data : ({} as ApiPromise)
+        }
+      >
         <InvalidateOnBlock>
           <ToastProvider>
             <SkeletonTheme
