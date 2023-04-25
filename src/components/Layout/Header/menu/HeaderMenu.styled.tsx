@@ -62,10 +62,6 @@ export const SSubMenuContainer = styled(Content)`
 
   animation: ${fadeInKeyframes} 0.15s ease-in-out;
   transform-origin: top;
-
-  &[data-state="delayed-open"],
-  &[data-state="instant-open"] {
-  }
 `
 
 export const SSubMenu = styled.div`
