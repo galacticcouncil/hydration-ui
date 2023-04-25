@@ -13,6 +13,8 @@ import { BLOCK_TIME, BN_0, BN_QUINTILL } from "utils/constants"
 import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useBestNumber } from "./chain"
+import { fixed_from_rational } from "@galacticcouncil/math-liquidity-mining"
+import BN from "bignumber.js"
 
 export function useActiveYieldFarms(poolIds: Array<Maybe<u32 | string>>) {
   const api = useApiPromise()
@@ -321,6 +323,69 @@ export const useFarmAprs = (
     return farms.map((farm) => getFarmApr(bestNumber, farm))
   })
 }
+
+export const useOraclePrices = (
+  assets: Array<{
+    rewardCurrency: string | undefined
+    incentivizedAsset: string | undefined
+  }>,
+) => {
+  const api = useApiPromise()
+  return useQueries({
+    queries: assets.map(({ rewardCurrency, incentivizedAsset }) => ({
+      queryKey: QUERY_KEYS.oraclePrice(rewardCurrency, incentivizedAsset),
+      queryFn:
+        rewardCurrency != null && incentivizedAsset != null
+          ? getOraclePrice(api, rewardCurrency, incentivizedAsset)
+          : undefinedNoop,
+      enabled: rewardCurrency != null && incentivizedAsset != null,
+    })),
+  })
+}
+
+export const useOraclePrice = (
+  rewardCurrency: string | undefined,
+  incentivizedAsset: string | undefined,
+) => {
+  const api = useApiPromise()
+  return useQuery(
+    QUERY_KEYS.oraclePrice(rewardCurrency, incentivizedAsset),
+    rewardCurrency != null && incentivizedAsset != null
+      ? getOraclePrice(api, rewardCurrency, incentivizedAsset)
+      : undefinedNoop,
+    { enabled: rewardCurrency != null && incentivizedAsset != null },
+  )
+}
+
+const getOraclePrice =
+  (api: ApiPromise, rewardCurrency: string, incentivizedAsset: string) =>
+  async () => {
+    const orderedAssets = [rewardCurrency, incentivizedAsset].sort() as [
+      string,
+      string,
+    ]
+    const res = await api.query.emaOracle.oracles(
+      "omnipool",
+      orderedAssets,
+      "TenMinutes",
+    )
+
+    const [data] = res.unwrap()
+    const n = data.price.n.toBigNumber()
+    const d = data.price.d.toBigNumber()
+
+    let oraclePrice
+    if (Number(rewardCurrency) < Number(incentivizedAsset)) {
+      oraclePrice = fixed_from_rational(n.toString(), d.toString())
+    } else {
+      oraclePrice = fixed_from_rational(d.toString(), n.toString())
+    }
+
+    return {
+      id: { rewardCurrency, incentivizedAsset },
+      oraclePrice: BN(oraclePrice),
+    }
+  }
 
 export const getMinAndMaxAPR = (farms: FarmAprs) => {
   const aprs = farms.data ? farms.data.map(({ apr }) => apr) : [BN_0]

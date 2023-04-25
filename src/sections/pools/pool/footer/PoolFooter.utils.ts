@@ -94,6 +94,7 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
           position.shares.toString(),
           positionPrice.toFixed(0),
           position.shares.toString(),
+          "0", // fee zero
         ]
 
         const liquidityOutResult = calculate_liquidity_out.apply(this, params)

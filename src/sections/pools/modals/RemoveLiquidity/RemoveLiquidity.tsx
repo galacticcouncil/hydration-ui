@@ -15,18 +15,22 @@ import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/W
 import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
+  calculate_withdrawal_fee,
 } from "@galacticcouncil/math-omnipool"
 import { useOmnipoolAssets } from "../../../../api/omnipool"
 import { useTokenBalance } from "../../../../api/balances"
 import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "../../../../utils/api"
-import { BN_10 } from "../../../../utils/constants"
+import { BN_10, BN_QUINTILL } from "../../../../utils/constants"
 import { useAssetMetaList } from "../../../../api/assetMeta"
-import { useApiIds } from "../../../../api/consts"
+import { useApiIds, useMinWithdrawalFee } from "api/consts"
 import BN from "bignumber.js"
 import { getFloatingPointAmount } from "utils/balance"
 import { useStore } from "../../../../state/store"
 import BigNumber from "bignumber.js"
 import { Spacer } from "components/Spacer/Spacer"
+import { useSpotPrice } from "api/spotPrice"
+import { useOraclePrice } from "api/farms"
+import { SummaryRow } from "components/Summary/SummaryRow"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
@@ -119,6 +123,10 @@ export const RemoveLiquidity = ({
   const apiIds = useApiIds()
   const metas = useAssetMetaList([apiIds.data?.hubId, position.assetId])
 
+  const spotPrice = useSpotPrice(apiIds.data?.hubId, position.assetId)
+  const oracle = useOraclePrice(position.assetId, apiIds.data?.hubId)
+  const minWithdrawalFee = useMinWithdrawalFee()
+  console.log({ spotPrice, oracle, minWithdrawalFee })
   const meta = metas.data?.find((m) => m.id.toString() === position.assetId)
   const lrnaMeta = metas.data?.find(
     (m) => m.id.toString() === apiIds.data?.hubId,
@@ -142,7 +150,35 @@ export const RemoveLiquidity = ({
 
   const removeLiquidityValues = useMemo(() => {
     const positionPrice = position.price.times(BN_10.pow(18))
-    if (omnipoolBalance.data && omnipoolAsset?.data) {
+    if (
+      omnipoolBalance.data &&
+      omnipoolAsset?.data &&
+      spotPrice.data &&
+      oracle.data &&
+      minWithdrawalFee.data &&
+      apiIds.data
+    ) {
+      const oraclePrice = oracle.data.oraclePrice
+
+      console.log(
+        spotPrice.data.spotPrice.toFixed(),
+        oraclePrice.toString(),
+        minWithdrawalFee.data.toString(),
+      )
+
+      /*const withdrawalFee = calculate_withdrawal_fee(
+        "65630583745686200",
+        "65630583745686200",
+        "0.01",
+      )*/
+
+      const withdrawalFee = calculate_withdrawal_fee(
+        spotPrice.data.spotPrice.toString(),
+        oraclePrice.toString(),
+        minWithdrawalFee.data.toString(),
+      )
+      console.log(withdrawalFee, "withdrawalFee")
+
       const params: Parameters<typeof calculate_liquidity_out> = [
         omnipoolBalance.data.balance.toString(),
         omnipoolAsset.data.hubReserve.toString(),
@@ -151,13 +187,26 @@ export const RemoveLiquidity = ({
         position.shares.toString(),
         positionPrice.toFixed(0),
         removeSharesValue.toFixed(0),
+        withdrawalFee,
       ]
       return {
         token: calculate_liquidity_out.apply(this, params),
         lrna: calculate_liquidity_lrna_out.apply(this, params),
+        withdrawalFee,
       }
     }
-  }, [omnipoolBalance, omnipoolAsset, position, removeSharesValue])
+  }, [
+    position.price,
+    position.providedAmount,
+    position.shares,
+    omnipoolBalance.data,
+    omnipoolAsset?.data,
+    spotPrice.data,
+    oracle.data,
+    minWithdrawalFee.data,
+    apiIds.data,
+    removeSharesValue,
+  ])
 
   const handleSubmit = async (values: FormValues<typeof form>) => {
     const value = position.shares.div(100).times(values.value)
@@ -298,6 +347,17 @@ export const RemoveLiquidity = ({
               )}
           </STradingPairContainer>
         </div>
+        <SummaryRow
+          label="Estimated fee for withdrawing liquidity"
+          content={
+            <Text fs={14}>
+              {BN(removeLiquidityValues?.withdrawalFee ?? "")
+                .div(BN_QUINTILL)
+                .multipliedBy(100) // percentage
+                .toString()}
+            </Text>
+          }
+        />
         <Spacer size={20} />
         <Button variant="primary">{t("liquidity.remove.modal.confirm")}</Button>
       </form>

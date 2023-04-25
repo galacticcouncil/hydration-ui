@@ -2137,35 +2137,35 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-lbp/-/math-lbp-0.0.7.tgz#3982a11b57590f1b87f89ec7ab0b4ca87e49a596"
   integrity sha512-lK/X1JCVu1q5slr8kWmDDrktGR+TD0gEM+wpeMRoXZdGZh00NzUCF47JaXSjnn1dAtjhOXRYbwhbaZPGfyP4nQ==
 
-"@galacticcouncil/math-lbp@^0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-lbp/-/math-lbp-0.0.8.tgz#698f229d6a6f75e331f07186528a5d9b0ec2d63d"
-  integrity sha512-TmW+qNOrFSuH1v6oKwhgiCeVixczfgvigUN59EELcn58fTud/R2ovI8VFHni5PtfHm2R17lxh51YIsy/gfGYeQ==
+"@galacticcouncil/math-lbp@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-lbp/-/math-lbp-0.1.3.tgz#ed5f613ce19e0232a8b4b5e36befe9cb4aabbcd6"
+  integrity sha512-UKIcyCB5MaY5wlkPX+hyrf44McGt28R0Mw2sGgN8gmn27KnXsai+13dsVSDPUxPAU2oJc9A+5m0pHSdh20b5PA==
 
-"@galacticcouncil/math-liquidity-mining@^0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-liquidity-mining/-/math-liquidity-mining-0.0.8.tgz#81fb21a95bf2cfaf1f5a860fb5cc0c9eff0c3430"
-  integrity sha512-gQwblRpmXU0om1AnqlDzkICllZ30NE6y9+ATY6ViXI24xa9CD6XE0BCyceW4vA7KrvDnCEL2Js3K8L1oV85udQ==
+"@galacticcouncil/math-liquidity-mining@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-liquidity-mining/-/math-liquidity-mining-0.1.3.tgz#88d15f50d657f4da79250be206a66563db1a8f7e"
+  integrity sha512-PybIwxqrPHJm96z5GWQPxIZgq8pGcNpM9tTyorxeHGbn2rF54QTN01TQNitn/jIQoByjZggo8szqdO1AktZH9A==
 
 "@galacticcouncil/math-omnipool@^0.0.7":
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-omnipool/-/math-omnipool-0.0.7.tgz#bd96f8bdba3e54bc8f2c0345b75f9e9831754cd2"
   integrity sha512-CQri4ibga4SI5SVvsqhWV95eeAzuGDyS9U7cjE3QsXPV7sUl7tjkEz5+Xgwvf0FxqlPSb/u23xV6Z65qmfZDkw==
 
-"@galacticcouncil/math-omnipool@^0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-omnipool/-/math-omnipool-0.0.8.tgz#67ff40f1e78bcf5c3e7890afb4c0e9ddd20adea8"
-  integrity sha512-xxmpdjshKqZzkYXYPYOGkTKeUHWfzPTw3gLEnyqIOTlK6FugtY6+zqdtk9S9KwGzeElEa7NQ5Sk1suGZF2kfrQ==
+"@galacticcouncil/math-omnipool@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-omnipool/-/math-omnipool-0.1.3.tgz#45ccb95c8196768e8a96577f56f7f90d48dcb44b"
+  integrity sha512-uA0O+9KA+BlFeLyU7vhKKhJEiiKUwu5ozD14fhJ3vCm11XbGQPwEboChiICXAKysc8BMDejAqpKBmKOEjiRBaw==
 
 "@galacticcouncil/math-xyk@^0.0.7":
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.0.7.tgz#627d797c0e50737d7525dcb4dc99531835743652"
   integrity sha512-bnW+EQmMUJp8/kRRuHIBuemV4Ehu/L81s8+Ujjh0H94mweqeDorfisATNvP4wI9PWm7FMGkp2BZdsoeGnEIYFQ==
 
-"@galacticcouncil/math-xyk@^0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.0.8.tgz#45fa4145e756e4468dbf8d379c276c7282c3cd14"
-  integrity sha512-tydSUOBNLxe5ej6gxOf6QtC71xP/QOqbl8v0lES16tO9UxRIP7We+UW9mt277kYAYX9u6nItU7fnntz4C7YGkA==
+"@galacticcouncil/math-xyk@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.1.3.tgz#d729a50ae19a29413718c41e1991bdaac1a040ec"
+  integrity sha512-tIXNOyBJO3eP4SDVuX4qtCk264cjba0dPi4aVGjinY5I6LtRYpOPt6zRypTaGiwHhfqOT6xWHiEHAa8jYhVU3A==
 
 "@galacticcouncil/sdk@^0.1.0":
   version "0.1.0"
