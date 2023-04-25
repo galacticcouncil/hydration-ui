@@ -3,7 +3,7 @@ import styled from "@emotion/styled"
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 import { theme } from "theme"
 
-const fadeInKeyframes = keyframes`
+export const fadeInKeyframes = keyframes`
   0% {
     opacity: 0;
     transform: scale(0.96);

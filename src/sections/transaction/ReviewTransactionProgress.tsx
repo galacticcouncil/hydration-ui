@@ -36,8 +36,8 @@ export const ReviewTransactionProgress = (props: {
         </Trans>
       </Text>
       <SProgressBar
-        initial={{ width: "100%" }}
-        animate={{ width: "0%" }}
+        initial={{ width: "0%" }}
+        animate={{ width: "100%" }}
         transition={{ duration: props.duration }}
         onUpdate={(latest) => {
           if (typeof latest.width === "string") {
