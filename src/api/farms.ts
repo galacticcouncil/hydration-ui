@@ -371,14 +371,14 @@ const getOraclePrice =
     )
 
     const [data] = res.unwrap()
-    const n = data.price.n.toBigNumber()
-    const d = data.price.d.toBigNumber()
+    const n = data.price.n.toString()
+    const d = data.price.d.toString()
 
     let oraclePrice
     if (Number(rewardCurrency) < Number(incentivizedAsset)) {
-      oraclePrice = fixed_from_rational(n.toString(), d.toString())
+      oraclePrice = fixed_from_rational(n, d)
     } else {
-      oraclePrice = fixed_from_rational(d.toString(), n.toString())
+      oraclePrice = fixed_from_rational(d, n)
     }
 
     return {
