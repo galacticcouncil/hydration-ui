@@ -127,9 +127,7 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
 
 export const useFooterValues = (pool: OmnipoolPool) => {
   const locked = useUsersTotalInPool(pool)
-
   const allPoolDeposits = useAllUserDepositShare()
-
   const poolDeposit = allPoolDeposits.data?.[pool.id.toString()] ?? []
 
   const totalDepositValueUSD = poolDeposit.reduce(
@@ -140,6 +138,7 @@ export const useFooterValues = (pool: OmnipoolPool) => {
   return {
     locked: locked.data?.plus(totalDepositValueUSD ?? BN_0),
     available: locked.data,
+    farming: totalDepositValueUSD ?? BN_0,
     isLoading: allPoolDeposits.isLoading || locked.isLoading,
   }
 }

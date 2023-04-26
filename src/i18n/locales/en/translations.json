@@ -87,7 +87,7 @@
   "liquidity.asset.actions.myPositions": "My positions",
   "liquidity.asset.claim.button": "Claim all",
   "liquidity.asset.claim.total": "Total locked {{ locked, bignumber(numberPrefix: '$'; type: 'dollar') }}",
-  "liquidity.asset.claim.farmTotal": "{{ locked, bignumber(numberPrefix: '$'; type: 'dollar') }} provided as liquidity ({{ available, bignumber(numberPrefix: '$'; type: 'dollar') }} not in farms).",
+  "liquidity.asset.claim.farmTotal": "Total locked {{ locked, bignumber(numberPrefix: '$'; type: 'dollar') }} of which {{ farming, bignumber(numberPrefix: '$'; type: 'dollar') }} is farming",
   "liquidity.asset.claim.claimable": "{{ claimable, bignumber(numberPrefix: '$'; type: 'token') }} claimable",
   "liquidity.asset.positions.title": "Liquidity positions",
   "liquidity.asset.positions.position.amount": "Amount",
