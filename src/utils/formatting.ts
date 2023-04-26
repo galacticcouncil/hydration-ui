@@ -217,7 +217,7 @@ export function formatBigNumber(
   /* If the final digit of the amount is 0 decimal it should be round it up. */
   if (num.lt(0.000001)) {
     return num
-      .decimalPlaces(6, BigNumber.ROUND_UP)
+      .decimalPlaces(4, BigNumber.ROUND_UP)
       .toFormat({ ...fmtConfig, prefix: "<" })
   }
 
