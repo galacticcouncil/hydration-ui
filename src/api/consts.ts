@@ -45,7 +45,7 @@ export const getMinWithdrawalFee = (api: ApiPromise) => async () => {
   const minWithdrawalFee = await api.consts.omnipool.minWithdrawalFee
 
   return (
-    minWithdrawalFee?.toBigNumber().div(10000) ??
-    BN(MIN_WITHDRAWAL_FEE).div(10000)
+    minWithdrawalFee?.toBigNumber().div(1000000) ??
+    BN(MIN_WITHDRAWAL_FEE).div(1000000)
   )
 }

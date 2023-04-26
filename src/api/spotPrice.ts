@@ -52,7 +52,6 @@ export const getSpotPrice =
     try {
       const res = await tradeRouter.getBestSpotPrice(tokenIn, tokenOut)
       if (res) {
-        // console.log(res.amount.toString(), tokenIn, tokenOut)
         spotPrice = res.amount.div(BN_10.pow(res.decimals))
       }
     } catch (e) {}

@@ -216,7 +216,9 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
             <Spacer size={15} />
             <SummaryRow
               label={t("liquidity.add.modal.lpFee")}
-              content={t("value.percentage", { value: omnipoolFee?.fee })}
+              content={t("value.percentage", {
+                value: omnipoolFee?.fee.multipliedBy(100),
+              })}
             />
             <Spacer size={35} />
             <Text
