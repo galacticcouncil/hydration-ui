@@ -12,12 +12,14 @@ type Props = {
   provider: string
   onSelect: (account: Account) => void
   currentAddress: string | undefined
+  onClose: () => void
 }
 
 export const WalletConnectAccountSelect = ({
   provider,
   onSelect,
   currentAddress,
+  onClose,
 }: Props) => {
   const { t } = useTranslation("translation")
   const isExternalWallet = provider === externalWallet.provider
@@ -39,7 +41,10 @@ export const WalletConnectAccountSelect = ({
 
       <SContainer>
         {currentAddress && isExternalWallet ? (
-          <ExternalWalletConnectAccount address={currentAddress} />
+          <ExternalWalletConnectAccount
+            address={currentAddress}
+            onClose={onClose}
+          />
         ) : (
           accounts.data
             // As Talisman allows Ethereum accounts to be added as well, filter these accounts out

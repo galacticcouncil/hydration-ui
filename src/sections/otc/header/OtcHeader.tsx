@@ -18,6 +18,7 @@ type Props = {
   showPartial: boolean
   onShowMyOrdersChange: (value: boolean) => void
   onShowPartialChange: (value: boolean) => void
+  skeleton?: boolean
 }
 
 export const OtcHeader: FC<Props> = ({
@@ -25,6 +26,7 @@ export const OtcHeader: FC<Props> = ({
   showPartial,
   onShowMyOrdersChange,
   onShowPartialChange,
+  skeleton,
 }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -48,6 +50,7 @@ export const OtcHeader: FC<Props> = ({
             size="small"
             name="my-offers"
             label={t("otc.header.switch")}
+            disabled={!!skeleton}
           />
         )}
       </SHeader>
@@ -65,25 +68,27 @@ export const OtcHeader: FC<Props> = ({
           mb: 20,
         }}
       >
-        <STabs>
+        <STabs disabled={!!skeleton}>
           <Tab
             value={"all"}
             active={!showPartial}
             label={"All"}
             onChange={onOptionChange}
+            disabled={!!skeleton}
           />
           <Tab
             value={"partial"}
             active={showPartial}
             label={"Partially fillable"}
             onChange={onOptionChange}
+            disabled={!!skeleton}
           />
         </STabs>
         <Button
           size="medium"
           variant="primary"
           onClick={() => setOpenAdd(true)}
-          disabled={!account}
+          disabled={!account || skeleton}
         >
           <div sx={{ flex: "row", align: "center" }}>
             <Icon icon={<PlusIcon />} sx={{ mr: 8, height: 16 }} />

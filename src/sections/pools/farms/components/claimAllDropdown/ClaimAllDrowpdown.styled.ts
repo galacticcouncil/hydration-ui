@@ -16,7 +16,7 @@ export const STriggerButton = styled(Tooltip.Trigger)`
 
   border: 1px solid transparent;
 
-  padding: 14px;
+  padding: 10px 16px;
 
   display: flex;
   align-items: center;
@@ -85,7 +85,7 @@ export const SContent = styled(motion.div)`
     ),
     #111320;
 
-  z-index: ${theme.zIndices.toast};
+  z-index: ${theme.zIndices.header};
 
   @media ${theme.viewport.gte.sm} {
     border-radius: 4px 0px 4px 4px;

@@ -1,32 +1,36 @@
-import { useTranslation } from "react-i18next"
-import { Icon } from "components/Icon/Icon"
 import { Link, useSearch } from "@tanstack/react-location"
-import { ReactComponent as PoolsAndFarmsIcon } from "assets/icons/PoolsAndFarms.svg"
-import { ReactComponent as TradeIcon } from "assets/icons/Trade.svg"
-import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
-import { ReactComponent as TransferIcon } from "assets/icons/TransferTabIcon.svg"
-import { ReactComponent as OtcIcon } from "assets/icons/Otc.svg"
+import { Icon } from "components/Icon/Icon"
+import { useTranslation } from "react-i18next"
 
+import { MENU_ITEMS, TabItem } from "utils/navigation"
+import { HeaderSubMenu } from "../menu/HeaderSubMenu"
 import {
   SMobileNavBar,
   SNavBarItem,
   SNavBarItemHidden,
 } from "./MobileNavBar.styled"
 import { MoreButton } from "./MoreButton"
-import { MENU_ITEMS, TabKeys, TabObject } from "utils/navigation"
+
+export const MobileNavBarItem = ({
+  item,
+  isActive,
+}: {
+  item: TabItem
+  isActive?: boolean
+}) => {
+  const { t } = useTranslation()
+
+  return (
+    <SNavBarItem active={isActive}>
+      <Icon size={20} icon={<item.Icon />} />
+      {t(`header.${item.key}`)}
+    </SNavBarItem>
+  )
+}
 
 export const MobileNavBar = () => {
   const { t } = useTranslation()
   const { account } = useSearch()
-
-  const getIcon = (name: TabKeys) => {
-    if (name === "trade") return <TradeIcon />
-    if (name === "pools") return <PoolsAndFarmsIcon />
-    if (name === "wallet") return <WalletIcon />
-    if (name === "cross-chain") return <TransferIcon />
-    if (name === "otc") return <OtcIcon />
-    return null
-  }
 
   const [visibleTabs, hiddenTabs] = MENU_ITEMS.filter(
     (item) => item.enabled,
@@ -36,7 +40,7 @@ export const MobileNavBar = () => {
       result[isVisible ? 0 : 1].push(value)
       return result
     },
-    [[], []] as [TabObject[], TabObject[]],
+    [[], []] as [TabItem[], TabItem[]],
   )
 
   const hiddenTabItems = hiddenTabs.map((hiddenTab, index) => (
@@ -45,8 +49,8 @@ export const MobileNavBar = () => {
       search={account ? { account } : undefined}
       key={index}
     >
-      <Icon size={20} icon={getIcon(hiddenTab.key)} />
-      {t(hiddenTab.translationKey)}
+      <Icon size={20} icon={<hiddenTab.Icon />} />
+      {t(`header.${hiddenTab.key}`)}
     </SNavBarItemHidden>
   ))
 
@@ -55,13 +59,14 @@ export const MobileNavBar = () => {
       {visibleTabs
         .sort((a, b) => a.mobOrder - b.mobOrder)
         .map((item, index) => {
+          if (!item.href && item.subItems?.length) {
+            return <HeaderSubMenu item={item} key={index} />
+          }
+
           if (item.external) {
             return (
               <a href={item.href} key={index} sx={{ height: "100%" }}>
-                <SNavBarItem key={index}>
-                  <Icon size={20} icon={getIcon(item.key)} />
-                  {t(item.translationKey)}
-                </SNavBarItem>
+                <MobileNavBarItem item={item} />
               </a>
             )
           }
@@ -74,10 +79,7 @@ export const MobileNavBar = () => {
               css={{ height: "100%" }}
             >
               {({ isActive }) => (
-                <SNavBarItem key={index} active={isActive}>
-                  <Icon size={20} icon={getIcon(item.key)} />
-                  {t(item.translationKey)}
-                </SNavBarItem>
+                <MobileNavBarItem item={item} isActive={isActive} />
               )}
             </Link>
           )
