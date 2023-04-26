@@ -1,19 +1,19 @@
-import { useState } from "react"
-import { Modal } from "components/Modal/Modal"
-import { FarmDetailsCard } from "../../components/detailsCard/FarmDetailsCard"
-import { Button } from "components/Button/Button"
-import { SJoinFarmContainer } from "./JoinFarmsModal.styled"
-import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
-import { FarmDetailsModal } from "../details/FarmDetailsModal"
-import { Farm } from "api/farms"
 import { u32 } from "@polkadot/types"
 import { useAssetMeta } from "api/assetMeta"
+import { DepositNftType } from "api/deposits"
+import { Farm } from "api/farms"
+import BigNumber from "bignumber.js"
+import { Button } from "components/Button/Button"
+import { Modal } from "components/Modal/Modal"
+import { Text } from "components/Typography/Text/Text"
+import { useState } from "react"
+import { useTranslation } from "react-i18next"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { FarmDepositMutationType } from "utils/farms/deposit"
 import { FarmRedepositMutationType } from "utils/farms/redeposit"
-import BigNumber from "bignumber.js"
-import { DepositNftType } from "api/deposits"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { FarmDetailsCard } from "../../components/detailsCard/FarmDetailsCard"
+import { FarmDetailsModal } from "../details/FarmDetailsModal"
+import { SJoinFarmContainer } from "./JoinFarmsModal.styled"
 
 type JoinFarmModalProps = {
   isOpen: boolean
@@ -51,7 +51,6 @@ export const JoinFarmModal = ({
 
   return (
     <Modal
-      withoutOutsideClose
       open={isOpen}
       onClose={onClose}
       title={t("farms.modal.join.title", { assetSymbol: "HDX" })}

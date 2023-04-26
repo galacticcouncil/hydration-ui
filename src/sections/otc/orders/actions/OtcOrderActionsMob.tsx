@@ -1,22 +1,22 @@
+import { ReactComponent as FillIcon } from "assets/icons/Fill.svg"
+import { ReactComponent as PauseIcon } from "assets/icons/PauseIcon.svg"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Separator } from "components/Separator/Separator"
-import { ReactComponent as FillIcon } from "assets/icons/Fill.svg"
-import { ReactComponent as PauseIcon } from "assets/icons/PauseIcon.svg"
-import { theme } from "theme"
-import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
+import { OrderCapacity } from "sections/otc/capacity/OrderCapacity"
 import { useAccountStore } from "state/store"
+import { theme } from "theme"
+import { HYDRA_ADDRESS_PREFIX } from "utils/api"
+import { safeConvertAddressSS58 } from "utils/formatting"
 import {
   OrderAssetColumn,
   OrderPairColumn,
   OrderPriceColumn,
 } from "../OtcOrdersData"
 import { OrderTableData } from "../OtcOrdersData.utils"
-import { safeConvertAddressSS58 } from "utils/formatting"
-import { OrderCapacity } from "sections/otc/capacity/OrderCapacity"
 import { SActionButtonsContainer } from "./OtcOrderActions.styled"
-import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 
 type Props = {
   row?: OrderTableData

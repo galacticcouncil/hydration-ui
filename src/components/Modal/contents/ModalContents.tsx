@@ -1,19 +1,29 @@
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence } from "framer-motion"
 import { ReactNode } from "react"
 import { useMeasure } from "react-use"
-import { ModalHeaderButton, ModalHeaderTitle } from "../header/ModalHeader"
+import {
+  ModalHeaderButton,
+  ModalHeaderTitle,
+  ModalHeaderVariant,
+} from "../header/ModalHeader"
+import { SContainer, SContent } from "./ModalContents.styled"
 
+export type ModalContentProps = {
+  title?: string
+  headerVariant?: ModalHeaderVariant
+  noPadding?: boolean
+}
 type Props = {
-  page: number
-  direction: number
+  page?: number
+  direction?: number
   onBack?: () => void
   onClose?: () => void
-  contents: { title?: string; content: ReactNode }[]
+  contents: ({ content: ReactNode } & ModalContentProps)[]
 }
 
 export const ModalContents = ({
-  page,
-  direction,
+  page = 0,
+  direction = 0,
   onBack,
   onClose,
   contents,
@@ -22,8 +32,12 @@ export const ModalContents = ({
 
   const canBack = !!onBack && page > 0
 
+  const title = contents[page].title
+  const headerVariant = contents[page].headerVariant || "gradient"
+  const noPadding = contents[page].noPadding
+
   return (
-    <div ref={ref}>
+    <SContainer ref={ref} noPadding={noPadding}>
       <AnimatePresence
         mode="popLayout"
         initial={false}
@@ -31,36 +45,38 @@ export const ModalContents = ({
       >
         <ModalHeaderTitle
           key={`title-${page}`}
-          title={contents[page].title}
-          centered={canBack}
+          title={title}
+          variant={headerVariant}
+          canBack={canBack}
           page={page}
           direction={direction}
         />
-        <motion.div
+        <SContent
           key={`content-${page}`}
           custom={{ direction, height }}
+          noPadding={noPadding}
           {...motionProps}
         >
           {contents[page].content}
-        </motion.div>
+        </SContent>
         {canBack && (
           <ModalHeaderButton
-            key="back"
+            key={`back-${page}`}
             variant="back"
+            headerVariant={headerVariant}
             onClick={onBack}
             direction={direction}
           />
         )}
-        {onClose && (
-          <ModalHeaderButton
-            key="close"
-            variant="close"
-            onClick={onClose}
-            direction={direction}
-          />
-        )}
       </AnimatePresence>
-    </div>
+      {onClose && (
+        <ModalHeaderButton
+          variant="close"
+          onClick={onClose}
+          headerVariant={headerVariant}
+        />
+      )}
+    </SContainer>
   )
 }
 
@@ -69,7 +85,7 @@ type VariantProps = { direction: number; height: number }
 const variants = {
   enter: ({ direction, height }: VariantProps) => ({
     x: direction > 0 ? "100%" : "-100%",
-    opacity: 0,
+    opacity: 0.25,
     height,
   }),
   center: {
@@ -79,7 +95,7 @@ const variants = {
   },
   exit: ({ direction }: VariantProps) => ({
     x: direction < 0 ? "100%" : "-100%",
-    opacity: 0,
+    opacity: 0.25,
     height: 0,
   }),
 }

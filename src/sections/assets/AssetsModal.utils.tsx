@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { AssetsModal } from "./AssetsModal"
+import { AssetsModalContent } from "./AssetsModal"
 import { u32 } from "@polkadot/types"
 import { Maybe } from "utils/helpers"
 import { UseAssetModel } from "api/asset"
@@ -34,7 +34,7 @@ export const useAssetsModal = ({
   )
 
   const modal = isOpen ? (
-    <AssetsModal
+    <AssetsModalContent
       title={title}
       onClose={() => setIsOpen(false)}
       onSelect={handleSelect}

@@ -1,12 +1,14 @@
 import { u32 } from "@polkadot/types"
-import BigNumber from "bignumber.js"
 import { useAssetMeta } from "api/assetMeta"
+import { useTokenBalance } from "api/balances"
+import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
+import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useApiPromise } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
 import { BN_10 } from "utils/constants"
@@ -15,8 +17,6 @@ import { useAccountStore, useStore } from "../../../state/store"
 import { OrderAssetSelect } from "./cmp/AssetSelect"
 import { OrderAssetRate } from "./cmp/AssetXRate"
 import { PartialOrderToggle } from "./cmp/PartialOrderToggle"
-import { useAssetsModal } from "sections/assets/AssetsModal.utils"
-import { useTokenBalance } from "api/balances"
 
 type PlaceOrderProps = {
   assetOut?: u32 | string
@@ -172,19 +172,19 @@ export const PlaceOrder = ({
   return (
     <>
       {assetOutModal.isOpen && (
-        <Modal open={true} onClose={onClose}>
+        <Modal open onClose={onClose}>
           {assetOutModal.modal}
         </Modal>
       )}
       {assetInModal.isOpen && (
-        <Modal open={true} onClose={onClose}>
+        <Modal open onClose={onClose}>
           {assetInModal.modal}
         </Modal>
       )}
       {!assetInModal.isOpen && !assetOutModal.isOpen && (
         <Modal
           open={isOpen}
-          withoutOutsideClose
+          disableCloseOutside
           title={t("otc.order.place.title")}
           onClose={() => {
             onClose()

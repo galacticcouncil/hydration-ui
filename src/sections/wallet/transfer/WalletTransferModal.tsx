@@ -1,20 +1,18 @@
-import { u32 } from "@polkadot/types"
-import { Modal } from "components/Modal/Modal"
-import { PillSwitch } from "components/PillSwitch/PillSwitch"
-import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
-import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
-import { useState } from "react"
-
-import { useTranslation } from "react-i18next"
-
-import { WalletTransferSectionOnchain } from "sections/wallet/transfer/onchain/WalletTransferSectionOnchain"
-import { WalletTransferSectionCrosschain } from "sections/wallet/transfer/crosschain/WalletTransferSectionCrosschain"
-import { STopContentContainer } from "./WalletTransferModal.styled"
-import { CloseButton, SecondaryButton } from "components/Modal/Modal.styled"
-import { useMedia } from "react-use"
-import { theme } from "theme"
-import { CROSSCHAINS } from "./crosschain/WalletTransferSectionCrosschain.utils"
 import { css } from "@emotion/react"
+import { u32 } from "@polkadot/types"
+import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
+import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import { Modal } from "components/Modal/Modal"
+import { CloseButton, SecondaryButton } from "components/Modal/ModalOld.styled"
+import { PillSwitch } from "components/PillSwitch/PillSwitch"
+import { useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useMedia } from "react-use"
+import { WalletTransferSectionCrosschain } from "sections/wallet/transfer/crosschain/WalletTransferSectionCrosschain"
+import { WalletTransferSectionOnchain } from "sections/wallet/transfer/onchain/WalletTransferSectionOnchain"
+import { theme } from "theme"
+import { STopContentContainer } from "./WalletTransferModal.styled"
+import { CROSSCHAINS } from "./crosschain/WalletTransferSectionCrosschain.utils"
 
 export function WalletTransferModal(props: {
   open: boolean
@@ -34,6 +32,7 @@ export function WalletTransferModal(props: {
       open={props.open}
       onClose={props.onClose}
       containerStyles={
+        // TODO
         !isDesktop
           ? {
               height: "calc(100vh - 75px)",

@@ -1,8 +1,10 @@
-import BigNumber from "bignumber.js"
 import { useAssetMeta } from "api/assetMeta"
+import { useTokenBalance } from "api/balances"
+import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
+import { useEffect } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useApiPromise } from "utils/api"
@@ -10,12 +12,10 @@ import { getFixedPointAmount } from "utils/balance"
 import { BN_0, BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { useAccountStore, useStore } from "../../../state/store"
-import { OrderAssetPrice } from "./cmp/AssetPrice"
-import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
 import { OrderCapacity } from "../capacity/OrderCapacity"
 import { OfferingPair } from "../orders/OtcOrdersData.utils"
-import { useEffect } from "react"
-import { useTokenBalance } from "api/balances"
+import { OrderAssetPrice } from "./cmp/AssetPrice"
+import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
 
 const FULL_ORDER_PCT_LBOUND = 99
 
@@ -147,8 +147,8 @@ export const PartialFillOrder = ({
 
   return (
     <Modal
-      open={true}
-      withoutOutsideClose
+      open
+      disableCloseOutside
       title={t("otc.order.fill.title")}
       onClose={() => {
         onClose()

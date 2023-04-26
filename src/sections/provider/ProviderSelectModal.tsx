@@ -6,20 +6,20 @@ import { Text } from "components/Typography/Text/Text"
 import { Fragment, useEffect, useState } from "react"
 import { theme } from "theme"
 
+import { ApiPromise, WsProvider } from "@polkadot/api"
+import { u32, u64 } from "@polkadot/types"
+import { useBestNumber } from "api/chain"
 import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRightIcon.svg"
-import { ProviderStatus } from "./ProviderStatus"
+import { useTranslation } from "react-i18next"
 import {
-  SItem,
+  SButton,
   SCircle,
   SContainer,
   SHeader,
-  SButton,
+  SItem,
   SName,
 } from "./ProviderSelectModal.styled"
-import { useTranslation } from "react-i18next"
-import { useBestNumber } from "api/chain"
-import { ApiPromise, WsProvider } from "@polkadot/api"
-import { u32, u64 } from "@polkadot/types"
+import { ProviderStatus } from "./ProviderStatus"
 
 function ProviderSelectItemExternal(props: {
   url: string
@@ -170,7 +170,6 @@ export function ProviderSelectModal(props: {
       open={props.open}
       onClose={props.onClose}
       title={t("rpc.change.modal.title")}
-      width={720}
     >
       <SContainer>
         <SHeader>

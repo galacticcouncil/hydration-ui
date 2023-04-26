@@ -1,5 +1,5 @@
 import { Button } from "components/Button/Button"
-import { ModalMeta } from "components/Modal/Modal"
+import { ModalMeta } from "components/Modal/ModalOld"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"

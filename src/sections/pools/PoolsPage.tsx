@@ -1,6 +1,6 @@
 import { Button } from "components/Button/Button"
 import { Page } from "components/Layout/Page/Page"
-import { ModalTest } from "components/Modal/new/Modal"
+import { ModalTest } from "components/Modal/Modal"
 import { useState } from "react"
 import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
 import { PoolsHeader } from "sections/pools/header/PoolsHeader"

@@ -1,11 +1,11 @@
+import { usePoolDeposits } from "api/deposits"
+import { Modal } from "components/Modal/Modal"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Modal } from "components/Modal/Modal"
-import { usePoolPositions } from "../../pool/Pool.utils"
-import { OmnipoolPool } from "../../PoolsPage.utils"
-import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
-import { usePoolDeposits } from "api/deposits"
+import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
+import { OmnipoolPool } from "../../PoolsPage.utils"
+import { usePoolPositions } from "../../pool/Pool.utils"
 
 interface Props {
   isOpen: boolean
@@ -21,16 +21,16 @@ export const LiquidityPositions: FC<Props> = ({ isOpen, pool, onClose }) => {
   return (
     <Modal
       open={isOpen}
-      withoutOutsideClose
       title={t("liquidity.positions.modal.title")}
+      headerVariant="FontOver"
+      noPadding
       onClose={onClose}
     >
       <div
         sx={{
           flex: "column",
-          gap: 8,
           align: "center",
-          m: "20px -20px -36px",
+          gap: 8,
         }}
       >
         <LiquidityPositionWrapper pool={pool} positions={positions} />

@@ -1,174 +1,125 @@
-import {
-  createContext,
-  FC,
-  PropsWithChildren,
-  ReactNode,
-  useContext,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react"
-import {
-  ModalWindow,
-  ModalTitle,
-  ModalBody,
-  ModalHeader,
-  CloseButton,
-  ModalContainer,
-  SecondaryButton,
-  ModalWindowContainer,
-} from "./Modal.styled"
-import { Backdrop } from "components/Backdrop/Backdrop"
-import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
-import { Dialog, DialogDescription, DialogPortal } from "@radix-ui/react-dialog"
-import { useTranslation } from "react-i18next"
-import { RemoveScroll } from "react-remove-scroll"
+import { Portal, Root } from "@radix-ui/react-dialog"
+import { BackdropVariant } from "components/Backdrop/Backdrop"
+import { Button } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
-import { Interpolation } from "@emotion/styled"
-import { Theme } from "@emotion/react"
-import { Spacer } from "components/Spacer/Spacer"
-import { useMedia } from "react-use"
-import { theme } from "theme"
-
-const MODAL_WIDTH = 610
+import { ReactNode, useMemo } from "react"
+import { SContent, SOverlay } from "./Modal.styled"
+import { usePagination } from "./Modal.utils"
+import { ModalContentProps, ModalContents } from "./contents/ModalContents"
 
 type Props = {
   open: boolean
   onClose: () => void
-  title?: string | undefined
-  variant?: "default" | "error" | "success"
-  secondaryIcon?: { icon: ReactNode; onClick: () => void; name: string }
-  topContent?: ReactNode
-  withoutClose?: boolean
-  withoutOutsideClose?: boolean
-  width?: number
   isDrawer?: boolean
-  titleHeader?: string
-  containerStyles?: Interpolation<Theme>
-}
+  disableClose?: boolean
+  disableCloseOutside?: boolean
+  backdrop?: BackdropVariant
+  children?: ReactNode
+} & ModalContentProps
 
-type PropsOverride = Pick<
-  Props,
-  | "variant"
-  | "width"
-  | "secondaryIcon"
-  | "title"
-  | "isDrawer"
-  | "withoutOutsideClose"
-  | "titleHeader"
->
+export const Modal = ({
+  open,
+  onClose,
+  isDrawer,
+  disableClose,
+  disableCloseOutside,
+  backdrop = "default",
+  children,
+  ...contentProps
+}: Props) => {
+  const hasContentProps = Object.values(contentProps).some(
+    (val) => val !== undefined,
+  )
+  const content = useMemo(() => {
+    if (!hasContentProps) return children
 
-const ModalContext = createContext<(override: PropsOverride | null) => void>(
-  () => void 0,
-)
-
-export const ModalMeta = (props: PropsOverride) => {
-  const ref = useRef(true)
-  const context = useContext(ModalContext)
-
-  useLayoutEffect(() => {
-    context({
-      title: props.title,
-      variant: props.variant,
-      width: props.width,
-      secondaryIcon: props.secondaryIcon,
-      isDrawer: props.isDrawer,
-      withoutOutsideClose: props.withoutOutsideClose,
-      titleHeader: props.titleHeader,
-    })
-    return () => {
-      context(null)
-    }
-  }, [
-    ref,
-    context,
-    props.title,
-    props.variant,
-    props.width,
-    props.secondaryIcon,
-    props.isDrawer,
-    props.withoutOutsideClose,
-    props.titleHeader,
-  ])
-
-  return null
-}
-
-export const Modal: FC<PropsWithChildren<Props>> = (props) => {
-  const { t } = useTranslation()
-  const [propsOverride, setPropsOverride] = useState<PropsOverride | null>(null)
-  const isDesktop = useMedia(theme.viewport.gte.sm)
-
-  const mergedProps = { ...props, ...propsOverride }
-  const { isDrawer, titleHeader, secondaryIcon, title, withoutClose } =
-    mergedProps
-
-  const visibleHeader = !withoutClose || !!secondaryIcon || titleHeader
+    return (
+      <ModalContents
+        page={0}
+        direction={0}
+        onClose={onClose}
+        contents={[{ content: children, ...contentProps }]}
+      />
+    )
+  }, [onClose, children, contentProps])
 
   return (
-    <Dialog open={props.open}>
-      <DialogPortal>
-        <ModalContext.Provider value={setPropsOverride}>
-          <ModalContainer css={props.containerStyles}>
-            <Backdrop variant={mergedProps.variant ?? "default"} />
+    <Root open={open}>
+      <Portal>
+        <SOverlay variant={backdrop} />
+        <SContent
+          isDrawer={isDrawer}
+          onEscapeKeyDown={!disableClose ? onClose : undefined}
+          onInteractOutside={
+            !disableClose || !disableCloseOutside ? onClose : undefined
+          }
+        >
+          {content}
+        </SContent>
+      </Portal>
+    </Root>
+  )
+}
 
-            <ModalWindow
-              isDrawer={isDrawer}
-              maxWidth={MODAL_WIDTH}
-              onEscapeKeyDown={!props.withoutClose ? props.onClose : undefined}
-              onInteractOutside={
-                props.withoutClose || mergedProps.withoutOutsideClose
-                  ? undefined
-                  : props.onClose
-              }
-            >
-              {props.topContent}
-              <ModalWindowContainer isDrawer={isDrawer}>
-                {visibleHeader ? (
-                  <ModalHeader>
-                    {secondaryIcon ? (
-                      <SecondaryButton
-                        icon={secondaryIcon.icon}
-                        onClick={secondaryIcon.onClick}
-                        name={secondaryIcon.name}
-                      />
-                    ) : (
-                      <Spacer size={34} />
-                    )}
-                    {titleHeader && (
-                      <Text color="white" font="FontOver" fs={16} fw={500}>
-                        {titleHeader}
-                      </Text>
-                    )}
-                    {!mergedProps.withoutClose && (
-                      <CloseButton
-                        icon={<CrossIcon />}
-                        onClick={props.onClose}
-                        name={t("modal.closeButton.name")}
-                      />
-                    )}
-                  </ModalHeader>
-                ) : (
-                  <Spacer size={20} />
-                )}
-                <RemoveScroll enabled={props.open} css={{ flexGrow: 1 }}>
-                  <ModalBody isDrawer={isDrawer}>
-                    {isDesktop ? (
-                      <ModalTitle>{title}</ModalTitle>
-                    ) : (
-                      <Text fs={19} font="FontOver">
-                        {title}
-                      </Text>
-                    )}
-                    {props.children}
-                  </ModalBody>
-                  <DialogDescription />
-                </RemoveScroll>
-              </ModalWindowContainer>
-            </ModalWindow>
-          </ModalContainer>
-        </ModalContext.Provider>
-      </DialogPortal>
-    </Dialog>
+export const ModalTest = ({
+  open,
+  onClose,
+}: {
+  open: boolean
+  onClose: () => void
+}) => {
+  const [{ page, direction }, { back, next, reset, paginateTo }] =
+    usePagination(0)
+
+  const onLast = () => paginateTo(2)
+
+  return (
+    <Modal open={open} onClose={onClose}>
+      <ModalContents
+        page={page}
+        direction={direction}
+        onBack={back}
+        onClose={onClose}
+        contents={[
+          {
+            title: "First Title",
+            content: (
+              <div sx={{ height: 200, bg: "red700", flex: "column" }}>
+                <div sx={{ bg: "black", p: 16, m: "auto", width: "100%" }}>
+                  <Text sx={{ mb: 16 }}>First Content</Text>
+                  <div sx={{ flex: "row", gap: 16 }}>
+                    <Button onClick={next}>Next</Button>
+                    <Button onClick={onLast}>Last</Button>
+                  </div>
+                </div>
+              </div>
+            ),
+          },
+          {
+            title: "Second Title",
+            content: (
+              <div sx={{ height: 800, bg: "brightBlue700", flex: "column" }}>
+                <div sx={{ bg: "black", p: 16, m: "auto", width: "100%" }}>
+                  <Text sx={{ mb: 16 }}>Second Content</Text>
+                  <Button onClick={next}>Next</Button>
+                </div>
+              </div>
+            ),
+          },
+          {
+            title: "Third title which is very long",
+            headerVariant: "FontOver",
+            content: (
+              <div sx={{ height: 400, bg: "green600", flex: "column" }}>
+                <div sx={{ bg: "black", p: 16, m: "auto", width: "100%" }}>
+                  <Text>Third Content</Text>
+                  <Button onClick={reset}>First</Button>
+                </div>
+              </div>
+            ),
+          },
+        ]}
+      />
+    </Modal>
   )
 }

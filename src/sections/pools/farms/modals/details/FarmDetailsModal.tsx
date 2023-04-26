@@ -1,4 +1,4 @@
-import { ModalMeta } from "components/Modal/Modal"
+import { ModalMeta } from "components/Modal/ModalOld"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { useTranslation } from "react-i18next"
 import { FarmDetailsCard } from "../../components/detailsCard/FarmDetailsCard"

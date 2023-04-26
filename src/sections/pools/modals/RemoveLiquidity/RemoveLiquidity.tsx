@@ -1,107 +1,34 @@
-import { BoxSwitch } from "components/BoxSwitch/BoxSwitch"
-import { Button } from "components/Button/Button"
-import { Input } from "components/Input/Input"
-import { Modal } from "components/Modal/Modal"
-import { Slider } from "components/Slider/Slider"
-import { Text } from "components/Typography/Text/Text"
-import { useMemo, useState } from "react"
-import { Controller, useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
-import { FormValues } from "utils/helpers"
-import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
-import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
-import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-
 import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
 } from "@galacticcouncil/math-omnipool"
-import { useOmnipoolAssets } from "../../../../api/omnipool"
-import { useTokenBalance } from "../../../../api/balances"
-import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "../../../../utils/api"
-import { BN_10 } from "../../../../utils/constants"
-import { useAssetMetaList } from "../../../../api/assetMeta"
-import { useApiIds } from "../../../../api/consts"
-import BN from "bignumber.js"
-import { getFloatingPointAmount } from "utils/balance"
-import { useStore } from "../../../../state/store"
+import { useAssetMetaList } from "api/assetMeta"
+import { useTokenBalance } from "api/balances"
+import { useApiIds } from "api/consts"
+import { useOmnipoolAssets } from "api/omnipool"
 import BigNumber from "bignumber.js"
+import { Button } from "components/Button/Button"
+import { Modal } from "components/Modal/Modal"
 import { Spacer } from "components/Spacer/Spacer"
+import { Text } from "components/Typography/Text/Text"
+import { useMemo } from "react"
+import { Controller, useForm } from "react-hook-form"
+import { Trans, useTranslation } from "react-i18next"
+import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
+import { useStore } from "state/store"
+import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
+import { getFloatingPointAmount } from "utils/balance"
+import { BN_10 } from "utils/constants"
+import { FormValues } from "utils/helpers"
+import { STradingPairContainer } from "./RemoveLiquidity.styled"
+import { RemoveLiquidityInput } from "./components/RemoveLiquidityInput"
+import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 
-type RemoveLiquidityProps = {
+type Props = {
   isOpen: boolean
   onClose: () => void
   position: HydraPositionsTableData
   onSuccess: () => void
-}
-
-type RemoveLiquidityInputProps = {
-  value: number
-  onChange: (value: number) => void
-  shares: BN
-}
-
-const options = [
-  { label: "25%", value: 25 },
-  { label: "50%", value: 50 },
-  { label: "75%", value: 75 },
-  { label: "MAX", value: 100 },
-]
-
-const RemoveLiquidityInput = ({
-  value,
-  onChange,
-  shares,
-}: RemoveLiquidityInputProps) => {
-  const { t } = useTranslation()
-  const [input, setInput] = useState("")
-
-  const handleOnChange = (value: string) => {
-    setInput(value)
-
-    const parsedValue = Number.parseFloat(value)
-    if (!Number.isNaN(parsedValue) && parsedValue >= 0 && parsedValue <= 100) {
-      onChange(parsedValue)
-    }
-  }
-
-  const onSelect = (value: number) => {
-    setInput("")
-    onChange(value)
-  }
-
-  return (
-    <>
-      <Slider
-        value={[value]}
-        onChange={([val]) => onSelect(val)}
-        min={0}
-        max={100}
-        step={1}
-      />
-
-      <SSlippage>
-        <BoxSwitch options={options} selected={value} onSelect={onSelect} />
-        <Input
-          value={input}
-          onChange={handleOnChange}
-          name="custom"
-          label="Custom"
-          placeholder="Custom"
-          unit="%"
-        />
-        <div
-          sx={{ flex: "row", justify: "end", gap: 4, mt: 9 }}
-          css={{ gridColumn: "span 2" }}
-        >
-          <Text fs={11} css={{ opacity: 0.7 }}>
-            {t("balance")}
-          </Text>
-          <Text fs={11}>{t("liquidity.remove.modal.shares", { shares })}</Text>
-        </div>
-      </SSlippage>
-    </>
-  )
 }
 
 export const RemoveLiquidity = ({
@@ -109,7 +36,7 @@ export const RemoveLiquidity = ({
   onClose,
   onSuccess,
   position,
-}: RemoveLiquidityProps) => {
+}: Props) => {
   const { t } = useTranslation()
   const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
 
@@ -227,7 +154,6 @@ export const RemoveLiquidity = ({
   return (
     <Modal
       open={isOpen}
-      withoutOutsideClose
       title={t("liquidity.remove.modal.title")}
       onClose={() => {
         onClose()
@@ -237,14 +163,10 @@ export const RemoveLiquidity = ({
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         autoComplete="off"
-        sx={{
-          flex: "column",
-          justify: "space-between",
-          height: "calc(100% - var(--modal-header-title-height))",
-        }}
+        sx={{ flex: "column", justify: "space-between" }}
       >
         <div>
-          <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
+          <Text fs={32} font="FontOver">
             {t("liquidity.remove.modal.value", {
               value: getFloatingPointAmount(
                 removeSharesValue,
@@ -285,7 +207,7 @@ export const RemoveLiquidity = ({
               })}
             />
             {removeLiquidityValues &&
-              !BN(removeLiquidityValues.lrna).isZero() && (
+              !BigNumber(removeLiquidityValues.lrna).isZero() && (
                 <RemoveLiquidityReward
                   name="Lerna"
                   symbol="LRNA"
@@ -299,7 +221,9 @@ export const RemoveLiquidity = ({
           </STradingPairContainer>
         </div>
         <Spacer size={20} />
-        <Button variant="primary">{t("liquidity.remove.modal.confirm")}</Button>
+        <Button variant="primary" type="submit">
+          {t("liquidity.remove.modal.confirm")}
+        </Button>
       </form>
     </Modal>
   )

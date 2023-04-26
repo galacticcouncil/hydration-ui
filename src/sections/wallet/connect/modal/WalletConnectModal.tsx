@@ -1,16 +1,15 @@
-import { Modal } from "components/Modal/Modal"
-import { useTranslation } from "react-i18next"
-import { FC, useState } from "react"
-
-import { useMutation } from "@tanstack/react-query"
-import { POLKADOT_APP_NAME } from "utils/api"
-import { WalletConnectConfirmPending } from "sections/wallet/connect/confirmPending/WalletConnectConfirmPending"
-import { WalletConnectProviderSelect } from "sections/wallet/connect/providerSelect/WalletConnectProviderSelect"
-import { WalletConnectAccountSelect } from "sections/wallet/connect/accountSelect/WalletConnectAccountSelect"
-import { externalWallet, useAccountStore } from "state/store"
-import { WalletConnectActiveFooter } from "./WalletConnectActiveFooter"
 import { Wallet } from "@talismn/connect-wallets"
 import { useNavigate } from "@tanstack/react-location"
+import { useMutation } from "@tanstack/react-query"
+import { Modal } from "components/Modal/Modal"
+import { FC, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { WalletConnectAccountSelect } from "sections/wallet/connect/accountSelect/WalletConnectAccountSelect"
+import { WalletConnectConfirmPending } from "sections/wallet/connect/confirmPending/WalletConnectConfirmPending"
+import { WalletConnectProviderSelect } from "sections/wallet/connect/providerSelect/WalletConnectProviderSelect"
+import { externalWallet, useAccountStore } from "state/store"
+import { POLKADOT_APP_NAME } from "utils/api"
+import { WalletConnectActiveFooter } from "./WalletConnectActiveFooter"
 
 type Props = {
   isOpen: boolean
@@ -41,7 +40,6 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
 
   return (
     <Modal
-      width={460}
       open={isOpen}
       onClose={() => {
         setUserSelectedProvider(null)

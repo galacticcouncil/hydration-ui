@@ -1,6 +1,6 @@
 import { u32 } from "@polkadot/types"
 import { Button } from "components/Button/Button"
-import { ModalMeta } from "components/Modal/Modal"
+import { ModalMeta } from "components/Modal/ModalOld"
 import { Separator } from "components/Separator/Separator"
 import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
