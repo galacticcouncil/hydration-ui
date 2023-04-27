@@ -410,12 +410,6 @@ export const RemoveLiquidity = ({
                       t={t}
                       i18nKey="liquidity.remove.modal.tokenFee.value"
                       tOptions={{
-                        /* numberPrefix: getFloatingPointAmount(
-                          removeLiquidityValues?.lrnaPayWith,
-                          lrnaMeta?.decimals.toString() ?? 12,
-                        ).gt("0.000001")
-                          ? "≈"
-                          : "<",*/
                         feeAmount: removeLiquidityValues?.lrnaPayWith,
                         fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
                         symbol: lrnaMeta?.symbol,
