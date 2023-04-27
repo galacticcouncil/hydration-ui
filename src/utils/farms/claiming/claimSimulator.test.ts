@@ -148,8 +148,9 @@ test("create mock type registry", () => {
       updatedAt: [U32, new U32(registry, "101545")],
     }),
     new BigNumber("117955"),
+    new BigNumber("3897022160208644"),
   )
 
-  expect(result?.value.toString()).toEqual("2,882,992".replaceAll(",", ""))
+  expect(result?.value.toString()).toEqual("222,635".replaceAll(",", ""))
   expect(result?.assetId.toString()).toEqual("0")
 })

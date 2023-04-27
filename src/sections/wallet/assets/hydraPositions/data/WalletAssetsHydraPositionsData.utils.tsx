@@ -111,6 +111,7 @@ export const useHydraPositionsData = () => {
             position.shares.toString(),
             positionPrice.toFixed(0),
             position.shares.toString(),
+            "0", // fee zero
           ]
           lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
           liquidityOutResult = calculate_liquidity_out.apply(this, params)

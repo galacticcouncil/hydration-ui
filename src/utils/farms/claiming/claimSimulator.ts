@@ -54,7 +54,11 @@ export class OmnipoolLiquidityMiningClaimSim {
     return reward
   }
 
-  sync_global_farm(global_farm: MutableGlobalFarm, current_period: BN) {
+  sync_global_farm(
+    global_farm: MutableGlobalFarm,
+    current_period: BN,
+    oraclePrice: BN,
+  ) {
     // Inactive farm should not be updated
     if (!global_farm.state.isActive) {
       return BN_0
@@ -67,26 +71,9 @@ export class OmnipoolLiquidityMiningClaimSim {
 
     // Nothing to update if there is no stake in the farm.
     if (global_farm.totalSharesZ.isZero()) {
+      global_farm.updatedAt = current_period
       return BN_0
     }
-
-    let total_shares_z_adjusted = new BN(
-      liquidityMining.calculate_adjusted_shares(
-        global_farm.totalSharesZ.toFixed(),
-        global_farm.priceAdjustment.toFixed(),
-      ),
-    )
-
-    let reward_per_period = new BN(
-      liquidityMining.calculate_global_farm_reward_per_period(
-        global_farm.yieldPerPeriod
-          .multipliedBy(BN_QUINTILL)
-          .integerValue(BN.ROUND_FLOOR)
-          .toFixed(),
-        total_shares_z_adjusted.toFixed(),
-        global_farm.maxRewardPerPeriod.toFixed(),
-      ),
-    )
 
     // Number of periods since last farm update.
     let periods_since_last_update = current_period.minus(global_farm.updatedAt)
@@ -108,8 +95,14 @@ export class OmnipoolLiquidityMiningClaimSim {
     )
 
     let reward = new BN(
-      liquidityMining.calculate_rewards_for_periods(
-        reward_per_period.toFixed(),
+      liquidityMining.calculate_global_farm_rewards(
+        global_farm.totalSharesZ.toFixed(),
+        oraclePrice.toFixed(),
+        global_farm.yieldPerPeriod
+          .multipliedBy(BN_QUINTILL)
+          .integerValue(BN.ROUND_FLOOR)
+          .toFixed(),
+        global_farm.maxRewardPerPeriod.toFixed(),
         periods_since_last_update.toFixed(),
       ),
     )
@@ -153,29 +146,34 @@ export class OmnipoolLiquidityMiningClaimSim {
     }
 
     if (yield_farm.totalValuedShares.isZero()) {
+      yield_farm.accumulatedRpz = global_farm.accumulatedRpz
+      yield_farm.updatedAt = current_period
       return
     }
 
-    let stake_in_global_farm = new BN(
-      liquidityMining.calculate_global_farm_shares(
-        yield_farm.totalValuedShares.toFixed(),
-        yield_farm.multiplier.toFixed(),
-      ),
+    const yield_farm_rewards = liquidityMining.calculate_yield_farm_rewards(
+      yield_farm.accumulatedRpz.toFixed(),
+      global_farm.accumulatedRpz.toFixed(),
+      yield_farm.multiplier.toFixed(),
+      yield_farm.totalValuedShares.toFixed(),
     )
 
-    let yield_farm_rewards = this.calculate_rewards_from_pot(
-      global_farm,
-      yield_farm,
-      stake_in_global_farm,
+    const delta_rpvs = liquidityMining.calculate_yield_farm_delta_rpvs(
+      yield_farm.accumulatedRpz.toFixed(),
+      global_farm.accumulatedRpz.toFixed(),
+      yield_farm.multiplier.toFixed(),
+      yield_farm.totalValuedShares.toFixed(),
     )
 
-    yield_farm.accumulatedRpvs = new BN(
-      liquidityMining.calculate_accumulated_rps(
-        yield_farm.accumulatedRpvs.toFixed(),
-        yield_farm.totalValuedShares.toFixed(),
-        yield_farm_rewards.toFixed(),
-      )!,
-    )
+    yield_farm.accumulatedRpz = global_farm.accumulatedRpz
+
+    global_farm.accumulatedPaidRewards =
+      global_farm.accumulatedPaidRewards.plus(yield_farm_rewards)
+
+    global_farm.pendingRewards =
+      global_farm.pendingRewards.minus(yield_farm_rewards)
+
+    yield_farm.accumulatedRpvs = yield_farm.accumulatedRpvs.plus(delta_rpvs)
 
     yield_farm.updatedAt = current_period
 
@@ -208,6 +206,7 @@ export class OmnipoolLiquidityMiningClaimSim {
     yield_farm: MutableYieldFarm,
     farmEntry: PalletLiquidityMiningYieldFarmEntry,
     relaychainBlockNumber: BN,
+    oraclePrice: BN,
   ) {
     // if yield farm is terminated, cannot claim
     if (yield_farm.state.isTerminated.valueOf()) {
@@ -223,7 +222,7 @@ export class OmnipoolLiquidityMiningClaimSim {
       return null
     }
 
-    this.sync_global_farm(global_farm, current_period)
+    this.sync_global_farm(global_farm, current_period, oraclePrice)
     this.sync_yield_farm(yield_farm, global_farm, current_period)
 
     let delta_stopped = yield_farm.totalStopped.minus(

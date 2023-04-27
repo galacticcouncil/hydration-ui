@@ -2392,7 +2392,6 @@ declare module "@polkadot/api-base/types/submittable" {
        * liquidity mining program.
        * - `yield_per_period`: percentage return on `reward_currency` of all farms.
        * - `min_deposit`: minimum amount of LP shares to be deposited into the liquidity mining by each user.
-       * - `lrna_price_adjustment`: price adjustment between `[LRNA]` and `reward_currency`.
        *
        * Emits `GlobalFarmCreated` when successful.
        *
@@ -2406,9 +2405,8 @@ declare module "@polkadot/api-base/types/submittable" {
           owner: AccountId32 | string | Uint8Array,
           yieldPerPeriod: Perquintill | AnyNumber | Uint8Array,
           minDeposit: u128 | AnyNumber | Uint8Array,
-          lrnaPriceAdjustment: u128 | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
-        [u128, u32, u32, u32, AccountId32, Perquintill, u128, u128]
+        [u128, u32, u32, u32, AccountId32, Perquintill, u128]
       >
       /**
        * Create yield farm for given `asset_id` in the omnipool.
@@ -2416,7 +2414,7 @@ declare module "@polkadot/api-base/types/submittable" {
        * Only farm owner can perform this action.
        *
        * Asset with `asset_id` has to be registered in the omnipool.
-       * Yield farm for same `asset_id` can exist only once in the global farm.
+       * At most one `active` yield farm can exist in one global farm for the same `asset_id`.
        *
        * Parameters:
        * - `origin`: global farm's owner.
@@ -2530,7 +2528,7 @@ declare module "@polkadot/api-base/types/submittable" {
        * This function claims rewards from `GlobalFarm` last time and stop yield farm
        * incentivization from a `GlobalFarm`. Users will be able to only withdraw
        * shares(with claiming) after calling this function.
-       * `deposit_shares()` and `claim_rewards()` are not allowed on stopped yield farm.
+       * `deposit_shares()` is not allowed on stopped yield farm.
        *
        * Only farm owner can perform this action.
        *
@@ -2599,26 +2597,6 @@ declare module "@polkadot/api-base/types/submittable" {
           assetId: u32 | AnyNumber | Uint8Array,
         ) => SubmittableExtrinsic<ApiType>,
         [u32, u32, u32]
-      >
-      /**
-       * Update global farm's exchange rate between [LRNA] and `incentivized_asset`.
-       *
-       * Only farm's owner can perform this action.
-       *
-       * Parameters:
-       * - `origin`: global farm's owner.
-       * - `global_farm_id`: id of the global farm to update.
-       * - `lrna_price_adjustment`: new value for LRNA price adjustment.
-       *
-       * Emits `GlobalFarmUpdated` event when successful.
-       *
-       **/
-      updateGlobalFarm: AugmentedSubmittable<
-        (
-          globalFarmId: u32 | AnyNumber | Uint8Array,
-          lrnaPriceAdjustment: u128 | AnyNumber | Uint8Array,
-        ) => SubmittableExtrinsic<ApiType>,
-        [u32, u128]
       >
       /**
        * Update yield farm's multiplier.

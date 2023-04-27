@@ -122,6 +122,10 @@ export const QUERY_KEYS = {
     assetA,
     assetB,
   ],
+  oraclePrice: (
+    rewardCurrency: Maybe<string>,
+    incentivizedAsset: Maybe<string>,
+  ) => [QUERY_KEY_PREFIX, "oraclePrice", rewardCurrency, incentivizedAsset],
   paymentInfo: (hash: CodecHash, account?: AccountId32 | string) => [
     QUERY_KEY_PREFIX,
     "paymentInfo",
@@ -155,6 +159,7 @@ export const QUERY_KEYS = {
     scaleCoef?.toString(),
     periodsInFarm,
   ],
+  minWithdrawalFee: ["minWithdrawalFee"],
   tradeVolume: (poolId: Maybe<string | u32>) => [
     QUERY_KEY_PREFIX,
     "tradeVolume",

@@ -1015,12 +1015,19 @@ declare module "@polkadot/api-base/types/events" {
        **/
       LiquidityRemoved: AugmentedEvent<
         ApiType,
-        [who: AccountId32, positionId: u128, assetId: u32, sharesRemoved: u128],
+        [
+          who: AccountId32,
+          positionId: u128,
+          assetId: u32,
+          sharesRemoved: u128,
+          fee: u128,
+        ],
         {
           who: AccountId32
           positionId: u128
           assetId: u32
           sharesRemoved: u128
+          fee: u128
         }
       >
       /**
@@ -1144,7 +1151,6 @@ declare module "@polkadot/api-base/types/events" {
           blocksPerPeriod: u32,
           maxRewardPerPeriod: u128,
           minDeposit: u128,
-          lrnaPriceAdjustment: u128,
         ],
         {
           id: u32
@@ -1156,7 +1162,6 @@ declare module "@polkadot/api-base/types/events" {
           blocksPerPeriod: u32
           maxRewardPerPeriod: u128
           minDeposit: u128
-          lrnaPriceAdjustment: u128
         }
       >
       /**
@@ -1176,14 +1181,6 @@ declare module "@polkadot/api-base/types/events" {
           rewardCurrency: u32
           undistributedRewards: u128
         }
-      >
-      /**
-       * Global farm's `lrna_price_adjustment` was updated.
-       **/
-      GlobalFarmUpdated: AugmentedEvent<
-        ApiType,
-        [id: u32, lrnaPriceAdjustment: u128],
-        { id: u32; lrnaPriceAdjustment: u128 }
       >
       /**
        * Rewards were claimed.

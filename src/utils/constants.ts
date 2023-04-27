@@ -27,3 +27,5 @@ export const ORMLVEST = "ormlvest"
 export const ASSET_TYPE_TOKEN = "Token"
 
 BN.config({ EXPONENTIAL_AT: 666 })
+
+export const MIN_WITHDRAWAL_FEE = 100
