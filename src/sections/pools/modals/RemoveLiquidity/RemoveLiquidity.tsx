@@ -178,7 +178,7 @@ export const RemoveLiquidity = ({
           lrnaToGet: "0",
           lrnaPayWith: "0",
           tokensPayWith: "0",
-          withdrawalFee: withdrawalFee,
+          withdrawalFee: BN(withdrawalFee).div(BN_QUINTILL).multipliedBy(100),
         }
       }
 
@@ -218,7 +218,7 @@ export const RemoveLiquidity = ({
         lrnaToGet,
         lrnaPayWith,
         tokensPayWith,
-        withdrawalFee,
+        withdrawalFee: BN(withdrawalFee).div(BN_QUINTILL).multipliedBy(100),
       }
     }
   }, [
@@ -386,9 +386,7 @@ export const RemoveLiquidity = ({
                   fixedPointScale: meta?.decimals.toString() ?? 12,
                   symbol: meta?.symbol,
                   feePercentage: removeLiquidityValues?.withdrawalFee
-                    ? BN(removeLiquidityValues.withdrawalFee ?? "")
-                        .div(BN_QUINTILL)
-                        .multipliedBy(100)
+                    ? removeLiquidityValues.withdrawalFee
                     : BN_0,
                 }}
               >
@@ -414,9 +412,7 @@ export const RemoveLiquidity = ({
                         fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
                         symbol: lrnaMeta?.symbol,
                         feePercentage: removeLiquidityValues?.withdrawalFee
-                          ? BN(removeLiquidityValues.withdrawalFee)
-                              .div(BN_QUINTILL)
-                              .multipliedBy(100)
+                          ? removeLiquidityValues.withdrawalFee
                           : BN_0,
                       }}
                     >
@@ -429,7 +425,13 @@ export const RemoveLiquidity = ({
             </>
           )}
         <Spacer size={20} />
-        <Button variant="primary" disabled={removeSharesValue.isZero()}>
+        <Button
+          variant="primary"
+          disabled={
+            removeSharesValue.isZero() ||
+            removeLiquidityValues?.withdrawalFee.gt(0.99)
+          }
+        >
           {t("liquidity.remove.modal.confirm")}
         </Button>
       </form>

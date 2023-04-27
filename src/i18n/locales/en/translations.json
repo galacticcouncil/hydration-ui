@@ -232,6 +232,8 @@
   "wallet.vesting.total_vested.value": "{{num}}<0>{{denom}} {{ symbol }}</0>",
   "wallet.vesting.your_vesting": "Your vestings",
   "wallet.vesting.claimable_now": "Claimable now",
+  "wallet.vesting.toast.onLoading": "<0>Claiming </0><1>{{ amount, bignumber(type: 'token') }} {{symbol}}</1> <0>from vesting.</0>",
+  "wallet.vesting.toast.onSuccess": "<0>Claimed </0><1>{{ amount, bignumber(type: 'token') }} {{symbol}}</1> <0>from vesting.</0>",
   "wallet.vesting.claimable_now_value": "{{num}}<0>{{denom}} {{ symbol }}</0>",
   "wallet.vesting.claim_assets": "Claim assets",
   "wallet.vesting.estimated_claim_date": "Available for claim on {{ date, dd.MM.yyyy }}",
