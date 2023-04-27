@@ -3,8 +3,8 @@ import { useState } from "react"
 import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
 import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
-import { PoolSkeleton } from "./skeleton/PoolSkeleton"
 import { useApiPromise } from "../../utils/api"
+import { PoolSkeleton } from "./skeleton/PoolSkeleton"
 
 const PoolPageContent = () => {
   const [filter, setFilter] = useState({ showMyPositions: false })
@@ -12,8 +12,6 @@ const PoolPageContent = () => {
   const { data, hasPositionsOrDeposits, isLoading } = useOmnipoolPools(
     filter.showMyPositions,
   )
-
-  const [open, setOpen] = useState(false)
 
   return (
     <Page>
