@@ -14,8 +14,5 @@ export const usePagination = (initial = 0) => {
   const reset = () => setPage(0)
   const paginateTo = (page: number) => setPage(page)
 
-  return [
-    { page, direction },
-    { paginate, next, back, reset, paginateTo },
-  ] as const
+  return { page, direction, paginate, next, back, reset, paginateTo } as const
 }

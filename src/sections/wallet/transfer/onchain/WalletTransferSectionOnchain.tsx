@@ -139,7 +139,6 @@ export function WalletTransferSectionOnchain(props: {
         withoutOutsideClose
       />
 
-      <Spacer size={[13, 26]} />
       {isOpenSelectAssetModal ? (
         modal
       ) : (

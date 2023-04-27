@@ -3,7 +3,7 @@ import { BackdropVariant } from "components/Backdrop/Backdrop"
 import { Button } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
 import { ReactNode, useMemo } from "react"
-import { SContent, SOverlay } from "./Modal.styled"
+import { SContainer, SContent, SOverlay, STopContent } from "./Modal.styled"
 import { usePagination } from "./Modal.utils"
 import { ModalContentProps, ModalContents } from "./contents/ModalContents"
 
@@ -14,6 +14,7 @@ type Props = {
   disableClose?: boolean
   disableCloseOutside?: boolean
   backdrop?: BackdropVariant
+  topContent?: ReactNode
   children?: ReactNode
 } & ModalContentProps
 
@@ -24,12 +25,15 @@ export const Modal = ({
   disableClose,
   disableCloseOutside,
   backdrop = "default",
+  topContent,
   children,
   ...contentProps
 }: Props) => {
   const hasContentProps = Object.values(contentProps).some(
     (val) => val !== undefined,
   )
+  const hasTopContent = topContent !== undefined
+
   const content = useMemo(() => {
     if (!hasContentProps) return children
 
@@ -47,15 +51,19 @@ export const Modal = ({
     <Root open={open}>
       <Portal>
         <SOverlay variant={backdrop} />
-        <SContent
-          isDrawer={isDrawer}
+        <SContainer
           onEscapeKeyDown={!disableClose ? onClose : undefined}
           onInteractOutside={
-            !disableClose || !disableCloseOutside ? onClose : undefined
+            disableClose || disableCloseOutside || hasTopContent
+              ? undefined
+              : onClose
           }
         >
-          {content}
-        </SContent>
+          <STopContent>{topContent}</STopContent>
+          <SContent isDrawer={isDrawer} hasTopContent={hasTopContent}>
+            {content}
+          </SContent>
+        </SContainer>
       </Portal>
     </Root>
   )
@@ -68,13 +76,11 @@ export const ModalTest = ({
   open: boolean
   onClose: () => void
 }) => {
-  const [{ page, direction }, { back, next, reset, paginateTo }] =
-    usePagination(0)
-
+  const { page, direction, back, next, reset, paginateTo } = usePagination(0)
   const onLast = () => paginateTo(2)
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} isDrawer>
       <ModalContents
         page={page}
         direction={direction}

@@ -3,7 +3,9 @@ import { u32 } from "@polkadot/types"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
 import { Modal } from "components/Modal/Modal"
+import { usePagination } from "components/Modal/Modal.utils"
 import { CloseButton, SecondaryButton } from "components/Modal/ModalOld.styled"
+import { ModalContents } from "components/Modal/contents/ModalContents"
 import { PillSwitch } from "components/PillSwitch/PillSwitch"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -26,23 +28,67 @@ export function WalletTransferModal(props: {
   >()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const { page, direction, paginateTo, back } = usePagination()
 
   return (
     <Modal
       open={props.open}
       onClose={props.onClose}
-      containerStyles={
-        // TODO
-        !isDesktop
-          ? {
-              height: "calc(100vh - 75px)",
-              "& > div": {
-                background: theme.gradients.background,
-              },
-            }
-          : undefined
+      disableClose={!isDesktop}
+      topContent={
+        <PillSwitch
+          options={[
+            {
+              value: 0,
+              label: t("wallet.assets.transfer.switch.onchain"),
+            },
+            {
+              value: 1,
+              label: t("wallet.assets.transfer.switch.bridge"),
+            },
+          ]}
+          value={page}
+          onChange={paginateTo}
+        />
       }
-      withoutClose={!isDesktop}
+    >
+      <ModalContents
+        page={page}
+        direction={direction}
+        onBack={back}
+        onClose={props.onClose}
+        contents={[
+          {
+            title: t("wallet.assets.transfer.title"),
+            content: (
+              <WalletTransferSectionOnchain
+                initialAsset={props.initialAsset}
+                onClose={props.onClose}
+              />
+            ),
+          },
+          {
+            title: active
+              ? undefined
+              : t("wallet.assets.transfer.bridge.title"),
+            content: (
+              <WalletTransferSectionCrosschain
+                onClose={props.onClose}
+                active={active}
+                setActive={setActive}
+              />
+            ),
+          },
+        ]}
+      />
+    </Modal>
+  )
+
+  return (
+    <Modal
+      open={props.open}
+      onClose={props.onClose}
+      disableClose={!isDesktop}
       topContent={
         <STopContentContainer>
           {active && (

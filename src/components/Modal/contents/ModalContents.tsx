@@ -28,8 +28,9 @@ export const ModalContents = ({
   onClose,
   contents,
 }: Props) => {
-  const [ref, { height }] = useMeasure<HTMLDivElement>()
+  const [ref, size] = useMeasure<HTMLDivElement>()
 
+  const height = size.height
   const canBack = !!onBack && page > 0
 
   const title = contents[page].title
@@ -37,7 +38,7 @@ export const ModalContents = ({
   const noPadding = contents[page].noPadding
 
   return (
-    <SContainer ref={ref} noPadding={noPadding}>
+    <SContainer ref={ref}>
       <AnimatePresence
         mode="popLayout"
         initial={false}

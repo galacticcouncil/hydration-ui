@@ -34,7 +34,7 @@ type Props = {
 export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   const { t } = useTranslation()
   const [assetId, setAssetId] = useState<u32 | string>(pool?.id.toString())
-  const [{ page, direction }, { back, next, reset }] = usePagination()
+  const { page, direction, back, next, reset } = usePagination()
 
   return (
     <Modal open={isOpen} onClose={onClose}>

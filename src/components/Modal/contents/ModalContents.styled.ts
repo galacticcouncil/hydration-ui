@@ -2,7 +2,7 @@ import styled from "@emotion/styled"
 import { motion } from "framer-motion"
 import { theme } from "theme"
 
-export const SContainer = styled.div<{ noPadding?: boolean }>`
+export const SContainer = styled.div`
   display: grid;
   grid-template-columns: 100%;
   grid-template-rows: max-content 1fr;

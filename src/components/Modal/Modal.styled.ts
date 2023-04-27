@@ -46,7 +46,7 @@ export const SOverlay = styled(Overlay)<{ variant?: BackdropVariant }>`
   ${({ variant }) => variant && backdropVariantStyles[variant]}
 `
 
-export const SContent = styled(Content)<{ isDrawer?: boolean }>`
+export const SContainer = styled(Content)`
   --modal-header-padding-y: 20px;
   --modal-header-padding-x: 24px;
   --modal-header-btn-size: 32px;
@@ -54,9 +54,41 @@ export const SContent = styled(Content)<{ isDrawer?: boolean }>`
     var(--modal-header-btn-size) + var(--modal-header-padding-y) * 2
   );
   --modal-content-padding: 24px;
+  --modal-top-content-height: 64px;
 
   position: fixed;
   inset: 0;
+  z-index: ${theme.zIndices.modal};
+`
+
+export const STopContent = styled.div`
+  position: absolute;
+  top: calc(var(--modal-top-content-height) / 2);
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: ${theme.zIndices.modal};
+
+  width: 100%;
+  height: var(--modal-top-content-height);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media ${theme.viewport.gte.sm} {
+    top: 5%;
+  }
+`
+
+export const SContent = styled.div<{
+  isDrawer?: boolean
+  hasTopContent?: boolean
+}>`
+  position: fixed;
+  inset: 0;
+  ${({ hasTopContent }) =>
+    hasTopContent && "top: var(--modal-top-content-height);"}
   z-index: ${theme.zIndices.modal};
   overflow: auto;
 
@@ -110,6 +142,7 @@ export const SContent = styled(Content)<{ isDrawer?: boolean }>`
         rgba(158, 167, 180, 0) 100%
       );
 
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask: linear-gradient(#fff 0 0) content-box,
         linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor;
