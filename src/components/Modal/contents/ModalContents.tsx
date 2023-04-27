@@ -33,12 +33,15 @@ export const ModalContents = ({
 }: Props) => {
   const [ref, size] = useMeasure<HTMLDivElement>()
 
-  const height = size.height
   const canBack = !!onBack && (forceBack || page > 0)
 
   const title = contents[page].title
   const headerVariant = contents[page].headerVariant || "gradient"
   const noPadding = contents[page].noPadding
+
+  const height = `calc(${size.height}px - ${
+    headerVariant === "gradient" ? "120px" : "var(--modal-header-height)"
+  })`
 
   return (
     <SContainer ref={ref}>
@@ -87,13 +90,13 @@ export const ModalContents = ({
   )
 }
 
-type VariantProps = { direction: number; height: number }
+type VariantProps = { direction: number; height: string }
 
 const variants = {
   enter: ({ direction, height }: VariantProps) => ({
     x: direction > 0 ? "100%" : "-100%",
     opacity: 0.25,
-    height: `calc(${height}px - var(--modal-header-height))`,
+    height,
   }),
   center: {
     x: 0,
