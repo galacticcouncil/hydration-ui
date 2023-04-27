@@ -1,33 +1,32 @@
 import { u32 } from "@polkadot/types"
+import { useAssetMeta } from "api/assetMeta"
+import { useAccountCurrency } from "api/payments"
+import { useSpotPrice } from "api/spotPrice"
+import { usePaymentInfo } from "api/transaction"
+import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import BigNumber from "bignumber.js"
+import { Alert } from "components/Alert/Alert"
 import { Button } from "components/Button/Button"
-import { ModalMeta } from "components/Modal/ModalOld"
 import { Separator } from "components/Separator/Separator"
+import { Spacer } from "components/Spacer/Spacer"
+import { SummaryRow } from "components/Summary/SummaryRow"
 import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
-import { FormValues } from "utils/helpers"
+import { Trans, useTranslation } from "react-i18next"
+import { useMedia } from "react-use"
+import { useAssetsModal } from "sections/assets/AssetsModal.utils"
+import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useAccountStore, useStore } from "state/store"
+import { theme } from "theme"
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
-import BigNumber from "bignumber.js"
 import { BN_1, BN_10 } from "utils/constants"
-import { useAssetMeta } from "api/assetMeta"
-import { Trans, useTranslation } from "react-i18next"
-import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
-import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
+import { FormValues } from "utils/helpers"
 import {
   CloseIcon,
   PasteAddressIcon,
 } from "./WalletTransferSectionOnchain.styled"
-import { useMedia } from "react-use"
-import { theme } from "theme"
-import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
-import { Alert } from "components/Alert/Alert"
-import { usePaymentInfo } from "api/transaction"
-import { Spacer } from "components/Spacer/Spacer"
-import { useAccountCurrency } from "api/payments"
-import { useSpotPrice } from "api/spotPrice"
-import { useAssetsModal } from "sections/assets/AssetsModal.utils"
-import { SummaryRow } from "components/Summary/SummaryRow"
 
 export function WalletTransferSectionOnchain(props: {
   initialAsset: u32 | string
@@ -134,11 +133,6 @@ export function WalletTransferSectionOnchain(props: {
 
   return (
     <>
-      <ModalMeta
-        title={t("wallet.assets.transfer.title")}
-        withoutOutsideClose
-      />
-
       {isOpenSelectAssetModal ? (
         modal
       ) : (

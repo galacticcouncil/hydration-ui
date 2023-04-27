@@ -171,16 +171,8 @@ export const PlaceOrder = ({
 
   return (
     <>
-      {assetOutModal.isOpen && (
-        <Modal open onClose={onClose}>
-          {assetOutModal.modal}
-        </Modal>
-      )}
-      {assetInModal.isOpen && (
-        <Modal open onClose={onClose}>
-          {assetInModal.modal}
-        </Modal>
-      )}
+      {assetOutModal.isOpen && assetOutModal.modal}
+      {assetInModal.isOpen && assetInModal.modal}
       {!assetInModal.isOpen && !assetOutModal.isOpen && (
         <Modal
           open={isOpen}

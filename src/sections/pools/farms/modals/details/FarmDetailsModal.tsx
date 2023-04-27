@@ -1,16 +1,14 @@
-import { ModalMeta } from "components/Modal/ModalOld"
-import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
-import { useTranslation } from "react-i18next"
-import { FarmDetailsCard } from "../../components/detailsCard/FarmDetailsCard"
-import { Text } from "components/Typography/Text/Text"
-import { SLoyaltyRewardsContainer } from "./FarmDetailsModal.styled"
-import { Spacer } from "components/Spacer/Spacer"
-import { LoyaltyGraph } from "../../components/loyaltyGraph/LoyaltyGraph"
-import { Farm } from "api/farms"
 import { DepositNftType } from "api/deposits"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
-import { FarmDetailsModalValues } from "./FarmDetailsModalValues"
+import { Farm } from "api/farms"
+import { Spacer } from "components/Spacer/Spacer"
+import { Text } from "components/Typography/Text/Text"
 import { useRef } from "react"
+import { useTranslation } from "react-i18next"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { FarmDetailsCard } from "../../components/detailsCard/FarmDetailsCard"
+import { LoyaltyGraph } from "../../components/loyaltyGraph/LoyaltyGraph"
+import { SLoyaltyRewardsContainer } from "./FarmDetailsModal.styled"
+import { FarmDetailsModalValues } from "./FarmDetailsModalValues"
 
 type FarmDetailsModalProps = {
   pool: OmnipoolPool
@@ -43,15 +41,6 @@ export const FarmDetailsModal = ({
 
   return (
     <>
-      <ModalMeta
-        title={t("farms.modal.details.title")}
-        secondaryIcon={{
-          icon: <ChevronRight css={{ transform: "rotate(180deg)" }} />,
-          name: "Back",
-          onClick: () => onBack(),
-        }}
-      />
-
       <Spacer size={16} />
 
       <FarmDetailsCard poolId={pool.id} depositNft={depositNft} farm={farm} />

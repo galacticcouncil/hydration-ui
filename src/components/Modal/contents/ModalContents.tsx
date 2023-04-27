@@ -16,22 +16,24 @@ export type ModalContentProps = {
 type Props = {
   page?: number
   direction?: number
-  onBack?: () => void
   onClose?: () => void
+  onBack?: () => void
+  forceBack?: boolean
   contents: ({ content: ReactNode } & ModalContentProps)[]
 }
 
 export const ModalContents = ({
   page = 0,
   direction = 0,
-  onBack,
   onClose,
+  onBack,
+  forceBack,
   contents,
 }: Props) => {
   const [ref, size] = useMeasure<HTMLDivElement>()
 
   const height = size.height
-  const canBack = !!onBack && page > 0
+  const canBack = !!onBack && (forceBack || page > 0)
 
   const title = contents[page].title
   const headerVariant = contents[page].headerVariant || "gradient"

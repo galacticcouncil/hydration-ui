@@ -1,8 +1,10 @@
-import { useCallback, useState } from "react"
-import { AssetsModalContent } from "./AssetsModal"
 import { u32 } from "@polkadot/types"
-import { Maybe } from "utils/helpers"
 import { UseAssetModel } from "api/asset"
+import { Modal } from "components/Modal/Modal"
+import { useCallback, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Maybe } from "utils/helpers"
+import { AssetsModalContent } from "./AssetsModal"
 
 interface useAssetsModalProps {
   onSelect?: (asset: NonNullable<UseAssetModel>) => void
@@ -19,6 +21,7 @@ export const useAssetsModal = ({
   hideInactiveAssets,
   allAssets,
 }: useAssetsModalProps) => {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
 
   const openModal = useCallback(() => {
@@ -34,14 +37,21 @@ export const useAssetsModal = ({
   )
 
   const modal = isOpen ? (
-    <AssetsModalContent
-      title={title}
+    <Modal
+      open={isOpen}
       onClose={() => setIsOpen(false)}
-      onSelect={handleSelect}
-      allowedAssets={allowedAssets}
-      hideInactiveAssets={hideInactiveAssets}
-      allAssets={allAssets}
-    />
+      onBack={() => setIsOpen(false)}
+      title={title || t("selectAsset.title")}
+      headerVariant="FontOver"
+      noPadding
+    >
+      <AssetsModalContent
+        onSelect={handleSelect}
+        allowedAssets={allowedAssets}
+        hideInactiveAssets={hideInactiveAssets}
+        allAssets={allAssets}
+      />
+    </Modal>
   ) : null
 
   return {

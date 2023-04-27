@@ -1,33 +1,31 @@
-import { Button } from "components/Button/Button"
-import { ModalMeta } from "components/Modal/ModalOld"
-import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
-import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
-import { Controller, useForm } from "react-hook-form"
-import { FormValues } from "utils/helpers"
-import { AddressInput } from "components/AddressInput/AddressInput"
+import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { getWalletBySource } from "@talismn/connect-wallets"
+import { useNavigate } from "@tanstack/react-location"
 import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import { AddressInput } from "components/AddressInput/AddressInput"
+import { SErrorMessage } from "components/AssetInput/AssetInput.styled"
+import { Button } from "components/Button/Button"
+import { Spacer } from "components/Spacer/Spacer"
+import { Text } from "components/Typography/Text/Text"
+import { Controller, useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import { SContainer } from "sections/wallet/transfer/WalletTransferAccountInput.styled"
 import {
   CloseIcon,
   PasteAddressIcon,
 } from "sections/wallet/transfer/onchain/WalletTransferSectionOnchain.styled"
-import { SContainer } from "sections/wallet/transfer/WalletTransferAccountInput.styled"
 import {
   PROXY_WALLET_PROVIDER,
   externalWallet,
   useAccountStore,
 } from "state/store"
-import { useNavigate } from "@tanstack/react-location"
-import { safeConvertAddressSS58 } from "utils/formatting"
-import { SErrorMessage } from "components/AssetInput/AssetInput.styled"
-import { Spacer } from "components/Spacer/Spacer"
 import {
   HYDRA_ADDRESS_PREFIX,
   POLKADOT_APP_NAME,
   useApiPromise,
 } from "utils/api"
-import { getWalletBySource } from "@talismn/connect-wallets"
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { safeConvertAddressSS58 } from "utils/formatting"
+import { FormValues } from "utils/helpers"
 
 type ExternalWalletConnectModalProps = {
   onBack: () => void
@@ -104,14 +102,6 @@ export const ExternalWalletConnectModal = ({
 
   return (
     <>
-      <ModalMeta
-        title={t("walletConnect.externalWallet.modal.title")}
-        secondaryIcon={{
-          icon: <ChevronRight css={{ transform: "rotate(180deg)" }} />,
-          name: "Back",
-          onClick: onBack,
-        }}
-      />
       <Text color="basic400">
         {t("walletConnect.externalWallet.modal.desc")}
       </Text>

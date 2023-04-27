@@ -1,6 +1,4 @@
-import { Button } from "components/Button/Button"
 import { Page } from "components/Layout/Page/Page"
-import { ModalTest } from "components/Modal/Modal"
 import { useState } from "react"
 import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
 import { PoolsHeader } from "sections/pools/header/PoolsHeader"
@@ -28,13 +26,6 @@ export const PoolsPage = () => {
         }
         disableMyPositions={!hasPositionsOrDeposits}
       />
-
-      <div sx={{ my: 32 }}>
-        <Button variant="primary" onClick={() => setOpen(true)}>
-          Open Modal
-        </Button>
-        <ModalTest open={open} onClose={() => setOpen(false)} />
-      </div>
 
       <div sx={{ flex: "column", gap: 20 }}>
         {!isLoading && data
