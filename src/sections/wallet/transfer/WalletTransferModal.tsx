@@ -17,13 +17,12 @@ export function WalletTransferModal(props: {
   initialAsset: u32 | string
 }) {
   const { t } = useTranslation()
-  const [chain, setChain] = useState<"onchain" | "crosschain">("onchain")
   const [active, setActive] = useState<
     (typeof CROSSCHAINS)[number] | undefined
   >()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const { page, direction, paginateTo, back } = usePagination()
+  const { page, direction, paginateTo } = usePagination()
 
   return (
     <Modal
@@ -50,7 +49,6 @@ export function WalletTransferModal(props: {
       <ModalContents
         page={page}
         direction={direction}
-        onBack={back}
         onClose={props.onClose}
         contents={[
           {
