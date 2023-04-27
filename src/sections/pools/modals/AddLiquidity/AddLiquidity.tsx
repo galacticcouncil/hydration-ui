@@ -152,8 +152,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
                 sx={{
                   flex: "column",
                   justify: "space-between",
-                  height: "100%",
-                  mt: 10,
+                  height: "calc(100% - var(--modal-content-padding))",
                 }}
               >
                 <div sx={{ flex: "column" }}>

@@ -24,7 +24,7 @@ export function WalletTransferSectionCrosschainGuide(props: {
           flex: "column",
           align: "center",
           justify: "space-between",
-          height: "100%",
+          height: "calc(100% - var(--modal-content-padding))",
         }}
       >
         <div sx={{ flex: "column", align: "center" }}>

@@ -13,7 +13,13 @@ export function WalletTransferCrosschainList(props: {
   const { t } = useTranslation()
 
   return (
-    <div sx={{ flex: "column", justify: "space-between", height: "100%" }}>
+    <div
+      sx={{
+        flex: "column",
+        justify: "space-between",
+        height: "calc(100% - var(--modal-content-padding))",
+      }}
+    >
       <div sx={{ flex: "column" }}>
         <Text fs={18} lh={25} sx={{ maxWidth: 360 }}>
           {t("wallet.assets.transfer.bridge.description")}
