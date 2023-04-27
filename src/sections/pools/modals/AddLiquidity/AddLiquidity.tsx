@@ -129,7 +129,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   return (
     <Modal
       open={isOpen}
-      withoutOutsideClose
+      disableCloseOutside
       title={t("liquidity.add.modal.title")}
       onClose={() => {
         onClose()

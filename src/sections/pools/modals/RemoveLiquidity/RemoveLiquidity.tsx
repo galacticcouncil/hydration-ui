@@ -11,7 +11,6 @@ import { FormValues } from "utils/helpers"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
 import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-
 import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
@@ -302,7 +301,7 @@ export const RemoveLiquidity = ({
   return (
     <Modal
       open={isOpen}
-      withoutOutsideClose
+      disableCloseOutside
       title={t("liquidity.remove.modal.title")}
       onClose={() => {
         onClose()
