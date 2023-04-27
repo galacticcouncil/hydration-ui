@@ -65,6 +65,8 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
       assetMeta.decimals.toNumber(),
     ).toString()
 
+    onClose()
+
     return await createTransaction(
       {
         tx: api.tx.omnipool.addLiquidity(assetId, amount),
