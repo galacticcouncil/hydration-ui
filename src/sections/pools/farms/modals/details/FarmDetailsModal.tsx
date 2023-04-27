@@ -14,14 +14,12 @@ type FarmDetailsModalProps = {
   pool: OmnipoolPool
   farm: Farm
   depositNft: DepositNftType | undefined
-  onBack: () => void
   currentBlock?: number
 }
 
 export const FarmDetailsModal = ({
   farm,
   depositNft,
-  onBack,
   pool,
   currentBlock,
 }: FarmDetailsModalProps) => {
@@ -41,8 +39,6 @@ export const FarmDetailsModal = ({
 
   return (
     <>
-      <Spacer size={16} />
-
       <FarmDetailsCard poolId={pool.id} depositNft={depositNft} farm={farm} />
 
       {loyaltyCurve && currentBlockRef.current && (
@@ -74,7 +70,7 @@ export const FarmDetailsModal = ({
           enteredBlock={enteredBlock}
         />
       ) : (
-        <Text sx={{ py: 30 }} color="basic400" tAlign="center">
+        <Text sx={{ pt: 30 }} color="basic400" tAlign="center">
           {t("farms.modal.details.description")}
         </Text>
       )}
