@@ -122,6 +122,7 @@
   "liquidity.remove.modal.lrnaFee.label": "LRNA fee:",
   "liquidity.remove.modal.tokenFee.value": "<0>≈ {{feeAmount, bignumber(type: 'token')}} {{symbol}}</0> <1>({{feePercentage, bignumber(type:'percentage, fixedPointScale: 0')}}%)</1>",
   "liquidity.remove.modal.confirm": "Remove liquidity",
+  "liquidity.remove.modal.fee.warning": "Due to the change in price, the withdrawal fee has exceeded the limit. Please try again in a few moments.",
   "liquidity.remove.modal.toast.withLrna": "and {{lrna, bignumber(type: 'token')}} LRNA",
   "liquidity.remove.modal.toast.onLoading": "<0>Withdrawing </0><1>{{value, bignumber(type: 'token')}}</1><0> Shares for </0><1>{{amount, bignumber(type: 'token')}} {{symbol}}</1> {{ withLrna }}</0>",
   "liquidity.remove.modal.toast.onSuccess": "<0>You withdrawed {{value, bignumber(type: 'token')}} Shares from Omnipool for <1>{{amount, bignumber(type: 'token')}} {{symbol}}</1> amount {{ withLrna }}</0>",
