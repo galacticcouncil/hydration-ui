@@ -7,7 +7,7 @@ import { u8aToHex } from "@polkadot/util"
 import { DepositNftType, useUserDeposits } from "api/deposits"
 import { u32 } from "@polkadot/types"
 import { useBestNumber } from "api/chain"
-import { useFarms } from "api/farms"
+import { useFarms, useOraclePrices } from "api/farms"
 import { getAccountResolver } from "./claiming/accountResolver"
 import { useAssetDetailsList } from "api/assetDetails"
 import { useSpotPrices } from "api/spotPrice"
@@ -73,6 +73,13 @@ export const useClaimableAmount = (
       )
       .flat(1) ?? []
 
+  const oracleAssetIds = farms.data?.map((farm) => ({
+    rewardCurrency: farm.globalFarm.rewardCurrency.toString(),
+    incentivizedAsset: farm.globalFarm.incentivizedAsset.toString(),
+  }))
+
+  const oraclePrices = useOraclePrices(oracleAssetIds ?? [])
+
   const accountBalances = useAccountAssetBalances(accountAddresses)
 
   return useQueryReduce(
@@ -119,11 +126,22 @@ export const useClaimableAmount = (
 
             if (!aprEntry) return null
 
+            const oracle = oraclePrices.find(
+              (oracle) =>
+                oracle.data?.id.incentivizedAsset ===
+                  aprEntry.globalFarm.incentivizedAsset.toString() &&
+                aprEntry.globalFarm.rewardCurrency.toString() ===
+                  oracle.data.id.rewardCurrency,
+            )
+
+            if (!oracle?.data) return null
+
             const reward = simulator.claim_rewards(
               globalFarms[aprEntry.globalFarm.id.toString()],
               yieldFarms[aprEntry.yieldFarm.id.toString()],
               farmEntry,
               bestNumber.relaychainBlockNumber.toBigNumber(),
+              oracle.data.oraclePrice,
             )
 
             const usd = usdSpotPrices.find(

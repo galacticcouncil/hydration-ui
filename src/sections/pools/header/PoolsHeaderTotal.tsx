@@ -14,8 +14,15 @@ import { useMemo } from "react"
 import { separateBalance } from "utils/balance"
 import { theme } from "theme"
 import { css } from "@emotion/react"
+import {
+  useTotalVolumesInPools,
+  useTotalVolumesInPoolsUser,
+} from "./PoolsHeaderVolume.utils"
 
-type Props = { myPositions: boolean; variant: "pools" | "farms" }
+type Props = {
+  myPositions: boolean
+  variant: "pools" | "farms" | "volume"
+}
 
 export const PoolsHeaderTotal = ({ myPositions, variant }: Props) => {
   if (myPositions && variant === "pools") {
@@ -30,71 +37,82 @@ export const PoolsHeaderTotal = ({ myPositions, variant }: Props) => {
   if (!myPositions && variant === "farms") {
     return <PoolsHeaderTotalFarms />
   }
+  if (myPositions && variant === "volume") {
+    return <PoolsHeaderTotalVolumeUser />
+  }
+
+  if (!myPositions && variant === "volume") {
+    return <PoolsHeaderTotalVolume />
+  }
+
   return null
 }
 
-const PoolsHeaderTotalData = ({
+export const HeaderTotalData = ({
   value,
   isLoading,
+  fontSize,
 }: {
   value: BN | undefined
   isLoading: boolean
+  fontSize?: [number, number]
 }) => {
   const { t } = useTranslation()
 
+  if (isLoading)
+    return <Skeleton sx={{ height: fontSize ?? [19, 28], width: [180, 200] }} />
+
   return (
-    <Heading as="h3" sx={{ fontSize: [19, 42], fontWeight: 500 }}>
-      {!isLoading ? (
-        <div css={{ whiteSpace: "nowrap" }}>
-          <Text
-            font="ChakraPetch"
-            fw={900}
-            fs={[19, 42]}
-            sx={{ display: "inline-block" }}
-          >
-            $
-          </Text>
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.header.value"
-            tOptions={{
-              ...separateBalance(value, {
-                type: "dollar",
-              }),
-            }}
-          >
-            <span
-              sx={{
-                fontSize: [19, 26],
-              }}
-              css={css`
-                color: rgba(${theme.rgbColors.white}, 0.4);
-              `}
-            />
-          </Trans>
-        </div>
-      ) : (
-        <Skeleton width={256} />
-      )}
+    <Heading
+      as="h3"
+      sx={{ fontSize: fontSize ?? [19, 28], fontWeight: 500 }}
+      css={{ whiteSpace: "nowrap" }}
+    >
+      <Text
+        font="ChakraPetch"
+        fw={900}
+        fs={fontSize ?? [19, 28]}
+        sx={{ display: "inline-block" }}
+      >
+        $
+      </Text>
+      <Trans
+        t={t}
+        i18nKey="wallet.assets.header.value"
+        tOptions={{
+          ...separateBalance(value, {
+            type: "dollar",
+          }),
+        }}
+      >
+        <span
+          sx={{
+            fontSize: [19, 20],
+          }}
+          css={css`
+            color: rgba(${theme.rgbColors.white}, 0.4);
+          `}
+        />
+      </Trans>
     </Heading>
   )
 }
 
 const PoolsHeaderTotalPools = () => {
   const { data, isLoading } = useTotalInPools()
-  return <PoolsHeaderTotalData value={data} isLoading={isLoading} />
+  return <HeaderTotalData value={data} isLoading={isLoading} />
 }
 
 const PoolsHeaderTotalPoolsUser = () => {
   const { data, isLoading } = useUsersTotalInPools()
-  return <PoolsHeaderTotalData value={data} isLoading={isLoading} />
+  return <HeaderTotalData value={data} isLoading={isLoading} />
 }
 
 const PoolsHeaderTotalFarms = () => {
   const totalInFarms = useTotalInFarms()
 
   return (
-    <PoolsHeaderTotalData
+    <HeaderTotalData
       value={totalInFarms.data}
       isLoading={totalInFarms.isLoading}
     />
@@ -116,9 +134,19 @@ const PoolsHeaderTotalFarmsUser = () => {
   }, [depositShares])
 
   return (
-    <PoolsHeaderTotalData
+    <HeaderTotalData
       value={calculatedShares}
       isLoading={depositShares.isLoading}
     />
   )
+}
+
+const PoolsHeaderTotalVolume = () => {
+  const { value, isLoading } = useTotalVolumesInPools()
+  return <HeaderTotalData value={value} isLoading={isLoading} />
+}
+
+const PoolsHeaderTotalVolumeUser = () => {
+  const { value, isLoading } = useTotalVolumesInPoolsUser()
+  return <HeaderTotalData value={value} isLoading={isLoading} />
 }

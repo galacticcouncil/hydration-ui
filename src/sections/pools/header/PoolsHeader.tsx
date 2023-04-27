@@ -7,13 +7,102 @@ import { useMedia } from "react-use"
 import { PoolsHeaderTotal } from "sections/pools/header/PoolsHeaderTotal"
 import { useAccountStore } from "state/store"
 import { theme } from "theme"
-import { PoolsHeaderVolume } from "./PoolsHeaderVolume"
 import { ClaimAllDropdown } from "../farms/components/claimAllDropdown/ClaimAllDropdown"
+import { useApiPromise } from "../../../utils/api"
+import { Fragment, ReactElement } from "react"
+import Skeleton from "react-loading-skeleton"
+import { isApiLoaded } from "utils/helpers"
 
 type Props = {
   myPositions: boolean
   onMyPositionsChange: (value: boolean) => void
   disableMyPositions: boolean
+}
+
+export const HeaderSeparator = () => {
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  return (
+    <Separator
+      sx={{
+        mb: [15, 0],
+        height: ["1px", "40px"],
+      }}
+      css={{ background: `rgba(${theme.rgbColors.white}, 0.12)` }}
+      orientation={isDesktop ? "vertical" : "horizontal"}
+    />
+  )
+}
+
+export const HeaderValues = ({
+  values,
+  skeletonHeight,
+}: {
+  skeletonHeight?: [number, number]
+  values: Array<{
+    label?: string
+    content: ReactElement
+    hidden?: boolean
+    disconnected?: boolean
+    withoutSeparator?: boolean
+    initiallyHidden?: boolean
+  }>
+}) => {
+  const api = useApiPromise()
+  const isApi = isApiLoaded(api)
+
+  const headerValues = values.reduce((acc, item, i, array) => {
+    const isLastElement = i + 1 === array.length
+
+    if (!isApi && item.initiallyHidden) return acc
+
+    const content =
+      isApi && !item.disconnected ? (
+        item.content
+      ) : (
+        <Skeleton
+          sx={{ height: skeletonHeight ?? [19, 28], width: [180, 200] }}
+          enableAnimation={!item.disconnected}
+        />
+      )
+
+    if (!item.hidden) {
+      acc.push(
+        item.label ? (
+          <div
+            key={`${i}_content`}
+            sx={{ flex: ["row", "column"], justify: "space-between" }}
+          >
+            <Text color="brightBlue300" sx={{ mb: 6 }}>
+              {item.label}
+            </Text>
+            {content}
+          </div>
+        ) : (
+          <Fragment key={`${i}_content`}>{content}</Fragment>
+        ),
+      )
+
+      if (!isLastElement && !item.withoutSeparator)
+        acc.push(<HeaderSeparator key={`${i}_separator`} />)
+    }
+
+    return acc
+  }, [] as ReactElement[])
+
+  return (
+    <div
+      sx={{
+        flex: ["column", "row"],
+        mb: 40,
+        flexWrap: "wrap",
+        gap: [12, 0],
+        align: ["normal", "center"],
+        justify: "space-between",
+      }}
+    >
+      {headerValues}
+    </div>
+  )
 }
 
 const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
@@ -24,8 +113,6 @@ export const PoolsHeader = ({
   disableMyPositions,
 }: Props) => {
   const { t } = useTranslation()
-
-  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const { account } = useAccountStore()
 
@@ -46,62 +133,35 @@ export const PoolsHeader = ({
           />
         )}
       </div>
-      <div
-        sx={{
-          flex: ["column", "row"],
-          mb: 40,
-          flexWrap: "wrap",
-          gap: [12, 35],
-          align: ["normal", "center"],
-        }}
-        css={{ "> *:not([role='separator'])": { flex: 1 } }}
-      >
-        <div sx={{ flex: ["row", "column"], justify: "space-between" }}>
-          <Text color="brightBlue300" sx={{ mb: 14 }}>
-            {t("liquidity.header.totalLocked")}
-          </Text>
-          <div sx={{ flex: "row", align: "baseline" }}>
-            <PoolsHeaderTotal variant="pools" myPositions={myPositions} />
-          </div>
-        </div>
-        <Separator
-          sx={{
-            mb: [15, 0],
-            height: ["1px", "40px"],
-          }}
-          css={{ background: `rgba(${theme.rgbColors.white}, 0.12)` }}
-          orientation={isDesktop ? "vertical" : "horizontal"}
-        />
-        {enabledFarms && (
-          <>
-            <div sx={{ flex: ["row", "column"], justify: "space-between" }}>
-              <Text color="brightBlue300" sx={{ mb: 14 }}>
-                {t("liquidity.header.totalInFarms")}
-              </Text>
-              <div sx={{ flex: "row", align: "baseline" }}>
-                <PoolsHeaderTotal variant="farms" myPositions={myPositions} />
-              </div>
-            </div>
-            <Separator
-              sx={{
-                mb: [15, 0],
-                height: ["1px", "40px"],
-              }}
-              css={{ background: `rgba(${theme.rgbColors.white}, 0.12)` }}
-              orientation={isDesktop ? "vertical" : "horizontal"}
-            />
-          </>
-        )}
-        <div sx={{ flex: ["row", "column"], justify: "space-between" }}>
-          <Text color="brightBlue300" sx={{ mb: 14 }}>
-            {t("liquidity.header.24hours")}
-          </Text>
-          <div sx={{ flex: "row", align: "baseline" }}>
-            <PoolsHeaderVolume myPositions={myPositions} variant="pools" />
-          </div>
-        </div>
-        {enabledFarms && account?.address && <ClaimAllDropdown />}
-      </div>
+      <HeaderValues
+        values={[
+          {
+            label: t("liquidity.header.totalLocked"),
+            content: (
+              <PoolsHeaderTotal variant="pools" myPositions={myPositions} />
+            ),
+          },
+          {
+            hidden: !enabledFarms,
+            label: t("liquidity.header.totalInFarms"),
+            content: (
+              <PoolsHeaderTotal variant="farms" myPositions={myPositions} />
+            ),
+          },
+          {
+            withoutSeparator: true,
+            label: t("liquidity.header.24hours"),
+            content: (
+              <PoolsHeaderTotal myPositions={myPositions} variant="volume" />
+            ),
+          },
+          {
+            initiallyHidden: true,
+            hidden: !enabledFarms || !account?.address,
+            content: <ClaimAllDropdown />,
+          },
+        ]}
+      />
     </>
   )
 }
