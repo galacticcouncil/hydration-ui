@@ -12,11 +12,12 @@ import {
 import { useSpotPrice } from "api/spotPrice"
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import { useExistentialDeposit, useTokenBalance } from "api/balances"
-import { useAccountStore, useStore } from "state/store"
+import { ToastMessage, useAccountStore, useStore } from "state/store"
 import { usePaymentInfo } from "api/transaction"
 import { separateBalance } from "utils/balance"
 import { useAssetMeta } from "api/assetMeta"
 import { useApiIds } from "api/consts"
+import { TOAST_MESSAGES } from "state/toasts"
 
 export const WalletVestingSchedule = () => {
   const { t } = useTranslation()
@@ -52,6 +53,25 @@ export const WalletVestingSchedule = () => {
   }, [paymentInfoData, existentialDeposit, claimableBalance])
 
   const handleClaim = useCallback(async () => {
+    const toast = TOAST_MESSAGES.reduce((memo, type) => {
+      const msType = type === "onError" ? "onLoading" : type
+      memo[type] = (
+        <Trans
+          t={t}
+          i18nKey={`wallet.vesting.toast.${msType}`}
+          tOptions={{
+            amount: claimableBalance,
+            fixedPointScale: meta?.decimals.toNumber() ?? 12,
+            symbol: meta?.symbol,
+          }}
+        >
+          <span />
+          <span className="highlight" />
+        </Trans>
+      )
+      return memo
+    }, {} as ToastMessage)
+
     return !!account?.delegate
       ? await createTransaction(
           {
@@ -61,12 +81,15 @@ export const WalletVestingSchedule = () => {
               api.tx.vesting.claimFor(account?.address),
             ),
           },
-          { isProxy: true },
+          { isProxy: true, toast },
         )
-      : await createTransaction({
-          tx: api.tx.vesting.claim(),
-        })
-  }, [api, account, createTransaction])
+      : await createTransaction(
+          {
+            tx: api.tx.vesting.claim(),
+          },
+          { toast },
+        )
+  }, [api, account, createTransaction, claimableBalance, meta, t])
 
   return (
     <SSchedule>
