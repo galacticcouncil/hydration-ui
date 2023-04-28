@@ -9,6 +9,9 @@ import { ReviewTransactionForm } from "./ReviewTransactionForm"
 import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionToast } from "./ReviewTransactionToast"
+import { useSendTransactionMutation } from "./ReviewTransaction.utils"
+import { WalletUpgradeModal } from "sections/wallet/upgrade/WalletUpgradeModal"
+import { Stepper } from "components/Stepper/Stepper"
 
 export const ReviewTransaction = (props: Transaction) => {
   const { t } = useTranslation()
@@ -61,6 +64,7 @@ export const ReviewTransaction = (props: Transaction) => {
         open={!minimizeModal}
         onClose={handleClose}
         disableCloseOutside
+        topContent={props.steps ? <Stepper steps={props.steps} /> : undefined}
         {...modalProps}
       >
         <WalletUpgradeModal />

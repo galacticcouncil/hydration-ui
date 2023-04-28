@@ -32,6 +32,8 @@ import { useSpotPrice } from "api/spotPrice"
 import { useOraclePrice } from "api/farms"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Separator } from "components/Separator/Separator"
+import { ReactComponent as IconWarning } from "assets/icons/WarningIcon.svg"
+import { Icon } from "components/Icon/Icon"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
@@ -177,7 +179,7 @@ export const RemoveLiquidity = ({
           lrnaToGet: "0",
           lrnaPayWith: "0",
           tokensPayWith: "0",
-          withdrawalFee: withdrawalFee,
+          withdrawalFee: BN(withdrawalFee).div(BN_QUINTILL).multipliedBy(100),
         }
       }
 
@@ -217,7 +219,7 @@ export const RemoveLiquidity = ({
         lrnaToGet,
         lrnaPayWith,
         tokensPayWith,
-        withdrawalFee,
+        withdrawalFee: BN(withdrawalFee).div(BN_QUINTILL).multipliedBy(100),
       }
     }
   }, [
@@ -299,7 +301,7 @@ export const RemoveLiquidity = ({
       },
     )
   }
-
+  const isFeeExceeded = removeLiquidityValues?.withdrawalFee.gt(0.99)
   return (
     <Modal
       open={isOpen}
@@ -387,9 +389,7 @@ export const RemoveLiquidity = ({
                   fixedPointScale: meta?.decimals.toString() ?? 12,
                   symbol: meta?.symbol,
                   feePercentage: removeLiquidityValues?.withdrawalFee
-                    ? BN(removeLiquidityValues.withdrawalFee ?? "")
-                        .div(BN_QUINTILL)
-                        .multipliedBy(100)
+                    ? removeLiquidityValues.withdrawalFee
                     : BN_0,
                 }}
               >
@@ -415,9 +415,7 @@ export const RemoveLiquidity = ({
                         fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
                         symbol: lrnaMeta?.symbol,
                         feePercentage: removeLiquidityValues?.withdrawalFee
-                          ? BN(removeLiquidityValues.withdrawalFee)
-                              .div(BN_QUINTILL)
-                              .multipliedBy(100)
+                          ? removeLiquidityValues.withdrawalFee
                           : BN_0,
                       }}
                     >
@@ -429,8 +427,31 @@ export const RemoveLiquidity = ({
               />
             </>
           )}
+
+        {isFeeExceeded && (
+          <div
+            sx={{
+              flex: "row",
+              align: "center",
+              gap: 8,
+              minHeight: 50,
+              p: "12px 14px",
+              my: 6,
+            }}
+            css={{ borderRadius: 2, background: "rgba(245, 168, 85, 0.3)" }}
+          >
+            <Icon size={24} icon={<IconWarning />} />
+
+            <Text color="white" fs={13} fw={400}>
+              {t("liquidity.remove.modal.fee.warning")}
+            </Text>
+          </div>
+        )}
         <Spacer size={20} />
-        <Button variant="primary" disabled={removeSharesValue.isZero()}>
+        <Button
+          variant="primary"
+          disabled={removeSharesValue.isZero() || isFeeExceeded}
+        >
           {t("liquidity.remove.modal.confirm")}
         </Button>
       </form>
