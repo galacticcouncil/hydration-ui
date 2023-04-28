@@ -1,4 +1,5 @@
 import { Modal } from "components/Modal/Modal"
+import { Stepper } from "components/Stepper/Stepper"
 import { ComponentProps, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { WalletUpgradeModal } from "sections/wallet/upgrade/WalletUpgradeModal"
@@ -9,9 +10,6 @@ import { ReviewTransactionForm } from "./ReviewTransactionForm"
 import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionToast } from "./ReviewTransactionToast"
-import { useSendTransactionMutation } from "./ReviewTransaction.utils"
-import { WalletUpgradeModal } from "sections/wallet/upgrade/WalletUpgradeModal"
-import { Stepper } from "components/Stepper/Stepper"
 
 export const ReviewTransaction = (props: Transaction) => {
   const { t } = useTranslation()
