@@ -113,6 +113,7 @@ export const Modal: FC<PropsWithChildren<Props>> = (props) => {
             <Backdrop variant={mergedProps.variant ?? "default"} />
 
             <ModalWindow
+              isTopContent={!!props.topContent}
               isDrawer={isDrawer}
               maxWidth={MODAL_WIDTH}
               onEscapeKeyDown={!props.withoutClose ? props.onClose : undefined}

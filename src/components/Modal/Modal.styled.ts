@@ -9,12 +9,12 @@ import { GradientText } from "components/Typography/GradientText/GradientText"
 const fadeInKeyframes = keyframes`
   0% {
     opacity: 0;
-    transform: translate(-50%, -48%) scale(0.96);
+    transform: translate(-50%, 2%) scale(0.96);
   }
 
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, 0) scale(1);
   }
 `
 
@@ -56,6 +56,7 @@ export const ModalWindow = styled(DialogContent, {
 })<{
   maxWidth?: number
   isDrawer?: boolean
+  isTopContent: boolean
 }>`
   position: absolute;
   z-index: ${theme.zIndices.modal};
@@ -70,9 +71,9 @@ export const ModalWindow = styled(DialogContent, {
       : { top: 0, height: "100%" }}
 
   @media ${theme.viewport.gte.sm} {
-    top: 50%;
+    top: ${({ isTopContent }) => (isTopContent ? "10%" : "8%")};
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
 
     height: auto;
     max-width: ${({ maxWidth }) => maxWidth}px;
@@ -80,6 +81,10 @@ export const ModalWindow = styled(DialogContent, {
     border-radius: 4px;
 
     animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) ${fadeInKeyframes};
+  }
+
+  @media ${theme.viewport.gte.lg} {
+    top: 10%;
   }
 `
 
@@ -92,9 +97,12 @@ export const ModalWindowContainer = styled.div<{ isDrawer?: boolean }>`
   background: ${theme.colors.darkBlue700};
   box-shadow: ${theme.shadows.modal};
 
+  position: relative;
+
   ${({ isDrawer }) => (isDrawer ? { borderRadius: "20px 20px 0px 0px" } : {})}
 
   @media ${theme.viewport.gte.sm} {
+    overflow: hidden;
     :before {
       content: "";
       position: absolute;
@@ -150,8 +158,12 @@ export const ModalBody = styled.div<{ isDrawer?: boolean }>`
   @media ${theme.viewport.gte.sm} {
     --modal-body-padding-x: 30px;
     padding-bottom: 30px;
-    max-height: 80vh;
+    max-height: 75vh;
     height: auto;
+  }
+
+  @media (min-height: 640px) {
+    min-height: 508px;
   }
 
   &::-webkit-scrollbar-track {

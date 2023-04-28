@@ -30,6 +30,7 @@ function JoinedFarmsDetailsRedeposit(props: {
   pool: OmnipoolPool
   depositNft: DepositNftType
   onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
+  onClose: () => void
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -62,6 +63,7 @@ function JoinedFarmsDetailsRedeposit(props: {
     availableFarms,
     [props.depositNft],
     toast,
+    props.onClose,
   )
 
   if (!availableFarms?.length) return null
@@ -189,6 +191,7 @@ export const JoinedFarmsDetails = (props: {
   } | null>(null)
 
   const bestNumber = useBestNumber()
+  const meta = useAssetMeta(props.pool.id)
 
   const farms = useFarms([props.pool.id])
   const selectedFarm =
@@ -210,7 +213,7 @@ export const JoinedFarmsDetails = (props: {
     <Modal
       open={props.isOpen}
       onClose={props.onClose}
-      title={t("farms.modal.join.title", { assetSymbol: "HDX" })}
+      title={t("farms.modal.join.title", { assetSymbol: meta.data?.symbol })}
     >
       {selectedFarm ? (
         <FarmDetailsModal
@@ -232,6 +235,7 @@ export const JoinedFarmsDetails = (props: {
             pool={props.pool}
             depositNft={props.depositNft}
             onSelect={(value) => setSelectedFarmIds(value)}
+            onClose={props.onClose}
           />
         </div>
       )}

@@ -74,6 +74,7 @@ export const RedepositFarms = ({ depositNft, pool }: RedepositFarmsProps) => {
     availableYieldFarms,
     [depositNft],
     toast,
+    () => setJoinFarm(false),
   )
 
   if (!availableYieldFarms.length) return null

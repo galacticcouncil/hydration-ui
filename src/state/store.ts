@@ -8,6 +8,7 @@ import { v4 as uuid } from "uuid"
 import { ReactElement } from "react"
 import BigNumber from "bignumber.js"
 import { safeConvertAddressSS58 } from "utils/formatting"
+import { StepProps } from "components/Stepper/Stepper"
 
 export interface ToastMessage {
   onLoading?: ReactElement
@@ -39,6 +40,7 @@ export interface Transaction extends TransactionInput {
   onError?: () => void
   toastMessage?: ToastMessage
   isProxy: boolean
+  steps?: Array<StepProps>
 }
 
 interface Store {
@@ -50,6 +52,7 @@ interface Store {
       onSubmitted?: () => void
       toast?: ToastMessage
       isProxy?: boolean
+      steps?: Array<StepProps>
     },
   ) => Promise<ISubmittableResult>
   cancelTransaction: (hash: string) => void
@@ -162,6 +165,7 @@ export const useStore = create<Store>((set) => ({
               },
               onError: () => reject(new Error("Transaction rejected")),
               isProxy: !!options?.isProxy,
+              steps: options?.steps,
             },
             ...(store.transactions ?? []),
           ],
