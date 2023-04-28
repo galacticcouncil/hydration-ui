@@ -54,7 +54,7 @@ export const JoinFarmModal = ({
       withoutOutsideClose
       open={isOpen}
       onClose={onClose}
-      title={t("farms.modal.join.title", { assetSymbol: "HDX" })}
+      title={t("farms.modal.join.title", { assetSymbol: meta.data?.symbol })}
     >
       {selectedFarm ? (
         <FarmDetailsModal
@@ -64,7 +64,7 @@ export const JoinFarmModal = ({
           onBack={() => setSelectedFarmId(null)}
         />
       ) : (
-        <div>
+        <div sx={{ flex: "column", justify: "space-between", flexGrow: 1 }}>
           {isRedeposit && (
             <Text color="basic400">
               {t("farms.modal.join.description", { assets: "HDX" })}
