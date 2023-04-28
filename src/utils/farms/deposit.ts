@@ -42,7 +42,11 @@ export const useFarmDepositMutation = (
           positionId,
         ),
       },
-      { toast, steps: firstStep, onSubmitted: onClose },
+      {
+        toast,
+        steps: restFarm.length > 1 ? firstStep : undefined,
+        onSubmitted: onClose,
+      },
     )
 
     for (const record of firstDeposit.events) {
