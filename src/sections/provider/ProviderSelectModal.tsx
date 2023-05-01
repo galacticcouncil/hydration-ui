@@ -20,6 +20,12 @@ import { useTranslation } from "react-i18next"
 import { useBestNumber } from "api/chain"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { u32, u64 } from "@polkadot/types"
+import { Controller, useForm } from "react-hook-form"
+import { ProviderInput } from "./components/ProviderInput/ProviderInput"
+import { useRpcStore } from "state/store"
+import { FormValues } from "utils/helpers"
+import { useMutation } from "@tanstack/react-query"
+import { connectWsProvider } from "./ProviderSelectModal.utils"
 
 function ProviderSelectItemExternal(props: {
   url: string
@@ -31,7 +37,7 @@ function ProviderSelectItemExternal(props: {
 
   useEffect(() => {
     const rpc = props.url
-    const provider = new WsProvider(rpc)
+    const provider = new WsProvider(rpc) //
 
     let cancel: () => void
 
@@ -103,8 +109,10 @@ function ProviderSelectItem(props: {
   name: string
   url: string
   isActive?: boolean
+  custom?: boolean
   onClick: () => void
 }) {
+  const { removeRpc } = useRpcStore()
   const store = useProviderRpcUrlStore()
   const rpcUrl = store.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
@@ -112,15 +120,23 @@ function ProviderSelectItem(props: {
 
   return (
     <SItem isActive={props.isActive} onClick={props.onClick}>
-      <Text
-        color={props.isActive ? "pink600" : "white"}
-        css={{
-          gridArea: "name",
-          transition: `all ${theme.transitions.default}`,
-        }}
-      >
-        {props.name}
-      </Text>
+      <div>
+        <Text
+          color={props.isActive ? "pink600" : "white"}
+          css={{
+            gridArea: "name",
+            transition: `all ${theme.transitions.default}`,
+          }}
+        >
+          {props.name}
+        </Text>
+        {/*add prevent */}
+        {props.custom && (
+          <Text fs={11} onClick={() => removeRpc(props.url)}>
+            remove
+          </Text>
+        )}
+      </div>
       {isLive ? (
         <ProviderSelectItemLive css={{ gridArea: "status" }} />
       ) : (
@@ -164,6 +180,40 @@ export function ProviderSelectModal(props: {
   const activeRpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
   const [userRpcUrl, setUserRpcUrl] = useState(activeRpcUrl)
   const { t } = useTranslation()
+  const { rpcList, setRpcList } = useRpcStore()
+
+  const form = useForm<{ address: string }>({
+    defaultValues: { address: "" },
+    mode: "onChange",
+  })
+
+  const mutation = useMutation(async (value: FormValues<typeof form>) => {
+    try {
+      const provider = await connectWsProvider(value.address)
+
+      const api = await ApiPromise.create({
+        provider,
+      })
+
+      const relay = await api.query.parachainSystem.validationData()
+      const relayParentNumber = relay.unwrap().relayParentNumber
+
+      if (relayParentNumber.toNumber()) {
+        setRpcList([`wss://${value.address}`])
+        form.reset()
+      }
+
+      //return true
+    } catch (e) {
+      if (e === "disconnected")
+        form.setError("address", {
+          message: "Provided rpc provider doesn't exist",
+        })
+      throw new Error("Provided rpc provider doesn't exist")
+    }
+  })
+
+  if (mutation.error) console.log("error in mutation")
 
   return (
     <Modal
@@ -172,6 +222,33 @@ export function ProviderSelectModal(props: {
       title={t("rpc.change.modal.title")}
       width={720}
     >
+      <form onSubmit={form.handleSubmit((a) => mutation.mutate(a))}>
+        <Controller
+          name="address"
+          control={form.control}
+          render={({
+            field: { name, value, onChange },
+            fieldState: { error },
+          }) => (
+            <ProviderInput
+              name={name}
+              value={value}
+              onChange={onChange}
+              error={error?.message}
+              button={
+                <Button
+                  size="small"
+                  type="submit"
+                  isLoading={mutation.isLoading}
+                >
+                  add
+                </Button>
+              }
+            />
+          )}
+        />
+      </form>
+
       <SContainer>
         <SHeader>
           <div css={{ gridArea: "name" }}>
@@ -197,6 +274,23 @@ export function ProviderSelectModal(props: {
                 url={provider.url}
                 isActive={provider.url === userRpcUrl}
                 onClick={() => setUserRpcUrl(provider.url)}
+              />
+              {index + 1 < PROVIDERS.length && (
+                <Separator color="alpha0" opacity={0.06} />
+              )}
+            </Fragment>
+          )
+        })}
+
+        {rpcList?.map((provider, index) => {
+          return (
+            <Fragment key={provider}>
+              <ProviderSelectItem
+                name={`Custom RPC #${index + 1}`}
+                url={provider}
+                isActive={provider === userRpcUrl}
+                onClick={() => setUserRpcUrl(provider)}
+                custom
               />
               {index + 1 < PROVIDERS.length && (
                 <Separator color="alpha0" opacity={0.06} />

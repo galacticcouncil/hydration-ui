@@ -181,3 +181,56 @@ export const useStore = create<Store>((set) => ({
     }))
   },
 }))
+
+export const useRpcStore = create(
+  persist<{
+    rpcList?: string[]
+    setRpcList: (account: string[]) => void
+    removeRpc: (url: string) => void
+  }>(
+    (set) => ({
+      setRpcList: (rpcList) => set({ rpcList }),
+      removeRpc: (rpcToRemove) =>
+        set((store) => {
+          const newRpcList = store.rpcList?.filter((rpc) => rpc !== rpcToRemove)
+          return {
+            rpcList: newRpcList,
+          }
+        }),
+    }),
+    {
+      name: "hydradx-rpc-list",
+      getStorage: () => ({
+        async getItem(name: string) {
+          // attempt to activate the account
+          const value = window.localStorage.getItem(name)
+          if (value == null) return value
+
+          try {
+            const { state } = JSON.parse(value)
+
+            if (state) {
+              const parsedAccount = JSON.parse(value)
+
+              return JSON.stringify({
+                ...parsedAccount,
+              })
+            }
+
+            if (!value) throw new Error("Account not found")
+            return value
+          } catch (err) {
+            console.error(err)
+            return null
+          }
+        },
+        setItem(name, value) {
+          window.localStorage.setItem(name, value)
+        },
+        removeItem(name) {
+          window.localStorage.removeItem(name)
+        },
+      }),
+    },
+  ),
+)
