@@ -71,6 +71,7 @@ export const ModalHeaderButton = forwardRef<HTMLDivElement, ButtonProps>(
         ref={ref}
         position={position}
         custom={{ direction }}
+        headerVariant={headerVariant}
         {...(variant === "close" ? {} : motionProps)}
       >
         <SButton onClick={onClick} icon={icon} headerVariant={headerVariant} />

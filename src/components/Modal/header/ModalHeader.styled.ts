@@ -57,12 +57,18 @@ export const STitleGradient = styled(GradientText)<{ canBack?: boolean }>`
 
 export const SButtonContainer = styled(motion.div)<{
   position: "left" | "right"
+  headerVariant?: ModalHeaderVariant
 }>`
+  --p-x: ${({ headerVariant }) =>
+    headerVariant === "gradient" ? "8px" : "var(--modal-header-padding-x)"};
+  --p-y: ${({ headerVariant }) =>
+    headerVariant === "gradient" ? "8px" : "var(--modal-header-padding-y)"};
+
   position: absolute;
-  top: var(--modal-header-padding-y);
+  top: var(--p-y);
   ${({ position }) => {
-    if (position === "left") return "left: var(--modal-header-padding-x);"
-    if (position === "right") return "right: var(--modal-header-padding-x);"
+    if (position === "left") return "left: var(--p-x);"
+    if (position === "right") return "right: var(--p-x);"
   }}
 `
 
