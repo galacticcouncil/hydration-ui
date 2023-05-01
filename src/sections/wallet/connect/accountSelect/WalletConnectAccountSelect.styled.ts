@@ -7,7 +7,6 @@ export const SContainer = styled.div`
   gap: 10px;
 
   margin-top: 42px;
-  padding-bottom: 76px;
 
   overflow-x: hidden;
   overflow-y: auto;

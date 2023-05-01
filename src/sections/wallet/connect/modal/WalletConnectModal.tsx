@@ -1,3 +1,4 @@
+import { css } from "@emotion/react"
 import { Wallet } from "@talismn/connect-wallets"
 import { useNavigate } from "@tanstack/react-location"
 import { useMutation } from "@tanstack/react-query"
@@ -45,6 +46,10 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
         setUserSelectedProvider(null)
         onClose()
       }}
+      css={css`
+        --wallet-select-footer-height: 96px;
+        padding-bottom: var(--wallet-select-footer-height);
+      `}
       {...modalProps}
     >
       {activeProvider ? (

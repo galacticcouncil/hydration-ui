@@ -13,6 +13,7 @@ type Props = {
   disableCloseOutside?: boolean
   backdrop?: BackdropVariant
   topContent?: ReactNode
+  className?: string
   children?: ReactNode
 } & ModalContentProps
 
@@ -25,6 +26,7 @@ export const Modal = ({
   disableCloseOutside,
   backdrop = "default",
   topContent,
+  className,
   children,
   ...contentProps
 }: Props) => {
@@ -38,6 +40,7 @@ export const Modal = ({
 
     return (
       <ModalContents
+        className={className}
         page={0}
         direction={0}
         onClose={onClose}
@@ -46,7 +49,7 @@ export const Modal = ({
         contents={[{ content: children, ...contentProps }]}
       />
     )
-  }, [onClose, children, contentProps])
+  }, [onClose, onBack, className, children, contentProps])
 
   return (
     <Root open={open}>

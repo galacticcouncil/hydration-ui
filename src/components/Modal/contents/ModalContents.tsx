@@ -19,6 +19,7 @@ type Props = {
   onClose?: () => void
   onBack?: () => void
   forceBack?: boolean
+  className?: string
   contents: ({ content: ReactNode } & ModalContentProps)[]
 }
 
@@ -28,6 +29,7 @@ export const ModalContents = ({
   onClose,
   onBack,
   forceBack,
+  className,
   contents,
 }: Props) => {
   const [ref, size] = useMeasure<HTMLDivElement>()
@@ -41,7 +43,7 @@ export const ModalContents = ({
   const height = `calc(${size.height}px - var(--modal-header-height))`
 
   return (
-    <SContainer ref={ref}>
+    <SContainer ref={ref} className={className}>
       <AnimatePresence
         mode="popLayout"
         initial={false}
