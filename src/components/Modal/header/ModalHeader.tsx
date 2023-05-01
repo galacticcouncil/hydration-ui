@@ -29,9 +29,9 @@ export const ModalHeaderTitle = forwardRef<HTMLDivElement, TitleProps>(
           return <Text font="FontOver">{title}</Text>
         case "gradient":
         default:
-          return <STitleGradient>{title}</STitleGradient>
+          return <STitleGradient canBack={canBack}>{title}</STitleGradient>
       }
-    }, [title, variant])
+    }, [title, variant, canBack])
 
     return (
       <SContainer

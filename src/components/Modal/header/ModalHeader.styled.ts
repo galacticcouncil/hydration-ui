@@ -38,8 +38,10 @@ export const SContainer = styled(motion.div)<{
   padding: var(--modal-header-padding-y) var(--modal-header-padding-x);
 `
 
-export const STitleGradient = styled(GradientText)`
-  margin-top: calc(var(--modal-header-height) - var(--modal-header-padding-y));
+export const STitleGradient = styled(GradientText)<{ canBack?: boolean }>`
+  ${({ canBack }) =>
+    canBack &&
+    "margin-top: calc(var(--modal-header-height) - var(--modal-header-padding-y));"};
 
   font-size: 19px;
   font-weight: 500;

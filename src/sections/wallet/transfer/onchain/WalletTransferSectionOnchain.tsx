@@ -142,7 +142,7 @@ export function WalletTransferSectionOnchain(props: {
           sx={{
             flex: "column",
             justify: "space-between",
-            height: "calc(100% - var(--modal-content-padding))",
+            minHeight: "100%",
           }}
         >
           <div sx={{ flex: "column" }}>

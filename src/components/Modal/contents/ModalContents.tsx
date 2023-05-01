@@ -1,5 +1,4 @@
-import { Spacer } from "components/Spacer/Spacer"
-import { AnimatePresence } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 import { ReactNode } from "react"
 import { useMeasure } from "react-use"
 import {
@@ -8,6 +7,7 @@ import {
   ModalHeaderVariant,
 } from "../header/ModalHeader"
 import { SContainer, SContent } from "./ModalContents.styled"
+import { Spacer } from "components/Spacer/Spacer"
 
 export type ModalContentProps = {
   title?: string
@@ -61,13 +61,10 @@ export const ModalContents = ({
         <SContent
           key={`content-${page}`}
           custom={{ direction, height }}
-          noPadding={noPadding}
           {...motionProps}
+          noPadding={noPadding}
         >
           {contents[page].content}
-          {!noPadding && (
-            <Spacer axis="vertical" size="var(--modal-content-padding)" />
-          )}
         </SContent>
         {canBack && (
           <ModalHeaderButton

@@ -318,7 +318,7 @@ export const RemoveLiquidity = ({
         sx={{
           flex: "column",
           justify: "space-between",
-          height: "calc(100% - var(--modal-header-title-height))",
+          minHeight: "100%",
         }}
       >
         <div>

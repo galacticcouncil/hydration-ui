@@ -90,7 +90,8 @@ export const SContent = styled.div<{
   ${({ hasTopContent }) =>
     hasTopContent && "top: var(--modal-top-content-height);"}
   z-index: ${theme.zIndices.modal};
-  overflow: auto;
+
+  display: flex;
 
   background: ${theme.colors.darkBlue700};
   box-shadow: ${theme.shadows.modal};
