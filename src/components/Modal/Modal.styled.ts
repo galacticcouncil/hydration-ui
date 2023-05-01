@@ -92,6 +92,7 @@ export const SContent = styled.div<{
   z-index: ${theme.zIndices.modal};
 
   display: flex;
+  overflow: hidden;
 
   background: ${theme.colors.darkBlue700};
   box-shadow: ${theme.shadows.modal};
