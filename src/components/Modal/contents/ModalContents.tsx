@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence } from "framer-motion"
 import { ReactNode } from "react"
 import { useMeasure } from "react-use"
 import {
@@ -7,7 +7,6 @@ import {
   ModalHeaderVariant,
 } from "../header/ModalHeader"
 import { SContainer, SContent } from "./ModalContents.styled"
-import { Spacer } from "components/Spacer/Spacer"
 
 export type ModalContentProps = {
   title?: string
@@ -39,9 +38,7 @@ export const ModalContents = ({
   const headerVariant = contents[page].headerVariant || "gradient"
   const noPadding = contents[page].noPadding
 
-  const height = `calc(${size.height}px - ${
-    headerVariant === "gradient" ? "120px" : "var(--modal-header-height)"
-  })`
+  const height = `calc(${size.height}px - var(--modal-header-height))`
 
   return (
     <SContainer ref={ref}>
