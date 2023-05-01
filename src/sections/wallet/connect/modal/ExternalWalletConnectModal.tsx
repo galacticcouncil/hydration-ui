@@ -101,95 +101,94 @@ export const ExternalWalletConnectModal = ({
   }
 
   return (
-    <>
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      autoComplete="off"
+      sx={{ flex: "column", minHeight: "100%" }}
+    >
       <Text color="basic400">
         {t("walletConnect.externalWallet.modal.desc")}
       </Text>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        autoComplete="off"
-        sx={{ flex: "column", justify: "space-between", height: "100%" }}
-      >
-        <Controller
-          name="address"
-          control={form.control}
-          rules={{
-            required: t("wallet.assets.transfer.error.required"),
-            validate: {
-              validAddress: (value) =>
-                safeConvertAddressSS58(value, 0) != null ||
-                t("wallet.assets.transfer.error.validAddress"),
-            },
-          }}
-          render={({
-            field: { name, value, onChange },
-            fieldState: { error },
-          }) => {
-            const rightIcon = value ? (
-              <CloseIcon
-                icon={<CrossIcon />}
-                onClick={() => {
-                  onChange("")
-                  form.clearErrors("delegates")
-                }}
-                name={t("modal.closeButton.name")}
-              />
-            ) : (
-              <PasteAddressIcon
-                onClick={async () => {
-                  const text = await navigator.clipboard.readText()
-                  onChange(text)
-                  form.clearErrors("delegates")
-                }}
-              />
-            )
+      <Controller
+        name="address"
+        control={form.control}
+        rules={{
+          required: t("wallet.assets.transfer.error.required"),
+          validate: {
+            validAddress: (value) =>
+              safeConvertAddressSS58(value, 0) != null ||
+              t("wallet.assets.transfer.error.validAddress"),
+          },
+        }}
+        render={({
+          field: { name, value, onChange },
+          fieldState: { error },
+        }) => {
+          const rightIcon = value ? (
+            <CloseIcon
+              icon={<CrossIcon />}
+              onClick={() => {
+                onChange("")
+                form.clearErrors("delegates")
+              }}
+              name={t("modal.closeButton.name")}
+            />
+          ) : (
+            <PasteAddressIcon
+              onClick={async () => {
+                const text = await navigator.clipboard.readText()
+                onChange(text)
+                form.clearErrors("delegates")
+              }}
+            />
+          )
 
-            return (
-              <>
-                <SContainer error={!!error} sx={{ mt: 35 }}>
-                  <AddressInput
-                    name={name}
-                    onChange={(value) => {
-                      onChange(value)
-                      form.clearErrors("delegates")
-                    }}
-                    value={value}
-                    placeholder={t(
-                      "walletConnect.externalWallet.modal.input.placeholder",
-                    )}
-                    rightIcon={rightIcon}
-                    css={{ width: "100%", height: 35, padding: "0 10px" }}
-                    error={error?.message}
-                  />
-                </SContainer>
-                {error && <SErrorMessage>{error.message}</SErrorMessage>}
-              </>
-            )
-          }}
-        />
-        {form.formState.errors.delegates ? (
-          <>
-            <Spacer size={15} />
-            <Text color="red400" font="ChakraPetchBold" fs={12}>
-              {t("walletConnect.accountSelect.proxyAccount.error")}
-            </Text>
-            <Spacer size={6} />
-            <Text fw={400} color="red400" fs={12}>
-              {t("walletConnect.accountSelect.proxyAccount.errorDesc")}
-            </Text>
-          </>
-        ) : null}
-        <Spacer size={35} />
-        <Button
-          disabled={!!form.formState.errors.address}
-          variant="primary"
-          type="submit"
-        >
-          {form.formState.errors.delegates
-            ? t("walletConnect.accountSelect.viewAsWallet")
-            : t("confirm")}
-        </Button>
-      </form>
-    </>
+          return (
+            <>
+              <SContainer error={!!error} sx={{ mt: 35 }}>
+                <AddressInput
+                  name={name}
+                  onChange={(value) => {
+                    onChange(value)
+                    form.clearErrors("delegates")
+                  }}
+                  value={value}
+                  placeholder={t(
+                    "walletConnect.externalWallet.modal.input.placeholder",
+                  )}
+                  rightIcon={rightIcon}
+                  css={{ width: "100%", height: 35, padding: "0 10px" }}
+                  error={error?.message}
+                />
+              </SContainer>
+              {error && <SErrorMessage>{error.message}</SErrorMessage>}
+            </>
+          )
+        }}
+      />
+      {form.formState.errors.delegates ? (
+        <>
+          <Spacer size={15} />
+          <Text color="red400" font="ChakraPetchBold" fs={12}>
+            {t("walletConnect.accountSelect.proxyAccount.error")}
+          </Text>
+          <Spacer size={6} />
+          <Text fw={400} color="red400" fs={12}>
+            {t("walletConnect.accountSelect.proxyAccount.errorDesc")}
+          </Text>
+        </>
+      ) : null}
+      <Spacer size={35} />
+      <Button
+        disabled={!!form.formState.errors.address}
+        variant="primary"
+        type="submit"
+        sx={{ mt: "auto" }}
+      >
+        {form.formState.errors.delegates
+          ? t("walletConnect.accountSelect.viewAsWallet")
+          : t("confirm")}
+      </Button>
+    </form>
   )
 }
