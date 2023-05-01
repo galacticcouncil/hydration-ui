@@ -207,7 +207,7 @@ export function ProviderSelectModal(props: {
 
       <Button
         variant="primary"
-        sx={{ mt: 64 }}
+        sx={{ mt: 64, width: "100%" }}
         onClick={() => {
           preference.setRpcUrl(userRpcUrl)
 

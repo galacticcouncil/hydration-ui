@@ -1,11 +1,11 @@
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 
-import { WalletConnectProviders } from "sections/wallet/connect/providers/WalletConnectProviders"
 import { Wallet } from "@talismn/connect-wallets"
-import { ExternalWalletConnectProviderButton } from "../providers/button/ExternalWalletConnectProviderButton"
 import { useState } from "react"
+import { WalletConnectProviders } from "sections/wallet/connect/providers/WalletConnectProviders"
 import { ExternalWalletConnectModal } from "../modal/ExternalWalletConnectModal"
+import { ExternalWalletConnectProviderButton } from "../providers/button/ExternalWalletConnectProviderButton"
 
 type Props = {
   onWalletSelect: (wallet: Wallet) => void
@@ -32,7 +32,7 @@ export const WalletConnectProviderSelect = ({
           />
           {import.meta.env.VITE_FF_EXTERNAL_WALLET_ENABLED === "true" && (
             <>
-              <Text sx={{ py: 4 }} fs={14} color="basic400" tAlign="center">
+              <Text sx={{ py: 8 }} fs={14} color="basic400" tAlign="center">
                 {t("or")}
               </Text>
               <ExternalWalletConnectProviderButton

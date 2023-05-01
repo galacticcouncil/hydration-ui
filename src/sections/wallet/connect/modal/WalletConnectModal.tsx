@@ -46,10 +46,13 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
         setUserSelectedProvider(null)
         onClose()
       }}
-      css={css`
-        --wallet-select-footer-height: 96px;
-        padding-bottom: var(--wallet-select-footer-height);
-      `}
+      css={
+        activeProvider &&
+        css`
+          --wallet-select-footer-height: 96px;
+          padding-bottom: var(--wallet-select-footer-height);
+        `
+      }
       {...modalProps}
     >
       {activeProvider ? (
