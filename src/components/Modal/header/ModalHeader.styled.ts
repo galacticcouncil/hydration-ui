@@ -40,7 +40,7 @@ export const SContainer = styled(motion.div)<{
 
 export const STitleGradient = styled(GradientText)`
   margin-top: calc(
-    var(--modal-header-height) - var(--modal-header-padding-y) * 2
+    var(--modal-header-height) - var(--modal-header-padding-y) * 2 + 16px
   );
 
   font-size: 19px;
@@ -59,16 +59,11 @@ export const SButtonContainer = styled(motion.div)<{
   position: "left" | "right"
   headerVariant?: ModalHeaderVariant
 }>`
-  --p-x: ${({ headerVariant }) =>
-    headerVariant === "gradient" ? "8px" : "var(--modal-header-padding-x)"};
-  --p-y: ${({ headerVariant }) =>
-    headerVariant === "gradient" ? "8px" : "var(--modal-header-padding-y)"};
-
   position: absolute;
-  top: var(--p-y);
+  top: var(--modal-header-padding-y);
   ${({ position }) => {
-    if (position === "left") return "left: var(--p-x);"
-    if (position === "right") return "right: var(--p-x);"
+    if (position === "left") return "left: var(--modal-header-padding-x);"
+    if (position === "right") return "right: var(--modal-header-padding-x);"
   }}
 `
 
