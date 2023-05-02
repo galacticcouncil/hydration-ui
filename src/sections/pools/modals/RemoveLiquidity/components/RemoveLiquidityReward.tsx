@@ -1,5 +1,6 @@
 import { Text } from "components/Typography/Text/Text"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { Icon } from "components/Icon/Icon"
 
 type Props = {
   name: string
@@ -11,7 +12,7 @@ export const RemoveLiquidityReward = ({ name, symbol, amount }: Props) => {
   return (
     <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
       <div sx={{ flex: "row", align: "center", gap: 8 }}>
-        {getAssetLogo(symbol)}
+        <Icon size={28} icon={getAssetLogo(symbol)} />
         <div sx={{ flex: "column" }}>
           <Text fs={[14, 16]}>{symbol}</Text>
           <Text fs={[10, 12]} color="neutralGray500">
