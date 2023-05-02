@@ -21,9 +21,10 @@ export function WalletUpgradeModal() {
   const { t } = useTranslation()
 
   if (!state.data || !state.data.needsUpdate) return null
+
   return (
-    <Modal open={open} onClose={onClose}>
-      <div sx={{ flex: "column", align: "center" }}>
+    <Modal open={open} onClose={onClose} title="">
+      <div sx={{ flex: "column", align: "center", width: "100%" }}>
         <UpdateMetadataIcon />
 
         <Spacer size={12} />
