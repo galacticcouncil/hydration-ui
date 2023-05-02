@@ -7,14 +7,8 @@ export const SStepperContainer = styled.div`
   align-items: center;
   justify-content: center;
 
-  position: absolute;
-  top: -60px;
-  width: 100vw;
-
   @media (${theme.viewport.gte.sm}) {
     width: 222px;
-    left: 50%;
-    transform: translateX(-50%);
   }
 `
 
