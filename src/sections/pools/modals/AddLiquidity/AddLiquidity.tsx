@@ -2,7 +2,7 @@ import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
-import { usePagination } from "components/Modal/Modal.utils"
+import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Separator } from "components/Separator/Separator"
 import { Spacer } from "components/Spacer/Spacer"
@@ -123,7 +123,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
     )
   }
 
-  const { page, direction, next, back } = usePagination()
+  const { page, direction, next, back } = useModalPagination()
 
   return (
     <Modal

@@ -5,7 +5,7 @@ import { DepositNftType } from "api/deposits"
 import { Farm, useFarms } from "api/farms"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
-import { usePagination } from "components/Modal/Modal.utils"
+import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
@@ -208,7 +208,7 @@ export const JoinedFarmsDetails = (props: {
       selectedFarm?.globalFarm.blocksPerPeriod.toNumber() ?? 1,
     )
 
-  const { page, direction, back, next } = usePagination()
+  const { page, direction, back, next } = useModalPagination()
   const onBack = () => {
     back()
     setSelectedFarmIds(null)

@@ -1,11 +1,12 @@
 import { u32 } from "@polkadot/types"
 import { Modal } from "components/Modal/Modal"
-import { usePagination } from "components/Modal/Modal.utils"
+import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { PillSwitch } from "components/PillSwitch/PillSwitch"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
+import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { WalletTransferSectionCrosschain } from "sections/wallet/transfer/crosschain/WalletTransferSectionCrosschain"
 import { WalletTransferSectionOnchain } from "sections/wallet/transfer/onchain/WalletTransferSectionOnchain"
 import { theme } from "theme"
@@ -20,9 +21,13 @@ export function WalletTransferModal(props: {
   const [active, setActive] = useState<
     (typeof CROSSCHAINS)[number] | undefined
   >()
+  const [asset, setAsset] = useState(props.initialAsset)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const { page, direction, paginateTo } = usePagination()
+  const { page, direction, paginateTo } = useModalPagination()
+
+  const openAssets = () => paginateTo(2)
+  const openOnChain = () => paginateTo(0)
 
   return (
     <Modal
@@ -41,7 +46,7 @@ export function WalletTransferModal(props: {
               label: t("wallet.assets.transfer.switch.bridge"),
             },
           ]}
-          value={page}
+          value={page === 2 || page === 0 ? 0 : 1}
           onChange={paginateTo}
         />
       }
@@ -50,12 +55,14 @@ export function WalletTransferModal(props: {
         page={page}
         direction={direction}
         onClose={props.onClose}
+        onBack={openOnChain}
         contents={[
           {
             title: t("wallet.assets.transfer.title"),
             content: (
               <WalletTransferSectionOnchain
-                initialAsset={props.initialAsset}
+                asset={asset}
+                openAssets={openAssets}
                 onClose={props.onClose}
               />
             ),
@@ -64,11 +71,25 @@ export function WalletTransferModal(props: {
             title: active
               ? undefined
               : t("wallet.assets.transfer.bridge.title"),
+            hideBack: true,
             content: (
               <WalletTransferSectionCrosschain
                 onClose={props.onClose}
                 active={active}
                 setActive={setActive}
+              />
+            ),
+          },
+          {
+            title: t("selectAsset.title"),
+            headerVariant: "FontOver",
+            noPadding: true,
+            content: (
+              <AssetsModalContent
+                onSelect={(a) => {
+                  setAsset(a.id)
+                  openOnChain()
+                }}
               />
             ),
           },

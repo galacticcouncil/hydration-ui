@@ -12,6 +12,7 @@ export type ModalContentProps = {
   title?: string
   headerVariant?: ModalHeaderVariant
   noPadding?: boolean
+  hideBack?: boolean
 }
 type Props = {
   page?: number
@@ -34,7 +35,8 @@ export const ModalContents = ({
 }: Props) => {
   const [ref, size] = useMeasure<HTMLDivElement>()
 
-  const canBack = !!onBack && (forceBack || page > 0)
+  const canBack =
+    !contents[page].hideBack && !!onBack && (forceBack || page > 0)
 
   const title = contents[page].title
   const headerVariant = contents[page].headerVariant || "gradient"

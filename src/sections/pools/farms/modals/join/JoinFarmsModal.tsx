@@ -5,7 +5,7 @@ import { Farm } from "api/farms"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
-import { usePagination } from "components/Modal/Modal.utils"
+import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
@@ -51,7 +51,7 @@ export const JoinFarmModal = ({
       farm.yieldFarm.id.eq(selectedFarmId?.yieldFarmId),
   )
 
-  const { page, direction, back, next } = usePagination()
+  const { page, direction, back, next } = useModalPagination()
   const onBack = () => {
     back()
     setSelectedFarmId(null)
