@@ -50,6 +50,7 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
         page={page}
         direction={direction}
         onBack={() => paginateTo(0)}
+        onClose={onModalClose}
         css={{ paddingBottom: showFooter ? 96 : 0 }}
         contents={[
           {
