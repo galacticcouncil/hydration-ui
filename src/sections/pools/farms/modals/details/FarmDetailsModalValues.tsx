@@ -36,7 +36,7 @@ export const FarmDetailsModalValues = ({
   if (!position.data) return null
 
   return (
-    <div sx={{ py: 22 }}>
+    <div sx={{ pt: 22 }}>
       <Summary
         rows={[
           {

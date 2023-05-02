@@ -68,13 +68,7 @@ export const CancelOrder = ({
   }
 
   return (
-    <Modal
-      open={true}
-      withoutClose
-      onClose={() => {
-        onClose()
-      }}
-    >
+    <Modal open disableClose onClose={onClose}>
       <SContainer>
         <Text
           fs={24}
