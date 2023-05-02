@@ -4,11 +4,13 @@ import { useTokenBalance } from "api/balances"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
+import { useModalPagination } from "components/Modal/Modal.utils"
+import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
 import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { useAssetsModal } from "sections/assets/AssetsModal.utils"
+import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { useApiPromise } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
 import { BN_10 } from "utils/constants"
@@ -60,18 +62,6 @@ export const PlaceOrder = ({
   const assetInBalance = useTokenBalance(aIn, account?.address)
 
   const { createTransaction } = useStore()
-
-  const assetOutModal = useAssetsModal({
-    onSelect: (asset) => {
-      form.trigger()
-      setAOut(asset.id)
-    },
-  })
-
-  const assetInModal = useAssetsModal({
-    onSelect: (asset) => setAIn(asset.id),
-    allAssets: true,
-  })
 
   const handleAmountChange = () => {
     const { amountOut, amountIn, price } = form.getValues()
@@ -169,157 +159,197 @@ export const PlaceOrder = ({
     )
   }
 
+  const onModalClose = () => {
+    onClose()
+    form.reset()
+  }
+  const { page, direction, paginateTo } = useModalPagination()
+
   return (
-    <>
-      {assetOutModal.isOpen && assetOutModal.modal}
-      {assetInModal.isOpen && assetInModal.modal}
-      {!assetInModal.isOpen && !assetOutModal.isOpen && (
-        <Modal
-          open={isOpen}
-          disableCloseOutside
-          title={t("otc.order.place.title")}
-          onClose={() => {
-            onClose()
-            form.reset()
-          }}
-        >
-          <Text fs={16} color="basic400" sx={{ mt: 10, mb: 22 }}>
-            {t("otc.order.place.desc")}
-          </Text>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            autoComplete="off"
-            sx={{
-              flex: "column",
-              justify: "space-between",
-            }}
-          >
-            <Controller
-              name="amountOut"
-              control={form.control}
-              rules={{
-                required: true,
-                validate: {
-                  maxBalance: (value) => {
-                    const balance = assetOutBalance.data?.balance
-                    const decimals = assetOutMeta.data?.decimals.toString()
-                    if (
-                      balance &&
-                      decimals &&
-                      balance.gte(
-                        new BigNumber(value).multipliedBy(BN_10.pow(decimals)),
-                      )
-                    ) {
-                      return true
-                    }
-                    return t("otc.order.place.validation.notEnoughBalance")
-                  },
-                },
-              }}
-              render={({
-                field: { name, value, onChange },
-                fieldState: { error },
-              }) => (
-                <OrderAssetSelect
-                  title={t("otc.order.place.offerTitle")}
-                  name={name}
-                  value={value}
-                  onChange={(e) => {
-                    onChange(e)
-                    handleAmountChange()
-                  }}
-                  onOpen={assetOutModal.openModal}
-                  asset={aOut}
-                  balance={assetOutBalance.data?.balance}
-                  error={error?.message}
-                />
-              )}
-            />
-            <div sx={{ pt: 10, pb: 10 }}>
-              {assetOutMeta.data && assetInMeta.data && (
-                <Controller
-                  name="price"
-                  control={form.control}
-                  render={({ field: { value, onChange } }) => (
-                    <OrderAssetRate
-                      inputAsset={assetOutMeta.data?.id}
-                      outputAsset={assetInMeta.data?.id}
-                      price={value!}
-                      onChange={(e) => {
-                        onChange(e)
-                        handlePriceChange()
-                      }}
-                    />
-                  )}
-                />
-              )}
-            </div>
-
-            <Controller
-              name="amountIn"
-              control={form.control}
-              rules={{
-                required: true,
-              }}
-              render={({
-                field: { name, value, onChange },
-                fieldState: { error },
-              }) => (
-                <OrderAssetSelect
-                  title={t("otc.order.place.getTitle")}
-                  name={name}
-                  value={value}
-                  onChange={(e) => {
-                    onChange(e)
-                    handleAmountChange()
-                  }}
-                  onOpen={assetInModal.openModal}
-                  asset={aIn}
-                  balance={assetInBalance.data?.balance}
-                  error={error?.message}
-                />
-              )}
-            />
-
-            <div
-              sx={{
-                mt: 10,
-                mb: 10,
-                flex: "row",
-                justify: "space-between",
-                align: "center",
-              }}
-            >
-              <div>
-                <Text fs={13} color="white">
-                  {t("otc.order.place.partial")}
+    <Modal open={isOpen} disableCloseOutside onClose={onModalClose}>
+      <ModalContents
+        page={page}
+        direction={direction}
+        onClose={onModalClose}
+        onBack={() => paginateTo(0)}
+        contents={[
+          {
+            title: t("otc.order.place.title"),
+            content: (
+              <>
+                <Text fs={16} color="basic400" sx={{ mb: 22 }}>
+                  {t("otc.order.place.desc")}
                 </Text>
-                <Text fs={13} color="darkBlue300">
-                  {t("otc.order.place.partialDesc")}
-                </Text>
-              </div>
-
-              <Controller
-                name="partiallyFillable"
-                control={form.control}
-                render={({ field: { value, onChange } }) => (
-                  <PartialOrderToggle
-                    partial={value}
-                    onChange={(e) => onChange(e)}
+                <form
+                  onSubmit={form.handleSubmit(handleSubmit)}
+                  autoComplete="off"
+                  sx={{
+                    flex: "column",
+                    justify: "space-between",
+                  }}
+                >
+                  <Controller
+                    name="amountOut"
+                    control={form.control}
+                    rules={{
+                      required: true,
+                      validate: {
+                        maxBalance: (value) => {
+                          const balance = assetOutBalance.data?.balance
+                          const decimals =
+                            assetOutMeta.data?.decimals.toString()
+                          if (
+                            balance &&
+                            decimals &&
+                            balance.gte(
+                              new BigNumber(value).multipliedBy(
+                                BN_10.pow(decimals),
+                              ),
+                            )
+                          ) {
+                            return true
+                          }
+                          return t(
+                            "otc.order.place.validation.notEnoughBalance",
+                          )
+                        },
+                      },
+                    }}
+                    render={({
+                      field: { name, value, onChange },
+                      fieldState: { error },
+                    }) => (
+                      <OrderAssetSelect
+                        title={t("otc.order.place.offerTitle")}
+                        name={name}
+                        value={value}
+                        onChange={(e) => {
+                          onChange(e)
+                          handleAmountChange()
+                        }}
+                        onOpen={() => paginateTo(2)}
+                        asset={aOut}
+                        balance={assetOutBalance.data?.balance}
+                        error={error?.message}
+                      />
+                    )}
                   />
-                )}
+                  <div sx={{ pt: 10, pb: 10 }}>
+                    {assetOutMeta.data && assetInMeta.data && (
+                      <Controller
+                        name="price"
+                        control={form.control}
+                        render={({ field: { value, onChange } }) => (
+                          <OrderAssetRate
+                            inputAsset={assetOutMeta.data?.id}
+                            outputAsset={assetInMeta.data?.id}
+                            price={value!}
+                            onChange={(e) => {
+                              onChange(e)
+                              handlePriceChange()
+                            }}
+                          />
+                        )}
+                      />
+                    )}
+                  </div>
+
+                  <Controller
+                    name="amountIn"
+                    control={form.control}
+                    rules={{
+                      required: true,
+                    }}
+                    render={({
+                      field: { name, value, onChange },
+                      fieldState: { error },
+                    }) => (
+                      <OrderAssetSelect
+                        title={t("otc.order.place.getTitle")}
+                        name={name}
+                        value={value}
+                        onChange={(e) => {
+                          onChange(e)
+                          handleAmountChange()
+                        }}
+                        onOpen={() => paginateTo(1)}
+                        asset={aIn}
+                        balance={assetInBalance.data?.balance}
+                        error={error?.message}
+                      />
+                    )}
+                  />
+
+                  <div
+                    sx={{
+                      mt: 10,
+                      mb: 10,
+                      flex: "row",
+                      justify: "space-between",
+                      align: "center",
+                    }}
+                  >
+                    <div>
+                      <Text fs={13} color="white">
+                        {t("otc.order.place.partial")}
+                      </Text>
+                      <Text fs={13} color="darkBlue300">
+                        {t("otc.order.place.partialDesc")}
+                      </Text>
+                    </div>
+
+                    <Controller
+                      name="partiallyFillable"
+                      control={form.control}
+                      render={({ field: { value, onChange } }) => (
+                        <PartialOrderToggle
+                          partial={value}
+                          onChange={(e) => onChange(e)}
+                        />
+                      )}
+                    />
+                  </div>
+                  <Button
+                    sx={{ mt: 20 }}
+                    variant="primary"
+                    disabled={!form.formState.isValid}
+                  >
+                    {t("otc.order.place.confirm")}
+                  </Button>
+                </form>
+              </>
+            ),
+          },
+          {
+            title: t("selectAsset.title"),
+            noPadding: true,
+            headerVariant: "FontOver",
+            content: (
+              <AssetsModalContent
+                allAssets
+                onSelect={(asset) => {
+                  setAIn(asset.id)
+                  paginateTo(0)
+                }}
               />
-            </div>
-            <Button
-              sx={{ mt: 20 }}
-              variant="primary"
-              disabled={!form.formState.isValid}
-            >
-              {t("otc.order.place.confirm")}
-            </Button>
-          </form>
-        </Modal>
-      )}
-    </>
+            ),
+          },
+          {
+            title: t("selectAsset.title"),
+            noPadding: true,
+            headerVariant: "FontOver",
+            content: (
+              <AssetsModalContent
+                onSelect={(asset) => {
+                  form.trigger()
+                  setAOut(asset.id)
+                  paginateTo(0)
+                }}
+              />
+            ),
+          },
+        ]}
+      />
+    </Modal>
   )
 }
