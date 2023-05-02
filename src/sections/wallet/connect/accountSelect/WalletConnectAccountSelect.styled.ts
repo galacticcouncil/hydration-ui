@@ -6,18 +6,13 @@ export const SContainer = styled.div`
   flex-direction: column;
   gap: 10px;
 
-  margin-top: 42px;
-
-  overflow-x: hidden;
-  overflow-y: auto;
+  margin-top: 20px;
 
   ::-webkit-scrollbar {
     width: 0px;
   }
 
   @media ${theme.viewport.gte.sm} {
-    max-height: 80vh;
-
     margin-right: -18px;
 
     ::-webkit-scrollbar {

@@ -35,7 +35,7 @@ export const WalletConnectAccountSelect = ({
 
   return (
     <>
-      <Text fw={400} color="basic400" sx={{ mt: 6 }}>
+      <Text fw={400} color="basic400">
         {t("walletConnect.accountSelect.description")}
       </Text>
 

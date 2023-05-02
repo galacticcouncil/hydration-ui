@@ -1,8 +1,9 @@
-import { css } from "@emotion/react"
 import { Wallet } from "@talismn/connect-wallets"
 import { useNavigate } from "@tanstack/react-location"
 import { useMutation } from "@tanstack/react-query"
 import { Modal } from "components/Modal/Modal"
+import { useModalPagination } from "components/Modal/Modal.utils"
+import { ModalContents } from "components/Modal/contents/ModalContents"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { WalletConnectAccountSelect } from "sections/wallet/connect/accountSelect/WalletConnectAccountSelect"
@@ -33,71 +34,81 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
   const navigate = useNavigate()
   const activeProvider = userSelectedProvider ?? account?.provider
 
-  const modalProps = userSelectedProvider
-    ? mutate.isLoading
-      ? { title: "" }
-      : { title: t("walletConnect.accountSelect.title") }
-    : { title: t("walletConnect.provider.title") }
+  const { page, direction, paginateTo } = useModalPagination()
+  const showFooter = activeProvider && page === 1
+
+  const onModalClose = () => {
+    setUserSelectedProvider(null)
+    onClose()
+  }
 
   return (
-    <Modal
-      open={isOpen}
-      onClose={() => {
-        setUserSelectedProvider(null)
-        onClose()
-      }}
-      css={css`
-        --wallet-select-footer-height: 96px;
-        ${activeProvider &&
-        "padding-bottom: var(--wallet-select-footer-height);"}
-      `}
-      {...modalProps}
-    >
-      {activeProvider ? (
-        activeProvider !== externalWallet.provider && mutate.isLoading ? (
-          <WalletConnectConfirmPending provider={activeProvider} />
-        ) : (
-          <>
-            <WalletConnectAccountSelect
-              currentAddress={account?.address.toString()}
-              provider={activeProvider}
-              onClose={onClose}
-              onSelect={(account) => {
-                setUserSelectedProvider(null)
-                setAccount(account)
-                onClose()
-              }}
-            />
-            <WalletConnectActiveFooter
-              account={account}
-              provider={activeProvider}
-              onLogout={() => {
-                setUserSelectedProvider(null)
-                setAccount(undefined)
-                onClose()
-                navigate({
-                  search: undefined,
-                  fromCurrent: true,
-                })
-              }}
-              onSwitch={() => {
-                navigate({
-                  search: undefined,
-                  fromCurrent: true,
-                })
-                setUserSelectedProvider(null)
-                setAccount(undefined)
-              }}
-            />
-          </>
-        )
-      ) : (
-        <WalletConnectProviderSelect
-          onWalletSelect={(wallet) => {
-            setUserSelectedProvider(wallet.extensionName)
-            mutate.mutate(wallet)
+    <Modal open={isOpen} onClose={onModalClose}>
+      <ModalContents
+        page={page}
+        direction={direction}
+        onBack={() => paginateTo(0)}
+        css={{ paddingBottom: showFooter ? 96 : 0 }}
+        contents={[
+          {
+            title: t("walletConnect.provider.title"),
+            content: (
+              <WalletConnectProviderSelect
+                onWalletSelect={(wallet) => {
+                  setUserSelectedProvider(wallet.extensionName)
+                  mutate.mutate(wallet)
+                  paginateTo(1)
+                }}
+                onClose={onClose}
+              />
+            ),
+          },
+          {
+            title: t("walletConnect.accountSelect.title"),
+            content:
+              activeProvider &&
+              (activeProvider !== externalWallet.provider &&
+              mutate.isLoading ? (
+                <WalletConnectConfirmPending provider={activeProvider} />
+              ) : (
+                <>
+                  <WalletConnectAccountSelect
+                    currentAddress={account?.address.toString()}
+                    provider={activeProvider}
+                    onClose={onClose}
+                    onSelect={(account) => {
+                      setUserSelectedProvider(null)
+                      setAccount(account)
+                      onClose()
+                    }}
+                  />
+                </>
+              )),
+          },
+        ]}
+      />
+      {activeProvider && page === 1 && (
+        <WalletConnectActiveFooter
+          account={account}
+          provider={activeProvider}
+          onLogout={() => {
+            setUserSelectedProvider(null)
+            setAccount(undefined)
+            onClose()
+            navigate({
+              search: undefined,
+              fromCurrent: true,
+            })
           }}
-          onClose={onClose}
+          onSwitch={() => {
+            navigate({
+              search: undefined,
+              fromCurrent: true,
+            })
+            setUserSelectedProvider(null)
+            setAccount(undefined)
+            paginateTo(0)
+          }}
         />
       )}
     </Modal>
