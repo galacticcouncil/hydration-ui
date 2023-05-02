@@ -14,6 +14,7 @@ import { FarmRedepositMutationType } from "utils/farms/redeposit"
 import BigNumber from "bignumber.js"
 import { DepositNftType } from "api/deposits"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { useBestNumber } from "api/chain"
 
 type JoinFarmModalProps = {
   isOpen: boolean
@@ -42,12 +43,19 @@ export const JoinFarmModal = ({
     globalFarmId: u32
   } | null>(null)
   const meta = useAssetMeta(pool.id)
+  const bestNumber = useBestNumber()
 
   const selectedFarm = farms.find(
     (farm) =>
       farm.globalFarm.id.eq(selectedFarmId?.globalFarmId) &&
       farm.yieldFarm.id.eq(selectedFarmId?.yieldFarmId),
   )
+
+  const currentBlock = bestNumber.data?.relaychainBlockNumber
+    .toBigNumber()
+    .dividedToIntegerBy(
+      selectedFarm?.globalFarm.blocksPerPeriod.toNumber() ?? 1,
+    )
 
   return (
     <Modal
@@ -62,6 +70,7 @@ export const JoinFarmModal = ({
           farm={selectedFarm}
           depositNft={depositNft}
           onBack={() => setSelectedFarmId(null)}
+          currentBlock={currentBlock?.toNumber()}
         />
       ) : (
         <div sx={{ flex: "column", justify: "space-between", flexGrow: 1 }}>
