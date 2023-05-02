@@ -10,7 +10,7 @@ export const useModalPagination = (initial = 0) => {
   const paginate = (direction: number) => setPage((prev) => prev + direction)
 
   const next = () => paginate(1)
-  const back = () => paginate(previous ?? -1)
+  const back = () => paginate(-1)
   const reset = () => setPage(0)
   const paginateTo = (page: number) => setPage(page)
 
