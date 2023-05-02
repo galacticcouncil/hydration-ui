@@ -1,5 +1,5 @@
 import { AnimatePresence } from "framer-motion"
-import { ReactNode } from "react"
+import { ReactNode, useState } from "react"
 import { useMeasure } from "react-use"
 import {
   ModalHeaderButton,
@@ -34,6 +34,7 @@ export const ModalContents = ({
   contents,
 }: Props) => {
   const [ref, size] = useMeasure<HTMLDivElement>()
+  const [animating, setAnimating] = useState(false)
 
   const canBack =
     !contents[page].hideBack && !!onBack && (forceBack || page > 0)
@@ -45,7 +46,7 @@ export const ModalContents = ({
   const height = `calc(${size.height}px - var(--modal-header-height))`
 
   return (
-    <SContainer ref={ref} className={className}>
+    <SContainer ref={ref} className={className} animating={animating}>
       <AnimatePresence
         mode="popLayout"
         initial={false}
@@ -64,6 +65,8 @@ export const ModalContents = ({
           custom={{ direction, height }}
           {...motionProps}
           noPadding={noPadding}
+          onAnimationStart={() => setAnimating(true)}
+          onAnimationComplete={() => setAnimating(false)}
         >
           {contents[page].content}
         </SContent>
