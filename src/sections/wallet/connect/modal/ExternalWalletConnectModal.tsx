@@ -28,12 +28,10 @@ import { safeConvertAddressSS58 } from "utils/formatting"
 import { FormValues } from "utils/helpers"
 
 type ExternalWalletConnectModalProps = {
-  onBack: () => void
   onClose: () => void
 }
 
 export const ExternalWalletConnectModal = ({
-  onBack,
   onClose,
 }: ExternalWalletConnectModalProps) => {
   const api = useApiPromise()

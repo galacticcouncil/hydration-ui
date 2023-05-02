@@ -11,6 +11,7 @@ import { WalletConnectConfirmPending } from "sections/wallet/connect/confirmPend
 import { WalletConnectProviderSelect } from "sections/wallet/connect/providerSelect/WalletConnectProviderSelect"
 import { externalWallet, useAccountStore } from "state/store"
 import { POLKADOT_APP_NAME } from "utils/api"
+import { ExternalWalletConnectModal } from "./ExternalWalletConnectModal"
 import { WalletConnectActiveFooter } from "./WalletConnectActiveFooter"
 
 type Props = {
@@ -23,6 +24,7 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
   const [userSelectedProvider, setUserSelectedProvider] = useState<
     string | null
   >(null)
+  const [isAddExternalWallet, setAddExternalWallet] = useState(false)
 
   const mutate = useMutation(
     ["web3Enable", userSelectedProvider],
@@ -35,7 +37,7 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
   const activeProvider = userSelectedProvider ?? account?.provider
 
   const { page, direction, paginateTo } = useModalPagination()
-  const showFooter = activeProvider && page === 1
+  const showFooter = activeProvider && page === 2
 
   const onModalClose = () => {
     setUserSelectedProvider(null)
@@ -57,11 +59,15 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
                 onWalletSelect={(wallet) => {
                   setUserSelectedProvider(wallet.extensionName)
                   mutate.mutate(wallet)
-                  paginateTo(1)
+                  paginateTo(2)
                 }}
-                onClose={onClose}
+                onExternalWallet={() => paginateTo(1)}
               />
             ),
+          },
+          {
+            title: t("walletConnect.provider.title"),
+            content: <ExternalWalletConnectModal onClose={onClose} />,
           },
           {
             title: t("walletConnect.accountSelect.title"),
@@ -71,23 +77,21 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
               mutate.isLoading ? (
                 <WalletConnectConfirmPending provider={activeProvider} />
               ) : (
-                <>
-                  <WalletConnectAccountSelect
-                    currentAddress={account?.address.toString()}
-                    provider={activeProvider}
-                    onClose={onClose}
-                    onSelect={(account) => {
-                      setUserSelectedProvider(null)
-                      setAccount(account)
-                      onClose()
-                    }}
-                  />
-                </>
+                <WalletConnectAccountSelect
+                  currentAddress={account?.address.toString()}
+                  provider={activeProvider}
+                  onClose={onClose}
+                  onSelect={(account) => {
+                    setUserSelectedProvider(null)
+                    setAccount(account)
+                    onClose()
+                  }}
+                />
               )),
           },
         ]}
       />
-      {activeProvider && page === 1 && (
+      {showFooter && (
         <WalletConnectActiveFooter
           account={account}
           provider={activeProvider}
