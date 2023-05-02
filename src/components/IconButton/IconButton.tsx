@@ -4,7 +4,7 @@ import { FC, ReactNode } from "react"
 import { SIconButton } from "./IconButton.styled"
 
 export type IconButtonProps = {
-  name: string
+  name?: string
   round?: boolean
   onClick?: () => void
   icon?: ReactNode

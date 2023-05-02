@@ -1,14 +1,12 @@
-import { Button } from "components/Button/Button"
-import { ModalMeta } from "components/Modal/Modal"
-import { Spacer } from "components/Spacer/Spacer"
-import { useTranslation } from "react-i18next"
-import { ReactNode } from "react"
-import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
-import { GradientText } from "components/Typography/GradientText/GradientText"
-import { WalletTransferCrosschainLogo } from "./WalletTransferCrosschainLogo"
 import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
+import { Button } from "components/Button/Button"
+import { Spacer } from "components/Spacer/Spacer"
+import { GradientText } from "components/Typography/GradientText/GradientText"
+import { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { WalletTransferCrosschainLogo } from "./WalletTransferCrosschainLogo"
 
 export function WalletTransferSectionCrosschainGuide(props: {
   name: string
@@ -21,25 +19,12 @@ export function WalletTransferSectionCrosschainGuide(props: {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   return (
     <>
-      <ModalMeta
-        title={undefined}
-        secondaryIcon={
-          isDesktop
-            ? {
-                icon: <ChevronRight css={{ transform: "rotate(180deg)" }} />,
-                name: "Back",
-                onClick: props.onBack,
-              }
-            : undefined
-        }
-      />
-
       <div
         sx={{
           flex: "column",
           align: "center",
           justify: "space-between",
-          height: "100%",
+          minHeight: "100%",
         }}
       >
         <div sx={{ flex: "column", align: "center" }}>

@@ -1,13 +1,13 @@
+import { ReactComponent as DoneIcon } from "assets/icons/StepperDoneIcon.svg"
+import { Icon } from "components/Icon/Icon"
+import { Text } from "components/Typography/Text/Text"
+import { Fragment } from "react"
 import {
   SCircle,
   SStepperContainer,
   SStepperLine,
   SThumbContainer,
 } from "./Stepper.styled"
-import { ReactComponent as DoneIcon } from "assets/icons/StepperDoneIcon.svg"
-import { Icon } from "components/Icon/Icon"
-import { Text } from "components/Typography/Text/Text"
-import { Fragment } from "react"
 
 const STEP_STATES = ["active", "done", "todo"] as const
 
@@ -37,7 +37,7 @@ const Step = ({ label, state }: StepProps) => {
       <Text
         fs={12}
         color={state === "active" ? "brightBlue600" : "basic500"}
-        css={{ position: "absolute", bottom: "-20px", whiteSpace: "nowrap" }}
+        css={{ position: "absolute", bottom: 0, whiteSpace: "nowrap" }}
       >
         {label}
       </Text>

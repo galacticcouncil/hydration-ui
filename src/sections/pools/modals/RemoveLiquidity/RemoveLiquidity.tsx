@@ -11,7 +11,6 @@ import { FormValues } from "utils/helpers"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
 import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-
 import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
@@ -243,6 +242,8 @@ export const RemoveLiquidity = ({
 
     const lrnaAsBigNumber = new BigNumber(removeLiquidityValues.lrnaToGet)
 
+    onClose()
+
     await createTransaction(
       {
         tx: api.tx.omnipool.removeLiquidity(position.id, value.toFixed(0)),
@@ -304,7 +305,7 @@ export const RemoveLiquidity = ({
   return (
     <Modal
       open={isOpen}
-      withoutOutsideClose
+      disableCloseOutside
       title={t("liquidity.remove.modal.title")}
       onClose={() => {
         onClose()
@@ -317,7 +318,7 @@ export const RemoveLiquidity = ({
         sx={{
           flex: "column",
           justify: "space-between",
-          height: "calc(100% - var(--modal-header-title-height))",
+          minHeight: "100%",
         }}
       >
         <div>

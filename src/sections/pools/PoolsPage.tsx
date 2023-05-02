@@ -1,10 +1,10 @@
 import { Page } from "components/Layout/Page/Page"
 import { useState } from "react"
+import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
 import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
-import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
-import { PoolSkeleton } from "./skeleton/PoolSkeleton"
 import { useApiPromise } from "../../utils/api"
+import { PoolSkeleton } from "./skeleton/PoolSkeleton"
 
 const PoolPageContent = () => {
   const [filter, setFilter] = useState({ showMyPositions: false })
@@ -25,6 +25,7 @@ const PoolPageContent = () => {
         }
         disableMyPositions={!hasPositionsOrDeposits}
       />
+
       <div sx={{ flex: "column", gap: 20 }}>
         {!isLoading && data
           ? data.map((pool) => <Pool key={pool.id.toString()} pool={pool} />)

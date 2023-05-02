@@ -1,17 +1,17 @@
+import { ReactComponent as UpdateMetadataIcon } from "assets/icons/UpdateMetadataIcon.svg"
 import { Button } from "components/Button/Button"
 import { ExternalLink } from "components/Link/ExternalLink"
 import { Modal } from "components/Modal/Modal"
-import { Text } from "components/Typography/Text/Text"
-import { useUpdateMetadataMutation } from "sections/wallet/upgrade/WalletUpgradeModal.utils"
-import { ReactComponent as UpdateMetadataIcon } from "assets/icons/UpdateMetadataIcon.svg"
 import { Spacer } from "components/Spacer/Spacer"
+import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useUpdateMetadataMutation } from "sections/wallet/upgrade/WalletUpgradeModal.utils"
 import {
-  SVersionContainer,
   SVersion,
   SVersionArrow,
+  SVersionContainer,
 } from "./WalletUpgradeModal.styled"
-import { useTranslation } from "react-i18next"
 
 export function WalletUpgradeModal() {
   const { state, mutation } = useUpdateMetadataMutation()
@@ -22,7 +22,7 @@ export function WalletUpgradeModal() {
 
   if (!state.data || !state.data.needsUpdate) return null
   return (
-    <Modal open={open} onClose={onClose} width={608}>
+    <Modal open={open} onClose={onClose}>
       <div sx={{ flex: "column", align: "center" }}>
         <UpdateMetadataIcon />
 
