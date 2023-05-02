@@ -24,7 +24,6 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
   const [userSelectedProvider, setUserSelectedProvider] = useState<
     string | null
   >(null)
-  const [isAddExternalWallet, setAddExternalWallet] = useState(false)
 
   const mutate = useMutation(
     ["web3Enable", userSelectedProvider],
