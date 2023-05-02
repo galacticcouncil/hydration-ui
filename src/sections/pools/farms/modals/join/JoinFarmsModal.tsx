@@ -16,6 +16,7 @@ import { FarmRedepositMutationType } from "utils/farms/redeposit"
 import { FarmDetailsCard } from "../../components/detailsCard/FarmDetailsCard"
 import { FarmDetailsModal } from "../details/FarmDetailsModal"
 import { SJoinFarmContainer } from "./JoinFarmsModal.styled"
+import { useBestNumber } from "api/chain"
 
 type JoinFarmModalProps = {
   isOpen: boolean
@@ -44,6 +45,7 @@ export const JoinFarmModal = ({
     globalFarmId: u32
   } | null>(null)
   const meta = useAssetMeta(pool.id)
+  const bestNumber = useBestNumber()
 
   const selectedFarm = farms.find(
     (farm) =>
@@ -56,6 +58,12 @@ export const JoinFarmModal = ({
     back()
     setSelectedFarmId(null)
   }
+
+  const currentBlock = bestNumber.data?.relaychainBlockNumber
+    .toBigNumber()
+    .dividedToIntegerBy(
+      selectedFarm?.globalFarm.blocksPerPeriod.toNumber() ?? 1,
+    )
 
   return (
     <Modal open={isOpen} onClose={onClose}>
@@ -140,6 +148,7 @@ export const JoinFarmModal = ({
                 pool={pool}
                 farm={selectedFarm}
                 depositNft={depositNft}
+                currentBlock={currentBlock?.toNumber()}
               />
             ),
           },
