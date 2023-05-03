@@ -69,7 +69,12 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
           },
           {
             title: t("walletConnect.provider.title"),
-            content: <ExternalWalletConnectModal onClose={onClose} />,
+            content: (
+              <ExternalWalletConnectModal
+                onClose={onClose}
+                onSelect={() => paginateTo(2)}
+              />
+            ),
           },
           {
             title: t("walletConnect.accountSelect.title"),
