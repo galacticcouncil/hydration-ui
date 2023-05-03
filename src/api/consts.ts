@@ -31,7 +31,7 @@ export const useTVLCap = () => {
   return useQuery(QUERY_KEYS.tvlCap, getTvlCap(api))
 }
 
-export const getTvlCap = (api: ApiPromise) => async () => {
+const getTvlCap = (api: ApiPromise) => async () => {
   return api.consts.omnipool.tvlCap || (await api.query.omnipool.tvlCap())
 }
 
@@ -41,7 +41,7 @@ export const useMinWithdrawalFee = () => {
   return useQuery(QUERY_KEYS.minWithdrawalFee, getMinWithdrawalFee(api))
 }
 
-export const getMinWithdrawalFee = (api: ApiPromise) => async () => {
+const getMinWithdrawalFee = (api: ApiPromise) => async () => {
   const minWithdrawalFee = await api.consts.omnipool.minWithdrawalFee
 
   return (
@@ -56,7 +56,7 @@ export const useMaxAddLiquidityLimit = () => {
   return useQuery(QUERY_KEYS.maxAddLiquidityLimit, getMaxAddLiquidityLimit(api))
 }
 
-export const getMaxAddLiquidityLimit = (api: ApiPromise) => async () => {
+const getMaxAddLiquidityLimit = (api: ApiPromise) => async () => {
   const data = await api.consts.circuitBreaker
     .defaultMaxAddLiquidityLimitPerBlock
 
