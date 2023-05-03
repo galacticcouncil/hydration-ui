@@ -64,7 +64,11 @@ export const Modal = ({
           }
         >
           <STopContent>{topContent}</STopContent>
-          <SContent isDrawer={isDrawer} hasTopContent={hasTopContent}>
+          <SContent
+            isDrawer={isDrawer}
+            hasTopContent={hasTopContent}
+            className={!hasContentProps ? className : undefined}
+          >
             {content}
           </SContent>
         </SContainer>

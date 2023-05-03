@@ -29,10 +29,12 @@ import { FormValues } from "utils/helpers"
 
 type ExternalWalletConnectModalProps = {
   onClose: () => void
+  onSelect: () => void
 }
 
 export const ExternalWalletConnectModal = ({
   onClose,
+  onSelect,
 }: ExternalWalletConnectModalProps) => {
   const api = useApiPromise()
   const { t } = useTranslation()
@@ -87,7 +89,7 @@ export const ExternalWalletConnectModal = ({
       provider: externalWallet.provider,
       isExternalWalletConnected: true,
     })
-
+    onSelect()
     navigate({
       search: { account: values.address },
       fromCurrent: true,
@@ -164,18 +166,27 @@ export const ExternalWalletConnectModal = ({
           )
         }}
       />
-      {form.formState.errors.delegates ? (
-        <>
-          <Spacer size={15} />
-          <Text color="red400" font="ChakraPetchBold" fs={12}>
-            {t("walletConnect.accountSelect.proxyAccount.error")}
-          </Text>
-          <Spacer size={6} />
-          <Text fw={400} color="red400" fs={12}>
-            {t("walletConnect.accountSelect.proxyAccount.errorDesc")}
-          </Text>
-        </>
-      ) : null}
+      <Controller
+        name="delegates"
+        control={form.control}
+        render={({ fieldState: { error } }) =>
+          error ? (
+            <>
+              <Spacer size={15} />
+              <Text color="red400" font="ChakraPetchBold" fs={12}>
+                {t("walletConnect.accountSelect.proxyAccount.error")}
+              </Text>
+              <Spacer size={6} />
+              <Text fw={400} color="red400" fs={12}>
+                {t("walletConnect.accountSelect.proxyAccount.errorDesc")}
+              </Text>
+            </>
+          ) : (
+            <div />
+          )
+        }
+      />
+
       <Spacer size={35} />
       <Button
         disabled={!!form.formState.errors.address}
