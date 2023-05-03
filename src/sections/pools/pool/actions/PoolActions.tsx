@@ -1,6 +1,7 @@
 import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
 import { ReactComponent as DetailsIcon } from "assets/icons/DetailsIcon.svg"
 import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
+import { ReactComponent as FarmDetailsIcon } from "assets/icons/FarmDetailsIcon.svg"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { useState } from "react"
@@ -16,6 +17,8 @@ import { useAccountStore } from "state/store"
 import { theme } from "theme"
 import { LiquidityPositions } from "../../modals/LiquidityPositions/LiquidityPositions"
 import { usePoolPositions } from "../Pool.utils"
+import { useFarms } from "api/farms"
+import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 
 type PoolActionsProps = {
   pool: OmnipoolPool
@@ -37,9 +40,11 @@ export const PoolActions = ({
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
   const [openLiquidityPositions, setOpenLiquidityPositions] = useState(false)
+  const [openFarmDefails, setOpenFarmDefails] = useState(false)
   const { account } = useAccountStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const positions = usePoolPositions(pool)
+  const farms = useFarms([pool.id])
 
   const actionButtons = (
     <div sx={{ flex: ["row", "column"], gap: 10, flexGrow: 1 }}>
@@ -47,9 +52,7 @@ export const PoolActions = ({
         fullWidth
         size="small"
         disabled={!account || account.isExternalWalletConnected}
-        onClick={() => {
-          setOpenAdd(true)
-        }}
+        onClick={() => setOpenAdd(true)}
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon icon={<PlusIcon />} sx={{ mr: 8, height: 16 }} />
@@ -71,6 +74,16 @@ export const PoolActions = ({
           </div>
         </Button>
       )}
+      {farms.data?.length ? (
+        <Button fullWidth size="small" onClick={() => setOpenFarmDefails(true)}>
+          <div sx={{ flex: "row", align: "center", justify: "center" }}>
+            <Icon icon={<FarmDetailsIcon />} sx={{ mr: 8, height: 16 }} />
+            {t("liquidity.asset.actions.farmDetails", {
+              count: farms.data.length,
+            })}
+          </div>
+        </Button>
+      ) : null}
     </div>
   )
 
@@ -101,6 +114,14 @@ export const PoolActions = ({
           isOpen={openLiquidityPositions}
           onClose={() => setOpenLiquidityPositions(false)}
           pool={pool}
+        />
+      )}
+      {openFarmDefails && farms.data && (
+        <JoinFarmModal
+          farms={farms.data}
+          isOpen={openFarmDefails}
+          pool={pool}
+          onClose={() => setOpenFarmDefails(false)}
         />
       )}
     </>
