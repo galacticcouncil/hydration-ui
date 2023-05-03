@@ -35,7 +35,9 @@ export const WalletConnectModal: FC<Props> = ({ isOpen, onClose }) => {
   const navigate = useNavigate()
   const activeProvider = userSelectedProvider ?? account?.provider
 
-  const { page, direction, paginateTo } = useModalPagination()
+  const { page, direction, paginateTo } = useModalPagination(
+    activeProvider ? 2 : 0,
+  )
   const showFooter = activeProvider && page === 2
 
   const onModalClose = () => {

@@ -1,15 +1,15 @@
-import { useTranslation } from "react-i18next"
-import { useAccountStore } from "../../../state/store"
-import { Text } from "components/Typography/Text/Text"
-import { useCopyToClipboard } from "react-use"
+import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { ReactComponent as CopyIcon } from "assets/icons/CopyIcon.svg"
 import { Button } from "components/Button/Button"
-import { Separator } from "components/Separator/Separator"
-import { WalletConnectModal } from "../connect/modal/WalletConnectModal"
-import { useState } from "react"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { Separator } from "components/Separator/Separator"
+import { Text } from "components/Typography/Text/Text"
+import { useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useCopyToClipboard } from "react-use"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
+import { useAccountStore } from "../../../state/store"
+import { WalletConnectModal } from "../connect/modal/WalletConnectModal"
 import { SWalletHeader } from "./WalletHeader.styled"
 
 export const WalletHeader = () => {
@@ -75,7 +75,9 @@ export const WalletHeader = () => {
         sx={{ display: ["none", "inherit"] }}
       />
 
-      <WalletConnectModal isOpen={open} onClose={() => setOpen(false)} />
+      {open && (
+        <WalletConnectModal isOpen={open} onClose={() => setOpen(false)} />
+      )}
     </>
   )
 }
