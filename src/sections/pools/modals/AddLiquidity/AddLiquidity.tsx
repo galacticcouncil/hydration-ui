@@ -21,7 +21,7 @@ import { useApiPromise } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
 import { BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
-import { useAddLiquidity, useVerifyCap } from "./AddLiquidity.utils"
+import { useAddLiquidity, useVerifyLimits } from "./AddLiquidity.utils"
 import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
 
 type Props = {
@@ -46,7 +46,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   })
   const amountIn = form.watch("amount")
 
-  const isWithinLimit = useVerifyCap({
+  const { data: limits } = useVerifyLimits({
     assetId: assetId.toString(),
     amount: amountIn,
     decimals: assetMeta?.decimals.toNumber() ?? 12,
@@ -268,8 +268,17 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
                     {t("liquidity.add.modal.warning")}
                   </Text>
 
-                  {isWithinLimit.data === false && <AddLiquidityLimitWarning />}
-
+                  {limits?.cap === false ? (
+                    <AddLiquidityLimitWarning type="cap" />
+                  ) : limits?.circuitBreaker.isWithinLimit === false ? (
+                    <AddLiquidityLimitWarning
+                      type="circuitBreaker"
+                      limit={{
+                        value: limits?.circuitBreaker.maxValue,
+                        symbol: assetMeta?.symbol,
+                      }}
+                    />
+                  ) : null}
                   <PoolAddLiquidityInformationCard />
 
                   <Separator
@@ -285,7 +294,9 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
                   variant="primary"
                   type="submit"
                   disabled={
-                    isWithinLimit.data === false || !form.formState.isValid
+                    limits?.cap === false ||
+                    !form.formState.isValid ||
+                    !limits?.circuitBreaker.isWithinLimit
                   }
                 >
                   {t("liquidity.add.modal.confirmButton")}
