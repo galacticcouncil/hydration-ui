@@ -49,3 +49,19 @@ export const getMinWithdrawalFee = (api: ApiPromise) => async () => {
     BN(MIN_WITHDRAWAL_FEE).div(1000000)
   )
 }
+
+export const useMaxAddLiquidityLimit = () => {
+  const api = useApiPromise()
+
+  return useQuery(QUERY_KEYS.maxAddLiquidityLimit, getMaxAddLiquidityLimit(api))
+}
+
+export const getMaxAddLiquidityLimit = (api: ApiPromise) => async () => {
+  const data = await api.consts.circuitBreaker
+    .defaultMaxAddLiquidityLimitPerBlock
+
+  const [n, d] = data.unwrap()
+  const minWithdrawalFee = n.toBigNumber().div(d.toNumber())
+
+  return minWithdrawalFee
+}
