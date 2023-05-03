@@ -7,6 +7,7 @@ export const SContainer = styled.div`
   gap: 10px;
 
   margin-top: 20px;
+  padding-bottom: var(--wallet-footer-height);
 
   ::-webkit-scrollbar {
     width: 0px;

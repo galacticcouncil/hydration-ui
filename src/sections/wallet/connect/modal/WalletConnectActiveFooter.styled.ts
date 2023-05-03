@@ -12,7 +12,7 @@ export const SContainer = styled.div`
   background: rgba(${theme.rgbColors.darkBlue900}, 0.6);
   backdrop-filter: blur(12px);
 
-  height: 96px;
+  height: var(--wallet-footer-height);
   width: 100%;
 
   border-radius: 4px;
