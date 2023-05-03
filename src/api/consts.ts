@@ -2,6 +2,8 @@ import { useApiPromise } from "utils/api"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
+import BN from "bignumber.js"
+import { MIN_WITHDRAWAL_FEE } from "utils/constants"
 
 export const useApiIds = () => {
   const api = useApiPromise()
@@ -29,6 +31,37 @@ export const useTVLCap = () => {
   return useQuery(QUERY_KEYS.tvlCap, getTvlCap(api))
 }
 
-export const getTvlCap = (api: ApiPromise) => async () => {
+const getTvlCap = (api: ApiPromise) => async () => {
   return api.consts.omnipool.tvlCap || (await api.query.omnipool.tvlCap())
+}
+
+export const useMinWithdrawalFee = () => {
+  const api = useApiPromise()
+
+  return useQuery(QUERY_KEYS.minWithdrawalFee, getMinWithdrawalFee(api))
+}
+
+const getMinWithdrawalFee = (api: ApiPromise) => async () => {
+  const minWithdrawalFee = await api.consts.omnipool.minWithdrawalFee
+
+  return (
+    minWithdrawalFee?.toBigNumber().div(1000000) ??
+    BN(MIN_WITHDRAWAL_FEE).div(1000000)
+  )
+}
+
+export const useMaxAddLiquidityLimit = () => {
+  const api = useApiPromise()
+
+  return useQuery(QUERY_KEYS.maxAddLiquidityLimit, getMaxAddLiquidityLimit(api))
+}
+
+const getMaxAddLiquidityLimit = (api: ApiPromise) => async () => {
+  const data = await api.consts.circuitBreaker
+    .defaultMaxAddLiquidityLimitPerBlock
+
+  const [n, d] = data.unwrap()
+  const minWithdrawalFee = n.toBigNumber().div(d.toNumber())
+
+  return minWithdrawalFee
 }

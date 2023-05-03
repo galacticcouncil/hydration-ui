@@ -1,5 +1,4 @@
 import { Button } from "components/Button/Button"
-import { ModalMeta } from "components/Modal/Modal"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
@@ -14,8 +13,13 @@ export function WalletTransferCrosschainList(props: {
   const { t } = useTranslation()
 
   return (
-    <div sx={{ flex: "column", justify: "space-between", height: "100%" }}>
-      <ModalMeta title={t("wallet.assets.transfer.bridge.title")} />
+    <div
+      sx={{
+        flex: "column",
+        justify: "space-between",
+        minHeight: "100%",
+      }}
+    >
       <div sx={{ flex: "column" }}>
         <Text fs={18} lh={25} sx={{ maxWidth: 360 }}>
           {t("wallet.assets.transfer.bridge.description")}

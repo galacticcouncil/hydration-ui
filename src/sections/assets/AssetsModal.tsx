@@ -1,33 +1,26 @@
-import { ModalMeta } from "../../components/Modal/Modal"
-import { FC } from "react"
-import { AssetsModalRow } from "./AssetsModalRow"
-import { SAssetsModalHeader } from "./AssetsModal.styled"
 import { u32 } from "@polkadot/types"
-import { Text } from "../../components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
-import { Maybe } from "utils/helpers"
-import { useAccountStore } from "state/store"
-import { useAssetAccountDetails, useAssetDetailsList } from "api/assetDetails"
-import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { UseAssetModel } from "api/asset"
+import { useAssetAccountDetails, useAssetDetailsList } from "api/assetDetails"
+import { useTranslation } from "react-i18next"
+import { useAccountStore } from "state/store"
+import { Maybe } from "utils/helpers"
+import { Text } from "../../components/Typography/Text/Text"
+import { SAssetsModalHeader } from "./AssetsModal.styled"
+import { AssetsModalRow } from "./AssetsModalRow"
 
-interface AssetsModalProps {
+type Props = {
   allowedAssets?: Maybe<u32 | string>[]
   onSelect?: (asset: NonNullable<UseAssetModel>) => void
-  onClose: () => void
-  title?: string
   hideInactiveAssets?: boolean
   allAssets?: boolean
 }
 
-export const AssetsModal: FC<AssetsModalProps> = ({
-  onClose,
+export const AssetsModalContent = ({
   allowedAssets,
   onSelect,
-  title,
   hideInactiveAssets,
   allAssets,
-}) => {
+}: Props) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
 
@@ -48,18 +41,9 @@ export const AssetsModal: FC<AssetsModalProps> = ({
 
   return (
     <>
-      <ModalMeta
-        withoutOutsideClose
-        titleHeader={title ?? t("selectAsset.title")}
-        secondaryIcon={{
-          icon: <ChevronRight css={{ transform: "rotate(180deg)" }} />,
-          name: "Back",
-          onClick: onClose,
-        }}
-      />
       {!!mainAssets?.length && (
         <>
-          <SAssetsModalHeader sx={{ m: ["0 -40px", "0 -40px"] }}>
+          <SAssetsModalHeader>
             <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
               {t("selectAssets.asset")}
             </Text>
@@ -78,7 +62,7 @@ export const AssetsModal: FC<AssetsModalProps> = ({
       )}
       {!hideInactiveAssets && !!otherAssets?.length && (
         <>
-          <SAssetsModalHeader shadowed sx={{ m: ["0 -40px", "0 -40px"] }}>
+          <SAssetsModalHeader shadowed>
             <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
               {t("selectAssets.asset_without_pair")}
             </Text>

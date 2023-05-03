@@ -1,18 +1,17 @@
-import React, { useState } from "react"
 import { Modal } from "components/Modal/Modal"
+import { Stepper } from "components/Stepper/Stepper"
+import { ComponentProps, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { WalletUpgradeModal } from "sections/wallet/upgrade/WalletUpgradeModal"
 import { Transaction } from "state/store"
-import { ComponentProps } from "react"
-
-import { ReviewTransactionPending } from "./ReviewTransactionPending"
-import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
+import { useSendTransactionMutation } from "./ReviewTransaction.utils"
 import { ReviewTransactionError } from "./ReviewTransactionError"
 import { ReviewTransactionForm } from "./ReviewTransactionForm"
+import { ReviewTransactionPending } from "./ReviewTransactionPending"
+import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionToast } from "./ReviewTransactionToast"
-import { useSendTransactionMutation } from "./ReviewTransaction.utils"
-import { WalletUpgradeModal } from "sections/wallet/upgrade/WalletUpgradeModal"
 
-export const ReviewTransaction: React.FC<Transaction> = (props) => {
+export const ReviewTransaction = (props: Transaction) => {
   const { t } = useTranslation()
   const [minimizeModal, setMinimizeModal] = useState(false)
 
@@ -21,10 +20,9 @@ export const ReviewTransaction: React.FC<Transaction> = (props) => {
   const modalProps: Partial<ComponentProps<typeof Modal>> =
     sendTx.isLoading || sendTx.isSuccess || sendTx.isError
       ? {
-          width: 460,
           title: undefined,
-          variant: sendTx.isError ? "error" : "default",
-          withoutClose: sendTx.isLoading,
+          backdrop: sendTx.isError ? "error" : "default",
+          disableClose: sendTx.isLoading,
         }
       : {
           title: t("liquidity.reviewTransaction.modal.title"),
@@ -63,7 +61,8 @@ export const ReviewTransaction: React.FC<Transaction> = (props) => {
       <Modal
         open={!minimizeModal}
         onClose={handleClose}
-        withoutOutsideClose
+        disableCloseOutside
+        topContent={props.steps ? <Stepper steps={props.steps} /> : undefined}
         {...modalProps}
       >
         <WalletUpgradeModal />

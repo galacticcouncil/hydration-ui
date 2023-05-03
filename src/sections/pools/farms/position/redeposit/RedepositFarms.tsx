@@ -23,8 +23,9 @@ const RedepositFarm = ({ availableYieldFarm }: RedepositFarmProps) => {
   const { data: farmApr } = useFarmApr(availableYieldFarm)
   const { data: assetMeta } = useAssetMeta(farmApr?.assetId)
   return (
-    <div sx={{ flex: "row", align: "center", gap: 4 }}>
-      <Icon icon={getAssetLogo(assetMeta?.symbol)} />
+    <div sx={{ flex: "row", align: "center", gap: 8 }}>
+      <Icon size={24} icon={getAssetLogo(assetMeta?.symbol)} />
+      <Text>{assetMeta?.symbol}</Text>
     </div>
   )
 }
@@ -74,6 +75,7 @@ export const RedepositFarms = ({ depositNft, pool }: RedepositFarmsProps) => {
     availableYieldFarms,
     [depositNft],
     toast,
+    () => setJoinFarm(false),
   )
 
   if (!availableYieldFarms.length) return null

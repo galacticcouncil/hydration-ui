@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { ReactNode, useEffect } from "react"
 import { useApiPromise } from "utils/api"
+import { isApiLoaded } from "utils/helpers"
 import { QUERY_KEY_PREFIX } from "utils/queryKeys"
 
 export const InvalidateOnBlock = (props: { children: ReactNode }) => {
@@ -8,15 +9,17 @@ export const InvalidateOnBlock = (props: { children: ReactNode }) => {
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    let cancel: () => void
+    if (isApiLoaded(api)) {
+      let cancel: () => void
 
-    api.rpc.chain
-      .subscribeNewHeads(() => {
-        queryClient.invalidateQueries([QUERY_KEY_PREFIX])
-      })
-      .then((newCancel) => (cancel = newCancel))
+      api.rpc.chain
+        .subscribeNewHeads(() => {
+          queryClient.invalidateQueries([QUERY_KEY_PREFIX])
+        })
+        .then((newCancel) => (cancel = newCancel))
 
-    return () => cancel?.()
+      return () => cancel?.()
+    }
   }, [api, queryClient])
 
   return <>{props.children}</>

@@ -6,7 +6,7 @@ import {
 import { u32 } from "@polkadot/types"
 import { useAssetMeta } from "api/assetMeta"
 import { useTokenBalance } from "api/balances"
-import { useApiIds } from "api/consts"
+import { useApiIds, useMaxAddLiquidityLimit } from "api/consts"
 import { useOmnipoolAsset, useOmnipoolFee } from "api/omnipool"
 import { useSpotPrice } from "api/spotPrice"
 import BigNumber from "bignumber.js"
@@ -53,7 +53,7 @@ export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
   return { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance }
 }
 
-export const useVerifyCap = ({
+export const useVerifyLimits = ({
   assetId,
   amount,
   decimals,
@@ -64,13 +64,15 @@ export const useVerifyCap = ({
 }) => {
   const apiIds = useApiIds()
   const asset = useOmnipoolAsset(assetId)
+  const assetMeta = useAssetMeta(assetId)
   const hubBalance = useTokenBalance(
     apiIds.data?.hubId,
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
   const poolBalance = useTokenBalance(assetId, OMNIPOOL_ACCOUNT_ADDRESS)
+  const maxAddLiquidityLimit = useMaxAddLiquidityLimit()
 
-  const queries = [apiIds, hubBalance]
+  const queries = [apiIds, hubBalance, maxAddLiquidityLimit, assetMeta]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
@@ -79,7 +81,8 @@ export const useVerifyCap = ({
       !asset.data ||
       !hubBalance.data ||
       !poolBalance.data ||
-      !amount
+      !amount ||
+      !maxAddLiquidityLimit.data
     )
       return undefined
 
@@ -89,6 +92,12 @@ export const useVerifyCap = ({
     const assetCap = asset.data.cap.toString()
     const totalHubReserve = hubBalance.data.total.toString()
     const amountIn = getFixedPointAmount(amount, decimals).toFixed(0)
+    const circuitBreakerLimit = maxAddLiquidityLimit.data
+      .multipliedBy(assetReserve)
+      .div(BN_10.pow(assetMeta.data?.decimals.toString() ?? 12))
+      .toFixed(4)
+    const isWithinCircuitBreakerLimit =
+      BigNumber(circuitBreakerLimit).gte(amount)
 
     const hubIn = calculate_liquidity_hub_in(
       assetReserve,
@@ -104,14 +113,22 @@ export const useVerifyCap = ({
       totalHubReserve,
     )
 
-    return isWithinLimit
+    return {
+      cap: isWithinLimit,
+      circuitBreaker: {
+        isWithinLimit: isWithinCircuitBreakerLimit,
+        maxValue: circuitBreakerLimit,
+      },
+    }
   }, [
-    amount,
-    decimals,
     apiIds.data,
     asset.data,
     hubBalance.data,
     poolBalance.data,
+    amount,
+    decimals,
+    maxAddLiquidityLimit.data,
+    assetMeta.data?.decimals,
   ])
 
   return { data, isLoading }

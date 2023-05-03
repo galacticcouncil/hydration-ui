@@ -14,9 +14,6 @@ export const SSwitch = styled.div`
 
   gap: 9px;
 
-  left: 50%;
-  transform: translate(-50%, 0);
-
   width: max-content;
 `
 
@@ -38,6 +35,8 @@ export const SButton = styled.button<{ isActive: boolean }>`
   text-transform: uppercase;
 
   position: relative;
+
+  cursor: pointer;
 
   ${({ isActive }) => {
     if (isActive) {

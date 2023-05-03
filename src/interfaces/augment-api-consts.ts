@@ -29,6 +29,7 @@ import type {
   FrameSupportWeightsRuntimeDbWeight,
   FrameSystemLimitsBlockLength,
   FrameSystemLimitsBlockWeights,
+  HydradxTraitsOracleOraclePeriod,
   SpVersionRuntimeVersion,
   XcmV1MultiLocation,
 } from "@polkadot/types/lookup"
@@ -374,6 +375,10 @@ declare module "@polkadot/api-base/types/consts" {
        **/
       minimumTradingLimit: u128 & AugmentedConst<ApiType>
       /**
+       * Minimum withdrawal fee
+       **/
+      minWithdrawalFee: Permill & AugmentedConst<ApiType>
+      /**
        * Non fungible class id
        **/
       nftCollectionId: u128 & AugmentedConst<ApiType>
@@ -396,6 +401,14 @@ declare module "@polkadot/api-base/types/consts" {
        **/
       nftCollectionId: u128 & AugmentedConst<ApiType>
       /**
+       * Oracle's price aggregation period.
+       **/
+      oraclePeriod: HydradxTraitsOracleOraclePeriod & AugmentedConst<ApiType>
+      /**
+       * Identifier of oracle data soruce
+       **/
+      oracleSource: U8aFixed & AugmentedConst<ApiType>
+      /**
        * Generic const
        **/
       [key: string]: Codec
@@ -408,7 +421,7 @@ declare module "@polkadot/api-base/types/consts" {
       maxFarmEntriesPerDeposit: u32 & AugmentedConst<ApiType>
       /**
        * Max number of yield farms can exist in global farm. This includes all farms in the
-       * storage(active, stopped, deleted).
+       * storage(active, stopped, terminated).
        **/
       maxYieldFarmsPerGlobalFarm: u32 & AugmentedConst<ApiType>
       /**

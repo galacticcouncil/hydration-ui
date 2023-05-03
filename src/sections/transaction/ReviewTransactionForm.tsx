@@ -171,7 +171,7 @@ export const ReviewTransactionForm = (
       sx={{
         flex: "column",
         justify: "space-between",
-        height: "calc(100% - var(--modal-header-title-height))",
+        flexGrow: 1,
       }}
     >
       <div>
