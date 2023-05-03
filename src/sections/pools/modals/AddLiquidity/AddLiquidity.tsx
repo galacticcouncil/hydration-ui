@@ -268,10 +268,9 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
                     {t("liquidity.add.modal.warning")}
                   </Text>
 
-                  {limits?.cap === false && (
+                  {limits?.cap === false ? (
                     <AddLiquidityLimitWarning type="cap" />
-                  )}
-                  {limits?.circuitBreaker.isWithinLimit === false && (
+                  ) : limits?.circuitBreaker.isWithinLimit === false ? (
                     <AddLiquidityLimitWarning
                       type="circuitBreaker"
                       limit={{
@@ -279,7 +278,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
                         symbol: assetMeta?.symbol,
                       }}
                     />
-                  )}
+                  ) : null}
                   <PoolAddLiquidityInformationCard />
 
                   <Separator
