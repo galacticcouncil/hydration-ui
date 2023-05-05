@@ -19,6 +19,7 @@ import { LiquidityPositions } from "../../modals/LiquidityPositions/LiquidityPos
 import { usePoolPositions } from "../Pool.utils"
 import { useFarms } from "api/farms"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
+import { Text } from "components/Typography/Text/Text"
 
 type PoolActionsProps = {
   pool: OmnipoolPool
@@ -47,42 +48,66 @@ export const PoolActions = ({
   const farms = useFarms([pool.id])
 
   const actionButtons = (
-    <div sx={{ flex: ["row", "column"], gap: 10, flexGrow: 1 }}>
-      <Button
-        fullWidth
-        size="small"
-        disabled={!account || account.isExternalWalletConnected}
-        onClick={() => setOpenAdd(true)}
-      >
-        <div sx={{ flex: "row", align: "center", justify: "center" }}>
-          <Icon icon={<PlusIcon />} sx={{ mr: 8, height: 16 }} />
-          {t("liquidity.asset.actions.addLiquidity")}
-        </div>
-      </Button>
-      {!isDesktop && (
+    <div sx={{ flexGrow: 1 }}>
+      <div sx={{ flex: ["row", "column"], gap: 10, flexGrow: 1 }}>
         <Button
           fullWidth
           size="small"
-          disabled={!account || !positions.data.length}
-          onClick={() => {
-            setOpenLiquidityPositions(true)
-          }}
+          disabled={!account || account.isExternalWalletConnected}
+          onClick={() => setOpenAdd(true)}
         >
           <div sx={{ flex: "row", align: "center", justify: "center" }}>
-            <Icon icon={<DetailsIcon />} sx={{ mr: 8, height: 16 }} />
-            {t("liquidity.asset.actions.myPositions")}
+            <Icon icon={<PlusIcon />} sx={{ mr: 8, height: 16 }} />
+            {t("liquidity.asset.actions.addLiquidity")}
           </div>
         </Button>
-      )}
-      {farms.data?.length ? (
-        <Button fullWidth size="small" onClick={() => setOpenFarmDefails(true)}>
-          <div sx={{ flex: "row", align: "center", justify: "center" }}>
-            <Icon icon={<FarmDetailsIcon />} sx={{ mr: 8, height: 16 }} />
+        {!isDesktop && (
+          <Button
+            fullWidth
+            size="small"
+            disabled={!account || !positions.data.length}
+            onClick={() => {
+              setOpenLiquidityPositions(true)
+            }}
+          >
+            <div sx={{ flex: "row", align: "center", justify: "center" }}>
+              <Icon icon={<DetailsIcon />} sx={{ mr: 8, height: 16 }} />
+              {t("liquidity.asset.actions.myPositions")}
+            </div>
+          </Button>
+        )}
+        {farms.data?.length && isDesktop ? (
+          <Button
+            fullWidth
+            size="small"
+            onClick={() => setOpenFarmDefails(true)}
+          >
+            <div sx={{ flex: "row", align: "center", justify: "center" }}>
+              <Icon icon={<FarmDetailsIcon />} sx={{ mr: 8, height: 16 }} />
+              {t("liquidity.asset.actions.farmDetails", {
+                count: farms.data.length,
+              })}
+            </div>
+          </Button>
+        ) : null}
+      </div>
+      {farms.data?.length && !isDesktop ? (
+        <div
+          role="button"
+          sx={{ flex: "row", align: "center", justify: "center", mt: 16 }}
+          onClick={() => setOpenFarmDefails(true)}
+        >
+          <Text color="brightBlue300" fs={12} tTransform="uppercase">
             {t("liquidity.asset.actions.farmDetails", {
               count: farms.data.length,
             })}
-          </div>
-        </Button>
+          </Text>
+          <Icon
+            icon={<ChevronDown />}
+            sx={{ mr: 8, height: 16, color: "brightBlue300" }}
+            css={{ rotate: "270deg" }}
+          />
+        </div>
       ) : null}
     </div>
   )
