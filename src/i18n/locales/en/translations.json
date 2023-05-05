@@ -85,6 +85,8 @@
   "liquidity.asset.actions.joinFarms": "Join Farms",
   "liquidity.asset.actions.header": "{{tokens}} actions",
   "liquidity.asset.actions.myPositions": "My positions",
+  "liquidity.asset.actions.farmDetails_one": "Farm Details",
+  "liquidity.asset.actions.farmDetails_other": "Farms Details",
   "liquidity.asset.claim.button": "Claim all",
   "liquidity.asset.claim.total": "Total locked {{ locked, bignumber(numberPrefix: '$'; type: 'dollar') }}",
   "liquidity.asset.claim.farmTotal": "Total locked {{ locked, bignumber(numberPrefix: '$'; type: 'dollar') }} of which {{ farming, bignumber(numberPrefix: '$'; type: 'dollar') }} is farming",

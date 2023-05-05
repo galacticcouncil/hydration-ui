@@ -22,10 +22,10 @@ type JoinFarmModalProps = {
   isOpen: boolean
   onClose: () => void
   pool: OmnipoolPool
-  shares: BigNumber
+  shares?: BigNumber
   farms: Farm[]
   isRedeposit?: boolean
-  mutation: FarmDepositMutationType | FarmRedepositMutationType
+  mutation?: FarmDepositMutationType | FarmRedepositMutationType
   depositNft?: DepositNftType
 }
 
@@ -54,6 +54,7 @@ export const JoinFarmModal = ({
   )
 
   const { page, direction, back, next } = useModalPagination()
+
   const onBack = () => {
     back()
     setSelectedFarmId(null)
@@ -105,44 +106,47 @@ export const JoinFarmModal = ({
                     )
                   })}
                 </div>
-                <SJoinFarmContainer>
-                  <div
-                    sx={{
-                      flex: "row",
-                      justify: "space-between",
-                      p: 30,
-                      gap: 120,
-                    }}
-                  >
-                    <div sx={{ flex: "column", gap: 13 }}>
-                      <Text>{t("farms.modal.footer.title")}</Text>
-                    </div>
-                    <Text
-                      color="pink600"
-                      fs={24}
-                      css={{ whiteSpace: "nowrap" }}
+                {mutation && shares && (
+                  <SJoinFarmContainer>
+                    <div
+                      sx={{
+                        flex: "row",
+                        justify: "space-between",
+                        p: 30,
+                        gap: 120,
+                      }}
                     >
-                      {t("value.token", {
-                        value: shares,
-                        fixedPointScale: meta.data?.decimals.toString() ?? 12,
+                      <div sx={{ flex: "column", gap: 13 }}>
+                        <Text>{t("farms.modal.footer.title")}</Text>
+                      </div>
+                      <Text
+                        color="pink600"
+                        fs={24}
+                        css={{ whiteSpace: "nowrap" }}
+                      >
+                        {t("value.token", {
+                          value: shares,
+                          fixedPointScale: meta.data?.decimals.toString() ?? 12,
+                        })}
+                      </Text>
+                    </div>
+                    <Button
+                      fullWidth
+                      variant="primary"
+                      onClick={() => mutation.mutate()}
+                      isLoading={mutation.isLoading}
+                    >
+                      {t("farms.modal.join.button.label", {
+                        count: farms.length,
                       })}
-                    </Text>
-                  </div>
-                  <Button
-                    fullWidth
-                    variant="primary"
-                    onClick={() => mutation.mutate()}
-                    isLoading={mutation.isLoading}
-                  >
-                    {t("farms.modal.join.button.label", {
-                      count: farms.length,
-                    })}
-                  </Button>
-                </SJoinFarmContainer>
+                    </Button>
+                  </SJoinFarmContainer>
+                )}
               </div>
             ),
           },
           {
+            title: t("farms.modal.details.title"),
             content: selectedFarm && (
               <FarmDetailsModal
                 pool={pool}
