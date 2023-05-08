@@ -238,4 +238,5 @@ export const QUERY_KEYS = {
     walletAddress,
   ],
   polkadotAccounts: ["polkadotAccounts"],
+  maxAddLiquidityLimit: ["maxAddLiquidityLimit"],
 } as const

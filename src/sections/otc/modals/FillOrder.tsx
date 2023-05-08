@@ -1,16 +1,16 @@
 import { useAssetMeta } from "api/assetMeta"
+import { useTokenBalance } from "api/balances"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
+import { useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useApiPromise } from "utils/api"
+import { BN_10 } from "utils/constants"
 import { useAccountStore, useStore } from "../../../state/store"
+import { OfferingPair } from "../orders/OtcOrdersData.utils"
 import { OrderAssetPrice } from "./cmp/AssetPrice"
 import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
-import { OfferingPair } from "../orders/OtcOrdersData.utils"
-import { useTokenBalance } from "api/balances"
-import { BN_10 } from "utils/constants"
-import { useState } from "react"
 
 type FillOrderProps = {
   orderId: string
@@ -101,11 +101,9 @@ export const FillOrder = ({
   return (
     <Modal
       open={true}
-      withoutOutsideClose
+      disableCloseOutside
       title={t("otc.order.fill.title")}
-      onClose={() => {
-        onClose()
-      }}
+      onClose={onClose}
     >
       <Text fs={16} color="basic400" sx={{ mt: 10, mb: 22 }}>
         {t("otc.order.fill.desc")}

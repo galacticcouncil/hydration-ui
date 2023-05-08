@@ -1,7 +1,7 @@
-import { Text } from "components/Typography/Text/Text"
 import styled from "@emotion/styled"
-import { theme } from "theme"
 import { ButtonTransparent } from "components/Button/Button"
+import { Text } from "components/Typography/Text/Text"
+import { theme } from "theme"
 
 export const SContainer = styled.div`
   display: flex;
@@ -12,13 +12,14 @@ export const SContainer = styled.div`
   background: rgba(${theme.rgbColors.darkBlue900}, 0.6);
   backdrop-filter: blur(12px);
 
+  height: var(--wallet-footer-height);
   width: 100%;
 
   border-radius: 4px;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
 
-  padding: 20px 30px;
+  padding: 0 30px;
 
   position: absolute;
   bottom: 0;

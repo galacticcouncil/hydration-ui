@@ -7,13 +7,12 @@ import { Fragment, useEffect, useState } from "react"
 import { theme } from "theme"
 
 import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRightIcon.svg"
-import { ProviderStatus } from "./ProviderStatus"
 import {
-  SItem,
+  SButton,
   SCircle,
   SContainer,
   SHeader,
-  SButton,
+  SItem,
   SName,
 } from "./ProviderSelectModal.styled"
 import { useTranslation } from "react-i18next"
@@ -26,6 +25,7 @@ import { useRpcStore } from "state/store"
 import { FormValues } from "utils/helpers"
 import { useMutation } from "@tanstack/react-query"
 import { connectWsProvider } from "./ProviderSelectModal.utils"
+import { ProviderStatus } from "./ProviderStatus"
 
 function ProviderSelectItemExternal(props: {
   url: string
@@ -220,7 +220,6 @@ export function ProviderSelectModal(props: {
       open={props.open}
       onClose={props.onClose}
       title={t("rpc.change.modal.title")}
-      width={720}
     >
       <form onSubmit={form.handleSubmit((a) => mutation.mutate(a))}>
         <Controller
@@ -302,7 +301,7 @@ export function ProviderSelectModal(props: {
 
       <Button
         variant="primary"
-        sx={{ mt: 64 }}
+        sx={{ mt: 64, width: "100%" }}
         onClick={() => {
           preference.setRpcUrl(userRpcUrl)
 
