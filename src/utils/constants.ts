@@ -28,4 +28,6 @@ export const ASSET_TYPE_TOKEN = "Token"
 
 BN.config({ EXPONENTIAL_AT: 666 })
 
-export const MIN_WITHDRAWAL_FEE = 100
+export const MIN_WITHDRAWAL_FEE = BN(100).div(1000000)
+
+export const MAX_WITHDRAWAL_FEE = BN(10000).div(1000000).multipliedBy(100)

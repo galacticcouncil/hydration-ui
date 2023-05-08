@@ -2,7 +2,6 @@ import { useApiPromise } from "utils/api"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
-import BN from "bignumber.js"
 import { MIN_WITHDRAWAL_FEE } from "utils/constants"
 
 export const useApiIds = () => {
@@ -44,10 +43,7 @@ export const useMinWithdrawalFee = () => {
 const getMinWithdrawalFee = (api: ApiPromise) => async () => {
   const minWithdrawalFee = await api.consts.omnipool.minWithdrawalFee
 
-  return (
-    minWithdrawalFee?.toBigNumber().div(1000000) ??
-    BN(MIN_WITHDRAWAL_FEE).div(1000000)
-  )
+  return minWithdrawalFee?.toBigNumber().div(1000000) ?? MIN_WITHDRAWAL_FEE
 }
 
 export const useMaxAddLiquidityLimit = () => {
