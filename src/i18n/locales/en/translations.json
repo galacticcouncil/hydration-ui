@@ -256,6 +256,7 @@
   "wallet.assets.transfer.switch.bridge": "Ethereum Bridge",
   "wallet.assets.transfer.dest.label": "To",
   "wallet.assets.transfer.dest.placeholder": "Enter recipient address",
+  "wallet.assets.transfer.dest.addressBook": "My Accounts",
   "wallet.assets.transfer.asset.label": "Asset",
   "wallet.assets.transfer.asset.label_mob": "Select asset",
   "wallet.assets.transfer.transaction_cost": "Transaction cost:",

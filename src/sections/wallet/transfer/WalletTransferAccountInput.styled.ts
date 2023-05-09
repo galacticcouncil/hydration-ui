@@ -1,13 +1,14 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
+import { ButtonTransparent } from "components/Button/Button"
 import { theme } from "theme"
 
-export const SContainer = styled.label<{ error?: boolean; disabled?: boolean }>`
+export const SContainer = styled.div<{ error?: boolean; disabled?: boolean }>`
+  position: relative;
   padding: 18px;
 
-  transition: ${theme.transitions.default};
-
   background: rgba(${theme.rgbColors.alpha0}, 0.06);
+  transition: ${theme.transitions.default};
 
   border-radius: 2px;
   border-bottom: 1px solid
@@ -30,6 +31,26 @@ export const SContainer = styled.label<{ error?: boolean; disabled?: boolean }>`
             ${error ? theme.colors.error : theme.colors.brightBlue600};
         `
     }}
+  }
+`
+
+export const SAddressBookButton = styled(ButtonTransparent)`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 2px 8px;
+
+  color: ${theme.colors.darkBlue100};
+  background: rgba(84, 99, 128, 0.35);
+  text-transform: uppercase;
+
+  &:hover {
+    background: rgba(84, 99, 128, 0.5);
   }
 `
 
