@@ -57,10 +57,20 @@ export const AddressBookItem = ({
           <SAddress>{hydraAddress}</SAddress>
           {provider === "external" && (
             <div sx={{ flex: "row" }}>
-              <SButton onClick={() => setRemoving(true)}>
+              <SButton
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setRemoving(true)
+                }}
+              >
                 <IconRemove />
               </SButton>
-              <SButton onClick={() => setEditting(true)}>
+              <SButton
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setEditting(true)
+                }}
+              >
                 <IconEdit />
               </SButton>
             </div>
