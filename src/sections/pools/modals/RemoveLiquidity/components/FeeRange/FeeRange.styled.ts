@@ -25,7 +25,7 @@ export const SFeeRangeItem = styled.div<{
   width: 16px;
 
   background-color: ${(p) =>
-    p.isActive ? theme.colors[p.color] : "rgba(135, 139, 163,0.2 )"};
+    p.isActive ? theme.colors[p.color] : "rgba(135, 139, 163, 0.2)"};
 `
 
 export const SFullRangeContainer = styled.div`
