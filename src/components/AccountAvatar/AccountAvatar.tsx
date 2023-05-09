@@ -8,7 +8,7 @@ import { PolkadotAvatar } from "./PolkadotAvatar"
 export function AccountAvatar(props: {
   address: string
   size: number
-  theme: string
+  theme?: string
   className?: string
   prefix?: number
 }) {

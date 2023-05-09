@@ -33,7 +33,7 @@ export const AddressBookItemEdit = ({
 
   return (
     <SContainer onSubmit={onSubmit}>
-      <AccountAvatar address={address} theme={provider} size={30} />
+      <AccountAvatar address={address} size={30} />
       <SInput
         value={input}
         onChange={(e) => setInput(e.target.value)}

@@ -50,7 +50,7 @@ export const AddressBookItem = ({
     <>
       <SItem onClick={() => onSelect(hydraAddress)}>
         <SNameContainer>
-          <AccountAvatar address={hydraAddress} theme={provider} size={30} />
+          <AccountAvatar address={hydraAddress} size={30} />
           <SName>{name}</SName>
         </SNameContainer>
         <SAddressContainer>
