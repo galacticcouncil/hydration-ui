@@ -45,7 +45,7 @@ export const FeeRange = ({
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
 
-  const { rangeNumbers, currentInderval } = useMemo(() => {
+  const { rangeNumbers, currentInterval } = useMemo(() => {
     if (minFee && currentFee) {
       const step = MAX_WITHDRAWAL_FEE.minus(minFee).div(3)
 
@@ -55,12 +55,12 @@ export const FeeRange = ({
         currentFee.lte(rangeNumber),
       )
 
-      const currentInderval =
+      const currentInterval =
         currentIntervalIndex !== -1
           ? currentIntervalIndex
           : Object.keys(FEE_RANGE_COLOR_CONFIG).length - 1
 
-      return { rangeNumbers: [minFee, ...rangeNumbers], currentInderval }
+      return { rangeNumbers: [minFee, ...rangeNumbers], currentInterval }
     }
 
     return { rangeNumbers: undefined, currentInderval: undefined }
@@ -71,7 +71,7 @@ export const FeeRange = ({
       <SummaryRow
         label={t("liquidity.remove.modal.tokenFee.label")}
         content={
-          currentInderval == null ? (
+          currentInterval == null ? (
             <Skeleton height={14} width={130} />
           ) : (
             <div
@@ -92,7 +92,7 @@ export const FeeRange = ({
                   <SFeeRangeItem
                     key={color}
                     color={color}
-                    isActive={currentInderval === index}
+                    isActive={currentInterval === index}
                   />
                 ))}
               </SFeeRangeContainer>
@@ -144,7 +144,7 @@ export const FeeRange = ({
                   {Object.values(FEE_RANGE_COLOR_CONFIG).map((color, index) => (
                     <SFullFeeRangeItem
                       key={color}
-                      isActive={currentInderval === index}
+                      isActive={currentInterval === index}
                       color={color}
                     >
                       <div />
