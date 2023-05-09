@@ -26,6 +26,8 @@
   "confirm": "Confirm",
   "or": "or",
   "balance": "Balance:",
+  "save": "Save",
+  "add": "Add",
   "depeg.modal.title": "Important notice",
   "depeg.modal.description": "All USD/$ pricing in the app.hydradx.io UI are calculated using DAI. Due to the ongoing DAI depeg, USD/$ prices may not be accurate.",
   "depeg.modal.more.info": "More info",
@@ -379,5 +381,16 @@
   "stats.tiles.risks.content": "TODO",
   "stats.tiles.rewards.title": "Liquidity rewards & Farming",
   "stats.tiles.rewards.description": "Earn up to 5% APR by providing liquidity to Hydra.",
-  "stats.tiles.rewards.content": "TODO"
+  "stats.tiles.rewards.content": "TODO",
+  "addressbook.title": "Select account to use",
+  "addressbook.list.account": "Account",
+  "addressbook.list.address": "Address",
+  "addressbook.list.empty.notFound": "This address is not on your list.",
+  "addressbook.list.empty.canAdd": "Click Save to add it to your address book.",
+  "addressbook.add.name": "My Account",
+  "addressbook.input.placeholder": "Search or paste address to add",
+  "addressbook.remove.title": "Remove address",
+  "addressbook.remove.subtitle": "Are you sure you want to remove this account address?",
+  "addressbook.remove.cancel": "Back",
+  "addressbook.remove.submit": "Yes, remove"
 }

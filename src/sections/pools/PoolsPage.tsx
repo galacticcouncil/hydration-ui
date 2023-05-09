@@ -3,7 +3,7 @@ import { useState } from "react"
 import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
 import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
-import { useApiPromise } from "../../utils/api"
+import { useApiPromise } from "utils/api"
 import { PoolSkeleton } from "./skeleton/PoolSkeleton"
 
 const PoolPageContent = () => {

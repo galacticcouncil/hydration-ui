@@ -1,8 +1,9 @@
-import { TalismanAvatar } from "components/AccountAvatar/TalismanAvatar"
-import { PolkadotAvatar } from "./PolkadotAvatar"
-import { JdenticonAvatar } from "./JdenticonAvatar"
 import { isHex, isU8a, u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { TalismanAvatar } from "components/AccountAvatar/TalismanAvatar"
+import { safeConvertAddressSS58 } from "utils/formatting"
+import { JdenticonAvatar } from "./JdenticonAvatar"
+import { PolkadotAvatar } from "./PolkadotAvatar"
 
 export function AccountAvatar(props: {
   address: string
@@ -11,6 +12,8 @@ export function AccountAvatar(props: {
   className?: string
   prefix?: number
 }) {
+  if (safeConvertAddressSS58(props.address, 0) === null) return null
+
   const address =
     isU8a(props.address) || isHex(props.address)
       ? encodeAddress(props.address, props.prefix)
