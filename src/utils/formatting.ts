@@ -255,3 +255,5 @@ export const formatAssetValue = (value: string) => {
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ")
   return parts.join(".")
 }
+
+export const isHydraAddress = (address: string) => address[0] === "7"

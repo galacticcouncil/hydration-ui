@@ -8,6 +8,10 @@ import { Maybe } from "utils/helpers"
 export const QUERY_KEY_PREFIX = "@block"
 
 export const QUERY_KEYS = {
+  providerAddresses: (provider: string | undefined) => [
+    "web3Addresses",
+    provider,
+  ],
   bestNumber: [QUERY_KEY_PREFIX, "bestNumber"],
   assetsTable: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,

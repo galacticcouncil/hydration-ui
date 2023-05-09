@@ -6,7 +6,7 @@ import { ModalContentProps, ModalContents } from "./contents/ModalContents"
 
 type Props = {
   open: boolean
-  onClose: () => void
+  onClose?: () => void
   onBack?: () => void
   isDrawer?: boolean
   disableClose?: boolean
