@@ -17,23 +17,22 @@ import {
   calculate_withdrawal_fee,
   calculate_lrna_spot_price,
 } from "@galacticcouncil/math-omnipool"
-import { useOmnipoolAssets } from "../../../../api/omnipool"
-import { useTokenBalance } from "../../../../api/balances"
-import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "../../../../utils/api"
-import { BN_10, BN_QUINTILL, BN_0 } from "../../../../utils/constants"
-import { useAssetMetaList } from "../../../../api/assetMeta"
+import { useOmnipoolAssets } from "api/omnipool"
+import { useTokenBalance } from "api/balances"
+import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
+import { BN_10, BN_QUINTILL } from "utils/constants"
+import { useAssetMetaList } from "api/assetMeta"
 import { useApiIds, useMinWithdrawalFee } from "api/consts"
 import BN from "bignumber.js"
 import { getFloatingPointAmount } from "utils/balance"
-import { useStore } from "../../../../state/store"
+import { useStore } from "state/store"
 import BigNumber from "bignumber.js"
 import { Spacer } from "components/Spacer/Spacer"
 import { useSpotPrice } from "api/spotPrice"
 import { useOraclePrice } from "api/farms"
-import { SummaryRow } from "components/Summary/SummaryRow"
-import { Separator } from "components/Separator/Separator"
 import { ReactComponent as IconWarning } from "assets/icons/WarningIcon.svg"
 import { Icon } from "components/Icon/Icon"
+import { FeeRange } from "./components/FeeRange/FeeRange"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
@@ -377,56 +376,23 @@ export const RemoveLiquidity = ({
           </STradingPairContainer>
         </div>
         <Spacer size={6} />
-        <SummaryRow
-          label={t("liquidity.remove.modal.tokenFee.label")}
-          content={
-            <div sx={{ display: "flex", gap: 4 }}>
-              <Trans
-                t={t}
-                i18nKey="liquidity.remove.modal.tokenFee.value"
-                tOptions={{
-                  feeAmount: removeLiquidityValues?.tokensPayWith,
-                  fixedPointScale: meta?.decimals.toString() ?? 12,
-                  symbol: meta?.symbol,
-                  feePercentage: removeLiquidityValues?.withdrawalFee
-                    ? removeLiquidityValues.withdrawalFee
-                    : BN_0,
-                }}
-              >
-                <Text fs={14} />
-                <Text fs={14} color="darkBlue200" />
-              </Trans>
-            </div>
+        <FeeRange
+          minFee={minWithdrawalFee.data?.multipliedBy(100)}
+          currentFee={removeLiquidityValues?.withdrawalFee}
+          lrnaFeeValue={
+            !BN(removeLiquidityValues?.lrnaPayWith ?? 0).isZero()
+              ? t("value.token", {
+                  value: removeLiquidityValues?.lrnaPayWith,
+                  fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
+                })
+              : undefined
           }
+          assetFeeValue={t("value.token", {
+            value: removeLiquidityValues?.tokensPayWith,
+            fixedPointScale: meta?.decimals.toString() ?? 12,
+          })}
+          assetSymbol={meta?.symbol}
         />
-        {removeLiquidityValues &&
-          !BN(removeLiquidityValues.lrnaPayWith).isZero() && (
-            <>
-              <Separator />
-              <SummaryRow
-                label={t("liquidity.remove.modal.lrnaFee.label")}
-                content={
-                  <div sx={{ display: "flex", gap: 4 }}>
-                    <Trans
-                      t={t}
-                      i18nKey="liquidity.remove.modal.tokenFee.value"
-                      tOptions={{
-                        feeAmount: removeLiquidityValues?.lrnaPayWith,
-                        fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
-                        symbol: lrnaMeta?.symbol,
-                        feePercentage: removeLiquidityValues?.withdrawalFee
-                          ? removeLiquidityValues.withdrawalFee
-                          : BN_0,
-                      }}
-                    >
-                      <Text fs={14} />
-                      <Text fs={14} color="darkBlue200" />
-                    </Trans>
-                  </div>
-                }
-              />
-            </>
-          )}
 
         {isFeeExceeded && (
           <div
