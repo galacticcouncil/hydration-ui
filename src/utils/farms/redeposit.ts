@@ -36,7 +36,7 @@ export const useFarmRedepositMutation = (
     if (txs.length > 1) {
       await createTransaction(
         { tx: api.tx.utility.batchAll(txs) },
-        { toast, onSubmitted: onClose },
+        { toast, onSubmitted: onClose, onBack: () => {}, onClose },
       )
     } else {
       await createTransaction({ tx: txs[0] }, { toast, onSubmitted: onClose })

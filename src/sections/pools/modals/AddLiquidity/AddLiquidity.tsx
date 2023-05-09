@@ -41,9 +41,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   const api = useApiPromise()
   const { createTransaction } = useStore()
   const { t } = useTranslation()
-  const form = useForm<{ amount: string }>({
-    mode: "onChange",
-  })
+  const form = useForm<{ amount: string }>({ mode: "onChange" })
   const amountIn = form.watch("amount")
 
   const { data: limits } = useVerifyLimits({
@@ -60,18 +58,16 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
       assetMeta.decimals.toNumber(),
     ).toString()
 
-    onClose()
-
     return await createTransaction(
-      {
-        tx: api.tx.omnipool.addLiquidity(assetId, amount),
-      },
+      { tx: api.tx.omnipool.addLiquidity(assetId, amount) },
       {
         onSuccess,
         onSubmitted: () => {
           onClose()
           form.reset()
         },
+        onClose,
+        onBack: () => {},
         toast: {
           onLoading: (
             <Trans

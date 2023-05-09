@@ -241,14 +241,14 @@ export const RemoveLiquidity = ({
 
     const lrnaAsBigNumber = new BigNumber(removeLiquidityValues.lrnaToGet)
 
-    onClose()
-
     await createTransaction(
       {
         tx: api.tx.omnipool.removeLiquidity(position.id, value.toFixed(0)),
       },
       {
         onSuccess,
+        onClose,
+        onBack: () => {},
         onSubmitted: () => {
           onClose()
           form.reset()

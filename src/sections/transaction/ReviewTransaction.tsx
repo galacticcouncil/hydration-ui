@@ -28,7 +28,7 @@ export const ReviewTransaction = (props: Transaction) => {
           title: t("liquidity.reviewTransaction.modal.title"),
         }
 
-  function handleClose() {
+  const handleTxOnClose = () => {
     if (sendTx.isLoading) {
       setMinimizeModal(true)
       return
@@ -40,6 +40,18 @@ export const ReviewTransaction = (props: Transaction) => {
       props.onError?.()
     }
   }
+
+  const onClose = () => {
+    handleTxOnClose()
+    props.onClose?.()
+  }
+
+  const onBack = props.onBack
+    ? () => {
+        handleTxOnClose()
+        props.onBack?.()
+      }
+    : undefined
 
   const onReview = () => {
     sendTx.reset()
@@ -54,13 +66,14 @@ export const ReviewTransaction = (props: Transaction) => {
           mutation={sendTx}
           link={sendTx.data?.transactionLink}
           onReview={onReview}
-          onClose={handleClose}
+          onClose={onClose}
           toastMessage={props.toastMessage}
         />
       )}
       <Modal
         open={!minimizeModal}
-        onClose={handleClose}
+        onBack={onBack}
+        onClose={onClose}
         disableCloseOutside
         topContent={props.steps ? <Stepper steps={props.steps} /> : undefined}
         {...modalProps}
@@ -69,19 +82,19 @@ export const ReviewTransaction = (props: Transaction) => {
         {sendTx.isLoading ? (
           <ReviewTransactionPending
             txState={sendTx.txState}
-            onClose={handleClose}
+            onClose={onClose}
           />
         ) : sendTx.isSuccess ? (
-          <ReviewTransactionSuccess onClose={handleClose} />
+          <ReviewTransactionSuccess onClose={onClose} />
         ) : sendTx.isError ? (
-          <ReviewTransactionError onClose={handleClose} onReview={onReview} />
+          <ReviewTransactionError onClose={onClose} onReview={onReview} />
         ) : (
           <ReviewTransactionForm
             tx={props.tx}
             isProxy={props.isProxy}
             overrides={props.overrides}
             title={props.title}
-            onCancel={handleClose}
+            onCancel={onClose}
             onSigned={(signed) => {
               props.onSubmitted?.()
               sendTx.mutateAsync(signed)

@@ -78,6 +78,8 @@ export function WalletTransferSectionOnchain({
               ),
       },
       {
+        onClose,
+        onBack: () => {},
         toast: {
           onLoading: (
             <Trans

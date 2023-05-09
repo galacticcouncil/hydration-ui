@@ -18,6 +18,7 @@ import { useAccountStore } from "state/store"
 export const ClaimRewardsCard = (props: {
   pool: OmnipoolPool
   depositNft?: DepositNftType
+  onTxClose?: () => void
 }) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -68,7 +69,13 @@ export const ClaimRewardsCard = (props: {
     return memo
   }, {} as ToastMessage)
 
-  const claimAll = useClaimAllMutation(props.pool.id, props.depositNft, toast)
+  const claimAll = useClaimAllMutation(
+    props.pool.id,
+    props.depositNft,
+    toast,
+    props.onTxClose,
+    () => {},
+  )
 
   return (
     <SContainer>
