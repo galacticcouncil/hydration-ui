@@ -29,7 +29,7 @@ export const useWalletAddresses = () => {
 }
 
 export const useProviderAddresses = (provider: string | undefined) => {
-  return useQuery(QUERY_KEYS.addresses(provider), async () => {
+  return useQuery(QUERY_KEYS.providerAddresses(provider), async () => {
     const wallet = getWalletBySource(provider)
     return await wallet?.getAccounts()
   })
