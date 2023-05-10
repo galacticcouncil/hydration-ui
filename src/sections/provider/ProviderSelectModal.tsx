@@ -56,8 +56,6 @@ export function ProviderSelectModal(props: {
     }
   })
 
-  if (mutation.error) console.log("error in mutation")
-
   return (
     <>
       <Modal

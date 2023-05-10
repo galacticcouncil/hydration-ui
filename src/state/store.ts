@@ -205,11 +205,9 @@ export const useRpcStore = create<RpcStore>()(
         })),
       renameRpc: (urlToRename, name) =>
         set((store) => ({
-          rpcList: store.rpcList.map((rpc) => {
-            console.log(name, urlToRename)
-            if (rpc.url === urlToRename) return { ...rpc, name }
-            return rpc
-          }),
+          rpcList: store.rpcList.map((rpc) =>
+            rpc.url === urlToRename ? { ...rpc, name } : rpc,
+          ),
         })),
     }),
     {

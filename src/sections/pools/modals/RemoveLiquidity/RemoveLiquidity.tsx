@@ -212,7 +212,7 @@ export const RemoveLiquidity = ({
       const lrnaPayWith = BN(
         calculate_liquidity_lrna_out.apply(this, paramsWithoutFee),
       ).minus(lrnaToGet)
-      console.log("newValue")
+
       return {
         tokensToGet,
         lrnaToGet,
@@ -233,7 +233,7 @@ export const RemoveLiquidity = ({
     removeSharesValue,
     spotPrice.data,
   ])
-  console.log(oracle.data?.oraclePrice.toString())
+
   const handleSubmit = async (values: FormValues<typeof form>) => {
     const value = position.shares.div(100).times(values.value)
 
