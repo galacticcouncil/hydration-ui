@@ -1,38 +1,37 @@
+import {
+  calculate_liquidity_lrna_out,
+  calculate_liquidity_out,
+  calculate_lrna_spot_price,
+  calculate_withdrawal_fee,
+} from "@galacticcouncil/math-omnipool"
+import { useAssetMetaList } from "api/assetMeta"
+import { useTokenBalance } from "api/balances"
+import { useApiIds, useMinWithdrawalFee } from "api/consts"
+import { useOraclePrice } from "api/farms"
+import { useOmnipoolAssets } from "api/omnipool"
+import { useSpotPrice } from "api/spotPrice"
+import { ReactComponent as IconWarning } from "assets/icons/WarningIcon.svg"
+import { default as BN, default as BigNumber } from "bignumber.js"
 import { BoxSwitch } from "components/BoxSwitch/BoxSwitch"
 import { Button } from "components/Button/Button"
+import { Icon } from "components/Icon/Icon"
 import { Input } from "components/Input/Input"
 import { Modal } from "components/Modal/Modal"
 import { Slider } from "components/Slider/Slider"
+import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { FormValues } from "utils/helpers"
-import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
-import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
-import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import {
-  calculate_liquidity_lrna_out,
-  calculate_liquidity_out,
-  calculate_withdrawal_fee,
-  calculate_lrna_spot_price,
-} from "@galacticcouncil/math-omnipool"
-import { useOmnipoolAssets } from "api/omnipool"
-import { useTokenBalance } from "api/balances"
-import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
-import { BN_10, BN_QUINTILL } from "utils/constants"
-import { useAssetMetaList } from "api/assetMeta"
-import { useApiIds, useMinWithdrawalFee } from "api/consts"
-import BN from "bignumber.js"
-import { getFloatingPointAmount } from "utils/balance"
 import { useStore } from "state/store"
-import BigNumber from "bignumber.js"
-import { Spacer } from "components/Spacer/Spacer"
-import { useSpotPrice } from "api/spotPrice"
-import { useOraclePrice } from "api/farms"
-import { ReactComponent as IconWarning } from "assets/icons/WarningIcon.svg"
-import { Icon } from "components/Icon/Icon"
+import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
+import { getFloatingPointAmount } from "utils/balance"
+import { BN_10, BN_QUINTILL } from "utils/constants"
+import { FormValues } from "utils/helpers"
+import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
+import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
 import { FeeRange } from "./components/FeeRange/FeeRange"
+import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
@@ -92,8 +91,8 @@ const RemoveLiquidityInput = ({
           value={input}
           onChange={handleOnChange}
           name="custom"
-          label="Custom"
-          placeholder="Custom"
+          label={t("custom")}
+          placeholder={t("custom")}
           unit="%"
         />
         <div

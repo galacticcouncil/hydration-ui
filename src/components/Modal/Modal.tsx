@@ -49,7 +49,7 @@ export const Modal = ({
         contents={[{ content: children, ...contentProps }]}
       />
     )
-  }, [onClose, onBack, className, children, contentProps])
+  }, [hasContentProps, children, className, onClose, onBack, contentProps])
 
   return (
     <Root open={open}>

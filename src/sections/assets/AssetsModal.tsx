@@ -7,6 +7,7 @@ import { Maybe } from "utils/helpers"
 import { Text } from "../../components/Typography/Text/Text"
 import { SAssetsModalHeader } from "./AssetsModal.styled"
 import { AssetsModalRow } from "./AssetsModalRow"
+import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
 
 type Props = {
   allowedAssets?: Maybe<u32 | string>[]
@@ -38,6 +39,25 @@ export const AssetsModalContent = ({
     (allowedAssets != null
       ? assets.data?.filter((asset) => !allowedAssets?.includes(asset.id))
       : []) ?? []
+
+  const isLoading = assetsRows.isLoading || assetsRowsAll.isLoading
+
+  if (isLoading || !mainAssets.length)
+    return (
+      <>
+        <SAssetsModalHeader>
+          <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+            {t("selectAssets.asset")}
+          </Text>
+          <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+            {t("selectAssets.your_balance")}
+          </Text>
+        </SAssetsModalHeader>
+        {[1, 2, 3, 4, 5, 6].map((n) => (
+          <AssetsModalRowSkeleton key={n} />
+        ))}
+      </>
+    )
 
   return (
     <>

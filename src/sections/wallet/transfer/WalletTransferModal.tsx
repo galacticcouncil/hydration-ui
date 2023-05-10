@@ -61,6 +61,7 @@ export function WalletTransferModal(props: {
         direction={direction}
         onClose={props.onClose}
         onBack={openOnChain}
+        disableAnimation
         contents={[
           {
             title: t("wallet.assets.transfer.title"),

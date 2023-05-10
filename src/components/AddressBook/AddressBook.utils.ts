@@ -23,7 +23,7 @@ export const useWalletAddresses = () => {
     addresses = [...addresses, ...storageAddresses.addresses]
 
     return addresses
-  }, [storageAddresses, providerAddresses])
+  }, [providerAddresses.data, storageAddresses.addresses, account?.provider])
 
   return { data, isLoading: providerAddresses.isLoading }
 }

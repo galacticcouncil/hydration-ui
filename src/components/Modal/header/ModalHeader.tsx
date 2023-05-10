@@ -15,10 +15,11 @@ type TitleProps = {
   direction: number
   page: number
   canBack: boolean
+  disableAnimation?: boolean
 }
 
 export const ModalHeaderTitle = forwardRef<HTMLDivElement, TitleProps>(
-  ({ title, variant, direction, page, canBack }, ref) => {
+  ({ title, variant, direction, page, canBack, disableAnimation }, ref) => {
     const content = useMemo(() => {
       if (!title) return null
 
@@ -40,7 +41,7 @@ export const ModalHeaderTitle = forwardRef<HTMLDivElement, TitleProps>(
         variant={variant}
         centered={canBack}
         custom={{ direction }}
-        {...motionProps}
+        {...(!disableAnimation ? motionProps : {})}
       >
         {content}
       </SContainer>
@@ -53,10 +54,11 @@ type ButtonProps = {
   onClick: () => void
   direction?: number
   headerVariant?: ModalHeaderVariant
+  disableAnimation?: boolean
 }
 
 export const ModalHeaderButton = forwardRef<HTMLDivElement, ButtonProps>(
-  ({ variant, onClick, direction, headerVariant }, ref) => {
+  ({ variant, onClick, direction, headerVariant, disableAnimation }, ref) => {
     const position = variant === "back" ? "left" : "right"
     const icon =
       variant === "back" ? (
@@ -72,7 +74,7 @@ export const ModalHeaderButton = forwardRef<HTMLDivElement, ButtonProps>(
         position={position}
         custom={{ direction }}
         headerVariant={headerVariant}
-        {...(variant === "close" ? {} : motionProps)}
+        {...(!disableAnimation ? motionProps : {})}
       >
         <SButton onClick={onClick} icon={icon} headerVariant={headerVariant} />
       </SButtonContainer>
