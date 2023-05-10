@@ -40,7 +40,7 @@ const drawerKeyFrames = keyframes`
 export const SOverlay = styled(Overlay)<{ variant?: BackdropVariant }>`
   position: fixed;
   inset: 0;
-  z-index: ${theme.zIndices.backdrop};
+  z-index: ${theme.zIndices.modal};
 
   backdrop-filter: blur(16px);
   ${({ variant }) => variant && backdropVariantStyles[variant]}

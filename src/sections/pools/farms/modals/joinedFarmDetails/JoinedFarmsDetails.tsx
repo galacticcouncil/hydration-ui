@@ -31,6 +31,7 @@ function JoinedFarmsDetailsRedeposit(props: {
   pool: OmnipoolPool
   depositNft: DepositNftType
   onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
+  onTxClose: () => void
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -63,6 +64,7 @@ function JoinedFarmsDetailsRedeposit(props: {
     availableFarms,
     [props.depositNft],
     toast,
+    props.onTxClose,
   )
 
   if (!availableFarms?.length) return null
@@ -108,6 +110,7 @@ function JoinedFarmsDetailsPositions(props: {
     yieldFarm: u32
     depositNft: DepositNftType
   }) => void
+  onTxClose: () => void
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -135,7 +138,11 @@ function JoinedFarmsDetailsPositions(props: {
     return memo
   }, {} as ToastMessage)
 
-  const exit = useFarmExitAllMutation([props.depositNft], toast)
+  const exit = useFarmExitAllMutation(
+    [props.depositNft],
+    toast,
+    props.onTxClose,
+  )
 
   return (
     <>
@@ -143,7 +150,11 @@ function JoinedFarmsDetailsPositions(props: {
         {t("farms.modal.joinedFarms.joined.label")}
       </Text>
 
-      <ClaimRewardsCard pool={props.pool} depositNft={props.depositNft} />
+      <ClaimRewardsCard
+        pool={props.pool}
+        depositNft={props.depositNft}
+        onTxClose={props.onTxClose}
+      />
 
       <div sx={{ flex: "column", gap: 12, mt: 12 }}>
         {joinedFarms?.map((farm, i) => (
@@ -215,12 +226,12 @@ export const JoinedFarmsDetails = (props: {
   }
 
   return (
-    <Modal open={props.isOpen} onClose={props.onClose}>
+    <Modal open={props.isOpen} onClose={props.onClose} disableCloseOutside>
       <ModalContents
         page={page}
         direction={direction}
-        onBack={onBack}
         onClose={props.onClose}
+        onBack={onBack}
         contents={[
           {
             title: t("farms.modal.join.title", {
@@ -235,6 +246,7 @@ export const JoinedFarmsDetails = (props: {
                     setSelectedFarmIds(value)
                     next()
                   }}
+                  onTxClose={props.onClose}
                 />
 
                 <JoinedFarmsDetailsRedeposit
@@ -244,6 +256,7 @@ export const JoinedFarmsDetails = (props: {
                     setSelectedFarmIds(value)
                     next()
                   }}
+                  onTxClose={props.onClose}
                 />
               </div>
             ),

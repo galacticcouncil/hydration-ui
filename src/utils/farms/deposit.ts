@@ -46,6 +46,8 @@ export const useFarmDepositMutation = (
         toast,
         steps: restFarm.length ? firstStep : undefined,
         onSubmitted: onClose,
+        onClose,
+        onBack: () => {},
       },
     )
 
