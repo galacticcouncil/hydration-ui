@@ -7,6 +7,7 @@ import { getWalletBySource } from "@talismn/connect-wallets"
 import { SContainer } from "./WalletConnectAccountSelect.styled"
 import { externalWallet } from "state/store"
 import { ExternalWalletConnectAccount } from "./external/ExternalWalletConnectAccount"
+import { ReactNode } from "react"
 
 type Props = {
   provider: string
@@ -33,6 +34,40 @@ export const WalletConnectAccountSelect = ({
     { enabled: !isExternalWallet },
   )
 
+  const accountComponents = accounts.data?.reduce((memo, account) => {
+    const accountName = account.name ?? account.address
+    // As Talisman allows Ethereum accounts to be added as well, filter these accounts out
+    // as I believe these are not supported on Basilisk / HydraDX
+    // @ts-expect-error
+    if (account.type !== "ethereum" && account.type !== "ecdsa") {
+      const isActive = currentAddress === account.address
+      const accountComponent = (
+        <WalletConnectAccountSelectItem
+          isActive={isActive}
+          provider={provider}
+          key={account.address}
+          name={accountName}
+          address={account.address}
+          setAccount={() => {
+            onSelect({
+              name: accountName,
+              address: account.address,
+              provider,
+              isExternalWalletConnected: false,
+            })
+          }}
+        />
+      )
+      if (isActive) {
+        memo.unshift(accountComponent)
+      } else {
+        memo.push(accountComponent)
+      }
+    }
+
+    return memo
+  }, [] as ReactNode[])
+
   return (
     <>
       <Text fw={400} color="basic400">
@@ -46,31 +81,7 @@ export const WalletConnectAccountSelect = ({
             onClose={onClose}
           />
         ) : (
-          accounts.data
-            // As Talisman allows Ethereum accounts to be added as well, filter these accounts out
-            // as I believe these are not supported on Basilisk / HydraDX
-            // @ts-expect-error
-            ?.filter((i) => i.type !== "ethereum" && i.type !== "ecdsa")
-            ?.map((account) => {
-              const accountName = account.name ?? account.address
-              return (
-                <WalletConnectAccountSelectItem
-                  isActive={currentAddress === account.address}
-                  provider={provider}
-                  key={account.address}
-                  name={accountName}
-                  address={account.address}
-                  setAccount={() => {
-                    onSelect({
-                      name: accountName,
-                      address: account.address,
-                      provider,
-                      isExternalWalletConnected: false,
-                    })
-                  }}
-                />
-              )
-            })
+          accountComponents
         )}
       </SContainer>
     </>
