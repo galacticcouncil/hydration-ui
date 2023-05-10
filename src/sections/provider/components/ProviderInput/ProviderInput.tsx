@@ -4,6 +4,7 @@ import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
+import { useTranslation } from "react-i18next"
 
 type ProviderInputProps = {
   name: string
@@ -21,6 +22,7 @@ export const ProviderInput = ({
   onChange,
   button,
 }: ProviderInputProps) => {
+  const { t } = useTranslation()
   return (
     <>
       <SContainer error={!!error}>
@@ -32,7 +34,7 @@ export const ProviderInput = ({
           name={name}
           value={value}
           onChange={onChange}
-          placeholder="Add custom RPC"
+          placeholder={t("rpc.change.modal.input.placeholdre")}
           autoComplete="off"
         />
         {button}

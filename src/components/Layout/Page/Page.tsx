@@ -1,9 +1,9 @@
 import { Header } from "components/Layout/Header/Header"
 import { ReactNode } from "react"
-import { ProviderSelectButton } from "sections/provider/ProviderSelectModal"
 import { MobileNavBar } from "../Header/MobileNavBar/MobileNavBar"
 import { SPage, SPageContent, SPageGrid, SPageInner } from "./Page.styled"
 import { useApiPromise } from "utils/api"
+import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
 
 type Props = { variant?: "stats" | "default"; children: ReactNode }
 
