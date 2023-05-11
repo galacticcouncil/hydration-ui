@@ -193,7 +193,7 @@ export const GlobalStyle = `
     font-size: 1.6rem;
     margin: 0;
     font-family: 'ChakraPetch', sans-serif;
-    background: ${theme.colors.darkBlue400};
+    background: #060917;//${theme.colors.darkBlue400};
   }
 
   html, body, #root {
