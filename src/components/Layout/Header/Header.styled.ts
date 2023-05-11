@@ -14,7 +14,7 @@ export const SHeader = styled.header`
   padding: 6px 12px;
 
   backdrop-filter: blur(16px);
-  background: rgba(${theme.rgbColors.black}, 0.2);
+  background: rgba(9, 9, 9, 0.11);
 
   @media ${theme.viewport.gte.sm} {
     padding: 8px 40px 8px 40px;
