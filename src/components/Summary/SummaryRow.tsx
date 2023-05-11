@@ -23,8 +23,7 @@ export const SummaryRow = ({
           flex: "row",
           justify: "space-between",
           align: "center",
-          mt: 7,
-          mb: 7,
+          my: 8,
         }}
       >
         <Text color="basic400" fs={14} tAlign="left">

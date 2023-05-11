@@ -36,6 +36,7 @@ export const SContainer = styled(motion.div)<{
     variant === "gradient" ? "flex-start" : centered ? "center" : "flex-start"};
 
   padding: var(--modal-header-padding-y) var(--modal-header-padding-x);
+  padding-bottom: 0;
 `
 
 export const STitleGradient = styled(GradientText)`

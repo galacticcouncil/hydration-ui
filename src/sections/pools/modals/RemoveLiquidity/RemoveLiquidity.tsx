@@ -16,7 +16,7 @@ import { BoxSwitch } from "components/BoxSwitch/BoxSwitch"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { Input } from "components/Input/Input"
-import { Modal } from "components/Modal/Modal"
+import { Modal, ModalScrollableContent } from "components/Modal/Modal"
 import { Slider } from "components/Slider/Slider"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
@@ -319,106 +319,120 @@ export const RemoveLiquidity = ({
           minHeight: "100%",
         }}
       >
-        <div>
-          <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
-            {t("liquidity.remove.modal.value", {
-              value: getFloatingPointAmount(
-                removeSharesValue,
-                meta?.decimals.toNumber() ?? 12,
-              ),
-            })}
-          </Text>
-          <Text fs={18} font="FontOver" color="pink500" sx={{ mb: 20 }}>
-            {t("value.percentage", { value })}
-          </Text>
-          <Controller
-            name="value"
-            control={form.control}
-            render={({ field }) => (
-              <RemoveLiquidityInput
-                value={field.value}
-                onChange={field.onChange}
-                shares={getFloatingPointAmount(
-                  position.shares,
-                  meta?.decimals.toNumber() ?? 12,
-                )}
-              />
-            )}
-          />
-
-          <STradingPairContainer>
-            <Text color="brightBlue300">
-              {t("liquidity.remove.modal.receive")}
-            </Text>
-
-            <RemoveLiquidityReward
-              name={position.name}
-              symbol={position.symbol}
-              amount={t("value", {
-                value: removeLiquidityValues?.tokensToGet,
-                fixedPointScale: meta?.decimals.toString() ?? 12,
-                type: "token",
-              })}
-            />
-            {removeLiquidityValues &&
-              !BN(removeLiquidityValues.lrnaToGet).isZero() && (
-                <RemoveLiquidityReward
-                  name="Lerna"
-                  symbol="LRNA"
-                  amount={t("value", {
-                    value: removeLiquidityValues?.lrnaToGet,
-                    fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
-                    type: "token",
+        <ModalScrollableContent
+          content={
+            <div>
+              <div>
+                <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
+                  {t("liquidity.remove.modal.value", {
+                    value: getFloatingPointAmount(
+                      removeSharesValue,
+                      meta?.decimals.toNumber() ?? 12,
+                    ),
                   })}
+                </Text>
+                <Text fs={18} font="FontOver" color="pink500" sx={{ mb: 20 }}>
+                  {t("value.percentage", { value })}
+                </Text>
+                <Controller
+                  name="value"
+                  control={form.control}
+                  render={({ field }) => (
+                    <RemoveLiquidityInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      shares={getFloatingPointAmount(
+                        position.shares,
+                        meta?.decimals.toNumber() ?? 12,
+                      )}
+                    />
+                  )}
                 />
+
+                <STradingPairContainer>
+                  <Text color="brightBlue300">
+                    {t("liquidity.remove.modal.receive")}
+                  </Text>
+
+                  <RemoveLiquidityReward
+                    name={position.name}
+                    symbol={position.symbol}
+                    amount={t("value", {
+                      value: removeLiquidityValues?.tokensToGet,
+                      fixedPointScale: meta?.decimals.toString() ?? 12,
+                      type: "token",
+                    })}
+                  />
+                  {removeLiquidityValues &&
+                    !BN(removeLiquidityValues.lrnaToGet).isZero() && (
+                      <RemoveLiquidityReward
+                        name="Lerna"
+                        symbol="LRNA"
+                        amount={t("value", {
+                          value: removeLiquidityValues?.lrnaToGet,
+                          fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
+                          type: "token",
+                        })}
+                      />
+                    )}
+                </STradingPairContainer>
+              </div>
+              <Spacer size={6} />
+              <FeeRange
+                minFee={minWithdrawalFee.data?.multipliedBy(100)}
+                currentFee={removeLiquidityValues?.withdrawalFee}
+                lrnaFeeValue={
+                  !BN(removeLiquidityValues?.lrnaPayWith ?? 0).isZero()
+                    ? t("value.token", {
+                        value: removeLiquidityValues?.lrnaPayWith,
+                        fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
+                      })
+                    : undefined
+                }
+                assetFeeValue={t("value.token", {
+                  value: removeLiquidityValues?.tokensPayWith,
+                  fixedPointScale: meta?.decimals.toString() ?? 12,
+                })}
+                assetSymbol={meta?.symbol}
+              />
+
+              {isFeeExceeded && (
+                <div
+                  sx={{
+                    flex: "row",
+                    align: "center",
+                    gap: 8,
+                    minHeight: 50,
+                    p: "12px 14px",
+                    my: 6,
+                  }}
+                  css={{
+                    borderRadius: 2,
+                    background: "rgba(245, 168, 85, 0.3)",
+                  }}
+                >
+                  <Icon size={24} icon={<IconWarning />} />
+
+                  <Text color="white" fs={13} fw={400}>
+                    {t("liquidity.remove.modal.fee.warning")}
+                  </Text>
+                </div>
               )}
-          </STradingPairContainer>
-        </div>
-        <Spacer size={6} />
-        <FeeRange
-          minFee={minWithdrawalFee.data?.multipliedBy(100)}
-          currentFee={removeLiquidityValues?.withdrawalFee}
-          lrnaFeeValue={
-            !BN(removeLiquidityValues?.lrnaPayWith ?? 0).isZero()
-              ? t("value.token", {
-                  value: removeLiquidityValues?.lrnaPayWith,
-                  fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
-                })
-              : undefined
+            </div>
           }
-          assetFeeValue={t("value.token", {
-            value: removeLiquidityValues?.tokensPayWith,
-            fixedPointScale: meta?.decimals.toString() ?? 12,
-          })}
-          assetSymbol={meta?.symbol}
+          footer={
+            <div>
+              <Spacer size={20} />
+              <Button
+                fullWidth
+                variant="primary"
+                disabled={removeSharesValue.isZero() || isFeeExceeded}
+              >
+                {t("liquidity.remove.modal.confirm")}
+              </Button>
+            </div>
+          }
         />
-
-        {isFeeExceeded && (
-          <div
-            sx={{
-              flex: "row",
-              align: "center",
-              gap: 8,
-              minHeight: 50,
-              p: "12px 14px",
-              my: 6,
-            }}
-            css={{ borderRadius: 2, background: "rgba(245, 168, 85, 0.3)" }}
-          >
-            <Icon size={24} icon={<IconWarning />} />
-
-            <Text color="white" fs={13} fw={400}>
-              {t("liquidity.remove.modal.fee.warning")}
-            </Text>
-          </div>
-        )}
-        <Spacer size={20} />
-        <Button
-          variant="primary"
-          disabled={removeSharesValue.isZero() || isFeeExceeded}
-        >
-          {t("liquidity.remove.modal.confirm")}
-        </Button>
       </form>
     </Modal>
   )

@@ -76,3 +76,26 @@ export const Modal = ({
     </Root>
   )
 }
+
+export const ModalScrollableContent = ({
+  content,
+  footer,
+}: {
+  content: ReactNode
+  footer: ReactNode
+}) => {
+  return (
+    <>
+      <div
+        css={{
+          overflow: "overlay",
+          marginRight: "-15px",
+          paddingRight: "15px",
+        }}
+      >
+        {content}
+      </div>
+      {footer}
+    </>
+  )
+}

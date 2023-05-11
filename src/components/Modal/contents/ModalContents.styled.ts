@@ -28,4 +28,7 @@ export const SContent = styled(motion.div)<{ noPadding?: boolean }>`
   overflow: auto;
 
   z-index: ${theme.zIndices.modal};
+
+  display: flex;
+  flex-direction: column;
 `

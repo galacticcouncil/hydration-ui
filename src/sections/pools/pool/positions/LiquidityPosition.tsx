@@ -187,7 +187,7 @@ export const LiquidityPosition = ({
       <div
         sx={{
           flex: "column",
-          align: "center",
+          align: "end",
           gap: 8,
         }}
       >
