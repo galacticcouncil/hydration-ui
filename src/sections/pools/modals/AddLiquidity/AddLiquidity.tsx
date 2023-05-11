@@ -131,6 +131,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
       }}
     >
       <ModalContents
+        disableAnimation
         page={page}
         direction={direction}
         onClose={() => {

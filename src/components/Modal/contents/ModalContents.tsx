@@ -14,12 +14,14 @@ export type ModalContentProps = {
   noPadding?: boolean
   hideBack?: boolean
 }
+
 type Props = {
   page?: number
   direction?: number
   onClose?: () => void
   onBack?: () => void
   forceBack?: boolean
+  disableAnimation?: boolean
   className?: string
   contents: ({ content: ReactNode } & ModalContentProps)[]
 }
@@ -30,6 +32,7 @@ export const ModalContents = ({
   onClose,
   onBack,
   forceBack,
+  disableAnimation,
   className,
   contents,
 }: Props) => {
@@ -47,10 +50,10 @@ export const ModalContents = ({
 
   return (
     <SContainer ref={ref} className={className} animating={animating}>
-      <AnimatePresence
-        mode="popLayout"
-        initial={false}
-        custom={{ direction, height }}
+      <Wrapper
+        direction={direction}
+        height={height}
+        disableAnimation={disableAnimation}
       >
         <ModalHeaderTitle
           key={`title-${page}`}
@@ -59,14 +62,15 @@ export const ModalContents = ({
           canBack={canBack}
           page={page}
           direction={direction}
+          disableAnimation={disableAnimation}
         />
         <SContent
           key={`content-${page}`}
           custom={{ direction, height }}
-          {...motionProps}
           noPadding={noPadding}
           onAnimationStart={() => setAnimating(true)}
           onAnimationComplete={() => setAnimating(false)}
+          {...(!disableAnimation ? motionProps : {})}
         >
           {contents[page].content}
         </SContent>
@@ -77,17 +81,43 @@ export const ModalContents = ({
             headerVariant={headerVariant}
             onClick={onBack}
             direction={direction}
+            disableAnimation={disableAnimation}
           />
         )}
-      </AnimatePresence>
+      </Wrapper>
       {onClose && (
         <ModalHeaderButton
           variant="close"
           onClick={onClose}
           headerVariant={headerVariant}
+          disableAnimation
         />
       )}
     </SContainer>
+  )
+}
+
+const Wrapper = ({
+  disableAnimation,
+  direction,
+  height,
+  children,
+}: {
+  disableAnimation?: boolean
+  direction: number
+  height: string
+  children: ReactNode
+}) => {
+  return disableAnimation ? (
+    <>{children}</>
+  ) : (
+    <AnimatePresence
+      mode="popLayout"
+      initial={false}
+      custom={{ direction, height }}
+    >
+      {children}
+    </AnimatePresence>
   )
 }
 

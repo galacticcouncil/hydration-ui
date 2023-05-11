@@ -36,6 +36,7 @@
   "balance": "Balance:",
   "save": "Save",
   "add": "Add",
+  "custom": "Custom",
   "depeg.modal.title": "Important notice",
   "depeg.modal.description": "All USD/$ pricing in the app.hydradx.io UI are calculated using DAI. Due to the ongoing DAI depeg, USD/$ prices may not be accurate.",
   "depeg.modal.more.info": "More info",
