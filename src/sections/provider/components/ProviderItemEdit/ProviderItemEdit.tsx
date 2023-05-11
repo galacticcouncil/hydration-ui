@@ -10,13 +10,13 @@ import { useClickAway } from "react-use"
 type ProviderItemEditProps = {
   name: string
   url: string
-  onCancle: () => void
+  onCancel: () => void
 }
 
 export const ProviderItemEdit = ({
   name,
   url,
-  onCancle,
+  onCancel,
 }: ProviderItemEditProps) => {
   const { t } = useTranslation()
   const [input, setInput] = useState(name)
@@ -24,13 +24,13 @@ export const ProviderItemEdit = ({
 
   const ref = useRef(null)
 
-  useClickAway(ref, () => onCancle())
+  useClickAway(ref, () => onCancel())
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!input) return
     renameRpc(url, input)
-    onCancle()
+    onCancel()
   }
 
   return (

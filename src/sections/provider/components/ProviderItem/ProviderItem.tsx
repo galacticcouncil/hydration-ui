@@ -42,7 +42,7 @@ export const ProviderItem = ({
       <ProviderItemEdit
         name={name}
         url={url}
-        onCancle={() => setIsEdit(false)}
+        onCancel={() => setIsEdit(false)}
       />
     )
 
