@@ -24,6 +24,8 @@ export const SPage = styled.div<{ variant?: "stats" | "default" }>`
 
   @media ${theme.viewport.gte.sm} {
     --nav-height: 70px;
+
+    overflow-y: overlay;
   }
 `
 
