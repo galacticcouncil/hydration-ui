@@ -4,8 +4,6 @@ import { Spacer } from "components/Spacer/Spacer"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { useMedia } from "react-use"
-import { theme } from "theme"
 import { WalletTransferCrosschainLogo } from "./WalletTransferCrosschainLogo"
 
 export function WalletTransferSectionCrosschainGuide(props: {
@@ -16,7 +14,7 @@ export function WalletTransferSectionCrosschainGuide(props: {
   onBack: () => void
 }) {
   const { t } = useTranslation()
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+
   return (
     <>
       <div
