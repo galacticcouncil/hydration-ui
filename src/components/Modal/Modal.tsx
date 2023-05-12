@@ -89,8 +89,8 @@ export const ModalScrollableContent = ({
       <div
         css={{
           overflow: "overlay",
-          marginRight: "-15px",
-          paddingRight: "15px",
+          marginRight: "calc(-1 * var(--modal-content-padding) / 2)",
+          paddingRight: "calc(var(--modal-content-padding) / 2)",
         }}
       >
         {content}
