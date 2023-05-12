@@ -82,7 +82,7 @@ export const ModalScrollableContent = ({
   footer,
 }: {
   content: ReactNode
-  footer: ReactNode
+  footer?: ReactNode
 }) => {
   return (
     <>
