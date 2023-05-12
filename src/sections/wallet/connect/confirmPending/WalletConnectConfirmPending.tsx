@@ -11,7 +11,10 @@ export const WalletConnectConfirmPending = ({ provider }: Props) => {
   const wallet = getWalletBySource(provider)
 
   return (
-    <div sx={{ flex: "column", align: "center" }}>
+    <div
+      sx={{ flex: "column", align: "center" }}
+      css={{ paddingBottom: "var(--wallet-footer-height)" }}
+    >
       <div
         css={css`
           display: grid;

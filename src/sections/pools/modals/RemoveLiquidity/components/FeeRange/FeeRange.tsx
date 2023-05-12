@@ -18,7 +18,6 @@ import { MAX_WITHDRAWAL_FEE } from "utils/constants"
 import { useMemo, useState } from "react"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import Skeleton from "react-loading-skeleton"
-import { SSeparator } from "components/Separator/Separator.styled"
 import { AccordionAnimation } from "components/AccordionAnimation/AccordionAnimation"
 
 const FEE_RANGE_COLOR_CONFIG: Record<number, keyof typeof theme.colors> = {
@@ -109,26 +108,24 @@ export const FeeRange = ({
         <SFullRangeContainer>
           <div sx={{ flex: "row", justify: "space-between" }}>
             <Text fs={13} color="basic100">
-              {t("liquidity.remove.modal.feeRange.tokenFee.label", {
+              {t("liquidity.remove.modal.feeRange.label")}
+            </Text>
+            <Text color="green500" fs={13}>
+              {t("value.tokenWithSymbol", {
+                value: assetFeeValue,
                 symbol: assetSymbol,
               })}
             </Text>
-            <Text color="green500" fs={13}>
-              {t("value.token", { value: assetFeeValue })}
-            </Text>
           </div>
           {lrnaFeeValue && (
-            <>
-              <SSeparator />
-              <div sx={{ flex: "row", justify: "space-between" }}>
-                <Text fs={13} color="basic100">
-                  {t("liquidity.remove.modal.feeRange.lrnaFee.label")}
-                </Text>
-                <Text color="green500" fs={13}>
-                  {t("value.token", { value: lrnaFeeValue })}
-                </Text>
-              </div>
-            </>
+            <div sx={{ flex: "row", justify: "end" }}>
+              <Text color="green500" fs={13}>
+                {t("value.tokenWithSymbol", {
+                  value: lrnaFeeValue,
+                  symbol: "LRNA",
+                })}
+              </Text>
+            </div>
           )}
 
           <div sx={{ mt: 8 }} css={{ position: "relative" }}>
