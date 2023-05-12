@@ -57,7 +57,7 @@ export const PoolSkeleton = ({
             </div>
             <div sx={{ flex: "column", gap: 10 }}>
               <Text fs={13} color="basic400">
-                {t("liquidity.asset.details.fee")}
+                {t("liquidity.asset.details.price")}
               </Text>
               <Text>
                 <Skeleton width={118} height={21} />
