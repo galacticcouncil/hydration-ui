@@ -12,13 +12,15 @@ export const Page = ({ variant = "default", children }: Props) => {
 
   return (
     <SPage variant={variant}>
-      {variant === "stats" && <SPageGrid />}
-      <Header />
-      <SPageContent>
-        <SPageInner>{children}</SPageInner>
-        {Object.keys(api).length ? <ProviderSelectButton /> : null}
-      </SPageContent>
-      <MobileNavBar />
+      <div>
+        {variant === "stats" && <SPageGrid />}
+        <Header />
+        <SPageContent>
+          <SPageInner>{children}</SPageInner>
+          {Object.keys(api).length ? <ProviderSelectButton /> : null}
+        </SPageContent>
+        <MobileNavBar />
+      </div>
     </SPage>
   )
 }
