@@ -86,7 +86,7 @@
   "liquidity.header.value": "{{num}}<0>{{denom}}</0>",
   "liquidity.header.24hours": "24h volume",
   "liquidity.asset.title": "Asset",
-  "liquidity.asset.details.fee": "Trade fee",
+  "liquidity.asset.details.price": "Price",
   "liquidity.asset.details.total": "Value in Omnipool",
   "liquidity.asset.details.24hours": "24h volume",
   "liquidity.asset.details.24hours.tooltip": "USD value is derived from the last known exchange rate.",
