@@ -2,7 +2,7 @@ import { css } from "@emotion/react"
 import { Wallet } from "@talismn/connect-wallets"
 import { useNavigate } from "@tanstack/react-location"
 import { useMutation } from "@tanstack/react-query"
-import { Modal } from "components/Modal/Modal"
+import { Modal, ModalScrollableContent } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { useState } from "react"
@@ -60,13 +60,17 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
           {
             title: t("walletConnect.provider.title"),
             content: (
-              <WalletConnectProviderSelect
-                onWalletSelect={(wallet) => {
-                  setUserSelectedProvider(wallet.extensionName)
-                  mutate.mutate(wallet)
-                  paginateTo(2)
-                }}
-                onExternalWallet={() => paginateTo(1)}
+              <ModalScrollableContent
+                content={
+                  <WalletConnectProviderSelect
+                    onWalletSelect={(wallet) => {
+                      setUserSelectedProvider(wallet.extensionName)
+                      mutate.mutate(wallet)
+                      paginateTo(2)
+                    }}
+                    onExternalWallet={() => paginateTo(1)}
+                  />
+                }
               />
             ),
           },
@@ -87,15 +91,19 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
               mutate.isLoading ? (
                 <WalletConnectConfirmPending provider={activeProvider} />
               ) : (
-                <WalletConnectAccountSelect
-                  currentAddress={account?.address.toString()}
-                  provider={activeProvider}
-                  onClose={onClose}
-                  onSelect={(account) => {
-                    setUserSelectedProvider(null)
-                    setAccount(account)
-                    onClose()
-                  }}
+                <ModalScrollableContent
+                  content={
+                    <WalletConnectAccountSelect
+                      currentAddress={account?.address.toString()}
+                      provider={activeProvider}
+                      onClose={onClose}
+                      onSelect={(account) => {
+                        setUserSelectedProvider(null)
+                        setAccount(account)
+                        onClose()
+                      }}
+                    />
+                  }
                 />
               )),
           },

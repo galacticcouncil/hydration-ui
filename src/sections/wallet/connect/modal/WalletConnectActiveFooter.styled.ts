@@ -13,7 +13,7 @@ export const SContainer = styled.div`
   backdrop-filter: blur(12px);
 
   height: var(--wallet-footer-height);
-  width: 100%;
+  width: calc(100% - 1px);
 
   border-radius: 4px;
   border-top-left-radius: 0px;
@@ -23,7 +23,7 @@ export const SContainer = styled.div`
 
   position: absolute;
   bottom: 0;
-  left: 0;
+  left: 1px;
 `
 
 export const SLogoutContainer = styled.div`

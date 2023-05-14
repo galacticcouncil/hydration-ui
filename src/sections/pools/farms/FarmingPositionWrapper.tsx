@@ -10,6 +10,7 @@ import { DepositNftType } from "api/deposits"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { ClaimRewardsCard } from "./components/claimableCard/ClaimRewardsCard"
+import { Spacer } from "components/Spacer/Spacer"
 
 interface Props {
   pool: OmnipoolPool
@@ -30,7 +31,12 @@ export const FarmingPositionWrapper = ({ pool, deposits }: Props) => {
         </Text>
       </div>
 
-      {!isDektop && <ClaimRewardsCard pool={pool} />}
+      {!isDektop && (
+        <>
+          <ClaimRewardsCard pool={pool} />
+          <Spacer size={12} />
+        </>
+      )}
 
       <div sx={{ flex: "column", gap: 16 }}>
         {deposits?.map((item, i) => (
