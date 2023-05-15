@@ -147,12 +147,17 @@ export const LiquidityPosition = ({
             {t("liquidity.asset.positions.position.title", { index })}
           </Text>
         </div>
-        <div css={{ display: "grid", gridTemplateColumns: "1fr auto 1fr" }}>
-          <div sx={{ flex: "column", gap: 6 }}>
-            <Text fs={[14, 14]} color="whiteish500">
+        <div
+          css={{
+            display: "grid",
+            gridTemplateColumns: "1fr auto 1fr auto 1fr",
+          }}
+        >
+          <div sx={{ flex: "column", gap: 6, pr: 12 }}>
+            <Text fs={14} color="whiteish500">
               {t("liquidity.asset.positions.position.amount")}
             </Text>
-            <Text fs={[16, 16]}>
+            <Text>
               {t("liquidity.asset.positions.position.shares", {
                 shares: position.shares,
                 fixedPointScale: meta.data?.decimals.toString() ?? 12,
@@ -160,26 +165,43 @@ export const LiquidityPosition = ({
             </Text>
           </div>
           <Separator orientation="vertical" />
-          <div sx={{ flex: "column", gap: 6, align: "end" }}>
-            <Text fs={[14, 14]} color="whiteish500">
-              {t("liquidity.asset.positions.position.currentValue")}
-            </Text>
-            <div sx={{ flex: "column", align: "end" }}>
-              <WalletAssetsHydraPositionsData
-                symbol={position.symbol}
-                value={position.value}
-                lrna={position.lrna}
-              />
-              <DollarAssetValue
-                value={position.valueUSD}
-                wrapper={(children) => (
-                  <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
-                    {children}
-                  </Text>
-                )}
-              >
-                {t("value.usd", { amount: position.valueUSD })}
-              </DollarAssetValue>
+          <div sx={{ flex: "column", align: "center", px: 12 }}>
+            <div sx={{ flex: "column", gap: 6 }}>
+              <Text fs={14} color="whiteish500">
+                {t("liquidity.asset.positions.position.initialValue")}
+              </Text>
+              <Text>
+                {t("value.token", {
+                  value: position.providedAmount,
+                  fixedPointScale: meta.data?.decimals.toString() ?? 12,
+                  numberSuffix: ` ${meta.data?.symbol ?? "N/A"}`,
+                })}
+              </Text>
+            </div>
+          </div>
+          <Separator orientation="vertical" />
+          <div sx={{ flex: "column", gap: 6, align: "center", pl: 12 }}>
+            <div sx={{ flex: "column", gap: 6 }}>
+              <Text fs={14} color="whiteish500">
+                {t("liquidity.asset.positions.position.currentValue")}
+              </Text>
+              <div sx={{ flex: "column", align: "start" }}>
+                <WalletAssetsHydraPositionsData
+                  symbol={position.symbol}
+                  value={position.value}
+                  lrna={position.lrna}
+                />
+                <DollarAssetValue
+                  value={position.valueUSD}
+                  wrapper={(children) => (
+                    <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                      {children}
+                    </Text>
+                  )}
+                >
+                  {t("value.usd", { amount: position.valueUSD })}
+                </DollarAssetValue>
+              </div>
             </div>
           </div>
         </div>

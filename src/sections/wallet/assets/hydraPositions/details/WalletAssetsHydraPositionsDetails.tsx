@@ -3,8 +3,8 @@ import { theme } from "theme"
 import { useTranslation } from "react-i18next"
 import BN from "bignumber.js"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
-import { css } from "@emotion/react"
-import { useAssetMeta } from "../../../../../api/assetMeta"
+import { useAssetMeta } from "api/assetMeta"
+import { Icon } from "components/Icon/Icon"
 
 type Props = {
   assetId: string
@@ -28,19 +28,8 @@ export const WalletAssetsHydraPositionsDetails = ({
   return (
     <div sx={{ flex: "row" }}>
       <div sx={{ m: "auto", flex: "column" }}>
-        <div sx={{ flex: "row", align: "center" }}>
-          <div
-            sx={{ mr: 8 }}
-            css={css`
-              &,
-              svg {
-                width: 16px;
-                height: 16px;
-              }
-            `}
-          >
-            {getAssetLogo(symbol)}
-          </div>
+        <div sx={{ flex: "row", align: "center", gap: 8 }}>
+          <Icon size={16} icon={getAssetLogo(symbol)} />
           <Text fs={12} lh={14} fw={500} color="basic300">
             {t("wallet.assets.hydraPositions.details.amount")}
           </Text>

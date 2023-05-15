@@ -17,7 +17,7 @@ export const SContainer = styled.div`
   @media ${theme.viewport.gte.sm} {
     display: grid;
     align-items: end;
-    grid-template-columns: 3fr 2fr;
+    grid-template-columns: 5fr 2fr;
     grid-column-gap: 16px;
     padding: 22px 44px;
     border: 1px solid rgba(114, 131, 165, 0.6);
