@@ -105,6 +105,7 @@
   "liquidity.asset.positions.title": "Liquidity positions",
   "liquidity.asset.positions.position.amount": "Amount",
   "liquidity.asset.positions.position.currentValue": "Current value",
+  "liquidity.asset.positions.position.initialValue": "Initial position value",
   "liquidity.asset.positions.position.title": "Liquidity position #{{ index }}",
   "liquidity.asset.positions.position.shares": "{{ shares, bignumber(type: 'token') }} asset shares",
   "liquidity.asset.capacity": "<0>Estimated asset cap:</0> <1>{{ filled, compact }} / {{ capacity, compact }} {{ symbol }}</1>",
