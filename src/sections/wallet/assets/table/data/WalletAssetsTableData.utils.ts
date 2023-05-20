@@ -7,7 +7,7 @@ import { BN_0, BN_10 } from "utils/constants"
 import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { PalletBalancesAccountData } from "@polkadot/types/lookup"
 import { u32 } from "@polkadot/types"
-import { getAssetsTableDetails, useAssetTable } from "api/assetDetails"
+import { getAssetsDetails, useAssetTable } from "api/assetDetails"
 import { getTokenLock } from "api/balances"
 
 import { useApiIds } from "api/consts"
@@ -145,7 +145,7 @@ export const getAssetsBalances = (
     ReturnType<ReturnType<typeof getAccountBalances>>
   >["balances"],
   spotPrices: Array<Awaited<ReturnType<ReturnType<typeof getSpotPrice>>>>,
-  assetMetas: Awaited<ReturnType<ReturnType<typeof getAssetsTableDetails>>>,
+  assetMetas: Awaited<ReturnType<ReturnType<typeof getAssetsDetails>>>,
   locksQueries: Array<Awaited<ReturnType<ReturnType<typeof getTokenLock>>>>,
   nativeData: Awaited<
     ReturnType<ReturnType<typeof getAccountBalances>>

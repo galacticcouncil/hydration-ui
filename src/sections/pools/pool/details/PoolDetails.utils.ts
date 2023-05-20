@@ -22,7 +22,7 @@ export function usePoolDetailsTradeVolume(assetId: u32) {
 
   const apiIds = useApiIds()
   const assetMeta = useAssetMeta(assetId)
-  const spotPrice = useSpotPrice(assetId, apiIds.data?.usdId)
+  const spotPrice = useSpotPrice(assetId, apiIds.data?.stableCoinId)
 
   const queries = [...volumes, apiIds, assetMeta, spotPrice]
   const isLoading = queries.some((q) => q.isInitialLoading)
@@ -47,7 +47,7 @@ export function usePoolsDetailsTradeVolumes(assetIds: u32[]) {
   const apiIds = useApiIds()
   const volumes = useTradeVolumes(assetIds)
   const assetMetas = useAssetMetaList(assetIds)
-  const spotPrices = useSpotPrices(assetIds, apiIds.data?.usdId)
+  const spotPrices = useSpotPrices(assetIds, apiIds.data?.stableCoinId)
 
   const queries = [apiIds, ...volumes, assetMetas, ...spotPrices]
   const isLoading = queries.some((q) => q.isInitialLoading)

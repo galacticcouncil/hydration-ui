@@ -1,21 +1,21 @@
-import { NATIVE_ASSET_ID, useApiPromise, useTradeRouter } from "utils/api"
-import { useQuery } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { u32, u8 } from "@polkadot/types"
-import { Maybe, normalizeId, isNotNil } from "utils/helpers"
-import { getAccountBalances, useAccountBalances } from "./accountBalances"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
+import { useQuery } from "@tanstack/react-query"
+import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { getAssetsBalances } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useAccountStore } from "state/store"
-import { getAcceptedCurrency, getAccountCurrency } from "./payments"
-import { getAssetName } from "components/AssetIcon/AssetIcon"
-import { getApiIds } from "./consts"
-import { getSpotPrice } from "./spotPrice"
-import { getTokenLock } from "./balances"
-import { getHubAssetTradability, getOmnipoolAssets } from "./omnipool"
+import { NATIVE_ASSET_ID, useApiPromise, useTradeRouter } from "utils/api"
 import { BN_0 } from "utils/constants"
+import { Maybe, isNotNil, normalizeId } from "utils/helpers"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { getAccountBalances, useAccountBalances } from "./accountBalances"
+import { getTokenLock } from "./balances"
+import { getApiIds } from "./consts"
+import { getHubAssetTradability, getOmnipoolAssets } from "./omnipool"
+import { getAcceptedCurrency, getAccountCurrency } from "./payments"
+import { getSpotPrice } from "./spotPrice"
 
 export const useAssetDetails = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
@@ -52,12 +52,12 @@ export const useAssetTable = () => {
 
       const apiIds = await getApiIds(api)()
 
-      const allAssets = await getAssetsTableDetails(api)()
+      const allAssets = await getAssetsDetails(api)()
 
       const tradeAssets = await tradeRouter.getAllAssets()
 
       const spotPricePromises = acceptedTokens.map((token) =>
-        getSpotPrice(tradeRouter, token.id, apiIds.usdId ?? "")(),
+        getSpotPrice(tradeRouter, token.id, apiIds.stableCoinId ?? "")(),
       )
       const spotPrices = await Promise.all(spotPricePromises)
       const tokenLockPromises = acceptedTokens.map((token) =>
@@ -160,7 +160,7 @@ const getAssetDetails = (api: ApiPromise) => async () => {
   return assets
 }
 
-export const getAssetsTableDetails = (api: ApiPromise) => async () => {
+export const getAssetsDetails = (api: ApiPromise) => async () => {
   const [system, rawAssetsData, rawAssetsMeta] = await Promise.all([
     api.rpc.system.properties(),
     api.query.assetRegistry.assets.entries(),
@@ -223,4 +223,24 @@ export const getAssetsTableDetails = (api: ApiPromise) => async () => {
   }
 
   return assets
+}
+
+export const useAssetList = () => {
+  const api = useApiPromise()
+  return useQuery(["asset-list"], async () => {
+    const [assets, details] = await Promise.all([
+      api.query.omnipool.assets.entries(),
+      getAssetsDetails(api)(),
+    ])
+
+    const list = assets.map(([key]) => {
+      const id = key.args[0].toString()
+      console.log(id)
+      return details.find((d) => d.id === id)
+    })
+
+    return list
+      .filter(isNotNil)
+      .sort((a, b) => a.symbol.localeCompare(b.symbol))
+  })
 }

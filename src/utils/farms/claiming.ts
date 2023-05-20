@@ -50,7 +50,7 @@ export const useClaimableAmount = (
   )
 
   const apiIds = useApiIds()
-  const usd = useAsset(apiIds.data?.usdId)
+  const usd = useAsset(apiIds.data?.stableCoinId)
 
   const api = useApiPromise()
   const accountResolver = getAccountResolver(api.registry)

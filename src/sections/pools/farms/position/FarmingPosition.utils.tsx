@@ -55,8 +55,8 @@ export const useAllUserDepositShare = () => {
     positionIds.map((pos) => pos.data?.value),
   )
 
-  const spotPrices = useSpotPrices(omnipoolAssetIds, apiIds.data?.usdId)
-  const lrnaSp = useSpotPrice(apiIds.data?.hubId, apiIds.data?.usdId)
+  const spotPrices = useSpotPrices(omnipoolAssetIds, apiIds.data?.stableCoinId)
+  const lrnaSp = useSpotPrice(apiIds.data?.hubId, apiIds.data?.stableCoinId)
 
   const queries = [
     apiIds,

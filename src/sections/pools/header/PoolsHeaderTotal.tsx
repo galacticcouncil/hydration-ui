@@ -18,6 +18,7 @@ import {
   useTotalVolumesInPools,
   useTotalVolumesInPoolsUser,
 } from "./PoolsHeaderVolume.utils"
+import { useDisplayAssetStore, useDisplayValue } from "utils/displayAsset"
 
 type Props = {
   myPositions: boolean
@@ -58,6 +59,7 @@ export const HeaderTotalData = ({
   fontSize?: [number, number]
 }) => {
   const { t } = useTranslation()
+  const displayAsset = useDisplayAssetStore()
 
   if (isLoading)
     return <Skeleton sx={{ height: fontSize ?? [19, 28], width: [180, 200] }} />
@@ -74,7 +76,7 @@ export const HeaderTotalData = ({
         fs={fontSize ?? [19, 28]}
         sx={{ display: "inline-block" }}
       >
-        $
+        {displayAsset.symbol}&nbsp;
       </Text>
       <Trans
         t={t}

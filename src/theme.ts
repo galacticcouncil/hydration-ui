@@ -34,6 +34,7 @@ const colors = {
   darkBlue600: "#00041D",
   darkBlue700: "#111320",
   darkBlue800: "#00020E",
+  darkBlue801: "#0A0C17",
   darkBlue900: "#000107",
   darkBlue1000: "#000524",
   basic100: "#ECEDEF",

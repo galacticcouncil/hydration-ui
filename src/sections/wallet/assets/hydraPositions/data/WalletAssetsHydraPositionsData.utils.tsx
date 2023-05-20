@@ -30,7 +30,7 @@ export const useHydraPositionsData = () => {
   )
 
   const metas = useAssetMetaList([
-    apiIds.data?.usdId,
+    apiIds.data?.stableCoinId,
     apiIds.data?.hubId,
     ...positions.map((query) => query.data?.assetId),
   ])
@@ -45,7 +45,7 @@ export const useHydraPositionsData = () => {
   )
   const spotPrices = useSpotPrices(
     [apiIds.data?.hubId, ...(positions?.map((p) => p.data?.assetId) ?? [])],
-    apiIds.data?.usdId,
+    apiIds.data?.stableCoinId,
   )
 
   const queries = [

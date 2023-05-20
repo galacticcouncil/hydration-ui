@@ -1,30 +1,32 @@
-import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
-import { useTokensBalances } from "api/balances"
-import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
-import { useSpotPrice, useSpotPrices } from "api/spotPrice"
-import { useApiIds } from "api/consts"
-import { useMemo } from "react"
-import { useAssetMetaList } from "api/assetMeta"
-import { BN_0, BN_10, BN_NAN } from "utils/constants"
-import { useUniques } from "api/uniques"
-import { useAccountStore } from "state/store"
-import BN from "bignumber.js"
 import {
-  calculate_liquidity_out,
   calculate_liquidity_lrna_out,
+  calculate_liquidity_out,
 } from "@galacticcouncil/math-omnipool"
-import { isNotNil } from "utils/helpers"
-import { useOmnipoolPools } from "../PoolsPage.utils"
 import { useQueries } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
+import { useAssetMetaList } from "api/assetMeta"
+import { useTokensBalances } from "api/balances"
+import { useApiIds } from "api/consts"
 import { FarmIds, getActiveYieldFarms, useYieldFarms } from "api/farms"
+import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
+import { useSpotPrice, useSpotPrices } from "api/spotPrice"
+import { useUniques } from "api/uniques"
+import BN from "bignumber.js"
+import { useMemo } from "react"
+import { useAccountStore } from "state/store"
+import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
+import { BN_0, BN_10, BN_NAN } from "utils/constants"
+import { useDisplayAssetStore } from "utils/displayAsset"
+import { isNotNil } from "utils/helpers"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { useOmnipoolPools } from "../PoolsPage.utils"
 
 export const useTotalInPools = () => {
-  const apiIds = useApiIds()
+  // const apiIds = useApiIds()
+  const displayAsset = useDisplayAssetStore()
   const assets = useOmnipoolAssets()
   const metas = useAssetMetaList([
-    apiIds.data?.usdId,
+    displayAsset.id,
     ...(assets.data?.map((a) => a.id) ?? []),
   ])
   const balances = useTokensBalances(
@@ -33,15 +35,14 @@ export const useTotalInPools = () => {
   )
   const spotPrices = useSpotPrices(
     assets.data?.map((a) => a.id) ?? [],
-    apiIds.data?.usdId,
+    displayAsset.id,
   )
 
-  const queries = [apiIds, assets, metas, ...balances, ...spotPrices]
+  const queries = [assets, metas, ...balances, ...spotPrices]
   const isLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
     if (
-      !apiIds.data ||
       !assets.data ||
       !metas.data ||
       balances.some((q) => !q.data) ||
@@ -67,7 +68,7 @@ export const useTotalInPools = () => {
       .reduce((acc, curr) => acc.plus(curr), BN_0)
 
     return total
-  }, [apiIds.data, assets.data, metas.data, balances, spotPrices])
+  }, [assets.data, metas.data, balances, spotPrices])
 
   return { data, isLoading }
 }
@@ -85,7 +86,7 @@ export const useUsersTotalInPools = () => {
   const assetIds =
     positions.map((p) => p.data?.assetId.toString()).filter(isNotNil) ?? []
   const metas = useAssetMetaList([
-    apiIds.data?.usdId.toString(),
+    apiIds.data?.stableCoinId.toString(),
     apiIds.data?.hubId,
     ...assetIds,
   ])
@@ -93,7 +94,7 @@ export const useUsersTotalInPools = () => {
   const omnipoolBalances = useTokensBalances(assetIds, OMNIPOOL_ACCOUNT_ADDRESS)
   const spotPrices = useSpotPrices(
     [apiIds.data?.hubId, ...assetIds],
-    apiIds.data?.usdId,
+    apiIds.data?.stableCoinId,
   )
 
   const queries = [
@@ -226,7 +227,10 @@ export const useTotalInFarms = () => {
 
   const yieldFarms = useYieldFarms(farmIds)
 
-  const lrnaSpotPrice = useSpotPrice(apiIds.data?.hubId, apiIds.data?.usdId)
+  const lrnaSpotPrice = useSpotPrice(
+    apiIds.data?.hubId,
+    apiIds.data?.stableCoinId,
+  )
 
   const result = farmIds.reduce((memo, farmId) => {
     const yieldFarm = yieldFarms.data?.find(

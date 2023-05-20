@@ -30,10 +30,13 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
   )
   const assetIds =
     positions.map((p) => p.data?.assetId.toString()).filter(isNotNil) ?? []
-  const metas = useAssetMetaList([apiIds.data?.usdId.toString(), ...assetIds])
+  const metas = useAssetMetaList([
+    apiIds.data?.stableCoinId.toString(),
+    ...assetIds,
+  ])
   const omnipoolAssets = useOmnipoolAssets()
   const omnipoolBalances = useTokensBalances(assetIds, OMNIPOOL_ACCOUNT_ADDRESS)
-  const spotPrices = useSpotPrices(assetIds, apiIds.data?.usdId)
+  const spotPrices = useSpotPrices(assetIds, apiIds.data?.stableCoinId)
 
   const queries = [
     apiIds,

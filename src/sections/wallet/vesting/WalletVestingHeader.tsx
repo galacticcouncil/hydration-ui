@@ -54,7 +54,7 @@ const WalletVestingHeaderContent = () => {
   const { data: vestingScheduleEnd } = useVestingScheduleEnd()
 
   const apiIds = useApiIds()
-  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, apiIds.data?.usdId)
+  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, apiIds.data?.stableCoinId)
   const { data: nativeAsset } = useAssetMeta(NATIVE_ASSET_ID)
 
   const totalVestedValue = totalVestedAmount ?? BN_0

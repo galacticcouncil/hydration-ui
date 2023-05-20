@@ -42,7 +42,7 @@ export const AssetSelect = (props: {
   const { t } = useTranslation()
 
   const apiIds = useApiIds()
-  const spotPrice = useSpotPrice(props.asset, apiIds.data?.usdId)
+  const spotPrice = useSpotPrice(props.asset, apiIds.data?.stableCoinId)
 
   const aUSDValue = useMemo(() => {
     if (!props.value) return 0

@@ -26,7 +26,7 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
   const apiIds = useApiIds()
   const balance = useTokenBalance(id, account?.address)
 
-  const spotPrice = useSpotPrice(id, apiIds.data?.usdId)
+  const spotPrice = useSpotPrice(id, apiIds.data?.stableCoinId)
   const totalUSD = useMemo(() => {
     if (balance.data && spotPrice.data) {
       return balance.data.balance.times(spotPrice.data.spotPrice)

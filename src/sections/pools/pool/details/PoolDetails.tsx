@@ -16,7 +16,7 @@ type PoolDetailsProps = {
 export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
   const { t } = useTranslation()
   const apiIds = useApiIds()
-  const spotPrice = useSpotPrice(pool.id, apiIds.data?.usdId)
+  const spotPrice = useSpotPrice(pool.id, apiIds.data?.stableCoinId)
 
   return (
     <div sx={{ flex: "column" }} className={className}>

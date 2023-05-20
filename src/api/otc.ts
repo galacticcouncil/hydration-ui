@@ -2,7 +2,7 @@ import { useApiPromise } from "utils/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { getAssetsTableDetails } from "./assetDetails"
+import { getAssetsDetails } from "./assetDetails"
 import { gql, request } from "graphql-request"
 import { Maybe, undefinedNoop } from "utils/helpers"
 
@@ -38,7 +38,7 @@ export const useOrdersData = () => {
 
   return useQuery(QUERY_KEYS.otcOrdersTable, async () => {
     const orders = await getOrders(api)()
-    const allAssets = await getAssetsTableDetails(api)()
+    const allAssets = await getAssetsDetails(api)()
 
     return orders
       .filter((order) => order.amountIn && order.amountOut)

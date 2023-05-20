@@ -32,7 +32,7 @@ export const WalletVestingSchedule = () => {
   const { data: meta } = useAssetMeta(NATIVE_ASSET_ID)
 
   const apiIds = useApiIds()
-  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, apiIds.data?.usdId)
+  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, apiIds.data?.stableCoinId)
   const balance = useTokenBalance(NATIVE_ASSET_ID, account?.address)
 
   const claimableUSD = useMemo(() => {

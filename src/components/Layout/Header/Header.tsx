@@ -16,6 +16,7 @@ import { Spinner } from "components/Spinner/Spinner.styled"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { css } from "@emotion/react"
 import { useDepegStore, DepegWarningModal } from "./DepegWarningModal"
+import { HeaderSettings } from "./settings/HeaderSettings"
 
 const depegEnabled = import.meta.env.VITE_FF_DEPEG_WARNING === "true"
 
@@ -94,6 +95,7 @@ export const Header = () => {
               </InfoTooltip>
             </div>
             <WalletConnectButton />
+            <HeaderSettings />
           </div>
         </div>
       </SHeader>

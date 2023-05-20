@@ -22,7 +22,7 @@ export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
   const { data: assetMeta } = useAssetMeta(assetId)
 
   const { data: apiIds } = useApiIds()
-  const { data: spotPrice } = useSpotPrice(assetId, apiIds?.usdId)
+  const { data: spotPrice } = useSpotPrice(assetId, apiIds?.stableCoinId)
 
   const { data: omnipoolFee } = useOmnipoolFee()
 

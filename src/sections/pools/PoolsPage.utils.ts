@@ -24,7 +24,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
   const apiIds = useApiIds()
   const spotPrices = useSpotPrices(
     assets.data?.map((a) => a.id) ?? [],
-    apiIds.data?.usdId,
+    apiIds.data?.stableCoinId,
   )
   const assetsTradability = useAssetsTradability()
   const balances = useTokensBalances(
