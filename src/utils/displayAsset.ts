@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query"
 import { useApiIds } from "api/consts"
 import { useSpotPrice } from "api/spotPrice"
 import BigNumber from "bignumber.js"
@@ -42,11 +43,34 @@ export const useDisplayAssetStore = create<DisplayAssetStore>()(
 )
 
 export const useDefaultDisplayAsset = () => {
-  const apiIds = useApiIds()
   const store = useDisplayAssetStore()
+  const apiIds = useApiIds()
 
   useEffect(() => {
-    if (!store.id && apiIds.data)
+    if (!store.id && apiIds.data) {
       store.update({ id: apiIds.data.stableCoinId, symbol: "USD" })
+    }
   }, [apiIds.data, store])
+}
+
+export const useCoingeckoUsdPrice = () => {
+  const twentyFourHoursInMs = 1000 * 60 * 60 * 24
+
+  return useQuery(
+    ["coingecko-usd"],
+    async () => {
+      const res = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=dai&vs_currencies=usd`,
+      )
+      const json: { dai: { usd: number } } = await res.json()
+      return json.dai.usd
+    },
+    {
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      retry: false,
+      staleTime: twentyFourHoursInMs,
+    },
+  )
 }
