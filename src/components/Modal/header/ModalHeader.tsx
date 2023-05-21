@@ -76,7 +76,7 @@ export const ModalHeaderButton = forwardRef<HTMLDivElement, ButtonProps>(
         headerVariant={headerVariant}
         {...(!disableAnimation ? motionProps : {})}
       >
-        <SButton onClick={onClick} icon={icon} headerVariant={headerVariant} />
+        <SButton onClick={onClick} icon={icon} />
       </SButtonContainer>
     )
   },

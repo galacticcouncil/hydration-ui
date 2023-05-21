@@ -33,12 +33,12 @@ export const SHeader = styled.div`
 
 export const SContent = styled(Content)`
   --modal-header-padding-y: 14px;
-  --modal-header-padding-x: 16px;
-  --modal-header-btn-size: 32px;
+  --modal-header-padding-x: 20px;
+  --modal-header-btn-size: 26px;
   --modal-header-height: calc(
     var(--modal-header-btn-size) + var(--modal-header-padding-y) * 2
   );
-  --modal-content-padding: 16px;
+  --modal-content-padding: 20px;
 
   width: 360px;
 
@@ -49,6 +49,14 @@ export const SContent = styled(Content)`
   backdrop-filter: blur(40px);
   z-index: ${theme.zIndices.toast};
   overflow: hidden;
+`
+
+export const SItems = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  padding: 8px 16px;
 `
 
 export const SItem = styled(ButtonTransparent)`

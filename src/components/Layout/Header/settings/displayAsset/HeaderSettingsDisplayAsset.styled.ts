@@ -7,7 +7,7 @@ export const SItems = styled.div`
   overflow: auto;
 `
 
-export const SItem = styled(ButtonTransparent)`
+export const SItem = styled(ButtonTransparent)<{ isActive?: boolean }>`
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-column-gap: 8px;
@@ -16,9 +16,24 @@ export const SItem = styled(ButtonTransparent)`
   width: 100%;
   padding: 10px 20px;
 
+  color: ${theme.colors.whiteish500};
+  ${({ isActive }) =>
+    isActive && `background-color: rgba(${theme.rgbColors.primaryA15}, 0.12);`}
+
+  transition: all 0.15s ease-in-out;
+
+  &:hover {
+    color: ${theme.colors.white};
+  }
+
   &:not(:last-of-type) {
     border-bottom: 1px solid ${theme.colors.darkBlue401};
   }
+`
+
+export const SItemUSD = styled(SItem)`
+  grid-template-columns: 1fr auto;
+  padding: 13px 20px;
 `
 
 export const SCircle = styled.div<{ isActive: boolean }>`

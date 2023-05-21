@@ -5,14 +5,24 @@ import { ReactComponent as IconSettings } from "assets/icons/IconSettings.svg"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
-import { SButton, SContent, SItem } from "./HeaderSettings.styled"
+import { useState } from "react"
+import { useTranslation } from "react-i18next"
+import { SButton, SContent, SItem, SItems } from "./HeaderSettings.styled"
 import { HeaderSettingsDisplayAsset } from "./displayAsset/HeaderSettingsDisplayAsset"
 
 export const HeaderSettings = () => {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
   const { page, direction, back, next } = useModalPagination()
 
+  const onClose = () => setOpen(false)
+  const onSelect = () => {
+    back()
+    onClose()
+  }
+
   return (
-    <Root>
+    <Root open={open} onOpenChange={setOpen}>
       <SButton>
         <IconSettings />
       </SButton>
@@ -21,33 +31,37 @@ export const HeaderSettings = () => {
         <SContent align="end" sideOffset={8}>
           <ModalContents
             disableHeightAnimation
+            onClose={onClose}
             onBack={back}
             page={page}
             direction={direction}
             contents={[
               {
-                title: "Settings TODO",
+                title: t("header.settings.title"),
                 headerVariant: "simple",
+                noPadding: true,
                 content: (
-                  <SItem onClick={next}>
-                    <IconDollar sx={{ color: "brightBlue200" }} />
-                    <div sx={{ flex: "column", gap: 3 }}>
-                      <Text fs={14} lh={14} fw={600} color="basic100">
-                        TODO
-                      </Text>
-                      <Text fs={12} lh={18} fw={400} color="basic500">
-                        TODO
-                      </Text>
-                    </div>
-                    <IconArrow />
-                  </SItem>
+                  <SItems>
+                    <SItem onClick={next}>
+                      <IconDollar sx={{ color: "brightBlue200" }} />
+                      <div sx={{ flex: "column", gap: 3 }}>
+                        <Text fs={14} lh={14} fw={600} color="basic100">
+                          {t("header.settings.items.displayAsset.title")}
+                        </Text>
+                        <Text fs={12} lh={18} fw={400} color="basic500">
+                          {t("header.settings.items.displayAsset.subtitle")}
+                        </Text>
+                      </div>
+                      <IconArrow />
+                    </SItem>
+                  </SItems>
                 ),
               },
               {
-                title: "Select TODO",
+                title: t("header.settings.displayAsset.title"),
                 headerVariant: "simple",
                 noPadding: true,
-                content: <HeaderSettingsDisplayAsset />,
+                content: <HeaderSettingsDisplayAsset onSelect={onSelect} />,
               },
             ]}
           />

@@ -67,17 +67,15 @@ export const SButtonContainer = styled(motion.div)<{
   }}
 `
 
-export const SButton = styled(IconButton)<{
-  headerVariant?: ModalHeaderVariant
-}>`
+export const SButton = styled(IconButton)`
   width: var(--modal-header-btn-size);
   height: var(--modal-header-btn-size);
+  min-width: var(--modal-header-btn-size);
+  min-height: var(--modal-header-btn-size);
 
-  ${({ headerVariant }) =>
-    headerVariant !== "simple" &&
-    css`
-      svg {
-        color: ${theme.colors.white};
-      }
-    `}
+  svg {
+    color: ${theme.colors.white};
+    width: calc(var(--modal-header-btn-size) - 6px);
+    height: calc(var(--modal-header-btn-size) - 6px);
+  }
 `

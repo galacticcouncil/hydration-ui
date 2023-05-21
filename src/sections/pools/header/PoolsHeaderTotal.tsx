@@ -1,24 +1,24 @@
+import { css } from "@emotion/react"
+import BN from "bignumber.js"
 import { Heading } from "components/Typography/Heading/Heading"
+import { Text } from "components/Typography/Text/Text"
+import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
-import { Text } from "components/Typography/Text/Text"
 import {
   useTotalInFarms,
   useTotalInPools,
   useUsersTotalInPools,
 } from "sections/pools/header/PoolsHeaderTotal.utils"
-import BN from "bignumber.js"
-import { useAllUserDepositShare } from "../farms/position/FarmingPosition.utils"
-import { BN_0 } from "utils/constants"
-import { useMemo } from "react"
-import { separateBalance } from "utils/balance"
 import { theme } from "theme"
-import { css } from "@emotion/react"
+import { separateBalance } from "utils/balance"
+import { BN_0 } from "utils/constants"
+import { useDisplayAssetStore } from "utils/displayAsset"
+import { useAllUserDepositShare } from "../farms/position/FarmingPosition.utils"
 import {
   useTotalVolumesInPools,
   useTotalVolumesInPoolsUser,
 } from "./PoolsHeaderVolume.utils"
-import { useDisplayAssetStore, useDisplayValue } from "utils/displayAsset"
 
 type Props = {
   myPositions: boolean
