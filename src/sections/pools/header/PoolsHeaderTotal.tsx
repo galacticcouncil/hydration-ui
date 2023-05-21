@@ -26,25 +26,12 @@ type Props = {
 }
 
 export const PoolsHeaderTotal = ({ myPositions, variant }: Props) => {
-  if (myPositions && variant === "pools") {
-    return <PoolsHeaderTotalPoolsUser />
-  }
-  if (!myPositions && variant === "pools") {
-    return <PoolsHeaderTotalPools />
-  }
-  if (myPositions && variant === "farms") {
-    return <PoolsHeaderTotalFarmsUser />
-  }
-  if (!myPositions && variant === "farms") {
-    return <PoolsHeaderTotalFarms />
-  }
-  if (myPositions && variant === "volume") {
-    return <PoolsHeaderTotalVolumeUser />
-  }
-
-  if (!myPositions && variant === "volume") {
-    return <PoolsHeaderTotalVolume />
-  }
+  if (variant === "pools" && myPositions) return <PoolsHeaderTotalPoolsUser />
+  if (variant === "pools" && !myPositions) return <PoolsHeaderTotalPools />
+  if (variant === "farms" && myPositions) return <PoolsHeaderTotalFarmsUser />
+  if (variant === "farms" && !myPositions) return <PoolsHeaderTotalFarms />
+  if (variant === "volume" && myPositions) return <PoolsHeaderTotalVolumeUser />
+  if (variant === "volume" && !myPositions) return <PoolsHeaderTotalVolume />
 
   return null
 }

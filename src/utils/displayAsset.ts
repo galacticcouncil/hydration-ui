@@ -1,33 +1,30 @@
 import { useApiIds } from "api/consts"
 import { useSpotPrice } from "api/spotPrice"
 import BigNumber from "bignumber.js"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 type Props = { id: string; amount: BigNumber }
 
 export const useDisplayValue = (props: Props) => {
-  const apiIds = useApiIds()
   const displayAsset = useDisplayAssetStore()
   const spotPrice = useSpotPrice(props.id, displayAsset.id)
 
-  const isLoading = apiIds.isLoading || spotPrice.isLoading
+  const isLoading = spotPrice.isLoading
 
   const symbol = displayAsset.symbol
   const amount = useMemo(() => {
-    if (!displayAsset.id && !apiIds.data?.stableCoinId) {
-      return undefined
-    }
-    if (!displayAsset.id && apiIds.data?.stableCoinId) {
-      displayAsset.update({ id: apiIds.data.stableCoinId, symbol: "USD" })
-    }
-    if (!spotPrice.data || spotPrice.data.spotPrice.isNaN()) {
+    if (
+      !displayAsset.id ||
+      !spotPrice.data ||
+      spotPrice.data.spotPrice.isNaN()
+    ) {
       return undefined
     }
 
     return props.amount.times(spotPrice.data.spotPrice)
-  }, [props.amount, apiIds.data?.stableCoinId, displayAsset, spotPrice.data])
+  }, [props.amount, displayAsset, spotPrice.data])
 
   return { amount, symbol, isLoading }
 }
@@ -43,3 +40,13 @@ export const useDisplayAssetStore = create<DisplayAssetStore>()(
     name: "hdx-display-asset",
   }),
 )
+
+export const useDefaultDisplayAsset = () => {
+  const apiIds = useApiIds()
+  const store = useDisplayAssetStore()
+
+  useEffect(() => {
+    if (!store.id && apiIds.data)
+      store.update({ id: apiIds.data.stableCoinId, symbol: "USD" })
+  }, [apiIds.data, store])
+}

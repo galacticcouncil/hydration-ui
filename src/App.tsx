@@ -1,12 +1,12 @@
-import { AppProviders } from "components/AppProviders/AppProviders"
 import {
   createBrowserHistory,
   ReactLocation,
   Router,
 } from "@tanstack/react-location"
-import { routes } from "./routes"
-import { TestnetModal } from "sections/testnet/TestnetModal"
+import { AppProviders } from "components/AppProviders/AppProviders"
 import { useEffect } from "react"
+import { TestnetModal } from "sections/testnet/TestnetModal"
+import { routes } from "./routes"
 
 const history = createBrowserHistory()
 const location = new ReactLocation({ history })

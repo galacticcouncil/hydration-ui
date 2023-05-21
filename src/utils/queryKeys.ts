@@ -1,7 +1,7 @@
 import type { u32 } from "@polkadot/types"
+import { u128 } from "@polkadot/types-codec"
 import type { AccountId32 } from "@polkadot/types/interfaces"
 import { CodecHash } from "@polkadot/types/interfaces/runtime"
-import { u128 } from "@polkadot/types-codec"
 import type BigNumber from "bignumber.js"
 import { Maybe } from "utils/helpers"
 
@@ -235,8 +235,8 @@ export const QUERY_KEYS = {
     "accountCurrency",
     address,
   ],
-  apiIds: [QUERY_KEY_PREFIX, "apiIds"],
-  tvlCap: [QUERY_KEY_PREFIX, "tvlCap"],
+  apiIds: ["apiIds"],
+  tvlCap: ["tvlCap"],
   externalWalletKey: (walletAddress: string) => [
     "externalWallet",
     walletAddress,
