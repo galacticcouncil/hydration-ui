@@ -227,7 +227,7 @@ export const getAssetsDetails = (api: ApiPromise) => async () => {
 
 export const useAssetList = () => {
   const api = useApiPromise()
-  return useQuery(["asset-list"], async () => {
+  return useQuery(QUERY_KEYS.assetList, async () => {
     const [assets, details] = await Promise.all([
       api.query.omnipool.assets.entries(),
       getAssetsDetails(api)(),
@@ -235,7 +235,6 @@ export const useAssetList = () => {
 
     const list = assets.map(([key]) => {
       const id = key.args[0].toString()
-      console.log(id)
       return details.find((d) => d.id === id)
     })
 

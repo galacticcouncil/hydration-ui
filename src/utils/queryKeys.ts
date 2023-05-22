@@ -243,4 +243,6 @@ export const QUERY_KEYS = {
   ],
   polkadotAccounts: ["polkadotAccounts"],
   maxAddLiquidityLimit: ["maxAddLiquidityLimit"],
+  coingeckoUsd: ["coingeckoUsd"],
+  assetList: ["assetList"],
 } as const
