@@ -27,9 +27,9 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
     <SItems>
       <SItemUSD
         key="usd"
-        isActive={apiIds.data.stableCoinId === displayAsset.id}
+        isActive={displayAsset.symbol === "USD"}
         onClick={() => {
-          displayAsset.update({ id: apiIds.data?.stableCoinId, symbol: "USD" })
+          displayAsset.update({ id: apiIds.data.stableCoinId, symbol: "USD" })
           onSelect()
         }}
       >
@@ -45,36 +45,32 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
           <Text fs={14} lh={20} fw={400} css={{ color: "inherit" }}>
             USD
           </Text>
-          <SCircle isActive={apiIds.data.stableCoinId === displayAsset.id} />
+          <SCircle isActive={displayAsset.symbol === "USD"} />
         </div>
       </SItemUSD>
-      {assets.data
-        .filter((a) => a.id !== apiIds.data?.stableCoinId)
-        .map((asset) => (
-          <SItem
-            key={asset.id}
-            isActive={asset.id === displayAsset.id}
-            onClick={() => {
-              displayAsset.update(asset)
-              onSelect()
-            }}
-          >
-            <div sx={{ width: 26, height: 26 }}>
-              {getAssetLogo(asset.symbol)}
-            </div>
-            <div>
-              <Text fs={14} lh={14} fw={500} color="white">
-                {asset.symbol}
-              </Text>
-            </div>
-            <div sx={{ flex: "row", align: "center", gap: 12 }}>
-              <Text fs={14} lh={20} fw={400} css={{ color: "inherit" }}>
-                {asset.name}
-              </Text>
-              <SCircle isActive={asset.id === displayAsset.id} />
-            </div>
-          </SItem>
-        ))}
+      {assets.data.map((asset) => (
+        <SItem
+          key={asset.id}
+          isActive={asset.symbol === displayAsset.symbol}
+          onClick={() => {
+            displayAsset.update(asset)
+            onSelect()
+          }}
+        >
+          <div sx={{ width: 26, height: 26 }}>{getAssetLogo(asset.symbol)}</div>
+          <div>
+            <Text fs={14} lh={14} fw={500} color="white">
+              {asset.symbol}
+            </Text>
+          </div>
+          <div sx={{ flex: "row", align: "center", gap: 12 }}>
+            <Text fs={14} lh={20} fw={400} css={{ color: "inherit" }}>
+              {asset.name}
+            </Text>
+            <SCircle isActive={asset.symbol === displayAsset.symbol} />
+          </div>
+        </SItem>
+      ))}
     </SItems>
   )
 }

@@ -6,6 +6,7 @@ import { useEffect, useMemo } from "react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { QUERY_KEYS } from "./queryKeys"
+import { u32 } from "@polkadot/types-codec"
 
 type Props = { id: string; amount: BigNumber }
 
@@ -31,7 +32,7 @@ export const useDisplayValue = (props: Props) => {
   return { amount, symbol, isLoading }
 }
 
-export const useDisplayPrice = (id: string) => {
+export const useDisplayPrice = (id: string | u32) => {
   const displayAsset = useDisplayAssetStore()
   const spotPrice = useSpotPrice(id, displayAsset.id)
   const usdPrice = useCoingeckoUsdPrice()
@@ -55,7 +56,7 @@ export const useDisplayPrice = (id: string) => {
   return { data, isLoading }
 }
 
-export const useDisplayPrices = (ids: string[]) => {
+export const useDisplayPrices = (ids: (string | u32)[]) => {
   const displayAsset = useDisplayAssetStore()
   const spotPrices = useSpotPrices(ids, displayAsset.id)
   const usdPrice = useCoingeckoUsdPrice()

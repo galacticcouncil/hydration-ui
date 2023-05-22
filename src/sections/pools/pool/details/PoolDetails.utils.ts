@@ -1,11 +1,11 @@
+import { u32 } from "@polkadot/types-codec"
+import { useAssetMeta, useAssetMetaList } from "api/assetMeta"
+import { useApiIds } from "api/consts"
 import { getVolumeAssetTotalValue, useTradeVolumes } from "api/volume"
 import { useMemo } from "react"
 import { BN_0, BN_10 } from "utils/constants"
-import { useSpotPrice, useSpotPrices } from "api/spotPrice"
-import { useAssetMeta, useAssetMetaList } from "api/assetMeta"
-import { useApiIds } from "api/consts"
-import { u32 } from "@polkadot/types-codec"
-import { normalizeId } from "../../../../utils/helpers"
+import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
+import { normalizeId } from "utils/helpers"
 
 export function usePoolDetailsTradeVolume(assetId: u32) {
   const volumes = useTradeVolumes([assetId])
@@ -22,10 +22,10 @@ export function usePoolDetailsTradeVolume(assetId: u32) {
 
   const apiIds = useApiIds()
   const assetMeta = useAssetMeta(assetId)
-  const spotPrice = useSpotPrice(assetId, apiIds.data?.stableCoinId)
+  const spotPrice = useDisplayPrice(assetId.toString())
 
   const queries = [...volumes, apiIds, assetMeta, spotPrice]
-  const isLoading = queries.some((q) => q.isInitialLoading)
+  const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
     let result = BN_0
@@ -47,10 +47,10 @@ export function usePoolsDetailsTradeVolumes(assetIds: u32[]) {
   const apiIds = useApiIds()
   const volumes = useTradeVolumes(assetIds)
   const assetMetas = useAssetMetaList(assetIds)
-  const spotPrices = useSpotPrices(assetIds, apiIds.data?.stableCoinId)
+  const spotPrices = useDisplayPrices(assetIds)
 
-  const queries = [apiIds, ...volumes, assetMetas, ...spotPrices]
-  const isLoading = queries.some((q) => q.isInitialLoading)
+  const queries = [apiIds, ...volumes, assetMetas, spotPrices]
+  const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
     return assetIds.reduce((acc, assetId) => {
@@ -60,9 +60,9 @@ export function usePoolsDetailsTradeVolumes(assetIds: u32[]) {
       const assetMeta = assetMetas.data?.find(
         (meta) => meta.id === assetId.toString(),
       )
-      const spotPrice = spotPrices.find(
-        (spot) => spot.data?.tokenIn === normalizeId(assetId),
-      )?.data?.spotPrice
+      const spotPrice = spotPrices.data?.find(
+        (sp) => sp?.tokenIn === normalizeId(assetId),
+      )?.spotPrice
 
       const assetTotalValue = getVolumeAssetTotalValue(volume?.data)?.[
         assetId.toString()
