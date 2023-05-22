@@ -6,6 +6,7 @@ import { useApiPromise } from "utils/api"
 export const useFarmExitAllMutation = (
   depositNfts: DepositNftType[],
   toast: ToastMessage,
+  onClose?: () => void,
 ) => {
   const api = useApiPromise()
   const { createTransaction } = useStore()
@@ -26,10 +27,13 @@ export const useFarmExitAllMutation = (
     if (txs.length > 1) {
       return await createTransaction(
         { tx: api.tx.utility.batchAll(txs) },
-        { toast },
+        { toast, onClose, onBack: () => {} },
       )
     } else {
-      return await createTransaction({ tx: txs[0] }, { toast })
+      return await createTransaction(
+        { tx: txs[0] },
+        { toast, onClose, onBack: () => {} },
+      )
     }
   })
 }

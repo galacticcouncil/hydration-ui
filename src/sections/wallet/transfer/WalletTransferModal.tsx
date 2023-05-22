@@ -1,9 +1,11 @@
 import { u32 } from "@polkadot/types"
+import { AddressBook } from "components/AddressBook/AddressBook"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { PillSwitch } from "components/PillSwitch/PillSwitch"
 import { useState } from "react"
+import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
@@ -23,11 +25,14 @@ export function WalletTransferModal(props: {
   >()
   const [asset, setAsset] = useState(props.initialAsset)
 
+  const form = useForm<{ dest: string; amount: string }>({})
+
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { page, direction, paginateTo } = useModalPagination()
 
-  const openAssets = () => paginateTo(2)
   const openOnChain = () => paginateTo(0)
+  const openAssets = () => paginateTo(2)
+  const openAddressBook = () => paginateTo(3)
 
   return (
     <Modal
@@ -46,7 +51,7 @@ export function WalletTransferModal(props: {
               label: t("wallet.assets.transfer.switch.bridge"),
             },
           ]}
-          value={page === 2 || page === 0 ? 0 : 1}
+          value={page === 1 ? 1 : 0}
           onChange={paginateTo}
         />
       }
@@ -56,13 +61,16 @@ export function WalletTransferModal(props: {
         direction={direction}
         onClose={props.onClose}
         onBack={openOnChain}
+        disableAnimation
         contents={[
           {
             title: t("wallet.assets.transfer.title"),
             content: (
               <WalletTransferSectionOnchain
                 asset={asset}
+                form={form}
                 openAssets={openAssets}
+                openAddressBook={openAddressBook}
                 onClose={props.onClose}
               />
             ),
@@ -88,6 +96,17 @@ export function WalletTransferModal(props: {
               <AssetsModalContent
                 onSelect={(a) => {
                   setAsset(a.id)
+                  openOnChain()
+                }}
+              />
+            ),
+          },
+          {
+            title: t("addressbook.title"),
+            content: (
+              <AddressBook
+                onSelect={(address) => {
+                  form.setValue("dest", address)
                   openOnChain()
                 }}
               />

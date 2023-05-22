@@ -6,7 +6,7 @@ import { ModalContentProps, ModalContents } from "./contents/ModalContents"
 
 type Props = {
   open: boolean
-  onClose: () => void
+  onClose?: () => void
   onBack?: () => void
   isDrawer?: boolean
   disableClose?: boolean
@@ -49,7 +49,7 @@ export const Modal = ({
         contents={[{ content: children, ...contentProps }]}
       />
     )
-  }, [onClose, onBack, className, children, contentProps])
+  }, [hasContentProps, children, className, onClose, onBack, contentProps])
 
   return (
     <Root open={open}>
@@ -74,5 +74,28 @@ export const Modal = ({
         </SContainer>
       </Portal>
     </Root>
+  )
+}
+
+export const ModalScrollableContent = ({
+  content,
+  footer,
+}: {
+  content: ReactNode
+  footer?: ReactNode
+}) => {
+  return (
+    <>
+      <div
+        css={{
+          overflow: "overlay",
+          marginRight: "calc(-1 * var(--modal-content-padding) / 2)",
+          paddingRight: "calc(var(--modal-content-padding) / 2)",
+        }}
+      >
+        {content}
+      </div>
+      {footer}
+    </>
   )
 }

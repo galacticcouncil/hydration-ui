@@ -10,7 +10,7 @@ import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
 import { Spacer } from "components/Spacer/Spacer"
 import { SummaryRow } from "components/Summary/SummaryRow"
-import { Controller, useForm } from "react-hook-form"
+import { Controller, UseFormReturn } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
@@ -28,22 +28,21 @@ import {
 
 export function WalletTransferSectionOnchain({
   asset,
+  form,
   onClose,
   openAssets,
+  openAddressBook,
 }: {
   asset: string | u32
+  form: UseFormReturn<{ dest: string; amount: string }>
   onClose: () => void
   openAssets: () => void
+  openAddressBook: () => void
 }) {
   const { t } = useTranslation()
 
   const api = useApiPromise()
   const { createTransaction } = useStore()
-
-  const form = useForm<{
-    dest: string
-    amount: string
-  }>({})
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const assetMeta = useAssetMeta(asset)
@@ -78,6 +77,8 @@ export function WalletTransferSectionOnchain({
               ),
       },
       {
+        onClose,
+        onBack: () => {},
         toast: {
           onLoading: (
             <Trans
@@ -189,6 +190,7 @@ export function WalletTransferSectionOnchain({
                 rightIcon={rightIcon}
                 onBlur={onBlur}
                 error={error?.message}
+                openAddressBook={openAddressBook}
               />
             )
           }}

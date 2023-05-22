@@ -25,4 +25,7 @@ export const SContent = styled(motion.div)<{ noPadding?: boolean }>`
     "padding: 0 var(--modal-content-padding) var(--modal-content-padding);"}
 
   overflow: auto;
+
+  display: flex;
+  flex-direction: column;
 `

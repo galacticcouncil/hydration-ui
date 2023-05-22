@@ -1,12 +1,18 @@
-import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
-import { AddressInput } from "components/AddressInput/AddressInput"
-import { Maybe } from "utils/helpers"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { ReactComponent as GuestIcon } from "assets/icons/GuestIcon.svg"
-import { Text } from "components/Typography/Text/Text"
-import { SContainer, SIconContainer } from "./WalletTransferAccountInput.styled"
-import { ReactNode } from "react"
+import { ReactComponent as IconWalletSmall } from "assets/icons/IconWalletSmall.svg"
+import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
+import { AddressInput } from "components/AddressInput/AddressInput"
 import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
+import { Text } from "components/Typography/Text/Text"
+import { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
+import { Maybe } from "utils/helpers"
+import {
+  SAddressBookButton,
+  SContainer,
+  SIconContainer,
+} from "./WalletTransferAccountInput.styled"
 
 interface Props {
   name: string
@@ -17,9 +23,12 @@ interface Props {
   label?: string
   placeholder?: string
   rightIcon?: ReactNode
+  openAddressBook?: () => void
 }
 
 export const WalletTransferAccountInput = (props: Props) => {
+  const { t } = useTranslation()
+
   let validAddress: string | null = null
   const isDisabled = !props.onChange
   try {
@@ -44,6 +53,15 @@ export const WalletTransferAccountInput = (props: Props) => {
             <SIconContainer>
               <GuestIcon width={35} height={35} />
             </SIconContainer>
+          )}
+
+          {props.openAddressBook && (
+            <SAddressBookButton type="button" onClick={props.openAddressBook}>
+              <Text fs={11} lh={11} color="darkBlue100">
+                {t("wallet.assets.transfer.dest.addressBook")}
+              </Text>
+              <IconWalletSmall />
+            </SAddressBookButton>
           )}
 
           <AddressInput
