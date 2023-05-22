@@ -3,6 +3,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { Icon } from "components/Icon/Icon"
 
 type PoolDetailsProps = {
   pool: OmnipoolPool
@@ -20,9 +21,7 @@ export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
             {t("liquidity.asset.title")}
           </Text>
           <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
-            <div sx={{ width: 32, height: 32 }}>
-              {getAssetLogo(pool.symbol)}
-            </div>
+            <Icon size={27} icon={getAssetLogo(pool.symbol)} />
             <div sx={{ flex: "column", gap: 2 }}>
               <Text color="white" fs={16}>
                 {pool.symbol}

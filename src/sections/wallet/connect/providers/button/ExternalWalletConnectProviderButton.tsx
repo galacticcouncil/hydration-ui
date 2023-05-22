@@ -1,9 +1,9 @@
-import { Icon } from "components/Icon/Icon"
-import { SWalletButton } from "../WalletConnectProviders.styled"
-import { ReactComponent as ExternalWalletIcon } from "assets/icons/ExternalWalletIcon.svg"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
+import { ReactComponent as ExternalWalletIcon } from "assets/icons/ExternalWalletIcon.svg"
+import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import { SWalletButton } from "../WalletConnectProviders.styled"
 
 export const ExternalWalletConnectProviderButton = ({
   onClick,
@@ -12,7 +12,7 @@ export const ExternalWalletConnectProviderButton = ({
 }) => {
   const { t } = useTranslation()
   return (
-    <SWalletButton sx={{ mt: 8 }} onClick={onClick}>
+    <SWalletButton onClick={onClick}>
       <div sx={{ bg: "basic900", p: 7 }} css={{ borderRadius: "9999px" }}>
         <Icon icon={<ExternalWalletIcon />} />
       </div>

@@ -20,10 +20,7 @@ export const WalletAssetsHydraPositionsActions = (props: Props) => {
     <>
       <div sx={{ display: ["block", "none"] }}>
         <div sx={{ display: ["block", "none"] }}>
-          <ButtonTransparent
-            onClick={() => console.log("detail")}
-            css={{ color: theme.colors.iconGray }}
-          >
+          <ButtonTransparent css={{ color: theme.colors.iconGray }}>
             <ChevronRightIcon />
           </ButtonTransparent>
         </div>

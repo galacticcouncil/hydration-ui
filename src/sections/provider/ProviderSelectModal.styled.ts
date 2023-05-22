@@ -22,7 +22,7 @@ export const SItem = styled.div<{ isActive?: boolean }>`
   gap: 24px;
   row-gap: 8px;
 
-  padding: 14px var(--modal-body-padding-x);
+  padding: 14px var(--modal-content-padding);
   cursor: pointer;
 
   &:hover ${SCircle} {
@@ -50,6 +50,7 @@ export const SItem = styled.div<{ isActive?: boolean }>`
     return null
   }}
 `
+
 export const SHeader = styled(SItem)`
   background: rgba(${theme.rgbColors.primaryA06}, 0.06);
   color: ${theme.colors.basic700};
@@ -58,10 +59,11 @@ export const SHeader = styled(SItem)`
   font-weight: 500;
   text-transform: uppercase;
 
-  padding: 6px var(--modal-body-padding-x);
+  padding: 6px var(--modal-content-padding);
 `
+
 export const SContainer = styled.div`
-  margin: 0 calc(-1 * var(--modal-body-padding-x));
+  margin: 0 calc(-1 * var(--modal-content-padding));
   margin-top: 20px;
 `
 

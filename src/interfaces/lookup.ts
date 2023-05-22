@@ -946,6 +946,7 @@ export default {
         positionId: "u128",
         assetId: "u32",
         sharesRemoved: "u128",
+        fee: "u128",
       },
       SellExecuted: {
         who: "AccountId32",
@@ -1073,11 +1074,6 @@ export default {
         blocksPerPeriod: "u32",
         maxRewardPerPeriod: "u128",
         minDeposit: "u128",
-        lrnaPriceAdjustment: "u128",
-      },
-      GlobalFarmUpdated: {
-        id: "u32",
-        lrnaPriceAdjustment: "u128",
       },
       GlobalFarmTerminated: {
         globalFarmId: "u32",
@@ -3117,11 +3113,6 @@ export default {
         owner: "AccountId32",
         yieldPerPeriod: "Perquintill",
         minDeposit: "u128",
-        lrnaPriceAdjustment: "u128",
-      },
-      update_global_farm: {
-        globalFarmId: "u32",
-        lrnaPriceAdjustment: "u128",
       },
       terminate_global_farm: {
         globalFarmId: "u32",
@@ -4534,6 +4525,8 @@ export default {
       "MaxOutRatioExceeded",
       "MaxInRatioExceeded",
       "PriceDifferenceTooHigh",
+      "InvalidOraclePrice",
+      "InvalidWithdrawalFee",
     ],
   },
   /**
@@ -4652,7 +4645,7 @@ export default {
       InvalidMinDeposit: "Null",
       InvalidPriceAdjustment: "Null",
       ErrorGetAccountId: "Null",
-      ZeroValuedShares: "Null",
+      IncorrectValuedShares: "Null",
       RewardCurrencyNotRegistered: "Null",
       IncentivizedAssetNotRegistered: "Null",
       InconsistentState: "PalletLiquidityMiningInconsistentStateError",
@@ -4682,7 +4675,13 @@ export default {
     ],
   },
   /**
-   * Lookup423: pallet_omnipool_liquidity_mining::pallet::Error<T>
+   * Lookup423: hydradx_traits::oracle::OraclePeriod
+   **/
+  HydradxTraitsOracleOraclePeriod: {
+    _enum: ["LastBlock", "Short", "TenMinutes", "Hour", "Day", "Week"],
+  },
+  /**
+   * Lookup424: pallet_omnipool_liquidity_mining::pallet::Error<T>
    **/
   PalletOmnipoolLiquidityMiningError: {
     _enum: {
@@ -4690,16 +4689,18 @@ export default {
       Forbidden: "Null",
       ZeroClaimedRewards: "Null",
       InconsistentState: "PalletOmnipoolLiquidityMiningInconsistentStateError",
+      OracleNotAvailable: "Null",
+      PriceAdjustmentNotAvailable: "Null",
     },
   },
   /**
-   * Lookup424: pallet_omnipool_liquidity_mining::pallet::InconsistentStateError
+   * Lookup425: pallet_omnipool_liquidity_mining::pallet::InconsistentStateError
    **/
   PalletOmnipoolLiquidityMiningInconsistentStateError: {
     _enum: ["MissingLpPosition", "DepositDataNotFound"],
   },
   /**
-   * Lookup425: pallet_otc::Order<sp_core::crypto::AccountId32, AssetId>
+   * Lookup426: pallet_otc::Order<sp_core::crypto::AccountId32, AssetId>
    **/
   PalletOtcOrder: {
     owner: "AccountId32",
@@ -4710,7 +4711,7 @@ export default {
     partiallyFillable: "bool",
   },
   /**
-   * Lookup426: pallet_otc::pallet::Error<T>
+   * Lookup427: pallet_otc::pallet::Error<T>
    **/
   PalletOtcError: {
     _enum: [
@@ -4724,7 +4725,7 @@ export default {
     ],
   },
   /**
-   * Lookup427: pallet_circuit_breaker::TradeVolumeLimit<T>
+   * Lookup428: pallet_circuit_breaker::TradeVolumeLimit<T>
    **/
   PalletCircuitBreakerTradeVolumeLimit: {
     volumeIn: "u128",
@@ -4732,14 +4733,14 @@ export default {
     limit: "u128",
   },
   /**
-   * Lookup428: pallet_circuit_breaker::LiquidityLimit<T>
+   * Lookup429: pallet_circuit_breaker::LiquidityLimit<T>
    **/
   PalletCircuitBreakerLiquidityLimit: {
     liquidity: "u128",
     limit: "u128",
   },
   /**
-   * Lookup429: pallet_circuit_breaker::pallet::Error<T>
+   * Lookup430: pallet_circuit_breaker::pallet::Error<T>
    **/
   PalletCircuitBreakerError: {
     _enum: [
@@ -4752,14 +4753,14 @@ export default {
     ],
   },
   /**
-   * Lookup432: orml_tokens::BalanceLock<Balance>
+   * Lookup433: orml_tokens::BalanceLock<Balance>
    **/
   OrmlTokensBalanceLock: {
     id: "[u8;8]",
     amount: "u128",
   },
   /**
-   * Lookup434: orml_tokens::AccountData<Balance>
+   * Lookup435: orml_tokens::AccountData<Balance>
    **/
   OrmlTokensAccountData: {
     free: "u128",
@@ -4767,14 +4768,14 @@ export default {
     frozen: "u128",
   },
   /**
-   * Lookup436: orml_tokens::ReserveData<ReserveIdentifier, Balance>
+   * Lookup437: orml_tokens::ReserveData<ReserveIdentifier, Balance>
    **/
   OrmlTokensReserveData: {
     id: "[u8;8]",
     amount: "u128",
   },
   /**
-   * Lookup438: orml_tokens::module::Error<T>
+   * Lookup439: orml_tokens::module::Error<T>
    **/
   OrmlTokensModuleError: {
     _enum: [
@@ -4789,13 +4790,13 @@ export default {
     ],
   },
   /**
-   * Lookup439: pallet_currencies::module::Error<T>
+   * Lookup440: pallet_currencies::module::Error<T>
    **/
   PalletCurrenciesModuleError: {
     _enum: ["AmountIntoBalanceFailed", "BalanceTooLow", "DepositFailed"],
   },
   /**
-   * Lookup441: orml_vesting::module::Error<T>
+   * Lookup442: orml_vesting::module::Error<T>
    **/
   OrmlVestingModuleError: {
     _enum: [
@@ -4808,13 +4809,13 @@ export default {
     ],
   },
   /**
-   * Lookup443: polkadot_primitives::v2::UpgradeRestriction
+   * Lookup444: polkadot_primitives::v2::UpgradeRestriction
    **/
   PolkadotPrimitivesV2UpgradeRestriction: {
     _enum: ["Present"],
   },
   /**
-   * Lookup444: cumulus_pallet_parachain_system::relay_state_snapshot::MessagingStateSnapshot
+   * Lookup445: cumulus_pallet_parachain_system::relay_state_snapshot::MessagingStateSnapshot
    **/
   CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot: {
     dmqMqcHead: "H256",
@@ -4823,7 +4824,7 @@ export default {
     egressChannels: "Vec<(u32,PolkadotPrimitivesV2AbridgedHrmpChannel)>",
   },
   /**
-   * Lookup447: polkadot_primitives::v2::AbridgedHrmpChannel
+   * Lookup448: polkadot_primitives::v2::AbridgedHrmpChannel
    **/
   PolkadotPrimitivesV2AbridgedHrmpChannel: {
     maxCapacity: "u32",
@@ -4834,7 +4835,7 @@ export default {
     mqcHead: "Option<H256>",
   },
   /**
-   * Lookup448: polkadot_primitives::v2::AbridgedHostConfiguration
+   * Lookup449: polkadot_primitives::v2::AbridgedHostConfiguration
    **/
   PolkadotPrimitivesV2AbridgedHostConfiguration: {
     maxCodeSize: "u32",
@@ -4848,14 +4849,14 @@ export default {
     validationUpgradeDelay: "u32",
   },
   /**
-   * Lookup454: polkadot_core_primitives::OutboundHrmpMessage<polkadot_parachain::primitives::Id>
+   * Lookup455: polkadot_core_primitives::OutboundHrmpMessage<polkadot_parachain::primitives::Id>
    **/
   PolkadotCorePrimitivesOutboundHrmpMessage: {
     recipient: "u32",
     data: "Bytes",
   },
   /**
-   * Lookup455: cumulus_pallet_parachain_system::pallet::Error<T>
+   * Lookup456: cumulus_pallet_parachain_system::pallet::Error<T>
    **/
   CumulusPalletParachainSystemError: {
     _enum: [
@@ -4870,7 +4871,7 @@ export default {
     ],
   },
   /**
-   * Lookup458: pallet_scheduler::ScheduledV3<frame_support::traits::schedule::MaybeHashed<hydradx_runtime::Call, primitive_types::H256>, BlockNumber, hydradx_runtime::OriginCaller, sp_core::crypto::AccountId32>
+   * Lookup459: pallet_scheduler::ScheduledV3<frame_support::traits::schedule::MaybeHashed<hydradx_runtime::Call, primitive_types::H256>, BlockNumber, hydradx_runtime::OriginCaller, sp_core::crypto::AccountId32>
    **/
   PalletSchedulerScheduledV3: {
     maybeId: "Option<Bytes>",
@@ -4880,7 +4881,7 @@ export default {
     origin: "HydradxRuntimeOriginCaller",
   },
   /**
-   * Lookup459: pallet_scheduler::pallet::Error<T>
+   * Lookup460: pallet_scheduler::pallet::Error<T>
    **/
   PalletSchedulerError: {
     _enum: [
@@ -4891,7 +4892,7 @@ export default {
     ],
   },
   /**
-   * Lookup460: pallet_xcm::pallet::QueryStatus<BlockNumber>
+   * Lookup461: pallet_xcm::pallet::QueryStatus<BlockNumber>
    **/
   PalletXcmQueryStatus: {
     _enum: {
@@ -4911,7 +4912,7 @@ export default {
     },
   },
   /**
-   * Lookup463: xcm::VersionedResponse
+   * Lookup464: xcm::VersionedResponse
    **/
   XcmVersionedResponse: {
     _enum: {
@@ -4921,7 +4922,7 @@ export default {
     },
   },
   /**
-   * Lookup469: pallet_xcm::pallet::VersionMigrationStage
+   * Lookup470: pallet_xcm::pallet::VersionMigrationStage
    **/
   PalletXcmVersionMigrationStage: {
     _enum: {
@@ -4932,7 +4933,7 @@ export default {
     },
   },
   /**
-   * Lookup470: pallet_xcm::pallet::Error<T>
+   * Lookup471: pallet_xcm::pallet::Error<T>
    **/
   PalletXcmError: {
     _enum: [
@@ -4952,11 +4953,11 @@ export default {
     ],
   },
   /**
-   * Lookup471: cumulus_pallet_xcm::pallet::Error<T>
+   * Lookup472: cumulus_pallet_xcm::pallet::Error<T>
    **/
   CumulusPalletXcmError: "Null",
   /**
-   * Lookup473: cumulus_pallet_xcmp_queue::InboundChannelDetails
+   * Lookup474: cumulus_pallet_xcmp_queue::InboundChannelDetails
    **/
   CumulusPalletXcmpQueueInboundChannelDetails: {
     sender: "u32",
@@ -4964,19 +4965,19 @@ export default {
     messageMetadata: "Vec<(u32,PolkadotParachainPrimitivesXcmpMessageFormat)>",
   },
   /**
-   * Lookup474: cumulus_pallet_xcmp_queue::InboundState
+   * Lookup475: cumulus_pallet_xcmp_queue::InboundState
    **/
   CumulusPalletXcmpQueueInboundState: {
     _enum: ["Ok", "Suspended"],
   },
   /**
-   * Lookup477: polkadot_parachain::primitives::XcmpMessageFormat
+   * Lookup478: polkadot_parachain::primitives::XcmpMessageFormat
    **/
   PolkadotParachainPrimitivesXcmpMessageFormat: {
     _enum: ["ConcatenatedVersionedXcm", "ConcatenatedEncodedBlob", "Signals"],
   },
   /**
-   * Lookup480: cumulus_pallet_xcmp_queue::OutboundChannelDetails
+   * Lookup481: cumulus_pallet_xcmp_queue::OutboundChannelDetails
    **/
   CumulusPalletXcmpQueueOutboundChannelDetails: {
     recipient: "u32",
@@ -4986,13 +4987,13 @@ export default {
     lastIndex: "u16",
   },
   /**
-   * Lookup481: cumulus_pallet_xcmp_queue::OutboundState
+   * Lookup482: cumulus_pallet_xcmp_queue::OutboundState
    **/
   CumulusPalletXcmpQueueOutboundState: {
     _enum: ["Ok", "Suspended"],
   },
   /**
-   * Lookup483: cumulus_pallet_xcmp_queue::QueueConfigData
+   * Lookup484: cumulus_pallet_xcmp_queue::QueueConfigData
    **/
   CumulusPalletXcmpQueueQueueConfigData: {
     suspendThreshold: "u32",
@@ -5003,7 +5004,7 @@ export default {
     xcmpMaxIndividualWeight: "WeightV1",
   },
   /**
-   * Lookup485: cumulus_pallet_xcmp_queue::pallet::Error<T>
+   * Lookup486: cumulus_pallet_xcmp_queue::pallet::Error<T>
    **/
   CumulusPalletXcmpQueueError: {
     _enum: [
@@ -5015,13 +5016,13 @@ export default {
     ],
   },
   /**
-   * Lookup486: cumulus_pallet_dmp_queue::ConfigData
+   * Lookup487: cumulus_pallet_dmp_queue::ConfigData
    **/
   CumulusPalletDmpQueueConfigData: {
     maxIndividual: "WeightV1",
   },
   /**
-   * Lookup487: cumulus_pallet_dmp_queue::PageIndexData
+   * Lookup488: cumulus_pallet_dmp_queue::PageIndexData
    **/
   CumulusPalletDmpQueuePageIndexData: {
     beginUsed: "u32",
@@ -5029,19 +5030,19 @@ export default {
     overweightCount: "u64",
   },
   /**
-   * Lookup490: cumulus_pallet_dmp_queue::pallet::Error<T>
+   * Lookup491: cumulus_pallet_dmp_queue::pallet::Error<T>
    **/
   CumulusPalletDmpQueueError: {
     _enum: ["Unknown", "OverLimit"],
   },
   /**
-   * Lookup491: orml_xcm::module::Error<T>
+   * Lookup492: orml_xcm::module::Error<T>
    **/
   OrmlXcmModuleError: {
     _enum: ["Unreachable", "SendFailure", "BadVersion"],
   },
   /**
-   * Lookup492: orml_xtokens::module::Error<T>
+   * Lookup493: orml_xtokens::module::Error<T>
    **/
   OrmlXtokensModuleError: {
     _enum: [
@@ -5067,13 +5068,13 @@ export default {
     ],
   },
   /**
-   * Lookup495: orml_unknown_tokens::module::Error<T>
+   * Lookup496: orml_unknown_tokens::module::Error<T>
    **/
   OrmlUnknownTokensModuleError: {
     _enum: ["BalanceTooLow", "BalanceOverflow", "UnhandledAsset"],
   },
   /**
-   * Lookup497: pallet_authorship::UncleEntryItem<BlockNumber, primitive_types::H256, sp_core::crypto::AccountId32>
+   * Lookup498: pallet_authorship::UncleEntryItem<BlockNumber, primitive_types::H256, sp_core::crypto::AccountId32>
    **/
   PalletAuthorshipUncleEntryItem: {
     _enum: {
@@ -5082,7 +5083,7 @@ export default {
     },
   },
   /**
-   * Lookup499: pallet_authorship::pallet::Error<T>
+   * Lookup500: pallet_authorship::pallet::Error<T>
    **/
   PalletAuthorshipError: {
     _enum: [
@@ -5096,14 +5097,14 @@ export default {
     ],
   },
   /**
-   * Lookup502: pallet_collator_selection::pallet::CandidateInfo<sp_core::crypto::AccountId32, Balance>
+   * Lookup503: pallet_collator_selection::pallet::CandidateInfo<sp_core::crypto::AccountId32, Balance>
    **/
   PalletCollatorSelectionCandidateInfo: {
     who: "AccountId32",
     deposit: "u128",
   },
   /**
-   * Lookup504: pallet_collator_selection::pallet::Error<T>
+   * Lookup505: pallet_collator_selection::pallet::Error<T>
    **/
   PalletCollatorSelectionError: {
     _enum: [
@@ -5120,11 +5121,11 @@ export default {
     ],
   },
   /**
-   * Lookup508: sp_core::crypto::KeyTypeId
+   * Lookup509: sp_core::crypto::KeyTypeId
    **/
   SpCoreCryptoKeyTypeId: "[u8;4]",
   /**
-   * Lookup509: pallet_session::pallet::Error<T>
+   * Lookup510: pallet_session::pallet::Error<T>
    **/
   PalletSessionError: {
     _enum: [
@@ -5136,11 +5137,11 @@ export default {
     ],
   },
   /**
-   * Lookup513: pallet_relaychain_info::pallet::Error<T>
+   * Lookup514: pallet_relaychain_info::pallet::Error<T>
    **/
   PalletRelaychainInfoError: "Null",
   /**
-   * Lookup516: pallet_ema_oracle::types::OracleEntry<BlockNumber>
+   * Lookup517: pallet_ema_oracle::types::OracleEntry<BlockNumber>
    **/
   PalletEmaOracleOracleEntry: {
     price: "HydraDxMathRatio",
@@ -5149,14 +5150,14 @@ export default {
     timestamp: "u32",
   },
   /**
-   * Lookup517: hydra_dx_math::ratio::Ratio
+   * Lookup518: hydra_dx_math::ratio::Ratio
    **/
   HydraDxMathRatio: {
     n: "u128",
     d: "u128",
   },
   /**
-   * Lookup518: hydradx_traits::oracle::Volume<Balance>
+   * Lookup519: hydradx_traits::oracle::Volume<Balance>
    **/
   HydradxTraitsOracleVolume: {
     aIn: "u128",
@@ -5165,17 +5166,11 @@ export default {
     bIn: "u128",
   },
   /**
-   * Lookup519: hydradx_traits::oracle::Liquidity<Balance>
+   * Lookup520: hydradx_traits::oracle::Liquidity<Balance>
    **/
   HydradxTraitsOracleLiquidity: {
     a: "u128",
     b: "u128",
-  },
-  /**
-   * Lookup524: hydradx_traits::oracle::OraclePeriod
-   **/
-  HydradxTraitsOracleOraclePeriod: {
-    _enum: ["LastBlock", "Short", "TenMinutes", "Hour", "Day", "Week"],
   },
   /**
    * Lookup526: pallet_ema_oracle::pallet::Error<T>

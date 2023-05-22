@@ -1,16 +1,15 @@
-import { SContainer } from "./PoolFooter.styled"
-import { Trans, useTranslation } from "react-i18next"
-import { Text } from "components/Typography/Text/Text"
-import { useFooterValues } from "sections/pools/pool/footer/PoolFooter.utils"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
-import Skeleton from "react-loading-skeleton"
-import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
-import { Button } from "components/Button/Button"
 import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
+import { Button } from "components/Button/Button"
+import { Text } from "components/Typography/Text/Text"
+import { Trans, useTranslation } from "react-i18next"
+import Skeleton from "react-loading-skeleton"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { useFooterValues } from "sections/pools/pool/footer/PoolFooter.utils"
+import { ToastMessage, useAccountStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
-import { ToastMessage } from "state/store"
 import { getFloatingPointAmount } from "utils/balance"
-import { useAccountStore } from "state/store"
+import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
+import { SContainer } from "./PoolFooter.styled"
 
 type Props = { pool: OmnipoolPool }
 
@@ -49,10 +48,14 @@ export const PoolFooter = ({ pool }: Props) => {
         <Text>
           {footerValues.isLoading ? (
             <Skeleton />
+          ) : footerValues.farming.isZero() ? (
+            t("liquidity.asset.claim.total", {
+              locked: footerValues.locked,
+            })
           ) : (
             t("liquidity.asset.claim.farmTotal", {
               locked: footerValues.locked,
-              available: footerValues.available,
+              farming: footerValues.farming,
             })
           )}
         </Text>

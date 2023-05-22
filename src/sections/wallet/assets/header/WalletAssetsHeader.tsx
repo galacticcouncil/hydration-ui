@@ -1,39 +1,46 @@
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useMedia } from "react-use"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
-import { Separator } from "components/Separator/Separator"
-import { theme } from "theme"
 import { BN_0 } from "utils/constants"
 import { useHydraPositionsData } from "../hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useAssetsTableData } from "../table/data/WalletAssetsTableData.utils"
-import { WalletAssetsHeaderValue } from "./WalletAssetsHeaderValue"
+import { HeaderValues } from "sections/pools/header/PoolsHeader"
+import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 
 const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
 type Props = { disconnected?: boolean }
 
 export const WalletAssetsHeader = ({ disconnected }: Props) => {
+  const { t } = useTranslation()
+
   return (
-    <div
-      sx={{ flex: ["column", "row"], align: ["start", "center"], mb: [20, 56] }}
-    >
-      <WalletAssetsHeaderBalance disconnected={disconnected} />
-      <HeaderSeparator />
-      <WalletAssetsHeaderOmnipool disconnected={disconnected} />
-      {enabledFarms && (
-        <>
-          <HeaderSeparator />
-          <WalletAssetsHeaderFarms disconnected={disconnected} />
-        </>
-      )}
-    </div>
+    <HeaderValues
+      skeletonHeight={[19, 42]}
+      values={[
+        {
+          disconnected: disconnected,
+          label: t("wallet.assets.header.balance"),
+          content: <WalletAssetsHeaderBalance />,
+        },
+        {
+          disconnected: disconnected,
+          label: t("wallet.assets.header.positions"),
+          content: <WalletAssetsHeaderOmnipool />,
+        },
+        {
+          disconnected: disconnected,
+          hidden: !enabledFarms,
+          label: t("wallet.assets.header.farms"),
+          content: <WalletAssetsHeaderFarms />,
+        },
+      ]}
+    />
   )
 }
 
-const WalletAssetsHeaderBalance = ({ disconnected }: Props) => {
-  const { t } = useTranslation()
+const WalletAssetsHeaderBalance = () => {
   const assets = useAssetsTableData(false)
 
   const totalUsd = useMemo(() => {
@@ -48,17 +55,15 @@ const WalletAssetsHeaderBalance = ({ disconnected }: Props) => {
   }, [assets])
 
   return (
-    <WalletAssetsHeaderValue
+    <HeaderTotalData
       value={totalUsd}
-      title={t("wallet.assets.header.balance")}
       isLoading={assets.isLoading}
-      disconnected={disconnected}
+      fontSize={[19, 42]}
     />
   )
 }
 
-const WalletAssetsHeaderOmnipool = ({ disconnected }: Props) => {
-  const { t } = useTranslation()
+const WalletAssetsHeaderOmnipool = () => {
   const positions = useHydraPositionsData()
 
   const amount = useMemo(() => {
@@ -71,17 +76,15 @@ const WalletAssetsHeaderOmnipool = ({ disconnected }: Props) => {
   }, [positions.data])
 
   return (
-    <WalletAssetsHeaderValue
+    <HeaderTotalData
       value={amount}
-      title={t("wallet.assets.header.positions")}
       isLoading={positions.isLoading}
-      disconnected={disconnected}
+      fontSize={[19, 42]}
     />
   )
 }
 
-const WalletAssetsHeaderFarms = ({ disconnected }: Props) => {
-  const { t } = useTranslation()
+const WalletAssetsHeaderFarms = () => {
   const depositShares = useAllUserDepositShare()
 
   const calculatedShares = useMemo(() => {
@@ -96,25 +99,10 @@ const WalletAssetsHeaderFarms = ({ disconnected }: Props) => {
   }, [depositShares])
 
   return (
-    <WalletAssetsHeaderValue
+    <HeaderTotalData
       value={calculatedShares}
-      title={t("wallet.assets.header.farms")}
       isLoading={depositShares.isLoading}
-      disconnected={disconnected}
+      fontSize={[19, 42]}
     />
-  )
-}
-
-const HeaderSeparator = () => {
-  const isDesktop = useMedia(theme.viewport.gte.sm)
-
-  return (
-    <div sx={{ flexGrow: [0, 0.5], width: ["100%", "auto"] }}>
-      <Separator
-        sx={{ my: [16, 0], height: [1, 72] }}
-        css={{ background: `rgba(${theme.rgbColors.white}, 0.12)` }}
-        orientation={isDesktop ? "vertical" : "horizontal"}
-      />
-    </div>
   )
 }

@@ -15,7 +15,7 @@ import { Fragment, ReactNode } from "react"
 
 type Props = {
   table: ReactTable<unknown>
-  title: string
+  title?: string
   placeholder?: ReactNode
   className?: string
   hideHeader?: boolean
@@ -30,17 +30,19 @@ export const TableSkeleton = ({
 }: Props) => {
   return (
     <TableContainer className={className}>
-      <TableTitle>
-        <Text
-          fs={[15, 19]}
-          lh={[19.5, 24.7]}
-          css={{ fontFamily: "FontOver" }}
-          fw={500}
-          color="white"
-        >
-          {title}
-        </Text>
-      </TableTitle>
+      {title && (
+        <TableTitle>
+          <Text
+            fs={[15, 19]}
+            lh={[19.5, 24.7]}
+            css={{ fontFamily: "FontOver" }}
+            fw={500}
+            color="white"
+          >
+            {title}
+          </Text>
+        </TableTitle>
+      )}
       <div css={{ position: "relative" }}>
         {placeholder && (
           <TablePlaceholderContent>{placeholder}</TablePlaceholderContent>

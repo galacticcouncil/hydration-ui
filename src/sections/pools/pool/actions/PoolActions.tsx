@@ -1,19 +1,19 @@
 import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
-import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
 import { ReactComponent as DetailsIcon } from "assets/icons/DetailsIcon.svg"
+import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useMedia } from "react-use"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
 import {
   SActionsContainer,
   SButtonOpen,
 } from "sections/pools/pool/actions/PoolActions.styled"
 import { useAccountStore } from "state/store"
-import { useMedia } from "react-use"
 import { theme } from "theme"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
-import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
 import { LiquidityPositions } from "../../modals/LiquidityPositions/LiquidityPositions"
 import { usePoolPositions } from "../Pool.utils"
 

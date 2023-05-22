@@ -39,7 +39,7 @@ export const DepositedYieldFarm = ({
 
   return (
     <div sx={{ flex: "row", align: "center", gap: 6 }}>
-      <Icon size={20} icon={getAssetLogo(assetMeta.symbol)} />
+      <Icon size={24} icon={getAssetLogo(assetMeta.symbol)} />
       <Text>{assetMeta.symbol}</Text>
       <Text color="brightBlue200">
         {t("value.APR", {

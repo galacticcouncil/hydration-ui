@@ -1,18 +1,18 @@
+import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 
-import { Text } from "components/Typography/Text/Text"
 import { ReactComponent as ChevronDownSmall } from "assets/icons/ChevronDownSmall.svg"
 import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { ButtonProps } from "components/Button/Button"
-import { HYDRA_ADDRESS_PREFIX } from "utils/api"
+import { Text } from "components/Typography/Text/Text"
 import { Account, useAccountStore } from "state/store"
+import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
 
-import { WalletConnectModal } from "./WalletConnectModal"
 import { SContainer, SLoginButton } from "./WalletConnectButton.styled"
+import { WalletConnectModal } from "./WalletConnectModal"
 
 const WalletActiveButton = (props: {
   onOpen: () => void
@@ -115,7 +115,9 @@ export const WalletConnectButton = (props: { className?: string }) => {
           onOpen={() => setOpen(true)}
         />
       )}
-      <WalletConnectModal isOpen={open} onClose={() => setOpen(false)} />
+      {open && (
+        <WalletConnectModal isOpen={open} onClose={() => setOpen(false)} />
+      )}
     </>
   )
 }

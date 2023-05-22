@@ -12,6 +12,7 @@ export const useFarmRedepositMutation = (
   availableYieldFarms: Farm[] | undefined,
   depositNfts: DepositNftType[],
   toast: ToastMessage,
+  onClose?: () => void,
 ) => {
   const api = useApiPromise()
   const { createTransaction } = useStore()
@@ -33,9 +34,12 @@ export const useFarmRedepositMutation = (
       .flat(2)
 
     if (txs.length > 1) {
-      await createTransaction({ tx: api.tx.utility.batchAll(txs) }, { toast })
+      await createTransaction(
+        { tx: api.tx.utility.batchAll(txs) },
+        { toast, onSubmitted: onClose },
+      )
     } else {
-      await createTransaction({ tx: txs[0] }, { toast })
+      await createTransaction({ tx: txs[0] }, { toast, onSubmitted: onClose })
     }
   })
 }

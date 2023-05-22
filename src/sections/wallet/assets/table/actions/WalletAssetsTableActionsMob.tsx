@@ -1,20 +1,20 @@
-import { Button } from "components/Button/Button"
-import { Modal } from "components/Modal/Modal"
-import { ReactComponent as TransferIcon } from "assets/icons/TransferIcon.svg"
-import { ReactComponent as SellIcon } from "assets/icons/SellIcon.svg"
+import { Link } from "@tanstack/react-location"
+import { useSetAsFeePayment } from "api/payments"
 import { ReactComponent as BuyIcon } from "assets/icons/BuyIcon.svg"
 import { ReactComponent as DollarIcon } from "assets/icons/DollarIcon.svg"
-import { WalletAssetsTableName } from "../data/WalletAssetsTableData"
+import { ReactComponent as SellIcon } from "assets/icons/SellIcon.svg"
+import { ReactComponent as TransferIcon } from "assets/icons/TransferIcon.svg"
+import { Button } from "components/Button/Button"
+import { Modal } from "components/Modal/Modal"
 import { Separator } from "components/Separator/Separator"
-import { theme } from "theme"
-import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
-import { AssetsTableData } from "../WalletAssetsTable.utils"
-import { SActionButtonsContainer } from "./WalletAssetsTable.styled"
-import { useSetAsFeePayment } from "api/payments"
-import { Link } from "@tanstack/react-location"
-import { LINKS } from "utils/navigation"
+import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
+import { theme } from "theme"
+import { LINKS } from "utils/navigation"
+import { AssetsTableData } from "../WalletAssetsTable.utils"
+import { WalletAssetsTableName } from "../data/WalletAssetsTableData"
+import { SActionButtonsContainer } from "./WalletAssetsTable.styled"
 
 type Props = {
   row?: AssetsTableData
@@ -37,7 +37,7 @@ export const WalletAssetsTableActionsMob = ({
   const canSell = row.tradability.inTradeRouter && row.tradability.canSell
 
   return (
-    <Modal open={!!row} isDrawer onClose={onClose}>
+    <Modal open={!!row} isDrawer onClose={onClose} title="">
       <div>
         <div sx={{ pb: 30 }}>
           <WalletAssetsTableName {...row} large />

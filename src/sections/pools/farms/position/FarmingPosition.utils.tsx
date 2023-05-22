@@ -118,6 +118,7 @@ export const useAllUserDepositShare = () => {
           position.data.shares.toString(),
           positionPrice.toFixed(0),
           position.data.shares.toString(),
+          "0", // fee zero
         ]
 
         lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)

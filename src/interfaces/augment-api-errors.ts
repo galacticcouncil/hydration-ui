@@ -764,9 +764,17 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       InvalidInitialAssetPrice: AugmentedError<ApiType>
       /**
+       * Invalid oracle price - division by zero.
+       **/
+      InvalidOraclePrice: AugmentedError<ApiType>
+      /**
        * Amount of shares provided cannot be 0.
        **/
       InvalidSharesAmount: AugmentedError<ApiType>
+      /**
+       * Failed to calculate withdrawal fee.
+       **/
+      InvalidWithdrawalFee: AugmentedError<ApiType>
       /**
        * Max fraction of asset reserve to sell has been exceeded.
        **/
@@ -835,6 +843,14 @@ declare module "@polkadot/api-base/types/errors" {
        **/
       InconsistentState: AugmentedError<ApiType>
       /**
+       * Oracle could not be found for requested assets.
+       **/
+      OracleNotAvailable: AugmentedError<ApiType>
+      /**
+       * Oracle providing `price_adjustment` could not be found for requested assets.
+       **/
+      PriceAdjustmentNotAvailable: AugmentedError<ApiType>
+      /**
        * Rewards to claim are 0.
        **/
       ZeroClaimedRewards: AugmentedError<ApiType>
@@ -882,6 +898,10 @@ declare module "@polkadot/api-base/types/errors" {
        * to protocol maintainers.
        **/
       InconsistentState: AugmentedError<ApiType>
+      /**
+       * Value of deposited shares amount in reward currency is bellow min. limit.
+       **/
+      IncorrectValuedShares: AugmentedError<ApiType>
       /**
        * Reward currency balance is not sufficient.
        **/
@@ -958,10 +978,6 @@ declare module "@polkadot/api-base/types/errors" {
        * Yield farm does not exist.
        **/
       YieldFarmNotFound: AugmentedError<ApiType>
-      /**
-       * Value of deposited shares amount in reward currency can't be 0.
-       **/
-      ZeroValuedShares: AugmentedError<ApiType>
       /**
        * Generic error
        **/

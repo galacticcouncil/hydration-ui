@@ -5,6 +5,8 @@ export const SWalletButton = styled.button`
   display: flex;
   align-items: center;
 
+  width: 100%;
+
   gap: 16px;
   padding: 16px;
 

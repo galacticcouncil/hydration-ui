@@ -1,13 +1,13 @@
-import { theme } from "theme"
 import { css } from "@emotion/react"
-import { Text } from "components/Typography/Text/Text"
+import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
 import { ExternalLink } from "components/Link/ExternalLink"
 import { Modal } from "components/Modal/Modal"
+import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
-import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import { useTranslation } from "react-i18next"
+import { theme } from "theme"
 import create from "zustand"
 import { persist } from "zustand/middleware"
-import { useTranslation } from "react-i18next"
 
 export const DepegWarningModal = (props: { onClose: () => void }) => {
   const [open, setOpen] = useState(false)
@@ -18,7 +18,6 @@ export const DepegWarningModal = (props: { onClose: () => void }) => {
         open={open}
         onClose={() => setOpen(false)}
         title={t("depeg.modal.title")}
-        width={460}
       >
         <Text css={{ color: "#B2B6C5" }} lh={24} sx={{ mt: 16 }}>
           {t("depeg.modal.description")}
