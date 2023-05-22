@@ -4,6 +4,9 @@ import { useTranslation } from "react-i18next"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { Icon } from "components/Icon/Icon"
+import { useSpotPrice } from "api/spotPrice"
+import { useApiIds } from "api/consts"
+import Skeleton from "react-loading-skeleton"
 
 type PoolDetailsProps = {
   pool: OmnipoolPool
@@ -12,6 +15,8 @@ type PoolDetailsProps = {
 
 export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
   const { t } = useTranslation()
+  const apiIds = useApiIds()
+  const spotPrice = useSpotPrice(pool.id, apiIds.data?.usdId)
 
   return (
     <div sx={{ flex: "column" }} className={className}>
@@ -41,11 +46,18 @@ export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
           }}
         >
           <Text fs={13} color="basic400">
-            {t("liquidity.asset.details.fee")}
+            {t("liquidity.asset.details.price")}
           </Text>
-          <Text>
-            {t("value.percentage", { value: pool.tradeFee.times(100) })}
-          </Text>
+          {spotPrice.isLoading || apiIds.isLoading ? (
+            <Skeleton width={118} height={21} />
+          ) : (
+            <Text lh={22} color="white" fs={18}>
+              {t("value.token", {
+                value: spotPrice.data?.spotPrice,
+                numberPrefix: "$", //TODO: Add spotPrice token symbol when we supports it
+              })}
+            </Text>
+          )}
         </div>
       </div>
       <Separator sx={{ mt: [18, 20] }} />

@@ -41,6 +41,8 @@ export interface Transaction extends TransactionInput {
   toastMessage?: ToastMessage
   isProxy: boolean
   steps?: Array<StepProps>
+  onBack?: () => void
+  onClose?: () => void
 }
 
 interface Store {
@@ -53,9 +55,21 @@ interface Store {
       toast?: ToastMessage
       isProxy?: boolean
       steps?: Array<StepProps>
+      onBack?: () => void
+      onClose?: () => void
     },
   ) => Promise<ISubmittableResult>
   cancelTransaction: (hash: string) => void
+}
+
+type RpcStore = {
+  rpcList: Array<{
+    name?: string
+    url: string
+  }>
+  addRpc: (account: string) => void
+  removeRpc: (url: string) => void
+  renameRpc: (url: string, newName: string) => void
 }
 
 export const externalWallet = {
@@ -166,6 +180,8 @@ export const useStore = create<Store>((set) => ({
               onError: () => reject(new Error("Transaction rejected")),
               isProxy: !!options?.isProxy,
               steps: options?.steps,
+              onBack: options?.onBack,
+              onClose: options?.onClose,
             },
             ...(store.transactions ?? []),
           ],
@@ -181,3 +197,27 @@ export const useStore = create<Store>((set) => ({
     }))
   },
 }))
+
+export const useRpcStore = create<RpcStore>()(
+  persist(
+    (set) => ({
+      rpcList: [],
+
+      addRpc: (url) =>
+        set((store) => ({ rpcList: [...store.rpcList, { url }] })),
+      removeRpc: (urlToRemove) =>
+        set((store) => ({
+          rpcList: store.rpcList.filter((rpc) => rpc.url !== urlToRemove),
+        })),
+      renameRpc: (urlToRename, name) =>
+        set((store) => ({
+          rpcList: store.rpcList.map((rpc) =>
+            rpc.url === urlToRename ? { ...rpc, name } : rpc,
+          ),
+        })),
+    }),
+    {
+      name: "hydradx-rpc-list",
+    },
+  ),
+)

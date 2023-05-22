@@ -19,11 +19,18 @@ export const SPage = styled.div<{ variant?: "stats" | "default" }>`
           background: ${theme.gradients.backgroundStats};
         `
       : css`
-          background: ${theme.gradients.background};
+          background: ${theme.colors.bg};
+
+          & > div {
+            height: 474px;
+            background: ${theme.gradients.background};
+          }
         `}
 
   @media ${theme.viewport.gte.sm} {
     --nav-height: 70px;
+
+    overflow-y: overlay;
   }
 `
 

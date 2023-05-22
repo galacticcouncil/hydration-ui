@@ -1,6 +1,5 @@
 import { DepositNftType } from "api/deposits"
 import { Farm } from "api/farms"
-import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useRef } from "react"
 import { useTranslation } from "react-i18next"

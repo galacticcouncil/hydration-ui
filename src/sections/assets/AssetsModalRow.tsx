@@ -1,18 +1,18 @@
 import { u32 } from "@polkadot/types"
-import { FC, useMemo } from "react"
 import { UseAssetModel, useAsset } from "api/asset"
 import { useTokenBalance } from "api/balances"
-import { useAccountStore } from "state/store"
+import { useApiIds } from "api/consts"
+import { useSpotPrice } from "api/spotPrice"
+import { getAssetName } from "components/AssetIcon/AssetIcon"
+import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
-import { SAssetRow } from "./AssetsModalRow.styled"
+import { FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useSpotPrice } from "api/spotPrice"
+import { useAccountStore } from "state/store"
 import { BN_NAN } from "utils/constants"
 import { Maybe } from "utils/helpers"
-import { getAssetName } from "components/AssetIcon/AssetIcon"
-import { useApiIds } from "api/consts"
-import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
+import { SAssetRow } from "./AssetsModalRow.styled"
 
 interface AssetsModalRowProps {
   id: Maybe<u32 | string>
@@ -38,12 +38,7 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
 
   return (
     <SAssetRow onClick={() => asset.data && onClick?.(asset.data)}>
-      <div
-        sx={{
-          display: "flex",
-          align: "center",
-        }}
-      >
+      <div sx={{ display: "flex", align: "center" }}>
         <Icon icon={asset.data.icon} sx={{ mr: 10 }} size={30} />
         <div sx={{ mr: 6 }}>
           <Text fw={700} color="white" fs={16} lh={22}>
@@ -54,13 +49,7 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
           </Text>
         </div>
       </div>
-      <div
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          align: "end",
-        }}
-      >
+      <div sx={{ display: "flex", flexDirection: "column", align: "end" }}>
         {balance.data && (
           <>
             <Trans

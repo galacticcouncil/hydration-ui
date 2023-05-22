@@ -1,25 +1,25 @@
+import { useAssetMeta } from "api/assetMeta"
+import { DepositNftType } from "api/deposits"
+import { Button } from "components/Button/Button"
+import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
+import { Text } from "components/Typography/Text/Text"
+import { useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useMedia } from "react-use"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
+import { theme } from "theme"
+import { useEnteredDate } from "utils/block"
+import { BN_0 } from "utils/constants"
+import { JoinedFarmsDetails } from "../modals/joinedFarmDetails/JoinedFarmsDetails"
 import {
   SContainer,
   SSeparator,
   SValueContainer,
 } from "./FarmingPosition.styled"
-import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
-import { Button } from "components/Button/Button"
-import { theme } from "theme"
-import { RedepositFarms } from "./redeposit/RedepositFarms"
-import { JoinedFarms } from "./joined/JoinedFarms"
-import { useMedia } from "react-use"
-import { useState } from "react"
-import { JoinedFarmsDetails } from "../modals/joinedFarmDetails/JoinedFarmsDetails"
-import { useEnteredDate } from "utils/block"
-import { BN_0 } from "utils/constants"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
-import { DepositNftType } from "api/deposits"
-import { useAssetMeta } from "api/assetMeta"
-import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
-import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { useDepositShare } from "./FarmingPosition.utils"
+import { JoinedFarms } from "./joined/JoinedFarms"
+import { RedepositFarms } from "./redeposit/RedepositFarms"
 
 function FarmingPositionDetailsButton(props: {
   pool: OmnipoolPool

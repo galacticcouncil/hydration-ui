@@ -4,7 +4,7 @@ import { DepositNftType } from "api/deposits"
 import { Farm } from "api/farms"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
-import { Modal } from "components/Modal/Modal"
+import { Modal, ModalScrollableContent } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
@@ -22,10 +22,10 @@ type JoinFarmModalProps = {
   isOpen: boolean
   onClose: () => void
   pool: OmnipoolPool
-  shares: BigNumber
+  shares?: BigNumber
   farms: Farm[]
   isRedeposit?: boolean
-  mutation: FarmDepositMutationType | FarmRedepositMutationType
+  mutation?: FarmDepositMutationType | FarmRedepositMutationType
   depositNft?: DepositNftType
 }
 
@@ -54,6 +54,7 @@ export const JoinFarmModal = ({
   )
 
   const { page, direction, back, next } = useModalPagination()
+
   const onBack = () => {
     back()
     setSelectedFarmId(null)
@@ -78,71 +79,82 @@ export const JoinFarmModal = ({
               assetSymbol: meta.data?.symbol,
             }),
             content: (
-              <div>
-                {isRedeposit && (
-                  <Text color="basic400">
-                    {t("farms.modal.join.description", {
-                      assets: meta.data?.symbol,
-                    })}
-                  </Text>
-                )}
-                <div sx={{ flex: "column", gap: 8, mt: 24 }}>
-                  {farms.map((farm, i) => {
-                    return (
-                      <FarmDetailsCard
-                        key={i}
-                        poolId={pool.id}
-                        farm={farm}
-                        depositNft={depositNft}
-                        onSelect={() => {
-                          setSelectedFarmId({
-                            globalFarmId: farm.globalFarm.id,
-                            yieldFarmId: farm.yieldFarm.id,
-                          })
-                          next()
-                        }}
-                      />
-                    )
-                  })}
-                </div>
-                <SJoinFarmContainer>
-                  <div
-                    sx={{
-                      flex: "row",
-                      justify: "space-between",
-                      p: 30,
-                      gap: 120,
-                    }}
-                  >
-                    <div sx={{ flex: "column", gap: 13 }}>
-                      <Text>{t("farms.modal.footer.title")}</Text>
-                    </div>
-                    <Text
-                      color="pink600"
-                      fs={24}
-                      css={{ whiteSpace: "nowrap" }}
-                    >
-                      {t("value.token", {
-                        value: shares,
-                        fixedPointScale: meta.data?.decimals.toString() ?? 12,
+              <ModalScrollableContent
+                content={
+                  <>
+                    {isRedeposit && (
+                      <Text color="basic400">
+                        {t("farms.modal.join.description", {
+                          assets: meta.data?.symbol,
+                        })}
+                      </Text>
+                    )}
+                    <div sx={{ flex: "column", gap: 8, mt: 24 }}>
+                      {farms.map((farm, i) => {
+                        return (
+                          <FarmDetailsCard
+                            key={i}
+                            poolId={pool.id}
+                            farm={farm}
+                            depositNft={depositNft}
+                            onSelect={() => {
+                              setSelectedFarmId({
+                                globalFarmId: farm.globalFarm.id,
+                                yieldFarmId: farm.yieldFarm.id,
+                              })
+                              next()
+                            }}
+                          />
+                        )
                       })}
-                    </Text>
-                  </div>
-                  <Button
-                    fullWidth
-                    variant="primary"
-                    onClick={() => mutation.mutate()}
-                    isLoading={mutation.isLoading}
-                  >
-                    {t("farms.modal.join.button.label", {
-                      count: farms.length,
-                    })}
-                  </Button>
-                </SJoinFarmContainer>
-              </div>
+                    </div>
+                  </>
+                }
+                footer={
+                  mutation &&
+                  shares && (
+                    <SJoinFarmContainer>
+                      <div
+                        sx={{
+                          flex: "row",
+                          justify: "space-between",
+                          p: 30,
+                          gap: 120,
+                        }}
+                      >
+                        <div sx={{ flex: "column", gap: 13 }}>
+                          <Text>{t("farms.modal.footer.title")}</Text>
+                        </div>
+                        <Text
+                          color="pink600"
+                          fs={24}
+                          css={{ whiteSpace: "nowrap" }}
+                        >
+                          {t("value.token", {
+                            value: shares,
+                            fixedPointScale:
+                              meta.data?.decimals.toString() ?? 12,
+                          })}
+                        </Text>
+                      </div>
+                      <Button
+                        fullWidth
+                        variant="primary"
+                        onClick={() => mutation.mutate()}
+                        isLoading={mutation.isLoading}
+                      >
+                        {t("farms.modal.join.button.label", {
+                          count: farms.length,
+                        })}
+                      </Button>
+                    </SJoinFarmContainer>
+                  )
+                }
+              ></ModalScrollableContent>
             ),
           },
           {
+            title: t("farms.modal.details.title"),
             content: selectedFarm && (
               <FarmDetailsModal
                 pool={pool}

@@ -1,39 +1,37 @@
+import {
+  calculate_liquidity_lrna_out,
+  calculate_liquidity_out,
+  calculate_lrna_spot_price,
+  calculate_withdrawal_fee,
+} from "@galacticcouncil/math-omnipool"
+import { useAssetMetaList } from "api/assetMeta"
+import { useTokenBalance } from "api/balances"
+import { useApiIds, useMinWithdrawalFee } from "api/consts"
+import { useOraclePrice } from "api/farms"
+import { useOmnipoolAssets } from "api/omnipool"
+import { useSpotPrice } from "api/spotPrice"
+import { ReactComponent as IconWarning } from "assets/icons/WarningIcon.svg"
+import { default as BN, default as BigNumber } from "bignumber.js"
 import { BoxSwitch } from "components/BoxSwitch/BoxSwitch"
 import { Button } from "components/Button/Button"
+import { Icon } from "components/Icon/Icon"
 import { Input } from "components/Input/Input"
-import { Modal } from "components/Modal/Modal"
+import { Modal, ModalScrollableContent } from "components/Modal/Modal"
 import { Slider } from "components/Slider/Slider"
+import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { FormValues } from "utils/helpers"
-import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
-import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
-import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import {
-  calculate_liquidity_lrna_out,
-  calculate_liquidity_out,
-  calculate_withdrawal_fee,
-  calculate_lrna_spot_price,
-} from "@galacticcouncil/math-omnipool"
-import { useOmnipoolAssets } from "../../../../api/omnipool"
-import { useTokenBalance } from "../../../../api/balances"
-import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "../../../../utils/api"
-import { BN_10, BN_QUINTILL, BN_0 } from "../../../../utils/constants"
-import { useAssetMetaList } from "../../../../api/assetMeta"
-import { useApiIds, useMinWithdrawalFee } from "api/consts"
-import BN from "bignumber.js"
+import { useStore } from "state/store"
+import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
-import { useStore } from "../../../../state/store"
-import BigNumber from "bignumber.js"
-import { Spacer } from "components/Spacer/Spacer"
-import { useSpotPrice } from "api/spotPrice"
-import { useOraclePrice } from "api/farms"
-import { SummaryRow } from "components/Summary/SummaryRow"
-import { Separator } from "components/Separator/Separator"
-import { ReactComponent as IconWarning } from "assets/icons/WarningIcon.svg"
-import { Icon } from "components/Icon/Icon"
+import { BN_10, BN_QUINTILL } from "utils/constants"
+import { FormValues } from "utils/helpers"
+import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
+import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
+import { FeeRange } from "./components/FeeRange/FeeRange"
+import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
@@ -93,8 +91,8 @@ const RemoveLiquidityInput = ({
           value={input}
           onChange={handleOnChange}
           name="custom"
-          label="Custom"
-          placeholder="Custom"
+          label={t("custom")}
+          placeholder={t("custom")}
           unit="%"
         />
         <div
@@ -242,14 +240,14 @@ export const RemoveLiquidity = ({
 
     const lrnaAsBigNumber = new BigNumber(removeLiquidityValues.lrnaToGet)
 
-    onClose()
-
     await createTransaction(
       {
         tx: api.tx.omnipool.removeLiquidity(position.id, value.toFixed(0)),
       },
       {
         onSuccess,
+        onClose,
+        onBack: () => {},
         onSubmitted: () => {
           onClose()
           form.reset()
@@ -321,139 +319,120 @@ export const RemoveLiquidity = ({
           minHeight: "100%",
         }}
       >
-        <div>
-          <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
-            {t("liquidity.remove.modal.value", {
-              value: getFloatingPointAmount(
-                removeSharesValue,
-                meta?.decimals.toNumber() ?? 12,
-              ),
-            })}
-          </Text>
-          <Text fs={18} font="FontOver" color="pink500" sx={{ mb: 20 }}>
-            {t("value.percentage", { value })}
-          </Text>
-          <Controller
-            name="value"
-            control={form.control}
-            render={({ field }) => (
-              <RemoveLiquidityInput
-                value={field.value}
-                onChange={field.onChange}
-                shares={getFloatingPointAmount(
-                  position.shares,
-                  meta?.decimals.toNumber() ?? 12,
-                )}
-              />
-            )}
-          />
-
-          <STradingPairContainer>
-            <Text color="brightBlue300">
-              {t("liquidity.remove.modal.receive")}
-            </Text>
-
-            <RemoveLiquidityReward
-              name={position.name}
-              symbol={position.symbol}
-              amount={t("value", {
-                value: removeLiquidityValues?.tokensToGet,
-                fixedPointScale: meta?.decimals.toString() ?? 12,
-                type: "token",
-              })}
-            />
-            {removeLiquidityValues &&
-              !BN(removeLiquidityValues.lrnaToGet).isZero() && (
-                <RemoveLiquidityReward
-                  name="Lerna"
-                  symbol="LRNA"
-                  amount={t("value", {
-                    value: removeLiquidityValues?.lrnaToGet,
-                    fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
-                    type: "token",
-                  })}
-                />
-              )}
-          </STradingPairContainer>
-        </div>
-        <Spacer size={6} />
-        <SummaryRow
-          label={t("liquidity.remove.modal.tokenFee.label")}
+        <ModalScrollableContent
           content={
-            <div sx={{ display: "flex", gap: 4 }}>
-              <Trans
-                t={t}
-                i18nKey="liquidity.remove.modal.tokenFee.value"
-                tOptions={{
-                  feeAmount: removeLiquidityValues?.tokensPayWith,
+            <div>
+              <div>
+                <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
+                  {t("liquidity.remove.modal.value", {
+                    value: getFloatingPointAmount(
+                      removeSharesValue,
+                      meta?.decimals.toNumber() ?? 12,
+                    ),
+                  })}
+                </Text>
+                <Text fs={18} font="FontOver" color="pink500" sx={{ mb: 20 }}>
+                  {t("value.percentage", { value })}
+                </Text>
+                <Controller
+                  name="value"
+                  control={form.control}
+                  render={({ field }) => (
+                    <RemoveLiquidityInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      shares={getFloatingPointAmount(
+                        position.shares,
+                        meta?.decimals.toNumber() ?? 12,
+                      )}
+                    />
+                  )}
+                />
+
+                <STradingPairContainer>
+                  <Text color="brightBlue300">
+                    {t("liquidity.remove.modal.receive")}
+                  </Text>
+
+                  <RemoveLiquidityReward
+                    name={position.name}
+                    symbol={position.symbol}
+                    amount={t("value", {
+                      value: removeLiquidityValues?.tokensToGet,
+                      fixedPointScale: meta?.decimals.toString() ?? 12,
+                      type: "token",
+                    })}
+                  />
+                  {removeLiquidityValues &&
+                    !BN(removeLiquidityValues.lrnaToGet).isZero() && (
+                      <RemoveLiquidityReward
+                        name="Lerna"
+                        symbol="LRNA"
+                        amount={t("value", {
+                          value: removeLiquidityValues?.lrnaToGet,
+                          fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
+                          type: "token",
+                        })}
+                      />
+                    )}
+                </STradingPairContainer>
+              </div>
+              <Spacer size={6} />
+              <FeeRange
+                minFee={minWithdrawalFee.data?.multipliedBy(100)}
+                currentFee={removeLiquidityValues?.withdrawalFee}
+                lrnaFeeValue={
+                  !BN(removeLiquidityValues?.lrnaPayWith ?? 0).isZero()
+                    ? t("value.token", {
+                        value: removeLiquidityValues?.lrnaPayWith,
+                        fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
+                      })
+                    : undefined
+                }
+                assetFeeValue={t("value.token", {
+                  value: removeLiquidityValues?.tokensPayWith,
                   fixedPointScale: meta?.decimals.toString() ?? 12,
-                  symbol: meta?.symbol,
-                  feePercentage: removeLiquidityValues?.withdrawalFee
-                    ? removeLiquidityValues.withdrawalFee
-                    : BN_0,
-                }}
+                })}
+                assetSymbol={meta?.symbol}
+              />
+
+              {isFeeExceeded && (
+                <div
+                  sx={{
+                    flex: "row",
+                    align: "center",
+                    gap: 8,
+                    minHeight: 50,
+                    p: "12px 14px",
+                    my: 6,
+                  }}
+                  css={{
+                    borderRadius: 2,
+                    background: "rgba(245, 168, 85, 0.3)",
+                  }}
+                >
+                  <Icon size={24} icon={<IconWarning />} />
+
+                  <Text color="white" fs={13} fw={400}>
+                    {t("liquidity.remove.modal.fee.warning")}
+                  </Text>
+                </div>
+              )}
+            </div>
+          }
+          footer={
+            <div>
+              <Spacer size={20} />
+              <Button
+                fullWidth
+                variant="primary"
+                disabled={removeSharesValue.isZero() || isFeeExceeded}
               >
-                <Text fs={14} />
-                <Text fs={14} color="darkBlue200" />
-              </Trans>
+                {t("liquidity.remove.modal.confirm")}
+              </Button>
             </div>
           }
         />
-        {removeLiquidityValues &&
-          !BN(removeLiquidityValues.lrnaPayWith).isZero() && (
-            <>
-              <Separator />
-              <SummaryRow
-                label={t("liquidity.remove.modal.lrnaFee.label")}
-                content={
-                  <div sx={{ display: "flex", gap: 4 }}>
-                    <Trans
-                      t={t}
-                      i18nKey="liquidity.remove.modal.tokenFee.value"
-                      tOptions={{
-                        feeAmount: removeLiquidityValues?.lrnaPayWith,
-                        fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
-                        symbol: lrnaMeta?.symbol,
-                        feePercentage: removeLiquidityValues?.withdrawalFee
-                          ? removeLiquidityValues.withdrawalFee
-                          : BN_0,
-                      }}
-                    >
-                      <Text fs={14} />
-                      <Text fs={14} color="darkBlue200" />
-                    </Trans>
-                  </div>
-                }
-              />
-            </>
-          )}
-
-        {isFeeExceeded && (
-          <div
-            sx={{
-              flex: "row",
-              align: "center",
-              gap: 8,
-              minHeight: 50,
-              p: "12px 14px",
-              my: 6,
-            }}
-            css={{ borderRadius: 2, background: "rgba(245, 168, 85, 0.3)" }}
-          >
-            <Icon size={24} icon={<IconWarning />} />
-
-            <Text color="white" fs={13} fw={400}>
-              {t("liquidity.remove.modal.fee.warning")}
-            </Text>
-          </div>
-        )}
-        <Spacer size={20} />
-        <Button
-          variant="primary"
-          disabled={removeSharesValue.isZero() || isFeeExceeded}
-        >
-          {t("liquidity.remove.modal.confirm")}
-        </Button>
       </form>
     </Modal>
   )
