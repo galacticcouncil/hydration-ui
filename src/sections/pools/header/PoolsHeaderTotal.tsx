@@ -1,4 +1,3 @@
-import { css } from "@emotion/react"
 import BN from "bignumber.js"
 import { Heading } from "components/Typography/Heading/Heading"
 import { Text } from "components/Typography/Text/Text"
@@ -20,10 +19,7 @@ import {
   useTotalVolumesInPoolsUser,
 } from "./PoolsHeaderVolume.utils"
 
-type Props = {
-  myPositions: boolean
-  variant: "pools" | "farms" | "volume"
-}
+type Props = { myPositions: boolean; variant: "pools" | "farms" | "volume" }
 
 export const PoolsHeaderTotal = ({ myPositions, variant }: Props) => {
   if (variant === "pools" && myPositions) return <PoolsHeaderTotalPoolsUser />
@@ -36,15 +32,9 @@ export const PoolsHeaderTotal = ({ myPositions, variant }: Props) => {
   return null
 }
 
-export const HeaderTotalData = ({
-  value,
-  isLoading,
-  fontSize,
-}: {
-  value: BN | undefined
-  isLoading: boolean
-  fontSize?: [number, number]
-}) => {
+type DataProps = { value?: BN; isLoading: boolean; fontSize?: [number, number] }
+
+export const HeaderTotalData = ({ value, isLoading, fontSize }: DataProps) => {
   const { t } = useTranslation()
   const displayAsset = useDisplayAssetStore()
 
@@ -57,32 +47,16 @@ export const HeaderTotalData = ({
       sx={{ fontSize: fontSize ?? [19, 28], fontWeight: 500 }}
       css={{ whiteSpace: "nowrap" }}
     >
-      <Text
-        font="ChakraPetch"
-        fw={900}
-        fs={fontSize ?? [19, 28]}
-        sx={{ display: "inline-block" }}
-      >
-        {displayAsset.symbol}&nbsp;
-      </Text>
       <Trans
         t={t}
         i18nKey="wallet.assets.header.value"
-        tOptions={{
-          ...separateBalance(value, {
-            type: "dollar",
-          }),
-        }}
+        tOptions={{ ...separateBalance(value, { type: "dollar" }) }}
       >
-        <span
-          sx={{
-            fontSize: [19, 20],
-          }}
-          css={css`
-            color: rgba(${theme.rgbColors.white}, 0.4);
-          `}
-        />
+        <span css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }} />
       </Trans>
+      <Text fs={fontSize ?? [19, 28]} sx={{ display: "inline-block" }}>
+        &nbsp;{displayAsset.symbol}
+      </Text>
     </Heading>
   )
 }
