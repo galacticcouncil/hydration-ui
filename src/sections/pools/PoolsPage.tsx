@@ -5,6 +5,8 @@ import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
 import { useApiPromise } from "utils/api"
 import { PoolSkeleton } from "./skeleton/PoolSkeleton"
+import { useWalletConnect } from "utils/walletConnect"
+import { Button } from "components/Button/Button"
 
 const PoolPageContent = () => {
   const [filter, setFilter] = useState({ showMyPositions: false })
@@ -12,6 +14,8 @@ const PoolPageContent = () => {
   const { data, hasPositionsOrDeposits, isLoading } = useOmnipoolPools(
     filter.showMyPositions,
   )
+
+  const wc = useWalletConnect()
 
   return (
     <Page>
@@ -25,6 +29,8 @@ const PoolPageContent = () => {
         }
         disableMyPositions={!hasPositionsOrDeposits}
       />
+
+      <Button onClick={wc.connect}>connect</Button>
 
       <div sx={{ flex: "column", gap: 20 }}>
         {!isLoading && data
