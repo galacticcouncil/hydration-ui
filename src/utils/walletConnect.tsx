@@ -1,5 +1,4 @@
-import { UniversalProvider } from "@walletconnect/universal-provider"
-import WCProvider from "@walletconnect/universal-provider/dist/types/UniversalProvider"
+import Client from "@walletconnect/sign-client"
 import { Web3Modal } from "@web3modal/standalone"
 import {
   PropsWithChildren,
@@ -10,7 +9,7 @@ import {
   useState,
 } from "react"
 
-export const WALLET_CONNECT_PROJECT_ID = "72e7d3d27d8ab1ebac47578375573726"
+export const WALLET_CONNECT_PROJECT_ID = "c47a5369367ec2dad6b49c478eb772f9"
 export const WALLET_CONNECT_RELAY_URL = "wss://relay.walletconnect.com"
 export const HDX_CAIP_ID = "afdc188f45c71dacbaa0b62e16a91f72"
 
@@ -19,59 +18,59 @@ const web3modal = new Web3Modal({
   walletConnectVersion: 2,
 })
 
-export const WalletConnectContext = createContext<{
-  connect: () => Promise<void>
-}>({
+export type WalletConnectCtx = { connect: () => Promise<void> }
+export const WalletConnectContext = createContext<WalletConnectCtx>({
   connect: async () => {},
 })
 export const useWalletConnect = () => useContext(WalletConnectContext)
 
 export const WalletConnectProvider = ({ children }: PropsWithChildren) => {
-  const [provider, setProvider] = useState<WCProvider>()
+  const [client, setClient] = useState<Client>()
 
-  const initProvider = useCallback(async () => {
-    const _provider = await UniversalProvider.init({
-      projectId: WALLET_CONNECT_PROJECT_ID,
-      relayUrl: WALLET_CONNECT_RELAY_URL,
-    })
-    setProvider(_provider)
+  const initClient = useCallback(async () => {
+    try {
+      const _client = await Client.init({
+        projectId: WALLET_CONNECT_PROJECT_ID,
+        relayUrl: WALLET_CONNECT_RELAY_URL,
+      })
+      setClient(_client)
+    } catch (e) {
+      console.error(e)
+    }
   }, [])
 
   useEffect(() => {
-    if (!provider) {
-      initProvider()
-    }
-  }, [initProvider, provider])
+    if (!client) initClient()
+  }, [initClient, client])
 
   const connect = useCallback(async () => {
-    if (!provider) return
+    if (!client) return
 
     const params = {
       requiredNamespaces: {
         polkadot: {
           methods: ["polkadot_signTransaction", "polkadot_signMessage"],
           chains: [`polkadot:${HDX_CAIP_ID}`],
-          events: ['chainChanged", "accountsChanged'],
+          events: ["chainChanged", "accountsChanged"],
         },
       },
     }
-    const { uri, approval } = await provider.client.connect(params)
-
-    console.log("uri:", uri)
-    if (uri) web3modal.openModal({ uri })
-
     try {
-      const session = await approval()
-      console.log("session:", session)
+      const { uri, approval } = await client.connect(params)
 
+      if (uri) web3modal.openModal({ uri })
+
+      const session = await approval()
       const account = Object.values(session.namespaces)
         .map((namespace) => namespace.accounts)
         .flat()
       console.log("account:", account)
+
+      web3modal.closeModal()
     } catch (e) {
-      console.log(e)
+      console.error(e)
     }
-  }, [provider])
+  }, [client])
 
   return (
     <WalletConnectContext.Provider value={{ connect }}>
