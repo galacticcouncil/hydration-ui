@@ -46,6 +46,7 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
   return (
     <Modal
       open={isOpen}
+      disableCloseOutside
       onClose={onModalClose}
       css={css`
         --wallet-footer-height: 96px;

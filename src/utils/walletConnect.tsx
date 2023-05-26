@@ -1,4 +1,6 @@
 import Client from "@walletconnect/sign-client"
+import { SessionTypes } from "@walletconnect/types"
+import { getSdkError } from "@walletconnect/utils"
 import { Web3Modal } from "@web3modal/standalone"
 import {
   PropsWithChildren,
@@ -18,14 +20,22 @@ const web3modal = new Web3Modal({
   walletConnectVersion: 2,
 })
 
-export type WalletConnectCtx = { connect: () => Promise<void> }
+export type WalletConnectCtx = {
+  connect: () => Promise<void>
+  disconnect: () => Promise<void>
+  accounts: string[]
+}
 export const WalletConnectContext = createContext<WalletConnectCtx>({
   connect: async () => {},
+  disconnect: async () => {},
+  accounts: [],
 })
 export const useWalletConnect = () => useContext(WalletConnectContext)
 
 export const WalletConnectProvider = ({ children }: PropsWithChildren) => {
   const [client, setClient] = useState<Client>()
+  const [session, setSession] = useState<SessionTypes.Struct>()
+  const [accounts, setAccounts] = useState<string[]>([])
 
   const initClient = useCallback(async () => {
     try {
@@ -35,7 +45,7 @@ export const WalletConnectProvider = ({ children }: PropsWithChildren) => {
       })
       setClient(_client)
     } catch (e) {
-      console.error(e)
+      console.error("Could not initialize WalletConnect client", e)
     }
   }, [])
 
@@ -55,25 +65,41 @@ export const WalletConnectProvider = ({ children }: PropsWithChildren) => {
         },
       },
     }
+
     try {
       const { uri, approval } = await client.connect(params)
 
       if (uri) web3modal.openModal({ uri })
 
       const session = await approval()
-      const account = Object.values(session.namespaces)
+      setSession(session)
+
+      const accounts = Object.values(session.namespaces)
         .map((namespace) => namespace.accounts)
         .flat()
-      console.log("account:", account)
+      setAccounts(accounts)
 
       web3modal.closeModal()
     } catch (e) {
-      console.error(e)
+      console.error("Could not connect to WalletConnect", e)
     }
   }, [client])
 
+  const disconnect = useCallback(async () => {
+    if (!client || !session) return
+
+    try {
+      await client.disconnect({
+        topic: session.topic,
+        reason: getSdkError("USER_DISCONNECTED"),
+      })
+    } catch (e) {
+      console.error("Could not disconnect from WalletConnect", e)
+    }
+  }, [client, session])
+
   return (
-    <WalletConnectContext.Provider value={{ connect }}>
+    <WalletConnectContext.Provider value={{ connect, disconnect, accounts }}>
       {children}
     </WalletConnectContext.Provider>
   )
