@@ -14,7 +14,7 @@ type Props = {
   address: string
   name: string
   provider: string
-  setAccount?: () => void
+  onClick?: () => void
   isProxy?: boolean
 }
 
@@ -23,7 +23,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
   address,
   name,
   provider,
-  setAccount,
+  onClick,
   isProxy,
 }) => {
   const isHydraAddress = address[0] === "7"
@@ -41,7 +41,7 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
   const { t } = useTranslation()
 
   return (
-    <SSelectItem isActive={isActive} isProxy={!!isProxy} onClick={setAccount}>
+    <SSelectItem isActive={isActive} isProxy={!!isProxy} onClick={onClick}>
       <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
         <Text font="ChakraPetchBold">{name}</Text>
         <div sx={{ flex: "row", align: "end", gap: 2 }}>

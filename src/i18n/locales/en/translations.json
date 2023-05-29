@@ -232,6 +232,7 @@
   "walletConnect.externalWallet.modal.title": "Add external account",
   "walletConnect.externalWallet.modal.desc": "Paste link to account you would like to monitor.",
   "walletConnect.externalWallet.modal.input.placeholder": "Account address here",
+  "walletConnect.wc": "Wallet Connect",
   "wallet.header.assets": "Assets",
   "wallet.header.transactions": "Transactions",
   "wallet.header.vesting": "Vesting",

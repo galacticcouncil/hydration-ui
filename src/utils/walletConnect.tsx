@@ -24,11 +24,19 @@ export type WalletConnectCtx = {
   connect: () => Promise<void>
   disconnect: () => Promise<void>
   accounts: string[]
+  addresses: string[]
+  isInitializing: boolean
+  isConnecting: boolean
+  isDisconnecting: boolean
 }
 export const WalletConnectContext = createContext<WalletConnectCtx>({
   connect: async () => {},
   disconnect: async () => {},
   accounts: [],
+  addresses: [],
+  isInitializing: false,
+  isConnecting: false,
+  isDisconnecting: false,
 })
 export const useWalletConnect = () => useContext(WalletConnectContext)
 
@@ -36,9 +44,15 @@ export const WalletConnectProvider = ({ children }: PropsWithChildren) => {
   const [client, setClient] = useState<Client>()
   const [session, setSession] = useState<SessionTypes.Struct>()
   const [accounts, setAccounts] = useState<string[]>([])
+  const [addresses, setAddresses] = useState<string[]>([])
+
+  const [isInitializing, setIsInitializing] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [isDisconnecting, setIsDisconnecting] = useState(false)
 
   const initClient = useCallback(async () => {
     try {
+      setIsInitializing(true)
       const _client = await Client.init({
         projectId: WALLET_CONNECT_PROJECT_ID,
         relayUrl: WALLET_CONNECT_RELAY_URL,
@@ -46,6 +60,8 @@ export const WalletConnectProvider = ({ children }: PropsWithChildren) => {
       setClient(_client)
     } catch (e) {
       console.error("Could not initialize WalletConnect client", e)
+    } finally {
+      setIsInitializing(false)
     }
   }, [])
 
@@ -67,6 +83,8 @@ export const WalletConnectProvider = ({ children }: PropsWithChildren) => {
     }
 
     try {
+      setIsConnecting(true)
+
       const { uri, approval } = await client.connect(params)
 
       if (uri) web3modal.openModal({ uri })
@@ -79,9 +97,14 @@ export const WalletConnectProvider = ({ children }: PropsWithChildren) => {
         .flat()
       setAccounts(accounts)
 
+      const addresses = accounts.map((account) => account.split(":")[2])
+      setAddresses(addresses)
+
       web3modal.closeModal()
     } catch (e) {
       console.error("Could not connect to WalletConnect", e)
+    } finally {
+      setIsConnecting(false)
     }
   }, [client])
 
@@ -89,17 +112,30 @@ export const WalletConnectProvider = ({ children }: PropsWithChildren) => {
     if (!client || !session) return
 
     try {
+      setIsDisconnecting(true)
       await client.disconnect({
         topic: session.topic,
         reason: getSdkError("USER_DISCONNECTED"),
       })
     } catch (e) {
       console.error("Could not disconnect from WalletConnect", e)
+    } finally {
+      setIsDisconnecting(false)
     }
   }, [client, session])
 
   return (
-    <WalletConnectContext.Provider value={{ connect, disconnect, accounts }}>
+    <WalletConnectContext.Provider
+      value={{
+        connect,
+        disconnect,
+        accounts,
+        addresses,
+        isInitializing,
+        isConnecting,
+        isDisconnecting,
+      }}
+    >
       {children}
     </WalletConnectContext.Provider>
   )
