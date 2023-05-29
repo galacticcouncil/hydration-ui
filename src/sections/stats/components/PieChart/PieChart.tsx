@@ -1,213 +1,245 @@
-import { useState } from "react"
+import { Fragment, useMemo, useState } from "react"
+import { SClipPath, SLabelContainer, SSliceContainer } from "./PieChart.styled"
 import {
-  PieChart,
-  Pie,
-  Sector,
-  ResponsiveContainer,
-  PieProps,
-  Cell,
-} from "recharts"
+  ASSET_COLORS,
+  getCircleCoordinates,
+  getPieConfig,
+} from "./PieChart.utils"
+import { useTotalInPools } from "sections/pools/header/PoolsHeaderTotal.utils"
+import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
+import {
+  SliceLabelRest,
+  TLabelRest,
+} from "./components/SliceLabelRest/SliceLabelRest"
+import { AnimatePresence } from "framer-motion"
+import { SliceLabel } from "./components/SliceLabel/SliceLabel"
+import { DefaultSliceLabel } from "./components/DefaultSliceLabel/DefaultSliceLabel"
+import { PieSkeleton } from "./components/Skeleton/Skeleton"
+import { ScrollablePicker } from "../ScrollablePicker/ScrollablePicker"
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import { t } from "i18next"
+import { EmotionJSX } from "@emotion/react/types/jsx-namespace"
+import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
 
-const data = [
-  { name: "Group A", value: 800 },
-  { name: "Group B", value: 300 },
-  { name: "Group C", value: 500 },
-  { name: "Group D", value: 100 },
-]
+export type TSlice = {
+  percentage: number
+  color: string
+  label: EmotionJSX.Element
+  symbol: string
+  name: string
+  assets?: TLabelRest[]
+}
 
-const COLORS = [
-  { start: "#FFFFFF", end: "#FFFFFF" },
-  { start: "#34c3ff", end: "#2876bd" },
-  { start: "#da9d35", end: "#e96935" },
-  { start: "#d11d35", end: "#e34935" },
-]
+type DoughnutChartProps = {
+  slices: TSlice[]
+}
 
-type PieDataType = Required<NonNullable<PieProps["sectors"]>[number]>
+const DoughnutChart = ({ slices }: DoughnutChartProps) => {
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const PIE_SIZE = !isDesktop ? 170 : 300
+  const config = getPieConfig(PIE_SIZE)
+  const { t } = useTranslation()
 
-const renderActiveShape = (props: PieDataType) => {
-  const RADIAN = Math.PI / 180
-  const {
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    startAngle,
-    endAngle,
-    fill,
-    payload,
-    percent,
-    value,
-  } = props
-  const sin = Math.sin(-RADIAN * midAngle)
-  const cos = Math.cos(-RADIAN * midAngle)
-  const sx = cx + (outerRadius + 10) * cos
-  const sy = cy + (outerRadius + 10) * sin
-  const mx = cx + (outerRadius + 30) * cos
-  const my = cy + (outerRadius + 30) * sin
-  const ex = mx + (cos >= 0 ? 1 : -1) * 22
-  const ey = my
-  const textAnchor = cos >= 0 ? "start" : "end"
+  const [activeSlice, setActiveSlice] = useState<number | undefined>(undefined)
+
+  const restCmp = slices.find((slice) => slice.symbol === "rest")
+  const restIsSelected = restCmp && slices.length - 1 === activeSlice
+
+  let label = <DefaultSliceLabel slices={slices} />
+
+  if (activeSlice != null) {
+    if (!isDesktop && restIsSelected) {
+      label = (
+        <Text color="basic100" fs={[20, 34]}>
+          {t("value.percentage", { value: restCmp.percentage })}
+        </Text>
+      )
+    } else {
+      label = slices[activeSlice].label
+    }
+  }
+
+  const sliceComponents = useMemo(() => {
+    if (!slices.length) return null
+
+    let diffAngle = 0
+    const components = slices.map((slice, index) => {
+      const sliceLength = slice.percentage * 3.6
+      const startAngle = diffAngle
+      const endAngle = sliceLength
+      diffAngle += endAngle
+
+      return (
+        <Fragment key={slice.percentage}>
+          <SClipPath
+            rotate={startAngle}
+            length={sliceLength - 1}
+            color={slice.color}
+            size={config.shadowSize}
+            radial
+            clipPath={getCircleCoordinates(
+              config.shadowInnerRadius,
+              config.innerRadius,
+              config.shadowSize,
+              slice.percentage,
+            )}
+          />
+
+          <SClipPath
+            rotate={startAngle}
+            length={sliceLength - 1}
+            color={slice.color}
+            size={config.pieSize}
+            clipPath={getCircleCoordinates(
+              config.innerRadius,
+              config.outerRadius,
+              config.pieSize,
+              slice.percentage,
+            )}
+          />
+
+          <SClipPath
+            rotate={startAngle}
+            length={sliceLength - 1}
+            color={slice.color}
+            size={config.pieSize}
+            isActive={activeSlice === index}
+            clipPath={getCircleCoordinates(
+              config.innerRadius,
+              config.outerRadius,
+              config.pieSize,
+              slice.percentage,
+            )}
+            hoverClipPath={getCircleCoordinates(
+              config.innerRadius,
+              config.hoverOuterRadius,
+              config.pieSize,
+              slice.percentage,
+            )}
+            onMouseMove={() => setActiveSlice(index)}
+            onMouseLeave={() => setActiveSlice(undefined)}
+          />
+        </Fragment>
+      )
+    })
+
+    return <SSliceContainer size={config.pieSize}>{components}</SSliceContainer>
+  }, [config, slices, activeSlice])
 
   return (
-    <g>
-      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill}>
-        {payload.name}
-      </text>
-
-      <Sector
-        cx={cx}
-        cy={cy}
-        innerRadius={innerRadius}
-        outerRadius={outerRadius + 10}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        fill={fill}
-      />
-    </g>
+    <div sx={{ flex: "column", gap: 24 }}>
+      <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
+        <div css={{ position: "relative" }}>
+          <SLabelContainer size={PIE_SIZE - config.shadowInnerRadius}>
+            <AnimatePresence>{label}</AnimatePresence>
+          </SLabelContainer>
+          <svg width={PIE_SIZE} height={PIE_SIZE}>
+            <foreignObject width={PIE_SIZE} height={PIE_SIZE}>
+              {sliceComponents}
+            </foreignObject>
+          </svg>
+        </div>
+        {!isDesktop ? (
+          <ScrollablePicker
+            values={[
+              {
+                name: t("stats.overview.pie.rest.label"),
+                color: "white",
+                symbol: "overview",
+                label: <Fragment />,
+                percentage: 0,
+              },
+              ...slices,
+            ]}
+            onChange={setActiveSlice}
+          />
+        ) : null}
+      </div>
+      {!isDesktop && restIsSelected ? restCmp.label : null}
+    </div>
   )
 }
 
-export const PieChartComponent = () => {
-  const [activeIndex, setIndex] = useState<number | undefined>(undefined)
+export const PieChart = () => {
+  const { data: omnipoolTotal } = useTotalInPools()
+  const { data: omnipoolData } = useOmnipoolPools()
 
-  const onPieEnter = (data: any, index: number | undefined) => {
-    setIndex(index)
-  }
+  if (!omnipoolTotal || !omnipoolData) return <PieSkeleton />
 
-  const valueSum = data.reduce((acc, val) => {
-    return (acc += val.value)
-  }, 0)
+  const slices = omnipoolData
+    ?.reduce((acc, omnipoolAsset) => {
+      const percentage = Number(
+        omnipoolAsset.totalUSD.div(omnipoolTotal).multipliedBy(100).toFixed(2),
+      )
 
-  const test = data.reduce((acc, val, index) => {
-    const length = (val.value / valueSum) * 360
+      if (percentage > 1) {
+        const label = (
+          <SliceLabel
+            key={percentage}
+            symbol={omnipoolAsset.symbol}
+            tvl={omnipoolAsset.totalUSD}
+            percentage={percentage}
+          />
+        )
 
-    const startAngle = acc?.[index - 1]?.endAngle ?? 0
-    const endAngle = startAngle + length
-    return [...acc, { startAngle, endAngle }]
-  }, [])
+        acc.push({
+          percentage,
+          color: ASSET_COLORS[omnipoolAsset.symbol.toLowerCase()] ?? "#ffffff",
+          label,
+          symbol: omnipoolAsset.symbol,
+          name: omnipoolAsset.name,
+        })
+      } else {
+        const restAssets = acc.find((slice) => slice.symbol === "rest")
 
-  //console.log(result, "result")
-  //console.log(anglesSum, "anglesSum")
-  //console.log(test, "test")
-  // 338 : 360
-  return (
-    <div>
-      <PieChart width={300} height={300}>
-        <defs>
-          {data.map((entry, index) => (
-            <linearGradient
-              id={`myGradient${index}`}
-              x1={"100%"}
-              y1={"100%"}
-              x2={"0%"}
-              y2={"0%"}
-            >
-              <stop
-                offset="0%"
-                stopColor={COLORS[index % COLORS.length].start}
-                stopOpacity={0}
-              />
-              <stop
-                offset="100%"
-                stopColor={COLORS[index % COLORS.length].start}
-                stopOpacity={1}
-              />
-            </linearGradient>
-          ))}
-        </defs>
-        <defs>
-          {data.map((entry, index) => (
-            <linearGradient
-              id={`myShadowGradient${index}`}
-              x1={"0%"}
-              y1={"100%"}
-              x2={"0%"}
-              y2={"0%"}
-            >
-              <stop
-                offset="0%"
-                stopColor={COLORS[index % COLORS.length].start}
-                stopOpacity={0}
-              />
-              <stop
-                offset="30%"
-                stopColor={COLORS[index % COLORS.length].start}
-                stopOpacity={0}
-              />
-              <stop
-                offset="100%"
-                stopColor={COLORS[index % COLORS.length].start}
-                stopOpacity={0.2}
-              />
-            </linearGradient>
-          ))}
-        </defs>
-        <Pie
-          //startAngle={90}
-          //endAngle={450}
-          activeIndex={activeIndex}
-          activeShape={renderActiveShape}
-          data={data}
-          paddingAngle={3}
-          //cx="200px"
-          //cy="200px"
-          innerRadius={120}
-          outerRadius={140}
-          //fill="#8884d8"
-          dataKey="value"
-          //onMouseEnter={onPieEnter}
-          shapeRendering={120}
-          //onMouseLeave={() => onPieEnter(null, undefined)}
-        >
-          {data.map((entry, index) => {
-            return (
-              <Cell
-                key={`cell-${index}`}
-                fill={`url(#myGradient${index})`}
-                stroke="0"
-                style={
-                  {
-                    // filter: `drop-shadow(0px 0px 10px ${COLORS[index].start}`,
-                  }
+        if (restAssets) {
+          const assets = [
+            ...(restAssets.assets ?? []),
+            {
+              name: omnipoolAsset.name,
+              percentage,
+              tvl: omnipoolAsset.totalUSD,
+            },
+          ]
+
+          const label = <SliceLabelRest key={percentage} assets={assets} />
+
+          return acc.map((slice) =>
+            slice.symbol === "rest"
+              ? {
+                  ...slice,
+                  percentage: (slice.percentage += percentage),
+                  label,
+                  assets,
                 }
-              />
-            )
-          })}
-        </Pie>
-        <Pie
-          //startAngle={90}
-          //endAngle={450}
-          //activeIndex={activeIndex}
-          //activeShape={renderActiveShape}
-          data={data}
-          paddingAngle={3}
-          //cx="200px"
-          //cy="200px"
-          innerRadius={100}
-          outerRadius={120}
-          //fill="#8884d8"
-          dataKey="value"
-          //onMouseEnter={onPieEnter}
-          shapeRendering={120}
-          //onMouseLeave={() => onPieEnter(null, undefined)}
-        >
-          {data.map((entry, index) => {
-            return (
-              <Cell
-                key={`cell-${index}`}
-                fill={`url(#myShadowGradient${index})`}
-                stroke="0"
-                style={
-                  {
-                    //filter: `drop-shadow(0px 0px 10px ${COLORS[index].start}`,
-                  }
-                }
-              />
-            )
-          })}
-        </Pie>
-      </PieChart>
-    </div>
-  )
+              : slice,
+          )
+        } else {
+          const assets = [
+            {
+              name: omnipoolAsset.name,
+              percentage,
+              tvl: omnipoolAsset.totalUSD,
+            },
+          ]
+          const label = <SliceLabelRest key={percentage} assets={assets} />
+
+          acc.push({
+            percentage,
+            color: "#D9D9D9",
+            label,
+            symbol: "rest",
+            assets,
+            name: t("stats.overview.pie.rest.header.assets"),
+          })
+        }
+      }
+
+      return acc
+    }, [] as TSlice[])
+    .sort((a) => (a.symbol !== "rest" ? -1 : 0))
+
+  return <DoughnutChart slices={slices} />
 }

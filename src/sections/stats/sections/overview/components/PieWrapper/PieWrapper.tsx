@@ -1,31 +1,50 @@
-import { Text } from "components/Typography/Text/Text"
 import { SPieWrapper } from "./PieWrapper.styled"
-import { PieChartComponent } from "sections/stats/components/PieChart/PieChart"
+import { PieChart } from "sections/stats/components/PieChart/PieChart"
+import { PieTotalValue } from "../PieTotalValue/PieTotalValue"
+import { useApiPromise } from "utils/api"
+import { isApiLoaded } from "utils/helpers"
+import { PieSkeleton } from "sections/stats/components/PieChart/components/Skeleton/Skeleton"
+import { ChartSwitchMobile } from "sections/stats/components/ChartSwitchMobile/ChartSwitchMobile"
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import { useState } from "react"
 
 export const PieWrapper = () => {
+  const api = useApiPromise()
+  const isApi = isApiLoaded(api)
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const [activeSection, setActiveSection] = useState<"overview" | "chart">(
+    "overview",
+  )
+
   return (
     <SPieWrapper>
-      <div sx={{ width: 300, height: 300 }}>
-        <PieChartComponent />
-      </div>
+      {!isDesktop && (
+        <ChartSwitchMobile onClick={setActiveSection} active={activeSection} />
+      )}
+
+      {activeSection === "overview" ? (
+        isApi ? (
+          <PieChart />
+        ) : (
+          <PieSkeleton />
+        )
+      ) : (
+        <div sx={{ color: "white" }}>TODO: Chart</div>
+      )}
+
       <div sx={{ flex: "column", gap: 20 }}>
-        <div sx={{ flex: "column", gap: 8 }}>
-          <Text color="brightBlue300">Total value locked</Text>
-          <Text fs={42} font="FontOver">
-            8 301 874
-          </Text>
-        </div>
-        <div sx={{ flex: "column", gap: 8 }}>
-          <Text color="brightBlue300">HydraDx POL</Text>
-          <Text fs={42} font="FontOver">
-            13.2m
-          </Text>
-        </div>
-        <div sx={{ flex: "column", gap: 8 }}>
-          <Text color="brightBlue300">24 volume</Text>
-          <Text fs={42} font="FontOver">
-            13.2m
-          </Text>
+        <PieTotalValue title="Total value locked" type="tvl" />
+        <div
+          sx={{
+            flex: ["row", "column"],
+            justify: "space-between",
+            flexWrap: "wrap",
+            gap: 20,
+          }}
+        >
+          <PieTotalValue title="HydraDx POL" type="pol" />
+          <PieTotalValue title="24 volume" type="volume" />
         </div>
       </div>
     </SPieWrapper>
