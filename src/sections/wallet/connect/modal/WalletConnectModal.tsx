@@ -9,10 +9,10 @@ import { WalletConnectAccountSelect } from "sections/wallet/connect/accountSelec
 import { WalletConnectConfirmPending } from "sections/wallet/connect/confirmPending/WalletConnectConfirmPending"
 import { WalletConnectProviderSelect } from "sections/wallet/connect/providerSelect/WalletConnectProviderSelect"
 import { externalWallet, useAccountStore } from "state/store"
+import { useWalletConnect } from "utils/walletConnect"
 import { ExternalWalletConnectModal } from "./ExternalWalletConnectModal"
 import { WalletConnectActiveFooter } from "./WalletConnectActiveFooter"
 import { useEnableWallet } from "./WalletConnectModal.utils"
-import { useWalletConnect } from "utils/walletConnect"
 
 type Props = { isOpen: boolean; onClose: () => void }
 
@@ -26,7 +26,7 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
     provider: userSelectedProvider,
     onError: () => setUserSelectedProvider(null),
   })
-  const walletConnect = useWalletConnect()
+  const wc = useWalletConnect()
 
   const { account, setAccount } = useAccountStore()
   const navigate = useNavigate()
@@ -44,11 +44,11 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
 
   const onWalletConnect = () => {
     setUserSelectedProvider("WalletConnect")
-    walletConnect.connect()
+    wc.connect()
     paginateTo(2)
   }
 
-  const isConnecting = enableWallet.isLoading || walletConnect.isConnecting
+  const isConnecting = enableWallet.isLoading || wc.isConnecting
 
   return (
     <Modal
@@ -124,6 +124,7 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
           onLogout={() => {
             setUserSelectedProvider(null)
             setAccount(undefined)
+            wc.disconnect()
             onClose()
             navigate({
               search: undefined,
