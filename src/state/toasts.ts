@@ -1,4 +1,4 @@
-import create from "zustand"
+import { create } from "zustand"
 import { ReactElement, ReactNode } from "react"
 import { v4 as uuid } from "uuid"
 import { renderToString } from "react-dom/server"

@@ -1,4 +1,4 @@
-import create from "zustand"
+import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { ISubmittableResult } from "@polkadot/types/types"
