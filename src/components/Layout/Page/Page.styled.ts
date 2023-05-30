@@ -13,14 +13,17 @@ export const SPage = styled.div<{ variant?: "stats" | "default" }>`
 
   height: 100vh;
 
+  background: ${theme.colors.bg};
+
   ${({ variant }) =>
     variant === "stats"
       ? css`
-          background: ${theme.gradients.backgroundStats};
+          & > div {
+            height: 1360px;
+            background: ${theme.gradients.backgroundStats};
+          }
         `
       : css`
-          background: ${theme.colors.bg};
-
           & > div {
             height: 474px;
             background: ${theme.gradients.background};
@@ -89,6 +92,7 @@ export const SPageGrid = styled.div`
   position: absolute;
   inset: 0;
   z-index: 0;
+  height: 843px;
 
   opacity: 0.06;
   pointer-events: none;
@@ -96,4 +100,5 @@ export const SPageGrid = styled.div`
   background-size: 22px 22px;
   background-image: linear-gradient(to right, white 1px, transparent 1px),
     linear-gradient(to bottom, white 1px, transparent 1px);
+  mask-image: linear-gradient(180deg, #d9d9d9 0%, rgba(217, 217, 217, 0) 100%);
 `
