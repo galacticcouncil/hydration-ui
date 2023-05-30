@@ -14,7 +14,7 @@ const pageEnabled = import.meta.env.VITE_FF_STATS_ENABLED === "true"
 export const StatsPage = () => {
   const { t } = useTranslation()
   const matchRoute = useMatchRoute()
-
+  console.log("test")
   if (!pageEnabled) return <Navigate to="/trade" />
 
   return (
