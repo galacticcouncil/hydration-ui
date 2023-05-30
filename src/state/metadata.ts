@@ -1,4 +1,4 @@
-import create from "zustand"
+import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { ChainMetadata } from "sections/wallet/upgrade/WalletUpgradeModal.utils"
 import { Hash } from "@polkadot/types/interfaces"

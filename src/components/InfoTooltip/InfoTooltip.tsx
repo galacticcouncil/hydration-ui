@@ -5,7 +5,7 @@ import { theme } from "theme"
 import { SContent, STrigger } from "./InfoTooltip.styled"
 
 type InfoTooltipProps = {
-  text: ReactNode
+  text: ReactNode | string
   textOnClick?: ReactNode
   children: ReactNode
   type?: "default" | "black"
@@ -58,9 +58,13 @@ export function InfoTooltip({
           alignOffset={-10}
           collisionPadding={12}
         >
-          <Text fs={11} fw={500}>
-            {textOnClick != null ? content : text}
-          </Text>
+          {typeof text === "string" ? (
+            <Text fs={11} fw={500}>
+              {textOnClick != null ? content : text}
+            </Text>
+          ) : (
+            text
+          )}
           {type === "default" && (
             <Tooltip.Arrow
               css={{
