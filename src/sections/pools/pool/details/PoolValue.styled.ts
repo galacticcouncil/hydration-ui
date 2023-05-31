@@ -19,7 +19,24 @@ export const SInfoIcon = styled(InfoIcon)`
 
   border-radius: 9999px;
 
+  & > path:nth-of-type(1) {
+    fill: url(#paint0_linear_16038_17627);
+  }
+
+  & > path:nth-of-type(2) {
+    fill: ${theme.colors.brightBlue300};
+  }
+
   [data-state*="open"] > & {
     cursor: pointer;
+
+    & > path:nth-of-type(1) {
+      fill: #57b3eb;
+      fill-opacity: 1;
+    }
+
+    & > path:nth-of-type(2) {
+      fill: #00041d;
+    }
   }
 `

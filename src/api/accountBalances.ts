@@ -36,7 +36,7 @@ export const useAccountAssetBalances = (
   const api = useApiPromise()
   return useQuery(
     QUERY_KEYS.accountAssetBalances(pairs),
-    getAccountAssetBalances(api, pairs),
+    pairs != null ? getAccountAssetBalances(api, pairs) : undefinedNoop,
     { enabled: pairs.length > 0 },
   )
 }
@@ -58,7 +58,12 @@ const getAccountAssetBalances =
       ),
     ])
 
-    const values: Array<{ free: BN; reserved: BN; frozen: BN }> = []
+    const values: Array<{
+      free: BN
+      reserved: BN
+      frozen: BN
+      assetId: string
+    }> = []
     for (
       let tokenIdx = 0, nativeIdx = 0;
       tokenIdx + nativeIdx < pairs.length;
@@ -69,6 +74,7 @@ const getAccountAssetBalances =
 
       if (assetId.toString() === NATIVE_ASSET_ID) {
         values.push({
+          assetId: assetId.toString(),
           free: natives[nativeIdx].data.free,
           reserved: natives[nativeIdx].data.reserved,
           frozen: natives[nativeIdx].data.feeFrozen.add(
@@ -79,6 +85,7 @@ const getAccountAssetBalances =
         nativeIdx += 1
       } else {
         values.push({
+          assetId: assetId.toString(),
           free: tokens[tokenIdx].free,
           reserved: tokens[tokenIdx].reserved,
           frozen: tokens[tokenIdx].frozen,

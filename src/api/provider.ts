@@ -2,7 +2,7 @@ import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import * as definitions from "interfaces/voting/definitions"
 import { QUERY_KEYS } from "utils/queryKeys"
-import create from "zustand"
+import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 export const PROVIDERS = [
