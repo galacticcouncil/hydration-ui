@@ -16,6 +16,8 @@ export const OMNIPOOL_ACCOUNT_ADDRESS = encodeAddress(
   stringToU8a("modlomnipool".padEnd(32, "\0")),
   HYDRA_ADDRESS_PREFIX,
 )
+export const HYDRA_TREASURE_ACCOUNT =
+  "7L53bUTBopuwFt3mKUfmkzgGLayYa1Yvn1hAg9v5UMrQzTfh"
 export const DEPOSIT_CLASS_ID = "1" // TODO: replace with constant from api
 export const POLKADOT_APP_NAME = "HydraDX"
 

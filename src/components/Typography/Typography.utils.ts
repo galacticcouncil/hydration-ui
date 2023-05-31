@@ -16,7 +16,7 @@ export type STypographyProps = Omit<TypographyProps, "color"> & {
   $color?: ResponsiveValue<keyof typeof theme.colors>
 }
 
-const assumePx = (val: number | string) => {
+export const assumePx = (val: number | string) => {
   if (typeof val === "number") return val + "px"
   return val
 }

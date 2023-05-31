@@ -6,7 +6,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
-import create from "zustand"
+import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 export const DepegWarningModal = (props: { onClose: () => void }) => {
