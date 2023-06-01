@@ -10,11 +10,13 @@ import { ReviewTransactionForm } from "./ReviewTransactionForm"
 import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionToast } from "./ReviewTransactionToast"
+import { useWalletConnect } from "utils/walletConnect"
 
 export const ReviewTransaction = (props: Transaction) => {
   const { t } = useTranslation()
   const [minimizeModal, setMinimizeModal] = useState(false)
 
+  const wc = useWalletConnect()
   const sendTx = useSendTransactionMutation()
 
   const modalProps: Partial<ComponentProps<typeof Modal>> =
@@ -78,7 +80,7 @@ export const ReviewTransaction = (props: Transaction) => {
         topContent={props.steps ? <Stepper steps={props.steps} /> : undefined}
         {...modalProps}
       >
-        <WalletUpgradeModal />
+        {!wc.session && <WalletUpgradeModal />}
         {sendTx.isLoading ? (
           <ReviewTransactionPending
             txState={sendTx.txState}

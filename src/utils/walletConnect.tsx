@@ -21,6 +21,8 @@ const web3modal = new Web3Modal({
 })
 
 export type WalletConnectCtx = {
+  client?: Client
+  session?: SessionTypes.Struct
   connect: () => Promise<void>
   disconnect: () => Promise<void>
   accounts: string[]
@@ -30,6 +32,8 @@ export type WalletConnectCtx = {
   isDisconnecting: boolean
 }
 export const WalletConnectContext = createContext<WalletConnectCtx>({
+  client: undefined,
+  session: undefined,
   connect: async () => {},
   disconnect: async () => {},
   accounts: [],
@@ -127,6 +131,8 @@ export const WalletConnectProvider = ({ children }: PropsWithChildren) => {
   return (
     <WalletConnectContext.Provider
       value={{
+        client,
+        session,
         connect,
         disconnect,
         accounts,

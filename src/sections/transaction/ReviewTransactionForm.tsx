@@ -1,36 +1,38 @@
-import { Trans, useTranslation } from "react-i18next"
-import { Text } from "components/Typography/Text/Text"
-import { Button } from "components/Button/Button"
-import { TransactionCode } from "components/TransactionCode/TransactionCode"
-import {
-  PROXY_WALLET_PROVIDER,
-  Transaction,
-  useAccountStore,
-} from "state/store"
-import { getTransactionJSON } from "./ReviewTransaction.utils"
-import { useNextNonce, usePaymentInfo } from "api/transaction"
-import { useMutation } from "@tanstack/react-query"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { getWalletBySource } from "@talismn/connect-wallets"
-import { useEra } from "api/era"
+import { useMutation } from "@tanstack/react-query"
+import { useAssetAccountDetails } from "api/assetDetails"
+import { useAssetMeta } from "api/assetMeta"
+import { useTokenBalance } from "api/balances"
 import { useBestNumber } from "api/chain"
+import { useEra } from "api/era"
 import {
   useAcceptedCurrencies,
   useAccountCurrency,
   useSetAsFeePayment,
 } from "api/payments"
-import { useAssetMeta } from "api/assetMeta"
 import { useSpotPrice } from "api/spotPrice"
-import { NATIVE_ASSET_ID, POLKADOT_APP_NAME } from "utils/api"
+import { useNextNonce, usePaymentInfo } from "api/transaction"
 import BigNumber from "bignumber.js"
-import { BN_0, BN_1 } from "utils/constants"
-import { Summary } from "components/Summary/Summary"
-import { Spacer } from "components/Spacer/Spacer"
-import { useTokenBalance } from "api/balances"
-import { getFloatingPointAmount } from "utils/balance"
-import { useAssetsModal } from "sections/assets/AssetsModal.utils"
-import { useAssetAccountDetails } from "api/assetDetails"
+import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
+import { Spacer } from "components/Spacer/Spacer"
+import { Summary } from "components/Summary/Summary"
+import { TransactionCode } from "components/TransactionCode/TransactionCode"
+import { Text } from "components/Typography/Text/Text"
+import { Trans, useTranslation } from "react-i18next"
+import { useAssetsModal } from "sections/assets/AssetsModal.utils"
+import {
+  PROXY_WALLET_PROVIDER,
+  Transaction,
+  useAccountStore,
+} from "state/store"
+import { NATIVE_ASSET_ID, POLKADOT_APP_NAME, useApiPromise } from "utils/api"
+import { getFloatingPointAmount } from "utils/balance"
+import { BN_0, BN_1 } from "utils/constants"
+import { HDX_CAIP_ID, useWalletConnect } from "utils/walletConnect"
+import { getTransactionJSON } from "./ReviewTransaction.utils"
+import { EXTRINSIC_VERSION } from "@polkadot/types/extrinsic/v4/Extrinsic"
 
 export const ReviewTransactionForm = (
   props: {
@@ -41,6 +43,7 @@ export const ReviewTransactionForm = (
 ) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
+  const api = useApiPromise()
   const bestNumber = useBestNumber()
   const accountCurrency = useAccountCurrency(account?.address)
   const feeMeta = useAssetMeta(
@@ -57,6 +60,8 @@ export const ReviewTransactionForm = (
   const nonce = useNextNonce(account?.address)
   const spotPrice = useSpotPrice(NATIVE_ASSET_ID, feeMeta.data?.id)
 
+  const wc = useWalletConnect()
+
   const signTx = useMutation(async () => {
     const address = props.isProxy ? account?.delegate : account?.address
     const provider =
@@ -64,21 +69,71 @@ export const ReviewTransactionForm = (
         ? PROXY_WALLET_PROVIDER
         : account?.provider
 
-    const wallet = getWalletBySource(provider)
+    if (provider === "WalletConnect" && wc.client && wc.session && address) {
+      const method = api.createType("Call", props.tx)
+      const era = api.registry.createType("ExtrinsicEra", {
+        current: bestNumber.data?.parachainBlockNumber.toNumber(),
+        period: 64,
+      })
 
-    if (address == null || wallet == null)
-      throw new Error("Missing active account or wallet")
+      const unsignedTransaction = {
+        specVersion: api.runtimeVersion.specVersion.toHex(),
+        transactionVersion: api.runtimeVersion.transactionVersion.toHex(),
+        address: address,
+        blockHash: bestNumber.data?.parachainBlockNumber.hash.toHex(),
+        blockNumber: bestNumber.data?.parachainBlockNumber.toHex(),
+        era: era.toHex(),
+        genesisHash: api.genesisHash.toHex(),
+        method: method.toHex(),
+        nonce: 0,
+        signedExtensions: [
+          "CheckNonZeroSender",
+          "CheckSpecVersion",
+          "CheckTxVersion",
+          "CheckGenesis",
+          "CheckMortality",
+          "CheckNonce",
+          "CheckWeight",
+          "ChargeTransactionPayment",
+        ],
+        tip: api.registry.createType("Compact<Balance>", 0).toHex(),
+        version: EXTRINSIC_VERSION,
+      }
 
-    if (props.isProxy) {
-      await wallet.enable(POLKADOT_APP_NAME)
+      const { signature }: { signature: `0x${string}` } =
+        await wc.client.request({
+          topic: wc.session.topic,
+          chainId: `polkadot:${HDX_CAIP_ID}`,
+          request: {
+            method: "polkadot_signTransaction",
+            params: { address, transactionPayload: unsignedTransaction },
+          },
+        })
+
+      const rawUnsignedTx = api.registry.createType(
+        "ExtrinsicPayload",
+        unsignedTransaction,
+        { version: EXTRINSIC_VERSION },
+      )
+
+      props.tx.addSignature(address, signature, rawUnsignedTx)
+      return await props.onSigned(props.tx)
+    } else {
+      const wallet = getWalletBySource(provider)
+
+      if (address == null || wallet == null)
+        throw new Error("Missing active account or wallet")
+
+      if (props.isProxy) {
+        await wallet.enable(POLKADOT_APP_NAME)
+      }
+      const signature = await props.tx.signAsync(address, {
+        signer: wallet.signer,
+        // defer to polkadot/api to handle nonce w/ regard to mempool
+        nonce: -1,
+      })
+      return await props.onSigned(signature)
     }
-    const signature = await props.tx.signAsync(address, {
-      signer: wallet.signer,
-      // defer to polkadot/api to handle nonce w/ regard to mempool
-      nonce: -1,
-    })
-
-    return await props.onSigned(signature)
   })
 
   const json = getTransactionJSON(props.tx)
