@@ -51,10 +51,10 @@ export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
           {spotPrice.isLoading || apiIds.isLoading ? (
             <Skeleton width={118} height={21} />
           ) : (
-            <Text>
+            <Text lh={22} color="white" fs={18}>
               {t("value.token", {
                 value: spotPrice.data?.spotPrice,
-                numberSuffix: "$", //TODO: Add spotPrice token symbol when we supports it
+                numberPrefix: "$", //TODO: Add spotPrice token symbol when we supports it
               })}
             </Text>
           )}

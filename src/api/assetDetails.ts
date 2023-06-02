@@ -141,7 +141,6 @@ const getAssetDetails = (api: ApiPromise) => async () => {
     return {
       id: key.args[0].toString(),
       name: data.unwrap().name.toUtf8(),
-      locked: data.unwrap().locked.toPrimitive(),
       assetType: data.unwrap().assetType.type,
       existentialDeposit: data.unwrap().existentialDeposit.toBigNumber(),
     }
@@ -150,7 +149,6 @@ const getAssetDetails = (api: ApiPromise) => async () => {
   if (!assets.find((i) => i.id === NATIVE_ASSET_ID)) {
     assets.push({
       id: NATIVE_ASSET_ID,
-      locked: false,
       name: system.tokenSymbol.unwrap()[0].toString(),
       assetType: "Token",
       existentialDeposit: BN_0,
@@ -199,7 +197,6 @@ export const getAssetsDetails = (api: ApiPromise) => async () => {
     return {
       id: key.args[0].toString(),
       name: data.unwrap().name.toUtf8() || getAssetName(symbol),
-      locked: data.unwrap().locked.toPrimitive(),
       assetType: data.unwrap().assetType.type,
       symbol,
       decimals,
@@ -214,7 +211,6 @@ export const getAssetsDetails = (api: ApiPromise) => async () => {
 
     assets.push({
       id: NATIVE_ASSET_ID,
-      locked: false,
       name: system.tokenSymbol.unwrap()[0].toString() || getAssetName(symbol),
       assetType: "Token",
       symbol,
