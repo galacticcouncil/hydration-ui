@@ -4,10 +4,10 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Heading } from "components/Typography/Heading/Heading"
 import { useTranslation } from "react-i18next"
 import { LINKS } from "utils/navigation"
-import { StatsLRNA } from "./LRNA/StatsLRNA"
-import { StatsPOL } from "./POL/StatsPOL"
-import { StatsOverview } from "./overview/StatsOverview"
-import { StatsTabs } from "./tabs/StatsTabs"
+import { StatsLRNA } from "./sections/LRNA/StatsLRNA"
+import { StatsPOL } from "./sections/POL/StatsPOL"
+import { StatsOverview } from "./sections/overview/StatsOverview"
+import { StatsTabs } from "./components/tabs/StatsTabs"
 
 const pageEnabled = import.meta.env.VITE_FF_STATS_ENABLED === "true"
 
@@ -19,15 +19,17 @@ export const StatsPage = () => {
 
   return (
     <Page variant="stats">
-      <Heading as="h1" fs={30} lh={30} fw={500}>
-        {t("stats.title")}
-      </Heading>
-      <Spacer size={42} />
-      <StatsTabs />
-      <Spacer size={30} />
-      {matchRoute({ to: LINKS.statsOverview }) && <StatsOverview />}
-      {matchRoute({ to: LINKS.statsPOL }) && <StatsPOL />}
-      {matchRoute({ to: LINKS.statsLRNA }) && <StatsLRNA />}
+      <div sx={{ height: 2000 }}>
+        <Heading as="h1" fs={30} lh={30} fw={500}>
+          {t("stats.title")}
+        </Heading>
+        <Spacer size={42} />
+        <StatsTabs />
+        <Spacer size={30} />
+        {matchRoute({ to: LINKS.statsOverview }) && <StatsOverview />}
+        {matchRoute({ to: LINKS.statsPOL }) && <StatsPOL />}
+        {matchRoute({ to: LINKS.statsLRNA }) && <StatsLRNA />}
+      </div>
     </Page>
   )
 }

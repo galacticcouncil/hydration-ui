@@ -1,17 +1,11 @@
 import styled from "@emotion/styled"
-import { css } from "@emotion/react"
+import { ResponsiveValue, getResponsiveStyles } from "utils/responsive"
+import { assumePx } from "components/Typography/Typography.utils"
 
-export const SIconWrapper = styled.span<{ size?: number }>`
+export const SIconWrapper = styled.span<{ size?: ResponsiveValue<number> }>`
   display: flex;
-  ${(p) =>
-    p.size &&
-    css`
-      width: ${p.size}px;
-      height: ${p.size}px;
-
-      svg {
-        width: ${p.size}px;
-        height: ${p.size}px;
-      }
-    `}
+  ${(p) => [
+    getResponsiveStyles(p.size, (size) => ({ width: assumePx(size) })),
+    getResponsiveStyles(p.size, (size) => ({ height: assumePx(size) })),
+  ]}
 `

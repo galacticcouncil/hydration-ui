@@ -27,6 +27,7 @@ const isPoolsPageEnabled = import.meta.env.VITE_FF_POOLS_ENABLED === "true"
 const isXcmPageEnabled = import.meta.env.VITE_FF_XCM_ENABLED === "true"
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
+const isStatsEnabled = import.meta.env.VITE_FF_STATS_ENABLED === "true"
 
 export const MENU_ITEMS = [
   {
@@ -72,6 +73,16 @@ export const MENU_ITEMS = [
     external: false,
     mobVisible: false,
     mobOrder: 3,
+  },
+  {
+    key: "stats",
+    href: LINKS.stats,
+    Icon: TransferIcon,
+    subItems: undefined,
+    enabled: isStatsEnabled,
+    external: false,
+    mobVisible: false,
+    mobOrder: 4,
   },
 ] as const
 

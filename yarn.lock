@@ -2178,10 +2178,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^1.1.13":
-  version "1.1.14"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.1.14.tgz#ec8c16f9e0b200342a23640ff86c59dc87336a87"
-  integrity sha512-YxuCUr84VunVg3VduxbUNDil7p5Klt7MFLQY7lSr/qXRlxDO07vr7kkyyNezXwjdvg9KYUaiDIr/PF9ye6dM0g==
+"@galacticcouncil/ui@^1.2.5":
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.2.5.tgz#0ba4410dac61a49d337ef643cd78a2ec495bb4c0"
+  integrity sha512-Z/AriIPssSGkoWIuDN+eEyBhild2sBFD3CxPomHqMPXJeZ3VLpD7byD+M1KXxMOZl2HDh1g6HsrrHFKY+b2fuQ==
   dependencies:
     "@lit/reactive-element" "^1.0.0"
     imask "^6.4.3"

@@ -9,6 +9,8 @@ import { QUERY_KEYS } from "utils/queryKeys"
 
 const DEPOSIT_NFT_COLLECTION_ID = "2584"
 
+const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
+
 export type DepositNftType = Awaited<
   ReturnType<ReturnType<typeof getDeposits>>
 >[number]
@@ -40,7 +42,9 @@ const getAccountDepositIds =
 
 export const useAllDeposits = () => {
   const api = useApiPromise()
-  return useQuery(QUERY_KEYS.allDeposits, getDeposits(api))
+  return useQuery(QUERY_KEYS.allDeposits, getDeposits(api), {
+    enabled: enabledFarms,
+  })
 }
 
 export const usePoolDeposits = (poolId?: u32 | string) => {
