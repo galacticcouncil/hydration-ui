@@ -139,10 +139,7 @@ export const FarmDetailsCard = ({
         </SRow>
         <SRow css={{ border: depositNft ? undefined : "none" }}>
           <FillBar
-            percentage={apr.data.distributedRewards
-              .div(apr.data.maxRewards)
-              .times(100)
-              .toNumber()}
+            percentage={apr.data.fullness.times(100).toNumber()}
             variant="secondary"
           />
           <Text fs={14} color="basic100" tAlign="right">
