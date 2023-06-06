@@ -43,22 +43,24 @@ export const OtcOrderActionsMob = ({
   const orderOwner = row.owner
 
   return (
-    <Modal open={!!row} isDrawer onClose={onClose}>
+    <Modal open={!!row} isDrawer onClose={onClose} title="">
       <div>
-        <div
-          sx={{
-            flex: "row",
-            justify: "space-between",
-            align: "center",
-            pb: 30,
-          }}
-        >
-          <OrderPairColumn
-            accepting={row.accepting}
-            offering={row.offering}
-            pol={row.pol}
-          />
-          <OrderPriceColumn symbol={row.accepting.symbol} price={row.price} />
+        <div>
+          <div
+            sx={{
+              flex: "row",
+              justify: "space-between",
+              align: "center",
+              pb: 30,
+            }}
+          >
+            <OrderPairColumn
+              accepting={row.accepting}
+              offering={row.offering}
+              pol={row.pol}
+            />
+            <OrderPriceColumn symbol={row.accepting.symbol} price={row.price} />
+          </div>
         </div>
         <Separator
           css={{ background: `rgba(${theme.rgbColors.alpha0}, 0.06)` }}
