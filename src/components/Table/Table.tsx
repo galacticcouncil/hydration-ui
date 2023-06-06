@@ -1,7 +1,9 @@
 import { SortDirection } from "@tanstack/react-table"
 import { ReactComponent as CaretIcon } from "assets/icons/CaretIcon.svg"
 import { Button, ButtonVariant } from "components/Button/Button"
+import { Icon } from "components/Icon/Icon"
 import { TableHeader } from "components/Table/Table.styled"
+import { Text } from "components/Typography/Text/Text"
 import { ReactNode } from "react"
 
 export const TableAction = (props: {
@@ -24,9 +26,11 @@ export const TableAction = (props: {
         props.onClick?.()
       }}
     >
-      <div sx={{ flex: "row", align: "center" }}>
-        {props.icon}
-        {props.children}
+      <div sx={{ flex: "row", align: "center", gap: 8 }}>
+        <Icon size={16} icon={props.icon}></Icon>
+        <Text fs={13} color="brightBlue300">
+          {props.children}
+        </Text>
       </div>
     </Button>
   )
@@ -47,10 +51,10 @@ export const TableSortHeader = (props: {
 
   return (
     <TableHeader canSort={canSort} onClick={onSort} className={className}>
-      <div sx={{ flex: "row", align: "center" }}>
+      <div sx={{ flex: "row", align: "center", gap: 6, justify: "center" }}>
         {children}
         {isSorting && (
-          <div sx={{ flex: "column", gap: 2, ml: 6 }}>
+          <div sx={{ flex: "column", gap: 2 }}>
             <CaretIcon css={{ rotate: "180deg", opacity: asc }} />
             <CaretIcon css={{ opacity: desc }} />
           </div>

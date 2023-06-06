@@ -108,6 +108,10 @@ export const QUERY_KEYS = {
   tokenBalance: (
     id: Maybe<string | u32>,
     address: Maybe<AccountId32 | string>,
+  ) => ["tokenBalance", id?.toString(), address],
+  tokenBalanceLive: (
+    id: Maybe<string | u32>,
+    address: Maybe<AccountId32 | string>,
   ) => [QUERY_KEY_PREFIX, "tokenBalance", id?.toString(), address],
   tokensBalances: (ids: string[], address?: string) => [
     QUERY_KEY_PREFIX,
@@ -115,12 +119,14 @@ export const QUERY_KEYS = {
     address,
     ...ids,
   ],
-  assets: [QUERY_KEY_PREFIX, "assets"],
-  assetsMeta: [QUERY_KEY_PREFIX, "assetsMeta"],
+  assets: ["assets"],
+  assetsLive: [QUERY_KEY_PREFIX, "assets"],
+  assetsMeta: ["assetsMeta"],
   tradeAssets: [QUERY_KEY_PREFIX, "tradeAssets"],
   exchangeFee: [QUERY_KEY_PREFIX, "exchangeFee"],
   calculateTotalLiqInPools: [QUERY_KEY_PREFIX, "totalLiqInPools"],
-  spotPrice: (assetA: string, assetB: string) => [
+  spotPrice: (assetA: string, assetB: string) => ["spotPrice", assetA, assetB],
+  spotPriceLive: (assetA: string, assetB: string) => [
     QUERY_KEY_PREFIX,
     "spotPrice",
     assetA,
@@ -164,7 +170,12 @@ export const QUERY_KEYS = {
     periodsInFarm,
   ],
   minWithdrawalFee: ["minWithdrawalFee"],
+  allTrades: ["allTrades"],
   tradeVolume: (poolId: Maybe<string | u32>) => [
+    "tradeVolume",
+    poolId?.toString(),
+  ],
+  tradeVolumeLive: (poolId: Maybe<string | u32>) => [
     QUERY_KEY_PREFIX,
     "tradeVolume",
     poolId?.toString(),
@@ -190,12 +201,18 @@ export const QUERY_KEYS = {
     asset,
   ],
   uniques: (address: string | AccountId32, collectionId: string | u128) => [
+    "uniques",
+    address.toString(),
+    collectionId.toString(),
+  ],
+  uniquesLive: (address: string | AccountId32, collectionId: string | u128) => [
     QUERY_KEY_PREFIX,
     "uniques",
     address.toString(),
     collectionId.toString(),
   ],
-  omnipoolAssets: [QUERY_KEY_PREFIX, "omnipoolAssets"],
+  omnipoolAssets: ["omnipoolAssets"],
+  omnipoolAssetsLive: [QUERY_KEY_PREFIX, "omnipoolAssets"],
   hubAssetTradability: [QUERY_KEY_PREFIX, "hubAssetTradability"],
   omnipoolFee: [QUERY_KEY_PREFIX, "omnipoolFee"],
   omnipoolAsset: (id: u32 | string) => [
@@ -205,6 +222,10 @@ export const QUERY_KEYS = {
   ],
   omnipoolPositions: [QUERY_KEY_PREFIX, "omnipoolPositions"],
   omnipoolPosition: (id: u128 | undefined) => [
+    "omnipoolPosition",
+    id?.toString(),
+  ],
+  omnipoolPositionLive: (id: u128 | undefined) => [
     QUERY_KEY_PREFIX,
     "omnipoolPosition",
     id?.toString(),
@@ -235,7 +256,7 @@ export const QUERY_KEYS = {
     "accountCurrency",
     address,
   ],
-  apiIds: [QUERY_KEY_PREFIX, "apiIds"],
+  apiIds: ["apiIds"],
   tvlCap: [QUERY_KEY_PREFIX, "tvlCap"],
   externalWalletKey: (walletAddress: string) => [
     "externalWallet",

@@ -8,4 +8,11 @@ export const SIconWrapper = styled.span<{ size?: ResponsiveValue<number> }>`
     getResponsiveStyles(p.size, (size) => ({ width: assumePx(size) })),
     getResponsiveStyles(p.size, (size) => ({ height: assumePx(size) })),
   ]}
+
+  & > svg {
+    ${(p) => [
+      getResponsiveStyles(p.size, (size) => ({ width: assumePx(size) })),
+      getResponsiveStyles(p.size, (size) => ({ height: assumePx(size) })),
+    ]}
+  }
 `

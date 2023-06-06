@@ -1,7 +1,7 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SPieWrapper = styled.div`
+export const SContainerVertical = styled.div`
   display: flex;
   flex-direction: column;
   gap: 40px;

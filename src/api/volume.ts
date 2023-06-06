@@ -1,4 +1,4 @@
-import { useQueries } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { addDays } from "date-fns"
 import { gql, request } from "graphql-request"
 import { Maybe, normalizeId, undefinedNoop } from "utils/helpers"
@@ -7,6 +7,21 @@ import { u32 } from "@polkadot/types-codec"
 import BN from "bignumber.js"
 import { BN_0 } from "../utils/constants"
 import { PROVIDERS, useProviderRpcUrlStore } from "./provider"
+
+export type TradeType = {
+  name: "Omnipool.SellExecuted" | "Omnipool.BuyExecuted" | "OTC.Placed"
+  id: string
+  args: {
+    who: string
+    assetIn: number
+    assetOut: number
+    amountIn: string
+    amountOut: string
+  }
+  block: {
+    timestamp: string
+  }
+}
 
 export const getTradeVolume =
   (indexerUrl: string, assetId: u32) => async () => {
@@ -18,28 +33,7 @@ export const getTradeVolume =
     return {
       assetId: normalizeId(assetId),
       ...(await request<{
-        events: Array<
-          | {
-              name: "Omnipool.SellExecuted"
-              args: {
-                who: string
-                assetIn: number
-                assetOut: number
-                amountIn: string
-                amountOut: string
-              }
-            }
-          | {
-              name: "Omnipool.BuyExecuted"
-              args: {
-                who: string
-                assetIn: number
-                assetOut: number
-                amountIn: string
-                amountOut: string
-              }
-            }
-        >
+        events: Array<TradeType>
       }>(
         indexerUrl,
         gql`
@@ -58,6 +52,7 @@ export const getTradeVolume =
                 }
               }
             ) {
+              id
               name
               args
               block {
@@ -71,7 +66,43 @@ export const getTradeVolume =
     }
   }
 
-export function useTradeVolumes(assetIds: Maybe<u32>[]) {
+export const getAllTradeVolume = (indexerUrl: string) => async () => {
+  const after = addDays(new Date(), -1).toISOString()
+
+  // This is being typed manually, as GraphQL schema does not
+  // describe the event arguments at all
+  return {
+    ...(await request<{
+      events: Array<TradeType>
+    }>(
+      indexerUrl,
+      gql`
+        query TradeVolume($after: DateTime!) {
+          events(
+            where: {
+              name_eq: "Omnipool.SellExecuted"
+              block: { timestamp_gte: $after }
+              OR: {
+                name_eq: "Omnipool.BuyExecuted"
+                block: { timestamp_gte: $after }
+              }
+            }
+          ) {
+            id
+            name
+            args
+            block {
+              timestamp
+            }
+          }
+        }
+      `,
+      { after },
+    )),
+  }
+}
+
+export function useTradeVolumes(assetIds: Maybe<u32>[], noRefresh?: boolean) {
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
   const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
@@ -81,12 +112,24 @@ export function useTradeVolumes(assetIds: Maybe<u32>[]) {
 
   return useQueries({
     queries: assetIds.map((assetId) => ({
-      queryKey: QUERY_KEYS.tradeVolume(assetId),
+      queryKey: noRefresh
+        ? QUERY_KEYS.tradeVolume(assetId)
+        : QUERY_KEYS.tradeVolumeLive(assetId),
       queryFn:
         assetId != null ? getTradeVolume(indexerUrl, assetId) : undefinedNoop,
       enabled: !!assetId,
     })),
   })
+}
+
+export function useTradeVolume(noRefresh?: boolean) {
+  const preference = useProviderRpcUrlStore()
+  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+
+  const indexerUrl =
+    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
+  return useQuery(QUERY_KEYS.allTrades, getAllTradeVolume(indexerUrl))
 }
 
 export function getVolumeAssetTotalValue(
