@@ -1,24 +1,24 @@
+import { css } from "@emotion/react"
+import { u32 } from "@polkadot/types"
 import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
+import BigNumber from "bignumber.js"
+import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
+import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { AssetInput } from "components/AssetInput/AssetInput"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { theme } from "theme"
+import { getFloatingPointAmount } from "utils/balance"
+import { useDisplayAssetStore, useDisplayPrice } from "utils/displayAsset"
+import { Maybe } from "utils/helpers"
 import {
   SContainer,
   SMaxButton,
   SSelectAssetButton,
 } from "./AssetSelect.styled"
-import { u32 } from "@polkadot/types"
-import BigNumber from "bignumber.js"
-import { getFloatingPointAmount } from "utils/balance"
-import { useSpotPrice } from "api/spotPrice"
-import { Maybe } from "utils/helpers"
-import { getAssetName } from "components/AssetIcon/AssetIcon"
-import { theme } from "theme"
-import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
-import { useApiIds } from "api/consts"
-import { css } from "@emotion/react"
 
 export const AssetSelect = (props: {
   name: string
@@ -40,11 +40,11 @@ export const AssetSelect = (props: {
   onSelectAssetClick: () => void
 }) => {
   const { t } = useTranslation()
+  const displayAsset = useDisplayAssetStore()
 
-  const apiIds = useApiIds()
-  const spotPrice = useSpotPrice(props.asset, apiIds.data?.stableCoinId)
+  const spotPrice = useDisplayPrice(props.asset)
 
-  const aUSDValue = useMemo(() => {
+  const displayValue = useMemo(() => {
     if (!props.value) return 0
     if (spotPrice.data?.spotPrice == null) return null
     return spotPrice.data.spotPrice.times(props.value)
@@ -147,7 +147,7 @@ export const AssetSelect = (props: {
             label={t("selectAsset.input.label")}
             onBlur={props.onBlur}
             onChange={props.onChange}
-            dollars={t("value.usd", { amount: aUSDValue })}
+            displayValue={<DisplayValue value={displayValue} />}
             placeholder="0.00"
             unit={props.assetSymbol}
             error={props.error}

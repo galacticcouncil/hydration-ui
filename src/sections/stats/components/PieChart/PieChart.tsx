@@ -171,7 +171,10 @@ export const PieChart = () => {
   const slices = omnipoolData
     ?.reduce((acc, omnipoolAsset) => {
       const percentage = Number(
-        omnipoolAsset.totalUSD.div(omnipoolTotal).multipliedBy(100).toFixed(2),
+        omnipoolAsset.totalDisplay
+          .div(omnipoolTotal)
+          .multipliedBy(100)
+          .toFixed(2),
       )
 
       if (percentage > 1) {
@@ -179,7 +182,7 @@ export const PieChart = () => {
           <SliceLabel
             key={percentage}
             symbol={omnipoolAsset.symbol}
-            tvl={omnipoolAsset.totalUSD}
+            tvl={omnipoolAsset.totalDisplay}
             percentage={percentage}
           />
         )
@@ -200,7 +203,7 @@ export const PieChart = () => {
             {
               name: omnipoolAsset.name,
               percentage,
-              tvl: omnipoolAsset.totalUSD,
+              tvl: omnipoolAsset.totalDisplay,
             },
           ]
 
@@ -221,7 +224,7 @@ export const PieChart = () => {
             {
               name: omnipoolAsset.name,
               percentage,
-              tvl: omnipoolAsset.totalUSD,
+              tvl: omnipoolAsset.totalDisplay,
             },
           ]
           const label = <SliceLabelRest key={percentage} assets={assets} />

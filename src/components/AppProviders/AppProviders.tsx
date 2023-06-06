@@ -8,13 +8,10 @@ import { SkeletonTheme } from "react-loading-skeleton"
 import { Transactions } from "sections/transaction/Transactions"
 import { theme } from "theme"
 import { ApiPromiseContext } from "utils/api"
-import { useDefaultDisplayAsset } from "utils/displayAsset"
 
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   const preference = useProviderRpcUrlStore()
   const api = useProvider(preference.rpcUrl)
-
-  useDefaultDisplayAsset()
 
   return (
     <TooltipProvider>

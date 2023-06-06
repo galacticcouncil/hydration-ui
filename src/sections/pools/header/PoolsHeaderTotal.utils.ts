@@ -178,15 +178,15 @@ export const useUsersTotalInPools = () => {
 
       if (!valueSp?.spotPrice) return BN_0
 
-      let valueUSD = value.times(valueSp.spotPrice)
+      let valueDisplay = value.times(valueSp.spotPrice)
 
       if (lrna.gt(0)) {
-        valueUSD = !lrnaSp
+        valueDisplay = !lrnaSp
           ? BN_NAN
-          : valueUSD.plus(lrna.times(lrnaSp.spotPrice))
+          : valueDisplay.plus(lrna.times(lrnaSp.spotPrice))
       }
 
-      return valueUSD
+      return valueDisplay
     })
 
     return totals.reduce((acc, total) => acc.plus(total), BN_0)

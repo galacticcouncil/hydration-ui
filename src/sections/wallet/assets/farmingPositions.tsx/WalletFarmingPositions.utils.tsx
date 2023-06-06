@@ -179,7 +179,7 @@ export const useFarmingPositionsData = () => {
       )
       const position = accountDepositsShare.data[assetId]?.find(
         (d) => d.depositId?.toString() === deposit.id.toString(),
-      ) ?? { symbol, value: BN_NAN, valueUSD: BN_NAN, lrna: BN_NAN }
+      ) ?? { symbol, value: BN_NAN, valueDisplay: BN_NAN, lrna: BN_NAN }
 
       return { id, symbol, name, date, shares, position }
     })

@@ -1,6 +1,6 @@
 import BN from "bignumber.js"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Heading } from "components/Typography/Heading/Heading"
-import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
@@ -12,7 +12,6 @@ import {
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
 import { BN_0 } from "utils/constants"
-import { useDisplayAssetStore } from "utils/displayAsset"
 import { useAllUserDepositShare } from "../farms/position/FarmingPosition.utils"
 import {
   useTotalVolumesInPools,
@@ -36,7 +35,6 @@ type DataProps = { value?: BN; isLoading: boolean; fontSize?: [number, number] }
 
 export const HeaderTotalData = ({ value, isLoading, fontSize }: DataProps) => {
   const { t } = useTranslation()
-  const displayAsset = useDisplayAssetStore()
 
   if (isLoading)
     return <Skeleton sx={{ height: fontSize ?? [19, 28], width: [180, 200] }} />
@@ -47,16 +45,17 @@ export const HeaderTotalData = ({ value, isLoading, fontSize }: DataProps) => {
       sx={{ fontSize: fontSize ?? [19, 28], fontWeight: 500 }}
       css={{ whiteSpace: "nowrap" }}
     >
-      <Trans
-        t={t}
-        i18nKey="wallet.assets.header.value"
-        tOptions={{ ...separateBalance(value, { type: "dollar" }) }}
-      >
-        <span css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }} />
-      </Trans>
-      <Text fs={fontSize ?? [19, 28]} sx={{ display: "inline-block" }}>
-        &nbsp;{displayAsset.symbol}
-      </Text>
+      <DisplayValue
+        value={
+          <Trans
+            t={t}
+            i18nKey="wallet.assets.header.value"
+            tOptions={{ ...separateBalance(value, { type: "dollar" }) }}
+          >
+            <span css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }} />
+          </Trans>
+        }
+      />
     </Heading>
   )
 }
@@ -72,14 +71,8 @@ const PoolsHeaderTotalPoolsUser = () => {
 }
 
 const PoolsHeaderTotalFarms = () => {
-  const totalInFarms = useTotalInFarms()
-
-  return (
-    <HeaderTotalData
-      value={totalInFarms.data}
-      isLoading={totalInFarms.isLoading}
-    />
-  )
+  const { data, isLoading } = useTotalInFarms()
+  return <HeaderTotalData value={data} isLoading={isLoading} />
 }
 
 const PoolsHeaderTotalFarmsUser = () => {
@@ -89,7 +82,7 @@ const PoolsHeaderTotalFarmsUser = () => {
     let calculatedShares = BN_0
     for (const poolId in depositShares.data) {
       const poolTotal = depositShares.data[poolId].reduce((memo, share) => {
-        return memo.plus(share.valueUSD)
+        return memo.plus(share.valueDisplay)
       }, BN_0)
       calculatedShares = calculatedShares.plus(poolTotal)
     }

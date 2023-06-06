@@ -1,4 +1,4 @@
-import React, { FC } from "react"
+import React, { FC, ReactNode } from "react"
 import { formatAssetValue } from "utils/formatting"
 import { Maybe } from "utils/helpers"
 import {
@@ -15,7 +15,7 @@ export type AssetInputProps = {
   onChange: (val: string) => void
   name: string
   label: string
-  dollars?: string
+  displayValue?: ReactNode
   unit?: Maybe<string>
   type?: string
   placeholder?: string
@@ -49,7 +49,7 @@ export const AssetInput: FC<AssetInputProps> = (props) => {
 
           {props.unit && <SUnit>{props.unit}</SUnit>}
         </SInputWrapper>
-        {props.dollars && <SDollars>{`≈  ${props.dollars} USD`}</SDollars>}
+        {props.displayValue && <SDollars>≈ {props.displayValue}</SDollars>}
       </SLabelWrapper>
     </div>
   )

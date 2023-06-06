@@ -44,12 +44,11 @@ export function usePoolDetailsTradeVolume(assetId: u32) {
 }
 
 export function usePoolsDetailsTradeVolumes(assetIds: u32[]) {
-  const apiIds = useApiIds()
   const volumes = useTradeVolumes(assetIds)
   const assetMetas = useAssetMetaList(assetIds)
   const spotPrices = useDisplayPrices(assetIds)
 
-  const queries = [apiIds, ...volumes, assetMetas, spotPrices]
+  const queries = [...volumes, assetMetas, spotPrices]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {

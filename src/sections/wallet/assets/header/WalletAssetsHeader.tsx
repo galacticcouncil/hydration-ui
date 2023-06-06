@@ -62,7 +62,7 @@ const WalletAssetsHeaderBalance = ({ label }: { label: string }) => {
     let calculatedShares = BN_0
     for (const poolId in farmsPositions.data) {
       const poolTotal = farmsPositions.data[poolId].reduce((memo, share) => {
-        return memo.plus(share.valueUSD)
+        return memo.plus(share.valueDisplay)
       }, BN_0)
       calculatedShares = calculatedShares.plus(poolTotal)
     }
@@ -73,7 +73,7 @@ const WalletAssetsHeaderBalance = ({ label }: { label: string }) => {
     if (!lpPositions.data) return BN_0
 
     return lpPositions.data.reduce(
-      (acc, { valueUSD }) => acc.plus(BN(valueUSD)),
+      (acc, { valueDisplay: valueUSD }) => acc.plus(BN(valueUSD)),
       BN_0,
     )
   }, [lpPositions.data])
@@ -135,7 +135,7 @@ const WalletAssetsHeaderOmnipool = ({ label }: { label: string }) => {
     let calculatedShares = BN_0
     for (const poolId in farmsPositions.data) {
       const poolTotal = farmsPositions.data[poolId].reduce((memo, share) => {
-        return memo.plus(share.valueUSD)
+        return memo.plus(share.valueDisplay)
       }, BN_0)
       calculatedShares = calculatedShares.plus(poolTotal)
     }
@@ -146,7 +146,7 @@ const WalletAssetsHeaderOmnipool = ({ label }: { label: string }) => {
     if (!lpPositions.data) return BN_0
 
     return lpPositions.data.reduce(
-      (acc, { valueUSD }) => acc.plus(BN(valueUSD)),
+      (acc, { valueDisplay: valueUSD }) => acc.plus(BN(valueUSD)),
       BN_0,
     )
   }, [lpPositions.data])

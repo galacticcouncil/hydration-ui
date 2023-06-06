@@ -1,25 +1,26 @@
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { useAccountStore } from "state/store"
-import { useMemo } from "react"
-import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { useAssetMetaList } from "api/assetMeta"
-import { getAssetName } from "components/AssetIcon/AssetIcon"
-import BN from "bignumber.js"
-import { useTokensBalances } from "api/balances"
-import { BN_10, BN_NAN } from "utils/constants"
-import { useUniques } from "api/uniques"
-import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
-import { useSpotPrices } from "api/spotPrice"
 import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
 } from "@galacticcouncil/math-omnipool"
-import { useApiIds } from "api/consts"
 import { useAssetDetailsList } from "api/assetDetails"
+import { useAssetMetaList } from "api/assetMeta"
+import { useTokensBalances } from "api/balances"
+import { useApiIds } from "api/consts"
+import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
+import { useUniques } from "api/uniques"
+import BN from "bignumber.js"
+import { getAssetName } from "components/AssetIcon/AssetIcon"
+import { useMemo } from "react"
+import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
+import { useAccountStore } from "state/store"
+import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
+import { BN_10, BN_NAN } from "utils/constants"
+import { useDisplayAssetStore, useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 
 export const useHydraPositionsData = () => {
   const { account } = useAccountStore()
+  const displayAsset = useDisplayAssetStore()
   const apiIds = useApiIds()
   const uniques = useUniques(
     account?.address ?? "",
@@ -30,7 +31,7 @@ export const useHydraPositionsData = () => {
   )
 
   const metas = useAssetMetaList([
-    apiIds.data?.stableCoinId,
+    displayAsset.id,
     apiIds.data?.hubId,
     ...positions.map((query) => query.data?.assetId),
   ])
@@ -43,10 +44,10 @@ export const useHydraPositionsData = () => {
     positions.map((p) => p.data?.assetId).filter(isNotNil) ?? [],
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
-  const spotPrices = useSpotPrices(
-    [apiIds.data?.hubId, ...(positions?.map((p) => p.data?.assetId) ?? [])],
-    apiIds.data?.stableCoinId,
-  )
+  const spotPrices = useDisplayPrices([
+    apiIds.data?.hubId ?? "",
+    ...(positions?.map((p) => p.data?.assetId.toString() ?? "") ?? []),
+  ])
 
   const queries = [
     apiIds,
@@ -54,11 +55,11 @@ export const useHydraPositionsData = () => {
     metas,
     detailsList,
     omnipoolAssets,
+    spotPrices,
     ...positions,
     ...omnipoolBalances,
-    ...spotPrices,
   ]
-  const isLoading = queries.some((q) => q.isInitialLoading)
+  const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
     if (
@@ -66,9 +67,9 @@ export const useHydraPositionsData = () => {
       !metas.data ||
       !omnipoolAssets.data ||
       !apiIds.data ||
+      !spotPrices.data ||
       positions.some((q) => !q.data) ||
-      omnipoolBalances.some((q) => !q.data) ||
-      spotPrices.some((q) => !q.data)
+      omnipoolBalances.some((q) => !q.data)
     )
       return []
 
@@ -117,38 +118,38 @@ export const useHydraPositionsData = () => {
           liquidityOutResult = calculate_liquidity_out.apply(this, params)
         }
 
-        const lrnaSp = spotPrices.find(
-          (sp) => sp.data?.tokenIn === apiIds.data.hubId,
+        const lrnaSp = spotPrices.data?.find(
+          (sp) => sp?.tokenIn === apiIds.data.hubId,
         )
         const lrnaDp = BN_10.pow(lrnaMeta?.decimals.toNumber() ?? 12)
         const lrna =
           lernaOutResult !== "-1" ? new BN(lernaOutResult).div(lrnaDp) : BN_NAN
 
-        const valueSp = spotPrices.find((sp) => sp.data?.tokenIn === assetId)
+        const valueSp = spotPrices.data?.find((sp) => sp?.tokenIn === assetId)
         const valueDp = BN_10.pow(meta?.decimals.toNumber() ?? 12)
         const value =
           liquidityOutResult !== "-1"
             ? new BN(liquidityOutResult).div(valueDp)
             : BN_NAN
-        let valueUSD = BN_NAN
+        let valueDisplay = BN_NAN
 
         const providedAmount = position.amount.toBigNumber().div(valueDp)
         let providedAmountUSD = BN_NAN
 
         const shares = position.shares.toBigNumber()
 
-        if (liquidityOutResult !== "-1" && valueSp?.data) {
-          valueUSD = value.times(valueSp.data.spotPrice)
+        if (liquidityOutResult !== "-1" && valueSp?.spotPrice) {
+          valueDisplay = value.times(valueSp.spotPrice)
 
           if (lrna.gt(0)) {
-            valueUSD = !lrnaSp?.data
+            valueDisplay = !lrnaSp?.spotPrice
               ? BN_NAN
-              : valueUSD.plus(lrna.times(lrnaSp.data.spotPrice))
+              : valueDisplay.plus(lrna.times(lrnaSp.spotPrice))
           }
         }
 
-        if (valueSp?.data)
-          providedAmountUSD = providedAmount.times(valueSp.data.spotPrice)
+        if (valueSp?.spotPrice)
+          providedAmountUSD = providedAmount.times(valueSp.spotPrice)
 
         const result = {
           id: position.id.toString(),
@@ -157,7 +158,7 @@ export const useHydraPositionsData = () => {
           name,
           lrna,
           value,
-          valueUSD,
+          valueDisplay,
           price,
           providedAmount: position.amount.toBigNumber(),
           providedAmountUSD,

@@ -1,12 +1,13 @@
-import { useTranslation } from "react-i18next"
-import { Text } from "components/Typography/Text/Text"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { SInfoIcon } from "./PoolValue.styled"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
+import Skeleton from "react-loading-skeleton"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { usePoolDetailsTradeVolume } from "sections/pools/pool/details/PoolDetails.utils"
 import { BN_NAN } from "utils/constants"
-import Skeleton from "react-loading-skeleton"
+import { SInfoIcon } from "./PoolValue.styled"
 
 type PoolValueProps = { pool: OmnipoolPool; className?: string }
 
@@ -24,7 +25,7 @@ export const PoolValue = ({ pool, className }: PoolValueProps) => {
           </Text>
           <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
             <Text lh={22} color="white" fs={18}>
-              {t("value.usd", { amount: pool.totalUSD })}
+              <DisplayValue value={pool.totalDisplay} />
             </Text>
           </div>
         </div>
@@ -48,7 +49,7 @@ export const PoolValue = ({ pool, className }: PoolValueProps) => {
                 </Text>
               )}
             >
-              {t("value.usd", { amount: data })}
+              <DisplayValue value={data} />
             </DollarAssetValue>
           )}
         </div>

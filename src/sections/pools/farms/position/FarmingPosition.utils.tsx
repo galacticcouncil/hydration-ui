@@ -133,15 +133,15 @@ export const useAllUserDepositShare = () => {
             ? new BN(liquidityOutResult).div(valueDp)
             : BN_NAN
 
-        let valueUSD = BN_NAN
+        let valueDisplay = BN_NAN
 
         if (liquidityOutResult !== "-1" && spotPrice) {
-          valueUSD = value.times(spotPrice.spotPrice)
+          valueDisplay = value.times(spotPrice.spotPrice)
 
           if (lrna.gt(0)) {
-            valueUSD = !lrnaSp
+            valueDisplay = !lrnaSp
               ? BN_NAN
-              : valueUSD.plus(lrna.times(lrnaSp.data.spotPrice))
+              : valueDisplay.plus(lrna.times(lrnaSp.data.spotPrice))
           }
         }
         const index = position.data?.assetId.toString()
@@ -157,7 +157,7 @@ export const useAllUserDepositShare = () => {
               )
               ?.data?.depositionId.toString(),
             value,
-            valueUSD,
+            valueDisplay,
             lrna,
             symbol: meta.symbol,
           },
@@ -165,7 +165,7 @@ export const useAllUserDepositShare = () => {
       }
 
       return memo
-    }, {} as Record<string, Array<OmnipoolPosition & { value: BN; valueUSD: BN; lrna: BN; symbol: string; depositId: string | undefined }>>)
+    }, {} as Record<string, Array<OmnipoolPosition & { value: BN; valueDisplay: BN; lrna: BN; symbol: string; depositId: string | undefined }>>)
 
     return rows
   }, [

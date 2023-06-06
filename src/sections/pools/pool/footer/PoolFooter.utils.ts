@@ -135,7 +135,7 @@ export const useFooterValues = (pool: OmnipoolPool) => {
   const poolDeposit = allPoolDeposits.data?.[pool.id.toString()] ?? []
 
   const totalDepositValueUSD = poolDeposit.reduce(
-    (memo, i) => memo.plus(i.valueUSD),
+    (memo, i) => memo.plus(i.valueDisplay),
     BN_0,
   )
 
