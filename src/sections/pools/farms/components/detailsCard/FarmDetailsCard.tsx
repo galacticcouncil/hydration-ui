@@ -16,11 +16,12 @@ import {
 import { useFarmApr } from "api/farms"
 import { DepositNftType } from "api/deposits"
 import { useBestNumber } from "api/chain"
-import { BLOCK_TIME, BN_0 } from "utils/constants"
+import { BLOCK_TIME, BN_0, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
-import { useAssetMeta } from "../../../../../api/assetMeta"
+import { useAssetMeta } from "api/assetMeta"
 import { u32 } from "@polkadot/types"
+import { useOraclePrice } from "api/farms"
 
 type FarmDetailsCardProps = {
   poolId: u32
@@ -45,6 +46,13 @@ export const FarmDetailsCard = ({
   const asset = useAsset(farm.globalFarm.rewardCurrency)
   const apr = useFarmApr(farm)
   const assetMeta = useAssetMeta(poolId)
+
+  const oraclePriceRaw = useOraclePrice(
+    apr.data?.rewardCurrency.toString(),
+    apr.data?.incentivizedAsset.toString(),
+  )
+
+  const oraclePrice = oraclePriceRaw.data?.oraclePrice.div(BN_QUINTILL)
 
   const variant = onSelect ? "button" : "div"
 
@@ -79,6 +87,8 @@ export const FarmDetailsCard = ({
   }, [depositNft, farm.globalFarm.id, farm.yieldFarm.id, apr.data])
 
   if (apr.data == null) return null
+
+  const fullness = apr.data.fullness.times(100).multipliedBy(oraclePrice ?? 1)
 
   return (
     <SContainer
@@ -138,13 +148,10 @@ export const FarmDetailsCard = ({
           </Text>
         </SRow>
         <SRow css={{ border: depositNft ? undefined : "none" }}>
-          <FillBar
-            percentage={apr.data.fullness.times(100).toNumber()}
-            variant="secondary"
-          />
+          <FillBar percentage={fullness.toNumber()} variant="secondary" />
           <Text fs={14} color="basic100" tAlign="right">
             {t("farms.details.card.capacity", {
-              capacity: apr.data.fullness.times(100),
+              capacity: fullness,
             })}
           </Text>
         </SRow>
