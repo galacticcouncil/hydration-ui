@@ -1,7 +1,7 @@
 import { ApiPromise } from "@polkadot/api"
 import { createContext, useContext, useMemo } from "react"
 import {
-  PolkadotApiPoolService,
+  PoolService,
   PoolType,
   TradeRouter,
 } from "@galacticcouncil/sdk"
@@ -28,7 +28,7 @@ export const useTradeRouter = () => {
   const api = useApiPromise()
 
   const router = useMemo(() => {
-    const poolService = new PolkadotApiPoolService(api)
+    const poolService = new PoolService(api)
     const tradeRouter = new TradeRouter(poolService, {
       includeOnly: [PoolType.Omni],
     })
