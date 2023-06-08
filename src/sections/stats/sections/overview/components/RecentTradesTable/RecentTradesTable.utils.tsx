@@ -13,14 +13,13 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-
+import { isAfter } from "date-fns"
 import { TRecentTradesTableData } from "./data/RecentTradesTableData.utils"
 import { shortenAccountAddress } from "utils/formatting"
 //import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
 import { ReactComponent as SellIcon } from "assets/icons/SellIcon.svg"
 import { ReactComponent as BuyIcon } from "assets/icons/BuyIcon.svg"
 import { ReactComponent as TradeIcon } from "assets/icons/TradeTypeIcon.svg"
-import { isAfter } from "date-fns"
 
 export const useRecentTradesTable = (data: TRecentTradesTableData) => {
   const { t } = useTranslation()
@@ -28,29 +27,19 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
     createColumnHelper<TRecentTradesTableData[number]>()
   const [sorting, setSorting] = useState<SortingState>([])
 
-  /*
-    type
-    account (without sort)
-    tvl
-    amount (display)
-    timestamp
-    subscan (without sort)
-  */
-
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
-    symbol: true,
-    tvl: true,
-    volume: isDesktop,
-    fee: isDesktop,
-    pol: isDesktop,
-    actions: true,
+    isBuy: true,
+    account: isDesktop,
+    totalValue: true,
+    trade: isDesktop,
+    date: isDesktop,
   }
 
   const columns = [
     accessor("isBuy", {
       id: "type",
-      header: "Action",
+      header: t("stats.overview.table.trades.header.action"),
       sortingFn: (a, b) => (a.original.isBuy === b.original.isBuy ? 1 : -1),
       cell: ({ row }) => (
         <div
@@ -65,13 +54,34 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
             sx={{ color: "darkBlue300" }}
             icon={row.original.isBuy ? <BuyIcon /> : <SellIcon />}
           />
-          <Text color="white">{row.original.isBuy ? "Buy" : "Sell"}</Text>
+          {isDesktop ? (
+            <Text color="white">{row.original.isBuy ? "Buy" : "Sell"}</Text>
+          ) : (
+            <div sx={{ flex: "row", align: "center", gap: 6 }}>
+              <Icon size={18} icon={getAssetLogo(row.original.assetInSymbol)} />
+              <Text>{row.original.assetInSymbol}</Text>
+
+              <Icon
+                sx={{ color: "brightBlue600" }}
+                css={{
+                  transform: row.original.isBuy ? "rotate(180deg)" : undefined,
+                }}
+                icon={<TradeIcon />}
+              />
+
+              <Icon
+                size={18}
+                icon={getAssetLogo(row.original.assetOutSymbol)}
+              />
+              <Text>{row.original.assetOutSymbol}</Text>
+            </div>
+          )}
         </div>
       ),
     }),
     accessor("account", {
       id: "account",
-      header: "Account",
+      header: t("stats.overview.table.trades.header.account"),
       sortingFn: (a, b) => a.original.account.localeCompare(b.original.account),
       cell: ({ row }) => (
         <Text tAlign={isDesktop ? "center" : "right"} color="white">
@@ -81,14 +91,26 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
     }),
     accessor("totalValue", {
       id: "totalValue",
-      header: " Total Value",
+      header: t("stats.overview.table.trades.header.totalValue"),
       sortingFn: (a, b) =>
         a.original.totalValue.gt(b.original.totalValue) ? 1 : -1,
-      cell: ({ row }) => (
-        <Text tAlign="center" color="white">
-          {t("value.usd", { amount: row.original.totalValue })}
-        </Text>
-      ),
+      cell: ({ row }) =>
+        isDesktop ? (
+          <Text tAlign="center" color="white">
+            {t("value.usd", { amount: row.original.totalValue })}
+          </Text>
+        ) : (
+          <div sx={{ flex: "column", align: "flex-end" }}>
+            <Text tAlign="center" color="white" fs={14}>
+              {t("value.usd", { amount: row.original.totalValue })}
+            </Text>
+            <Text fs={11} color="darkBlue200">
+              {t("stats.overview.table.trades.value.totalValueTime", {
+                date: new Date(row.original.date),
+              })}
+            </Text>
+          </div>
+        ),
     }),
     display({
       id: "trade",
@@ -103,7 +125,13 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
               })}
             </Text>
 
-            <Icon sx={{ color: "brightBlue600" }} icon={<TradeIcon />} />
+            <Icon
+              sx={{ color: "brightBlue600" }}
+              icon={<TradeIcon />}
+              css={{
+                transform: row.original.isBuy ? "rotate(180deg)" : undefined,
+              }}
+            />
 
             <Icon size={18} icon={getAssetLogo(row.original.assetOutSymbol)} />
             <Text>
@@ -118,7 +146,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
     }),
     accessor("date", {
       id: "date",
-      header: "Time Stamp",
+      header: t("stats.overview.table.trades.header.timeStamp"),
       sortingFn: (a, b) => (isAfter(a.original.date, b.original.date) ? 1 : -1),
       cell: ({ row }) => (
         <Text tAlign="center" color="white">
@@ -128,7 +156,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
     }),
     /* display({
       id: "pol",
-      header: "Subscan",
+      header: t("stats.overview.table.trades.header.subscan"),
       cell: () => (
         <Icon size={12} sx={{ color: "darkBlue300" }} icon={<LinkIcon />} />
       ),

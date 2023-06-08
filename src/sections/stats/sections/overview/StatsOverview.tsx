@@ -24,8 +24,8 @@ export const StatsOverviewData = () => {
         {isDesktop && (
           <SContainerVertical
             sx={{
-              width: "100%!important",
-              p: "24px!important",
+              width: "100%",
+              p: 24,
             }}
           >
             <ChartWrapper />
@@ -34,7 +34,9 @@ export const StatsOverviewData = () => {
       </div>
 
       <StatsTiles />
+
       <OmnipoolAssetsTableWrapper />
+
       <RecentTradesTableWrapper />
     </div>
   )

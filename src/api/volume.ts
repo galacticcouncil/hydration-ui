@@ -66,7 +66,7 @@ export const getTradeVolume =
     }
   }
 
-export const getAllTradeVolume = (indexerUrl: string) => async () => {
+export const getAllTrades = (indexerUrl: string) => async () => {
   const after = addDays(new Date(), -1).toISOString()
 
   // This is being typed manually, as GraphQL schema does not
@@ -122,14 +122,14 @@ export function useTradeVolumes(assetIds: Maybe<u32>[], noRefresh?: boolean) {
   })
 }
 
-export function useTradeVolume(noRefresh?: boolean) {
+export function useAllTrades() {
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
   const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
 
   const indexerUrl =
     selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
-  return useQuery(QUERY_KEYS.allTrades, getAllTradeVolume(indexerUrl))
+  return useQuery(QUERY_KEYS.allTrades, getAllTrades(indexerUrl))
 }
 
 export function getVolumeAssetTotalValue(

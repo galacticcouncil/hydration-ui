@@ -9,6 +9,7 @@ import { SContainerVertical } from "../../StatsOverview.styled"
 import { TOmnipoolOverviewData } from "../../data/OmnipoolOverview.utils"
 import { BN_0 } from "utils/constants"
 import { ChartWrapper } from "../ChartWrapper/ChartWrapper"
+import { useTranslation } from "react-i18next"
 
 type PieWrapperProps = {
   data: TOmnipoolOverviewData
@@ -16,6 +17,7 @@ type PieWrapperProps = {
 }
 
 export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
+  const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [activeSection, setActiveSection] = useState<"overview" | "chart">(
     "overview",
@@ -35,48 +37,56 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
     )
   }, [data])
 
+  const pieChartValues = (
+    <div sx={{ flex: "column", gap: 20 }}>
+      <PieTotalValue
+        title={t("stats.overview.pie.values.tvl")}
+        data={totalTvl}
+        isLoading={isLoading}
+      />
+      <div
+        sx={{
+          flex: ["row", "column"],
+          justify: "space-between",
+          flexWrap: "wrap",
+          gap: 20,
+        }}
+      >
+        <PieTotalValue
+          title={t("stats.overview.pie.values.pol")}
+          data={totalPol}
+          isLoading={isLoading}
+        />
+        <PieTotalValue
+          title={t("stats.overview.pie.values.volume")}
+          data={totalVolume.div(2)}
+          isLoading={isLoading}
+        />
+      </div>
+    </div>
+  )
+
   return (
-    <SContainerVertical>
+    <SContainerVertical sx={{ width: ["100%", "fit-content"], p: [20, 40] }}>
       {!isDesktop && (
         <ChartSwitchMobile onClick={setActiveSection} active={activeSection} />
       )}
 
       {activeSection === "overview" ? (
         !isLoading ? (
-          <PieChart data={data} />
+          <>
+            <PieChart data={data} />
+            {pieChartValues}
+          </>
         ) : (
-          <PieSkeleton />
+          <>
+            <PieSkeleton />
+            {pieChartValues}
+          </>
         )
       ) : (
         <ChartWrapper />
       )}
-
-      <div sx={{ flex: "column", gap: 20 }}>
-        <PieTotalValue
-          title="Total value locked"
-          data={totalTvl}
-          isLoading={isLoading}
-        />
-        <div
-          sx={{
-            flex: ["row", "column"],
-            justify: "space-between",
-            flexWrap: "wrap",
-            gap: 20,
-          }}
-        >
-          <PieTotalValue
-            title="HydraDx POL"
-            data={totalPol}
-            isLoading={isLoading}
-          />
-          <PieTotalValue
-            title="24 volume"
-            data={totalVolume.div(2)}
-            isLoading={isLoading}
-          />
-        </div>
-      </div>
     </SContainerVertical>
   )
 }

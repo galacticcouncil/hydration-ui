@@ -23,6 +23,7 @@ type Props = {
 export const OmnipoolAssetsTable = ({ data }: Props) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+
   const onRowSelect = (assetId: string) => {
     // TODO
     console.log(assetId)
@@ -50,9 +51,6 @@ export const OmnipoolAssetsTable = ({ data }: Props) => {
                   css={
                     !isDesktop
                       ? {
-                          "&:first-of-type > div": {
-                            justifyContent: "flex-start",
-                          },
                           "&:nth-last-of-type(2) > div": {
                             justifyContent: "flex-end",
                           },

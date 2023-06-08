@@ -61,14 +61,52 @@ export const TableContainer = styled.div`
 export const StatsTableContainer = styled.div`
   overflow: hidden;
 
-  margin: 0 -12px;
+  background-image: radial-gradient(
+      circle at 100% 100%,
+      transparent 3px,
+      rgba(144, 165, 198, 0.3) 3px,
+      rgba(144, 165, 198, 0.3) 4px,
+      transparent 4px
+    ),
+    linear-gradient(
+      to right,
+      rgba(144, 165, 198, 0.3),
+      rgba(144, 165, 198, 0.3)
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      transparent 3px,
+      rgba(144, 165, 198, 0.3) 3px,
+      rgba(144, 165, 198, 0.3) 4px,
+      transparent 4px
+    ),
+    linear-gradient(to bottom, rgba(144, 165, 198, 0.3), rgba(158, 167, 180, 0)),
+    radial-gradient(
+      circle at 0% 0%,
+      transparent 3px,
+      rgba(158, 167, 180, 0) 3px,
+      rgba(158, 167, 180, 0) 4px,
+      transparent 4px
+    ),
+    linear-gradient(to left, rgba(158, 167, 180, 0), rgba(158, 167, 180, 0)),
+    radial-gradient(
+      circle at 100% 0%,
+      transparent 3px,
+      rgba(158, 167, 180, 0) 3px,
+      rgba(158, 167, 180, 0) 4px,
+      transparent 4px
+    ),
+    linear-gradient(to top, rgba(158, 167, 180, 0), rgba(144, 165, 198, 0.3));
+  background-size: 4px 4px, calc(100% - 8px) 1px, 4px 4px, 1px calc(100% - 8px);
+  background-position: top left, top center, top right, center right,
+    bottom right, bottom center, bottom left, center left;
 
-  background: transparent;
+  background-repeat: no-repeat;
 
   @media ${theme.viewport.gte.sm} {
     border-radius: 4px;
 
-    margin: unset;
+    background: transparent;
   }
 `
 
@@ -98,8 +136,12 @@ export const StatsTableTitle = styled.div`
 
   padding: 14px 20px;
 
+  border-bottom: 1px solid #202135;
+
   @media ${theme.viewport.gte.sm} {
     padding: 0px 30px;
+
+    border-bottom: none;
   }
 `
 

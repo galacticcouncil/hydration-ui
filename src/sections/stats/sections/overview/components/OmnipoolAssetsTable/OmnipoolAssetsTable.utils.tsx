@@ -44,11 +44,22 @@ export const useOmnipoolAssetsTable = (data: TOmnipoolAssetsTableData) => {
             flex: "row",
             gap: 8,
             align: "center",
-            justify: ["start", "center"],
+            justify: "start",
           }}
         >
           <Icon size={26} icon={getAssetLogo(row.original.symbol)} />
-          <Text color="white">{row.original.symbol}</Text>
+          <div sx={{ flex: "column" }}>
+            <Text fs={[14, 16]} color="white">
+              {row.original.symbol}
+            </Text>
+            <Text
+              fs={12}
+              css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
+              sx={{ display: ["inherit", "none"] }}
+            >
+              {row.original.name}
+            </Text>
+          </div>
         </div>
       ),
     }),
@@ -57,7 +68,11 @@ export const useOmnipoolAssetsTable = (data: TOmnipoolAssetsTableData) => {
       header: t("stats.overview.table.assets.header.tvl"),
       sortingFn: (a, b) => (a.original.tvl.gt(b.original.tvl) ? 1 : -1),
       cell: ({ row }) => (
-        <Text tAlign={isDesktop ? "center" : "right"} color="white">
+        <Text
+          tAlign={isDesktop ? "center" : "right"}
+          color="white"
+          fs={[13, 16]}
+        >
           {t("value.usd", { amount: row.original.tvl })}
         </Text>
       ),

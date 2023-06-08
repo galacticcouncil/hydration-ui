@@ -221,11 +221,11 @@ export const QUERY_KEYS = {
     id?.toString(),
   ],
   omnipoolPositions: [QUERY_KEY_PREFIX, "omnipoolPositions"],
-  omnipoolPosition: (id: u128 | undefined) => [
+  omnipoolPosition: (id: string | undefined) => [
     "omnipoolPosition",
     id?.toString(),
   ],
-  omnipoolPositionLive: (id: u128 | undefined) => [
+  omnipoolPositionLive: (id: string | undefined) => [
     QUERY_KEY_PREFIX,
     "omnipoolPosition",
     id?.toString(),

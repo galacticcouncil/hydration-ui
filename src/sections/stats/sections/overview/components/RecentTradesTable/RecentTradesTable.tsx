@@ -12,9 +12,9 @@ import {
 import { Text } from "components/Typography/Text/Text"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { useTranslation } from "react-i18next"
 import { useRecentTradesTable } from "./RecentTradesTable.utils"
 import { TRecentTradesTableData } from "./data/RecentTradesTableData.utils"
+import { useTranslation } from "react-i18next"
 
 type Props = {
   data: TRecentTradesTableData
@@ -23,10 +23,6 @@ type Props = {
 export const RecentTradesTable = ({ data }: Props) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const onRowSelect = (assetId: string) => {
-    // TODO
-    console.log(assetId)
-  }
 
   const table = useRecentTradesTable(data)
 
@@ -34,7 +30,7 @@ export const RecentTradesTable = ({ data }: Props) => {
     <StatsTableContainer>
       <StatsTableTitle>
         <Text fs={[16, 24]} lh={[24, 26]} color="white" font="ChakraPetchBold">
-          Recent Trades
+          {t("stats.overview.table.trades.header.title")}
         </Text>
       </StatsTableTitle>
       <Table>
@@ -53,9 +49,6 @@ export const RecentTradesTable = ({ data }: Props) => {
                           "&:first-of-type > div": {
                             justifyContent: "flex-start",
                           },
-                          "&:nth-last-of-type(2) > div": {
-                            justifyContent: "flex-end",
-                          },
                         }
                       : undefined
                   }
@@ -71,11 +64,7 @@ export const RecentTradesTable = ({ data }: Props) => {
         </TableHeaderContent>
         <TableBodyContent>
           {table.getRowModel().rows.map((row, i) => (
-            <TableRowStats
-              onClick={() => onRowSelect(row.original.id)}
-              key={row.id}
-              css={{ cursor: "pointer" }}
-            >
+            <TableRowStats key={row.id} css={{ cursor: "pointer" }}>
               {row.getVisibleCells().map((cell) => (
                 <TableData
                   key={cell.id}

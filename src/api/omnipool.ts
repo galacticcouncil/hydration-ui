@@ -45,7 +45,7 @@ export const getOmnipoolAssets = (api: ApiPromise) => async () => {
 }
 
 export const useOmnipoolPositions = (
-  itemIds: Array<u128 | undefined>,
+  itemIds: Array<u128 | u32 | undefined>,
   noRefresh?: boolean,
 ) => {
   const api = useApiPromise()
@@ -53,20 +53,23 @@ export const useOmnipoolPositions = (
   return useQueries({
     queries: itemIds.map((id) => ({
       queryKey: noRefresh
-        ? QUERY_KEYS.omnipoolPosition(id)
-        : QUERY_KEYS.omnipoolPositionLive(id),
-      queryFn: id != null ? getOmnipoolPosition(api, id) : undefinedNoop,
+        ? QUERY_KEYS.omnipoolPosition(id?.toString())
+        : QUERY_KEYS.omnipoolPositionLive(id?.toString()),
+      queryFn:
+        id != null ? getOmnipoolPosition(api, id.toString()) : undefinedNoop,
       enabled: !!id,
     })),
   })
 }
 
-export const useOmnipoolPosition = (itemId: u128 | undefined) => {
+export const useOmnipoolPosition = (itemId: u128 | u32 | undefined) => {
   const api = useApiPromise()
 
   return useQuery(
-    QUERY_KEYS.omnipoolPosition(itemId),
-    itemId != null ? getOmnipoolPosition(api, itemId) : undefinedNoop,
+    QUERY_KEYS.omnipoolPosition(itemId?.toString()),
+    itemId != null
+      ? getOmnipoolPosition(api, itemId.toString())
+      : undefinedNoop,
     { enabled: itemId != null },
   )
 }
@@ -85,7 +88,7 @@ export const getOmnipoolFee = (api: ApiPromise) => async () => {
 }
 
 export type OmnipoolPosition = {
-  id: u128
+  id: string
   assetId: u32
   amount: u128
   shares: u128
@@ -93,7 +96,7 @@ export type OmnipoolPosition = {
 }
 
 export const getOmnipoolPosition =
-  (api: ApiPromise, itemId: u128) => async () => {
+  (api: ApiPromise, itemId: string) => async () => {
     const res = await api.query.omnipool.positions(itemId)
     const data = res.unwrap()
     const position: OmnipoolPosition = {
