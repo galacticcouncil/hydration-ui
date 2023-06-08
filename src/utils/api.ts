@@ -1,10 +1,6 @@
 import { ApiPromise } from "@polkadot/api"
 import { createContext, useContext, useMemo } from "react"
-import {
-  PoolService,
-  PoolType,
-  TradeRouter,
-} from "@galacticcouncil/sdk"
+import { PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { encodeAddress } from "@polkadot/util-crypto"
