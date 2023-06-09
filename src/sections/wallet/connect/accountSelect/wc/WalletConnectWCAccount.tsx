@@ -1,5 +1,7 @@
+import { WalletType } from "@polkadot-onboard/core"
+import { useWallets } from "@polkadot-onboard/react"
+import { useEffect, useState } from "react"
 import { Account } from "state/store"
-import { HDX_CAIP_ID, useWalletConnect } from "utils/walletConnect"
 import { WalletConnectAccountSelectItem } from "../item/WalletConnectAccountSelectItem"
 
 type Props = {
@@ -8,12 +10,18 @@ type Props = {
 }
 
 export const WalletConnectWCAccount = ({ currentAddress, onSelect }: Props) => {
-  const wc = useWalletConnect()
-  const addresses = wc.accounts
-    .filter((a) => a.split(":")[1] === HDX_CAIP_ID)
-    .map((a) => a.split(":")[2])
+  const { wallets } = useWallets()
+  const wallet = wallets?.find((w) => w.type === WalletType.WALLET_CONNECT)
 
-  console.log(wc.addresses)
+  const [addresses, setAddresses] = useState<string[]>([])
+
+  useEffect(() => {
+    ;(async () => {
+      const accounts = await wallet?.getAccounts()
+      console.log("accounts", accounts)
+      setAddresses(accounts?.map((a) => a.address) ?? [])
+    })()
+  }, [wallet])
 
   return (
     <>

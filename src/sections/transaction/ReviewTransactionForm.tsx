@@ -1,3 +1,5 @@
+import { WalletType } from "@polkadot-onboard/core"
+import { useWallets } from "@polkadot-onboard/react"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { useMutation } from "@tanstack/react-query"
@@ -27,12 +29,10 @@ import {
   Transaction,
   useAccountStore,
 } from "state/store"
-import { NATIVE_ASSET_ID, POLKADOT_APP_NAME, useApiPromise } from "utils/api"
+import { NATIVE_ASSET_ID, POLKADOT_APP_NAME } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_1 } from "utils/constants"
-import { HDX_CAIP_ID, useWalletConnect } from "utils/walletConnect"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
-import { EXTRINSIC_VERSION } from "@polkadot/types/extrinsic/v4/Extrinsic"
 
 export const ReviewTransactionForm = (
   props: {
@@ -43,7 +43,6 @@ export const ReviewTransactionForm = (
 ) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
-  const api = useApiPromise()
   const bestNumber = useBestNumber()
   const accountCurrency = useAccountCurrency(account?.address)
   const feeMeta = useAssetMeta(
@@ -60,7 +59,7 @@ export const ReviewTransactionForm = (
   const nonce = useNextNonce(account?.address)
   const spotPrice = useSpotPrice(NATIVE_ASSET_ID, feeMeta.data?.id)
 
-  const wc = useWalletConnect()
+  const { wallets } = useWallets()
 
   const signTx = useMutation(async () => {
     const address = props.isProxy ? account?.delegate : account?.address
@@ -69,60 +68,21 @@ export const ReviewTransactionForm = (
         ? PROXY_WALLET_PROVIDER
         : account?.provider
 
-    if (provider === "WalletConnect" && wc.client && wc.session && address) {
-      const method = api.createType("Call", props.tx)
-      const era = api.registry.createType("ExtrinsicEra", {
-        current: bestNumber.data?.parachainBlockNumber.toNumber(),
-        period: 64,
-      })
+    if (!address) throw new Error("Missing active account")
 
-      const unsignedTransaction = {
-        specVersion: api.runtimeVersion.specVersion.toHex(),
-        transactionVersion: api.runtimeVersion.transactionVersion.toHex(),
-        address: address,
-        blockHash: bestNumber.data?.parachainBlockNumber.hash.toHex(),
-        blockNumber: bestNumber.data?.parachainBlockNumber.toHex(),
-        era: era.toHex(),
-        genesisHash: api.genesisHash.toHex(),
-        method: method.toHex(),
-        nonce: 0,
-        signedExtensions: [
-          "CheckNonZeroSender",
-          "CheckSpecVersion",
-          "CheckTxVersion",
-          "CheckGenesis",
-          "CheckMortality",
-          "CheckNonce",
-          "CheckWeight",
-          "ChargeTransactionPayment",
-        ],
-        tip: api.registry.createType("Compact<Balance>", 0).toHex(),
-        version: EXTRINSIC_VERSION,
-      }
+    if (provider === "WalletConnect") {
+      const wallet = wallets?.find((w) => w.type === WalletType.WALLET_CONNECT)
+      if (wallet == null) throw new Error("Missing wallet for Wallet Connect")
 
-      const { signature }: { signature: `0x${string}` } =
-        await wc.client.request({
-          topic: wc.session.topic,
-          chainId: `polkadot:${HDX_CAIP_ID}`,
-          request: {
-            method: "polkadot_signTransaction",
-            params: { address, transactionPayload: unsignedTransaction },
-          },
-        })
+      const signer = wallet.signer
+      if (!signer) throw new Error("Missing signer for Wallet Connect")
 
-      const rawUnsignedTx = api.registry.createType(
-        "ExtrinsicPayload",
-        unsignedTransaction,
-        { version: EXTRINSIC_VERSION },
-      )
-
-      props.tx.addSignature(address, signature, rawUnsignedTx)
-      return await props.onSigned(props.tx)
+      const signature = await props.tx.signAsync(address, { signer, nonce: -1 })
+      return await props.onSigned(signature)
     } else {
       const wallet = getWalletBySource(provider)
 
-      if (address == null || wallet == null)
-        throw new Error("Missing active account or wallet")
+      if (wallet == null) throw new Error("Missing wallet")
 
       if (props.isProxy) {
         await wallet.enable(POLKADOT_APP_NAME)

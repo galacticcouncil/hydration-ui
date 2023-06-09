@@ -10,13 +10,14 @@ import { ReviewTransactionForm } from "./ReviewTransactionForm"
 import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionToast } from "./ReviewTransactionToast"
-import { useWalletConnect } from "utils/walletConnect"
+import { useWallets } from "@polkadot-onboard/react"
+import { WalletType } from "@polkadot-onboard/core"
 
 export const ReviewTransaction = (props: Transaction) => {
   const { t } = useTranslation()
   const [minimizeModal, setMinimizeModal] = useState(false)
 
-  const wc = useWalletConnect()
+  const { wallets } = useWallets()
   const sendTx = useSendTransactionMutation()
 
   const modalProps: Partial<ComponentProps<typeof Modal>> =
@@ -26,9 +27,7 @@ export const ReviewTransaction = (props: Transaction) => {
           backdrop: sendTx.isError ? "error" : "default",
           disableClose: sendTx.isLoading,
         }
-      : {
-          title: t("liquidity.reviewTransaction.modal.title"),
-        }
+      : { title: t("liquidity.reviewTransaction.modal.title") }
 
   const handleTxOnClose = () => {
     if (sendTx.isLoading) {
@@ -80,7 +79,8 @@ export const ReviewTransaction = (props: Transaction) => {
         topContent={props.steps ? <Stepper steps={props.steps} /> : undefined}
         {...modalProps}
       >
-        {!wc.session && <WalletUpgradeModal />}
+        {!wallets?.find((w) => w.type === WalletType.WALLET_CONNECT)
+          ?.isConnected && <WalletUpgradeModal />}
         {sendTx.isLoading ? (
           <ReviewTransactionPending
             txState={sendTx.txState}
