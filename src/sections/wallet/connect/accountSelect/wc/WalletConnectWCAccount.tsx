@@ -1,6 +1,6 @@
 import { WalletType } from "@polkadot-onboard/core"
 import { useWallets } from "@polkadot-onboard/react"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Account } from "state/store"
 import { WalletConnectAccountSelectItem } from "../item/WalletConnectAccountSelectItem"
 
@@ -11,17 +11,18 @@ type Props = {
 
 export const WalletConnectWCAccount = ({ currentAddress, onSelect }: Props) => {
   const { wallets } = useWallets()
-  const wallet = wallets?.find((w) => w.type === WalletType.WALLET_CONNECT)
 
   const [addresses, setAddresses] = useState<string[]>([])
 
+  const getAddresses = useCallback(async () => {
+    const wallet = wallets?.find((w) => w.type === WalletType.WALLET_CONNECT)
+    const accounts = await wallet?.getAccounts()
+    setAddresses(accounts?.map((a) => a.address) ?? [])
+  }, [wallets])
+
   useEffect(() => {
-    ;(async () => {
-      const accounts = await wallet?.getAccounts()
-      console.log("accounts", accounts)
-      setAddresses(accounts?.map((a) => a.address) ?? [])
-    })()
-  }, [wallet])
+    getAddresses()
+  }, [getAddresses])
 
   return (
     <>
