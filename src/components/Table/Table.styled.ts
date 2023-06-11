@@ -1,3 +1,4 @@
+import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
@@ -57,9 +58,62 @@ export const TableContainer = styled.div`
   }
 `
 
+export const StatsTableContainer = styled.div`
+  overflow: hidden;
+
+  background-image: radial-gradient(
+      circle at 100% 100%,
+      transparent 3px,
+      rgba(144, 165, 198, 0.3) 3px,
+      rgba(144, 165, 198, 0.3) 4px,
+      transparent 4px
+    ),
+    linear-gradient(
+      to right,
+      rgba(144, 165, 198, 0.3),
+      rgba(144, 165, 198, 0.3)
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      transparent 3px,
+      rgba(144, 165, 198, 0.3) 3px,
+      rgba(144, 165, 198, 0.3) 4px,
+      transparent 4px
+    ),
+    linear-gradient(to bottom, rgba(144, 165, 198, 0.3), rgba(158, 167, 180, 0)),
+    radial-gradient(
+      circle at 0% 0%,
+      transparent 3px,
+      rgba(158, 167, 180, 0) 3px,
+      rgba(158, 167, 180, 0) 4px,
+      transparent 4px
+    ),
+    linear-gradient(to left, rgba(158, 167, 180, 0), rgba(158, 167, 180, 0)),
+    radial-gradient(
+      circle at 100% 0%,
+      transparent 3px,
+      rgba(158, 167, 180, 0) 3px,
+      rgba(158, 167, 180, 0) 4px,
+      transparent 4px
+    ),
+    linear-gradient(to top, rgba(158, 167, 180, 0), rgba(144, 165, 198, 0.3));
+  background-size: 4px 4px, calc(100% - 8px) 1px, 4px 4px, 1px calc(100% - 8px);
+  background-position: top left, top center, top right, center right,
+    bottom right, bottom center, bottom left, center left;
+
+  background-repeat: no-repeat;
+
+  @media ${theme.viewport.gte.sm} {
+    border-radius: 4px;
+
+    background: transparent;
+  }
+`
+
 export const Table = styled.table`
   width: 100%;
   border-spacing: 0;
+  border-collapse: collapse;
 `
 
 export const TableTitle = styled.div`
@@ -72,6 +126,22 @@ export const TableTitle = styled.div`
 
   @media ${theme.viewport.gte.sm} {
     padding: 24px 30px;
+  }
+`
+
+export const StatsTableTitle = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 14px 20px;
+
+  border-bottom: 1px solid #202135;
+
+  @media ${theme.viewport.gte.sm} {
+    padding: 0px 30px;
+
+    border-bottom: none;
   }
 `
 
@@ -96,14 +166,41 @@ export const TablePlaceholderContent = styled.div`
   backdrop-filter: blur(8px);
 `
 
-export const TableRow = styled.tr<{ isOdd?: boolean; isSub?: boolean }>`
+export const TableRow = styled.tr<{
+  isOdd?: boolean
+  isSub?: boolean
+  header?: boolean
+}>`
   transition: ${theme.transitions.slow};
 
   :hover {
-    background: rgba(${theme.rgbColors.white}, 0.06);
+    ${({ header }) =>
+      !header && `background: rgba(${theme.rgbColors.white}, 0.06);`}
   }
   ${({ isOdd }) => isOdd && `background: rgba(${theme.rgbColors.white}, 0.03);`}
   ${({ isSub }) => isSub && `background: rgba(${theme.rgbColors.white}, 0.06);`}
+`
+
+export const TableRowStats = styled.tr<{
+  isOdd?: boolean
+  isSub?: boolean
+  header?: boolean
+}>`
+  transition: ${theme.transitions.slow};
+
+  border-bottom: 1px solid #202135;
+
+  ${({ header }) =>
+    !header &&
+    css`
+      :hover {
+        background: rgba(${theme.rgbColors.white}, 0.06);
+      }
+
+      &:last-of-type {
+        border-bottom: none;
+      }
+    `}
 `
 
 export const TableHeader = styled.th<{ canSort?: boolean }>`

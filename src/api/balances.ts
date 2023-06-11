@@ -42,6 +42,7 @@ export const getTokenBalance =
         assetId: id,
         balance,
         total: freeBalance.plus(reservedBalance),
+        freeBalance,
       }
     }
 
@@ -59,6 +60,7 @@ export const getTokenBalance =
       assetId: id,
       balance,
       total: freeBalance.plus(reservedBalance),
+      freeBalance,
     }
   }
 
@@ -80,12 +82,15 @@ export const useTokenBalance = (
 export function useTokensBalances(
   tokenIds: (string | u32)[],
   address: Maybe<AccountId32 | string>,
+  noRefresh?: boolean,
 ) {
   const api = useApiPromise()
 
   return useQueries({
     queries: tokenIds.map((id) => ({
-      queryKey: QUERY_KEYS.tokenBalance(id, address),
+      queryKey: noRefresh
+        ? QUERY_KEYS.tokenBalance(id, address)
+        : QUERY_KEYS.tokenBalanceLive(id, address),
       queryFn:
         address != null ? getTokenBalance(api, address, id) : undefinedNoop,
       enabled: !!id && !!address,
