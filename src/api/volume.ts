@@ -102,7 +102,10 @@ export const getAllTrades = (indexerUrl: string) => async () => {
   }
 }
 
-export function useTradeVolumes(assetIds: Maybe<u32>[], noRefresh?: boolean) {
+export function useTradeVolumes(
+  assetIds: Maybe<u32 | string>[],
+  noRefresh?: boolean,
+) {
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
   const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)

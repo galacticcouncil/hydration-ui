@@ -21,6 +21,7 @@ export const LINKS = {
   statsOverview: "/stats/overview",
   statsPOL: "/stats/POL",
   statsLRNA: "/stats/LRNA",
+  statsOmnipool: "/stats/overview/omnipool",
 }
 
 const isPoolsPageEnabled = import.meta.env.VITE_FF_POOLS_ENABLED === "true"

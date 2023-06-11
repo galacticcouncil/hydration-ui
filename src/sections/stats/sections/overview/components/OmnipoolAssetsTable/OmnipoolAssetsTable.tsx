@@ -15,6 +15,7 @@ import { TOmnipoolAssetsTableData } from "./data/OmnipoolAssetsTableData.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "@tanstack/react-location"
 
 type Props = {
   data: TOmnipoolAssetsTableData
@@ -23,10 +24,16 @@ type Props = {
 export const OmnipoolAssetsTable = ({ data }: Props) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const navigate = useNavigate()
 
   const onRowSelect = (assetId: string) => {
     // TODO
     console.log(assetId)
+    navigate({
+      fromCurrent: true,
+      to: "omnipool",
+      search: { asset: assetId },
+    })
   }
 
   const table = useOmnipoolAssetsTable(data)

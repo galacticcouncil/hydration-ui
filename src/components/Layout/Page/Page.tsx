@@ -4,11 +4,17 @@ import { MobileNavBar } from "../Header/MobileNavBar/MobileNavBar"
 import { SPage, SPageContent, SPageGrid, SPageInner } from "./Page.styled"
 import { useApiPromise } from "utils/api"
 import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
+import { isApiLoaded } from "utils/helpers"
 
-type Props = { variant?: "stats" | "default"; children: ReactNode }
+type Props = {
+  variant?: "stats" | "default"
+  className?: string
+  children: ReactNode
+}
 
-export const Page = ({ variant = "default", children }: Props) => {
+export const Page = ({ variant = "default", className, children }: Props) => {
   const api = useApiPromise()
+  const isApi = isApiLoaded(api)
 
   return (
     <SPage variant={variant}>
@@ -16,8 +22,8 @@ export const Page = ({ variant = "default", children }: Props) => {
         {variant === "stats" && <SPageGrid />}
         <Header />
         <SPageContent>
-          <SPageInner>{children}</SPageInner>
-          {Object.keys(api).length ? <ProviderSelectButton /> : null}
+          <SPageInner className={className}>{children}</SPageInner>
+          {isApi ? <ProviderSelectButton /> : null}
         </SPageContent>
         <MobileNavBar />
       </div>

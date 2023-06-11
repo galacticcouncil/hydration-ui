@@ -92,7 +92,6 @@ export const SPageGrid = styled.div`
   position: absolute;
   inset: 0;
   z-index: 0;
-  height: 843px;
 
   opacity: 0.06;
   pointer-events: none;
