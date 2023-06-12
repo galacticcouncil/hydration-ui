@@ -23,6 +23,8 @@ import BigNumber from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { useQueryReduce } from "utils/helpers"
 import { useOmnipoolAssets } from "api/omnipool"
+import { getFloatingPointAmount } from "utils/balance"
+import { useAssetMetaList } from "api/assetMeta"
 
 export const useClaimableAmount = (
   pool?: OmnipoolPool,
@@ -61,6 +63,7 @@ export const useClaimableAmount = (
 
   const assetList = useAssetDetailsList(assetIds)
   const usdSpotPrices = useSpotPrices(assetIds, usd.data?.id)
+  const metas = useAssetMetaList(assetIds)
 
   const accountAddresses =
     farms.data
@@ -89,6 +92,7 @@ export const useClaimableAmount = (
       farms,
       assetList,
       accountBalances,
+      metas,
       ...usdSpotPrices,
     ] as const,
     (
@@ -97,6 +101,7 @@ export const useClaimableAmount = (
       farms,
       assetList,
       accountBalances,
+      metas,
       ...usdSpotPrices
     ) => {
       const deposits =
@@ -148,10 +153,15 @@ export const useClaimableAmount = (
               (spot) => spot?.tokenIn === reward?.assetId,
             )
 
+            const meta = metas.find((meta) => meta.id === reward?.assetId)
+
             if (!reward || !usd) return null
 
             return {
-              usd: reward.value.multipliedBy(usd.spotPrice),
+              usd: getFloatingPointAmount(
+                reward.value.multipliedBy(usd.spotPrice),
+                meta?.decimals.toNumber() ?? 12,
+              ),
               asset: {
                 id: reward?.assetId,
                 value: reward.value,
