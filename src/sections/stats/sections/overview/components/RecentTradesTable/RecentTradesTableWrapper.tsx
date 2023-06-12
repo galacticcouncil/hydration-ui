@@ -17,7 +17,7 @@ export const RecentTradesTableWrapperData = ({
 }: {
   assetId?: string
 }) => {
-  const recentTrades = useRecentTradesTableData(assetId)
+  const recentTrades = useRecentTradesTableData()
 
   if (recentTrades.isLoading && !recentTrades.data.length)
     return <RecentTradesTableSkeleton />

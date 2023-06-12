@@ -14,9 +14,9 @@ export const useRecentTradesTableData = (assetId?: string) => {
   const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
   const apiIds = useApiIds()
   const allTrades = useAllTrades()
-  const volumes = useTradeVolumes([assetId])
+  //const volumes = useTradeVolumes([assetId])
 
-  console.log(volumes, "volume")
+  //console.log(volumes, "volume")
 
   const omnipoolAssetsIds = omnipoolAssets.data?.map((a) => a.id) ?? []
 
@@ -32,7 +32,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
     apiIds,
     assetMetas,
     allTrades,
-    ...volumes,
+    //...volumes,
     ...spotPrices,
   ]
 
@@ -44,8 +44,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
       !omnipoolAssets.data ||
       !apiIds.data ||
       !assetMetas.data ||
-      spotPrices.some((q) => !q.data) ||
-      volumes.some((q) => !q.data)
+      spotPrices.some((q) => !q.data)
     )
       return []
 
