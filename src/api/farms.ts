@@ -217,6 +217,7 @@ function getFarmApr(
   farm: Farm,
 ) {
   const { globalFarm, yieldFarm } = farm
+  const { rewardCurrency, incentivizedAsset } = globalFarm
 
   const loyaltyFactor = yieldFarm.loyaltyCurve.isNone
     ? null
@@ -297,6 +298,8 @@ function getFarmApr(
     assetId: globalFarm.rewardCurrency,
     currentPeriod,
     loyaltyCurve,
+    rewardCurrency,
+    incentivizedAsset,
   }
 }
 

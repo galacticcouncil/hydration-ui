@@ -1,6 +1,7 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { motion } from "framer-motion"
+import { theme } from "theme"
 
 export const SContainer = styled.div<{ animating: boolean }>`
   display: grid;
@@ -20,12 +21,16 @@ export const SContainer = styled.div<{ animating: boolean }>`
 `
 
 export const SContent = styled(motion.div)<{ noPadding?: boolean }>`
-  ${({ noPadding }) =>
-    !noPadding &&
-    "padding: 0 var(--modal-content-padding) var(--modal-content-padding);"}
+  ${({ noPadding }) => !noPadding && "padding: 0 var(--modal-content-padding);"}
 
   overflow: auto;
 
   display: flex;
   flex-direction: column;
+
+  @media (${theme.viewport.gte.sm}) {
+    ${({ noPadding }) =>
+      !noPadding &&
+      "padding: 0 var(--modal-content-padding) var(--modal-content-padding);"}
+  }
 `

@@ -4,7 +4,9 @@ import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { useCopyToClipboard } from "react-use"
+import { useCopyToClipboard, useMedia } from "react-use"
+import { shortenAccountAddress } from "utils/formatting"
+import { theme as themeParams } from "theme"
 
 type Props = {
   name: string
@@ -23,6 +25,7 @@ export const WalletConnectAccountSelectAddress = ({
 }: Props) => {
   const { t } = useTranslation()
   const [, copy] = useCopyToClipboard()
+  const isDesktop = useMedia(themeParams.viewport.gte.sm)
 
   return (
     <div
@@ -53,7 +56,7 @@ export const WalletConnectAccountSelectAddress = ({
               color: ${isProxy ? undefined : "var(--secondary-color)"};
             `}
           >
-            {address}
+            {isDesktop ? address : shortenAccountAddress(address, 12)}
           </Text>
         </div>
       </div>
