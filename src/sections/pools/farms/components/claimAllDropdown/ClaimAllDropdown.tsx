@@ -61,7 +61,6 @@ export const ClaimAllDropdown = () => {
           value: claimable.data?.usd,
           type: "token",
           numberPrefix: "$",
-          fixedPointScale: 12,
         })}
       </>
     )
@@ -112,7 +111,6 @@ export const ClaimAllDropdown = () => {
           {t("farms.claimCard.claim.usd", {
             value: claimable.data?.usd,
             numberPrefix: "$",
-            fixedPointScale: 12,
           })}
         </Text>
         <Spacer size={18} />
