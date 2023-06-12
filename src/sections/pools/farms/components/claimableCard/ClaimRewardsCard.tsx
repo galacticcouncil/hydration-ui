@@ -116,7 +116,6 @@ export const ClaimRewardsCard = (props: {
           {t("farms.claimCard.claim.usd", {
             value: claimable.data?.usd,
             numberPrefix: "$",
-            fixedPointScale: 12,
           })}
         </Text>
       </div>
