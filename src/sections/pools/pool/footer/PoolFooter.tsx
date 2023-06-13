@@ -67,7 +67,6 @@ export const PoolFooter = ({ pool }: Props) => {
                 ? t("farms.claimCard.smallValue")
                 : t("liquidity.asset.claim.claimable", {
                     claimable: claimable.data?.usd,
-                    fixedPointScale: 12,
                   })}
             </Text>
           </div>

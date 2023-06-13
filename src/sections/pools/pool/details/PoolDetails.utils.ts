@@ -5,7 +5,7 @@ import { useSpotPrice, useSpotPrices } from "api/spotPrice"
 import { useAssetMeta, useAssetMetaList } from "api/assetMeta"
 import { useApiIds } from "api/consts"
 import { u32 } from "@polkadot/types-codec"
-import { normalizeId } from "../../../../utils/helpers"
+import { normalizeId } from "utils/helpers"
 
 export function usePoolDetailsTradeVolume(assetId: u32) {
   const volumes = useTradeVolumes([assetId])

@@ -1,14 +1,9 @@
 import styled from "@emotion/styled"
-import { theme } from "theme"
 
-export const SPieWrapper = styled.div`
+export const SContainerVertical = styled.div`
   display: flex;
   flex-direction: column;
   gap: 40px;
-
-  padding: 20px;
-
-  width: 100%;
 
   background-color: rgba(6, 9, 23, 0.4);
   border-radius: 4px;
@@ -36,11 +31,5 @@ export const SPieWrapper = styled.div`
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
-  }
-
-  @media (${theme.viewport.gte.sm}) {
-    width: fit-content;
-
-    padding: 40px;
   }
 `
