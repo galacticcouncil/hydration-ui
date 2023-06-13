@@ -28,7 +28,7 @@ export const TableAction = (props: {
     >
       <div sx={{ flex: "row", align: "center", gap: 8 }}>
         <Icon size={16} icon={props.icon}></Icon>
-        <Text fs={13} color="brightBlue300">
+        <Text fs={13} color={props.disabled ? "darkBlue300" : "brightBlue300"}>
           {props.children}
         </Text>
       </div>
