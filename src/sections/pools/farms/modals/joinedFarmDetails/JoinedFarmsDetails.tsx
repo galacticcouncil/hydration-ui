@@ -175,7 +175,7 @@ function JoinedFarmsDetailsPositions(props: {
       </div>
 
       <Button
-        sx={{ width: "fit-content", mt: 24 }}
+        sx={{ width: "fit-content", my: 24 }}
         css={{ alignSelf: "center" }}
         onClick={() => exit.mutate()}
         isLoading={exit.isLoading}
