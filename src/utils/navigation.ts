@@ -36,8 +36,8 @@ export const MENU_ITEMS = [
     Icon: TradeIcon,
     subItems: [
       { key: "swap", href: LINKS.trade, Icon: IconSwap, enabled: true },
-      { key: "otc", href: LINKS.otc, Icon: IconOTC, enabled: isOtcPageEnabled },
       { key: "dca", href: LINKS.dca, Icon: IconDCA, enabled: isDcaPageEnabled },
+      { key: "otc", href: LINKS.otc, Icon: IconOTC, enabled: isOtcPageEnabled },
     ],
     enabled: true,
     external: false,

@@ -20,6 +20,7 @@ import { usePoolPositions } from "../Pool.utils"
 import { useFarms } from "api/farms"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { Text } from "components/Typography/Text/Text"
+import { useAccountDeposits } from "api/deposits"
 
 type PoolActionsProps = {
   pool: OmnipoolPool
@@ -29,6 +30,7 @@ type PoolActionsProps = {
   refetch: () => void
   className?: string
 }
+const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
 export const PoolActions = ({
   pool,
@@ -46,6 +48,7 @@ export const PoolActions = ({
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const positions = usePoolPositions(pool)
   const farms = useFarms([pool.id])
+  const accountDeposits = useAccountDeposits(enabledFarms ? pool.id : undefined)
 
   const actionButtons = (
     <div sx={{ flexGrow: 1 }}>
@@ -65,7 +68,10 @@ export const PoolActions = ({
           <Button
             fullWidth
             size="small"
-            disabled={!account || !positions.data.length}
+            disabled={
+              !account ||
+              !(positions.data.length || accountDeposits.data?.length)
+            }
             onClick={() => {
               setOpenLiquidityPositions(true)
             }}

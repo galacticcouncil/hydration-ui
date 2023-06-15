@@ -19,17 +19,15 @@ export const StatsPage = () => {
 
   return (
     <Page variant="stats">
-      <div sx={{ height: 2000 }}>
-        <Heading as="h1" fs={30} lh={30} fw={500}>
-          {t("stats.title")}
-        </Heading>
-        <Spacer size={42} />
-        <StatsTabs />
-        <Spacer size={30} />
-        {matchRoute({ to: LINKS.statsOverview }) && <StatsOverview />}
-        {matchRoute({ to: LINKS.statsPOL }) && <StatsPOL />}
-        {matchRoute({ to: LINKS.statsLRNA }) && <StatsLRNA />}
-      </div>
+      <Heading as="h1" fs={30} lh={30} fw={500}>
+        {t("stats.title")}
+      </Heading>
+      <Spacer size={42} />
+      <StatsTabs />
+      <Spacer size={30} />
+      {matchRoute({ to: LINKS.statsOverview }) && <StatsOverview />}
+      {matchRoute({ to: LINKS.statsPOL }) && <StatsPOL />}
+      {matchRoute({ to: LINKS.statsLRNA }) && <StatsLRNA />}
     </Page>
   )
 }
