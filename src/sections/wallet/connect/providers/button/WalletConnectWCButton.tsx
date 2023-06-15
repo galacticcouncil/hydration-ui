@@ -1,7 +1,9 @@
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
+import { ReactComponent as WalletConnect } from "assets/icons/WalletConnect.svg"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SWalletButton } from "../WalletConnectProviders.styled"
+import { Icon } from "components/Icon/Icon"
 
 type Props = { onClick: () => void }
 
@@ -10,7 +12,8 @@ export const WalletConnectWCButton = ({ onClick }: Props) => {
 
   return (
     <SWalletButton onClick={onClick}>
-      <img src="" alt={t("walletConnect.wc")} width={40} height={40} />
+      <Icon size={40} icon={<WalletConnect />} />
+
       <Text fs={18} css={{ flexGrow: 1 }}>
         {t("walletConnect.wc")}
       </Text>

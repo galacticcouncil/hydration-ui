@@ -1,5 +1,3 @@
-import { WalletType } from "@polkadot-onboard/core"
-import { useWallets } from "@polkadot-onboard/react"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { useMutation } from "@tanstack/react-query"
@@ -33,6 +31,7 @@ import { NATIVE_ASSET_ID, POLKADOT_APP_NAME } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_1 } from "utils/constants"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
+import { useWalletConnect } from "components/OnboardProvider/OnboardProvider"
 
 export const ReviewTransactionForm = (
   props: {
@@ -59,7 +58,7 @@ export const ReviewTransactionForm = (
   const nonce = useNextNonce(account?.address)
   const spotPrice = useSpotPrice(NATIVE_ASSET_ID, feeMeta.data?.id)
 
-  const { wallets } = useWallets()
+  const { wallet } = useWalletConnect()
 
   const signTx = useMutation(async () => {
     const address = props.isProxy ? account?.delegate : account?.address
@@ -71,9 +70,7 @@ export const ReviewTransactionForm = (
     if (!address) throw new Error("Missing active account")
 
     if (provider === "WalletConnect") {
-      const wallet = wallets?.find((w) => w.type === WalletType.WALLET_CONNECT)
       if (wallet == null) throw new Error("Missing wallet for Wallet Connect")
-
       const signer = wallet.signer
       if (!signer) throw new Error("Missing signer for Wallet Connect")
 

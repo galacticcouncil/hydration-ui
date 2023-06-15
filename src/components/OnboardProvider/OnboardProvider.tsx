@@ -1,16 +1,13 @@
-import { WalletAggregator } from "@polkadot-onboard/core"
-import { InjectedWalletProvider } from "@polkadot-onboard/injected-wallets"
-import { PolkadotWalletsContextProvider } from "@polkadot-onboard/react"
-import { WalletConnectProvider } from "@polkadot-onboard/wallet-connect"
-import { ReactNode } from "react"
-
-export const WALLET_CONNECT_PROJECT_ID = "c47a5369367ec2dad6b49c478eb772f9"
-export const WALLET_CONNECT_RELAY_URL = "wss://relay.walletconnect.com"
-export const HDX_CAIP_ID = "afdc188f45c71dacbaa0b62e16a91f72"
+import { createContext, useContext, useEffect, useMemo, useState } from "react"
+import {
+  BaseWallet,
+  WalletAggregator,
+  WalletConnectProvider,
+} from "utils/signer"
 
 const walletConnectParams = {
-  projectId: WALLET_CONNECT_PROJECT_ID,
-  relayUrl: WALLET_CONNECT_RELAY_URL,
+  projectId: import.meta.env.VITE_WC_PROJECT_ID,
+  relayUrl: "wss://relay.walletconnect.com",
   metadata: {
     name: "HydraDX",
     description: "HydraDX",
@@ -18,14 +15,63 @@ const walletConnectParams = {
     icons: ["https://walletconnect.com/walletconnect-logo.png"],
   },
 }
-const walletAggregator = new WalletAggregator([
-  new InjectedWalletProvider({}, "HydraDX"),
+
+const walletAggregator = new WalletAggregator(
   new WalletConnectProvider(walletConnectParams, "HydraDX"),
-])
+)
 
-type Props = { children: ReactNode }
+type OnboardProviderProps = { children: JSX.Element }
 
-export const OnboardProvider = ({ children }: Props) => {
+interface PolkadotWalletsContextProviderProps {
+  children: JSX.Element
+  walletAggregator: WalletAggregator
+  initialWaitMs?: number
+}
+
+interface PolkadotWalletsContextProps {
+  wallet: BaseWallet | undefined
+}
+
+const PolkadotWalletsContext = createContext<PolkadotWalletsContextProps>({
+  wallet: undefined,
+})
+
+export const useWalletConnect = () => useContext(PolkadotWalletsContext)
+
+const PolkadotWalletsContextProvider = ({
+  children,
+  walletAggregator,
+  initialWaitMs = 5 /* the default is set to 5ms to give extensions enough lead time to inject their providers */,
+}: PolkadotWalletsContextProviderProps) => {
+  const [wallet, setWallet] = useState<BaseWallet | undefined>()
+
+  useEffect(() => {
+    const timeoutId = setTimeout(async () => {
+      const wallet = walletAggregator.getWallet()
+      const isWalletConnected = walletAggregator.getWallet().isConnected()
+
+      if (!isWalletConnected) wallet.autoConnect()
+
+      setWallet(wallet)
+    }, initialWaitMs)
+    return () => clearTimeout(timeoutId)
+  }, [walletAggregator, initialWaitMs])
+
+  const contextData = useMemo(
+    () => ({
+      wallet,
+    }),
+    [wallet],
+  )
+
+  return (
+    <PolkadotWalletsContext.Provider value={contextData}>
+      {children}
+    </PolkadotWalletsContext.Provider>
+  )
+}
+
+export const OnboardProvider = ({ children }: OnboardProviderProps) => {
   return (
     <PolkadotWalletsContextProvider walletAggregator={walletAggregator}>
       {children}

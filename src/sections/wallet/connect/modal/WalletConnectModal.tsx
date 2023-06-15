@@ -1,6 +1,4 @@
 import { css } from "@emotion/react"
-import { WalletType } from "@polkadot-onboard/core"
-import { useWallets } from "@polkadot-onboard/react"
 import { useNavigate } from "@tanstack/react-location"
 import { Modal, ModalScrollableContent } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
@@ -14,6 +12,7 @@ import { externalWallet, useAccountStore } from "state/store"
 import { ExternalWalletConnectModal } from "./ExternalWalletConnectModal"
 import { WalletConnectActiveFooter } from "./WalletConnectActiveFooter"
 import { useEnableWallet } from "./WalletConnectModal.utils"
+import { useWalletConnect } from "components/OnboardProvider/OnboardProvider"
 
 type Props = { isOpen: boolean; onClose: () => void }
 
@@ -42,8 +41,8 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
     onClose()
   }
 
-  const { wallets } = useWallets()
-  const wcWallet = wallets?.find((w) => w.type === WalletType.WALLET_CONNECT)
+  const { wallet } = useWalletConnect()
+
   const [isWCConnecting, setIsWCConnecting] = useState(false)
 
   const onWalletConnect = async () => {
@@ -51,7 +50,7 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
 
     setUserSelectedProvider("WalletConnect")
     paginateTo(2)
-    await wcWallet?.connect()
+    await wallet?.connect()
 
     setIsWCConnecting(false)
   }
@@ -132,7 +131,7 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
           onLogout={() => {
             setUserSelectedProvider(null)
             setAccount(undefined)
-            wcWallet?.disconnect()
+            wallet?.disconnect()
             onClose()
             navigate({
               search: undefined,
@@ -140,6 +139,7 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
             })
           }}
           onSwitch={() => {
+            wallet?.disconnect()
             navigate({
               search: undefined,
               fromCurrent: true,
