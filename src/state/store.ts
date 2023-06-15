@@ -126,7 +126,6 @@ export const useAccountStore = create(
               })
             }
 
-            console.log(parsedAccount)
             if (parsedAccount.state.account.provider === "WalletConnect")
               return value
 
