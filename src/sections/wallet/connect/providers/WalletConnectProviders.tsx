@@ -38,7 +38,9 @@ export const WalletConnectProviders = ({
           isInjected={!!wallet.installed}
         />
       ))}
-      <WalletConnectWCButton key="WalletConnect" onClick={onWalletConnect} />
+      {import.meta.env.VITE_FF_WALLET_CONNECT === "true" && (
+        <WalletConnectWCButton key="WalletConnect" onClick={onWalletConnect} />
+      )}
     </div>
   )
 }
