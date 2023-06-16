@@ -1,13 +1,12 @@
+import { useProviderAccounts } from "components/AddressBook/AddressBook.utils"
 import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
-import { useQuery } from "@tanstack/react-query"
-import { WalletConnectAccountSelectItem } from "sections/wallet/connect/accountSelect/item/WalletConnectAccountSelectItem"
-import { Account } from "state/store"
-import { getWalletBySource } from "@talismn/connect-wallets"
-import { SContainer } from "./WalletConnectAccountSelect.styled"
-import { externalWallet } from "state/store"
-import { ExternalWalletConnectAccount } from "./external/ExternalWalletConnectAccount"
 import { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
+import { WalletConnectAccountSelectItem } from "sections/wallet/connect/accountSelect/item/WalletConnectAccountSelectItem"
+import { Account, externalWallet } from "state/store"
+import { SContainer } from "./WalletConnectAccountSelect.styled"
+import { ExternalWalletConnectAccount } from "./external/ExternalWalletConnectAccount"
+import { WalletConnectWCAccount } from "./wc/WalletConnectWCAccount"
 
 type Props = {
   provider: string
@@ -22,16 +21,14 @@ export const WalletConnectAccountSelect = ({
   currentAddress,
   onClose,
 }: Props) => {
-  const { t } = useTranslation("translation")
-  const isExternalWallet = provider === externalWallet.provider
+  const { t } = useTranslation()
 
-  const accounts = useQuery(
-    ["web3Accounts", provider],
-    async () => {
-      const wallet = getWalletBySource(provider)
-      return await wallet?.getAccounts()
-    },
-    { enabled: !isExternalWallet },
+  const isExternalWallet = provider === externalWallet.provider
+  const isWalletConnect = provider === "WalletConnect"
+
+  const accounts = useProviderAccounts(
+    provider,
+    !isExternalWallet && !isWalletConnect,
   )
 
   const accountComponents = accounts.data?.reduce((memo, account) => {
@@ -48,7 +45,7 @@ export const WalletConnectAccountSelect = ({
           key={account.address}
           name={accountName}
           address={account.address}
-          setAccount={() => {
+          onClick={() => {
             onSelect({
               name: accountName,
               address: account.address,
@@ -79,6 +76,11 @@ export const WalletConnectAccountSelect = ({
           <ExternalWalletConnectAccount
             address={currentAddress}
             onClose={onClose}
+          />
+        ) : isWalletConnect ? (
+          <WalletConnectWCAccount
+            currentAddress={currentAddress}
+            onSelect={onSelect}
           />
         ) : (
           accountComponents

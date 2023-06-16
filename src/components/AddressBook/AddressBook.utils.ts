@@ -9,7 +9,7 @@ import { persist } from "zustand/middleware"
 export const useWalletAddresses = () => {
   const { account } = useAccountStore()
   const storageAddresses = useAddressStore()
-  const providerAddresses = useProviderAddresses(account?.provider)
+  const providerAddresses = useProviderAccounts(account?.provider)
 
   const data = useMemo(() => {
     if (!providerAddresses.data) return []
@@ -28,11 +28,18 @@ export const useWalletAddresses = () => {
   return { data, isLoading: providerAddresses.isLoading }
 }
 
-export const useProviderAddresses = (provider: string | undefined) => {
-  return useQuery(QUERY_KEYS.providerAddresses(provider), async () => {
-    const wallet = getWalletBySource(provider)
-    return await wallet?.getAccounts()
-  })
+export const useProviderAccounts = (
+  provider: string | undefined,
+  enabled?: boolean,
+) => {
+  return useQuery(
+    QUERY_KEYS.providerAccounts(provider),
+    async () => {
+      const wallet = getWalletBySource(provider)
+      return await wallet?.getAccounts()
+    },
+    { enabled },
+  )
 }
 
 type Address = { name: string; address: string; provider: string }

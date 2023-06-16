@@ -104,7 +104,7 @@ export const ExternalWalletConnectAccount = ({
                 provider={PROXY_WALLET_PROVIDER}
                 name={delegate.name ?? "N/A"}
                 address={address}
-                setAccount={() => {
+                onClick={() => {
                   setAccount({
                     ...account,
                     delegate: address,

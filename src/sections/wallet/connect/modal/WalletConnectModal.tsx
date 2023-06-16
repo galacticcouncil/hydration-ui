@@ -1,7 +1,5 @@
 import { css } from "@emotion/react"
-import { Wallet } from "@talismn/connect-wallets"
 import { useNavigate } from "@tanstack/react-location"
-import { useMutation } from "@tanstack/react-query"
 import { Modal, ModalScrollableContent } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
@@ -11,23 +9,23 @@ import { WalletConnectAccountSelect } from "sections/wallet/connect/accountSelec
 import { WalletConnectConfirmPending } from "sections/wallet/connect/confirmPending/WalletConnectConfirmPending"
 import { WalletConnectProviderSelect } from "sections/wallet/connect/providerSelect/WalletConnectProviderSelect"
 import { externalWallet, useAccountStore } from "state/store"
-import { POLKADOT_APP_NAME } from "utils/api"
 import { ExternalWalletConnectModal } from "./ExternalWalletConnectModal"
 import { WalletConnectActiveFooter } from "./WalletConnectActiveFooter"
+import { useEnableWallet } from "./WalletConnectModal.utils"
+import { useWalletConnect } from "components/OnboardProvider/OnboardProvider"
 
 type Props = { isOpen: boolean; onClose: () => void }
 
 export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
-  const { t } = useTranslation("translation")
+  const { t } = useTranslation()
   const [userSelectedProvider, setUserSelectedProvider] = useState<
     string | null
   >(null)
 
-  const mutate = useMutation(
-    ["web3Enable", userSelectedProvider],
-    async (wallet: Wallet) => wallet.enable(POLKADOT_APP_NAME),
-    { onError: () => setUserSelectedProvider(null) },
-  )
+  const enableWallet = useEnableWallet({
+    provider: userSelectedProvider,
+    onError: () => setUserSelectedProvider(null),
+  })
 
   const { account, setAccount } = useAccountStore()
   const navigate = useNavigate()
@@ -43,9 +41,28 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
     onClose()
   }
 
+  const { wallet } = useWalletConnect()
+
+  const [isWCConnecting, setIsWCConnecting] = useState(false)
+
+  const onWalletConnect = async () => {
+    setIsWCConnecting(true)
+
+    try {
+      await wallet?.connect()
+      setUserSelectedProvider("WalletConnect")
+      paginateTo(2)
+    } catch (e) {}
+
+    setIsWCConnecting(false)
+  }
+
+  const isConnecting = enableWallet.isLoading || isWCConnecting
+
   return (
     <Modal
       open={isOpen}
+      disableCloseOutside
       onClose={onModalClose}
       css={css`
         --wallet-footer-height: 96px;
@@ -65,10 +82,11 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
                   <WalletConnectProviderSelect
                     onWalletSelect={(wallet) => {
                       setUserSelectedProvider(wallet.extensionName)
-                      mutate.mutate(wallet)
+                      enableWallet.mutate(wallet)
                       paginateTo(2)
                     }}
                     onExternalWallet={() => paginateTo(1)}
+                    onWalletConnect={onWalletConnect}
                   />
                 }
               />
@@ -87,8 +105,7 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
             title: t("walletConnect.accountSelect.title"),
             content:
               activeProvider &&
-              (activeProvider !== externalWallet.provider &&
-              mutate.isLoading ? (
+              (activeProvider !== externalWallet.provider && isConnecting ? (
                 <WalletConnectConfirmPending provider={activeProvider} />
               ) : (
                 <ModalScrollableContent
@@ -116,6 +133,7 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
           onLogout={() => {
             setUserSelectedProvider(null)
             setAccount(undefined)
+            wallet?.disconnect()
             onClose()
             navigate({
               search: undefined,
@@ -123,6 +141,7 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
             })
           }}
           onSwitch={() => {
+            wallet?.disconnect()
             navigate({
               search: undefined,
               fromCurrent: true,
