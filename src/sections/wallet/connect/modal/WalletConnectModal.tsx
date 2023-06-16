@@ -48,9 +48,11 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
   const onWalletConnect = async () => {
     setIsWCConnecting(true)
 
-    setUserSelectedProvider("WalletConnect")
-    paginateTo(2)
-    await wallet?.connect()
+    try {
+      await wallet?.connect()
+      setUserSelectedProvider("WalletConnect")
+      paginateTo(2)
+    } catch (e) {}
 
     setIsWCConnecting(false)
   }
