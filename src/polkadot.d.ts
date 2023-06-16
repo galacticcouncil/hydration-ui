@@ -1,4 +1,3 @@
-import "interfaces/augment-api"
 import { InjectedWindowProvider } from "@polkadot/extension-inject/types"
 import BN from "bignumber.js"
 
