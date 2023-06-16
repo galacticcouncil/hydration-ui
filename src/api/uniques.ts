@@ -8,11 +8,14 @@ import { ApiPromise } from "@polkadot/api"
 export const useUniques = (
   address: string | AccountId32,
   collectionId: string | u128,
+  noRefresh?: boolean,
 ) => {
   const api = useApiPromise()
 
   return useQuery(
-    QUERY_KEYS.uniques(address, collectionId),
+    noRefresh
+      ? QUERY_KEYS.uniques(address, collectionId)
+      : QUERY_KEYS.uniquesLive(address, collectionId),
     getUniques(api, address, collectionId),
     { enabled: !!address && !!collectionId },
   )

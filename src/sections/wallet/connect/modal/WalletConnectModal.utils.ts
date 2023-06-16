@@ -1,4 +1,7 @@
 import { Wallet } from "@talismn/connect-wallets"
+import { useMutation } from "@tanstack/react-query"
+import { POLKADOT_APP_NAME } from "utils/api"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 export const getWalletMeta = (
   wallet: Wallet | undefined,
@@ -33,4 +36,18 @@ export const getWalletMeta = (
   }
 
   return walletMeta
+}
+
+export const useEnableWallet = ({
+  provider,
+  onError,
+}: {
+  provider: string | null
+  onError: () => void
+}) => {
+  return useMutation(
+    QUERY_KEYS.walletEnable(provider),
+    async (wallet: Wallet) => wallet.enable(POLKADOT_APP_NAME),
+    { onError },
+  )
 }

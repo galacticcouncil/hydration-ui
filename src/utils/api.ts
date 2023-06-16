@@ -1,10 +1,6 @@
 import { ApiPromise } from "@polkadot/api"
 import { createContext, useContext, useMemo } from "react"
-import {
-  PolkadotApiPoolService,
-  PoolType,
-  TradeRouter,
-} from "@galacticcouncil/sdk"
+import { PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { encodeAddress } from "@polkadot/util-crypto"
@@ -28,7 +24,7 @@ export const useTradeRouter = () => {
   const api = useApiPromise()
 
   const router = useMemo(() => {
-    const poolService = new PolkadotApiPoolService(api)
+    const poolService = new PoolService(api)
     const tradeRouter = new TradeRouter(poolService, {
       includeOnly: [PoolType.Omni],
     })

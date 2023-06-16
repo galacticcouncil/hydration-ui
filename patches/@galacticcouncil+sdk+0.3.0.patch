@@ -1,13 +1,11 @@
 diff --git a/node_modules/@galacticcouncil/sdk/dist/types/client/PolkadotApi.d.ts b/node_modules/@galacticcouncil/sdk/dist/types/client/PolkadotApi.d.ts
-index 457e725..6091039 100644
+index c9b72ae..4ea6d27 100644
 --- a/node_modules/@galacticcouncil/sdk/dist/types/client/PolkadotApi.d.ts
 +++ b/node_modules/@galacticcouncil/sdk/dist/types/client/PolkadotApi.d.ts
-@@ -3,7 +3,7 @@ import type { StorageKey } from '@polkadot/types';
- import type { AnyTuple, Codec } from '@polkadot/types/types';
- import type { AssetMetadata } from '@polkadot/types/interfaces';
- import type { PoolToken } from '../types';
--import '@polkadot/api-augment';
-+
- export declare class PolkadotApiClient {
+@@ -1,6 +1,5 @@
+ import { ApiPromise } from '@polkadot/api';
+ import '@galacticcouncil/api-augment/hydradx';
+-import '@galacticcouncil/api-augment/basilisk';
+ export declare abstract class PolkadotApiClient {
      protected readonly api: ApiPromise;
      constructor(api: ApiPromise);

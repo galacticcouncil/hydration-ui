@@ -4,6 +4,7 @@ import { ButtonTransparent } from "components/Button/Button"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { ReactComponent as LogoutIcon } from "assets/icons/LogoutIcon.svg"
 import { ReactComponent as ExternalWalletIcon } from "assets/icons/ExternalWalletIcon.svg"
+import { ReactComponent as WalletConnect } from "assets/icons/WalletConnect.svg"
 import { Account, externalWallet } from "state/store"
 import { useTranslation } from "react-i18next"
 import {
@@ -52,6 +53,13 @@ export function WalletConnectActiveFooter(props: {
                 <Icon icon={<ExternalWalletIcon />} />
                 <Text fs={14} fw={600} css={{ color: theme.colors.basic500 }}>
                   {t("walletConnect.externalWallet")}
+                </Text>
+              </>
+            ) : props.provider === "WalletConnect" ? (
+              <>
+                <Icon size={40} icon={<WalletConnect />} />
+                <Text fs={14} fw={600} css={{ color: theme.colors.basic500 }}>
+                  {t("walletConnect.wc")}
                 </Text>
               </>
             ) : (

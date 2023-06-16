@@ -50,11 +50,20 @@ export const TableSortHeader = (props: {
   const desc = sortDirection === "desc" || sortDirection === false ? 1 : 0
 
   return (
-    <TableHeader canSort={canSort} onClick={onSort} className={className}>
-      <div sx={{ flex: "row", align: "center" }}>
+    <TableHeader
+      canSort={canSort}
+      onClick={onSort}
+      className={className}
+      css={{
+        "&:first-of-type > div": {
+          justifyContent: "flex-start",
+        },
+      }}
+    >
+      <div sx={{ flex: "row", align: "center", gap: 6, justify: "center" }}>
         {children}
         {isSorting && (
-          <div sx={{ flex: "column", gap: 2, ml: 6 }}>
+          <div sx={{ flex: "column", gap: 2 }}>
             <CaretIcon css={{ rotate: "180deg", opacity: asc }} />
             <CaretIcon css={{ opacity: desc }} />
           </div>

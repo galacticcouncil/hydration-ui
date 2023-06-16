@@ -1,6 +1,8 @@
 import { flexRender, Table as ReactTable } from "@tanstack/react-table"
 import { TableSortHeader } from "components/Table/Table"
 import {
+  StatsTableContainer,
+  StatsTableTitle,
   Table,
   TableBodyContent,
   TableContainer,
@@ -8,6 +10,7 @@ import {
   TableHeaderContent,
   TablePlaceholderContent,
   TableRow,
+  TableRowStats,
   TableTitle,
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
@@ -83,5 +86,69 @@ export const TableSkeleton = ({
         </Table>
       </div>
     </TableContainer>
+  )
+}
+
+export const TableStatsSkeleton = ({
+  table,
+  title,
+  placeholder,
+  className,
+  hideHeader = false,
+}: Props) => {
+  return (
+    <StatsTableContainer className={className}>
+      {title && (
+        <StatsTableTitle>
+          <Text
+            fs={[16, 24]}
+            lh={[24, 26]}
+            color="white"
+            font="ChakraPetchBold"
+          >
+            {title}
+          </Text>
+        </StatsTableTitle>
+      )}
+      <div css={{ position: "relative" }}>
+        {placeholder && (
+          <TablePlaceholderContent>{placeholder}</TablePlaceholderContent>
+        )}
+        <Table>
+          {!hideHeader && (
+            <TableHeaderContent>
+              {table.getHeaderGroups().map((hg) => (
+                <TableRowStats key={hg.id} header>
+                  {hg.headers.map((header) => (
+                    <TableSortHeader key={header.id} canSort={false}>
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                    </TableSortHeader>
+                  ))}
+                </TableRowStats>
+              ))}
+            </TableHeaderContent>
+          )}
+          <TableBodyContent>
+            {table.getRowModel().rows.map((row, i) => (
+              <Fragment key={row.id}>
+                <TableRowStats isOdd={!(i % 2)}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableData key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableData>
+                  ))}
+                </TableRowStats>
+              </Fragment>
+            ))}
+          </TableBodyContent>
+        </Table>
+      </div>
+    </StatsTableContainer>
   )
 }
