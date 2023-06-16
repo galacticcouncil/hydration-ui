@@ -126,7 +126,7 @@ export const useAccountStore = create(
               })
             }
 
-            if (parsedAccount.state.account.provider === "WalletConnect")
+            if (parsedAccount.state.account?.provider === "WalletConnect")
               return value
 
             if (state.account?.provider == null) return null
