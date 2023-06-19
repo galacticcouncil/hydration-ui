@@ -96,14 +96,37 @@ export const SContent = styled.div<{
 
   background: ${theme.colors.darkBlue700};
   box-shadow: ${theme.shadows.modal};
-  border-radius: 4px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    border-radius: 4px;
+
+    padding: 1px; // a width of the border
+
+    background: linear-gradient(
+      180deg,
+      rgba(102, 151, 227, 0.35) 0%,
+      rgba(68, 109, 174, 0.3) 66.67%,
+      rgba(91, 151, 245, 0) 99.99%,
+      rgba(158, 167, 180, 0) 100%
+    );
+
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
 
   ${({ isDrawer }) =>
     isDrawer &&
     css`
       top: initial;
       max-height: 90%;
-      border-radius: 20px 20px 0 0;
     `}
 
   animation: 150ms cubic-bezier(0.16, 1, 0.3, 1)
@@ -127,29 +150,5 @@ export const SContent = styled.div<{
     border-radius: 4px;
 
     animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) ${fadeInKeyframes};
-
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-
-      border-radius: 4px;
-      padding: 1px; // a width of the border
-
-      background: linear-gradient(
-        180deg,
-        rgba(102, 151, 227, 0.35) 0%,
-        rgba(68, 109, 174, 0.3) 66.67%,
-        rgba(91, 151, 245, 0) 99.99%,
-        rgba(158, 167, 180, 0) 100%
-      );
-
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box,
-        linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
-    }
   }
 `

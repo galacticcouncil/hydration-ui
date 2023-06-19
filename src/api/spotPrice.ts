@@ -25,6 +25,7 @@ export const useSpotPrice = (
 export const useSpotPrices = (
   assetsIn: Maybe<u32 | string>[],
   assetOut: Maybe<u32 | string>,
+  noRefresh?: boolean,
 ) => {
   const tradeRouter = useTradeRouter()
 
@@ -35,7 +36,9 @@ export const useSpotPrices = (
 
   return useQueries({
     queries: assets.map((tokenIn) => ({
-      queryKey: QUERY_KEYS.spotPrice(tokenIn, tokenOut),
+      queryKey: noRefresh
+        ? QUERY_KEYS.spotPrice(tokenIn, tokenOut)
+        : QUERY_KEYS.spotPriceLive(tokenIn, tokenOut),
       queryFn: getSpotPrice(tradeRouter, tokenIn, tokenOut),
       enabled: !!tokenIn && !!tokenOut,
     })),

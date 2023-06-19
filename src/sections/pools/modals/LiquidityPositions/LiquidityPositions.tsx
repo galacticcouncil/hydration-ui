@@ -1,4 +1,4 @@
-import { usePoolDeposits } from "api/deposits"
+import { useAccountDeposits } from "api/deposits"
 import { Modal } from "components/Modal/Modal"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -15,7 +15,7 @@ interface Props {
 
 export const LiquidityPositions: FC<Props> = ({ isOpen, pool, onClose }) => {
   const positions = usePoolPositions(pool)
-  const accountDeposits = usePoolDeposits(pool.id)
+  const accountDeposits = useAccountDeposits(pool.id)
   const { t } = useTranslation()
 
   return (

@@ -7,11 +7,13 @@ import { ExternalWalletConnectProviderButton } from "../providers/button/Externa
 type Props = {
   onWalletSelect: (wallet: Wallet) => void
   onExternalWallet: () => void
+  onWalletConnect: () => void
 }
 
 export const WalletConnectProviderSelect = ({
   onWalletSelect,
   onExternalWallet,
+  onWalletConnect,
 }: Props) => {
   const { t } = useTranslation()
 
@@ -23,6 +25,7 @@ export const WalletConnectProviderSelect = ({
       <WalletConnectProviders
         onConnect={onWalletSelect}
         onDownload={(wallet) => window.open(wallet.installUrl, "_blank")}
+        onWalletConnect={onWalletConnect}
       />
       {import.meta.env.VITE_FF_EXTERNAL_WALLET_ENABLED === "true" && (
         <>

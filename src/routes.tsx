@@ -7,6 +7,7 @@ import { XcmPage } from "sections/xcm/XcmPage"
 import { OtcPageWrapper } from "sections/otc/OtcPageWrappet"
 import { PoolsPage } from "sections/pools/PoolsPage"
 import { StatsPage } from "sections/stats/StatsPage"
+import { DcaPage } from "sections/dca/DcaPage"
 
 export const routes = [
   {
@@ -16,6 +17,10 @@ export const routes = [
   {
     path: "trade",
     element: <TradePage />,
+  },
+  {
+    path: "dca",
+    element: <DcaPage />,
   },
   {
     path: "wallet",

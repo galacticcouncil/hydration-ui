@@ -3,7 +3,7 @@ import { theme } from "theme"
 
 export const SContainer = styled.div`
   --scrollbar-url: url("images/Scrollbar.svg");
-  margin: -16px -12px;
+  margin: 0 -12px;
 
   @media ${theme.viewport.gte.sm} {
     margin: unset;

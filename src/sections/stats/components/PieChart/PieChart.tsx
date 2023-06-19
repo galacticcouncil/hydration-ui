@@ -5,8 +5,6 @@ import {
   getCircleCoordinates,
   getPieConfig,
 } from "./PieChart.utils"
-import { useTotalInPools } from "sections/pools/header/PoolsHeaderTotal.utils"
-import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
 import {
   SliceLabelRest,
   TLabelRest,
@@ -22,6 +20,8 @@ import { t } from "i18next"
 import { EmotionJSX } from "@emotion/react/types/jsx-namespace"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import { TOmnipoolOverviewData } from "sections/stats/sections/overview/data/OmnipoolOverview.utils"
+import { BN_0 } from "utils/constants"
 
 export type TSlice = {
   percentage: number
@@ -162,19 +162,22 @@ const DoughnutChart = ({ slices }: DoughnutChartProps) => {
   )
 }
 
-export const PieChart = () => {
-  const { data: omnipoolTotal } = useTotalInPools()
-  const { data: omnipoolData } = useOmnipoolPools()
+type PieChartProps = {
+  data: TOmnipoolOverviewData
+}
 
-  if (!omnipoolTotal || !omnipoolData) return <PieSkeleton />
+export const PieChart = ({ data }: PieChartProps) => {
+  if (!data) return <PieSkeleton />
 
-  const slices = omnipoolData
+  const tvlTotal = data.reduce(
+    (acc, omnipoolAsset) => omnipoolAsset.tvl.plus(acc),
+    BN_0,
+  )
+
+  const slices = data
     ?.reduce((acc, omnipoolAsset) => {
       const percentage = Number(
-        omnipoolAsset.totalDisplay
-          .div(omnipoolTotal)
-          .multipliedBy(100)
-          .toFixed(2),
+        omnipoolAsset.tvl.div(tvlTotal).multipliedBy(100).toFixed(2),
       )
 
       if (percentage > 1) {
@@ -182,7 +185,7 @@ export const PieChart = () => {
           <SliceLabel
             key={percentage}
             symbol={omnipoolAsset.symbol}
-            tvl={omnipoolAsset.totalDisplay}
+            tvl={omnipoolAsset.tvl}
             percentage={percentage}
           />
         )
@@ -203,7 +206,7 @@ export const PieChart = () => {
             {
               name: omnipoolAsset.name,
               percentage,
-              tvl: omnipoolAsset.totalDisplay,
+              tvl: omnipoolAsset.tvl,
             },
           ]
 
@@ -224,7 +227,7 @@ export const PieChart = () => {
             {
               name: omnipoolAsset.name,
               percentage,
-              tvl: omnipoolAsset.totalDisplay,
+              tvl: omnipoolAsset.tvl,
             },
           ]
           const label = <SliceLabelRest key={percentage} assets={assets} />

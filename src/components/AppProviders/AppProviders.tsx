@@ -2,6 +2,7 @@ import { ApiPromise } from "@polkadot/api"
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import { useProvider, useProviderRpcUrlStore } from "api/provider"
 import { InvalidateOnBlock } from "components/InvalidateOnBlock"
+import { OnboardProvider } from "components/OnboardProvider/OnboardProvider"
 import { ToastProvider } from "components/Toast/ToastProvider"
 import { FC, PropsWithChildren } from "react"
 import { SkeletonTheme } from "react-loading-skeleton"
@@ -20,18 +21,20 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
           api.data && preference._hasHydrated ? api.data : ({} as ApiPromise)
         }
       >
-        <InvalidateOnBlock>
-          <ToastProvider>
-            <SkeletonTheme
-              baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
-              highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
-              borderRadius={4}
-            >
-              {children}
-              <Transactions />
-            </SkeletonTheme>
-          </ToastProvider>
-        </InvalidateOnBlock>
+        <OnboardProvider>
+          <InvalidateOnBlock>
+            <ToastProvider>
+              <SkeletonTheme
+                baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
+                highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
+                borderRadius={4}
+              >
+                {children}
+                <Transactions />
+              </SkeletonTheme>
+            </ToastProvider>
+          </InvalidateOnBlock>
+        </OnboardProvider>
       </ApiPromiseContext.Provider>
     </TooltipProvider>
   )

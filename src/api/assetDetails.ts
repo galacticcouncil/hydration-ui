@@ -100,23 +100,28 @@ export const useAssetDetailsList = (
   filter: AssetDetailsListFilter = {
     assetType: ["Token"],
   },
+  noRefresh?: boolean,
 ) => {
   const api = useApiPromise()
 
   const normalizedIds = ids?.filter(isNotNil).map(normalizeId)
 
-  return useQuery(QUERY_KEYS.assets, getAssetDetails(api), {
-    select: (data) => {
-      const normalized =
-        normalizedIds != null
-          ? data.filter((i) => normalizedIds?.includes(i.id))
-          : data
+  return useQuery(
+    noRefresh ? QUERY_KEYS.assets : QUERY_KEYS.assetsLive,
+    getAssetDetails(api),
+    {
+      select: (data) => {
+        const normalized =
+          normalizedIds != null
+            ? data.filter((i) => normalizedIds?.includes(i.id))
+            : data
 
-      return normalized.filter((asset) =>
-        filter.assetType.includes(asset.assetType),
-      )
+        return normalized.filter((asset) =>
+          filter.assetType.includes(asset.assetType),
+        )
+      },
     },
-  })
+  )
 }
 
 export const useAssetAccountDetails = (

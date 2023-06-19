@@ -7,7 +7,6 @@ import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useFooterValues } from "sections/pools/pool/footer/PoolFooter.utils"
 import { ToastMessage, useAccountStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
-import { getFloatingPointAmount } from "utils/balance"
 import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
 import { SContainer } from "./PoolFooter.styled"
 
@@ -31,7 +30,6 @@ export const PoolFooter = ({ pool }: Props) => {
           value: claimable.data?.usd,
           type: "token",
           numberPrefix: "$",
-          fixedPointScale: 12,
         })}
       </>
     )
@@ -65,11 +63,10 @@ export const PoolFooter = ({ pool }: Props) => {
           <div sx={{ flex: "row", justify: "center" }}>
             <Text fw={600} lh={22} tAlign="center">
               {import.meta.env.VITE_FF_FORMAT_CLAIMABLE_VALUE === "true" &&
-              getFloatingPointAmount(claimable.data?.usd ?? 0, 12).lt(0.01)
+              (claimable.data?.usd ?? 0).lt(0.01)
                 ? t("farms.claimCard.smallValue")
                 : t("liquidity.asset.claim.claimable", {
                     claimable: claimable.data?.usd,
-                    fixedPointScale: 12,
                   })}
             </Text>
           </div>
