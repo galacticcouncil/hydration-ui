@@ -1,24 +1,25 @@
+import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
 import { useAssetDetailsList } from "api/assetDetails"
 import { useAssetMetaList } from "api/assetMeta"
 import { useTokensBalances } from "api/balances"
 import { useApiIds } from "api/consts"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
-import { useSpotPrices } from "api/spotPrice"
 import { useUniques } from "api/uniques"
+import { getVolumeAssetTotalValue, useTradeVolumes } from "api/volume"
+import BN from "bignumber.js"
 import { useMemo } from "react"
 import { HYDRA_TREASURE_ACCOUNT, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import BN from "bignumber.js"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_10, BN_NAN } from "utils/constants"
-import { getVolumeAssetTotalValue, useTradeVolumes } from "api/volume"
-import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
+import { useDisplayAssetStore, useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 
 const withoutRefresh = true
 
 export const useOmnipoolAssetsTableData = () => {
-  const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
   const apiIds = useApiIds()
+  const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
+  const displayAsset = useDisplayAssetStore()
 
   const omnipoolAssetsIds = omnipoolAssets.data?.map((a) => a.id) ?? []
 
@@ -29,7 +30,7 @@ export const useOmnipoolAssetsTableData = () => {
     undefined,
     withoutRefresh,
   )
-  const metas = useAssetMetaList([apiIds.data?.usdId, ...omnipoolAssetsIds])
+  const metas = useAssetMetaList([displayAsset.id, ...omnipoolAssetsIds])
 
   // get all NFTs on HYDRA_TREASURE_ACCOUNT to calculate POL
   const uniques = useUniques(
@@ -50,11 +51,7 @@ export const useOmnipoolAssetsTableData = () => {
     withoutRefresh,
   )
 
-  const spotPrices = useSpotPrices(
-    [apiIds.data?.usdId, ...omnipoolAssetsIds],
-    apiIds.data?.usdId,
-    withoutRefresh,
-  )
+  const spotPrices = useDisplayPrices(omnipoolAssetsIds, withoutRefresh)
 
   const queries = [
     omnipoolAssets,
@@ -62,12 +59,12 @@ export const useOmnipoolAssetsTableData = () => {
     metas,
     apiIds,
     uniques,
+    spotPrices,
     ...volumes,
     ...positions,
-    ...spotPrices,
     ...omnipoolAssetBalances,
   ]
-  const isInitialLoading = queries.some((q) => q.isInitialLoading)
+  const isInitialLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
     if (
@@ -75,7 +72,7 @@ export const useOmnipoolAssetsTableData = () => {
       !assetDetails.data ||
       !metas.data ||
       !apiIds.data ||
-      spotPrices.some((q) => !q.data) ||
+      !spotPrices.data ||
       omnipoolAssetBalances.some((q) => !q.data) ||
       positions.some((q) => !q.data) ||
       volumes.some((q) => !q.data)
@@ -117,14 +114,12 @@ export const useOmnipoolAssetsTableData = () => {
         liquidityOutResult = calculate_liquidity_out.apply(this, params)
       }
 
-      const valueSp = spotPrices.find((sp) => sp.data?.tokenIn === assetId)
+      const valueSp = spotPrices.data?.find((sp) => sp?.tokenIn === assetId)
       const valueDp = BN_10.pow(meta?.decimals.toNumber() ?? 12)
       let valueUSD = BN_NAN
 
-      if (liquidityOutResult !== "-1" && valueSp?.data) {
-        valueUSD = BN(liquidityOutResult)
-          .div(valueDp)
-          .times(valueSp.data.spotPrice)
+      if (liquidityOutResult !== "-1" && valueSp) {
+        valueUSD = BN(liquidityOutResult).div(valueDp).times(valueSp.spotPrice)
       }
 
       return { ...acc, [assetId]: valueUSD.plus(acc[assetId] ?? BN_0) }
@@ -140,9 +135,9 @@ export const useOmnipoolAssetsTableData = () => {
       )
       const meta = metas.data?.find((m) => m.id.toString() === omnipoolAssetId)
 
-      const spotPrice = spotPrices.find(
-        (sp) => sp.data?.tokenIn === omnipoolAssetId,
-      )?.data?.spotPrice
+      const spotPrice = spotPrices.data?.find(
+        (sp) => sp?.tokenIn === omnipoolAssetId,
+      )?.spotPrice
 
       const omnipoolAssetBalance = omnipoolAssetBalances.find(
         (b) => b.data?.assetId.toString() === omnipoolAssetId,

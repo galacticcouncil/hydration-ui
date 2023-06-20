@@ -26,6 +26,7 @@ import { getEnteredDate } from "utils/block"
 import { BN_0, BN_NAN } from "utils/constants"
 import { WalletAssetsHydraPositionsData } from "../hydraPositions/data/WalletAssetsHydraPositionsData"
 import { WalletAssetsTableName } from "../table/data/WalletAssetsTableData"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 
 export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
   const { t } = useTranslation()
@@ -75,7 +76,9 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
       id: "value",
       header: t("wallet.assets.farmingPositions.header.value"),
       sortingFn: (a, b) =>
-        a.original.position.valueUSD.gt(b.original.position.valueUSD) ? 1 : -1,
+        a.original.position.valueDisplay.gt(b.original.position.valueDisplay)
+          ? 1
+          : -1,
       cell: ({ row }) => (
         <div sx={{ flex: "column", align: ["end", "start"], gap: 2 }}>
           <WalletAssetsHydraPositionsData
@@ -84,14 +87,14 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
             lrna={row.original.position.lrna}
           />
           <DollarAssetValue
-            value={row.original.position.valueUSD}
+            value={row.original.position.valueDisplay}
             wrapper={(children) => (
               <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
                 {children}
               </Text>
             )}
           >
-            {t("value.usd", { amount: row.original.position.valueUSD })}
+            <DisplayValue value={row.original.position.valueDisplay} />
           </DollarAssetValue>
         </div>
       ),
@@ -205,7 +208,7 @@ export type FarmingPositionsTableData = {
   position: {
     symbol: string
     value: BN
-    valueUSD: BN
+    valueDisplay: BN
     lrna: BN
   }
 }

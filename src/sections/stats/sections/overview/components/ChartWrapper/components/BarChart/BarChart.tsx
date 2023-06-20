@@ -1,17 +1,18 @@
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  ResponsiveContainer,
-  Cell,
-  BarProps,
-} from "recharts"
-import { useAssetsVolumeChart } from "./BarChart.utils"
-import { theme } from "theme"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
+import {
+  Bar,
+  BarChart,
+  BarProps,
+  Cell,
+  ResponsiveContainer,
+  XAxis,
+} from "recharts"
+import { theme } from "theme"
+import { useAssetsVolumeChart } from "./BarChart.utils"
 
 type BarItemProps = Required<NonNullable<BarProps["data"]>[number]> &
   ReturnType<typeof useAssetsVolumeChart>["data"][number]
@@ -108,12 +109,8 @@ const Label = ({ item }: { item: BarItemProps }) => {
           zIndex: 1,
         }}
       >
-        <Text fs={24}>$</Text>
-        <Text fs={24} font="FontOver">
-          {t("value.usd", {
-            amount: item.dollarValue,
-            numberPrefix: "",
-          })}
+        <Text fs={24}>
+          <DisplayValue value={item.value} />
         </Text>
       </div>
     </>

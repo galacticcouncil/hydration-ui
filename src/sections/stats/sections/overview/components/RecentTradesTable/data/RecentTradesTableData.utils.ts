@@ -1,11 +1,11 @@
+import { useAssetMetaList } from "api/assetMeta"
 import { useApiIds } from "api/consts"
 import { useOmnipoolAssets } from "api/omnipool"
 import { useAllTrades } from "api/volume"
-import { useMemo } from "react"
 import BN from "bignumber.js"
-import { useAssetMetaList } from "api/assetMeta"
-import { useSpotPrices } from "api/spotPrice"
+import { useMemo } from "react"
 import { getFloatingPointAmount } from "utils/balance"
+import { useDisplayPrices } from "utils/displayAsset"
 
 const withoutRefresh = true
 const VISIBLE_TRADE_NUMBER = 10
@@ -18,15 +18,11 @@ export const useRecentTradesTableData = () => {
   const omnipoolAssetsIds = omnipoolAssets.data?.map((a) => a.id) ?? []
 
   const assetMetas = useAssetMetaList(omnipoolAssetsIds)
-  const spotPrices = useSpotPrices(
-    omnipoolAssetsIds,
-    apiIds.data?.usdId,
-    withoutRefresh,
-  )
+  const spotPrices = useDisplayPrices(omnipoolAssetsIds, withoutRefresh)
 
-  const queries = [omnipoolAssets, apiIds, assetMetas, allTrades, ...spotPrices]
+  const queries = [omnipoolAssets, apiIds, assetMetas, allTrades, spotPrices]
 
-  const isInitialLoading = queries.some((q) => q.isInitialLoading)
+  const isInitialLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
     if (
@@ -34,7 +30,7 @@ export const useRecentTradesTableData = () => {
       !omnipoolAssets.data ||
       !apiIds.data ||
       !assetMetas.data ||
-      spotPrices.some((q) => !q.data)
+      !spotPrices.data
     )
       return []
 
@@ -66,11 +62,11 @@ export const useRecentTradesTableData = () => {
               (assetMeta) => assetMeta.id === assetOut,
             )
 
-            const spotPriceIn = spotPrices.find(
-              (spotPrice) => spotPrice.data?.tokenIn === assetIn,
+            const spotPriceIn = spotPrices.data?.find(
+              (spotPrice) => spotPrice?.tokenIn === assetIn,
             )
-            const spotPriceOut = spotPrices.find(
-              (spotPrice) => spotPrice.data?.tokenIn === assetOut,
+            const spotPriceOut = spotPrices.data?.find(
+              (spotPrice) => spotPrice?.tokenIn === assetOut,
             )
 
             const amountIn = getFloatingPointAmount(
@@ -83,8 +79,8 @@ export const useRecentTradesTableData = () => {
             )
 
             const totalValue = amountIn
-              .multipliedBy(spotPriceIn?.data?.spotPrice ?? 1)
-              .plus(amountOut.multipliedBy(spotPriceOut?.data?.spotPrice ?? 1))
+              .multipliedBy(spotPriceIn?.spotPrice ?? 1)
+              .plus(amountOut.multipliedBy(spotPriceOut?.spotPrice ?? 1))
 
             if (assetMetaIn && assetMetaOut)
               memo.push({

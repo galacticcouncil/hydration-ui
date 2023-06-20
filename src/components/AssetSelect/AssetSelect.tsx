@@ -12,7 +12,7 @@ import { ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { getFloatingPointAmount } from "utils/balance"
-import { useDisplayAssetStore, useDisplayPrice } from "utils/displayAsset"
+import { useDisplayPrice } from "utils/displayAsset"
 import { Maybe } from "utils/helpers"
 import {
   SContainer,
@@ -40,7 +40,6 @@ export const AssetSelect = (props: {
   onSelectAssetClick: () => void
 }) => {
   const { t } = useTranslation()
-  const displayAsset = useDisplayAssetStore()
 
   const spotPrice = useDisplayPrice(props.asset)
 

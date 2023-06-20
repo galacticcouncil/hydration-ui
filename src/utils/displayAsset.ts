@@ -51,9 +51,12 @@ export const useDisplayPrice = (id: string | u32) => {
   return { data, isLoading }
 }
 
-export const useDisplayPrices = (ids: (string | u32)[]) => {
+export const useDisplayPrices = (
+  ids: (string | u32)[],
+  noRefresh?: boolean,
+) => {
   const displayAsset = useDisplayAssetStore()
-  const spotPrices = useSpotPrices(ids, displayAsset.id)
+  const spotPrices = useSpotPrices(ids, displayAsset.id, noRefresh)
   const usdPrice = useCoingeckoUsdPrice()
 
   const isLoading =
