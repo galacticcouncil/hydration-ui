@@ -3,16 +3,16 @@ export const getCircleCoordinates = (
   outerRadius: number,
   circleSize: number,
   percentage: number,
+  startAnglePoint?: number,
 ) => {
-  const angle = percentage * 3.6 - 1
-  const startAngle = 0
-  const endAngle = angle
+  let currentAngle = startAnglePoint ?? 0
 
+  const angle = percentage * 3.6 - 1
   const centerX = circleSize / 2 // X-coordinate of the center of the doughnut chart
   const centerY = circleSize / 2 // Y-coordinate of the center of the doughnut chart
 
-  const startAngleRad = ((startAngle - 90) * Math.PI) / 180
-  const endAngleRad = ((endAngle - 90) * Math.PI) / 180
+  const startAngleRad = ((currentAngle - 90) * Math.PI) / 180
+  const endAngleRad = ((currentAngle + angle - 90) * Math.PI) / 180
 
   const outerStartX = centerX + outerRadius * Math.cos(startAngleRad)
   const outerStartY = centerY + outerRadius * Math.sin(startAngleRad)
