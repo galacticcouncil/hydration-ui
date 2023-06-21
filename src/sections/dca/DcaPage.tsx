@@ -28,6 +28,7 @@ export function DcaPage() {
   const { createTransaction } = useStore()
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const indexerUrl = import.meta.env.VITE_INDEXER_URL
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
     const { transaction, notification } = e.detail
@@ -80,6 +81,7 @@ export function DcaPage() {
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}
+          indexerUrl={indexerUrl}
           apiAddress={rpcUrl}
           stableCoinAssetId="2"
           pools="Omni"

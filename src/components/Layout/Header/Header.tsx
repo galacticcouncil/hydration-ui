@@ -50,6 +50,7 @@ export const Header = () => {
         <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
           <div sx={{ flex: "row", align: "center" }}>
             <Icon
+              sx={{ color: "white" }}
               icon={
                 isDesktop && !isMediumMedia ? <HydraLogoFull /> : <HydraLogo />
               }

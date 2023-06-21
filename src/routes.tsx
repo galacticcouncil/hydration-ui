@@ -8,6 +8,7 @@ import { OtcPageWrapper } from "sections/otc/OtcPageWrappet"
 import { PoolsPage } from "sections/pools/PoolsPage"
 import { StatsPage } from "sections/stats/StatsPage"
 import { DcaPage } from "sections/dca/DcaPage"
+import { StakingPage } from "./sections/staking/StakingPage"
 
 export const routes = [
   {
@@ -69,6 +70,23 @@ export const routes = [
       {
         path: "LRNA",
         element: <StatsPage />,
+      },
+    ],
+  },
+  {
+    path: "staking",
+    children: [
+      {
+        path: "/",
+        element: <Navigate to="dashboard" />,
+      },
+      {
+        path: "dashboard",
+        element: <StakingPage />,
+      },
+      {
+        path: "governance",
+        element: <StakingPage />,
       },
     ],
   },
