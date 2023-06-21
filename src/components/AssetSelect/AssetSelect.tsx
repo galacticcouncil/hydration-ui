@@ -37,7 +37,7 @@ export const AssetSelect = (props: {
 
   onBlur?: (v: string) => void
   onChange: (v: string) => void
-  onSelectAssetClick: () => void
+  onSelectAssetClick?: () => void
 }) => {
   const { t } = useTranslation()
 
@@ -117,7 +117,7 @@ export const AssetSelect = (props: {
             size="small"
             onClick={(e) => {
               e.preventDefault()
-              props.onSelectAssetClick()
+              props.onSelectAssetClick?.()
             }}
           >
             <Icon icon={props.assetIcon} size={30} />
@@ -138,7 +138,7 @@ export const AssetSelect = (props: {
                 </Text>
               </div>
             )}
-            <Icon icon={<ChevronDown />} />
+            {props.onSelectAssetClick && <Icon icon={<ChevronDown />} />}
           </SSelectAssetButton>
 
           <AssetInput

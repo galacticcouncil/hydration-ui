@@ -73,6 +73,7 @@ const colors = {
   primaryA0: "#546380",
   primaryA15: "#4CD5F3",
   primaryA20: "#25CBFF",
+  primaryA35: "#2FD3F7",
   primaryA06: "#DAFFEE",
   primaryA15Blue: "#546380",
   graphGradient0: "#FC408C",
@@ -178,6 +179,10 @@ const transitions = {
   default: "0.15s ease-in-out",
 } as const
 
+const borderRadius = {
+  stakingCard: 8,
+} as const
+
 export const theme = {
   colors,
   gradients,
@@ -186,4 +191,5 @@ export const theme = {
   zIndices,
   viewport,
   shadows,
+  borderRadius,
 }
