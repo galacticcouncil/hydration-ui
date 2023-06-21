@@ -31,7 +31,6 @@ interface AssetDetailsListFilter {
 export const useAssetTable = () => {
   const api = useApiPromise()
   const tradeRouter = useTradeRouter()
-
   const { account } = useAccountStore()
 
   return useQuery(

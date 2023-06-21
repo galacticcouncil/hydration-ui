@@ -1,24 +1,25 @@
 import * as Tooltip from "@radix-ui/react-tooltip"
-import {
-  STriggerButton,
-  SContent,
-  SClaimButton,
-} from "./ClaimAllDrowpdown.styled"
-import { Trans, useTranslation } from "react-i18next"
-import { Text } from "components/Typography/Text/Text"
-import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
-import { useMemo, useState } from "react"
 import { useAssetMetaList } from "api/assetMeta"
-import { theme } from "theme"
+import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Spacer } from "components/Spacer/Spacer"
-import { TOAST_MESSAGES } from "state/toasts"
-import { ToastMessage, useAccountStore } from "state/store"
+import { Text } from "components/Typography/Text/Text"
+import { useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
-import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
-import { Icon } from "components/Icon/Icon"
-import { useAllUserDepositShare } from "../../position/FarmingPosition.utils"
 import { HeaderSeparator } from "sections/pools/header/PoolsHeader"
+import { ToastMessage, useAccountStore } from "state/store"
+import { TOAST_MESSAGES } from "state/toasts"
+import { theme } from "theme"
+import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
+import { useAllUserDepositShare } from "../../position/FarmingPosition.utils"
+import {
+  SClaimButton,
+  SContent,
+  STriggerButton,
+} from "./ClaimAllDrowpdown.styled"
 
 export const ClaimAllDropdown = () => {
   const { t } = useTranslation()
@@ -57,11 +58,7 @@ export const ClaimAllDropdown = () => {
         <Trans i18nKey={`farms.claimCard.toast.${msType}`}>
           <span />
         </Trans>
-        {t("value", {
-          value: claimable.data?.usd,
-          type: "token",
-          numberPrefix: "$",
-        })}
+        <DisplayValue value={claimable.data?.displayValue} type="token" />
       </>
     )
     return memo
@@ -108,16 +105,15 @@ export const ClaimAllDropdown = () => {
           </div>
         ))}
         <Text fs={14} sx={{ mt: 6 }}>
-          {t("farms.claimCard.claim.usd", {
-            value: claimable.data?.usd,
-            numberPrefix: "$",
-          })}
+          <Trans t={t} i18nKey="farms.claimCard.claim.usd">
+            <DisplayValue value={claimable.data?.displayValue} />
+          </Trans>
         </Text>
         <Spacer size={18} />
         <SClaimButton
           disabled={
             !claimable.data ||
-            claimable.data.usd.isZero() ||
+            claimable.data.displayValue.isZero() ||
             account?.isExternalWalletConnected
           }
           onClick={() => {

@@ -107,23 +107,20 @@ export const useDisplayAssetStore = create<DisplayAssetStore>()(
 export const useCoingeckoUsdPrice = () => {
   const displayAsset = useDisplayAssetStore()
 
-  return useQuery(
-    QUERY_KEYS.coingeckoUsd,
-    async () => {
-      const res = await fetch(
-        `https://api.coingecko.com/api/v3/simple/price?ids=${STABLECOIN_SYMBOL.toLowerCase()}&vs_currencies=usd`,
-      )
-      const json = await res.json()
-      console.log(json)
-      return json[STABLECOIN_SYMBOL.toLowerCase()].usd
-    },
-    {
-      enabled: displayAsset.isRealUSD,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      retry: false,
-      staleTime: 1000 * 60 * 60 * 24, // 24h
-    },
+  return useQuery(QUERY_KEYS.coingeckoUsd, getCoingeckoSpotPrice, {
+    enabled: displayAsset.isRealUSD,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    retry: false,
+    staleTime: 1000 * 60 * 60 * 24, // 24h
+  })
+}
+
+export const getCoingeckoSpotPrice = async () => {
+  const res = await fetch(
+    `https://api.coingecko.com/api/v3/simple/price?ids=${STABLECOIN_SYMBOL.toLowerCase()}&vs_currencies=usd`,
   )
+  const json = await res.json()
+  return json[STABLECOIN_SYMBOL.toLowerCase()].usd
 }
