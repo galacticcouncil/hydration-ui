@@ -74,7 +74,7 @@ const WalletAssetsHeaderBalance = ({ label }: { label: string }) => {
     if (!lpPositions.data) return BN_0
 
     return lpPositions.data.reduce(
-      (acc, { valueDisplay: valueUSD }) => acc.plus(BN(valueUSD)),
+      (acc, { valueDisplay }) => acc.plus(BN(valueDisplay)),
       BN_0,
     )
   }, [lpPositions.data])
@@ -153,7 +153,7 @@ const WalletAssetsHeaderOmnipool = ({ label }: { label: string }) => {
     if (!lpPositions.data) return BN_0
 
     return lpPositions.data.reduce(
-      (acc, { valueDisplay: valueUSD }) => acc.plus(BN(valueUSD)),
+      (acc, { valueDisplay }) => acc.plus(BN(valueDisplay)),
       BN_0,
     )
   }, [lpPositions.data])
