@@ -16,8 +16,8 @@ export const HeaderSettingsMobile = () => {
         <IconButton
           onClick={() => setOpen(true)}
           icon={<IconSettings />}
-          round
           sx={{ color: "brightBlue100" }}
+          round
         />
         <Text fs={12} fw={500} color="brightBlue200">
           {t("header.settings.title")}
