@@ -1,11 +1,12 @@
 import BigNumber from "bignumber.js"
-import { SRow, SSliceLabelContainer } from "./SliceLabelRest.styled"
-import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
-import { Spacer } from "components/Spacer/Spacer"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { SSeparator } from "components/Separator/Separator.styled"
-import { theme } from "theme"
+import { Spacer } from "components/Spacer/Spacer"
+import { Text } from "components/Typography/Text/Text"
 import { Fragment } from "react"
+import { useTranslation } from "react-i18next"
+import { theme } from "theme"
+import { SRow, SSliceLabelContainer } from "./SliceLabelRest.styled"
 
 export type TLabelRest = {
   name: string
@@ -61,7 +62,7 @@ export const SliceLabelRest = ({ assets }: { assets: TLabelRest[] }) => {
                 {asset.percentage}%
               </Text>
               <Text fs={14} color="basic100">
-                {t("value.usd", { amount: asset.tvl })}
+                <DisplayValue value={asset.tvl} />
               </Text>
             </SRow>
             {isNotLastEl ? (
