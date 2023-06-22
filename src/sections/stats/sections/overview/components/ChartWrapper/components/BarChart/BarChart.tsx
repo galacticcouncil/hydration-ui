@@ -110,7 +110,7 @@ const Label = ({ item }: { item: BarItemProps }) => {
         }}
       >
         <Text fs={24}>
-          <DisplayValue value={item.value} />
+          <DisplayValue value={item.displayValue} />
         </Text>
       </div>
     </>
