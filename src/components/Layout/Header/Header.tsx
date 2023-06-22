@@ -96,7 +96,7 @@ export const Header = () => {
               </InfoTooltip>
             </div>
             <WalletConnectButton />
-            <HeaderSettings />
+            {isDesktop && <HeaderSettings />}
           </div>
         </div>
       </SHeader>

@@ -1,4 +1,6 @@
-import React, { FC, ReactNode } from "react"
+import BigNumber from "bignumber.js"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import React, { FC } from "react"
 import { formatAssetValue } from "utils/formatting"
 import { Maybe } from "utils/helpers"
 import {
@@ -15,7 +17,7 @@ export type AssetInputProps = {
   onChange: (val: string) => void
   name: string
   label: string
-  displayValue?: ReactNode
+  displayValue?: BigNumber | 0 | null
   unit?: Maybe<string>
   type?: string
   placeholder?: string
@@ -49,7 +51,11 @@ export const AssetInput: FC<AssetInputProps> = (props) => {
 
           {props.unit && <SUnit>{props.unit}</SUnit>}
         </SInputWrapper>
-        {props.displayValue && <SDollars>≈ {props.displayValue}</SDollars>}
+        {props.displayValue && (
+          <SDollars>
+            ≈ <DisplayValue value={props.displayValue} />
+          </SDollars>
+        )}
       </SLabelWrapper>
     </div>
   )

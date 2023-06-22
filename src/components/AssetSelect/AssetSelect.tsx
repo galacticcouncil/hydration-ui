@@ -5,7 +5,6 @@ import BigNumber from "bignumber.js"
 import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { AssetInput } from "components/AssetInput/AssetInput"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { ReactNode, useMemo } from "react"
@@ -146,7 +145,7 @@ export const AssetSelect = (props: {
             label={t("selectAsset.input.label")}
             onBlur={props.onBlur}
             onChange={props.onChange}
-            displayValue={<DisplayValue value={displayValue} />}
+            displayValue={displayValue}
             placeholder="0.00"
             unit={props.assetSymbol}
             error={props.error}
