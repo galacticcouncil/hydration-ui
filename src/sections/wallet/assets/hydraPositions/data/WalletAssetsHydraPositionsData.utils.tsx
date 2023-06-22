@@ -134,7 +134,7 @@ export const useHydraPositionsData = () => {
         let valueDisplay = BN_NAN
 
         const providedAmount = position.amount.toBigNumber().div(valueDp)
-        let providedAmountUSD = BN_NAN
+        let providedAmountDisplay = BN_NAN
 
         const shares = position.shares.toBigNumber()
 
@@ -149,7 +149,7 @@ export const useHydraPositionsData = () => {
         }
 
         if (valueSp?.spotPrice)
-          providedAmountUSD = providedAmount.times(valueSp.spotPrice)
+          providedAmountDisplay = providedAmount.times(valueSp.spotPrice)
 
         const result = {
           id: position.id.toString(),
@@ -161,7 +161,7 @@ export const useHydraPositionsData = () => {
           valueDisplay,
           price,
           providedAmount: position.amount.toBigNumber(),
-          providedAmountUSD,
+          providedAmountDisplay,
           shares,
         }
 

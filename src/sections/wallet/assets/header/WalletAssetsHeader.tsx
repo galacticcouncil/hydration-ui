@@ -1,15 +1,16 @@
 import BN from "bignumber.js"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
+import { HeaderValues } from "sections/pools/header/PoolsHeader"
+import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
+import { SInfoIcon } from "sections/pools/pool/details/PoolValue.styled"
 import { BN_0 } from "utils/constants"
 import { useHydraPositionsData } from "../hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useAssetsTableData } from "../table/data/WalletAssetsTableData.utils"
-import { HeaderValues } from "sections/pools/header/PoolsHeader"
-import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { SInfoIcon } from "sections/pools/pool/details/PoolValue.styled"
-import { Text } from "components/Typography/Text/Text"
 
 type Props = { disconnected?: boolean }
 
@@ -47,12 +48,12 @@ const WalletAssetsHeaderBalance = ({ label }: { label: string }) => {
   const lpPositions = useHydraPositionsData()
   const farmsPositions = useAllUserDepositShare()
 
-  const totalUsd = useMemo(() => {
+  const totalDisplay = useMemo(() => {
     if (!assets.data) return BN_0
 
     return assets.data.reduce((acc, cur) => {
-      if (!cur.totalUSD.isNaN()) {
-        return acc.plus(cur.totalUSD)
+      if (!cur.totalDisplay.isNaN()) {
+        return acc.plus(cur.totalDisplay)
       }
       return acc
     }, BN_0)
@@ -86,21 +87,27 @@ const WalletAssetsHeaderBalance = ({ label }: { label: string }) => {
         <Text fs={8} tTransform="uppercase" color="basic500">
           {t("wallet.assets.header.balance.tooltip.assets")}
         </Text>
-        <Text fs={12}>{t("value.usd", { amount: totalUsd })}</Text>
+        <Text fs={12}>
+          <DisplayValue value={totalDisplay} />
+        </Text>
       </div>
 
       <div sx={{ flex: "column", gap: 2 }}>
         <Text fs={8} tTransform="uppercase" color="basic500">
           {t("wallet.assets.header.balance.tooltip.positions")}
         </Text>
-        <Text fs={12}>{t("value.usd", { amount: lpAmount })}</Text>
+        <Text fs={12}>
+          <DisplayValue value={lpAmount} />
+        </Text>
       </div>
 
       <div sx={{ flex: "column", gap: 2 }}>
         <Text fs={8} tTransform="uppercase" color="basic500">
           {t("wallet.assets.header.balance.tooltip.farms")}
         </Text>
-        <Text fs={12}>{t("value.usd", { amount: farmsAmount })}</Text>
+        <Text fs={12}>
+          <DisplayValue value={farmsAmount} />
+        </Text>
       </div>
     </div>
   )
@@ -116,7 +123,7 @@ const WalletAssetsHeaderBalance = ({ label }: { label: string }) => {
       </div>
 
       <HeaderTotalData
-        value={totalUsd.plus(farmsAmount).plus(lpAmount)}
+        value={totalDisplay.plus(farmsAmount).plus(lpAmount)}
         isLoading={
           assets.isLoading || lpPositions.isLoading || farmsPositions.isLoading
         }
@@ -159,14 +166,18 @@ const WalletAssetsHeaderOmnipool = ({ label }: { label: string }) => {
         <Text fs={8} tTransform="uppercase" color="basic500">
           {t("wallet.assets.header.balance.tooltip.positions")}
         </Text>
-        <Text fs={12}>{t("value.usd", { amount: lpAmount })}</Text>
+        <Text fs={12}>
+          <DisplayValue value={lpAmount} />
+        </Text>
       </div>
 
       <div sx={{ flex: "column", gap: 2 }}>
         <Text fs={8} tTransform="uppercase" color="basic500">
           {t("wallet.assets.header.balance.tooltip.farms")}
         </Text>
-        <Text fs={12}>{t("value.usd", { amount: farmsAmount })}</Text>
+        <Text fs={12}>
+          <DisplayValue value={farmsAmount} />
+        </Text>
       </div>
     </div>
   )

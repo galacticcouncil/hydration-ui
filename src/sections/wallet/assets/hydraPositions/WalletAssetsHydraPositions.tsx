@@ -83,7 +83,7 @@ export const WalletAssetsHydraPositions = ({ data }: Props) => {
                         assetId={row.original.assetId}
                         symbol={row.original.symbol}
                         amount={row.original.providedAmount}
-                        amountUSD={row.original.providedAmountUSD}
+                        amountDisplay={row.original.providedAmountDisplay}
                         shares={row.original.shares}
                       />
                     </TableData>

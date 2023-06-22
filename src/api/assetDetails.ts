@@ -4,7 +4,6 @@ import { AccountId32 } from "@polkadot/types/interfaces"
 import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
 import { useQuery } from "@tanstack/react-query"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
-import { getAssetsBalances } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useAccountStore } from "state/store"
 import { NATIVE_ASSET_ID, useApiPromise, useTradeRouter } from "utils/api"
 import { BN_0 } from "utils/constants"
@@ -15,7 +14,6 @@ import { getTokenLock } from "./balances"
 import { getApiIds } from "./consts"
 import { getHubAssetTradability, getOmnipoolAssets } from "./omnipool"
 import { getAcceptedCurrency, getAccountCurrency } from "./payments"
-import { getSpotPrice } from "./spotPrice"
 
 export const useAssetDetails = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
@@ -55,42 +53,28 @@ export const useAssetTable = () => {
 
       const tradeAssets = await tradeRouter.getAllAssets()
 
-      const spotPricePromises = acceptedTokens.map((token) =>
-        getSpotPrice(tradeRouter, token.id, apiIds.stableCoinId ?? "")(),
-      )
-      const spotPrices = await Promise.all(spotPricePromises)
       const tokenLockPromises = acceptedTokens.map((token) =>
         getTokenLock(api, account.address, token.id)(),
       )
-
       const tokenLocks = await Promise.all(tokenLockPromises)
 
       const omnipoolAssets = await getOmnipoolAssets(api)()
 
       const hubAssetTradability = await getHubAssetTradability(api)()
 
-      const assetsBalances = getAssetsBalances(
-        balances.balances,
-        spotPrices,
-        allAssets,
-        tokenLocks,
-        balances.native,
-      )
-
       return {
+        balances,
         allAssets,
         accountTokenId,
         tradeAssets,
         acceptedTokens,
-        assetsBalances,
+        tokenLocks,
         apiIds,
         omnipoolAssets,
         hubAssetTradability,
       }
     },
-    {
-      enabled: !!account?.address,
-    },
+    { enabled: !!account?.address },
   )
 }
 
