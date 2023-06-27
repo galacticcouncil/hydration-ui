@@ -27,7 +27,7 @@ export const SliceLabel = ({ symbol, percentage, tvl }: SliceLabelProps) => {
         {t("value.percentage", { value: percentage })}
       </Text>
       <Text color="basic100" fs={[10, 20]}>
-        <DisplayValue value={tvl} />
+        <DisplayValue value={tvl} isUSD />
       </Text>
       <Text color="basic100" fs={[10, 20]}>
         {symbol}

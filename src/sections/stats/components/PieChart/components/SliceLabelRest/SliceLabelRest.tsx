@@ -62,7 +62,7 @@ export const SliceLabelRest = ({ assets }: { assets: TLabelRest[] }) => {
                 {asset.percentage}%
               </Text>
               <Text fs={14} color="basic100">
-                <DisplayValue value={asset.tvl} />
+                <DisplayValue value={asset.tvl} isUSD />
               </Text>
             </SRow>
             {isNotLastEl ? (

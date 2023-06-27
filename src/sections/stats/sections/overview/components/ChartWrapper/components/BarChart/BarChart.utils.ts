@@ -1,18 +1,18 @@
 import { useAssetMetaList } from "api/assetMeta"
 import { useOmnipoolAssets } from "api/omnipool"
+import { useSpotPrices } from "api/spotPrice"
 import { useTradeVolumes } from "api/volume"
 import BN from "bignumber.js"
 import { isAfter, isBefore, subHours } from "date-fns"
 import { useMemo } from "react"
-import { BN_10 } from "utils/constants"
-import { useDisplayPrices } from "utils/displayAsset"
+import { BN_10, STABLECOIN_ID } from "utils/constants"
 
 export const useAssetsVolumeChart = () => {
   const omnipoolAssets = useOmnipoolAssets()
   const assetIds = omnipoolAssets.data?.map((asset) => asset.id) ?? []
   const volumes = useTradeVolumes(assetIds)
   const assetMetas = useAssetMetaList(assetIds)
-  const displayPrices = useDisplayPrices(assetIds)
+  const spotPrices = useSpotPrices(assetIds, STABLECOIN_ID)
 
   const currentDate = new Date()
 
@@ -22,13 +22,13 @@ export const useAssetsVolumeChart = () => {
       return {
         date,
         hours: `${String(date.getHours()).padStart(2, "0")}:00`,
-        displayValue: 0,
+        dollarValue: 0,
       }
     })
     .reverse()
 
-  const queries = [displayPrices, ...volumes]
-  const isLoading = queries.some((q) => q.isLoading)
+  const queries = [...spotPrices, ...volumes]
+  const isLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
     if (isLoading || !volumes.length) return []
@@ -44,16 +44,16 @@ export const useAssetsVolumeChart = () => {
 
         const assetMeta = assetMetas.data?.find((meta) => meta.id === assetIn)
 
-        const spotPrice = displayPrices.data?.find(
-          (spotPrice) => spotPrice?.tokenIn === assetIn,
+        const spotPrice = spotPrices.find(
+          (spotPrice) => spotPrice?.data?.tokenIn === assetIn,
         )
 
         const assetScale = amountIn.dividedBy(
           BN_10.pow(assetMeta?.decimals.toNumber() ?? 12),
         )
 
-        const displayValue = assetScale
-          .multipliedBy(spotPrice?.spotPrice ?? 1)
+        const dollarValue = assetScale
+          .multipliedBy(spotPrice?.data?.spotPrice ?? 1)
           .div(2)
 
         const datesResult = outerAcc.map((el) => {
@@ -65,7 +65,7 @@ export const useAssetsVolumeChart = () => {
           if (isWithinRange) {
             return {
               ...el,
-              displayValue: el.displayValue + displayValue.toNumber(),
+              dollarValue: el.dollarValue + dollarValue.toNumber(),
             }
           }
 
@@ -77,7 +77,7 @@ export const useAssetsVolumeChart = () => {
 
       return outerAcc
     }, dates)
-  }, [isLoading, volumes, dates, assetMetas.data, displayPrices])
+  }, [isLoading, volumes, dates, assetMetas.data, spotPrices])
 
   return { data, isLoading }
 }

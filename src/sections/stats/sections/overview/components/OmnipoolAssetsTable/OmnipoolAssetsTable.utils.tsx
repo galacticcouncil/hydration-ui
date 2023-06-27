@@ -74,7 +74,7 @@ export const useOmnipoolAssetsTable = (data: TOmnipoolAssetsTableData) => {
           color="white"
           fs={[13, 16]}
         >
-          <DisplayValue value={row.original.tvl} />
+          <DisplayValue value={row.original.tvl} isUSD />
         </Text>
       ),
     }),
@@ -84,7 +84,7 @@ export const useOmnipoolAssetsTable = (data: TOmnipoolAssetsTableData) => {
       sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
       cell: ({ row }) => (
         <Text tAlign="center" color="white">
-          <DisplayValue value={row.original.volume} />
+          <DisplayValue value={row.original.volume} isUSD />
         </Text>
       ),
     }),
@@ -94,7 +94,7 @@ export const useOmnipoolAssetsTable = (data: TOmnipoolAssetsTableData) => {
       sortingFn: (a, b) => (a.original.fee.gt(b.original.fee) ? 1 : -1),
       cell: ({ row }) => (
         <Text tAlign="center" color="white">
-          <DisplayValue value={row.original.fee} />
+          <DisplayValue value={row.original.fee} isUSD />
         </Text>
       ),
     }),*/
@@ -104,7 +104,7 @@ export const useOmnipoolAssetsTable = (data: TOmnipoolAssetsTableData) => {
       sortingFn: (a, b) => (a.original.pol.gt(b.original.pol) ? 1 : -1),
       cell: ({ row }) => (
         <Text tAlign="center" color="white">
-          <DisplayValue value={row.original.pol} />
+          <DisplayValue value={row.original.pol} isUSD />
         </Text>
       ),
     }),

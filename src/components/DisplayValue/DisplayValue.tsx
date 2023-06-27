@@ -5,14 +5,15 @@ import { useDisplayAssetStore } from "utils/displayAsset"
 
 type Props = {
   value: BigNumber | number | null | ReactNode
+  isUSD?: boolean
   type?: "dollar" | "token"
 }
 
-export const DisplayValue = ({ value, type = "dollar" }: Props) => {
+export const DisplayValue = ({ value, isUSD, type = "dollar" }: Props) => {
   const { t } = useTranslation()
   const store = useDisplayAssetStore()
 
-  const isDollar = store.isRealUSD || store.isStableCoin
+  const isDollar = isUSD || store.isRealUSD || store.isStableCoin
   const isNumber = BigNumber.isBigNumber(value) || typeof value === "number"
 
   return (

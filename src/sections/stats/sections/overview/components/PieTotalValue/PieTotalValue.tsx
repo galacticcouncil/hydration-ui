@@ -25,7 +25,7 @@ export const PieTotalValue = ({
       <Text color="brightBlue300">{title}</Text>
       <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
         <Text fs={[20, 42]} font="FontOver">
-          <DisplayValue value={data} />
+          <DisplayValue value={data} isUSD />
         </Text>
       </div>
     </div>

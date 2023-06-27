@@ -98,12 +98,12 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
       cell: ({ row }) =>
         isDesktop ? (
           <Text tAlign="center" color="white">
-            <DisplayValue value={row.original.totalValue} />
+            <DisplayValue value={row.original.totalValue} isUSD />
           </Text>
         ) : (
           <div sx={{ flex: "column", align: "flex-end" }}>
             <Text tAlign="center" color="white" fs={14}>
-              <DisplayValue value={row.original.totalValue} />
+              <DisplayValue value={row.original.totalValue} isUSD />
             </Text>
             <Text fs={11} color="darkBlue200">
               {t("stats.overview.table.trades.value.totalValueTime", {
