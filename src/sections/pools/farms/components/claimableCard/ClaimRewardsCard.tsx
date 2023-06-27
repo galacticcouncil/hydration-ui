@@ -1,19 +1,19 @@
-import { Trans, useTranslation } from "react-i18next"
-import { SContainer } from "./ClaimRewardsCard.styled"
-import { Text } from "components/Typography/Text/Text"
-import { theme } from "theme"
-import { Button } from "components/Button/Button"
-import { Fragment, useMemo } from "react"
 import { css } from "@emotion/react"
-import { Separator } from "components/Separator/Separator"
 import { useAssetMetaList } from "api/assetMeta"
-import { separateBalance } from "utils/balance"
-import { useClaimableAmount, useClaimAllMutation } from "utils/farms/claiming"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { DepositNftType } from "api/deposits"
+import { Button } from "components/Button/Button"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { Separator } from "components/Separator/Separator"
+import { Text } from "components/Typography/Text/Text"
+import { Fragment, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { ToastMessage, useAccountStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
-import { ToastMessage } from "state/store"
-import { useAccountStore } from "state/store"
+import { theme } from "theme"
+import { separateBalance } from "utils/balance"
+import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
+import { SContainer } from "./ClaimRewardsCard.styled"
 
 export const ClaimRewardsCard = (props: {
   pool: OmnipoolPool
@@ -113,10 +113,9 @@ export const ClaimRewardsCard = (props: {
           sx={{ mt: 6 }}
           css={{ color: `rgba(${theme.rgbColors.white}, 0.4)` }}
         >
-          {t("farms.claimCard.claim.usd", {
-            value: claimable.data?.usd,
-            numberPrefix: "$",
-          })}
+          <Trans t={t} i18nKey="farms.claimCard.claim.usd">
+            <DisplayValue value={claimable.data?.displayValue} />
+          </Trans>
         </Text>
       </div>
       <Button
@@ -124,7 +123,7 @@ export const ClaimRewardsCard = (props: {
         sx={{ height: "fit-content", width: ["100%", 168] }}
         disabled={
           account?.isExternalWalletConnected ||
-          (claimable.data && claimable.data.usd.isZero())
+          (claimable.data && claimable.data.displayValue.isZero())
         }
         onClick={() => claimAll.mutate()}
         isLoading={claimAll.isLoading}

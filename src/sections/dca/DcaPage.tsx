@@ -20,7 +20,9 @@ export const DcaApp = createComponent({
   },
 })
 
-const chartDatasourceId = import.meta.env.VITE_FF_CHART_DATASOURCE
+const indexerUrl = import.meta.env.VITE_INDEXER_URL
+const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
+const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 
 export function DcaPage() {
   const api = useApiPromise()
@@ -28,7 +30,6 @@ export function DcaPage() {
   const { createTransaction } = useStore()
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const indexerUrl = import.meta.env.VITE_INDEXER_URL
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
     const { transaction, notification } = e.detail
@@ -71,10 +72,7 @@ export function DcaPage() {
       <SContainer>
         <DcaApp
           ref={(r) => {
-            if (r) {
-              r.setAttribute("chart", "")
-              r.setAttribute("chartDatasourceId", chartDatasourceId)
-            }
+            r && r.setAttribute("chart", "")
           }}
           onDcaSchedule={(e) => handleSubmit(e)}
           onDcaTerminate={(e) => handleSubmit(e)}
@@ -82,6 +80,8 @@ export function DcaPage() {
           accountProvider={account?.provider}
           accountAddress={account?.address}
           indexerUrl={indexerUrl}
+          grafanaUrl={grafanaUrl}
+          grafanaDsn={grafanaDsn}
           apiAddress={rpcUrl}
           stableCoinAssetId="2"
           pools="Omni"

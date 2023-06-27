@@ -13,7 +13,7 @@ export const WalletTransferAssetSelect = (props: {
 
   asset: u32 | string
 
-  onAssetOpen: () => void
+  onAssetOpen?: () => void
   title?: string
   className?: string
 

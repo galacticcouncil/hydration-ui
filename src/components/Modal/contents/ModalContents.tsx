@@ -22,6 +22,7 @@ type Props = {
   onBack?: () => void
   forceBack?: boolean
   disableAnimation?: boolean
+  disableHeightAnimation?: boolean
   className?: string
   contents: ({ content: ReactNode } & ModalContentProps)[]
 }
@@ -33,6 +34,7 @@ export const ModalContents = ({
   onBack,
   forceBack,
   disableAnimation,
+  disableHeightAnimation,
   className,
   contents,
 }: Props) => {
@@ -46,7 +48,9 @@ export const ModalContents = ({
   const headerVariant = contents[page].headerVariant || "gradient"
   const noPadding = contents[page].noPadding
 
-  const height = `calc(${size.height}px - var(--modal-header-height))`
+  const height = disableHeightAnimation
+    ? "auto"
+    : `calc(${size.height}px - var(--modal-header-height))`
 
   return (
     <SContainer ref={ref} className={className} animating={animating}>
@@ -127,7 +131,7 @@ const variants = {
   enter: ({ direction, height }: VariantProps) => ({
     x: direction > 0 ? "100%" : "-100%",
     opacity: 0.25,
-    height,
+    height: "auto",
   }),
   center: {
     x: 0,

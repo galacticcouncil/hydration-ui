@@ -23,6 +23,7 @@ import { useFarmDepositMutation } from "utils/farms/deposit"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import { useAccountStore } from "state/store"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 
 type Props = {
   pool: OmnipoolPool
@@ -192,14 +193,14 @@ export const LiquidityPosition = ({
                   lrna={position.lrna}
                 />
                 <DollarAssetValue
-                  value={position.valueUSD}
+                  value={position.valueDisplay}
                   wrapper={(children) => (
                     <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
                       {children}
                     </Text>
                   )}
                 >
-                  {t("value.usd", { amount: position.valueUSD })}
+                  <DisplayValue value={position.valueDisplay} />
                 </DollarAssetValue>
               </div>
             </div>

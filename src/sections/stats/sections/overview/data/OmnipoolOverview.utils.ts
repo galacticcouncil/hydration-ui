@@ -1,3 +1,4 @@
+import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
 import { useAssetDetailsList } from "api/assetDetails"
 import { useAssetMetaList } from "api/assetMeta"
 import { useTokensBalances } from "api/balances"
@@ -5,13 +6,12 @@ import { useApiIds } from "api/consts"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
 import { useUniques } from "api/uniques"
+import { getVolumeAssetTotalValue, useTradeVolumes } from "api/volume"
+import BN from "bignumber.js"
 import { useMemo } from "react"
 import { HYDRA_TREASURE_ACCOUNT, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import BN from "bignumber.js"
 import { getFloatingPointAmount } from "utils/balance"
-import { BN_0, BN_10, BN_NAN } from "utils/constants"
-import { getVolumeAssetTotalValue, useTradeVolumes } from "api/volume"
-import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
+import { BN_0, BN_10, BN_NAN, STABLECOIN_ID } from "utils/constants"
 import { isNotNil } from "utils/helpers"
 
 const withoutRefresh = true
@@ -29,7 +29,7 @@ export const useOmnipoolOverviewData = () => {
     undefined,
     withoutRefresh,
   )
-  const metas = useAssetMetaList([apiIds.data?.usdId, ...omnipoolAssetsIds])
+  const metas = useAssetMetaList([STABLECOIN_ID, ...omnipoolAssetsIds])
 
   // get all NFTs on HYDRA_TREASURE_ACCOUNT to calculate POL
   const uniques = useUniques(
@@ -51,8 +51,8 @@ export const useOmnipoolOverviewData = () => {
   )
 
   const spotPrices = useSpotPrices(
-    [apiIds.data?.usdId, ...omnipoolAssetsIds],
-    apiIds.data?.usdId,
+    omnipoolAssetsIds,
+    STABLECOIN_ID,
     withoutRefresh,
   )
 
@@ -62,9 +62,9 @@ export const useOmnipoolOverviewData = () => {
     metas,
     apiIds,
     uniques,
+    ...spotPrices,
     ...volumes,
     ...positions,
-    ...spotPrices,
     ...omnipoolAssetBalances,
   ]
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
@@ -117,17 +117,17 @@ export const useOmnipoolOverviewData = () => {
         liquidityOutResult = calculate_liquidity_out.apply(this, params)
       }
 
-      const valueSp = spotPrices.find((sp) => sp.data?.tokenIn === assetId)
+      const valueSp = spotPrices.find((sp) => sp?.data?.tokenIn === assetId)
       const valueDp = BN_10.pow(meta?.decimals.toNumber() ?? 12)
-      let valueUSD = BN_NAN
+      let dollarValue = BN_NAN
 
       if (liquidityOutResult !== "-1" && valueSp?.data) {
-        valueUSD = BN(liquidityOutResult)
+        dollarValue = BN(liquidityOutResult)
           .div(valueDp)
           .times(valueSp.data.spotPrice)
       }
 
-      return { ...acc, [assetId]: valueUSD.plus(acc[assetId] ?? BN_0) }
+      return { ...acc, [assetId]: dollarValue.plus(acc[assetId] ?? BN_0) }
     }, {} as { [key: string]: BN })
 
     const rows = omnipoolAssets.data.map((omnipoolAsset) => {
@@ -141,7 +141,7 @@ export const useOmnipoolOverviewData = () => {
       const meta = metas.data?.find((m) => m.id.toString() === omnipoolAssetId)
 
       const spotPrice = spotPrices.find(
-        (sp) => sp.data?.tokenIn === omnipoolAssetId,
+        (sp) => sp?.data?.tokenIn === omnipoolAssetId,
       )?.data?.spotPrice
 
       const omnipoolAssetBalance = omnipoolAssetBalances.find(
