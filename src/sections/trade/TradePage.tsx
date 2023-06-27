@@ -36,8 +36,8 @@ type SearchGenerics = MakeGenerics<{
   Search: z.infer<typeof TradeAppSearch>
 }>
 
-const chartEnabled = import.meta.env.VITE_FF_CHART_ENABLED === "true"
-const chartDatasourceId = import.meta.env.VITE_FF_CHART_DATASOURCE
+const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
+const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 
 export function TradePage() {
   const api = useApiPromise()
@@ -90,16 +90,15 @@ export function TradePage() {
       <SContainer>
         <TradeApp
           ref={(r) => {
-            if (chartEnabled && r) {
-              r.setAttribute("chart", "")
-              r.setAttribute("chartDatasourceId", chartDatasourceId)
-            }
+            r && r.setAttribute("chart", "")
           }}
           onTxNew={(e) => handleSubmit(e)}
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}
           apiAddress={rpcUrl}
+          grafanaUrl={grafanaUrl}
+          grafanaDsn={grafanaDsn}
           stableCoinAssetId="2"
           assetIn={search.success ? search.data.assetIn : undefined}
           assetOut={search.success ? search.data.assetOut : undefined}
