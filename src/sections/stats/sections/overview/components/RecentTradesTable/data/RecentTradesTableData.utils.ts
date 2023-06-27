@@ -1,11 +1,12 @@
 import { useAssetMetaList } from "api/assetMeta"
 import { useApiIds } from "api/consts"
 import { useOmnipoolAssets } from "api/omnipool"
+import { useSpotPrices } from "api/spotPrice"
 import { useAllTrades } from "api/volume"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { getFloatingPointAmount } from "utils/balance"
-import { useDisplayPrices } from "utils/displayAsset"
+import { STABLECOIN_ID } from "utils/constants"
 
 const withoutRefresh = true
 const VISIBLE_TRADE_NUMBER = 10
@@ -18,11 +19,15 @@ export const useRecentTradesTableData = () => {
   const omnipoolAssetsIds = omnipoolAssets.data?.map((a) => a.id) ?? []
 
   const assetMetas = useAssetMetaList(omnipoolAssetsIds)
-  const spotPrices = useDisplayPrices(omnipoolAssetsIds, withoutRefresh)
+  const spotPrices = useSpotPrices(
+    omnipoolAssetsIds,
+    STABLECOIN_ID,
+    withoutRefresh,
+  )
 
-  const queries = [omnipoolAssets, apiIds, assetMetas, allTrades, spotPrices]
+  const queries = [omnipoolAssets, apiIds, assetMetas, allTrades, ...spotPrices]
 
-  const isInitialLoading = queries.some((q) => q.isLoading)
+  const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
     if (
@@ -30,7 +35,7 @@ export const useRecentTradesTableData = () => {
       !omnipoolAssets.data ||
       !apiIds.data ||
       !assetMetas.data ||
-      !spotPrices.data
+      spotPrices.some((q) => !q.data)
     )
       return []
 
@@ -62,12 +67,12 @@ export const useRecentTradesTableData = () => {
               (assetMeta) => assetMeta.id === assetOut,
             )
 
-            const spotPriceIn = spotPrices.data?.find(
-              (spotPrice) => spotPrice?.tokenIn === assetIn,
-            )
-            const spotPriceOut = spotPrices.data?.find(
-              (spotPrice) => spotPrice?.tokenIn === assetOut,
-            )
+            const spotPriceIn = spotPrices.find(
+              (spotPrice) => spotPrice?.data?.tokenIn === assetIn,
+            )?.data
+            const spotPriceOut = spotPrices.find(
+              (spotPrice) => spotPrice?.data?.tokenIn === assetOut,
+            )?.data
 
             const amountIn = getFloatingPointAmount(
               amountInRaw,
