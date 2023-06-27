@@ -12,23 +12,28 @@ import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { Text } from "components/Typography/Text/Text"
+import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
+import Skeleton from "react-loading-skeleton"
 
 const stakeTokenId = "0"
 
-export const Stake = () => {
+export const Stake = ({ loading }: { loading: boolean }) => {
   const { t } = useTranslation()
 
   const { account } = useAccountStore()
   const form = useForm<{ amount: string }>()
 
-  const { data: assetBalance } = useTokenBalance(stakeTokenId, account?.address)
+  const { data: assetBalance } = useTokenBalance(
+    loading ? undefined : stakeTokenId,
+    account?.address,
+  )
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     console.log("TODO: submitted", values)
   }
 
   return (
-    <div sx={{ flex: "column", gap: 12 }}>
+    <div sx={{ flex: "column" }}>
       <GradientText
         gradient="pinkLightBlue"
         fs={19}
@@ -42,7 +47,6 @@ export const Stake = () => {
         sx={{
           flex: "column",
           justify: "space-between",
-          gap: 16,
           minHeight: "100%",
         }}
       >
@@ -76,29 +80,35 @@ export const Stake = () => {
           render={({
             field: { name, value, onChange },
             fieldState: { error },
-          }) => (
-            <WalletTransferAssetSelect
-              title={t("wallet.assets.transfer.asset.label_mob")}
-              name={name}
-              value={value}
-              onChange={onChange}
-              asset={stakeTokenId}
-              error={error?.message}
-            />
-          )}
+          }) =>
+            loading ? (
+              <AssetSelectSkeleton title="Amount" name={name} />
+            ) : (
+              <WalletTransferAssetSelect
+                title="Amount"
+                name={name}
+                value={value}
+                onChange={onChange}
+                asset={stakeTokenId}
+                error={error?.message}
+              />
+            )
+          }
         />
         <SummaryRow
           label={t("staking.dashboard.form.stake.transactionCost")}
-          content={<Text>TODO</Text>}
+          content={
+            loading ? <Skeleton height={12} width={30} /> : <Text>TODO</Text>
+          }
           /*content={t("value.percentage", {
             value: 0,
           })}*/
         />
 
-        <Separator />
+        <Separator sx={{ mb: 12 }} />
 
         {account ? (
-          <Button variant="primary" type="submit">
+          <Button variant="primary" type="submit" disabled={loading}>
             {t("staking.dashboard.form.stake.button")}
           </Button>
         ) : (

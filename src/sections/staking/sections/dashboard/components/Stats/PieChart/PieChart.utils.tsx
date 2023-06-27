@@ -1,5 +1,5 @@
 const numLines = 41
-const lineLength = 10
+const lineLength = 8
 const startAnglePoint = 270
 
 export const getRuleScaleLines = (radius: number) => {
@@ -27,7 +27,7 @@ export const getRuleScaleLines = (radius: number) => {
         x2={x2}
         y2={y2}
         stroke="rgba(197, 220, 255, 0.58)"
-        strokeOpacity={0.58}
+        strokeOpacity={0.3}
       />,
     )
   }
