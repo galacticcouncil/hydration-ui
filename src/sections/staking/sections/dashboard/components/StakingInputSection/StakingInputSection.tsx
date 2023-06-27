@@ -10,7 +10,7 @@ const stakeActions = ["stake", "unstake"] as const
 
 type StakeAction = (typeof stakeActions)[number]
 
-export const StakingInputSection = () => {
+export const StakingInputSection = ({ loading }: { loading?: boolean }) => {
   const [activeStakeAction, setActiveStakeAction] =
     useState<StakeAction>("stake")
 
@@ -28,7 +28,7 @@ export const StakingInputSection = () => {
         ))}
       </SSectionHeader>
       <div sx={{ p: "0px 20px 24px" }}>
-        {activeStakeAction === "stake" ? <Stake /> : null}
+        {activeStakeAction === "stake" ? <Stake loading={!!loading} /> : null}
       </div>
     </SSectionContainer>
   )

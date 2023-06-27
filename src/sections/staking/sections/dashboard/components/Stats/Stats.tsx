@@ -2,7 +2,13 @@ import { SContainer } from "sections/staking/StakingPage.styled"
 import { PieChart } from "./PieChart/PieChart"
 import { StakingValues } from "./Values/StakingValues"
 
-export const Stats = ({ isConnected }: { isConnected: boolean }) => {
+export const Stats = ({
+  isConnected,
+  loading,
+}: {
+  isConnected: boolean
+  loading?: boolean
+}) => {
   const hasStakingPos = true && isConnected
 
   return (
@@ -15,10 +21,10 @@ export const Stats = ({ isConnected }: { isConnected: boolean }) => {
           gap: 40,
         }}
       >
-        <PieChart percentage={60.5} />
+        <PieChart percentage={60.5} loading={!!loading} />
 
         <StakingValues
-          loading={false}
+          loading={!!loading}
           data={null}
           isStakingPosition={hasStakingPos}
         />
