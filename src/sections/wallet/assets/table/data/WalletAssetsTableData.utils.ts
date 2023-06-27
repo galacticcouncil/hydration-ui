@@ -1,40 +1,54 @@
-import { useMemo } from "react"
-import BN from "bignumber.js"
+import { u32 } from "@polkadot/types"
+import { PalletBalancesAccountData } from "@polkadot/types/lookup"
 import { getAccountBalances } from "api/accountBalances"
-import { getSpotPrice } from "api/spotPrice"
+import { getAssetsDetails, useAssetTable } from "api/assetDetails"
+import { getTokenLock } from "api/balances"
+import { SpotPrice } from "api/spotPrice"
+import BN from "bignumber.js"
+import { useMemo } from "react"
+import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { BN_0, BN_10 } from "utils/constants"
-import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
-import { PalletBalancesAccountData } from "@polkadot/types/lookup"
-import { u32 } from "@polkadot/types"
-import { getAssetsTableDetails, useAssetTable } from "api/assetDetails"
-import { getTokenLock } from "api/balances"
 
+import {
+  is_add_liquidity_allowed,
+  is_buy_allowed,
+  is_remove_liquidity_allowed,
+  is_sell_allowed,
+} from "@galacticcouncil/math-omnipool"
 import { useApiIds } from "api/consts"
 import { useHubAssetTradability, useOmnipoolAssets } from "api/omnipool"
-import {
-  is_buy_allowed,
-  is_sell_allowed,
-  is_add_liquidity_allowed,
-  is_remove_liquidity_allowed,
-} from "@galacticcouncil/math-omnipool"
+import { useDisplayPrices } from "utils/displayAsset"
+import { isNotNil } from "utils/helpers"
 
 export const useAssetsTableData = (isAllAssets: boolean) => {
   const myTableData = useAssetTable()
+  const spotPrices = useDisplayPrices(
+    myTableData.data?.acceptedTokens.map((t) => t.id) ?? [],
+  )
 
   const data = useMemo(() => {
-    if (!myTableData.data) return []
+    if (!myTableData.data || !spotPrices.data) return []
 
     const {
+      balances,
       tradeAssets,
       allAssets,
       accountTokenId,
       acceptedTokens,
-      assetsBalances,
+      tokenLocks,
       apiIds,
       omnipoolAssets,
       hubAssetTradability,
     } = myTableData.data
+
+    const assetsBalances = getAssetsBalances(
+      balances.balances,
+      spotPrices.data.filter(isNotNil),
+      allAssets,
+      tokenLocks,
+      balances.native,
+    )
 
     const assetsToShow = isAllAssets
       ? allAssets
@@ -109,17 +123,17 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
         couldBeSetAsPaymentFee,
         origin: "TODO",
         transferable: balance?.transferable ?? BN_0,
-        transferableUSD: balance?.transferableUSD ?? BN_0,
+        transferableDisplay: balance?.transferableDisplay ?? BN_0,
         total: balance?.total ?? BN_0,
-        totalUSD: balance?.totalUSD ?? BN_0,
+        totalDisplay: balance?.totalDisplay ?? BN_0,
         lockedMax: balance?.lockedMax ?? BN_0,
-        lockedMaxUSD: balance?.lockedMaxUSD ?? BN_0,
+        lockedMaxDisplay: balance?.lockedMaxDisplay ?? BN_0,
         lockedVesting: balance?.lockedVesting ?? BN_0,
-        lockedVestingUSD: balance?.lockedVestingUSD ?? BN_0,
+        lockedVestingDisplay: balance?.lockedVestingDisplay ?? BN_0,
         lockedDemocracy: balance?.lockedDemocracy ?? BN_0,
-        lockedDemocracyUSD: balance?.lockedDemocracyUSD ?? BN_0,
+        lockedDemocracyDisplay: balance?.lockedDemocracyDisplay ?? BN_0,
         reserved: balance?.reserved ?? BN_0,
-        reservedUSD: balance?.reservedUSD ?? BN_0,
+        reservedDisplay: balance?.reservedDisplay ?? BN_0,
         tradability,
       }
     })
@@ -135,7 +149,7 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
 
         return a.symbol.localeCompare(b.symbol)
       })
-  }, [myTableData.data, isAllAssets])
+  }, [myTableData.data, spotPrices.data, isAllAssets])
 
   return { data, isLoading: myTableData.isLoading }
 }
@@ -144,8 +158,8 @@ export const getAssetsBalances = (
   accountBalances: Awaited<
     ReturnType<ReturnType<typeof getAccountBalances>>
   >["balances"],
-  spotPrices: Array<Awaited<ReturnType<ReturnType<typeof getSpotPrice>>>>,
-  assetMetas: Awaited<ReturnType<ReturnType<typeof getAssetsTableDetails>>>,
+  spotPrices: SpotPrice[],
+  assetMetas: Awaited<ReturnType<ReturnType<typeof getAssetsDetails>>>,
   locksQueries: Array<Awaited<ReturnType<ReturnType<typeof getTokenLock>>>>,
   nativeData: Awaited<
     ReturnType<ReturnType<typeof getAccountBalances>>
@@ -172,14 +186,13 @@ export const getAssetsBalances = (
       const frozen = ab.data.frozen.toBigNumber()
 
       const total = free.plus(reservedBN).div(dp)
-
-      const totalUSD = total.times(spotPrice.spotPrice)
+      const totalDisplay = total.times(spotPrice.spotPrice)
 
       const transferable = free.minus(frozen).div(dp)
-      const transferableUSD = transferable.times(spotPrice.spotPrice)
+      const transferableDisplay = transferable.times(spotPrice.spotPrice)
 
       const reserved = reservedBN.div(dp)
-      const reservedUSD = reserved.times(spotPrice.spotPrice)
+      const reservedDisplay = reserved.times(spotPrice.spotPrice)
 
       const lockMax = locks.reduce(
         (max, curr) =>
@@ -188,34 +201,34 @@ export const getAssetsBalances = (
       )
 
       const lockedMax = lockMax.div(dp)
-      const lockedMaxUSD = lockedMax.times(spotPrice.spotPrice)
+      const lockedMaxDisplay = lockedMax.times(spotPrice.spotPrice)
 
       const lockVesting = locks.find(
         (lock) => lock.id === id.toString() && lock.type === "ormlvest",
       )
       const lockedVesting = lockVesting?.amount.div(dp) ?? BN_0
-      const lockedVestingUSD = lockedVesting.times(spotPrice.spotPrice)
+      const lockedVestingDisplay = lockedVesting.times(spotPrice.spotPrice)
 
       const lockDemocracy = locks.find(
         (lock) => lock.id === id.toString() && lock.type === "democrac",
       )
       const lockedDemocracy = lockDemocracy?.amount.div(dp) ?? BN_0
-      const lockedDemocracyUSD = lockedDemocracy.times(spotPrice.spotPrice)
+      const lockedDemocracyDisplay = lockedDemocracy.times(spotPrice.spotPrice)
 
       return {
         id,
         total,
-        totalUSD,
+        totalDisplay,
         transferable,
-        transferableUSD,
+        transferableDisplay,
         lockedMax,
-        lockedMaxUSD,
+        lockedMaxDisplay,
         lockedVesting,
-        lockedVestingUSD,
+        lockedVestingDisplay,
         lockedDemocracy,
-        lockedDemocracyUSD,
+        lockedDemocracyDisplay,
         reserved,
-        reservedUSD,
+        reservedDisplay,
       }
     },
   )
@@ -273,54 +286,54 @@ const getNativeBalances = (
   const miscFrozen = balance.miscFrozen.toBigNumber()
 
   const total = free.plus(reservedBN).div(dp)
-  const totalUSD = total.times(spotPrice)
+  const totalDisplay = total.times(spotPrice)
 
   const transferable = free.minus(BN.max(feeFrozen, miscFrozen)).div(dp)
-  const transferableUSD = transferable.times(spotPrice)
+  const transferableDisplay = transferable.times(spotPrice)
 
   const reserved = reservedBN.div(dp)
-  const reservedUSD = reserved.times(spotPrice)
+  const reservedDisplay = reserved.times(spotPrice)
 
   const lockedMax = lockMax?.div(dp) ?? BN_0
-  const lockedMaxUSD = lockedMax.times(spotPrice)
+  const lockedMaxDisplay = lockedMax.times(spotPrice)
 
   const lockedVesting = lockVesting?.div(dp) ?? BN_0
-  const lockedVestingUSD = lockedVesting.times(spotPrice)
+  const lockedVestingDisplay = lockedVesting.times(spotPrice)
 
   const lockedDemocracy = lockDemocracy?.div(dp) ?? BN_0
-  const lockedDemocracyUSD = lockedDemocracy.times(spotPrice)
+  const lockedDemocracyDisplay = lockedDemocracy.times(spotPrice)
 
   return {
     id: NATIVE_ASSET_ID,
     total,
-    totalUSD,
+    totalDisplay,
     transferable,
-    transferableUSD,
+    transferableDisplay,
     lockedMax,
-    lockedMaxUSD,
+    lockedMaxDisplay,
     lockedVesting,
-    lockedVestingUSD,
+    lockedVestingDisplay,
     lockedDemocracy,
-    lockedDemocracyUSD,
+    lockedDemocracyDisplay,
     reserved,
-    reservedUSD,
+    reservedDisplay,
   }
 }
 
 type AssetsTableDataBalances = {
   id: string | u32
   total: BN
-  totalUSD: BN
+  totalDisplay: BN
   transferable: BN
-  transferableUSD: BN
+  transferableDisplay: BN
   lockedMax: BN
-  lockedMaxUSD: BN
+  lockedMaxDisplay: BN
   lockedVesting: BN
-  lockedVestingUSD: BN
+  lockedVestingDisplay: BN
   lockedDemocracy: BN
-  lockedDemocracyUSD: BN
+  lockedDemocracyDisplay: BN
   reserved: BN
-  reservedUSD: BN
+  reservedDisplay: BN
 }
 
 export const useAssetsTradability = () => {

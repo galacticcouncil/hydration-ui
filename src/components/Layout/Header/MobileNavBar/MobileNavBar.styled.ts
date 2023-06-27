@@ -53,13 +53,14 @@ export const SNavBarItem = styled.span<{ active?: boolean }>`
 
 export const SNavBarItemHidden = styled(Link)`
   display: flex;
+  align-items: center;
   gap: 12px;
 
   background: rgba(${theme.rgbColors.primaryA06}, 0.06);
   color: ${theme.colors.brightBlue200};
+  font-size: 14px;
 
-  padding: 28px 20px;
-
+  padding: 22px 14px;
   border-radius: 4px;
 `
 

@@ -67,7 +67,7 @@ export const AssetSelectSkeleton = (props: {
             name={props.name}
             label={t("selectAsset.input.label")}
             onChange={() => null}
-            dollars={t("value.usd", { amount: 0 })}
+            displayValue={0}
             placeholder="0.00"
             unit="HDX"
             css={css`

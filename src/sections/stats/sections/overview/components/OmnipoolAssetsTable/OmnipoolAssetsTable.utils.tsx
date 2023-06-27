@@ -6,7 +6,10 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
+import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.svg"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { ButtonTransparent } from "components/Button/Button"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
@@ -14,8 +17,6 @@ import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { TOmnipoolAssetsTableData } from "./data/OmnipoolAssetsTableData.utils"
-import { ButtonTransparent } from "components/Button/Button"
-import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.svg"
 
 export const useOmnipoolAssetsTable = (data: TOmnipoolAssetsTableData) => {
   const { t } = useTranslation()
@@ -73,7 +74,7 @@ export const useOmnipoolAssetsTable = (data: TOmnipoolAssetsTableData) => {
           color="white"
           fs={[13, 16]}
         >
-          {t("value.usd", { amount: row.original.tvl })}
+          <DisplayValue value={row.original.tvl} isUSD />
         </Text>
       ),
     }),
@@ -83,7 +84,7 @@ export const useOmnipoolAssetsTable = (data: TOmnipoolAssetsTableData) => {
       sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
       cell: ({ row }) => (
         <Text tAlign="center" color="white">
-          {t("value.usd", { amount: row.original.volume })}
+          <DisplayValue value={row.original.volume} isUSD />
         </Text>
       ),
     }),
@@ -93,7 +94,7 @@ export const useOmnipoolAssetsTable = (data: TOmnipoolAssetsTableData) => {
       sortingFn: (a, b) => (a.original.fee.gt(b.original.fee) ? 1 : -1),
       cell: ({ row }) => (
         <Text tAlign="center" color="white">
-          {t("value.usd", { amount: row.original.fee })}
+          <DisplayValue value={row.original.fee} isUSD />
         </Text>
       ),
     }),*/
@@ -103,7 +104,7 @@ export const useOmnipoolAssetsTable = (data: TOmnipoolAssetsTableData) => {
       sortingFn: (a, b) => (a.original.pol.gt(b.original.pol) ? 1 : -1),
       cell: ({ row }) => (
         <Text tAlign="center" color="white">
-          {t("value.usd", { amount: row.original.pol })}
+          <DisplayValue value={row.original.pol} isUSD />
         </Text>
       ),
     }),

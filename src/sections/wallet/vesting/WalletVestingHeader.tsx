@@ -1,20 +1,20 @@
-import { Text } from "components/Typography/Text/Text"
-import { Heading } from "components/Typography/Heading/Heading"
-import { Trans, useTranslation } from "react-i18next"
-import { useVestingScheduleEnd, useVestingTotalVestedAmount } from "api/vesting"
-import { useSpotPrice } from "api/spotPrice"
-import { useMemo } from "react"
 import { css } from "@emotion/react"
+import { useVestingScheduleEnd, useVestingTotalVestedAmount } from "api/vesting"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { Heading } from "components/Typography/Heading/Heading"
+import { Text } from "components/Typography/Text/Text"
+import { addDays } from "date-fns"
+import { useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import Skeleton from "react-loading-skeleton"
 import { theme } from "theme"
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
-import { useAssetMeta } from "../../../api/assetMeta"
-import { SSeparator, STable } from "./WalletVestingHeader.styled"
-import { addDays } from "date-fns"
-import { BN_0, DAY_IN_MILLISECONDS } from "../../../utils/constants"
 import { separateBalance } from "utils/balance"
-import { useApiIds } from "api/consts"
-import Skeleton from "react-loading-skeleton"
+import { useDisplayPrice } from "utils/displayAsset"
 import { isApiLoaded } from "utils/helpers"
+import { useAssetMeta } from "../../../api/assetMeta"
+import { BN_0, BN_10, DAY_IN_MILLISECONDS } from "../../../utils/constants"
+import { SSeparator, STable } from "./WalletVestingHeader.styled"
 
 export const WalletVestingHeader = () => {
   const { t } = useTranslation()
@@ -53,18 +53,19 @@ const WalletVestingHeaderContent = () => {
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
   const { data: vestingScheduleEnd } = useVestingScheduleEnd()
 
-  const apiIds = useApiIds()
-  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, apiIds.data?.usdId)
+  const spotPrice = useDisplayPrice(NATIVE_ASSET_ID)
   const { data: nativeAsset } = useAssetMeta(NATIVE_ASSET_ID)
 
   const totalVestedValue = totalVestedAmount ?? BN_0
 
-  const totalVestedUSD = useMemo(() => {
+  const totalVestedDisplay = useMemo(() => {
     if (totalVestedValue && spotPrice.data) {
-      return totalVestedValue.times(spotPrice.data.spotPrice)
+      return totalVestedValue
+        .times(spotPrice.data.spotPrice)
+        .div(BN_10.pow(nativeAsset?.decimals.toBigNumber() ?? 12))
     }
     return null
-  }, [totalVestedValue, spotPrice])
+  }, [totalVestedValue, spotPrice.data, nativeAsset?.decimals])
 
   return (
     <>
@@ -104,10 +105,7 @@ const WalletVestingHeaderContent = () => {
           }}
           css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }}
         >
-          {t("value.usd", {
-            amount: totalVestedUSD,
-            fixedPointScale: nativeAsset?.decimals.toString() ?? 12,
-          })}
+          <DisplayValue value={totalVestedDisplay} />
         </Text>
       </div>
 

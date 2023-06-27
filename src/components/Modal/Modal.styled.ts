@@ -49,7 +49,7 @@ export const SOverlay = styled(Overlay)<{ variant?: BackdropVariant }>`
 export const SContainer = styled(Content)`
   --modal-header-padding-y: 20px;
   --modal-header-padding-x: 24px;
-  --modal-header-btn-size: 32px;
+  --modal-header-btn-size: 34px;
   --modal-header-height: calc(
     var(--modal-header-btn-size) + var(--modal-header-padding-y) * 2
   );

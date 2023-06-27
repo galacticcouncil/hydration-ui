@@ -1,20 +1,18 @@
 import { useAssetMetaList } from "api/assetMeta"
-import { useApiIds } from "api/consts"
 import { useOmnipoolAssets } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
 import { useTradeVolumes } from "api/volume"
+import BN from "bignumber.js"
 import { isAfter, isBefore, subHours } from "date-fns"
 import { useMemo } from "react"
-import { BN_10 } from "utils/constants"
-import BN from "bignumber.js"
+import { BN_10, STABLECOIN_ID } from "utils/constants"
 
 export const useAssetsVolumeChart = () => {
-  const apiIds = useApiIds()
   const omnipoolAssets = useOmnipoolAssets()
   const assetIds = omnipoolAssets.data?.map((asset) => asset.id) ?? []
   const volumes = useTradeVolumes(assetIds)
   const assetMetas = useAssetMetaList(assetIds)
-  const spotPrices = useSpotPrices(assetIds, apiIds.data?.usdId)
+  const spotPrices = useSpotPrices(assetIds, STABLECOIN_ID)
 
   const currentDate = new Date()
 
@@ -29,7 +27,7 @@ export const useAssetsVolumeChart = () => {
     })
     .reverse()
 
-  const queries = [...volumes, ...spotPrices]
+  const queries = [...spotPrices, ...volumes]
   const isLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
@@ -47,7 +45,7 @@ export const useAssetsVolumeChart = () => {
         const assetMeta = assetMetas.data?.find((meta) => meta.id === assetIn)
 
         const spotPrice = spotPrices.find(
-          (spotPrice) => spotPrice.data?.tokenIn === assetIn,
+          (spotPrice) => spotPrice?.data?.tokenIn === assetIn,
         )
 
         const assetScale = amountIn.dividedBy(
