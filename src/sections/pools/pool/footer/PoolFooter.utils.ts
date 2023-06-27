@@ -1,26 +1,27 @@
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
-import { useAccountStore } from "state/store"
+import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
+import { useAssetMetaList } from "api/assetMeta"
+import { useTokensBalances } from "api/balances"
 import { useApiIds } from "api/consts"
-import { useUniques } from "api/uniques"
 import {
   OmnipoolPosition,
   useOmnipoolAssets,
   useOmnipoolPositions,
 } from "api/omnipool"
-import { isNotNil } from "utils/helpers"
-import { useAssetMetaList } from "api/assetMeta"
-import { useTokensBalances } from "api/balances"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { useSpotPrices } from "api/spotPrice"
-import { useMemo } from "react"
-import { BN_0, BN_10, BN_NAN } from "utils/constants"
+import { useUniques } from "api/uniques"
 import BN from "bignumber.js"
-import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
+import { useMemo } from "react"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
+import { useAccountStore } from "state/store"
+import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
+import { BN_0, BN_10, BN_NAN } from "utils/constants"
+import { useDisplayAssetStore, useDisplayPrices } from "utils/displayAsset"
+import { isNotNil } from "utils/helpers"
 
 export const useUsersTotalInPool = (pool: OmnipoolPool) => {
   const { account } = useAccountStore()
   const apiIds = useApiIds()
+  const displayAsset = useDisplayAssetStore()
   const uniques = useUniques(
     account?.address ?? "",
     apiIds.data?.omnipoolCollectionId ?? "",
@@ -30,24 +31,21 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
   )
   const assetIds =
     positions.map((p) => p.data?.assetId.toString()).filter(isNotNil) ?? []
-  const metas = useAssetMetaList([
-    apiIds.data?.stableCoinId.toString(),
-    ...assetIds,
-  ])
+  const metas = useAssetMetaList([displayAsset.id, ...assetIds])
   const omnipoolAssets = useOmnipoolAssets()
   const omnipoolBalances = useTokensBalances(assetIds, OMNIPOOL_ACCOUNT_ADDRESS)
-  const spotPrices = useSpotPrices(assetIds, apiIds.data?.stableCoinId)
+  const spotPrices = useDisplayPrices(assetIds)
 
   const queries = [
     apiIds,
     uniques,
     metas,
     omnipoolAssets,
+    spotPrices,
     ...positions,
     ...omnipoolBalances,
-    ...spotPrices,
   ]
-  const isLoading = queries.some((q) => q.isInitialLoading)
+  const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
     if (
@@ -55,9 +53,9 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
       !uniques.data ||
       !metas.data ||
       !omnipoolAssets.data ||
+      !spotPrices.data ||
       positions.some((q) => !q.data) ||
-      omnipoolBalances.some((q) => !q.data) ||
-      spotPrices.some((q) => !q.data)
+      omnipoolBalances.some((q) => !q.data)
     )
       return undefined
 
@@ -103,15 +101,15 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
         const liquidityOutResult = calculate_liquidity_out.apply(this, params)
         if (liquidityOutResult === "-1") return BN_NAN
 
-        const valueSp = spotPrices.find((sp) => sp.data?.tokenIn === id)
+        const valueSp = spotPrices.data?.find((sp) => sp?.tokenIn === id)
         const valueDp = BN_10.pow(meta.decimals.toBigNumber())
         const value = new BN(liquidityOutResult).div(valueDp)
 
-        if (!valueSp?.data?.spotPrice) return BN_NAN
+        if (!valueSp?.spotPrice) return BN_NAN
 
-        const valueUSD = value.times(valueSp.data.spotPrice)
+        const valueDisplay = value.times(valueSp.spotPrice)
 
-        return valueUSD
+        return valueDisplay
       })
 
     return totals.reduce((acc, total) => acc.plus(total), BN_0)
@@ -134,15 +132,15 @@ export const useFooterValues = (pool: OmnipoolPool) => {
   const allPoolDeposits = useAllUserDepositShare()
   const poolDeposit = allPoolDeposits.data?.[pool.id.toString()] ?? []
 
-  const totalDepositValueUSD = poolDeposit.reduce(
+  const totalDepositValueDisplay = poolDeposit.reduce(
     (memo, i) => memo.plus(i.valueDisplay),
     BN_0,
   )
 
   return {
-    locked: locked.data?.plus(totalDepositValueUSD ?? BN_0),
+    locked: locked.data?.plus(totalDepositValueDisplay ?? BN_0),
     available: locked.data,
-    farming: totalDepositValueUSD ?? BN_0,
+    farming: totalDepositValueDisplay ?? BN_0,
     isLoading: allPoolDeposits.isLoading || locked.isLoading,
   }
 }

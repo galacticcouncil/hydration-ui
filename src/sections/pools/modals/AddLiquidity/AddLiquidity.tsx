@@ -1,6 +1,7 @@
 import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Modal, ModalScrollableContent } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
@@ -242,11 +243,20 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
                         rows={[
                           {
                             label: t("liquidity.remove.modal.price"),
-                            content: t("liquidity.add.modal.row.spotPrice", {
-                              firstAmount: 1,
-                              firstCurrency: assetMeta?.symbol,
-                              secondAmount: spotPrice?.spotPrice,
-                            }),
+                            content: (
+                              <Text fs={14} color="white" tAlign="right">
+                                <Trans
+                                  t={t}
+                                  i18nKey="liquidity.add.modal.row.spotPrice"
+                                  tOptions={{
+                                    firstAmount: 1,
+                                    firstCurrency: assetMeta?.symbol,
+                                  }}
+                                >
+                                  <DisplayValue value={spotPrice?.spotPrice} />
+                                </Trans>
+                              </Text>
+                            ),
                           },
                           {
                             label: t("liquidity.add.modal.receive"),

@@ -1,8 +1,6 @@
 import { css } from "@emotion/react"
 import { useAssetMeta } from "api/assetMeta"
 import { useExistentialDeposit, useTokenBalance } from "api/balances"
-import { useApiIds } from "api/consts"
-import { useSpotPrice } from "api/spotPrice"
 import { usePaymentInfo } from "api/transaction"
 import {
   useNextClaimableDate,
@@ -19,6 +17,7 @@ import { theme } from "theme"
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import { separateBalance } from "utils/balance"
 import { BN_10 } from "utils/constants"
+import { useDisplayPrice } from "utils/displayAsset"
 import { SClaimButton, SInner, SSchedule } from "./WalletVestingSchedule.styled"
 
 export const WalletVestingSchedule = () => {
@@ -33,8 +32,7 @@ export const WalletVestingSchedule = () => {
   const { data: existentialDeposit } = useExistentialDeposit()
   const { data: meta } = useAssetMeta(NATIVE_ASSET_ID)
 
-  const apiIds = useApiIds()
-  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, apiIds.data?.stableCoinId)
+  const spotPrice = useDisplayPrice(NATIVE_ASSET_ID)
   const balance = useTokenBalance(NATIVE_ASSET_ID, account?.address)
 
   const claimableDisplay = useMemo(() => {

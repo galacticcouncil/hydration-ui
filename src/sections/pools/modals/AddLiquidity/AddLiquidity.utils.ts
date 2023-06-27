@@ -8,21 +8,20 @@ import { useAssetMeta } from "api/assetMeta"
 import { useTokenBalance } from "api/balances"
 import { useApiIds, useMaxAddLiquidityLimit } from "api/consts"
 import { useOmnipoolAsset, useOmnipoolFee } from "api/omnipool"
-import { useSpotPrice } from "api/spotPrice"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { useAccountStore } from "state/store"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { BN_10 } from "utils/constants"
 import { getFixedPointAmount } from "utils/balance"
+import { BN_10 } from "utils/constants"
+import { useDisplayPrice } from "utils/displayAsset"
 
 export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
   const omnipoolBalance = useTokenBalance(assetId, OMNIPOOL_ACCOUNT_ADDRESS)
   const ommipoolAsset = useOmnipoolAsset(assetId)
   const { data: assetMeta } = useAssetMeta(assetId)
 
-  const { data: apiIds } = useApiIds()
-  const { data: spotPrice } = useSpotPrice(assetId, apiIds?.stableCoinId)
+  const { data: spotPrice } = useDisplayPrice(assetId)
 
   const { data: omnipoolFee } = useOmnipoolFee()
 
