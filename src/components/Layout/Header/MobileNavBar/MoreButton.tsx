@@ -7,9 +7,9 @@ import { HeaderSettingsMobile } from "../settings/mobile/HeaderSettingsMobile"
 import { STabButton } from "./MobileNavBar.styled"
 import { TabMenuModal } from "./TabMenuModal/TabMenuModal"
 
-type MoreButtonProps = {
-  tabs: ReactNode
-}
+const settingsEanbled = import.meta.env.VITE_FF_SETTINGS_ENABLED === "true"
+
+type MoreButtonProps = { tabs: ReactNode }
 
 export const MoreButton = ({ tabs }: MoreButtonProps) => {
   const { t } = useTranslation()
@@ -23,9 +23,13 @@ export const MoreButton = ({ tabs }: MoreButtonProps) => {
       </STabButton>
       <TabMenuModal open={openModal} onClose={() => setOpenModal(false)}>
         <div sx={{ flex: "column", color: "white", px: 12, pb: 12, gap: 8 }}>
-          <Spacer size={4} />
-          <HeaderSettingsMobile />
-          <Spacer size={14} />
+          {settingsEanbled && (
+            <>
+              <Spacer size={4} />
+              <HeaderSettingsMobile />
+              <Spacer size={14} />
+            </>
+          )}
           {tabs}
         </div>
       </TabMenuModal>
