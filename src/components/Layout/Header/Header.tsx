@@ -19,6 +19,7 @@ import { useDepegStore, DepegWarningModal } from "./DepegWarningModal"
 import { HeaderSettings } from "./settings/HeaderSettings"
 
 const depegEnabled = import.meta.env.VITE_FF_DEPEG_WARNING === "true"
+const settingsEanbled = import.meta.env.VITE_FF_SETTINGS_ENABLED === "true"
 
 export const Header = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -96,7 +97,7 @@ export const Header = () => {
               </InfoTooltip>
             </div>
             <WalletConnectButton />
-            {isDesktop && <HeaderSettings />}
+            {isDesktop && settingsEanbled && <HeaderSettings />}
           </div>
         </div>
       </SHeader>
