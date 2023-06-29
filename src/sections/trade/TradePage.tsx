@@ -38,11 +38,13 @@ type SearchGenerics = MakeGenerics<{
 
 const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
 const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
+const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export function TradePage() {
   const api = useApiPromise()
   const { account } = useAccountStore()
   const { createTransaction } = useStore()
+
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
@@ -92,17 +94,17 @@ export function TradePage() {
           ref={(r) => {
             r && r.setAttribute("chart", "")
           }}
-          onTxNew={(e) => handleSubmit(e)}
+          assetIn={search.success ? search.data.assetIn : undefined}
+          assetOut={search.success ? search.data.assetOut : undefined}
+          apiAddress={rpcUrl}
+          pools="Omni"
+          stableCoinAssetId={stableCoinAssetId}
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}
-          apiAddress={rpcUrl}
           grafanaUrl={grafanaUrl}
           grafanaDsn={grafanaDsn}
-          stableCoinAssetId="2"
-          assetIn={search.success ? search.data.assetIn : undefined}
-          assetOut={search.success ? search.data.assetOut : undefined}
-          pools="Omni"
+          onTxNew={(e) => handleSubmit(e)}
         />
       </SContainer>
     </Page>
