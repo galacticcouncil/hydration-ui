@@ -49,7 +49,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     ...positions,
     ...balances,
   ]
-  const isInitialLoading = queries.some((q) => q.isLoading)
+  const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
   const pools = useMemo(() => {
     if (
