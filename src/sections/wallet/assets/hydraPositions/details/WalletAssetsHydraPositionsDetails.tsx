@@ -1,16 +1,17 @@
-import { Text } from "components/Typography/Text/Text"
-import { theme } from "theme"
-import { useTranslation } from "react-i18next"
+import { useAssetMeta } from "api/assetMeta"
 import BN from "bignumber.js"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
-import { useAssetMeta } from "api/assetMeta"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
+import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
+import { theme } from "theme"
 
 type Props = {
   assetId: string
   symbol: string
   amount: BN
-  amountUSD: BN
+  amountDisplay: BN
   shares: BN
 }
 
@@ -18,7 +19,7 @@ export const WalletAssetsHydraPositionsDetails = ({
   assetId,
   symbol,
   amount,
-  amountUSD,
+  amountDisplay,
   shares,
 }: Props) => {
   const { t } = useTranslation()
@@ -49,7 +50,7 @@ export const WalletAssetsHydraPositionsDetails = ({
           sx={{ mt: 2 }}
           css={{ color: `rgba(${theme.rgbColors.whiteish500} ,0.6)` }}
         >
-          {t("value.usd", { amount: amountUSD })}
+          <DisplayValue value={amountDisplay} />
         </Text>
       </div>
       <div

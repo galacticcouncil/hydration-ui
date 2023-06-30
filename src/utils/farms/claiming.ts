@@ -1,30 +1,28 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
-import { useApiPromise } from "utils/api"
-import { ToastMessage, useStore } from "state/store"
-import { useMutation } from "@tanstack/react-query"
-import { decodeAddress } from "@polkadot/util-crypto"
-import { u8aToHex } from "@polkadot/util"
-import { DepositNftType, useUserDeposits } from "api/deposits"
 import { u32 } from "@polkadot/types"
-import { useBestNumber } from "api/chain"
-import { useFarms, useOraclePrices } from "api/farms"
-import { getAccountResolver } from "./claiming/accountResolver"
-import { useAssetDetailsList } from "api/assetDetails"
-import { useSpotPrices } from "api/spotPrice"
 import { AccountId32 } from "@polkadot/types/interfaces"
-import { MultiCurrencyContainer } from "./claiming/multiCurrency"
-import { OmnipoolLiquidityMiningClaimSim } from "./claiming/claimSimulator"
-import { createMutableFarmEntries } from "./claiming/mutableFarms"
-import { useApiIds } from "api/consts"
-import { useAsset } from "api/asset"
+import { u8aToHex } from "@polkadot/util"
+import { decodeAddress } from "@polkadot/util-crypto"
+import { useMutation } from "@tanstack/react-query"
 import { useAccountAssetBalances } from "api/accountBalances"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
-import BigNumber from "bignumber.js"
-import { BN_0 } from "utils/constants"
-import { useQueryReduce } from "utils/helpers"
-import { useOmnipoolAssets } from "api/omnipool"
-import { getFloatingPointAmount } from "utils/balance"
+import { useAssetDetailsList } from "api/assetDetails"
 import { useAssetMetaList } from "api/assetMeta"
+import { useBestNumber } from "api/chain"
+import { DepositNftType, useUserDeposits } from "api/deposits"
+import { useFarms, useOraclePrices } from "api/farms"
+import { useOmnipoolAssets } from "api/omnipool"
+import BigNumber from "bignumber.js"
+import { useMemo } from "react"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { ToastMessage, useStore } from "state/store"
+import { useApiPromise } from "utils/api"
+import { getFloatingPointAmount } from "utils/balance"
+import { BN_0 } from "utils/constants"
+import { useDisplayPrices } from "utils/displayAsset"
+import { getAccountResolver } from "./claiming/accountResolver"
+import { OmnipoolLiquidityMiningClaimSim } from "./claiming/claimSimulator"
+import { MultiCurrencyContainer } from "./claiming/multiCurrency"
+import { createMutableFarmEntries } from "./claiming/mutableFarms"
 
 export const useClaimableAmount = (
   pool?: OmnipoolPool,
@@ -51,9 +49,6 @@ export const useClaimableAmount = (
     pool?.id ? [pool.id] : assets.data?.map((asset) => asset.id) ?? [],
   )
 
-  const apiIds = useApiIds()
-  const usd = useAsset(apiIds.data?.usdId)
-
   const api = useApiPromise()
   const accountResolver = getAccountResolver(api.registry)
 
@@ -62,7 +57,7 @@ export const useClaimableAmount = (
   ]
 
   const assetList = useAssetDetailsList(assetIds)
-  const usdSpotPrices = useSpotPrices(assetIds, usd.data?.id)
+  const spotPrices = useDisplayPrices(assetIds)
   const metas = useAssetMetaList(assetIds)
 
   const accountAddresses =
@@ -82,121 +77,139 @@ export const useClaimableAmount = (
   }))
 
   const oraclePrices = useOraclePrices(oracleAssetIds ?? [])
-
   const accountBalances = useAccountAssetBalances(accountAddresses)
 
-  return useQueryReduce(
-    [
-      bestNumberQuery,
-      filteredDeposits,
-      farms,
-      assetList,
-      accountBalances,
-      metas,
-      ...usdSpotPrices,
-    ] as const,
-    (
-      bestNumberQuery,
-      filteredDeposits,
-      farms,
-      assetList,
-      accountBalances,
-      metas,
-      ...usdSpotPrices
-    ) => {
-      const deposits =
-        depositNft != null ? [depositNft] : filteredDeposits ?? []
-      const bestNumber = bestNumberQuery
+  const queries = [
+    bestNumberQuery,
+    filteredDeposits,
+    farms,
+    assetList,
+    accountBalances,
+    metas,
+    spotPrices,
+  ]
+  const isLoading = queries.some((q) => q.isLoading)
 
-      const multiCurrency = new MultiCurrencyContainer(
-        accountAddresses,
-        accountBalances ?? [],
+  const data = useMemo(() => {
+    if (
+      !bestNumberQuery.data ||
+      !filteredDeposits.data ||
+      !farms.data ||
+      !assetList.data ||
+      !accountBalances.data ||
+      !metas.data ||
+      !spotPrices.data
+    )
+      return undefined
+
+    const deposits =
+      depositNft != null ? [depositNft] : filteredDeposits.data ?? []
+    const bestNumber = bestNumberQuery
+
+    const multiCurrency = new MultiCurrencyContainer(
+      accountAddresses,
+      accountBalances.data ?? [],
+    )
+    const simulator = new OmnipoolLiquidityMiningClaimSim(
+      getAccountResolver(api.registry),
+      multiCurrency,
+      assetList.data ?? [],
+    )
+
+    const { globalFarms, yieldFarms } = createMutableFarmEntries(
+      farms.data ?? [],
+    )
+
+    return deposits
+      ?.map((record) =>
+        record.deposit.yieldFarmEntries.map((farmEntry) => {
+          const aprEntry = farms.data?.find(
+            (i) =>
+              i.globalFarm.id.eq(farmEntry.globalFarmId) &&
+              i.yieldFarm.id.eq(farmEntry.yieldFarmId),
+          )
+
+          if (!aprEntry) return null
+
+          const oracle = oraclePrices.find(
+            (oracle) =>
+              oracle.data?.id.incentivizedAsset ===
+                aprEntry.globalFarm.incentivizedAsset.toString() &&
+              aprEntry.globalFarm.rewardCurrency.toString() ===
+                oracle.data.id.rewardCurrency,
+          )
+
+          if (!oracle?.data) return null
+
+          const reward = simulator.claim_rewards(
+            globalFarms[aprEntry.globalFarm.id.toString()],
+            yieldFarms[aprEntry.yieldFarm.id.toString()],
+            farmEntry,
+            bestNumber.data.relaychainBlockNumber.toBigNumber(),
+            oracle.data.oraclePrice,
+          )
+
+          const spotPrice = spotPrices.data?.find(
+            (spot) => spot?.tokenIn === reward?.assetId,
+          )
+
+          const meta = metas.data.find((meta) => meta.id === reward?.assetId)
+
+          if (!reward || !spotPrice) return null
+
+          return {
+            displayValue: getFloatingPointAmount(
+              reward.value.multipliedBy(spotPrice.spotPrice),
+              meta?.decimals.toNumber() ?? 12,
+            ),
+            asset: {
+              id: reward?.assetId,
+              value: reward.value,
+              yieldFarmId: aprEntry.yieldFarm.id.toString(),
+            },
+          }
+        }),
       )
-      const simulator = new OmnipoolLiquidityMiningClaimSim(
-        getAccountResolver(api.registry),
-        multiCurrency,
-        assetList ?? [],
+      .flat(2)
+      .reduce<{
+        displayValue: BigNumber
+        depositRewards: Array<{
+          assetId: string
+          yieldFarmId: string
+          value: BigNumber
+        }>
+        assets: Record<string, BigNumber>
+      }>(
+        (memo, item) => {
+          if (item == null) return memo
+          const { id, value, yieldFarmId } = item.asset
+
+          memo.displayValue = memo.displayValue.plus(item.displayValue)
+
+          memo.depositRewards.push({ yieldFarmId, assetId: id, value })
+          !memo.assets[id]
+            ? (memo.assets[id] = value)
+            : (memo.assets[id] = memo.assets[id].plus(value))
+
+          return memo
+        },
+        { displayValue: BN_0, assets: {}, depositRewards: [] },
       )
+  }, [
+    accountAddresses,
+    accountBalances.data,
+    api.registry,
+    assetList.data,
+    bestNumberQuery,
+    depositNft,
+    farms.data,
+    filteredDeposits.data,
+    metas.data,
+    oraclePrices,
+    spotPrices.data,
+  ])
 
-      const { globalFarms, yieldFarms } = createMutableFarmEntries(farms ?? [])
-
-      return deposits
-        ?.map((record) =>
-          record.deposit.yieldFarmEntries.map((farmEntry) => {
-            const aprEntry = farms?.find(
-              (i) =>
-                i.globalFarm.id.eq(farmEntry.globalFarmId) &&
-                i.yieldFarm.id.eq(farmEntry.yieldFarmId),
-            )
-
-            if (!aprEntry) return null
-
-            const oracle = oraclePrices.find(
-              (oracle) =>
-                oracle.data?.id.incentivizedAsset ===
-                  aprEntry.globalFarm.incentivizedAsset.toString() &&
-                aprEntry.globalFarm.rewardCurrency.toString() ===
-                  oracle.data.id.rewardCurrency,
-            )
-
-            if (!oracle?.data) return null
-
-            const reward = simulator.claim_rewards(
-              globalFarms[aprEntry.globalFarm.id.toString()],
-              yieldFarms[aprEntry.yieldFarm.id.toString()],
-              farmEntry,
-              bestNumber.relaychainBlockNumber.toBigNumber(),
-              oracle.data.oraclePrice,
-            )
-
-            const usd = usdSpotPrices.find(
-              (spot) => spot?.tokenIn === reward?.assetId,
-            )
-
-            const meta = metas.find((meta) => meta.id === reward?.assetId)
-
-            if (!reward || !usd) return null
-
-            return {
-              usd: getFloatingPointAmount(
-                reward.value.multipliedBy(usd.spotPrice),
-                meta?.decimals.toNumber() ?? 12,
-              ),
-              asset: {
-                id: reward?.assetId,
-                value: reward.value,
-                yieldFarmId: aprEntry.yieldFarm.id.toString(),
-              },
-            }
-          }),
-        )
-        .flat(2)
-        .reduce<{
-          usd: BigNumber
-          depositRewards: Array<{
-            assetId: string
-            yieldFarmId: string
-            value: BigNumber
-          }>
-          assets: Record<string, BigNumber>
-        }>(
-          (memo, item) => {
-            if (item == null) return memo
-            const { id, value, yieldFarmId } = item.asset
-
-            memo.usd = memo.usd.plus(item.usd)
-
-            memo.depositRewards.push({ yieldFarmId, assetId: id, value })
-            !memo.assets[id]
-              ? (memo.assets[id] = value)
-              : (memo.assets[id] = memo.assets[id].plus(value))
-
-            return memo
-          },
-          { usd: BN_0, assets: {}, depositRewards: [] },
-        )
-    },
-  )
+  return { data, isLoading }
 }
 
 export const useClaimAllMutation = (

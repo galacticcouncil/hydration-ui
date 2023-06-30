@@ -9,17 +9,18 @@ import {
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
+import { isAfter } from "date-fns"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { isAfter } from "date-fns"
-import { TRecentTradesTableData } from "./data/RecentTradesTableData.utils"
 import { shortenAccountAddress } from "utils/formatting"
+import { TRecentTradesTableData } from "./data/RecentTradesTableData.utils"
 //import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
-import { ReactComponent as SellIcon } from "assets/icons/SellIcon.svg"
 import { ReactComponent as BuyIcon } from "assets/icons/BuyIcon.svg"
+import { ReactComponent as SellIcon } from "assets/icons/SellIcon.svg"
 import { ReactComponent as TradeIcon } from "assets/icons/TradeTypeIcon.svg"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 
 export const useRecentTradesTable = (data: TRecentTradesTableData) => {
   const { t } = useTranslation()
@@ -97,12 +98,12 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
       cell: ({ row }) =>
         isDesktop ? (
           <Text tAlign="center" color="white">
-            {t("value.usd", { amount: row.original.totalValue })}
+            <DisplayValue value={row.original.totalValue} isUSD />
           </Text>
         ) : (
           <div sx={{ flex: "column", align: "flex-end" }}>
             <Text tAlign="center" color="white" fs={14}>
-              {t("value.usd", { amount: row.original.totalValue })}
+              <DisplayValue value={row.original.totalValue} isUSD />
             </Text>
             <Text fs={11} color="darkBlue200">
               {t("stats.overview.table.trades.value.totalValueTime", {

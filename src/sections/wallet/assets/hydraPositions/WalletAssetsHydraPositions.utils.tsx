@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next"
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -7,14 +6,16 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { WalletAssetsTableName } from "sections/wallet/assets/table/data/WalletAssetsTableData"
-import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
-import { Text } from "components/Typography/Text/Text"
-import { WalletAssetsHydraPositionsActions } from "sections/wallet/assets/hydraPositions/actions/WalletAssetsHydraPositionsActions"
-import { useState } from "react"
-import { useMedia } from "react-use"
-import { theme } from "theme"
 import BN from "bignumber.js"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { Text } from "components/Typography/Text/Text"
+import { useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useMedia } from "react-use"
+import { WalletAssetsHydraPositionsActions } from "sections/wallet/assets/hydraPositions/actions/WalletAssetsHydraPositionsActions"
+import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
+import { WalletAssetsTableName } from "sections/wallet/assets/table/data/WalletAssetsTableData"
+import { theme } from "theme"
 
 export const useHydraPositionsTable = (
   data: HydraPositionsTableData[],
@@ -50,18 +51,18 @@ export const useHydraPositionsTable = (
         />
       ),
     }),
-    accessor("valueUSD", {
-      id: "valueUSD",
+    accessor("valueDisplay", {
+      id: "valueDisplay",
       header: t("wallet.assets.hydraPositions.header.valueUSD"),
       sortingFn: (a, b) =>
-        b.original.valueUSD.isNaN()
+        b.original.valueDisplay.isNaN()
           ? 1
-          : a.original.valueUSD.gt(b.original.valueUSD)
+          : a.original.valueDisplay.gt(b.original.valueDisplay)
           ? 1
           : -1,
       cell: ({ row }) => (
         <Text fw={500} fs={16} lh={16} color="green600" tAlign="left">
-          {t("value.usd", { amount: row.original.valueUSD })}
+          <DisplayValue value={row.original.valueDisplay} />
         </Text>
       ),
     }),
@@ -96,9 +97,9 @@ export type HydraPositionsTableData = {
   name: string
   lrna: BN
   value: BN
-  valueUSD: BN
+  valueDisplay: BN
   price: BN
   providedAmount: BN
-  providedAmountUSD: BN
+  providedAmountDisplay: BN
   shares: BN
 }

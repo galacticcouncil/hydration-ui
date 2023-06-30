@@ -1,5 +1,6 @@
 import BigNumber from "bignumber.js"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { motion } from "framer-motion"
@@ -26,7 +27,7 @@ export const SliceLabel = ({ symbol, percentage, tvl }: SliceLabelProps) => {
         {t("value.percentage", { value: percentage })}
       </Text>
       <Text color="basic100" fs={[10, 20]}>
-        {t("value.usd", { amount: tvl })}
+        <DisplayValue value={tvl} isUSD />
       </Text>
       <Text color="basic100" fs={[10, 20]}>
         {symbol}

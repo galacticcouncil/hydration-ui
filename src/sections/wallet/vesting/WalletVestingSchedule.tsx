@@ -1,23 +1,24 @@
-import { SClaimButton, SInner, SSchedule } from "./WalletVestingSchedule.styled"
-import { useCallback, useMemo } from "react"
-import { Text } from "components/Typography/Text/Text"
-import { Trans, useTranslation } from "react-i18next"
 import { css } from "@emotion/react"
-import { theme } from "theme"
-import { Heading } from "components/Typography/Heading/Heading"
+import { useAssetMeta } from "api/assetMeta"
+import { useExistentialDeposit, useTokenBalance } from "api/balances"
+import { usePaymentInfo } from "api/transaction"
 import {
   useNextClaimableDate,
   useVestingTotalClaimableBalance,
 } from "api/vesting"
-import { useSpotPrice } from "api/spotPrice"
-import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
-import { useExistentialDeposit, useTokenBalance } from "api/balances"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { Heading } from "components/Typography/Heading/Heading"
+import { Text } from "components/Typography/Text/Text"
+import { useCallback, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { ToastMessage, useAccountStore, useStore } from "state/store"
-import { usePaymentInfo } from "api/transaction"
-import { separateBalance } from "utils/balance"
-import { useAssetMeta } from "api/assetMeta"
-import { useApiIds } from "api/consts"
 import { TOAST_MESSAGES } from "state/toasts"
+import { theme } from "theme"
+import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
+import { separateBalance } from "utils/balance"
+import { BN_10 } from "utils/constants"
+import { useDisplayPrice } from "utils/displayAsset"
+import { SClaimButton, SInner, SSchedule } from "./WalletVestingSchedule.styled"
 
 export const WalletVestingSchedule = () => {
   const { t } = useTranslation()
@@ -31,16 +32,17 @@ export const WalletVestingSchedule = () => {
   const { data: existentialDeposit } = useExistentialDeposit()
   const { data: meta } = useAssetMeta(NATIVE_ASSET_ID)
 
-  const apiIds = useApiIds()
-  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, apiIds.data?.usdId)
+  const spotPrice = useDisplayPrice(NATIVE_ASSET_ID)
   const balance = useTokenBalance(NATIVE_ASSET_ID, account?.address)
 
-  const claimableUSD = useMemo(() => {
+  const claimableDisplay = useMemo(() => {
     if (claimableBalance && spotPrice.data) {
-      return claimableBalance.times(spotPrice.data.spotPrice)
+      return claimableBalance
+        .times(spotPrice.data.spotPrice)
+        .div(BN_10.pow(meta?.decimals.toBigNumber() ?? 12))
     }
     return null
-  }, [claimableBalance, spotPrice])
+  }, [claimableBalance, meta?.decimals, spotPrice.data])
 
   const isClaimAllowed = useMemo(() => {
     if (paymentInfoData && existentialDeposit && claimableBalance) {
@@ -128,10 +130,7 @@ export const WalletVestingSchedule = () => {
             lh={18}
             css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }}
           >
-            {t("value.usd", {
-              amount: claimableUSD,
-              fixedPointScale: meta?.decimals.toNumber() ?? 12,
-            })}
+            <DisplayValue value={claimableDisplay} />
           </Text>
         </div>
         <div

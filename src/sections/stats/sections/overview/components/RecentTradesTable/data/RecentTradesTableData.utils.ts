@@ -1,11 +1,12 @@
+import { useAssetMetaList } from "api/assetMeta"
 import { useApiIds } from "api/consts"
 import { useOmnipoolAssets } from "api/omnipool"
-import { useAllTrades } from "api/volume"
-import { useMemo } from "react"
-import BN from "bignumber.js"
-import { useAssetMetaList } from "api/assetMeta"
 import { useSpotPrices } from "api/spotPrice"
+import { useAllTrades } from "api/volume"
+import BN from "bignumber.js"
+import { useMemo } from "react"
 import { getFloatingPointAmount } from "utils/balance"
+import { STABLECOIN_ID } from "utils/constants"
 
 const withoutRefresh = true
 const VISIBLE_TRADE_NUMBER = 10
@@ -20,7 +21,7 @@ export const useRecentTradesTableData = () => {
   const assetMetas = useAssetMetaList(omnipoolAssetsIds)
   const spotPrices = useSpotPrices(
     omnipoolAssetsIds,
-    apiIds.data?.usdId,
+    STABLECOIN_ID,
     withoutRefresh,
   )
 
@@ -67,11 +68,11 @@ export const useRecentTradesTableData = () => {
             )
 
             const spotPriceIn = spotPrices.find(
-              (spotPrice) => spotPrice.data?.tokenIn === assetIn,
-            )
+              (spotPrice) => spotPrice?.data?.tokenIn === assetIn,
+            )?.data
             const spotPriceOut = spotPrices.find(
-              (spotPrice) => spotPrice.data?.tokenIn === assetOut,
-            )
+              (spotPrice) => spotPrice?.data?.tokenIn === assetOut,
+            )?.data
 
             const amountIn = getFloatingPointAmount(
               amountInRaw,
@@ -83,8 +84,8 @@ export const useRecentTradesTableData = () => {
             )
 
             const totalValue = amountIn
-              .multipliedBy(spotPriceIn?.data?.spotPrice ?? 1)
-              .plus(amountOut.multipliedBy(spotPriceOut?.data?.spotPrice ?? 1))
+              .multipliedBy(spotPriceIn?.spotPrice ?? 1)
+              .plus(amountOut.multipliedBy(spotPriceOut?.spotPrice ?? 1))
 
             if (assetMetaIn && assetMetaOut)
               memo.push({

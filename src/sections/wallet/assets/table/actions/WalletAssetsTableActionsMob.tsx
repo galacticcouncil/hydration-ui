@@ -5,6 +5,7 @@ import { ReactComponent as DollarIcon } from "assets/icons/DollarIcon.svg"
 import { ReactComponent as SellIcon } from "assets/icons/SellIcon.svg"
 import { ReactComponent as TransferIcon } from "assets/icons/TransferIcon.svg"
 import { Button } from "components/Button/Button"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Modal } from "components/Modal/Modal"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
@@ -54,7 +55,7 @@ export const WalletAssetsTableActionsMob = ({
               {t("value", { value: row.total })}
             </Text>
             <Text fs={12} lh={17} color="whiteish500">
-              {t("value.usd", { amount: row.totalUSD })}
+              <DisplayValue value={row.totalDisplay} />
             </Text>
           </div>
           <div sx={{ flex: "column", gap: 4 }}>
@@ -65,7 +66,7 @@ export const WalletAssetsTableActionsMob = ({
               {t("value", { value: row.transferable })}
             </Text>
             <Text fs={12} lh={17} color="whiteish500">
-              {t("value.usd", { amount: row.transferableUSD })}
+              <DisplayValue value={row.transferableDisplay} />
             </Text>
           </div>
         </div>
@@ -79,7 +80,7 @@ export const WalletAssetsTableActionsMob = ({
                 {t("value", { value: row.lockedDemocracy })}
               </Text>
               <Text fs={12} lh={17} color="whiteish500">
-                {t("value.usd", { amount: row.lockedDemocracyUSD })}
+                <DisplayValue value={row.lockedDemocracyDisplay} />
               </Text>
             </div>
             <div sx={{ flex: "column", gap: 4, pt: 20, pb: 30 }}>
@@ -90,7 +91,7 @@ export const WalletAssetsTableActionsMob = ({
                 {t("value", { value: row.lockedVesting })}
               </Text>
               <Text fs={12} lh={17} color="whiteish500">
-                {t("value.usd", { amount: row.lockedVestingUSD })}
+                <DisplayValue value={row.lockedVestingDisplay} />
               </Text>
             </div>
           </div>

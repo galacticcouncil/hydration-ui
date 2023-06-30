@@ -1,10 +1,11 @@
 import BN from "bignumber.js"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SIcon } from "sections/wallet/assets/table/data/WalletAssetsTableData.styled"
 import { theme } from "theme"
-import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 
 export const WalletAssetsTableName = ({
   large,
@@ -62,7 +63,7 @@ export const WalletAssetsTableName = ({
 
 export const WalletAssetsTableBalance = (props: {
   balance: BN
-  balanceUSD: BN
+  balanceDisplay: BN
 }) => {
   const { t } = useTranslation()
 
@@ -73,7 +74,7 @@ export const WalletAssetsTableBalance = (props: {
       </Text>
 
       <DollarAssetValue
-        value={props.balanceUSD}
+        value={props.balanceDisplay}
         wrapper={(children) => (
           <Text
             fs={[11, 13]}
@@ -85,7 +86,7 @@ export const WalletAssetsTableBalance = (props: {
           </Text>
         )}
       >
-        {t("value.usd", { amount: props.balanceUSD, type: "dollar" })}
+        <DisplayValue value={props.balanceDisplay} />
       </DollarAssetValue>
     </div>
   )

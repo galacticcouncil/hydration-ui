@@ -18,7 +18,7 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
   const tvlCap = useTVLCap()
   const assets = useOmnipoolAssets()
   const balances = useTokensBalances(
-    [apiIds.data?.hubId ?? "", apiIds?.data?.usdId ?? "", pool.id],
+    [apiIds.data?.hubId ?? "", apiIds?.data?.stableCoinId ?? "", pool.id],
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
   const meta = useAssetMeta(pool.id)
@@ -40,7 +40,7 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
       (a) => a.id.toString() === pool.id.toString(),
     )
     const assetUsd = assets.data.find(
-      (a) => a.id.toString() === apiIds.data.usdId.toString(),
+      (a) => a.id.toString() === apiIds.data.stableCoinId.toString(),
     )
     const assetBalance = balances.find(
       (b) => b.data?.assetId.toString() === pool.id.toString(),
@@ -49,7 +49,7 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
       (b) => b.data?.assetId.toString() === apiIds.data.hubId.toString(),
     )
     const usdBalance = balances.find(
-      (b) => b.data?.assetId.toString() === apiIds.data.usdId.toString(),
+      (b) => b.data?.assetId.toString() === apiIds.data.stableCoinId.toString(),
     )
     const symbol = meta.data?.symbol ?? "N/A"
 
