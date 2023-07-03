@@ -33,6 +33,7 @@ export const AssetSelect = (props: {
   assetIcon: Maybe<ReactNode>
   decimals: Maybe<number>
   balance: Maybe<BigNumber>
+  balanceLabel: string
 
   onBlur?: (v: string) => void
   onChange: (v: string) => void
@@ -74,7 +75,7 @@ export const AssetSelect = (props: {
               sx={{ mr: 5 }}
               css={{ color: `rgba(${theme.rgbColors.white}, 0.7)` }}
             >
-              {t("selectAsset.balance.label")}
+              {props.balanceLabel}
             </Text>
             <Text fs={11} lh={16} sx={{ mr: 5 }}>
               {t("selectAsset.balance.value", {
