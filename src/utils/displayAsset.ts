@@ -14,7 +14,7 @@ export const useDisplayValue = (props: Props) => {
   const displayAsset = useDisplayAssetStore()
   const spotPrice = useSpotPrice(props.id, displayAsset.id)
 
-  const isLoading = spotPrice.isLoading
+  const isLoading = spotPrice.isInitialLoading
 
   const symbol = displayAsset.symbol
   const amount = useMemo(() => {
@@ -75,7 +75,7 @@ export const useDisplayPrices = (
     return spotPrices.map((sp) => sp.data)
   }, [displayAsset.isRealUSD, isLoading, spotPrices, usdPrice.data])
 
-  return { data, isLoading }
+  return { data, isLoading, isInitialLoading: isLoading }
 }
 
 type Asset = {

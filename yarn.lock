@@ -2085,10 +2085,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.3.tgz#b787c779ccd1455efb219d67bae43822a89396e4"
   integrity sha512-evxZy6ipHr3Y7B/V+aCSh4sJmG773qy1fDnIHIhk0uIhSB1pe7Fp0+Bpgu9T3xOPbMIuOdOV6aHEwQeZ5Xt5mg==
 
-"@galacticcouncil/apps@1.4.12":
-  version "1.4.12"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.4.12.tgz#4b153e90213b1fc7b69545035a55cd68f109619a"
-  integrity sha512-IvF4QID0GlBbR+Ez9MpkjaX/NbK50NXM7/DvdEwY4a7z/gxjqXyfL+D6JlKDXtiLoIrixRgKVaZm2Y7/WoQASw==
+"@galacticcouncil/apps@1.4.13":
+  version "1.4.13"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.4.13.tgz#949d3ee7e13fef614b6a6e0fc06ae0c76a9a91e0"
+  integrity sha512-Ftk2ZO65qPLMSWPJeHTSrrYYXo9z/JNke8VXl5lF8UyR0cz6Haj1tIcrfq/I4Czvymt8XdkZRytH2Ub/dZPFWA==
   dependencies:
     "@talismn/connect-wallets" "^1.2.1"
     "@tanstack/table-core" "^8.5.17"
@@ -2101,10 +2101,10 @@
     patch-package "^7.0.0"
     short-uuid "^4.2.0"
 
-"@galacticcouncil/bridge@0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.5.tgz#98cd9a1849bf1a53f2524e9a7a9abab5ea151778"
-  integrity sha512-1IFosMeIrc3/me1PzN1k9qd29uLszinK9TYAA3VPQTQwb5x/KaLf/AAT8u6iccKe0qgDu7pNLhVLPclPdSLiPA==
+"@galacticcouncil/bridge@0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.6.tgz#2d65adab82c9d6027ad90cb2ee30334870cf098b"
+  integrity sha512-GHbrOLXZSH7VfWpZwNJoDATvVHypCPJzfugxKl2ItYSnp/5HhnWxytWMlHCCZpvzXALRztbNc6YQ6vmKZtlVjw==
   dependencies:
     "@acala-network/api" "^5"
     "@acala-network/sdk" "^4.1.9-2"
@@ -2147,10 +2147,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^1.2.12":
-  version "1.2.12"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.2.12.tgz#c1105038690f09619a376fd13d0625d661154254"
-  integrity sha512-+EDkq9lhkS8/ws0fC75/PtBDA5WRjXudegDLEpxOO6UrZfSewBCkt0TM9nn3LnhYVfgdWAumLi7T7Mm7BJ22Dg==
+"@galacticcouncil/ui@^1.2.13":
+  version "1.2.13"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.2.13.tgz#0bdfcdd03046f749d0c3eb73e62207b9e6e47a07"
+  integrity sha512-LAuuKvAXfa3TmSuVLuAytop5YnkOcb2N19WESLHot9FtnD/MtdU7HxiOarXcENNeUafw3jCTBc4ENspHqy1u4Q==
   dependencies:
     "@lit/reactive-element" "^1.0.0"
     imask "^6.4.3"

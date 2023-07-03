@@ -23,6 +23,7 @@ export const DcaApp = createComponent({
 const indexerUrl = import.meta.env.VITE_INDEXER_URL
 const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
 const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
+const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export function DcaPage() {
   const api = useApiPromise()
@@ -74,17 +75,17 @@ export function DcaPage() {
           ref={(r) => {
             r && r.setAttribute("chart", "")
           }}
-          onDcaSchedule={(e) => handleSubmit(e)}
-          onDcaTerminate={(e) => handleSubmit(e)}
+          apiAddress={rpcUrl}
+          pools="Omni"
+          stableCoinAssetId={stableCoinAssetId}
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}
           indexerUrl={indexerUrl}
           grafanaUrl={grafanaUrl}
           grafanaDsn={grafanaDsn}
-          apiAddress={rpcUrl}
-          stableCoinAssetId="2"
-          pools="Omni"
+          onDcaSchedule={(e) => handleSubmit(e)}
+          onDcaTerminate={(e) => handleSubmit(e)}
         />
       </SContainer>
     </Page>
