@@ -13,6 +13,7 @@ import { ExternalWalletConnectModal } from "./ExternalWalletConnectModal"
 import { WalletConnectActiveFooter } from "./WalletConnectActiveFooter"
 import { useEnableWallet } from "./WalletConnectModal.utils"
 import { useWalletConnect } from "components/OnboardProvider/OnboardProvider"
+import { Text } from "components/Typography/Text/Text"
 
 type Props = { isOpen: boolean; onClose: () => void }
 
@@ -103,7 +104,9 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
           },
           {
             title: t("walletConnect.accountSelect.title"),
-            content:
+            content: enableWallet.isError ? (
+              <Text sx={{ m: 40 }}>{enableWallet.error?.message}</Text>
+            ) : (
               activeProvider &&
               (activeProvider !== externalWallet.provider && isConnecting ? (
                 <WalletConnectConfirmPending provider={activeProvider} />
@@ -122,7 +125,8 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
                     />
                   }
                 />
-              )),
+              ))
+            ),
           },
         ]}
       />

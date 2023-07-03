@@ -43,11 +43,20 @@ export const useEnableWallet = ({
   onError,
 }: {
   provider: string | null
-  onError: () => void
+  onError: (e: { message: string }) => void
 }) => {
   return useMutation(
     QUERY_KEYS.walletEnable(provider),
-    async (wallet: Wallet) => wallet.enable(POLKADOT_APP_NAME),
+    async (wallet: Wallet) => {
+      await wallet.enable(POLKADOT_APP_NAME)
+
+      try {
+        await wallet.getAccounts()
+        return wallet
+      } catch {
+        throw new Error("Rejected")
+      }
+    },
     { onError },
   )
 }
