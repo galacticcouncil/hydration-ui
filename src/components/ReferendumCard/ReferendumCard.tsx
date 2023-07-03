@@ -30,8 +30,14 @@ export const ReferendumCard = ({ id, referendum }: Props) => {
       .div(BN_10.pow(12))
 
     const votesSum = ayes.plus(nays)
-    const percAyes = ayes.div(votesSum).times(100)
-    const percNays = nays.div(votesSum).times(100)
+
+    let percAyes = BN_0
+    let percNays = BN_0
+
+    if (!votesSum.isZero()) {
+      percAyes = ayes.div(votesSum).times(100)
+      percNays = nays.div(votesSum).times(100)
+    }
 
     return { ayes, nays, percAyes, percNays }
   }, [referendum])
