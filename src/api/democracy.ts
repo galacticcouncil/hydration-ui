@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query"
 import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 
+const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL
+
 export const useReferendums = (ongoing = true) => {
   const api = useApiPromise()
   return useQuery(QUERY_KEYS.referendums, getReferendums(api), {
@@ -19,9 +21,7 @@ export const useReferendumInfo = (referendumIndex: string) => {
 }
 
 export const getReferendumInfo = (referendumIndex: string) => async () => {
-  const res = await fetch(
-    `https://hydradx.subsquare.io/api/democracy/referendums/${referendumIndex}.json`,
-  )
+  const res = await fetch(`${REFERENDUM_DATA_URL}${referendumIndex}.json`)
 
   if (!res.ok) return null
 
