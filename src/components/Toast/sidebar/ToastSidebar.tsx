@@ -1,6 +1,8 @@
 import { Dialog, DialogPortal } from "@radix-ui/react-dialog"
+import { useReferendums } from "api/democracy"
 import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
 import { Backdrop } from "components/Backdrop/Backdrop"
+import { ReferendumCard } from "components/ReferendumCard/ReferendumCard"
 import { Spacer } from "components/Spacer/Spacer"
 import { Heading } from "components/Typography/Heading/Heading"
 import { Text } from "components/Typography/Text/Text"
@@ -11,15 +13,12 @@ import { ToastContent } from "../ToastContent"
 import {
   SCloseButton,
   SDialogContent,
-  SGroupHeader,
   SNoActivitiesContainer,
   SNoActivitiesIcon,
   SSidebarBody,
   SWrapper,
 } from "./ToastSidebar.styled"
-import { useReferendums } from "api/democracy"
 import { ToastSidebarGroup } from "./group/ToastSidebarGroup"
-import { ReferendumCard } from "components/ReferendumCard/ReferendumCard"
 
 export function ToastSidebar() {
   const { t } = useTranslation()
@@ -27,7 +26,7 @@ export function ToastSidebar() {
   const store = useToast()
   const onClose = () => store.setSidebar(false)
 
-  const referendums = useReferendums(false)
+  const referendums = useReferendums()
 
   const sortedToasts = store.toasts.sort(
     (a, b) =>

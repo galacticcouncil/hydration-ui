@@ -1,13 +1,13 @@
-import { Referendum, useReferendumInfo } from "api/democracy"
+import { PalletDemocracyReferendumInfo } from "@polkadot/types/lookup"
+import { useReferendumInfo } from "api/democracy"
 import { ReactComponent as IconLink } from "assets/icons/LinkIcon.svg"
 import { Separator } from "components/Separator/Separator"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
-import { SContainer, SHeader } from "./ReferendumCard.styled"
-import { PalletDemocracyReferendumInfo } from "@polkadot/types/lookup"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { BN_0, BN_10 } from "utils/constants"
+import { SBar, SContainer, SHeader } from "./ReferendumCard.styled"
 
 const REFERENDUM_LINK = import.meta.env.VITE_REFERENDUM_LINK as string
 
@@ -17,12 +17,10 @@ export const ReferendumCard = ({ id, referendum }: Props) => {
   const { t } = useTranslation()
 
   const info = useReferendumInfo(id)
-  const ref = info.data
-
-  console.log(ref)
 
   const votes = useMemo(() => {
-    return { ayes: BN_0, nays: BN_0, percAyes: BN_0, percNays: BN_0 }
+    if (!referendum.isOngoing)
+      return { ayes: BN_0, nays: BN_0, percAyes: BN_0, percNays: BN_0 }
 
     const ayes = referendum.asOngoing.tally.ayes
       .toBigNumber()
@@ -36,32 +34,28 @@ export const ReferendumCard = ({ id, referendum }: Props) => {
     const percNays = nays.div(votesSum).times(100)
 
     return { ayes, nays, percAyes, percNays }
-  }, [
-    referendum.asOngoing.tally.ayes,
-    referendum.asOngoing.tally.nays,
-    referendum.isOngoing,
-  ])
+  }, [referendum])
 
-  if (!ref) return null
+  if (!info.data) return null
 
   return (
     <SContainer>
       <SHeader>
         <div sx={{ flex: "row", align: "center", gap: 8 }}>
           <Text color="brightBlue200" fs={14} fw={500}>
-            #{ref.motionIndex}
+            #{info.data.motionIndex}
           </Text>
           <Text color="brightBlue200" fs={12} fw={500}>
             {"//"}
           </Text>
           <Text color="basic500" fs={13} fw={500}>
-            {ref.lastActivityAt &&
-              t("toast.date", { value: new Date(ref.lastActivityAt) })}
+            {info.data.lastActivityAt &&
+              t("toast.date", { value: new Date(info.data.lastActivityAt) })}
           </Text>
         </div>
 
         <a
-          href={`${REFERENDUM_LINK}/${ref.referendumIndex}`}
+          href={`${REFERENDUM_LINK}/${info.data.referendumIndex}`}
           target="_blank"
           rel="noreferrer"
         >
@@ -72,12 +66,15 @@ export const ReferendumCard = ({ id, referendum }: Props) => {
       <Separator color="primaryA15Blue" opacity={0.35} sx={{ my: 16 }} />
 
       <Text color="white" fw={500}>
-        {ref.title}
+        {info.data.title}
       </Text>
 
       <Spacer size={20} />
 
-      <div>bars</div>
+      <div sx={{ flex: "row", gap: 8 }}>
+        <SBar variant="aye" percentage={votes.percAyes.toNumber()} />
+        <SBar variant="nay" percentage={votes.percNays.toNumber()} />
+      </div>
 
       <Spacer size={4} />
 

@@ -19,21 +19,23 @@ export const useReferendumInfo = (referendumIndex: string) => {
 }
 
 export const getReferendumInfo = (referendumIndex: string) => async () => {
-  return {
-    title: "Test",
-    state: "Ongoing",
-    lastActivityAt: new Date().toISOString(),
-    referendumIndex: 30,
-    motionIndex: 57,
-  }
-
   const res = await fetch(
     `https://hydradx.subsquare.io/api/democracy/referendums/${referendumIndex}.json`,
   )
-  if (res.ok) {
-    const json: Referendum = await res.json()
-    return json
-  } else return null
+
+  if (!res.ok) return null
+
+  const json: Referendum = await res.json()
+
+  if (
+    json === null ||
+    json.referendumIndex === null ||
+    json.motionIndex === null ||
+    json.title === null
+  )
+    return null
+
+  return json
 }
 
 export const getReferendums = (api: ApiPromise) => async () => {
@@ -52,12 +54,4 @@ export type Referendum = {
   lastActivityAt: string
   referendumIndex: number
   motionIndex: number
-}
-
-const isReferendum = (referendum: any): referendum is Referendum => {
-  return (
-    !!referendum &&
-    referendum.referendumIndex !== null &&
-    referendum.motionIndex !== null
-  )
 }
