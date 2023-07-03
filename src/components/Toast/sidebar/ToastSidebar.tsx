@@ -1,14 +1,14 @@
 import { Dialog, DialogPortal } from "@radix-ui/react-dialog"
-import { useReferendums } from "api/democracy"
 import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
 import { Backdrop } from "components/Backdrop/Backdrop"
-import { ReferendumCard } from "components/ReferendumCard/ReferendumCard"
 import { Spacer } from "components/Spacer/Spacer"
 import { Heading } from "components/Typography/Heading/Heading"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { RemoveScroll } from "react-remove-scroll"
 import { useToast } from "state/toasts"
+import { useApiPromise } from "utils/api"
+import { isApiLoaded } from "utils/helpers"
 import { ToastContent } from "../ToastContent"
 import {
   SCloseButton,
@@ -19,14 +19,14 @@ import {
   SWrapper,
 } from "./ToastSidebar.styled"
 import { ToastSidebarGroup } from "./group/ToastSidebarGroup"
+import { ToastSidebarReferendums } from "./referendums/ToastSidebarReferendums"
 
 export function ToastSidebar() {
   const { t } = useTranslation()
+  const api = useApiPromise()
 
   const store = useToast()
   const onClose = () => store.setSidebar(false)
-
-  const referendums = useReferendums()
 
   const sortedToasts = store.toasts.sort(
     (a, b) =>
@@ -55,7 +55,8 @@ export function ToastSidebar() {
                 />
               </div>
               <SSidebarBody>
-                {!sortedToasts.length && !referendums.data?.length ? (
+                {isApiLoaded(api) && <ToastSidebarReferendums />}
+                {!sortedToasts.length ? (
                   <SNoActivitiesContainer>
                     <SNoActivitiesIcon />
                     <Spacer size={16} />
@@ -68,20 +69,6 @@ export function ToastSidebar() {
                   </SNoActivitiesContainer>
                 ) : (
                   <>
-                    {!!referendums.data?.length && (
-                      <ToastSidebarGroup
-                        title={t("toast.sidebar.referendums.title")}
-                      >
-                        <div sx={{ flex: "column", gap: 8 }}>
-                          {referendums.data.map((referendum) => (
-                            <ReferendumCard
-                              key={`referendum_${referendum.id}`}
-                              {...referendum}
-                            />
-                          ))}
-                        </div>
-                      </ToastSidebarGroup>
-                    )}
                     {pendingToasts.length > 0 && (
                       <ToastSidebarGroup title={t("toast.sidebar.pending")}>
                         <div sx={{ flex: "column", gap: 6 }}>

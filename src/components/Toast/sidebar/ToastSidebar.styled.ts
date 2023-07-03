@@ -98,7 +98,6 @@ export const SNoActivitiesContainer = styled.div`
   flex-direction: column;
   align-items: center;
 
-  height: 100%;
   padding: 96px 0;
 
   color: ${theme.colors.basic500};
