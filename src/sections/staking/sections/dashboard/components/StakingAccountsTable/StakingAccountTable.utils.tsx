@@ -107,7 +107,7 @@ export const useStakingAccountsTable = () => {
       id: "link",
       cell: () => (
         <ButtonTransparent>
-          <Icon size={18} sx={{ color: "darkBlue300" }} icon={<LinkIcon />} />
+          <Icon size={12} sx={{ color: "darkBlue300" }} icon={<LinkIcon />} />
         </ButtonTransparent>
       ),
     }),

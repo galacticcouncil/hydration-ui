@@ -59,6 +59,10 @@ export const SContent = styled.span`
   gap: 10px;
   align-items: center;
   justify-content: center;
+
+  font-size: 13px;
+
+  height: 20px;
 `
 export const SButtonTransparent = styled.button`
   background: transparent;

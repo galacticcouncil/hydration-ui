@@ -48,7 +48,7 @@ export const OtcOrderActions = (props: Props) => {
                 {t("otc.offers.table.actions.cancel")}
               </span>
             }
-          ></TableAction>
+          />
         )}
         {orderOwner !== userAddress && (
           <TableAction
@@ -60,7 +60,7 @@ export const OtcOrderActions = (props: Props) => {
                 {t("otc.offers.table.actions.fill")}
               </span>
             }
-          ></TableAction>
+          />
         )}
       </div>
     </>
