@@ -32,7 +32,7 @@ export const getReferendums = (api: ApiPromise) => async () => {
 }
 
 export const getReferendumInfo = (referendumIndex: string) => async () => {
-  const res = await fetch(`${REFERENDUM_DATA_URL}${referendumIndex}.json`)
+  const res = await fetch(`${REFERENDUM_DATA_URL}/${referendumIndex}.json`)
   if (!res.ok) return null
 
   const json: Referendum = await res.json()
