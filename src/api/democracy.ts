@@ -2,6 +2,7 @@ import { ApiPromise } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { isApiLoaded } from '../utils/helpers'
 
 const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
 
@@ -9,6 +10,7 @@ export const useReferendums = (ongoing = true) => {
   const api = useApiPromise()
 
   return useQuery(QUERY_KEYS.referendums, getReferendums(api), {
+    enabled: !!isApiLoaded(api),
     select: (data) =>
       ongoing ? data.filter((r) => r.referendum.isOngoing) : data,
   })
@@ -32,7 +34,7 @@ export const getReferendums = (api: ApiPromise) => async () => {
 }
 
 export const getReferendumInfo = (referendumIndex: string) => async () => {
-  const res = await fetch(`${REFERENDUM_DATA_URL}/${referendumIndex}.json`)
+  const res = await fetch(`${REFERENDUM_DATA_URL}/${30}.json`)
   if (!res.ok) return null
 
   const json: Referendum = await res.json()
