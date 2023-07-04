@@ -51,11 +51,11 @@ export const AssetInput: FC<AssetInputProps> = (props) => {
 
           {props.unit && <SUnit>{props.unit}</SUnit>}
         </SInputWrapper>
-        {props.displayValue && (
+        {props.displayValue != null ? (
           <SDollars>
             ≈ <DisplayValue value={props.displayValue} />
           </SDollars>
-        )}
+        ) : null}
       </SLabelWrapper>
     </div>
   )

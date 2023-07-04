@@ -40,7 +40,7 @@ export const StakingData = () => {
 
 export const StakingSkeleton = () => {
   return (
-    <div sx={{ flex: ["column-reverse", "row"], gap: 30 }}>
+    <div sx={{ flex: ["column-reverse", "row"], gap: 30, flexWrap: "wrap" }}>
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
         <StakingGuide />
         <Stats isConnected={false} loading />
