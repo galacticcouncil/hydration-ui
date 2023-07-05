@@ -53,7 +53,7 @@ export const useAssetsTable = (
       cell: ({ row }) => (
         <WalletAssetsTableBalance
           balance={row.original.transferable}
-          balanceUSD={row.original.transferableUSD}
+          balanceDisplay={row.original.transferableDisplay}
         />
       ),
     }),
@@ -64,7 +64,7 @@ export const useAssetsTable = (
       cell: ({ row }) => (
         <WalletAssetsTableBalance
           balance={row.original.total}
-          balanceUSD={row.original.totalUSD}
+          balanceDisplay={row.original.totalDisplay}
         />
       ),
     }),
@@ -120,17 +120,17 @@ export type AssetsTableData = {
   symbol: string
   name: string
   transferable: BN
-  transferableUSD: BN
+  transferableDisplay: BN
   total: BN
-  totalUSD: BN
+  totalDisplay: BN
   lockedMax: BN
-  lockedMaxUSD: BN
+  lockedMaxDisplay: BN
   lockedVesting: BN
-  lockedVestingUSD: BN
+  lockedVestingDisplay: BN
   lockedDemocracy: BN
-  lockedDemocracyUSD: BN
+  lockedDemocracyDisplay: BN
   reserved: BN
-  reservedUSD: BN
+  reservedDisplay: BN
   origin: string
   assetType: PalletAssetRegistryAssetType["type"]
   couldBeSetAsPaymentFee: boolean

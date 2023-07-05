@@ -24,7 +24,7 @@ function useElapsedTimeStatus(time: Maybe<u64>) {
     }
   }, [])
 
-  if (time == null) return null
+  if (time == null) return "offline"
 
   const diff = now - time.toNumber()
 

@@ -5,7 +5,6 @@ import { useTokensBalances } from "api/balances"
 import { useApiIds } from "api/consts"
 import { useUserDeposits } from "api/deposits"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
-import { useSpotPrices } from "api/spotPrice"
 import { useUniques } from "api/uniques"
 import BN from "bignumber.js"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
@@ -15,6 +14,7 @@ import { useAccountStore } from "state/store"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
+import { useDisplayPrices } from "utils/displayAsset"
 
 export const useOmnipoolPools = (withPositions?: boolean) => {
   const { account } = useAccountStore()
@@ -22,10 +22,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
   const assetDetails = useAssetDetailsList(assets.data?.map((a) => a.id) ?? [])
   const metas = useAssetMetaList(assets.data?.map((a) => a.id) ?? [])
   const apiIds = useApiIds()
-  const spotPrices = useSpotPrices(
-    assets.data?.map((a) => a.id) ?? [],
-    apiIds.data?.usdId,
-  )
+  const spotPrices = useDisplayPrices(assets.data?.map((a) => a.id) ?? [])
   const assetsTradability = useAssetsTradability()
   const balances = useTokensBalances(
     assets.data?.map((a) => a.id) ?? [],
@@ -48,8 +45,8 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     uniques,
     assetsTradability,
     userDeposits,
+    spotPrices,
     ...positions,
-    ...spotPrices,
     ...balances,
   ]
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
@@ -61,7 +58,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
       !metas.data ||
       !apiIds.data ||
       !assetsTradability.data ||
-      spotPrices.some((q) => !q.data) ||
+      !spotPrices.data ||
       balances.some((q) => !q.data) ||
       positions.some((q) => !q.data)
     )
@@ -75,9 +72,9 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
         const meta = metas.data?.find(
           (m) => m.id.toString() === asset.id.toString(),
         )
-        const spotPrice = spotPrices.find(
-          (sp) => sp.data?.tokenIn === asset.id.toString(),
-        )?.data?.spotPrice
+        const spotPrice = spotPrices.data?.find(
+          (sp) => sp?.tokenIn === asset.id.toString(),
+        )?.spotPrice
         const balance = balances.find(
           (b) => b.data?.assetId.toString() === asset.id.toString(),
         )?.data?.balance
@@ -100,7 +97,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
           balance ?? BN_0,
           meta?.decimals?.toNumber() ?? 12,
         )
-        const totalUSD = !spotPrice ? BN_NAN : total.times(spotPrice)
+        const totalDisplay = !spotPrice ? BN_NAN : total.times(spotPrice)
 
         const hasPositions = positions.some(
           (p) => p.data?.assetId.toString() === id.toString(),
@@ -115,7 +112,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
           name,
           tradeFee,
           total,
-          totalUSD,
+          totalDisplay,
           tradability,
           hasPositions,
           hasDeposits,
@@ -158,7 +155,7 @@ export type OmnipoolPool = {
   name: string
   tradeFee: BN
   total: BN
-  totalUSD: BN
+  totalDisplay: BN
   tradability: {
     canSell: boolean
     canBuy: boolean

@@ -36,13 +36,15 @@ type SearchGenerics = MakeGenerics<{
   Search: z.infer<typeof TradeAppSearch>
 }>
 
-const chartEnabled = import.meta.env.VITE_FF_CHART_ENABLED === "true"
-const chartDatasourceId = import.meta.env.VITE_FF_CHART_DATASOURCE
+const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
+const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
+const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export function TradePage() {
   const api = useApiPromise()
   const { account } = useAccountStore()
   const { createTransaction } = useStore()
+
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
@@ -90,20 +92,19 @@ export function TradePage() {
       <SContainer>
         <TradeApp
           ref={(r) => {
-            if (chartEnabled && r) {
-              r.setAttribute("chart", "")
-              r.setAttribute("chartDatasourceId", chartDatasourceId)
-            }
+            r && r.setAttribute("chart", "")
           }}
-          onTxNew={(e) => handleSubmit(e)}
+          assetIn={search.success ? search.data.assetIn : undefined}
+          assetOut={search.success ? search.data.assetOut : undefined}
+          apiAddress={rpcUrl}
+          pools="Omni"
+          stableCoinAssetId={stableCoinAssetId}
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}
-          apiAddress={rpcUrl}
-          stableCoinAssetId="2"
-          assetIn={search.success ? search.data.assetIn : undefined}
-          assetOut={search.success ? search.data.assetOut : undefined}
-          pools="Omni"
+          grafanaUrl={grafanaUrl}
+          grafanaDsn={grafanaDsn}
+          onTxNew={(e) => handleSubmit(e)}
         />
       </SContainer>
     </Page>

@@ -1,0 +1,11 @@
+diff --git a/node_modules/@galacticcouncil/sdk/dist/types/client/PolkadotApi.d.ts b/node_modules/@galacticcouncil/sdk/dist/types/client/PolkadotApi.d.ts
+index c9b72ae..4ea6d27 100644
+--- a/node_modules/@galacticcouncil/sdk/dist/types/client/PolkadotApi.d.ts
++++ b/node_modules/@galacticcouncil/sdk/dist/types/client/PolkadotApi.d.ts
+@@ -1,6 +1,5 @@
+ import { ApiPromise } from '@polkadot/api';
+ import '@galacticcouncil/api-augment/hydradx';
+-import '@galacticcouncil/api-augment/basilisk';
+ export declare abstract class PolkadotApiClient {
+     protected readonly api: ApiPromise;
+     constructor(api: ApiPromise);

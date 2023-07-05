@@ -1,5 +1,6 @@
 import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
 import { Button } from "components/Button/Button"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
@@ -7,7 +8,6 @@ import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useFooterValues } from "sections/pools/pool/footer/PoolFooter.utils"
 import { ToastMessage, useAccountStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
-import { getFloatingPointAmount } from "utils/balance"
 import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
 import { SContainer } from "./PoolFooter.styled"
 
@@ -27,12 +27,7 @@ export const PoolFooter = ({ pool }: Props) => {
         <Trans i18nKey={`farms.claimCard.toast.${msType}`}>
           <span />
         </Trans>
-        {t("value", {
-          value: claimable.data?.usd,
-          type: "token",
-          numberPrefix: "$",
-          fixedPointScale: 12,
-        })}
+        <DisplayValue value={claimable.data?.displayValue} type="token" />
       </>
     )
     return memo
@@ -49,48 +44,50 @@ export const PoolFooter = ({ pool }: Props) => {
           {footerValues.isLoading ? (
             <Skeleton />
           ) : footerValues.farming.isZero() ? (
-            t("liquidity.asset.claim.total", {
-              locked: footerValues.locked,
-            })
+            <Trans t={t} i18nKey="liquidity.asset.claim.total">
+              <DisplayValue value={footerValues.locked} />
+            </Trans>
           ) : (
-            t("liquidity.asset.claim.farmTotal", {
-              locked: footerValues.locked,
-              farming: footerValues.farming,
-            })
+            <Trans t={t} i18nKey="liquidity.asset.claim.farmTotal">
+              <DisplayValue value={footerValues.locked} />
+              <DisplayValue value={footerValues.farming} />
+            </Trans>
           )}
         </Text>
       </div>
-      {claimable.data?.usd && !claimable.data?.usd.isZero() && (
-        <>
-          <div sx={{ flex: "row", justify: "center" }}>
-            <Text fw={600} lh={22} tAlign="center">
-              {import.meta.env.VITE_FF_FORMAT_CLAIMABLE_VALUE === "true" &&
-              getFloatingPointAmount(claimable.data?.usd ?? 0, 12).lt(0.01)
-                ? t("farms.claimCard.smallValue")
-                : t("liquidity.asset.claim.claimable", {
-                    claimable: claimable.data?.usd,
-                    fixedPointScale: 12,
-                  })}
-            </Text>
-          </div>
-          <div sx={{ flex: "row", justify: "end" }}>
-            <Button
-              variant="primary"
-              size="small"
-              sx={{ p: "12px 21px" }}
-              isLoading={claimAll.isLoading}
-              disabled={
-                claimable.data.usd.isZero() ||
-                account?.isExternalWalletConnected
-              }
-              onClick={() => claimAll.mutate()}
-            >
-              <WalletIcon />
-              {t("farms.claimCard.button.label")}
-            </Button>
-          </div>
-        </>
-      )}
+      {claimable.data?.displayValue &&
+        !claimable.data?.displayValue.isZero() && (
+          <>
+            <div sx={{ flex: "row", justify: "center" }}>
+              <Text fw={600} lh={22} tAlign="center">
+                {import.meta.env.VITE_FF_FORMAT_CLAIMABLE_VALUE === "true" &&
+                (claimable.data?.displayValue ?? 0).lt(0.01) ? (
+                  t("farms.claimCard.smallValue")
+                ) : (
+                  <Trans t={t} i18nKey="liquidity.asset.claim.claimable">
+                    <DisplayValue value={claimable.data?.displayValue} />
+                  </Trans>
+                )}
+              </Text>
+            </div>
+            <div sx={{ flex: "row", justify: "end" }}>
+              <Button
+                variant="primary"
+                size="small"
+                sx={{ p: "12px 21px" }}
+                isLoading={claimAll.isLoading}
+                disabled={
+                  claimable.data.displayValue.isZero() ||
+                  account?.isExternalWalletConnected
+                }
+                onClick={() => claimAll.mutate()}
+              >
+                <WalletIcon />
+                {t("farms.claimCard.button.label")}
+              </Button>
+            </div>
+          </>
+        )}
     </SContainer>
   )
 }

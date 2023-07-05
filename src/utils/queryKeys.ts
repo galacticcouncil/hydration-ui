@@ -1,17 +1,18 @@
 import type { u32 } from "@polkadot/types"
+import { u128 } from "@polkadot/types-codec"
 import type { AccountId32 } from "@polkadot/types/interfaces"
 import { CodecHash } from "@polkadot/types/interfaces/runtime"
-import { u128 } from "@polkadot/types-codec"
 import type BigNumber from "bignumber.js"
 import { Maybe } from "utils/helpers"
 
 export const QUERY_KEY_PREFIX = "@block"
 
 export const QUERY_KEYS = {
-  providerAddresses: (provider: string | undefined) => [
-    "web3Addresses",
+  providerAccounts: (provider: string | undefined) => [
+    "web3Accounts",
     provider,
   ],
+  walletEnable: (provider: string | null) => ["web3Enable", provider],
   bestNumber: [QUERY_KEY_PREFIX, "bestNumber"],
   assetsTable: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
@@ -257,11 +258,13 @@ export const QUERY_KEYS = {
     address,
   ],
   apiIds: ["apiIds"],
-  tvlCap: [QUERY_KEY_PREFIX, "tvlCap"],
+  tvlCap: ["tvlCap"],
   externalWalletKey: (walletAddress: string) => [
     "externalWallet",
     walletAddress,
   ],
   polkadotAccounts: ["polkadotAccounts"],
   maxAddLiquidityLimit: ["maxAddLiquidityLimit"],
+  coingeckoUsd: ["coingeckoUsd"],
+  assetList: ["assetList"],
 } as const

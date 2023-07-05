@@ -17,11 +17,11 @@ export const getApiIds = (api: ApiPromise) => async () => {
     api.consts.omnipool.stableCoinAssetId,
     api.consts.omnipool.nftCollectionId,
   ])
-  const [nativeId, hubId, usdId, omnipoolCollectionId] = apiIds.map((c) =>
-    c.toString(),
+  const [nativeId, hubId, stableCoinId, omnipoolCollectionId] = apiIds.map(
+    (c) => c.toString(),
   )
 
-  return { nativeId, hubId, usdId, omnipoolCollectionId }
+  return { nativeId, hubId, stableCoinId, omnipoolCollectionId }
 }
 
 export const useTVLCap = () => {

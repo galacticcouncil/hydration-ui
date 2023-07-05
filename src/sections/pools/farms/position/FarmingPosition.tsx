@@ -20,6 +20,7 @@ import {
 import { useDepositShare } from "./FarmingPosition.utils"
 import { JoinedFarms } from "./joined/JoinedFarms"
 import { RedepositFarms } from "./redeposit/RedepositFarms"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 
 function FarmingPositionDetailsButton(props: {
   pool: OmnipoolPool
@@ -141,14 +142,14 @@ export const FarmingPosition = ({
                   lrna={position.data.lrna}
                 />
                 <DollarAssetValue
-                  value={position.data.valueUSD}
+                  value={position.data.valueDisplay}
                   wrapper={(children) => (
                     <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
                       {children}
                     </Text>
                   )}
                 >
-                  {t("value.usd", { amount: position.data.valueUSD })}
+                  <DisplayValue value={position.data.valueDisplay} />
                 </DollarAssetValue>
               </div>
             )}

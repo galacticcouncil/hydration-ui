@@ -9,6 +9,7 @@ export type ButtonVariant =
   | "gradient"
   | "outline"
   | "transparent"
+  | "blue"
 export type ButtonSize = "small" | "medium" | "micro"
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {

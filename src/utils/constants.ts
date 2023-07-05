@@ -31,3 +31,7 @@ BN.config({ EXPONENTIAL_AT: 666 })
 export const MIN_WITHDRAWAL_FEE = new BN(100).div(1000000)
 
 export const MAX_WITHDRAWAL_FEE = new BN(10000).div(1000000).multipliedBy(100)
+
+export const STABLECOIN_ID = import.meta.env.VITE_STABLECOIN_ASSET_ID as string
+export const STABLECOIN_SYMBOL = import.meta.env
+  .VITE_STABLECOIN_ASSET_SYMBOL as string

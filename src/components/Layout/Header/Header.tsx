@@ -16,8 +16,10 @@ import { Spinner } from "components/Spinner/Spinner.styled"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { css } from "@emotion/react"
 import { useDepegStore, DepegWarningModal } from "./DepegWarningModal"
+import { HeaderSettings } from "./settings/HeaderSettings"
 
 const depegEnabled = import.meta.env.VITE_FF_DEPEG_WARNING === "true"
+const settingsEanbled = import.meta.env.VITE_FF_SETTINGS_ENABLED === "true"
 
 export const Header = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -49,6 +51,7 @@ export const Header = () => {
         <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
           <div sx={{ flex: "row", align: "center" }}>
             <Icon
+              sx={{ color: "white" }}
               icon={
                 isDesktop && !isMediumMedia ? <HydraLogoFull /> : <HydraLogo />
               }
@@ -94,6 +97,7 @@ export const Header = () => {
               </InfoTooltip>
             </div>
             <WalletConnectButton />
+            {isDesktop && settingsEanbled && <HeaderSettings />}
           </div>
         </div>
       </SHeader>
