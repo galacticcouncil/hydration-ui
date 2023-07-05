@@ -10,6 +10,7 @@ import { css } from "@emotion/react"
 export const AssetSelectSkeleton = (props: {
   name: string
   title: ReactNode
+  balanceLabel: string
 }) => {
   const { t } = useTranslation()
   return (
@@ -34,7 +35,7 @@ export const AssetSelectSkeleton = (props: {
               sx={{ mr: 5 }}
               css={{ color: `rgba(${theme.rgbColors.white}, 0.7)` }}
             >
-              {t("selectAsset.balance.label")}
+              {props.balanceLabel}
             </Text>
             <Skeleton height={10} width={20} sx={{ mr: 8 }} />
             <SMaxButton

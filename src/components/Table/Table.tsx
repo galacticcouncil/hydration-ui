@@ -3,7 +3,6 @@ import { ReactComponent as CaretIcon } from "assets/icons/CaretIcon.svg"
 import { Button, ButtonVariant } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { TableHeader } from "components/Table/Table.styled"
-import { Text } from "components/Typography/Text/Text"
 import { ReactNode } from "react"
 
 export const TableAction = (props: {
@@ -26,12 +25,8 @@ export const TableAction = (props: {
         props.onClick?.()
       }}
     >
-      <div sx={{ flex: "row", align: "center", gap: 8 }}>
-        <Icon size={16} icon={props.icon}></Icon>
-        <Text fs={13} color={props.disabled ? "darkBlue300" : "brightBlue300"}>
-          {props.children}
-        </Text>
-      </div>
+      <Icon size={16} icon={props.icon}></Icon>
+      {props.children}
     </Button>
   )
 }

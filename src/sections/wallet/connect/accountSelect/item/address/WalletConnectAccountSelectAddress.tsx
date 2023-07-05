@@ -70,10 +70,7 @@ export const WalletConnectAccountSelectAddress = ({
             cursor: "pointer",
             color: isProxy ? "white" : "var(--secondary-color)",
           }}
-          onClick={(e) => {
-            e.stopPropagation()
-            copy(address.toString())
-          }}
+          onClick={() => copy(address.toString())}
         />
       </InfoTooltip>
     </div>
