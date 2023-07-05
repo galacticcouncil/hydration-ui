@@ -248,8 +248,13 @@ export const GlobalStyle = `
   }
 
   &::-webkit-scrollbar-thumb:vertical {
-    background: transparent url("/images/Scrollbar.svg") no-repeat;
-    background-position: bottom;
+    background: ${theme.colors.basic600}; 
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: ${theme.colors.darkBlue401}; 
+    border-radius: 3px;
   }
 
   &::-webkit-scrollbar-corner {

@@ -9,7 +9,7 @@ export const SHeader = styled.header`
   left: 0;
   z-index: ${theme.zIndices.header};
 
-  width: calc(100% - 1px);
+  width: calc(100% - 0px);
 
   padding: 6px 12px;
 
