@@ -2101,10 +2101,10 @@
     patch-package "^7.0.0"
     short-uuid "^4.2.0"
 
-"@galacticcouncil/bridge@0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.6.tgz#2d65adab82c9d6027ad90cb2ee30334870cf098b"
-  integrity sha512-GHbrOLXZSH7VfWpZwNJoDATvVHypCPJzfugxKl2ItYSnp/5HhnWxytWMlHCCZpvzXALRztbNc6YQ6vmKZtlVjw==
+"@galacticcouncil/bridge@0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.7.tgz#caae7b98f8e29114cedec7416fb00027b6f5be91"
+  integrity sha512-SRqx18FpmrMQv806f0c+gYhdRrUMjjLQRBq1rTcdli8g1u4EV9aBNy772o40eDFBa2Zx7/rwHIgau3+Qhi8TCg==
   dependencies:
     "@acala-network/api" "^5"
     "@acala-network/sdk" "^4.1.9-2"
