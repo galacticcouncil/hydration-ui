@@ -27,7 +27,7 @@
     "@emotion/styled": "^11.10.4",
     "@galacticcouncil/api-augment": "^0.0.3",
     "@galacticcouncil/apps": "1.4.13",
-    "@galacticcouncil/bridge": "0.0.6",
+    "@galacticcouncil/bridge": "0.0.7",
     "@galacticcouncil/math-lbp": "^0.1.3",
     "@galacticcouncil/math-liquidity-mining": "^0.1.3",
     "@galacticcouncil/math-xyk": "^0.1.3",
