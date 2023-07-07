@@ -14,7 +14,7 @@ export const SActiveReferendumIcon = styled(ActiveReferendumIcon)`
   height: 12px;
   
   // TODO: how to do transparent border / outline?
-  //border: 2px solid black;
+  border: 2px solid #1469A5;
 `
 
 export const SBellIcon = styled(BellIcon)`

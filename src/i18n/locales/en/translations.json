@@ -76,6 +76,7 @@
   "header.documentation.tooltip": "Documentation",
   "header.notification.pending.tooltip": "{{number}} Pending Transactions",
   "header.notification.tooltip": "Notifications",
+  "header.notification.activeReferendum": "Active Referendum",
   "header.walletConnect.button": "Connect wallet",
   "header.settings.title": "Settings",
   "header.settings.items.displayAsset.title": "Display Asset",

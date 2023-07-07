@@ -15,22 +15,19 @@ export const Bell = () => {
 
   const hasReferendum = !!referendumsQuery.data?.length
 
+  const tooltipText = `
+    ${isLoading ? t("header.notification.pending.tooltip", { number: loadingToasts.length }) : t("header.notification.tooltip")}${hasReferendum ? `, ${t("header.notification.activeReferendum")}` : ''}
+  `
+
   return (
     <InfoTooltip
-      text={
-        isLoading
-          ? t("header.notification.pending.tooltip", {
-            number: loadingToasts.length,
-          })
-          : t("header.notification.tooltip")
-      }
+      text={tooltipText}
       type={isLoading ? "default" : "black"}
     >
       <div css={{ position: "relative" }}>
         {isLoading && <Spinner width={40} height={40} />}
-        <SWrap>
+        <SWrap onClick={() => setSidebar(true)}>
           <SBellIcon
-            onClick={() => setSidebar(true)}
             aria-label={t("toast.sidebar.title")}
             css={
               isLoading && {
