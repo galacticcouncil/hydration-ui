@@ -4,7 +4,7 @@ import { ReactComponent as BellIcon } from "assets/icons/BellIcon.svg"
 import { ReactComponent as ActiveReferendumIcon } from "assets/icons/ActiveReferendumIcon.svg"
 
 export const SActiveReferendumIcon = styled(ActiveReferendumIcon)`
-  color: #1469A5;
+  color: #1469a5;
   background: ${theme.colors.warningYellow400};
   border-radius: 50%;
   position: absolute;
@@ -30,11 +30,11 @@ export const SBellIcon = styled(BellIcon)`
 
 export const SWrap = styled.div`
   cursor: pointer;
-  
+
   ${SBellIcon} {
     transition: ${theme.transitions.slow};
   }
-  
+
   :hover > ${SBellIcon} {
     color: ${theme.colors.white};
     background: rgba(${theme.rgbColors.alpha0}, 0.06);

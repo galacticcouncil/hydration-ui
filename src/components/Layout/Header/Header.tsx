@@ -2,10 +2,7 @@ import { ReactComponent as HydraLogoFull } from "assets/icons/HydraLogoFull.svg"
 import { ReactComponent as HydraLogo } from "assets/icons/HydraLogo.svg"
 import { Icon } from "components/Icon/Icon"
 import { HeaderMenu } from "components/Layout/Header/menu/HeaderMenu"
-import {
-  SHeader,
-  SQuestionmark,
-} from 'components/Layout/Header/Header.styled'
+import { SHeader, SQuestionmark } from "components/Layout/Header/Header.styled"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
@@ -14,7 +11,7 @@ import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { css } from "@emotion/react"
 import { useDepegStore, DepegWarningModal } from "./DepegWarningModal"
 import { HeaderSettings } from "./settings/HeaderSettings"
-import { Bell } from './Bell'
+import { Bell } from "./Bell"
 
 const depegEnabled = import.meta.env.VITE_FF_DEPEG_WARNING === "true"
 const settingsEanbled = import.meta.env.VITE_FF_SETTINGS_ENABLED === "true"
