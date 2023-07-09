@@ -1,2 +1,3 @@
 /*
-Header-Name: Header-Value
+  Access-Control-Allow-Origin: *
+  X-Frame-Options: DENY
