@@ -1,33 +1,31 @@
 import { useState } from "react"
 import { SChartTab } from "./ChartWrapper.styled"
-import { BarChartComp } from "./components/BarChart/BarChart"
 import { useTranslation } from "react-i18next"
 
-type ChartType = "tvl" | "volume"
+type ChartType = "price" | "supply"
 
 export const ChartWrapper = () => {
   const { t } = useTranslation()
-  const [chartType, setChartType] = useState<ChartType>("volume")
+  const [chartType, setChartType] = useState<ChartType>("price")
 
   return (
     <>
       <div sx={{ flex: "row", gap: 12, justify: ["end", "start"] }}>
         <SChartTab
-          aria-label="total value locked"
-          active={chartType === "tvl"}
-          onClick={() => setChartType("tvl")}
+          aria-label="Price"
+          active={chartType === "price"}
+          onClick={() => setChartType("price")}
         >
           {t("stats.lrna.chart.switcher.price")}
         </SChartTab>
         <SChartTab
-          aria-label="24 volume"
-          active={chartType === "volume"}
-          onClick={() => setChartType("volume")}
+          aria-label="Supply"
+          active={chartType === "supply"}
+          onClick={() => setChartType("supply")}
         >
           {t("stats.lrna.chart.switcher.supply")}
         </SChartTab>
       </div>
-      {chartType === "volume" && <BarChartComp />}
     </>
   )
 }

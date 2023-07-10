@@ -1,6 +1,5 @@
 import { useApiPromise } from "utils/api"
 import { ChartWrapper } from "./components/ChartWrapper/ChartWrapper"
-import { PieWrapper } from "./components/PieWrapper/PieWrapper"
 import { isApiLoaded } from "utils/helpers"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -8,6 +7,7 @@ import { SContainerVertical } from "./StatsLRNA.styled"
 import { RecentTradesTableWrapper } from "./components/RecentTradesTable/RecentTradesTableWrapper"
 import { StatsTiles } from "./components/StatsTiles/StatsTiles"
 import { PieChart } from "./components/PieChart/PieChart"
+import { Distribution } from './components/Distribution/Distribution'
 
 const StatsLRNAData = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -15,7 +15,7 @@ const StatsLRNAData = () => {
   return (
     <div sx={{ flex: "column", gap: 50 }}>
       <div sx={{ flex: "row", gap: 20 }}>
-        <PieWrapper />
+        <Distribution />
         {isDesktop && (
           <SContainerVertical
             sx={{

@@ -1,4 +1,4 @@
-import { PieTotalValue } from "../PieTotalValue/PieTotalValue"
+import { TotalValue } from "./TotalValue"
 import { PieSkeleton } from "sections/stats/components/PieChart/components/Skeleton/Skeleton"
 import { ChartSwitchMobile } from "sections/stats/components/ChartSwitchMobile/ChartSwitchMobile"
 import { useMedia } from "react-use"
@@ -8,10 +8,10 @@ import { SContainerVertical } from "../../StatsLRNA.styled"
 import { ChartWrapper } from "../ChartWrapper/ChartWrapper"
 import { useTranslation } from "react-i18next"
 import BigNumber from "bignumber.js"
-import { PieLabel } from "./PieLabel"
+import { ChartLabel } from "./ChartLabel"
 import { DoughnutChart } from "../../../../components/DoughnutChart/DoughnutChart"
 
-export const PieWrapper = () => {
+export const Distribution = () => {
   const isLoading = false
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -22,7 +22,7 @@ export const PieWrapper = () => {
 
   const pieChartValues = (
     <div sx={{ flex: "column", gap: 20 }}>
-      <PieTotalValue
+      <TotalValue
         title={t("stats.lrna.pie.values.total")}
         data={new BigNumber(8301874)}
         isLoading={isLoading}
@@ -35,13 +35,13 @@ export const PieWrapper = () => {
           gap: 20,
         }}
       >
-        <PieTotalValue
+        <TotalValue
           title={t("stats.lrna.pie.values.inside")}
           data={new BigNumber(4200000)}
           isLoading={isLoading}
           compact={true}
         />
-        <PieTotalValue
+        <TotalValue
           title={t("stats.lrna.pie.values.outside")}
           data={new BigNumber(4200000)}
           isLoading={isLoading}
@@ -75,7 +75,7 @@ export const PieWrapper = () => {
                   name: "out",
                 },
               ]}
-              label={PieLabel}
+              label={ChartLabel}
             />
             {pieChartValues}
           </>

@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 
-export const PieLabel = () => {
+export const ChartLabel = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { t } = useTranslation()
 

@@ -12,7 +12,7 @@ type PieTotalValueProps = {
   compact?: boolean
 }
 
-export const PieTotalValue = ({
+export const TotalValue = ({
   title,
   data,
   isLoading,
