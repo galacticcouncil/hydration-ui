@@ -1,17 +1,16 @@
-import { ComponentProps } from 'react'
+import { ComponentProps } from "react"
+import { ASSET_COLORS } from "./PieChart.utils"
 import {
-  ASSET_COLORS,
-} from "./PieChart.utils"
-import {
-  SliceLabelRest, TLabelRest,
-} from './components/SliceLabelRest/SliceLabelRest'
+  SliceLabelRest,
+  TLabelRest,
+} from "./components/SliceLabelRest/SliceLabelRest"
 import { SliceLabel } from "./components/SliceLabel/SliceLabel"
 import { PieSkeleton } from "./components/Skeleton/Skeleton"
 import { t } from "i18next"
 import { TOmnipoolOverviewData } from "sections/stats/sections/overview/data/OmnipoolOverview.utils"
 import { BN_0 } from "utils/constants"
-import { DoughnutChart } from '../DoughnutChart/DoughnutChart'
-import { EmotionJSX } from '@emotion/react/types/jsx-namespace'
+import { DoughnutChart } from "../DoughnutChart/DoughnutChart"
+import { EmotionJSX } from "@emotion/react/types/jsx-namespace"
 
 type TSlice = {
   percentage: number
@@ -24,7 +23,7 @@ type TSlice = {
 
 type PieChartProps = {
   data: TOmnipoolOverviewData
-  label?: ComponentProps<typeof DoughnutChart>['label'];
+  label?: ComponentProps<typeof DoughnutChart>["label"]
 }
 
 export const PieChart = ({ data, label }: PieChartProps) => {

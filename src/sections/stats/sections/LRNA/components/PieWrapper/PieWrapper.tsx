@@ -8,19 +8,19 @@ import { SContainerVertical } from "../../StatsLRNA.styled"
 import { BN_0 } from "utils/constants"
 import { ChartWrapper } from "../ChartWrapper/ChartWrapper"
 import { useTranslation } from "react-i18next"
-import BigNumber from 'bignumber.js'
-import { PieLabel } from './PieLabel'
-import { DoughnutChart } from '../../../../components/DoughnutChart/DoughnutChart'
+import BigNumber from "bignumber.js"
+import { PieLabel } from "./PieLabel"
+import { DoughnutChart } from "../../../../components/DoughnutChart/DoughnutChart"
 
 type PieWrapperProps = {
   data: Array<{
-    id: string;
-    name: string;
-    symbol: string;
-    tvl: BigNumber;
-    volume: BigNumber;
-    fee: BigNumber;
-    pol: BigNumber;
+    id: string
+    name: string
+    symbol: string
+    tvl: BigNumber
+    volume: BigNumber
+    fee: BigNumber
+    pol: BigNumber
   }>
   isLoading: boolean
 }
@@ -85,21 +85,22 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
       {activeSection === "overview" ? (
         !isLoading ? (
           <>
-            <DoughnutChart slices={[
-              {
-                label: <div>in label</div>,
-                percentage: 40,
-                color: '#A6DDFF',
-                name: 'in'
-              },
-              {
-                label: <div>out label</div>,
-                percentage: 60,
-                color: '#2489FF',
-                name: 'out'
-              }
-            ]}
-             label={PieLabel}
+            <DoughnutChart
+              slices={[
+                {
+                  label: <div>in label</div>,
+                  percentage: 40,
+                  color: "#A6DDFF",
+                  name: "in",
+                },
+                {
+                  label: <div>out label</div>,
+                  percentage: 60,
+                  color: "#2489FF",
+                  name: "out",
+                },
+              ]}
+              label={PieLabel}
             />
             {pieChartValues}
           </>

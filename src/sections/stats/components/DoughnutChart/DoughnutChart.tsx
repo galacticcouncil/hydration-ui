@@ -1,14 +1,18 @@
-import { useMedia } from 'react-use'
-import { theme } from 'theme'
-import { getCircleCoordinates, getPieConfig } from '../PieChart/PieChart.utils'
-import { useTranslation } from 'react-i18next'
-import { Fragment, ReactNode, useMemo, useState } from 'react'
-import { DefaultSliceLabel } from './components/DefaultSliceLabel'
-import { Text } from 'components/Typography/Text/Text'
-import { SClipPath, SLabelContainer, SSliceContainer } from './DoughnutChart.styled'
-import { AnimatePresence } from 'framer-motion'
-import { ScrollablePicker } from '../ScrollablePicker/ScrollablePicker'
-import { EmotionJSX } from '@emotion/react/types/jsx-namespace'
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import { getCircleCoordinates, getPieConfig } from "../PieChart/PieChart.utils"
+import { useTranslation } from "react-i18next"
+import { Fragment, ReactNode, useMemo, useState } from "react"
+import { DefaultSliceLabel } from "./components/DefaultSliceLabel"
+import { Text } from "components/Typography/Text/Text"
+import {
+  SClipPath,
+  SLabelContainer,
+  SSliceContainer,
+} from "./DoughnutChart.styled"
+import { AnimatePresence } from "framer-motion"
+import { ScrollablePicker } from "../ScrollablePicker/ScrollablePicker"
+import { EmotionJSX } from "@emotion/react/types/jsx-namespace"
 
 export type TSlice = {
   percentage: number
@@ -19,8 +23,8 @@ export type TSlice = {
 }
 
 type DoughnutChartProps = {
-  slices: TSlice[];
-  label?: ({ slices }: { slices: TSlice[]; }) => ReactNode;
+  slices: TSlice[]
+  label?: ({ slices }: { slices: TSlice[] }) => ReactNode
 }
 
 export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
@@ -34,7 +38,11 @@ export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
   const restCmp = slices.find((slice) => slice?.symbol === "rest")
   const restIsSelected = restCmp && slices.length - 1 === activeSlice
 
-  let label = props.label ? props.label({ slices }) : <DefaultSliceLabel slices={slices} />
+  let label = props.label ? (
+    props.label({ slices })
+  ) : (
+    <DefaultSliceLabel slices={slices} />
+  )
 
   if (activeSlice != null) {
     if (!isDesktop && restIsSelected) {
