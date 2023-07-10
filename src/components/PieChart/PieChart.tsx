@@ -5,15 +5,18 @@ import { getRuleScaleLines } from "./PieChart.utils"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { Skeleton } from "./Skeleton"
+import styled from '@emotion/styled'
 
 const RADIUS = 140
 
-export const PieChart = ({
+export const PieChart = styled(({
   percentage,
   loading,
+  className,
 }: {
   percentage: number
-  loading: boolean
+  loading: boolean,
+  className?: string;
 }) => {
   const { t } = useTranslation()
 
@@ -28,6 +31,7 @@ export const PieChart = ({
         <div css={{ margin: 15 }}>
           <SClipPath
             radius={RADIUS}
+            className={className}
             clipPath={getCircleCoordinates(
               80,
               125,
@@ -48,4 +52,4 @@ export const PieChart = ({
       {lines}
     </svg>
   )
-}
+})``

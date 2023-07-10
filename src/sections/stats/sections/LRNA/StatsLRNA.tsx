@@ -7,13 +7,12 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { SContainerVertical } from "./StatsOverview.styled"
 import { RecentTradesTableWrapper } from "./components/RecentTradesTable/RecentTradesTableWrapper"
-import { StatsTiles } from './components/tiles/StatsTiles'
+import { StatsTiles } from './components/StatsTiles/StatsTiles'
+import { PieChart } from './components/PieChart/PieChart'
 
 const StatsLRNAData = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const omnipoolOverview = useOmnipoolOverviewData()
-
-  console.log('-- omnipoolOverview --', omnipoolOverview)
 
   return (
     <div sx={{ flex: "column", gap: 50 }}>
@@ -34,6 +33,7 @@ const StatsLRNAData = () => {
         )}
       </div>
 
+      <PieChart percentage={20} loading={false} />
       <StatsTiles />
       <RecentTradesTableWrapper />
     </div>
