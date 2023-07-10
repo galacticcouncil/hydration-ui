@@ -3,7 +3,7 @@ import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { motion } from "framer-motion"
-import { TSlice } from "../../PieChart"
+import { TSlice } from "../DoughnutChart"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 
@@ -24,9 +24,9 @@ export const DefaultSliceLabel = ({ slices }: { slices: TSlice[] }) => {
         <MultipleIcons
           size={[20, 36]}
           icons={[
-            { icon: getAssetLogo(sortedSlices[0].symbol) },
-            { icon: getAssetLogo(sortedSlices[1].symbol) },
-            { icon: getAssetLogo(sortedSlices[2].symbol) },
+            { icon: getAssetLogo(sortedSlices[0]?.symbol) },
+            { icon: getAssetLogo(sortedSlices[1]?.symbol) },
+            { icon: getAssetLogo(sortedSlices[2]?.symbol) },
           ]}
         />
         <Text color="basic100" fs={[12, 18]}>
