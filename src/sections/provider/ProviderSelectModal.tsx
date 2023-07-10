@@ -28,7 +28,7 @@ export function ProviderSelectModal(props: {
   const { rpcList, addRpc, removeRpc } = useRpcStore()
 
   const form = useForm<{ address: string }>({
-    defaultValues: { address: "" },
+    defaultValues: { address: "wss://" },
     mode: "onChange",
   })
 
@@ -44,7 +44,7 @@ export function ProviderSelectModal(props: {
       const relayParentNumber = relay.unwrap().relayParentNumber
 
       if (relayParentNumber.toNumber()) {
-        addRpc(`wss://${value.address}`)
+        addRpc(value.address)
         form.reset()
       }
     } catch (e) {

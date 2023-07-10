@@ -1,32 +1,25 @@
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useAccountStore } from "state/store"
 import { FormValues } from "utils/helpers"
 import BigNumber from "bignumber.js"
 import { SummaryRow } from "components/Summary/SummaryRow"
-import { BN_10 } from "utils/constants"
-import { useTokenBalance } from "api/balances"
 import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { Text } from "components/Typography/Text/Text"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
 import Skeleton from "react-loading-skeleton"
+import { UnstakeAssetSelect } from "./UnstakeAssetSelect"
 
 const stakeTokenId = "0"
 
-export const Stake = ({ loading }: { loading: boolean }) => {
+export const Unstake = ({ loading }: { loading: boolean }) => {
   const { t } = useTranslation()
 
   const { account } = useAccountStore()
   const form = useForm<{ amount: string }>()
-
-  const { data: assetBalance } = useTokenBalance(
-    loading ? undefined : stakeTokenId,
-    account?.address,
-  )
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     console.log("TODO: submitted", values)
@@ -39,7 +32,7 @@ export const Stake = ({ loading }: { loading: boolean }) => {
         fs={19}
         sx={{ width: "fit-content" }}
       >
-        {t("staking.dashboard.form.stake.title")}
+        {t("staking.dashboard.form.unstake.title")}
       </GradientText>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
@@ -66,12 +59,7 @@ export const Stake = ({ loading }: { loading: boolean }) => {
                 new BigNumber(value).gt(0) || t("error.positive"),
               maxBalance: (value) => {
                 try {
-                  if (
-                    assetBalance?.balance.gte(
-                      BigNumber(value).multipliedBy(BN_10.pow(12)),
-                    )
-                  )
-                    return true
+                  if (false) return true
                 } catch {}
                 return t("liquidity.add.modal.validation.notEnoughBalance")
               },
@@ -85,15 +73,15 @@ export const Stake = ({ loading }: { loading: boolean }) => {
               <AssetSelectSkeleton
                 title={t("staking.dashboard.form.stake.inputTitle")}
                 name={name}
-                balanceLabel={t("selectAsset.balance.label")}
+                balanceLabel={t("staking.dashboard.form.unstake.balanceLabel")}
               />
             ) : (
-              <WalletTransferAssetSelect
+              <UnstakeAssetSelect
                 title={t("staking.dashboard.form.stake.inputTitle")}
                 name={name}
                 value={value}
                 onChange={onChange}
-                asset={stakeTokenId}
+                assetId={stakeTokenId}
                 error={error?.message}
               />
             )
@@ -112,8 +100,8 @@ export const Stake = ({ loading }: { loading: boolean }) => {
         <Separator sx={{ mb: 12 }} />
 
         {account ? (
-          <Button variant="primary" type="submit" disabled={loading}>
-            {t("staking.dashboard.form.stake.button")}
+          <Button variant="blue" type="submit" disabled={loading}>
+            {t("staking.dashboard.form.unstake.button")}
           </Button>
         ) : (
           <WalletConnectButton />

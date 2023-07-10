@@ -59,6 +59,10 @@ export const SContent = styled.span`
   gap: 10px;
   align-items: center;
   justify-content: center;
+
+  font-size: 13px;
+
+  height: 20px;
 `
 export const SButtonTransparent = styled.button`
   background: transparent;
@@ -220,6 +224,57 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
   transparent: css`
     background: transparent;
     color: ${theme.colors.brightBlue600};
+  `,
+  blue: css`
+    background: ${theme.colors.brightBlue700};
+    color: ${theme.colors.white};
+
+    position: relative;
+
+    -webkit-transition: all 0.3s, background 0.1s, border 0.1s;
+    transition: all 0.3s, background 0.1s, border 0.1s;
+
+    border: 1px solid transparent;
+
+    transform-style: preserve-3d;
+
+    :before {
+      content: "";
+      position: absolute;
+      inset: 0;
+
+      height: 100%;
+      width: 100%;
+
+      background: rgba(1, 158, 255, 0.35);
+
+      border-radius: 4px;
+
+      transform: translate3d(0px, 0px, -1px);
+      -webkit-transition: 0.3s;
+      transition: 0.3s;
+    }
+
+    :hover:before {
+      transform: translate3d(5px, 5px, -1px);
+    }
+
+    :hover {
+      background: #23acff;
+
+      border: 1px solid rgba(255, 212, 222, 0.2);
+
+      transform: translate(-5px, -5px);
+      transform-style: preserve-3d;
+    }
+
+    :active {
+      transform: translate3d(-3px, -3px, -1px);
+    }
+
+    :active:before {
+      transform: translate3d(3px, 3px, -1px);
+    }
   `,
 }
 

@@ -6,10 +6,16 @@ import { useDisplayAssetStore } from "utils/displayAsset"
 type Props = {
   value: BigNumber | number | null | ReactNode
   isUSD?: boolean
+  withGap?: boolean
   type?: "dollar" | "token"
 }
 
-export const DisplayValue = ({ value, isUSD, type = "dollar" }: Props) => {
+export const DisplayValue = ({
+  value,
+  isUSD,
+  type = "dollar",
+  withGap,
+}: Props) => {
   const { t } = useTranslation()
   const store = useDisplayAssetStore()
 
@@ -18,13 +24,7 @@ export const DisplayValue = ({ value, isUSD, type = "dollar" }: Props) => {
 
   return (
     <>
-      {isDollar && (
-        <span
-          css={{ all: "inherit", fontFamily: "ChakraPetch", display: "inline" }}
-        >
-          $
-        </span>
-      )}
+      {isDollar && <span sx={{ mr: withGap ? [2, 4] : undefined }}>$</span>}
       {isNumber ? t("value", { value, type }) : value}
       {!isDollar && <>&nbsp;{store.symbol}</>}
     </>
