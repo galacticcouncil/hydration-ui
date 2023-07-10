@@ -18,8 +18,6 @@ export const PoolCapacity = ({ pool, className }: Props) => {
   const filled = isError ? "0" : capacity.data.filledPercent.toFixed(2)
   const isFull = capacity.data.filledPercent.eq(100)
 
-  console.log('-- capacity.data.filled --', capacity.data.filled, isFull)
-
   return (
     <SContainer ref={ref} className={className}>
       <Separator sx={{ mb: 15, display: ["none", "inherit"] }} />

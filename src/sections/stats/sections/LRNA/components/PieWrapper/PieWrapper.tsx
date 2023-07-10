@@ -3,7 +3,7 @@ import { PieSkeleton } from "sections/stats/components/PieChart/components/Skele
 import { ChartSwitchMobile } from "sections/stats/components/ChartSwitchMobile/ChartSwitchMobile"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { SContainerVertical } from "../../StatsLRNA.styled"
 import { ChartWrapper } from "../ChartWrapper/ChartWrapper"
 import { useTranslation } from "react-i18next"
