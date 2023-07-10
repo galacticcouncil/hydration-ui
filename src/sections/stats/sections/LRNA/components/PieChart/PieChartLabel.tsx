@@ -1,5 +1,4 @@
 import { Text } from 'components/Typography/Text/Text'
-import { useTranslation } from 'react-i18next'
 
 export const PieChartLabel = () => {
   // const { t } = useTranslation()
