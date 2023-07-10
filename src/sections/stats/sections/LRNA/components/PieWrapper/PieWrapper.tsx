@@ -11,20 +11,8 @@ import BigNumber from "bignumber.js"
 import { PieLabel } from "./PieLabel"
 import { DoughnutChart } from "../../../../components/DoughnutChart/DoughnutChart"
 
-type PieWrapperProps = {
-  data: Array<{
-    id: string
-    name: string
-    symbol: string
-    tvl: BigNumber
-    volume: BigNumber
-    fee: BigNumber
-    pol: BigNumber
-  }>
-  isLoading: boolean
-}
-
-export const PieWrapper = ({ isLoading }: PieWrapperProps) => {
+export const PieWrapper = () => {
+  const isLoading = false;
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -75,13 +63,13 @@ export const PieWrapper = ({ isLoading }: PieWrapperProps) => {
             <DoughnutChart
               slices={[
                 {
-                  label: <div>in label</div>,
+                  label: <div sx={{ color: "white" }}>in label todo</div>,
                   percentage: 40,
                   color: "#A6DDFF",
                   name: "in",
                 },
                 {
-                  label: <div>out label</div>,
+                  label: <div sx={{ color: "white" }}>out label todo</div>,
                   percentage: 60,
                   color: "#2489FF",
                   name: "out",

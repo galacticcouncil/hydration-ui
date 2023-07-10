@@ -2,25 +2,26 @@ import { getCircleCoordinates } from "sections/stats/components/PieChart/PieChar
 import { SClipPath, SPieLabelContainer } from "./PieChart.styled"
 import { ReactComponent as ChartBackground } from "assets/icons/StakingChart.svg"
 import { getRuleScaleLines } from "./PieChart.utils"
-import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
 import { Skeleton } from "./Skeleton"
 import styled from "@emotion/styled"
+import { ReactNode } from 'react'
 
 const RADIUS = 140
+
+type Props = {
+  percentage: number
+  loading: boolean
+  className?: string
+  label: ReactNode;
+}
 
 export const PieChart = styled(
   ({
     percentage,
     loading,
     className,
-  }: {
-    percentage: number
-    loading: boolean
-    className?: string
-  }) => {
-    const { t } = useTranslation()
-
+    label
+  }: Props) => {
     if (loading) return <Skeleton />
 
     const lines = getRuleScaleLines(RADIUS)
@@ -47,10 +48,7 @@ export const PieChart = styled(
             />
             <ChartBackground />
             <SPieLabelContainer>
-              <Text fs={12}>{t("staking.dashboard.stats.chart.label")}</Text>
-              <Text fs={30} font="FontOver">
-                {percentage}%
-              </Text>
+              {label}
             </SPieLabelContainer>
           </div>
         </foreignObject>

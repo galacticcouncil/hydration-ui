@@ -8,7 +8,6 @@ import { SContainerVertical } from "./StatsLRNA.styled"
 import { RecentTradesTableWrapper } from "./components/RecentTradesTable/RecentTradesTableWrapper"
 import { StatsTiles } from "./components/StatsTiles/StatsTiles"
 import { PieChart } from "./components/PieChart/PieChart"
-import BN from "bignumber.js"
 
 const StatsLRNAData = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -16,29 +15,7 @@ const StatsLRNAData = () => {
   return (
     <div sx={{ flex: "column", gap: 50 }}>
       <div sx={{ flex: "row", gap: 20 }}>
-        <PieWrapper
-          data={[
-            {
-              id: "0",
-              name: "LRNA",
-              symbol: "LRNA",
-              tvl: new BN(1234),
-              volume: new BN(0),
-              fee: new BN(0),
-              pol: new BN(567),
-            },
-            {
-              id: "1",
-              name: "",
-              symbol: "",
-              tvl: new BN(890),
-              volume: new BN(0),
-              fee: new BN(0),
-              pol: new BN(123),
-            },
-          ]}
-          isLoading={false}
-        />
+        <PieWrapper />
         {isDesktop && (
           <SContainerVertical
             sx={{
