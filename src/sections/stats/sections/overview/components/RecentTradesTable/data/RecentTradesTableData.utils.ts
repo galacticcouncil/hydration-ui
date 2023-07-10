@@ -2,7 +2,7 @@ import { useAssetMetaList } from "api/assetMeta"
 import { useApiIds } from "api/consts"
 import { useOmnipoolAssets } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
-import { useAllTrades, useTradeVolumes } from "api/volume"
+import { useAllTrades } from "api/volume"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { getFloatingPointAmount } from "utils/balance"
@@ -15,9 +15,6 @@ export const useRecentTradesTableData = (assetId?: string) => {
   const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
   const apiIds = useApiIds()
   const allTrades = useAllTrades()
-  //const volumes = useTradeVolumes([assetId])
-
-  //console.log(volumes, "volume")
 
   const omnipoolAssetsIds = omnipoolAssets.data?.map((a) => a.id) ?? []
 
@@ -28,14 +25,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
     withoutRefresh,
   )
 
-  const queries = [
-    omnipoolAssets,
-    apiIds,
-    assetMetas,
-    allTrades,
-    //...volumes,
-    ...spotPrices,
-  ]
+  const queries = [omnipoolAssets, apiIds, assetMetas, allTrades, ...spotPrices]
 
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
@@ -58,8 +48,14 @@ export const useRecentTradesTableData = (assetId?: string) => {
       .slice(0) // copy an array to avoid the mutating
       .reduce(
         (memo, trade, i, arr) => {
-          if (i === VISIBLE_TRADE_NUMBER - 1) arr.splice(1) // break iteration
+          const isSelectedAsset = assetId
+            ? assetId === trade.args.assetIn.toString() ||
+              assetId === trade.args.assetOut.toString()
+            : true
+
+          if (memo.length === VISIBLE_TRADE_NUMBER) arr.splice(1) // break iteration
           if (
+            isSelectedAsset &&
             !memo.find((memoTrade) => memoTrade.id === trade.id) &&
             memo.length < VISIBLE_TRADE_NUMBER
           ) {
@@ -134,6 +130,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
     assetMetas.data,
     omnipoolAssets.data,
     spotPrices,
+    assetId,
   ])
 
   return { data, isLoading: isInitialLoading }

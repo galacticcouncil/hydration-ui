@@ -24,8 +24,8 @@ export type TradeType = {
 }
 
 export const getTradeVolume =
-  (indexerUrl: string, assetId: u32) => async () => {
-    const assetIn = assetId.toNumber()
+  (indexerUrl: string, assetId: string) => async () => {
+    const assetIn = Number(assetId)
     const after = addDays(new Date(), -1).toISOString()
 
     // This is being typed manually, as GraphQL schema does not
@@ -119,7 +119,9 @@ export function useTradeVolumes(
         ? QUERY_KEYS.tradeVolume(assetId)
         : QUERY_KEYS.tradeVolumeLive(assetId),
       queryFn:
-        assetId != null ? getTradeVolume(indexerUrl, assetId) : undefinedNoop,
+        assetId != null
+          ? getTradeVolume(indexerUrl, assetId.toString())
+          : undefinedNoop,
       enabled: !!assetId,
     })),
   })

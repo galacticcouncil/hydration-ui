@@ -8,7 +8,7 @@ export type IconButtonProps = {
   round?: boolean
   onClick?: () => void
   icon?: ReactNode
-  size: number
+  size?: number
 }
 
 export const IconButton: FC<IconButtonProps> = ({
