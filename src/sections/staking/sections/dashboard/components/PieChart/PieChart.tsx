@@ -1,7 +1,7 @@
 import { PieChart as PieChartComponent } from "components/PieChart/PieChart"
 import styled from "@emotion/styled"
-import { PieChartLabel } from './PieChartLabel'
-import { ComponentProps } from 'react'
+import { PieChartLabel } from "./PieChartLabel"
+import { ComponentProps } from "react"
 
 const SPieChart = styled(PieChartComponent)`
   background: conic-gradient(
@@ -13,6 +13,11 @@ const SPieChart = styled(PieChartComponent)`
   );
 `
 
-type Props = Omit<ComponentProps<typeof PieChartComponent>, 'label'>
+type Props = Omit<ComponentProps<typeof PieChartComponent>, "label">
 
-export const PieChart = (props: Props) => <SPieChart {...props} label={<PieChartLabel percentage={props.percentage} />} />
+export const PieChart = (props: Props) => (
+  <SPieChart
+    {...props}
+    label={<PieChartLabel percentage={props.percentage} />}
+  />
+)

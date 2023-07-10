@@ -1,8 +1,8 @@
-import { Text } from 'components/Typography/Text/Text'
-import { useTranslation } from 'react-i18next'
+import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
 
 type Props = {
-  percentage: number;
+  percentage: number
 }
 
 export const PieChartLabel = ({ percentage }: Props) => {

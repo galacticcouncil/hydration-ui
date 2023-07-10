@@ -12,7 +12,7 @@ import { PieLabel } from "./PieLabel"
 import { DoughnutChart } from "../../../../components/DoughnutChart/DoughnutChart"
 
 export const PieWrapper = () => {
-  const isLoading = false;
+  const isLoading = false
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 

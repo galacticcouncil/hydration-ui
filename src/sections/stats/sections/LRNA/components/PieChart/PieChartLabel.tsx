@@ -1,4 +1,4 @@
-import { Text } from 'components/Typography/Text/Text'
+import { Text } from "components/Typography/Text/Text"
 
 export const PieChartLabel = () => {
   // const { t } = useTranslation()
