@@ -5,7 +5,6 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useMemo, useState } from "react"
 import { SContainerVertical } from "../../StatsLRNA.styled"
-import { BN_0 } from "utils/constants"
 import { ChartWrapper } from "../ChartWrapper/ChartWrapper"
 import { useTranslation } from "react-i18next"
 import BigNumber from "bignumber.js"
@@ -25,7 +24,7 @@ type PieWrapperProps = {
   isLoading: boolean
 }
 
-export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
+export const PieWrapper = ({ isLoading }: PieWrapperProps) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -33,25 +32,11 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
     "overview",
   )
 
-  const { totalTvl, totalPol, totalVolume } = useMemo(() => {
-    return data.reduce(
-      (acc, omnipoolAsset) => {
-        acc = {
-          totalTvl: acc.totalTvl.plus(omnipoolAsset.tvl),
-          totalPol: acc.totalPol.plus(omnipoolAsset.pol),
-          totalVolume: acc.totalVolume.plus(omnipoolAsset.volume),
-        }
-        return acc
-      },
-      { totalTvl: BN_0, totalPol: BN_0, totalVolume: BN_0 },
-    )
-  }, [data])
-
   const pieChartValues = (
     <div sx={{ flex: "column", gap: 20 }}>
       <PieTotalValue
-        title={t("stats.overview.pie.values.tvl")}
-        data={totalTvl}
+        title={t("stats.lrna.pie.values.total")}
+        data={new BigNumber(8301874)}
         isLoading={isLoading}
       />
       <div
@@ -63,14 +48,16 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
         }}
       >
         <PieTotalValue
-          title={t("stats.overview.pie.values.pol")}
-          data={totalPol}
+          title={t("stats.lrna.pie.values.inside")}
+          data={new BigNumber(4200000)}
           isLoading={isLoading}
+          compact={true}
         />
         <PieTotalValue
-          title={t("stats.overview.pie.values.volume")}
-          data={totalVolume.div(2)}
+          title={t("stats.lrna.pie.values.outside")}
+          data={new BigNumber(4200000)}
           isLoading={isLoading}
+          compact={true}
         />
       </div>
     </div>
