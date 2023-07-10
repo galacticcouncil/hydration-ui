@@ -4,7 +4,7 @@ import { ReactComponent as ChartBackground } from "assets/icons/StakingChart.svg
 import { getRuleScaleLines } from "./PieChart.utils"
 import { Skeleton } from "./Skeleton"
 import styled from "@emotion/styled"
-import { ReactNode } from 'react'
+import { ReactNode } from "react"
 
 const RADIUS = 140
 
@@ -12,16 +12,11 @@ type Props = {
   percentage: number
   loading: boolean
   className?: string
-  label: ReactNode;
+  label: ReactNode
 }
 
 export const PieChart = styled(
-  ({
-    percentage,
-    loading,
-    className,
-    label
-  }: Props) => {
+  ({ percentage, loading, className, label }: Props) => {
     if (loading) return <Skeleton />
 
     const lines = getRuleScaleLines(RADIUS)
@@ -47,9 +42,7 @@ export const PieChart = styled(
               )}
             />
             <ChartBackground />
-            <SPieLabelContainer>
-              {label}
-            </SPieLabelContainer>
+            <SPieLabelContainer>{label}</SPieLabelContainer>
           </div>
         </foreignObject>
         {lines}
