@@ -14,16 +14,16 @@ export type TSlice = {
   percentage: number
   color: string
   label: EmotionJSX.Element
-  symbol: string
+  symbol?: string
   name: string
 }
 
 type DoughnutChartProps = {
   slices: TSlice[];
-  sliceLabel?: (slices: TSlice[]) => ReactNode;
+  label?: ({ slices }: { slices: TSlice[]; }) => ReactNode;
 }
 
-export const DoughnutChart = ({ slices, sliceLabel }: DoughnutChartProps) => {
+export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const PIE_SIZE = !isDesktop ? 170 : 300
   const config = getPieConfig(PIE_SIZE)
@@ -31,10 +31,10 @@ export const DoughnutChart = ({ slices, sliceLabel }: DoughnutChartProps) => {
 
   const [activeSlice, setActiveSlice] = useState<number | undefined>(undefined)
 
-  const restCmp = slices.find((slice) => slice.symbol === "rest")
+  const restCmp = slices.find((slice) => slice?.symbol === "rest")
   const restIsSelected = restCmp && slices.length - 1 === activeSlice
 
-  let label = sliceLabel ? sliceLabel(slices) : <DefaultSliceLabel slices={slices} />
+  let label = props.label ? props.label({ slices }) : <DefaultSliceLabel slices={slices} />
 
   if (activeSlice != null) {
     if (!isDesktop && restIsSelected) {

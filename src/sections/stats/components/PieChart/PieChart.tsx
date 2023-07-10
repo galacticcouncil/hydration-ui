@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ComponentProps } from 'react'
 import {
   ASSET_COLORS,
 } from "./PieChart.utils"
@@ -24,10 +24,10 @@ type TSlice = {
 
 type PieChartProps = {
   data: TOmnipoolOverviewData
-  sliceLabel?: (slices: TSlice[]) => ReactNode;
+  label?: ComponentProps<typeof DoughnutChart>['label'];
 }
 
-export const PieChart = ({ data, sliceLabel }: PieChartProps) => {
+export const PieChart = ({ data, label }: PieChartProps) => {
   if (!data) return <PieSkeleton />
 
   const tvlTotal = data.reduce(
@@ -108,5 +108,5 @@ export const PieChart = ({ data, sliceLabel }: PieChartProps) => {
     }, [])
     .sort((a) => (a.symbol !== "rest" ? -1 : 0))
 
-  return <DoughnutChart slices={slices} sliceLabel={sliceLabel} />
+  return <DoughnutChart slices={slices} label={label} />
 }

@@ -4,7 +4,7 @@ import { PieWrapper } from "./components/PieWrapper/PieWrapper"
 import { isApiLoaded } from "utils/helpers"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { SContainerVertical } from "./StatsOverview.styled"
+import { SContainerVertical } from "./StatsLRNA.styled"
 import { RecentTradesTableWrapper } from "./components/RecentTradesTable/RecentTradesTableWrapper"
 import { StatsTiles } from './components/StatsTiles/StatsTiles'
 import { PieChart } from './components/PieChart/PieChart'
@@ -20,8 +20,8 @@ const StatsLRNAData = () => {
           data={[
             {
               id: "0",
-              name: "HDX",
-              symbol: "HDX",
+              name: "LRNA",
+              symbol: "LRNA",
               tvl: new BN(1234),
               volume: new BN(0),
               fee: new BN(0),
@@ -29,8 +29,8 @@ const StatsLRNAData = () => {
             },
             {
               id: "1",
-              name: "Ether (via Wormhole)",
-              symbol: "ETH",
+              name: "",
+              symbol: "",
               tvl: new BN(890),
               volume: new BN(0),
               fee: new BN(0),
