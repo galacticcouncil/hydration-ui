@@ -1,4 +1,4 @@
 /*
     X-XSS-Protection: 1; mode=block
     X-Frame-Options: DENY
-    Content-Security-Policy: default-src 'self' 'unsafe-eval' 'unsafe-inline' *.hydradx.io/; frame-ancestors 'none'; connect-src 'self' wss://*
+   
