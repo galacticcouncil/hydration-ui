@@ -4,10 +4,10 @@ import { isApiLoaded } from "utils/helpers"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { SContainerVertical } from "./StatsLRNA.styled"
-import { RecentTradesTableWrapper } from "./components/RecentTradesTable/RecentTradesTableWrapper"
-import { StatsTiles } from "./components/StatsTiles/StatsTiles"
 import { PieChart } from "./components/PieChart/PieChart"
 import { Distribution } from "./components/Distribution/Distribution"
+import { StatsTiles } from "../../components/tiles/StatsTiles"
+import { RecentTradesTableWrapper } from "../../components/RecentTradesTable/RecentTradesTableWrapper"
 
 const StatsLRNAData = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
