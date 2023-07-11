@@ -1,6 +1,6 @@
 import { SContainer } from "sections/staking/StakingPage.styled"
-import { PieChart } from "./PieChart/PieChart"
 import { StakingValues } from "./Values/StakingValues"
+import { PieChart } from "../PieChart/PieChart"
 
 export const Stats = ({
   isConnected,

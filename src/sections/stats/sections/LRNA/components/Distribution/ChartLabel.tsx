@@ -1,17 +1,13 @@
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { motion } from "framer-motion"
-import { TSlice } from "../../PieChart"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 
-export const DefaultSliceLabel = ({ slices }: { slices: TSlice[] }) => {
+export const ChartLabel = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { t } = useTranslation()
-
-  const sortedSlices = [...slices].sort((a, b) => b.percentage - a.percentage)
 
   return (
     <motion.div
@@ -21,21 +17,13 @@ export const DefaultSliceLabel = ({ slices }: { slices: TSlice[] }) => {
       animate={{ opacity: 1, y: 0 }}
     >
       <div sx={{ flex: "column", align: "center", gap: 6 }}>
-        <MultipleIcons
-          size={[20, 36]}
-          icons={[
-            { icon: getAssetLogo(sortedSlices[0].symbol) },
-            { icon: getAssetLogo(sortedSlices[1].symbol) },
-            { icon: getAssetLogo(sortedSlices[2].symbol) },
-          ]}
-        />
+        {getAssetLogo("LRNA")}
         <Text color="basic100" fs={[12, 18]}>
-          {t("stats.overview.pie.defaultLabel.composition")}
+          LRNA Distribution
+          {/*{t("stats.overview.pie.defaultLabel.composition")}*/}
         </Text>
         <Text color="basic100" fs={[10, 12]}>
-          {t("stats.overview.pie.defaultLabel.assetAvailable", {
-            amount: slices.length,
-          })}
+          In/Outside of Omnipool
         </Text>
       </div>
       <motion.div
