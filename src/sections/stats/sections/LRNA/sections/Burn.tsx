@@ -9,8 +9,8 @@ import { useTranslation } from "react-i18next"
 export const Burn = () => {
   const { t, i18n } = useTranslation()
 
-  const toBeBurned = 2455;
-  const fees = 1455;
+  const toBeBurned = 2455
+  const fees = 1455
 
   return (
     <SBurnContainer>
