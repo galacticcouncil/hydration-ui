@@ -5,7 +5,7 @@ import { useToast } from "state/toasts"
 import { Toast } from "components/Toast/Toast"
 import { AnimatePresence } from "framer-motion"
 
-import { ToastSidebar } from "./ToastSidebar"
+import { ToastSidebar } from "./sidebar/ToastSidebar"
 
 export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
   const { toasts, hide, sidebar, setSidebar } = useToast()

@@ -3,6 +3,8 @@ import { theme } from "theme"
 import { IconButton } from "components/IconButton/IconButton"
 import styled from "@emotion/styled"
 import { keyframes } from "@emotion/react"
+import { Text } from "components/Typography/Text/Text"
+import { ReactComponent as NoActivities } from "assets/icons/NoActivities.svg"
 
 const slideKeyframe = keyframes`
   0% {
@@ -55,8 +57,6 @@ export const SDialogContent = styled(DialogContent)`
     top: 8px;
     bottom: 8px;
 
-    animation: 300ms cubic-bezier(0.16, 1, 0.3, 1) ${slideKeyframe};
-
     width: calc(100% - 16px);
     max-width: 400px;
     max-height: unset;
@@ -65,18 +65,45 @@ export const SDialogContent = styled(DialogContent)`
     border-bottom-right-radius: 16px;
 
     padding-bottom: 12px;
+
+    animation: 300ms cubic-bezier(0.16, 1, 0.3, 1) ${slideKeyframe};
   }
 `
-export const SidebarBody = styled.div`
-  overflow-y: auto;
 
+export const SSidebarBody = styled.div`
   height: 100%;
+  overflow-y: auto;
 `
 
 export const SCloseButton = styled(IconButton)`
-  color: ${theme.colors.white};
-
   position: absolute;
   top: 8px;
   right: 8px;
+
+  color: ${theme.colors.white};
+`
+
+export const SGroupHeader = styled(Text)`
+  padding: 10px 22px;
+
+  font-size: 14px;
+  font-weight: 400;
+  color: ${theme.colors.basic400};
+
+  background-color: rgba(${theme.rgbColors.primaryA06}, 0.06);
+`
+
+export const SNoActivitiesContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: 96px 0;
+
+  color: ${theme.colors.basic500};
+`
+
+export const SNoActivitiesIcon = styled(NoActivities)`
+  width: 100%;
+  height: 50px;
 `
