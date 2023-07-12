@@ -27,7 +27,7 @@ export const SContainerVertical = styled.div`
     );
 
     -webkit-mask: linear-gradient(#fff 0 0) content-box,
-linear-gradient(#fff 0 0);
+      linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;

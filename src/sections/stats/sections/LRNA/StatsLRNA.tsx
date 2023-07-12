@@ -7,7 +7,7 @@ import { SContainerVertical } from "./StatsLRNA.styled"
 import { Distribution } from "./components/Distribution/Distribution"
 import { StatsTiles } from "../../components/tiles/StatsTiles"
 import { RecentTradesTableWrapper } from "../../components/RecentTradesTable/RecentTradesTableWrapper"
-import { Burn } from './sections/Burn'
+import { Burn } from "./sections/Burn"
 
 const StatsLRNAData = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
