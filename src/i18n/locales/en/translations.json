@@ -440,6 +440,8 @@
   "stats.lrna.pie.values.total": "Total LRNA Supply",
   "stats.lrna.pie.values.inside": "Inside of Omnipool",
   "stats.lrna.pie.values.outside": "Outside of Omnipool",
+  "stats.lrna.burn.toBeBurned": "To be burned:",
+  "stats.lrna.burn.fees": "Protocol fees last 24h:",
   "staking.title": "Staking Dashboard",
   "staking.tabs.dashboard": "Staking",
   "staking.tabs.governance": "Governance",

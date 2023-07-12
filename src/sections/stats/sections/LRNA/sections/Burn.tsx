@@ -4,8 +4,14 @@ import { ReactComponent as StakedAPRIcon } from "assets/icons/StakedAPR.svg"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { SBurnContainer } from "./Burn.styled"
+import { useTranslation } from "react-i18next"
 
 export const Burn = () => {
+  const { t, i18n } = useTranslation()
+
+  const toBeBurned = 2455;
+  const fees = 1455;
+
   return (
     <SBurnContainer>
       <div>
@@ -18,10 +24,10 @@ export const Burn = () => {
           icon={<StakingRewardIcon />}
         />
         <Text color="brightBlue300" sx={{ my: "10px" }}>
-          To be burned:
+          {t("stats.lrna.burn.toBeBurned")}
         </Text>
         <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
-          2 455 LRNA
+          {i18n.format(toBeBurned, "bignumber")} LRNA
         </Text>
         <Text color="darkBlue200" fs={14}>
           ≈$59509,2
@@ -34,10 +40,10 @@ export const Burn = () => {
           icon={<StakedAPRIcon />}
         />
         <Text color="brightBlue300" sx={{ my: "10px" }}>
-          Protocol fees last 24h
+          {t("stats.lrna.burn.fees")}
         </Text>
         <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
-          1 455 LRNA
+          {i18n.format(fees, "bignumber")} LRNA
         </Text>
         <Text color="darkBlue200" fs={14}>
           ≈$24.24
