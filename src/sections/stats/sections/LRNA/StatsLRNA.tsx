@@ -6,7 +6,7 @@ import { theme } from "theme"
 import { SContainerVertical } from "./StatsLRNA.styled"
 import { PieChart } from "./components/PieChart/PieChart"
 import { Distribution } from "./components/Distribution/Distribution"
-import { StatsTiles } from "../../components/tiles/StatsTiles"
+import { StatsTiles } from "../../components/StatsTiles/StatsTiles"
 import { RecentTradesTableWrapper } from "../../components/RecentTradesTable/RecentTradesTableWrapper"
 
 const StatsLRNAData = () => {

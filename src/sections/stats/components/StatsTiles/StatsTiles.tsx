@@ -1,4 +1,4 @@
-import { STATS_TILES } from "./StastTiles.util"
+import { STATS_TILES } from "./StatsTiles.util"
 import { SContainer } from "./StatsTiles.styled"
 import { StatsTilesTile } from "./tile/StatsTilesTile"
 
