@@ -4,10 +4,10 @@ import { isApiLoaded } from "utils/helpers"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { SContainerVertical } from "./StatsLRNA.styled"
-import { PieChart } from "./components/PieChart/PieChart"
 import { Distribution } from "./components/Distribution/Distribution"
 import { StatsTiles } from "../../components/StatsTiles/StatsTiles"
 import { RecentTradesTableWrapper } from "../../components/RecentTradesTable/RecentTradesTableWrapper"
+import { Burn } from "./sections/Burn"
 
 const StatsLRNAData = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -27,9 +27,7 @@ const StatsLRNAData = () => {
           </SContainerVertical>
         )}
       </div>
-      <SContainerVertical sx={{ width: "100%", p: 40 }}>
-        <PieChart percentage={20} loading={false} />
-      </SContainerVertical>
+      <Burn />
       <StatsTiles />
       <RecentTradesTableWrapper />
     </div>
