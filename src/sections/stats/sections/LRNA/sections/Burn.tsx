@@ -5,8 +5,8 @@ import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { SBurnContainer } from "./Burn.styled"
 import { useTranslation } from "react-i18next"
-import { useAssetMeta } from 'api/assetMeta'
-import { useApiIds } from 'api/consts'
+import { useAssetMeta } from "api/assetMeta"
+import { useApiIds } from "api/consts"
 
 export const Burn = () => {
   const { t } = useTranslation()
@@ -32,7 +32,10 @@ export const Burn = () => {
           {t("stats.lrna.burn.toBeBurned")}
         </Text>
         <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
-          {t('value.tokenWithSymbol', { value: toBeBurned, symbol: lrnaMeta.data?.symbol })}
+          {t("value.tokenWithSymbol", {
+            value: toBeBurned,
+            symbol: lrnaMeta.data?.symbol,
+          })}
         </Text>
         <Text color="darkBlue200" fs={14}>
           ≈$59509,2
@@ -48,7 +51,10 @@ export const Burn = () => {
           {t("stats.lrna.burn.fees")}
         </Text>
         <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
-          {t('value.tokenWithSymbol', { value: fees, symbol: lrnaMeta.data?.symbol })}
+          {t("value.tokenWithSymbol", {
+            value: fees,
+            symbol: lrnaMeta.data?.symbol,
+          })}
         </Text>
         <Text color="darkBlue200" fs={14}>
           ≈$24.24
