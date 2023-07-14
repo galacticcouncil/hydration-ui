@@ -24,8 +24,10 @@ export const StatsOverviewData = () => {
         {isDesktop && (
           <SContainerVertical
             sx={{
-              width: "100%",
               p: 24,
+              justify: "space-between",
+              flexGrow: 3,
+              gap: 0,
             }}
           >
             <ChartWrapper />

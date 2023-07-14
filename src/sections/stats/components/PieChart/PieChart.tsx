@@ -27,12 +27,12 @@ type PieChartProps = {
 }
 
 export const PieChart = ({ data, label }: PieChartProps) => {
-  if (!data) return <PieSkeleton />
-
-  const tvlTotal = data.reduce(
+  const tvlTotal = data?.reduce(
     (acc, omnipoolAsset) => omnipoolAsset.tvl.plus(acc),
     BN_0,
   )
+
+  if (!data || tvlTotal.isNaN()) return <PieSkeleton />
 
   const slices = data
     ?.reduce<TSlice[]>((acc, omnipoolAsset) => {
