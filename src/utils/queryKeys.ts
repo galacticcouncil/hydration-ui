@@ -96,6 +96,8 @@ export const QUERY_KEYS = {
     "totalIssuance",
     lpToken?.toString(),
   ],
+  LRNATotalIssuance: () => ["LRNATotalIssuance"],
+  LRNAOmnipoolBalance: () => ["LRNAOmnipoolBalance"],
   totalLiquidities: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "totalLiquidities",
