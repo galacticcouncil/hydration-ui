@@ -13,7 +13,7 @@ export const Charts = ({
   const stats = useStats({
     timeframe,
   })
-  console.log(stats)
+
   return type === "volume" ? (
     <BarChart
       data={stats.data}
