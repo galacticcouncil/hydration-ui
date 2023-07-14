@@ -1,39 +1,83 @@
 import { useState } from "react"
-import { SChartTab } from "./ChartWrapper.styled"
-import { BarChartComp } from "./components/BarChart/BarChart"
+import {
+  SChartTab,
+  STimeframeContainer,
+  STimeframeEl,
+} from "./ChartWrapper.styled"
 import { useApiPromise } from "utils/api"
 import { isApiLoaded } from "utils/helpers"
 import { useTranslation } from "react-i18next"
+import { Charts } from "./components/Charts/Charts"
+import { AreaChart } from "components/Charts/AreaChart/AreaChart"
+import { StatsTimeframe } from "api/stats"
 
-type ChartType = "tvl" | "volume"
+export type ChartType = "tvl" | "volume"
 
 export const ChartWrapper = () => {
   const { t } = useTranslation()
-  const [chartType, setChartType] = useState<ChartType>("volume")
+  const [chartType, setChartType] = useState<ChartType>("tvl")
+  const [timeframe, setTimeframe] = useState<StatsTimeframe>(
+    StatsTimeframe["ALL"],
+  )
   const api = useApiPromise()
   const isApi = isApiLoaded(api)
 
-  if (!isApi) return null
-
   return (
     <>
-      <div sx={{ flex: "row", gap: 12, justify: ["end", "start"] }}>
-        <SChartTab
-          aria-label="total value locked"
-          active={chartType === "tvl"}
-          onClick={() => setChartType("tvl")}
-        >
-          {t("stats.overview.chart.switcher.tvl")}
-        </SChartTab>
-        <SChartTab
-          aria-label="24 volume"
-          active={chartType === "volume"}
-          onClick={() => setChartType("volume")}
-        >
-          {t("stats.overview.chart.switcher.volume")}
-        </SChartTab>
+      <div
+        sx={{
+          flex: ["row-reverse", "column"],
+          gap: 40,
+          justify: "space-between",
+        }}
+      >
+        <div sx={{ flex: "row", gap: [4, 12], justify: ["end", "start"] }}>
+          <SChartTab
+            disabled={!isApi}
+            aria-label="total value locked"
+            active={chartType === "tvl"}
+            onClick={() => setChartType("tvl")}
+          >
+            {t("stats.overview.chart.switcher.tvl")}
+          </SChartTab>
+          <SChartTab
+            disabled={!isApi}
+            aria-label="24 volume"
+            active={chartType === "volume"}
+            onClick={() => setChartType("volume")}
+          >
+            {t("stats.overview.chart.switcher.volume")}
+          </SChartTab>
+        </div>
+        <STimeframeContainer>
+          <STimeframeEl
+            disabled={!isApi}
+            active={timeframe === StatsTimeframe["ALL"]}
+            onClick={() => setTimeframe(StatsTimeframe["ALL"])}
+          >
+            {t("stats.overview.chart.timeframe.all")}
+          </STimeframeEl>
+          <STimeframeEl
+            disabled={!isApi}
+            active={timeframe === StatsTimeframe["WEEKLY"]}
+            onClick={() => setTimeframe(StatsTimeframe["WEEKLY"])}
+          >
+            {t("stats.overview.chart.timeframe.week")}
+          </STimeframeEl>
+          <STimeframeEl
+            disabled={!isApi}
+            active={timeframe === StatsTimeframe["DAILY"]}
+            onClick={() => setTimeframe(StatsTimeframe["DAILY"])}
+          >
+            {t("stats.overview.chart.timeframe.day")}
+          </STimeframeEl>
+        </STimeframeContainer>
       </div>
-      {chartType === "volume" && <BarChartComp />}
+      {isApi ? (
+        <Charts type={chartType} timeframe={timeframe} />
+      ) : (
+        <AreaChart data={[]} loading error={false} />
+      )}
     </>
   )
 }

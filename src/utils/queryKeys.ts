@@ -2,6 +2,7 @@ import type { u32 } from "@polkadot/types"
 import { u128 } from "@polkadot/types-codec"
 import type { AccountId32 } from "@polkadot/types/interfaces"
 import { CodecHash } from "@polkadot/types/interfaces/runtime"
+import { StatsTimeframe } from "api/stats"
 import type BigNumber from "bignumber.js"
 import { Maybe } from "utils/helpers"
 
@@ -269,4 +270,12 @@ export const QUERY_KEYS = {
   assetList: ["assetList"],
   referendums: [QUERY_KEY_PREFIX, "referendums"],
   referendumInfo: (id: string) => [QUERY_KEY_PREFIX, id, "referendumInfo"],
+  stats: (timeframe?: StatsTimeframe, assetSymbol?: string) => {
+    const key = ["stats"]
+
+    if (timeframe) key.push(timeframe)
+    if (assetSymbol) key.push(assetSymbol)
+
+    return key
+  },
 } as const

@@ -5,30 +5,46 @@ import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import {
   Bar,
-  BarChart,
+  BarChart as BarRecharts,
   BarProps,
   Cell,
   ResponsiveContainer,
   XAxis,
 } from "recharts"
 import { theme } from "theme"
-import { useAssetsVolumeChart } from "./BarChart.utils"
+import { StatsData } from "api/stats"
+import { format } from "date-fns"
+import { BarChartSkeleton } from "./BarChartSkeleton"
+import { Maybe } from "utils/helpers"
 
-type BarItemProps = Required<NonNullable<BarProps["data"]>[number]> &
-  ReturnType<typeof useAssetsVolumeChart>["data"][number]
+const MIN_TO_SHOW_CHART = 5
 
-export const BarChartComp = () => {
+type BarChartProps = {
+  data: Maybe<Array<StatsData>>
+  error: boolean
+  loading: boolean
+}
+
+type BarItemProps = Required<NonNullable<BarProps["data"]>[number]> & StatsData
+
+export const BarChart = ({ data, loading, error }: BarChartProps) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [activeBar, setActiveBar] = useState<BarItemProps | undefined>(
     undefined,
   )
-  const { data } = useAssetsVolumeChart()
+
+  if (loading) return <BarChartSkeleton state="loading" />
+
+  if (error) return <BarChartSkeleton state="error" />
+
+  if (!data?.length || data.length < MIN_TO_SHOW_CHART)
+    return <BarChartSkeleton state="noData" />
 
   return (
     <div css={{ position: "relative" }}>
       {activeBar && <Label item={activeBar} />}
       <ResponsiveContainer width="100%" height={isDesktop ? 600 : 400}>
-        <BarChart data={data}>
+        <BarRecharts data={data}>
           <defs>
             <linearGradient id="gradient" x1=".5" x2=".5" y2="1">
               <stop offset=".455" stopColor="#85d1ff" stopOpacity=".61" />
@@ -37,22 +53,23 @@ export const BarChartComp = () => {
           </defs>
 
           <XAxis
-            dataKey="hours"
+            dataKey="interval"
             height={30}
             tick={{ fontSize: 12, fill: "white" }}
+            tickFormatter={(data) => format(new Date(data), "MMM  dd")}
           />
 
           <Bar
-            dataKey="dollarValue"
+            dataKey="volume_usd"
             onMouseLeave={() => setActiveBar(undefined)}
             onMouseOver={(bar) => {
-              if (bar.hours !== activeBar?.hours) {
+              if (bar.interval !== activeBar?.interval) {
                 setActiveBar(bar)
               }
             }}
           >
             {data.map((entry, index) => {
-              const isActive = entry.hours === activeBar?.hours
+              const isActive = entry.interval === activeBar?.interval
               return (
                 <Cell
                   cursor="pointer"
@@ -64,7 +81,7 @@ export const BarChartComp = () => {
               )
             })}
           </Bar>
-        </BarChart>
+        </BarRecharts>
       </ResponsiveContainer>
     </div>
   )
@@ -72,6 +89,8 @@ export const BarChartComp = () => {
 
 const Label = ({ item }: { item: BarItemProps }) => {
   const { t } = useTranslation()
+
+  const date = new Date(item.interval)
 
   return (
     <>
@@ -93,11 +112,13 @@ const Label = ({ item }: { item: BarItemProps }) => {
           }}
         >
           {t("stats.overview.chart.tvl.label.date", {
-            date: item.date,
+            date,
           })}
         </Text>
         <Text fs={18} color="basic100">
-          {item.hours}
+          {t("stats.overview.chart.tvl.label.time", {
+            date,
+          })}
         </Text>
       </div>
       <div
@@ -110,7 +131,7 @@ const Label = ({ item }: { item: BarItemProps }) => {
         }}
       >
         <Text fs={24}>
-          <DisplayValue value={item.dollarValue} isUSD />
+          <DisplayValue value={item.volume_usd} isUSD />
         </Text>
       </div>
     </>

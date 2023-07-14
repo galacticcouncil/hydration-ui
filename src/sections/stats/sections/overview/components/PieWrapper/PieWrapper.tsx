@@ -73,17 +73,10 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
       )}
 
       {activeSection === "overview" ? (
-        !isLoading ? (
-          <>
-            <PieChart data={data} />
-            {pieChartValues}
-          </>
-        ) : (
-          <>
-            <PieSkeleton />
-            {pieChartValues}
-          </>
-        )
+        <>
+          {!isLoading ? <PieChart data={data} /> : <PieSkeleton />}
+          {pieChartValues}
+        </>
       ) : (
         <ChartWrapper />
       )}
