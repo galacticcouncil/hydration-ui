@@ -2,7 +2,6 @@ import { useAssetList } from "api/assetDetails"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { STABLECOIN_ID } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import {
   SCircle,
@@ -21,7 +20,8 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
 
   const onSelectUSD = () => {
     displayAsset.update({
-      id: STABLECOIN_ID,
+      id: displayAsset.stableCoinId,
+      stableCoinId: displayAsset.stableCoinId,
       symbol: "$",
       isRealUSD: true,
       isStableCoin: false,
@@ -30,7 +30,8 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
   }
   const onSelectStableCoin = () => {
     displayAsset.update({
-      id: STABLECOIN_ID,
+      id: displayAsset.stableCoinId,
+      stableCoinId: displayAsset.stableCoinId,
       symbol: "$",
       isRealUSD: false,
       isStableCoin: true,
@@ -40,6 +41,7 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
   const onSelectAsset = (asset: { id: string; symbol: string }) => {
     displayAsset.update({
       id: asset.id,
+      stableCoinId: displayAsset.stableCoinId,
       symbol: asset.symbol,
       isRealUSD: false,
       isStableCoin: false,

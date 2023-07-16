@@ -32,7 +32,7 @@ export const PieChart = ({ data, label }: PieChartProps) => {
     BN_0,
   )
 
-  if (!data || tvlTotal.isNaN()) return <PieSkeleton />
+  if (!data || tvlTotal.isNaN() || tvlTotal.isZero()) return <PieSkeleton />
 
   const slices = data
     ?.reduce<TSlice[]>((acc, omnipoolAsset) => {
