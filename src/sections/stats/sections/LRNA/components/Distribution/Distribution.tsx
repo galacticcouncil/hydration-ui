@@ -11,17 +11,24 @@ import { ChartLabel } from "./ChartLabel"
 import { DoughnutChart } from "../../../../components/DoughnutChart/DoughnutChart"
 import { useApiPromise } from "utils/api"
 import {
+  makePercent,
+  useLRNAMeta,
   useLRNAOmnipoolBalance,
   useLRNATotalIssuance,
 } from "./Distribution.utils"
+import { DistributionSliceLabel } from "./DistributionSliceLabel"
 
 export const Distribution = () => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const api = useApiPromise()
+
+  const meta = useLRNAMeta(api)
   const totalIssuanceQuery = useLRNATotalIssuance(api)
   const omnipoolBalanceQuery = useLRNAOmnipoolBalance(api)
+
+  const symbol = meta?.data?.data?.symbol?.toString()
 
   const [activeSection, setActiveSection] = useState<"overview" | "chart">(
     "overview",
@@ -34,13 +41,12 @@ export const Distribution = () => {
   const outsideOmnipool = hasData
     ? totalIssuanceQuery.data.minus(omnipoolBalanceQuery.data)
     : undefined
-  const outsidePercent =
-    hasData && outsideOmnipool
-      ? outsideOmnipool.div(totalIssuanceQuery.data).multipliedBy(100)
-      : undefined
-  const insidePercent = hasData
-    ? omnipoolBalanceQuery.data.div(totalIssuanceQuery.data).multipliedBy(100)
-    : undefined
+
+  const outsidePercent = makePercent(outsideOmnipool, totalIssuanceQuery.data)
+  const insidePercent = makePercent(
+    omnipoolBalanceQuery.data,
+    totalIssuanceQuery.data,
+  )
 
   const pieChartValues = (
     <div sx={{ flex: "column", gap: 20 }}>
@@ -85,13 +91,25 @@ export const Distribution = () => {
             <DoughnutChart
               slices={[
                 {
-                  label: <div sx={{ color: "white" }}>in label todo</div>,
+                  label: (
+                    <DistributionSliceLabel
+                      text="Inside Omnipool"
+                      symbol={symbol}
+                      percentage={insidePercent?.toNumber() ?? 0}
+                    />
+                  ),
                   percentage: insidePercent?.toNumber() ?? 0,
                   color: "#A6DDFF",
                   name: "in",
                 },
                 {
-                  label: <div sx={{ color: "white" }}>out label todo</div>,
+                  label: (
+                    <DistributionSliceLabel
+                      text="Outside of Omnipool"
+                      symbol={symbol}
+                      percentage={outsidePercent?.toNumber() ?? 0}
+                    />
+                  ),
                   percentage: outsidePercent?.toNumber() ?? 0,
                   color: "#2489FF",
                   name: "out",

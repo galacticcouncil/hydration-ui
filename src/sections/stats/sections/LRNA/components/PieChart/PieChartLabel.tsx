@@ -1,14 +1,16 @@
 import { Text } from "components/Typography/Text/Text"
 
-export const PieChartLabel = () => {
+type Props = {
+  state: 'BURNING' | 'BIDDING'
+}
+export const PieChartLabel = ({ state }: Props) => {
   // const { t } = useTranslation()
 
   return (
     <>
-      {/*<Text fs={12}>{t("staking.dashboard.stats.chart.label")}</Text>*/}
       <Text fs={12}>status:</Text>
       <Text fs={20} font="FontOver">
-        BURNING
+        {state}
       </Text>
     </>
   )
