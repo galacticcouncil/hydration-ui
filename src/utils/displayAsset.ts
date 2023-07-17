@@ -5,7 +5,7 @@ import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import { STABLECOIN_ID, STABLECOIN_SYMBOL } from "./constants"
+import { STABLECOIN_SYMBOL } from "./constants"
 import { QUERY_KEYS } from "./queryKeys"
 
 type Props = { id: string; amount: BigNumber }
@@ -79,11 +79,12 @@ export const useDisplayPrices = (
 }
 
 type Asset = {
-  id: string
+  id: string | undefined
   symbol: string
   isRealUSD: boolean
   isStableCoin: boolean
   isDollar?: boolean
+  stableCoinId: string | undefined
 }
 export type DisplayAssetStore = Asset & {
   update: (asset: Asset) => void
@@ -92,7 +93,8 @@ export type DisplayAssetStore = Asset & {
 export const useDisplayAssetStore = create<DisplayAssetStore>()(
   persist(
     (set) => ({
-      id: STABLECOIN_ID,
+      id: undefined,
+      stableCoinId: undefined,
       symbol: "$",
       isDollar: true,
       isRealUSD: false,
