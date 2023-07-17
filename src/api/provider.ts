@@ -1,6 +1,7 @@
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import * as definitions from "interfaces/voting/definitions"
+import { useDisplayAssetStore } from "utils/displayAsset"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
@@ -71,15 +72,48 @@ export const useProviderRpcUrlStore = create(
 )
 
 export const useProvider = (rpcUrl?: string) => {
+  const displayAsset = useDisplayAssetStore()
+
   return useQuery(
     QUERY_KEYS.provider(rpcUrl ?? import.meta.env.VITE_PROVIDER_URL),
-    async ({ queryKey: [_, api] }) => {
-      const provider = new WsProvider(api)
+    async ({ queryKey: [_, url] }) => {
+      const provider = new WsProvider(url)
       const types = Object.values(definitions).reduce(
         (res, { types }): object => ({ ...res, ...types }),
         {},
       )
-      return await ApiPromise.create({ provider, types })
+
+      const api = await ApiPromise.create({ provider, types })
+
+      const { id, isStableCoin, update } = displayAsset
+      const assets = await api.query.assetRegistry.assetMetadataMap.entries()
+
+      let stableCoinId: string | undefined
+
+      // set USDT as a stable token
+      stableCoinId = assets
+        .find(([_, data]) => data.unwrap().symbol.toUtf8() === "USDT")?.[0]
+        .args[0].toString()
+
+      // set DAI as a stable token if there is no USDT
+      if (!stableCoinId) {
+        stableCoinId = assets
+          .find(([_, data]) => data.unwrap().symbol.toUtf8() === "DAI")?.[0]
+          .args[0].toString()
+      }
+
+      if (stableCoinId && isStableCoin && id !== stableCoinId) {
+        // setting stable coin id from asset registry
+        update({
+          id: stableCoinId,
+          symbol: "$",
+          isRealUSD: false,
+          isStableCoin: true,
+          stableCoinId,
+        })
+      }
+
+      return api
     },
     { staleTime: Infinity },
   )

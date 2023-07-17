@@ -6,7 +6,7 @@ import { useAllTrades } from "api/volume"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { getFloatingPointAmount } from "utils/balance"
-import { STABLECOIN_ID } from "utils/constants"
+import { useDisplayAssetStore } from "utils/displayAsset"
 
 const withoutRefresh = true
 const VISIBLE_TRADE_NUMBER = 10
@@ -15,13 +15,14 @@ export const useRecentTradesTableData = (assetId?: string) => {
   const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
   const apiIds = useApiIds()
   const allTrades = useAllTrades()
+  const displayAsset = useDisplayAssetStore()
 
   const omnipoolAssetsIds = omnipoolAssets.data?.map((a) => a.id) ?? []
 
   const assetMetas = useAssetMetaList(omnipoolAssetsIds)
   const spotPrices = useSpotPrices(
     omnipoolAssetsIds,
-    STABLECOIN_ID,
+    displayAsset.stableCoinId,
     withoutRefresh,
   )
 
