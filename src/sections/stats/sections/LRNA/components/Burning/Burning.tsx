@@ -11,30 +11,36 @@ import { useApiPromise } from "utils/api"
 import { formatValue } from "../../StatsLRNA.utils"
 import BigNumber from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { useMemo } from 'react'
-import { useDisplayAssetStore } from 'utils/displayAsset'
+import { useMemo } from "react"
+import { useDisplayAssetStore } from "utils/displayAsset"
+import { useSpotPrice } from "api/spotPrice"
 export const Burning = () => {
   const api = useApiPromise()
   const { t } = useTranslation()
 
-  const imbalance = useHubAssetImbalance(api)
   const meta = useLRNAMeta(api)
-
-  const imbalanceValue = imbalance?.data?.value
   const symbol = meta.data?.data?.symbol
 
-  const toBeBurned = formatValue(
-    imbalanceValue ? new BigNumber(imbalanceValue.toHex()) : BN_0,
-    meta.data,
-  )
+  const hubAssetImbalance = useHubAssetImbalance(api)
+  const imbalance = hubAssetImbalance?.data?.value
+    ? new BigNumber(hubAssetImbalance.data.value.toHex())
+    : BN_0
+
+  const toBeBurned = formatValue(imbalance, meta.data)
 
   const displayAsset = useDisplayAssetStore()
-
-  // console.log('display asset', displayAsset.stableCoinId)
+  const spotPrice = useSpotPrice(meta.data?.id, displayAsset.stableCoinId)
+  const toBeBurnedSpotPrice = formatValue(
+    spotPrice?.data?.spotPrice.multipliedBy(imbalance),
+    meta.data,
+  ).toNumber()
 
   // TODO: fetch historical value form indexer
-  const maxHistoricalValue = 4567;
-  const percentage = useMemo(() => toBeBurned.times(100).div(maxHistoricalValue).toNumber(), [maxHistoricalValue, toBeBurned]);
+  const maxHistoricalValue = 4567
+  const percentage = useMemo(
+    () => toBeBurned.times(100).div(maxHistoricalValue).toNumber(),
+    [maxHistoricalValue, toBeBurned],
+  )
   const fees = 1455
 
   return (
@@ -58,7 +64,8 @@ export const Burning = () => {
           })}
         </Text>
         <Text color="darkBlue200" fs={14}>
-          ≈$59509,2
+          ≈{displayAsset.symbol}
+          {toBeBurnedSpotPrice}
         </Text>
       </div>
       <div>
