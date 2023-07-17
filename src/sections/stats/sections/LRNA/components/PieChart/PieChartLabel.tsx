@@ -1,7 +1,7 @@
 import { Text } from "components/Typography/Text/Text"
 
 type Props = {
-  state: 'BURNING' | 'BIDDING'
+  state: "BURNING" | "BIDDING"
 }
 export const PieChartLabel = ({ state }: Props) => {
   // const { t } = useTranslation()

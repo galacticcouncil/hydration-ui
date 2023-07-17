@@ -129,4 +129,6 @@ export const getHubAssetImbalance = (api: ApiPromise) =>
   api.query.omnipool.hubAssetImbalance()
 
 export const useHubAssetImbalance = (api: ApiPromise) =>
-  useQuery(QUERY_KEYS.hubAssetImbalance(), () => getHubAssetImbalance(api), { enabled: !!api })
+  useQuery(QUERY_KEYS.hubAssetImbalance(), () => getHubAssetImbalance(api), {
+    enabled: !!api,
+  })

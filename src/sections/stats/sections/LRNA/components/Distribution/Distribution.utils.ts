@@ -27,7 +27,11 @@ const getLRNAOmnipoolBalance = async (api: ApiPromise) => {
   const meta = await getLRNAMeta(api)
   const shiftBy = meta.data ? meta.data.decimals.neg().toNumber() : 0
 
-  const balance = await getTokenBalance(api, OMNIPOOL_ACCOUNT_ADDRESS, meta.id)()
+  const balance = await getTokenBalance(
+    api,
+    OMNIPOOL_ACCOUNT_ADDRESS,
+    meta.id,
+  )()
   return balance.total.shiftedBy(shiftBy).dp(0)
 }
 

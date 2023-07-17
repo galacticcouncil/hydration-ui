@@ -13,7 +13,7 @@ export const SPieChart = styled(PieChartComponent)`
   );
 `
 type Props = Omit<ComponentProps<typeof PieChartComponent>, "label"> & {
-  state: 'BURNING' | 'BIDDING'
+  state: "BURNING" | "BIDDING"
 }
 
 export const PieChart = ({ state, ...props }: Props) => (

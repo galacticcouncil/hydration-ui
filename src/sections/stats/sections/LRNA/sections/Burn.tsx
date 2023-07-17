@@ -7,8 +7,8 @@ import { SBurnContainer } from "./Burn.styled"
 import { useTranslation } from "react-i18next"
 import { useAssetMeta } from "api/assetMeta"
 import { useApiIds } from "api/consts"
-import { useHubAssetImbalance } from 'api/omnipool'
-import { useApiPromise } from 'utils/api'
+import { useHubAssetImbalance } from "api/omnipool"
+import { useApiPromise } from "utils/api"
 
 export const Burn = () => {
   const { t } = useTranslation()
@@ -18,13 +18,19 @@ export const Burn = () => {
   const fees = 1455
 
   const apiIds = useApiIds()
-  const imbalance = useHubAssetImbalance(api);
+  const imbalance = useHubAssetImbalance(api)
   const lrnaMeta = useAssetMeta(apiIds.data?.hubId)
 
   return (
     <SBurnContainer>
       <div>
-        <PieChart percentage={20} loading={false} state={imbalance.data?.negative?.toPrimitive() ? "BURNING" : "BIDDING"} />
+        <PieChart
+          percentage={20}
+          loading={false}
+          state={
+            imbalance.data?.negative?.toPrimitive() ? "BURNING" : "BIDDING"
+          }
+        />
       </div>
       <div>
         <Icon
