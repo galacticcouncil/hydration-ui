@@ -28,6 +28,7 @@ export const ChartWrapper = ({ assetSymbol }: { assetSymbol?: string }) => {
         sx={{
           flex: ["row-reverse", "column"],
           justify: "space-between",
+          gap: 20,
         }}
       >
         <div sx={{ flex: "row", gap: [4, 12], justify: ["end", "start"] }}>

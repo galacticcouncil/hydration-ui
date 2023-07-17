@@ -120,11 +120,10 @@ const Label = ({ item }: { item: BarItemProps }) => {
         </Text>
       </div>
       <div
-        sx={{ flex: "row", gap: 4, align: "baseline" }}
+        sx={{ flex: "row", gap: 4, align: "baseline", top: [-100, -50] }}
         css={{
           position: "absolute",
           left: 0,
-          top: "-50px",
           zIndex: 1,
         }}
       >

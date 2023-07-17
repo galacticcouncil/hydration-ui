@@ -3,7 +3,12 @@ import {
   BackButton,
   SOmnipoolAssetContainer,
 } from "./StatsOmnipoolAsset.styled"
-import { MakeGenerics, useNavigate, useSearch } from "@tanstack/react-location"
+import {
+  MakeGenerics,
+  Navigate,
+  useNavigate,
+  useSearch,
+} from "@tanstack/react-location"
 import { Text } from "components/Typography/Text/Text"
 import { Icon } from "components/Icon/Icon"
 import { useAsset } from "api/asset"
@@ -23,7 +28,6 @@ import { RecentTradesTableWrapperData } from "sections/stats/components/RecentTr
 import { RecentTradesTableSkeleton } from "sections/stats/components/RecentTradesTable/skeleton/RecentTradesTableSkeleton"
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 import { SStatsCardContainer } from "sections/stats/StatsPage.styled"
-//import { useUniquesAsset } from "api/uniques"
 
 type SearchGenerics = MakeGenerics<{
   Search: { asset: number }
@@ -39,7 +43,7 @@ const OmnipoolAssetNavigation = () => {
         <BackButton
           name="Expand"
           icon={<ChevronDownIcon />}
-          onClick={() => navigate({ to: "" })} // mb add a scroll position
+          onClick={() => navigate({ to: "" })}
           size={24}
         />
         <Text fs={13} tTransform="uppercase" color="white">
@@ -134,18 +138,21 @@ export const StatsOmnipoolAsset = () => {
   const search = useSearch<SearchGenerics>()
   const assetId = search.asset?.toString()
 
-  if (!isApiLoaded(api) || !assetId) return <StatsOmnipoolAssetSkeleton />
+  if (!assetId) return <Navigate to="/stats" />
+
+  if (!isApiLoaded(api)) return <StatsOmnipoolAssetSkeleton />
 
   return <StatsOmnipoolAssetData assetId={assetId} />
 }
 
 const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
   const overviewData = useOmnipoolOverviewData()
-  //const uniques = useUniquesAsset("1337")
-  //console.log(uniques)
+
   const omnipoolAsset = overviewData.data.find(
     (overview) => overview.id === assetId,
   )
+
+  if (!omnipoolAsset) return <Navigate to="/stats" />
 
   const omnipollTvl = overviewData.data.reduce(
     (acc, asset) => acc.plus(asset.tvl),
@@ -160,7 +167,7 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
       <SOmnipoolAssetContainer>
         <OmnipoolAssetNavigation />
         <OmnipoolAssetHeader assetId={assetId} tvl={omnipoolAsset.tvl} />
-        <div sx={{ flex: ["column", "row"], mb: 20 }}>
+        <div sx={{ flex: ["column", "row"], gap: 20, mb: 20 }}>
           <AssetStats
             data={{
               vlm: omnipoolAsset.volume,
@@ -170,7 +177,7 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
             }}
           />
           <SStatsCardContainer
-            sx={{ width: "100%", height: [500, 600] }}
+            sx={{ width: "100%", height: [500, 600], pt: [60, 20] }}
             css={{ position: "relative" }}
           >
             <ChartWrapper assetSymbol={omnipoolAsset.symbol} />
@@ -189,7 +196,7 @@ const StatsOmnipoolAssetSkeleton = () => {
     <SOmnipoolAssetContainer>
       <OmnipoolAssetNavigation />
       <OmnipoolAssetHeader loading />
-      <div sx={{ flex: ["column", "row"], mb: 20 }}>
+      <div sx={{ flex: ["column", "row"], gap: 20, mb: 20 }}>
         <AssetStats loading />
         <SStatsCardContainer
           sx={{ width: "100%", height: [500, 600] }}

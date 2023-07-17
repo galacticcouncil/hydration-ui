@@ -27,7 +27,7 @@ export const StatsOverviewData = () => {
               p: 24,
               justify: "space-between",
               flexGrow: 3,
-              gap: 0,
+              gap: 20,
             }}
           >
             <ChartWrapper />
