@@ -68,7 +68,11 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
 
   return (
     <SContainerVertical
-      sx={{ width: ["100%", "fit-content"], height: 500, p: [20, 40] }}
+      sx={{
+        width: ["100%", "fit-content"],
+        height: [500, "100%"],
+        p: [20, 40],
+      }}
     >
       {!isDesktop && (
         <ChartSwitchMobile onClick={setActiveSection} active={activeSection} />
