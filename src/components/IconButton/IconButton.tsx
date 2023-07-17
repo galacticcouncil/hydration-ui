@@ -8,6 +8,7 @@ export type IconButtonProps = {
   round?: boolean
   onClick?: () => void
   icon?: ReactNode
+  size?: number
 }
 
 export const IconButton: FC<IconButtonProps> = ({
@@ -15,9 +16,16 @@ export const IconButton: FC<IconButtonProps> = ({
   onClick = noop,
   icon,
   name,
+  size = 34,
   ...rest
 }) => (
-  <SIconButton round={round} onClick={onClick} {...rest} aria-label={name}>
+  <SIconButton
+    round={round}
+    size={size}
+    onClick={onClick}
+    {...rest}
+    aria-label={name}
+  >
     <Icon icon={icon} />
   </SIconButton>
 )

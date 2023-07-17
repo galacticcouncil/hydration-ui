@@ -8,6 +8,7 @@ import { Maybe } from "utils/helpers"
 export const useAssetMeta = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
   return useQuery(QUERY_KEYS.assetsMeta, getAllAssetMeta(api), {
+    enabled: !!id,
     select: (data) => data.find((i) => i.id === id?.toString()),
   })
 }

@@ -24,8 +24,8 @@ export type TradeType = {
 }
 
 export const getTradeVolume =
-  (indexerUrl: string, assetId: u32) => async () => {
-    const assetIn = assetId.toNumber()
+  (indexerUrl: string, assetId: string) => async () => {
+    const assetIn = Number(assetId)
     const after = addDays(new Date(), -1).toISOString()
 
     // This is being typed manually, as GraphQL schema does not
@@ -102,7 +102,10 @@ export const getAllTrades = (indexerUrl: string) => async () => {
   }
 }
 
-export function useTradeVolumes(assetIds: Maybe<u32>[], noRefresh?: boolean) {
+export function useTradeVolumes(
+  assetIds: Maybe<u32 | string>[],
+  noRefresh?: boolean,
+) {
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
   const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
@@ -116,7 +119,9 @@ export function useTradeVolumes(assetIds: Maybe<u32>[], noRefresh?: boolean) {
         ? QUERY_KEYS.tradeVolume(assetId)
         : QUERY_KEYS.tradeVolumeLive(assetId),
       queryFn:
-        assetId != null ? getTradeVolume(indexerUrl, assetId) : undefinedNoop,
+        assetId != null
+          ? getTradeVolume(indexerUrl, assetId.toString())
+          : undefinedNoop,
       enabled: !!assetId,
     })),
   })

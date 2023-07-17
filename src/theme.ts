@@ -182,6 +182,7 @@ const transitions = {
 
 const borderRadius = {
   stakingCard: 8,
+  default: 4,
 } as const
 
 export const theme = {
