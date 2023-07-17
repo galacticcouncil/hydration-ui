@@ -7,6 +7,7 @@ import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import BigNumber from "bignumber.js"
 import { getLRNAMeta } from "api/assetMeta"
 import { formatValue } from "../../StatsLRNA.utils"
+import { REFETCH_INTERVAL } from "utils/constants"
 
 const getLRNATotalIssuance = async (api: ApiPromise) => {
   const meta = await getLRNAMeta(api)
@@ -29,13 +30,13 @@ const getLRNAOmnipoolBalance = async (api: ApiPromise) => {
 export const useLRNATotalIssuance = (api: ApiPromise) =>
   useQuery(QUERY_KEYS.LRNATotalIssuance(), () => getLRNATotalIssuance(api), {
     enabled: !!api,
-    refetchInterval: 60000,
+    refetchInterval: REFETCH_INTERVAL,
   })
 export const useLRNAOmnipoolBalance = (api: ApiPromise) =>
   useQuery(
     QUERY_KEYS.LRNAOmnipoolBalance(),
     () => getLRNAOmnipoolBalance(api),
-    { enabled: !!api, refetchInterval: 60000 },
+    { enabled: !!api, refetchInterval: REFETCH_INTERVAL },
   )
 
 export const makePercent = (value?: BigNumber, total?: BigNumber) =>

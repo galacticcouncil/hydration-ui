@@ -5,6 +5,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { u128, u32 } from "@polkadot/types-codec"
 import { ITuple } from "@polkadot/types-codec/types"
 import { undefinedNoop } from "utils/helpers"
+import { REFETCH_INTERVAL } from "../utils/constants"
 
 export const useOmnipoolAsset = (id: u32 | string) => {
   const api = useApiPromise()
@@ -131,4 +132,5 @@ export const getHubAssetImbalance = (api: ApiPromise) =>
 export const useHubAssetImbalance = (api: ApiPromise) =>
   useQuery(QUERY_KEYS.hubAssetImbalance(), () => getHubAssetImbalance(api), {
     enabled: !!api,
+    refetchInterval: REFETCH_INTERVAL,
   })

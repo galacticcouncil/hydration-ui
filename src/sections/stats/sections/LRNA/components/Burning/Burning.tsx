@@ -11,6 +11,8 @@ import { useApiPromise } from "utils/api"
 import { formatValue } from "../../StatsLRNA.utils"
 import BigNumber from "bignumber.js"
 import { BN_0 } from "utils/constants"
+import { useMemo } from 'react'
+import { useDisplayAssetStore } from 'utils/displayAsset'
 export const Burning = () => {
   const api = useApiPromise()
   const { t } = useTranslation()
@@ -25,12 +27,20 @@ export const Burning = () => {
     imbalanceValue ? new BigNumber(imbalanceValue.toHex()) : BN_0,
     meta.data,
   )
+
+  const displayAsset = useDisplayAssetStore()
+
+  // console.log('display asset', displayAsset.stableCoinId)
+
+  // TODO: fetch historical value form indexer
+  const maxHistoricalValue = 4567;
+  const percentage = useMemo(() => toBeBurned.times(100).div(maxHistoricalValue).toNumber(), [maxHistoricalValue, toBeBurned]);
   const fees = 1455
 
   return (
     <SBurnContainer>
       <div>
-        <PieChart percentage={20} loading={false} />
+        <PieChart percentage={percentage} loading={false} />
       </div>
       <div>
         <Icon
