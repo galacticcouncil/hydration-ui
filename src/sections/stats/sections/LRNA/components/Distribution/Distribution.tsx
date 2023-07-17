@@ -12,11 +12,11 @@ import { DoughnutChart } from "../../../../components/DoughnutChart/DoughnutChar
 import { useApiPromise } from "utils/api"
 import {
   makePercent,
-  useLRNAMeta,
   useLRNAOmnipoolBalance,
   useLRNATotalIssuance,
 } from "./Distribution.utils"
 import { DistributionSliceLabel } from "./DistributionSliceLabel"
+import { useLRNAMeta } from "api/assetMeta"
 
 export const Distribution = () => {
   const { t } = useTranslation()

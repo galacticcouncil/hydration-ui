@@ -5,16 +5,27 @@ import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { SBurnContainer } from "./Burning.styled"
 import { useTranslation } from "react-i18next"
-import { useAssetMeta } from "api/assetMeta"
-import { useApiIds } from "api/consts"
+import { useLRNAMeta } from "api/assetMeta"
+import { useHubAssetImbalance } from "api/omnipool"
+import { useApiPromise } from "utils/api"
+import { formatValue } from "../../StatsLRNA.utils"
+import BigNumber from "bignumber.js"
+import { BN_0 } from "utils/constants"
 export const Burning = () => {
+  const api = useApiPromise()
   const { t } = useTranslation()
 
-  const toBeBurned = 2455
-  const fees = 1455
+  const imbalance = useHubAssetImbalance(api)
+  const meta = useLRNAMeta(api)
 
-  const apiIds = useApiIds()
-  const lrnaMeta = useAssetMeta(apiIds.data?.hubId)
+  const imbalanceValue = imbalance?.data?.value
+  const symbol = meta.data?.data?.symbol
+
+  const toBeBurned = formatValue(
+    imbalanceValue ? new BigNumber(imbalanceValue.toHex()) : BN_0,
+    meta.data,
+  )
+  const fees = 1455
 
   return (
     <SBurnContainer>
@@ -33,7 +44,7 @@ export const Burning = () => {
         <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
           {t("value.tokenWithSymbol", {
             value: toBeBurned,
-            symbol: lrnaMeta.data?.symbol,
+            symbol,
           })}
         </Text>
         <Text color="darkBlue200" fs={14}>
@@ -52,7 +63,7 @@ export const Burning = () => {
         <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
           {t("value.tokenWithSymbol", {
             value: fees,
-            symbol: lrnaMeta.data?.symbol,
+            symbol,
           })}
         </Text>
         <Text color="darkBlue200" fs={14}>
