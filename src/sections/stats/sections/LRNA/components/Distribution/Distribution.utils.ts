@@ -5,6 +5,7 @@ import { getTokenBalance } from "api/balances"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { getAssetMeta } from "api/assetMeta"
+import { OMNIPOOL_ACCOUNT_ADDRESS } from 'utils/api'
 
 const getLRNATotalIssuance = async (api: ApiPromise) => {
   const apiIds = await getApiIds(api)()
@@ -18,7 +19,7 @@ const getLRNATotalIssuance = async (api: ApiPromise) => {
 }
 
 const getLRNAOmnipoolBalance = async (api: ApiPromise) => {
-  const address = import.meta.env.VITE_OMNIPOOL_ADDR
+  const address = OMNIPOOL_ACCOUNT_ADDRESS
   const apiIds = await getApiIds(api)()
   const hubId = apiIds?.hubId
   const meta = await getAssetMeta(api, hubId)()
