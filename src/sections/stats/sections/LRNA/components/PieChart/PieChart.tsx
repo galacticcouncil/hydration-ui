@@ -12,10 +12,8 @@ export const SPieChart = styled(PieChartComponent)`
     rgba(246, 41, 124, 0) 645.15deg
   );
 `
-type Props = Omit<ComponentProps<typeof PieChartComponent>, "label"> & {
-  state: "BURNING" | "BIDDING"
-}
+type Props = Omit<ComponentProps<typeof PieChartComponent>, "label">
 
-export const PieChart = ({ state, ...props }: Props) => (
-  <SPieChart {...props} label={<PieChartLabel state={state} />} />
+export const PieChart = (props: Props) => (
+  <SPieChart {...props} label={<PieChartLabel />} />
 )
