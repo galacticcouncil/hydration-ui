@@ -189,7 +189,16 @@ const StatsOmnipoolAssetSkeleton = () => {
     <SOmnipoolAssetContainer>
       <OmnipoolAssetNavigation />
       <OmnipoolAssetHeader loading />
-      <AssetStats loading />
+      <div sx={{ flex: ["column", "row"], mb: 20 }}>
+        <AssetStats loading />
+        <SStatsCardContainer
+          sx={{ width: "100%", height: [500, 600] }}
+          css={{ position: "relative" }}
+        >
+          <ChartWrapper />
+        </SStatsCardContainer>
+      </div>
+
       <LiquidityProvidersTableWrapper />
       <Spacer size={[24, 60]} />
       <RecentTradesTableSkeleton />
