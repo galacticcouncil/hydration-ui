@@ -8,8 +8,8 @@ import { useMemo, useState } from "react"
 import { SContainerVertical } from "../../StatsOverview.styled"
 import { TOmnipoolOverviewData } from "../../data/OmnipoolOverview.utils"
 import { BN_0 } from "utils/constants"
-import { ChartWrapper } from "../ChartWrapper/ChartWrapper"
 import { useTranslation } from "react-i18next"
+import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 
 type PieWrapperProps = {
   data: TOmnipoolOverviewData
@@ -67,7 +67,9 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
   )
 
   return (
-    <SContainerVertical sx={{ width: ["100%", "fit-content"], p: [20, 40] }}>
+    <SContainerVertical
+      sx={{ width: ["100%", "fit-content"], height: 500, p: [20, 40] }}
+    >
       {!isDesktop && (
         <ChartSwitchMobile onClick={setActiveSection} active={activeSection} />
       )}

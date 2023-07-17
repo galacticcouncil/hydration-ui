@@ -1,19 +1,19 @@
 import { useState } from "react"
+import { useApiPromise } from "utils/api"
+import { isApiLoaded } from "utils/helpers"
+import { useTranslation } from "react-i18next"
+import { AreaChart } from "components/Charts/AreaChart/AreaChart"
+import { StatsTimeframe } from "api/stats"
 import {
   SChartTab,
   STimeframeContainer,
   STimeframeEl,
-} from "./ChartWrapper.styled"
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
-import { useTranslation } from "react-i18next"
-import { Charts } from "./components/Charts/Charts"
-import { AreaChart } from "components/Charts/AreaChart/AreaChart"
-import { StatsTimeframe } from "api/stats"
+} from "./ChartsWrapper.styled"
+import { Charts } from "./Charts"
 
 export type ChartType = "tvl" | "volume"
 
-export const ChartWrapper = () => {
+export const ChartWrapper = ({ assetSymbol }: { assetSymbol?: string }) => {
   const { t } = useTranslation()
   const [chartType, setChartType] = useState<ChartType>("tvl")
   const [timeframe, setTimeframe] = useState<StatsTimeframe>(
@@ -27,7 +27,6 @@ export const ChartWrapper = () => {
       <div
         sx={{
           flex: ["row-reverse", "column"],
-          gap: 40,
           justify: "space-between",
         }}
       >
@@ -74,7 +73,11 @@ export const ChartWrapper = () => {
         </STimeframeContainer>
       </div>
       {isApi ? (
-        <Charts type={chartType} timeframe={timeframe} />
+        <Charts
+          type={chartType}
+          timeframe={timeframe}
+          assetSymbol={assetSymbol}
+        />
       ) : (
         <AreaChart data={[]} loading error={false} />
       )}

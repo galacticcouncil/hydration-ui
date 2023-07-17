@@ -12,8 +12,8 @@ export const AssetStats = ({
   const { t } = useTranslation()
 
   return (
-    <div sx={{ flex: ["column", "row"], gap: 20, mb: 40 }}>
-      <div sx={{ flex: "column", gap: 20 }}>
+    <div sx={{ flex: ["column", "row"], gap: 20 }}>
+      <div sx={{ flex: "column", gap: 20, justify: "space-between" }}>
         <AssetStatsCard
           title={t("stats.omnipool.stats.card.vlm")}
           value={t("value.usd", { amount: data?.vlm })}

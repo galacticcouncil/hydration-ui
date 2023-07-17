@@ -21,6 +21,8 @@ import { theme } from "theme"
 import { BN_0 } from "utils/constants"
 import { RecentTradesTableWrapperData } from "sections/stats/components/RecentTradesTable/RecentTradesTableWrapper"
 import { RecentTradesTableSkeleton } from "sections/stats/components/RecentTradesTable/skeleton/RecentTradesTableSkeleton"
+import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
+import { SStatsCardContainer } from "sections/stats/StatsPage.styled"
 //import { useUniquesAsset } from "api/uniques"
 
 type SearchGenerics = MakeGenerics<{
@@ -139,8 +141,8 @@ export const StatsOmnipoolAsset = () => {
 
 const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
   const overviewData = useOmnipoolOverviewData()
-  //const test = useUniquesAsset("1337")
-  //console.log(test)
+  //const uniques = useUniquesAsset("1337")
+  //console.log(uniques)
   const omnipoolAsset = overviewData.data.find(
     (overview) => overview.id === assetId,
   )
@@ -158,14 +160,22 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
       <SOmnipoolAssetContainer>
         <OmnipoolAssetNavigation />
         <OmnipoolAssetHeader assetId={assetId} tvl={omnipoolAsset.tvl} />
-        <AssetStats
-          data={{
-            vlm: omnipoolAsset.volume,
-            cap: omnipoolAsset.cap.multipliedBy(100),
-            pol: omnipoolAsset.pol,
-            share: omnipoolAsset.tvl.div(omnipollTvl).multipliedBy(100),
-          }}
-        />
+        <div sx={{ flex: ["column", "row"], mb: 20 }}>
+          <AssetStats
+            data={{
+              vlm: omnipoolAsset.volume,
+              cap: omnipoolAsset.cap.multipliedBy(100),
+              pol: omnipoolAsset.pol,
+              share: omnipoolAsset.tvl.div(omnipollTvl).multipliedBy(100),
+            }}
+          />
+          <SStatsCardContainer
+            sx={{ width: "100%", height: [500, 600] }}
+            css={{ position: "relative" }}
+          >
+            <ChartWrapper assetSymbol={omnipoolAsset.symbol} />
+          </SStatsCardContainer>
+        </div>
         <LiquidityProvidersTableWrapper />
         <Spacer size={[24, 60]} />
         <RecentTradesTableWrapperData assetId={assetId} />

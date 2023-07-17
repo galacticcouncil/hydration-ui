@@ -71,7 +71,7 @@ const Label = ({ value }: { value: number }) => {
       css={{
         position: "absolute",
         left: 0,
-        top: "-20px",
+        top: "-50px",
         zIndex: 1,
       }}
     >
@@ -115,6 +115,27 @@ export const AreaChart = ({ data, loading, error }: AreaChartProps) => {
               <stop offset="95%" stopColor="#000" stopOpacity={0} />
             </linearGradient>
           </defs>
+
+          <Tooltip
+            wrapperStyle={{
+              outline: "unset",
+            }}
+            content={(props) => (
+              <CustomTooltip active={!!props.active} label={props.label} />
+            )}
+            cursor={{
+              stroke: "#66697C",
+              strokeWidth: 1,
+              strokeDasharray: "2 6",
+            }}
+          />
+          <Area
+            type="monotone"
+            dataKey="tvl_usd"
+            stroke="#85D1FF"
+            fill="url(#color)"
+            activeDot={(props) => <CustomizedDot {...props} />}
+          />
           <XAxis
             dataKey="interval"
             tick={{ fontSize: 12, fill: "white" }}
@@ -131,27 +152,6 @@ export const AreaChart = ({ data, loading, error }: AreaChartProps) => {
             y={activePoint?.activePayload?.[0].value}
             stroke="#66697C"
             strokeDasharray="2 4"
-          />
-          <Tooltip
-            wrapperStyle={{
-              outline: "unset",
-            }}
-            content={(props) => (
-              <CustomTooltip active={!!props.active} label={props.label} />
-            )}
-            cursor={{
-              stroke: "#66697C",
-              strokeWidth: 1,
-              strokeDasharray: "2 6",
-            }}
-          />
-
-          <Area
-            type="monotone"
-            dataKey="tvl_usd"
-            stroke="#85D1FF"
-            fill="url(#color)"
-            activeDot={(props) => <CustomizedDot {...props} />}
           />
         </AreaRecharts>
       </ResponsiveContainer>
