@@ -34,7 +34,7 @@ export const Burning = () => {
   ).toNumber()
 
   // TODO: fetch historical value form indexer
-  const maxHistoricalValue = 4567
+  const maxHistoricalValue = new BigNumber(4567456745674564)
   const percentage = imbalance.times(100).div(maxHistoricalValue).toNumber()
 
   // TODO: fetch protocol fees
