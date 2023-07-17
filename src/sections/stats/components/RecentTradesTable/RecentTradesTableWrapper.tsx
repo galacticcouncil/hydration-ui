@@ -4,16 +4,20 @@ import { RecentTradesTable } from "./RecentTradesTable"
 import { useRecentTradesTableData } from "./data/RecentTradesTableData.utils"
 import { RecentTradesTableSkeleton } from "./skeleton/RecentTradesTableSkeleton"
 
-export const RecentTradesTableWrapper = () => {
+export const RecentTradesTableWrapper = ({ assetId }: { assetId?: string }) => {
   const api = useApiPromise()
 
   if (!isApiLoaded(api)) return <RecentTradesTableSkeleton />
 
-  return <RecentTradesTableWrapperData />
+  return <RecentTradesTableWrapperData assetId={assetId} />
 }
 
-export const RecentTradesTableWrapperData = () => {
-  const recentTrades = useRecentTradesTableData()
+export const RecentTradesTableWrapperData = ({
+  assetId,
+}: {
+  assetId?: string
+}) => {
+  const recentTrades = useRecentTradesTableData(assetId)
 
   if (recentTrades.isLoading && !recentTrades.data.length)
     return <RecentTradesTableSkeleton />

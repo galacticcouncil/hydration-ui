@@ -18,6 +18,7 @@ import { getAcceptedCurrency, getAccountCurrency } from "./payments"
 export const useAssetDetails = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
   return useQuery(QUERY_KEYS.assets, getAssetDetails(api), {
+    enabled: !!id,
     select: (data) => data.find((i) => i.id === id?.toString()),
   })
 }

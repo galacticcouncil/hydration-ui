@@ -1,5 +1,4 @@
 import { useApiPromise } from "utils/api"
-import { ChartWrapper } from "./components/ChartWrapper/ChartWrapper"
 import { OmnipoolAssetsTableWrapper } from "./components/OmnipoolAssetsTable/OmnipoolAssetsTableWrapper"
 import { PieWrapper } from "./components/PieWrapper/PieWrapper"
 import { StatsTiles } from "../../components/StatsTiles/StatsTiles"
@@ -9,6 +8,7 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { SContainerVertical } from "./StatsOverview.styled"
 import { RecentTradesTableWrapper } from "../../components/RecentTradesTable/RecentTradesTableWrapper"
+import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 
 export const StatsOverviewData = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -27,7 +27,7 @@ export const StatsOverviewData = () => {
               p: 24,
               justify: "space-between",
               flexGrow: 3,
-              gap: 0,
+              gap: 20,
             }}
           >
             <ChartWrapper />

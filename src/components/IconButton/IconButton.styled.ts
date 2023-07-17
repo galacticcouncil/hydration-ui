@@ -1,13 +1,16 @@
+import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SIconButton = styled.button<{ round?: boolean }>`
+export const SIconButton = styled.button<{ round?: boolean; size: number }>`
   border-radius: 4px;
 
   ${(p) => p.round && "border-radius: 9999px;"};
 
-  min-width: 34px;
-  min-height: 34px;
+  ${(p) => css`
+    min-width: ${p.size}px;
+    min-height: ${p.size}px;
+  `}
 
   background: rgba(${theme.rgbColors.alpha0}, 0.06);
   color: ${theme.colors.brightBlue700};

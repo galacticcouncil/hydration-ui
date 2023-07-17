@@ -11,7 +11,7 @@ import { useDisplayAssetStore } from "utils/displayAsset"
 const withoutRefresh = true
 const VISIBLE_TRADE_NUMBER = 10
 
-export const useRecentTradesTableData = () => {
+export const useRecentTradesTableData = (assetId?: string) => {
   const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
   const apiIds = useApiIds()
   const allTrades = useAllTrades()
@@ -49,8 +49,14 @@ export const useRecentTradesTableData = () => {
       .slice(0) // copy an array to avoid the mutating
       .reduce(
         (memo, trade, i, arr) => {
-          if (i === VISIBLE_TRADE_NUMBER - 1) arr.splice(1) // break iteration
+          const isSelectedAsset = assetId
+            ? assetId === trade.args.assetIn.toString() ||
+              assetId === trade.args.assetOut.toString()
+            : true
+
+          if (memo.length === VISIBLE_TRADE_NUMBER) arr.splice(1) // break iteration
           if (
+            isSelectedAsset &&
             !memo.find((memoTrade) => memoTrade.id === trade.id) &&
             memo.length < VISIBLE_TRADE_NUMBER
           ) {
@@ -125,6 +131,7 @@ export const useRecentTradesTableData = () => {
     assetMetas.data,
     omnipoolAssets.data,
     spotPrices,
+    assetId,
   ])
 
   return { data, isLoading: isInitialLoading }

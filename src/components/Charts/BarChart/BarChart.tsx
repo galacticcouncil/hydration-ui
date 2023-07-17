@@ -2,7 +2,6 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useMedia } from "react-use"
 import {
   Bar,
   BarChart as BarRecharts,
@@ -28,7 +27,6 @@ type BarChartProps = {
 type BarItemProps = Required<NonNullable<BarProps["data"]>[number]> & StatsData
 
 export const BarChart = ({ data, loading, error }: BarChartProps) => {
-  const isDesktop = useMedia(theme.viewport.gte.sm)
   const [activeBar, setActiveBar] = useState<BarItemProps | undefined>(
     undefined,
   )
@@ -41,9 +39,9 @@ export const BarChart = ({ data, loading, error }: BarChartProps) => {
     return <BarChartSkeleton state="noData" />
 
   return (
-    <div css={{ position: "relative" }}>
+    <div css={{ position: "relative", height: "100%" }}>
       {activeBar && <Label item={activeBar} />}
-      <ResponsiveContainer width="100%" height={isDesktop ? 600 : 400}>
+      <ResponsiveContainer width="100%" height="100%">
         <BarRecharts data={data}>
           <defs>
             <linearGradient id="gradient" x1=".5" x2=".5" y2="1">
@@ -122,11 +120,10 @@ const Label = ({ item }: { item: BarItemProps }) => {
         </Text>
       </div>
       <div
-        sx={{ flex: "row", gap: 4, align: "baseline" }}
+        sx={{ flex: "row", gap: 4, align: "baseline", top: [-100, -50] }}
         css={{
           position: "absolute",
           left: 0,
-          top: "-20px",
           zIndex: 1,
         }}
       >

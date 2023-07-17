@@ -11,7 +11,7 @@ import BN from "bignumber.js"
 import { useMemo } from "react"
 import { HYDRA_TREASURE_ACCOUNT, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
-import { BN_0, BN_10, BN_NAN } from "utils/constants"
+import { BN_0, BN_10, BN_NAN, BN_QUINTILL } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 
@@ -139,6 +139,9 @@ export const useOmnipoolOverviewData = () => {
       const omnipoolAssetId = omnipoolAsset.id.toString()
       const shares = omnipoolAsset.data.shares.toBigNumber()
       const protocolShares = omnipoolAsset.data.protocolShares.toBigNumber()
+      const omnipoolAssetCap = omnipoolAsset.data.cap
+        .toBigNumber()
+        .div(BN_QUINTILL)
 
       const details = assetDetails.data.find(
         (d) => d.id.toString() === omnipoolAssetId,
@@ -190,6 +193,7 @@ export const useOmnipoolOverviewData = () => {
         volume,
         fee: BN(0),
         pol,
+        cap: omnipoolAssetCap,
       }
     })
     return rows

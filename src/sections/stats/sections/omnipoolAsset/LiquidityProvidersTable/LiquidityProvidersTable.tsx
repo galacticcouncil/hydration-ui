@@ -10,39 +10,43 @@ import {
   TableRowStats,
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
-import { useOmnipoolAssetsTable } from "./OmnipoolAssetsTable.utils"
-import { TOmnipoolAssetsTableData } from "./data/OmnipoolAssetsTableData.utils"
+
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "@tanstack/react-location"
+import { useLiquidityProvidersTable } from "./LiquidityProvidersTable.utils"
+import { Icon } from "components/Icon/Icon"
+import { ReactComponent as TitleIcon } from "assets/icons/StakingTableIcon.svg"
 
 type Props = {
-  data: TOmnipoolAssetsTableData
+  data: any
 }
 
-export const OmnipoolAssetsTable = ({ data }: Props) => {
+export const LiquidityProvidersTable = ({ data }: Props) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const navigate = useNavigate()
 
   const onRowSelect = (assetId: string) => {
     // TODO
     console.log(assetId)
-    navigate({
-      to: "omnipool",
-      search: { asset: assetId },
-    })
   }
 
-  const table = useOmnipoolAssetsTable(data)
+  const table = useLiquidityProvidersTable(data)
 
   return (
     <StatsTableContainer>
       <StatsTableTitle>
-        <Text fs={[16, 24]} lh={[24, 26]} color="white" font="ChakraPetchBold">
-          {t("stats.overview.table.assets.header.title")}
-        </Text>
+        <div sx={{ flex: "row", align: "center", gap: 12, mt: [0, 20] }}>
+          <Icon sx={{ color: "white" }} icon={<TitleIcon />} />
+          <Text
+            fs={[18, 24]}
+            lh={[24, 26]}
+            color="white"
+            font="ChakraPetchBold"
+          >
+            {t("stats.omnipool.table.providers.title")}
+          </Text>
+        </div>
       </StatsTableTitle>
       <Table>
         <TableHeaderContent>
