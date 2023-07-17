@@ -11,9 +11,9 @@ import { useApiPromise } from "utils/api"
 import { formatValue } from "../../StatsLRNA.utils"
 import BigNumber from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { useMemo } from "react"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useSpotPrice } from "api/spotPrice"
+
 export const Burning = () => {
   const api = useApiPromise()
   const { t } = useTranslation()
@@ -26,8 +26,6 @@ export const Burning = () => {
     ? new BigNumber(hubAssetImbalance.data.value.toHex())
     : BN_0
 
-  const toBeBurned = formatValue(imbalance, meta.data)
-
   const displayAsset = useDisplayAssetStore()
   const spotPrice = useSpotPrice(meta.data?.id, displayAsset.stableCoinId)
   const toBeBurnedSpotPrice = formatValue(
@@ -37,11 +35,14 @@ export const Burning = () => {
 
   // TODO: fetch historical value form indexer
   const maxHistoricalValue = 4567
-  const percentage = useMemo(
-    () => toBeBurned.times(100).div(maxHistoricalValue).toNumber(),
-    [maxHistoricalValue, toBeBurned],
-  )
-  const fees = 1455
+  const percentage = imbalance.times(100).div(maxHistoricalValue).toNumber()
+
+  // TODO: fetch protocol fees
+  const fees = new BigNumber(14551455145514)
+  const feesSpotPrice = formatValue(
+    spotPrice?.data?.spotPrice.multipliedBy(fees),
+    meta.data,
+  ).toNumber()
 
   return (
     <SBurnContainer>
@@ -59,7 +60,7 @@ export const Burning = () => {
         </Text>
         <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
           {t("value.tokenWithSymbol", {
-            value: toBeBurned,
+            value: formatValue(imbalance, meta.data),
             symbol,
           })}
         </Text>
@@ -79,12 +80,13 @@ export const Burning = () => {
         </Text>
         <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
           {t("value.tokenWithSymbol", {
-            value: fees,
+            value: formatValue(fees, meta.data),
             symbol,
           })}
         </Text>
         <Text color="darkBlue200" fs={14}>
-          ≈$24.24
+          ≈{displayAsset.symbol}
+          {feesSpotPrice}
         </Text>
       </div>
     </SBurnContainer>
