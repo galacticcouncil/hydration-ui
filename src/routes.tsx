@@ -75,20 +75,7 @@ export const routes = [
   },
   {
     path: "staking",
-    children: [
-      {
-        path: "/",
-        element: <Navigate to="dashboard" />,
-      },
-      {
-        path: "dashboard",
-        element: <StakingPage />,
-      },
-      {
-        path: "governance",
-        element: <StakingPage />,
-      },
-    ],
+    element: <StakingPage />,
   },
   {
     path: "*",

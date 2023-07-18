@@ -25,6 +25,7 @@ export const UnstakeAssetSelect = ({
 
   return (
     <AssetSelect
+      disabled
       name={name}
       title={title}
       value={value}
@@ -37,6 +38,7 @@ export const UnstakeAssetSelect = ({
       assetSymbol={asset.data?.symbol?.toString()}
       error={error}
       balanceLabel={t("staking.dashboard.form.unstake.balanceLabel")}
+      withoutMaxValue
     />
   )
 }

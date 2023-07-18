@@ -11,9 +11,13 @@ import { SBar, SContainer, SHeader } from "./ReferendumCard.styled"
 
 const REFERENDUM_LINK = import.meta.env.VITE_REFERENDUM_LINK as string
 
-type Props = { id: string; referendum: PalletDemocracyReferendumInfo }
+type Props = {
+  id: string
+  referendum: PalletDemocracyReferendumInfo
+  type: "toast" | "staking"
+}
 
-export const ReferendumCard = ({ id, referendum }: Props) => {
+export const ReferendumCard = ({ id, referendum, type }: Props) => {
   const { t } = useTranslation()
 
   const info = useReferendumInfo(id)
@@ -45,7 +49,7 @@ export const ReferendumCard = ({ id, referendum }: Props) => {
   if (!info.data) return null
 
   return (
-    <SContainer>
+    <SContainer type={type}>
       <SHeader>
         <div sx={{ flex: "row", align: "center", gap: 8 }}>
           <Text color="brightBlue200" fs={14} fw={500}>

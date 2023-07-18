@@ -19,7 +19,11 @@ export const Unstake = ({ loading }: { loading: boolean }) => {
   const { t } = useTranslation()
 
   const { account } = useAccountStore()
-  const form = useForm<{ amount: string }>()
+  const form = useForm<{ amount: string }>({
+    defaultValues: {
+      amount: "1234",
+    },
+  })
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     console.log("TODO: submitted", values)
