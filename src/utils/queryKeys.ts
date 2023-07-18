@@ -281,6 +281,7 @@ export const QUERY_KEYS = {
   maxAddLiquidityLimit: ["maxAddLiquidityLimit"],
   coingeckoUsd: ["coingeckoUsd"],
   assetList: ["assetList"],
+  polStats: ["polStats"],
   referendums: [QUERY_KEY_PREFIX, "referendums"],
   referendumInfo: (id: string) => [QUERY_KEY_PREFIX, id, "referendumInfo"],
   stats: (timeframe?: StatsTimeframe, assetSymbol?: string) => {
