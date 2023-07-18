@@ -93,7 +93,7 @@ export const Distribution = () => {
                 {
                   label: (
                     <DistributionSliceLabel
-                      text={t('stats.lrna.distribution.inside')}
+                      text={t("stats.lrna.distribution.inside")}
                       symbol={symbol}
                       percentage={insidePercent?.toNumber() ?? 0}
                     />
@@ -105,7 +105,7 @@ export const Distribution = () => {
                 {
                   label: (
                     <DistributionSliceLabel
-                      text={t('stats.lrna.distribution.outside')}
+                      text={t("stats.lrna.distribution.outside")}
                       symbol={symbol}
                       percentage={outsidePercent?.toNumber() ?? 0}
                     />
