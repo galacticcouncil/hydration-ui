@@ -13,7 +13,7 @@ import { BN_0 } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useSpotPrice } from "api/spotPrice"
 import Skeleton from "react-loading-skeleton"
-import { BlockSkeleton } from './BlockSkeleton'
+import { BlockSkeleton } from "./BlockSkeleton"
 
 export const Burning = () => {
   const { t } = useTranslation()
@@ -91,16 +91,16 @@ export const Burning = () => {
           <BlockSkeleton />
         ) : (
           <>
-        <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
-          {t("value.tokenWithSymbol", {
-            value: formatValue(fees, meta.data),
-            symbol,
-          })}
-        </Text>
-        <Text color="darkBlue200" fs={14}>
-          ≈{displayAsset.symbol}
-          {feesSpotPrice}
-        </Text>
+            <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
+              {t("value.tokenWithSymbol", {
+                value: formatValue(fees, meta.data),
+                symbol,
+              })}
+            </Text>
+            <Text color="darkBlue200" fs={14}>
+              ≈{displayAsset.symbol}
+              {feesSpotPrice}
+            </Text>
           </>
         )}
       </div>
