@@ -40,16 +40,16 @@ export const SWrap = styled.div`
 
   position: relative;
 
-  & > div > svg:active {
+  &:active > div > svg {
     transform: rotate(30deg);
-  }
-
-  & > div > svg:hover {
-    color: ${theme.colors.white};
   }
 
   &:hover {
     background: rgba(${theme.rgbColors.alpha0}, 0.06);
+
+    & > div > svg {
+      color: ${theme.colors.white};
+    }
   }
 `
 
