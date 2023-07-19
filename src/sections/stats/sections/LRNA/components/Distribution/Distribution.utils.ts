@@ -3,7 +3,7 @@ import { getTotalIssuance } from "api/totalIssuance"
 import { getTokenBalance } from "api/balances"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
+import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
 import BigNumber from "bignumber.js"
 import { getLRNAMeta } from "api/assetMeta"
 import { formatValue } from "../../StatsLRNA.utils"
@@ -27,17 +27,28 @@ const getLRNAOmnipoolBalance = async (api: ApiPromise) => {
   return formatValue(balance.total, meta)
 }
 
-export const useLRNATotalIssuance = (api: ApiPromise) =>
-  useQuery(QUERY_KEYS.LRNATotalIssuance(), () => getLRNATotalIssuance(api), {
-    enabled: !!api,
-    refetchInterval: REFETCH_INTERVAL,
-  })
-export const useLRNAOmnipoolBalance = (api: ApiPromise) =>
-  useQuery(
+export const useLRNATotalIssuance = () => {
+  const api = useApiPromise()
+
+  return useQuery(
+    QUERY_KEYS.LRNATotalIssuance(),
+    () => getLRNATotalIssuance(api),
+    {
+      enabled: !!api,
+      refetchInterval: REFETCH_INTERVAL,
+    },
+  )
+}
+
+export const useLRNAOmnipoolBalance = () => {
+  const api = useApiPromise()
+
+  return useQuery(
     QUERY_KEYS.LRNAOmnipoolBalance(),
     () => getLRNAOmnipoolBalance(api),
     { enabled: !!api, refetchInterval: REFETCH_INTERVAL },
   )
+}
 
 export const makePercent = (value?: BigNumber, total?: BigNumber) =>
   value && total ? value.div(total).multipliedBy(100) : undefined

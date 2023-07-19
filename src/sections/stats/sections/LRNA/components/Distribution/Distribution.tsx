@@ -9,7 +9,6 @@ import { ChartWrapper } from "../ChartWrapper/ChartWrapper"
 import { useTranslation } from "react-i18next"
 import { ChartLabel } from "./ChartLabel"
 import { DoughnutChart } from "../../../../components/DoughnutChart/DoughnutChart"
-import { useApiPromise } from "utils/api"
 import {
   makePercent,
   useLRNAOmnipoolBalance,
@@ -22,11 +21,9 @@ export const Distribution = () => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const api = useApiPromise()
-
-  const meta = useLRNAMeta(api)
-  const totalIssuanceQuery = useLRNATotalIssuance(api)
-  const omnipoolBalanceQuery = useLRNAOmnipoolBalance(api)
+  const meta = useLRNAMeta()
+  const totalIssuanceQuery = useLRNATotalIssuance()
+  const omnipoolBalanceQuery = useLRNAOmnipoolBalance()
 
   const symbol = meta?.data?.data?.symbol?.toString()
 

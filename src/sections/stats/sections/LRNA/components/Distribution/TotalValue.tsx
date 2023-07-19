@@ -18,7 +18,7 @@ export const TotalValue = ({
   isLoading,
   compact,
 }: PieTotalValueProps) => {
-  const { i18n } = useTranslation()
+  const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
@@ -29,7 +29,7 @@ export const TotalValue = ({
       ) : (
         <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
           <Text fs={[20, 42]} font="FontOver">
-            {i18n.format(data, compact ? "compact" : "bignumber")}
+            {t(compact ? "value.compact" : "value", { value: data })}
           </Text>
         </div>
       )}

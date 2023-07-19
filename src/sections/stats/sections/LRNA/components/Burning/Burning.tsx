@@ -7,7 +7,6 @@ import { SBurnContainer } from "./Burning.styled"
 import { useTranslation } from "react-i18next"
 import { useLRNAMeta } from "api/assetMeta"
 import { useHubAssetImbalance } from "api/omnipool"
-import { useApiPromise } from "utils/api"
 import { formatValue } from "../../StatsLRNA.utils"
 import BigNumber from "bignumber.js"
 import { BN_0 } from "utils/constants"
@@ -15,13 +14,12 @@ import { useDisplayAssetStore } from "utils/displayAsset"
 import { useSpotPrice } from "api/spotPrice"
 
 export const Burning = () => {
-  const api = useApiPromise()
   const { t } = useTranslation()
 
-  const meta = useLRNAMeta(api)
+  const meta = useLRNAMeta()
   const symbol = meta.data?.data?.symbol
 
-  const hubAssetImbalance = useHubAssetImbalance(api)
+  const hubAssetImbalance = useHubAssetImbalance()
   const imbalance = hubAssetImbalance?.data?.value
     ? new BigNumber(hubAssetImbalance.data.value.toHex())
     : BN_0

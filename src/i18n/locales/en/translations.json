@@ -90,6 +90,7 @@
   "header.settings.displayAsset.usd": "USD asset with coingecko dollar price.",
   "header.settings.displayAsset.stableCoin": "USD asset.",
   "value": "{{ value, bignumber }}",
+  "value.compact": "{{ value, compact }}",
   "value.na": "-",
   "value.usd": "{{ amount, bignumber(numberPrefix: '$'; type: 'dollar') }}",
   "value.displaySymbol": "{{ value, bignumber(type: 'dollar') }} {{ symbol }}",

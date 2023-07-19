@@ -86,5 +86,9 @@ export const getLRNAMeta = async (api: ApiPromise) => {
   return getAssetMeta(api, hubId)()
 }
 
-export const useLRNAMeta = (api: ApiPromise) =>
-  useQuery(QUERY_KEYS.LRNAMeta(), () => getLRNAMeta(api), { enabled: !!api })
+export const useLRNAMeta = () => {
+  const api = useApiPromise()
+  return useQuery(QUERY_KEYS.LRNAMeta(), () => getLRNAMeta(api), {
+    enabled: !!api,
+  })
+}
