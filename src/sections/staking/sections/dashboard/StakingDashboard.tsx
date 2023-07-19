@@ -5,7 +5,7 @@ import { AvailableRewards } from "./components/AvailableRewards/AvailableRewards
 import { StakingInputSection } from "./components/StakingInputSection/StakingInputSection"
 import { useAccountStore } from "state/store"
 import { Stats } from "./components/Stats/Stats"
-import { OmnipoolAssetsTableWrapperData } from "./components/StakingAccountsTable/StakingAcoountsTableWrapper"
+import { StakingAccountsTableWrapperData } from "./components/StakingAccountsTable/StakingAcoountsTableWrapper"
 import { StakingAccountSkeleton } from "./components/StakingAccountsTable/skeleton/StakingAccountSkeleton"
 import { Rerefenrenda } from "./components/Referenda/Referenda"
 
@@ -26,7 +26,7 @@ export const StakingData = () => {
         <StakingGuide />
         <Stats isConnected={!!account} />
         <Rerefenrenda />
-        <OmnipoolAssetsTableWrapperData />
+        <StakingAccountsTableWrapperData />
       </div>
 
       <div
