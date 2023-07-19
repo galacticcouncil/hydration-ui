@@ -4,13 +4,11 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useMemo, useState } from "react"
 import { BN_0 } from "utils/constants"
-import { useTranslation } from "react-i18next"
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 import { SContainerVertical } from "../StatsPOL.styled"
 import { PieTotalValue } from "../../overview/components/PieTotalValue/PieTotalValue"
-import { DoughnutChart } from "../../../components/DoughnutChart/DoughnutChart"
-import { ChartLabel } from "../../LRNA/components/Distribution/ChartLabel"
 import { TUseOmnipoolAssetDetailsData } from "../../../StatsPage.utils"
+import { PieChart } from "../../../components/PieChart/PieChart"
 
 type PieWrapperProps = {
   data: TUseOmnipoolAssetDetailsData
@@ -74,33 +72,14 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
       )}
 
       {activeSection === "overview" ? (
-        !isLoading ? (
-          <>
-            <DoughnutChart
-              slices={[
-                {
-                  label: <div sx={{ color: "white" }}>in label todo</div>,
-                  percentage: 40,
-                  color: "#A6DDFF",
-                  name: "in",
-                },
-                {
-                  label: <div sx={{ color: "white" }}>out label todo</div>,
-                  percentage: 60,
-                  color: "#2489FF",
-                  name: "out",
-                },
-              ]}
-              label={ChartLabel}
-            />
-            {pieChartValues}
-          </>
-        ) : (
-          <>
+        <>
+          {!isLoading ? (
+            <PieChart data={data} property="pol" />
+          ) : (
             <PieSkeleton />
-            {pieChartValues}
-          </>
-        )
+          )}
+          {pieChartValues}
+        </>
       ) : (
         <ChartWrapper />
       )}
