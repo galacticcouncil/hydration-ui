@@ -46,6 +46,9 @@ export const SWrap = styled.div`
 
   & > div > svg:hover {
     color: ${theme.colors.white};
+  }
+
+  &:hover {
     background: rgba(${theme.rgbColors.alpha0}, 0.06);
   }
 `
