@@ -1,5 +1,5 @@
 import { useProviderRpcUrlStore } from "api/provider"
-import { SCircle, SItem } from "./ProviderItem.styled"
+import { SCircle, SCircleThumb, SItem } from "./ProviderItem.styled"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
@@ -47,7 +47,7 @@ export const ProviderItem = ({
     )
 
   return (
-    <SItem isActive={isActive} onClick={onClick}>
+    <SItem onClick={onClick}>
       <div>
         <Text
           color={isActive ? "pink600" : "white"}
@@ -85,7 +85,7 @@ export const ProviderItem = ({
           {new URL(url).hostname}
         </Text>
 
-        <SCircle />
+        <SCircle>{isActive && <SCircleThumb />}</SCircle>
         {custom && (
           <div sx={{ flex: "row", align: "center", gap: 12, ml: 8 }}>
             <InfoTooltip text="Remove" type="black">

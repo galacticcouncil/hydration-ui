@@ -1,9 +1,14 @@
 import { Spinner } from "../../Spinner/Spinner.styled"
-import { SActiveReferendumIcon, SBellIcon, SWrap } from "./Bell.styled"
+import {
+  MaskContainer,
+  SActiveReferendumIcon,
+  SBellIcon,
+  SWrap,
+} from "./Bell.styled"
 import { InfoTooltip } from "../../InfoTooltip/InfoTooltip"
-import { useToast } from "../../../state/toasts"
+import { useToast } from "state/toasts"
 import { useTranslation } from "react-i18next"
-import { useReferendums } from "../../../api/democracy"
+import { useReferendums } from "api/democracy"
 
 export const Bell = () => {
   const { setSidebar, toasts } = useToast()
@@ -27,17 +32,17 @@ export const Bell = () => {
 
   return (
     <InfoTooltip text={tooltipText} type={isLoading ? "default" : "black"}>
-      <div css={{ position: "relative" }}>
-        {isLoading && <Spinner width={40} height={40} />}
+      <div
+        css={{ position: "relative" }}
+        sx={{ flex: "row", justify: "center", align: "center" }}
+      >
+        {isLoading && (
+          <Spinner width={40} height={40} css={{ position: "absolute" }} />
+        )}
         <SWrap onClick={() => setSidebar(true)}>
-          <SBellIcon
-            aria-label={t("toast.sidebar.title")}
-            css={
-              isLoading && {
-                position: "absolute",
-              }
-            }
-          />
+          <MaskContainer cropped={hasReferendum}>
+            <SBellIcon aria-label={t("toast.sidebar.title")} />
+          </MaskContainer>
           {hasReferendum && <SActiveReferendumIcon />}
         </SWrap>
       </div>
