@@ -12,6 +12,8 @@ import BigNumber from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useSpotPrice } from "api/spotPrice"
+import Skeleton from "react-loading-skeleton"
+import { BlockSkeleton } from './BlockSkeleton'
 
 export const Burning = () => {
   const { t } = useTranslation()
@@ -42,10 +44,13 @@ export const Burning = () => {
     meta.data,
   ).toNumber()
 
+  const isLoading =
+    meta.isLoading || hubAssetImbalance.isLoading || spotPrice.isLoading
+
   return (
     <SBurnContainer>
       <div>
-        <PieChart percentage={percentage} loading={false} />
+        <PieChart percentage={percentage} loading={isLoading} />
       </div>
       <div>
         <Icon
@@ -56,16 +61,22 @@ export const Burning = () => {
         <Text color="brightBlue300" sx={{ my: "10px" }}>
           {t("stats.lrna.burn.toBeBurned")}
         </Text>
-        <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
-          {t("value.tokenWithSymbol", {
-            value: formatValue(imbalance, meta.data),
-            symbol,
-          })}
-        </Text>
-        <Text color="darkBlue200" fs={14}>
-          ≈{displayAsset.symbol}
-          {toBeBurnedSpotPrice}
-        </Text>
+        {isLoading ? (
+          <BlockSkeleton />
+        ) : (
+          <>
+            <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
+              {t("value.tokenWithSymbol", {
+                value: formatValue(imbalance, meta.data),
+                symbol,
+              })}
+            </Text>
+            <Text color="darkBlue200" fs={14}>
+              ≈{displayAsset.symbol}
+              {toBeBurnedSpotPrice}
+            </Text>
+          </>
+        )}
       </div>
       <div>
         <Icon
@@ -76,6 +87,10 @@ export const Burning = () => {
         <Text color="brightBlue300" sx={{ my: "10px" }}>
           {t("stats.lrna.burn.fees")}
         </Text>
+        {isLoading ? (
+          <BlockSkeleton />
+        ) : (
+          <>
         <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
           {t("value.tokenWithSymbol", {
             value: formatValue(fees, meta.data),
@@ -86,6 +101,8 @@ export const Burning = () => {
           ≈{displayAsset.symbol}
           {feesSpotPrice}
         </Text>
+          </>
+        )}
       </div>
     </SBurnContainer>
   )
