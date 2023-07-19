@@ -12,7 +12,6 @@ import BigNumber from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useSpotPrice } from "api/spotPrice"
-import Skeleton from "react-loading-skeleton"
 import { BlockSkeleton } from "./BlockSkeleton"
 
 export const Burning = () => {
