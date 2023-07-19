@@ -45,16 +45,11 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
           gap: 20,
         }}
       >
-        {/*<PieTotalValue*/}
-        {/*  title={t("stats.overview.pie.values.pol")}*/}
-        {/*  data={totalPol}*/}
-        {/*  isLoading={isLoading}*/}
-        {/*/>*/}
-        {/*<PieTotalValue*/}
-        {/*  title={t("stats.overview.pie.values.volume")}*/}
-        {/*  data={totalVolume.div(2)}*/}
-        {/*  isLoading={isLoading}*/}
-        {/*/>*/}
+        <PieTotalValue
+          title="24h volume"
+          data={totalPol}
+          isLoading={isLoading}
+        />
       </div>
     </div>
   )
