@@ -7,7 +7,7 @@ import { useAccountStore } from "state/store"
 import { Stats } from "./components/Stats/Stats"
 import { StakingAccountsTableWrapperData } from "./components/StakingAccountsTable/StakingAcoountsTableWrapper"
 import { StakingAccountSkeleton } from "./components/StakingAccountsTable/skeleton/StakingAccountSkeleton"
-import { Rerefenrenda } from "./components/Referenda/Referenda"
+import { Referenda, ReferendaWrapper } from "./components/Referenda/Referenda"
 
 export const StakingDashboard = () => {
   const api = useApiPromise()
@@ -25,7 +25,7 @@ export const StakingData = () => {
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
         <StakingGuide />
         <Stats isConnected={!!account} />
-        <Rerefenrenda />
+        <ReferendaWrapper />
         <StakingAccountsTableWrapperData />
       </div>
 
@@ -46,6 +46,7 @@ export const StakingSkeleton = () => {
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
         <StakingGuide />
         <Stats isConnected={false} loading />
+        <Referenda loading />
         <StakingAccountSkeleton />
       </div>
 

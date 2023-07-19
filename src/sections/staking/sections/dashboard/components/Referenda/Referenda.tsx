@@ -1,21 +1,47 @@
 import { useReferendums } from "api/democracy"
 import { ReferendumCard } from "components/ReferendumCard/ReferendumCard"
+import { ReferendumCardSkeleton } from "components/ReferendumCard/ReferendumCardSkeleton"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SContainer } from "sections/staking/StakingPage.styled"
+import { ReactComponent as GovernanceIcon } from "assets/icons/GovernanceIcon.svg"
+import { Icon } from "components/Icon/Icon"
 
-export const Rerefenrenda = () => {
-  const { t } = useTranslation()
+type ReferendaProps = {
+  loading: boolean
+  data?: ReturnType<typeof useReferendums>["data"]
+}
+
+export const ReferendaWrapper = () => {
   const referendums = useReferendums()
 
-  if (!referendums.data) return null
+  return <Referenda data={referendums.data} loading={referendums.isLoading} />
+}
+
+export const Referenda = ({ data, loading }: ReferendaProps) => {
+  const { t } = useTranslation()
 
   return (
-    <SContainer sx={{ p: [24, "21px 16px 16px"], gap: 21 }}>
+    <SContainer sx={{ p: [24, "25px 20px 20px"], gap: 21 }}>
       <Text font="FontOver" fs={19} tTransform="uppercase">
         {t("stats.overview.referenda.title")}
       </Text>
-      <ReferendumCard type="staking" {...referendums.data[0]} />
+      {loading ? (
+        <ReferendumCardSkeleton type="staking" />
+      ) : data?.length ? (
+        <div sx={{ flex: "column", gap: 16 }}>
+          {data.map((referendum) => (
+            <ReferendumCard type="staking" {...referendum} />
+          ))}
+        </div>
+      ) : (
+        <div sx={{ flex: "row", align: "center", gap: 16, my: 16 }}>
+          <Icon icon={<GovernanceIcon />} />
+          <Text color="basic700">
+            {t("stats.overview.referenda.emptyState")}
+          </Text>
+        </div>
+      )}
     </SContainer>
   )
 }

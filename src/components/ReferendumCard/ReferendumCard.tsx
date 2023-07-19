@@ -1,6 +1,6 @@
 import { PalletDemocracyReferendumInfo } from "@polkadot/types/lookup"
 import { useReferendumInfo } from "api/democracy"
-import { ReactComponent as IconLink } from "assets/icons/LinkIcon.svg"
+import { ReactComponent as LinkIcon } from "assets/icons/LinkPixeled.svg"
 import { Separator } from "components/Separator/Separator"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
@@ -8,6 +8,8 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { BN_0, BN_10 } from "utils/constants"
 import { SBar, SContainer, SHeader } from "./ReferendumCard.styled"
+import { ReferendumCardSkeleton } from "./ReferendumCardSkeleton"
+import { Icon } from "components/Icon/Icon"
 
 const REFERENDUM_LINK = import.meta.env.VITE_REFERENDUM_LINK as string
 
@@ -48,7 +50,9 @@ export const ReferendumCard = ({ id, referendum, type }: Props) => {
 
   if (!info.data) return null
 
-  return (
+  return info.isLoading || !info.data ? (
+    <ReferendumCardSkeleton type={type} />
+  ) : (
     <SContainer type={type}>
       <SHeader>
         <div sx={{ flex: "row", align: "center", gap: 8 }}>
@@ -69,7 +73,7 @@ export const ReferendumCard = ({ id, referendum, type }: Props) => {
           target="_blank"
           rel="noreferrer"
         >
-          <IconLink sx={{ color: "brightBlue300", width: 12, height: 12 }} />
+          <Icon sx={{ color: "brightBlue300" }} icon={<LinkIcon />} />
         </a>
       </SHeader>
 
