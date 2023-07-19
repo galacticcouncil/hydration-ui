@@ -421,6 +421,8 @@
   "stats.tiles.rewards.title": "Liquidity rewards & Farming",
   "stats.tiles.rewards.description": "Earn up to 5% APR by providing liquidity to Hydra.",
   "stats.tiles.rewards.content": "TODO",
+  "stats.pie.rest.header.tvl": "tvl",
+  "stats.pie.rest.header.pol": "pol",
   "stats.overview.pie.defaultLabel.composition": "Omnipool Composition",
   "stats.overview.pie.defaultLabel.assetAvailable": "{{amount}} Assets Available",
   "stats.overview.pie.defaultLabel.hover": "Hover for details",

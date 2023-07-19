@@ -17,7 +17,7 @@ import { isNotNil } from "utils/helpers"
 
 const withoutRefresh = true
 
-export const useOmnipoolAssetsTableData = () => {
+export const useOmnipoolAssetDetails = () => {
   const apiIds = useApiIds()
   const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
   const displayAsset = useDisplayAssetStore()
@@ -207,5 +207,6 @@ export const useOmnipoolAssetsTableData = () => {
   return { data, isLoading: isInitialLoading }
 }
 
-export type TOmnipoolAssetsTable = typeof useOmnipoolAssetsTableData
-export type TOmnipoolAssetsTableData = ReturnType<TOmnipoolAssetsTable>["data"]
+export type TUseOmnipoolAssetDetails = typeof useOmnipoolAssetDetails
+export type TUseOmnipoolAssetDetailsData =
+  ReturnType<TUseOmnipoolAssetDetails>["data"]

@@ -8,16 +8,16 @@ import { useTranslation } from "react-i18next"
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 import { SContainerVertical } from "../StatsPOL.styled"
 import { PieTotalValue } from "../../overview/components/PieTotalValue/PieTotalValue"
-import { DoughnutChart } from '../../../components/DoughnutChart/DoughnutChart'
-import { TPOLStatsData } from '../StatsPOL.utils'
+import { DoughnutChart } from "../../../components/DoughnutChart/DoughnutChart"
+import { ChartLabel } from "../../LRNA/components/Distribution/ChartLabel"
+import { TUseOmnipoolAssetDetailsData } from "../../../StatsPage.utils"
 
 type PieWrapperProps = {
-  data: TPOLStatsData
+  data: TUseOmnipoolAssetDetailsData
   isLoading: boolean
 }
 
 export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
-  const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [activeSection, setActiveSection] = useState<"overview" | "chart">(
     "overview",
@@ -35,7 +35,7 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
   const pieChartValues = (
     <div sx={{ flex: "column", gap: 20 }}>
       <PieTotalValue
-        title={t("stats.overview.pie.values.pol")}
+        title="Protocol Owned Liquidity"
         data={totalPol}
         isLoading={isLoading}
       />
@@ -77,7 +77,21 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
         !isLoading ? (
           <>
             <DoughnutChart
-              slices={[]}
+              slices={[
+                {
+                  label: <div sx={{ color: "white" }}>in label todo</div>,
+                  percentage: 40,
+                  color: "#A6DDFF",
+                  name: "in",
+                },
+                {
+                  label: <div sx={{ color: "white" }}>out label todo</div>,
+                  percentage: 60,
+                  color: "#2489FF",
+                  name: "out",
+                },
+              ]}
+              label={ChartLabel}
             />
             {pieChartValues}
           </>

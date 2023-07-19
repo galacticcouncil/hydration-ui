@@ -80,7 +80,11 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
 
       {activeSection === "overview" ? (
         <>
-          {!isLoading ? <PieChart data={data} /> : <PieSkeleton />}
+          {!isLoading ? (
+            <PieChart data={data} property="tvl" />
+          ) : (
+            <PieSkeleton />
+          )}
           {pieChartValues}
         </>
       ) : (

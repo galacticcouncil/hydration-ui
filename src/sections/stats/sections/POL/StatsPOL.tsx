@@ -7,10 +7,10 @@ import { StatsTiles } from "../../components/StatsTiles/StatsTiles"
 import { RecentTradesTableWrapper } from "../../components/RecentTradesTable/RecentTradesTableWrapper"
 import { SContainerVertical } from "./StatsPOL.styled"
 import { PieWrapper } from "./PieWrapper/PieWrapper"
-import { usePOLData } from './StatsPOL.utils'
+import { useOmnipoolAssetDetails } from "../../StatsPage.utils"
 
 const StatsPOLData = () => {
-  const data = usePOLData()
+  const data = useOmnipoolAssetDetails()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
