@@ -31,7 +31,11 @@ export const Referenda = ({ data, loading }: ReferendaProps) => {
       ) : data?.length ? (
         <div sx={{ flex: "column", gap: 16 }}>
           {data.map((referendum) => (
-            <ReferendumCard type="staking" {...referendum} />
+            <ReferendumCard
+              key={referendum.id}
+              type="staking"
+              {...referendum}
+            />
           ))}
         </div>
       ) : (

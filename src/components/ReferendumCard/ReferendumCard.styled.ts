@@ -47,7 +47,10 @@ export const SHeader = styled.div`
   justify-content: space-between;
 `
 
-export const SBar = styled.div<{ variant: "aye" | "nay"; percentage: number }>`
+export const SBar = styled.div<{
+  variant: "aye" | "nay" | "neutral"
+  percentage: number
+}>`
   height: 4px;
   width: ${({ percentage }) => percentage}%;
 
@@ -61,11 +64,15 @@ export const SBar = styled.div<{ variant: "aye" | "nay"; percentage: number }>`
             transparent 100%
           );
         `
-      : css`
+      : variant === "nay"
+      ? css`
           background: linear-gradient(
             90deg,
             ${theme.colors.pink700} 50%,
             transparent 100%
           );
+        `
+      : css`
+          background: rgba(${theme.rgbColors.darkBlue300}, 0.5);
         `}
 `
