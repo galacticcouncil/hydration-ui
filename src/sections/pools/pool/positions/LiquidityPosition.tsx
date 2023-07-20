@@ -24,9 +24,9 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import { useAccountStore } from "state/store"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useSpotPrice } from '../../../../api/spotPrice'
-import { useDisplayAssetStore } from '../../../../utils/displayAsset'
-import { BN_0 } from '../../../../utils/constants'
+import { useSpotPrice } from "../../../../api/spotPrice"
+import { useDisplayAssetStore } from "../../../../utils/displayAsset"
+import { BN_0 } from "../../../../utils/constants"
 
 type Props = {
   pool: OmnipoolPool
@@ -139,13 +139,14 @@ export const LiquidityPosition = ({
   const { t } = useTranslation()
   const meta = useAssetMeta(position.assetId)
 
-
   const displayAsset = useDisplayAssetStore()
   const price = useSpotPrice(meta.data?.id, displayAsset.id)
 
   const shiftBy = meta?.data ? meta.data.decimals.neg().toNumber() : 0
-  const spotPrice = price.data?.spotPrice;
-  const providedAmountPrice = spotPrice ? position.providedAmount.multipliedBy(spotPrice).shiftedBy(shiftBy) : BN_0
+  const spotPrice = price.data?.spotPrice
+  const providedAmountPrice = spotPrice
+    ? position.providedAmount.multipliedBy(spotPrice).shiftedBy(shiftBy)
+    : BN_0
 
   return (
     <SContainer>
@@ -159,7 +160,7 @@ export const LiquidityPosition = ({
             {t("liquidity.asset.positions.position.title", { index })}
           </Text>
         </div>
-        <div css={{  display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
+        <div css={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
           <div sx={{ flex: "column", gap: 6 }}>
             <Text fs={14} color="whiteish500">
               {t("liquidity.asset.positions.position.initialValue")}
@@ -172,7 +173,7 @@ export const LiquidityPosition = ({
                   numberSuffix: ` ${meta.data?.symbol ?? "N/A"}`,
                 })}
               </Text>
-              {spotPrice &&
+              {spotPrice && (
                 <DollarAssetValue
                   value={providedAmountPrice}
                   wrapper={(children) => (
@@ -183,7 +184,7 @@ export const LiquidityPosition = ({
                 >
                   <DisplayValue value={providedAmountPrice} />
                 </DollarAssetValue>
-              }
+              )}
             </div>
           </div>
           <Separator orientation="vertical" />
