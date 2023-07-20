@@ -63,7 +63,9 @@ export const useOmnipoolPositions = (
   })
 }
 
-export const useOmnipoolPosition = (itemId: u128 | u32 | undefined) => {
+export const useOmnipoolPosition = (
+  itemId: u128 | u32 | string | undefined,
+) => {
   const api = useApiPromise()
 
   return useQuery(
