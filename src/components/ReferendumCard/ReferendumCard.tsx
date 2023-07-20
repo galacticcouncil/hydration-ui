@@ -49,7 +49,7 @@ export const ReferendumCard = ({ id, referendum }: Props) => {
       <SHeader>
         <div sx={{ flex: "row", align: "center", gap: 8 }}>
           <Text color="brightBlue200" fs={14} fw={500}>
-            #{info.data.motionIndex}
+            #{info.data.referendumIndex}
           </Text>
           <Text color="brightBlue200" fs={12} fw={500}>
             {"//"}
