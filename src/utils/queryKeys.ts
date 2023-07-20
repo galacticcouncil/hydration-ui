@@ -96,6 +96,9 @@ export const QUERY_KEYS = {
     "totalIssuance",
     lpToken?.toString(),
   ],
+  LRNATotalIssuance: () => ["LRNATotalIssuance"],
+  LRNAOmnipoolBalance: () => ["LRNAOmnipoolBalance"],
+  LRNAMeta: () => ["LRNAMeta"],
   totalLiquidities: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "totalLiquidities",
@@ -225,6 +228,7 @@ export const QUERY_KEYS = {
   omnipoolAssets: ["omnipoolAssets"],
   omnipoolAssetsLive: [QUERY_KEY_PREFIX, "omnipoolAssets"],
   hubAssetTradability: [QUERY_KEY_PREFIX, "hubAssetTradability"],
+  hubAssetImbalance: () => ["hubAssetImbalance"],
   omnipoolFee: [QUERY_KEY_PREFIX, "omnipoolFee"],
   omnipoolAsset: (id: u32 | string) => [
     QUERY_KEY_PREFIX,
