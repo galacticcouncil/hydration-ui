@@ -7,10 +7,10 @@ import { useTranslation } from "react-i18next"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
-import { SInfoIcon } from "sections/pools/pool/details/PoolValue.styled"
 import { BN_0 } from "utils/constants"
 import { useHydraPositionsData } from "../hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useAssetsTableData } from "../table/data/WalletAssetsTableData.utils"
+import { SInfoIcon } from "../../../pools/pool/Pool.styled"
 
 type Props = { disconnected?: boolean }
 
