@@ -1,6 +1,6 @@
 import { PalletDemocracyReferendumInfo } from "@polkadot/types/lookup"
 import { useReferendumInfo } from "api/democracy"
-import { ReactComponent as IconLink } from "assets/icons/LinkIcon.svg"
+import { ReactComponent as LinkIcon } from "assets/icons/LinkPixeled.svg"
 import { Separator } from "components/Separator/Separator"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
@@ -8,12 +8,18 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { BN_0, BN_10 } from "utils/constants"
 import { SBar, SContainer, SHeader } from "./ReferendumCard.styled"
+import { ReferendumCardSkeleton } from "./ReferendumCardSkeleton"
+import { Icon } from "components/Icon/Icon"
 
 const REFERENDUM_LINK = import.meta.env.VITE_REFERENDUM_LINK as string
 
-type Props = { id: string; referendum: PalletDemocracyReferendumInfo }
+type Props = {
+  id: string
+  referendum: PalletDemocracyReferendumInfo
+  type: "toast" | "staking"
+}
 
-export const ReferendumCard = ({ id, referendum }: Props) => {
+export const ReferendumCard = ({ id, referendum, type }: Props) => {
   const { t } = useTranslation()
 
   const info = useReferendumInfo(id)
@@ -42,10 +48,12 @@ export const ReferendumCard = ({ id, referendum }: Props) => {
     return { ayes, nays, percAyes, percNays }
   }, [referendum])
 
-  if (!info.data) return null
+  const isNoVotes = votes.percAyes.eq(0) && votes.percNays.eq(0)
 
-  return (
-    <SContainer>
+  return info.isLoading || !info.data ? (
+    <ReferendumCardSkeleton type={type} />
+  ) : (
+    <SContainer type={type}>
       <SHeader>
         <div sx={{ flex: "row", align: "center", gap: 8 }}>
           <Text color="brightBlue200" fs={14} fw={500}>
@@ -65,7 +73,7 @@ export const ReferendumCard = ({ id, referendum }: Props) => {
           target="_blank"
           rel="noreferrer"
         >
-          <IconLink sx={{ color: "brightBlue300", width: 12, height: 12 }} />
+          <Icon sx={{ color: "brightBlue300" }} icon={<LinkIcon />} />
         </a>
       </SHeader>
 
@@ -78,17 +86,40 @@ export const ReferendumCard = ({ id, referendum }: Props) => {
       <Spacer size={20} />
 
       <div sx={{ flex: "row", gap: 8 }}>
-        <SBar variant="aye" percentage={votes.percAyes.toNumber()} />
-        <SBar variant="nay" percentage={votes.percNays.toNumber()} />
+        {isNoVotes ? (
+          <SBar variant="neutral" percentage={100} />
+        ) : (
+          <>
+            {/*zero value of progress bar should be visible*/}
+            <SBar
+              variant="aye"
+              percentage={votes.percAyes.eq(0) ? 2 : votes.percAyes.toNumber()}
+            />
+            <SBar
+              variant="nay"
+              percentage={votes.percNays.eq(0) ? 2 : votes.percNays.toNumber()}
+            />
+          </>
+        )}
       </div>
 
       <Spacer size={4} />
 
       <div sx={{ flex: "row", justify: "space-between" }}>
-        <Text color="white" fs={14} fw={600}>
+        <Text
+          color={votes.percAyes.eq(0) ? "darkBlue300" : "white"}
+          fs={14}
+          fw={600}
+          tTransform="uppercase"
+        >
           {t("toast.sidebar.referendums.aye")}
         </Text>
-        <Text color="white" fs={14} fw={600}>
+        <Text
+          color={votes.percNays.eq(0) ? "darkBlue300" : "white"}
+          fs={14}
+          fw={600}
+          tTransform="uppercase"
+        >
           {t("toast.sidebar.referendums.nay")}
         </Text>
       </div>

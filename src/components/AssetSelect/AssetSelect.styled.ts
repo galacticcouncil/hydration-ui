@@ -1,8 +1,9 @@
 import { Button } from "components/Button/Button"
 import styled from "@emotion/styled"
 import { theme } from "theme"
+import { css } from "@emotion/react"
 
-export const SContainer = styled.label<{ error?: boolean }>`
+export const SContainer = styled.label<{ error?: boolean; disabled?: boolean }>`
   padding: 12px 18px 20px 18px;
   margin-top: 10px;
 
@@ -13,24 +14,27 @@ export const SContainer = styled.label<{ error?: boolean }>`
   border-bottom: 1px solid
     ${(p) => (p.error ? theme.colors.error : theme.colors.darkBlue400)};
 
-  :focus,
-  :focus-visible,
-  :focus-within,
-  :hover {
-    outline: none;
-
-    cursor: text;
-
-    background: rgba(${theme.rgbColors.primaryA15}, 0.12);
-
-    border-bottom: 1px solid
-      ${({ error }) =>
-        error ? theme.colors.error : theme.colors.brightBlue600};
-  }
-
   @media ${theme.viewport.gte.sm} {
     padding: 12px;
   }
+
+  ${({ disabled, error }) =>
+    !disabled &&
+    css`
+      :focus,
+      :focus-visible,
+      :focus-within,
+      :hover {
+        outline: none;
+
+        cursor: text;
+
+        background: rgba(${theme.rgbColors.primaryA15}, 0.12);
+
+        border-bottom: 1px solid
+          ${error ? theme.colors.error : theme.colors.brightBlue600};
+      }
+    `}
 `
 
 export const SMaxButton = styled(Button)`

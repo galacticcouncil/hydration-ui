@@ -13,7 +13,7 @@ export const ToastSidebarReferendums = () => {
     <ToastSidebarGroup title={t("toast.sidebar.referendums.title")}>
       <div sx={{ flex: "column", gap: 8 }}>
         {referendums.data.map((referendum) => (
-          <ReferendumCard key={referendum.id} {...referendum} />
+          <ReferendumCard key={referendum.id} type="toast" {...referendum} />
         ))}
       </div>
     </ToastSidebarGroup>
