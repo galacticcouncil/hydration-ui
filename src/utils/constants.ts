@@ -34,3 +34,5 @@ export const MAX_WITHDRAWAL_FEE = new BN(10000).div(1000000).multipliedBy(100)
 
 export const STABLECOIN_SYMBOL = import.meta.env
   .VITE_STABLECOIN_ASSET_SYMBOL as string
+
+export const REFETCH_INTERVAL = 60000
