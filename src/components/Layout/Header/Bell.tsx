@@ -9,6 +9,7 @@ import { InfoTooltip } from "../../InfoTooltip/InfoTooltip"
 import { useToast } from "state/toasts"
 import { useTranslation } from "react-i18next"
 import { useReferendums } from "api/democracy"
+import { motion } from "framer-motion"
 
 export const Bell = () => {
   const { setSidebar, toasts } = useToast()
@@ -41,7 +42,18 @@ export const Bell = () => {
         )}
         <SWrap onClick={() => setSidebar(true)}>
           <MaskContainer cropped={hasReferendum}>
-            <SBellIcon aria-label={t("toast.sidebar.title")} />
+            <motion.div
+              whileTap={{ rotate: 30 }}
+              transition={{
+                type: "spring",
+                mass: 1,
+                stiffness: 1067,
+                damping: 20,
+                duration: 0.3,
+              }}
+            >
+              <SBellIcon aria-label={t("toast.sidebar.title")} />
+            </motion.div>
           </MaskContainer>
           {hasReferendum && <SActiveReferendumIcon />}
         </SWrap>
