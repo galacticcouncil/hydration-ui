@@ -27,7 +27,7 @@ export const useDisplayValue = (props: Props) => {
   return { amount, symbol, isLoading }
 }
 
-export const useDisplayPrice = (id: string | u32) => {
+export const useDisplayPrice = (id: string | u32 | undefined) => {
   const displayAsset = useDisplayAssetStore()
   const spotPrice = useSpotPrice(id, displayAsset.id)
   const usdPrice = useCoingeckoUsdPrice()
