@@ -24,8 +24,8 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import { useAccountStore } from "state/store"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useSpotPrice } from "../../../../api/spotPrice"
-import { useDisplayAssetStore } from "utils/displayAsset"
+import { useSpotPrice } from "api/spotPrice"
+import { useDisplayPrice } from "utils/displayAsset"
 import { BN_0 } from "utils/constants"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "../Pool.styled"
@@ -142,10 +142,9 @@ export const LiquidityPosition = ({
   const { t } = useTranslation()
   const meta = useAssetMeta(position.assetId)
 
-  const displayAsset = useDisplayAssetStore()
-  const price = useSpotPrice(meta.data?.id, displayAsset.id)
+  const price = useDisplayPrice(meta.data?.id)
 
-  const shiftBy = meta?.data ? meta.data.decimals.neg().toNumber() : 0
+  const shiftBy = meta?.data ? meta.data.decimals.neg().toNumber() : 12
   const spotPrice = price.data?.spotPrice
   const providedAmountPrice = spotPrice
     ? position.providedAmount.multipliedBy(spotPrice).shiftedBy(shiftBy)
@@ -211,12 +210,16 @@ export const LiquidityPosition = ({
                   infoTooltipLoading ? (
                     <Skeleton width={200} height={10} />
                   ) : (
-                    t("liquidity.asset.positions.position.tooltip", {
-                      value: position.value.plus(
-                        position.lrna.multipliedBy(lrnaSpotPrice),
-                      ),
-                      numberSuffix: `${meta.data?.symbol ?? "N/A"}`,
-                    })
+                    <Text fs={11} fw={500}>
+                      {t("liquidity.asset.positions.position.tooltip")}
+                      <br />
+                      {t("value.token", {
+                        value: position.value.plus(
+                          position.lrna.multipliedBy(lrnaSpotPrice),
+                        ),
+                        numberSuffix: `${meta.data?.symbol ?? "N/A"}`,
+                      })}
+                    </Text>
                   )
                 }
               >
