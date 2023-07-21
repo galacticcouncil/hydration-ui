@@ -29,6 +29,7 @@ import { useDisplayAssetStore } from "utils/displayAsset"
 import { BN_0 } from "utils/constants"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "../Pool.styled"
+import Skeleton from "react-loading-skeleton"
 
 type Props = {
   pool: OmnipoolPool
@@ -150,8 +151,13 @@ export const LiquidityPosition = ({
     ? position.providedAmount.multipliedBy(spotPrice).shiftedBy(shiftBy)
     : BN_0
 
+  const providedAmountPriceLoading = meta.isLoading || price.isLoading
+
   const lrnaMeta = useLRNAMeta()
   const lrnaPrice = useSpotPrice(lrnaMeta.data?.id, meta.data?.id)
+  const lrnaSpotPrice = lrnaPrice.data?.spotPrice ?? BN_0
+
+  const infoTooltipLoading = lrnaMeta.isLoading || lrnaPrice.isLoading
 
   return (
     <SContainer>
@@ -178,7 +184,9 @@ export const LiquidityPosition = ({
                   numberSuffix: ` ${meta.data?.symbol ?? "N/A"}`,
                 })}
               </Text>
-              {spotPrice && (
+              {providedAmountPriceLoading ? (
+                <Skeleton width={50} height={7} />
+              ) : (
                 <DollarAssetValue
                   value={providedAmountPrice}
                   wrapper={(children) => (
@@ -198,18 +206,22 @@ export const LiquidityPosition = ({
               <Text fs={14} color="whiteish500">
                 {t("liquidity.asset.positions.position.currentValue")}
               </Text>
-              {lrnaPrice.data?.spotPrice && (
-                <InfoTooltip
-                  text={t("liquidity.asset.positions.position.tooltip", {
-                    value: position.value.plus(
-                      position.lrna.multipliedBy(lrnaPrice.data?.spotPrice),
-                    ),
-                    numberSuffix: `${meta.data?.symbol ?? "N/A"}`,
-                  })}
-                >
-                  <SInfoIcon />
-                </InfoTooltip>
-              )}
+              <InfoTooltip
+                text={
+                  infoTooltipLoading ? (
+                    <Skeleton width={200} height={10} />
+                  ) : (
+                    t("liquidity.asset.positions.position.tooltip", {
+                      value: position.value.plus(
+                        position.lrna.multipliedBy(lrnaSpotPrice),
+                      ),
+                      numberSuffix: `${meta.data?.symbol ?? "N/A"}`,
+                    })
+                  )
+                }
+              >
+                <SInfoIcon />
+              </InfoTooltip>
             </div>
             <div sx={{ flex: "column", align: "start" }}>
               <WalletAssetsHydraPositionsData
