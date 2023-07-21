@@ -7,10 +7,10 @@ import {
 import { SliceLabel } from "./components/SliceLabel/SliceLabel"
 import { PieSkeleton } from "./components/Skeleton/Skeleton"
 import { t } from "i18next"
-import { TOmnipoolOverviewData } from "sections/stats/sections/overview/data/OmnipoolOverview.utils"
 import { BN_0 } from "utils/constants"
 import { DoughnutChart } from "../DoughnutChart/DoughnutChart"
 import { EmotionJSX } from "@emotion/react/types/jsx-namespace"
+import BN from "bignumber.js"
 
 type TSlice = {
   percentage: number
@@ -21,23 +21,47 @@ type TSlice = {
   assets?: TLabelRest[]
 }
 
-type PieChartProps = {
-  data: TOmnipoolOverviewData
+type KeyOfType<T, V> = keyof {
+  [P in keyof T as T[P] extends V ? P : never]: P
+} &
+  keyof T
+
+type DataEntry = {
+  id: string
+  name: string
+  symbol: string
+  [key: string]: BN | string
+}
+
+type PieChartProps<T extends DataEntry> = {
+  data: Array<T>
+  property: Extract<KeyOfType<T, BN>, string>
   label?: ComponentProps<typeof DoughnutChart>["label"]
 }
 
-export const PieChart = ({ data, label }: PieChartProps) => {
-  const tvlTotal = data?.reduce(
-    (acc, omnipoolAsset) => omnipoolAsset.tvl.plus(acc),
+export const PieChart = <T extends DataEntry>({
+  data,
+  label,
+  property,
+}: PieChartProps<T>) => {
+  const getValue = (dataEntry: T): BN => {
+    const propValue = dataEntry[property]
+    return BN.isBigNumber(propValue) ? propValue : BN_0
+  }
+
+  const total = data?.reduce(
+    (acc, omnipoolAsset) => getValue(omnipoolAsset).plus(acc),
     BN_0,
   )
 
-  if (!data || tvlTotal.isNaN() || tvlTotal.isZero()) return <PieSkeleton />
+  if (!data || total.isNaN() || total.isZero()) {
+    return <PieSkeleton />
+  }
 
   const slices = data
     ?.reduce<TSlice[]>((acc, omnipoolAsset) => {
       const percentage = Number(
-        omnipoolAsset.tvl.div(tvlTotal).multipliedBy(100).toFixed(2),
+        getValue(omnipoolAsset).div(total).multipliedBy(100).toFixed(2),
       )
 
       if (percentage > 1) {
@@ -45,7 +69,7 @@ export const PieChart = ({ data, label }: PieChartProps) => {
           <SliceLabel
             key={percentage}
             symbol={omnipoolAsset.symbol}
-            tvl={omnipoolAsset.tvl}
+            value={getValue(omnipoolAsset)}
             percentage={percentage}
           />
         )
@@ -66,11 +90,17 @@ export const PieChart = ({ data, label }: PieChartProps) => {
             {
               name: omnipoolAsset.name,
               percentage,
-              tvl: omnipoolAsset.tvl,
+              value: getValue(omnipoolAsset),
             },
           ]
 
-          const label = <SliceLabelRest key={percentage} assets={assets} />
+          const label = (
+            <SliceLabelRest
+              key={percentage}
+              assets={assets}
+              property={property}
+            />
+          )
 
           return acc.map((slice) =>
             slice.symbol === "rest"
@@ -87,10 +117,16 @@ export const PieChart = ({ data, label }: PieChartProps) => {
             {
               name: omnipoolAsset.name,
               percentage,
-              tvl: omnipoolAsset.tvl,
+              value: getValue(omnipoolAsset),
             },
           ]
-          const label = <SliceLabelRest key={percentage} assets={assets} />
+          const label = (
+            <SliceLabelRest
+              key={percentage}
+              assets={assets}
+              property={property}
+            />
+          )
 
           acc.push({
             percentage,

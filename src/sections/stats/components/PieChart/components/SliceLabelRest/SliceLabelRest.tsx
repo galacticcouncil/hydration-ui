@@ -11,11 +11,18 @@ import { SRow, SSliceLabelContainer } from "./SliceLabelRest.styled"
 export type TLabelRest = {
   name: string
   percentage: number
-  tvl: BigNumber
+  value: BigNumber
 }
 
-export const SliceLabelRest = ({ assets }: { assets: TLabelRest[] }) => {
+export const SliceLabelRest = ({
+  assets,
+  property,
+}: {
+  assets: TLabelRest[]
+  property: string
+}) => {
   const { t } = useTranslation()
+
   return (
     <SSliceLabelContainer
       key="modal"
@@ -45,7 +52,9 @@ export const SliceLabelRest = ({ assets }: { assets: TLabelRest[] }) => {
           tTransform="uppercase"
           sx={{ color: "white", opacity: 0.4 }}
         >
-          {t("stats.overview.pie.rest.header.tvl")}
+          {t(
+            `stats.pie.rest.header.${property}` as unknown as TemplateStringsArray,
+          )}
         </Text>
       </SRow>
       <Spacer size={24} />
@@ -62,7 +71,7 @@ export const SliceLabelRest = ({ assets }: { assets: TLabelRest[] }) => {
                 {asset.percentage}%
               </Text>
               <Text fs={14} color="basic100">
-                <DisplayValue value={asset.tvl} isUSD />
+                <DisplayValue value={asset.value} isUSD />
               </Text>
             </SRow>
             {isNotLastEl ? (

@@ -1,18 +1,18 @@
-import { PieChart } from "sections/stats/components/PieChart/PieChart"
-import { PieTotalValue } from "../PieTotalValue/PieTotalValue"
 import { PieSkeleton } from "sections/stats/components/PieChart/components/Skeleton/Skeleton"
 import { ChartSwitchMobile } from "sections/stats/components/ChartSwitchMobile/ChartSwitchMobile"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useMemo, useState } from "react"
-import { SContainerVertical } from "../../StatsOverview.styled"
-import { TOmnipoolOverviewData } from "../../data/OmnipoolOverview.utils"
 import { BN_0 } from "utils/constants"
-import { useTranslation } from "react-i18next"
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
+import { SContainerVertical } from "../StatsPOL.styled"
+import { PieTotalValue } from "../../overview/components/PieTotalValue/PieTotalValue"
+import { TUseOmnipoolAssetDetailsData } from "../../../StatsPage.utils"
+import { PieChart } from "../../../components/PieChart/PieChart"
+import { useTranslation } from "react-i18next"
 
 type PieWrapperProps = {
-  data: TOmnipoolOverviewData
+  data: TUseOmnipoolAssetDetailsData
   isLoading: boolean
 }
 
@@ -23,25 +23,16 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
     "overview",
   )
 
-  const { totalTvl, totalPol, totalVolume } = useMemo(() => {
-    return data.reduce(
-      (acc, omnipoolAsset) => {
-        acc = {
-          totalTvl: acc.totalTvl.plus(omnipoolAsset.tvl),
-          totalPol: acc.totalPol.plus(omnipoolAsset.pol),
-          totalVolume: acc.totalVolume.plus(omnipoolAsset.volume),
-        }
-        return acc
-      },
-      { totalTvl: BN_0, totalPol: BN_0, totalVolume: BN_0 },
-    )
-  }, [data])
+  const totalPol = useMemo(
+    () => data.reduce((acc, value) => acc.plus(value.pol), BN_0),
+    [data],
+  )
 
   const pieChartValues = (
     <div sx={{ flex: "column", gap: 20 }}>
       <PieTotalValue
-        title={t("stats.overview.pie.values.tvl")}
-        data={totalTvl}
+        title={t("stats.pol.total")}
+        data={totalPol}
         isLoading={isLoading}
       />
       <div
@@ -53,13 +44,8 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
         }}
       >
         <PieTotalValue
-          title={t("stats.overview.pie.values.pol")}
+          title={t("stats.pol.volume")}
           data={totalPol}
-          isLoading={isLoading}
-        />
-        <PieTotalValue
-          title={t("stats.overview.pie.values.volume")}
-          data={totalVolume.div(2)}
           isLoading={isLoading}
         />
       </div>
@@ -81,7 +67,7 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
       {activeSection === "overview" ? (
         <>
           {!isLoading ? (
-            <PieChart data={data} property="tvl" />
+            <PieChart data={data} property="pol" />
           ) : (
             <PieSkeleton />
           )}
