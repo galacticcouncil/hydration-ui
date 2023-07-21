@@ -466,6 +466,8 @@
   "stats.lrna.distribution.inside": "Inside Omnipool",
   "stats.lrna.distribution.outside": "Outside of Omnipool",
   "stats.lrna.status.burning": "Burning",
+  "stats.pol.total": "Protocol Owned Liquidity",
+  "stats.pol.volume": "24h volume",
   "stats.omnipool.navigation.back": "Back to Stats",
   "stats.omnipool.stats.card.vlm": "24 volume",
   "stats.omnipool.stats.card.pol": "HydraDX POL",

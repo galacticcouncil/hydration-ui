@@ -9,6 +9,7 @@ import { SContainerVertical } from "../StatsPOL.styled"
 import { PieTotalValue } from "../../overview/components/PieTotalValue/PieTotalValue"
 import { TUseOmnipoolAssetDetailsData } from "../../../StatsPage.utils"
 import { PieChart } from "../../../components/PieChart/PieChart"
+import { useTranslation } from 'react-i18next'
 
 type PieWrapperProps = {
   data: TUseOmnipoolAssetDetailsData
@@ -16,14 +17,14 @@ type PieWrapperProps = {
 }
 
 export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
+  const { t } = useTranslation();
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [activeSection, setActiveSection] = useState<"overview" | "chart">(
     "overview",
   )
 
   const totalPol = useMemo(
-    () =>
-      Object.values(data ?? {}).reduce(
+    () => data.reduce(
         (acc, value) => acc.plus(value.pol),
         BN_0,
       ),
@@ -33,7 +34,7 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
   const pieChartValues = (
     <div sx={{ flex: "column", gap: 20 }}>
       <PieTotalValue
-        title="Protocol Owned Liquidity"
+        title={t('stats.pol.total')}
         data={totalPol}
         isLoading={isLoading}
       />
@@ -46,7 +47,7 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
         }}
       >
         <PieTotalValue
-          title="24h volume"
+          title={t('stats.pol.volume')}
           data={totalPol}
           isLoading={isLoading}
         />
