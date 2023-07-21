@@ -25,9 +25,9 @@ import { useOmnipoolPosition } from "api/omnipool"
 import { useDisplayPrice } from "utils/displayAsset"
 import { getFloatingPointAmount } from "utils/balance"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { SInfoIcon } from "sections/pools/pool/details/PoolValue.styled"
 import { useSpotPrice } from "api/spotPrice"
 import { useApiIds } from "api/consts"
+import { SInfoIcon } from '../../pool/Pool.styled'
 
 function FarmingPositionDetailsButton(props: {
   pool: OmnipoolPool
