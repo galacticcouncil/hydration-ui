@@ -10,18 +10,22 @@ import {
   TableRowStats,
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
-import { useOmnipoolAssetsTable } from "./OmnipoolAssetsTable.utils"
-import { TUseOmnipoolAssetDetailsData } from "../../../../StatsPage.utils"
+import {
+  OmnipoolAssetsTableColumn,
+  useOmnipoolAssetsTable,
+} from "./OmnipoolAssetsTable.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "@tanstack/react-location"
+import { TUseOmnipoolAssetDetailsData } from "../../StatsPage.utils"
 
 type Props = {
   data: TUseOmnipoolAssetDetailsData
+  columns: OmnipoolAssetsTableColumn[]
 }
 
-export const OmnipoolAssetsTable = ({ data }: Props) => {
+export const OmnipoolAssetsTable = ({ data, columns }: Props) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const navigate = useNavigate()
@@ -35,7 +39,7 @@ export const OmnipoolAssetsTable = ({ data }: Props) => {
     })
   }
 
-  const table = useOmnipoolAssetsTable(data)
+  const table = useOmnipoolAssetsTable(data, columns)
 
   return (
     <StatsTableContainer>
