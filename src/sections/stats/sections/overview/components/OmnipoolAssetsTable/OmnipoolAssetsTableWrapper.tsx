@@ -1,5 +1,5 @@
 import { OmnipoolAssetsTable } from "./OmnipoolAssetsTable"
-import { useOmnipoolAssetsTableData } from "./data/OmnipoolAssetsTableData.utils"
+import { useOmnipoolAssetDetails } from "../../../../StatsPage.utils"
 import { useApiPromise } from "utils/api"
 import { isApiLoaded } from "utils/helpers"
 import { OmnipoolAssetsTableSkeleton } from "./skeleton/OmnipoolAssetsTableSkeleton"
@@ -13,7 +13,7 @@ export const OmnipoolAssetsTableWrapper = () => {
 }
 
 export const OmnipoolAssetsTableWrapperData = () => {
-  const omnipoolAssets = useOmnipoolAssetsTableData()
+  const omnipoolAssets = useOmnipoolAssetDetails()
 
   if (omnipoolAssets.isLoading && !omnipoolAssets.data.length)
     return <OmnipoolAssetsTableSkeleton />

@@ -5,6 +5,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { u128, u32 } from "@polkadot/types-codec"
 import { ITuple } from "@polkadot/types-codec/types"
 import { undefinedNoop } from "utils/helpers"
+import { REFETCH_INTERVAL } from "../utils/constants"
 
 export const useOmnipoolAsset = (id: u32 | string) => {
   const api = useApiPromise()
@@ -62,7 +63,9 @@ export const useOmnipoolPositions = (
   })
 }
 
-export const useOmnipoolPosition = (itemId: u128 | u32 | undefined) => {
+export const useOmnipoolPosition = (
+  itemId: u128 | u32 | string | undefined,
+) => {
   const api = useApiPromise()
 
   return useQuery(
@@ -124,3 +127,19 @@ export const getOmnipoolPositions =
 
     return data
   }
+
+export const getHubAssetImbalance = (api: ApiPromise) =>
+  api.query.omnipool.hubAssetImbalance()
+
+export const useHubAssetImbalance = () => {
+  const api = useApiPromise()
+
+  return useQuery(
+    QUERY_KEYS.hubAssetImbalance(),
+    () => getHubAssetImbalance(api),
+    {
+      enabled: !!api,
+      refetchInterval: REFETCH_INTERVAL,
+    },
+  )
+}

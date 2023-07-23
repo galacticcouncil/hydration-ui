@@ -41,14 +41,9 @@ export const useStakingAccountsTableSkeleton = () => {
       ),
     }),
     display({
-      id: "amount",
-      header: t("staking.dashboard.table.stakedAmount"),
+      id: "actionPoints",
+      header: t("staking.dashboard.table.actionPoints"),
       cell: () => <Skeleton height={16} width={70} />,
-    }),
-    display({
-      id: "dollarValue",
-      header: t("staking.dashboard.table.currentValue"),
-      cell: ({ row }) => <Skeleton height={16} width={70} />,
     }),
     display({
       id: "link",

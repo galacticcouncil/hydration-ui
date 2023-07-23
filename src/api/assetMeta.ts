@@ -4,6 +4,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { u32, u8 } from "@polkadot/types"
 import { Maybe } from "utils/helpers"
+import { getApiIds } from "./consts"
 
 export const useAssetMeta = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
@@ -69,5 +70,25 @@ export const getAssetMeta = (api: ApiPromise, id: u32 | string) => async () => {
   }
 
   const res = await api.query.assetRegistry.assetMetadataMap(id)
-  return { id, data: res.unwrapOr(null) }
+  return {
+    id,
+    data: {
+      symbol: res.unwrap().symbol.toUtf8(),
+      decimals: res.unwrap().decimals,
+    },
+  }
+}
+
+export const getLRNAMeta = async (api: ApiPromise) => {
+  const apiIds = await getApiIds(api)()
+  const hubId = apiIds?.hubId
+
+  return getAssetMeta(api, hubId)()
+}
+
+export const useLRNAMeta = () => {
+  const api = useApiPromise()
+  return useQuery(QUERY_KEYS.LRNAMeta(), () => getLRNAMeta(api), {
+    enabled: !!api,
+  })
 }

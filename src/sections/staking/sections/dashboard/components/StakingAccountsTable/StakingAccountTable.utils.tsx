@@ -22,23 +22,19 @@ import { shortenAccountAddress } from "utils/formatting"
 const dummyData = [
   {
     account: "7NPoMQbiA6trJKkjB35uk96MeJD4PGWkLQLH7k7hXEkZpiba",
-    amount: BN(1000000),
-    dollarValue: BN(2000),
+    actionPoints: BN(2000),
   },
   {
     account: "7NPoMQbiA6trJKkjB32kk96MeJD4PGWkLQLH7k7hXEkZpipo",
-    amount: BN(2300000),
-    dollarValue: BN(900),
+    actionPoints: BN(900),
   },
   {
     account: "7NPoMQbiA6trJKkjB32kk96MeJD4PGWkLQLHhXEkZ2jd",
-    amount: BN(20000),
-    dollarValue: BN(9100),
+    actionPoints: BN(9100),
   },
   {
     account: "7NPoMQbiA6trJKkjB32kk96MeJD4PGWkLQLH7k7hXEk3oPo",
-    amount: BN(2340000),
-    dollarValue: BN(9200),
+    actionPoints: BN(9200),
   },
 ]
 
@@ -78,28 +74,14 @@ export const useStakingAccountsTable = () => {
         </div>
       ),
     }),
-    accessor("amount", {
-      id: "amount",
-      header: t("staking.dashboard.table.stakedAmount"),
-      sortingFn: (a, b) => (a.original.amount.gt(b.original.amount) ? 1 : -1),
-      cell: ({ row }) => (
-        <Text
-          tAlign={isDesktop ? "center" : "right"}
-          color="white"
-          fs={[13, 16]}
-        >
-          {t("value.usd", { amount: row.original.amount })}
-        </Text>
-      ),
-    }),
-    accessor("dollarValue", {
-      id: "dollarValue",
-      header: t("staking.dashboard.table.currentValue"),
+    accessor("actionPoints", {
+      id: "actionPoints",
+      header: t("staking.dashboard.table.actionPoints"),
       sortingFn: (a, b) =>
-        a.original.dollarValue.gt(b.original.dollarValue) ? 1 : -1,
+        a.original.actionPoints.gt(b.original.actionPoints) ? 1 : -1,
       cell: ({ row }) => (
-        <Text tAlign="center" color="white">
-          {t("value.usd", { amount: row.original.dollarValue })}
+        <Text tAlign="right" color="white">
+          {t("value.usd", { amount: row.original.actionPoints })}
         </Text>
       ),
     }),

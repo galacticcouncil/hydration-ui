@@ -1,18 +1,20 @@
-import BigNumber from "bignumber.js"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { motion } from "framer-motion"
 import { useTranslation } from "react-i18next"
 
 type SliceLabelProps = {
-  symbol: string
+  symbol?: string
   percentage: number
-  value: BigNumber
+  text: string
 }
 
-export const SliceLabel = ({ symbol, percentage, value }: SliceLabelProps) => {
+export const DistributionSliceLabel = ({
+  percentage,
+  symbol,
+  text,
+}: SliceLabelProps) => {
   const { t } = useTranslation()
 
   return (
@@ -22,15 +24,15 @@ export const SliceLabel = ({ symbol, percentage, value }: SliceLabelProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Icon size={[20, 36]} icon={getAssetLogo(symbol)} />
+      <Icon size={[20, 36]} icon={getAssetLogo("LRNA")} />
       <Text color="basic100" fs={[20, 34]}>
         {t("value.percentage", { value: percentage })}
       </Text>
       <Text color="basic100" fs={[10, 20]}>
-        <DisplayValue value={value} isUSD />
-      </Text>
-      <Text color="basic100" fs={[10, 20]}>
         {symbol}
+      </Text>
+      <Text color="basic100" fs={[10, 12]}>
+        {text}
       </Text>
     </motion.div>
   )

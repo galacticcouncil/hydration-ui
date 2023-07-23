@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 
 type PieTotalValueProps = {
   title: string
-  data: BN
+  data?: BN
   isLoading: boolean
   compact?: boolean
 }
@@ -18,19 +18,21 @@ export const TotalValue = ({
   isLoading,
   compact,
 }: PieTotalValueProps) => {
-  const { i18n } = useTranslation()
+  const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-
-  if (isLoading) return <Skeleton width={200} height={isDesktop ? 42 : 20} />
 
   return (
     <div sx={{ flex: "column", gap: 8 }}>
       <Text color="brightBlue300">{title}</Text>
-      <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
-        <Text fs={[20, 42]} font="FontOver">
-          {i18n.format(data, compact ? "compact" : "bignumber")}
-        </Text>
-      </div>
+      {isLoading ? (
+        <Skeleton width={200} height={isDesktop ? 42 : 20} />
+      ) : (
+        <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
+          <Text fs={[20, 42]} font="FontOver">
+            {t(compact ? "value.compact" : "value", { value: data })}
+          </Text>
+        </div>
+      )}
     </div>
   )
 }
