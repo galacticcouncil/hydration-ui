@@ -1,5 +1,4 @@
 import { useApiPromise } from "utils/api"
-import { OmnipoolAssetsTableWrapper } from "./components/OmnipoolAssetsTable/OmnipoolAssetsTableWrapper"
 import { PieWrapper } from "./components/PieWrapper/PieWrapper"
 import { StatsTiles } from "../../components/StatsTiles/StatsTiles"
 import { isApiLoaded } from "utils/helpers"
@@ -9,6 +8,7 @@ import { theme } from "theme"
 import { SContainerVertical } from "./StatsOverview.styled"
 import { RecentTradesTableWrapper } from "../../components/RecentTradesTable/RecentTradesTableWrapper"
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
+import { OmnipoolAssetsTableWrapper } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
 
 export const StatsOverviewData = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -36,9 +36,7 @@ export const StatsOverviewData = () => {
       </div>
 
       <StatsTiles />
-
       <OmnipoolAssetsTableWrapper />
-
       <RecentTradesTableWrapper />
     </div>
   )
