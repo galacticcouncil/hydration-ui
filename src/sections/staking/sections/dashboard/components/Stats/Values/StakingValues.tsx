@@ -10,6 +10,8 @@ import { SStakingValuesContainer } from "./StakingValues.styled"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
+import { TStakingData } from "api/staking"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 
 const StakingValue = ({
   logo,
@@ -47,7 +49,7 @@ export const StakingValues = ({
   isStakingPosition,
 }: {
   loading: boolean
-  data: any
+  data: TStakingData
   isStakingPosition: boolean
 }) => {
   const { t } = useTranslation()
@@ -72,10 +74,14 @@ export const StakingValues = ({
         ) : (
           <div sx={{ flex: "column", align: ["start", "center"] }}>
             <Text fs={[19, 24]} lh={[19, 24]} color="white" font="FontOver">
-              -- HDX
+              {t("value.tokenWithSymbol", {
+                value: data?.availableBalance,
+                symbol: "HDX",
+                fixedPointScale: 12,
+              })}
             </Text>
             <Text fs={14} color="darkBlue200">
-              ≈$0
+              <DisplayValue value={data?.availableBalanceDollar} />
             </Text>
           </div>
         )
@@ -145,10 +151,14 @@ export const StakingValues = ({
           ) : (
             <div sx={{ flex: "column", align: ["start", "center"] }}>
               <Text fs={[19, 24]} lh={[19, 24]} color="white" font="FontOver">
-                -- HDX
+                {t("value.tokenWithSymbol", {
+                  value: data?.stakingPosition?.stake,
+                  symbol: "HDX",
+                  fixedPointScale: 12,
+                })}
               </Text>
               <Text fs={14} color="darkBlue200">
-                ≈$0
+                <DisplayValue value={data?.stakeDollar} />
               </Text>
             </div>
           )
@@ -175,7 +185,7 @@ export const StakingValues = ({
               <Skeleton width={100} height={24} />
             </div>
           ) : (
-            "21"
+            t("value", { value: data?.stakingPosition?.actionPoints })
           )
         }
       />

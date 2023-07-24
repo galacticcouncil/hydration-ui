@@ -2,34 +2,62 @@ import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { useAccountStore } from "state/store"
+import { useAccountStore, useStore } from "state/store"
 import { FormValues } from "utils/helpers"
 import BigNumber from "bignumber.js"
-import { SummaryRow } from "components/Summary/SummaryRow"
 import { BN_10 } from "utils/constants"
 import { useTokenBalance } from "api/balances"
 import { Button } from "components/Button/Button"
-import { Separator } from "components/Separator/Separator"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
-import { Text } from "components/Typography/Text/Text"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
-import Skeleton from "react-loading-skeleton"
+import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
+import { getFixedPointAmount } from "utils/balance"
+import { useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { Spacer } from "components/Spacer/Spacer"
 
-const stakeTokenId = "0"
-
-export const Stake = ({ loading }: { loading: boolean }) => {
+export const Stake = ({
+  loading,
+  stakingId,
+  minStake,
+}: {
+  loading: boolean
+  minStake?: BigNumber
+  stakingId?: number
+}) => {
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
 
+  const api = useApiPromise()
+  const { createTransaction } = useStore()
   const { account } = useAccountStore()
   const form = useForm<{ amount: string }>()
 
   const { data: assetBalance } = useTokenBalance(
-    loading ? undefined : stakeTokenId,
+    loading ? undefined : NATIVE_ASSET_ID,
     account?.address,
   )
 
   const onSubmit = async (values: FormValues<typeof form>) => {
-    console.log("TODO: submitted", values)
+    const amount = getFixedPointAmount(values.amount, 12).toString()
+
+    const isStakePosition = stakingId != null && false
+
+    if (isStakePosition) {
+      await createTransaction({
+        tx: api.tx.staking.increaseStake(stakingId, amount),
+      })
+    } else {
+      await createTransaction({ tx: api.tx.staking.stake(amount) })
+    }
+
+    await queryClient.refetchQueries({
+      queryKey: [
+        QUERY_KEYS.staking,
+        QUERY_KEYS.circulatingSupply,
+        QUERY_KEYS.stakingPosition(stakingId),
+      ],
+    })
   }
 
   return (
@@ -75,6 +103,17 @@ export const Stake = ({ loading }: { loading: boolean }) => {
                 } catch {}
                 return t("liquidity.add.modal.validation.notEnoughBalance")
               },
+              minStake: (value) => {
+                const minStakeValue = minStake?.shiftedBy(-12) ?? 0
+
+                try {
+                  if (!new BigNumber(value).lt(minStakeValue ?? 0)) return true
+                } catch {}
+                return t("staking.dashboard.form.stake.minStakeError", {
+                  value: minStakeValue,
+                  symbol: "HDX",
+                })
+              },
             },
           }}
           render={({
@@ -93,23 +132,14 @@ export const Stake = ({ loading }: { loading: boolean }) => {
                 name={name}
                 value={value}
                 onChange={onChange}
-                asset={stakeTokenId}
+                asset={NATIVE_ASSET_ID}
                 error={error?.message}
               />
             )
           }
         />
-        <SummaryRow
-          label={t("staking.dashboard.form.stake.transactionCost")}
-          content={
-            loading ? <Skeleton height={12} width={30} /> : <Text>TODO</Text>
-          }
-          /*content={t("value.percentage", {
-            value: 0,
-          })}*/
-        />
 
-        <Separator sx={{ mb: 12 }} />
+        <Spacer size={20} />
 
         {account ? (
           <Button variant="primary" type="submit" disabled={loading}>

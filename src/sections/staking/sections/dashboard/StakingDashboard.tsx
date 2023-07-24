@@ -8,6 +8,7 @@ import { Stats } from "./components/Stats/Stats"
 import { StakingAccountsTableWrapperData } from "./components/StakingAccountsTable/StakingAcoountsTableWrapper"
 import { StakingAccountSkeleton } from "./components/StakingAccountsTable/skeleton/StakingAccountSkeleton"
 import { Referenda, ReferendaWrapper } from "./components/Referenda/Referenda"
+import { useStakingData } from "api/staking"
 
 export const StakingDashboard = () => {
   const api = useApiPromise()
@@ -19,12 +20,13 @@ export const StakingDashboard = () => {
 
 export const StakingData = () => {
   const { account } = useAccountStore()
+  const staking = useStakingData()
 
   return (
     <div sx={{ flex: ["column-reverse", "row"], gap: 30 }}>
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
         <StakingGuide />
-        <Stats isConnected={!!account} />
+        <Stats data={staking.data} loading={staking.isLoading} />
         <ReferendaWrapper />
         <StakingAccountsTableWrapperData />
       </div>
@@ -33,7 +35,7 @@ export const StakingData = () => {
         sx={{ flex: ["column-reverse", "column"], gap: 28 }}
         css={{ flex: 2 }}
       >
-        <StakingInputSection />
+        <StakingInputSection data={staking.data} loading={staking.isLoading} />
         {account && <AvailableRewards />}
       </div>
     </div>
@@ -45,7 +47,7 @@ export const StakingSkeleton = () => {
     <div sx={{ flex: ["column-reverse", "row"], gap: 30, flexWrap: "wrap" }}>
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
         <StakingGuide />
-        <Stats isConnected={false} loading />
+        <Stats loading />
         <Referenda loading />
         <StakingAccountSkeleton />
       </div>

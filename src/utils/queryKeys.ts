@@ -205,16 +205,19 @@ export const QUERY_KEYS = {
     address,
     asset,
   ],
-  uniques: (address: string | AccountId32, collectionId: string | u128) => [
+  uniques: (address?: string | AccountId32, collectionId?: string | u128) => [
     "uniques",
-    address.toString(),
-    collectionId.toString(),
+    address?.toString(),
+    collectionId?.toString(),
   ],
-  uniquesLive: (address: string | AccountId32, collectionId: string | u128) => [
+  uniquesLive: (
+    address?: string | AccountId32,
+    collectionId?: string | u128,
+  ) => [
     QUERY_KEY_PREFIX,
     "uniques",
-    address.toString(),
-    collectionId.toString(),
+    address?.toString(),
+    collectionId?.toString(),
   ],
   uniquesAsset: (collectionId: string | u128) => [
     "uniquesAsset",
@@ -292,4 +295,7 @@ export const QUERY_KEYS = {
 
     return key
   },
+  circulatingSupply: ["circulatingSupply"],
+  staking: ["staking"],
+  stakingPosition: (id: number | undefined) => ["totalStaking", id],
 } as const

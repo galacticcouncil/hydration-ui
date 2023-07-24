@@ -23,7 +23,7 @@ export const PieChart = styled(
     const calculatedPercentage = 0.56 * percentage
 
     return (
-      <svg width={RADIUS * 2} height={RADIUS + 30}>
+      <svg width={RADIUS * 2} height={RADIUS + 60}>
         <foreignObject
           width="100%"
           height="100%"
