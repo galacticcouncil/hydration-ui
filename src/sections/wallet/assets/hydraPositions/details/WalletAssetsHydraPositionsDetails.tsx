@@ -17,10 +17,9 @@ export const WalletAssetsHydraPositionsDetails = ({
   lrna,
   amountDisplay,
 }: Props) => {
-  const tKey =
-    lrna?.gt(0)
-      ? "wallet.assets.hydraPositions.data.valueLrna"
-      : "wallet.assets.hydraPositions.data.value"
+  const tKey = lrna?.gt(0)
+    ? "wallet.assets.hydraPositions.data.valueLrna"
+    : "wallet.assets.hydraPositions.data.value"
 
   return (
     <div sx={{ m: "auto", flex: "column" }}>
