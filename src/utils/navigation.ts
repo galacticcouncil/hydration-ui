@@ -21,6 +21,7 @@ export const LINKS = {
   statsOverview: "/stats/overview",
   statsPOL: "/stats/POL",
   statsLRNA: "/stats/LRNA",
+  statsOmnipool: "/stats/overview/omnipool",
   staking: "/staking",
   stakingDashboard: "/staking/dashboard",
   stakingGovernance: "/staking/governance",

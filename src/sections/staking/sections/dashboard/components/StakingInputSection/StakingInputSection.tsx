@@ -5,6 +5,7 @@ import {
   SStakeTab,
 } from "./StakingInputSection.styled"
 import { Stake } from "./Stake/Stake"
+import { Unstake } from "./Unstake/Unstake"
 
 const stakeActions = ["stake", "unstake"] as const
 
@@ -28,7 +29,11 @@ export const StakingInputSection = ({ loading }: { loading?: boolean }) => {
         ))}
       </SSectionHeader>
       <div sx={{ p: "0px 20px 24px" }}>
-        {activeStakeAction === "stake" ? <Stake loading={!!loading} /> : null}
+        {activeStakeAction === "stake" ? (
+          <Stake loading={!!loading} />
+        ) : (
+          <Unstake loading={!!loading} />
+        )}
       </div>
     </SSectionContainer>
   )

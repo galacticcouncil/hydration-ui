@@ -82,10 +82,14 @@ export const Stake = ({ loading }: { loading: boolean }) => {
             fieldState: { error },
           }) =>
             loading ? (
-              <AssetSelectSkeleton title="Amount" name={name} />
+              <AssetSelectSkeleton
+                title={t("staking.dashboard.form.stake.inputTitle")}
+                name={name}
+                balanceLabel={t("selectAsset.balance.label")}
+              />
             ) : (
               <WalletTransferAssetSelect
-                title="Amount"
+                title={t("staking.dashboard.form.stake.inputTitle")}
                 name={name}
                 value={value}
                 onChange={onChange}

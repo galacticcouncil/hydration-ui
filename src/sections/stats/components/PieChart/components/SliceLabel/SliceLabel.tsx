@@ -9,10 +9,10 @@ import { useTranslation } from "react-i18next"
 type SliceLabelProps = {
   symbol: string
   percentage: number
-  tvl: BigNumber
+  value: BigNumber
 }
 
-export const SliceLabel = ({ symbol, percentage, tvl }: SliceLabelProps) => {
+export const SliceLabel = ({ symbol, percentage, value }: SliceLabelProps) => {
   const { t } = useTranslation()
 
   return (
@@ -27,7 +27,7 @@ export const SliceLabel = ({ symbol, percentage, tvl }: SliceLabelProps) => {
         {t("value.percentage", { value: percentage })}
       </Text>
       <Text color="basic100" fs={[10, 20]}>
-        <DisplayValue value={tvl} isUSD />
+        <DisplayValue value={value} isUSD />
       </Text>
       <Text color="basic100" fs={[10, 20]}>
         {symbol}

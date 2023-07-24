@@ -36,3 +36,25 @@ export const getUniques =
 
     return data
   }
+
+export const useUniquesAsset = (
+  collectionId: string | u128,
+  noRefresh?: boolean,
+) => {
+  const api = useApiPromise()
+
+  return useQuery(
+    noRefresh
+      ? QUERY_KEYS.uniquesAsset(collectionId)
+      : QUERY_KEYS.uniquesAssetLive(collectionId),
+    getUniquesAsset(api, collectionId),
+    { enabled: !!collectionId },
+  )
+}
+
+export const getUniquesAsset =
+  (api: ApiPromise, collectionId: string | u128) => async () => {
+    const res = await api.query.uniques.asset(collectionId)
+
+    return res
+  }

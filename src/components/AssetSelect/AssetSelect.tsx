@@ -26,6 +26,7 @@ export const AssetSelect = (props: {
 
   title: ReactNode
   className?: string
+  disabled?: boolean
 
   asset: u32 | string
   assetName: Maybe<string>
@@ -33,6 +34,8 @@ export const AssetSelect = (props: {
   assetIcon: Maybe<ReactNode>
   decimals: Maybe<number>
   balance: Maybe<BigNumber>
+  balanceLabel: string
+  withoutMaxValue?: boolean
 
   onBlur?: (v: string) => void
   onChange: (v: string) => void
@@ -54,6 +57,7 @@ export const AssetSelect = (props: {
         className={props.className}
         htmlFor={props.name}
         error={!!props.error}
+        disabled={props.disabled}
       >
         <div sx={{ flex: "row", justify: "space-between" }}>
           <Text
@@ -65,41 +69,43 @@ export const AssetSelect = (props: {
           >
             {props.title}
           </Text>
-          <div
-            sx={{ flex: "row", align: "center", pt: [5, 0], justify: "end" }}
-          >
-            <Text
-              fs={11}
-              lh={16}
-              sx={{ mr: 5 }}
-              css={{ color: `rgba(${theme.rgbColors.white}, 0.7)` }}
+          {!props.withoutMaxValue && (
+            <div
+              sx={{ flex: "row", align: "center", pt: [5, 0], justify: "end" }}
             >
-              {t("selectAsset.balance.label")}
-            </Text>
-            <Text fs={11} lh={16} sx={{ mr: 5 }}>
-              {t("selectAsset.balance.value", {
-                balance: props.balance,
-                fixedPointScale: props.decimals ?? 12,
-                type: "token",
-              })}
-            </Text>
+              <Text
+                fs={11}
+                lh={16}
+                sx={{ mr: 5 }}
+                css={{ color: `rgba(${theme.rgbColors.white}, 0.7)` }}
+              >
+                {props.balanceLabel}
+              </Text>
+              <Text fs={11} lh={16} sx={{ mr: 5 }}>
+                {t("selectAsset.balance.value", {
+                  balance: props.balance,
+                  fixedPointScale: props.decimals ?? 12,
+                  type: "token",
+                })}
+              </Text>
 
-            <SMaxButton
-              size="micro"
-              text={t("selectAsset.button.max")}
-              onClick={(e) => {
-                e.preventDefault()
-                if (props.decimals != null && props.balance != null) {
-                  const value = getFloatingPointAmount(
-                    props.balance,
-                    props.decimals,
-                  ).toString()
-                  props.onChange(value)
-                  props.onBlur?.(value)
-                }
-              }}
-            />
-          </div>
+              <SMaxButton
+                size="micro"
+                text={t("selectAsset.button.max")}
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (props.decimals != null && props.balance != null) {
+                    const value = getFloatingPointAmount(
+                      props.balance,
+                      props.decimals,
+                    ).toString()
+                    props.onChange(value)
+                    props.onBlur?.(value)
+                  }
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <div
@@ -140,6 +146,7 @@ export const AssetSelect = (props: {
           </SSelectAssetButton>
 
           <AssetInput
+            disabled={props.disabled}
             value={props.value}
             name={props.name}
             label={t("selectAsset.input.label")}

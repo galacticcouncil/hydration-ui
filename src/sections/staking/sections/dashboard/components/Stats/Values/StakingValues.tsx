@@ -3,7 +3,7 @@ import { Text } from "components/Typography/Text/Text"
 import { ReactComponent as AvailableBalance } from "assets/icons/HydraLogo.svg"
 import { ReactComponent as StakedBalance } from "assets/icons/StakedBalanceIcon.svg"
 import { ReactComponent as StakedMultiplier } from "assets/icons/StakedMultiplier.svg"
-import { ReactComponent as StakedAPR } from "assets/icons/StakedAPR.svg"
+import { ReactComponent as ProjectedRewardsIcon } from "assets/icons/ProjectedRewardsIcon.svg"
 import Skeleton from "react-loading-skeleton"
 import { Separator } from "components/Separator/Separator"
 import { SStakingValuesContainer } from "./StakingValues.styled"
@@ -83,10 +83,40 @@ export const StakingValues = ({
     />
   )
 
+  const projectedRewards = (
+    <StakingValue
+      logo={
+        <Icon
+          size={24}
+          sx={{ color: "brightBlue300" }}
+          icon={<ProjectedRewardsIcon />}
+        />
+      }
+      title={t("staking.dashboard.stats.projectdRewards")}
+      value={
+        loading ? (
+          <div sx={{ flex: "column", gap: 2 }}>
+            <Skeleton width={100} height={24} />
+          </div>
+        ) : (
+          "5%"
+        )
+      }
+    />
+  )
+
   if (!isStakingPosition)
     return (
-      <div css={{ alignSelf: !isDesktop ? "flex-start" : undefined }}>
+      <div
+        sx={{ flex: ["column", "row"], justify: "space-between" }}
+        css={{ rowGap: 28 }}
+      >
         {availableBalanceValue}
+        <Separator
+          orientation={isDesktop ? "vertical" : "horizontal"}
+          sx={{ height: [1, 35], m: "auto" }}
+        />
+        {projectedRewards}
       </div>
     )
 
@@ -138,14 +168,14 @@ export const StakingValues = ({
             icon={<StakedMultiplier />}
           />
         }
-        title={t("staking.dashboard.stats.multiplier")}
+        title={t("staking.dashboard.stats.actionPoints")}
         value={
           loading ? (
             <div sx={{ flex: "column", gap: 2 }}>
               <Skeleton width={100} height={24} />
             </div>
           ) : (
-            "2X"
+            "21"
           )
         }
       />
@@ -153,25 +183,7 @@ export const StakingValues = ({
         orientation={isDesktop ? "vertical" : "horizontal"}
         sx={{ height: [1, 35], m: "auto" }}
       />
-      <StakingValue
-        logo={
-          <Icon
-            size={24}
-            sx={{ color: "brightBlue300" }}
-            icon={<StakedAPR />}
-          />
-        }
-        title={t("staking.dashboard.stats.currentApr")}
-        value={
-          loading ? (
-            <div sx={{ flex: "column", gap: 2 }}>
-              <Skeleton width={100} height={24} />
-            </div>
-          ) : (
-            "5%"
-          )
-        }
-      />
+      {projectedRewards}
     </SStakingValuesContainer>
   )
 }

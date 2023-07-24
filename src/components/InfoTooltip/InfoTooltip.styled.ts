@@ -5,6 +5,8 @@ import { theme } from "theme"
 
 export const STrigger = styled(Tooltip.Trigger)`
   all: unset;
+
+  height: fit-content;
 `
 
 export const SContent = styled(Tooltip.Content)<{ type: "default" | "black" }>`

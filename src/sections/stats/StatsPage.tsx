@@ -8,6 +8,7 @@ import { StatsLRNA } from "./sections/LRNA/StatsLRNA"
 import { StatsPOL } from "./sections/POL/StatsPOL"
 import { StatsOverview } from "./sections/overview/StatsOverview"
 import { StatsTabs } from "./components/tabs/StatsTabs"
+import { StatsOmnipoolAsset } from "./sections/omnipoolAsset/StatsOmnipoolAsset"
 
 const pageEnabled = import.meta.env.VITE_FF_STATS_ENABLED === "true"
 
@@ -17,17 +18,28 @@ export const StatsPage = () => {
 
   if (!pageEnabled) return <Navigate to="/trade" />
 
+  const isOmnipoolAssetPage = matchRoute({ to: LINKS.statsOmnipool })
+
   return (
-    <Page variant="stats">
-      <Heading as="h1" fs={30} lh={30} fw={500}>
-        {t("stats.title")}
-      </Heading>
-      <Spacer size={42} />
-      <StatsTabs />
-      <Spacer size={30} />
+    <Page
+      variant="stats"
+      css={isOmnipoolAssetPage && { padding: "10px!important" }}
+    >
+      {!isOmnipoolAssetPage && (
+        <>
+          <Heading as="h1" fs={30} lh={30} fw={500}>
+            {t("stats.title")}
+          </Heading>
+          <Spacer size={42} />
+          <StatsTabs />
+          <Spacer size={30} />
+        </>
+      )}
+
       {matchRoute({ to: LINKS.statsOverview }) && <StatsOverview />}
       {matchRoute({ to: LINKS.statsPOL }) && <StatsPOL />}
       {matchRoute({ to: LINKS.statsLRNA }) && <StatsLRNA />}
+      {isOmnipoolAssetPage && <StatsOmnipoolAsset />}
     </Page>
   )
 }

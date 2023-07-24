@@ -46,6 +46,7 @@ export const HeaderTotalData = ({ value, isLoading, fontSize }: DataProps) => {
       css={{ whiteSpace: "nowrap" }}
     >
       <DisplayValue
+        withGap
         value={
           <Trans
             t={t}

@@ -16,12 +16,12 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { TOmnipoolAssetsTableData } from "./data/OmnipoolAssetsTableData.utils"
+import { TUseOmnipoolAssetDetailsData } from "../../../../StatsPage.utils"
 
-export const useOmnipoolAssetsTable = (data: TOmnipoolAssetsTableData) => {
+export const useOmnipoolAssetsTable = (data: TUseOmnipoolAssetDetailsData) => {
   const { t } = useTranslation()
   const { accessor, display } =
-    createColumnHelper<TOmnipoolAssetsTableData[number]>()
+    createColumnHelper<TUseOmnipoolAssetDetailsData[number]>()
   const [sorting, setSorting] = useState<SortingState>([])
 
   const isDesktop = useMedia(theme.viewport.gte.sm)

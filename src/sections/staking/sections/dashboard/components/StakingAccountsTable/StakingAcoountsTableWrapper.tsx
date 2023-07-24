@@ -8,11 +8,11 @@ export const StakingAccountsTableWrapper = () => {
 
   if (!isApiLoaded(api)) return <StakingAccountSkeleton />
 
-  return <OmnipoolAssetsTableWrapperData />
+  return <StakingAccountsTableWrapperData />
 }
 
-export const OmnipoolAssetsTableWrapperData = () => {
-  if (false) <StakingAccountSkeleton />
+export const StakingAccountsTableWrapperData = () => {
+  if (false) return <StakingAccountSkeleton />
 
   return <StakingAccountTable />
 }

@@ -11,22 +11,28 @@ import {
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useOmnipoolAssetsTable } from "./OmnipoolAssetsTable.utils"
-import { TOmnipoolAssetsTableData } from "./data/OmnipoolAssetsTableData.utils"
+import { TUseOmnipoolAssetDetailsData } from "../../../../StatsPage.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "@tanstack/react-location"
 
 type Props = {
-  data: TOmnipoolAssetsTableData
+  data: TUseOmnipoolAssetDetailsData
 }
 
 export const OmnipoolAssetsTable = ({ data }: Props) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const navigate = useNavigate()
 
   const onRowSelect = (assetId: string) => {
     // TODO
     console.log(assetId)
+    navigate({
+      to: "omnipool",
+      search: { asset: assetId },
+    })
   }
 
   const table = useOmnipoolAssetsTable(data)

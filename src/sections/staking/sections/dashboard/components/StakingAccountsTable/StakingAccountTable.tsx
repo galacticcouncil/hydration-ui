@@ -17,6 +17,25 @@ import { useStakingAccountsTable } from "./StakingAccountTable.utils"
 import { Icon } from "components/Icon/Icon"
 import { ReactComponent as StakinTableIcon } from "assets/icons/StakingTableIcon.svg"
 import { SContainer } from "sections/staking/StakingPage.styled"
+import { css } from "@emotion/react"
+
+export const tableStyles = css`
+  th {
+    &:nth-last-of-type(1) {
+      > div {
+        justify-content: flex-end;
+      }
+    }
+
+    @media ${theme.viewport.gte.sm} {
+      &:nth-last-of-type(2) {
+        > div {
+          justify-content: flex-end;
+        }
+      }
+    }
+  }
+`
 
 //TODO: Connect data
 export const StakingAccountTable = () => {
@@ -27,7 +46,7 @@ export const StakingAccountTable = () => {
 
   return (
     <SContainer>
-      <StatsTableContainer css={{ backgroundImage: "none" }}>
+      <StatsTableContainer css={tableStyles}>
         <StatsTableTitle>
           <div sx={{ flex: "row", align: "center", gap: 12, mt: [0, 20] }}>
             <Icon sx={{ color: "white" }} icon={<StakinTableIcon />} />

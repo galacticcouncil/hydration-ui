@@ -24,6 +24,7 @@ export type AssetInputProps = {
   error?: string
   withLabel?: boolean
   className?: string
+  disabled?: boolean
 }
 
 export const AssetInput: FC<AssetInputProps> = (props) => {
@@ -47,15 +48,16 @@ export const AssetInput: FC<AssetInputProps> = (props) => {
             id={props.name}
             type={props.type}
             placeholder={props.placeholder}
+            disabled={props.disabled}
           />
 
           {props.unit && <SUnit>{props.unit}</SUnit>}
         </SInputWrapper>
-        {props.displayValue && (
+        {props.displayValue != null ? (
           <SDollars>
             ≈ <DisplayValue value={props.displayValue} />
           </SDollars>
-        )}
+        ) : null}
       </SLabelWrapper>
     </div>
   )
