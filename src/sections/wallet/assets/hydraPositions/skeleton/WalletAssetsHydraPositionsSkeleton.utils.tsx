@@ -2,24 +2,13 @@ import {
   createColumnHelper,
   getCoreRowModel,
   useReactTable,
-  VisibilityState,
 } from "@tanstack/react-table"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
-import { useMedia } from "react-use"
-import { theme } from "theme"
 
 export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
   const { t } = useTranslation()
   const { display } = createColumnHelper()
-
-  const isDesktop = useMedia(theme.viewport.gte.sm)
-  const columnVisibility: VisibilityState = {
-    name: true,
-    value: true,
-    valueUSD: isDesktop,
-    actions: true,
-  }
 
   const columns = [
     display({
@@ -44,7 +33,7 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
     }),
     display({
       id: "value",
-      header: t("wallet.assets.hydraPositions.header.position"),
+      header: t("wallet.assets.hydraPositions.header.providedAmount"),
       cell: () => (
         <div
           sx={{ width: [90, 134], height: [24, 32], ml: ["auto", "initial"] }}
@@ -66,22 +55,11 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
         </div>
       ),
     }),
-    display({
-      id: "actions",
-      cell: () => (
-        <div sx={{ flex: "row", gap: 8, mr: 32, display: ["none", "flex"] }}>
-          <Skeleton width={72} height={32} enableAnimation={enableAnimation} />
-          <Skeleton width={72} height={32} enableAnimation={enableAnimation} />
-          <Skeleton width={32} height={32} enableAnimation={enableAnimation} />
-        </div>
-      ),
-    }),
   ]
 
   return useReactTable({
     data: mockData,
     columns,
-    state: { columnVisibility },
     getCoreRowModel: getCoreRowModel(),
   })
 }

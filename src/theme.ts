@@ -11,6 +11,7 @@ const colors = {
   pink600: "#FC408C",
   pink700: "#F6297C",
   pink400Alpha: "#FF0369",
+  paleBlue: '#DDE5FF',
   brightBlue100: "#A6DDFF",
   brightBlue200: "#9CDDFF",
   brightBlue300: "#85D1FF",
