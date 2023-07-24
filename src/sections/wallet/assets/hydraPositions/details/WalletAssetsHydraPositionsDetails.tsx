@@ -3,8 +3,10 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
 import { Trans } from "react-i18next"
 import { theme } from "theme"
+import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 
 type Props = {
+  assetId: string
   symbol: string
   amount: BN
   lrna?: BN
@@ -16,6 +18,7 @@ export const WalletAssetsHydraPositionsDetails = ({
   amount,
   lrna,
   amountDisplay,
+  assetId,
 }: Props) => {
   const tKey = lrna?.gt(0)
     ? "wallet.assets.hydraPositions.data.valueLrna"
@@ -30,6 +33,11 @@ export const WalletAssetsHydraPositionsDetails = ({
         >
           <br sx={{ display: ["initial", "none"] }} />
         </Trans>
+        <LrnaPositionTooltip
+          lrnaPosition={lrna}
+          tokenPosition={amount}
+          assetId={assetId}
+        />
       </Text>
       <Text
         fs={13}

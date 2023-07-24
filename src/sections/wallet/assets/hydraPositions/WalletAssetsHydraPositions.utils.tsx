@@ -6,12 +6,9 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import BN from "bignumber.js"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
+import { useMemo, useState } from 'react'
 import { useTranslation } from "react-i18next"
 import { WalletAssetsHydraPositionsActions } from "sections/wallet/assets/hydraPositions/actions/WalletAssetsHydraPositionsActions"
-import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { WalletAssetsTableName } from "sections/wallet/assets/table/data/WalletAssetsTableData"
 import { WalletAssetsHydraPositionsDetails } from "./details/WalletAssetsHydraPositionsDetails"
 
@@ -20,7 +17,7 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
   const { accessor, display } = createColumnHelper<HydraPositionsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
 
-  const columns = [
+  const columns = useMemo(() => [
     accessor("symbol", {
       id: "name",
       header: t("wallet.assets.hydraPositions.header.name"),
@@ -32,6 +29,7 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
       sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
       cell: ({ row }) => (
         <WalletAssetsHydraPositionsDetails
+          assetId={row.original.assetId}
           symbol={row.original.symbol}
           amount={row.original.providedAmountShifted}
           amountDisplay={row.original.providedAmountDisplay}
@@ -49,6 +47,7 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
           : -1,
       cell: ({ row }) => (
         <WalletAssetsHydraPositionsDetails
+          assetId={row.original.assetId}
           symbol={row.original.symbol}
           lrna={row.original.lrna}
           amount={row.original.value}
@@ -60,7 +59,7 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
       id: "actions",
       cell: () => <WalletAssetsHydraPositionsActions />,
     }),
-  ]
+  ], [])
 
   return useReactTable({
     data,
