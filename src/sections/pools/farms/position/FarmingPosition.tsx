@@ -24,7 +24,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useOmnipoolPosition } from "api/omnipool"
 import { useDisplayPrice } from "utils/displayAsset"
 import { getFloatingPointAmount } from "utils/balance"
-import { TokenPositionInfo } from "../../components/TokenPositionInfo"
+import { LrnaPositionTooltip } from "../../components/LrnaPositionTooltip"
 
 function FarmingPositionDetailsButton(props: {
   pool: OmnipoolPool
@@ -154,7 +154,7 @@ export const FarmingPosition = ({
               <Text color="basic500" fs={14} lh={16} fw={400}>
                 {t("farms.positions.labels.currentValue")}
               </Text>
-              <TokenPositionInfo
+              <LrnaPositionTooltip
                 assetId={position.data?.assetId}
                 tokenPosition={position.data?.value}
                 lrnaPosition={position.data?.lrna}

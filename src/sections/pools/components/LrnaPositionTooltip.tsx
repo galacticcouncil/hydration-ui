@@ -15,7 +15,7 @@ type Props = {
   tokenPosition?: BigNumber
 }
 
-export const TokenPositionInfo = ({
+export const LrnaPositionTooltip = ({
   assetId,
   tokenPosition,
   lrnaPosition,
@@ -37,7 +37,7 @@ export const TokenPositionInfo = ({
     <InfoTooltip
       text={
         <Text fs={11} fw={500}>
-          {t("pools.tokenPositionInfo.tooltip")}
+          {t("pools.lrnaPosition.tooltip")}
           <br />
           {t("value.tokenWithSymbol", {
             value: lrnaPositionPrice.plus(tokenPosition ?? BN_0),

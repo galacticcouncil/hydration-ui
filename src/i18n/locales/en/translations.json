@@ -353,7 +353,7 @@
   "wallet.assets.farmingPositions.header.shares": "Asset shares",
   "wallet.assets.farmingPositions.header.value": "Current value",
   "wallet.assets.farmingPositions.data.date": "{{ date, dd.MM.yyyy }}",
-  "pools.tokenPositionInfo.tooltip": "Sum of underlying asset and LRNA:",
+  "pools.lrnaPosition.tooltip": "Sum of underlying asset and LRNA:",
   "farms.positions.header.title": "Farm positions",
   "farms.positions.joinedFarms.button.label": "Details",
   "farms.positions.join.button.label": "Join",

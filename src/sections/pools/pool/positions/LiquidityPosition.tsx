@@ -27,7 +27,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useDisplayPrice } from "utils/displayAsset"
 import { BN_0 } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
-import { TokenPositionInfo } from "../../components/TokenPositionInfo"
+import { LrnaPositionTooltip } from "../../components/LrnaPositionTooltip"
 
 type Props = {
   pool: OmnipoolPool
@@ -196,7 +196,7 @@ export const LiquidityPosition = ({
               <Text fs={14} color="whiteish500">
                 {t("liquidity.asset.positions.position.currentValue")}
               </Text>
-              <TokenPositionInfo
+              <LrnaPositionTooltip
                 assetId={position.assetId}
                 tokenPosition={position.value}
                 lrnaPosition={position.lrna}
