@@ -1,6 +1,6 @@
-import { Text } from "../Typography/Text/Text"
+import { Text } from "components/Typography/Text/Text"
 import { SInfoIcon } from "sections/pools/pool/Pool.styled"
-import { InfoTooltip } from "../InfoTooltip/InfoTooltip"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { useTranslation } from "react-i18next"
 import { useSpotPrice } from "api/spotPrice"
 import { useApiIds } from "api/consts"
@@ -37,7 +37,7 @@ export const TokenPositionInfo = ({
     <InfoTooltip
       text={
         <Text fs={11} fw={500}>
-          {t("tokenPositionInfo.tooltip")}
+          {t("pools.tokenPositionInfo.tooltip")}
           <br />
           {t("value.tokenWithSymbol", {
             value: lrnaPositionPrice.plus(tokenPosition ?? BN_0),
