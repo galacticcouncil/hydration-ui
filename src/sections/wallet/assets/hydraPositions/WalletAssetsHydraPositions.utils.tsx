@@ -6,7 +6,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import BN from "bignumber.js"
-import { useMemo, useState } from 'react'
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { WalletAssetsHydraPositionsActions } from "sections/wallet/assets/hydraPositions/actions/WalletAssetsHydraPositionsActions"
 import { WalletAssetsTableName } from "sections/wallet/assets/table/data/WalletAssetsTableData"
@@ -17,49 +17,52 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
   const { accessor, display } = createColumnHelper<HydraPositionsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
 
-  const columns = useMemo(() => [
-    accessor("symbol", {
-      id: "name",
-      header: t("wallet.assets.hydraPositions.header.name"),
-      cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
-    }),
-    accessor("providedAmount", {
-      id: "providedAmount",
-      header: t("wallet.assets.hydraPositions.header.providedAmount"),
-      sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
-      cell: ({ row }) => (
-        <WalletAssetsHydraPositionsDetails
-          assetId={row.original.assetId}
-          symbol={row.original.symbol}
-          amount={row.original.providedAmountShifted}
-          amountDisplay={row.original.providedAmountDisplay}
-        />
-      ),
-    }),
-    accessor("valueDisplay", {
-      id: "valueDisplay",
-      header: t("wallet.assets.hydraPositions.header.valueUSD"),
-      sortingFn: (a, b) =>
-        b.original.valueDisplay.isNaN()
-          ? 1
-          : a.original.valueDisplay.gt(b.original.valueDisplay)
-          ? 1
-          : -1,
-      cell: ({ row }) => (
-        <WalletAssetsHydraPositionsDetails
-          assetId={row.original.assetId}
-          symbol={row.original.symbol}
-          lrna={row.original.lrna}
-          amount={row.original.value}
-          amountDisplay={row.original.valueDisplay}
-        />
-      ),
-    }),
-    display({
-      id: "actions",
-      cell: () => <WalletAssetsHydraPositionsActions />,
-    }),
-  ], [])
+  const columns = useMemo(
+    () => [
+      accessor("symbol", {
+        id: "name",
+        header: t("wallet.assets.hydraPositions.header.name"),
+        cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
+      }),
+      accessor("providedAmount", {
+        id: "providedAmount",
+        header: t("wallet.assets.hydraPositions.header.providedAmount"),
+        sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
+        cell: ({ row }) => (
+          <WalletAssetsHydraPositionsDetails
+            assetId={row.original.assetId}
+            symbol={row.original.symbol}
+            amount={row.original.providedAmountShifted}
+            amountDisplay={row.original.providedAmountDisplay}
+          />
+        ),
+      }),
+      accessor("valueDisplay", {
+        id: "valueDisplay",
+        header: t("wallet.assets.hydraPositions.header.valueUSD"),
+        sortingFn: (a, b) =>
+          b.original.valueDisplay.isNaN()
+            ? 1
+            : a.original.valueDisplay.gt(b.original.valueDisplay)
+            ? 1
+            : -1,
+        cell: ({ row }) => (
+          <WalletAssetsHydraPositionsDetails
+            assetId={row.original.assetId}
+            symbol={row.original.symbol}
+            lrna={row.original.lrna}
+            amount={row.original.value}
+            amountDisplay={row.original.valueDisplay}
+          />
+        ),
+      }),
+      display({
+        id: "actions",
+        cell: () => <WalletAssetsHydraPositionsActions />,
+      }),
+    ],
+    [],
+  )
 
   return useReactTable({
     data,
