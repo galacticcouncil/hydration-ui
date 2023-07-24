@@ -24,12 +24,10 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import { useAccountStore } from "state/store"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useSpotPrice } from "api/spotPrice"
 import { useDisplayPrice } from "utils/displayAsset"
 import { BN_0 } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
-import { useApiIds } from "api/consts"
-import { TokenPositionInfo } from "../../../../components/TokenPositionInfo/TokenPositionInfo"
+import { TokenPositionInfo } from "components/TokenPositionInfo/TokenPositionInfo"
 
 type Props = {
   pool: OmnipoolPool
