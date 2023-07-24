@@ -4,10 +4,10 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { ChartWrapper } from "../LRNA/components/ChartWrapper/ChartWrapper"
 import { StatsTiles } from "../../components/StatsTiles/StatsTiles"
-import { RecentTradesTableWrapper } from "../../components/RecentTradesTable/RecentTradesTableWrapper"
 import { SContainerVertical } from "./StatsPOL.styled"
-import { PieWrapper } from "./PieWrapper/PieWrapper"
+import { PieWrapper } from "./components/PieWrapper/PieWrapper"
 import { useOmnipoolAssetDetails } from "../../StatsPage.utils"
+import { OmnipoolAssetsTableWrapper } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
 
 const StatsPOLData = () => {
   const data = useOmnipoolAssetDetails()
@@ -29,7 +29,7 @@ const StatsPOLData = () => {
         )}
       </div>
       <StatsTiles />
-      <RecentTradesTableWrapper />
+      <OmnipoolAssetsTableWrapper />
     </div>
   )
 }
