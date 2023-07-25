@@ -2,7 +2,7 @@ import { useApiPromise } from "utils/api"
 import { isApiLoaded } from "utils/helpers"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { ChartWrapper } from "../LRNA/components/ChartWrapper/ChartWrapper"
+import { ChartsWrapper } from "./components/ChartsWrapper/ChartsWrapper"
 import { StatsTiles } from "../../components/StatsTiles/StatsTiles"
 import { SContainerVertical } from "./StatsPOL.styled"
 import { PieWrapper } from "./components/PieWrapper/PieWrapper"
@@ -24,7 +24,7 @@ const StatsPOLData = () => {
               p: 24,
             }}
           >
-            <ChartWrapper />
+            <ChartsWrapper />
           </SContainerVertical>
         )}
       </div>
