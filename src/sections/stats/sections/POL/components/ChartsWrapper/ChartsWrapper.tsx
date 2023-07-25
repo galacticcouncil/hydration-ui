@@ -5,7 +5,11 @@ import { useTranslation } from "react-i18next"
 import { AreaChart } from "components/Charts/AreaChart/AreaChart"
 import { StatsTimeframe } from "api/stats"
 import { Charts } from "./Charts"
-import { SChartTab, STimeframeContainer, STimeframeEl } from 'sections/stats/components/ChartsWrapper/ChartsWrapper.styled'
+import {
+  SChartTab,
+  STimeframeContainer,
+  STimeframeEl,
+} from "sections/stats/components/ChartsWrapper/ChartsWrapper.styled"
 
 export type ChartType = "pol" | "volume"
 
@@ -76,7 +80,12 @@ export const ChartsWrapper = ({ assetSymbol }: { assetSymbol?: string }) => {
           assetSymbol={assetSymbol}
         />
       ) : (
-        <AreaChart dataKey="tvl_pol_usd" data={[]} loading={true} error={false} />
+        <AreaChart
+          dataKey="tvl_pol_usd"
+          data={[]}
+          loading={true}
+          error={false}
+        />
       )}
     </>
   )

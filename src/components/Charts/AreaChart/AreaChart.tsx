@@ -25,7 +25,7 @@ type CustomTooltipProps = { active: boolean; label: string }
 
 type AreaChartProps = {
   data: Maybe<Array<StatsData>>
-  dataKey: 'tvl_usd' | 'tvl_pol_usd'
+  dataKey: "tvl_usd" | "tvl_pol_usd"
   loading: boolean
   error: boolean
 }
@@ -82,7 +82,12 @@ const Label = ({ value }: { value: number }) => {
   )
 }
 
-export const AreaChart = ({ data, loading, error, dataKey }: AreaChartProps) => {
+export const AreaChart = ({
+  data,
+  loading,
+  error,
+  dataKey,
+}: AreaChartProps) => {
   const { t } = useTranslation()
   const [activePoint, setActivePoint] = useState<CategoricalChartState | null>(
     null,
