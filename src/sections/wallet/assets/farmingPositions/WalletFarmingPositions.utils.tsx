@@ -27,6 +27,7 @@ import { BN_0, BN_NAN } from "utils/constants"
 import { WalletAssetsHydraPositionsData } from "../hydraPositions/data/WalletAssetsHydraPositionsData"
 import { WalletAssetsTableName } from "../table/data/WalletAssetsTableData"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { LrnaPositionTooltip } from 'sections/pools/components/LrnaPositionTooltip'
 
 export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
   const { t } = useTranslation()
@@ -41,7 +42,7 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
     position: true,
   }
 
-  const columns = [
+  const columns = useMemo(() => [
     accessor("symbol", {
       id: "name",
       header: isDesktop
@@ -81,11 +82,18 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
           : -1,
       cell: ({ row }) => (
         <div sx={{ flex: "column", align: ["end", "start"], gap: 2 }}>
-          <WalletAssetsHydraPositionsData
-            symbol={row.original.position.symbol}
-            value={row.original.position.value}
-            lrna={row.original.position.lrna}
-          />
+          <div sx={{ flex: 'row', gap: 4 }}>
+            <WalletAssetsHydraPositionsData
+              symbol={row.original.position.symbol}
+              value={row.original.position.value}
+              lrna={row.original.position.lrna}
+            />
+            <LrnaPositionTooltip
+              lrnaPosition={row.original.position.lrna}
+              tokenPosition={row.original.position.value}
+              assetId={row.original.assetId}
+            />
+          </div>
           <DollarAssetValue
             value={row.original.position.valueDisplay}
             wrapper={(children) => (
@@ -99,7 +107,7 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
         </div>
       ),
     }),
-  ]
+  ], [])
 
   const table = useReactTable({
     data,
@@ -184,7 +192,7 @@ export const useFarmingPositionsData = () => {
         (d) => d.depositId?.toString() === deposit.id.toString(),
       ) ?? { symbol, value: BN_NAN, valueDisplay: BN_NAN, lrna: BN_NAN }
 
-      return { id, symbol, name, date, shares, position }
+      return { id, symbol, name, date, shares, position, assetId }
     })
 
     return rows
@@ -201,6 +209,7 @@ export const useFarmingPositionsData = () => {
 
 export type FarmingPositionsTableData = {
   id: string
+  assetId: string
   symbol: string
   name: string
   date: Date
