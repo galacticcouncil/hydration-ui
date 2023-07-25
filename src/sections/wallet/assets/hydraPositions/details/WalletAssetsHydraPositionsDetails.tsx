@@ -26,7 +26,7 @@ export const WalletAssetsHydraPositionsDetails = ({
 
   return (
     <div sx={{ m: "auto", flex: "column" }}>
-      <div sx={{ flex: 'row', gap: 4 }}>
+      <div sx={{ flex: "row", gap: 4 }}>
         <Text fs={16} lh={16} fw={500} color="white">
           <Trans
             i18nKey={tKey}
@@ -36,10 +36,10 @@ export const WalletAssetsHydraPositionsDetails = ({
           </Trans>
         </Text>
         <LrnaPositionTooltip
-            lrnaPosition={lrna}
-            tokenPosition={amount}
-            assetId={assetId}
-          />
+          lrnaPosition={lrna}
+          tokenPosition={amount}
+          assetId={assetId}
+        />
       </div>
       <Text
         fs={13}
