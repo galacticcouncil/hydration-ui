@@ -24,7 +24,7 @@ const StatsPOLData = () => {
               p: 24,
             }}
           >
-            <ChartsWrapper />
+            <ChartsWrapper isLoading={data.isLoading} />
           </SContainerVertical>
         )}
       </div>

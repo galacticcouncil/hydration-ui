@@ -13,7 +13,9 @@ import {
 
 export type ChartType = "pol" | "volume"
 
-export const ChartsWrapper = ({ assetSymbol }: { assetSymbol?: string }) => {
+type Props = { assetSymbol?: string; isLoading: boolean }
+
+export const ChartsWrapper = ({ assetSymbol, isLoading }: Props) => {
   const { t } = useTranslation()
   const [chartType, setChartType] = useState<ChartType>("pol")
   const [timeframe, setTimeframe] = useState<StatsTimeframe>(
@@ -73,18 +75,18 @@ export const ChartsWrapper = ({ assetSymbol }: { assetSymbol?: string }) => {
           </STimeframeEl>
         </STimeframeContainer>
       </div>
-      {isApi ? (
-        <Charts
-          type={chartType}
-          timeframe={timeframe}
-          assetSymbol={assetSymbol}
-        />
-      ) : (
+      {isLoading ? (
         <AreaChart
           dataKey="tvl_pol_usd"
           data={[]}
           loading={true}
           error={false}
+        />
+      ) : (
+        <Charts
+          type={chartType}
+          timeframe={timeframe}
+          assetSymbol={assetSymbol}
         />
       )}
     </>

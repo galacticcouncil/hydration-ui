@@ -13,7 +13,9 @@ import { Charts } from "./Charts"
 
 export type ChartType = "tvl" | "volume"
 
-export const ChartWrapper = ({ assetSymbol }: { assetSymbol?: string }) => {
+type Props = { assetSymbol?: string; isLoading: boolean }
+
+export const ChartWrapper = ({ assetSymbol, isLoading }: Props) => {
   const { t } = useTranslation()
   const [chartType, setChartType] = useState<ChartType>("tvl")
   const [timeframe, setTimeframe] = useState<StatsTimeframe>(
@@ -73,14 +75,14 @@ export const ChartWrapper = ({ assetSymbol }: { assetSymbol?: string }) => {
           </STimeframeEl>
         </STimeframeContainer>
       </div>
-      {isApi ? (
+      {isLoading ? (
+        <AreaChart dataKey="tvl_usd" data={[]} loading={true} error={false} />
+      ) : (
         <Charts
           type={chartType}
           timeframe={timeframe}
           assetSymbol={assetSymbol}
         />
-      ) : (
-        <AreaChart dataKey="tvl_usd" data={[]} loading error={false} />
       )}
     </>
   )

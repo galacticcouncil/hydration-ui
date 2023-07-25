@@ -3,11 +3,12 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { MIN_WITHDRAWAL_FEE } from "utils/constants"
+import { isApiLoaded } from '../utils/helpers'
 
 export const useApiIds = () => {
   const api = useApiPromise()
 
-  return useQuery(QUERY_KEYS.apiIds, getApiIds(api))
+  return useQuery(QUERY_KEYS.apiIds, getApiIds(api), { enabled: !!isApiLoaded(api) })
 }
 
 export const getApiIds = (api: ApiPromise) => async () => {

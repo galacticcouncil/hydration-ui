@@ -30,7 +30,7 @@ export const StatsOverviewData = () => {
               gap: 20,
             }}
           >
-            <ChartWrapper />
+            <ChartWrapper isLoading={omnipoolOverview.isLoading} />
           </SContainerVertical>
         )}
       </div>

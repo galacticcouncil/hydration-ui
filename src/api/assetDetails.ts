@@ -7,7 +7,7 @@ import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useAccountStore } from "state/store"
 import { NATIVE_ASSET_ID, useApiPromise, useTradeRouter } from "utils/api"
 import { BN_0 } from "utils/constants"
-import { Maybe, isNotNil, normalizeId } from "utils/helpers"
+import { Maybe, isNotNil, normalizeId, isApiLoaded } from 'utils/helpers'
 import { QUERY_KEYS } from "utils/queryKeys"
 import { getAccountBalances, useAccountBalances } from "./accountBalances"
 import { getTokenLock } from "./balances"
@@ -18,7 +18,7 @@ import { getAcceptedCurrency, getAccountCurrency } from "./payments"
 export const useAssetDetails = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
   return useQuery(QUERY_KEYS.assets, getAssetDetails(api), {
-    enabled: !!id,
+    enabled: !!id && !!isApiLoaded(api),
     select: (data) => data.find((i) => i.id === id?.toString()),
   })
 }
@@ -87,7 +87,6 @@ export const useAssetDetailsList = (
   noRefresh?: boolean,
 ) => {
   const api = useApiPromise()
-
   const normalizedIds = ids?.filter(isNotNil).map(normalizeId)
 
   return useQuery(
@@ -104,6 +103,7 @@ export const useAssetDetailsList = (
           filter.assetType.includes(asset.assetType),
         )
       },
+      enabled: !!isApiLoaded(api)
     },
   )
 }
