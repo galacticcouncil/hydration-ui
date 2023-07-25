@@ -24,7 +24,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
   const { account } = useSearch()
   const [open, setOpen] = useState(false)
 
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isDesktop = useMedia(theme.viewport.gte.md)
   const match = useMatchRoute()
 
   const { key, subItems } = item

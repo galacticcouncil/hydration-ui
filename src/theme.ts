@@ -136,7 +136,7 @@ const zIndices = {
 const breakpoints = {
   xs: 480,
   sm: 768,
-  md: 1024,
+  md: 1200, //value represents navigation bar for tablet
   lg: 1440,
   xl: 1536,
 } as const
