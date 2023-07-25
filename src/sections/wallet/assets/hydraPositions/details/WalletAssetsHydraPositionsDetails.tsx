@@ -26,19 +26,21 @@ export const WalletAssetsHydraPositionsDetails = ({
 
   return (
     <div sx={{ m: "auto", flex: "column" }}>
-      <Text fs={16} lh={16} fw={500} color="white">
-        <Trans
-          i18nKey={tKey}
-          tOptions={{ value: amount, symbol, lrna, type: "token" }}
-        >
-          <br sx={{ display: ["initial", "none"] }} />
-        </Trans>
+      <div sx={{ flex: 'row', gap: 4 }}>
+        <Text fs={16} lh={16} fw={500} color="white">
+          <Trans
+            i18nKey={tKey}
+            tOptions={{ value: amount, symbol, lrna, type: "token" }}
+          >
+            <br sx={{ display: ["initial", "none"] }} />
+          </Trans>
+        </Text>
         <LrnaPositionTooltip
-          lrnaPosition={lrna}
-          tokenPosition={amount}
-          assetId={assetId}
-        />
-      </Text>
+            lrnaPosition={lrna}
+            tokenPosition={amount}
+            assetId={assetId}
+          />
+      </div>
       <Text
         fs={13}
         lh={20}
