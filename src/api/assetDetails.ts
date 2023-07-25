@@ -7,7 +7,7 @@ import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useAccountStore } from "state/store"
 import { NATIVE_ASSET_ID, useApiPromise, useTradeRouter } from "utils/api"
 import { BN_0 } from "utils/constants"
-import { Maybe, isNotNil, normalizeId, isApiLoaded } from 'utils/helpers'
+import { Maybe, isNotNil, normalizeId, isApiLoaded } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { getAccountBalances, useAccountBalances } from "./accountBalances"
 import { getTokenLock } from "./balances"
@@ -103,7 +103,7 @@ export const useAssetDetailsList = (
           filter.assetType.includes(asset.assetType),
         )
       },
-      enabled: !!isApiLoaded(api)
+      enabled: !!isApiLoaded(api),
     },
   )
 }

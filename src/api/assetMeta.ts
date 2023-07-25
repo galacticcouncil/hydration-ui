@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { u32, u8 } from "@polkadot/types"
-import { isApiLoaded, Maybe } from 'utils/helpers'
+import { isApiLoaded, Maybe } from "utils/helpers"
 import { getApiIds } from "./consts"
 
 export const useAssetMeta = (id: Maybe<u32 | string>) => {
