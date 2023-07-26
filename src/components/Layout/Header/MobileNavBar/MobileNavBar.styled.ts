@@ -50,7 +50,7 @@ export const SNavBarItem = styled.span<{ active?: boolean }>`
   margin: 0 17px;
 
   color: ${({ active }) =>
-    active ? theme.colors.brightBlue300 : theme.colors.basic400};
+    active ? theme.colors.brightBlue300 : theme.colors.white};
 
   ${({ active }) =>
     active &&

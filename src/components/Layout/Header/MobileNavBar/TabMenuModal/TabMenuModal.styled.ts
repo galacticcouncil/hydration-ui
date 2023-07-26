@@ -1,9 +1,9 @@
 import styled from "@emotion/styled"
-import { DialogContent } from "@radix-ui/react-dialog"
 import { IconButton } from "components/IconButton/IconButton"
+import { motion } from "framer-motion"
 import { theme } from "theme"
 
-export const SModalContent = styled(DialogContent)`
+export const SModalContent = styled(motion.div)`
   position: absolute;
   right: 0;
   bottom: 0;
@@ -25,7 +25,7 @@ export const SModalContent = styled(DialogContent)`
   }
 `
 
-export const SBackdrop = styled.div`
+export const SBackdrop = styled(motion.div)`
   width: 100%;
   height: 100vh;
 

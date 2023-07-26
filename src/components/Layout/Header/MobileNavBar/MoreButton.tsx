@@ -20,7 +20,7 @@ export const MoreButton = ({ tabs }: MoreButtonProps) => {
 
   return (
     <>
-      <STabButton active={openModal} onClick={() => setOpenModal(true)}>
+      <STabButton active={openModal} onClick={() => setOpenModal(!openModal)}>
         <Icon size={20} icon={<MoreTabIcon />} />
         {t("header.more")}
       </STabButton>
