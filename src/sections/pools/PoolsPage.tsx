@@ -1,13 +1,16 @@
 import { Page } from "components/Layout/Page/Page"
 import { useState } from "react"
-import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
+import { useOmnipoolPools, useOmnipoolStablePools } from 'sections/pools/PoolsPage.utils'
 import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
 import { useApiPromise } from "utils/api"
 import { PoolSkeleton } from "./skeleton/PoolSkeleton"
+import { StablePool } from "./stablepool/StablePool"
 
 const PoolPageContent = () => {
   const [filter, setFilter] = useState({ showMyPositions: false })
+
+  useOmnipoolStablePools()
 
   const { data, hasPositionsOrDeposits, isLoading } = useOmnipoolPools(
     filter.showMyPositions,
@@ -27,6 +30,7 @@ const PoolPageContent = () => {
       />
 
       <div sx={{ flex: "column", gap: 20 }}>
+        {data?.[1] && <StablePool pool={data?.[1]} />}
         {!isLoading && data
           ? data.map((pool) => <Pool key={pool.id.toString()} pool={pool} />)
           : [...Array(3)].map((_, index) => (
