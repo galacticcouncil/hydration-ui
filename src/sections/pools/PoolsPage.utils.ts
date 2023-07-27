@@ -20,20 +20,17 @@ import { useStableswapPools } from 'api/stableswap'
 
 export const useOmnipoolStablePools = () => {
   const pools = useStableswapPools();
-  // const assetIds: u32[] = (pools.data ?? []).map((pool) => pool.data.assets).reduce((acc, assetIds) => [...acc, ...assetIds], [])
-
 
   const poolAssetIdsMap = new Map((pools.data ?? []).map((pool) => [pool.id, pool.data.assets.map((asset: u32) => asset.toString())]));
   const assetIds: string[] = [].concat(...poolAssetIdsMap.values())
-
   const assetMetaList = useAssetMetaList(assetIds)
 
-  const result = pools.data?.map((pool) => ({
+  const data = (pools.data ?? []).map((pool) => ({
     id: pool.id,
-    assets: assetMetaList.data?.filter((asset) => poolAssetIdsMap.get(pool.id).includes(asset.id))
+    assets: (assetMetaList.data ?? []).filter((asset) => poolAssetIdsMap.get(pool.id).includes(asset.id))
   }))
 
-  console.log('-- result --', result);
+  return { data, isLoading: pools.isLoading || assetMetaList.isLoading }
 }
 
 export const useOmnipoolPools = (withPositions?: boolean) => {

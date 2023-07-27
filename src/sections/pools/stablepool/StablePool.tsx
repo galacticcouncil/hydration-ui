@@ -1,4 +1,3 @@
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { SContainer, SGridContainer } from "sections/pools/pool/Pool.styled"
 import { PoolDetails } from "./details/PoolDetails"
 import { PoolValue } from "./details/PoolValue"
@@ -14,41 +13,41 @@ import { LiquidityPositionWrapper } from "sections/pools/pool/positions/Liquidit
 import { FarmingPositionWrapper } from "../farms/FarmingPositionWrapper"
 import { useAccountDeposits } from "api/deposits"
 import { PoolFooterWithNoFarms } from "sections/pools/pool/footer/PoolFooterWithNoFarms"
+import { useOmnipoolStablePools } from '../PoolsPage.utils'
+import { BN_0, BN_1, BN_10 } from '../../../utils/constants'
 
-type Props = { pool: OmnipoolPool }
+type Props = ReturnType<typeof useOmnipoolStablePools>['data'][number]
 
 const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
-export const StablePool = ({ pool }: Props) => {
+export const StablePool = ({ id, assets }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const positions = usePoolPositions(pool)
-  const accountDeposits = useAccountDeposits(enabledFarms ? pool.id : undefined)
+  const positions = usePoolPositions({ id } as any)
+  const accountDeposits = useAccountDeposits(enabledFarms ? id : undefined)
 
   const hasExpandContent =
     !!positions.data?.length || !!accountDeposits.data?.length
 
   return (
-    <SContainer id={pool.id.toString()}>
+    <SContainer id={id.toString()}>
       <SGridContainer>
         <PoolDetails
-          assets={[
-            { symbol: pool.symbol, decimals: 0 },
-            { symbol: pool.symbol, decimals: 0 },
-            { symbol: pool.symbol, decimals: 0 },
-          ]}
+          assets={assets.map((asset) => ({ symbol: asset.symbol, decimals: asset.decimals.toNumber() }))}
           css={{ gridArea: "details" }}
         />
 
         {enabledFarms ? (
-          <PoolIncentives poolId={pool.id} css={{ gridArea: "incentives" }} />
+          <PoolIncentives poolId={id} css={{ gridArea: "incentives" }} />
         ) : (
           <div css={{ gridArea: "incentives" }} />
         )}
-        <PoolValue pool={pool} css={{ gridArea: "values" }} />
+        {/* TODO: load total values */}
+        <PoolValue id={id} omnipoolTotal={BN_10} stablepoolTotal={BN_1} css={{ gridArea: "values" }} />
+        {/* TODO: type pool corretly */}
         <PoolActions
-          pool={pool}
+          pool={{ id } as any}
           refetch={positions.refetch}
           canExpand={!positions.isLoading && hasExpandContent}
           isExpanded={isExpanded}
@@ -56,33 +55,34 @@ export const StablePool = ({ pool }: Props) => {
           css={{ gridArea: "actions" }}
         />
       </SGridContainer>
-      {isDesktop && hasExpandContent && (
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ height: 0 }}
-              animate={{ height: "auto" }}
-              exit={{ height: 0 }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              css={{ overflow: "hidden" }}
-            >
-              <LiquidityPositionWrapper pool={pool} positions={positions} />
-              {enabledFarms && (
-                <FarmingPositionWrapper
-                  pool={pool}
-                  deposits={accountDeposits.data}
-                />
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      )}
-      {isDesktop &&
-        (enabledFarms ? (
-          <PoolFooter pool={pool} />
-        ) : (
-          <PoolFooterWithNoFarms pool={pool} />
-        ))}
+      {/* TODO: show expanded content */}
+      {/*{isDesktop && hasExpandContent && (*/}
+      {/*  <AnimatePresence>*/}
+      {/*    {isExpanded && (*/}
+      {/*      <motion.div*/}
+      {/*        initial={{ height: 0 }}*/}
+      {/*        animate={{ height: "auto" }}*/}
+      {/*        exit={{ height: 0 }}*/}
+      {/*        transition={{ duration: 0.5, ease: "easeInOut" }}*/}
+      {/*        css={{ overflow: "hidden" }}*/}
+      {/*      >*/}
+      {/*        <LiquidityPositionWrapper pool={pool} positions={positions} />*/}
+      {/*        {enabledFarms && (*/}
+      {/*          <FarmingPositionWrapper*/}
+      {/*            pool={pool}*/}
+      {/*            deposits={accountDeposits.data}*/}
+      {/*          />*/}
+      {/*        )}*/}
+      {/*      </motion.div>*/}
+      {/*    )}*/}
+      {/*  </AnimatePresence>*/}
+      {/*)}*/}
+      {/*{isDesktop &&*/}
+      {/*  (enabledFarms ? (*/}
+      {/*    <PoolFooter pool={pool} />*/}
+      {/*  ) : (*/}
+      {/*    <PoolFooterWithNoFarms pool={pool} />*/}
+      {/*  ))}*/}
     </SContainer>
   )
 }

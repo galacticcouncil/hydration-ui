@@ -2,16 +2,13 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import Skeleton from "react-loading-skeleton"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
-import { usePoolDetailsTradeVolume } from "sections/pools/pool/details/PoolDetails.utils"
-import { BN_NAN } from "utils/constants"
+import { u32 } from '@polkadot/types-codec'
+import BigNumber from 'bignumber.js'
 
-type PoolValueProps = { pool: OmnipoolPool; className?: string }
+type PoolValueProps = { id: u32; omnipoolTotal: BigNumber, stablepoolTotal: BigNumber; className?: string }
 
-export const PoolValue = ({ pool, className }: PoolValueProps) => {
+export const PoolValue = ({ id, omnipoolTotal, stablepoolTotal, className }: PoolValueProps) => {
   const { t } = useTranslation()
-  const { data, isLoading } = usePoolDetailsTradeVolume(pool.id)
 
   return (
     <div sx={{ flex: "column", justify: "end" }} className={className}>
@@ -22,7 +19,7 @@ export const PoolValue = ({ pool, className }: PoolValueProps) => {
           </Text>
           <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
             <Text lh={22} color="white" fs={18}>
-              <DisplayValue value={pool.totalDisplay} />
+              <DisplayValue value={omnipoolTotal} />
             </Text>
           </div>
         </div>
@@ -32,20 +29,16 @@ export const PoolValue = ({ pool, className }: PoolValueProps) => {
               {t("liquidity.asset.details.total.stablepool")}
             </Text>
           </div>
-          {isLoading ? (
-            <Skeleton />
-          ) : (
-            <DollarAssetValue
-              value={data ?? BN_NAN}
-              wrapper={(children) => (
-                <Text fs={18} lh={22} color="white" tAlign={["right", "left"]}>
-                  {children}
-                </Text>
-              )}
-            >
-              <DisplayValue value={data} />
-            </DollarAssetValue>
-          )}
+          <DollarAssetValue
+            value={stablepoolTotal}
+            wrapper={(children) => (
+              <Text fs={18} lh={22} color="white" tAlign={["right", "left"]}>
+                {children}
+              </Text>
+            )}
+          >
+            <DisplayValue value={stablepoolTotal} />
+          </DollarAssetValue>
         </div>
       </div>
     </div>
