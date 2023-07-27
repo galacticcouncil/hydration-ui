@@ -6,7 +6,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.svg"
 import { ButtonTransparent } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
@@ -17,6 +16,7 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { shortenAccountAddress } from "utils/formatting"
 import { ReactComponent as AccountIcon } from "assets/icons/StakingAccountIcon.svg"
+import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
 
 export const useLiquidityProvidersTable = (data: any) => {
   const { t } = useTranslation()
@@ -91,8 +91,8 @@ export const useLiquidityProvidersTable = (data: any) => {
       id: "actions",
       cell: () => (
         <div>
-          <ButtonTransparent css={{ color: theme.colors.iconGray }}>
-            <ChevronRightIcon />
+          <ButtonTransparent>
+            <Icon size={12} sx={{ color: "iconGray" }} icon={<LinkIcon />} />
           </ButtonTransparent>
         </div>
       ),

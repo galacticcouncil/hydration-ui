@@ -29,6 +29,7 @@ export const Charts = ({
       data={stats.data}
       loading={stats.isLoading}
       error={stats.isError}
+      timeframe={timeframe}
     />
   )
 }
