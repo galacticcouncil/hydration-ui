@@ -11,6 +11,7 @@ import { theme } from "theme"
 //import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
 import { ReactComponent as TradeIcon } from "assets/icons/TradeTypeIcon.svg"
 import Skeleton from "react-loading-skeleton"
+import { useMemo } from 'react'
 
 export const useRecentTradesTableSkeleton = (enableAnimation = true) => {
   const { t } = useTranslation()
@@ -25,7 +26,7 @@ export const useRecentTradesTableSkeleton = (enableAnimation = true) => {
     date: isDesktop,
   }
 
-  const columns = [
+  const columns = useMemo(() => [
     display({
       id: "type",
       header: t("stats.overview.table.trades.header.action"),
@@ -160,7 +161,9 @@ export const useRecentTradesTableSkeleton = (enableAnimation = true) => {
             <Skeleton width={22} height={22}  circle enableAnimation={enableAnimation} />
         ),
       }),*/
-  ]
+  ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [enableAnimation, isDesktop])
 
   return useReactTable({
     data: mockData,

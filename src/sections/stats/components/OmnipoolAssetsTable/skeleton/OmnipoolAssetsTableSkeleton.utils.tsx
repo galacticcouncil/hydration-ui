@@ -10,6 +10,7 @@ import { theme } from "theme"
 import Skeleton from "react-loading-skeleton"
 import { ButtonTransparent } from "components/Button/Button"
 import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.svg"
+import { useMemo } from "react"
 
 export const useOmnipoolAssetsTableSkeleton = (enableAnimation = true) => {
   const { t } = useTranslation()
@@ -25,60 +26,69 @@ export const useOmnipoolAssetsTableSkeleton = (enableAnimation = true) => {
     actions: isDesktop,
   }
 
-  const columns = [
-    display({
-      id: "symbol",
-      header: t("stats.overview.table.assets.header.asset"),
-      cell: () => (
-        <div sx={{ flex: "row", gap: 6, align: "center" }}>
-          <Skeleton
-            width={26}
-            height={26}
-            circle
-            enableAnimation={enableAnimation}
-          />
-          {isDesktop ? (
+  const columns = useMemo(
+    () => [
+      display({
+        id: "symbol",
+        header: t("stats.overview.table.assets.header.asset"),
+        cell: () => (
+          <div sx={{ flex: "row", gap: 6, align: "center" }}>
+            <Skeleton
+              width={26}
+              height={26}
+              circle
+              enableAnimation={enableAnimation}
+            />
+            {isDesktop ? (
+              <Skeleton
+                width={72}
+                height={26}
+                enableAnimation={enableAnimation}
+              />
+            ) : (
+              <div>
+                <Skeleton
+                  width={52}
+                  height={16}
+                  enableAnimation={enableAnimation}
+                />
+                <Skeleton
+                  width={52}
+                  height={12}
+                  enableAnimation={enableAnimation}
+                />
+              </div>
+            )}
+          </div>
+        ),
+      }),
+      display({
+        id: "tvl",
+        header: t("stats.overview.table.assets.header.tvl"),
+        cell: () => (
+          <div sx={{ flex: "row", justify: ["end", "center"] }}>
             <Skeleton
               width={72}
               height={26}
               enableAnimation={enableAnimation}
             />
-          ) : (
-            <div>
-              <Skeleton
-                width={52}
-                height={16}
-                enableAnimation={enableAnimation}
-              />
-              <Skeleton
-                width={52}
-                height={12}
-                enableAnimation={enableAnimation}
-              />
-            </div>
-          )}
-        </div>
-      ),
-    }),
-    display({
-      id: "tvl",
-      header: t("stats.overview.table.assets.header.tvl"),
-      cell: () => (
-        <div sx={{ flex: "row", justify: ["end", "center"] }}>
-          <Skeleton width={72} height={26} enableAnimation={enableAnimation} />
-        </div>
-      ),
-    }),
-    display({
-      id: "volume",
-      header: t("stats.overview.table.assets.header.volume"),
-      cell: () => (
-        <div sx={{ flex: "row", justify: "center" }}>
-          <Skeleton width={72} height={26} enableAnimation={enableAnimation} />
-        </div>
-      ),
-    }),
-    /*display({
+          </div>
+        ),
+      }),
+      display({
+        id: "volume",
+        header: t("stats.overview.table.assets.header.volume"),
+        cell: () => (
+          <div sx={{ flex: "row", justify: "center" }}>
+            <Skeleton
+              width={72}
+              height={26}
+              enableAnimation={enableAnimation}
+            />
+          </div>
+        ),
+      }),
+      /*display({
       id: "fee",
       header: t("stats.overview.table.assets.header.fee"),
       cell: () => {
@@ -87,26 +97,33 @@ export const useOmnipoolAssetsTableSkeleton = (enableAnimation = true) => {
         )
       },
     }),*/
-    display({
-      id: "pol",
-      header: t("stats.overview.table.assets.header.pol"),
-      cell: () => (
-        <div sx={{ flex: "row", justify: "center" }}>
-          <Skeleton width={72} height={26} enableAnimation={enableAnimation} />
-        </div>
-      ),
-    }),
-    display({
-      id: "actions",
-      cell: () => (
-        <div>
-          <ButtonTransparent css={{ color: theme.colors.iconGray }}>
-            <ChevronRightIcon />
-          </ButtonTransparent>
-        </div>
-      ),
-    }),
-  ]
+      display({
+        id: "pol",
+        header: t("stats.overview.table.assets.header.pol"),
+        cell: () => (
+          <div sx={{ flex: "row", justify: "center" }}>
+            <Skeleton
+              width={72}
+              height={26}
+              enableAnimation={enableAnimation}
+            />
+          </div>
+        ),
+      }),
+      display({
+        id: "actions",
+        cell: () => (
+          <div>
+            <ButtonTransparent css={{ color: theme.colors.iconGray }}>
+              <ChevronRightIcon />
+            </ButtonTransparent>
+          </div>
+        ),
+      }),
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isDesktop, enableAnimation],
+  )
 
   return useReactTable({
     data: mockData,
