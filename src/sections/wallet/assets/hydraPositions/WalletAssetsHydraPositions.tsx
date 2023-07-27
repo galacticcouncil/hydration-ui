@@ -4,7 +4,6 @@ import {
   Table,
   TableBodyContent,
   TableContainer,
-  TableData,
   TableHeaderContent,
   TableRow,
   TableTitle,
@@ -17,7 +16,7 @@ import {
   useHydraPositionsTable,
 } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { EmptyState } from "./EmptyState"
-import { tableStyles } from "./WalletHydraPositions.styled"
+import { STableData, tableStyles } from "./WalletHydraPositions.styled"
 
 type Props = { data: HydraPositionsTableData[] }
 
@@ -64,12 +63,12 @@ export const WalletAssetsHydraPositions = ({ data }: Props) => {
               <Fragment key={row.id}>
                 <TableRow isOdd={!(i % 2)} onClick={() => row.toggleSelected()}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableData key={cell.id}>
+                    <STableData key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
                       )}
-                    </TableData>
+                    </STableData>
                   ))}
                 </TableRow>
               </Fragment>

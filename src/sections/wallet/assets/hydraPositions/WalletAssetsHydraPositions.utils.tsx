@@ -8,13 +8,12 @@ import {
 import BN from "bignumber.js"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { WalletAssetsHydraPositionsActions } from "sections/wallet/assets/hydraPositions/actions/WalletAssetsHydraPositionsActions"
 import { WalletAssetsTableName } from "sections/wallet/assets/table/data/WalletAssetsTableData"
 import { WalletAssetsHydraPositionsDetails } from "./details/WalletAssetsHydraPositionsDetails"
 
 export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
   const { t } = useTranslation()
-  const { accessor, display } = createColumnHelper<HydraPositionsTableData>()
+  const { accessor } = createColumnHelper<HydraPositionsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
 
   const columns = useMemo(
@@ -56,11 +55,8 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
           />
         ),
       }),
-      display({
-        id: "actions",
-        cell: () => <WalletAssetsHydraPositionsActions />,
-      }),
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
 
