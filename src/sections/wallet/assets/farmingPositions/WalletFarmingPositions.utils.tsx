@@ -110,10 +110,12 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
         ),
       }),
     ],
-    [],
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isDesktop],
   )
 
-  const table = useReactTable({
+  return useReactTable({
     data,
     columns,
     state: { sorting, columnVisibility },
@@ -121,8 +123,6 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
-
-  return table
 }
 
 export const useFarmingPositionsData = () => {
