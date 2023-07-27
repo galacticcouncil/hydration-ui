@@ -17,7 +17,6 @@ const depegEnabled = import.meta.env.VITE_FF_DEPEG_WARNING === "true"
 const settingsEanbled = import.meta.env.VITE_FF_SETTINGS_ENABLED === "true"
 
 export const Header = () => {
-  const isDesktop = useMedia(theme.viewport.gte.sm)
   const isMediumMedia = useMedia(theme.viewport.lt.md)
   const { t } = useTranslation()
 
@@ -43,30 +42,30 @@ export const Header = () => {
           <div sx={{ flex: "row", align: "center" }}>
             <Icon
               sx={{ color: "white" }}
-              icon={
-                isDesktop && !isMediumMedia ? <HydraLogoFull /> : <HydraLogo />
-              }
+              icon={!isMediumMedia ? <HydraLogoFull /> : <HydraLogo />}
             />
-            {isDesktop && <HeaderMenu />}
+            {!isMediumMedia && <HeaderMenu />}
           </div>
           <div sx={{ flex: "row", align: "center", gap: [12, 24] }}>
             <div sx={{ flex: "row" }}>
-              <InfoTooltip
-                text={t("header.documentation.tooltip")}
-                type="black"
-              >
-                <a
-                  href="https://docs.hydradx.io/"
-                  target="blank"
-                  rel="noreferrer"
+              {!isMediumMedia && (
+                <InfoTooltip
+                  text={t("header.documentation.tooltip")}
+                  type="black"
                 >
-                  <SQuestionmark />
-                </a>
-              </InfoTooltip>
+                  <a
+                    href="https://docs.hydradx.io/"
+                    target="blank"
+                    rel="noreferrer"
+                  >
+                    <SQuestionmark />
+                  </a>
+                </InfoTooltip>
+              )}
               <Bell />
             </div>
             <WalletConnectButton />
-            {isDesktop && settingsEanbled && <HeaderSettings />}
+            {!isMediumMedia && settingsEanbled && <HeaderSettings />}
           </div>
         </div>
       </SHeader>
