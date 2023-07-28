@@ -72,7 +72,7 @@ export const useOmnipoolOverviewData = () => {
     ...positions,
     ...omnipoolAssetBalances,
   ]
-  const isInitialLoading = queries.some((q) => q.isInitialLoading)
+  const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
     if (
@@ -208,7 +208,7 @@ export const useOmnipoolOverviewData = () => {
     volumes,
   ]).filter(isNotNil)
 
-  return { data, isLoading: isInitialLoading }
+  return { data, isLoading }
 }
 
 export type TOmnipoolOverview = typeof useOmnipoolOverviewData

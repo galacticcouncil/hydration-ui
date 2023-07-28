@@ -25,6 +25,7 @@ type CustomTooltipProps = { active: boolean; label: string }
 
 type AreaChartProps = {
   data: Maybe<Array<StatsData>>
+  dataKey: "tvl_usd" | "tvl_pol_usd"
   loading: boolean
   error: boolean
 }
@@ -81,7 +82,12 @@ const Label = ({ value }: { value: number }) => {
   )
 }
 
-export const AreaChart = ({ data, loading, error }: AreaChartProps) => {
+export const AreaChart = ({
+  data,
+  loading,
+  error,
+  dataKey,
+}: AreaChartProps) => {
   const { t } = useTranslation()
   const [activePoint, setActivePoint] = useState<CategoricalChartState | null>(
     null,
@@ -130,7 +136,7 @@ export const AreaChart = ({ data, loading, error }: AreaChartProps) => {
           />
           <Area
             type="monotone"
-            dataKey="tvl_usd"
+            dataKey={dataKey}
             stroke="#85D1FF"
             fill="url(#color)"
             activeDot={(props) => <CustomizedDot {...props} />}
@@ -141,7 +147,7 @@ export const AreaChart = ({ data, loading, error }: AreaChartProps) => {
             tickFormatter={(data) => format(new Date(data), "MMM  dd")}
           />
           <YAxis
-            dataKey="tvl_usd"
+            dataKey={dataKey}
             tick={{ fontSize: 12, fill: "white" }}
             orientation="right"
             mirror

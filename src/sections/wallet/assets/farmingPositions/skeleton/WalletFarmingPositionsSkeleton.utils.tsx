@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { useMemo } from "react"
 
-export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
+export const useFarmingPositionsSkeleton = (enableAnimation = true) => {
   const { t } = useTranslation()
   const { display } = createColumnHelper()
 
@@ -15,7 +15,7 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
     () => [
       display({
         id: "name",
-        header: t("wallet.assets.hydraPositions.header.name"),
+        header: t("wallet.assets.farmingPositions.header.name"),
         cell: () => (
           <div sx={{ flex: "row", gap: 8, height: [24, 32] }}>
             <div sx={{ width: [24, 32] }}>
@@ -34,27 +34,48 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
         ),
       }),
       display({
-        id: "value",
-        header: t("wallet.assets.hydraPositions.header.providedAmount"),
+        id: "date",
+        header: t("wallet.assets.farmingPositions.header.date"),
         cell: () => (
-          <div
-            sx={{ width: [90, 134], height: [24, 32], ml: ["auto", "initial"] }}
-          >
+          <div>
             <Skeleton
-              width="100%"
-              height="100%"
+              width={134}
+              height={32}
               enableAnimation={enableAnimation}
             />
           </div>
         ),
       }),
       display({
-        id: "price",
-        header: t("wallet.assets.hydraPositions.header.valueUSD"),
+        id: "shares",
+        header: t("wallet.assets.farmingPositions.header.shares"),
         cell: () => (
           <div>
             <Skeleton
               width={134}
+              height={32}
+              enableAnimation={enableAnimation}
+            />
+          </div>
+        ),
+      }),
+      display({
+        id: "value",
+        header: t("wallet.assets.farmingPositions.header.value"),
+        cell: () => (
+          <div sx={{ flex: "row", gap: 8, mr: 32, display: ["none", "flex"] }}>
+            <Skeleton
+              width={72}
+              height={32}
+              enableAnimation={enableAnimation}
+            />
+            <Skeleton
+              width={72}
+              height={32}
+              enableAnimation={enableAnimation}
+            />
+            <Skeleton
+              width={32}
               height={32}
               enableAnimation={enableAnimation}
             />
@@ -73,4 +94,4 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
   })
 }
 
-const mockData = [1, 2]
+const mockData = [1, 2, 3, 4]

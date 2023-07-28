@@ -1,6 +1,4 @@
-import { useApiPromise } from "utils/api"
 import { ChartWrapper } from "./components/ChartWrapper/ChartWrapper"
-import { isApiLoaded } from "utils/helpers"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { SContainerVertical } from "./StatsLRNA.styled"
@@ -9,7 +7,7 @@ import { StatsTiles } from "../../components/StatsTiles/StatsTiles"
 import { RecentTradesTableWrapper } from "../../components/RecentTradesTable/RecentTradesTableWrapper"
 import { StatusBar } from "./sections/StatusBar"
 
-const StatsLRNAData = () => {
+export const StatsLRNA = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
@@ -32,14 +30,4 @@ const StatsLRNAData = () => {
       <RecentTradesTableWrapper />
     </div>
   )
-}
-
-export const StatsLRNA = () => {
-  const api = useApiPromise()
-
-  if (!isApiLoaded(api)) {
-    return null
-  }
-
-  return <StatsLRNAData />
 }

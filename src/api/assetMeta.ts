@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { u32, u8 } from "@polkadot/types"
-import { Maybe } from "utils/helpers"
+import { isApiLoaded, Maybe } from "utils/helpers"
 import { getApiIds } from "./consts"
 
 export const useAssetMeta = (id: Maybe<u32 | string>) => {
@@ -22,6 +22,7 @@ export const useAssetMetaList = (ids: Array<Maybe<u32 | string>>) => {
     .map((i) => i?.toString())
 
   return useQuery(QUERY_KEYS.assetsMeta, getAllAssetMeta(api), {
+    enabled: !!isApiLoaded(api),
     select: (data) => data.filter((i) => normalizedIds.includes(i.id)),
   })
 }
@@ -88,7 +89,8 @@ export const getLRNAMeta = async (api: ApiPromise) => {
 
 export const useLRNAMeta = () => {
   const api = useApiPromise()
+
   return useQuery(QUERY_KEYS.LRNAMeta(), () => getLRNAMeta(api), {
-    enabled: !!api,
+    enabled: !!isApiLoaded(api),
   })
 }
