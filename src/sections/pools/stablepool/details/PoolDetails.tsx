@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { AssetMetadata } from "@galacticcouncil/sdk"
 import { Fragment } from "react"
+import { SBadge } from "../StablePool.styled"
 
 type PoolDetailsProps = {
   assets: AssetMetadata[]
@@ -18,9 +19,16 @@ export const PoolDetails = ({ assets, className }: PoolDetailsProps) => {
     <div sx={{ flex: "column" }} className={className}>
       <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
         <div sx={{ flex: "column", gap: 26 }}>
-          <Text fs={13} color="basic400">
-            {t("liquidity.assets.title")}
-          </Text>
+          <div sx={{ flex: "row", gap: 8, align: "center" }}>
+            <SBadge>
+              <Text fs={11} fw={700} color="basic900">
+                {t("liquidity.stablepool")}
+              </Text>
+            </SBadge>
+            <Text fs={13} color="basic400">
+              {t("liquidity.assets.title")}
+            </Text>
+          </div>
           <div sx={{ flex: "column", gap: 5 }}>
             <MultipleIcons
               icons={assets.map((asset) => ({

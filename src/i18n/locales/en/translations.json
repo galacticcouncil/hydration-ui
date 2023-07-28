@@ -100,6 +100,7 @@
   "value.multiAPR": "{{minApr, bignumber(type: 'percentage'; decimalPlaces: 0) }}-{{maxApr, bignumber(type: 'percentage'; decimalPlaces: 0) }}% APR",
   "value.token": "{{ value, bignumber(type: 'token') }}",
   "value.tokenWithSymbol": "{{ value, bignumber(type: 'token') }} {{symbol}}",
+  "liquidity.stablepool": "Stablepool",
   "liquidity.header.title": "Liquidity",
   "liquidity.header.switch": "Show my positions",
   "liquidity.header.totalLocked": "Value in Omnipool",
