@@ -139,7 +139,7 @@ export const useHubAssetImbalance = () => {
     QUERY_KEYS.hubAssetImbalance(),
     () => getHubAssetImbalance(api),
     {
-      enabled: !!api,
+      enabled: !!isApiLoaded(api),
       refetchInterval: REFETCH_INTERVAL,
     },
   )

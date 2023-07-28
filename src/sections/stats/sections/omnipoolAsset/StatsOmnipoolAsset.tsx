@@ -182,7 +182,7 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
           sx={{ width: "100%", height: [500, 600], pt: [60, 20] }}
           css={{ position: "relative" }}
         >
-          <ChartWrapper assetSymbol={omnipoolAsset.symbol} isLoading={false} />
+          <ChartWrapper assetSymbol={omnipoolAsset.symbol} />
         </SStatsCardContainer>
       </div>
       <LiquidityProvidersTableWrapper />
@@ -203,7 +203,7 @@ const StatsOmnipoolAssetSkeleton = () => {
           sx={{ width: "100%", height: [500, 600] }}
           css={{ position: "relative" }}
         >
-          <ChartWrapper isLoading={true} />
+          <ChartWrapper />
         </SStatsCardContainer>
       </div>
 

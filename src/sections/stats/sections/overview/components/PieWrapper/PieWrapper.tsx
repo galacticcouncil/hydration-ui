@@ -88,7 +88,7 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
           {pieChartValues}
         </>
       ) : (
-        <ChartWrapper isLoading={isLoading} />
+        <ChartWrapper />
       )}
     </SContainerVertical>
   )

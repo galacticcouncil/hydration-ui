@@ -1,7 +1,5 @@
-import { useApiPromise } from "utils/api"
 import { PieWrapper } from "./components/PieWrapper/PieWrapper"
 import { StatsTiles } from "../../components/StatsTiles/StatsTiles"
-import { isApiLoaded } from "utils/helpers"
 import { useOmnipoolOverviewData } from "./data/OmnipoolOverview.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -10,7 +8,7 @@ import { RecentTradesTableWrapper } from "../../components/RecentTradesTable/Rec
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 import { OmnipoolAssetsTableWrapper } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
 
-export const StatsOverviewData = () => {
+export const StatsOverview = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const omnipoolOverview = useOmnipoolOverviewData()
 
@@ -30,7 +28,7 @@ export const StatsOverviewData = () => {
               gap: 20,
             }}
           >
-            <ChartWrapper isLoading={omnipoolOverview.isLoading} />
+            <ChartWrapper />
           </SContainerVertical>
         )}
       </div>
@@ -40,12 +38,4 @@ export const StatsOverviewData = () => {
       <RecentTradesTableWrapper />
     </div>
   )
-}
-
-export const StatsOverview = () => {
-  const api = useApiPromise()
-
-  if (!isApiLoaded(api)) return null
-
-  return <StatsOverviewData />
 }

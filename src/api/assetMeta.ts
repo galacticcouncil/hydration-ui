@@ -89,7 +89,8 @@ export const getLRNAMeta = async (api: ApiPromise) => {
 
 export const useLRNAMeta = () => {
   const api = useApiPromise()
+
   return useQuery(QUERY_KEYS.LRNAMeta(), () => getLRNAMeta(api), {
-    enabled: !!api,
+    enabled: !!isApiLoaded(api),
   })
 }

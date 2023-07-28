@@ -2,7 +2,6 @@ import { useState } from "react"
 import { useApiPromise } from "utils/api"
 import { isApiLoaded } from "utils/helpers"
 import { useTranslation } from "react-i18next"
-import { AreaChart } from "components/Charts/AreaChart/AreaChart"
 import { StatsTimeframe } from "api/stats"
 import {
   SChartTab,
@@ -13,9 +12,9 @@ import { Charts } from "./Charts"
 
 export type ChartType = "tvl" | "volume"
 
-type Props = { assetSymbol?: string; isLoading: boolean }
+type Props = { assetSymbol?: string }
 
-export const ChartWrapper = ({ assetSymbol, isLoading }: Props) => {
+export const ChartWrapper = ({ assetSymbol }: Props) => {
   const { t } = useTranslation()
   const [chartType, setChartType] = useState<ChartType>("tvl")
   const [timeframe, setTimeframe] = useState<StatsTimeframe>(
@@ -75,15 +74,11 @@ export const ChartWrapper = ({ assetSymbol, isLoading }: Props) => {
           </STimeframeEl>
         </STimeframeContainer>
       </div>
-      {isLoading ? (
-        <AreaChart dataKey="tvl_usd" data={[]} loading={true} error={false} />
-      ) : (
-        <Charts
-          type={chartType}
-          timeframe={timeframe}
-          assetSymbol={assetSymbol}
-        />
-      )}
+      <Charts
+        type={chartType}
+        timeframe={timeframe}
+        assetSymbol={assetSymbol}
+      />
     </>
   )
 }
