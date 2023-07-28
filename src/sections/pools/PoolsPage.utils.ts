@@ -15,19 +15,25 @@ import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
-import { useStableswapPools } from 'api/stableswap'
-
+import { useStableswapPools } from "api/stableswap"
 
 export const useOmnipoolStablePools = () => {
-  const pools = useStableswapPools();
+  const pools = useStableswapPools()
 
-  const poolAssetIdsMap = new Map((pools.data ?? []).map((pool) => [pool.id, pool.data.assets.map((asset: u32) => asset.toString())]));
+  const poolAssetIdsMap = new Map(
+    (pools.data ?? []).map((pool) => [
+      pool.id,
+      pool.data.assets.map((asset: u32) => asset.toString()),
+    ]),
+  )
   const assetIds: string[] = [].concat(...poolAssetIdsMap.values())
   const assetMetaList = useAssetMetaList(assetIds)
 
   const data = (pools.data ?? []).map((pool) => ({
     id: pool.id,
-    assets: (assetMetaList.data ?? []).filter((asset) => poolAssetIdsMap.get(pool.id).includes(asset.id))
+    assets: (assetMetaList.data ?? []).filter((asset) =>
+      poolAssetIdsMap.get(pool.id).includes(asset.id),
+    ),
   }))
 
   return { data, isLoading: pools.isLoading || assetMetaList.isLoading }

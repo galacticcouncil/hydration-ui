@@ -13,10 +13,10 @@ import { LiquidityPositionWrapper } from "sections/pools/pool/positions/Liquidit
 import { FarmingPositionWrapper } from "../farms/FarmingPositionWrapper"
 import { useAccountDeposits } from "api/deposits"
 import { PoolFooterWithNoFarms } from "sections/pools/pool/footer/PoolFooterWithNoFarms"
-import { useOmnipoolStablePools } from '../PoolsPage.utils'
-import { BN_0, BN_1, BN_10 } from '../../../utils/constants'
+import { useOmnipoolStablePools } from "../PoolsPage.utils"
+import { BN_0, BN_1, BN_10 } from "../../../utils/constants"
 
-type Props = ReturnType<typeof useOmnipoolStablePools>['data'][number]
+type Props = ReturnType<typeof useOmnipoolStablePools>["data"][number]
 
 const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
@@ -34,7 +34,10 @@ export const StablePool = ({ id, assets }: Props) => {
     <SContainer id={id.toString()}>
       <SGridContainer>
         <PoolDetails
-          assets={assets.map((asset) => ({ symbol: asset.symbol, decimals: asset.decimals.toNumber() }))}
+          assets={assets.map((asset) => ({
+            symbol: asset.symbol,
+            decimals: asset.decimals.toNumber(),
+          }))}
           css={{ gridArea: "details" }}
         />
 
@@ -44,7 +47,12 @@ export const StablePool = ({ id, assets }: Props) => {
           <div css={{ gridArea: "incentives" }} />
         )}
         {/* TODO: load total values */}
-        <PoolValue id={id} omnipoolTotal={BN_10} stablepoolTotal={BN_1} css={{ gridArea: "values" }} />
+        <PoolValue
+          id={id}
+          omnipoolTotal={BN_10}
+          stablepoolTotal={BN_1}
+          css={{ gridArea: "values" }}
+        />
         {/* TODO: type pool corretly */}
         <PoolActions
           pool={{ id } as any}

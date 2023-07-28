@@ -1,6 +1,9 @@
 import { Page } from "components/Layout/Page/Page"
 import { useState } from "react"
-import { useOmnipoolPools, useOmnipoolStablePools } from 'sections/pools/PoolsPage.utils'
+import {
+  useOmnipoolPools,
+  useOmnipoolStablePools,
+} from "sections/pools/PoolsPage.utils"
 import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
 import { useApiPromise } from "utils/api"

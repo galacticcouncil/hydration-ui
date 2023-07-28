@@ -2,12 +2,22 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { u32 } from '@polkadot/types-codec'
-import BigNumber from 'bignumber.js'
+import { u32 } from "@polkadot/types-codec"
+import BigNumber from "bignumber.js"
 
-type PoolValueProps = { id: u32; omnipoolTotal: BigNumber, stablepoolTotal: BigNumber; className?: string }
+type PoolValueProps = {
+  id: u32
+  omnipoolTotal: BigNumber
+  stablepoolTotal: BigNumber
+  className?: string
+}
 
-export const PoolValue = ({ id, omnipoolTotal, stablepoolTotal, className }: PoolValueProps) => {
+export const PoolValue = ({
+  id,
+  omnipoolTotal,
+  stablepoolTotal,
+  className,
+}: PoolValueProps) => {
   const { t } = useTranslation()
 
   return (
