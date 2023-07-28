@@ -8,7 +8,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { useTranslation } from "react-i18next"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import {
   WalletAssetsTableBalance,
   WalletAssetsTableName,
@@ -36,74 +36,78 @@ export const useAssetsTable = (
     actions: true,
   }
 
-  const columns = [
-    accessor("symbol", {
-      id: "name",
-      header: isDesktop
-        ? t("wallet.assets.table.header.name")
-        : t("selectAssets.asset"),
-      sortingFn: (a, b) => a.original.symbol.localeCompare(b.original.symbol),
-      cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
-    }),
-    accessor("transferable", {
-      id: "transferable",
-      header: t("wallet.assets.table.header.transferable"),
-      sortingFn: (a, b) =>
-        a.original.transferable.gt(b.original.transferable) ? 1 : -1,
-      cell: ({ row }) => (
-        <WalletAssetsTableBalance
-          balance={row.original.transferable}
-          balanceDisplay={row.original.transferableDisplay}
-        />
-      ),
-    }),
-    accessor("total", {
-      id: "total",
-      header: t("wallet.assets.table.header.total"),
-      sortingFn: (a, b) => (a.original.total.gt(b.original.total) ? 1 : -1),
-      cell: ({ row }) => (
-        <WalletAssetsTableBalance
-          balance={row.original.total}
-          balanceDisplay={row.original.totalDisplay}
-        />
-      ),
-    }),
-    display({
-      id: "actions",
-      cell: ({ row }) => (
-        <WalletAssetsTableActions
-          couldBeSetAsPaymentFee={row.original.couldBeSetAsPaymentFee}
-          onBuyClick={
-            row.original.tradability.inTradeRouter &&
-            row.original.tradability.canBuy
-              ? () =>
-                  navigate({
-                    to: "/trade",
-                    search: { assetOut: row.original.id },
-                  })
-              : undefined
-          }
-          onSellClick={
-            row.original.tradability.inTradeRouter &&
-            row.original.tradability.canSell
-              ? () =>
-                  navigate({
-                    to: "/trade",
-                    search: { assetIn: row.original.id },
-                  })
-              : undefined
-          }
-          toggleExpanded={row.toggleSelected}
-          isExpanded={row.getIsSelected()}
-          onTransferClick={() => actions.onTransfer(row.original.id)}
-          symbol={row.original.symbol}
-          id={row.original.id}
-        />
-      ),
-    }),
-  ]
+  const columns = useMemo(
+    () => [
+      accessor("symbol", {
+        id: "name",
+        header: isDesktop
+          ? t("wallet.assets.table.header.name")
+          : t("selectAssets.asset"),
+        sortingFn: (a, b) => a.original.symbol.localeCompare(b.original.symbol),
+        cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
+      }),
+      accessor("transferable", {
+        id: "transferable",
+        header: t("wallet.assets.table.header.transferable"),
+        sortingFn: (a, b) =>
+          a.original.transferable.gt(b.original.transferable) ? 1 : -1,
+        cell: ({ row }) => (
+          <WalletAssetsTableBalance
+            balance={row.original.transferable}
+            balanceDisplay={row.original.transferableDisplay}
+          />
+        ),
+      }),
+      accessor("total", {
+        id: "total",
+        header: t("wallet.assets.table.header.total"),
+        sortingFn: (a, b) => (a.original.total.gt(b.original.total) ? 1 : -1),
+        cell: ({ row }) => (
+          <WalletAssetsTableBalance
+            balance={row.original.total}
+            balanceDisplay={row.original.totalDisplay}
+          />
+        ),
+      }),
+      display({
+        id: "actions",
+        cell: ({ row }) => (
+          <WalletAssetsTableActions
+            couldBeSetAsPaymentFee={row.original.couldBeSetAsPaymentFee}
+            onBuyClick={
+              row.original.tradability.inTradeRouter &&
+              row.original.tradability.canBuy
+                ? () =>
+                    navigate({
+                      to: "/trade",
+                      search: { assetOut: row.original.id },
+                    })
+                : undefined
+            }
+            onSellClick={
+              row.original.tradability.inTradeRouter &&
+              row.original.tradability.canSell
+                ? () =>
+                    navigate({
+                      to: "/trade",
+                      search: { assetIn: row.original.id },
+                    })
+                : undefined
+            }
+            toggleExpanded={row.toggleSelected}
+            isExpanded={row.getIsSelected()}
+            onTransferClick={() => actions.onTransfer(row.original.id)}
+            symbol={row.original.symbol}
+            id={row.original.id}
+          />
+        ),
+      }),
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [actions, isDesktop],
+  )
 
-  const table = useReactTable({
+  return useReactTable({
     data,
     columns,
     state: { sorting, columnVisibility },
@@ -111,8 +115,6 @@ export const useAssetsTable = (
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
-
-  return table
 }
 
 export type AssetsTableData = {

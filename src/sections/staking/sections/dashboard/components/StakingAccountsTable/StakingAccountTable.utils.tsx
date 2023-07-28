@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-table"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -53,49 +53,54 @@ export const useStakingAccountsTable = () => {
     link: isDesktop,
   }
 
-  const columns = [
-    accessor("account", {
-      id: "account",
-      header: t("staking.dashboard.table.account"),
-      sortingFn: (a, b) => a.original.account.localeCompare(b.original.account),
-      cell: ({ row }) => (
-        <div
-          sx={{
-            flex: "row",
-            gap: 8,
-            align: "center",
-            justify: "start",
-          }}
-        >
-          <Icon size={26} icon={<StakingAccountIcon />} />
-          <Text fs={[14]} color="basic300">
-            {shortenAccountAddress(row.original.account)}
+  const columns = useMemo(
+    () => [
+      accessor("account", {
+        id: "account",
+        header: t("staking.dashboard.table.account"),
+        sortingFn: (a, b) =>
+          a.original.account.localeCompare(b.original.account),
+        cell: ({ row }) => (
+          <div
+            sx={{
+              flex: "row",
+              gap: 8,
+              align: "center",
+              justify: "start",
+            }}
+          >
+            <Icon size={26} icon={<StakingAccountIcon />} />
+            <Text fs={[14]} color="basic300">
+              {shortenAccountAddress(row.original.account)}
+            </Text>
+          </div>
+        ),
+      }),
+      accessor("actionPoints", {
+        id: "actionPoints",
+        header: t("staking.dashboard.table.actionPoints"),
+        sortingFn: (a, b) =>
+          a.original.actionPoints.gt(b.original.actionPoints) ? 1 : -1,
+        cell: ({ row }) => (
+          <Text tAlign="right" color="white">
+            {t("value.usd", { amount: row.original.actionPoints })}
           </Text>
-        </div>
-      ),
-    }),
-    accessor("actionPoints", {
-      id: "actionPoints",
-      header: t("staking.dashboard.table.actionPoints"),
-      sortingFn: (a, b) =>
-        a.original.actionPoints.gt(b.original.actionPoints) ? 1 : -1,
-      cell: ({ row }) => (
-        <Text tAlign="right" color="white">
-          {t("value.usd", { amount: row.original.actionPoints })}
-        </Text>
-      ),
-    }),
-    display({
-      id: "link",
-      cell: () => (
-        <ButtonTransparent>
-          <Icon size={12} sx={{ color: "darkBlue300" }} icon={<LinkIcon />} />
-        </ButtonTransparent>
-      ),
-    }),
-  ]
+        ),
+      }),
+      display({
+        id: "link",
+        cell: () => (
+          <ButtonTransparent>
+            <Icon size={12} sx={{ color: "darkBlue300" }} icon={<LinkIcon />} />
+          </ButtonTransparent>
+        ),
+      }),
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
 
-  const table = useReactTable({
+  return useReactTable({
     data: dummyData,
     columns,
     state: { sorting, columnVisibility },
@@ -103,6 +108,4 @@ export const useStakingAccountsTable = () => {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
-
-  return table
 }
