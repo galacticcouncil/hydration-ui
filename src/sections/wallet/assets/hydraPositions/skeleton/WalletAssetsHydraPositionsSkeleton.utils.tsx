@@ -57,10 +57,11 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
               width={134}
               height={32}
               enableAnimation={enableAnimation}
-            /></div>
-      ),
-    }),
-  ],
+            />
+          </div>
+        ),
+      }),
+    ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [enableAnimation],
   )
