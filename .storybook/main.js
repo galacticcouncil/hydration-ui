@@ -1,21 +1,19 @@
-const { mergeConfig } = require("vite")
-const { default: tsconfigPaths } = require("vite-tsconfig-paths")
-const svgr = require("vite-plugin-svgr")
+const { mergeConfig } = require("vite");
+const { default: tsconfigPaths } = require("vite-tsconfig-paths");
 
 module.exports = {
   stories: ["../src/**/*.stories.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
-  addons: [
-    "@storybook/addon-links",
-    "@storybook/addon-essentials",
-    "@storybook/addon-interactions",
-  ],
-  framework: "@storybook/react",
-  core: {
-    builder: "@storybook/builder-vite",
+  addons: ["@storybook/addon-links", "@storybook/addon-essentials", "@storybook/addon-interactions", "@storybook/addon-mdx-gfm"],
+  framework: {
+    name: "@storybook/react-vite",
+    options: {}
   },
   async viteFinal(config) {
     return mergeConfig(config, {
-      plugins: [tsconfigPaths(), svgr()],
-    })
+      plugins: [tsconfigPaths()]
+    });
   },
-}
+  docs: {
+    autodocs: true
+  }
+};
