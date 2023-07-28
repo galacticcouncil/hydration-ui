@@ -4,34 +4,17 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
-  VisibilityState,
 } from "@tanstack/react-table"
 import BN from "bignumber.js"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { Text } from "components/Typography/Text/Text"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useMedia } from "react-use"
-import { WalletAssetsHydraPositionsActions } from "sections/wallet/assets/hydraPositions/actions/WalletAssetsHydraPositionsActions"
-import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { WalletAssetsTableName } from "sections/wallet/assets/table/data/WalletAssetsTableData"
-import { theme } from "theme"
+import { WalletAssetsHydraPositionsDetails } from "./details/WalletAssetsHydraPositionsDetails"
 
-export const useHydraPositionsTable = (
-  data: HydraPositionsTableData[],
-  actions: { onTransfer: (assetId: string) => void },
-) => {
+export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
   const { t } = useTranslation()
-  const { accessor, display } = createColumnHelper<HydraPositionsTableData>()
+  const { accessor } = createColumnHelper<HydraPositionsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
-
-  const isDesktop = useMedia(theme.viewport.gte.sm)
-  const columnVisibility: VisibilityState = {
-    name: true,
-    value: true,
-    valueUSD: isDesktop,
-    actions: true,
-  }
 
   const columns = useMemo(
     () => [
@@ -40,15 +23,16 @@ export const useHydraPositionsTable = (
         header: t("wallet.assets.hydraPositions.header.name"),
         cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
       }),
-      accessor("value", {
-        id: "value",
-        header: t("wallet.assets.hydraPositions.header.position"),
+      accessor("providedAmount", {
+        id: "providedAmount",
+        header: t("wallet.assets.hydraPositions.header.providedAmount"),
         sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
         cell: ({ row }) => (
-          <WalletAssetsHydraPositionsData
+          <WalletAssetsHydraPositionsDetails
+            assetId={row.original.assetId}
             symbol={row.original.symbol}
-            lrna={row.original.lrna}
-            value={row.original.value}
+            amount={row.original.providedAmountShifted}
+            amountDisplay={row.original.providedAmountDisplay}
           />
         ),
       }),
@@ -62,30 +46,24 @@ export const useHydraPositionsTable = (
             ? 1
             : -1,
         cell: ({ row }) => (
-          <Text fw={500} fs={16} lh={16} color="green600" tAlign="left">
-            <DisplayValue value={row.original.valueDisplay} />
-          </Text>
-        ),
-      }),
-      display({
-        id: "actions",
-        cell: ({ row }) => (
-          <WalletAssetsHydraPositionsActions
-            toggleExpanded={row.toggleSelected}
-            onTransferClick={() => actions.onTransfer(row.original.assetId)}
-            isExpanded={row.getIsSelected()}
+          <WalletAssetsHydraPositionsDetails
+            assetId={row.original.assetId}
+            symbol={row.original.symbol}
+            lrna={row.original.lrna}
+            amount={row.original.value}
+            amountDisplay={row.original.valueDisplay}
           />
         ),
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [actions],
+    [],
   )
 
   return useReactTable({
     data,
     columns,
-    state: { sorting, columnVisibility },
+    state: { sorting },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -103,5 +81,6 @@ export type HydraPositionsTableData = {
   price: BN
   providedAmount: BN
   providedAmountDisplay: BN
+  providedAmountShifted: BN
   shares: BN
 }

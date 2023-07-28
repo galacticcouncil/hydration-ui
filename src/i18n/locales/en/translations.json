@@ -340,7 +340,7 @@
   "wallet.assets.hydraPositions.title": "Liquidity positions",
   "wallet.assets.hydraPositions.header.name": "Asset",
   "wallet.assets.hydraPositions.header.valueUSD": "Current value",
-  "wallet.assets.hydraPositions.header.position": "Current amount",
+  "wallet.assets.hydraPositions.header.providedAmount": "Initial value",
   "wallet.assets.hydraPositions.data.value": "{{ value, bignumber(type: 'token') }} {{ symbol }}",
   "wallet.assets.hydraPositions.data.valueLrna": "{{ value, bignumber(type: 'token') }} {{ symbol }} <0/>+ {{ lrna, bignumber(type: 'token') }} LRNA",
   "wallet.assets.hydraPositions.actions.transfer": "Transfer",
