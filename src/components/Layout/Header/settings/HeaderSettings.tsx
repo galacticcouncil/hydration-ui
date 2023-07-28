@@ -1,4 +1,4 @@
-import { Portal, Root } from "@radix-ui/react-dropdown-menu"
+import { Portal, Root, Content } from "@radix-ui/react-dropdown-menu"
 import { ReactComponent as IconArrow } from "assets/icons/IconArrow.svg"
 import { ReactComponent as IconDollar } from "assets/icons/IconDollarLarge.svg"
 import { ReactComponent as IconSettings } from "assets/icons/IconSettings.svg"
@@ -9,6 +9,7 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { SButton, SContent, SItem, SItems } from "./HeaderSettings.styled"
 import { HeaderSettingsDisplayAsset } from "./displayAsset/HeaderSettingsDisplayAsset"
+import { AnimatePresence } from "framer-motion"
 
 export const HeaderSettings = () => {
   const [open, setOpen] = useState(false)
@@ -20,12 +21,28 @@ export const HeaderSettings = () => {
       <SButton>
         <IconSettings />
       </SButton>
-
-      <Portal>
-        <SContent align="end" sideOffset={8}>
-          <HeaderSettingsContents onClose={onClose} />
-        </SContent>
-      </Portal>
+      <AnimatePresence>
+        {open && (
+          <Portal forceMount>
+            <Content align="end" sideOffset={18}>
+              <SContent
+                initial={{ opacity: 0, height: 50, x: 200 }}
+                animate={{ opacity: 1, height: "auto", x: 0 }}
+                exit={{ opacity: 0, height: 50, x: 200 }}
+                transition={{
+                  type: "spring",
+                  mass: 1,
+                  stiffness: 300,
+                  damping: 20,
+                  duration: 0.2,
+                }}
+              >
+                <HeaderSettingsContents onClose={onClose} />
+              </SContent>
+            </Content>
+          </Portal>
+        )}
+      </AnimatePresence>
     </Root>
   )
 }

@@ -4,18 +4,18 @@ import { isApiLoaded } from "utils/helpers"
 import { useTranslation } from "react-i18next"
 import { AreaChart } from "components/Charts/AreaChart/AreaChart"
 import { StatsTimeframe } from "api/stats"
+import { Charts } from "./Charts"
 import {
   SChartTab,
   STimeframeContainer,
   STimeframeEl,
-} from "./ChartsWrapper.styled"
-import { Charts } from "./Charts"
+} from "sections/stats/components/ChartsWrapper/ChartsWrapper.styled"
 
-export type ChartType = "tvl" | "volume"
+export type ChartType = "pol" | "volume"
 
-export const ChartWrapper = ({ assetSymbol }: { assetSymbol?: string }) => {
+export const ChartsWrapper = ({ assetSymbol }: { assetSymbol?: string }) => {
   const { t } = useTranslation()
-  const [chartType, setChartType] = useState<ChartType>("tvl")
+  const [chartType, setChartType] = useState<ChartType>("pol")
   const [timeframe, setTimeframe] = useState<StatsTimeframe>(
     StatsTimeframe["ALL"],
   )
@@ -35,10 +35,10 @@ export const ChartWrapper = ({ assetSymbol }: { assetSymbol?: string }) => {
           <SChartTab
             disabled={!isApi}
             aria-label="total value locked"
-            active={chartType === "tvl"}
-            onClick={() => setChartType("tvl")}
+            active={chartType === "pol"}
+            onClick={() => setChartType("pol")}
           >
-            {t("stats.overview.chart.switcher.tvl")}
+            {t("stats.pol.chart.switcher.pol")}
           </SChartTab>
           <SChartTab
             disabled={!isApi}
@@ -46,7 +46,7 @@ export const ChartWrapper = ({ assetSymbol }: { assetSymbol?: string }) => {
             active={chartType === "volume"}
             onClick={() => setChartType("volume")}
           >
-            {t("stats.overview.chart.switcher.volume")}
+            {t("stats.pol.chart.switcher.volume")}
           </SChartTab>
         </div>
         <STimeframeContainer>
@@ -80,7 +80,12 @@ export const ChartWrapper = ({ assetSymbol }: { assetSymbol?: string }) => {
           assetSymbol={assetSymbol}
         />
       ) : (
-        <AreaChart dataKey="tvl_usd" data={[]} loading error={false} />
+        <AreaChart
+          dataKey="tvl_pol_usd"
+          data={[]}
+          loading={true}
+          error={false}
+        />
       )}
     </>
   )
