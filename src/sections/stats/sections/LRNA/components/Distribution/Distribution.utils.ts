@@ -8,7 +8,7 @@ import BigNumber from "bignumber.js"
 import { getLRNAMeta } from "api/assetMeta"
 import { formatValue } from "../../StatsLRNA.utils"
 import { REFETCH_INTERVAL } from "utils/constants"
-import { isApiLoaded } from '../../../../../../utils/helpers'
+import { isApiLoaded } from 'utils/helpers'
 
 const getLRNATotalIssuance = async (api: ApiPromise) => {
   const meta = await getLRNAMeta(api)
