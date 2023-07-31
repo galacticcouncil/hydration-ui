@@ -3,18 +3,11 @@ import { PoolDetails } from "./details/PoolDetails"
 import { PoolValue } from "./details/PoolValue"
 import { useState } from "react"
 import { PoolActions } from "./actions/PoolActions"
-import { useMedia } from "react-use"
-import { theme } from "theme"
-import { AnimatePresence, motion } from "framer-motion"
-import { PoolFooter } from "sections/pools/pool/footer/PoolFooter"
 import { PoolIncentives } from "./details/PoolIncentives"
 import { usePoolPositions } from "sections/pools/pool/Pool.utils"
-import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
-import { FarmingPositionWrapper } from "../farms/FarmingPositionWrapper"
 import { useAccountDeposits } from "api/deposits"
-import { PoolFooterWithNoFarms } from "sections/pools/pool/footer/PoolFooterWithNoFarms"
 import { useOmnipoolStablePools } from "../PoolsPage.utils"
-import { BN_0, BN_1, BN_10 } from "../../../utils/constants"
+import { BN_1, BN_10 } from "utils/constants"
 
 type Props = ReturnType<typeof useOmnipoolStablePools>["data"][number]
 
@@ -22,7 +15,6 @@ const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
 export const StablePool = ({ id, assets }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false)
-  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const positions = usePoolPositions({ id } as any)
   const accountDeposits = useAccountDeposits(enabledFarms ? id : undefined)
@@ -48,7 +40,6 @@ export const StablePool = ({ id, assets }: Props) => {
         )}
         {/* TODO: load total values */}
         <PoolValue
-          id={id}
           omnipoolTotal={BN_10}
           stablepoolTotal={BN_1}
           css={{ gridArea: "values" }}

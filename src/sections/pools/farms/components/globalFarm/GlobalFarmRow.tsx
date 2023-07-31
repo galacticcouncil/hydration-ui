@@ -1,17 +1,9 @@
 import { useAsset } from "api/asset"
 import { Farm, useFarmApr } from "api/farms"
-import { Icon } from "components/Icon/Icon"
-import { Separator } from "components/Separator/Separator"
-import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import { FarmIncentive } from "../../../components/FarmIncentive"
 
-export const GlobalFarmRow = ({
-  farm,
-  isLastElement,
-}: {
-  farm: Farm
-  isLastElement: boolean
-}) => {
+export const GlobalFarmRow = ({ farm }: { farm: Farm }) => {
   const { t } = useTranslation()
   const { data: apr } = useFarmApr(farm)
   const { data: asset } = useAsset(apr?.assetId)
@@ -19,20 +11,13 @@ export const GlobalFarmRow = ({
   if (!apr || !asset) return null
 
   return (
-    <>
-      <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
-        <div sx={{ flex: "row", align: "center", gap: 6 }}>
-          <Icon icon={asset.icon} size={24} />
-          <Text>{asset.symbol}</Text>
-        </div>
-
-        <Text color="brightBlue200">
-          {apr.minApr
-            ? t("value.APR.range", { from: apr.minApr, to: apr.apr })
-            : t("value.APR", { apr: apr.apr })}
-        </Text>
-      </div>
-      {!isLastElement && <Separator />}
-    </>
+    <FarmIncentive
+      symbol={asset.symbol}
+      apr={
+        apr.minApr
+          ? t("value.APR.range", { from: apr.minApr, to: apr.apr })
+          : t("value.APR", { apr: apr.apr })
+      }
+    />
   )
 }

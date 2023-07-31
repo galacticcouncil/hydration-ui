@@ -32,15 +32,9 @@ export const PoolIncentives = ({
       </Text>
       <Spacer size={[10, 27]} />
       {isDesktop ? (
-        <div sx={{ flex: "column", gap: 15 }}>
-          {farms.data.map((farm, i) => (
-            <GlobalFarmRow
-              key={farm.yieldFarm.id.toString()}
-              farm={farm}
-              isLastElement={farms.data?.length === i + 1}
-            />
-          ))}
-        </div>
+        farms.data.map((farm) => (
+          <GlobalFarmRow key={farm.yieldFarm.id.toString()} farm={farm} />
+        ))
       ) : (
         <GlobalFarmRowMulti farms={farms.data} />
       )}

@@ -6,14 +6,12 @@ import { u32 } from "@polkadot/types-codec"
 import BigNumber from "bignumber.js"
 
 type PoolValueProps = {
-  id: u32
   omnipoolTotal: BigNumber
   stablepoolTotal: BigNumber
   className?: string
 }
 
 export const PoolValue = ({
-  id,
   omnipoolTotal,
   stablepoolTotal,
   className,
@@ -36,7 +34,7 @@ export const PoolValue = ({
         <div sx={{ flex: "column", gap: 10, width: ["auto", 118] }}>
           <div sx={{ flex: "row", align: "center", gap: 6 }}>
             <Text fs={13} color="basic400">
-              {t("liquidity.asset.details.total.stablepool")}
+              {t("liquidity.stablepool.asset.details.total")}
             </Text>
           </div>
           <DollarAssetValue
