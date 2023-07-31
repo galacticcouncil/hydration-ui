@@ -66,13 +66,29 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
         ),
       }),
       accessor("shares", {
-        id: "shares",
-        header: t("wallet.assets.farmingPositions.header.shares"),
+        id: "initial",
+        header: t("wallet.assets.farmingPositions.header.initial"),
         sortingFn: (a, b) => (a.original.shares.gt(b.original.shares) ? 1 : -1),
         cell: ({ row }) => (
-          <Text fs={16} fw={500} color="white">
-            {t("value.token", { value: row.original.shares })}
-          </Text>
+          <>
+            <Text fs={16} fw={500} color="white">
+              {t("value.token", {
+                value: row.original.position.providedAmount,
+              })}
+            </Text>
+            <DollarAssetValue
+              value={row.original.position.providedAmountDisplay}
+              wrapper={(children) => (
+                <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                  {children}
+                </Text>
+              )}
+            >
+              <DisplayValue
+                value={row.original.position.providedAmountDisplay}
+              />
+            </DollarAssetValue>
+          </>
         ),
       }),
       accessor("position", {
@@ -194,9 +210,25 @@ export const useFarmingPositionsData = () => {
       )
       const position = accountDepositsShare.data[assetId]?.find(
         (d) => d.depositId?.toString() === deposit.id.toString(),
-      ) ?? { symbol, value: BN_NAN, valueDisplay: BN_NAN, lrna: BN_NAN }
+      ) ?? {
+        symbol,
+        value: BN_NAN,
+        valueDisplay: BN_NAN,
+        lrna: BN_NAN,
+        amount: BN_NAN,
+        providedAmount: BN_NAN,
+        providedAmountDisplay: BN_NAN,
+      }
 
-      return { id, symbol, name, date, shares, position, assetId }
+      return {
+        id,
+        symbol,
+        name,
+        date,
+        shares,
+        position,
+        assetId,
+      }
     })
 
     return rows
@@ -223,5 +255,7 @@ export type FarmingPositionsTableData = {
     value: BN
     valueDisplay: BN
     lrna: BN
+    providedAmount: BN
+    providedAmountDisplay: BN
   }
 }
