@@ -65,7 +65,7 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
           </Text>
         ),
       }),
-      accessor("shares", {
+      accessor("position.providedAmount", {
         id: "initial",
         header: t("wallet.assets.farmingPositions.header.initial"),
         sortingFn: (a, b) => (a.original.shares.gt(b.original.shares) ? 1 : -1),
