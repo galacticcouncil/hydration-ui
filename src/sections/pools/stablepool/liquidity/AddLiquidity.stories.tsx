@@ -6,12 +6,8 @@ export default {
   component: AddLiquidity,
 } as ComponentMeta<typeof AddLiquidity>
 
-
-
 const Template: ComponentStory<typeof AddLiquidity> = () => {
-  return (
-    <AddLiquidity />
-  )
+  return <AddLiquidity />
 }
 
 export const AddLiquidityStory = Template.bind({})
