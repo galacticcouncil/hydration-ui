@@ -299,7 +299,7 @@ export const useClaimReward = () => {
   )
 }
 
-export const useStakingData = () => {
+export const useStakeData = () => {
   const { account } = useAccountStore()
   const stake = useStake(account?.address)
   const circulatingSupply = useCirculatingSupply()
@@ -324,6 +324,7 @@ export const useStakingData = () => {
   )
 
   const availableBalance = balance.data?.balance.minus(vestLocks ?? 0)
+
   const availableBalanceDollar = availableBalance
     ?.multipliedBy(spotPrice.data?.spotPrice ?? 1)
     .shiftedBy(decimals)
@@ -342,7 +343,7 @@ export const useStakingData = () => {
   const circulatingSupplyData = BN(circulatingSupply.data ?? 0).shiftedBy(
     decimals,
   )
-  console.log({ stake })
+
   return {
     data: {
       supplyStaked,
@@ -358,4 +359,4 @@ export const useStakingData = () => {
   }
 }
 
-export type TStakingData = ReturnType<typeof useStakingData>["data"]
+export type TStakingData = ReturnType<typeof useStakeData>["data"]

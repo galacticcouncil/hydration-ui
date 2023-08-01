@@ -20,7 +20,7 @@ export const AvailableRewards = ({
   positionId: number | undefined
 }) => {
   const { t } = useTranslation()
-  const reward = useClaimReward(positionId)
+  const reward = useClaimReward()
   const spotPrice = useDisplayPrice(NATIVE_ASSET_ID)
 
   const isLoading = reward.isLoading || spotPrice.isLoading

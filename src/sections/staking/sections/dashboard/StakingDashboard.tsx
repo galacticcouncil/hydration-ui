@@ -8,7 +8,7 @@ import { Stats } from "./components/Stats/Stats"
 import { StakingAccountsTableWrapperData } from "./components/StakingAccountsTable/StakingAcoountsTableWrapper"
 import { StakingAccountSkeleton } from "./components/StakingAccountsTable/skeleton/StakingAccountSkeleton"
 import { Referenda, ReferendaWrapper } from "./components/Referenda/Referenda"
-import { useStakingData } from "api/staking"
+import { useStakeData } from "api/staking"
 
 export const StakingDashboard = () => {
   const api = useApiPromise()
@@ -20,7 +20,7 @@ export const StakingDashboard = () => {
 
 export const StakingData = () => {
   const { account } = useAccountStore()
-  const staking = useStakingData()
+  const staking = useStakeData()
   console.log(staking)
   return (
     <div sx={{ flex: ["column-reverse", "row"], gap: 30 }}>
@@ -36,7 +36,7 @@ export const StakingData = () => {
         css={{ flex: 2 }}
       >
         <StakingInputSection data={staking.data} loading={staking.isLoading} />
-        {account && staking.data?.positionId && (
+        {account && staking.data?.positionId && false && (
           <AvailableRewards positionId={staking.data.positionId} />
         )}
       </div>
