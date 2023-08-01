@@ -152,7 +152,7 @@ export const StakingValues = ({
             <div sx={{ flex: "column", align: ["start", "center"] }}>
               <Text fs={[19, 24]} lh={[19, 24]} color="white" font="FontOver">
                 {t("value.tokenWithSymbol", {
-                  value: data?.stakingPosition?.stake,
+                  value: data?.stakePosition?.stake,
                   symbol: "HDX",
                   fixedPointScale: 12,
                 })}
@@ -185,7 +185,7 @@ export const StakingValues = ({
               <Skeleton width={100} height={24} />
             </div>
           ) : (
-            t("value", { value: data?.stakingPosition?.actionPoints })
+            t("value", { value: data?.stakePosition?.actionPoints })
           )
         }
       />

@@ -18,12 +18,12 @@ import { Spacer } from "components/Spacer/Spacer"
 
 export const Stake = ({
   loading,
-  stakingId,
+  positionId,
   minStake,
 }: {
   loading: boolean
   minStake?: BigNumber
-  stakingId?: number
+  positionId?: number
 }) => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
@@ -41,23 +41,28 @@ export const Stake = ({
   const onSubmit = async (values: FormValues<typeof form>) => {
     const amount = getFixedPointAmount(values.amount, 12).toString()
 
-    const isStakePosition = stakingId != null && false
+    const isStakePosition = positionId != null
+    let transaction
 
     if (isStakePosition) {
-      await createTransaction({
-        tx: api.tx.staking.increaseStake(stakingId, amount),
+      transaction = await createTransaction({
+        tx: api.tx.staking.increaseStake(positionId, amount),
       })
     } else {
-      await createTransaction({ tx: api.tx.staking.stake(amount) })
+      transaction = await createTransaction({
+        tx: api.tx.staking.stake(amount),
+      })
     }
 
-    await queryClient.refetchQueries({
-      queryKey: [
-        QUERY_KEYS.staking,
-        QUERY_KEYS.circulatingSupply,
-        QUERY_KEYS.stakingPosition(stakingId),
-      ],
-    })
+    if (!transaction.isError) {
+      form.reset()
+    }
+
+    await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
+    await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)
+    await queryClient.invalidateQueries(
+      QUERY_KEYS.tokenBalance(NATIVE_ASSET_ID, account?.address),
+    )
   }
 
   return (
@@ -143,7 +148,9 @@ export const Stake = ({
 
         {account ? (
           <Button variant="primary" type="submit" disabled={loading}>
-            {t("staking.dashboard.form.stake.button")}
+            {positionId == null
+              ? t("staking.dashboard.form.stake.button")
+              : t("staking.dashboard.form.restake.button")}
           </Button>
         ) : (
           <WalletConnectButton />

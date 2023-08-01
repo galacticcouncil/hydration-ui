@@ -12,7 +12,6 @@ export const Stats = ({
   data?: TStakingData
 }) => {
   const { account } = useAccountStore()
-  const hasStakingPos = !!data?.stakingPosition
 
   return (
     <SContainer sx={{ p: [24, 40] }}>
@@ -35,7 +34,7 @@ export const Stats = ({
           <StakingValues
             loading={!!loading}
             data={data}
-            isStakingPosition={hasStakingPos}
+            isStakingPosition={!!data?.stakePosition}
           />
         )}
       </div>

@@ -296,6 +296,8 @@ export const QUERY_KEYS = {
     return key
   },
   circulatingSupply: ["circulatingSupply"],
+  stake: (address: string | undefined) => ["stake", address],
   staking: ["staking"],
   stakingPosition: (id: number | undefined) => ["totalStaking", id],
+  stakingConsts: ["stakingConsts"],
 } as const

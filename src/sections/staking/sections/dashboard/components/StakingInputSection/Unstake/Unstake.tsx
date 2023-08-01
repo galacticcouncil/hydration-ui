@@ -16,10 +16,10 @@ import { QUERY_KEYS } from "utils/queryKeys"
 export const Unstake = ({
   loading,
   staked,
-  stakingId,
+  positionId,
 }: {
   loading: boolean
-  stakingId?: number
+  positionId?: number
   staked: BigNumber
 }) => {
   const { t } = useTranslation()
@@ -37,17 +37,19 @@ export const Unstake = ({
   })
 
   const onSubmit = async () => {
-    await createTransaction({
-      tx: api.tx.staking.unstake(stakingId),
+    const transaction = await createTransaction({
+      tx: api.tx.staking.unstake(positionId),
     })
 
-    await queryClient.refetchQueries({
-      queryKey: [
-        QUERY_KEYS.staking,
-        QUERY_KEYS.circulatingSupply,
-        QUERY_KEYS.stakingPosition(stakingId),
-      ],
-    })
+    await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
+    await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)
+    await queryClient.invalidateQueries(
+      QUERY_KEYS.tokenBalance(NATIVE_ASSET_ID, account?.address),
+    )
+
+    if (!transaction.isError) {
+      form.reset({ amount: "0" })
+    }
   }
 
   return (

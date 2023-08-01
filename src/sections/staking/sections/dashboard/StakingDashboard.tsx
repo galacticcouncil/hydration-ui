@@ -21,11 +21,11 @@ export const StakingDashboard = () => {
 export const StakingData = () => {
   const { account } = useAccountStore()
   const staking = useStakingData()
-
+  console.log(staking)
   return (
     <div sx={{ flex: ["column-reverse", "row"], gap: 30 }}>
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
-        <StakingGuide />
+        {!staking.data?.stakePosition && <StakingGuide />}
         <Stats data={staking.data} loading={staking.isLoading} />
         <ReferendaWrapper />
         <StakingAccountsTableWrapperData />
@@ -36,7 +36,9 @@ export const StakingData = () => {
         css={{ flex: 2 }}
       >
         <StakingInputSection data={staking.data} loading={staking.isLoading} />
-        {account && <AvailableRewards />}
+        {account && staking.data?.positionId && (
+          <AvailableRewards positionId={staking.data.positionId} />
+        )}
       </div>
     </div>
   )
