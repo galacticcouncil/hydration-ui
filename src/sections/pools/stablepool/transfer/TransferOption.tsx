@@ -3,7 +3,7 @@ import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
 import { theme } from "theme"
 import { Text } from "components/Typography/Text/Text"
-import { SBlock } from "./AddLiquidityBlock.styled"
+import { SBlock } from "./TransferOption.styled"
 
 type Props = {
   selected: boolean
@@ -13,7 +13,7 @@ type Props = {
   icon: ReactNode
 }
 
-export const AddLiquidityBlock = ({
+export const TransferOption = ({
   selected,
   children,
   heading,
