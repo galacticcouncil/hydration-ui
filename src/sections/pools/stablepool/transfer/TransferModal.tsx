@@ -4,6 +4,7 @@ import { TransferOptions } from "./TransferOptions"
 import { ComponentProps, useState } from 'react'
 import { Button } from 'components/Button/Button'
 import { useTranslation } from 'react-i18next'
+import { AddLiquidity } from '../../modals/AddLiquidity/AddLiquidity'
 
 type Props = {
   isOpen: boolean
@@ -12,34 +13,49 @@ type Props = {
 
 export const TransferModal = ({ isOpen, onClose }: Props) => {
   const { t } = useTranslation();
-  const [page] = useState(0)
+  const [page, setPage] = useState(0)
   const [option, setOption] = useState<ComponentProps<typeof TransferOptions>['selected']>('OMNIPOOL')
+
+  const handleBack = () => {
+    if(page === 1 || page === 2) {
+      return setPage(0)
+    }
+
+    if(option === 'OMNIPOOL') {
+      return setPage(1);
+    }
+
+    if(option === 'STABLEPOOL') {
+      return setPage(2);
+    }
+  }
 
   return (
     <Modal open={isOpen} onClose={onClose} disableCloseOutside={true}>
       <ModalContents
         onClose={onClose}
         page={page}
+        onBack={page ? handleBack : undefined}
         contents={[
           {
-            title: "Add Liquidity",
+            title: t('liquidity.stablepool.transfer.options'),
             headerVariant: "gradient",
             content: (
               <>
                 <TransferOptions onSelect={setOption} selected={option} />
-                <Button variant="primary" sx={{ mt: 21 }}>{t('next')}</Button>
+                <Button variant="primary" sx={{ mt: 21 }} onClick={() => setPage(option === 'OMNIPOOL' ? 1 : 2)}>{t('next')}</Button>
               </>
             ),
           },
           {
-            title: "Title 2",
-            headerVariant: "simple",
-            content: <div>content 2 </div>,
+            title: "Omnipool",
+            headerVariant: "gradient",
+            content: <div />,
           },
           {
-            title: "Title 3",
-            headerVariant: "simple",
-            content: <div>content 3</div>,
+            title: "Stablepool",
+            headerVariant: "gradient",
+            content: <div />,
           },
         ]}
       />

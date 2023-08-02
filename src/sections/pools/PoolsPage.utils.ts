@@ -12,7 +12,7 @@ import { useMemo } from "react"
 import { useAssetsTradability } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useAccountStore } from "state/store"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { getFloatingPointAmount } from "utils/balance"
+import { getFloatingPointAmount, normalizeBigNumber } from 'utils/balance'
 import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { useStableswapPools } from "api/stableswap"
@@ -40,7 +40,7 @@ export const useOmnipoolStablePools = () => {
 
   const data = (pools.data ?? []).map((pool) => ({
     id: pool.id,
-    tradeFee: pool.data.tradeFee,
+    tradeFee: normalizeBigNumber(pool.data.tradeFee).div(10000),
     assets: (assetMetaList.data ?? []).filter((asset) =>
       poolAssetIdsMap.get(pool.id).includes(asset.id),
     ),
