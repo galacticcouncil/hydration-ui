@@ -38,7 +38,7 @@ type SearchGenerics = MakeGenerics<{
   Search: z.infer<typeof TradeAppSearch>
 }>
 
-const twapEnabled = import.meta.env.VITE_FF_TWAP_ENABLED
+const isTwapEnabled = import.meta.env.VITE_FF_TWAP_ENABLED === "true"
 const indexerUrl = import.meta.env.VITE_INDEXER_URL
 const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
 const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
@@ -98,7 +98,7 @@ export function TradePage() {
           ref={(r) => {
             if (r) {
               r.setAttribute("chart", "")
-              twapEnabled && r.setAttribute("twap", "")
+              isTwapEnabled && r.setAttribute("twap", "")
             }
           }}
           assetIn={search.success ? search.data.assetIn : undefined}
