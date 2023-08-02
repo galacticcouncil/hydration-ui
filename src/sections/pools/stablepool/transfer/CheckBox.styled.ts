@@ -3,7 +3,6 @@ import { css } from '@emotion/react'
 import { theme } from 'theme'
 
 export const Outer = styled.div<{ selected?: boolean }>`
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;

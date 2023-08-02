@@ -3,10 +3,18 @@ import { ReactComponent as DropletIcon } from "assets/icons/DropletIcon.svg"
 import { TransferOption } from "./TransferOption"
 import { ListItem } from "./ListItem"
 
-export const TransferOptions = () => (
+type Option = 'OMNIPOOL' | 'STABLEPOOL'
+
+type Props = {
+  selected: Option;
+  onSelect: (selected: Option) => void;
+}
+
+export const TransferOptions = ({ selected, onSelect }: Props) => (
   <>
     <TransferOption
-      selected={true}
+      selected={selected === 'OMNIPOOL'}
+      onSelect={() => onSelect('OMNIPOOL')}
       heading="Add to omnipool"
       subheading="Benefits"
       icon={<WaterRippleIcon />}
@@ -23,7 +31,8 @@ export const TransferOptions = () => (
       <ListItem>Fourth benefit mentioned here.</ListItem>
     </TransferOption>
     <TransferOption
-      selected={false}
+      selected={selected === 'STABLEPOOL'}
+      onSelect={() => onSelect('STABLEPOOL')}
       heading="Add to stablepool"
       subheading="Benefits"
       icon={<DropletIcon />}

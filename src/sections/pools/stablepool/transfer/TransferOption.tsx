@@ -1,4 +1,4 @@
-import { ReactNode } from "react"
+import { MouseEventHandler, ReactNode } from 'react'
 import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
 import { theme } from "theme"
@@ -8,7 +8,7 @@ import { CheckBox } from './CheckBox'
 
 type Props = {
   selected: boolean
-  onSelect: () => void
+  onSelect: MouseEventHandler<HTMLDivElement>
   children: ReactNode
   heading: string
   subheading: string
@@ -23,7 +23,7 @@ export const TransferOption = ({
   subheading,
   icon,
 }: Props) => (
-  <SBlock selected={selected}>
+  <SBlock selected={selected} onClick={onSelect}>
     <div sx={{ flex: "row", align: "center", justify: 'space-between', mb: 26 }}>
       <div sx={{ flex: "row", align: "center", gap: 12 }}>
         <Icon icon={icon} />
@@ -31,7 +31,7 @@ export const TransferOption = ({
           {heading}
         </Heading>
       </div>
-      <CheckBox selected={selected} onSelect={onSelect} />
+      <CheckBox selected={selected} />
     </div>
     <div
       css={{

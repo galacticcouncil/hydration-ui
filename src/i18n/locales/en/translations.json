@@ -43,6 +43,7 @@
   "add": "Add",
   "custom": "Custom",
   "hide": "Hide",
+  "next": "Next",
   "chart.state.noData.label": "Not enough data to display this chart.",
   "chart.state.error.label": "Error displaying the chart, try loading it again.",
   "totalValueLocked": "Total value locked",

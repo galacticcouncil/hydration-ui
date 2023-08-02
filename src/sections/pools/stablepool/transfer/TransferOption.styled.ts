@@ -1,7 +1,9 @@
 import styled from "@emotion/styled"
 import { css } from "@emotion/react"
+import { theme } from 'theme'
 
 export const SBlock = styled.div<{ selected: boolean }>`
+  cursor: pointer;
   border-radius: 4px;
   padding: 24px 22px 42px 24px;
 
@@ -11,7 +13,7 @@ export const SBlock = styled.div<{ selected: boolean }>`
   ${({ selected }) =>
     selected &&
     css`
-      border: transparent;
+      border-color: ${theme.colors.darkBlue700};
       background: linear-gradient(
           0deg,
           rgba(19, 18, 47, 0.52),

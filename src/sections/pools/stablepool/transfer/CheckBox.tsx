@@ -2,11 +2,10 @@ import { Inner, Outer } from './CheckBox.styled'
 
 type Props = {
   selected?: boolean;
-  onSelect: () => void;
 }
 
-export const CheckBox = ({ selected, onSelect }: Props) => (
-  <Outer selected={selected} onClick={onSelect}>
+export const CheckBox = ({ selected }: Props) => (
+  <Outer selected={selected}>
     {selected && <Inner />}
   </Outer>
 )
