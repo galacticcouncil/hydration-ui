@@ -2,7 +2,7 @@ import { GradientText } from "components/Typography/GradientText/GradientText"
 import { ReactComponent as WaterRippleIcon } from "assets/icons/WaterRippleIcon.svg"
 import { ReactComponent as DropletIcon } from "assets/icons/DropletIcon.svg"
 import { AddLiquidityBlock } from "./AddLiquidityBlock"
-import { ListItem } from './ListItem'
+import { ListItem } from "./ListItem"
 
 export const AddLiquidity = () => (
   <>
