@@ -3,17 +3,27 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { AssetMetadata } from "@galacticcouncil/sdk"
-import { Fragment } from "react"
+import { Fragment, useMemo } from 'react'
 import { SBadge } from "../StablePool.styled"
+import { u32, u8 } from '@polkadot/types'
+import { derivePoolAccount } from '../../PoolsPage.utils'
+import BN from 'bignumber.js'
+import { normalizeBigNumber } from 'utils/balance'
 
 type PoolDetailsProps = {
-  assets: AssetMetadata[]
+  assets: {
+    id: string
+    symbol: string
+    decimals: u8 | u32
+  }[]
+  tradeFee: number
   className?: string
 }
-
-export const PoolDetails = ({ assets, className }: PoolDetailsProps) => {
+export const PoolDetails = ({ assets, tradeFee, className }: PoolDetailsProps) => {
   const { t } = useTranslation()
+
+  const pacc = useMemo(() => assets.map((asset) => derivePoolAccount(asset.id)), [assets])
+  const tradeFeeDisplay = normalizeBigNumber(tradeFee).div(new BN(1000)).toString();
 
   return (
     <div sx={{ flex: "column" }} className={className}>
@@ -57,7 +67,7 @@ export const PoolDetails = ({ assets, className }: PoolDetailsProps) => {
             {t("liquidity.asset.details.fee")}
           </Text>
           <Text lh={22} color="white" fs={18}>
-            0.3%
+            {tradeFeeDisplay}%
           </Text>
         </div>
       </div>

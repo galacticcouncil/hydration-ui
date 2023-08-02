@@ -13,7 +13,7 @@ type Props = ReturnType<typeof useOmnipoolStablePools>["data"][number]
 
 const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
-export const StablePool = ({ id, assets }: Props) => {
+export const StablePool = ({ id, tradeFee, assets }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const positions = usePoolPositions({ id } as any)
@@ -26,10 +26,8 @@ export const StablePool = ({ id, assets }: Props) => {
     <SContainer id={id.toString()}>
       <SGridContainer>
         <PoolDetails
-          assets={assets.map((asset) => ({
-            symbol: asset.symbol,
-            decimals: asset.decimals.toNumber(),
-          }))}
+          assets={assets}
+          tradeFee={tradeFee}
           css={{ gridArea: "details" }}
         />
 

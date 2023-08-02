@@ -16,6 +16,15 @@ import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { useStableswapPools } from "api/stableswap"
+import { pool_account_name } from '@galacticcouncil/math-stableswap'
+import { encodeAddress } from '@polkadot/util-crypto'
+import { stringToU8a } from '@polkadot/util'
+import { HYDRADX_SS58_PREFIX } from '@galacticcouncil/sdk'
+
+export const derivePoolAccount = (assetId: string) => {
+  const addr = pool_account_name(Number(assetId));
+  return encodeAddress(stringToU8a(addr.padEnd(32, '\0')), HYDRADX_SS58_PREFIX);
+}
 
 export const useOmnipoolStablePools = () => {
   const pools = useStableswapPools()
@@ -31,6 +40,7 @@ export const useOmnipoolStablePools = () => {
 
   const data = (pools.data ?? []).map((pool) => ({
     id: pool.id,
+    tradeFee: pool.data.tradeFee,
     assets: (assetMetaList.data ?? []).filter((asset) =>
       poolAssetIdsMap.get(pool.id).includes(asset.id),
     ),
