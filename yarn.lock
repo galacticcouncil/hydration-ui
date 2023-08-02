@@ -3015,10 +3015,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.4.tgz#08b43392b3aa5602e0ebc098ff07dfc9999dfd9f"
   integrity sha512-lwGqEqEuCOoTXmVwovWHTjDPM9FUBsmvn0Q7FRg7/059OcWGTUEVkV+//FaXevz3Fkl/toP2ocOuIK5JG8MxRw==
 
-"@galacticcouncil/apps@1.5.2":
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.5.2.tgz#96a612bce76100c12cf006157a70911124e6b4af"
-  integrity sha512-m7uoS3sWoJvRrRvrVf8dzpe0Xctzht+FivdNsgOLARt/SWMeiVCDqWalcqG0GVOp+kA9R5JUOuY4TBsKSKvSow==
+"@galacticcouncil/apps@1.6.1":
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.6.1.tgz#38db5cd372d3a64b8ed6c38409725eba3da2039d"
+  integrity sha512-RVlmqlNYiecLfX8qWtjmu9G/taLZ24HICzjmLFLylflAKewWNtJI5ZV+dnn+6u3EeRNnun6RZMZ9YHRtW4o+DA==
   dependencies:
     "@talismn/connect-wallets" "^1.2.1"
     "@tanstack/table-core" "^8.5.17"
@@ -3078,10 +3078,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^1.2.13":
-  version "1.2.13"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.2.13.tgz#0bdfcdd03046f749d0c3eb73e62207b9e6e47a07"
-  integrity sha512-LAuuKvAXfa3TmSuVLuAytop5YnkOcb2N19WESLHot9FtnD/MtdU7HxiOarXcENNeUafw3jCTBc4ENspHqy1u4Q==
+"@galacticcouncil/ui@^1.2.15":
+  version "1.2.15"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.2.15.tgz#b5efc8f3e6cfb223d8103abc1a84962179d84e84"
+  integrity sha512-Ts20neIzNAXSvSUVPwDUQnPLwHyDRo1IDSPQsZrNRtP/OvxGLuiAkib6s2xHzanfusGh7tw1yW/CZOl1J4dY9w==
   dependencies:
     "@lit/reactive-element" "^1.0.0"
     imask "^6.4.3"
