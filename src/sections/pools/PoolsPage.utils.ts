@@ -30,78 +30,93 @@ export const derivePoolAccount = (assetId: string) => {
 export const useOmnipoolStablePools = () => {
   const pools = useStableswapPools()
 
-  const poolAssetIdsMap = new Map(
+  const assetsByPool = new Map(
     (pools.data ?? []).map((pool) => [
       pool.id,
       pool.data.assets.map((asset: u32) => asset.toString()),
     ]),
   )
 
-  const assetIds: string[] = [
-    ...new Set([].concat(...poolAssetIdsMap.values())),
+  const uniqueAssetIds: string[] = [
+    ...new Set([].concat(...assetsByPool.values())),
   ]
-  const assetMetas = useAssetMetaList(assetIds)
-  const assetMetaMap = new Map(
+  const assetMetas = useAssetMetaList(uniqueAssetIds)
+  const assetMetaById = new Map(
     (assetMetas?.data ?? []).map((asset) => [asset.id, asset]),
   )
 
-  const spotPrices = useDisplayPrices(assetIds)
-  const spotPriceMap = new Map(
+  const spotPrices = useDisplayPrices(uniqueAssetIds)
+  const spotPriceByAsset = new Map(
     (spotPrices?.data ?? []).map((spotPrice) => [
       spotPrice?.tokenIn,
       spotPrice,
     ]),
   )
 
-  const poolAccounts = assetIds.map(derivePoolAccount)
-  const accountsBalances = useAccountsBalances(poolAccounts)
+  const poolAssetsByAccount = new Map(
+    uniqueAssetIds.map((assetId) => [derivePoolAccount(assetId), assetId]),
+  )
+
+  const accountsBalances = useAccountsBalances(
+    Array.from(poolAssetsByAccount.keys()),
+  )
 
   if (pools.isLoading || assetMetas.isLoading || spotPrices.isLoading) {
     return { data: undefined, isLoading: true }
   }
 
-  const balanceByAsset = accountsBalances.data?.reduce((acc, account) => {
-    account.balances.forEach((balance) => {
-      const id = balance.id.toString()
-
-      if (acc.has(id)) {
-        acc.set(
-          id,
-          (acc.get(id) ?? BN_0).plus(normalizeBigNumber(balance.data.free)),
-        )
-      }
-
-      acc.set(id, normalizeBigNumber(balance.data.free))
-    })
-
-    return acc
-  }, new Map<string, BN>())
-
-  const total = Array.from(balanceByAsset?.entries() ?? []).reduce(
-    (acc, [assetId, balance]) => {
-      const decimals = normalizeBigNumber(
-        assetMetaMap.get(assetId)?.decimals ?? 12,
-      )
-      const spotPrice = spotPriceMap.get(assetId)
-      const value = spotPrice
-        ? balance
-            .times(spotPrice.spotPrice)
-            .shiftedBy(decimals.negated().toNumber())
-        : BN_0
-
-      return acc.plus(value)
-    },
-    BN_0,
+  const balancesByAsset = new Map(
+    accountsBalances.data?.map((balance) => [
+      poolAssetsByAccount.get(balance.accountId.toString()),
+      balance,
+    ]),
   )
 
-  const data = (pools.data ?? []).map((pool) => ({
-    id: pool.id,
-    total,
-    tradeFee: normalizeBigNumber(pool.data.tradeFee).div(10000),
-    assets: (assetMetas.data ?? []).filter((asset) =>
-      poolAssetIdsMap.get(pool.id).includes(asset.id),
-    ),
-  }))
+  const data = (pools.data ?? []).map((pool) => {
+    const poolAssets = (assetMetas.data ?? []).filter((asset) =>
+      assetsByPool.get(pool.id).includes(asset.id),
+    )
+
+    const balanceByAsset = poolAssets.reduce((acc, asset) => {
+      balancesByAsset.get(asset.id)?.balances.forEach((balance) => {
+        const id = balance.id.toString()
+        const spotPrice = spotPriceByAsset.get(id)
+        const decimals = normalizeBigNumber(
+          assetMetaById.get(id)?.decimals ?? 12,
+        )
+
+        const free = normalizeBigNumber(balance.data.free).shiftedBy(
+          decimals.negated().toNumber(),
+        )
+        const value = spotPrice ? free.times(spotPrice.spotPrice) : BN_0
+
+        const current = acc.get(id)
+        acc.set(id, {
+          free: (current?.free ?? BN_0).plus(free),
+          value: (current?.value ?? BN_0).plus(value),
+        })
+      })
+
+      return acc
+    }, new Map<string, { free: BN; value: BN }>())
+
+    const total = Array.from(balanceByAsset?.entries() ?? []).reduce(
+      (acc, [, balance]) => ({
+        free: acc.free.plus(balance.free),
+        value: acc.value.plus(balance.value),
+      }),
+      { free: BN_0, value: BN_0 },
+    )
+
+    return {
+      id: pool.id,
+      assets: poolAssets,
+      total,
+      balanceByAsset,
+      assetMetaById,
+      tradeFee: normalizeBigNumber(pool.data.tradeFee).div(10000),
+    }
+  })
 
   return { data, isLoading: false }
 }

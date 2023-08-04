@@ -7,12 +7,22 @@ import { SActionsContainer } from "sections/pools/pool/actions/PoolActions.style
 import { useAccountStore } from "state/store"
 import { TransferModal } from "../transfer/TransferModal"
 import { u32 } from "@polkadot/types-codec"
+import BigNumber from "bignumber.js"
 
 type PoolActionsProps = {
   poolId: u32
+  balanceByAsset?: Map<string, { free: BigNumber; value: BigNumber }>
+  total: { free: BigNumber; value: BigNumber }
+  assetMetaById?: Map<string, { symbol: string }>
   className?: string
 }
-export const PoolActions = ({ poolId, className }: PoolActionsProps) => {
+export const PoolActions = ({
+  poolId,
+  className,
+  total,
+  balanceByAsset,
+  assetMetaById,
+}: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
   const { account } = useAccountStore()
@@ -45,6 +55,9 @@ export const PoolActions = ({ poolId, className }: PoolActionsProps) => {
           isOpen={true}
           onClose={() => setOpenAdd(false)}
           poolId={poolId}
+          balanceByAsset={balanceByAsset}
+          assetMetaById={assetMetaById}
+          total={total}
         />
       )}
     </>

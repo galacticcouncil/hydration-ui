@@ -35,7 +35,7 @@ export const getAccountBalances =
       return { id, data }
     })
 
-    return { native, balances }
+    return { accountId, native, balances }
   }
 
 export const useAccountAssetBalances = (

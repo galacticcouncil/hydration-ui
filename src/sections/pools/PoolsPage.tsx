@@ -12,7 +12,6 @@ import { StablePool } from "./stablepool/StablePool"
 
 const PoolPageContent = () => {
   const [filter, setFilter] = useState({ showMyPositions: false })
-
   const stablePools = useOmnipoolStablePools()
 
   const { data, hasPositionsOrDeposits, isLoading } = useOmnipoolPools(
@@ -34,13 +33,7 @@ const PoolPageContent = () => {
 
       <div sx={{ flex: "column", gap: 20 }}>
         {stablePools.data?.map((stablePool) => (
-          <StablePool
-            key={stablePool.id.toString()}
-            id={stablePool.id}
-            total={stablePool.total}
-            tradeFee={stablePool.tradeFee}
-            assets={stablePool.assets}
-          />
+          <StablePool key={stablePool.id.toString()} {...stablePool} />
         ))}
         {!isLoading && data
           ? data.map((pool) => <Pool key={pool.id.toString()} pool={pool} />)

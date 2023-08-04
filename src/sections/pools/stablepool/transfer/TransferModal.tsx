@@ -7,11 +7,15 @@ import { useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
 import { u32 } from "@polkadot/types-codec"
 import { AssetsModalContent } from "../../../assets/AssetsModal"
+import BigNumber from "bignumber.js"
 
 type Props = {
   isOpen: boolean
   onClose: () => void
   poolId: u32
+  assetMetaById?: Map<string, { symbol: string }>
+  balanceByAsset?: Map<string, { free: BigNumber; value: BigNumber }>
+  total: { free: BigNumber; value: BigNumber }
 }
 
 enum Page {
@@ -21,7 +25,14 @@ enum Page {
   ASSETS,
 }
 
-export const TransferModal = ({ isOpen, onClose, poolId }: Props) => {
+export const TransferModal = ({
+  isOpen,
+  onClose,
+  poolId,
+  balanceByAsset,
+  total,
+  assetMetaById,
+}: Props) => {
   const { t } = useTranslation()
   const [page, setPage] = useState<Page>(Page.OPTIONS)
   const [assetId, setAssetId] = useState<string>(poolId.toString())
@@ -78,6 +89,9 @@ export const TransferModal = ({ isOpen, onClose, poolId }: Props) => {
             headerVariant: "gradient",
             content: (
               <AddStablepoolLiquidity
+                assetMetaById={assetMetaById}
+                balanceByAsset={balanceByAsset}
+                total={total}
                 onSuccess={console.log}
                 onAssetOpen={() => setPage(3)}
                 assetId={assetId}

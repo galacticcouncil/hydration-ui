@@ -12,7 +12,14 @@ type Props = Exclude<
 
 const STABLEPOOL_INCENTIVES_ENABLED = false
 
-export const StablePool = ({ id, tradeFee, assets, total }: Props) => {
+export const StablePool = ({
+  id,
+  tradeFee,
+  assets,
+  total,
+  balanceByAsset,
+  assetMetaById,
+}: Props) => {
   return (
     <SContainer id={id.toString()}>
       <SGridContainer>
@@ -26,8 +33,14 @@ export const StablePool = ({ id, tradeFee, assets, total }: Props) => {
         ) : (
           <div css={{ gridArea: "incentives" }} />
         )}
-        <PoolValue total={total} css={{ gridArea: "values" }} />
-        <PoolActions poolId={id} css={{ gridArea: "actions" }} />
+        <PoolValue total={total.value} css={{ gridArea: "values" }} />
+        <PoolActions
+          poolId={id}
+          css={{ gridArea: "actions" }}
+          balanceByAsset={balanceByAsset}
+          assetMetaById={assetMetaById}
+          total={total}
+        />
       </SGridContainer>
       {/* TODO: show expanded content */}
       {/*{isDesktop && hasExpandContent && (*/}
