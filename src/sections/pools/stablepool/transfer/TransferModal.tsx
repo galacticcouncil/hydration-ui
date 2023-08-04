@@ -4,17 +4,21 @@ import { TransferOptions } from "./TransferOptions"
 import { ComponentProps, useState } from 'react'
 import { Button } from 'components/Button/Button'
 import { useTranslation } from 'react-i18next'
-import { AddLiquidity } from '../../modals/AddLiquidity/AddLiquidity'
+import { AddStablepoolLiquidity } from './AddStablepoolLiquidity'
+import { u32 } from '@polkadot/types-codec'
+import { AssetsModalContent } from '../../../assets/AssetsModal'
 
 type Props = {
   isOpen: boolean
   onClose: () => void
+  poolId: u32
 }
 
-export const TransferModal = ({ isOpen, onClose }: Props) => {
+export const TransferModal = ({ isOpen, onClose, poolId }: Props) => {
   const { t } = useTranslation();
   const [page, setPage] = useState(0)
   const [option, setOption] = useState<ComponentProps<typeof TransferOptions>['selected']>('OMNIPOOL')
+  const [assetId, setAssetId] = useState<string>(poolId.toString())
 
   const handleBack = () => {
     if(page === 1 || page === 2) {
@@ -55,8 +59,13 @@ export const TransferModal = ({ isOpen, onClose }: Props) => {
           {
             title: "Stablepool",
             headerVariant: "gradient",
-            content: <div />,
+            content: <AddStablepoolLiquidity onSuccess={console.log} onAssetOpen={() => setPage(3)} assetId={assetId} />,
           },
+          {
+            title: t('selectAsset.title'),
+            headerVariant: 'gradient',
+            content: <AssetsModalContent onSelect={(asset) => { setAssetId(asset.id); handleBack() }} />
+          }
         ]}
       />
     </Modal>

@@ -3,21 +3,16 @@ import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
-
 import { SActionsContainer } from "sections/pools/pool/actions/PoolActions.styled"
 import { useAccountStore } from "state/store"
 import { TransferModal } from "../transfer/TransferModal"
+import { u32 } from '@polkadot/types-codec'
 
 type PoolActionsProps = {
-  pool: OmnipoolPool
-  canExpand: boolean
-  isExpanded: boolean
-  onExpandClick: () => void
-  refetch: () => void
+  poolId: u32
   className?: string
 }
-export const PoolActions = ({ className }: PoolActionsProps) => {
+export const PoolActions = ({ poolId, className }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
   const { account } = useAccountStore()
@@ -45,7 +40,7 @@ export const PoolActions = ({ className }: PoolActionsProps) => {
       <SActionsContainer className={className}>
         {actionButtons}
       </SActionsContainer>
-      <TransferModal isOpen={openAdd} onClose={() => setOpenAdd(false)} />
+      {openAdd && <TransferModal isOpen={true} onClose={() => setOpenAdd(false)} poolId={poolId} />}
     </>
   )
 }

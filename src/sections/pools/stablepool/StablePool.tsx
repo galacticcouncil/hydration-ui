@@ -42,13 +42,8 @@ export const StablePool = ({ id, tradeFee, assets }: Props) => {
           stablepoolTotal={BN_1}
           css={{ gridArea: "values" }}
         />
-        {/* TODO: type pool corretly */}
         <PoolActions
-          pool={{ id } as any}
-          refetch={positions.refetch}
-          canExpand={!positions.isLoading && hasExpandContent}
-          isExpanded={isExpanded}
-          onExpandClick={() => setIsExpanded((prev) => !prev)}
+          poolId={id}
           css={{ gridArea: "actions" }}
         />
       </SGridContainer>
