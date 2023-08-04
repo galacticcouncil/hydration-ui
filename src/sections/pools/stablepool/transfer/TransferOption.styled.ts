@@ -1,6 +1,6 @@
 import styled from "@emotion/styled"
 import { css } from "@emotion/react"
-import { theme } from 'theme'
+import { theme } from "theme"
 
 export const SBlock = styled.div<{ selected: boolean }>`
   cursor: pointer;

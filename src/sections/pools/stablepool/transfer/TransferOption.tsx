@@ -1,10 +1,10 @@
-import { MouseEventHandler, ReactNode } from 'react'
+import { MouseEventHandler, ReactNode } from "react"
 import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
 import { theme } from "theme"
 import { Text } from "components/Typography/Text/Text"
 import { SBlock } from "./TransferOption.styled"
-import { CheckBox } from './CheckBox'
+import { CheckBox } from "./CheckBox"
 
 type Props = {
   selected: boolean
@@ -24,7 +24,9 @@ export const TransferOption = ({
   icon,
 }: Props) => (
   <SBlock selected={selected} onClick={onSelect}>
-    <div sx={{ flex: "row", align: "center", justify: 'space-between', mb: 26 }}>
+    <div
+      sx={{ flex: "row", align: "center", justify: "space-between", mb: 26 }}
+    >
       <div sx={{ flex: "row", align: "center", gap: 12 }}>
         <Icon icon={icon} />
         <Heading fs={15} lh={20} fw={500}>

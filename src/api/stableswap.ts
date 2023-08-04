@@ -20,3 +20,5 @@ export const getStableswapPools =
       return { id, data }
     })
   }
+
+export const getStablePoolValue = () => {}

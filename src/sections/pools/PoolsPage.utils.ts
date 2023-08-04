@@ -12,18 +12,19 @@ import { useMemo } from "react"
 import { useAssetsTradability } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useAccountStore } from "state/store"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { getFloatingPointAmount, normalizeBigNumber } from 'utils/balance'
+import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
 import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { useStableswapPools } from "api/stableswap"
-import { pool_account_name } from '@galacticcouncil/math-stableswap'
-import { encodeAddress } from '@polkadot/util-crypto'
-import { stringToU8a } from '@polkadot/util'
-import { HYDRADX_SS58_PREFIX } from '@galacticcouncil/sdk'
+import { pool_account_name } from "@galacticcouncil/math-stableswap"
+import { encodeAddress } from "@polkadot/util-crypto"
+import { stringToU8a } from "@polkadot/util"
+import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
+import { useAccountsBalances } from "api/accountBalances"
 
 export const derivePoolAccount = (assetId: string) => {
-  const addr = pool_account_name(Number(assetId));
-  return encodeAddress(stringToU8a(addr.padEnd(32, '\0')), HYDRADX_SS58_PREFIX);
+  const addr = pool_account_name(Number(assetId))
+  return encodeAddress(stringToU8a(addr.padEnd(32, "\0")), HYDRADX_SS58_PREFIX)
 }
 
 export const useOmnipoolStablePools = () => {
@@ -35,18 +36,74 @@ export const useOmnipoolStablePools = () => {
       pool.data.assets.map((asset: u32) => asset.toString()),
     ]),
   )
-  const assetIds: string[] = [].concat(...poolAssetIdsMap.values())
-  const assetMetaList = useAssetMetaList(assetIds)
+
+  const assetIds: string[] = [
+    ...new Set([].concat(...poolAssetIdsMap.values())),
+  ]
+  const assetMetas = useAssetMetaList(assetIds)
+  const assetMetaMap = new Map(
+    (assetMetas?.data ?? []).map((asset) => [asset.id, asset]),
+  )
+
+  const spotPrices = useDisplayPrices(assetIds)
+  const spotPriceMap = new Map(
+    (spotPrices?.data ?? []).map((spotPrice) => [
+      spotPrice?.tokenIn,
+      spotPrice,
+    ]),
+  )
+
+  const poolAccounts = assetIds.map(derivePoolAccount)
+  const accountsBalances = useAccountsBalances(poolAccounts)
+
+  if (pools.isLoading || assetMetas.isLoading || spotPrices.isLoading) {
+    return { data: undefined, isLoading: true }
+  }
+
+  const balanceByAsset = accountsBalances.data?.reduce((acc, account) => {
+    account.balances.forEach((balance) => {
+      const id = balance.id.toString()
+
+      if (acc.has(id)) {
+        acc.set(
+          id,
+          (acc.get(id) ?? BN_0).plus(normalizeBigNumber(balance.data.free)),
+        )
+      }
+
+      acc.set(id, normalizeBigNumber(balance.data.free))
+    })
+
+    return acc
+  }, new Map<string, BN>())
+
+  const total = Array.from(balanceByAsset?.entries() ?? []).reduce(
+    (acc, [assetId, balance]) => {
+      const decimals = normalizeBigNumber(
+        assetMetaMap.get(assetId)?.decimals ?? 12,
+      )
+      const spotPrice = spotPriceMap.get(assetId)
+      const value = spotPrice
+        ? balance
+            .times(spotPrice.spotPrice)
+            .shiftedBy(decimals.negated().toNumber())
+        : BN_0
+
+      return acc.plus(value)
+    },
+    BN_0,
+  )
 
   const data = (pools.data ?? []).map((pool) => ({
     id: pool.id,
+    total,
     tradeFee: normalizeBigNumber(pool.data.tradeFee).div(10000),
-    assets: (assetMetaList.data ?? []).filter((asset) =>
+    assets: (assetMetas.data ?? []).filter((asset) =>
       poolAssetIdsMap.get(pool.id).includes(asset.id),
     ),
   }))
 
-  return { data, isLoading: pools.isLoading || assetMetaList.isLoading }
+  return { data, isLoading: false }
 }
 
 export const useOmnipoolPools = (withPositions?: boolean) => {

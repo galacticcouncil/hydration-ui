@@ -3,11 +3,10 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { Fragment, useMemo } from 'react'
+import { Fragment } from "react"
 import { SBadge } from "../StablePool.styled"
-import { u32, u8 } from '@polkadot/types'
-import { derivePoolAccount } from '../../PoolsPage.utils'
-import BigNumber from 'bignumber.js'
+import { u32, u8 } from "@polkadot/types"
+import BigNumber from "bignumber.js"
 
 type PoolDetailsProps = {
   assets: {
@@ -18,11 +17,14 @@ type PoolDetailsProps = {
   tradeFee: BigNumber
   className?: string
 }
-export const PoolDetails = ({ assets, tradeFee, className }: PoolDetailsProps) => {
+export const PoolDetails = ({
+  assets,
+  tradeFee,
+  className,
+}: PoolDetailsProps) => {
   const { t } = useTranslation()
 
-  const pacc = useMemo(() => assets.map((asset) => derivePoolAccount(asset.id)), [assets])
-  const tradeFeeDisplay = tradeFee.toString();
+  const tradeFeeDisplay = tradeFee.toString()
 
   return (
     <div sx={{ flex: "column" }} className={className}>

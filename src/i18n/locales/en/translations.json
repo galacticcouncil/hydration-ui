@@ -116,6 +116,8 @@
   "liquidity.stablepool.asset.details.total": "Value in Stablepool",
   "liquidity.stablepool.asset.incentives.title": "Farming incentives",
   "liquidity.stablepool.transfer.options": "Add Liquidity",
+  "liquidity.stablepool.transfer.omnipool": "Omnipool",
+  "liquidity.stablepool.transfer.stablepool": "Stablepool",
   "liquidity.asset.details.24hours": "24h volume",
   "liquidity.asset.details.24hours.tooltip": "USD value is derived from the last known exchange rate.",
   "liquidity.asset.incentives.title": "Farm rewards",

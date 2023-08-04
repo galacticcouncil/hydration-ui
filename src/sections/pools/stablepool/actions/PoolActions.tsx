@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { SActionsContainer } from "sections/pools/pool/actions/PoolActions.styled"
 import { useAccountStore } from "state/store"
 import { TransferModal } from "../transfer/TransferModal"
-import { u32 } from '@polkadot/types-codec'
+import { u32 } from "@polkadot/types-codec"
 
 type PoolActionsProps = {
   poolId: u32
@@ -40,7 +40,13 @@ export const PoolActions = ({ poolId, className }: PoolActionsProps) => {
       <SActionsContainer className={className}>
         {actionButtons}
       </SActionsContainer>
-      {openAdd && <TransferModal isOpen={true} onClose={() => setOpenAdd(false)} poolId={poolId} />}
+      {openAdd && (
+        <TransferModal
+          isOpen={true}
+          onClose={() => setOpenAdd(false)}
+          poolId={poolId}
+        />
+      )}
     </>
   )
 }

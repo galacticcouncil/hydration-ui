@@ -20,16 +20,23 @@ import { useApiPromise } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
 import { BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
-import { useAddLiquidity, useVerifyLimits } from '../../modals/AddLiquidity/AddLiquidity.utils'
-import { PoolAddLiquidityInformationCard } from '../../modals/AddLiquidity/AddLiquidityInfoCard'
+import {
+  useAddLiquidity,
+  useVerifyLimits,
+} from "../../modals/AddLiquidity/AddLiquidity.utils"
+import { PoolAddLiquidityInformationCard } from "../../modals/AddLiquidity/AddLiquidityInfoCard"
 
 type Props = {
-  assetId: string;
+  assetId: string
   onSuccess: () => void
   onAssetOpen: () => void
 }
 
-export const AddStablepoolLiquidity = ({ assetId, onSuccess, onAssetOpen }: Props) => {
+export const AddStablepoolLiquidity = ({
+  assetId,
+  onSuccess,
+  onAssetOpen,
+}: Props) => {
   const [assetValue, setAssetValue] = useState("")
 
   const { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance } =
@@ -50,17 +57,22 @@ export const AddStablepoolLiquidity = ({ assetId, onSuccess, onAssetOpen }: Prop
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (assetMeta?.decimals == null) throw new Error("Missing asset meta")
 
-    const amount = getFixedPointAmount(values.amount, assetMeta.decimals.toNumber()).toString()
+    const amount = getFixedPointAmount(
+      values.amount,
+      assetMeta.decimals.toNumber(),
+    ).toString()
 
     return await createTransaction(
       { tx: api.tx.omnipool.addLiquidity(assetId, amount) },
       {
         onSuccess,
         onSubmitted: () => {
-          console.log('--- submittted ---')
+          console.log("--- submittted ---")
           form.reset()
         },
-        onClose: () => { console.log('-- on close--')},
+        onClose: () => {
+          console.log("-- on close--")
+        },
         onBack: () => {},
         toast: {
           onLoading: (
@@ -153,9 +165,7 @@ export const AddStablepoolLiquidity = ({ assetId, onSuccess, onAssetOpen }: Prop
                       )
                         return true
                     } catch {}
-                    return t(
-                      "liquidity.add.modal.validation.notEnoughBalance",
-                    )
+                    return t("liquidity.add.modal.validation.notEnoughBalance")
                   },
                   minPoolLiquidity: (value) => {
                     try {
@@ -169,16 +179,16 @@ export const AddStablepoolLiquidity = ({ assetId, onSuccess, onAssetOpen }: Prop
                         BN_10.pow(assetMeta?.decimals.toNumber()),
                       )
 
-                      if (amount.gte(minimumPoolLiquidity))
-                        return true
+                      if (amount.gte(minimumPoolLiquidity)) return true
                     } catch {}
-                    return t(
-                      "liquidity.add.modal.validation.minPoolLiquidity",
-                    )
+                    return t("liquidity.add.modal.validation.minPoolLiquidity")
                   },
                 },
               }}
-              render={({ field: { name, value, onChange }, fieldState: { error } }) => (
+              render={({
+                field: { name, value, onChange },
+                fieldState: { error },
+              }) => (
                 <WalletTransferAssetSelect
                   title={t("wallet.assets.transfer.asset.label_mob")}
                   name={name}

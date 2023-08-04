@@ -1,27 +1,18 @@
 import { SContainer, SGridContainer } from "sections/pools/pool/Pool.styled"
 import { PoolDetails } from "./details/PoolDetails"
 import { PoolValue } from "./details/PoolValue"
-import { useState } from "react"
 import { PoolActions } from "./actions/PoolActions"
 import { PoolIncentives } from "./details/PoolIncentives"
-import { usePoolPositions } from "sections/pools/pool/Pool.utils"
-import { useAccountDeposits } from "api/deposits"
 import { useOmnipoolStablePools } from "../PoolsPage.utils"
-import { BN_1, BN_10 } from "utils/constants"
 
-type Props = ReturnType<typeof useOmnipoolStablePools>["data"][number]
+type Props = Exclude<
+  ReturnType<typeof useOmnipoolStablePools>["data"],
+  undefined
+>[number]
 
-const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
+const STABLEPOOL_INCENTIVES_ENABLED = false
 
-export const StablePool = ({ id, tradeFee, assets }: Props) => {
-  const [isExpanded, setIsExpanded] = useState(false)
-
-  const positions = usePoolPositions({ id } as any)
-  const accountDeposits = useAccountDeposits(enabledFarms ? id : undefined)
-
-  const hasExpandContent =
-    !!positions.data?.length || !!accountDeposits.data?.length
-
+export const StablePool = ({ id, tradeFee, assets, total }: Props) => {
   return (
     <SContainer id={id.toString()}>
       <SGridContainer>
@@ -30,22 +21,13 @@ export const StablePool = ({ id, tradeFee, assets }: Props) => {
           tradeFee={tradeFee}
           css={{ gridArea: "details" }}
         />
-
-        {enabledFarms ? (
+        {STABLEPOOL_INCENTIVES_ENABLED ? (
           <PoolIncentives poolId={id} css={{ gridArea: "incentives" }} />
         ) : (
           <div css={{ gridArea: "incentives" }} />
         )}
-        {/* TODO: load total values */}
-        <PoolValue
-          omnipoolTotal={BN_10}
-          stablepoolTotal={BN_1}
-          css={{ gridArea: "values" }}
-        />
-        <PoolActions
-          poolId={id}
-          css={{ gridArea: "actions" }}
-        />
+        <PoolValue total={total} css={{ gridArea: "values" }} />
+        <PoolActions poolId={id} css={{ gridArea: "actions" }} />
       </SGridContainer>
       {/* TODO: show expanded content */}
       {/*{isDesktop && hasExpandContent && (*/}

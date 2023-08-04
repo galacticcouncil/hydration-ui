@@ -34,7 +34,13 @@ const PoolPageContent = () => {
 
       <div sx={{ flex: "column", gap: 20 }}>
         {stablePools.data?.map((stablePool) => (
-          <StablePool key={stablePool.id.toString()} id={stablePool.id} tradeFee={stablePool.tradeFee} assets={stablePool.assets} />
+          <StablePool
+            key={stablePool.id.toString()}
+            id={stablePool.id}
+            total={stablePool.total}
+            tradeFee={stablePool.tradeFee}
+            assets={stablePool.assets}
+          />
         ))}
         {!isLoading && data
           ? data.map((pool) => <Pool key={pool.id.toString()} pool={pool} />)

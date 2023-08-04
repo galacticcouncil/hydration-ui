@@ -1,12 +1,9 @@
-import { Inner, Outer } from './CheckBox.styled'
+import { Inner, Outer } from "./CheckBox.styled"
 
 type Props = {
-  selected?: boolean;
+  selected?: boolean
 }
 
 export const CheckBox = ({ selected }: Props) => (
-  <Outer selected={selected}>
-    {selected && <Inner />}
-  </Outer>
+  <Outer selected={selected}>{selected && <Inner />}</Outer>
 )
-
