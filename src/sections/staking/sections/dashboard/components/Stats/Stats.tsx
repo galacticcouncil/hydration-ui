@@ -2,7 +2,7 @@ import { SContainer } from "sections/staking/StakingPage.styled"
 import { StakingValues } from "./Values/StakingValues"
 import { PieChart } from "../PieChart/PieChart"
 import { useAccountStore } from "state/store"
-import { TStakingData } from "api/staking"
+import { TStakingData } from "sections/staking/StakingPage.utils"
 
 export const Stats = ({
   loading,

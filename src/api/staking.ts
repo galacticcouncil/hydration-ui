@@ -1,31 +1,13 @@
+// @ts-nocheck
 import { ApiPromise } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
-import {
-  NATIVE_ASSET_ID,
-  getHydraAccountAddress,
-  useApiPromise,
-} from "utils/api"
+import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
-import { getUniques, useUniques } from "./uniques"
-import { useAccountStore } from "state/store"
-import { undefinedNoop, useQueryReduce } from "utils/helpers"
-import { useTokenBalance, useTokenLocks } from "./balances"
-import { BN_0, BN_BILL } from "utils/constants"
-import { useAssetMeta } from "./assetMeta"
-import { useDisplayPrice } from "../utils/displayAsset"
-import * as stakingWasm from "@galacticcouncil/math/build/staking/bundler"
-import { useBestNumber } from "./chain"
-
-const CONVICTIONS = {
-  none: 1,
-  locked1x: 2,
-  locked2x: 3,
-  locked3x: 4,
-  locked4x: 5,
-  locked5x: 6,
-  locked6x: 7,
-}
+import { getUniques } from "./uniques"
+import { getReferendumInfoOf } from "./democracy"
+import request, { gql } from "graphql-request"
+import { PROVIDERS, useProviderRpcUrlStore } from "./provider"
 
 interface ISubscanData {
   code: number
@@ -100,8 +82,7 @@ const getStake = (api: ApiPromise, address: string | undefined) => async () => {
     totalStake: staking?.totalStake?.toBigNumber() as BN,
     accumulatedRewardPerStake:
       staking?.accumulatedRewardPerStake?.toBigNumber() as BN,
-    accumulatedClaimableRewards:
-      staking?.accumulatedClaimableRewards?.toBigNumber() as BN,
+    potReservedBalance: staking?.potReservedBalance?.toBigNumber() as BN,
     minStake: minStake.toBigNumber() as BN,
     positionId: stakePositionId,
     stakePosition: stakePositionId
@@ -110,28 +91,33 @@ const getStake = (api: ApiPromise, address: string | undefined) => async () => {
   }
 }
 
-export const useStakingPosition = (id: number | undefined) => {
-  const api = useApiPromise()
-
-  return useQuery(
-    QUERY_KEYS.stakingPosition(id),
-    id != null ? getStakingPosition(api, id) : undefinedNoop,
-    { enabled: id != null, retry: 0 },
-  )
-}
-
 const getStakingPosition = (api: ApiPromise, id: number) => async () => {
-  const position = await api.query.staking.positions(id)
+  const [position, votesRes] = await Promise.all([
+    api.query.staking.positions(id),
+    api.query.staking.positionVotes(id),
+  ])
 
-  const votesRes = await api.query.staking.positionVotes(id)
+  const votes: Array<{
+    id: BN
+    amount: BN
+    conviction: string
+  }> = await votesRes.votes.reduce(async (acc, [key, data]) => {
+    const id = key.toBigNumber()
+    const amount = data.amount.toBigNumber()
+    const conviction = data.conviction.toString()
 
-  const votes = votesRes.votes.map(([key, data]) => {
-    return {
-      id: key.toBigNumber(),
-      amount: data.amount.toBigNumber(),
-      conviction: data.conviction.toString(),
-    }
-  })
+    const referendaInfo = await getReferendumInfoOf(api, id.toString())
+    const isFinished = referendaInfo.value.isFinished
+
+    if (!isFinished)
+      acc.push({
+        id,
+        amount,
+        conviction,
+      })
+
+    return acc
+  }, [])
 
   const positionData = position.unwrap()
 
@@ -150,28 +136,32 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
   }
 }
 
-const useStakingConsts = () => {
+export const useStakingConsts = () => {
   const api = useApiPromise()
 
   return useQuery(QUERY_KEYS.stakingConsts, getStakingConsts(api))
 }
 
 const getStakingConsts = (api: ApiPromise) => async () => {
-  const palletId = await api.consts.staking.palletId
-
-  //const periodLength = await api.consts.staking.periodLength
-
-  const unclaimablePeriods = await api.consts.staking.unclaimablePeriods
-
-  const timePointsPerPeriod = await api.consts.staking.timePointsPerPeriod
-
-  const timePointsWeight = await api.consts.staking.timePointsWeight
-
-  const actionPointsWeight = await api.consts.staking.actionPointsWeight
+  const [
+    palletId,
+    periodLength,
+    unclaimablePeriods,
+    timePointsPerPeriod,
+    timePointsWeight,
+    actionPointsWeight,
+  ] = await Promise.all([
+    api.consts.staking.palletId,
+    api.consts.staking.periodLength,
+    api.consts.staking.unclaimablePeriods,
+    api.consts.staking.timePointsPerPeriod,
+    api.consts.staking.timePointsWeight,
+    api.consts.staking.actionPointsWeight,
+  ])
 
   return {
     palletId: palletId.toHuman() as string,
-    periodLength: BN(1), //periodLength.toBigNumber() as BN,
+    periodLength: periodLength.toBigNumber() as BN,
     unclaimablePeriods: unclaimablePeriods.toBigNumber() as BN,
     timePointsPerPeriod: timePointsPerPeriod.toBigNumber() as BN,
     timePointsWeight: timePointsWeight.toBigNumber() as BN,
@@ -179,184 +169,51 @@ const getStakingConsts = (api: ApiPromise) => async () => {
   }
 }
 
-export const useClaimReward = () => {
-  const { account } = useAccountStore()
-  const bestNumber = useBestNumber()
-  const stake = useStake(account?.address)
-  const stakingConsts = useStakingConsts()
-  const potAddress = getHydraAccountAddress(stakingConsts.data?.palletId)
-  const potBalance = useTokenBalance(NATIVE_ASSET_ID, potAddress)
-
-  return useQueryReduce(
-    [stake, potBalance, bestNumber, stakingConsts] as const,
-    (stake, potBalance, bestNumber, stakingConsts) => {
-      const {
-        accumulatedClaimableRewards,
-        accumulatedRewardPerStake,
-        totalStake,
-        stakePosition,
-      } = stake
-
-      const {
-        periodLength,
-        unclaimablePeriods,
-        timePointsPerPeriod,
-        timePointsWeight,
-        actionPointsWeight,
-      } = stakingConsts
-
-      if (!(potBalance?.balance && stake && stakePosition && stakingConsts))
-        return undefined
-
-      const pendingRewards = potBalance.balance.minus(
-        accumulatedClaimableRewards,
-      )
-
-      let rewardPerStake = accumulatedRewardPerStake.toString()
-
-      if (!pendingRewards.isZero() && !totalStake.isZero()) {
-        rewardPerStake = stakingWasm.calculate_accumulated_rps(
-          accumulatedRewardPerStake.toString(),
-          pendingRewards.toString(),
-          totalStake.toString(),
-        )
-      }
-
-      const currentPeriod = stakingWasm.calculate_period_number(
-        periodLength.toString(),
-        bestNumber.parachainBlockNumber.toString(),
-      )
-
-      const enteredAt = stakingWasm.calculate_period_number(
-        periodLength.toString(),
-        stakePosition.createdAt.toString(),
-      )
-
-      if (BN(currentPeriod).minus(enteredAt).lte(unclaimablePeriods)) {
-        return { rewards: BN_0, unlockedRewards: BN_0 }
-      }
-
-      const maxRewards = stakingWasm.calculate_rewards(
-        rewardPerStake,
-        stakePosition.rewardPerStake.toString(),
-        stakePosition.stake.toString(),
-      )
-
-      let actionPoints = 0
-
-      let actionMultipliers = {
-        democracyVote: 1,
-      }
-
-      actionPoints *= actionMultipliers.democracyVote
-      actionPoints += stakePosition.actionPoints.toNumber()
-
-      let points = stakingWasm.calculate_points(
-        stakePosition.createdAt.toString(),
-        currentPeriod,
-        timePointsPerPeriod.toString(),
-        timePointsWeight.toString(),
-        actionPoints.toString(),
-        actionPointsWeight.toString(),
-        stakePosition.accumulatedSlashPoints.toString(),
-      )
-
-      const payablePercentage = stakingWasm.sigmoid(
-        points,
-        "150000000000000000",
-        "40000",
-      )
-
-      let rewards = BN(
-        stakingWasm.calculate_percentage_amount(maxRewards, payablePercentage),
-      )
-
-      rewards.plus(
-        stakingWasm.calculate_percentage_amount(
-          stakePosition.accumulatedUnpaidRewards.toString(),
-          payablePercentage,
-        ),
-      )
-
-      const unlockedRewards = BN(
-        stakingWasm.calculate_percentage_amount(
-          stakePosition.accumulatedLockedRewards.toString(),
-          payablePercentage,
-        ),
-      )
-
-      return {
-        currentPeriod,
-        rewardPerStake,
-        maxRewards,
-        actionPoints,
-        points,
-        payablePercentage,
-        rewards,
-        unlockedRewards,
-      }
-    },
-  )
-}
-
-export const useStakeData = () => {
-  const { account } = useAccountStore()
-  const stake = useStake(account?.address)
-  const circulatingSupply = useCirculatingSupply()
-
-  const balance = useTokenBalance(NATIVE_ASSET_ID, account?.address)
-
-  const locks = useTokenLocks(NATIVE_ASSET_ID)
-  const meta = useAssetMeta(NATIVE_ASSET_ID)
-  const spotPrice = useDisplayPrice(NATIVE_ASSET_ID)
-
-  const queries = [stake, circulatingSupply, balance, locks, spotPrice]
-
-  const isLoading = queries.some((query) => query.isInitialLoading)
-
-  if (isLoading) return { data: undefined, isLoading }
-
-  const decimals = meta.data?.decimals.neg().toNumber() ?? -12
-
-  const vestLocks = locks.data?.reduce(
-    (acc, lock) => (lock.type === "ormlvest" ? acc.plus(lock.amount) : acc),
-    BN_0,
-  )
-
-  const availableBalance = balance.data?.balance.minus(vestLocks ?? 0)
-
-  const availableBalanceDollar = availableBalance
-    ?.multipliedBy(spotPrice.data?.spotPrice ?? 1)
-    .shiftedBy(decimals)
-
-  const totalStake = stake.data?.totalStake ?? 0
-
-  const supplyStaked = BN(totalStake)
-    .div(Number(circulatingSupply.data ?? 1))
-    .decimalPlaces(4)
-    .multipliedBy(100)
-
-  const stakeDollar = stake.data?.stakePosition?.stake
-    .multipliedBy(spotPrice.data?.spotPrice ?? 1)
-    .shiftedBy(decimals)
-
-  const circulatingSupplyData = BN(circulatingSupply.data ?? 0).shiftedBy(
-    decimals,
-  )
-
-  return {
-    data: {
-      supplyStaked,
-      availableBalance,
-      availableBalanceDollar,
-      circulatingSupply: circulatingSupplyData,
-      stakePosition: stake.data?.stakePosition,
-      positionId: stake.data?.positionId,
-      stakeDollar,
-      minStake: stake.data?.minStake,
-    },
-    isLoading,
+type StakeEventType = {
+  name: "Staking.StakingInitialized" | "Staking.AccumulatedRpsUpdated"
+  id: string
+  args: {
+    accumulatedRps: string
+    totalStake: string
+  }
+  block: {
+    timestamp: string
   }
 }
 
-export type TStakingData = ReturnType<typeof useStakeData>["data"]
+export const useStakingEvents = () => {
+  const preference = useProviderRpcUrlStore()
+  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+
+  const indexerUrl =
+    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
+
+  return useQuery(QUERY_KEYS.stakingEvents, getStakeEvents(indexerUrl))
+}
+const getStakeEvents = (indexerUrl: string) => async () => {
+  return {
+    ...(await request<{
+      events: Array<StakeEventType>
+    }>(
+      indexerUrl,
+      gql`
+        query StakeEvents {
+          events(
+            where: {
+              name_contains: "AccumulatedRpsUpdated"
+              OR: { name_contains: "StakingInitialized" }
+            }
+          ) {
+            args
+            id
+            block {
+              timestamp
+            }
+            name
+          }
+        }
+      `,
+    )),
+  }
+}

@@ -34,7 +34,7 @@ export const PROVIDERS = [
   {
     name: "Testnet",
     url: "wss://mining-rpc.hydradx.io",
-    indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",
+    indexerUrl: "https://mining-explorer.play.hydration.cloud/graphql",
     env: "development",
   },
 ]

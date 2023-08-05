@@ -60,5 +60,8 @@ export const useMath = () => {
 
 export const getHydraAccountAddress = (seed?: string) =>
   seed
-    ? encodeAddress(stringToU8a(seed.padEnd(32, "\0")), HYDRA_ADDRESS_PREFIX)
+    ? encodeAddress(
+        stringToU8a(("modl" + seed).padEnd(32, "\0")),
+        HYDRA_ADDRESS_PREFIX,
+      )
     : undefined

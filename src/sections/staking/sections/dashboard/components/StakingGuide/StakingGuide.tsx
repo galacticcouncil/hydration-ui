@@ -44,7 +44,7 @@ const StakingGuideItem = ({ title, desc, freq }: StakingGuideItemProps) => {
         </Text>
       </SGuideItemCount>
       <div sx={{ flex: "column", gap: 4 }}>
-        <Text color="white" fs={[16, 18]}>
+        <Text color="white" fs={[16, 18]} font="ChakraPetchSemiBold">
           {title}
         </Text>
         {desc}

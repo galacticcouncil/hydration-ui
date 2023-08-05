@@ -6,8 +6,8 @@ import {
 } from "./StakingInputSection.styled"
 import { Stake } from "./Stake/Stake"
 import { Unstake } from "./Unstake/Unstake"
-import { TStakingData } from "api/staking"
 import { BN_0 } from "utils/constants"
+import { TStakingData } from "sections/staking/StakingPage.utils"
 
 const stakeActions = ["stake", "unstake"] as const
 

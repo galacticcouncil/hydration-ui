@@ -8,22 +8,18 @@ import {
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { useTranslation } from "react-i18next"
-import { useClaimReward } from "api/staking"
 import { useDisplayPrice } from "utils/displayAsset"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { NATIVE_ASSET_ID } from "utils/api"
 import Skeleton from "react-loading-skeleton"
+import { useClaimReward } from "sections/staking/StakingPage.utils"
 
-export const AvailableRewards = ({
-  positionId,
-}: {
-  positionId: number | undefined
-}) => {
+export const AvailableRewards = () => {
   const { t } = useTranslation()
   const reward = useClaimReward()
   const spotPrice = useDisplayPrice(NATIVE_ASSET_ID)
 
-  const isLoading = reward.isLoading || spotPrice.isLoading
+  const isLoading = !reward.data || spotPrice.isLoading
 
   return (
     <SRewardCardContainer>

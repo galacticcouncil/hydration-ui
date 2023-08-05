@@ -57,3 +57,6 @@ export type Referendum = {
   referendumIndex: number
   motionIndex: number
 }
+
+export const getReferendumInfoOf = async (api: ApiPromise, id: string) =>
+  await api.query.democracy.referendumInfoOf(id)

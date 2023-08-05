@@ -8,7 +8,7 @@ import { Stats } from "./components/Stats/Stats"
 import { StakingAccountsTableWrapperData } from "./components/StakingAccountsTable/StakingAcoountsTableWrapper"
 import { StakingAccountSkeleton } from "./components/StakingAccountsTable/skeleton/StakingAccountSkeleton"
 import { Referenda, ReferendaWrapper } from "./components/Referenda/Referenda"
-import { useStakeData } from "api/staking"
+import { useStakeData } from "sections/staking/StakingPage.utils"
 
 export const StakingDashboard = () => {
   const api = useApiPromise()
@@ -16,32 +16,6 @@ export const StakingDashboard = () => {
   if (!isApiLoaded(api)) return <StakingSkeleton />
 
   return <StakingData />
-}
-
-export const StakingData = () => {
-  const { account } = useAccountStore()
-  const staking = useStakeData()
-  console.log(staking)
-  return (
-    <div sx={{ flex: ["column-reverse", "row"], gap: 30 }}>
-      <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
-        {!staking.data?.stakePosition && <StakingGuide />}
-        <Stats data={staking.data} loading={staking.isLoading} />
-        <ReferendaWrapper />
-        <StakingAccountsTableWrapperData />
-      </div>
-
-      <div
-        sx={{ flex: ["column-reverse", "column"], gap: 28 }}
-        css={{ flex: 2 }}
-      >
-        <StakingInputSection data={staking.data} loading={staking.isLoading} />
-        {account && staking.data?.positionId && false && (
-          <AvailableRewards positionId={staking.data.positionId} />
-        )}
-      </div>
-    </div>
-  )
 }
 
 export const StakingSkeleton = () => {
@@ -59,6 +33,30 @@ export const StakingSkeleton = () => {
         css={{ flex: 2 }}
       >
         <StakingInputSection loading />
+      </div>
+    </div>
+  )
+}
+
+export const StakingData = () => {
+  const { account } = useAccountStore()
+  const staking = useStakeData()
+
+  return (
+    <div sx={{ flex: ["column-reverse", "row"], gap: 30 }}>
+      <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
+        {!staking.data?.stakePosition && <StakingGuide />}
+        <Stats data={staking.data} loading={staking.isLoading} />
+        <ReferendaWrapper />
+        <StakingAccountsTableWrapperData />
+      </div>
+
+      <div
+        sx={{ flex: ["column-reverse", "column"], gap: 28 }}
+        css={{ flex: 2 }}
+      >
+        <StakingInputSection data={staking.data} loading={staking.isLoading} />
+        {account && staking.data?.positionId && <AvailableRewards />}
       </div>
     </div>
   )

@@ -10,8 +10,11 @@ import { SStakingValuesContainer } from "./StakingValues.styled"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
-import { TStakingData } from "api/staking"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { TStakingData, useStakeARP } from "sections/staking/StakingPage.utils"
+import BN from "bignumber.js"
+import { useApiPromise } from "utils/api"
+import { isApiLoaded } from "utils/helpers"
 
 const StakingValue = ({
   logo,
@@ -54,6 +57,7 @@ export const StakingValues = ({
 }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const api = useApiPromise()
 
   const availableBalanceValue = (
     <StakingValue
@@ -100,12 +104,12 @@ export const StakingValues = ({
       }
       title={t("staking.dashboard.stats.projectdRewards")}
       value={
-        loading ? (
+        loading || !isApiLoaded(api) ? (
           <div sx={{ flex: "column", gap: 2 }}>
             <Skeleton width={100} height={24} />
           </div>
         ) : (
-          "5%"
+          <AprStatValue availableBalance={data?.availableBalance} />
         )
       }
     />
@@ -195,5 +199,24 @@ export const StakingValues = ({
       />
       {projectedRewards}
     </SStakingValuesContainer>
+  )
+}
+
+const AprStatValue = ({
+  availableBalance,
+}: {
+  availableBalance: BN | undefined
+}) => {
+  const { t } = useTranslation()
+  const stakeApr = useStakeARP(availableBalance)
+
+  return (
+    <Text fs={[19, 24]} color="white" font="FontOver">
+      {stakeApr.isLoading ? (
+        <Skeleton width={100} height={24} />
+      ) : (
+        t("value.percentage", { value: stakeApr?.data?.apr })
+      )}
+    </Text>
   )
 }
