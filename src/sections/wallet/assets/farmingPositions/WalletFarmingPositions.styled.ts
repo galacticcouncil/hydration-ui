@@ -1,22 +1,10 @@
 import styled from "@emotion/styled"
-import { TableContainer, TableData } from "components/Table/Table.styled"
-import { theme } from "theme"
+import { TableData } from "components/Table/Table.styled"
+import { css } from "@emotion/react"
 
-export const STableContainer = styled(TableContainer)`
-  th {
-    &:last-of-type {
-      > div {
-        justify-content: flex-end;
-      }
-    }
-
-    @media ${theme.viewport.gte.sm} {
-      &:last-of-type {
-        > div {
-          justify-content: flex-start;
-        }
-      }
-    }
+export const tableStyles = css`
+  th > div {
+    justify-content: flex-start;
   }
 `
 
