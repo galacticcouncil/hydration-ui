@@ -134,60 +134,61 @@ const OmnipoolAssetHeader = ({
 }
 
 export const StatsOmnipoolAsset = () => {
-  const api = useApiPromise()
   const search = useSearch<SearchGenerics>()
   const assetId = search.asset?.toString()
 
-  if (!assetId) return <Navigate to="/stats" />
-
-  if (!isApiLoaded(api)) return <StatsOmnipoolAssetSkeleton />
+  if (!assetId) {
+    return <Navigate to="/stats" />
+  }
 
   return <StatsOmnipoolAssetData assetId={assetId} />
 }
 
 const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
+  const api = useApiPromise()
   const overviewData = useOmnipoolOverviewData()
 
   const omnipoolAsset = overviewData.data.find(
     (overview) => overview.id === assetId,
   )
 
-  if (!omnipoolAsset) return <Navigate to="/stats" />
+  if (!omnipoolAsset || overviewData.isLoading || !isApiLoaded(api)) {
+    return <StatsOmnipoolAssetSkeleton />
+  }
+
+  if (!omnipoolAsset) {
+    return <Navigate to="/stats" />
+  }
 
   const omnipollTvl = overviewData.data.reduce(
     (acc, asset) => acc.plus(asset.tvl),
     BN_0,
   )
 
-  if (!omnipoolAsset || overviewData.isLoading)
-    return <StatsOmnipoolAssetSkeleton />
-
   return (
-    <div>
-      <SOmnipoolAssetContainer>
-        <OmnipoolAssetNavigation />
-        <OmnipoolAssetHeader assetId={assetId} tvl={omnipoolAsset.tvl} />
-        <div sx={{ flex: ["column", "row"], gap: 20, mb: 20 }}>
-          <AssetStats
-            data={{
-              vlm: omnipoolAsset.volume,
-              cap: omnipoolAsset.cap.multipliedBy(100),
-              pol: omnipoolAsset.pol,
-              share: omnipoolAsset.tvl.div(omnipollTvl).multipliedBy(100),
-            }}
-          />
-          <SStatsCardContainer
-            sx={{ width: "100%", height: [500, 600], pt: [60, 20] }}
-            css={{ position: "relative" }}
-          >
-            <ChartWrapper assetSymbol={omnipoolAsset.symbol} />
-          </SStatsCardContainer>
-        </div>
-        <LiquidityProvidersTableWrapper />
-        <Spacer size={[24, 60]} />
-        <RecentTradesTableWrapperData assetId={assetId} />
-      </SOmnipoolAssetContainer>
-    </div>
+    <SOmnipoolAssetContainer>
+      <OmnipoolAssetNavigation />
+      <OmnipoolAssetHeader assetId={assetId} tvl={omnipoolAsset.tvl} />
+      <div sx={{ flex: ["column", "row"], gap: 20, mb: 20 }}>
+        <AssetStats
+          data={{
+            vlm: omnipoolAsset.volume,
+            cap: omnipoolAsset.cap.multipliedBy(100),
+            pol: omnipoolAsset.pol,
+            share: omnipoolAsset.tvl.div(omnipollTvl).multipliedBy(100),
+          }}
+        />
+        <SStatsCardContainer
+          sx={{ width: "100%", height: [500, 600], pt: [60, 20] }}
+          css={{ position: "relative" }}
+        >
+          <ChartWrapper assetSymbol={omnipoolAsset.symbol} />
+        </SStatsCardContainer>
+      </div>
+      <LiquidityProvidersTableWrapper />
+      <Spacer size={[24, 60]} />
+      <RecentTradesTableWrapperData assetId={assetId} />
+    </SOmnipoolAssetContainer>
   )
 }
 

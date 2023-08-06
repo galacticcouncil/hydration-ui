@@ -27,6 +27,7 @@ import { BN_0, BN_NAN } from "utils/constants"
 import { WalletAssetsHydraPositionsData } from "../hydraPositions/data/WalletAssetsHydraPositionsData"
 import { WalletAssetsTableName } from "../table/data/WalletAssetsTableData"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 
 export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
   const { t } = useTranslation()
@@ -41,67 +42,96 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
     position: true,
   }
 
-  const columns = [
-    accessor("symbol", {
-      id: "name",
-      header: isDesktop
-        ? t("wallet.assets.farmingPositions.header.name")
-        : t("selectAssets.asset"),
-      sortingFn: (a, b) => a.original.symbol.localeCompare(b.original.symbol),
-      cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
-    }),
-    accessor("date", {
-      id: "date",
-      header: t("wallet.assets.farmingPositions.header.date"),
-      sortingFn: (a, b) => (isAfter(a.original.date, b.original.date) ? 1 : -1),
-      cell: ({ row }) => (
-        <Text fs={16} fw={500} color="white">
-          {t("wallet.assets.farmingPositions.data.date", {
-            date: row.original.date,
-          })}
-        </Text>
-      ),
-    }),
-    accessor("shares", {
-      id: "shares",
-      header: t("wallet.assets.farmingPositions.header.shares"),
-      sortingFn: (a, b) => (a.original.shares.gt(b.original.shares) ? 1 : -1),
-      cell: ({ row }) => (
-        <Text fs={16} fw={500} color="white">
-          {t("value.token", { value: row.original.shares })}
-        </Text>
-      ),
-    }),
-    accessor("position", {
-      id: "value",
-      header: t("wallet.assets.farmingPositions.header.value"),
-      sortingFn: (a, b) =>
-        a.original.position.valueDisplay.gt(b.original.position.valueDisplay)
-          ? 1
-          : -1,
-      cell: ({ row }) => (
-        <div sx={{ flex: "column", align: ["end", "start"], gap: 2 }}>
-          <WalletAssetsHydraPositionsData
-            symbol={row.original.position.symbol}
-            value={row.original.position.value}
-            lrna={row.original.position.lrna}
-          />
-          <DollarAssetValue
-            value={row.original.position.valueDisplay}
-            wrapper={(children) => (
-              <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
-                {children}
-              </Text>
-            )}
-          >
-            <DisplayValue value={row.original.position.valueDisplay} />
-          </DollarAssetValue>
-        </div>
-      ),
-    }),
-  ]
+  const columns = useMemo(
+    () => [
+      accessor("symbol", {
+        id: "name",
+        header: isDesktop
+          ? t("wallet.assets.farmingPositions.header.name")
+          : t("selectAssets.asset"),
+        sortingFn: (a, b) => a.original.symbol.localeCompare(b.original.symbol),
+        cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
+      }),
+      accessor("date", {
+        id: "date",
+        header: t("wallet.assets.farmingPositions.header.date"),
+        sortingFn: (a, b) =>
+          isAfter(a.original.date, b.original.date) ? 1 : -1,
+        cell: ({ row }) => (
+          <Text fs={16} fw={500} color="white">
+            {t("wallet.assets.farmingPositions.data.date", {
+              date: row.original.date,
+            })}
+          </Text>
+        ),
+      }),
+      accessor("position.providedAmount", {
+        id: "initial",
+        header: t("wallet.assets.farmingPositions.header.initial"),
+        sortingFn: (a, b) => (a.original.shares.gt(b.original.shares) ? 1 : -1),
+        cell: ({ row }) => (
+          <>
+            <Text fs={16} fw={500} color="white">
+              {t("value.token", {
+                value: row.original.position.providedAmount,
+              })}
+            </Text>
+            <DollarAssetValue
+              value={row.original.position.providedAmountDisplay}
+              wrapper={(children) => (
+                <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                  {children}
+                </Text>
+              )}
+            >
+              <DisplayValue
+                value={row.original.position.providedAmountDisplay}
+              />
+            </DollarAssetValue>
+          </>
+        ),
+      }),
+      accessor("position", {
+        id: "value",
+        header: t("wallet.assets.farmingPositions.header.value"),
+        sortingFn: (a, b) =>
+          a.original.position.valueDisplay.gt(b.original.position.valueDisplay)
+            ? 1
+            : -1,
+        cell: ({ row }) => (
+          <div sx={{ flex: "column", align: ["end", "start"], gap: 2 }}>
+            <div sx={{ flex: "row", gap: 4 }}>
+              <WalletAssetsHydraPositionsData
+                symbol={row.original.position.symbol}
+                value={row.original.position.value}
+                lrna={row.original.position.lrna}
+              />
+              <LrnaPositionTooltip
+                lrnaPosition={row.original.position.lrna}
+                tokenPosition={row.original.position.value}
+                assetId={row.original.assetId}
+              />
+            </div>
+            <DollarAssetValue
+              value={row.original.position.valueDisplay}
+              wrapper={(children) => (
+                <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                  {children}
+                </Text>
+              )}
+            >
+              <DisplayValue value={row.original.position.valueDisplay} />
+            </DollarAssetValue>
+          </div>
+        ),
+      }),
+    ],
 
-  const table = useReactTable({
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isDesktop],
+  )
+
+  return useReactTable({
     data,
     columns,
     state: { sorting, columnVisibility },
@@ -109,8 +139,6 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
-
-  return table
 }
 
 export const useFarmingPositionsData = () => {
@@ -182,9 +210,25 @@ export const useFarmingPositionsData = () => {
       )
       const position = accountDepositsShare.data[assetId]?.find(
         (d) => d.depositId?.toString() === deposit.id.toString(),
-      ) ?? { symbol, value: BN_NAN, valueDisplay: BN_NAN, lrna: BN_NAN }
+      ) ?? {
+        symbol,
+        value: BN_NAN,
+        valueDisplay: BN_NAN,
+        lrna: BN_NAN,
+        amount: BN_NAN,
+        providedAmount: BN_NAN,
+        providedAmountDisplay: BN_NAN,
+      }
 
-      return { id, symbol, name, date, shares, position }
+      return {
+        id,
+        symbol,
+        name,
+        date,
+        shares,
+        position,
+        assetId,
+      }
     })
 
     return rows
@@ -201,6 +245,7 @@ export const useFarmingPositionsData = () => {
 
 export type FarmingPositionsTableData = {
   id: string
+  assetId: string
   symbol: string
   name: string
   date: Date
@@ -210,5 +255,7 @@ export type FarmingPositionsTableData = {
     value: BN
     valueDisplay: BN
     lrna: BN
+    providedAmount: BN
+    providedAmountDisplay: BN
   }
 }

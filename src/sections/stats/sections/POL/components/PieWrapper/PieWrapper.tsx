@@ -5,10 +5,10 @@ import { theme } from "theme"
 import { useMemo, useState } from "react"
 import { BN_0 } from "utils/constants"
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
-import { SContainerVertical } from "../StatsPOL.styled"
-import { PieTotalValue } from "../../overview/components/PieTotalValue/PieTotalValue"
-import { TUseOmnipoolAssetDetailsData } from "../../../StatsPage.utils"
-import { PieChart } from "../../../components/PieChart/PieChart"
+import { SContainerVertical } from "../../StatsPOL.styled"
+import { PieTotalValue } from "sections/stats/sections/overview/components/PieTotalValue/PieTotalValue"
+import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
+import { PieChart } from "sections/stats/components/PieChart/PieChart"
 import { useTranslation } from "react-i18next"
 
 type PieWrapperProps = {
@@ -19,12 +19,20 @@ type PieWrapperProps = {
 export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+
   const [activeSection, setActiveSection] = useState<"overview" | "chart">(
     "overview",
   )
 
-  const totalPol = useMemo(
-    () => data.reduce((acc, value) => acc.plus(value.pol), BN_0),
+  const { totalVolume, totalPol } = useMemo(
+    () =>
+      data.reduce(
+        (acc, omnipoolAsset) => ({
+          totalPol: acc.totalPol.plus(omnipoolAsset.pol),
+          totalVolume: acc.totalVolume.plus(omnipoolAsset.volume),
+        }),
+        { totalPol: BN_0, totalVolume: BN_0 },
+      ),
     [data],
   )
 
@@ -45,7 +53,7 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
       >
         <PieTotalValue
           title={t("stats.pol.volume")}
-          data={totalPol}
+          data={totalVolume}
           isLoading={isLoading}
         />
       </div>

@@ -37,7 +37,7 @@ export const WalletAssetsTableName = ({
             fs={[large ? 13 : 12, 13]}
             lh={[large ? 17 : 14, 13]}
             fw={500}
-            css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
+            css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.61)` }}
           >
             {name}
           </Text>
@@ -80,7 +80,7 @@ export const WalletAssetsTableBalance = (props: {
             fs={[11, 13]}
             lh={[14, 16]}
             fw={500}
-            css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
+            css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.61)` }}
           >
             {children}
           </Text>

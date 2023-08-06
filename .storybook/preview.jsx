@@ -1,5 +1,13 @@
 import { theme } from "../src/theme"
 
+import { Global, css } from "@emotion/react"
+import { withThemeFromJSXProvider } from "@storybook/addon-styling"
+import { GlobalStyle } from "../src/components/GlobalStyle"
+
+const GlobalStyles = () => (
+  <Global styles={GlobalStyle} />
+)
+
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
   controls: {
@@ -16,3 +24,9 @@ export const parameters = {
     ],
   },
 }
+
+export const decorators = [
+  withThemeFromJSXProvider({
+    GlobalStyles,
+  }),
+]

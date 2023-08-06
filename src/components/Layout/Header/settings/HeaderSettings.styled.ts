@@ -1,6 +1,7 @@
 import styled from "@emotion/styled"
-import { Content, Trigger } from "@radix-ui/react-dropdown-menu"
+import { Trigger } from "@radix-ui/react-dropdown-menu"
 import { ButtonTransparent } from "components/Button/Button"
+import { motion } from "framer-motion"
 import { theme } from "theme"
 
 export const SButton = styled(Trigger)`
@@ -32,7 +33,7 @@ export const SHeader = styled.div`
   padding: 14px 21px;
 `
 
-export const SContent = styled(Content)`
+export const SContent = styled(motion.div)`
   --modal-header-padding-y: 14px;
   --modal-header-padding-x: 20px;
   --modal-header-btn-size: 26px;

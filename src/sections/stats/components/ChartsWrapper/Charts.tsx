@@ -25,6 +25,7 @@ export const Charts = ({
     />
   ) : (
     <AreaChart
+      dataKey="tvl_usd"
       data={stats.data}
       loading={stats.isLoading}
       error={stats.isError}
