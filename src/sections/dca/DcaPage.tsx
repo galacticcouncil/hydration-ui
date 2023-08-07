@@ -9,6 +9,7 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useAccountStore, useStore } from "state/store"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useApiPromise } from "utils/api"
+import { PoolType } from "@galacticcouncil/sdk"
 
 export const DcaApp = createComponent({
   tagName: "gc-dca-app",
@@ -76,7 +77,7 @@ export function DcaPage() {
             r && r.setAttribute("chart", "")
           }}
           apiAddress={rpcUrl}
-          pools="Omni"
+          pools={PoolType.Omni}
           stableCoinAssetId={stableCoinAssetId}
           accountName={account?.name}
           accountProvider={account?.provider}

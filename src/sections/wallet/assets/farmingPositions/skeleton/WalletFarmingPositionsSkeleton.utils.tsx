@@ -37,49 +37,21 @@ export const useFarmingPositionsSkeleton = (enableAnimation = true) => {
         id: "date",
         header: t("wallet.assets.farmingPositions.header.date"),
         cell: () => (
-          <div>
-            <Skeleton
-              width={134}
-              height={32}
-              enableAnimation={enableAnimation}
-            />
-          </div>
+          <Skeleton width={134} height={32} enableAnimation={enableAnimation} />
         ),
       }),
       display({
-        id: "shares",
-        header: t("wallet.assets.farmingPositions.header.shares"),
+        id: "initial",
+        header: t("wallet.assets.farmingPositions.header.initial"),
         cell: () => (
-          <div>
-            <Skeleton
-              width={134}
-              height={32}
-              enableAnimation={enableAnimation}
-            />
-          </div>
+          <Skeleton width={134} height={32} enableAnimation={enableAnimation} />
         ),
       }),
       display({
         id: "value",
         header: t("wallet.assets.farmingPositions.header.value"),
         cell: () => (
-          <div sx={{ flex: "row", gap: 8, mr: 32, display: ["none", "flex"] }}>
-            <Skeleton
-              width={72}
-              height={32}
-              enableAnimation={enableAnimation}
-            />
-            <Skeleton
-              width={72}
-              height={32}
-              enableAnimation={enableAnimation}
-            />
-            <Skeleton
-              width={32}
-              height={32}
-              enableAnimation={enableAnimation}
-            />
-          </div>
+          <Skeleton width={134} height={32} enableAnimation={enableAnimation} />
         ),
       }),
     ],

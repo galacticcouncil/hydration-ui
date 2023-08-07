@@ -11,6 +11,7 @@ import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useApiPromise } from "utils/api"
+import { PoolType } from "@galacticcouncil/sdk"
 
 export const TradeApp = createComponent({
   tagName: "gc-trade-app",
@@ -104,7 +105,7 @@ export function TradePage() {
           assetIn={search.success ? search.data.assetIn : undefined}
           assetOut={search.success ? search.data.assetOut : undefined}
           apiAddress={rpcUrl}
-          pools="Omni"
+          pools={PoolType.Omni}
           stableCoinAssetId={stableCoinAssetId}
           accountName={account?.name}
           accountProvider={account?.provider}
