@@ -1,8 +1,8 @@
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Controller, useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { useAccountStore, useStore } from "state/store"
+import { ToastMessage, useAccountStore, useStore } from "state/store"
 import { FormValues } from "utils/helpers"
 import BigNumber from "bignumber.js"
 import { BN_10 } from "utils/constants"
@@ -15,6 +15,7 @@ import { getFixedPointAmount } from "utils/balance"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Spacer } from "components/Spacer/Spacer"
+import { TOAST_MESSAGES } from "state/toasts"
 
 export const Stake = ({
   loading,
@@ -44,10 +45,32 @@ export const Stake = ({
     const isStakePosition = positionId != null
     let transaction
 
+    const toast = TOAST_MESSAGES.reduce((memo, type) => {
+      const msType = type === "onError" ? "onLoading" : type
+      memo[type] = (
+        <Trans
+          t={t}
+          i18nKey={`staking.toasts.${
+            isStakePosition ? "increaseStake" : "stake"
+          }.${msType}`}
+          tOptions={{
+            value: BigNumber(values.amount),
+          }}
+        >
+          <span />
+          <span className="highlight" />
+        </Trans>
+      )
+      return memo
+    }, {} as ToastMessage)
+
     if (isStakePosition) {
-      transaction = await createTransaction({
-        tx: api.tx.staking.increaseStake(positionId, amount),
-      })
+      transaction = await createTransaction(
+        {
+          tx: api.tx.staking.increaseStake(positionId, amount),
+        },
+        { toast },
+      )
     } else {
       transaction = await createTransaction({
         tx: api.tx.staking.stake(amount),

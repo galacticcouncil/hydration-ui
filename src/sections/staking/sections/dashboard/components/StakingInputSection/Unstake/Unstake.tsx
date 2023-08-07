@@ -1,7 +1,7 @@
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Controller, useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { useAccountStore, useStore } from "state/store"
+import { Trans, useTranslation } from "react-i18next"
+import { ToastMessage, useAccountStore, useStore } from "state/store"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
@@ -12,6 +12,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { TOAST_MESSAGES } from "state/toasts"
 
 export const Unstake = ({
   loading,
@@ -37,9 +38,29 @@ export const Unstake = ({
   })
 
   const onSubmit = async () => {
-    const transaction = await createTransaction({
-      tx: api.tx.staking.unstake(positionId),
-    })
+    const toast = TOAST_MESSAGES.reduce((memo, type) => {
+      const msType = type === "onError" ? "onLoading" : type
+      memo[type] = (
+        <Trans
+          t={t}
+          i18nKey={`staking.toasts.unstake.${msType}`}
+          tOptions={{
+            value: staked,
+          }}
+        >
+          <span />
+          <span className="highlight" />
+        </Trans>
+      )
+      return memo
+    }, {} as ToastMessage)
+
+    const transaction = await createTransaction(
+      {
+        tx: api.tx.staking.unstake(positionId),
+      },
+      { toast },
+    )
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
     await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)

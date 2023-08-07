@@ -7,15 +7,17 @@ import {
 } from "./AvailableRewards.styled"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { useDisplayPrice } from "utils/displayAsset"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import Skeleton from "react-loading-skeleton"
 import { useClaimReward } from "sections/staking/StakingPage.utils"
-import { useAccountStore, useStore } from "state/store"
+import { ToastMessage, useAccountStore, useStore } from "state/store"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { TOAST_MESSAGES } from "state/toasts"
+import { DECIMAL_PLACES } from "@galacticcouncil/sdk"
 
 export const AvailableRewards = () => {
   const { t } = useTranslation()
@@ -30,9 +32,30 @@ export const AvailableRewards = () => {
   const isLoading = !reward.data || spotPrice.isLoading
 
   const onClaimRewards = async () => {
-    await createTransaction({
-      tx: api.tx.staking.claim(reward.data?.positionId),
-    })
+    const toast = TOAST_MESSAGES.reduce((memo, type) => {
+      const msType = type === "onError" ? "onLoading" : type
+      memo[type] = (
+        <Trans
+          t={t}
+          i18nKey={`staking.toasts.claim.${msType}`}
+          tOptions={{
+            value: reward.data?.rewards,
+            fixedPointScale: DECIMAL_PLACES,
+          }}
+        >
+          <span />
+          <span className="highlight" />
+        </Trans>
+      )
+      return memo
+    }, {} as ToastMessage)
+
+    await createTransaction(
+      {
+        tx: api.tx.staking.claim(reward.data?.positionId),
+      },
+      { toast },
+    )
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
     await queryClient.invalidateQueries(
