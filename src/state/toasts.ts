@@ -4,7 +4,7 @@ import { v4 as uuid } from "uuid"
 import { renderToString } from "react-dom/server"
 import { useAccountStore } from "./store"
 import { createJSONStorage, persist } from "zustand/middleware"
-import { Maybe } from "utils/helpers"
+import { Maybe, safelyParse } from "utils/helpers"
 
 export const TOAST_MESSAGES = ["onLoading", "onSuccess", "onError"] as const
 export type ToastVariant = "info" | "success" | "error" | "progress" | "unknown"
@@ -24,6 +24,13 @@ type ToastData = ToastParams & {
   hidden: boolean
   dateCreated: string
   title: string
+}
+
+type PersistState<T> = {
+  version: number
+  state: {
+    toasts: Record<string, T>
+  }
 }
 
 interface ToastStore {
@@ -80,17 +87,20 @@ const useToastsStore = create<ToastStore>()(
               `toasts_${accountAddress}`,
             )
 
-            const toastsDeprecated =
-              accountToastsDeprecated &&
-              JSON.parse(accountToastsDeprecated).map((toast: ToastData) => ({
-                ...toast,
-                hidden: true,
-              }))
+            const toastsDeprecated = accountToastsDeprecated
+              ? safelyParse<Array<ToastData>>(accountToastsDeprecated)?.map(
+                  (toast) => ({
+                    ...toast,
+                    hidden: true,
+                  }),
+                )
+              : undefined
 
             if (storeToasts != null) {
-              const { state: toastsState } = JSON.parse(storeToasts)
+              const { state: toastsState } =
+                safelyParse<PersistState<ToastData[]>>(storeToasts) ?? {}
 
-              const allToasts = { ...toastsState.toasts }
+              const allToasts = { ...toastsState?.toasts }
 
               const accountToasts = allToasts[accountAddress]
 
@@ -156,7 +166,7 @@ export const useToast = () => {
 
   const toasts = useMemo(() => {
     if (account?.address) {
-      const toasts = store.toasts[account?.address]
+      const toasts = store.toasts[account.address]
 
       if (!toasts) {
         // check if there is deprecated toast storage
@@ -165,9 +175,10 @@ export const useToast = () => {
         )
 
         if (accountToastsDeprecated) {
-          const toastsDeprecated: Array<ToastData> = JSON.parse(
-            accountToastsDeprecated,
-          ).map((toast: ToastData) => ({ ...toast, hidden: true }))
+          const toastsDeprecated =
+            safelyParse<Array<ToastData>>(accountToastsDeprecated)?.map(
+              (toast: ToastData) => ({ ...toast, hidden: true }),
+            ) ?? []
 
           store.update(account.address, () => toastsDeprecated)
 
