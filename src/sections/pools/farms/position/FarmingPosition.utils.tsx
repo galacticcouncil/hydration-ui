@@ -22,6 +22,8 @@ import { useAccountStore } from "state/store"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { BN_10, BN_NAN } from "utils/constants"
 import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
+import { normalizeBigNumber } from "utils/balance"
+import { DECIMAL_PLACES } from "@galacticcouncil/sdk"
 
 export const useAllUserDepositShare = () => {
   const { account } = useAccountStore()
@@ -144,6 +146,14 @@ export const useAllUserDepositShare = () => {
               : valueDisplay.plus(lrna.times(lrnaSp.data.spotPrice))
           }
         }
+
+        const providedAmount = normalizeBigNumber(
+          position.data.amount,
+        ).shiftedBy(-1 * meta.decimals.toNumber() ?? DECIMAL_PLACES)
+        const providedAmountDisplay = spotPrice?.spotPrice
+          ? providedAmount.times(spotPrice.spotPrice)
+          : BN_NAN
+
         const index = position.data?.assetId.toString()
 
         memo[index] = [
@@ -158,6 +168,8 @@ export const useAllUserDepositShare = () => {
               ?.data?.depositionId.toString(),
             value,
             valueDisplay,
+            providedAmount,
+            providedAmountDisplay,
             lrna,
             symbol: meta.symbol,
           },
@@ -165,7 +177,7 @@ export const useAllUserDepositShare = () => {
       }
 
       return memo
-    }, {} as Record<string, Array<OmnipoolPosition & { value: BN; valueDisplay: BN; lrna: BN; symbol: string; depositId: string | undefined }>>)
+    }, {} as Record<string, Array<OmnipoolPosition & { value: BN; valueDisplay: BN; lrna: BN; symbol: string; depositId: string | undefined; providedAmountDisplay: BN; providedAmount: BN }>>)
 
     return rows
   }, [
