@@ -307,6 +307,7 @@ export const useClaimReward = () => {
       accumulatedRewardPerStake,
       totalStake,
       stakePosition,
+      positionId,
     } = stake.data
 
     const {
@@ -402,6 +403,7 @@ export const useClaimReward = () => {
     )
 
     return {
+      positionId,
       rewards: rewards.div(BN_BILL),
       unlockedRewards: unlockedRewards.div(BN_BILL),
       actionPoints,

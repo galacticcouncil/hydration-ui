@@ -10,16 +10,35 @@ import { Icon } from "components/Icon/Icon"
 import { useTranslation } from "react-i18next"
 import { useDisplayPrice } from "utils/displayAsset"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { NATIVE_ASSET_ID } from "utils/api"
+import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import Skeleton from "react-loading-skeleton"
 import { useClaimReward } from "sections/staking/StakingPage.utils"
+import { useAccountStore, useStore } from "state/store"
+import { useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 export const AvailableRewards = () => {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
   const reward = useClaimReward()
   const spotPrice = useDisplayPrice(NATIVE_ASSET_ID)
 
+  const api = useApiPromise()
+  const { createTransaction } = useStore()
+  const queryClient = useQueryClient()
+
   const isLoading = !reward.data || spotPrice.isLoading
+
+  const onClaimRewards = async () => {
+    await createTransaction({
+      tx: api.tx.staking.claim(reward.data?.positionId),
+    })
+
+    await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
+    await queryClient.invalidateQueries(
+      QUERY_KEYS.tokenBalance(NATIVE_ASSET_ID, account?.address),
+    )
+  }
 
   return (
     <SRewardCardContainer>
@@ -71,6 +90,7 @@ export const AvailableRewards = () => {
           variant="primary"
           fullWidth
           disabled={!reward.data || reward.data.rewards.isZero()}
+          onClick={onClaimRewards}
         >
           {t("staking.dashboard.rewards.button")}
         </Button>
