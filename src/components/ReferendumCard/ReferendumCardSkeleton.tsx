@@ -14,22 +14,27 @@ export const ReferendumCardSkeleton = ({
 }) => {
   const { t } = useTranslation()
 
+  const isToastCard = type === "toast"
+
   return (
     <SContainer type={type}>
       <SHeader>
-        <Skeleton height={13} width={164} />
+        <Skeleton height={13} width={isToastCard ? 100 : 164} />
         <Icon sx={{ color: "brightBlue300" }} icon={<LinkIcon />} />
       </SHeader>
 
       <Separator color="primaryA15Blue" opacity={0.35} sx={{ my: 16 }} />
 
-      <Skeleton height={23} width={565} />
+      <Skeleton height={23} width="100%" />
 
       <Spacer size={20} />
 
-      <div sx={{ flex: "row", gap: 8, justify: "space-between" }}>
-        <Skeleton height={4} width={279} />
-        <Skeleton height={4} width={279} />
+      <div
+        sx={{ flex: "row", gap: 8, justify: "space-between" }}
+        css={{ "& > span": { width: "100%" } }}
+      >
+        <Skeleton height={4} />
+        <Skeleton height={4} />
       </div>
 
       <Spacer size={4} />

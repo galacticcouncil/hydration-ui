@@ -1,9 +1,10 @@
 import { create } from "zustand"
-import { ReactElement, ReactNode } from "react"
+import { ReactElement, ReactNode, useMemo } from "react"
 import { v4 as uuid } from "uuid"
 import { renderToString } from "react-dom/server"
-import { useEffectOnce, useLocalStorage } from "react-use"
 import { useAccountStore } from "./store"
+import { createJSONStorage, persist } from "zustand/middleware"
+import { Maybe, safelyParse } from "utils/helpers"
 
 export const TOAST_MESSAGES = ["onLoading", "onSuccess", "onError"] as const
 export type ToastVariant = "info" | "success" | "error" | "progress" | "unknown"
@@ -25,104 +26,208 @@ type ToastData = ToastParams & {
   title: string
 }
 
+type PersistState<T> = {
+  version: number
+  state: {
+    toasts: Record<string, T>
+  }
+}
+
 interface ToastStore {
-  toasts: ToastData[]
-  add: (
-    variant: ToastVariant,
-    toast: ToastParams,
-    setLocalStorage: (toasts: ToastData[]) => void,
-  ) => string
-  remove: (id: string) => void
-  hide: (id: string) => void
-  syncActivities: (toasts: ToastData[]) => void
+  toasts: Record<string, Array<ToastData>>
+  update: (
+    accoutAddress: Maybe<string>,
+    callback: (toasts: Array<ToastData>) => Array<ToastData>,
+  ) => void
 
   sidebar: boolean
   setSidebar: (value: boolean) => void
 }
 
-const useToastsStore = create<ToastStore>((set) => ({
-  toasts: [],
-  sidebar: false,
+const useToastsStore = create<ToastStore>()(
+  persist(
+    (set) => ({
+      toasts: {},
+      sidebar: false,
+      update(accoutAddress, callback) {
+        set((state) => {
+          const accountToasts = accoutAddress
+            ? state.toasts[accoutAddress] ?? []
+            : []
+          const toasts = callback(accountToasts)
 
-  add(variant, toast, setLocalStorage) {
+          return {
+            toasts: {
+              ...state.toasts,
+              ...(!!accoutAddress && { [accoutAddress]: toasts }),
+            },
+          }
+        })
+      },
+      setSidebar: (sidebar) =>
+        set({
+          sidebar,
+        }),
+    }),
+    {
+      name: "toasts",
+      storage: createJSONStorage(() => ({
+        async getItem(name: string) {
+          const storeToasts = window.localStorage.getItem(name)
+          const storeAccount = window.localStorage.getItem("account")
+
+          if (storeAccount == null) return storeToasts
+
+          const { state: account } = JSON.parse(storeAccount)
+
+          const accountAddress = account?.account.address
+
+          if (accountAddress) {
+            const accountToastsDeprecated = window.localStorage.getItem(
+              `toasts_${accountAddress}`,
+            )
+
+            const toastsDeprecated = accountToastsDeprecated
+              ? safelyParse<Array<ToastData>>(accountToastsDeprecated)?.map(
+                  (toast) => ({
+                    ...toast,
+                    hidden: true,
+                  }),
+                )
+              : undefined
+
+            if (storeToasts != null) {
+              const { state: toastsState } =
+                safelyParse<PersistState<ToastData[]>>(storeToasts) ?? {}
+
+              const allToasts = { ...toastsState?.toasts }
+
+              const accountToasts = allToasts[accountAddress]
+
+              if (!accountToasts) {
+                if (toastsDeprecated != null) {
+                  allToasts[accountAddress] = toastsDeprecated
+
+                  window.localStorage.removeItem(`toasts_${accountAddress}`) // remove deprecated storage
+                } else {
+                  allToasts[accountAddress] = []
+                }
+              }
+              return JSON.stringify({
+                ...toastsState,
+                state: { toasts: allToasts },
+              })
+            } else {
+              if (toastsDeprecated != null) {
+                window.localStorage.removeItem(`toasts_${accountAddress}`) // remove deprecated storage
+                return JSON.stringify({
+                  version: 0,
+                  state: {
+                    toasts: {
+                      [accountAddress]: toastsDeprecated,
+                    },
+                  },
+                })
+              } else {
+                return JSON.stringify({
+                  version: 0,
+                  state: {
+                    toasts: {
+                      [accountAddress]: [],
+                    },
+                  },
+                })
+              }
+            }
+          }
+          return storeToasts
+        },
+        setItem(name, value) {
+          const parsedState = JSON.parse(value)
+
+          const stringState = JSON.stringify({
+            version: parsedState.version,
+            state: { toasts: parsedState.state.toasts },
+          })
+
+          window.localStorage.setItem(name, stringState)
+        },
+        removeItem(name) {
+          window.localStorage.removeItem(name)
+        },
+      })),
+    },
+  ),
+)
+
+export const useToast = () => {
+  const store = useToastsStore()
+  const { account } = useAccountStore()
+
+  const toasts = useMemo(() => {
+    if (account?.address) {
+      const toasts = store.toasts[account.address]
+
+      if (!toasts) {
+        // check if there is deprecated toast storage
+        const accountToastsDeprecated = window.localStorage.getItem(
+          `toasts_${account.address}`,
+        )
+
+        if (accountToastsDeprecated) {
+          const toastsDeprecated =
+            safelyParse<Array<ToastData>>(accountToastsDeprecated)?.map(
+              (toast: ToastData) => ({ ...toast, hidden: true }),
+            ) ?? []
+
+          store.update(account.address, () => toastsDeprecated)
+
+          window.localStorage.removeItem(`toasts_${account.address}`) // remove deprecated storage
+
+          return toastsDeprecated
+        } else {
+          return []
+        }
+      }
+
+      return toasts
+    }
+    return []
+  }, [account?.address, store])
+
+  const add = (variant: ToastVariant, toast: ToastParams) => {
     const id = toast.id ?? uuid()
     const dateCreated = new Date().toISOString()
     const title = renderToString(toast.title)
 
-    set((state) => {
+    store.update(account?.address, (toasts) => {
       // set max 10 toasts
       const prevToasts =
-        state.toasts.length > 9
-          ? state.toasts
+        toasts.length > 9
+          ? toasts
               .sort(
                 (a, b) =>
                   new Date(b.dateCreated).getTime() -
                   new Date(a.dateCreated).getTime(),
               )
               .slice(0, 9)
-          : [...state.toasts]
+          : [...toasts]
 
-      const toasts = [
+      return [
         {
           ...toast,
           variant,
           title,
           dateCreated,
           id,
-          hidden: state.sidebar,
+          hidden: store.sidebar,
         } as ToastData,
         ...prevToasts,
       ]
-      setLocalStorage(toasts)
-      return { toasts }
     })
 
     return id
-  },
-  remove(id: string) {
-    set((state) => {
-      const toasts = state.toasts.filter((t) => t.id !== id)
-      return { toasts }
-    })
-  },
-  hide(id: string) {
-    set((state) => ({
-      toasts: state.toasts.map((toast) => {
-        if (toast.id === id) return { ...toast, hidden: true }
-        return toast
-      }),
-    }))
-  },
-  setSidebar: (sidebar) =>
-    set((state) => ({
-      sidebar,
-      toasts: sidebar
-        ? state.toasts.map((toast) => ({ ...toast, hidden: sidebar }))
-        : state.toasts,
-    })),
-  syncActivities: (activities) =>
-    set({
-      toasts: activities.map((activity) => ({
-        ...activity,
-        variant: activity.variant === "progress" ? "unknown" : activity.variant,
-        hidden: true,
-      })),
-    }),
-}))
-
-export const useToast = () => {
-  const store = useToastsStore()
-  const { account } = useAccountStore()
-  const [activities, setActivities] = useLocalStorage<ToastData[]>(
-    `toasts_${account?.address}`,
-    [],
-  )
-  useEffectOnce(() => {
-    store.syncActivities(activities ?? [])
-  })
-
-  const add = (variant: ToastVariant, toast: ToastParams) =>
-    store.add(variant, toast, setActivities)
+  }
 
   const info = (toast: ToastParams) => add("info", toast)
   const success = (toast: ToastParams) => add("success", toast)
@@ -130,5 +235,39 @@ export const useToast = () => {
   const loading = (toast: ToastParams) => add("progress", toast)
   const unknown = (toast: ToastParams) => add("unknown", toast)
 
-  return { ...store, add, info, success, error, loading, unknown }
+  const hide = (id: string) =>
+    store.update(account?.address, (toasts) =>
+      toasts.map((toast) =>
+        toast.id === id ? { ...toast, hidden: true } : toast,
+      ),
+    )
+
+  const remove = (id: string) => {
+    store.update(account?.address, (toasts) =>
+      toasts.filter((t) => t.id !== id),
+    )
+  }
+
+  const setSidebar = (isOpen: boolean) => {
+    if (isOpen)
+      store.update(account?.address, (toasts) =>
+        toasts.map((toast) => ({ ...toast, hidden: true })),
+      )
+
+    store.setSidebar(isOpen)
+  }
+
+  return {
+    sidebar: store.sidebar,
+    toasts,
+    setSidebar,
+    add,
+    hide,
+    remove,
+    info,
+    success,
+    error,
+    loading,
+    unknown,
+  }
 }

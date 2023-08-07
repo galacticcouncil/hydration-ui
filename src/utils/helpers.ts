@@ -9,6 +9,14 @@ import { ApiPromise } from "@polkadot/api"
 export const noop = () => {}
 export const undefinedNoop = () => undefined
 
+export const safelyParse = <T>(input: string): T | undefined => {
+  try {
+    return JSON.parse(input)
+  } catch (e) {
+    return undefined
+  }
+}
+
 export type Maybe<T> = T | null | undefined
 export type FormValues<T> = T extends UseFormReturn<infer Values>
   ? Values
