@@ -169,15 +169,21 @@ const getStakingConsts = (api: ApiPromise) => async () => {
   }
 }
 
-type StakeEventType = {
-  name: "Staking.StakingInitialized" | "Staking.AccumulatedRpsUpdated"
-  id: string
+type StakeEventBase = {
+  block: {
+    height: string
+  }
+}
+
+type TStakingInitialized = StakeEventBase & {
+  name: "Staking.StakingInitialized"
+}
+
+export type TAccumulatedRpsUpdated = StakeEventBase & {
+  name: "Staking.AccumulatedRpsUpdated"
   args: {
     accumulatedRps: string
     totalStake: string
-  }
-  block: {
-    timestamp: string
   }
 }
 
@@ -189,26 +195,55 @@ export const useStakingEvents = () => {
   const indexerUrl =
     selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
 
-  return useQuery(QUERY_KEYS.stakingEvents, getStakeEvents(indexerUrl))
+  return useQuery(QUERY_KEYS.stakingEvents, async () => {
+    const [accumulatedRpsUpdated, stakingInitialized] = await Promise.all([
+      getAccumulatedRpsUpdatedEvents(indexerUrl)(),
+      getStakingInitializedEvents(indexerUrl)(),
+    ])
+
+    return {
+      accumulatedRpsUpdated,
+      stakingInitialized: stakingInitialized.events.length
+        ? stakingInitialized.events[0]
+        : undefined,
+    }
+  })
 }
-const getStakeEvents = (indexerUrl: string) => async () => {
+const getAccumulatedRpsUpdatedEvents = (indexerUrl: string) => async () => {
   return {
     ...(await request<{
-      events: Array<StakeEventType>
+      events: Array<TAccumulatedRpsUpdated>
     }>(
       indexerUrl,
       gql`
-        query StakeEvents {
+        query AccumulatedRpsUpdatedEvents {
           events(
-            where: {
-              name_contains: "AccumulatedRpsUpdated"
-              OR: { name_contains: "StakingInitialized" }
-            }
+            where: { name_eq: "Staking.AccumulatedRpsUpdated" }
+            orderBy: [block_height_ASC]
           ) {
             args
-            id
             block {
-              timestamp
+              height
+            }
+            name
+          }
+        }
+      `,
+    )),
+  }
+}
+
+const getStakingInitializedEvents = (indexerUrl: string) => async () => {
+  return {
+    ...(await request<{
+      events: Array<TStakingInitialized>
+    }>(
+      indexerUrl,
+      gql`
+        query StakingInitializedEvents {
+          events(where: { name_eq: "Staking.StakingInitialized" }) {
+            block {
+              height
             }
             name
           }

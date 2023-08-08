@@ -5,7 +5,6 @@ import { AvailableRewards } from "./components/AvailableRewards/AvailableRewards
 import { StakingInputSection } from "./components/StakingInputSection/StakingInputSection"
 import { useAccountStore } from "state/store"
 import { Stats } from "./components/Stats/Stats"
-import { StakingAccountsTableWrapperData } from "./components/StakingAccountsTable/StakingAcoountsTableWrapper"
 import { StakingAccountSkeleton } from "./components/StakingAccountsTable/skeleton/StakingAccountSkeleton"
 import { Referenda, ReferendaWrapper } from "./components/Referenda/Referenda"
 import { useStakeData } from "sections/staking/StakingPage.utils"
@@ -48,7 +47,6 @@ export const StakingData = () => {
         {!staking.data?.stakePosition && <StakingGuide />}
         <Stats data={staking.data} loading={staking.isLoading} />
         <ReferendaWrapper />
-        <StakingAccountsTableWrapperData />
       </div>
 
       <div

@@ -3,6 +3,7 @@ import BN from "bignumber.js"
 import * as stakingWasm from "@galacticcouncil/math/build/staking/bundler"
 import { useAccountStore } from "state/store"
 import {
+  TAccumulatedRpsUpdated,
   useCirculatingSupply,
   useStake,
   useStakingConsts,
@@ -12,7 +13,7 @@ import { useTokenBalance, useTokenLocks } from "api/balances"
 import { NATIVE_ASSET_ID, getHydraAccountAddress } from "utils/api"
 import { useAssetMeta } from "api/assetMeta"
 import { useDisplayPrice } from "utils/displayAsset"
-import { BN_0, BN_BILL } from "utils/constants"
+import { BN_0, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
 
 const CONVICTIONS: { [key: string]: number } = {
@@ -25,10 +26,8 @@ const CONVICTIONS: { [key: string]: number } = {
   locked6x: 7,
 }
 
-const x = BN(50400) // min. amount of block for how long we want to calculate APR from - one week 50400
+const lengthOfStaking = BN(50400) // min. amount of block for how long we want to calculate APR from = one week
 const blockPerYear = 2628000
-
-const getBlockNumberFromEventId = (id: string) => BN(id.split("-")[0])
 
 export type TStakingData = ReturnType<typeof useStakeData>["data"]
 
@@ -128,12 +127,27 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
 
     const pendingRewards = potBalance.data.balance.minus(potReservedBalance)
 
-    const accumulatedRpsUpdated = stakingEvents.data?.events.filter(
-      (event) => event.name === "Staking.AccumulatedRpsUpdated",
-    )
+    const { accumulatedRpsUpdated, stakingInitialized } = stakingEvents.data
 
-    const stakingInitialized = stakingEvents.data?.events.find(
-      (event) => event.name === "Staking.StakingInitialized",
+    const {
+      filteredAccumulatedRpsUpdatedBefore,
+      filteredAccumulatedRpsUpdatedAfter,
+    } = accumulatedRpsUpdated.events.reduce(
+      (acc, event) => {
+        const isBeforeStaking = currentBlockNumber
+          .minus(lengthOfStaking)
+          .gt(event.block.height)
+        acc[
+          isBeforeStaking
+            ? "filteredAccumulatedRpsUpdatedBefore"
+            : "filteredAccumulatedRpsUpdatedAfter"
+        ].push(event)
+        return acc
+      },
+      {
+        filteredAccumulatedRpsUpdatedBefore: [] as TAccumulatedRpsUpdated[],
+        filteredAccumulatedRpsUpdatedAfter: [] as TAccumulatedRpsUpdated[],
+      },
     )
 
     if (hasPosition) {
@@ -153,11 +167,6 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
         )
       }
 
-      const filteredAccumulatedRpsUpdatedBefore = accumulatedRpsUpdated?.filter(
-        (event) =>
-          currentBlockNumber.minus(x).gt(getBlockNumberFromEventId(event.id)),
-      )
-
       if (filteredAccumulatedRpsUpdatedBefore?.length) {
         const lastAccumulatedRpsUpdated =
           filteredAccumulatedRpsUpdatedBefore[
@@ -166,10 +175,10 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
 
         deltaRps = rpsNow.minus(lastAccumulatedRpsUpdated.args.accumulatedRps)
         deltaBlocks = currentBlockNumber.minus(
-          getBlockNumberFromEventId(lastAccumulatedRpsUpdated.id),
+          lastAccumulatedRpsUpdated.block.height,
         )
       } else if (stakingInitialized) {
-        const blockNumber = getBlockNumberFromEventId(stakingInitialized.id)
+        const blockNumber = stakingInitialized.block.height
         deltaRps = rpsNow
         deltaBlocks = currentBlockNumber.minus(blockNumber)
       }
@@ -177,7 +186,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
       const rpsAvg = deltaRps.dividedBy(deltaBlocks) // per block
 
       const apr = rpsAvg
-        .div(BN_BILL)
+        .div(BN_QUINTILL)
         .multipliedBy(blockPerYear)
         .multipliedBy(100)
 
@@ -187,16 +196,6 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
       const rpsNow = pendingRewards.div(totalToStake)
       let deltaBlocks = BN_0
       let rpsAvg = BN_0
-
-      const filteredAccumulatedRpsUpdatedAfter = accumulatedRpsUpdated?.filter(
-        (event) =>
-          currentBlockNumber.minus(x).lte(getBlockNumberFromEventId(event.id)), //e.triggered_at >= (now - X)
-      )
-
-      const filteredAccumulatedRpsUpdatedBefore = accumulatedRpsUpdated?.filter(
-        (event) =>
-          currentBlockNumber.minus(x).gt(getBlockNumberFromEventId(event.id)), //e.triggered_at >= (now - X)
-      )
 
       const lastAccumulatedRpsUpdated =
         filteredAccumulatedRpsUpdatedBefore?.[
@@ -235,31 +234,29 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
 
         if (lastAccumulatedRpsUpdated) {
           deltaBlocks = currentBlockNumber.minus(
-            getBlockNumberFromEventId(lastAccumulatedRpsUpdated.id),
+            lastAccumulatedRpsUpdated.block.height,
           )
         } else if (stakingInitialized) {
           deltaBlocks = currentBlockNumber.minus(
-            getBlockNumberFromEventId(stakingInitialized.id),
+            stakingInitialized.block.height,
           )
         }
 
         const rpsAvg = deltaRpsAdjusted.div(deltaBlocks)
 
         const apr = rpsAvg
-          .div(BN_BILL)
+          .div(BN_QUINTILL)
           .multipliedBy(blockPerYear)
           .multipliedBy(100)
 
         return { apr }
       } else if (stakingInitialized) {
-        deltaBlocks = currentBlockNumber.minus(
-          getBlockNumberFromEventId(stakingInitialized.id),
-        )
+        deltaBlocks = currentBlockNumber.minus(stakingInitialized.block.height)
 
         rpsAvg = rpsNow.div(deltaBlocks)
 
         const apr = rpsAvg
-          .div(BN_BILL)
+          .div(BN_QUINTILL)
           .multipliedBy(blockPerYear)
           .multipliedBy(100)
 
@@ -357,7 +354,7 @@ export const useClaimReward = () => {
 
       actionPoints += vote.amount
         .multipliedBy(convictionIndex)
-        .div(BN_BILL)
+        .div(BN_QUINTILL)
         .toNumber()
     })
 
@@ -404,8 +401,8 @@ export const useClaimReward = () => {
 
     return {
       positionId,
-      rewards: rewards.div(BN_BILL),
-      unlockedRewards: unlockedRewards.div(BN_BILL),
+      rewards: rewards.div(BN_QUINTILL),
+      unlockedRewards: unlockedRewards.div(BN_QUINTILL),
       actionPoints,
     }
   }, [bestNumber.data, potBalance.data, stake, stakingConsts])
