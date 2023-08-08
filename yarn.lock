@@ -3088,19 +3088,20 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-omnipool/-/math-omnipool-0.1.3.tgz#45ccb95c8196768e8a96577f56f7f90d48dcb44b"
   integrity sha512-uA0O+9KA+BlFeLyU7vhKKhJEiiKUwu5ozD14fhJ3vCm11XbGQPwEboChiICXAKysc8BMDejAqpKBmKOEjiRBaw==
 
+"@galacticcouncil/math-staking@^0.1.4-beta.0":
+  version "0.1.4-beta.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-staking/-/math-staking-0.1.4-beta.0.tgz#3a7f6bf32bd6a0d166d5d3e2ef287a53f860e004"
+  integrity sha512-8PWY0x01L6Cg9osy0tjhfwW1qVLfT8n8runEl7wFNU6XykR7O4JsPz4QFVcL74QKOwnk45qfNPvKJYcxsUAwwQ==
+
 "@galacticcouncil/math-xyk@^0.1.3":
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.1.3.tgz#d729a50ae19a29413718c41e1991bdaac1a040ec"
   integrity sha512-tIXNOyBJO3eP4SDVuX4qtCk264cjba0dPi4aVGjinY5I6LtRYpOPt6zRypTaGiwHhfqOT6xWHiEHAa8jYhVU3A==
 
-"@galacticcouncil/math@https://github.com/galacticcouncil/HydraDX-wasm#feat/staking":
-  version "0.1.3"
-  resolved "https://github.com/galacticcouncil/HydraDX-wasm#f3ff9181a5240e20142a3412596fa221b4f98360"
-
-"@galacticcouncil/sdk@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-0.5.0.tgz#b1d9eb607fdec4be3fd7d38c1f2e23e56fa230c5"
-  integrity sha512-6LEjXvrcgUg9d4jSNuHrBtSZ67gCauKU33oWbRswoUn/WDtYagGqwie8RNiM4y5YkQnIs63TSdePUZbgW6dirw==
+"@galacticcouncil/sdk@^0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-0.5.2.tgz#5e9d5ff029f82da5b543e42f1eecda22ca284cb0"
+  integrity sha512-myXvHH1GI0ZW3acuaMmZE9PvPB35o2ILCnVcpsvj2ZAd+9ubwCHWLsdpeo65F20jhxxwslEg8M85vogkWmXwxQ==
   dependencies:
     "@galacticcouncil/math-lbp" "^0.1.3"
     "@galacticcouncil/math-omnipool" "^0.1.3"

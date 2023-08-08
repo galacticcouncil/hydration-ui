@@ -1,6 +1,6 @@
 import { useBestNumber } from "api/chain"
 import BN from "bignumber.js"
-import * as stakingWasm from "@galacticcouncil/math/build/staking/bundler"
+import * as wasm from "@galacticcouncil/math-staking"
 import { useAccountStore } from "state/store"
 import {
   TAccumulatedRpsUpdated,
@@ -159,7 +159,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
         rpsNow = accumulatedRewardPerStake
       } else {
         rpsNow = BN(
-          stakingWasm.calculate_accumulated_rps(
+          wasm.calculate_accumulated_rps(
             accumulatedRewardPerStake.toString(),
             pendingRewards.toString(),
             totalStake.toString(),
@@ -320,19 +320,19 @@ export const useClaimReward = () => {
     let rewardPerStake = accumulatedRewardPerStake.toString()
 
     if (!pendingRewards.isZero() && !totalStake.isZero()) {
-      rewardPerStake = stakingWasm.calculate_accumulated_rps(
+      rewardPerStake = wasm.calculate_accumulated_rps(
         accumulatedRewardPerStake.toString(),
         pendingRewards.toString(),
         totalStake.toString(),
       )
     }
 
-    const currentPeriod = stakingWasm.calculate_period_number(
+    const currentPeriod = wasm.calculate_period_number(
       periodLength.toString(),
       bestNumber.data.parachainBlockNumber.toString(),
     )
 
-    const enteredAt = stakingWasm.calculate_period_number(
+    const enteredAt = wasm.calculate_period_number(
       periodLength.toString(),
       stakePosition.createdAt.toString(),
     )
@@ -341,7 +341,7 @@ export const useClaimReward = () => {
       return { rewards: BN_0, unlockedRewards: BN_0 }
     }
 
-    const maxRewards = stakingWasm.calculate_rewards(
+    const maxRewards = wasm.calculate_rewards(
       rewardPerStake,
       stakePosition.rewardPerStake.toString(),
       stakePosition.stake.toString(),
@@ -365,7 +365,7 @@ export const useClaimReward = () => {
     actionPoints *= actionMultipliers.democracyVote
     actionPoints += stakePosition.actionPoints.toNumber()
 
-    const points = stakingWasm.calculate_points(
+    const points = wasm.calculate_points(
       stakePosition.createdAt.toString(),
       currentPeriod,
       timePointsPerPeriod.toString(),
@@ -375,25 +375,25 @@ export const useClaimReward = () => {
       stakePosition.accumulatedSlashPoints.toString(),
     )
 
-    const payablePercentage = stakingWasm.sigmoid(
+    const payablePercentage = wasm.sigmoid(
       points,
       "150000000000000000",
       "40000",
     )
 
     let rewards = BN(
-      stakingWasm.calculate_percentage_amount(maxRewards, payablePercentage),
+      wasm.calculate_percentage_amount(maxRewards, payablePercentage),
     )
 
     rewards.plus(
-      stakingWasm.calculate_percentage_amount(
+      wasm.calculate_percentage_amount(
         stakePosition.accumulatedUnpaidRewards.toString(),
         payablePercentage,
       ),
     )
 
     const unlockedRewards = BN(
-      stakingWasm.calculate_percentage_amount(
+      wasm.calculate_percentage_amount(
         stakePosition.accumulatedLockedRewards.toString(),
         payablePercentage,
       ),
