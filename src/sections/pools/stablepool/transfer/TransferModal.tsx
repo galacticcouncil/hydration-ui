@@ -5,19 +5,15 @@ import { ComponentProps, useState } from "react"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
-import { u32 } from "@polkadot/types-codec"
 import { AssetsModalContent } from "../../../assets/AssetsModal"
-import BigNumber from "bignumber.js"
 import { CurrencyReserves } from "./CurrencyReserves"
 import { AssetMetaById, BalanceByAsset } from "../../PoolsPage.utils"
 
 type Props = {
   isOpen: boolean
   onClose: () => void
-  poolId: u32
   assetMetaById?: AssetMetaById
   balanceByAsset?: BalanceByAsset
-  total: { free: BigNumber; value: BigNumber }
 }
 
 enum Page {
@@ -30,16 +26,16 @@ enum Page {
 export const TransferModal = ({
   isOpen,
   onClose,
-  poolId,
   balanceByAsset,
-  total,
   assetMetaById,
 }: Props) => {
   const { t } = useTranslation()
   // TODO: skip stablepool / omnipool selection for now. When omnipool flow is ready use useState<Page>(Page.OPTIONS)
   const [page, setPage] = useState<Page>(Page.STABLEPOOL)
 
-  const [assetId, setAssetId] = useState<string>(assetMetaById?.keys().next().value)
+  const [assetId, setAssetId] = useState<string>(
+    assetMetaById?.keys().next().value,
+  )
   const [selectedOption, setSelectedOption] =
     useState<ComponentProps<typeof TransferOptions>["selected"]>("STABLEPOOL")
 

@@ -4,6 +4,6 @@ export const useAddStablepoolLiquidity = (
   assetId?: string,
   assetValue?: string,
 ) => {
-  return ''
+  return ""
   // return calculate_shares(reserves, assets, amplification, shareIssuance)
 }

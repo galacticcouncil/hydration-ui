@@ -6,22 +6,16 @@ import { useTranslation } from "react-i18next"
 import { SActionsContainer } from "sections/pools/pool/actions/PoolActions.styled"
 import { useAccountStore } from "state/store"
 import { TransferModal } from "../transfer/TransferModal"
-import { u32 } from "@polkadot/types-codec"
-import BigNumber from "bignumber.js"
 import { AssetMetaById, BalanceByAsset } from "../../PoolsPage.utils"
 
 type PoolActionsProps = {
-  poolId: u32
   balanceByAsset?: BalanceByAsset
-  total: { free: BigNumber; value: BigNumber }
   assetMetaById?: AssetMetaById
   className?: string
 }
 
 export const PoolActions = ({
-  poolId,
   className,
-  total,
   balanceByAsset,
   assetMetaById,
 }: PoolActionsProps) => {
@@ -56,10 +50,8 @@ export const PoolActions = ({
         <TransferModal
           isOpen={openAdd}
           onClose={() => setOpenAdd(false)}
-          poolId={poolId}
           balanceByAsset={balanceByAsset}
           assetMetaById={assetMetaById}
-          total={total}
         />
       )}
     </>

@@ -14,7 +14,7 @@ import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransf
 import { useStore } from "state/store"
 import { useApiPromise } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
-import { BN_0, BN_1, BN_10 } from 'utils/constants'
+import { BN_0, BN_1, BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { useVerifyLimits } from "../../modals/AddLiquidity/AddLiquidity.utils"
 import { PoolAddLiquidityInformationCard } from "../../modals/AddLiquidity/AddLiquidityInfoCard"
@@ -151,7 +151,7 @@ export const AddStablepoolLiquidity = ({
                     try {
                       if (asset?.decimals == null)
                         throw new Error("Missing asset meta")
-                      console.log('-- value --', value);
+                      console.log("-- value --", value)
                       // TODO:
                       // if (
                       //   assetBalance?.balance.gte(
@@ -160,7 +160,7 @@ export const AddStablepoolLiquidity = ({
                       //     ),
                       //   )
                       // )
-                        return true
+                      return true
                     } catch {}
                     return t("liquidity.add.modal.validation.notEnoughBalance")
                   },
