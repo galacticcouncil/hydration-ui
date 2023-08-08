@@ -8,14 +8,16 @@ import { useAccountStore } from "state/store"
 import { TransferModal } from "../transfer/TransferModal"
 import { u32 } from "@polkadot/types-codec"
 import BigNumber from "bignumber.js"
+import { AssetMetaById, BalanceByAsset } from "../../PoolsPage.utils"
 
 type PoolActionsProps = {
   poolId: u32
-  balanceByAsset?: Map<string, { free: BigNumber; value: BigNumber }>
+  balanceByAsset?: BalanceByAsset
   total: { free: BigNumber; value: BigNumber }
-  assetMetaById?: Map<string, { symbol: string }>
+  assetMetaById?: AssetMetaById
   className?: string
 }
+
 export const PoolActions = ({
   poolId,
   className,

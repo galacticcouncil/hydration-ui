@@ -9,13 +9,14 @@ import { u32 } from "@polkadot/types-codec"
 import { AssetsModalContent } from "../../../assets/AssetsModal"
 import BigNumber from "bignumber.js"
 import { CurrencyReserves } from "./CurrencyReserves"
+import { AssetMetaById, BalanceByAsset } from "../../PoolsPage.utils"
 
 type Props = {
   isOpen: boolean
   onClose: () => void
   poolId: u32
-  assetMetaById?: Map<string, { symbol: string }>
-  balanceByAsset?: Map<string, { free: BigNumber; value: BigNumber }>
+  assetMetaById?: AssetMetaById
+  balanceByAsset?: BalanceByAsset
   total: { free: BigNumber; value: BigNumber }
 }
 
@@ -38,7 +39,7 @@ export const TransferModal = ({
   // TODO: skip stablepool / omnipool selection for now. When omnipool flow is ready use useState<Page>(Page.OPTIONS)
   const [page, setPage] = useState<Page>(Page.STABLEPOOL)
 
-  const [assetId, setAssetId] = useState<string>(poolId.toString())
+  const [assetId, setAssetId] = useState<string>(assetMetaById?.keys().next().value)
   const [selectedOption, setSelectedOption] =
     useState<ComponentProps<typeof TransferOptions>["selected"]>("STABLEPOOL")
 
@@ -114,7 +115,7 @@ export const TransferModal = ({
                 onClose={onClose}
                 onSuccess={console.log}
                 onAssetOpen={() => setPage(3)}
-                assetId={assetId}
+                asset={assetMetaById?.get(assetId)}
               />
             ),
           },
@@ -123,6 +124,8 @@ export const TransferModal = ({
             headerVariant: "gradient",
             content: (
               <AssetsModalContent
+                hideInactiveAssets={true}
+                allowedAssets={Array.from(assetMetaById?.keys() ?? [])}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   handleBack()

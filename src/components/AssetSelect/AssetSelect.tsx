@@ -28,7 +28,7 @@ export const AssetSelect = (props: {
   className?: string
   disabled?: boolean
 
-  asset: u32 | string
+  asset?: u32 | string
   assetName: Maybe<string>
   assetSymbol: Maybe<string>
   assetIcon: Maybe<ReactNode>

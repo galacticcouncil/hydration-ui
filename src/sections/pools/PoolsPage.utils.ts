@@ -27,6 +27,15 @@ export const derivePoolAccount = (assetId: string) => {
   return encodeAddress(stringToU8a(addr.padEnd(32, "\0")), HYDRADX_SS58_PREFIX)
 }
 
+export type AssetMetaById = Exclude<
+  ReturnType<typeof useOmnipoolStablePools>["data"],
+  undefined
+>[number]["assetMetaById"]
+export type BalanceByAsset = Exclude<
+  ReturnType<typeof useOmnipoolStablePools>["data"],
+  undefined
+>[number]["balanceByAsset"]
+
 export const useOmnipoolStablePools = () => {
   const pools = useStableswapPools()
 

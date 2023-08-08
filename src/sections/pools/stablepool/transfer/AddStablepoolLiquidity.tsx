@@ -14,31 +14,30 @@ import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransf
 import { useStore } from "state/store"
 import { useApiPromise } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
-import { BN_1, BN_10 } from 'utils/constants'
+import { BN_0, BN_1, BN_10 } from 'utils/constants'
 import { FormValues } from "utils/helpers"
-import {
-  useAddLiquidity,
-  useVerifyLimits,
-} from "../../modals/AddLiquidity/AddLiquidity.utils"
+import { useVerifyLimits } from "../../modals/AddLiquidity/AddLiquidity.utils"
 import { PoolAddLiquidityInformationCard } from "../../modals/AddLiquidity/AddLiquidityInfoCard"
+import { useAddStablepoolLiquidity } from "./AddStablepoolLiquidity.utils"
+import { u8 } from "@polkadot/types"
+import { u32 } from "@polkadot/types-codec"
 
 type Props = {
-  assetId: string
+  asset?: { id: string; symbol: string; decimals: u32 | u8 }
   onSuccess: () => void
   onClose: () => void
   onAssetOpen: () => void
 }
 
 export const AddStablepoolLiquidity = ({
-  assetId,
+  asset,
   onSuccess,
   onAssetOpen,
-                                         onClose
+  onClose,
 }: Props) => {
   const [assetValue, setAssetValue] = useState("")
 
-  const { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance } =
-    useAddLiquidity(assetId, assetValue)
+  const s = useAddStablepoolLiquidity(asset?.id, assetValue)
 
   const api = useApiPromise()
   const { createTransaction } = useStore()
@@ -47,21 +46,21 @@ export const AddStablepoolLiquidity = ({
   const amountIn = form.watch("amount")
 
   const { data: limits } = useVerifyLimits({
-    assetId: assetId.toString(),
+    assetId: asset?.id as any,
     amount: amountIn,
-    decimals: assetMeta?.decimals.toNumber() ?? 12,
+    decimals: asset?.decimals.toNumber() ?? 12,
   })
 
   const onSubmit = async (values: FormValues<typeof form>) => {
-    if (assetMeta?.decimals == null) throw new Error("Missing asset meta")
+    if (asset?.decimals == null) throw new Error("Missing asset meta")
 
     const amount = getFixedPointAmount(
       values.amount,
-      assetMeta.decimals.toNumber(),
+      asset.decimals.toNumber(),
     ).toString()
 
     return await createTransaction(
-      { tx: api.tx.omnipool.addLiquidity(assetId, amount) },
+      { tx: api.tx.omnipool.addLiquidity(asset.id, amount) },
       {
         onSuccess,
         onSubmitted: () => {
@@ -77,9 +76,9 @@ export const AddStablepoolLiquidity = ({
               i18nKey="liquidity.add.modal.toast.onLoading"
               tOptions={{
                 value: values.amount,
-                symbol: assetMeta?.symbol,
-                shares: calculatedShares,
-                fixedPointScale: assetMeta?.decimals.toString(),
+                symbol: asset?.symbol,
+                shares: BN_0,
+                fixedPointScale: asset.decimals.toString(),
               }}
             >
               <span />
@@ -92,9 +91,9 @@ export const AddStablepoolLiquidity = ({
               i18nKey="liquidity.add.modal.toast.onSuccess"
               tOptions={{
                 value: values.amount,
-                symbol: assetMeta?.symbol,
-                shares: calculatedShares,
-                fixedPointScale: assetMeta?.decimals.toString(),
+                symbol: asset.symbol,
+                shares: BN_0,
+                fixedPointScale: asset.decimals.toString(),
               }}
             >
               <span />
@@ -107,9 +106,9 @@ export const AddStablepoolLiquidity = ({
               i18nKey="liquidity.add.modal.toast.onLoading"
               tOptions={{
                 value: values.amount,
-                symbol: assetMeta?.symbol,
-                shares: calculatedShares,
-                fixedPointScale: assetMeta?.decimals.toString(),
+                symbol: asset?.symbol,
+                shares: BN_0,
+                fixedPointScale: asset.decimals.toString(),
               }}
             >
               <span />
@@ -150,29 +149,31 @@ export const AddStablepoolLiquidity = ({
                     new BigNumber(value).gt(0) || t("error.positive"),
                   maxBalance: (value) => {
                     try {
-                      if (assetMeta?.decimals == null)
+                      if (asset?.decimals == null)
                         throw new Error("Missing asset meta")
-                      if (
-                        assetBalance?.balance.gte(
-                          BigNumber(value).multipliedBy(
-                            BN_10.pow(assetMeta?.decimals.toNumber()),
-                          ),
-                        )
-                      )
+                      console.log('-- value --', value);
+                      // TODO:
+                      // if (
+                      //   assetBalance?.balance.gte(
+                      //     BigNumber(value).multipliedBy(
+                      //       BN_10.pow(assetMeta?.decimals.toNumber()),
+                      //     ),
+                      //   )
+                      // )
                         return true
                     } catch {}
                     return t("liquidity.add.modal.validation.notEnoughBalance")
                   },
                   minPoolLiquidity: (value) => {
                     try {
-                      if (assetMeta?.decimals == null)
+                      if (asset?.decimals == null)
                         throw new Error("Missing asset meta")
 
                       const minimumPoolLiquidity =
                         api.consts.omnipool.minimumPoolLiquidity.toBigNumber()
 
                       const amount = BigNumber(value).multipliedBy(
-                        BN_10.pow(assetMeta?.decimals.toNumber()),
+                        BN_10.pow(asset?.decimals.toNumber()),
                       )
 
                       if (amount.gte(minimumPoolLiquidity)) return true
@@ -191,7 +192,7 @@ export const AddStablepoolLiquidity = ({
                   value={value}
                   onBlur={setAssetValue}
                   onChange={onChange}
-                  asset={assetId}
+                  asset={asset?.id}
                   error={error?.message}
                   onAssetOpen={onAssetOpen}
                 />
@@ -230,14 +231,15 @@ export const AddStablepoolLiquidity = ({
                         i18nKey="liquidity.add.modal.row.spotPrice"
                         tOptions={{
                           firstAmount: 1,
-                          firstCurrency: assetMeta?.symbol,
+                          firstCurrency: asset?.symbol,
                         }}
                       >
-                        <DisplayValue value={spotPrice?.spotPrice} />
+                        {/* TODO: */}
+                        {/*<DisplayValue value={spotPrice?.spotPrice} />*/}
                       </Trans>
                     </Text>
                   ),
-                }
+                },
               ]}
             />
             <Text
@@ -256,7 +258,7 @@ export const AddStablepoolLiquidity = ({
                 type="circuitBreaker"
                 limit={{
                   value: limits?.circuitBreaker.maxValue,
-                  symbol: assetMeta?.symbol,
+                  symbol: asset?.symbol,
                 }}
               />
             ) : null}
@@ -265,12 +267,19 @@ export const AddStablepoolLiquidity = ({
           </div>
         }
         footer={
-          <div sx={{ flex: 'row', justify: 'space-between', gap: '100px', mb: [24, 0] }}>
+          <div
+            sx={{
+              flex: "row",
+              justify: "space-between",
+              gap: "100px",
+              mb: [24, 0],
+            }}
+          >
             <Button variant="secondary" type="button" onClick={onClose}>
               {t("cancel")}
             </Button>
             <Button
-              sx={{ width: '300px' }}
+              sx={{ width: "300px" }}
               variant="primary"
               type="submit"
               disabled={

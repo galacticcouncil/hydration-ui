@@ -12,7 +12,7 @@ export const WalletTransferAssetSelect = (props: {
   onBlur?: (value: string) => void
   onChange: (value: string) => void
 
-  asset: u32 | string
+  asset?: u32 | string
 
   onAssetOpen?: () => void
   title?: string
