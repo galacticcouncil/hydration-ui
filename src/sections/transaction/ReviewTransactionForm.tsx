@@ -271,9 +271,18 @@ export const ReviewTransactionForm = (
                 )}
                 variant="primary"
                 isLoading={signTx.isLoading}
-                disabled={account == null || !hasFeePaymentBalance}
-                onClick={() => signTx.mutate()}
+                disabled={account == null}
+                onClick={() =>
+                  hasFeePaymentBalance ? signTx.mutate() : openModal()
+                }
               />
+              {!hasFeePaymentBalance && (
+                <Text fs={16} color="pink600">
+                  {t(
+                    "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance.msg",
+                  )}
+                </Text>
+              )}
               {signTx.isLoading && (
                 <Text fs={12} lh={16} tAlign="center" color="warning300">
                   {t("liquidity.reviewTransaction.modal.confirmButton.warning")}
