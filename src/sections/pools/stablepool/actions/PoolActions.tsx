@@ -52,7 +52,7 @@ export const PoolActions = ({
       </SActionsContainer>
       {openAdd && (
         <TransferModal
-          isOpen={true}
+          isOpen={openAdd}
           onClose={() => setOpenAdd(false)}
           poolId={poolId}
           balanceByAsset={balanceByAsset}

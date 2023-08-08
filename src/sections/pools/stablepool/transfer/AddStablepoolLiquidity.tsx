@@ -1,11 +1,7 @@
-import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { ModalScrollableContent } from "components/Modal/Modal"
-import { useModalPagination } from "components/Modal/Modal.utils"
-import { ModalContents } from "components/Modal/contents/ModalContents"
-import { Separator } from "components/Separator/Separator"
 import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
 import { SummaryRow } from "components/Summary/SummaryRow"
@@ -18,7 +14,7 @@ import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransf
 import { useStore } from "state/store"
 import { useApiPromise } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
-import { BN_10 } from "utils/constants"
+import { BN_1, BN_10 } from 'utils/constants'
 import { FormValues } from "utils/helpers"
 import {
   useAddLiquidity,
@@ -29,6 +25,7 @@ import { PoolAddLiquidityInformationCard } from "../../modals/AddLiquidity/AddLi
 type Props = {
   assetId: string
   onSuccess: () => void
+  onClose: () => void
   onAssetOpen: () => void
 }
 
@@ -36,6 +33,7 @@ export const AddStablepoolLiquidity = ({
   assetId,
   onSuccess,
   onAssetOpen,
+                                         onClose
 }: Props) => {
   const [assetValue, setAssetValue] = useState("")
 
@@ -70,9 +68,7 @@ export const AddStablepoolLiquidity = ({
           console.log("--- submittted ---")
           form.reset()
         },
-        onClose: () => {
-          console.log("-- on close--")
-        },
+        onClose,
         onBack: () => {},
         toast: {
           onLoading: (
@@ -202,10 +198,9 @@ export const AddStablepoolLiquidity = ({
               )}
             />
             <SummaryRow
-              label={t("liquidity.add.modal.lpFee")}
-              content={t("value.percentage", {
-                value: omnipoolFee?.fee.multipliedBy(100),
-              })}
+              label={t("liquidity.add.modal.tradeFee")}
+              content={t("value.percentage", { value: BN_1 })}
+              description={t("liquidity.add.modal.tradeFee.description")}
             />
             <Spacer size={24} />
             <Text
@@ -218,6 +213,14 @@ export const AddStablepoolLiquidity = ({
             </Text>
             <Summary
               rows={[
+                {
+                  label: t("liquidity.add.modal.shareTokens"),
+                  content: t("value", {
+                    value: BN_10,
+                    // fixedPointScale: assetMeta?.decimals.toString(),
+                    type: "token",
+                  }),
+                },
                 {
                   label: t("liquidity.remove.modal.price"),
                   content: (
@@ -234,15 +237,7 @@ export const AddStablepoolLiquidity = ({
                       </Trans>
                     </Text>
                   ),
-                },
-                {
-                  label: t("liquidity.add.modal.receive"),
-                  content: t("value", {
-                    value: calculatedShares,
-                    fixedPointScale: assetMeta?.decimals.toString(),
-                    type: "token",
-                  }),
-                },
+                }
               ]}
             />
             <Text
@@ -270,16 +265,12 @@ export const AddStablepoolLiquidity = ({
           </div>
         }
         footer={
-          <>
-            <Separator
-              color="darkBlue401"
-              sx={{
-                mx: "calc(-1 * var(--modal-content-padding))",
-                mb: 20,
-                width: "auto",
-              }}
-            />
+          <div sx={{ flex: 'row', justify: 'space-between', gap: '100px', mb: [24, 0] }}>
+            <Button variant="secondary" type="button" onClick={onClose}>
+              {t("cancel")}
+            </Button>
             <Button
+              sx={{ width: '300px' }}
               variant="primary"
               type="submit"
               disabled={
@@ -288,9 +279,9 @@ export const AddStablepoolLiquidity = ({
                 !limits?.circuitBreaker.isWithinLimit
               }
             >
-              {t("liquidity.add.modal.confirmButton")}
+              {t("confirm")}
             </Button>
-          </>
+          </div>
         }
       />
     </form>

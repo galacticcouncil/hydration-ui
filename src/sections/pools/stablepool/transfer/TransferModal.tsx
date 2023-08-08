@@ -107,10 +107,11 @@ export const TransferModal = ({
             content: <div />,
           },
           {
-            title: t("liquidity.stablepool.transfer.stablepool"),
+            title: t("liquidity.add.modal.title"),
             headerVariant: "gradient",
             content: (
               <AddStablepoolLiquidity
+                onClose={onClose}
                 onSuccess={console.log}
                 onAssetOpen={() => setPage(3)}
                 assetId={assetId}
