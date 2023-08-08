@@ -8,6 +8,7 @@ import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
 import { u32 } from "@polkadot/types-codec"
 import { AssetsModalContent } from "../../../assets/AssetsModal"
 import BigNumber from "bignumber.js"
+import { CurrencyReserves } from "./CurrencyReserves"
 
 type Props = {
   isOpen: boolean
@@ -34,10 +35,12 @@ export const TransferModal = ({
   assetMetaById,
 }: Props) => {
   const { t } = useTranslation()
-  const [page, setPage] = useState<Page>(Page.OPTIONS)
+  // TODO: skip stablepool / omnipool selection for now. When omnipool flow is ready use useState<Page>(Page.OPTIONS)
+  const [page, setPage] = useState<Page>(Page.STABLEPOOL)
+
   const [assetId, setAssetId] = useState<string>(poolId.toString())
   const [selectedOption, setSelectedOption] =
-    useState<ComponentProps<typeof TransferOptions>["selected"]>("OMNIPOOL")
+    useState<ComponentProps<typeof TransferOptions>["selected"]>("STABLEPOOL")
 
   const handleBack = () => {
     if (page === Page.OMNIPOOL || page === Page.STABLEPOOL) {
@@ -54,11 +57,30 @@ export const TransferModal = ({
   }
 
   return (
-    <Modal open={isOpen} onClose={onClose} disableCloseOutside={true}>
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      disableCloseOutside={true}
+      bottomContent={
+        page === Page.STABLEPOOL ? (
+          <CurrencyReserves
+            assets={Array.from(balanceByAsset?.entries() ?? []).map(
+              ([id, balance]) => ({
+                id,
+                symbol: assetMetaById?.get(id)?.symbol,
+                balance: balance.free,
+                value: balance.value,
+              }),
+            )}
+          />
+        ) : null
+      }
+    >
       <ModalContents
         onClose={onClose}
         page={page}
-        onBack={page ? handleBack : undefined}
+        // TODO: skip stablepool / omnipool selection for now. When omnipool flow is ready use onBack={page ? handleBack : undefined}
+        onBack={page === Page.ASSETS ? handleBack : undefined}
         contents={[
           {
             title: t("liquidity.stablepool.transfer.options"),
@@ -89,9 +111,6 @@ export const TransferModal = ({
             headerVariant: "gradient",
             content: (
               <AddStablepoolLiquidity
-                assetMetaById={assetMetaById}
-                balanceByAsset={balanceByAsset}
-                total={total}
                 onSuccess={console.log}
                 onAssetOpen={() => setPage(3)}
                 assetId={assetId}

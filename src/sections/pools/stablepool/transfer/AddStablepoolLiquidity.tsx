@@ -25,26 +25,17 @@ import {
   useVerifyLimits,
 } from "../../modals/AddLiquidity/AddLiquidity.utils"
 import { PoolAddLiquidityInformationCard } from "../../modals/AddLiquidity/AddLiquidityInfoCard"
-import { Heading } from "components/Typography/Heading/Heading"
-import { getAssetLogo } from "../../../../components/AssetIcon/AssetIcon"
-import { Icon } from "../../../../components/Icon/Icon"
 
 type Props = {
   assetId: string
   onSuccess: () => void
   onAssetOpen: () => void
-  assetMetaById?: Map<string, { symbol: string }>
-  balanceByAsset?: Map<string, { free: BigNumber; value: BigNumber }>
-  total: { free: BigNumber; value: BigNumber }
 }
 
 export const AddStablepoolLiquidity = ({
   assetId,
   onSuccess,
   onAssetOpen,
-  balanceByAsset,
-  assetMetaById,
-  total,
 }: Props) => {
   const [assetValue, setAssetValue] = useState("")
 
@@ -299,29 +290,6 @@ export const AddStablepoolLiquidity = ({
             >
               {t("liquidity.add.modal.confirmButton")}
             </Button>
-
-            <div sx={{ mt: 34 }}>
-              <Heading color="white" fs={15}>
-                Currency reserves
-              </Heading>
-              {Array.from(balanceByAsset?.entries() ?? []).map(
-                ([id, balance]) => (
-                  <div
-                    key={id}
-                    sx={{ flex: "row", align: "center", gap: 5, mt: 10 }}
-                  >
-                    <Icon
-                      size={24}
-                      icon={getAssetLogo(assetMetaById?.get(id)?.symbol)}
-                    />
-                    <Text color="white">{assetMetaById?.get(id)?.symbol}</Text>
-                    <Text color="white">
-                      {balance.free.toNumber()}: {balance.value.toNumber()}
-                    </Text>
-                  </div>
-                ),
-              )}
-            </div>
           </>
         }
       />

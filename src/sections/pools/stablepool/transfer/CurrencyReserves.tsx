@@ -3,34 +3,27 @@ import { Icon } from "components/Icon/Icon"
 import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
 import BigNumber from "bignumber.js"
-import styled from "@emotion/styled"
-import { theme } from "theme"
 import { BN_0, BN_100 } from "utils/constants"
+import { useDisplayAssetStore } from "utils/displayAsset"
+import { useAssetMeta } from "api/assetMeta"
+import { SRow } from "./CurrencyReserves.styled"
 
 type Props = {
   assets: Array<{
     id: string
-    symbol: string
+    symbol?: string
     balance: BigNumber
     value: BigNumber
   }>
 }
 
-const SRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding: 15px 0;
-  gap: 10px;
-  border-bottom: 1px solid ${theme.colors.darkBlue400};
-`
-
 export const CurrencyReserves = ({ assets }: Props) => {
   const totalValue = assets.reduce((t, asset) => t.plus(asset.value), BN_0)
+  const displayAsset = useDisplayAssetStore()
+  const meta = useAssetMeta(displayAsset.id)
 
   return (
-    <>
+    <div sx={{ p: 30 }}>
       <Heading color="white" fs={15}>
         Currency reserves
       </Heading>
@@ -52,8 +45,10 @@ export const CurrencyReserves = ({ assets }: Props) => {
         sx={{ flex: "row", justify: "space-between", align: "center", mt: 19 }}
       >
         <Text color="basic400">Total:</Text>
-        <Text color="white">≈ ${totalValue.toNumber()} USDT</Text>
+        <Text color="white">
+          ≈ {totalValue.toNumber()} {meta.data?.symbol}
+        </Text>
       </div>
-    </>
+    </div>
   )
 }
