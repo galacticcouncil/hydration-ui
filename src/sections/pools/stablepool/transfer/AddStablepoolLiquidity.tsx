@@ -10,7 +10,6 @@ import { Trans, useTranslation } from "react-i18next"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useAccountStore, useStore } from "state/store"
 import { useApiPromise } from "utils/api"
-import { getFixedPointAmount } from "utils/balance"
 import { BN_0 } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { PoolAddLiquidityInformationCard } from "../../modals/AddLiquidity/AddLiquidityInfoCard"
@@ -50,7 +49,7 @@ export const AddStablepoolLiquidity = ({
 
   const amountIn = form.watch("amount")
 
-  const shares = useStablepoolShares({
+  const { shares, assets } = useStablepoolShares({
     poolId,
     asset: { id: asset?.id, amount: amountIn },
     balanceByAsset,
@@ -60,15 +59,12 @@ export const AddStablepoolLiquidity = ({
   const walletBalance = useTokenBalance(asset?.id, account?.address)
 
   const onSubmit = async (values: FormValues<typeof form>) => {
-    if (asset?.decimals == null) throw new Error("Missing asset meta")
-
-    const amount = getFixedPointAmount(
-      values.amount,
-      asset.decimals.toNumber(),
-    ).toString()
+    if (asset?.decimals == null) {
+      throw new Error("Missing asset meta")
+    }
 
     return await createTransaction(
-      { tx: api.tx.omnipool.addLiquidity(asset.id, amount) },
+      { tx: api.tx.stableswap.addLiquidity(poolId, assets) },
       {
         onSuccess,
         onSubmitted: () => {

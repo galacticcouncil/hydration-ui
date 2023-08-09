@@ -23,7 +23,7 @@ export const PoolActions = ({
   className,
   balanceByAsset,
   assetMetaById,
-                              tradeFee,
+  tradeFee,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)

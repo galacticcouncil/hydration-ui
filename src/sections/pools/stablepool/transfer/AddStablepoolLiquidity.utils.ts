@@ -28,7 +28,7 @@ export const useStablepoolShares = ({
   const shareIssuance = useTotalIssuance(poolId)
 
   if (!pool.data || !currentBlock || !shareIssuance?.data) {
-    return undefined
+    return { shares: undefined, assets: [] }
   }
 
   const amplification = calculate_amplification(
@@ -58,10 +58,13 @@ export const useStablepoolShares = ({
         ]
       : []
 
-  return calculate_shares(
-    JSON.stringify(reserves),
-    JSON.stringify(assets),
-    amplification,
-    shareIssuance.data.total.toString(),
-  )
+  return {
+    shares: calculate_shares(
+      JSON.stringify(reserves),
+      JSON.stringify(assets),
+      amplification,
+      shareIssuance.data.total.toString(),
+    ),
+    assets,
+  }
 }
