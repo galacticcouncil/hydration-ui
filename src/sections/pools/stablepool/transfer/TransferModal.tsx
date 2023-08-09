@@ -8,8 +8,10 @@ import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
 import { AssetsModalContent } from "../../../assets/AssetsModal"
 import { CurrencyReserves } from "./CurrencyReserves"
 import { AssetMetaById, BalanceByAsset } from "../../PoolsPage.utils"
+import { u32 } from "@polkadot/types-codec"
 
 type Props = {
+  poolId: u32
   isOpen: boolean
   onClose: () => void
   assetMetaById?: AssetMetaById
@@ -24,6 +26,7 @@ enum Page {
 }
 
 export const TransferModal = ({
+  poolId,
   isOpen,
   onClose,
   balanceByAsset,
@@ -91,7 +94,13 @@ export const TransferModal = ({
                 <Button
                   variant="primary"
                   sx={{ mt: 21 }}
-                  onClick={() => setPage(selectedOption === "OMNIPOOL" ? 1 : 2)}
+                  onClick={() =>
+                    setPage(
+                      selectedOption === "OMNIPOOL"
+                        ? Page.OMNIPOOL
+                        : Page.STABLEPOOL,
+                    )
+                  }
                 >
                   {t("next")}
                 </Button>
@@ -108,9 +117,11 @@ export const TransferModal = ({
             headerVariant: "gradient",
             content: (
               <AddStablepoolLiquidity
+                poolId={poolId}
                 onClose={onClose}
                 onSuccess={console.log}
-                onAssetOpen={() => setPage(3)}
+                balanceByAsset={balanceByAsset}
+                onAssetOpen={() => setPage(Page.ASSETS)}
                 asset={assetMetaById?.get(assetId)}
               />
             ),

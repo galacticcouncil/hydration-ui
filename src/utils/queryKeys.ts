@@ -298,4 +298,9 @@ export const QUERY_KEYS = {
     return key
   },
   stableswapPools: [QUERY_KEY_PREFIX, "stableswapPools"],
+  stableswapPool: (id: u32 | string) => [
+    QUERY_KEY_PREFIX,
+    "stableswapPool",
+    id?.toString(),
+  ],
 } as const

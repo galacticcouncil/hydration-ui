@@ -7,14 +7,17 @@ import { SActionsContainer } from "sections/pools/pool/actions/PoolActions.style
 import { useAccountStore } from "state/store"
 import { TransferModal } from "../transfer/TransferModal"
 import { AssetMetaById, BalanceByAsset } from "../../PoolsPage.utils"
+import { u32 } from "@polkadot/types-codec"
 
 type PoolActionsProps = {
+  poolId: u32
   balanceByAsset?: BalanceByAsset
   assetMetaById?: AssetMetaById
   className?: string
 }
 
 export const PoolActions = ({
+  poolId,
   className,
   balanceByAsset,
   assetMetaById,
@@ -48,6 +51,7 @@ export const PoolActions = ({
       </SActionsContainer>
       {openAdd && (
         <TransferModal
+          poolId={poolId}
           isOpen={openAdd}
           onClose={() => setOpenAdd(false)}
           balanceByAsset={balanceByAsset}

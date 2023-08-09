@@ -36,3 +36,5 @@ export const STABLECOIN_SYMBOL = import.meta.env
   .VITE_STABLECOIN_ASSET_SYMBOL as string
 
 export const REFETCH_INTERVAL = 60000
+
+export const STABLEPOOL_TOKEN_DECIMALS = 18

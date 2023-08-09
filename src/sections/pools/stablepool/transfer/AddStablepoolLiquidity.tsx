@@ -1,12 +1,10 @@
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { AddLiquidityLimitWarning } from "sections/pools/modals/AddLiquidity/AddLiquidityLimitWarning"
@@ -18,27 +16,28 @@ import { BN_0, BN_1, BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { useVerifyLimits } from "../../modals/AddLiquidity/AddLiquidity.utils"
 import { PoolAddLiquidityInformationCard } from "../../modals/AddLiquidity/AddLiquidityInfoCard"
-import { useAddStablepoolLiquidity } from "./AddStablepoolLiquidity.utils"
+import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
 import { u8 } from "@polkadot/types"
 import { u32 } from "@polkadot/types-codec"
+import { BalanceByAsset } from "../../PoolsPage.utils"
 
 type Props = {
+  poolId: u32
   asset?: { id: string; symbol: string; decimals: u32 | u8 }
   onSuccess: () => void
   onClose: () => void
   onAssetOpen: () => void
+  balanceByAsset?: BalanceByAsset
 }
 
 export const AddStablepoolLiquidity = ({
+  poolId,
   asset,
   onSuccess,
   onAssetOpen,
   onClose,
+  balanceByAsset,
 }: Props) => {
-  const [assetValue, setAssetValue] = useState("")
-
-  const s = useAddStablepoolLiquidity(asset?.id, assetValue)
-
   const api = useApiPromise()
   const { createTransaction } = useStore()
   const { t } = useTranslation()
@@ -49,6 +48,12 @@ export const AddStablepoolLiquidity = ({
     assetId: asset?.id as any,
     amount: amountIn,
     decimals: asset?.decimals.toNumber() ?? 12,
+  })
+
+  const shares = useStablepoolShares({
+    poolId,
+    asset: { id: asset?.id, amount: amountIn },
+    balanceByAsset,
   })
 
   const onSubmit = async (values: FormValues<typeof form>) => {
@@ -151,7 +156,6 @@ export const AddStablepoolLiquidity = ({
                     try {
                       if (asset?.decimals == null)
                         throw new Error("Missing asset meta")
-                      console.log("-- value --", value)
                       // TODO:
                       // if (
                       //   assetBalance?.balance.gte(
@@ -190,7 +194,7 @@ export const AddStablepoolLiquidity = ({
                   title={t("wallet.assets.transfer.asset.label_mob")}
                   name={name}
                   value={value}
-                  onBlur={setAssetValue}
+                  // onBlur={setAssetValue}
                   onChange={onChange}
                   asset={asset?.id}
                   error={error?.message}
@@ -217,7 +221,7 @@ export const AddStablepoolLiquidity = ({
                 {
                   label: t("liquidity.add.modal.shareTokens"),
                   content: t("value", {
-                    value: BN_10,
+                    value: shares,
                     // fixedPointScale: assetMeta?.decimals.toString(),
                     type: "token",
                   }),

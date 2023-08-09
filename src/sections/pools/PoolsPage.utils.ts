@@ -31,6 +31,7 @@ export type AssetMetaById = Exclude<
   ReturnType<typeof useOmnipoolStablePools>["data"],
   undefined
 >[number]["assetMetaById"]
+
 export type BalanceByAsset = Exclude<
   ReturnType<typeof useOmnipoolStablePools>["data"],
   undefined
