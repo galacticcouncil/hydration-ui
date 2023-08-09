@@ -9,11 +9,13 @@ import { AssetsModalContent } from "../../../assets/AssetsModal"
 import { CurrencyReserves } from "./CurrencyReserves"
 import { AssetMetaById, BalanceByAsset } from "../../PoolsPage.utils"
 import { u32 } from "@polkadot/types-codec"
+import BigNumber from "bignumber.js"
 
 type Props = {
   poolId: u32
   isOpen: boolean
   onClose: () => void
+  tradeFee: BigNumber
   assetMetaById?: AssetMetaById
   balanceByAsset?: BalanceByAsset
 }
@@ -27,6 +29,7 @@ enum Page {
 
 export const TransferModal = ({
   poolId,
+  tradeFee,
   isOpen,
   onClose,
   balanceByAsset,
@@ -123,6 +126,7 @@ export const TransferModal = ({
                 balanceByAsset={balanceByAsset}
                 onAssetOpen={() => setPage(Page.ASSETS)}
                 asset={assetMetaById?.get(assetId)}
+                tradeFee={tradeFee}
               />
             ),
           },

@@ -7,22 +7,25 @@ import { SummaryRow } from "components/Summary/SummaryRow"
 import { Text } from "components/Typography/Text/Text"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { AddLiquidityLimitWarning } from "sections/pools/modals/AddLiquidity/AddLiquidityLimitWarning"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { useStore } from "state/store"
+import { useAccountStore, useStore } from "state/store"
 import { useApiPromise } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
-import { BN_0, BN_1, BN_10 } from "utils/constants"
+import { BN_0 } from "utils/constants"
 import { FormValues } from "utils/helpers"
-import { useVerifyLimits } from "../../modals/AddLiquidity/AddLiquidity.utils"
 import { PoolAddLiquidityInformationCard } from "../../modals/AddLiquidity/AddLiquidityInfoCard"
 import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
 import { u8 } from "@polkadot/types"
 import { u32 } from "@polkadot/types-codec"
 import { BalanceByAsset } from "../../PoolsPage.utils"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { useDisplayPrice } from "utils/displayAsset"
+import { useTokenBalance } from "api/balances"
+import { positive, validNumber } from "utils/validators"
 
 type Props = {
   poolId: u32
+  tradeFee: BigNumber
   asset?: { id: string; symbol: string; decimals: u32 | u8 }
   onSuccess: () => void
   onClose: () => void
@@ -37,24 +40,24 @@ export const AddStablepoolLiquidity = ({
   onAssetOpen,
   onClose,
   balanceByAsset,
+  tradeFee,
 }: Props) => {
   const api = useApiPromise()
   const { createTransaction } = useStore()
   const { t } = useTranslation()
   const form = useForm<{ amount: string }>({ mode: "onChange" })
-  const amountIn = form.watch("amount")
+  const displayPrice = useDisplayPrice(asset?.id)
 
-  const { data: limits } = useVerifyLimits({
-    assetId: asset?.id as any,
-    amount: amountIn,
-    decimals: asset?.decimals.toNumber() ?? 12,
-  })
+  const amountIn = form.watch("amount")
 
   const shares = useStablepoolShares({
     poolId,
     asset: { id: asset?.id, amount: amountIn },
     balanceByAsset,
   })
+
+  const { account } = useAccountStore()
+  const walletBalance = useTokenBalance(asset?.id, account?.address)
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (asset?.decimals == null) throw new Error("Missing asset meta")
@@ -144,45 +147,25 @@ export const AddStablepoolLiquidity = ({
               rules={{
                 required: t("wallet.assets.transfer.error.required"),
                 validate: {
-                  validNumber: (value) => {
-                    try {
-                      if (!new BigNumber(value).isNaN()) return true
-                    } catch {}
-                    return t("error.validNumber")
-                  },
-                  positive: (value) =>
-                    new BigNumber(value).gt(0) || t("error.positive"),
+                  validNumber,
+                  positive,
                   maxBalance: (value) => {
                     try {
-                      if (asset?.decimals == null)
+                      if (asset?.decimals == null) {
                         throw new Error("Missing asset meta")
-                      // TODO:
-                      // if (
-                      //   assetBalance?.balance.gte(
-                      //     BigNumber(value).multipliedBy(
-                      //       BN_10.pow(assetMeta?.decimals.toNumber()),
-                      //     ),
-                      //   )
-                      // )
-                      return true
+                      }
+
+                      if (
+                        walletBalance.data?.balance?.gte(
+                          BigNumber(value).shiftedBy(
+                            asset?.decimals.toNumber(),
+                          ),
+                        )
+                      ) {
+                        return true
+                      }
                     } catch {}
                     return t("liquidity.add.modal.validation.notEnoughBalance")
-                  },
-                  minPoolLiquidity: (value) => {
-                    try {
-                      if (asset?.decimals == null)
-                        throw new Error("Missing asset meta")
-
-                      const minimumPoolLiquidity =
-                        api.consts.omnipool.minimumPoolLiquidity.toBigNumber()
-
-                      const amount = BigNumber(value).multipliedBy(
-                        BN_10.pow(asset?.decimals.toNumber()),
-                      )
-
-                      if (amount.gte(minimumPoolLiquidity)) return true
-                    } catch {}
-                    return t("liquidity.add.modal.validation.minPoolLiquidity")
                   },
                 },
               }}
@@ -194,7 +177,6 @@ export const AddStablepoolLiquidity = ({
                   title={t("wallet.assets.transfer.asset.label_mob")}
                   name={name}
                   value={value}
-                  // onBlur={setAssetValue}
                   onChange={onChange}
                   asset={asset?.id}
                   error={error?.message}
@@ -204,10 +186,10 @@ export const AddStablepoolLiquidity = ({
             />
             <SummaryRow
               label={t("liquidity.add.modal.tradeFee")}
-              content={t("value.percentage", { value: BN_1 })}
+              content={t("value.percentage", { value: tradeFee })}
               description={t("liquidity.add.modal.tradeFee.description")}
             />
-            <Spacer size={24} />
+            <Spacer size={69} />
             <Text
               color="pink500"
               fs={15}
@@ -221,8 +203,7 @@ export const AddStablepoolLiquidity = ({
                 {
                   label: t("liquidity.add.modal.shareTokens"),
                   content: t("value", {
-                    value: shares,
-                    // fixedPointScale: assetMeta?.decimals.toString(),
+                    value: Math.max(0, Number(shares)),
                     type: "token",
                   }),
                 },
@@ -238,34 +219,13 @@ export const AddStablepoolLiquidity = ({
                           firstCurrency: asset?.symbol,
                         }}
                       >
-                        {/* TODO: */}
-                        {/*<DisplayValue value={spotPrice?.spotPrice} />*/}
+                        <DisplayValue value={displayPrice.data?.spotPrice} />
                       </Trans>
                     </Text>
                   ),
                 },
               ]}
             />
-            <Text
-              color="warningOrange200"
-              fs={14}
-              fw={400}
-              sx={{ mt: 17, mb: 24 }}
-            >
-              {t("liquidity.add.modal.warning")}
-            </Text>
-
-            {limits?.cap === false ? (
-              <AddLiquidityLimitWarning type="cap" />
-            ) : limits?.circuitBreaker.isWithinLimit === false ? (
-              <AddLiquidityLimitWarning
-                type="circuitBreaker"
-                limit={{
-                  value: limits?.circuitBreaker.maxValue,
-                  symbol: asset?.symbol,
-                }}
-              />
-            ) : null}
             <PoolAddLiquidityInformationCard />
             <Spacer size={20} />
           </div>
@@ -286,11 +246,7 @@ export const AddStablepoolLiquidity = ({
               sx={{ width: "300px" }}
               variant="primary"
               type="submit"
-              disabled={
-                limits?.cap === false ||
-                !form.formState.isValid ||
-                !limits?.circuitBreaker.isWithinLimit
-              }
+              disabled={!form.formState.isValid}
             >
               {t("confirm")}
             </Button>

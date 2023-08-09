@@ -36,6 +36,7 @@ export const StablePool = ({
         <PoolValue total={total.value} css={{ gridArea: "values" }} />
         <PoolActions
           poolId={id}
+          tradeFee={tradeFee}
           css={{ gridArea: "actions" }}
           balanceByAsset={balanceByAsset}
           assetMetaById={assetMetaById}

@@ -8,9 +8,11 @@ import { useAccountStore } from "state/store"
 import { TransferModal } from "../transfer/TransferModal"
 import { AssetMetaById, BalanceByAsset } from "../../PoolsPage.utils"
 import { u32 } from "@polkadot/types-codec"
+import BigNumber from "bignumber.js"
 
 type PoolActionsProps = {
   poolId: u32
+  tradeFee: BigNumber
   balanceByAsset?: BalanceByAsset
   assetMetaById?: AssetMetaById
   className?: string
@@ -21,6 +23,7 @@ export const PoolActions = ({
   className,
   balanceByAsset,
   assetMetaById,
+                              tradeFee,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
@@ -52,6 +55,7 @@ export const PoolActions = ({
       {openAdd && (
         <TransferModal
           poolId={poolId}
+          tradeFee={tradeFee}
           isOpen={openAdd}
           onClose={() => setOpenAdd(false)}
           balanceByAsset={balanceByAsset}
