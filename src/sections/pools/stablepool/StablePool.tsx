@@ -48,6 +48,8 @@ export const StablePool = ({
           css={{ gridArea: "actions" }}
           balanceByAsset={balanceByAsset}
           assetMetaById={assetMetaById}
+          onExpandClick={() => setIsExpanded((prev) => !prev)}
+          isExpanded={isExpanded}
         />
       </SGridContainer>
       {isDesktop && (

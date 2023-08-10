@@ -115,6 +115,7 @@
   "liquidity.asset.details.price": "Price",
   "liquidity.asset.details.total": "Value in Omnipool",
   "liquidity.stablepool.asset.details.total": "Value in Stablepool",
+  "liquidity.stablepool.asset.positions.title": "Stablepool Positions",
   "liquidity.stablepool.asset.incentives.title": "Farming incentives",
   "liquidity.stablepool.transfer.options": "Add Liquidity",
   "liquidity.stablepool.transfer.omnipool": "Omnipool",

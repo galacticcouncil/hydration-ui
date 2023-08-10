@@ -10,7 +10,6 @@ import { Trans, useTranslation } from "react-i18next"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useAccountStore, useStore } from "state/store"
 import { useApiPromise } from "utils/api"
-import { BN_0 } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { PoolAddLiquidityInformationCard } from "../../modals/AddLiquidity/AddLiquidityInfoCard"
 import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
@@ -82,7 +81,6 @@ export const AddStablepoolLiquidity = ({
                 value: values.amount,
                 symbol: asset?.symbol,
                 shares,
-                fixedPointScale: asset.decimals.toString(),
               }}
             >
               <span />
@@ -97,7 +95,6 @@ export const AddStablepoolLiquidity = ({
                 value: values.amount,
                 symbol: asset.symbol,
                 shares,
-                fixedPointScale: asset.decimals.toString(),
               }}
             >
               <span />
@@ -112,7 +109,6 @@ export const AddStablepoolLiquidity = ({
                 value: values.amount,
                 symbol: asset?.symbol,
                 shares,
-                fixedPointScale: asset.decimals.toString(),
               }}
             >
               <span />
