@@ -15,7 +15,7 @@ import { useTokenBalance, useTokenLocks } from "api/balances"
 import { NATIVE_ASSET_ID, getHydraAccountAddress } from "utils/api"
 import { useAssetMeta } from "api/assetMeta"
 import { useDisplayPrice } from "utils/displayAsset"
-import { BN_0, BN_BILL, BN_QUINTILL } from "utils/constants"
+import { BN_0, BN_100, BN_BILL, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
 import { useReferendums } from "api/democracy"
 
@@ -168,7 +168,7 @@ export const useStakeData = () => {
 
   const rewardBoostPersentage = !currentActionPoints.isZero()
     ? currentActionPoints.div(maxActionPoints).multipliedBy(100)
-    : undefined
+    : BN_100
 
   return {
     data: {
