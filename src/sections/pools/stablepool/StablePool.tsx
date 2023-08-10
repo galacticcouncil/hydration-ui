@@ -4,6 +4,11 @@ import { PoolValue } from "./details/PoolValue"
 import { PoolActions } from "./actions/PoolActions"
 import { PoolIncentives } from "./details/PoolIncentives"
 import { useOmnipoolStablePools } from "../PoolsPage.utils"
+import { useState } from 'react'
+import { useMedia } from 'react-use'
+import { theme } from 'theme'
+import { AnimatePresence, motion } from "framer-motion"
+import { LiquidityPositionWrapper } from './positions/LiquidityPositionWrapper'
 
 type Props = Exclude<
   ReturnType<typeof useOmnipoolStablePools>["data"],
@@ -20,6 +25,9 @@ export const StablePool = ({
   balanceByAsset,
   assetMetaById,
 }: Props) => {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
   return (
     <SContainer id={id.toString()}>
       <SGridContainer>
@@ -42,34 +50,21 @@ export const StablePool = ({
           assetMetaById={assetMetaById}
         />
       </SGridContainer>
-      {/* TODO: show expanded content */}
-      {/*{isDesktop && hasExpandContent && (*/}
-      {/*  <AnimatePresence>*/}
-      {/*    {isExpanded && (*/}
-      {/*      <motion.div*/}
-      {/*        initial={{ height: 0 }}*/}
-      {/*        animate={{ height: "auto" }}*/}
-      {/*        exit={{ height: 0 }}*/}
-      {/*        transition={{ duration: 0.5, ease: "easeInOut" }}*/}
-      {/*        css={{ overflow: "hidden" }}*/}
-      {/*      >*/}
-      {/*        <LiquidityPositionWrapper pool={pool} positions={positions} />*/}
-      {/*        {enabledFarms && (*/}
-      {/*          <FarmingPositionWrapper*/}
-      {/*            pool={pool}*/}
-      {/*            deposits={accountDeposits.data}*/}
-      {/*          />*/}
-      {/*        )}*/}
-      {/*      </motion.div>*/}
-      {/*    )}*/}
-      {/*  </AnimatePresence>*/}
-      {/*)}*/}
-      {/*{isDesktop &&*/}
-      {/*  (enabledFarms ? (*/}
-      {/*    <PoolFooter pool={pool} />*/}
-      {/*  ) : (*/}
-      {/*    <PoolFooterWithNoFarms pool={pool} />*/}
-      {/*  ))}*/}
+      {isDesktop && (
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0 }}
+              animate={{ height: "auto" }}
+              exit={{ height: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              css={{ overflow: "hidden" }}
+            >
+              <LiquidityPositionWrapper />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
     </SContainer>
   )
 }

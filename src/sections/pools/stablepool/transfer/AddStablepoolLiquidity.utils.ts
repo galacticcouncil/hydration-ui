@@ -8,12 +8,14 @@ import { u32 } from "@polkadot/types-codec"
 import { useTotalIssuance } from "api/totalIssuance"
 import { normalizeBigNumber } from "utils/balance"
 import { BalanceByAsset } from "../../PoolsPage.utils"
+import { u8 } from '@polkadot/types'
+import { STABLEPOOL_TOKEN_DECIMALS } from 'utils/constants'
 
 type Asset = { asset_id: number; amount: number }
 
 type Args = {
   poolId: u32
-  asset?: { id?: string; amount?: string }
+  asset?: { id?: string; amount?: string, decimals?: u32 | u8; }
   balanceByAsset?: BalanceByAsset
 }
 
@@ -27,7 +29,7 @@ export const useStablepoolShares = ({
   const currentBlock = bestNumber.data?.relaychainBlockNumber
   const shareIssuance = useTotalIssuance(poolId)
 
-  if (!pool.data || !currentBlock || !shareIssuance?.data) {
+  if (!pool.data || !currentBlock || !shareIssuance?.data || !asset?.decimals) {
     return { shares: undefined, assets: [] }
   }
 
@@ -53,18 +55,20 @@ export const useStablepoolShares = ({
       ? [
           {
             asset_id: Number(asset.id),
-            amount: normalizeBigNumber(asset.amount).toNumber(),
+            amount: normalizeBigNumber(asset.amount).shiftedBy(normalizeBigNumber(asset.decimals).toNumber()).toNumber(),
           },
         ]
       : []
 
+  const shares = calculate_shares(
+    JSON.stringify(reserves),
+    JSON.stringify(assets),
+    amplification,
+    shareIssuance.data.total.toString(),
+  )
+
   return {
-    shares: calculate_shares(
-      JSON.stringify(reserves),
-      JSON.stringify(assets),
-      amplification,
-      shareIssuance.data.total.toString(),
-    ),
+    shares: normalizeBigNumber(shares).shiftedBy(-STABLEPOOL_TOKEN_DECIMALS).toString(),
     assets,
   }
 }

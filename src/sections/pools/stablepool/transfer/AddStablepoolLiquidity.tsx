@@ -51,7 +51,7 @@ export const AddStablepoolLiquidity = ({
 
   const { shares, assets } = useStablepoolShares({
     poolId,
-    asset: { id: asset?.id, amount: amountIn },
+    asset: { id: asset?.id, decimals: asset?.decimals, amount: amountIn },
     balanceByAsset,
   })
 
@@ -68,7 +68,7 @@ export const AddStablepoolLiquidity = ({
       {
         onSuccess,
         onSubmitted: () => {
-          console.log("--- submittted ---")
+          onClose()
           form.reset()
         },
         onClose,

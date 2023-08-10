@@ -95,10 +95,8 @@ export const useOmnipoolStablePools = () => {
           assetMetaById.get(id)?.decimals ?? 12,
         )
 
-        const free = normalizeBigNumber(balance.data.free).shiftedBy(
-          decimals.negated().toNumber(),
-        )
-        const value = spotPrice ? free.times(spotPrice.spotPrice) : BN_0
+        const free = normalizeBigNumber(balance.data.free)
+        const value = spotPrice ? free.shiftedBy(decimals.negated().toNumber()).times(spotPrice.spotPrice) : BN_0
 
         const current = acc.get(id)
         acc.set(id, {
