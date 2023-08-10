@@ -91,88 +91,88 @@ export const useStakeData = () => {
 
   const isLoading = queries.some((query) => query.isInitialLoading)
 
-  if (isLoading) return { data: undefined, isLoading }
+  const data = useMemo(() => {
+    if (isLoading) return undefined
 
-  const decimals = meta.data?.decimals.neg().toNumber() ?? -12
+    const decimals = meta.data?.decimals.neg().toNumber() ?? -12
 
-  const availableBalanceDollar = availableBalance
-    ?.multipliedBy(spotPrice.data?.spotPrice ?? 1)
-    .shiftedBy(decimals)
+    const availableBalanceDollar = availableBalance
+      ?.multipliedBy(spotPrice.data?.spotPrice ?? 1)
+      .shiftedBy(decimals)
 
-  const totalStake = stake.data?.totalStake ?? 0
+    const totalStake = stake.data?.totalStake ?? 0
 
-  const supplyStaked = BN(totalStake)
-    .div(Number(circulatingSupply.data ?? 1))
-    .decimalPlaces(4)
-    .multipliedBy(100)
+    const supplyStaked = BN(totalStake)
+      .div(Number(circulatingSupply.data ?? 1))
+      .decimalPlaces(4)
+      .multipliedBy(100)
 
-  const stakeDollar = stake.data?.stakePosition?.stake
-    .multipliedBy(spotPrice.data?.spotPrice ?? 1)
-    .shiftedBy(decimals)
+    const stakeDollar = stake.data?.stakePosition?.stake
+      .multipliedBy(spotPrice.data?.spotPrice ?? 1)
+      .shiftedBy(decimals)
 
-  const circulatingSupplyData = BN(circulatingSupply.data ?? 0).shiftedBy(
-    decimals,
-  )
-
-  const stakePosition = stake.data?.stakePosition
-
-  let maxActionPoints = BN_0
-  let currentActionPoints = BN_0
-
-  if (stakePosition) {
-    currentActionPoints = getCurrentActionPoints(
-      stakePosition.votes,
-      stakePosition.actionPoints.toNumber(),
+    const circulatingSupplyData = BN(circulatingSupply.data ?? 0).shiftedBy(
+      decimals,
     )
 
-    const initialPositionBalance = BN(
-      positionBalances.data?.events.find(
-        (event) => event.name === "Staking.PositionCreated",
-      )?.args.stake ?? 0,
-    )
+    const stakePosition = stake.data?.stakePosition
 
-    const maxStakedReferendasBalance =
-      referendas.data?.reduce((acc, referenda) => {
-        const endReferendaBlockNumber =
-          referenda.referendum.asFinished.end.toBigNumber()
+    let maxActionPoints = BN_0
+    let currentActionPoints = BN_0
 
-        if (endReferendaBlockNumber.gt(stakePosition.createdAt)) {
-          /* staked position value when a referenda is over */
-          let positionBalance = initialPositionBalance
+    if (stakePosition) {
+      currentActionPoints = getCurrentActionPoints(
+        stakePosition.votes,
+        stakePosition.actionPoints.toNumber(),
+      )
 
-          positionBalances.data?.events.forEach((event) => {
-            if (event.name === "Staking.StakeAdded") {
-              const eventOccurBlockNumber = BN(event.block.height)
+      const initialPositionBalance = BN(
+        positionBalances.data?.events.find(
+          (event) => event.name === "Staking.PositionCreated",
+        )?.args.stake ?? 0,
+      )
 
-              if (
-                endReferendaBlockNumber.gte(eventOccurBlockNumber) &&
-                positionBalance.lt(event.args.totalStake)
-              ) {
-                positionBalance = BN(event.args.totalStake)
+      const maxStakedReferendasBalance =
+        referendas.data?.reduce((acc, referenda) => {
+          const endReferendaBlockNumber =
+            referenda.referendum.asFinished.end.toBigNumber()
+
+          if (endReferendaBlockNumber.gt(stakePosition.createdAt)) {
+            /* staked position value when a referenda is over */
+            let positionBalance = initialPositionBalance
+
+            positionBalances.data?.events.forEach((event) => {
+              if (event.name === "Staking.StakeAdded") {
+                const eventOccurBlockNumber = BN(event.block.height)
+
+                if (
+                  endReferendaBlockNumber.gte(eventOccurBlockNumber) &&
+                  positionBalance.lt(event.args.totalStake)
+                ) {
+                  positionBalance = BN(event.args.totalStake)
+                }
               }
-            }
-          })
+            })
 
-          return acc.plus(positionBalance)
-        }
+            return acc.plus(positionBalance)
+          }
 
-        return acc
-      }, BN_0) ?? BN(0)
+          return acc
+        }, BN_0) ?? BN(0)
 
-    maxActionPoints = maxStakedReferendasBalance.isZero()
-      ? currentActionPoints
-      : maxStakedReferendasBalance
-          .div(BN_BILL)
-          .multipliedBy(CONVICTIONS["locked6x"])
-  }
+      maxActionPoints = maxStakedReferendasBalance.isZero()
+        ? currentActionPoints
+        : maxStakedReferendasBalance
+            .div(BN_BILL)
+            .multipliedBy(CONVICTIONS["locked6x"])
+    }
 
-  const rewardBoostPersentage =
-    !currentActionPoints.isZero() && !maxActionPoints.isZero()
-      ? currentActionPoints.div(maxActionPoints).multipliedBy(100)
-      : BN_100
+    const rewardBoostPersentage =
+      !currentActionPoints.isZero() && !maxActionPoints.isZero()
+        ? currentActionPoints.div(maxActionPoints).multipliedBy(100)
+        : BN_100
 
-  return {
-    data: {
+    return {
       supplyStaked,
       availableBalance,
       availableBalanceDollar,
@@ -186,7 +186,20 @@ export const useStakeData = () => {
             rewardBoostPersentage,
           }
         : undefined,
-    },
+    }
+  }, [
+    availableBalance,
+    circulatingSupply.data,
+    isLoading,
+    meta.data?.decimals,
+    positionBalances.data?.events,
+    referendas.data,
+    spotPrice.data?.spotPrice,
+    stake.data,
+  ])
+
+  return {
+    data,
     isLoading,
   }
 }
