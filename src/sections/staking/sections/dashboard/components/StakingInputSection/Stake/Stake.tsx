@@ -72,9 +72,12 @@ export const Stake = ({
         { toast },
       )
     } else {
-      transaction = await createTransaction({
-        tx: api.tx.staking.stake(amount),
-      })
+      transaction = await createTransaction(
+        {
+          tx: api.tx.staking.stake(amount),
+        },
+        { toast },
+      )
     }
 
     if (!transaction.isError) {

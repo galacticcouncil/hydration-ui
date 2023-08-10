@@ -30,7 +30,7 @@ export const Stats = ({
           />
         </div>
 
-        {account && (
+        {account && data && (
           <StakingValues
             loading={!!loading}
             data={data}
