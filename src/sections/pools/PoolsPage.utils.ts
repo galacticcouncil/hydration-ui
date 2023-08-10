@@ -96,7 +96,11 @@ export const useOmnipoolStablePools = () => {
         )
 
         const free = normalizeBigNumber(balance.data.free)
-        const value = spotPrice ? free.shiftedBy(decimals.negated().toNumber()).times(spotPrice.spotPrice) : BN_0
+        const value = spotPrice
+          ? free
+              .shiftedBy(decimals.negated().toNumber())
+              .times(spotPrice.spotPrice)
+          : BN_0
 
         const current = acc.get(id)
         acc.set(id, {

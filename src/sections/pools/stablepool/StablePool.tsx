@@ -4,11 +4,11 @@ import { PoolValue } from "./details/PoolValue"
 import { PoolActions } from "./actions/PoolActions"
 import { PoolIncentives } from "./details/PoolIncentives"
 import { useOmnipoolStablePools } from "../PoolsPage.utils"
-import { useState } from 'react'
-import { useMedia } from 'react-use'
-import { theme } from 'theme'
+import { useState } from "react"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 import { AnimatePresence, motion } from "framer-motion"
-import { LiquidityPositionWrapper } from './positions/LiquidityPositionWrapper'
+import { LiquidityPositionWrapper } from "./positions/LiquidityPositionWrapper"
 
 type Props = Exclude<
   ReturnType<typeof useOmnipoolStablePools>["data"],

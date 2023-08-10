@@ -8,14 +8,15 @@ import { u32 } from "@polkadot/types-codec"
 import { useTotalIssuance } from "api/totalIssuance"
 import { normalizeBigNumber } from "utils/balance"
 import { BalanceByAsset } from "../../PoolsPage.utils"
-import { u8 } from '@polkadot/types'
-import { STABLEPOOL_TOKEN_DECIMALS } from 'utils/constants'
+import { u8 } from "@polkadot/types"
+import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import BigNumber from "bignumber.js"
 
-type Asset = { asset_id: number; amount: number }
+type Asset = { asset_id: number; amount: string }
 
 type Args = {
   poolId: u32
-  asset?: { id?: string; amount?: string, decimals?: u32 | u8; }
+  asset?: { id?: string; amount?: string; decimals?: u32 | u8 }
   balanceByAsset?: BalanceByAsset
 }
 
@@ -46,7 +47,7 @@ export const useStablepoolShares = ({
   balanceByAsset?.forEach((balance, assetId) => {
     reserves.push({
       asset_id: Number(assetId),
-      amount: balance.free.toNumber(),
+      amount: balance.free.toString(),
     })
   })
 
@@ -55,7 +56,9 @@ export const useStablepoolShares = ({
       ? [
           {
             asset_id: Number(asset.id),
-            amount: normalizeBigNumber(asset.amount).shiftedBy(normalizeBigNumber(asset.decimals).toNumber()).toNumber(),
+            amount: normalizeBigNumber(asset.amount)
+              .shiftedBy(normalizeBigNumber(asset.decimals).toNumber())
+              .toString(),
           },
         ]
       : []
@@ -68,7 +71,10 @@ export const useStablepoolShares = ({
   )
 
   return {
-    shares: normalizeBigNumber(shares).shiftedBy(-STABLEPOOL_TOKEN_DECIMALS).toString(),
+    shares: BigNumber.maximum(
+      normalizeBigNumber(shares).shiftedBy(-STABLEPOOL_TOKEN_DECIMALS),
+      BN_0,
+    ).toString(),
     assets,
   }
 }

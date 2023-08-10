@@ -10,13 +10,12 @@ export const LiquidityPositionWrapper = () => {
 
   const positions = [
     {
-      id: 1
+      id: 1,
     },
     {
-      id: 2
-    }
+      id: 2,
+    },
   ]
-
 
   return (
     <SPositions>
@@ -27,7 +26,9 @@ export const LiquidityPositionWrapper = () => {
         </Text>
       </div>
       <div sx={{ flex: "column", gap: 16 }}>
-        {positions.map((position) => <LiquidityPosition key={position.id} />)}
+        {positions.map((position) => (
+          <LiquidityPosition key={position.id} />
+        ))}
       </div>
     </SPositions>
   )

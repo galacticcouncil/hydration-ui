@@ -81,7 +81,7 @@ export const AddStablepoolLiquidity = ({
               tOptions={{
                 value: values.amount,
                 symbol: asset?.symbol,
-                shares: BN_0,
+                shares,
                 fixedPointScale: asset.decimals.toString(),
               }}
             >
@@ -96,7 +96,7 @@ export const AddStablepoolLiquidity = ({
               tOptions={{
                 value: values.amount,
                 symbol: asset.symbol,
-                shares: BN_0,
+                shares,
                 fixedPointScale: asset.decimals.toString(),
               }}
             >
@@ -111,7 +111,7 @@ export const AddStablepoolLiquidity = ({
               tOptions={{
                 value: values.amount,
                 symbol: asset?.symbol,
-                shares: BN_0,
+                shares,
                 fixedPointScale: asset.decimals.toString(),
               }}
             >
@@ -199,7 +199,7 @@ export const AddStablepoolLiquidity = ({
                 {
                   label: t("liquidity.add.modal.shareTokens"),
                   content: t("value", {
-                    value: Math.max(0, Number(shares)),
+                    value: shares,
                     type: "token",
                   }),
                 },

@@ -3,13 +3,11 @@ import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import {
-  SContainer,
-} from "sections/pools/pool/positions/LiquidityPosition.styled"
+import { SContainer } from "sections/pools/pool/positions/LiquidityPosition.styled"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { useAssetMeta } from "api/assetMeta"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { BN_10, BN_100 } from 'utils/constants'
+import { BN_10, BN_100 } from "utils/constants"
 
 export const LiquidityPosition = () => {
   const { t } = useTranslation()
