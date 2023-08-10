@@ -173,7 +173,11 @@ export const Stake = ({
         <Spacer size={20} />
 
         {account ? (
-          <Button variant="primary" type="submit" disabled={loading}>
+          <Button
+            variant="primary"
+            type="submit"
+            disabled={loading || account?.isExternalWalletConnected}
+          >
             {positionId == null
               ? t("staking.dashboard.form.stake.button")
               : t("staking.dashboard.form.restake.button")}

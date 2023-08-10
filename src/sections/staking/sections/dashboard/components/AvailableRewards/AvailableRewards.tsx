@@ -112,7 +112,11 @@ export const AvailableRewards = () => {
         <Button
           variant="primary"
           fullWidth
-          disabled={!reward.data || reward.data.rewards.isZero()}
+          disabled={
+            !reward.data ||
+            reward.data.rewards.isZero() ||
+            account?.isExternalWalletConnected
+          }
           onClick={onClaimRewards}
         >
           {t("staking.dashboard.rewards.button")}
