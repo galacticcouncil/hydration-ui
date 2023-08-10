@@ -15,25 +15,42 @@ import { TStakingData, useStakeARP } from "sections/staking/StakingPage.utils"
 import BN from "bignumber.js"
 import { useApiPromise } from "utils/api"
 import { isApiLoaded } from "utils/helpers"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "sections/pools/pool/Pool.styled"
 
 const StakingValue = ({
   logo,
   title,
   value,
+  tooltip,
 }: {
   logo: JSX.Element
   title: string
   value: string | JSX.Element
+  tooltip?: string
 }) => {
   return (
     <div sx={{ flex: ["row", "column"], align: ["start", "center"], gap: 6 }}>
       {logo}
+
       <div
-        sx={{ flex: "column", mt: [4, 0], align: ["start", "center"], gap: 8 }}
+        sx={{
+          flex: "column",
+          mt: [4, 0],
+          align: ["start", "center"],
+          gap: 8,
+        }}
       >
-        <Text fs={[14, 16]} color="brightBlue300">
-          {title}
-        </Text>
+        <div sx={{ flex: "row", align: "center", gap: 8 }}>
+          <Text fs={[14, 16]} color="brightBlue300">
+            {title}
+          </Text>
+          {tooltip && (
+            <InfoTooltip text={tooltip}>
+              <SInfoIcon />
+            </InfoTooltip>
+          )}
+        </div>
         {typeof value === "string" ? (
           <Text fs={[19, 24]} color="white" font="FontOver">
             {value}
@@ -141,7 +158,7 @@ export const StakingValues = ({
         logo={
           <Icon
             size={20}
-            sx={{ color: "brightBlue300" }}
+            sx={{ color: "brightBlue300", m: 3 }}
             icon={<StakedBalance />}
           />
         }
@@ -178,10 +195,11 @@ export const StakingValues = ({
         logo={
           <Icon
             size={18}
-            sx={{ color: "brightBlue300" }}
+            sx={{ color: "brightBlue300", m: 3 }}
             icon={<StakedMultiplier />}
           />
         }
+        tooltip={t("staking.dashboard.stats.rewardBoost.tooltip")}
         title={t("staking.dashboard.stats.rewardBoost")}
         value={
           loading ? (
