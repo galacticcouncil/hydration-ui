@@ -140,7 +140,7 @@ export const useTokenLocks = (id: Maybe<u32 | string>) => {
     account?.address != null
       ? getTokenLock(api, account.address, id?.toString() ?? "")
       : undefinedNoop,
-    { enabled: !!account?.address || !!id },
+    { enabled: !!account?.address && !!id },
   )
 }
 

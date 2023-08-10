@@ -182,14 +182,16 @@ export const StakingValues = ({
             icon={<StakedMultiplier />}
           />
         }
-        title={t("staking.dashboard.stats.actionPoints")}
+        title={t("staking.dashboard.stats.rewardBoost")}
         value={
           loading ? (
             <div sx={{ flex: "column", gap: 2 }}>
               <Skeleton width={100} height={24} />
             </div>
           ) : (
-            t("value", { value: data?.stakePosition?.actionPoints })
+            t("value.percentage", {
+              value: data?.stakePosition?.rewardBoostPersentage,
+            })
           )
         }
       />

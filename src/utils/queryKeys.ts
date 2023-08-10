@@ -300,4 +300,8 @@ export const QUERY_KEYS = {
   stakingPosition: (id: number | undefined) => ["totalStaking", id],
   stakingConsts: ["stakingConsts"],
   stakingEvents: ["stakingEvents"],
+  stakingPositionBalances: (positionId: Maybe<string>) => [
+    "positionBalances",
+    positionId,
+  ],
 } as const

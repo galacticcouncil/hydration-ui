@@ -13,7 +13,7 @@ type ReferendaProps = {
 }
 
 export const ReferendaWrapper = () => {
-  const referendums = useReferendums()
+  const referendums = useReferendums("ongoing")
 
   return <Referenda data={referendums.data} loading={referendums.isLoading} />
 }

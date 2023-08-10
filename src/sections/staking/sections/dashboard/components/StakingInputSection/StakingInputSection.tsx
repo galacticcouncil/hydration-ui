@@ -23,7 +23,7 @@ export const StakingInputSection = ({
   const [activeStakeAction, setActiveStakeAction] =
     useState<StakeAction>("stake")
 
-  const stakedValue = data?.stakePosition?.stake.shiftedBy(-12) ?? BN_0
+  const stakedValue = data?.stakePosition?.stake?.shiftedBy(-12) ?? BN_0
 
   return (
     <SSectionContainer>

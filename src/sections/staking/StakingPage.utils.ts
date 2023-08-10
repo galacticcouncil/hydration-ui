@@ -4,42 +4,73 @@ import * as wasm from "@galacticcouncil/math-staking"
 import { useAccountStore } from "state/store"
 import {
   TAccumulatedRpsUpdated,
+  TStakingPosition,
   useCirculatingSupply,
   useStake,
   useStakingConsts,
   useStakingEvents,
+  useStakingPositionBalances,
 } from "api/staking"
 import { useTokenBalance, useTokenLocks } from "api/balances"
 import { NATIVE_ASSET_ID, getHydraAccountAddress } from "utils/api"
 import { useAssetMeta } from "api/assetMeta"
 import { useDisplayPrice } from "utils/displayAsset"
-import { BN_0, BN_QUINTILL } from "utils/constants"
+import { BN_0, BN_BILL, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
+import { useReferendums } from "api/democracy"
 
 const CONVICTIONS: { [key: string]: number } = {
-  none: 1,
-  locked1x: 2,
-  locked2x: 3,
-  locked3x: 4,
-  locked4x: 5,
-  locked5x: 6,
-  locked6x: 7,
+  none: 0.1,
+  locked1x: 1,
+  locked2x: 2,
+  locked3x: 3,
+  locked4x: 4,
+  locked5x: 5,
+  locked6x: 6,
 }
 
 const lengthOfStaking = BN(50400) // min. amount of block for how long we want to calculate APR from = one week
-const blockPerYear = 2628000
+const blocksPerYear = 2628000
 
-export type TStakingData = ReturnType<typeof useStakeData>["data"]
+export type TStakingData = NonNullable<ReturnType<typeof useStakeData>["data"]>
+
+const getCurrentActionPoints = (
+  votes: TStakingPosition["votes"],
+  initialActionPoints: number,
+) => {
+  let currentActionPoints = 0
+
+  votes?.forEach((vote) => {
+    const convictionIndex = CONVICTIONS[vote.conviction.toLowerCase()]
+
+    currentActionPoints += vote.amount
+      .multipliedBy(convictionIndex)
+      .div(BN_BILL)
+      .toNumber()
+  })
+
+  const actionMultipliers = {
+    democracyVote: 1,
+  }
+
+  currentActionPoints *= actionMultipliers.democracyVote
+  currentActionPoints += initialActionPoints ?? 0
+
+  return BN(currentActionPoints)
+}
 
 export const useStakeData = () => {
   const { account } = useAccountStore()
   const stake = useStake(account?.address)
   const circulatingSupply = useCirculatingSupply()
   const balance = useTokenBalance(NATIVE_ASSET_ID, account?.address)
-
   const locks = useTokenLocks(NATIVE_ASSET_ID)
   const meta = useAssetMeta(NATIVE_ASSET_ID)
   const spotPrice = useDisplayPrice(NATIVE_ASSET_ID)
+  const positionBalances = useStakingPositionBalances(
+    stake.data?.positionId?.toString(),
+  )
+  const referendas = useReferendums("finished")
 
   const vestLocks = locks.data?.reduce(
     (acc, lock) => (lock.type === "ormlvest" ? acc.plus(lock.amount) : acc),
@@ -48,7 +79,15 @@ export const useStakeData = () => {
 
   const availableBalance = balance.data?.balance.minus(vestLocks ?? 0)
 
-  const queries = [stake, circulatingSupply, balance, locks, spotPrice]
+  const queries = [
+    stake,
+    circulatingSupply,
+    balance,
+    locks,
+    spotPrice,
+    positionBalances,
+    referendas,
+  ]
 
   const isLoading = queries.some((query) => query.isInitialLoading)
 
@@ -75,16 +114,77 @@ export const useStakeData = () => {
     decimals,
   )
 
+  const stakePosition = stake.data?.stakePosition
+
+  let maxActionPoints = BN_0
+  let currentActionPoints = BN_0
+
+  if (stakePosition) {
+    currentActionPoints = getCurrentActionPoints(
+      stakePosition.votes,
+      stakePosition.actionPoints.toNumber(),
+    )
+
+    const initialPositionBalance = BN(
+      positionBalances.data?.events.find(
+        (event) => event.name === "Staking.PositionCreated",
+      )?.args.stake ?? 0,
+    )
+
+    const maxStakedReferendasBalance =
+      referendas.data?.reduce((acc, referenda) => {
+        const endReferendaBlockNumber =
+          referenda.referendum.asFinished.end.toBigNumber()
+
+        if (endReferendaBlockNumber.gt(stakePosition.createdAt)) {
+          /* staked position value when a referenda is over */
+          let positionBalance = initialPositionBalance
+
+          positionBalances.data?.events.forEach((event) => {
+            if (event.name === "Staking.StakeAdded") {
+              const eventOccurBlockNumber = BN(event.block.height)
+
+              if (
+                endReferendaBlockNumber.gte(eventOccurBlockNumber) &&
+                positionBalance.lt(event.args.totalStake)
+              ) {
+                positionBalance = BN(event.args.totalStake)
+              }
+            }
+          })
+
+          return acc.plus(positionBalance)
+        }
+
+        return acc
+      }, BN_0) ?? BN(0)
+
+    maxActionPoints = maxStakedReferendasBalance.isZero()
+      ? currentActionPoints
+      : maxStakedReferendasBalance
+          .div(BN_BILL)
+          .multipliedBy(CONVICTIONS["locked6x"])
+  }
+
+  const rewardBoostPersentage = !currentActionPoints.isZero()
+    ? currentActionPoints.div(maxActionPoints).multipliedBy(100)
+    : undefined
+
   return {
     data: {
       supplyStaked,
       availableBalance,
       availableBalanceDollar,
       circulatingSupply: circulatingSupplyData,
-      stakePosition: stake.data?.stakePosition,
       positionId: stake.data?.positionId,
       stakeDollar,
       minStake: stake.data?.minStake,
+      stakePosition: stakePosition
+        ? {
+            ...stake.data?.stakePosition,
+            rewardBoostPersentage,
+          }
+        : undefined,
     },
     isLoading,
   }
@@ -142,6 +242,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
             ? "filteredAccumulatedRpsUpdatedBefore"
             : "filteredAccumulatedRpsUpdatedAfter"
         ].push(event)
+
         return acc
       },
       {
@@ -187,7 +288,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
 
       const apr = rpsAvg
         .div(BN_QUINTILL)
-        .multipliedBy(blockPerYear)
+        .multipliedBy(blocksPerYear)
         .multipliedBy(100)
 
       return { apr }
@@ -246,7 +347,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
 
         const apr = rpsAvg
           .div(BN_QUINTILL)
-          .multipliedBy(blockPerYear)
+          .multipliedBy(blocksPerYear)
           .multipliedBy(100)
 
         return { apr }
@@ -257,7 +358,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
 
         const apr = rpsAvg
           .div(BN_QUINTILL)
-          .multipliedBy(blockPerYear)
+          .multipliedBy(blocksPerYear)
           .multipliedBy(100)
 
         return { apr }
@@ -277,6 +378,10 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
 }
 
 export const useClaimReward = () => {
+  /* constants that might be changed */
+  const a = "150000000000000000"
+  const b = "40000"
+
   const { account } = useAccountStore()
   const bestNumber = useBestNumber()
   const stake = useStake(account?.address)
@@ -347,23 +452,10 @@ export const useClaimReward = () => {
       stakePosition.stake.toString(),
     )
 
-    let actionPoints = 0
-
-    stakePosition.votes.forEach((vote) => {
-      const convictionIndex = CONVICTIONS[vote.conviction.toLowerCase()]
-
-      actionPoints += vote.amount
-        .multipliedBy(convictionIndex)
-        .div(BN_QUINTILL)
-        .toNumber()
-    })
-
-    const actionMultipliers = {
-      democracyVote: 1,
-    }
-
-    actionPoints *= actionMultipliers.democracyVote
-    actionPoints += stakePosition.actionPoints.toNumber()
+    const actionPoints = getCurrentActionPoints(
+      stakePosition.votes,
+      stakePosition.actionPoints.toNumber(),
+    )
 
     const points = wasm.calculate_points(
       stakePosition.createdAt.toString(),
@@ -375,11 +467,7 @@ export const useClaimReward = () => {
       stakePosition.accumulatedSlashPoints.toString(),
     )
 
-    const payablePercentage = wasm.sigmoid(
-      points,
-      "150000000000000000",
-      "40000",
-    )
+    const payablePercentage = wasm.sigmoid(points, a, b)
 
     let rewards = BN(
       wasm.calculate_percentage_amount(maxRewards, payablePercentage),

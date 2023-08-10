@@ -42,6 +42,10 @@ interface ISubscanData {
   }
 }
 
+export type TStakingPosition = Awaited<
+  ReturnType<ReturnType<typeof getStakingPosition>>
+>
+
 export const useCirculatingSupply = () => {
   return useQuery(
     QUERY_KEYS.circulatingSupply,
@@ -96,6 +100,9 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     api.query.staking.positions(id),
     api.query.staking.positionVotes(id),
   ])
+  const positionData = position.unwrap()
+
+  const createdAt: BN = positionData.createdAt.toBigNumber()
 
   const votes: Array<{
     id: BN
@@ -107,24 +114,23 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     const conviction = data.conviction.toString()
 
     const referendaInfo = await getReferendumInfoOf(api, id.toString())
-    const isFinished = referendaInfo.value.isFinished
+    const isFinished = referendaInfo.unwrapOr(null).isFinished
 
-    if (!isFinished)
+    if (isFinished) {
       acc.push({
         id,
         amount,
         conviction,
       })
+    }
 
     return acc
   }, [])
 
-  const positionData = position.unwrap()
-
   return {
     stake: positionData.stake.toBigNumber() as BN,
     rewardPerStake: positionData.rewardPerStake.toBigNumber() as BN,
-    createdAt: positionData.createdAt.toBigNumber() as BN,
+    createdAt,
     actionPoints: positionData.actionPoints.toBigNumber() as BN,
     accumulatedUnpaidRewards:
       positionData.accumulatedUnpaidRewards.toBigNumber() as BN,
@@ -179,6 +185,29 @@ type TStakingInitialized = StakeEventBase & {
   name: "Staking.StakingInitialized"
 }
 
+type TPositionBalance = StakeEventBase &
+  (
+    | {
+        name: "Staking.PositionCreated"
+        args: {
+          positionId: string
+          stake: string
+          who: string
+        }
+      }
+    | {
+        name: "Staking.StakeAdded"
+        args: {
+          lockedRewards: string
+          positionId: string
+          slashedPoints: string
+          stake: string
+          totalStake: string
+          who: string
+        }
+      }
+  )
+
 export type TAccumulatedRpsUpdated = StakeEventBase & {
   name: "Staking.AccumulatedRpsUpdated"
   args: {
@@ -209,6 +238,22 @@ export const useStakingEvents = () => {
     }
   })
 }
+
+export const useStakingPositionBalances = (positionId: Maybe<string>) => {
+  const preference = useProviderRpcUrlStore()
+  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+
+  const indexerUrl =
+    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
+
+  return useQuery(
+    QUERY_KEYS.stakingPositionBalances(positionId),
+    getStakingPositionBalances(indexerUrl, positionId),
+    { enabled: !!positionId },
+  )
+}
+
 const getAccumulatedRpsUpdatedEvents = (indexerUrl: string) => async () => {
   return {
     ...(await request<{
@@ -252,3 +297,32 @@ const getStakingInitializedEvents = (indexerUrl: string) => async () => {
     )),
   }
 }
+
+const getStakingPositionBalances =
+  (indexerUrl: string, positionId: string) => async () => {
+    return {
+      ...(await request<{
+        events: Array<TPositionBalance>
+      }>(
+        indexerUrl,
+        gql`
+          query StakingPositionBalances($positionId: String!) {
+            events(
+              where: {
+                name_contains: "Staking"
+                args_jsonContains: { positionId: $positionId }
+              }
+              orderBy: [block_height_ASC]
+            ) {
+              name
+              block {
+                height
+              }
+              args
+            }
+          }
+        `,
+        { positionId },
+      )),
+    }
+  }

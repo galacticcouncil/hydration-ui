@@ -5,7 +5,7 @@ import { ToastSidebarGroup } from "../group/ToastSidebarGroup"
 
 export const ToastSidebarReferendums = () => {
   const { t } = useTranslation()
-  const referendums = useReferendums()
+  const referendums = useReferendums("ongoing")
 
   if (!referendums.data?.length) return null
 

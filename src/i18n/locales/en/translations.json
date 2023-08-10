@@ -502,7 +502,7 @@
   "staking.dashboard.stats.chart.label": "HDX Supply Staked",
   "staking.dashboard.stats.available": "Available HDX Balance",
   "staking.dashboard.stats.staked": "Staked Balance",
-  "staking.dashboard.stats.actionPoints": "My Action Points",
+  "staking.dashboard.stats.rewardBoost": "Reward Boost",
   "staking.dashboard.stats.projectdRewards": "Projected % rewards",
   "staking.dashboard.table.title": "Top 10 Action points owners",
   "staking.dashboard.table.account": "Account",

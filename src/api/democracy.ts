@@ -6,13 +6,18 @@ import { isApiLoaded } from "../utils/helpers"
 
 const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
 
-export const useReferendums = (ongoing = true) => {
+export const useReferendums = (type?: "ongoing" | "finished") => {
   const api = useApiPromise()
 
   return useQuery(QUERY_KEYS.referendums, getReferendums(api), {
     enabled: !!isApiLoaded(api),
     select: (data) =>
-      ongoing ? data.filter((r) => r.referendum.isOngoing) : data,
+      type
+        ? data.filter(
+            (r) =>
+              r.referendum[type === "ongoing" ? "isOngoing" : "isFinished"],
+          )
+        : data,
   })
 }
 

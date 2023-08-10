@@ -32,7 +32,7 @@ export const Unstake = ({
 
   const { account } = useAccountStore()
   const form = useForm<{ amount: string }>({
-    defaultValues: {
+    values: {
       amount: staked.toString(),
     },
   })
