@@ -504,8 +504,8 @@ export const useClaimReward = () => {
 
     return {
       positionId,
-      rewards: rewards.div(BN_QUINTILL),
-      unlockedRewards: unlockedRewards.div(BN_QUINTILL),
+      rewards: rewards.div(BN_BILL),
+      unlockedRewards: unlockedRewards.div(BN_BILL),
       actionPoints,
     }
   }, [bestNumber.data, potBalance.data, stake, stakingConsts])

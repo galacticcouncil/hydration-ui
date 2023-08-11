@@ -17,7 +17,6 @@ import { ToastMessage, useAccountStore, useStore } from "state/store"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { TOAST_MESSAGES } from "state/toasts"
-import { DECIMAL_PLACES } from "@galacticcouncil/sdk"
 
 export const AvailableRewards = () => {
   const { t } = useTranslation()
@@ -40,7 +39,6 @@ export const AvailableRewards = () => {
           i18nKey={`staking.toasts.claim.${msType}`}
           tOptions={{
             value: reward.data?.rewards,
-            fixedPointScale: DECIMAL_PLACES,
           }}
         >
           <span />
