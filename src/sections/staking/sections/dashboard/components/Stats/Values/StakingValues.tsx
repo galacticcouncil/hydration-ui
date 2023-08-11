@@ -119,7 +119,7 @@ export const StakingValues = ({
           icon={<ProjectedRewardsIcon />}
         />
       }
-      title={t("staking.dashboard.stats.projectdRewards")}
+      title={t("staking.dashboard.stats.projectedRewards")}
       value={
         loading || !isApiLoaded(api) ? (
           <div sx={{ flex: "column", gap: 2 }}>

@@ -91,6 +91,7 @@ export const AvailableRewards = () => {
               {t("value.tokenWithSymbol", {
                 value: reward.data.rewards,
                 symbol: "HDX",
+                decimalPlaces: 2,
               })}
             </Text>
           )}

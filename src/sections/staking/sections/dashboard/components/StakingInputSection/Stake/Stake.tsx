@@ -21,10 +21,12 @@ export const Stake = ({
   loading,
   positionId,
   minStake,
+  balance,
 }: {
   loading: boolean
   minStake?: BigNumber
   positionId?: number
+  balance: BigNumber
 }) => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
@@ -159,6 +161,7 @@ export const Stake = ({
               />
             ) : (
               <WalletTransferAssetSelect
+                balance={balance}
                 title={t("staking.dashboard.form.stake.inputTitle")}
                 name={name}
                 value={value}

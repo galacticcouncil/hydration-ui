@@ -72,12 +72,17 @@ export const useStakeData = () => {
   )
   const referendas = useReferendums("finished")
 
-  const vestLocks = locks.data?.reduce(
-    (acc, lock) => (lock.type === "ormlvest" ? acc.plus(lock.amount) : acc),
+  const vestAndStakeLocks = locks.data?.reduce(
+    (acc, lock) =>
+      lock.type === "ormlvest" || lock.type === "stk_stks"
+        ? acc.plus(lock.amount)
+        : acc,
     BN_0,
   )
 
-  const availableBalance = balance.data?.balance.minus(vestLocks ?? 0)
+  const availableBalance = balance.data?.freeBalance.minus(
+    vestAndStakeLocks ?? 0,
+  )
 
   const queries = [
     stake,

@@ -224,7 +224,11 @@ export function formatBigNumber(
 
   /* If the integer number is equal or less than 0 display a maximum of 6 decimals, by cutting them not rounding */
   if (num.lt(1)) {
-    return num.decimalPlaces(6).toFormat(fmtConfig)
+    return num
+      .decimalPlaces(
+        typeof options?.decimalPlaces === "number" ? options.decimalPlaces : 6,
+      )
+      .toFormat(fmtConfig)
   }
 
   return num.decimalPlaces(4).toFormat(fmtConfig)
