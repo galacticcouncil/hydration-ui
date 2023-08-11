@@ -21,7 +21,6 @@ export const StakingSkeleton = () => {
   return (
     <div sx={{ flex: ["column-reverse", "row"], gap: 30, flexWrap: "wrap" }}>
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
-        <StakingGuide />
         <Stats loading />
         <Referenda loading />
         <StakingAccountSkeleton />
@@ -41,10 +40,12 @@ export const StakingData = () => {
   const { account } = useAccountStore()
   const staking = useStakeData()
 
+  const showGuide = staking.data && !staking.data.stakePosition
+
   return (
     <div sx={{ flex: ["column-reverse", "row"], gap: 30 }}>
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
-        {!staking.data?.stakePosition && <StakingGuide />}
+        {showGuide && <StakingGuide />}
         <Stats data={staking.data} loading={staking.isLoading} />
         <ReferendaWrapper />
       </div>
