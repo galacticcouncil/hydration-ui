@@ -4,15 +4,18 @@ import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { SActionsContainer, SButtonOpen } from 'sections/pools/pool/actions/PoolActions.styled'
+import {
+  SActionsContainer,
+  SButtonOpen,
+} from "sections/pools/pool/actions/PoolActions.styled"
 import { useAccountStore } from "state/store"
 import { TransferModal } from "../transfer/TransferModal"
 import { AssetMetaById, BalanceByAsset } from "../../PoolsPage.utils"
 import { u32 } from "@polkadot/types-codec"
 import BigNumber from "bignumber.js"
-import { useMedia } from 'react-use'
-import { theme } from 'theme'
-import { LiquidityPositions } from '../../modals/LiquidityPositions/LiquidityPositions'
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import { LiquidityPositions } from "../../modals/LiquidityPositions/LiquidityPositions"
 import { ReactComponent as DetailsIcon } from "assets/icons/DetailsIcon.svg"
 
 type PoolActionsProps = {
@@ -22,8 +25,8 @@ type PoolActionsProps = {
   assetMetaById?: AssetMetaById
   className?: string
   onExpandClick: () => void
-  isExpanded: boolean;
-  canExpand?: boolean;
+  isExpanded: boolean
+  canExpand?: boolean
 }
 
 export const PoolActions = ({
@@ -34,7 +37,7 @@ export const PoolActions = ({
   tradeFee,
   onExpandClick,
   isExpanded,
-  canExpand
+  canExpand,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)

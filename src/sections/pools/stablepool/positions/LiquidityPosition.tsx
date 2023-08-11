@@ -6,10 +6,10 @@ import { useTranslation } from "react-i18next"
 import { SContainer } from "./LiquidityPosition.styled"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { BN_100, STABLEPOOL_TOKEN_DECIMALS } from 'utils/constants'
-import BN from 'bignumber.js'
-import { MultipleIcons } from 'components/MultipleIcons/MultipleIcons'
-import { u32, u8 } from '@polkadot/types'
+import { BN_100, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import BN from "bignumber.js"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { u32, u8 } from "@polkadot/types"
 
 type Props = {
   amount: BN
@@ -29,7 +29,9 @@ export const LiquidityPosition = ({ amount, assets }: Props) => {
         <div sx={{ flex: "row", gap: 7, align: "center" }}>
           <MultipleIcons
             size={15}
-            icons={assets.map((asset) => ({ icon: getAssetLogo(asset.symbol) }))}
+            icons={assets.map((asset) => ({
+              icon: getAssetLogo(asset.symbol),
+            }))}
           />
           <Text fs={18} color="white">
             {t("liquidity.stablepool.position.title")}
@@ -44,7 +46,7 @@ export const LiquidityPosition = ({ amount, assets }: Props) => {
               {t("value.token", {
                 value: amount,
                 fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
-                numberSuffix: ` ${t('liquidity.stablepool.position.token')}`,
+                numberSuffix: ` ${t("liquidity.stablepool.position.token")}`,
               })}
             </Text>
           </div>

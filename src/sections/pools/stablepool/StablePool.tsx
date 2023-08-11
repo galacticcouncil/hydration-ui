@@ -9,10 +9,10 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { AnimatePresence, motion } from "framer-motion"
 import { LiquidityPositionWrapper } from "./positions/LiquidityPositionWrapper"
-import { useTokenBalance, useTokensBalances } from '../../../api/balances'
-import { useAccountBalances } from '../../../api/accountBalances'
-import { useAccountStore } from '../../../state/store'
-import { BN_0 } from '../../../utils/constants'
+import { useTokenBalance, useTokensBalances } from "../../../api/balances"
+import { useAccountBalances } from "../../../api/accountBalances"
+import { useAccountStore } from "../../../state/store"
+import { BN_0 } from "../../../utils/constants"
 
 type Props = Exclude<
   ReturnType<typeof useOmnipoolStablePools>["data"],
@@ -36,7 +36,7 @@ export const StablePool = ({
   const position = useTokenBalance(id.toString(), account?.address)
 
   const amount = position?.data?.freeBalance ?? BN_0
-  const hasPosition = amount?.isGreaterThan(BN_0);
+  const hasPosition = amount?.isGreaterThan(BN_0)
 
   return (
     <SContainer id={id.toString()}>

@@ -10,7 +10,7 @@ export const SContainer = styled.div`
 
   border: 1px solid ${theme.colors.vibrantBlue300};
   background: rgba(${theme.rgbColors.primaryA0}, 0.35);
-  
+
   border-radius: 4px;
   padding: 20px;
 
