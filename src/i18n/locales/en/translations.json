@@ -1,6 +1,8 @@
 {
   "and": "and",
   "back": "Back",
+  "duration.left": "{{duration}} left",
+  "duration.ago": "{{duration}} ago",
   "toast.close": "Close",
   "toast.counter": "{{ index }} of {{ count }}",
   "toast.date": "{{ value, relativetime }}",

@@ -61,6 +61,11 @@ export type Referendum = {
   lastActivityAt: string
   referendumIndex: number
   motionIndex: number
+  onchainData: {
+    meta: {
+      end: number
+    }
+  }
 }
 
 export const getReferendumInfoOf = async (api: ApiPromise, id: string) =>

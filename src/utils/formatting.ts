@@ -6,6 +6,7 @@ import BigNumber from "bignumber.js"
 import { BN_10 } from "./constants"
 import { Maybe } from "utils/helpers"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { intervalToDuration, formatDuration } from "date-fns"
 
 export const formatNum = (
   number?: number | string,
@@ -257,3 +258,21 @@ export const formatAssetValue = (value: string) => {
 }
 
 export const isHydraAddress = (address: string) => address[0] === "7"
+
+export const customFormatDuration = ({
+  start = 0,
+  end,
+}: {
+  start?: number
+  end: number
+}) => {
+  const isPositive = BigNumber(end).isPositive()
+  const durations = intervalToDuration({ start, end })
+  console.log(durations, isPositive)
+  return {
+    duration: formatDuration(durations, {
+      format: ["months", "weeks", "days", "minutes"],
+    }),
+    isPositive,
+  }
+}

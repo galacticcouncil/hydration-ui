@@ -6,10 +6,13 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { BN_0, BN_10 } from "utils/constants"
+import { BN_0, BN_10, PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { SBar, SContainer, SHeader } from "./ReferendumCard.styled"
 import { ReferendumCardSkeleton } from "./ReferendumCardSkeleton"
 import { Icon } from "components/Icon/Icon"
+import BN from "bignumber.js"
+import { useBestNumber } from "api/chain"
+import { customFormatDuration } from "utils/formatting"
 
 const REFERENDUM_LINK = import.meta.env.VITE_REFERENDUM_LINK as string
 
@@ -23,6 +26,7 @@ export const ReferendumCard = ({ id, referendum, type }: Props) => {
   const { t } = useTranslation()
 
   const info = useReferendumInfo(id)
+  const bestNumber = useBestNumber()
 
   const votes = useMemo(() => {
     if (!referendum.isOngoing)
@@ -49,6 +53,11 @@ export const ReferendumCard = ({ id, referendum, type }: Props) => {
   }, [referendum])
 
   const isNoVotes = votes.percAyes.eq(0) && votes.percNays.eq(0)
+  const diff = BN(info?.data?.onchainData.meta.end ?? 0)
+    .minus(bestNumber.data?.parachainBlockNumber.toBigNumber() ?? 0)
+    .times(PARACHAIN_BLOCK_TIME)
+    .toNumber()
+  const endDate = customFormatDuration({ end: diff * 1000 })
 
   return info.isLoading || !info.data ? (
     <ReferendumCardSkeleton type={type} />
@@ -63,8 +72,10 @@ export const ReferendumCard = ({ id, referendum, type }: Props) => {
             {"//"}
           </Text>
           <Text color="basic500" fs={13} fw={500}>
-            {info.data.lastActivityAt &&
-              t("toast.date", { value: new Date(info.data.lastActivityAt) })}
+            {endDate &&
+              t(`duration.${endDate.isPositive ? "left" : "ago"}`, {
+                duration: endDate.duration,
+              })}
           </Text>
         </div>
 
