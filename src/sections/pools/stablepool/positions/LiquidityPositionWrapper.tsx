@@ -4,18 +4,20 @@ import { LiquidityPosition } from "./LiquidityPosition"
 import { ReactComponent as DropletIcon } from "assets/icons/DropletIcon.svg"
 import { Icon } from "components/Icon/Icon"
 import { SPositions } from '../../pool/Pool.styled'
+import BN from 'bignumber.js'
+import { u32, u8 } from '@polkadot/types'
 
-export const LiquidityPositionWrapper = () => {
+type Props = {
+  amount: BN
+  assets: {
+    id: string
+    symbol: string
+    decimals: u8 | u32
+  }[]
+}
+
+export const LiquidityPositionWrapper = ({ amount, assets }: Props) => {
   const { t } = useTranslation()
-
-  const positions = [
-    {
-      id: 1,
-    },
-    {
-      id: 2,
-    },
-  ]
 
   return (
     <SPositions>
@@ -26,9 +28,7 @@ export const LiquidityPositionWrapper = () => {
         </Text>
       </div>
       <div sx={{ flex: "column", gap: 16 }}>
-        {positions.map((position) => (
-          <LiquidityPosition key={position.id} />
-        ))}
+        <LiquidityPosition amount={amount} assets={assets} />
       </div>
     </SPositions>
   )

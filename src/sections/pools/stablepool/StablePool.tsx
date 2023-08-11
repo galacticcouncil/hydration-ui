@@ -9,6 +9,10 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { AnimatePresence, motion } from "framer-motion"
 import { LiquidityPositionWrapper } from "./positions/LiquidityPositionWrapper"
+import { useTokenBalance, useTokensBalances } from '../../../api/balances'
+import { useAccountBalances } from '../../../api/accountBalances'
+import { useAccountStore } from '../../../state/store'
+import { BN_0 } from '../../../utils/constants'
 
 type Props = Exclude<
   ReturnType<typeof useOmnipoolStablePools>["data"],
@@ -27,6 +31,12 @@ export const StablePool = ({
 }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const { account } = useAccountStore()
+  const position = useTokenBalance(id.toString(), account?.address)
+
+  const amount = position?.data?.freeBalance ?? BN_0
+  const hasPosition = amount?.isGreaterThan(BN_0);
 
   return (
     <SContainer id={id.toString()}>
@@ -50,9 +60,10 @@ export const StablePool = ({
           assetMetaById={assetMetaById}
           onExpandClick={() => setIsExpanded((prev) => !prev)}
           isExpanded={isExpanded}
+          canExpand={hasPosition}
         />
       </SGridContainer>
-      {isDesktop && (
+      {isDesktop && hasPosition && (
         <AnimatePresence>
           {isExpanded && (
             <motion.div
@@ -62,7 +73,7 @@ export const StablePool = ({
               transition={{ duration: 0.5, ease: "easeInOut" }}
               css={{ overflow: "hidden" }}
             >
-              <LiquidityPositionWrapper />
+              <LiquidityPositionWrapper assets={assets} amount={amount} />
             </motion.div>
           )}
         </AnimatePresence>

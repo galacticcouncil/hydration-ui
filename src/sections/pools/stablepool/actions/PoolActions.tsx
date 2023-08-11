@@ -23,6 +23,7 @@ type PoolActionsProps = {
   className?: string
   onExpandClick: () => void
   isExpanded: boolean;
+  canExpand?: boolean;
 }
 
 export const PoolActions = ({
@@ -32,7 +33,8 @@ export const PoolActions = ({
   assetMetaById,
   tradeFee,
   onExpandClick,
-                              isExpanded
+  isExpanded,
+  canExpand
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
@@ -83,7 +85,7 @@ export const PoolActions = ({
             icon={<ChevronDown />}
             isActive={isExpanded}
             onClick={onExpandClick}
-            disabled={!account}
+            disabled={!account || !canExpand}
           />
         )}
       </SActionsContainer>
