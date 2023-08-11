@@ -167,10 +167,11 @@ export const useStakeData = () => {
             .multipliedBy(CONVICTIONS["locked6x"])
     }
 
-    const rewardBoostPersentage =
-      !currentActionPoints.isZero() && !maxActionPoints.isZero()
-        ? currentActionPoints.div(maxActionPoints).multipliedBy(100)
-        : BN_100
+    const rewardBoostPersentage = !(
+      currentActionPoints.isZero() && maxActionPoints.isZero()
+    )
+      ? currentActionPoints.div(maxActionPoints).multipliedBy(100)
+      : BN_100
 
     return {
       supplyStaked,
