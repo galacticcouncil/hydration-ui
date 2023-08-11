@@ -6,10 +6,16 @@ import { useTranslation } from "react-i18next"
 import { SContainer } from "./LiquidityPosition.styled"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { BN_100, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import { BN_0, BN_1, BN_100, STABLEPOOL_TOKEN_DECIMALS } from 'utils/constants'
 import BN from "bignumber.js"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { u32, u8 } from "@polkadot/types"
+import { HydraPositionsTableData } from '../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils'
+import { useAccountStore } from '../../../../state/store'
+import { useState } from 'react'
+import { SButton } from '../../pool/positions/LiquidityPosition.styled'
+import { RemoveLiquidity } from '../../modals/RemoveLiquidity/RemoveLiquidity'
+import { ReactComponent as MinusIcon } from "assets/icons/MinusIcon.svg"
 
 type Props = {
   amount: BN
@@ -18,6 +24,38 @@ type Props = {
     symbol: string
     decimals: u8 | u32
   }[]
+}
+
+function LiquidityPositionRemoveLiquidity(props: {
+  position: HydraPositionsTableData
+  onSuccess: () => void
+}) {
+  const { t } = useTranslation()
+  const { account } = useAccountStore()
+  const [openRemove, setOpenRemove] = useState(false)
+  return (
+    <>
+      <SButton
+        variant="secondary"
+        size="small"
+        onClick={() => setOpenRemove(true)}
+        disabled={account?.isExternalWalletConnected}
+      >
+        <div sx={{ flex: "row", align: "center", justify: "center" }}>
+          <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
+          {t("liquidity.asset.actions.removeLiquidity")}
+        </div>
+      </SButton>
+      {openRemove && (
+        <RemoveLiquidity
+          isOpen={openRemove}
+          onClose={() => setOpenRemove(false)}
+          position={props.position}
+          onSuccess={props.onSuccess}
+        />
+      )}
+    </>
+  )
 }
 
 export const LiquidityPosition = ({ amount, assets }: Props) => {
@@ -77,6 +115,32 @@ export const LiquidityPosition = ({ amount, assets }: Props) => {
             </div>
           </div>
         </div>
+      </div>
+      <div
+        sx={{
+          flex: "column",
+          align: "end",
+          height: "100%",
+          justify: 'center'
+        }}
+      >
+        <LiquidityPositionRemoveLiquidity
+          position={{
+            id: "",
+            assetId: "",
+            symbol: "",
+            name: "",
+            lrna: BN_100,
+            value: BN_100,
+            valueDisplay: BN_100,
+            price: BN_1,
+            providedAmount: BN_100,
+            providedAmountDisplay: BN_100,
+            providedAmountShifted: BN_100,
+            shares: BN_100,
+          }}
+          onSuccess={console.log}
+        />
       </div>
     </SContainer>
   )
