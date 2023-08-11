@@ -18,6 +18,7 @@ type Props = {
   tradeFee: BigNumber
   assetMetaById?: AssetMetaById
   balanceByAsset?: BalanceByAsset
+  refetchPositions: () => void;
 }
 
 enum Page {
@@ -34,6 +35,7 @@ export const TransferModal = ({
   onClose,
   balanceByAsset,
   assetMetaById,
+  refetchPositions,
 }: Props) => {
   const { t } = useTranslation()
   // TODO: skip stablepool / omnipool selection for now. When omnipool flow is ready use useState<Page>(Page.OPTIONS)
@@ -124,7 +126,7 @@ export const TransferModal = ({
               <AddStablepoolLiquidity
                 poolId={poolId}
                 onClose={onClose}
-                onSuccess={console.log}
+                onSuccess={refetchPositions}
                 balanceByAsset={balanceByAsset}
                 onAssetOpen={() => setPage(Page.ASSETS)}
                 asset={assetMetaById?.get(assetId)}

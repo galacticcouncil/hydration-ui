@@ -27,6 +27,7 @@ type PoolActionsProps = {
   onExpandClick: () => void
   isExpanded: boolean
   canExpand?: boolean
+  refetchPositions: () => void
 }
 
 export const PoolActions = ({
@@ -38,6 +39,7 @@ export const PoolActions = ({
   onExpandClick,
   isExpanded,
   canExpand,
+  refetchPositions
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
@@ -107,6 +109,7 @@ export const PoolActions = ({
           onClose={() => setOpenAdd(false)}
           balanceByAsset={balanceByAsset}
           assetMetaById={assetMetaById}
+          refetchPositions={refetchPositions}
         />
       )}
     </>

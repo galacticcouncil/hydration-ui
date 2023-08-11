@@ -61,6 +61,7 @@ export const StablePool = ({
           onExpandClick={() => setIsExpanded((prev) => !prev)}
           isExpanded={isExpanded}
           canExpand={hasPosition}
+          refetchPositions={position.refetch}
         />
       </SGridContainer>
       {isDesktop && hasPosition && (
