@@ -11,7 +11,7 @@ import BN from "bignumber.js"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { u32, u8 } from "@polkadot/types"
 import { useAccountStore } from "state/store"
-import { ComponentProps, useState } from 'react'
+import { ComponentProps, useState } from "react"
 import { SButton } from "../../pool/positions/LiquidityPosition.styled"
 import { ReactComponent as MinusIcon } from "assets/icons/MinusIcon.svg"
 import { RemoveLiquidityModal } from "../removeLiquidity/RemoveLiquidityModal"
@@ -28,7 +28,12 @@ type Props = {
 }
 
 function LiquidityPositionRemoveLiquidity(props: {
-  position: ComponentProps<typeof RemoveLiquidityModal>['position']
+  assets: {
+    id: string
+    symbol: string
+    decimals: u8 | u32
+  }[]
+  position: ComponentProps<typeof RemoveLiquidityModal>["position"]
   onSuccess: () => void
 }) {
   const { t } = useTranslation()
@@ -52,6 +57,7 @@ function LiquidityPositionRemoveLiquidity(props: {
           isOpen={openRemove}
           onClose={() => setOpenRemove(false)}
           position={props.position}
+          assets={props.assets}
           onSuccess={props.onSuccess}
         />
       )}
@@ -59,7 +65,12 @@ function LiquidityPositionRemoveLiquidity(props: {
   )
 }
 
-export const LiquidityPosition = ({ amount, assets, poolId, withdrawFee }: Props) => {
+export const LiquidityPosition = ({
+  amount,
+  assets,
+  poolId,
+  withdrawFee,
+}: Props) => {
   const { t } = useTranslation()
 
   return (
@@ -126,6 +137,7 @@ export const LiquidityPosition = ({ amount, assets, poolId, withdrawFee }: Props
         }}
       >
         <LiquidityPositionRemoveLiquidity
+          assets={assets}
           position={{
             withdrawFee,
             poolId,

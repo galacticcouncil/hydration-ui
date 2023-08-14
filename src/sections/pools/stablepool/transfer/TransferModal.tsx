@@ -42,10 +42,8 @@ export const TransferModal = ({
   const { t } = useTranslation()
   // TODO: skip stablepool / omnipool selection for now. When omnipool flow is ready use useState<Page>(Page.OPTIONS)
   const [page, setPage] = useState<Page>(Page.STABLEPOOL)
+  const [assetId, setAssetId] = useState<string>(assets[0]?.id)
 
-  const [assetId, setAssetId] = useState<string>(
-    assetMetaById?.keys().next().value,
-  )
   const [selectedOption, setSelectedOption] =
     useState<ComponentProps<typeof TransferOptions>["selected"]>("STABLEPOOL")
 

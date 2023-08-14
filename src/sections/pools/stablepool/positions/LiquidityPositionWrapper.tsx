@@ -18,7 +18,12 @@ type Props = {
   }[]
 }
 
-export const LiquidityPositionWrapper = ({ amount, assets, poolId, withdrawFee }: Props) => {
+export const LiquidityPositionWrapper = ({
+  amount,
+  assets,
+  poolId,
+  withdrawFee,
+}: Props) => {
   const { t } = useTranslation()
 
   return (
@@ -34,7 +39,12 @@ export const LiquidityPositionWrapper = ({ amount, assets, poolId, withdrawFee }
         </Text>
       </div>
       <div sx={{ flex: "column", gap: 16 }}>
-        <LiquidityPosition poolId={poolId} amount={amount} assets={assets} withdrawFee={withdrawFee} />
+        <LiquidityPosition
+          poolId={poolId}
+          amount={amount}
+          assets={assets}
+          withdrawFee={withdrawFee}
+        />
       </div>
     </SPositions>
   )

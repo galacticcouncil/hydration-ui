@@ -17,7 +17,7 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { LiquidityPositions } from "../../modals/LiquidityPositions/LiquidityPositions"
 import { ReactComponent as DetailsIcon } from "assets/icons/DetailsIcon.svg"
-import { u8 } from '@polkadot/types'
+import { u8 } from "@polkadot/types"
 
 type PoolActionsProps = {
   poolId: u32
@@ -46,7 +46,7 @@ export const PoolActions = ({
   isExpanded,
   canExpand,
   refetchPositions,
-  assets
+  assets,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)

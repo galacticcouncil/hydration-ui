@@ -27,7 +27,7 @@ export const StablePool = ({
   total,
   balanceByAsset,
   assetMetaById,
-  withdrawFee
+  withdrawFee,
 }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -75,7 +75,12 @@ export const StablePool = ({
               transition={{ duration: 0.5, ease: "easeInOut" }}
               css={{ overflow: "hidden" }}
             >
-              <LiquidityPositionWrapper poolId={id} assets={assets} amount={amount} withdrawFee={withdrawFee} />
+              <LiquidityPositionWrapper
+                poolId={id}
+                assets={assets}
+                amount={amount}
+                withdrawFee={withdrawFee}
+              />
             </motion.div>
           )}
         </AnimatePresence>

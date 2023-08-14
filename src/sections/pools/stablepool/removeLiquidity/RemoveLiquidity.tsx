@@ -12,14 +12,14 @@ import { Trans, useTranslation } from "react-i18next"
 import { useStore } from "state/store"
 import { useApiPromise } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
-import { BN_100, STABLEPOOL_TOKEN_DECIMALS } from 'utils/constants'
+import { BN_100, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 import { theme } from "theme"
 import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
-import { u32 } from '@polkadot/types-codec'
-import { useAssetMeta } from 'api/assetMeta'
+import { u32 } from "@polkadot/types-codec"
+import { useAssetMeta } from "api/assetMeta"
 
 type RemoveLiquidityProps = {
   assetId?: string
@@ -96,7 +96,7 @@ const RemoveLiquidityInput = ({
           css={{ gridColumn: "span 2" }}
         >
           <Text fs={11} css={{ opacity: 0.7 }}>
-            {t("balance")} {t('value.token', { value: amount.toString()} )}
+            {t("balance")} {t("value.token", { value: amount.toString() })}
           </Text>
         </div>
       </SSlippage>
@@ -124,13 +124,16 @@ export const RemoveLiquidity = ({
     return position.amount.div(100).times(value)
   }, [value, position])
 
-
   const handleSubmit = async (values: FormValues<typeof form>) => {
     const value = position.shares.div(100).times(values.value)
 
     await createTransaction(
       {
-        tx: api.tx.stableswap.removeLiquidity(position.poolId, assetId, value.toFixed(0)),
+        tx: api.tx.stableswap.removeLiquidity(
+          position.poolId,
+          assetId,
+          value.toFixed(0),
+        ),
       },
       {
         onSuccess,
@@ -223,7 +226,10 @@ export const RemoveLiquidity = ({
                 <div>
                   <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
                     {t("liquidity.remove.modal.value", {
-                      value: getFloatingPointAmount(removeSharesValue, STABLEPOOL_TOKEN_DECIMALS),
+                      value: getFloatingPointAmount(
+                        removeSharesValue,
+                        STABLEPOOL_TOKEN_DECIMALS,
+                      ),
                     })}
                   </Text>
                   <Text
@@ -244,7 +250,10 @@ export const RemoveLiquidity = ({
                   <RemoveLiquidityInput
                     value={field.value}
                     onChange={field.onChange}
-                    amount={getFloatingPointAmount(position.amount, STABLEPOOL_TOKEN_DECIMALS)}
+                    amount={getFloatingPointAmount(
+                      position.amount,
+                      STABLEPOOL_TOKEN_DECIMALS,
+                    )}
                   />
                 )}
               />
@@ -253,22 +262,27 @@ export const RemoveLiquidity = ({
                 <Text color="brightBlue300">
                   {t("liquidity.remove.modal.receive")}
                 </Text>
-                {meta.data && <RemoveLiquidityReward
-                  name={meta.data.symbol}
-                  symbol={meta.data.symbol}
-                  amount={t("value", {
-                    value: BN_100,
-                    type: "token",
-                    numberSuffix: ` ${meta.data.symbol}`,
-                  })}
-                />
-                }
+                {meta.data && (
+                  <RemoveLiquidityReward
+                    name={meta.data.symbol}
+                    symbol={meta.data.symbol}
+                    amount={t("value", {
+                      value: BN_100,
+                      type: "token",
+                      numberSuffix: ` ${meta.data.symbol}`,
+                    })}
+                  />
+                )}
               </STradingPairContainer>
             </div>
             <Spacer size={17} />
-            <div sx={{ flex: 'row', justify: 'space-between' }}>
-              <Text color="basic400">{t('liquidity.remove.modal.tokenFee.label')}</Text>
-              <Text color="white">{t('value.percentage', { value: position.withdrawFee })}</Text>
+            <div sx={{ flex: "row", justify: "space-between" }}>
+              <Text color="basic400">
+                {t("liquidity.remove.modal.tokenFee.label")}
+              </Text>
+              <Text color="white">
+                {t("value.percentage", { value: position.withdrawFee })}
+              </Text>
             </div>
           </>
         }
