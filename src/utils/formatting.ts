@@ -275,7 +275,7 @@ export const customFormatDuration = ({
 
   return {
     duration: formatDuration(durations, {
-      format: ["months", "weeks", "days", "minutes"],
+      format: ["months", "weeks", "days", "hours", "minutes"],
     }),
     isPositive,
   }

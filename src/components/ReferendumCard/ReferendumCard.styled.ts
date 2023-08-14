@@ -2,7 +2,7 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SContainer = styled.div<{ type: "staking" | "toast" }>`
+export const SContainer = styled.a<{ type: "staking" | "toast" }>`
   padding: 16px;
   ${({ type }) =>
     type === "toast"
