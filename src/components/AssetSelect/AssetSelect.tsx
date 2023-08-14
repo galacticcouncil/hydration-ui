@@ -1,11 +1,8 @@
 import { css } from "@emotion/react"
 import { u32 } from "@polkadot/types"
-import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
 import BigNumber from "bignumber.js"
 import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
-import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { AssetInput } from "components/AssetInput/AssetInput"
-import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -13,11 +10,8 @@ import { theme } from "theme"
 import { getFloatingPointAmount } from "utils/balance"
 import { useDisplayPrice } from "utils/displayAsset"
 import { Maybe } from "utils/helpers"
-import {
-  SContainer,
-  SMaxButton,
-  SSelectAssetButton,
-} from "./AssetSelect.styled"
+import { SContainer, SMaxButton } from "./AssetSelect.styled"
+import { AssetSelectButton } from "./AssetSelectButton"
 
 export const AssetSelect = (props: {
   name: string
@@ -31,7 +25,6 @@ export const AssetSelect = (props: {
   asset?: u32 | string
   assetName: Maybe<string>
   assetSymbol: Maybe<string>
-  assetIcon: Maybe<ReactNode>
   decimals: Maybe<number>
   balance: Maybe<BigNumber>
   balanceLabel: string
@@ -117,34 +110,10 @@ export const AssetSelect = (props: {
             mt: [16, 0],
           }}
         >
-          <SSelectAssetButton
-            size="small"
-            onClick={(e) => {
-              e.preventDefault()
-              props.onSelectAssetClick?.()
-            }}
-          >
-            <Icon icon={props.assetIcon} size={30} />
-            {props.assetSymbol && (
-              <div sx={{ flex: "column", justify: "space-between" }}>
-                <Text fw={700} lh={16} color="white">
-                  {props.assetSymbol}
-                </Text>
-                <Text
-                  fs={13}
-                  lh={13}
-                  css={{
-                    whiteSpace: "nowrap",
-                    color: `rgba(${theme.rgbColors.whiteish500}, 0.6)`,
-                  }}
-                >
-                  {props.assetName || getAssetName(props.assetSymbol)}
-                </Text>
-              </div>
-            )}
-            {props.onSelectAssetClick && <Icon icon={<ChevronDown />} />}
-          </SSelectAssetButton>
-
+          <AssetSelectButton
+            assetId={props.asset}
+            onClick={props.onSelectAssetClick}
+          />
           <AssetInput
             disabled={props.disabled}
             value={props.value}

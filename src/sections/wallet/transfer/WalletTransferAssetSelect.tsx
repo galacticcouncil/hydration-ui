@@ -34,7 +34,6 @@ export const WalletTransferAssetSelect = (props: {
       onChange={props.onChange}
       onBlur={props.onBlur}
       asset={props.asset}
-      assetIcon={asset.data?.icon}
       decimals={asset.data?.decimals?.toNumber()}
       balance={balance.data?.balance}
       assetName={asset.data?.name?.toString()}

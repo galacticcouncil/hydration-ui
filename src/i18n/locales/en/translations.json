@@ -124,6 +124,7 @@
   "liquidity.stablepool.position.amount": "Amount available",
   "liquidity.stablepool.position.token": "share tokens",
   "liquidity.asset.details.24hours": "24h volume",
+  "liquidity.stablepool.remove.confirm": "Confirm removal",
   "liquidity.asset.details.24hours.tooltip": "USD value is derived from the last known exchange rate.",
   "liquidity.asset.incentives.title": "Farm rewards",
   "liquidity.asset.actions.addLiquidity": "Add liquidity",

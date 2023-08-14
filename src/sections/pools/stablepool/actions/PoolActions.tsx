@@ -39,7 +39,7 @@ export const PoolActions = ({
   onExpandClick,
   isExpanded,
   canExpand,
-  refetchPositions
+  refetchPositions,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)

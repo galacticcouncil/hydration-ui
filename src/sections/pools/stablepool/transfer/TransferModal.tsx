@@ -18,7 +18,7 @@ type Props = {
   tradeFee: BigNumber
   assetMetaById?: AssetMetaById
   balanceByAsset?: BalanceByAsset
-  refetchPositions: () => void;
+  refetchPositions: () => void
 }
 
 enum Page {

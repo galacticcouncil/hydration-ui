@@ -6,16 +6,16 @@ import { useTranslation } from "react-i18next"
 import { SContainer } from "./LiquidityPosition.styled"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { BN_0, BN_1, BN_100, STABLEPOOL_TOKEN_DECIMALS } from 'utils/constants'
+import { BN_0, BN_1, BN_100, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import BN from "bignumber.js"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { u32, u8 } from "@polkadot/types"
-import { HydraPositionsTableData } from '../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils'
-import { useAccountStore } from '../../../../state/store'
-import { useState } from 'react'
-import { SButton } from '../../pool/positions/LiquidityPosition.styled'
-import { RemoveLiquidity } from '../../modals/RemoveLiquidity/RemoveLiquidity'
+import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
+import { useAccountStore } from "state/store"
+import { useState } from "react"
+import { SButton } from "../../pool/positions/LiquidityPosition.styled"
 import { ReactComponent as MinusIcon } from "assets/icons/MinusIcon.svg"
+import { RemoveLiquidityModal } from "../removeLiquidity/RemoveLiquidityModal"
 
 type Props = {
   amount: BN
@@ -47,7 +47,7 @@ function LiquidityPositionRemoveLiquidity(props: {
         </div>
       </SButton>
       {openRemove && (
-        <RemoveLiquidity
+        <RemoveLiquidityModal
           isOpen={openRemove}
           onClose={() => setOpenRemove(false)}
           position={props.position}
@@ -121,14 +121,14 @@ export const LiquidityPosition = ({ amount, assets }: Props) => {
           flex: "column",
           align: "end",
           height: "100%",
-          justify: 'center'
+          justify: "center",
         }}
       >
         <LiquidityPositionRemoveLiquidity
           position={{
             id: "",
             assetId: "",
-            symbol: "",
+            symbol: "DAI",
             name: "",
             lrna: BN_100,
             value: BN_100,
