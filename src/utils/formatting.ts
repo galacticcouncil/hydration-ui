@@ -272,7 +272,7 @@ export const customFormatDuration = ({
 }) => {
   const isPositive = BigNumber(end).isPositive()
   const durations = intervalToDuration({ start, end })
-  console.log(durations, isPositive)
+
   return {
     duration: formatDuration(durations, {
       format: ["months", "weeks", "days", "minutes"],
