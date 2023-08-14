@@ -20,7 +20,7 @@ export const AssetSelectButton = ({ onClick, assetId }: Props) => {
   const name = asset?.data?.name
 
   return (
-    <SSelectAssetButton size="small" onClick={onClick}>
+    <SSelectAssetButton size="small" onClick={onClick} type="button">
       <Icon icon={icon} size={30} />
       {symbol && (
         <div sx={{ flex: "column", justify: "space-between" }}>
