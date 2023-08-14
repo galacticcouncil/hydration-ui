@@ -9,8 +9,10 @@ export const ToastSidebarReferendums = () => {
   const { t } = useTranslation()
   const referendums = useReferendums("ongoing")
   const providers = useProviderRpcUrlStore()
-  const isRococoProvider =
-    providers.rpcUrl === "wss://hydradx-rococo-rpc.play.hydration.cloud"
+  const rococoProvider = [
+    "hydradx-rococo-rpc.play.hydration.cloud",
+    "mining-rpc.hydradx.io",
+  ].find((rpc) => providers.rpcUrl === `wss://${rpc}`)
 
   if (!referendums.data?.length) return null
 
@@ -18,10 +20,11 @@ export const ToastSidebarReferendums = () => {
     <ToastSidebarGroup title={t("toast.sidebar.referendums.title")}>
       <div sx={{ flex: "column", gap: 8 }}>
         {referendums.data.map((referendum) =>
-          isRococoProvider ? (
+          rococoProvider ? (
             <ReferendumCardRococo
               key={referendum.id}
               type="toast"
+              rpc={rococoProvider}
               {...referendum}
             />
           ) : (

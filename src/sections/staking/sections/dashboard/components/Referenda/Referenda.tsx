@@ -23,8 +23,10 @@ export const ReferendaWrapper = () => {
 export const Referenda = ({ data, loading }: ReferendaProps) => {
   const { t } = useTranslation()
   const providers = useProviderRpcUrlStore()
-  const isRococoProvider =
-    providers.rpcUrl === "wss://hydradx-rococo-rpc.play.hydration.cloud"
+  const rococoProvider = [
+    "hydradx-rococo-rpc.play.hydration.cloud",
+    "mining-rpc.hydradx.io",
+  ].find((rpc) => providers.rpcUrl === `wss://${rpc}`)
 
   return (
     <SContainer sx={{ p: [24, "25px 20px 20px"], gap: 21 }}>
@@ -36,10 +38,11 @@ export const Referenda = ({ data, loading }: ReferendaProps) => {
       ) : data?.length ? (
         <div sx={{ flex: "column", gap: 16 }}>
           {data.map((referendum) =>
-            isRococoProvider ? (
+            rococoProvider ? (
               <ReferendumCardRococo
                 key={referendum.id}
                 type="staking"
+                rpc={rococoProvider}
                 {...referendum}
               />
             ) : (

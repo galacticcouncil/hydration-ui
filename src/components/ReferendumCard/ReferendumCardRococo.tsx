@@ -15,9 +15,10 @@ type Props = {
   id: string
   referendum: PalletDemocracyReferendumInfo
   type: "toast" | "staking"
+  rpc: string
 }
 
-export const ReferendumCardRococo = ({ id, referendum, type }: Props) => {
+export const ReferendumCardRococo = ({ id, referendum, type, rpc }: Props) => {
   const { t } = useTranslation()
 
   const bestNumber = useBestNumber()
@@ -57,7 +58,7 @@ export const ReferendumCardRococo = ({ id, referendum, type }: Props) => {
   return (
     <SContainer
       type={type}
-      href="https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fhydradx-rococo-rpc.play.hydration.cloud#/democracy"
+      href={`https://polkadot.js.org/apps/?rpc=wss%3A%2F%2F${rpc}#/democracy`}
       target="_blank"
       rel="noreferrer"
     >
