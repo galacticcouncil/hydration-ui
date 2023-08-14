@@ -108,7 +108,9 @@ export function useTradeVolumes(
 ) {
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+  const selectedProvider = PROVIDERS.find(
+    (provider) => new URL(provider.url).hostname === new URL(rpcUrl).hostname,
+  )
 
   const indexerUrl =
     selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
@@ -130,7 +132,9 @@ export function useTradeVolumes(
 export function useAllTrades() {
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+  const selectedProvider = PROVIDERS.find(
+    (provider) => new URL(provider.url).hostname === new URL(rpcUrl).hostname,
+  )
 
   const indexerUrl =
     selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL

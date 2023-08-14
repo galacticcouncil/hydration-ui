@@ -1,6 +1,6 @@
+import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { TableData } from "components/Table/Table.styled"
-import { css } from "@emotion/react"
 
 export const tableStyles = css`
   th > div {

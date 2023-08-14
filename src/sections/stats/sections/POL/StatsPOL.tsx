@@ -1,5 +1,3 @@
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { ChartsWrapper } from "./components/ChartsWrapper/ChartsWrapper"
@@ -9,7 +7,7 @@ import { PieWrapper } from "./components/PieWrapper/PieWrapper"
 import { useOmnipoolAssetDetails } from "../../StatsPage.utils"
 import { OmnipoolAssetsTableWrapper } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
 
-const StatsPOLData = () => {
+export const StatsPOL = () => {
   const data = useOmnipoolAssetDetails()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -32,14 +30,4 @@ const StatsPOLData = () => {
       <OmnipoolAssetsTableWrapper />
     </div>
   )
-}
-
-export const StatsPOL = () => {
-  const api = useApiPromise()
-
-  if (!isApiLoaded(api)) {
-    return null
-  }
-
-  return <StatsPOLData />
 }
