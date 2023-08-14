@@ -9,10 +9,9 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { AnimatePresence, motion } from "framer-motion"
 import { LiquidityPositionWrapper } from "./positions/LiquidityPositionWrapper"
-import { useTokenBalance, useTokensBalances } from "../../../api/balances"
-import { useAccountBalances } from "../../../api/accountBalances"
-import { useAccountStore } from "../../../state/store"
-import { BN_0 } from "../../../utils/constants"
+import { useTokenBalance } from "api/balances"
+import { useAccountStore } from "state/store"
+import { BN_0 } from "utils/constants"
 
 type Props = Exclude<
   ReturnType<typeof useOmnipoolStablePools>["data"],
@@ -28,6 +27,7 @@ export const StablePool = ({
   total,
   balanceByAsset,
   assetMetaById,
+  withdrawFee
 }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -54,6 +54,7 @@ export const StablePool = ({
         <PoolValue total={total.value} css={{ gridArea: "values" }} />
         <PoolActions
           poolId={id}
+          assets={assets}
           tradeFee={tradeFee}
           css={{ gridArea: "actions" }}
           balanceByAsset={balanceByAsset}
@@ -74,7 +75,7 @@ export const StablePool = ({
               transition={{ duration: 0.5, ease: "easeInOut" }}
               css={{ overflow: "hidden" }}
             >
-              <LiquidityPositionWrapper assets={assets} amount={amount} />
+              <LiquidityPositionWrapper poolId={id} assets={assets} amount={amount} withdrawFee={withdrawFee} />
             </motion.div>
           )}
         </AnimatePresence>

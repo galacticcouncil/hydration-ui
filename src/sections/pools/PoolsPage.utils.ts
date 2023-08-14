@@ -127,6 +127,7 @@ export const useOmnipoolStablePools = () => {
       balanceByAsset,
       assetMetaById,
       tradeFee: normalizeBigNumber(pool.data.tradeFee).div(10000),
+      withdrawFee: normalizeBigNumber(pool.data.withdrawFee).div(10000),
     }
   })
 

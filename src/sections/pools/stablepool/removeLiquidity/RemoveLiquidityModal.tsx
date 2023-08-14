@@ -1,17 +1,15 @@
 import { Modal } from "components/Modal/Modal"
 import { ModalContents } from "components/Modal/contents/ModalContents"
-import { useState } from "react"
-import { Button } from "components/Button/Button"
+import { ComponentProps, useState } from 'react'
 import { useTranslation } from "react-i18next"
 import { AssetsModalContent } from "../../../assets/AssetsModal"
 import { RemoveLiquidity } from "./RemoveLiquidity"
-import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 
 type Props = {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
-  position: HydraPositionsTableData
+  position: ComponentProps<typeof RemoveLiquidity>['position']
 }
 
 enum Page {

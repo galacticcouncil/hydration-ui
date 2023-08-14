@@ -1,22 +1,8 @@
-import {
-  calculate_liquidity_lrna_out,
-  calculate_liquidity_out,
-  calculate_lrna_spot_price,
-  calculate_withdrawal_fee,
-} from "@galacticcouncil/math-omnipool"
-import { useAssetMetaList } from "api/assetMeta"
-import { useTokenBalance } from "api/balances"
-import { useApiIds, useMinWithdrawalFee } from "api/consts"
-import { useOraclePrice } from "api/farms"
-import { useOmnipoolAssets } from "api/omnipool"
-import { useSpotPrice } from "api/spotPrice"
-import { ReactComponent as IconWarning } from "assets/icons/WarningIcon.svg"
 import { default as BN, default as BigNumber } from "bignumber.js"
 import { BoxSwitch } from "components/BoxSwitch/BoxSwitch"
 import { Button } from "components/Button/Button"
-import { Icon } from "components/Icon/Icon"
 import { Input } from "components/Input/Input"
-import { Modal, ModalScrollableContent } from "components/Modal/Modal"
+import { ModalScrollableContent } from "components/Modal/Modal"
 import { Slider } from "components/Slider/Slider"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
@@ -24,24 +10,28 @@ import { useMemo, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useStore } from "state/store"
-import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
+import { useApiPromise } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
-import { BN_10, BN_100, BN_QUINTILL } from "utils/constants"
+import { BN_100, STABLEPOOL_TOKEN_DECIMALS } from 'utils/constants'
 import { FormValues } from "utils/helpers"
-import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
-import { FeeRange } from "./components/FeeRange/FeeRange"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
-import { WalletTransferAssetSelect } from "../../../wallet/transfer/WalletTransferAssetSelect"
-import { SSelectAssetButton } from "../../../../components/AssetSelect/AssetSelect.styled"
-import { theme } from "../../../../theme"
-import { getAssetName } from "../../../../components/AssetIcon/AssetIcon"
-import { AssetSelectButton } from "../../../../components/AssetSelect/AssetSelectButton"
+import { theme } from "theme"
+import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
+import { u32 } from '@polkadot/types-codec'
+import { useAssetMeta } from 'api/assetMeta'
 
 type RemoveLiquidityProps = {
   assetId?: string
   onClose: () => void
-  position: HydraPositionsTableData
+  position: {
+    poolId: u32
+    amount: BigNumber
+    shares: BigNumber
+    price: BigNumber
+    providedAmount: BigNumber
+    withdrawFee: BigNumber
+  }
   onSuccess: () => void
   onAssetOpen: () => void
 }
@@ -49,7 +39,7 @@ type RemoveLiquidityProps = {
 type RemoveLiquidityInputProps = {
   value: number
   onChange: (value: number) => void
-  shares: BN
+  amount: BN
 }
 
 const options = [
@@ -62,7 +52,7 @@ const options = [
 const RemoveLiquidityInput = ({
   value,
   onChange,
-  shares,
+  amount,
 }: RemoveLiquidityInputProps) => {
   const { t } = useTranslation()
   const [input, setInput] = useState("")
@@ -106,9 +96,8 @@ const RemoveLiquidityInput = ({
           css={{ gridColumn: "span 2" }}
         >
           <Text fs={11} css={{ opacity: 0.7 }}>
-            {t("balance")}
+            {t("balance")} {t('value.token', { value: amount.toString()} )}
           </Text>
-          <Text fs={11}>{t("liquidity.remove.modal.shares", { shares })}</Text>
         </div>
       </SSlippage>
     </>
@@ -124,133 +113,24 @@ export const RemoveLiquidity = ({
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
   const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
+  const meta = useAssetMeta(assetId)
 
   const api = useApiPromise()
   const { createTransaction } = useStore()
 
-  const apiIds = useApiIds()
-  const metas = useAssetMetaList([apiIds.data?.hubId, position.assetId])
-
-  const spotPrice = useSpotPrice(apiIds.data?.hubId, position.assetId)
-  const oracle = useOraclePrice(position.assetId, apiIds.data?.hubId)
-  // TODO: remove, related to omnipool
-  const minWithdrawalFee = useMinWithdrawalFee()
-  const meta = metas.data?.find((m) => m.id.toString() === position.assetId)
-  const lrnaMeta = metas.data?.find(
-    (m) => m.id.toString() === apiIds.data?.hubId,
-  )
-
   const value = form.watch("value")
 
   const removeSharesValue = useMemo(() => {
-    return position.shares.div(100).times(value)
+    return position.amount.div(100).times(value)
   }, [value, position])
 
-  const omnipoolAssets = useOmnipoolAssets()
-  const omnipoolBalance = useTokenBalance(
-    position.assetId,
-    OMNIPOOL_ACCOUNT_ADDRESS,
-  )
-
-  const omnipoolAsset = omnipoolAssets.data?.find(
-    (a) => a.id.toString() === position.assetId,
-  )
-
-  const removeLiquidityValues = useMemo(() => {
-    const positionPrice = position.price.times(BN_10.pow(18))
-    if (
-      omnipoolBalance.data &&
-      omnipoolAsset?.data &&
-      spotPrice.data &&
-      oracle.data &&
-      minWithdrawalFee.data &&
-      apiIds.data
-    ) {
-      const oraclePrice = oracle.data.oraclePrice
-
-      const spotPrice = calculate_lrna_spot_price(
-        omnipoolBalance?.data?.balance.toString(),
-        omnipoolAsset.data.hubReserve.toString(),
-      )
-
-      const withdrawalFee = calculate_withdrawal_fee(
-        spotPrice,
-        oraclePrice.toString(),
-        minWithdrawalFee.data.toString(),
-      )
-
-      if (removeSharesValue.isZero()) {
-        return {
-          tokensToGet: "0",
-          lrnaToGet: "0",
-          lrnaPayWith: "0",
-          tokensPayWith: "0",
-          withdrawalFee: BN(withdrawalFee).div(BN_QUINTILL).multipliedBy(100),
-        }
-      }
-
-      const paramsWithFee: Parameters<typeof calculate_liquidity_out> = [
-        omnipoolBalance.data.balance.toString(),
-        omnipoolAsset.data.hubReserve.toString(),
-        omnipoolAsset.data.shares.toString(),
-        position.providedAmount.toString(),
-        position.shares.toString(),
-        positionPrice.toFixed(0),
-        removeSharesValue.toFixed(0),
-        withdrawalFee,
-      ]
-
-      const paramsWithoutFee: Parameters<typeof calculate_liquidity_out> = [
-        omnipoolBalance.data.balance.toString(),
-        omnipoolAsset.data.hubReserve.toString(),
-        omnipoolAsset.data.shares.toString(),
-        position.providedAmount.toString(),
-        position.shares.toString(),
-        positionPrice.toFixed(0),
-        removeSharesValue.toFixed(0),
-        "0",
-      ]
-
-      const tokensToGet = calculate_liquidity_out.apply(this, paramsWithFee)
-      const tokensPayWith = BN(
-        calculate_liquidity_out.apply(this, paramsWithoutFee),
-      ).minus(tokensToGet)
-      const lrnaToGet = calculate_liquidity_lrna_out.apply(this, paramsWithFee)
-      const lrnaPayWith = BN(
-        calculate_liquidity_lrna_out.apply(this, paramsWithoutFee),
-      ).minus(lrnaToGet)
-
-      return {
-        tokensToGet,
-        lrnaToGet,
-        lrnaPayWith,
-        tokensPayWith,
-        withdrawalFee: BN(withdrawalFee).div(BN_QUINTILL).multipliedBy(100),
-      }
-    }
-  }, [
-    apiIds.data,
-    minWithdrawalFee.data,
-    omnipoolAsset?.data,
-    omnipoolBalance.data,
-    oracle.data,
-    position.price,
-    position.providedAmount,
-    position.shares,
-    removeSharesValue,
-    spotPrice.data,
-  ])
 
   const handleSubmit = async (values: FormValues<typeof form>) => {
     const value = position.shares.div(100).times(values.value)
 
-    if (!(removeLiquidityValues && lrnaMeta && meta)) return
-
-    const lrnaAsBigNumber = new BigNumber(removeLiquidityValues.lrnaToGet)
-
     await createTransaction(
       {
-        tx: api.tx.omnipool.removeLiquidity(position.id, value.toFixed(0)),
+        tx: api.tx.stableswap.removeLiquidity(position.poolId, assetId, value.toFixed(0)),
       },
       {
         onSuccess,
@@ -267,15 +147,15 @@ export const RemoveLiquidity = ({
               i18nKey="liquidity.remove.modal.toast.onLoading"
               tOptions={{
                 value: value,
-                amount: removeLiquidityValues.tokensToGet,
-                fixedPointScale: meta.decimals ?? 12,
-                symbol: position.symbol,
-                withLrna: lrnaAsBigNumber.isGreaterThan(0)
-                  ? t("liquidity.remove.modal.toast.withLrna", {
-                      lrna: lrnaAsBigNumber,
-                      fixedPointScale: lrnaMeta.decimals.toString() ?? 12,
-                    })
-                  : "",
+                // amount: removeLiquidityValues.tokensToGet,
+                // fixedPointScale: meta.decimals ?? 12,
+                // symbol: position.symbol,
+                // withLrna: lrnaAsBigNumber.isGreaterThan(0)
+                //   ? t("liquidity.remove.modal.toast.withLrna", {
+                //       lrna: lrnaAsBigNumber,
+                //       fixedPointScale: lrnaMeta.decimals.toString() ?? 12,
+                //     })
+                //   : "",
               }}
             >
               <span />
@@ -288,15 +168,15 @@ export const RemoveLiquidity = ({
               i18nKey="liquidity.remove.modal.toast.onSuccess"
               tOptions={{
                 value: value,
-                amount: removeLiquidityValues.tokensToGet,
-                fixedPointScale: meta.decimals ?? 12,
-                symbol: position.symbol,
-                withLrna: lrnaAsBigNumber.isGreaterThan(0)
-                  ? t("liquidity.remove.modal.toast.withLrna", {
-                      lrna: lrnaAsBigNumber,
-                      fixedPointScale: lrnaMeta.decimals.toString() ?? 12,
-                    })
-                  : "",
+                // amount: removeLiquidityValues.tokensToGet,
+                // fixedPointScale: meta.decimals ?? 12,
+                // symbol: position.symbol,
+                // withLrna: lrnaAsBigNumber.isGreaterThan(0)
+                //   ? t("liquidity.remove.modal.toast.withLrna", {
+                //       lrna: lrnaAsBigNumber,
+                //       fixedPointScale: lrnaMeta.decimals.toString() ?? 12,
+                //     })
+                //   : "",
               }}
             >
               <span />
@@ -308,7 +188,7 @@ export const RemoveLiquidity = ({
     )
   }
 
-  const isFeeExceeded = removeLiquidityValues?.withdrawalFee.gt(0.99)
+  // const isFeeExceeded = removeLiquidityValues?.withdrawalFee.gt(0.99)
 
   return (
     <form
@@ -343,10 +223,7 @@ export const RemoveLiquidity = ({
                 <div>
                   <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
                     {t("liquidity.remove.modal.value", {
-                      value: getFloatingPointAmount(
-                        removeSharesValue,
-                        meta?.decimals.toNumber() ?? 12,
-                      ),
+                      value: getFloatingPointAmount(removeSharesValue, STABLEPOOL_TOKEN_DECIMALS),
                     })}
                   </Text>
                   <Text
@@ -367,10 +244,7 @@ export const RemoveLiquidity = ({
                   <RemoveLiquidityInput
                     value={field.value}
                     onChange={field.onChange}
-                    shares={getFloatingPointAmount(
-                      position.shares,
-                      meta?.decimals.toNumber() ?? 12,
-                    )}
+                    amount={getFloatingPointAmount(position.amount, STABLEPOOL_TOKEN_DECIMALS)}
                   />
                 )}
               />
@@ -379,35 +253,23 @@ export const RemoveLiquidity = ({
                 <Text color="brightBlue300">
                   {t("liquidity.remove.modal.receive")}
                 </Text>
-                <RemoveLiquidityReward
-                  name={position.name}
-                  symbol={position.symbol}
+                {meta.data && <RemoveLiquidityReward
+                  name={meta.data.symbol}
+                  symbol={meta.data.symbol}
                   amount={t("value", {
                     value: BN_100,
                     type: "token",
-                    numberSuffix: ` ${position.symbol}`,
+                    numberSuffix: ` ${meta.data.symbol}`,
                   })}
                 />
+                }
               </STradingPairContainer>
             </div>
-            <Spacer size={6} />
-            <FeeRange
-              minFee={minWithdrawalFee.data?.multipliedBy(100)}
-              currentFee={removeLiquidityValues?.withdrawalFee}
-              lrnaFeeValue={
-                !BN(removeLiquidityValues?.lrnaPayWith ?? 0).isZero()
-                  ? t("value.token", {
-                      value: removeLiquidityValues?.lrnaPayWith,
-                      fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
-                    })
-                  : undefined
-              }
-              assetFeeValue={t("value.token", {
-                value: removeLiquidityValues?.tokensPayWith,
-                fixedPointScale: meta?.decimals.toString() ?? 12,
-              })}
-              assetSymbol={meta?.symbol}
-            />
+            <Spacer size={17} />
+            <div sx={{ flex: 'row', justify: 'space-between' }}>
+              <Text color="basic400">{t('liquidity.remove.modal.tokenFee.label')}</Text>
+              <Text color="white">{t('value.percentage', { value: position.withdrawFee })}</Text>
+            </div>
           </>
         }
         footer={
@@ -416,7 +278,7 @@ export const RemoveLiquidity = ({
             <Button
               fullWidth
               variant="primary"
-              disabled={removeSharesValue.isZero() || isFeeExceeded}
+              disabled={removeSharesValue.isZero()}
             >
               {t("liquidity.stablepool.remove.confirm")}
             </Button>

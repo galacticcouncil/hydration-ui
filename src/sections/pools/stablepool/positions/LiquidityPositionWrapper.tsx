@@ -9,6 +9,8 @@ import { u32, u8 } from "@polkadot/types"
 
 type Props = {
   amount: BN
+  poolId: u32
+  withdrawFee: BN
   assets: {
     id: string
     symbol: string
@@ -16,7 +18,7 @@ type Props = {
   }[]
 }
 
-export const LiquidityPositionWrapper = ({ amount, assets }: Props) => {
+export const LiquidityPositionWrapper = ({ amount, assets, poolId, withdrawFee }: Props) => {
   const { t } = useTranslation()
 
   return (
@@ -32,7 +34,7 @@ export const LiquidityPositionWrapper = ({ amount, assets }: Props) => {
         </Text>
       </div>
       <div sx={{ flex: "column", gap: 16 }}>
-        <LiquidityPosition amount={amount} assets={assets} />
+        <LiquidityPosition poolId={poolId} amount={amount} assets={assets} withdrawFee={withdrawFee} />
       </div>
     </SPositions>
   )

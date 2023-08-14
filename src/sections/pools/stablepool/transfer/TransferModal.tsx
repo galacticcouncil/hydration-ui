@@ -19,6 +19,7 @@ type Props = {
   assetMetaById?: AssetMetaById
   balanceByAsset?: BalanceByAsset
   refetchPositions: () => void
+  assets: { id: string }[]
 }
 
 enum Page {
@@ -29,6 +30,7 @@ enum Page {
 }
 
 export const TransferModal = ({
+  assets,
   poolId,
   tradeFee,
   isOpen,
@@ -140,7 +142,7 @@ export const TransferModal = ({
             content: (
               <AssetsModalContent
                 hideInactiveAssets={true}
-                allowedAssets={Array.from(assetMetaById?.keys() ?? [])}
+                allowedAssets={assets.map((asset) => asset.id)}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   handleBack()

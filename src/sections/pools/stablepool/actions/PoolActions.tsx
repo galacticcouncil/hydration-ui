@@ -17,9 +17,15 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { LiquidityPositions } from "../../modals/LiquidityPositions/LiquidityPositions"
 import { ReactComponent as DetailsIcon } from "assets/icons/DetailsIcon.svg"
+import { u8 } from '@polkadot/types'
 
 type PoolActionsProps = {
   poolId: u32
+  assets: {
+    id: string
+    symbol: string
+    decimals: u8 | u32
+  }[]
   tradeFee: BigNumber
   balanceByAsset?: BalanceByAsset
   assetMetaById?: AssetMetaById
@@ -40,6 +46,7 @@ export const PoolActions = ({
   isExpanded,
   canExpand,
   refetchPositions,
+  assets
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
@@ -104,6 +111,7 @@ export const PoolActions = ({
       {openAdd && (
         <TransferModal
           poolId={poolId}
+          assets={assets}
           tradeFee={tradeFee}
           isOpen={openAdd}
           onClose={() => setOpenAdd(false)}
