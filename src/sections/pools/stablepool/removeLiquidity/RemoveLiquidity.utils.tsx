@@ -42,16 +42,9 @@ export const useStablepoolLiquidiyOut = ({
     currentBlock.toString(),
   )
 
-  // [{"asset_id":10,"amount":"9000000000"},{"asset_id":2,"amount":"5000000000000000000000"}]
-  // 40379600762990012.7
-  // 2
-  // 1000
-  // 61181213277257595
-  // 3000
-
   const result = calculate_liquidity_out_one_asset(
     JSON.stringify(reserves),
-    shares.toString(),
+    shares.dp(0).toString(),
     Number(assetId),
     amplification,
     shareIssuance.data.total.toString(),
