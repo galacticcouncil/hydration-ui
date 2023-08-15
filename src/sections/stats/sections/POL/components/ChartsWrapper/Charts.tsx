@@ -15,7 +15,7 @@ export const Charts = ({
   const stats = useStats({
     timeframe,
     assetSymbol,
-    type,
+    type: "volume",
   })
 
   return type === "volume" ? (

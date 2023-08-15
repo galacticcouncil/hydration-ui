@@ -17,7 +17,7 @@ type Props = { assetSymbol?: string }
 
 export const ChartsWrapper = ({ assetSymbol }: Props) => {
   const { t } = useTranslation()
-  const [chartType, setChartType] = useState<ChartType>("pol")
+  const [chartType, setChartType] = useState<ChartType>("volume")
   const [timeframe, setTimeframe] = useState<StatsTimeframe>(
     StatsTimeframe.HOURLY,
   )
@@ -35,7 +35,7 @@ export const ChartsWrapper = ({ assetSymbol }: Props) => {
       >
         <div sx={{ flex: "row", gap: [4, 12], justify: ["end", "start"] }}>
           <SChartTab
-            disabled={!isApi}
+            disabled={!isApi || true}
             aria-label="total value locked"
             active={chartType === "pol"}
             onClick={() => setChartType("pol")}
