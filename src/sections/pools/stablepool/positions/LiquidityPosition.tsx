@@ -4,8 +4,6 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SContainer } from "./LiquidityPosition.styled"
-import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { BN_1, BN_100, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import BN from "bignumber.js"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
@@ -20,6 +18,7 @@ type Props = {
   amount: BN
   poolId: u32
   withdrawFee: BN
+  reserves: { asset_id: number; amount: string }[]
   assets: {
     id: string
     symbol: string
@@ -28,17 +27,14 @@ type Props = {
 }
 
 function LiquidityPositionRemoveLiquidity(props: {
-  assets: {
-    id: string
-    symbol: string
-    decimals: u8 | u32
-  }[]
+  assets: Props["assets"]
   position: ComponentProps<typeof RemoveLiquidityModal>["position"]
   onSuccess: () => void
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const [openRemove, setOpenRemove] = useState(false)
+
   return (
     <>
       <SButton
@@ -70,6 +66,7 @@ export const LiquidityPosition = ({
   assets,
   poolId,
   withdrawFee,
+  reserves,
 }: Props) => {
   const { t } = useTranslation()
 
@@ -114,16 +111,17 @@ export const LiquidityPosition = ({
               })}
             </Text>
             <div sx={{ flex: "column", align: "start" }}>
-              <DollarAssetValue
-                value={BN_100}
-                wrapper={(children) => (
-                  <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
-                    {children}
-                  </Text>
-                )}
-              >
-                <DisplayValue value={BN_100} />
-              </DollarAssetValue>
+              {/*TODO: not yet able to get value */}
+              {/*<DollarAssetValue*/}
+              {/*  value={BN_100}*/}
+              {/*  wrapper={(children) => (*/}
+              {/*    <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">*/}
+              {/*      {children}*/}
+              {/*    </Text>*/}
+              {/*  )}*/}
+              {/*>*/}
+              {/*  <DisplayValue value={BN_100} />*/}
+              {/*</DollarAssetValue>*/}
             </div>
           </div>
         </div>
@@ -139,6 +137,7 @@ export const LiquidityPosition = ({
         <LiquidityPositionRemoveLiquidity
           assets={assets}
           position={{
+            reserves,
             withdrawFee,
             poolId,
             amount,

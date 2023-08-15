@@ -11,6 +11,7 @@ type Props = {
   amount: BN
   poolId: u32
   withdrawFee: BN
+  reserves: { asset_id: number; amount: string }[]
   assets: {
     id: string
     symbol: string
@@ -23,6 +24,7 @@ export const LiquidityPositionWrapper = ({
   assets,
   poolId,
   withdrawFee,
+  reserves,
 }: Props) => {
   const { t } = useTranslation()
 
@@ -44,6 +46,7 @@ export const LiquidityPositionWrapper = ({
           amount={amount}
           assets={assets}
           withdrawFee={withdrawFee}
+          reserves={reserves}
         />
       </div>
     </SPositions>

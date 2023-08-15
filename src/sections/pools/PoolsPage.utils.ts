@@ -120,12 +120,20 @@ export const useOmnipoolStablePools = () => {
       { free: BN_0, value: BN_0 },
     )
 
+    const reserves = Array.from(balanceByAsset?.entries() ?? []).map(
+      ([assetId, balance]) => ({
+        asset_id: Number(assetId),
+        amount: balance.free.toString(),
+      }),
+    )
+
     return {
       id: pool.id,
       assets: poolAssets,
       total,
       balanceByAsset,
       assetMetaById,
+      reserves,
       tradeFee: normalizeBigNumber(pool.data.tradeFee).div(10000),
       withdrawFee: normalizeBigNumber(pool.data.withdrawFee).div(10000),
     }

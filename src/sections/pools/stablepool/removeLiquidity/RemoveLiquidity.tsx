@@ -12,7 +12,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { useStore } from "state/store"
 import { useApiPromise } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
-import { BN_100, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
@@ -20,11 +20,13 @@ import { theme } from "theme"
 import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
 import { u32 } from "@polkadot/types-codec"
 import { useAssetMeta } from "api/assetMeta"
+import { useStablepoolLiquidiyOut } from "./RemoveLiquidity.utils"
 
 type RemoveLiquidityProps = {
   assetId?: string
   onClose: () => void
   position: {
+    reserves: { asset_id: number; amount: string }[]
     poolId: u32
     amount: BigNumber
     shares: BigNumber
@@ -123,6 +125,14 @@ export const RemoveLiquidity = ({
   const removeSharesValue = useMemo(() => {
     return position.amount.div(100).times(value)
   }, [value, position])
+
+  const liquidityOut = useStablepoolLiquidiyOut({
+    shares: removeSharesValue,
+    reserves: position.reserves,
+    poolId: position.poolId,
+    assetId,
+    withdrawFee: position.withdrawFee,
+  })
 
   const handleSubmit = async (values: FormValues<typeof form>) => {
     const value = position.shares.div(100).times(values.value)
@@ -267,7 +277,7 @@ export const RemoveLiquidity = ({
                     name={meta.data.symbol}
                     symbol={meta.data.symbol}
                     amount={t("value", {
-                      value: BN_100,
+                      value: liquidityOut,
                       type: "token",
                       numberSuffix: ` ${meta.data.symbol}`,
                     })}

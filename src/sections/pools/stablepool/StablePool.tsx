@@ -28,6 +28,7 @@ export const StablePool = ({
   balanceByAsset,
   assetMetaById,
   withdrawFee,
+  reserves,
 }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -80,6 +81,7 @@ export const StablePool = ({
                 assets={assets}
                 amount={amount}
                 withdrawFee={withdrawFee}
+                reserves={reserves}
               />
             </motion.div>
           )}
