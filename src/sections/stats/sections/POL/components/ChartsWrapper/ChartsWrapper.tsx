@@ -2,7 +2,6 @@ import { useState } from "react"
 import { useApiPromise } from "utils/api"
 import { isApiLoaded } from "utils/helpers"
 import { useTranslation } from "react-i18next"
-import { AreaChart } from "components/Charts/AreaChart/AreaChart"
 import { StatsTimeframe } from "api/stats"
 import { Charts } from "./Charts"
 import {
@@ -10,6 +9,7 @@ import {
   STimeframeContainer,
   STimeframeEl,
 } from "sections/stats/components/ChartsWrapper/ChartsWrapper.styled"
+import { Spacer } from "components/Spacer/Spacer"
 
 export type ChartType = "pol" | "volume"
 
@@ -19,7 +19,7 @@ export const ChartsWrapper = ({ assetSymbol }: Props) => {
   const { t } = useTranslation()
   const [chartType, setChartType] = useState<ChartType>("pol")
   const [timeframe, setTimeframe] = useState<StatsTimeframe>(
-    StatsTimeframe["ALL"],
+    StatsTimeframe.HOURLY,
   )
   const api = useApiPromise()
   const isApi = isApiLoaded(api)
@@ -51,29 +51,26 @@ export const ChartsWrapper = ({ assetSymbol }: Props) => {
             {t("stats.pol.chart.switcher.volume")}
           </SChartTab>
         </div>
-        <STimeframeContainer>
-          <STimeframeEl
-            disabled={!isApi}
-            active={timeframe === StatsTimeframe["ALL"]}
-            onClick={() => setTimeframe(StatsTimeframe["ALL"])}
-          >
-            {t("stats.chart.timeframe.all")}
-          </STimeframeEl>
-          <STimeframeEl
-            disabled={!isApi}
-            active={timeframe === StatsTimeframe["WEEKLY"]}
-            onClick={() => setTimeframe(StatsTimeframe["WEEKLY"])}
-          >
-            {t("stats.chart.timeframe.week")}
-          </STimeframeEl>
-          <STimeframeEl
-            disabled={!isApi}
-            active={timeframe === StatsTimeframe["DAILY"]}
-            onClick={() => setTimeframe(StatsTimeframe["DAILY"])}
-          >
-            {t("stats.chart.timeframe.day")}
-          </STimeframeEl>
-        </STimeframeContainer>
+        {chartType === "volume" ? (
+          <STimeframeContainer>
+            <STimeframeEl
+              disabled={!isApi}
+              active={timeframe === StatsTimeframe["DAILY"]}
+              onClick={() => setTimeframe(StatsTimeframe["DAILY"])}
+            >
+              {t("stats.chart.timeframe.month")}
+            </STimeframeEl>
+            <STimeframeEl
+              disabled={!isApi}
+              active={timeframe === StatsTimeframe["HOURLY"]}
+              onClick={() => setTimeframe(StatsTimeframe["HOURLY"])}
+            >
+              {t("stats.chart.timeframe.day")}
+            </STimeframeEl>
+          </STimeframeContainer>
+        ) : (
+          <Spacer size={22} />
+        )}
       </div>
       <Charts
         type={chartType}

@@ -8,10 +8,10 @@ import {
   ReferenceLine,
 } from "recharts"
 import { theme } from "theme"
-import { format, startOfHour } from "date-fns"
+import { format } from "date-fns"
 import { ReactComponent as CustomDot } from "assets/icons/ChartDot.svg"
 import { useTranslation } from "react-i18next"
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { CategoricalChartState } from "recharts/types/chart/generateCategoricalChart"
 import { Text } from "components/Typography/Text/Text"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -86,59 +86,16 @@ const Label = ({ value }: { value: number }) => {
   )
 }
 
-const filterTickes = (
-  data: Array<StatsData>,
-  timeframe: StatsTimeframe.DAILY | StatsTimeframe.WEEKLY,
-) => {
-  const ticks = data.reduce((acc, item) => {
-    if (
-      timeframe === StatsTimeframe.WEEKLY &&
-      !acc.find(
-        (tick) =>
-          new Date(tick).getDate() === new Date(item.interval).getDate(),
-      )
-    ) {
-      acc.push(item.interval)
-      return acc
-    }
-
-    const currentLabelHour = startOfHour(new Date(item.interval))
-
-    if (
-      timeframe === StatsTimeframe.DAILY &&
-      !acc.find(
-        (tick) => new Date(tick).getHours() === currentLabelHour.getHours(),
-      )
-    ) {
-      acc.push(currentLabelHour.toISOString())
-      return acc
-    }
-
-    return acc
-  }, [] as string[])
-
-  return ticks
-}
-
 export const AreaChart = ({
   data,
   loading,
   error,
   dataKey,
-  timeframe,
 }: AreaChartProps) => {
   const { t } = useTranslation()
   const [activePoint, setActivePoint] = useState<CategoricalChartState | null>(
     null,
   )
-
-  const ticks = useMemo(() => {
-    if (data && timeframe !== StatsTimeframe.ALL) {
-      const ticks = filterTickes(data, timeframe)
-      return ticks
-    }
-    return []
-  }, [timeframe, data])
 
   if (loading) return <AreaChartSkeleton state="loading" />
 
@@ -201,18 +158,12 @@ export const AreaChart = ({
             activeDot={(props) => <CustomizedDot {...props} />}
           />
           <XAxis
-            dataKey="interval"
+            dataKey="timestamp"
             tick={{ fontSize: 12, fill: "white" }}
             tickFormatter={(data) => {
               const date = new Date(data)
-              return format(
-                date,
-                timeframe === StatsTimeframe.DAILY && date.getHours() !== 0
-                  ? "HH:mm"
-                  : "MMM  dd",
-              )
+              return format(date, "MMM  dd")
             }}
-            ticks={timeframe !== StatsTimeframe.ALL ? ticks : []}
           />
           <YAxis
             dataKey={dataKey}

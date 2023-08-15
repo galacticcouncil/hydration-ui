@@ -12,7 +12,7 @@ import {
   YAxis,
 } from "recharts"
 import { theme } from "theme"
-import { StatsData } from "api/stats"
+import { StatsData, StatsTimeframe } from "api/stats"
 import { format } from "date-fns"
 import { BarChartSkeleton } from "./BarChartSkeleton"
 import { Maybe } from "utils/helpers"
@@ -23,11 +23,17 @@ type BarChartProps = {
   data: Maybe<Array<StatsData>>
   error: boolean
   loading: boolean
+  timeframe: StatsTimeframe
 }
 
 type BarItemProps = Required<NonNullable<BarProps["data"]>[number]> & StatsData
 
-export const BarChart = ({ data, loading, error }: BarChartProps) => {
+export const BarChart = ({
+  data,
+  loading,
+  error,
+  timeframe,
+}: BarChartProps) => {
   const { t } = useTranslation()
   const [activeBar, setActiveBar] = useState<BarItemProps | undefined>(
     undefined,
@@ -64,13 +70,13 @@ export const BarChart = ({ data, loading, error }: BarChartProps) => {
             dataKey="volume_usd"
             onMouseLeave={() => setActiveBar(undefined)}
             onMouseOver={(bar) => {
-              if (bar.interval !== activeBar?.interval) {
+              if (bar.timestamp !== activeBar?.timestamp) {
                 setActiveBar(bar)
               }
             }}
           >
             {data.map((entry, index) => {
-              const isActive = entry.interval === activeBar?.interval
+              const isActive = entry.timestamp === activeBar?.timestamp
               return (
                 <Cell
                   cursor="pointer"
@@ -84,10 +90,15 @@ export const BarChart = ({ data, loading, error }: BarChartProps) => {
           </Bar>
 
           <XAxis
-            dataKey="interval"
+            dataKey="timestamp"
             height={30}
             tick={{ fontSize: 12, fill: "white" }}
-            tickFormatter={(data) => format(new Date(data), "MMM  dd")}
+            tickFormatter={(data) =>
+              format(
+                new Date(data),
+                timeframe === StatsTimeframe.DAILY ? "MMM  dd" : "HH:mm",
+              )
+            }
           />
 
           <YAxis
@@ -107,7 +118,7 @@ export const BarChart = ({ data, loading, error }: BarChartProps) => {
 const Label = ({ item }: { item: BarItemProps }) => {
   const { t } = useTranslation()
 
-  const date = new Date(item.interval)
+  const date = new Date(item.timestamp)
 
   return (
     <>
