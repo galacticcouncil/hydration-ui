@@ -1,5 +1,5 @@
 import { PalletDemocracyReferendumInfo } from "@polkadot/types/lookup"
-import { ReactComponent as LinkIcon } from "assets/icons/LinkPixeled.svg"
+import { ReactComponent as IconArrow } from "assets/icons/IconArrow.svg"
 import { Separator } from "components/Separator/Separator"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
@@ -78,7 +78,7 @@ export const ReferendumCardRococo = ({ id, referendum, type, rpc }: Props) => {
           </Text>
         </div>
 
-        <Icon sx={{ color: "brightBlue300" }} icon={<LinkIcon />} />
+        <Icon sx={{ color: "brightBlue300" }} icon={<IconArrow />} />
       </SHeader>
 
       <Separator color="primaryA15Blue" opacity={0.35} sx={{ my: 16 }} />

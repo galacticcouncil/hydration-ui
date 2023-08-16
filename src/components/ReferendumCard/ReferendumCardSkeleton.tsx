@@ -1,5 +1,5 @@
 import Skeleton from "react-loading-skeleton"
-import { ReactComponent as LinkIcon } from "assets/icons/LinkPixeled.svg"
+import { ReactComponent as IconArrow } from "assets/icons/IconArrow.svg"
 import { Separator } from "components/Separator/Separator"
 import { SContainer, SHeader } from "./ReferendumCard.styled"
 import { Spacer } from "components/Spacer/Spacer"
@@ -20,7 +20,7 @@ export const ReferendumCardSkeleton = ({
     <SContainer type={type}>
       <SHeader>
         <Skeleton height={13} width={isToastCard ? 100 : 164} />
-        <Icon sx={{ color: "brightBlue300" }} icon={<LinkIcon />} />
+        <Icon sx={{ color: "brightBlue300" }} icon={<IconArrow />} />
       </SHeader>
 
       <Separator color="primaryA15Blue" opacity={0.35} sx={{ my: 16 }} />
