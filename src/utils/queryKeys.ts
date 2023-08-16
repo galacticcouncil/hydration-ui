@@ -5,6 +5,7 @@ import { CodecHash } from "@polkadot/types/interfaces/runtime"
 import { StatsTimeframe } from "api/stats"
 import type BigNumber from "bignumber.js"
 import { Maybe } from "utils/helpers"
+import { ChartType } from "../sections/stats/components/ChartsWrapper/ChartsWrapper"
 
 export const QUERY_KEY_PREFIX = "@block"
 
@@ -286,8 +287,12 @@ export const QUERY_KEYS = {
   polStats: ["polStats"],
   referendums: [QUERY_KEY_PREFIX, "referendums"],
   referendumInfo: (id: string) => [QUERY_KEY_PREFIX, id, "referendumInfo"],
-  stats: (timeframe?: StatsTimeframe, assetSymbol?: string) => {
-    const key = ["stats"]
+  stats: (
+    type: ChartType,
+    timeframe?: StatsTimeframe,
+    assetSymbol?: string,
+  ) => {
+    const key = ["stats", type]
 
     if (timeframe) key.push(timeframe)
     if (assetSymbol) key.push(assetSymbol)

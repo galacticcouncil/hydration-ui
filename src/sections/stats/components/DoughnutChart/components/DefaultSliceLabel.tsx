@@ -19,6 +19,7 @@ export const DefaultSliceLabel = ({ slices }: { slices: TSlice[] }) => {
       css={{ position: "absolute" }}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.25 }}
     >
       <div sx={{ flex: "column", align: "center", gap: 6 }}>
         <MultipleIcons

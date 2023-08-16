@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
 import { Maybe } from "graphql/jsutils/Maybe"
+import { ChartType } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 export type StatsData = {
-  interval: string
+  timestamp: string
   volume_usd: number
   tvl_usd: number
   tvl_pol_usd: number
@@ -11,22 +12,25 @@ export type StatsData = {
 }
 
 export enum StatsTimeframe {
-  ALL = "all",
-  WEEKLY = "weekly",
   DAILY = "daily",
+  HOURLY = "hourly",
 }
 
 export const useStats = (
   data: Maybe<{
     timeframe?: StatsTimeframe
     assetSymbol?: string
+    type: ChartType
   }>,
 ) => {
-  const { timeframe, assetSymbol } = data ?? {}
+  const { timeframe, assetSymbol, type = "tvl" } = data ?? {}
   return useQuery(
-    QUERY_KEYS.stats(timeframe, assetSymbol),
+    QUERY_KEYS.stats(type, timeframe, assetSymbol),
     async () => {
-      const res = await getStats(timeframe, assetSymbol)()
+      const res =
+        type === "volume"
+          ? await getStats(timeframe, assetSymbol)()
+          : await getStatsTvl(assetSymbol)()
 
       if (!res.length) {
         throw new Error("Error fetching stats data")
@@ -41,7 +45,7 @@ export const useStats = (
 const getStats =
   (timeframe?: StatsTimeframe, assetSymbol?: string) => async () => {
     const res = await fetch(
-      `https://api.hydradx.io/hydradx-ui/v1/stats/${assetSymbol ?? ""}${
+      `https://api.hydradx.io/hydradx-ui/v1/stats/volume/${assetSymbol ?? ""}${
         timeframe ? `?timeframe=${timeframe}` : ""
       }`,
     )
@@ -50,3 +54,13 @@ const getStats =
 
     return data
   }
+
+const getStatsTvl = (assetSymbol?: string) => async () => {
+  const res = await fetch(
+    `https://api.hydradx.io/hydradx-ui/v1/stats/tvl/${assetSymbol ?? ""}`,
+  )
+
+  const data: Promise<StatsData[]> = res.json()
+
+  return data
+}
