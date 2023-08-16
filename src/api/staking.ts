@@ -109,6 +109,7 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     amount: BN
     conviction: string
   }> = await votesRes.votes.reduce(async (acc, [key, data]) => {
+    const prevAcc = await acc
     const id = key.toBigNumber()
     const amount = data.amount.toBigNumber()
     const conviction = data.conviction.toString()
@@ -117,15 +118,15 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     const isFinished = referendaInfo.unwrapOr(null).isFinished
 
     if (isFinished) {
-      acc.push({
+      prevAcc.push({
         id,
         amount,
         conviction,
       })
     }
 
-    return acc
-  }, [])
+    return prevAcc
+  }, Promise.resolve([]))
 
   return {
     stake: positionData.stake.toBigNumber() as BN,

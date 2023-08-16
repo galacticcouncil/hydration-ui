@@ -7,13 +7,9 @@ export const SContainer = styled.a<{ type: "staking" | "toast" }>`
   ${({ type }) =>
     type === "toast"
       ? css`
-          background: rgba(${theme.rgbColors.darkBlue401}, 0.8);
-
           border-radius: ${theme.borderRadius.default}px;
         `
       : css`
-          background: ${theme.colors.darkBlue700};
-
           border-radius: ${theme.borderRadius.stakingCard}px;
 
           position: relative;
@@ -39,6 +35,20 @@ export const SContainer = styled.a<{ type: "staking" | "toast" }>`
             pointer-events: none;
           }
         `}
+
+  background: ${theme.colors.darkBlue700};
+
+  transition: background ${theme.transitions.default};
+
+  cursor: pointer;
+
+  &:hover {
+    background: ${theme.colors.darkBlue401};
+  }
+
+  &:active {
+    background: ${theme.colors.darkBlue400};
+  }
 `
 
 export const SHeader = styled.div`
