@@ -3087,10 +3087,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-omnipool/-/math-omnipool-0.1.3.tgz#45ccb95c8196768e8a96577f56f7f90d48dcb44b"
   integrity sha512-uA0O+9KA+BlFeLyU7vhKKhJEiiKUwu5ozD14fhJ3vCm11XbGQPwEboChiICXAKysc8BMDejAqpKBmKOEjiRBaw==
 
-"@galacticcouncil/math-staking@^0.1.4-beta.0":
-  version "0.1.4-beta.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-staking/-/math-staking-0.1.4-beta.0.tgz#3a7f6bf32bd6a0d166d5d3e2ef287a53f860e004"
-  integrity sha512-8PWY0x01L6Cg9osy0tjhfwW1qVLfT8n8runEl7wFNU6XykR7O4JsPz4QFVcL74QKOwnk45qfNPvKJYcxsUAwwQ==
+"@galacticcouncil/math-staking@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-staking/-/math-staking-0.1.4.tgz#0beee2eac3294d286b1d4bc7db3d87960faccfcb"
+  integrity sha512-wq5GbflaOI4LMwYXSTuPqno4xj08jl2vGlSggMo8bL/pOGi0y7wu5E6qIQUK01stvWWNnru4wKQ7z7N+fP2s+Q==
 
 "@galacticcouncil/math-xyk@^0.1.3":
   version "0.1.3"

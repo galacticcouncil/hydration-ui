@@ -29,7 +29,7 @@
     "@galacticcouncil/bridge": "0.0.7",
     "@galacticcouncil/math-lbp": "^0.1.3",
     "@galacticcouncil/math-liquidity-mining": "^0.1.3",
-    "@galacticcouncil/math-staking": "^0.1.4-beta.0",
+    "@galacticcouncil/math-staking": "^0.1.4",
     "@galacticcouncil/math-xyk": "^0.1.3",
     "@galacticcouncil/sdk": "^0.5.2",
     "@galacticcouncil/ui": "^1.2.15",
