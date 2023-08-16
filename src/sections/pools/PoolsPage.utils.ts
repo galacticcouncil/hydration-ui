@@ -26,10 +26,15 @@ import { useAccountsBalances } from "api/accountBalances"
 export const derivePoolAccount = (assetId: u32) => {
   try {
     const addr = stable_pool_account_name(assetId.toString())
-    return encodeAddress(stringToU8a(addr.padEnd(32, "\0")), HYDRADX_SS58_PREFIX)
+    return encodeAddress(
+      stringToU8a(addr.padEnd(32, "\0")),
+      HYDRADX_SS58_PREFIX,
+    )
   } catch (e) {
     console.log(e)
-    return assetId.toString() === "1000" ? "7J8qdo3LE74tniQYxiMRo2GXQZzpdGBUcizHYRoAkoYUVDko" : "7JJnazA8nHpy1yqg2ZugX9zh8YdSWjqyU3XiDhUPRawLFeMw"
+    return assetId.toString() === "1000"
+      ? "7J8qdo3LE74tniQYxiMRo2GXQZzpdGBUcizHYRoAkoYUVDko"
+      : "7JJnazA8nHpy1yqg2ZugX9zh8YdSWjqyU3XiDhUPRawLFeMw"
   }
 }
 
@@ -46,8 +51,12 @@ export type BalanceByAsset = Exclude<
 export const useOmnipoolStablePools = () => {
   const pools = useStableswapPools()
 
-  const poolAddressById = new Map((pools.data ?? []).map((pool) => [pool.id, derivePoolAccount(pool.id)]));
-  const poolsBalances = useAccountsBalances(Array.from(poolAddressById.values()))
+  const poolAddressById = new Map(
+    (pools.data ?? []).map((pool) => [pool.id, derivePoolAccount(pool.id)]),
+  )
+  const poolsBalances = useAccountsBalances(
+    Array.from(poolAddressById.values()),
+  )
 
   const assetsByPool = new Map(
     (pools.data ?? []).map((pool) => [
@@ -73,28 +82,43 @@ export const useOmnipoolStablePools = () => {
     ]),
   )
 
-  if (pools.isLoading || assetMetas.isLoading || spotPrices.isLoading || poolsBalances.isLoading) {
+  if (
+    pools.isLoading ||
+    assetMetas.isLoading ||
+    spotPrices.isLoading ||
+    poolsBalances.isLoading
+  ) {
     return { data: undefined, isLoading: true }
   }
-
 
   const data = (pools.data ?? []).map((pool) => {
     const poolAssets = (assetMetas.data ?? []).filter((asset) =>
       assetsByPool.get(pool.id).includes(asset.id),
     )
 
-    const poolBalances =  (poolsBalances.data ?? []).find((p) => p.accountId === poolAddressById.get(pool.id))
+    const poolBalances = (poolsBalances.data ?? []).find(
+      (p) => p.accountId === poolAddressById.get(pool.id),
+    )
 
-    const balanceByAsset = new Map((poolBalances?.balances ?? []).map((balance) => {
-      const id = balance.id.toString()
-      const spotPrice = spotPriceByAsset.get(id)
-      const decimals = normalizeBigNumber(assetMetaById.get(id)?.decimals ?? 12)
+    const balanceByAsset = new Map(
+      (poolBalances?.balances ?? []).map((balance) => {
+        const id = balance.id.toString()
+        const spotPrice = spotPriceByAsset.get(id)
+        const decimals = normalizeBigNumber(
+          assetMetaById.get(id)?.decimals ?? 12,
+        )
 
-      const free = normalizeBigNumber(balance.data.free)
-      const value = spotPrice && !spotPrice.spotPrice.isNaN() ? free.shiftedBy(decimals.negated().toNumber()).times(spotPrice.spotPrice) : BN_0
+        const free = normalizeBigNumber(balance.data.free)
+        const value =
+          spotPrice && !spotPrice.spotPrice.isNaN()
+            ? free
+                .shiftedBy(decimals.negated().toNumber())
+                .times(spotPrice.spotPrice)
+            : BN_0
 
-      return ([id, { free, value }])
-    }))
+        return [id, { free, value }]
+      }),
+    )
 
     const total = Array.from(balanceByAsset.entries()).reduce(
       (acc, [, balance]) => ({

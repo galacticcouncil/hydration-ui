@@ -21,11 +21,7 @@ type Args = {
   reserves: { asset_id: number; amount: string }[]
 }
 
-export const useStablepoolShares = ({
-  poolId,
-  asset,
-  reserves,
-}: Args) => {
+export const useStablepoolShares = ({ poolId, asset, reserves }: Args) => {
   const pool = useStableswapPool(poolId)
   const bestNumber = useBestNumber()
   const currentBlock = bestNumber.data?.relaychainBlockNumber
@@ -42,7 +38,6 @@ export const useStablepoolShares = ({
     pool.data.finalBlock.toString(),
     currentBlock.toString(),
   )
-
 
   const assets: Asset[] =
     asset?.id && asset.amount

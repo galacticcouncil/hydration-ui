@@ -9,11 +9,12 @@ import { useTotalIssuance } from "api/totalIssuance"
 import { normalizeBigNumber } from "utils/balance"
 import { BN_0, BN_NAN } from "utils/constants"
 import BigNumber from "bignumber.js"
+import { u8 } from "@polkadot/types"
 
 type Args = {
   poolId: u32
   shares: BigNumber
-  asset?: { id: string; decimals: u32 }
+  asset?: { id: string; decimals: u32 | u8 }
   withdrawFee: BigNumber
   reserves: { asset_id: number; amount: string }[]
 }
@@ -52,7 +53,9 @@ export const useStablepoolLiquidiyOut = ({
   )
 
   return BigNumber.maximum(
-    normalizeBigNumber(result).shiftedBy(normalizeBigNumber(asset.decimals).negated().toNumber()),
+    normalizeBigNumber(result).shiftedBy(
+      normalizeBigNumber(asset.decimals).negated().toNumber(),
+    ),
     BN_0,
   ).toString()
 }

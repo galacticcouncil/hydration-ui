@@ -48,7 +48,7 @@ export const PoolActions = ({
   canExpand,
   refetchPositions,
   assets,
-  reserves
+  reserves,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
