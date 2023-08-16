@@ -142,7 +142,7 @@ export const RemoveLiquidity = ({
           assetId,
           removeSharesValue.dp(0).toString(),
           // TODO: specified amount-withdrawal fees-slippage limit
-          removeSharesValue.dp(0).toString()
+          removeSharesValue.dp(0).toString(),
         ),
       },
       {
