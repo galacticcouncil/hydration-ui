@@ -27,7 +27,7 @@ export const TransferOption = ({
     <div
       sx={{ flex: "row", align: "center", justify: "space-between", mb: 26 }}
     >
-      <div sx={{ flex: "row", align: "center", gap: 12 }}>
+      <div sx={{ flex: "row", align: "center", gap: 12, color: "white" }}>
         <Icon icon={icon} />
         <Heading fs={15} lh={20} fw={500}>
           {heading}

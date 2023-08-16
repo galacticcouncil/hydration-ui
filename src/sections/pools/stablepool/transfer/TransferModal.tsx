@@ -42,8 +42,7 @@ export const TransferModal = ({
   refetchPositions,
 }: Props) => {
   const { t } = useTranslation()
-  // TODO: skip stablepool / omnipool selection for now. When omnipool flow is ready use useState<Page>(Page.OPTIONS)
-  const [page, setPage] = useState<Page>(Page.STABLEPOOL)
+  const [page, setPage] = useState<Page>(Page.OPTIONS)
   const [assetId, setAssetId] = useState<string>(assets[0]?.id)
 
   const [selectedOption, setSelectedOption] =
@@ -88,8 +87,7 @@ export const TransferModal = ({
       <ModalContents
         onClose={onClose}
         page={page}
-        // TODO: skip stablepool / omnipool selection for now. When omnipool flow is ready use onBack={page ? handleBack : undefined}
-        onBack={page === Page.ASSETS ? handleBack : undefined}
+        onBack={page ? handleBack : undefined}
         contents={[
           {
             title: t("liquidity.stablepool.transfer.options"),
