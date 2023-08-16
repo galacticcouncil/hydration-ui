@@ -120,6 +120,11 @@ export const StakingValues = ({
         />
       }
       title={t("staking.dashboard.stats.projectedRewards")}
+      tooltip={t(
+        `staking.dashboard.stats.${
+          isStakingPosition ? "aprWithPos" : "apr"
+        }.tooltip`,
+      )}
       value={
         loading || !isApiLoaded(api) ? (
           <div sx={{ flex: "column", gap: 2 }}>
