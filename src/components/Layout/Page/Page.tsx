@@ -19,7 +19,6 @@ export const Page = ({ variant = "default", className, children }: Props) => {
     ref.current?.scrollTo({
       top: 0,
       left: 0,
-      behavior: "smooth",
     })
   }, [location.pathname])
 

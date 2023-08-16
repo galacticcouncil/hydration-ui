@@ -1,3 +1,4 @@
+import { PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import * as definitions from "interfaces/voting/definitions"
@@ -86,20 +87,21 @@ export const useProvider = (rpcUrl?: string) => {
       const api = await ApiPromise.create({ provider, types })
 
       const { id, isStableCoin, update } = displayAsset
-      const assets = await api.query.assetRegistry.assetMetadataMap.entries()
+
+      const poolService = new PoolService(api)
+      const tradeRouter = new TradeRouter(poolService, {
+        includeOnly: [PoolType.Omni],
+      })
+      const assets = await tradeRouter.getAllAssets()
 
       let stableCoinId: string | undefined
 
       // set USDT as a stable token
-      stableCoinId = assets
-        .find(([_, data]) => data.unwrap().symbol.toUtf8() === "USDT")?.[0]
-        .args[0].toString()
+      stableCoinId = assets.find((asset) => asset.symbol === "USDT")?.id
 
       // set DAI as a stable token if there is no USDT
       if (!stableCoinId) {
-        stableCoinId = assets
-          .find(([_, data]) => data.unwrap().symbol.toUtf8() === "DAI")?.[0]
-          .args[0].toString()
+        stableCoinId = assets.find((asset) => asset.symbol === "DAI")?.id
       }
 
       if (stableCoinId && isStableCoin && id !== stableCoinId) {

@@ -421,6 +421,7 @@
   "stats.pie.rest.header.tvl": "tvl",
   "stats.pie.rest.header.pol": "pol",
   "stats.chart.timeframe.all": "all",
+  "stats.chart.timeframe.month": "1m",
   "stats.chart.timeframe.week": "1w",
   "stats.chart.timeframe.day": "1d",
   "stats.overview.pie.defaultLabel.composition": "Omnipool Composition",
