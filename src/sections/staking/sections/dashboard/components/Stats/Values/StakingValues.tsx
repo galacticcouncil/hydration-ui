@@ -52,7 +52,7 @@ const StakingValue = ({
           )}
         </div>
         {typeof value === "string" ? (
-          <Text fs={[19, 24]} color="white" font="FontOver">
+          <Text fs={[19]} color="white" font="FontOver">
             {value}
           </Text>
         ) : (
@@ -94,7 +94,7 @@ export const StakingValues = ({
           </div>
         ) : (
           <div sx={{ flex: "column", align: ["start", "center"] }}>
-            <Text fs={[19, 24]} lh={[19, 24]} color="white" font="FontOver">
+            <Text fs={[19]} lh={[19]} color="white" font="FontOver">
               {t("value.tokenWithSymbol", {
                 value: data?.availableBalance,
                 symbol: "HDX",
@@ -171,7 +171,7 @@ export const StakingValues = ({
             </div>
           ) : (
             <div sx={{ flex: "column", align: ["start", "center"] }}>
-              <Text fs={[19, 24]} lh={[19, 24]} color="white" font="FontOver">
+              <Text fs={[19]} lh={[19]} color="white" font="FontOver">
                 {t("value.tokenWithSymbol", {
                   value: data?.stakePosition?.stake,
                   symbol: "HDX",
@@ -231,7 +231,7 @@ const AprStatValue = ({
   const stakeApr = useStakeARP(availableBalance)
 
   return (
-    <Text fs={[19, 24]} color="white" font="FontOver">
+    <Text fs={[19]} color="white" font="FontOver">
       {stakeApr.isLoading ? (
         <Skeleton width={100} height={24} />
       ) : (
