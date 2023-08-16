@@ -12,7 +12,10 @@ export const ToastSidebarReferendums = () => {
   const rococoProvider = [
     "hydradx-rococo-rpc.play.hydration.cloud",
     "mining-rpc.hydradx.io",
-  ].find((rpc) => providers.rpcUrl === `wss://${rpc}`)
+  ].find(
+    (rpc) =>
+      providers.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL === `wss://${rpc}`,
+  )
 
   if (!referendums.data?.length) return null
 

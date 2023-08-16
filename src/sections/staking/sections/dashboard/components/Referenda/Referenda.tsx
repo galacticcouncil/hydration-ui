@@ -26,7 +26,10 @@ export const Referenda = ({ data, loading }: ReferendaProps) => {
   const rococoProvider = [
     "hydradx-rococo-rpc.play.hydration.cloud",
     "mining-rpc.hydradx.io",
-  ].find((rpc) => providers.rpcUrl === `wss://${rpc}`)
+  ].find(
+    (rpc) =>
+      providers.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL === `wss://${rpc}`,
+  )
 
   return (
     <SContainer sx={{ p: [24, "25px 20px 20px"], gap: 21 }}>

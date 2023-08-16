@@ -5,7 +5,6 @@ import { AvailableRewards } from "./components/AvailableRewards/AvailableRewards
 import { StakingInputSection } from "./components/StakingInputSection/StakingInputSection"
 import { useAccountStore } from "state/store"
 import { Stats } from "./components/Stats/Stats"
-import { StakingAccountSkeleton } from "./components/StakingAccountsTable/skeleton/StakingAccountSkeleton"
 import { Referenda, ReferendaWrapper } from "./components/Referenda/Referenda"
 import { useStakeData } from "sections/staking/StakingPage.utils"
 
@@ -23,7 +22,6 @@ export const StakingSkeleton = () => {
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
         <Stats loading />
         <Referenda loading />
-        <StakingAccountSkeleton />
       </div>
 
       <div
