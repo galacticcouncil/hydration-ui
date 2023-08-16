@@ -6,6 +6,7 @@ import BigNumber from "bignumber.js"
 import { BN_10 } from "./constants"
 import { Maybe } from "utils/helpers"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { intervalToDuration, formatDuration } from "date-fns"
 
 export const formatNum = (
   number?: number | string,
@@ -223,7 +224,11 @@ export function formatBigNumber(
 
   /* If the integer number is equal or less than 0 display a maximum of 6 decimals, by cutting them not rounding */
   if (num.lt(1)) {
-    return num.decimalPlaces(6).toFormat(fmtConfig)
+    return num
+      .decimalPlaces(
+        typeof options?.decimalPlaces === "number" ? options.decimalPlaces : 6,
+      )
+      .toFormat(fmtConfig)
   }
 
   return num.decimalPlaces(4).toFormat(fmtConfig)
@@ -257,3 +262,21 @@ export const formatAssetValue = (value: string) => {
 }
 
 export const isHydraAddress = (address: string) => address[0] === "7"
+
+export const customFormatDuration = ({
+  start = 0,
+  end,
+}: {
+  start?: number
+  end: number
+}) => {
+  const isPositive = BigNumber(end).isPositive()
+  const durations = intervalToDuration({ start, end })
+
+  return {
+    duration: formatDuration(durations, {
+      format: ["months", "weeks", "days", "hours", "minutes"],
+    }),
+    isPositive,
+  }
+}

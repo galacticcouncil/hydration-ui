@@ -4,6 +4,7 @@ import { useTokenBalance } from "api/balances"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
+import BN from "bignumber.js"
 
 export const WalletTransferAssetSelect = (props: {
   name: string
@@ -17,6 +18,7 @@ export const WalletTransferAssetSelect = (props: {
   onAssetOpen?: () => void
   title?: string
   className?: string
+  balance?: BN
 
   error?: string
 }) => {
@@ -36,7 +38,7 @@ export const WalletTransferAssetSelect = (props: {
       asset={props.asset}
       assetIcon={asset.data?.icon}
       decimals={asset.data?.decimals?.toNumber()}
-      balance={balance.data?.balance}
+      balance={props.balance ?? balance.data?.balance}
       assetName={asset.data?.name?.toString()}
       assetSymbol={asset.data?.symbol?.toString()}
       onSelectAssetClick={props.onAssetOpen}

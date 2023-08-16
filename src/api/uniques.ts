@@ -6,8 +6,8 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 
 export const useUniques = (
-  address: string | AccountId32,
-  collectionId: string | u128,
+  address: string | AccountId32 | undefined,
+  collectionId: string | u128 | undefined,
   noRefresh?: boolean,
 ) => {
   const api = useApiPromise()
@@ -24,8 +24,8 @@ export const useUniques = (
 export const getUniques =
   (
     api: ApiPromise,
-    address: string | AccountId32,
-    collectionId: string | u128,
+    address?: string | AccountId32,
+    collectionId?: string | u128,
   ) =>
   async () => {
     const res = await api.query.uniques.account.entries(address, collectionId)

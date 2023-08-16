@@ -51,10 +51,11 @@ export const StakingAccountTable = () => {
           <div sx={{ flex: "row", align: "center", gap: 12, mt: [0, 20] }}>
             <Icon sx={{ color: "white" }} icon={<StakinTableIcon />} />
             <Text
-              fs={[18, 24]}
-              lh={[24, 26]}
+              fs={[18, 19]}
+              lh={[20, 24]}
               color="white"
-              font="ChakraPetchBold"
+              font="FontOver"
+              css={{ alignSelf: "self-end" }}
             >
               {t("staking.dashboard.table.title")}
             </Text>
