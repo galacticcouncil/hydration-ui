@@ -36,7 +36,7 @@ export const CurrencyReserves = ({ assets }: Props) => {
           <div sx={{ flex: "row", align: "center", gap: 8 }}>
             <Text color="white">{balance.toNumber()}</Text>
             <Text color="basic500">
-              ({value.div(totalValue).times(BN_100).dp(1).toNumber()}%)
+              ({totalValue.gt(BN_0) ? value.div(totalValue).times(BN_100).dp(1).toNumber() : 0}%)
             </Text>
           </div>
         </SRow>

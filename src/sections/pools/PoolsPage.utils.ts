@@ -16,15 +16,21 @@ import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
 import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { useStableswapPools } from "api/stableswap"
-import { pool_account_name } from "@galacticcouncil/math-stableswap"
+import { stable_pool_account_name } from "@galacticcouncil/math-stableswap"
 import { encodeAddress } from "@polkadot/util-crypto"
 import { stringToU8a } from "@polkadot/util"
 import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 import { useAccountsBalances } from "api/accountBalances"
 
-export const derivePoolAccount = (assetId: string) => {
-  const addr = pool_account_name(Number(assetId))
-  return encodeAddress(stringToU8a(addr.padEnd(32, "\0")), HYDRADX_SS58_PREFIX)
+// TODO: remove hardcoded addresses
+export const derivePoolAccount = (assetId: u32) => {
+  try {
+    const addr = stable_pool_account_name(assetId.toString())
+    return encodeAddress(stringToU8a(addr.padEnd(32, "\0")), HYDRADX_SS58_PREFIX)
+  } catch (e) {
+    console.log(e)
+    return assetId.toString() === "1000" ? "7J8qdo3LE74tniQYxiMRo2GXQZzpdGBUcizHYRoAkoYUVDko" : "7JJnazA8nHpy1yqg2ZugX9zh8YdSWjqyU3XiDhUPRawLFeMw"
+  }
 }
 
 export type AssetMetaById = Exclude<
@@ -40,6 +46,9 @@ export type BalanceByAsset = Exclude<
 export const useOmnipoolStablePools = () => {
   const pools = useStableswapPools()
 
+  const poolAddressById = new Map((pools.data ?? []).map((pool) => [pool.id, derivePoolAccount(pool.id)]));
+  const poolsBalances = useAccountsBalances(Array.from(poolAddressById.values()))
+
   const assetsByPool = new Map(
     (pools.data ?? []).map((pool) => [
       pool.id,
@@ -50,6 +59,7 @@ export const useOmnipoolStablePools = () => {
   const uniqueAssetIds: string[] = [
     ...new Set([].concat(...assetsByPool.values())),
   ]
+
   const assetMetas = useAssetMetaList(uniqueAssetIds)
   const assetMetaById = new Map(
     (assetMetas?.data ?? []).map((asset) => [asset.id, asset]),
@@ -63,56 +73,28 @@ export const useOmnipoolStablePools = () => {
     ]),
   )
 
-  const poolAssetsByAccount = new Map(
-    uniqueAssetIds.map((assetId) => [derivePoolAccount(assetId), assetId]),
-  )
-
-  const accountsBalances = useAccountsBalances(
-    Array.from(poolAssetsByAccount.keys()),
-  )
-
-  if (pools.isLoading || assetMetas.isLoading || spotPrices.isLoading) {
+  if (pools.isLoading || assetMetas.isLoading || spotPrices.isLoading || poolsBalances.isLoading) {
     return { data: undefined, isLoading: true }
   }
 
-  const balancesByAsset = new Map(
-    accountsBalances.data?.map((balance) => [
-      poolAssetsByAccount.get(balance.accountId.toString()),
-      balance,
-    ]),
-  )
 
   const data = (pools.data ?? []).map((pool) => {
     const poolAssets = (assetMetas.data ?? []).filter((asset) =>
       assetsByPool.get(pool.id).includes(asset.id),
     )
 
-    const initialBalanceByAsset = new Map(poolAssets.map((asset) => [asset.id, { free: BN_0, value: BN_0 }]))
+    const poolBalances =  (poolsBalances.data ?? []).find((p) => p.accountId === poolAddressById.get(pool.id))
 
-    const balanceByAsset = poolAssets.reduce((acc, asset) => {
-      balancesByAsset.get(asset.id)?.balances.forEach((balance) => {
-        const id = balance.id.toString()
-        const spotPrice = spotPriceByAsset.get(id)
-        const decimals = normalizeBigNumber(
-          assetMetaById.get(id)?.decimals ?? 12,
-        )
+    const balanceByAsset = new Map((poolBalances?.balances ?? []).map((balance) => {
+      const id = balance.id.toString()
+      const spotPrice = spotPriceByAsset.get(id)
+      const decimals = normalizeBigNumber(assetMetaById.get(id)?.decimals ?? 12)
 
-        const free = normalizeBigNumber(balance.data.free)
-        const value = spotPrice
-          ? free
-              .shiftedBy(decimals.negated().toNumber())
-              .times(spotPrice.spotPrice)
-          : BN_0
+      const free = normalizeBigNumber(balance.data.free)
+      const value = spotPrice && !spotPrice.spotPrice.isNaN() ? free.shiftedBy(decimals.negated().toNumber()).times(spotPrice.spotPrice) : BN_0
 
-        const current = acc.get(id)
-        acc.set(id, {
-          free: (current?.free ?? BN_0).plus(free),
-          value: (current?.value ?? BN_0).plus(value),
-        })
-      })
-
-      return acc
-    }, initialBalanceByAsset)
+      return ([id, { free, value }])
+    }))
 
     const total = Array.from(balanceByAsset.entries()).reduce(
       (acc, [, balance]) => ({

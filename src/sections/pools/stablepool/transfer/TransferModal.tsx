@@ -75,9 +75,7 @@ export const TransferModal = ({
               ([id, balance]) => ({
                 id,
                 symbol: assetMetaById?.get(id)?.symbol,
-                balance: balance.free?.shiftedBy(
-                  assetMetaById?.get(id)?.decimals?.neg()?.toNumber() ?? -12,
-                ),
+                balance: balance.free?.shiftedBy(assetMetaById?.get(id)?.decimals?.neg()?.toNumber() ?? -12),
                 value: balance.value,
               }),
             )}

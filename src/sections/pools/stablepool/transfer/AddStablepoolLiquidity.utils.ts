@@ -56,19 +56,12 @@ export const useStablepoolShares = ({
         ]
       : []
 
-  console.log(JSON.stringify(reserves),
-    JSON.stringify(assets),
-    amplification,
-    shareIssuance.data.total.toString(),)
-
   const shares = calculate_shares(
     JSON.stringify(reserves),
     JSON.stringify(assets),
     amplification,
     shareIssuance.data.total.toString(),
   )
-
-  console.log(shares)
 
   return {
     shares: BigNumber.maximum(
