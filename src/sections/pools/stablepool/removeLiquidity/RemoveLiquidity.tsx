@@ -130,7 +130,7 @@ export const RemoveLiquidity = ({
     shares: removeSharesValue,
     reserves: position.reserves,
     poolId: position.poolId,
-    assetId,
+    asset: meta.data,
     withdrawFee: position.withdrawFee,
   })
 

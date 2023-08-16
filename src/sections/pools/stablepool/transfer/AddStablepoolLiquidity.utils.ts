@@ -18,12 +18,13 @@ type Args = {
   poolId: u32
   asset?: { id?: string; amount?: string; decimals?: u32 | u8 }
   balanceByAsset?: BalanceByAsset
+  reserves: { asset_id: number; amount: string }[]
 }
 
 export const useStablepoolShares = ({
   poolId,
   asset,
-  balanceByAsset,
+  reserves,
 }: Args) => {
   const pool = useStableswapPool(poolId)
   const bestNumber = useBestNumber()
@@ -42,14 +43,6 @@ export const useStablepoolShares = ({
     currentBlock.toString(),
   )
 
-  const reserves: Asset[] = []
-
-  balanceByAsset?.forEach((balance, assetId) => {
-    reserves.push({
-      asset_id: Number(assetId),
-      amount: balance.free.toString(),
-    })
-  })
 
   const assets: Asset[] =
     asset?.id && asset.amount
@@ -63,12 +56,19 @@ export const useStablepoolShares = ({
         ]
       : []
 
+  console.log(JSON.stringify(reserves),
+    JSON.stringify(assets),
+    amplification,
+    shareIssuance.data.total.toString(),)
+
   const shares = calculate_shares(
     JSON.stringify(reserves),
     JSON.stringify(assets),
     amplification,
     shareIssuance.data.total.toString(),
   )
+
+  console.log(shares)
 
   return {
     shares: BigNumber.maximum(

@@ -20,6 +20,7 @@ type Props = {
   balanceByAsset?: BalanceByAsset
   refetchPositions: () => void
   assets: { id: string }[]
+  reserves: { asset_id: number; amount: string }[]
 }
 
 enum Page {
@@ -37,6 +38,7 @@ export const TransferModal = ({
   onClose,
   balanceByAsset,
   assetMetaById,
+  reserves,
   refetchPositions,
 }: Props) => {
   const { t } = useTranslation()
@@ -127,7 +129,7 @@ export const TransferModal = ({
                 poolId={poolId}
                 onClose={onClose}
                 onSuccess={refetchPositions}
-                balanceByAsset={balanceByAsset}
+                reserves={reserves}
                 onAssetOpen={() => setPage(Page.ASSETS)}
                 asset={assetMetaById?.get(assetId)}
                 tradeFee={tradeFee}

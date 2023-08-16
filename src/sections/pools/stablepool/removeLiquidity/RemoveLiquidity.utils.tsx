@@ -7,20 +7,20 @@ import { useStableswapPool } from "api/stableswap"
 import { u32 } from "@polkadot/types-codec"
 import { useTotalIssuance } from "api/totalIssuance"
 import { normalizeBigNumber } from "utils/balance"
-import { BN_0, BN_NAN, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import BigNumber from "bignumber.js"
 
 type Args = {
   poolId: u32
   shares: BigNumber
-  assetId?: string
+  asset?: { id: string; decimals: u32 }
   withdrawFee: BigNumber
   reserves: { asset_id: number; amount: string }[]
 }
 
 export const useStablepoolLiquidiyOut = ({
   poolId,
- assetId,
+  asset,
   withdrawFee,
   reserves,
   shares,
@@ -30,7 +30,7 @@ export const useStablepoolLiquidiyOut = ({
   const currentBlock = bestNumber.data?.relaychainBlockNumber
   const shareIssuance = useTotalIssuance(poolId)
 
-  if (!pool.data || !currentBlock || !shareIssuance?.data) {
+  if (!pool.data || !currentBlock || !shareIssuance?.data || !asset) {
     return BN_NAN
   }
 
@@ -45,14 +45,14 @@ export const useStablepoolLiquidiyOut = ({
   const result = calculate_liquidity_out_one_asset(
     JSON.stringify(reserves),
     shares.dp(0).toString(),
-    Number(assetId),
+    Number(asset.id),
     amplification,
     shareIssuance.data.total.toString(),
     withdrawFee.times(10000).toString(),
   )
 
   return BigNumber.maximum(
-    normalizeBigNumber(result).shiftedBy(-STABLEPOOL_TOKEN_DECIMALS),
+    normalizeBigNumber(result).shiftedBy(normalizeBigNumber(asset.decimals).negated().toNumber()),
     BN_0,
   ).toString()
 }

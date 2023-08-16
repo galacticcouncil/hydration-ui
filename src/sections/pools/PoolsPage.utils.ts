@@ -87,6 +87,8 @@ export const useOmnipoolStablePools = () => {
       assetsByPool.get(pool.id).includes(asset.id),
     )
 
+    const initialBalanceByAsset = new Map(poolAssets.map((asset) => [asset.id, { free: BN_0, value: BN_0 }]))
+
     const balanceByAsset = poolAssets.reduce((acc, asset) => {
       balancesByAsset.get(asset.id)?.balances.forEach((balance) => {
         const id = balance.id.toString()
@@ -110,9 +112,9 @@ export const useOmnipoolStablePools = () => {
       })
 
       return acc
-    }, new Map<string, { free: BN; value: BN }>())
+    }, initialBalanceByAsset)
 
-    const total = Array.from(balanceByAsset?.entries() ?? []).reduce(
+    const total = Array.from(balanceByAsset.entries()).reduce(
       (acc, [, balance]) => ({
         free: acc.free.plus(balance.free),
         value: acc.value.plus(balance.value),
@@ -120,7 +122,7 @@ export const useOmnipoolStablePools = () => {
       { free: BN_0, value: BN_0 },
     )
 
-    const reserves = Array.from(balanceByAsset?.entries() ?? []).map(
+    const reserves = Array.from(balanceByAsset.entries()).map(
       ([assetId, balance]) => ({
         asset_id: Number(assetId),
         amount: balance.free.toString(),

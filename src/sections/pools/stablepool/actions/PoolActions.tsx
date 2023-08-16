@@ -34,6 +34,7 @@ type PoolActionsProps = {
   isExpanded: boolean
   canExpand?: boolean
   refetchPositions: () => void
+  reserves: { asset_id: number; amount: string }[]
 }
 
 export const PoolActions = ({
@@ -47,6 +48,7 @@ export const PoolActions = ({
   canExpand,
   refetchPositions,
   assets,
+  reserves
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
@@ -114,6 +116,7 @@ export const PoolActions = ({
           assets={assets}
           tradeFee={tradeFee}
           isOpen={openAdd}
+          reserves={reserves}
           onClose={() => setOpenAdd(false)}
           balanceByAsset={balanceByAsset}
           assetMetaById={assetMetaById}

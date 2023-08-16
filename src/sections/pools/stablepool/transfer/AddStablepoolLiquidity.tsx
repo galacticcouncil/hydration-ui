@@ -15,7 +15,6 @@ import { PoolAddLiquidityInformationCard } from "../../modals/AddLiquidity/AddLi
 import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
 import { u8 } from "@polkadot/types"
 import { u32 } from "@polkadot/types-codec"
-import { BalanceByAsset } from "../../PoolsPage.utils"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useDisplayPrice } from "utils/displayAsset"
 import { useTokenBalance } from "api/balances"
@@ -28,7 +27,7 @@ type Props = {
   onSuccess: () => void
   onClose: () => void
   onAssetOpen: () => void
-  balanceByAsset?: BalanceByAsset
+  reserves: { asset_id: number; amount: string }[]
 }
 
 export const AddStablepoolLiquidity = ({
@@ -37,7 +36,7 @@ export const AddStablepoolLiquidity = ({
   onSuccess,
   onAssetOpen,
   onClose,
-  balanceByAsset,
+  reserves,
   tradeFee,
 }: Props) => {
   const api = useApiPromise()
@@ -51,7 +50,7 @@ export const AddStablepoolLiquidity = ({
   const { shares, assets } = useStablepoolShares({
     poolId,
     asset: { id: asset?.id, decimals: asset?.decimals, amount: amountIn },
-    balanceByAsset,
+    reserves,
   })
 
   const { account } = useAccountStore()

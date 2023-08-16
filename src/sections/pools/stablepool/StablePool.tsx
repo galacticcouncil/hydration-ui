@@ -64,6 +64,7 @@ export const StablePool = ({
           isExpanded={isExpanded}
           canExpand={hasPosition}
           refetchPositions={position.refetch}
+          reserves={reserves}
         />
       </SGridContainer>
       {isDesktop && hasPosition && (
