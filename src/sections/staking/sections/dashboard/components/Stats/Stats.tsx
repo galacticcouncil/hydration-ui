@@ -2,16 +2,16 @@ import { SContainer } from "sections/staking/StakingPage.styled"
 import { StakingValues } from "./Values/StakingValues"
 import { PieChart } from "../PieChart/PieChart"
 import { useAccountStore } from "state/store"
+import { TStakingData } from "sections/staking/StakingPage.utils"
 
 export const Stats = ({
-  isConnected,
   loading,
+  data,
 }: {
-  isConnected: boolean
   loading?: boolean
+  data?: TStakingData
 }) => {
   const { account } = useAccountStore()
-  const hasStakingPos = true && isConnected
 
   return (
     <SContainer sx={{ p: [24, 40] }}>
@@ -23,14 +23,18 @@ export const Stats = ({
         }}
       >
         <div css={{ alignSelf: "center" }}>
-          <PieChart percentage={60.5} loading={!!loading} />
+          <PieChart
+            percentage={data?.supplyStaked?.toNumber() ?? 0}
+            circulatigSupply={data?.circulatingSupply.toNumber() ?? 0}
+            loading={!!loading}
+          />
         </div>
 
-        {account && (
+        {account && data && (
           <StakingValues
             loading={!!loading}
-            data={null}
-            isStakingPosition={hasStakingPos}
+            data={data}
+            isStakingPosition={!!data?.stakePosition}
           />
         )}
       </div>

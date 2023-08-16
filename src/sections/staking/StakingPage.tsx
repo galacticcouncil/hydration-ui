@@ -17,8 +17,7 @@ export const StakingPage = () => {
       <Heading as="h1" fs={19} lh={19} fw={500}>
         {t("staking.title")}
       </Heading>
-      <Spacer size={40} />
-      <Spacer size={40} />
+      <Spacer size={35} />
       <StakingDashboard />
     </Page>
   )
