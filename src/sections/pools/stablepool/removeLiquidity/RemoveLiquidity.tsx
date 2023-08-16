@@ -139,10 +139,12 @@ export const RemoveLiquidity = ({
 
     await createTransaction(
       {
-        tx: api.tx.stableswap.removeLiquidity(
+        tx: api.tx.stableswap.removeLiquidityOneAsset(
           position.poolId,
           assetId,
-          value.toFixed(0),
+          removeSharesValue.dp(0).toString(),
+          // TODO: specified amount-withdrawal fees-slippage limit
+          removeSharesValue.dp(0).toString()
         ),
       },
       {
