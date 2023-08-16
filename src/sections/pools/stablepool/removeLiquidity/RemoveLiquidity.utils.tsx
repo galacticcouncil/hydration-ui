@@ -7,7 +7,7 @@ import { useStableswapPool } from "api/stableswap"
 import { u32 } from "@polkadot/types-codec"
 import { useTotalIssuance } from "api/totalIssuance"
 import { normalizeBigNumber } from "utils/balance"
-import { BN_0, BN_NAN } from "utils/constants"
+import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
 import { u8 } from "@polkadot/types"
 
@@ -32,7 +32,7 @@ export const useStablepoolLiquidiyOut = ({
   const shareIssuance = useTotalIssuance(poolId)
 
   if (!pool.data || !currentBlock || !shareIssuance?.data || !asset) {
-    return BN_NAN
+    return ""
   }
 
   const amplification = calculate_amplification(

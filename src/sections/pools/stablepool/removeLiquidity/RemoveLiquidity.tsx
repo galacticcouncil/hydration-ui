@@ -135,8 +135,6 @@ export const RemoveLiquidity = ({
   })
 
   const handleSubmit = async (values: FormValues<typeof form>) => {
-    const value = position.shares.div(100).times(values.value)
-
     await createTransaction(
       {
         tx: api.tx.stableswap.removeLiquidityOneAsset(
@@ -159,18 +157,12 @@ export const RemoveLiquidity = ({
           onLoading: (
             <Trans
               t={t}
-              i18nKey="liquidity.remove.modal.toast.onLoading"
+              i18nKey="liquidity.stablepool.remove.onLoading"
               tOptions={{
-                value: value,
-                // amount: removeLiquidityValues.tokensToGet,
-                // fixedPointScale: meta.decimals ?? 12,
-                // symbol: position.symbol,
-                // withLrna: lrnaAsBigNumber.isGreaterThan(0)
-                //   ? t("liquidity.remove.modal.toast.withLrna", {
-                //       lrna: lrnaAsBigNumber,
-                //       fixedPointScale: lrnaMeta.decimals.toString() ?? 12,
-                //     })
-                //   : "",
+                out: liquidityOut,
+                amount: removeSharesValue,
+                fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
+                symbol: meta?.data?.symbol,
               }}
             >
               <span />
@@ -180,18 +172,12 @@ export const RemoveLiquidity = ({
           onSuccess: (
             <Trans
               t={t}
-              i18nKey="liquidity.remove.modal.toast.onSuccess"
+              i18nKey="liquidity.stablepool.remove.onSuccess"
               tOptions={{
-                value: value,
-                // amount: removeLiquidityValues.tokensToGet,
-                // fixedPointScale: meta.decimals ?? 12,
-                // symbol: position.symbol,
-                // withLrna: lrnaAsBigNumber.isGreaterThan(0)
-                //   ? t("liquidity.remove.modal.toast.withLrna", {
-                //       lrna: lrnaAsBigNumber,
-                //       fixedPointScale: lrnaMeta.decimals.toString() ?? 12,
-                //     })
-                //   : "",
+                out: liquidityOut,
+                amount: removeSharesValue,
+                fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
+                symbol: meta?.data?.symbol,
               }}
             >
               <span />
@@ -202,8 +188,6 @@ export const RemoveLiquidity = ({
       },
     )
   }
-
-  // const isFeeExceeded = removeLiquidityValues?.withdrawalFee.gt(0.99)
 
   return (
     <form
