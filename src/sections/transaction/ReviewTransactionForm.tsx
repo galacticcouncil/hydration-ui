@@ -32,6 +32,7 @@ import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_1 } from "utils/constants"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
 import { useWalletConnect } from "components/OnboardProvider/OnboardProvider"
+import Skeleton from "react-loading-skeleton"
 
 export const ReviewTransactionForm = (
   props: {
@@ -47,7 +48,7 @@ export const ReviewTransactionForm = (
   const feeMeta = useAssetMeta(
     props.overrides?.currencyId ?? accountCurrency.data,
   )
-  const { data: feeAssetBalance } = useTokenBalance(
+  const feeAssetBalance = useTokenBalance(
     props.overrides?.currencyId ?? accountCurrency.data,
     account?.address,
   )
@@ -104,7 +105,7 @@ export const ReviewTransactionForm = (
   const acceptedFeeAssets = useAcceptedCurrencies(
     feeAssets.data?.map((feeAsset) => feeAsset.id) ?? [],
   )
-
+  const isLoading = feeAssetBalance.isLoading || feeMeta.isLoading
   const {
     openModal,
     modal,
@@ -162,7 +163,7 @@ export const ReviewTransactionForm = (
   })
 
   const feePaymentBalance = getFloatingPointAmount(
-    feeAssetBalance?.balance ?? BN_0,
+    feeAssetBalance.data?.balance ?? BN_0,
     feeMeta.data?.decimals.toString() ?? 12,
   )
   const paymentFee = paymentInfoData
@@ -178,6 +179,20 @@ export const ReviewTransactionForm = (
     paymentFee && feePaymentBalance.minus(paymentFee).gt(0)
 
   if (isOpenSelectAssetModal) return modal
+
+  let btnText = t("liquidity.reviewTransaction.modal.confirmButton")
+
+  if (!isLoading) {
+    if (hasFeePaymentBalance === false) {
+      btnText = t(
+        "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance",
+      )
+    }
+
+    if (signTx.isLoading) {
+      btnText = t("liquidity.reviewTransaction.modal.confirmButton.loading")
+    }
+  }
 
   return (
     <ModalScrollableContent
@@ -229,7 +244,7 @@ export const ReviewTransactionForm = (
                       </div>
                     </div>
                   ) : (
-                    ""
+                    <Skeleton width={100} height={16} />
                   ),
                 },
                 {
@@ -262,21 +277,15 @@ export const ReviewTransactionForm = (
             />
             <div sx={{ flex: "column", justify: "center", gap: 4 }}>
               <Button
-                text={t(
-                  signTx.isLoading
-                    ? "liquidity.reviewTransaction.modal.confirmButton.loading"
-                    : !hasFeePaymentBalance
-                    ? "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance"
-                    : "liquidity.reviewTransaction.modal.confirmButton",
-                )}
+                text={btnText}
                 variant="primary"
-                isLoading={signTx.isLoading}
-                disabled={account == null}
+                isLoading={signTx.isLoading || isLoading}
+                disabled={account == null || isLoading || signTx.isLoading}
                 onClick={() =>
                   hasFeePaymentBalance ? signTx.mutate() : openModal()
                 }
               />
-              {!hasFeePaymentBalance && (
+              {hasFeePaymentBalance === false && (
                 <Text fs={16} color="pink600">
                   {t(
                     "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance.msg",
