@@ -504,6 +504,8 @@
   "staking.dashboard.form.unstake.balanceLabel": "Staked",
   "staking.dashboard.form.unstake.msg": "Currently we only support unstaking 100% of the amount.",
   "staking.dashboard.rewards.title": "Available rewards",
+  "staking.dashboard.rewards.desc": "Participate in governance to speed up the rate at which you can claim rewards.",
+  "staking.dashboard.rewards.allocatedRewards": "of allocated rewards",
   "staking.dashboard.rewards.button": "Claim",
   "staking.dashboard.stats.chart.label": "HDX Supply Staked",
   "staking.dashboard.stats.available": "Stakeable HDX Balance",
