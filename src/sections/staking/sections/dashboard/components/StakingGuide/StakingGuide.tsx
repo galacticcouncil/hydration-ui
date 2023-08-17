@@ -28,6 +28,11 @@ const GUIDE_CONFIG = [
     desc: "staking.dashboard.guide.third.desc",
     withLink: false,
   },
+  {
+    title: "staking.dashboard.guide.fourth.title",
+    desc: "staking.dashboard.guide.fourth.desc",
+    withLink: false,
+  },
 ] as const
 
 const StakingGuideItem = ({ title, desc, freq }: StakingGuideItemProps) => {
