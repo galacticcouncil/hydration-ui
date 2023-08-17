@@ -419,7 +419,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
 
 export const useClaimReward = () => {
   /* constants that might be changed */
-  const a = "200000000000000"
+  const a = "20000000000000000"
   const b = "2000"
 
   const { account } = useAccountStore()
