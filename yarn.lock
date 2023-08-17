@@ -3088,10 +3088,8 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-omnipool/-/math-omnipool-0.1.3.tgz#45ccb95c8196768e8a96577f56f7f90d48dcb44b"
   integrity sha512-uA0O+9KA+BlFeLyU7vhKKhJEiiKUwu5ozD14fhJ3vCm11XbGQPwEboChiICXAKysc8BMDejAqpKBmKOEjiRBaw==
 
-"@galacticcouncil/math-stableswap@^0.1.4":
+"@galacticcouncil/math-stableswap@../HydraDX-wasm/packages/stableswap/":
   version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-stableswap/-/math-stableswap-0.1.4.tgz#06489c067d1bacfbb505a097da2e41458a6e08b1"
-  integrity sha512-cVpznGzMnu0ffdd1JkOAdPHJazjwRHnb53VJOK1AsEA+RpckrRrdnyov5gPQUMJoZUUdsbNiPoOezZpRn1R7bQ==
 
 "@galacticcouncil/math-xyk@^0.1.3":
   version "0.1.3"

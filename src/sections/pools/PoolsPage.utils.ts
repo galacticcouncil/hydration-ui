@@ -16,26 +16,14 @@ import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
 import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { useStableswapPools } from "api/stableswap"
-import { stable_pool_account_name } from "@galacticcouncil/math-stableswap"
-import { encodeAddress } from "@polkadot/util-crypto"
-import { stringToU8a } from "@polkadot/util"
+import { pool_account_name } from "@galacticcouncil/math-stableswap"
+import { encodeAddress, blake2AsHex } from "@polkadot/util-crypto"
 import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 import { useAccountsBalances } from "api/accountBalances"
 
-// TODO: remove hardcoded addresses
 export const derivePoolAccount = (assetId: u32) => {
-  try {
-    const addr = stable_pool_account_name(assetId.toString())
-    return encodeAddress(
-      stringToU8a(addr.padEnd(32, "\0")),
-      HYDRADX_SS58_PREFIX,
-    )
-  } catch (e) {
-    console.log(e)
-    return assetId.toString() === "1000"
-      ? "7J8qdo3LE74tniQYxiMRo2GXQZzpdGBUcizHYRoAkoYUVDko"
-      : "7JJnazA8nHpy1yqg2ZugX9zh8YdSWjqyU3XiDhUPRawLFeMw"
-  }
+  const name = pool_account_name(Number(assetId))
+  return encodeAddress(blake2AsHex(name), HYDRADX_SS58_PREFIX)
 }
 
 export type AssetMetaById = Exclude<
