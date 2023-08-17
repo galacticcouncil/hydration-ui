@@ -492,7 +492,7 @@
   "staking.dashboard.guide.third.title": "Participate",
   "staking.dashboard.guide.third.desc": "Participate in governance to speed up the rate at which you can claim rewards.",
   "staking.dashboard.guide.fourth.title": "Claim",
-  "staking.dashboard.guide.fourth.desc": "Rewards can be claimed at any time - however, be aware that this could forfeit your unavailable portion.",
+  "staking.dashboard.guide.fourth.desc": "Rewards can be claimed at any time - however, be aware that this will forfeit any reserved rewards.",
   "staking.dashboard.form.stake.title": "Stake Your HDX",
   "staking.dashboard.form.stake.inputTitle": "Amount",
   "staking.dashboard.form.stake.transactionCost": "Transaction cost",
