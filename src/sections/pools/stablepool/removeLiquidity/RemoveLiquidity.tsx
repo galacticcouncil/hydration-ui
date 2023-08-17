@@ -11,8 +11,8 @@ import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useStore } from "state/store"
 import { useApiPromise } from "utils/api"
-import { getFloatingPointAmount, normalizeBigNumber } from 'utils/balance'
-import { SLIPPAGE_LIMIT, STABLEPOOL_TOKEN_DECIMALS } from 'utils/constants'
+import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
+import { SLIPPAGE_LIMIT, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 import { theme } from "theme"
@@ -135,7 +135,9 @@ export const RemoveLiquidity = ({
 
   const fee = position.withdrawFee.times(liquidityOut).div(100)
   const slippage = SLIPPAGE_LIMIT.times(liquidityOut).div(100)
-  const minAmountOut = normalizeBigNumber(liquidityOut).minus(fee).minus(slippage)
+  const minAmountOut = normalizeBigNumber(liquidityOut)
+    .minus(fee)
+    .minus(slippage)
 
   const handleSubmit = async () => {
     await createTransaction(
