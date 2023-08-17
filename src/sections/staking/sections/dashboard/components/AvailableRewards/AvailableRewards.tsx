@@ -17,6 +17,8 @@ import { ToastMessage, useAccountStore, useStore } from "state/store"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { TOAST_MESSAGES } from "state/toasts"
+import { Separator } from "components/Separator/Separator"
+import { theme } from "theme"
 
 export const AvailableRewards = () => {
   const { t } = useTranslation()
@@ -76,39 +78,70 @@ export const AvailableRewards = () => {
           {t("staking.dashboard.rewards.title")}
         </Text>
       </SRewartCardHeader>
-      <div sx={{ p: "28px 25px", flex: ["column", "row"], gap: 12 }}>
-        <div sx={{ flex: "column", justify: "space-around" }}>
-          {isLoading || !reward.data ? (
-            <Skeleton width={90} height={25} />
-          ) : (
-            <Text
-              fs={24}
-              color="white"
-              font="FontOver"
-              tTransform="uppercase"
-              css={{ whiteSpace: "nowrap" }}
-            >
-              {t("value.tokenWithSymbol", {
-                value: reward.data.rewards,
-                symbol: "HDX",
-                decimalPlaces: 2,
-              })}
+      <div sx={{ p: "28px 25px", flex: "column", gap: 20 }}>
+        <div sx={{ flex: "row", justify: "space-between" }}>
+          <div sx={{ flex: "column", justify: "space-around" }}>
+            {isLoading || !reward.data ? (
+              <Skeleton width={90} height={25} />
+            ) : (
+              <Text
+                fs={19}
+                color="white"
+                font="FontOver"
+                tTransform="uppercase"
+                css={{ whiteSpace: "nowrap" }}
+              >
+                {t("value.tokenWithSymbol", {
+                  value: reward.data.rewards,
+                  symbol: "HDX",
+                  decimalPlaces: 2,
+                })}
+              </Text>
+            )}
+            {isLoading || !reward.data ? (
+              <Skeleton width={60} height={16} />
+            ) : (
+              <Text fs={14} css={{ color: "rgba(255, 255, 255, 0.6)" }}>
+                <DisplayValue
+                  value={reward.data.rewards.multipliedBy(
+                    spotPrice.data?.spotPrice ?? 1,
+                  )}
+                />
+              </Text>
+            )}
+          </div>
+
+          <Separator orientation="vertical" css={{ background: "#55394E" }} />
+
+          <div sx={{ flex: "column" }}>
+            {isLoading || !reward.data ? (
+              <Skeleton width={90} height={25} />
+            ) : (
+              <Text
+                fs={19}
+                color="white"
+                font="FontOver"
+                tTransform="uppercase"
+                css={{ whiteSpace: "nowrap" }}
+              >
+                {t("value.percentage", {
+                  value: reward.data.allocatedRewardsPercentage,
+                  fixedPointScale: 18,
+                })}
+              </Text>
+            )}
+            <Text fs={14} color="white">
+              {t("staking.dashboard.rewards.allocatedRewards")}
             </Text>
-          )}
-          {isLoading || !reward.data ? (
-            <Skeleton width={60} height={16} />
-          ) : (
-            <Text fs={14} css={{ color: "rgba(255, 255, 255, 0.6)" }}>
-              <DisplayValue
-                value={reward.data.rewards.multipliedBy(
-                  spotPrice.data?.spotPrice ?? 1,
-                )}
-              />
-            </Text>
-          )}
+          </div>
         </div>
 
+        <Text css={{ color: `rgba(${theme.rgbColors.white}, 0.6)` }}>
+          {t("staking.dashboard.rewards.desc")}
+        </Text>
+
         <Button
+          size="small"
           variant="primary"
           fullWidth
           disabled={

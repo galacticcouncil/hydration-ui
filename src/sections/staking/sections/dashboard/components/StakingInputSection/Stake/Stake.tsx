@@ -6,7 +6,6 @@ import { ToastMessage, useAccountStore, useStore } from "state/store"
 import { FormValues } from "utils/helpers"
 import BigNumber from "bignumber.js"
 import { BN_10 } from "utils/constants"
-import { useTokenBalance } from "api/balances"
 import { Button } from "components/Button/Button"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
@@ -35,11 +34,6 @@ export const Stake = ({
   const { createTransaction } = useStore()
   const { account } = useAccountStore()
   const form = useForm<{ amount: string }>()
-
-  const { data: assetBalance } = useTokenBalance(
-    loading ? undefined : NATIVE_ASSET_ID,
-    account?.address,
-  )
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     const amount = getFixedPointAmount(values.amount, 12).toString()
@@ -127,11 +121,7 @@ export const Stake = ({
                 new BigNumber(value).gt(0) || t("error.positive"),
               maxBalance: (value) => {
                 try {
-                  if (
-                    assetBalance?.balance.gte(
-                      BigNumber(value).multipliedBy(BN_10.pow(12)),
-                    )
-                  )
+                  if (balance.gte(BigNumber(value).multipliedBy(BN_10.pow(12))))
                     return true
                 } catch {}
                 return t("liquidity.add.modal.validation.notEnoughBalance")

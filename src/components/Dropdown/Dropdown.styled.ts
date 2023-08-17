@@ -77,8 +77,8 @@ export const STrigger = styled(DropdownMenu.Trigger)`
 
   border-radius: 4px;
 
-  min-width: 40px;
-  min-height: 40px;
+  min-width: 36px;
+  min-height: 36px;
 
   background: rgba(${theme.rgbColors.primaryA15}, 0.12);
   color: ${theme.colors.brightBlue300};

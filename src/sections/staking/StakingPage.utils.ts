@@ -18,6 +18,8 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { BN_0, BN_100, BN_BILL, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
 import { useReferendums } from "api/democracy"
+//import { usePaymentInfo } from "api/transaction"
+//import { useAccountCurrency } from "api/payments"
 
 const CONVICTIONS: { [key: string]: number } = {
   none: 0.1,
@@ -61,6 +63,7 @@ const getCurrentActionPoints = (
 
 export const useStakeData = () => {
   const { account } = useAccountStore()
+  //const api = useApiPromise()
   const stake = useStake(account?.address)
   const circulatingSupply = useCirculatingSupply()
   const balance = useTokenBalance(NATIVE_ASSET_ID, account?.address)
@@ -71,6 +74,8 @@ export const useStakeData = () => {
     stake.data?.positionId?.toString(),
   )
   const referendas = useReferendums("finished")
+
+  //const accountCurrency = useAccountCurrency(account?.address)
 
   const vestAndStakeLocks = locks.data?.reduce(
     (acc, lock) =>
@@ -83,6 +88,21 @@ export const useStakeData = () => {
   const availableBalance = balance.data?.freeBalance.minus(
     vestAndStakeLocks ?? 0,
   )
+  /*const { data: paymentInfoData } = usePaymentInfo(
+    api.tx.staking.increaseStake("0", availableBalance?.toString()),
+  )
+
+  console.log(
+    paymentInfoData?.partialFee.toString(),
+    accountCurrency,
+    "paymentInfoData",
+  )*/
+
+  //const transactionCost =
+
+  //const tx = api.tx.staking.increaseStake(positionId, amount)
+
+  //const paymentInfo = await tx.paymentInfo(account)
 
   const queries = [
     stake,
@@ -399,7 +419,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
 
 export const useClaimReward = () => {
   /* constants that might be changed */
-  const a = "200000000000000"
+  const a = "20000000000000000"
   const b = "2000"
 
   const { account } = useAccountStore()
@@ -489,6 +509,8 @@ export const useClaimReward = () => {
 
     const payablePercentage = wasm.sigmoid(points, a, b)
 
+    const allocatedRewardsPercentage = BN(payablePercentage).multipliedBy(100)
+
     let rewards = BN(
       wasm.calculate_percentage_amount(maxRewards, payablePercentage),
     )
@@ -512,6 +534,7 @@ export const useClaimReward = () => {
       rewards: rewards.div(BN_BILL),
       unlockedRewards: unlockedRewards.div(BN_BILL),
       actionPoints,
+      allocatedRewardsPercentage,
     }
   }, [bestNumber.data, potBalance.data, stake, stakingConsts])
 
