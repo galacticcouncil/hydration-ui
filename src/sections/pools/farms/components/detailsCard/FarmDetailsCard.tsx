@@ -22,6 +22,7 @@ import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { useAssetMeta } from "api/assetMeta"
 import { u32 } from "@polkadot/types"
 import { useOraclePrice } from "api/farms"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
 type FarmDetailsCardProps = {
   poolId: u32
@@ -111,7 +112,7 @@ export const FarmDetailsCard = ({
         css={{ gridArea: "apr" }}
       >
         <div sx={{ flex: "row", align: "center", gap: 6 }}>
-          <Icon size={24} icon={asset.data?.icon} />
+          <Icon size={24} icon={<AssetLogo symbol={asset.data?.symbol} />} />
           <Text fs={[18, 16]} font="ChakraPetchBold">
             {asset.data?.symbol}
           </Text>

@@ -6,7 +6,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { isAfter } from "date-fns"
@@ -61,7 +61,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
               <div sx={{ flex: "row", align: "center", gap: 6 }}>
                 <Icon
                   size={18}
-                  icon={getAssetLogo(row.original.assetInSymbol)}
+                  icon={<AssetLogo symbol={row.original.assetInSymbol} />}
                 />
                 <Text>{row.original.assetInSymbol}</Text>
 
@@ -77,7 +77,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
 
                 <Icon
                   size={18}
-                  icon={getAssetLogo(row.original.assetOutSymbol)}
+                  icon={<AssetLogo symbol={row.original.assetOutSymbol} />}
                 />
                 <Text>{row.original.assetOutSymbol}</Text>
               </div>
@@ -124,7 +124,10 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
         cell: ({ row }) => {
           return (
             <div sx={{ flex: "row", align: "center", gap: 6 }}>
-              <Icon size={18} icon={getAssetLogo(row.original.assetInSymbol)} />
+              <Icon
+                size={18}
+                icon={<AssetLogo symbol={row.original.assetInSymbol} />}
+              />
               <Text>
                 {t("value.tokenWithSymbol", {
                   value: row.original.amountIn,
@@ -142,7 +145,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
 
               <Icon
                 size={18}
-                icon={getAssetLogo(row.original.assetOutSymbol)}
+                icon={<AssetLogo symbol={row.original.assetOutSymbol} />}
               />
               <Text>
                 {t("value.tokenWithSymbol", {

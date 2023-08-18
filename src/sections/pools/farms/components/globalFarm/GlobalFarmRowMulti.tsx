@@ -1,15 +1,15 @@
 import { u32 } from "@polkadot/types"
-import { useAsset } from "api/asset"
 import { Farm, useFarmAprs, getMinAndMaxAPR } from "api/farms"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { ReactComponent as PlaceholderIcon } from "assets/icons/PlaceholderIcon.svg"
+import { useAssetMeta } from "api/assetMeta"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
 const FarmAssetIcon = ({ assetId }: { assetId: u32 }) => {
-  const { data: asset } = useAsset(assetId)
+  const { data: asset } = useAssetMeta(assetId)
 
-  return asset?.icon ?? <PlaceholderIcon />
+  return <AssetLogo symbol={asset?.symbol} />
 }
 
 export const GlobalFarmRowMulti = ({ farms }: { farms: Farm[] }) => {

@@ -178,13 +178,13 @@ export const getAssetsDetails = (api: ApiPromise) => async () => {
   }
 
   const assets = rawAssetsData.map(([key, data]) => {
+    const id = key.args[0].toString()
+
     const { symbol = "N/A", decimals } =
-      assetsMeta.find(
-        (assetMeta) => assetMeta.id.toString() === key.args[0].toString(),
-      ) || {}
+      assetsMeta.find((assetMeta) => assetMeta.id.toString() === id) || {}
 
     return {
-      id: key.args[0].toString(),
+      id,
       name: data.unwrap().name.toUtf8() || getAssetName(symbol),
       assetType: data.unwrap().assetType.type,
       symbol,
@@ -226,5 +226,51 @@ export const useAssetList = () => {
     return list
       .filter(isNotNil)
       .sort((a, b) => a.symbol.localeCompare(b.symbol))
+  })
+}
+
+export const useAssetsLocation = () => {
+  const api = useApiPromise()
+  return useQuery(QUERY_KEYS.assetsLocation, getAssetsLocation(api))
+}
+
+const getAssetsLocation = (api: ApiPromise) => async () => {
+  const [metas, locations] = await Promise.all([
+    api.query.assetRegistry.assetMetadataMap.entries(),
+    api.query.assetRegistry.assetLocations.entries(),
+  ])
+
+  return locations.map(([key, raw]) => {
+    const id = key.args[0].toString()
+    const data = raw.unwrap()
+    const type = data.interior.type
+
+    const symbol = metas
+      .find(([key]) => key.args[0].toString() === id)?.[1]
+      .unwrap()
+      .symbol.toUtf8()
+
+    if (data.interior && type !== "Here") {
+      const xcm = data.interior[`as${type}`]
+
+      const parachainId = !Array.isArray(xcm)
+        ? xcm.asParachain.unwrap().toNumber()
+        : xcm
+            .find((el) => el.isParachain)
+            ?.asParachain.unwrap()
+            .toNumber()
+
+      return {
+        id,
+        parachainId,
+        symbol,
+      }
+    }
+
+    return {
+      id: key.args[0].toString(),
+      parachainId: undefined,
+      symbol,
+    }
   })
 }

@@ -1,13 +1,17 @@
 import * as React from "react"
 import { createComponent } from "@lit-labs/react"
-import { AssetLogo, PlaceholderLogo } from "@galacticcouncil/ui"
+import {
+  AssetId,
+  ChainLogo as ChainLogoUi,
+  PlaceholderLogo,
+} from "@galacticcouncil/ui"
+import { PolkadotRegistry } from "@galacticcouncil/sdk"
+import { useAssetsLocation } from "api/assetDetails"
 import { assetPlaceholderCss } from "./AssetIcon.styled"
+import { useMemo } from "react"
 
-export const UigcAssetLogo = createComponent({
-  tagName: "uigc-logo-asset",
-  elementClass: AssetLogo,
-  react: React,
-})
+const registry = new PolkadotRegistry()
+console.log(registry)
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -15,20 +19,17 @@ export const UigcAssetPlaceholder = createComponent({
   react: React,
 })
 
-export function getAssetLogo(symbol: string | null | undefined) {
-  return (
-    <UigcAssetLogo
-      ref={(el) => el && el.setAttribute("fit", "")}
-      asset={symbol}
-    >
-      <UigcAssetPlaceholder
-        css={assetPlaceholderCss}
-        ref={(el) => el && el.setAttribute("fit", "")}
-        slot="placeholder"
-      ></UigcAssetPlaceholder>
-    </UigcAssetLogo>
-  )
-}
+export const UigcAssetId = createComponent({
+  tagName: "uigc-asset-id",
+  elementClass: AssetId,
+  react: React,
+})
+
+export const UigcChainLogo = createComponent({
+  tagName: "uigc-logo-chain",
+  elementClass: ChainLogoUi,
+  react: React,
+})
 
 export function getAssetName(symbol: string | null | undefined) {
   const _symbol = symbol?.toUpperCase()
@@ -52,4 +53,58 @@ export function getAssetName(symbol: string | null | undefined) {
   if (_symbol === "IBTC") return "interBTC"
 
   return "N/A"
+}
+
+export const AssetLogo = ({ symbol }: { symbol?: string }) => {
+  const locations = useAssetsLocation()
+
+  const chain = useMemo(() => {
+    if (!locations.data) return undefined
+
+    const location = locations.data?.find(
+      (location) => location.symbol === symbol,
+    )
+
+    return registry
+      .getChains()
+      .find((chain) => chain.paraID === location?.parachainId)
+  }, [symbol, locations])
+
+  if (!symbol)
+    return (
+      <UigcAssetPlaceholder
+        css={assetPlaceholderCss}
+        ref={(el) => el && el.setAttribute("fit", "")}
+        slot="placeholder"
+      />
+    )
+
+  return (
+    <UigcAssetId
+      css={{ "& uigc-logo-chain": { display: "none" } }}
+      ref={(el) => {
+        el && chain?.id && el.setAttribute("chain", chain?.id)
+        el && el.setAttribute("fit", "")
+        // el && el.setAttribute("style", `display: none`)
+        //el && el.setAttribute("styles", { display: "none" })
+      }}
+      symbol={symbol}
+      chain={chain?.id}
+    />
+  )
+}
+
+export const ChainLogo = ({ symbol }: { symbol?: string }) => {
+  return (
+    <UigcChainLogo
+      chain={symbol}
+      ref={(el) => el && el.setAttribute("fit", "")}
+    >
+      <UigcAssetPlaceholder
+        css={assetPlaceholderCss}
+        ref={(el) => el && el.setAttribute("fit", "")}
+        slot="placeholder"
+      />
+    </UigcChainLogo>
+  )
 }

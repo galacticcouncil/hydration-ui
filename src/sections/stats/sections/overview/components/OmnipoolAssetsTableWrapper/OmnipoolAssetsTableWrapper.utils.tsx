@@ -1,5 +1,5 @@
 import { Icon } from "components/Icon/Icon"
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -31,7 +31,7 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
             justify: "start",
           }}
         >
-          <Icon size={26} icon={getAssetLogo(row.original.symbol)} />
+          <Icon size={26} icon={<AssetLogo symbol={row.original.symbol} />} />
           <div sx={{ flex: "column" }}>
             <Text fs={[14, 16]} color="white">
               {row.original.symbol}

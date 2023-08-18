@@ -1,4 +1,4 @@
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
@@ -153,10 +153,7 @@ export const LiquidityPosition = ({
     <SContainer>
       <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
         <div sx={{ flex: "row", gap: 7, align: "center" }}>
-          <Icon
-            icon={getAssetLogo(position.symbol)}
-            sx={{ width: 18, height: "fit-content" }}
-          />
+          <Icon size={18} icon={<AssetLogo symbol={position.symbol} />} />
           <Text fs={[14, 18]} color={["white", "basic100"]}>
             {t("liquidity.asset.positions.position.title", { index })}
           </Text>

@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js"
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
@@ -22,7 +22,7 @@ export const SliceLabel = ({ symbol, percentage, value }: SliceLabelProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Icon size={[20, 36]} icon={getAssetLogo(symbol)} />
+      <Icon size={[20, 36]} icon={<AssetLogo symbol={symbol} />} />
       <Text color="basic100" fs={[20, 34]}>
         {t("value.percentage", { value: percentage })}
       </Text>

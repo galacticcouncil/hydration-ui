@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { SSeparator } from "../FarmingPosition.styled"
 import { ReactElement } from "react"
 import { Icon } from "components/Icon/Icon"
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useAssetMeta } from "api/assetMeta"
 import { useFarmApr, useFarms } from "api/farms"
 import { DepositNftType } from "api/deposits"
@@ -39,7 +39,7 @@ export const DepositedYieldFarm = ({
 
   return (
     <div sx={{ flex: "row", align: "center", gap: 6 }}>
-      <Icon size={24} icon={getAssetLogo(assetMeta.symbol)} />
+      <Icon size={24} icon={<AssetLogo symbol={assetMeta.symbol} />} />
       <Text>{assetMeta.symbol}</Text>
       <Text color="brightBlue200">
         {t("value.APR", {

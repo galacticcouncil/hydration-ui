@@ -1,5 +1,6 @@
 import { u32 } from "@polkadot/types"
 import { useAsset } from "api/asset"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { useTranslation } from "react-i18next"
 import { BN_0 } from "utils/constants"
@@ -31,7 +32,7 @@ export const UnstakeAssetSelect = ({
       value={value}
       onChange={onChange}
       asset={assetId}
-      assetIcon={asset.data?.icon}
+      assetIcon={<AssetLogo symbol={asset.data?.symbol} />}
       decimals={asset.data?.decimals?.toNumber()}
       balance={balance}
       assetName={asset.data?.name?.toString()}

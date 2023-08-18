@@ -1,5 +1,6 @@
 import { useAsset } from "api/asset"
 import { Farm, useFarmApr } from "api/farms"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
@@ -22,7 +23,7 @@ export const GlobalFarmRow = ({
     <>
       <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
         <div sx={{ flex: "row", align: "center", gap: 6 }}>
-          <Icon icon={asset.icon} size={24} />
+          <Icon icon={<AssetLogo symbol={asset.symbol} />} size={24} />
           <Text>{asset.symbol}</Text>
         </div>
 
