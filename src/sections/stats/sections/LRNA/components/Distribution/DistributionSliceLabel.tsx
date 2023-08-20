@@ -24,7 +24,7 @@ export const DistributionSliceLabel = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Icon size={[20, 36]} icon={<AssetLogo symbol="LRNA" />} />
+      <Icon size={[20, 36]} icon={<AssetLogo id="1" />} />
       <Text color="basic100" fs={[20, 34]}>
         {t("value.percentage", { value: percentage })}
       </Text>

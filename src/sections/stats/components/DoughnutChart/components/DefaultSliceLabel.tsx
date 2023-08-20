@@ -25,9 +25,9 @@ export const DefaultSliceLabel = ({ slices }: { slices: TSlice[] }) => {
         <MultipleIcons
           size={[20, 36]}
           icons={[
-            { icon: <AssetLogo symbol={sortedSlices[0]?.symbol} /> },
-            { icon: <AssetLogo symbol={sortedSlices[1]?.symbol} /> },
-            { icon: <AssetLogo symbol={sortedSlices[2]?.symbol} /> },
+            { icon: <AssetLogo id={sortedSlices[0]?.id} /> },
+            { icon: <AssetLogo id={sortedSlices[1]?.id} /> },
+            { icon: <AssetLogo id={sortedSlices[2]?.id} /> },
           ]}
         />
         <Text color="basic100" fs={[12, 18]}>

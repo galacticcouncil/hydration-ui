@@ -14,8 +14,8 @@ export const OrderPairColumn = (props: {
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
       <MultipleIcons
         icons={[
-          { icon: <AssetLogo symbol={props.offering.symbol} /> },
-          { icon: <AssetLogo symbol={props.accepting.symbol} /> },
+          { icon: <AssetLogo id={props.offering.asset} /> },
+          { icon: <AssetLogo id={props.accepting.asset} /> },
         ]}
       />
       <div sx={{ display: "box", ml: 8 }}>

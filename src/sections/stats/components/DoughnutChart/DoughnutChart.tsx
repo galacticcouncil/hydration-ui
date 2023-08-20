@@ -20,6 +20,7 @@ export type TSlice = {
   label: EmotionJSX.Element
   symbol?: string
   name: string
+  id: string
 }
 
 type DoughnutChartProps = {
@@ -145,6 +146,7 @@ export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
                 symbol: "overview",
                 label: <Fragment />,
                 percentage: 0,
+                id: "",
               },
               ...slices,
             ]}

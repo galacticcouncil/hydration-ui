@@ -17,7 +17,7 @@ export const ChartLabel = () => {
       animate={{ opacity: 1, y: 0 }}
     >
       <div sx={{ flex: "column", align: "center", gap: 6 }}>
-        {<AssetLogo symbol="LRNA" />}
+        {<AssetLogo id="1" />}
         <Text color="basic100" fs={[12, 18]}>
           LRNA Distribution
           {/*{t("stats.overview.pie.defaultLabel.composition")}*/}

@@ -103,6 +103,8 @@ export const useRecentTradesTableData = (assetId?: string) => {
                 amountOut,
                 assetInSymbol: assetMetaIn.symbol,
                 assetOutSymbol: assetMetaOut?.symbol,
+                assetInId: assetMetaIn.id,
+                assetOutId: assetMetaOut.id,
                 totalValue,
                 account: trade.args.who,
                 date: new Date(trade.block.timestamp),
@@ -121,6 +123,8 @@ export const useRecentTradesTableData = (assetId?: string) => {
           assetInSymbol: string
           assetOutSymbol: string
           date: Date
+          assetInId: string
+          assetOutId: string
         }>,
       )
 

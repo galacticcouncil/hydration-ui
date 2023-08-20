@@ -95,10 +95,7 @@ const OmnipoolAssetHeader = ({
             circle
           />
         ) : (
-          <Icon
-            size={[30, 38]}
-            icon={<AssetLogo symbol={asset.data.symbol.toString()} />}
-          />
+          <Icon size={[30, 38]} icon={<AssetLogo id={asset.data.id} />} />
         )}
 
         <div>

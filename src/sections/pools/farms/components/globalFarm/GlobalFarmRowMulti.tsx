@@ -9,7 +9,7 @@ import { AssetLogo } from "components/AssetIcon/AssetIcon"
 const FarmAssetIcon = ({ assetId }: { assetId: u32 }) => {
   const { data: asset } = useAssetMeta(assetId)
 
-  return <AssetLogo symbol={asset?.symbol} />
+  return <AssetLogo id={asset?.id} />
 }
 
 export const GlobalFarmRowMulti = ({ farms }: { farms: Farm[] }) => {

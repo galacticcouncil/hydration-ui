@@ -112,7 +112,7 @@ export const FarmDetailsCard = ({
         css={{ gridArea: "apr" }}
       >
         <div sx={{ flex: "row", align: "center", gap: 6 }}>
-          <Icon size={24} icon={<AssetLogo symbol={asset.data?.symbol} />} />
+          <Icon size={24} icon={<AssetLogo id={asset.data?.id} />} />
           <Text fs={[18, 16]} font="ChakraPetchBold">
             {asset.data?.symbol}
           </Text>

@@ -108,7 +108,7 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
             onClick={() => onSelectAsset(asset)}
           >
             <div sx={{ width: 26, height: 26 }}>
-              <Icon icon={<AssetLogo symbol={asset.symbol} />} />
+              <Icon icon={<AssetLogo id={asset.id} />} />
             </div>
             <div>
               <Text fs={14} lh={14} fw={500} color="white">

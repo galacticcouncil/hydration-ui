@@ -41,7 +41,7 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
     <SAssetRow onClick={() => asset.data && onClick?.(asset.data)}>
       <div sx={{ display: "flex", align: "center" }}>
         <Icon
-          icon={<AssetLogo symbol={asset.data.symbol} />}
+          icon={<AssetLogo id={asset.data.id} />}
           sx={{ mr: 10 }}
           size={30}
         />

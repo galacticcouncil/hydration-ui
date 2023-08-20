@@ -9,9 +9,9 @@ import { PolkadotRegistry } from "@galacticcouncil/sdk"
 import { useAssetsLocation } from "api/assetDetails"
 import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
+import Skeleton from "react-loading-skeleton"
 
 const registry = new PolkadotRegistry()
-console.log(registry)
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -55,22 +55,38 @@ export function getAssetName(symbol: string | null | undefined) {
   return "N/A"
 }
 
-export const AssetLogo = ({ symbol }: { symbol?: string }) => {
+export const AssetLogo = ({ id }: { id?: string }) => {
   const locations = useAssetsLocation()
 
-  const chain = useMemo(() => {
-    if (!locations.data) return undefined
+  const asset = useMemo(() => {
+    if (!locations.data) return { chain: undefined, symbol: undefined }
 
-    const location = locations.data?.find(
-      (location) => location.symbol === symbol,
-    )
+    const location = locations.data?.find((location) => location.id === id)
 
-    return registry
+    const chain = registry
       .getChains()
       .find((chain) => chain.paraID === location?.parachainId)
-  }, [symbol, locations])
 
-  if (!symbol)
+    return {
+      chain: chain?.id,
+      symbol: location?.symbol,
+    }
+  }, [id, locations])
+
+  if (locations.isLoading) {
+    return (
+      <div
+        sx={{
+          width: "100%",
+          height: "100%",
+        }}
+      >
+        <Skeleton circle width="100%" height="100%" />
+      </div>
+    )
+  }
+
+  if (!asset || !asset.symbol)
     return (
       <UigcAssetPlaceholder
         css={assetPlaceholderCss}
@@ -83,13 +99,11 @@ export const AssetLogo = ({ symbol }: { symbol?: string }) => {
     <UigcAssetId
       css={{ "& uigc-logo-chain": { display: "none" } }}
       ref={(el) => {
-        el && chain?.id && el.setAttribute("chain", chain?.id)
+        el && asset.chain && el.setAttribute("chain", asset.chain)
         el && el.setAttribute("fit", "")
-        // el && el.setAttribute("style", `display: none`)
-        //el && el.setAttribute("styles", { display: "none" })
       }}
-      symbol={symbol}
-      chain={chain?.id}
+      symbol={asset.symbol}
+      chain={asset?.chain}
     />
   )
 }

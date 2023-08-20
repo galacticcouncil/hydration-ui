@@ -15,6 +15,7 @@ type Props = {
   reserved: BN
   reservedDisplay: BN
   symbol: string
+  id: string
 }
 
 const registry = new PolkadotRegistry()
@@ -25,34 +26,39 @@ export const WalletAssetsTableDetails = ({
   reserved,
   reservedDisplay,
   symbol,
+  id,
 }: Props) => {
   const { t } = useTranslation()
 
   const locations = useAssetsLocation()
-  const chain = useMemo(() => {
+  const asset = useMemo(() => {
     if (!locations.data) return undefined
 
-    const location = locations.data?.find(
-      (location) => location.symbol === symbol,
-    )
+    const location = locations.data?.find((location) => location.id === id)
 
-    return registry
+    const chain = registry
       .getChains()
       .find((chain) => chain.paraID === location?.parachainId)
-  }, [symbol, locations])
+
+    return {
+      chain: chain?.id,
+      name: chain?.name,
+      symbol: location?.symbol,
+    }
+  }, [id, locations])
 
   return (
     <div sx={{ flex: "row" }}>
-      {chain && (
+      {asset?.chain && (
         <>
           <div sx={{ mx: "auto" }}>
             <Text fs={14} lh={14} fw={500} color="basic300">
               {t("wallet.assets.table.details.origin")}
             </Text>
             <div sx={{ flex: "row", gap: 8, mt: 12 }}>
-              <Icon size={18} icon={<ChainLogo symbol={chain.id} />} />
+              <Icon size={18} icon={<ChainLogo symbol={asset?.chain} />} />
               <Text fs={14} color="white">
-                {chain.name}
+                {asset?.name}
               </Text>
             </div>
           </div>

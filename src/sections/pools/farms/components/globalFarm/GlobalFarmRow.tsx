@@ -23,7 +23,7 @@ export const GlobalFarmRow = ({
     <>
       <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
         <div sx={{ flex: "row", align: "center", gap: 6 }}>
-          <Icon icon={<AssetLogo symbol={asset.symbol} />} size={24} />
+          <Icon icon={<AssetLogo id={asset.id} />} size={24} />
           <Text>{asset.symbol}</Text>
         </div>
 

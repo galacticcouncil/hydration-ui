@@ -31,7 +31,7 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
             justify: "start",
           }}
         >
-          <Icon size={26} icon={<AssetLogo symbol={row.original.symbol} />} />
+          <Icon size={26} icon={<AssetLogo id={row.original.id} />} />
           <div sx={{ flex: "column" }}>
             <Text fs={[14, 16]} color="white">
               {row.original.symbol}

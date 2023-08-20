@@ -153,7 +153,7 @@ export const LiquidityPosition = ({
     <SContainer>
       <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
         <div sx={{ flex: "row", gap: 7, align: "center" }}>
-          <Icon size={18} icon={<AssetLogo symbol={position.symbol} />} />
+          <Icon size={18} icon={<AssetLogo id={position.assetId} />} />
           <Text fs={[14, 18]} color={["white", "basic100"]}>
             {t("liquidity.asset.positions.position.title", { index })}
           </Text>

@@ -5,7 +5,12 @@ import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
 import { useQuery } from "@tanstack/react-query"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useAccountStore } from "state/store"
-import { NATIVE_ASSET_ID, useApiPromise, useTradeRouter } from "utils/api"
+import {
+  DEPOSIT_CLASS_ID,
+  NATIVE_ASSET_ID,
+  useApiPromise,
+  useTradeRouter,
+} from "utils/api"
 import { BN_0 } from "utils/constants"
 import { Maybe, isNotNil, normalizeId, isApiLoaded } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -235,12 +240,24 @@ export const useAssetsLocation = () => {
 }
 
 const getAssetsLocation = (api: ApiPromise) => async () => {
-  const [metas, locations] = await Promise.all([
+  const [metas, locationsRaw] = await Promise.all([
     api.query.assetRegistry.assetMetadataMap.entries(),
     api.query.assetRegistry.assetLocations.entries(),
   ])
 
-  return locations.map(([key, raw]) => {
+  const nativeToken = {
+    id: NATIVE_ASSET_ID,
+    parachainId: undefined,
+    symbol: "HDX",
+  }
+
+  const hubToken = {
+    id: DEPOSIT_CLASS_ID,
+    parachainId: undefined,
+    symbol: "LRNA",
+  }
+
+  const locations = locationsRaw.map(([key, raw]) => {
     const id = key.args[0].toString()
     const data = raw.unwrap()
     const type = data.interior.type
@@ -273,4 +290,6 @@ const getAssetsLocation = (api: ApiPromise) => async () => {
       symbol,
     }
   })
+
+  return [nativeToken, hubToken, ...locations]
 }

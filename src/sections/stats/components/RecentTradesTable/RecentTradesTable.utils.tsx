@@ -61,7 +61,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
               <div sx={{ flex: "row", align: "center", gap: 6 }}>
                 <Icon
                   size={18}
-                  icon={<AssetLogo symbol={row.original.assetInSymbol} />}
+                  icon={<AssetLogo id={row.original.assetInId} />}
                 />
                 <Text>{row.original.assetInSymbol}</Text>
 
@@ -77,7 +77,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
 
                 <Icon
                   size={18}
-                  icon={<AssetLogo symbol={row.original.assetOutSymbol} />}
+                  icon={<AssetLogo id={row.original.assetOutId} />}
                 />
                 <Text>{row.original.assetOutSymbol}</Text>
               </div>
@@ -126,7 +126,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
             <div sx={{ flex: "row", align: "center", gap: 6 }}>
               <Icon
                 size={18}
-                icon={<AssetLogo symbol={row.original.assetInSymbol} />}
+                icon={<AssetLogo id={row.original.assetInId} />}
               />
               <Text>
                 {t("value.tokenWithSymbol", {
@@ -145,7 +145,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
 
               <Icon
                 size={18}
-                icon={<AssetLogo symbol={row.original.assetOutSymbol} />}
+                icon={<AssetLogo id={row.original.assetOutId} />}
               />
               <Text>
                 {t("value.tokenWithSymbol", {

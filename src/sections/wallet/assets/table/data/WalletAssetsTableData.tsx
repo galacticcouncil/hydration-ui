@@ -12,18 +12,20 @@ export const WalletAssetsTableName = ({
   symbol,
   name,
   isPaymentFee,
+  id,
 }: {
   symbol: string
   name: string
   large?: boolean
   isPaymentFee?: boolean
+  id: string
 }) => {
   const { t } = useTranslation()
 
   return (
     <div>
       <div sx={{ flex: "row", gap: 8, align: "center" }}>
-        <SIcon large={large}>{<AssetLogo symbol={symbol} />}</SIcon>
+        <SIcon large={large}>{<AssetLogo id={id} />}</SIcon>
         <div sx={{ flex: "column", width: "100%", gap: [0, 4] }}>
           <Text
             fs={[large ? 18 : 14, 16]}
