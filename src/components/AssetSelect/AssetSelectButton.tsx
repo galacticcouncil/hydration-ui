@@ -1,11 +1,11 @@
 import { Icon } from "../Icon/Icon"
 import { Text } from "../Typography/Text/Text"
-import { theme } from "../../theme"
+import { theme } from "theme"
 import { getAssetName } from "../AssetIcon/AssetIcon"
 import { SSelectAssetButton } from "./AssetSelect.styled"
 import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
 import { u32 } from "@polkadot/types-codec"
-import { useAsset } from "../../api/asset"
+import { useAsset } from "api/asset"
 
 type Props = {
   onClick?: () => void
