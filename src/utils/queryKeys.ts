@@ -285,7 +285,11 @@ export const QUERY_KEYS = {
   coingeckoUsd: ["coingeckoUsd"],
   assetList: ["assetList"],
   polStats: ["polStats"],
-  referendums: [QUERY_KEY_PREFIX, "referendums"],
+  referendums: (accountAddress?: string) => [
+    QUERY_KEY_PREFIX,
+    accountAddress,
+    "referendums",
+  ],
   referendumInfo: (id: string) => [QUERY_KEY_PREFIX, id, "referendumInfo"],
   stats: (
     type: ChartType,

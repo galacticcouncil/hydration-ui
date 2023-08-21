@@ -8,6 +8,7 @@ import { ReactComponent as GovernanceIcon } from "assets/icons/GovernanceIcon.sv
 import { Icon } from "components/Icon/Icon"
 import { ReferendumCardRococo } from "components/ReferendumCard/ReferendumCardRococo"
 import { useProviderRpcUrlStore } from "api/provider"
+import { theme } from "theme"
 
 type ReferendaProps = {
   loading: boolean
@@ -40,6 +41,13 @@ export const Referenda = ({ data, loading }: ReferendaProps) => {
         <ReferendumCardSkeleton type="staking" />
       ) : data?.length ? (
         <div sx={{ flex: "column", gap: 16 }}>
+          <Text
+            lh={22}
+            css={{ color: `rgba(${theme.rgbColors.white}, 0.6)` }}
+            sx={{ width: ["auto", "60%"] }}
+          >
+            {t("stats.overview.referenda.desc")}
+          </Text>
           {data.map((referendum) =>
             rococoProvider ? (
               <ReferendumCardRococo
@@ -59,7 +67,7 @@ export const Referenda = ({ data, loading }: ReferendaProps) => {
         </div>
       ) : (
         <div sx={{ flex: "row", align: "center", gap: 16, my: 16 }}>
-          <Icon icon={<GovernanceIcon />} />
+          <Icon sx={{ color: "basic600" }} icon={<GovernanceIcon />} />
           <Text color="basic700">
             {t("stats.overview.referenda.emptyState")}
           </Text>
