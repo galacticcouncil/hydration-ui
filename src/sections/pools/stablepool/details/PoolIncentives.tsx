@@ -5,16 +5,14 @@ import { useTranslation } from "react-i18next"
 import { SIncentivesContainer } from "./PoolIncentives.styled"
 import { BN_1, BN_10 } from "utils/constants"
 import { FarmIncentive } from "../../components/FarmIncentive"
-import { useFarms } from "api/farms"
 
 type Props = {
   poolId: u32
   className?: string
 }
 
-export const PoolIncentives = ({ poolId, className }: Props) => {
+export const PoolIncentives = ({ className }: Props) => {
   const { t } = useTranslation()
-  const farms = useFarms([poolId])
 
   return (
     <SIncentivesContainer className={className}>
