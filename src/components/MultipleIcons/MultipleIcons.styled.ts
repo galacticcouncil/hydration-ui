@@ -21,14 +21,14 @@ export const IconsWrapper = styled.div<{ size: ResponsiveValue<number> }>`
     }
   }
 
-  > :not(:last-of-type) {
-    mask: radial-gradient(
-      circle at
-        calc(var(--circle-size) + var(--mask-radius) + var(--additional-space)),
-      transparent calc(var(--mask-radius) + var(--additional-space)),
-      white 0
-    );
-  }
+  #> :not(:last-of-type) {
+  #  mask: radial-gradient(
+  #    circle at
+  #     calc(var(--circle-size) + var(--mask-radius) + var(--additional-space)),
+  #   transparent calc(var(--mask-radius) + var(--additional-space)),
+  #   white 0
+  # );
+  #}
 
   > :not(:first-of-type) {
     margin-left: -4px;
