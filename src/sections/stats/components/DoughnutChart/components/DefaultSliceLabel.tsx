@@ -3,7 +3,7 @@ import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { motion } from "framer-motion"
-import { TSlice } from "../DoughnutChart"
+import { TSlice } from "sections/stats/components/DoughnutChart/DoughnutChart"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 

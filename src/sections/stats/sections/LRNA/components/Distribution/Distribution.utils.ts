@@ -6,7 +6,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
 import BigNumber from "bignumber.js"
 import { getLRNAMeta } from "api/assetMeta"
-import { formatValue } from "../../StatsLRNA.utils"
+import { formatValue } from "sections/stats/sections/LRNA/StatsLRNA.utils"
 import { REFETCH_INTERVAL } from "utils/constants"
 import { isApiLoaded } from "utils/helpers"
 

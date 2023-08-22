@@ -32,7 +32,7 @@ import {
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_10, BN_QUINTILL } from "utils/constants"
 import { FormValues } from "utils/helpers"
-import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
+import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
 import { FeeRange } from "./components/FeeRange/FeeRange"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"

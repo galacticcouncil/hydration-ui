@@ -6,7 +6,7 @@ import { useMemo } from "react"
 import { u32 } from "@polkadot/types"
 import { useTotalIssuances } from "./totalIssuance"
 import { useTokensBalances } from "./balances"
-import { useAccountStore } from "../state/store"
+import { useAccountStore } from "state/store"
 
 export const usePools = () => {
   const tradeRouter = useTradeRouter()

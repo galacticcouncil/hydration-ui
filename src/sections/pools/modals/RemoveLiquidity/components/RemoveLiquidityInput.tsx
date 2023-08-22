@@ -5,7 +5,7 @@ import { Slider } from "components/Slider/Slider"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { SSlippage } from "../RemoveLiquidity.styled"
+import { SSlippage } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.styled"
 
 type RemoveLiquidityInputProps = {
   value: number

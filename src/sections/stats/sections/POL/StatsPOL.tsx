@@ -1,10 +1,10 @@
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { ChartsWrapper } from "./components/ChartsWrapper/ChartsWrapper"
-import { StatsTiles } from "../../components/StatsTiles/StatsTiles"
+import { StatsTiles } from "sections/stats/components/StatsTiles/StatsTiles"
 import { SContainerVertical } from "./StatsPOL.styled"
 import { PieWrapper } from "./components/PieWrapper/PieWrapper"
-import { useOmnipoolAssetDetails } from "../../StatsPage.utils"
+import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
 import { OmnipoolAssetsTableWrapper } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
 
 export const StatsPOL = () => {

@@ -1,6 +1,6 @@
-import { useOmnipoolAssets } from "../../../api/omnipool"
-import { usePoolsDetailsTradeVolumes } from "../pool/details/PoolDetails.utils"
-import { useOmnipoolPools } from "../PoolsPage.utils"
+import { useOmnipoolAssets } from "api/omnipool"
+import { usePoolsDetailsTradeVolumes } from "sections/pools/pool/details/PoolDetails.utils"
+import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
 
 export function useTotalVolumesInPools() {
   const assets = useOmnipoolAssets()

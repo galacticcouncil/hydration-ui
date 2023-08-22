@@ -1,6 +1,6 @@
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { SSeparator } from "../FarmingPosition.styled"
+import { SSeparator } from "sections/pools/farms/position/FarmingPosition.styled"
 import { ReactElement } from "react"
 import { Icon } from "components/Icon/Icon"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
