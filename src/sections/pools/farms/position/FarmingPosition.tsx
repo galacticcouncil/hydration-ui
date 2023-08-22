@@ -10,7 +10,7 @@ import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPosi
 import { theme } from "theme"
 import { useEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
-import { JoinedFarmsDetails } from "../modals/joinedFarmDetails/JoinedFarmsDetails"
+import { JoinedFarmsDetails } from "sections/pools/farms/modals/joinedFarmDetails/JoinedFarmsDetails"
 import {
   SContainer,
   SSeparator,
@@ -23,7 +23,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useOmnipoolPosition } from "api/omnipool"
 import { useDisplayPrice } from "utils/displayAsset"
 import { getFloatingPointAmount } from "utils/balance"
-import { LrnaPositionTooltip } from "../../components/LrnaPositionTooltip"
+import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { u32 } from "@polkadot/types-codec"
 
 function FarmingPositionDetailsButton(props: {

@@ -4,7 +4,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Fragment } from "react"
-import { SBadge } from "../StablePool.styled"
+import { SBadge } from "sections/pools/stablepool/StablePool.styled"
 import { u32, u8 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 

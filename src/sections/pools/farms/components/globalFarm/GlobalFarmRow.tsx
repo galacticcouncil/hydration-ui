@@ -1,7 +1,7 @@
 import { useAsset } from "api/asset"
 import { Farm, useFarmApr } from "api/farms"
 import { useTranslation } from "react-i18next"
-import { FarmIncentive } from "../../../components/FarmIncentive"
+import { FarmIncentive } from "sections/pools/components/FarmIncentive"
 
 export const GlobalFarmRow = ({ farm }: { farm: Farm }) => {
   const { t } = useTranslation()

@@ -9,8 +9,8 @@ import BN from "bignumber.js"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { u32, u8 } from "@polkadot/types"
 import { ReactComponent as DropletIcon } from "assets/icons/DropletIcon.svg"
-import { SPositions } from "../../pool/Pool.styled"
-import { RemoveLiquidityButton } from "../removeLiquidity/RemoveLiquidityButton"
+import { SPositions } from "sections/pools/pool/Pool.styled"
+import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
 
 type Props = {
   refetchPosition: () => void

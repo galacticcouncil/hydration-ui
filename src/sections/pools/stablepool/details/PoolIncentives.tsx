@@ -4,7 +4,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SIncentivesContainer } from "./PoolIncentives.styled"
 import { BN_1, BN_10 } from "utils/constants"
-import { FarmIncentive } from "../../components/FarmIncentive"
+import { FarmIncentive } from "sections/pools/components/FarmIncentive"
 
 type Props = {
   poolId: u32

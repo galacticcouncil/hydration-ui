@@ -2,7 +2,7 @@ import { Modal } from "components/Modal/Modal"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { ComponentProps, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { AssetsModalContent } from "../../../assets/AssetsModal"
+import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { RemoveLiquidity } from "./RemoveLiquidity"
 
 type Props = {

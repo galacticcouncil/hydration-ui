@@ -9,14 +9,14 @@ import {
   SButtonOpen,
 } from "sections/pools/pool/actions/PoolActions.styled"
 import { useAccountStore } from "state/store"
-import { TransferModal } from "../transfer/TransferModal"
-import { AssetMetaById, BalanceByAsset } from "../../PoolsPage.utils"
+import { TransferModal } from "sections/pools/stablepool/transfer/TransferModal"
+import { AssetMetaById, BalanceByAsset } from "sections/pools/PoolsPage.utils"
 import { u32 } from "@polkadot/types-codec"
 import BigNumber from "bignumber.js"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { u8 } from "@polkadot/types"
-import { LiquidityPositionButton } from "../positions/LiquidityPositionButton"
+import { LiquidityPositionButton } from "sections/pools/stablepool/positions/LiquidityPositionButton"
 
 type PoolActionsProps = {
   poolId: u32

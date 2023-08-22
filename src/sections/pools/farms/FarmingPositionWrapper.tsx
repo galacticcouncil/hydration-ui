@@ -1,5 +1,5 @@
 import { Text } from "components/Typography/Text/Text"
-import { SPositions } from "../pool/Pool.styled"
+import { SPositions } from "sections/pools/pool/Pool.styled"
 import { useTranslation } from "react-i18next"
 import { FarmingPosition } from "./position/FarmingPosition"
 import { Icon } from "components/Icon/Icon"

@@ -4,7 +4,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
-import { usePoolPositions } from "../../pool/Pool.utils"
+import { usePoolPositions } from "sections/pools/pool/Pool.utils"
 import { u32 } from "@polkadot/types-codec"
 
 interface Props {

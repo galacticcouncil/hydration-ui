@@ -11,7 +11,7 @@ import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransf
 import { useAccountStore, useStore } from "state/store"
 import { useApiPromise } from "utils/api"
 import { FormValues } from "utils/helpers"
-import { PoolAddLiquidityInformationCard } from "../../modals/AddLiquidity/AddLiquidityInfoCard"
+import { PoolAddLiquidityInformationCard } from "sections/pools/modals/AddLiquidity/AddLiquidityInfoCard"
 import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
 import { u8 } from "@polkadot/types"
 import { u32 } from "@polkadot/types-codec"
