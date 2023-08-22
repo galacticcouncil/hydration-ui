@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 import { motion } from "framer-motion"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { DEPOSIT_CLASS_ID } from "utils/api"
 
 export const ChartLabel = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -17,7 +18,7 @@ export const ChartLabel = () => {
       animate={{ opacity: 1, y: 0 }}
     >
       <div sx={{ flex: "column", align: "center", gap: 6 }}>
-        {<AssetLogo id="1" />}
+        {<AssetLogo id={DEPOSIT_CLASS_ID} />}
         <Text color="basic100" fs={[12, 18]}>
           LRNA Distribution
           {/*{t("stats.overview.pie.defaultLabel.composition")}*/}
