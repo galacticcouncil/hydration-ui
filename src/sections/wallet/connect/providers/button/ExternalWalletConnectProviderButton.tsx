@@ -3,7 +3,7 @@ import { ReactComponent as ExternalWalletIcon } from "assets/icons/ExternalWalle
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { SWalletButton } from "../WalletConnectProviders.styled"
+import { SWalletButton } from "sections/wallet/connect/providers/WalletConnectProviders.styled"
 
 export const ExternalWalletConnectProviderButton = ({
   onClick,

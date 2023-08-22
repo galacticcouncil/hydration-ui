@@ -14,7 +14,7 @@ import { ToastMessage, useAccountStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
 import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
-import { useAllUserDepositShare } from "../../position/FarmingPosition.utils"
+import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import {
   SClaimButton,
   SContent,

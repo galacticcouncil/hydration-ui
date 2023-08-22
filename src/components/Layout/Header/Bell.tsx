@@ -1,11 +1,11 @@
-import { Spinner } from "../../Spinner/Spinner.styled"
+import { Spinner } from "components/Spinner/Spinner.styled"
 import {
   MaskContainer,
   SActiveReferendumIcon,
   SBellIcon,
   SWrap,
 } from "./Bell.styled"
-import { InfoTooltip } from "../../InfoTooltip/InfoTooltip"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { useToast } from "state/toasts"
 import { useTranslation } from "react-i18next"
 import { useReferendums } from "api/democracy"

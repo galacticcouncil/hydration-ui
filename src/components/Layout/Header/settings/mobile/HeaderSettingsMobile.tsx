@@ -4,7 +4,7 @@ import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { HeaderSettingsContents } from "../HeaderSettings"
+import { HeaderSettingsContents } from "components/Layout/Header/settings/HeaderSettings"
 import { theme } from "theme"
 
 export const HeaderSettingsMobile = () => {

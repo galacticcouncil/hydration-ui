@@ -5,7 +5,7 @@ import { Maybe, normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types-codec"
 import BN from "bignumber.js"
-import { BN_0 } from "../utils/constants"
+import { BN_0 } from "utils/constants"
 import { PROVIDERS, useProviderRpcUrlStore } from "./provider"
 
 export type TradeType = {

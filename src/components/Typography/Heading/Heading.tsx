@@ -1,5 +1,5 @@
 import { FC, ReactNode } from "react"
-import { TypographyProps } from "../Typography.utils"
+import { TypographyProps } from "components/Typography/Typography.utils"
 import { SHeading } from "./Heading.styled"
 
 interface HeadingProps extends TypographyProps {

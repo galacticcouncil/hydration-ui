@@ -5,7 +5,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { AnimatePresence, motion } from "framer-motion"
 import { Trans, useTranslation } from "react-i18next"
 import { useToggle } from "react-use"
-import { STATS_TILES } from "../StatsTiles.util"
+import { STATS_TILES } from "sections/stats/components/StatsTiles/StatsTiles.util"
 import {
   SContainer,
   SDescription,

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { MIN_WITHDRAWAL_FEE } from "utils/constants"
-import { isApiLoaded } from "../utils/helpers"
+import { isApiLoaded } from "utils/helpers"
 
 export const useApiIds = () => {
   const api = useApiPromise()
