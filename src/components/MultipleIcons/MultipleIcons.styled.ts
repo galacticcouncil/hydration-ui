@@ -21,7 +21,6 @@ export const IconsWrapper = styled.div<{ size: ResponsiveValue<number> }>`
     }
   }
 
-
   > :not(:first-of-type) {
     margin-left: -4px;
   }
