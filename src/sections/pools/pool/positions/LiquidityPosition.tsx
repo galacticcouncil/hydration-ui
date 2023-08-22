@@ -27,7 +27,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useDisplayPrice } from "utils/displayAsset"
 import { BN_0 } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
-import { LrnaPositionTooltip } from "../../components/LrnaPositionTooltip"
+import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 
 type Props = {
   pool: OmnipoolPool

@@ -3,7 +3,7 @@ import {
   externalWallet,
   useAccountStore,
 } from "state/store"
-import { WalletConnectAccountSelectItem } from "../item/WalletConnectAccountSelectItem"
+import { WalletConnectAccountSelectItem } from "sections/wallet/connect/accountSelect/item/WalletConnectAccountSelectItem"
 import { useQuery } from "@tanstack/react-query"
 import {
   HYDRA_ADDRESS_PREFIX,

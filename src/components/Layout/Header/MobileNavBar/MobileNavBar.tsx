@@ -3,7 +3,7 @@ import { Icon } from "components/Icon/Icon"
 import { useTranslation } from "react-i18next"
 
 import { MENU_ITEMS, TabItem } from "utils/navigation"
-import { HeaderSubMenu } from "../menu/HeaderSubMenu"
+import { HeaderSubMenu } from "components/Layout/Header/menu/HeaderSubMenu"
 import {
   SMobileNavBar,
   SNavBarItem,

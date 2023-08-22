@@ -12,8 +12,8 @@ import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import { separateBalance } from "utils/balance"
 import { useDisplayPrice } from "utils/displayAsset"
 import { isApiLoaded } from "utils/helpers"
-import { useAssetMeta } from "../../../api/assetMeta"
-import { BN_0, BN_10, DAY_IN_MILLISECONDS } from "../../../utils/constants"
+import { useAssetMeta } from "api/assetMeta"
+import { BN_0, BN_10, DAY_IN_MILLISECONDS } from "utils/constants"
 import { SSeparator, STable } from "./WalletVestingHeader.styled"
 
 export const WalletVestingHeader = () => {

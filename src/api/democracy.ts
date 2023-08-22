@@ -2,7 +2,7 @@ import { ApiPromise } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { isApiLoaded } from "../utils/helpers"
+import { isApiLoaded } from "utils/helpers"
 
 const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
 

@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { safeConvertAddressSS58 } from "utils/formatting"
-import { useAddressStore } from "../AddressBook.utils"
+import { useAddressStore } from "components/AddressBook/AddressBook.utils"
 import { SButton, SContainer, SIcon, SInput } from "./AddressBookInput.styled"
 
 type Props = {

@@ -8,7 +8,7 @@ import { SliceLabel } from "./components/SliceLabel/SliceLabel"
 import { PieSkeleton } from "./components/Skeleton/Skeleton"
 import { t } from "i18next"
 import { BN_0 } from "utils/constants"
-import { DoughnutChart } from "../DoughnutChart/DoughnutChart"
+import { DoughnutChart } from "sections/stats/components/DoughnutChart/DoughnutChart"
 import { EmotionJSX } from "@emotion/react/types/jsx-namespace"
 import BN from "bignumber.js"
 

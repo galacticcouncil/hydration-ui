@@ -3,8 +3,8 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { SContainerVertical } from "./StatsLRNA.styled"
 import { Distribution } from "./components/Distribution/Distribution"
-import { StatsTiles } from "../../components/StatsTiles/StatsTiles"
-import { RecentTradesTableWrapper } from "../../components/RecentTradesTable/RecentTradesTableWrapper"
+import { StatsTiles } from "sections/stats/components/StatsTiles/StatsTiles"
+import { RecentTradesTableWrapper } from "sections/stats/components/RecentTradesTable/RecentTradesTableWrapper"
 import { StatusBar } from "./sections/StatusBar"
 
 export const StatsLRNA = () => {

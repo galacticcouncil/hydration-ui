@@ -1,7 +1,7 @@
 import { useReferendums } from "api/democracy"
 import { ReferendumCard } from "components/ReferendumCard/ReferendumCard"
 import { useTranslation } from "react-i18next"
-import { ToastSidebarGroup } from "../group/ToastSidebarGroup"
+import { ToastSidebarGroup } from "components/Toast/sidebar/group/ToastSidebarGroup"
 import { useProviderRpcUrlStore } from "api/provider"
 import { ReferendumCardRococo } from "components/ReferendumCard/ReferendumCardRococo"
 

@@ -1,6 +1,6 @@
 import { useHubAssetImbalance } from "api/omnipool"
-import { Burning } from "../components/Burning/Burning"
-import { Bidding } from "../components/Bidding/Bidding"
+import { Burning } from "sections/stats/sections/LRNA/components/Burning/Burning"
+import { Bidding } from "sections/stats/sections/LRNA/components/Bidding/Bidding"
 
 export const StatusBar = () => {
   const imbalance = useHubAssetImbalance()
