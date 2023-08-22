@@ -1,13 +1,14 @@
 import { PalletDemocracyReferendumInfo } from "@polkadot/types/lookup"
 import { useReferendumInfo } from "api/democracy"
 import { ReactComponent as IconArrow } from "assets/icons/IconArrow.svg"
+import { ReactComponent as GovernanceIcon } from "assets/icons/GovernanceIcon.svg"
 import { Separator } from "components/Separator/Separator"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { BN_0, BN_10, PARACHAIN_BLOCK_TIME } from "utils/constants"
-import { SBar, SContainer, SHeader } from "./ReferendumCard.styled"
+import { SBar, SContainer, SHeader, SVotedBage } from "./ReferendumCard.styled"
 import { ReferendumCardSkeleton } from "./ReferendumCardSkeleton"
 import { Icon } from "components/Icon/Icon"
 import BN from "bignumber.js"
@@ -20,9 +21,10 @@ type Props = {
   id: string
   referendum: PalletDemocracyReferendumInfo
   type: "toast" | "staking"
+  voted: boolean
 }
 
-export const ReferendumCard = ({ id, referendum, type }: Props) => {
+export const ReferendumCard = ({ id, referendum, type, voted }: Props) => {
   const { t } = useTranslation()
 
   const info = useReferendumInfo(id)
@@ -84,7 +86,19 @@ export const ReferendumCard = ({ id, referendum, type }: Props) => {
           </Text>
         </div>
 
-        <Icon sx={{ color: "brightBlue300" }} icon={<IconArrow />} />
+        <div sx={{ flex: "row", gap: 20, align: "center" }}>
+          {voted && (
+            <SVotedBage>
+              {t("toast.sidebar.referendums.voted")}
+              <Icon
+                size={11}
+                sx={{ color: "basic900" }}
+                icon={<GovernanceIcon />}
+              />
+            </SVotedBage>
+          )}
+          <Icon sx={{ color: "brightBlue300" }} icon={<IconArrow />} />
+        </div>
       </SHeader>
 
       <Separator color="primaryA15Blue" opacity={0.35} sx={{ my: 16 }} />
