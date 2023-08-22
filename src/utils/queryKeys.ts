@@ -5,6 +5,7 @@ import { CodecHash } from "@polkadot/types/interfaces/runtime"
 import { StatsTimeframe } from "api/stats"
 import type BigNumber from "bignumber.js"
 import { Maybe } from "utils/helpers"
+import { ChartType } from "../sections/stats/components/ChartsWrapper/ChartsWrapper"
 
 export const QUERY_KEY_PREFIX = "@block"
 
@@ -205,21 +206,23 @@ export const QUERY_KEYS = {
     address,
   ],
   lock: (address: Maybe<AccountId32 | string>, asset: Maybe<u32 | string>) => [
-    QUERY_KEY_PREFIX,
     "lock",
     address,
     asset,
   ],
-  uniques: (address: string | AccountId32, collectionId: string | u128) => [
+  uniques: (address?: string | AccountId32, collectionId?: string | u128) => [
     "uniques",
-    address.toString(),
-    collectionId.toString(),
+    address?.toString(),
+    collectionId?.toString(),
   ],
-  uniquesLive: (address: string | AccountId32, collectionId: string | u128) => [
+  uniquesLive: (
+    address?: string | AccountId32,
+    collectionId?: string | u128,
+  ) => [
     QUERY_KEY_PREFIX,
     "uniques",
-    address.toString(),
-    collectionId.toString(),
+    address?.toString(),
+    collectionId?.toString(),
   ],
   uniquesAsset: (collectionId: string | u128) => [
     "uniquesAsset",
@@ -289,14 +292,28 @@ export const QUERY_KEYS = {
   polStats: ["polStats"],
   referendums: [QUERY_KEY_PREFIX, "referendums"],
   referendumInfo: (id: string) => [QUERY_KEY_PREFIX, id, "referendumInfo"],
-  stats: (timeframe?: StatsTimeframe, assetSymbol?: string) => {
-    const key = ["stats"]
+  stats: (
+    type: ChartType,
+    timeframe?: StatsTimeframe,
+    assetSymbol?: string,
+  ) => {
+    const key = ["stats", type]
 
     if (timeframe) key.push(timeframe)
     if (assetSymbol) key.push(assetSymbol)
 
     return key
   },
+  circulatingSupply: ["circulatingSupply"],
+  stake: (address: string | undefined) => ["stake", address],
+  staking: ["staking"],
+  stakingPosition: (id: number | undefined) => ["totalStaking", id],
+  stakingConsts: ["stakingConsts"],
+  stakingEvents: ["stakingEvents"],
+  stakingPositionBalances: (positionId: Maybe<string>) => [
+    "positionBalances",
+    positionId,
+  ],
   stableswapPools: [QUERY_KEY_PREFIX, "stableswapPools"],
   stableswapPool: (id: u32 | string) => [
     QUERY_KEY_PREFIX,

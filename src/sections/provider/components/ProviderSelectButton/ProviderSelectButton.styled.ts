@@ -26,12 +26,18 @@ export const SButton = styled(motion.div)`
 
   cursor: pointer;
 
-  @media ${theme.viewport.gte.sm} {
+  @media ${theme.viewport.gte.md} {
     position: fixed;
     bottom: 16px;
     right: 16px;
 
     margin: 0;
+  }
+
+  @media ${theme.viewport.gte.sm} {
+    margin-left: auto;
+
+    bottom: 16px;
   }
 `
 

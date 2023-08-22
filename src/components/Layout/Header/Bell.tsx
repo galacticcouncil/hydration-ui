@@ -15,7 +15,7 @@ export const Bell = () => {
   const { setSidebar, toasts } = useToast()
   const { t } = useTranslation()
 
-  const referendumsQuery = useReferendums()
+  const referendumsQuery = useReferendums("ongoing")
   const loadingToasts = toasts.filter((toast) => toast.variant === "progress")
   const isLoading = !!loadingToasts.length || referendumsQuery.isLoading
 

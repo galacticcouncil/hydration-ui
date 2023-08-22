@@ -32,6 +32,7 @@ export const SItem = styled.div`
   grid-template-areas: "name url" "status url";
   gap: 24px;
   row-gap: 8px;
+  align-items: center;
 
   padding: 14px var(--modal-content-padding);
   cursor: pointer;

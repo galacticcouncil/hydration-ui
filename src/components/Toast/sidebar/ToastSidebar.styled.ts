@@ -42,7 +42,7 @@ export const SDialogContent = styled(DialogContent)`
   width: 100%;
   max-height: 80vh;
 
-  background: ${theme.colors.basic900};
+  background: ${theme.colors.bg};
   box-shadow: 0px 0px 60px rgba(${theme.rgbColors.black}, 0.36);
 
   border-radius: 4px;

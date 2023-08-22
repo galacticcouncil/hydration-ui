@@ -7,7 +7,9 @@ export interface TypographyProps {
   fs?: ResponsiveValue<number>
   fw?: ResponsiveValue<number>
   lh?: ResponsiveValue<number>
-  font?: ResponsiveValue<"ChakraPetch" | "ChakraPetchBold" | "FontOver">
+  font?: ResponsiveValue<
+    "ChakraPetch" | "ChakraPetchBold" | "FontOver" | "ChakraPetchSemiBold"
+  >
   tAlign?: ResponsiveValue<"left" | "right" | "center">
   tTransform?: ResponsiveValue<"uppercase" | "lowercase" | "none">
 }
