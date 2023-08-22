@@ -50,7 +50,9 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
           ? t("wallet.assets.farmingPositions.header.name")
           : t("selectAssets.asset"),
         sortingFn: (a, b) => a.original.symbol.localeCompare(b.original.symbol),
-        cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
+        cell: ({ row }) => (
+          <WalletAssetsTableName {...row.original} id={row.original.assetId} />
+        ),
       }),
       accessor("date", {
         id: "date",

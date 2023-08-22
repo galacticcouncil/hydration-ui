@@ -1,8 +1,9 @@
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { motion } from "framer-motion"
 import { useTranslation } from "react-i18next"
+import { DEPOSIT_CLASS_ID } from "utils/api"
 
 type SliceLabelProps = {
   symbol?: string
@@ -24,7 +25,7 @@ export const DistributionSliceLabel = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Icon size={[20, 36]} icon={getAssetLogo("LRNA")} />
+      <Icon size={[20, 36]} icon={<AssetLogo id={DEPOSIT_CLASS_ID} />} />
       <Text color="basic100" fs={[20, 34]}>
         {t("value.percentage", { value: percentage })}
       </Text>

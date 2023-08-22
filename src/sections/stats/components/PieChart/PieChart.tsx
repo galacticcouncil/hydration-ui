@@ -19,6 +19,7 @@ type TSlice = {
   symbol: string
   name: string
   assets?: TLabelRest[]
+  id: string
 }
 
 type KeyOfType<T, V> = keyof {
@@ -71,6 +72,7 @@ export const PieChart = <T extends DataEntry>({
             symbol={omnipoolAsset.symbol}
             value={getValue(omnipoolAsset)}
             percentage={percentage}
+            id={omnipoolAsset.id}
           />
         )
 
@@ -80,6 +82,7 @@ export const PieChart = <T extends DataEntry>({
           label,
           symbol: omnipoolAsset.symbol,
           name: omnipoolAsset.name,
+          id: omnipoolAsset.id,
         })
       } else {
         const restAssets = acc.find((slice) => slice.symbol === "rest")
@@ -91,6 +94,7 @@ export const PieChart = <T extends DataEntry>({
               name: omnipoolAsset.name,
               percentage,
               value: getValue(omnipoolAsset),
+              id: omnipoolAsset.id,
             },
           ]
 
@@ -118,6 +122,7 @@ export const PieChart = <T extends DataEntry>({
               name: omnipoolAsset.name,
               percentage,
               value: getValue(omnipoolAsset),
+              id: omnipoolAsset.id,
             },
           ]
           const label = (
@@ -135,6 +140,7 @@ export const PieChart = <T extends DataEntry>({
             symbol: "rest",
             assets,
             name: t("stats.overview.pie.rest.header.assets"),
+            id: "",
           })
         }
       }

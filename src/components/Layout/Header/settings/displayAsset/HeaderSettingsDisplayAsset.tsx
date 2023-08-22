@@ -1,5 +1,5 @@
 import { useAssetList } from "api/assetDetails"
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useDisplayAssetStore } from "utils/displayAsset"
@@ -10,6 +10,7 @@ import {
   SItems,
 } from "./HeaderSettingsDisplayAsset.styled"
 import { HeaderSettingsDisplayAssetSkeleton } from "./skeleton/HeaderSettingsDisplayAssetSkeleton"
+import { Icon } from "components/Icon/Icon"
 
 type Props = { onSelect: () => void }
 
@@ -107,7 +108,7 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
             onClick={() => onSelectAsset(asset)}
           >
             <div sx={{ width: 26, height: 26 }}>
-              {getAssetLogo(asset.symbol)}
+              <Icon icon={<AssetLogo id={asset.id} />} />
             </div>
             <div>
               <Text fs={14} lh={14} fw={500} color="white">
