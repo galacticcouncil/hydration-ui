@@ -1,7 +1,7 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
-import { Heading } from "../Heading/Heading"
-import { handleTypographyProps } from "../Typography.utils"
+import { Heading } from "components/Typography/Heading/Heading"
+import { handleTypographyProps } from "components/Typography/Typography.utils"
 import { GradientTextProps } from "./GradientText"
 
 export const SGradientText = styled(Heading)<GradientTextProps>`

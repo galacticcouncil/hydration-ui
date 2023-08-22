@@ -12,7 +12,7 @@ import {
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
 import { BN_0 } from "utils/constants"
-import { useAllUserDepositShare } from "../farms/position/FarmingPosition.utils"
+import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import {
   useTotalVolumesInPools,
   useTotalVolumesInPoolsUser,

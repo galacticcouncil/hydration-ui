@@ -1,6 +1,9 @@
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { getCircleCoordinates, getPieConfig } from "../PieChart/PieChart.utils"
+import {
+  getCircleCoordinates,
+  getPieConfig,
+} from "sections/stats/components/PieChart/PieChart.utils"
 import { useTranslation } from "react-i18next"
 import { Fragment, ReactNode, useMemo, useState } from "react"
 import { DefaultSliceLabel } from "./components/DefaultSliceLabel"
@@ -11,7 +14,7 @@ import {
   SSliceContainer,
 } from "./DoughnutChart.styled"
 import { AnimatePresence } from "framer-motion"
-import { ScrollablePicker } from "../ScrollablePicker/ScrollablePicker"
+import { ScrollablePicker } from "sections/stats/components/ScrollablePicker/ScrollablePicker"
 import { EmotionJSX } from "@emotion/react/types/jsx-namespace"
 
 export type TSlice = {

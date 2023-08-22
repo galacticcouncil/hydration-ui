@@ -6,7 +6,7 @@ import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { useMutation } from "@tanstack/react-query"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useMountedState } from "react-use"
-import { useTransactionLink } from "../../api/transaction"
+import { useTransactionLink } from "api/transaction"
 
 type TxMethod = AnyJson & {
   method: string

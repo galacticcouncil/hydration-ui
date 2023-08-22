@@ -2,7 +2,7 @@ import { getWallets, Wallet } from "@talismn/connect-wallets"
 import { useMedia } from "react-use"
 import { WalletConnectProvidersButton } from "sections/wallet/connect/providers/button/WalletConnectProvidersButton"
 import { theme } from "theme"
-import { getWalletMeta } from "../modal/WalletConnectModal.utils"
+import { getWalletMeta } from "sections/wallet/connect/modal/WalletConnectModal.utils"
 import { WalletConnectWCButton } from "./button/WalletConnectWCButton"
 
 type Props = {

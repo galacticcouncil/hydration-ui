@@ -8,8 +8,8 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useCopyToClipboard } from "react-use"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
-import { useAccountStore } from "../../../state/store"
-import { WalletConnectModal } from "../connect/modal/WalletConnectModal"
+import { useAccountStore } from "state/store"
+import { WalletConnectModal } from "sections/wallet/connect/modal/WalletConnectModal"
 import { SWalletHeader } from "./WalletHeader.styled"
 
 export const WalletHeader = () => {

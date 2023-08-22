@@ -1,6 +1,9 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
-import { STypographyProps, handleTypographyProps } from "../Typography.utils"
+import {
+  STypographyProps,
+  handleTypographyProps,
+} from "components/Typography/Typography.utils"
 
 export const SText = styled.p<STypographyProps>`
   color: ${theme.colors.basic100};

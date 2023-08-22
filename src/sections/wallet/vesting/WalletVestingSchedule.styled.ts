@@ -1,6 +1,6 @@
 import styled from "@emotion/styled"
 import { Button } from "components/Button/Button"
-import { theme } from "../../../theme"
+import { theme } from "theme"
 
 export const SSchedule = styled.div`
   background: linear-gradient(

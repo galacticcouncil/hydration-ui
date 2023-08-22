@@ -9,7 +9,7 @@ import { RemoveScroll } from "react-remove-scroll"
 import { useToast } from "state/toasts"
 import { useApiPromise } from "utils/api"
 import { isApiLoaded } from "utils/helpers"
-import { ToastContent } from "../ToastContent"
+import { ToastContent } from "components/Toast/ToastContent"
 import {
   SCloseButton,
   SDialogContent,
