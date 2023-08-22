@@ -5,19 +5,19 @@ import { FarmingPosition } from "./position/FarmingPosition"
 import { Icon } from "components/Icon/Icon"
 import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
 import { Maybe } from "utils/helpers"
-import { OmnipoolPool } from "../PoolsPage.utils"
 import { DepositNftType } from "api/deposits"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { ClaimRewardsCard } from "./components/claimableCard/ClaimRewardsCard"
 import { Spacer } from "components/Spacer/Spacer"
+import { u32 } from "@polkadot/types-codec"
 
 interface Props {
-  pool: OmnipoolPool
+  poolId: u32
   deposits: Maybe<DepositNftType[]>
 }
 
-export const FarmingPositionWrapper = ({ pool, deposits }: Props) => {
+export const FarmingPositionWrapper = ({ poolId, deposits }: Props) => {
   const { t } = useTranslation()
   const isDektop = useMedia(theme.viewport.gte.sm)
 
@@ -33,7 +33,7 @@ export const FarmingPositionWrapper = ({ pool, deposits }: Props) => {
 
       {!isDektop && (
         <>
-          <ClaimRewardsCard pool={pool} />
+          <ClaimRewardsCard poolId={poolId} />
           <Spacer size={12} />
         </>
       )}
@@ -42,7 +42,7 @@ export const FarmingPositionWrapper = ({ pool, deposits }: Props) => {
         {deposits?.map((item, i) => (
           <FarmingPosition
             key={i}
-            pool={pool}
+            poolId={poolId}
             index={i + 1}
             depositNft={item}
           />

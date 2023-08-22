@@ -13,7 +13,7 @@ import { JoinFarmModal } from "../../modals/join/JoinFarmsModal"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import { useAccountStore } from "state/store"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { u32 } from "@polkadot/types-codec"
 
 type RedepositFarmProps = {
   availableYieldFarm: NonNullable<ReturnType<typeof useFarms>["data"]>[0]
@@ -32,16 +32,16 @@ const RedepositFarm = ({ availableYieldFarm }: RedepositFarmProps) => {
 
 type RedepositFarmsProps = {
   depositNft: DepositNftType
-  pool: OmnipoolPool
+  poolId: u32
 }
 
-export const RedepositFarms = ({ depositNft, pool }: RedepositFarmsProps) => {
+export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const [joinFarm, setJoinFarm] = useState(false)
 
-  const farms = useFarms([pool.id])
-  const meta = useAssetMeta(pool.id)
+  const farms = useFarms([poolId])
+  const meta = useAssetMeta(poolId)
 
   let availableYieldFarms =
     farms.data?.filter(
@@ -123,7 +123,7 @@ export const RedepositFarms = ({ depositNft, pool }: RedepositFarmsProps) => {
         <JoinFarmModal
           farms={availableYieldFarms}
           isOpen={joinFarm}
-          pool={pool}
+          poolId={poolId}
           shares={depositNft.deposit.shares.toBigNumber()}
           mutation={redeposit}
           onClose={() => setJoinFarm(false)}

@@ -5,18 +5,20 @@ import { LiquidityPosition } from "./LiquidityPosition"
 import { Positions } from "../Pool.utils"
 import { ReactComponent as ChartIcon } from "assets/icons/ChartIcon.svg"
 import { Icon } from "components/Icon/Icon"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { u32 } from "@polkadot/types-codec"
 
-export const LiquidityPositionWrapper = ({
-  positions,
-  pool,
-}: {
-  pool: OmnipoolPool
+type Props = {
+  poolId: u32
   positions: Positions
-}) => {
+}
+
+export const LiquidityPositionWrapper = ({ positions, poolId }: Props) => {
   const { t } = useTranslation()
 
-  if (!positions.data.length) return null
+  if (!positions.data.length) {
+    return null
+  }
+
   return (
     <SPositions>
       <div sx={{ flex: "row", align: "center", gap: 8, mb: 20 }}>
@@ -28,8 +30,8 @@ export const LiquidityPositionWrapper = ({
       <div sx={{ flex: "column", gap: 16 }}>
         {positions.data.map((position, i) => (
           <LiquidityPosition
-            pool={pool}
             key={`${i}-${position.assetId}`}
+            poolId={poolId}
             position={position}
             index={i + 1}
             onSuccess={positions.refetch}

@@ -15,9 +15,8 @@ import { u32 } from "@polkadot/types-codec"
 import BigNumber from "bignumber.js"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { LiquidityPositions } from "../../modals/LiquidityPositions/LiquidityPositions"
-import { ReactComponent as DetailsIcon } from "assets/icons/DetailsIcon.svg"
 import { u8 } from "@polkadot/types"
+import { LiquidityPositionButton } from "../positions/LiquidityPositionButton"
 
 type PoolActionsProps = {
   poolId: u32
@@ -35,6 +34,8 @@ type PoolActionsProps = {
   canExpand?: boolean
   refetchPositions: () => void
   reserves: { asset_id: number; amount: string }[]
+  withdrawFee: BigNumber
+  amount: BigNumber
 }
 
 export const PoolActions = ({
@@ -49,12 +50,13 @@ export const PoolActions = ({
   refetchPositions,
   assets,
   reserves,
+  amount,
+  withdrawFee,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
   const { account } = useAccountStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const [openLiquidityPositions, setOpenLiquidityPositions] = useState(false)
 
   const actionButtons = (
     <div sx={{ flexGrow: 1 }}>
@@ -71,19 +73,14 @@ export const PoolActions = ({
           </div>
         </Button>
         {!isDesktop && (
-          <Button
-            fullWidth
-            size="small"
-            disabled={!account}
-            onClick={() => {
-              setOpenLiquidityPositions(true)
-            }}
-          >
-            <div sx={{ flex: "row", align: "center", justify: "center" }}>
-              <Icon icon={<DetailsIcon />} sx={{ mr: 8, height: 16 }} />
-              {t("liquidity.asset.actions.myPositions")}
-            </div>
-          </Button>
+          <LiquidityPositionButton
+            poolId={poolId}
+            assets={assets}
+            reserves={reserves}
+            amount={amount}
+            withdrawFee={withdrawFee}
+            refetchPosition={refetchPositions}
+          />
         )}
       </div>
     </div>
@@ -103,13 +100,6 @@ export const PoolActions = ({
           />
         )}
       </SActionsContainer>
-      {openLiquidityPositions && !isDesktop && (
-        <LiquidityPositions
-          isOpen={openLiquidityPositions}
-          onClose={() => setOpenLiquidityPositions(false)}
-          pool={{} as any}
-        />
-      )}
       {openAdd && (
         <TransferModal
           poolId={poolId}

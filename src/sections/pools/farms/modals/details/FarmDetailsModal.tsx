@@ -3,14 +3,14 @@ import { Farm } from "api/farms"
 import { Text } from "components/Typography/Text/Text"
 import { useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { FarmDetailsCard } from "../../components/detailsCard/FarmDetailsCard"
 import { LoyaltyGraph } from "../../components/loyaltyGraph/LoyaltyGraph"
 import { SLoyaltyRewardsContainer } from "./FarmDetailsModal.styled"
 import { FarmDetailsModalValues } from "./FarmDetailsModalValues"
+import { u32 } from "@polkadot/types-codec"
 
 type FarmDetailsModalProps = {
-  pool: OmnipoolPool
+  poolId: u32
   farm: Farm
   depositNft: DepositNftType | undefined
   currentBlock?: number
@@ -19,7 +19,7 @@ type FarmDetailsModalProps = {
 export const FarmDetailsModal = ({
   farm,
   depositNft,
-  pool,
+  poolId,
   currentBlock,
 }: FarmDetailsModalProps) => {
   const { t } = useTranslation()
@@ -38,7 +38,7 @@ export const FarmDetailsModal = ({
 
   return (
     <>
-      <FarmDetailsCard poolId={pool.id} depositNft={depositNft} farm={farm} />
+      <FarmDetailsCard poolId={poolId} depositNft={depositNft} farm={farm} />
 
       {loyaltyCurve && currentBlockRef.current && (
         <SLoyaltyRewardsContainer>
@@ -65,7 +65,7 @@ export const FarmDetailsModal = ({
         <FarmDetailsModalValues
           yieldFarmId={farm.yieldFarm.id.toString()}
           depositNft={depositNft}
-          pool={pool}
+          poolId={poolId}
           enteredBlock={enteredBlock}
         />
       ) : (

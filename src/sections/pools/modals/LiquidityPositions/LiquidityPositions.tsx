@@ -4,18 +4,18 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
-import { OmnipoolPool } from "../../PoolsPage.utils"
 import { usePoolPositions } from "../../pool/Pool.utils"
+import { u32 } from "@polkadot/types-codec"
 
 interface Props {
   isOpen: boolean
-  pool: OmnipoolPool
+  poolId: u32
   onClose: () => void
 }
 
-export const LiquidityPositions: FC<Props> = ({ isOpen, pool, onClose }) => {
-  const positions = usePoolPositions(pool)
-  const accountDeposits = useAccountDeposits(pool.id)
+export const LiquidityPositions: FC<Props> = ({ isOpen, poolId, onClose }) => {
+  const positions = usePoolPositions(poolId)
+  const accountDeposits = useAccountDeposits(poolId)
   const { t } = useTranslation()
 
   return (
@@ -33,9 +33,12 @@ export const LiquidityPositions: FC<Props> = ({ isOpen, pool, onClose }) => {
           gap: 8,
         }}
       >
-        <LiquidityPositionWrapper pool={pool} positions={positions} />
+        <LiquidityPositionWrapper poolId={poolId} positions={positions} />
         {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
-          <FarmingPositionWrapper pool={pool} deposits={accountDeposits.data} />
+          <FarmingPositionWrapper
+            poolId={poolId}
+            deposits={accountDeposits.data}
+          />
         )}
       </div>
     </Modal>

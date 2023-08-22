@@ -10,7 +10,6 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { FarmDepositMutationType } from "utils/farms/deposit"
 import { FarmRedepositMutationType } from "utils/farms/redeposit"
 import { FarmDetailsCard } from "../../components/detailsCard/FarmDetailsCard"
@@ -21,7 +20,7 @@ import { useBestNumber } from "api/chain"
 type JoinFarmModalProps = {
   isOpen: boolean
   onClose: () => void
-  pool: OmnipoolPool
+  poolId: u32
   shares?: BigNumber
   farms: Farm[]
   isRedeposit?: boolean
@@ -33,7 +32,7 @@ export const JoinFarmModal = ({
   isOpen,
   onClose,
   isRedeposit,
-  pool,
+  poolId,
   mutation,
   shares,
   depositNft,
@@ -44,7 +43,7 @@ export const JoinFarmModal = ({
     yieldFarmId: u32
     globalFarmId: u32
   } | null>(null)
-  const meta = useAssetMeta(pool.id)
+  const meta = useAssetMeta(poolId)
   const bestNumber = useBestNumber()
 
   const selectedFarm = farms.find(
@@ -94,7 +93,7 @@ export const JoinFarmModal = ({
                         return (
                           <FarmDetailsCard
                             key={i}
-                            poolId={pool.id}
+                            poolId={poolId}
                             farm={farm}
                             depositNft={depositNft}
                             onSelect={() => {
@@ -157,7 +156,7 @@ export const JoinFarmModal = ({
             title: t("farms.modal.details.title"),
             content: selectedFarm && (
               <FarmDetailsModal
-                pool={pool}
+                poolId={poolId}
                 farm={selectedFarm}
                 depositNft={depositNft}
                 currentBlock={currentBlock?.toNumber()}

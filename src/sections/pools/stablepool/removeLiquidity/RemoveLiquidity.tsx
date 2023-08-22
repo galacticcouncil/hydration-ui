@@ -1,12 +1,9 @@
-import { default as BN, default as BigNumber } from "bignumber.js"
-import { BoxSwitch } from "components/BoxSwitch/BoxSwitch"
+import { default as BigNumber } from "bignumber.js"
 import { Button } from "components/Button/Button"
-import { Input } from "components/Input/Input"
 import { ModalScrollableContent } from "components/Modal/Modal"
-import { Slider } from "components/Slider/Slider"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useStore } from "state/store"
@@ -20,9 +17,9 @@ import { useAssetMeta } from "api/assetMeta"
 import { useStablepoolLiquidiyOut } from "./RemoveLiquidity.utils"
 import { RemoveLiquidityReward } from "../../modals/RemoveLiquidity/components/RemoveLiquidityReward"
 import {
-  SSlippage,
   STradingPairContainer,
 } from "../../modals/RemoveLiquidity/RemoveLiquidity.styled"
+import { RemoveLiquidityInput } from "../../modals/RemoveLiquidity/components/RemoveLiquidityInput"
 
 type RemoveLiquidityProps = {
   assetId?: string
@@ -35,74 +32,6 @@ type RemoveLiquidityProps = {
   }
   onSuccess: () => void
   onAssetOpen: () => void
-}
-
-type RemoveLiquidityInputProps = {
-  value: number
-  onChange: (value: number) => void
-  amount: BN
-}
-
-const options = [
-  { label: "25%", value: 25 },
-  { label: "50%", value: 50 },
-  { label: "75%", value: 75 },
-  { label: "MAX", value: 100 },
-]
-
-const RemoveLiquidityInput = ({
-  value,
-  onChange,
-  amount,
-}: RemoveLiquidityInputProps) => {
-  const { t } = useTranslation()
-  const [input, setInput] = useState("")
-
-  const handleOnChange = (value: string) => {
-    setInput(value)
-
-    const parsedValue = Number.parseFloat(value)
-    if (!Number.isNaN(parsedValue) && parsedValue >= 0 && parsedValue <= 100) {
-      onChange(parsedValue)
-    }
-  }
-
-  const onSelect = (value: number) => {
-    setInput("")
-    onChange(value)
-  }
-
-  return (
-    <>
-      <Slider
-        value={[value]}
-        onChange={([val]) => onSelect(val)}
-        min={0}
-        max={100}
-        step={1}
-      />
-
-      <SSlippage>
-        <BoxSwitch options={options} selected={value} onSelect={onSelect} />
-        <Input
-          value={input}
-          onChange={handleOnChange}
-          name="custom"
-          label={t("custom")}
-          placeholder={t("custom")}
-          unit="%"
-        />
-        <div
-          sx={{ flex: "row", justify: "end", gap: 4, mt: 9 }}
-          css={{ gridColumn: "span 2" }}
-        >
-          <Text fs={11} css={{ opacity: 0.7 }}>
-            {t("balance")} {t("value.token", { value: amount.toString() })}
-          </Text>
-        </div>
-      </SSlippage>
-    </>
-  )
 }
 
 export const RemoveLiquidity = ({
@@ -250,10 +179,12 @@ export const RemoveLiquidity = ({
                   <RemoveLiquidityInput
                     value={field.value}
                     onChange={field.onChange}
-                    amount={getFloatingPointAmount(
-                      position.amount,
-                      STABLEPOOL_TOKEN_DECIMALS,
-                    )}
+                    balance={t("value.token", {
+                      value: getFloatingPointAmount(
+                        position.amount,
+                        STABLEPOOL_TOKEN_DECIMALS,
+                      ),
+                    })}
                   />
                 )}
               />

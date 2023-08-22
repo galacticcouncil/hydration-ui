@@ -46,7 +46,7 @@ export const PoolActions = ({
   const [openFarmDefails, setOpenFarmDefails] = useState(false)
   const { account } = useAccountStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const positions = usePoolPositions(pool)
+  const positions = usePoolPositions(pool.id)
   const farms = useFarms([pool.id])
   const accountDeposits = useAccountDeposits(enabledFarms ? pool.id : undefined)
 
@@ -144,14 +144,14 @@ export const PoolActions = ({
         <LiquidityPositions
           isOpen={openLiquidityPositions}
           onClose={() => setOpenLiquidityPositions(false)}
-          pool={pool}
+          poolId={pool.id}
         />
       )}
       {openFarmDefails && farms.data && (
         <JoinFarmModal
           farms={farms.data}
           isOpen={openFarmDefails}
-          pool={pool}
+          poolId={pool.id}
           onClose={() => setOpenFarmDefails(false)}
         />
       )}

@@ -2,7 +2,7 @@ import { Page } from "components/Layout/Page/Page"
 import { useState } from "react"
 import {
   useOmnipoolPools,
-  useOmnipoolStablePools,
+  useStablePools,
 } from "sections/pools/PoolsPage.utils"
 import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
@@ -12,7 +12,7 @@ import { StablePool } from "./stablepool/StablePool"
 
 const PoolPageContent = () => {
   const [filter, setFilter] = useState({ showMyPositions: false })
-  const stablePools = useOmnipoolStablePools()
+  const stablePools = useStablePools()
 
   const { data, hasPositionsOrDeposits, isLoading } = useOmnipoolPools(
     filter.showMyPositions,

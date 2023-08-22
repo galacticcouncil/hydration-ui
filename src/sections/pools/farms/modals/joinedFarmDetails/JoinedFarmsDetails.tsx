@@ -10,7 +10,6 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { ClaimRewardsCard } from "sections/pools/farms/components/claimableCard/ClaimRewardsCard"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
@@ -28,15 +27,15 @@ function isFarmJoined(depositNft: DepositNftType, farm: Farm) {
 }
 
 function JoinedFarmsDetailsRedeposit(props: {
-  pool: OmnipoolPool
+  poolId: u32
   depositNft: DepositNftType
   onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
   onTxClose: () => void
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
-  const farms = useFarms([props.pool.id])
-  const meta = useAssetMeta(props.pool.id)
+  const farms = useFarms([props.poolId])
+  const meta = useAssetMeta(props.poolId)
 
   const availableFarms = farms.data?.filter(
     (farm) => !isFarmJoined(props.depositNft, farm),
@@ -77,7 +76,7 @@ function JoinedFarmsDetailsRedeposit(props: {
         {availableFarms?.map((farm, i) => (
           <FarmDetailsCard
             key={i}
-            poolId={props.pool.id}
+            poolId={props.poolId}
             farm={farm}
             onSelect={() =>
               props.onSelect({
@@ -103,7 +102,7 @@ function JoinedFarmsDetailsRedeposit(props: {
 }
 
 function JoinedFarmsDetailsPositions(props: {
-  pool: OmnipoolPool
+  poolId: u32
   depositNft: DepositNftType
   onSelect: (value: {
     globalFarm: u32
@@ -114,8 +113,8 @@ function JoinedFarmsDetailsPositions(props: {
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
-  const farms = useFarms([props.pool.id])
-  const meta = useAssetMeta(props.pool.id)
+  const farms = useFarms([props.poolId])
+  const meta = useAssetMeta(props.poolId)
   const joinedFarms = farms.data?.filter((farm) =>
     isFarmJoined(props.depositNft, farm),
   )
@@ -151,7 +150,7 @@ function JoinedFarmsDetailsPositions(props: {
       </Text>
 
       <ClaimRewardsCard
-        pool={props.pool}
+        poolId={props.poolId}
         depositNft={props.depositNft}
         onTxClose={props.onTxClose}
       />
@@ -160,7 +159,7 @@ function JoinedFarmsDetailsPositions(props: {
         {joinedFarms?.map((farm, i) => (
           <FarmDetailsCard
             key={i}
-            poolId={props.pool.id}
+            poolId={props.poolId}
             farm={farm}
             depositNft={props.depositNft}
             onSelect={() =>
@@ -190,7 +189,7 @@ function JoinedFarmsDetailsPositions(props: {
 export const JoinedFarmsDetails = (props: {
   isOpen: boolean
   onClose: () => void
-  pool: OmnipoolPool
+  poolId: u32
   depositNft: DepositNftType
 }) => {
   const { t } = useTranslation()
@@ -201,9 +200,9 @@ export const JoinedFarmsDetails = (props: {
   } | null>(null)
 
   const bestNumber = useBestNumber()
-  const meta = useAssetMeta(props.pool.id)
+  const meta = useAssetMeta(props.poolId)
 
-  const farms = useFarms([props.pool.id])
+  const farms = useFarms([props.poolId])
   const selectedFarm =
     selectedFarmIds != null
       ? farms.data?.find(
@@ -240,7 +239,7 @@ export const JoinedFarmsDetails = (props: {
             content: (
               <div sx={{ flex: "column" }}>
                 <JoinedFarmsDetailsPositions
-                  pool={props.pool}
+                  poolId={props.poolId}
                   depositNft={props.depositNft}
                   onSelect={(value) => {
                     setSelectedFarmIds(value)
@@ -250,7 +249,7 @@ export const JoinedFarmsDetails = (props: {
                 />
 
                 <JoinedFarmsDetailsRedeposit
-                  pool={props.pool}
+                  poolId={props.poolId}
                   depositNft={props.depositNft}
                   onSelect={(value) => {
                     setSelectedFarmIds(value)
@@ -264,7 +263,7 @@ export const JoinedFarmsDetails = (props: {
           {
             content: selectedFarm && (
               <FarmDetailsModal
-                pool={props.pool}
+                poolId={props.poolId}
                 farm={selectedFarm}
                 depositNft={selectedFarmIds?.depositNft}
                 currentBlock={currentBlock?.toNumber()}

@@ -3,18 +3,18 @@ import { PoolDetails } from "./details/PoolDetails"
 import { PoolValue } from "./details/PoolValue"
 import { PoolActions } from "./actions/PoolActions"
 import { PoolIncentives } from "./details/PoolIncentives"
-import { useOmnipoolStablePools } from "../PoolsPage.utils"
+import { useStablePools } from "../PoolsPage.utils"
 import { useState } from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { AnimatePresence, motion } from "framer-motion"
-import { LiquidityPositionWrapper } from "./positions/LiquidityPositionWrapper"
+import { LiquidityPosition } from "./positions/LiquidityPosition"
 import { useTokenBalance } from "api/balances"
 import { useAccountStore } from "state/store"
 import { BN_0 } from "utils/constants"
 
 type Props = Exclude<
-  ReturnType<typeof useOmnipoolStablePools>["data"],
+  ReturnType<typeof useStablePools>["data"],
   undefined
 >[number]
 
@@ -65,6 +65,8 @@ export const StablePool = ({
           canExpand={hasPosition}
           refetchPositions={position.refetch}
           reserves={reserves}
+          withdrawFee={withdrawFee}
+          amount={amount}
         />
       </SGridContainer>
       {isDesktop && hasPosition && (
@@ -77,12 +79,13 @@ export const StablePool = ({
               transition={{ duration: 0.5, ease: "easeInOut" }}
               css={{ overflow: "hidden" }}
             >
-              <LiquidityPositionWrapper
+              <LiquidityPosition
                 poolId={id}
                 assets={assets}
                 amount={amount}
                 withdrawFee={withdrawFee}
                 reserves={reserves}
+                refetchPosition={position.refetch}
               />
             </motion.div>
           )}

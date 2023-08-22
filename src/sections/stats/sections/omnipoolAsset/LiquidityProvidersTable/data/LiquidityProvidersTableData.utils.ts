@@ -1,9 +1,4 @@
-import { useApiIds } from "api/consts"
-import { useUniques, useUniquesAsset } from "api/uniques"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import BN from "bignumber.js"
-
-const withoutRefresh = true
 
 export const useLiquidityProvidersTableData = () => {
   /* const apiIds = useApiIds()

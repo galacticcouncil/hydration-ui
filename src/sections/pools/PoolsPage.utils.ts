@@ -27,16 +27,16 @@ export const derivePoolAccount = (assetId: u32) => {
 }
 
 export type AssetMetaById = Exclude<
-  ReturnType<typeof useOmnipoolStablePools>["data"],
+  ReturnType<typeof useStablePools>["data"],
   undefined
 >[number]["assetMetaById"]
 
 export type BalanceByAsset = Exclude<
-  ReturnType<typeof useOmnipoolStablePools>["data"],
+  ReturnType<typeof useStablePools>["data"],
   undefined
 >[number]["balanceByAsset"]
 
-export const useOmnipoolStablePools = () => {
+export const useStablePools = () => {
   const pools = useStableswapPools()
 
   const poolAddressById = new Map(

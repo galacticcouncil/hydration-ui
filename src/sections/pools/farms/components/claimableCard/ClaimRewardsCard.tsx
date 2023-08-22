@@ -7,23 +7,23 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { Fragment, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { ToastMessage, useAccountStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
 import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
 import { SContainer } from "./ClaimRewardsCard.styled"
+import { u32 } from "@polkadot/types-codec"
 
 export const ClaimRewardsCard = (props: {
-  pool: OmnipoolPool
+  poolId: u32
   depositNft?: DepositNftType
   onTxClose?: () => void
 }) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
 
-  const claimable = useClaimableAmount(props.pool, props.depositNft)
+  const claimable = useClaimableAmount(props.poolId, props.depositNft)
   const assetsMeta = useAssetMetaList(Object.keys(claimable.data?.assets || {}))
 
   const { claimableAssets, toastValue } = useMemo(() => {
@@ -70,7 +70,7 @@ export const ClaimRewardsCard = (props: {
   }, {} as ToastMessage)
 
   const claimAll = useClaimAllMutation(
-    props.pool.id,
+    props.poolId,
     props.depositNft,
     toast,
     props.onTxClose,

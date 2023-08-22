@@ -12,15 +12,12 @@ import { useOmnipoolAssets } from "api/omnipool"
 import { useSpotPrice } from "api/spotPrice"
 import { ReactComponent as IconWarning } from "assets/icons/WarningIcon.svg"
 import { default as BN, default as BigNumber } from "bignumber.js"
-import { BoxSwitch } from "components/BoxSwitch/BoxSwitch"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
-import { Input } from "components/Input/Input"
 import { Modal, ModalScrollableContent } from "components/Modal/Modal"
-import { Slider } from "components/Slider/Slider"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useStore } from "state/store"
@@ -29,84 +26,16 @@ import { getFloatingPointAmount } from "utils/balance"
 import { BN_10, BN_QUINTILL } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { HydraPositionsTableData } from "../../../wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
+import { STradingPairContainer } from "./RemoveLiquidity.styled"
 import { FeeRange } from "./components/FeeRange/FeeRange"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
+import { RemoveLiquidityInput } from "./components/RemoveLiquidityInput"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
   onClose: () => void
   position: HydraPositionsTableData
   onSuccess: () => void
-}
-
-type RemoveLiquidityInputProps = {
-  value: number
-  onChange: (value: number) => void
-  shares: BN
-}
-
-const options = [
-  { label: "25%", value: 25 },
-  { label: "50%", value: 50 },
-  { label: "75%", value: 75 },
-  { label: "MAX", value: 100 },
-]
-
-const RemoveLiquidityInput = ({
-  value,
-  onChange,
-  shares,
-}: RemoveLiquidityInputProps) => {
-  const { t } = useTranslation()
-  const [input, setInput] = useState("")
-
-  const handleOnChange = (value: string) => {
-    setInput(value)
-
-    const parsedValue = Number.parseFloat(value)
-    if (!Number.isNaN(parsedValue) && parsedValue >= 0 && parsedValue <= 100) {
-      onChange(parsedValue)
-    }
-  }
-
-  const onSelect = (value: number) => {
-    setInput("")
-    onChange(value)
-  }
-
-  return (
-    <>
-      <Slider
-        value={[value]}
-        onChange={([val]) => onSelect(val)}
-        min={0}
-        max={100}
-        step={1}
-      />
-
-      <SSlippage>
-        <BoxSwitch options={options} selected={value} onSelect={onSelect} />
-        <Input
-          value={input}
-          onChange={handleOnChange}
-          name="custom"
-          label={t("custom")}
-          placeholder={t("custom")}
-          unit="%"
-        />
-        <div
-          sx={{ flex: "row", justify: "end", gap: 4, mt: 9 }}
-          css={{ gridColumn: "span 2" }}
-        >
-          <Text fs={11} css={{ opacity: 0.7 }}>
-            {t("balance")}
-          </Text>
-          <Text fs={11}>{t("liquidity.remove.modal.shares", { shares })}</Text>
-        </div>
-      </SSlippage>
-    </>
-  )
 }
 
 export const RemoveLiquidity = ({
@@ -341,10 +270,12 @@ export const RemoveLiquidity = ({
                     <RemoveLiquidityInput
                       value={field.value}
                       onChange={field.onChange}
-                      shares={getFloatingPointAmount(
-                        position.shares,
-                        meta?.decimals.toNumber() ?? 12,
-                      )}
+                      balance={t("liquidity.remove.modal.shares", {
+                        shares: getFloatingPointAmount(
+                          position.shares,
+                          meta?.decimals.toNumber() ?? 12,
+                        ),
+                      })}
                     />
                   )}
                 />
