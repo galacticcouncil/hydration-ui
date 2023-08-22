@@ -28,6 +28,7 @@ import { RecentTradesTableWrapperData } from "sections/stats/components/RecentTr
 import { RecentTradesTableSkeleton } from "sections/stats/components/RecentTradesTable/skeleton/RecentTradesTableSkeleton"
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 import { SStatsCardContainer } from "sections/stats/StatsPage.styled"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
 type SearchGenerics = MakeGenerics<{
   Search: { asset: number }
@@ -94,7 +95,7 @@ const OmnipoolAssetHeader = ({
             circle
           />
         ) : (
-          <Icon size={[30, 38]} icon={asset.data.icon} />
+          <Icon size={[30, 38]} icon={<AssetLogo id={asset.data.id} />} />
         )}
 
         <div>

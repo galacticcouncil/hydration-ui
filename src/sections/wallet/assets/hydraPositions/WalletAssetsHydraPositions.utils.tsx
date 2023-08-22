@@ -21,7 +21,9 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
       accessor("symbol", {
         id: "name",
         header: t("wallet.assets.hydraPositions.header.name"),
-        cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
+        cell: ({ row }) => (
+          <WalletAssetsTableName {...row.original} id={row.original.assetId} />
+        ),
       }),
       accessor("providedAmount", {
         id: "providedAmount",

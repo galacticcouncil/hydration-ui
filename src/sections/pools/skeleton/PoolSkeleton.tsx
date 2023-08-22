@@ -40,7 +40,7 @@ export const PoolSkeleton = ({
               </Text>
               <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
                 <div>
-                  <Skeleton circle width={32} height={32} />
+                  <Skeleton circle width={27} height={27} />
                 </div>
                 <div
                   sx={{
