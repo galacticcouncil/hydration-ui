@@ -4,7 +4,7 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SContainer } from "./LiquidityPosition.styled"
-import { BN_1, BN_100, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import BN from "bignumber.js"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { u32, u8 } from "@polkadot/types"
@@ -110,19 +110,6 @@ export const LiquidityPosition = ({
                 fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
               })}
             </Text>
-            <div sx={{ flex: "column", align: "start" }}>
-              {/*TODO: not yet able to get value */}
-              {/*<DollarAssetValue*/}
-              {/*  value={BN_100}*/}
-              {/*  wrapper={(children) => (*/}
-              {/*    <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">*/}
-              {/*      {children}*/}
-              {/*    </Text>*/}
-              {/*  )}*/}
-              {/*>*/}
-              {/*  <DisplayValue value={BN_100} />*/}
-              {/*</DollarAssetValue>*/}
-            </div>
           </div>
         </div>
       </div>
@@ -141,9 +128,6 @@ export const LiquidityPosition = ({
             withdrawFee,
             poolId,
             amount,
-            shares: BN_100,
-            price: BN_1,
-            providedAmount: BN_100,
           }}
           onSuccess={console.log}
         />

@@ -68,7 +68,7 @@ export const PoolDetails = ({
             {t("liquidity.asset.details.fee")}
           </Text>
           <Text lh={22} color="white" fs={18}>
-            {tradeFeeDisplay}%
+            {t('value.percentage', { value: tradeFeeDisplay })}
           </Text>
         </div>
       </div>

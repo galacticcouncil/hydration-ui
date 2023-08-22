@@ -37,7 +37,7 @@ export const StablePool = ({
   const position = useTokenBalance(id.toString(), account?.address)
 
   const amount = position?.data?.freeBalance ?? BN_0
-  const hasPosition = amount?.isGreaterThan(BN_0)
+  const hasPosition = amount.isGreaterThan(BN_0)
 
   return (
     <SContainer id={id.toString()}>

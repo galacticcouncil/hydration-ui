@@ -28,9 +28,6 @@ type RemoveLiquidityProps = {
     reserves: { asset_id: number; amount: string }[]
     poolId: u32
     amount: BigNumber
-    shares: BigNumber
-    price: BigNumber
-    providedAmount: BigNumber
     withdrawFee: BigNumber
   }
   onSuccess: () => void
