@@ -50,7 +50,7 @@ export const getReferendums =
       return {
         id: key.args[0].toString(),
         referendum: codec.unwrap(),
-        voted: vote,
+        voted: !!vote,
       }
     })
 
