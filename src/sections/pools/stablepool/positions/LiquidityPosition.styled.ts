@@ -4,5 +4,5 @@ import { SContainer as PoolContainer } from "../../pool/positions/LiquidityPosit
 
 export const SContainer = styled(PoolContainer)`
   border-color: ${theme.colors.vibrantBlue300}!important;
-  background: rgba(0, 7, 50, 0.7)!important;
+  background: rgba(0, 7, 50, 0.7) !important;
 `

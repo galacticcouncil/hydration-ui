@@ -16,9 +16,7 @@ import { u32 } from "@polkadot/types-codec"
 import { useAssetMeta } from "api/assetMeta"
 import { useStablepoolLiquidiyOut } from "./RemoveLiquidity.utils"
 import { RemoveLiquidityReward } from "../../modals/RemoveLiquidity/components/RemoveLiquidityReward"
-import {
-  STradingPairContainer,
-} from "../../modals/RemoveLiquidity/RemoveLiquidity.styled"
+import { STradingPairContainer } from "../../modals/RemoveLiquidity/RemoveLiquidity.styled"
 import { RemoveLiquidityInput } from "../../modals/RemoveLiquidity/components/RemoveLiquidityInput"
 
 type RemoveLiquidityProps = {
