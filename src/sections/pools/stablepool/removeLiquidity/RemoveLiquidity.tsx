@@ -18,8 +18,11 @@ import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
 import { u32 } from "@polkadot/types-codec"
 import { useAssetMeta } from "api/assetMeta"
 import { useStablepoolLiquidiyOut } from "./RemoveLiquidity.utils"
-import { RemoveLiquidityReward } from '../../modals/RemoveLiquidity/components/RemoveLiquidityReward'
-import { SSlippage, STradingPairContainer } from '../../modals/RemoveLiquidity/RemoveLiquidity.styled'
+import { RemoveLiquidityReward } from "../../modals/RemoveLiquidity/components/RemoveLiquidityReward"
+import {
+  SSlippage,
+  STradingPairContainer,
+} from "../../modals/RemoveLiquidity/RemoveLiquidity.styled"
 
 type RemoveLiquidityProps = {
   assetId?: string
