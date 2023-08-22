@@ -3042,10 +3042,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.4.tgz#08b43392b3aa5602e0ebc098ff07dfc9999dfd9f"
   integrity sha512-lwGqEqEuCOoTXmVwovWHTjDPM9FUBsmvn0Q7FRg7/059OcWGTUEVkV+//FaXevz3Fkl/toP2ocOuIK5JG8MxRw==
 
-"@galacticcouncil/apps@1.6.6":
-  version "1.6.6"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.6.6.tgz#0d09e10bf42425376bfd00a3fa8fcee7cc26709a"
-  integrity sha512-ZQTkAeBgnMDxebFTyfRY2NGRhw/eWjKzLzG/ZQDEeOOBW16kAOQQ5i39tp9HrjBiv7gXfuiFUGMNvn/VF8Zd6w==
+"@galacticcouncil/apps@1.6.7":
+  version "1.6.7"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.6.7.tgz#5e96bbf152e8f8e7d67c71b70ce6644afa6855cc"
+  integrity sha512-LnkUkOfgz+vidAityf7Z/ewkPXsj3GKolw4w8Les7zOiEUzOnXW6wX2vv7gpknDbk4BPVu8CDl7TT49hO8ZhjQ==
   dependencies:
     "@talismn/connect-wallets" "^1.2.1"
     "@tanstack/table-core" "^8.5.17"
@@ -3057,10 +3057,10 @@
     lightweight-charts "^4.0.1"
     short-uuid "^4.2.0"
 
-"@galacticcouncil/bridge@0.0.7":
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.7.tgz#caae7b98f8e29114cedec7416fb00027b6f5be91"
-  integrity sha512-SRqx18FpmrMQv806f0c+gYhdRrUMjjLQRBq1rTcdli8g1u4EV9aBNy772o40eDFBa2Zx7/rwHIgau3+Qhi8TCg==
+"@galacticcouncil/bridge@0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.8.tgz#90dceaa641282af7b8b5e2fa923a73cf25fc975c"
+  integrity sha512-FoUIsHcAe6NtepksjvOfG24Ax1ukn4q5KjXUGDHCQqTmdnp3IBsADVh7bk00PpUID7JSmyLyCS0XrDCE+qDPaw==
   dependencies:
     "@acala-network/api" "^5"
     "@acala-network/sdk" "^4.1.9-2"
@@ -3109,10 +3109,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^1.2.19":
-  version "1.2.19"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.2.19.tgz#aaf201c37bc8b97756542caeb4f85c6dafe7fd01"
-  integrity sha512-+FuUVg2nQnukgA1fe1WYJYa89ToPPXoxjF6H11wtxAGh5itEaonSyP/sSwUqkcuJQ1WZ6aXeTA/KJkwozvz5hw==
+"@galacticcouncil/ui@^1.2.20":
+  version "1.2.20"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.2.20.tgz#cc47d4c7e3d8efb6cc8be5f43d90bd14b04f20a3"
+  integrity sha512-KrJlTSsZJ36D6oTxc4e5+5//2QTfmNsOd5pmo01a3lKvW9DCsTPgNX20Z0+AvoyM+nYmsN6bNHLWEPb88YbpbQ==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
