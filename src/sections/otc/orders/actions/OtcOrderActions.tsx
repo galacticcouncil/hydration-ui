@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { useAccountStore } from "state/store"
 import { safeConvertAddressSS58 } from "utils/formatting"
-import { OrderTableData } from "../OtcOrdersData.utils"
+import { OrderTableData } from "sections/otc/orders/OtcOrdersData.utils"
 
 type Props = {
   data: OrderTableData

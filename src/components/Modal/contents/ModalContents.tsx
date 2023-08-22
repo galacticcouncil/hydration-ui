@@ -5,7 +5,7 @@ import {
   ModalHeaderButton,
   ModalHeaderTitle,
   ModalHeaderVariant,
-} from "../header/ModalHeader"
+} from "components/Modal/header/ModalHeader"
 import { SContainer, SContent } from "./ModalContents.styled"
 
 export type ModalContentProps = {

@@ -10,7 +10,7 @@ import { useAccountStore } from "state/store"
 import { BLOCK_TIME, BN_0, ORMLVEST } from "utils/constants"
 import { useMemo } from "react"
 import { useApiPromise } from "utils/api"
-import { getExpectedBlockDate } from "../utils/block"
+import { getExpectedBlockDate } from "utils/block"
 import { compareAsc } from "date-fns"
 
 export const useVestingSchedules = (address: Maybe<AccountId32 | string>) => {

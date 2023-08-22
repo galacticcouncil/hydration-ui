@@ -1,5 +1,8 @@
 import { AreaChart as AreaRecharts, Area, ResponsiveContainer } from "recharts"
-import { ChartState, TChartState } from "../components/ChartState"
+import {
+  ChartState,
+  TChartState,
+} from "components/Charts/components/ChartState"
 
 const points = [
   14, 22, 36, 0, 15, 22, 35, 27, 50, 70, 74, 56, 41, 67, 82, 102, 107, 85, 121,

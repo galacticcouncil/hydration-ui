@@ -8,9 +8,9 @@ import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPos
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { BN_0 } from "utils/constants"
-import { useHydraPositionsData } from "../hydraPositions/data/WalletAssetsHydraPositionsData.utils"
-import { useAssetsTableData } from "../table/data/WalletAssetsTableData.utils"
-import { SInfoIcon } from "../../../pools/pool/Pool.styled"
+import { useHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
+import { useAssetsTableData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
+import { SInfoIcon } from "sections/pools/pool/Pool.styled"
 
 type Props = { disconnected?: boolean }
 

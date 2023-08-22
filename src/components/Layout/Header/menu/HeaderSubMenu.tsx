@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { TabItemWithSubItems } from "utils/navigation"
-import { MobileNavBarItem } from "../MobileNavBar/MobileNavBar"
+import { MobileNavBarItem } from "components/Layout/Header/MobileNavBar/MobileNavBar"
 import {
   SArrow,
   SItem,

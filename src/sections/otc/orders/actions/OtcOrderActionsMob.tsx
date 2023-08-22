@@ -14,8 +14,8 @@ import {
   OrderAssetColumn,
   OrderPairColumn,
   OrderPriceColumn,
-} from "../OtcOrdersData"
-import { OrderTableData } from "../OtcOrdersData.utils"
+} from "sections/otc/orders/OtcOrdersData"
+import { OrderTableData } from "sections/otc/orders/OtcOrdersData.utils"
 import { SActionButtonsContainer } from "./OtcOrderActions.styled"
 
 type Props = {

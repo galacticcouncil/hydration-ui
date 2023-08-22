@@ -7,8 +7,8 @@ import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
 import {
   SActionsContainer,
   SButtonOpen,
-} from "../pool/actions/PoolActions.styled"
-import { SContainer, SGridContainer } from "../pool/Pool.styled"
+} from "sections/pools/pool/actions/PoolActions.styled"
+import { SContainer, SGridContainer } from "sections/pools/pool/Pool.styled"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { useMedia } from "react-use"

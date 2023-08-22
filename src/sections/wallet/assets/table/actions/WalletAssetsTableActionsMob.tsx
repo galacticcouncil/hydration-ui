@@ -13,8 +13,8 @@ import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
 import { theme } from "theme"
 import { LINKS } from "utils/navigation"
-import { AssetsTableData } from "../WalletAssetsTable.utils"
-import { WalletAssetsTableName } from "../data/WalletAssetsTableData"
+import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
+import { WalletAssetsTableName } from "sections/wallet/assets/table/data/WalletAssetsTableData"
 import { SActionButtonsContainer } from "./WalletAssetsTable.styled"
 
 type Props = {

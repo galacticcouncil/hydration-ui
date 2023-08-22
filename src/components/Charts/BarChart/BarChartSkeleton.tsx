@@ -1,5 +1,8 @@
 import { Bar, BarChart, Cell, ResponsiveContainer } from "recharts"
-import { ChartState, TChartState } from "../components/ChartState"
+import {
+  ChartState,
+  TChartState,
+} from "components/Charts/components/ChartState"
 
 const per = [
   7, 4, 10, 25, 21, 58, 47, 64, 67, 49, 61, 85, 89, 63, 98, 83, 86, 67, 81, 85,

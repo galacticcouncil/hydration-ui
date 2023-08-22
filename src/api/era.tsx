@@ -4,7 +4,7 @@ import { ExtrinsicEra } from "@polkadot/types/interfaces/extrinsics"
 import { bnToBn } from "@polkadot/util"
 import { useTimestamp } from "./timestamp"
 import { useMemo } from "react"
-import { BLOCK_TIME } from "../utils/constants"
+import { BLOCK_TIME } from "utils/constants"
 
 export const useEra = (
   era: ExtrinsicEra,

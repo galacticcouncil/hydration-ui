@@ -4,7 +4,7 @@ import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { ReactComponent as DownloadIcon } from "assets/icons/DownloadIcon.svg"
 import { useTranslation } from "react-i18next"
 import { Wallet } from "@talismn/connect-wallets"
-import { getWalletMeta } from "../../modal/WalletConnectModal.utils"
+import { getWalletMeta } from "sections/wallet/connect/modal/WalletConnectModal.utils"
 
 type Props = {
   wallet: Wallet

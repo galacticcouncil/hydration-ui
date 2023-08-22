@@ -4,7 +4,7 @@ import {
   SItem,
   SItemUSD,
   SItems,
-} from "../HeaderSettingsDisplayAsset.styled"
+} from "components/Layout/Header/settings/displayAsset/HeaderSettingsDisplayAsset.styled"
 
 export const HeaderSettingsDisplayAssetSkeleton = () => {
   return (
