@@ -12,7 +12,7 @@ import { useEffect, useState } from "react"
 import { WsProvider } from "@polkadot/rpc-provider"
 import { ApiPromise } from "@polkadot/api"
 import { u32, u64 } from "@polkadot/types"
-import { ProviderItemEdit } from "../ProviderItemEdit/ProviderItemEdit"
+import { ProviderItemEdit } from "sections/provider/components/ProviderItemEdit/ProviderItemEdit"
 
 type ProviderItemProps = {
   name: string

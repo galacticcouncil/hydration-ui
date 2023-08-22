@@ -1,5 +1,5 @@
 import { FC, ReactNode } from "react"
-import { TypographyProps } from "../Typography.utils"
+import { TypographyProps } from "components/Typography/Typography.utils"
 import { SGradientText } from "./GradientText.styled"
 import { theme } from "theme"
 

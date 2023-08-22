@@ -1,6 +1,6 @@
 import { SContainer } from "sections/staking/StakingPage.styled"
 import { StakingValues } from "./Values/StakingValues"
-import { PieChart } from "../PieChart/PieChart"
+import { PieChart } from "sections/staking/sections/dashboard/components/PieChart/PieChart"
 import { useAccountStore } from "state/store"
 import { TStakingData } from "sections/staking/StakingPage.utils"
 

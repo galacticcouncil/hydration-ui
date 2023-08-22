@@ -9,7 +9,7 @@ import {
 import { useState } from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { TUseOmnipoolAssetDetailsData } from "../../StatsPage.utils"
+import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
 import BigNumber from "bignumber.js"
 
 export type OmnipoolAssetsTableColumn = ColumnDef<

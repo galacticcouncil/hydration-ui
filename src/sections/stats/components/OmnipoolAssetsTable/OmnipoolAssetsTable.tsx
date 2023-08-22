@@ -17,7 +17,7 @@ import {
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
-import { TUseOmnipoolAssetDetailsData } from "../../StatsPage.utils"
+import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
 
 type Props = {
   data: TUseOmnipoolAssetDetailsData

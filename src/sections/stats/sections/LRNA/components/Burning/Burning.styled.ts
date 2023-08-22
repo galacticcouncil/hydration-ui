@@ -1,5 +1,5 @@
 import styled from "@emotion/styled"
-import { SContainerVertical } from "../../StatsLRNA.styled"
+import { SContainerVertical } from "sections/stats/sections/LRNA/StatsLRNA.styled"
 import { theme } from "theme"
 
 export const SBurnContainer = styled(SContainerVertical)`

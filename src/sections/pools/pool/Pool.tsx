@@ -12,7 +12,7 @@ import { PoolIncentives } from "./details/PoolIncentives"
 import { usePoolPositions } from "sections/pools/pool/Pool.utils"
 import { PoolCapacity } from "sections/pools/pool/capacity/PoolCapacity"
 import { LiquidityPositionWrapper } from "./positions/LiquidityPositionWrapper"
-import { FarmingPositionWrapper } from "../farms/FarmingPositionWrapper"
+import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
 import { useAccountDeposits } from "api/deposits"
 import { PoolFooterWithNoFarms } from "./footer/PoolFooterWithNoFarms"
 
