@@ -15,6 +15,7 @@ export const Charts = ({
   const stats = useStats({
     timeframe,
     assetSymbol,
+    type,
   })
 
   return type === "volume" ? (
@@ -22,12 +23,15 @@ export const Charts = ({
       data={stats.data}
       loading={stats.isLoading}
       error={stats.isError}
+      timeframe={timeframe}
     />
   ) : (
     <AreaChart
+      dataKey="tvl_usd"
       data={stats.data}
       loading={stats.isLoading}
       error={stats.isError}
+      timeframe={timeframe}
     />
   )
 }

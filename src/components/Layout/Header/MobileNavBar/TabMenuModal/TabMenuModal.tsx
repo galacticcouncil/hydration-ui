@@ -1,9 +1,10 @@
-import { Dialog, DialogPortal } from "@radix-ui/react-dialog"
+import { Dialog, DialogPortal, DialogContent } from "@radix-ui/react-dialog"
 import { PropsWithChildren } from "react"
 import { RemoveScroll } from "react-remove-scroll"
 import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
-import { CloseButton, SBackdrop, SModalContent } from "./TabMenuModal.styled"
+import { CloseButton, SModalContent, SBackdrop } from "./TabMenuModal.styled"
 import { useTranslation } from "react-i18next"
+import { AnimatePresence } from "framer-motion"
 
 type TabMenuModalProps = {
   open: boolean
@@ -18,18 +19,38 @@ export const TabMenuModal = ({
   const { t } = useTranslation()
   return (
     <Dialog open={open}>
-      <DialogPortal>
-        <SBackdrop>
-          <SModalContent>
-            <CloseButton
-              icon={<CrossIcon />}
-              onClick={onClose}
-              name={t("modal.closeButton.name")}
-            />
-            <RemoveScroll enabled={open}>{children}</RemoveScroll>
-          </SModalContent>
-        </SBackdrop>
-      </DialogPortal>
+      <AnimatePresence mode="wait">
+        {open && (
+          <DialogPortal forceMount>
+            <SBackdrop
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <DialogContent onInteractOutside={onClose} asChild>
+                <SModalContent
+                  key="content"
+                  initial={{ opacity: 0, x: 200 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 200 }}
+                  transition={{
+                    duration: 0.2,
+                  }}
+                >
+                  <CloseButton
+                    icon={<CrossIcon />}
+                    onClick={onClose}
+                    name={t("modal.closeButton.name")}
+                  />
+                  <RemoveScroll enabled={open}>{children}</RemoveScroll>
+                </SModalContent>
+              </DialogContent>
+            </SBackdrop>
+          </DialogPortal>
+        )}
+      </AnimatePresence>
     </Dialog>
   )
 }

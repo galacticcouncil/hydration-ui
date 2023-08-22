@@ -11,7 +11,7 @@ import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPosi
 import { theme } from "theme"
 import { useEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
-import { JoinedFarmsDetails } from "../modals/joinedFarmDetails/JoinedFarmsDetails"
+import { JoinedFarmsDetails } from "sections/pools/farms/modals/joinedFarmDetails/JoinedFarmsDetails"
 import {
   SContainer,
   SSeparator,
@@ -24,10 +24,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useOmnipoolPosition } from "api/omnipool"
 import { useDisplayPrice } from "utils/displayAsset"
 import { getFloatingPointAmount } from "utils/balance"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { SInfoIcon } from "sections/pools/pool/details/PoolValue.styled"
-import { useSpotPrice } from "api/spotPrice"
-import { useApiIds } from "api/consts"
+import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 
 function FarmingPositionDetailsButton(props: {
   pool: OmnipoolPool
@@ -65,16 +62,11 @@ export const FarmingPosition = ({
 }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const apiIds = useApiIds()
   const position = useDepositShare(pool.id, depositNft.id.toString())
 
   const lpPosition = useOmnipoolPosition(position.data?.id)
   const meta = useAssetMeta(lpPosition.data?.assetId)
   const spotPrice = useDisplayPrice(lpPosition.data?.assetId)
-  const lrnaSpotPrice = useSpotPrice(
-    apiIds.data?.hubId,
-    lpPosition.data?.assetId,
-  )
 
   const initialPosValue =
     getFloatingPointAmount(
@@ -86,14 +78,6 @@ export const FarmingPosition = ({
     spotPrice.data?.spotPrice ?? 1,
   )
 
-  let lrnaSum = BN_0
-
-  if (!position.data?.lrna.isNaN() && position.data?.lrna.gt(0)) {
-    lrnaSum = position.data?.lrna.multipliedBy(
-      lrnaSpotPrice.data?.spotPrice ?? 1,
-    )
-  }
-
   // use latest entry date
   const enteredDate = useEnteredDate(
     depositNft.deposit.yieldFarmEntries.reduce(
@@ -103,20 +87,6 @@ export const FarmingPosition = ({
           : acc,
       BN_0,
     ),
-  )
-
-  const tooltip = (
-    <div sx={{ flex: "column", gap: 6, width: 210 }}>
-      <Text fs={11}>
-        {t("farms.positions.labels.currentValue.tooltip.label")}
-      </Text>
-      <Text fs={12}>
-        {t("value.tokenWithSymbol", {
-          value: lrnaSum.plus(position.data?.value ?? 0),
-          symbol: meta.data?.symbol,
-        })}
-      </Text>
-    </div>
   )
 
   return (
@@ -184,11 +154,11 @@ export const FarmingPosition = ({
               <Text color="basic500" fs={14} lh={16} fw={400}>
                 {t("farms.positions.labels.currentValue")}
               </Text>
-              {!lrnaSum.isZero() && (
-                <InfoTooltip text={tooltip}>
-                  <SInfoIcon />
-                </InfoTooltip>
-              )}
+              <LrnaPositionTooltip
+                assetId={position.data?.assetId}
+                tokenPosition={position.data?.value}
+                lrnaPosition={position.data?.lrna}
+              />
             </div>
 
             {position.data && (

@@ -1,7 +1,7 @@
 import { TableSkeleton } from "components/Table/TableSkeleton"
 import { useTranslation } from "react-i18next"
-import { assetsTableStyles } from "../../table/WalletAssetsTable.styled"
 import { useFarmingPositionsSkeleton } from "./WalletFarmingPositionsSkeleton.utils"
+import { tableStyles } from "sections/wallet/assets/farmingPositions/WalletFarmingPositions.styled"
 
 export const WalletFarmingPositionsSkeleton = () => {
   const { t } = useTranslation()
@@ -11,7 +11,7 @@ export const WalletFarmingPositionsSkeleton = () => {
     <TableSkeleton
       table={table}
       title={t("wallet.assets.farmingPositions.title")}
-      css={assetsTableStyles}
+      css={tableStyles}
     />
   )
 }

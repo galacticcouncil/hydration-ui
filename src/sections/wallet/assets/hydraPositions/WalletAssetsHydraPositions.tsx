@@ -1,36 +1,31 @@
 import { useTranslation } from "react-i18next"
-import { Fragment, useState } from "react"
+import { Fragment } from "react"
 import {
   Table,
   TableBodyContent,
   TableContainer,
-  TableData,
   TableHeaderContent,
   TableRow,
   TableTitle,
 } from "components/Table/Table.styled"
-import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
 import { Text } from "components/Typography/Text/Text"
 import { TableSortHeader } from "components/Table/Table"
 import { flexRender } from "@tanstack/react-table"
-import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 import {
   HydraPositionsTableData,
   useHydraPositionsTable,
 } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { WalletAssetsHydraPositionsDetails } from "sections/wallet/assets/hydraPositions/details/WalletAssetsHydraPositionsDetails"
 import { EmptyState } from "./EmptyState"
+import { STableData, tableStyles } from "./WalletHydraPositions.styled"
 
 type Props = { data: HydraPositionsTableData[] }
 
 export const WalletAssetsHydraPositions = ({ data }: Props) => {
   const { t } = useTranslation()
-  const [transferAsset, setTransferAsset] = useState<string | null>(null)
-
-  const table = useHydraPositionsTable(data, { onTransfer: setTransferAsset })
+  const table = useHydraPositionsTable(data)
 
   return (
-    <TableContainer css={assetsTableStyles}>
+    <TableContainer css={tableStyles}>
       <TableTitle>
         <Text
           fs={[16, 20]}
@@ -68,27 +63,14 @@ export const WalletAssetsHydraPositions = ({ data }: Props) => {
               <Fragment key={row.id}>
                 <TableRow isOdd={!(i % 2)} onClick={() => row.toggleSelected()}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableData key={cell.id}>
+                    <STableData key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
                       )}
-                    </TableData>
+                    </STableData>
                   ))}
                 </TableRow>
-                {row.getIsSelected() && (
-                  <TableRow isSub>
-                    <TableData colSpan={table.getAllColumns().length}>
-                      <WalletAssetsHydraPositionsDetails
-                        assetId={row.original.assetId}
-                        symbol={row.original.symbol}
-                        amount={row.original.providedAmount}
-                        amountDisplay={row.original.providedAmountDisplay}
-                        shares={row.original.shares}
-                      />
-                    </TableData>
-                  </TableRow>
-                )}
               </Fragment>
             ))
           ) : (
@@ -96,13 +78,6 @@ export const WalletAssetsHydraPositions = ({ data }: Props) => {
           )}
         </TableBodyContent>
       </Table>
-      {transferAsset && (
-        <WalletTransferModal
-          open
-          initialAsset={transferAsset}
-          onClose={() => setTransferAsset(null)}
-        />
-      )}
     </TableContainer>
   )
 }

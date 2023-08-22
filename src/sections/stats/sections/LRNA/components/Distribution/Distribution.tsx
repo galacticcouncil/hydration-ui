@@ -4,11 +4,11 @@ import { ChartSwitchMobile } from "sections/stats/components/ChartSwitchMobile/C
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useState } from "react"
-import { SContainerVertical } from "../../StatsLRNA.styled"
-import { ChartWrapper } from "../ChartWrapper/ChartWrapper"
+import { SContainerVertical } from "sections/stats/sections/LRNA/StatsLRNA.styled"
+import { ChartWrapper } from "sections/stats/sections/LRNA/components/ChartWrapper/ChartWrapper"
 import { useTranslation } from "react-i18next"
 import { ChartLabel } from "./ChartLabel"
-import { DoughnutChart } from "../../../../components/DoughnutChart/DoughnutChart"
+import { DoughnutChart } from "sections/stats/components/DoughnutChart/DoughnutChart"
 import {
   makePercent,
   useLRNAOmnipoolBalance,
@@ -16,6 +16,7 @@ import {
 } from "./Distribution.utils"
 import { DistributionSliceLabel } from "./DistributionSliceLabel"
 import { useLRNAMeta } from "api/assetMeta"
+import { DEPOSIT_CLASS_ID } from "utils/api"
 
 export const Distribution = () => {
   const { t } = useTranslation()
@@ -98,6 +99,7 @@ export const Distribution = () => {
                   percentage: insidePercent?.toNumber() ?? 0,
                   color: "#A6DDFF",
                   name: "in",
+                  id: DEPOSIT_CLASS_ID,
                 },
                 {
                   label: (
@@ -110,6 +112,7 @@ export const Distribution = () => {
                   percentage: outsidePercent?.toNumber() ?? 0,
                   color: "#2489FF",
                   name: "out",
+                  id: DEPOSIT_CLASS_ID,
                 },
               ]}
               label={ChartLabel}

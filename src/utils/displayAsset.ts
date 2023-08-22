@@ -48,7 +48,7 @@ export const useDisplayPrice = (id: string | u32 | undefined) => {
     return spotPrice.data
   }, [displayAsset.isRealUSD, isLoading, spotPrice.data, usdPrice.data])
 
-  return { data, isLoading }
+  return { data, isLoading, isInitialLoading: isLoading }
 }
 
 export const useDisplayPrices = (

@@ -1,4 +1,4 @@
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
@@ -24,6 +24,10 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import { useAccountStore } from "state/store"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { useDisplayPrice } from "utils/displayAsset"
+import { BN_0 } from "utils/constants"
+import Skeleton from "react-loading-skeleton"
+import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 
 type Props = {
   pool: OmnipoolPool
@@ -135,42 +139,31 @@ export const LiquidityPosition = ({
 }: Props) => {
   const { t } = useTranslation()
   const meta = useAssetMeta(position.assetId)
+  const price = useDisplayPrice(meta.data?.id)
+
+  const shiftBy = meta?.data ? meta.data.decimals.neg().toNumber() : 12
+  const spotPrice = price.data?.spotPrice
+  const providedAmountPrice = spotPrice
+    ? position.providedAmount.multipliedBy(spotPrice).shiftedBy(shiftBy)
+    : BN_0
+
+  const providedAmountPriceLoading = meta.isLoading || price.isLoading
 
   return (
     <SContainer>
       <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
-        <div sx={{ flex: "row", gap: 7, align: "center", ml: [0, "-25px"] }}>
-          <Icon
-            icon={getAssetLogo(position.symbol)}
-            sx={{ width: 18, height: "fit-content" }}
-          />
+        <div sx={{ flex: "row", gap: 7, align: "center" }}>
+          <Icon size={18} icon={<AssetLogo id={position.assetId} />} />
           <Text fs={[14, 18]} color={["white", "basic100"]}>
             {t("liquidity.asset.positions.position.title", { index })}
           </Text>
         </div>
-        <div
-          css={{
-            display: "grid",
-            gridTemplateColumns: "1fr auto 1fr auto 1fr",
-          }}
-        >
-          <div sx={{ flex: "column", gap: 6, pr: 12 }}>
+        <div css={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
+          <div sx={{ flex: "column", gap: 6 }}>
             <Text fs={14} color="whiteish500">
-              {t("liquidity.asset.positions.position.amount")}
+              {t("liquidity.asset.positions.position.initialValue")}
             </Text>
-            <Text>
-              {t("liquidity.asset.positions.position.shares", {
-                shares: position.shares,
-                fixedPointScale: meta.data?.decimals.toString() ?? 12,
-              })}
-            </Text>
-          </div>
-          <Separator orientation="vertical" />
-          <div sx={{ flex: "column", align: "center", px: 12 }}>
-            <div sx={{ flex: "column", gap: 6 }}>
-              <Text fs={14} color="whiteish500">
-                {t("liquidity.asset.positions.position.initialValue")}
-              </Text>
+            <div>
               <Text>
                 {t("value.token", {
                   value: position.providedAmount,
@@ -178,31 +171,50 @@ export const LiquidityPosition = ({
                   numberSuffix: ` ${meta.data?.symbol ?? "N/A"}`,
                 })}
               </Text>
-            </div>
-          </div>
-          <Separator orientation="vertical" />
-          <div sx={{ flex: "column", gap: 6, align: "center", pl: 12 }}>
-            <div sx={{ flex: "column", gap: 6 }}>
-              <Text fs={14} color="whiteish500">
-                {t("liquidity.asset.positions.position.currentValue")}
-              </Text>
-              <div sx={{ flex: "column", align: "start" }}>
-                <WalletAssetsHydraPositionsData
-                  symbol={position.symbol}
-                  value={position.value}
-                  lrna={position.lrna}
-                />
+              {providedAmountPriceLoading ? (
+                <Skeleton width={50} height={7} />
+              ) : (
                 <DollarAssetValue
-                  value={position.valueDisplay}
+                  value={providedAmountPrice}
                   wrapper={(children) => (
                     <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
                       {children}
                     </Text>
                   )}
                 >
-                  <DisplayValue value={position.valueDisplay} />
+                  <DisplayValue value={providedAmountPrice} />
                 </DollarAssetValue>
-              </div>
+              )}
+            </div>
+          </div>
+          <Separator orientation="vertical" />
+          <div sx={{ flex: "column", gap: 6 }}>
+            <div sx={{ display: "flex", gap: 6 }}>
+              <Text fs={14} color="whiteish500">
+                {t("liquidity.asset.positions.position.currentValue")}
+              </Text>
+              <LrnaPositionTooltip
+                assetId={position.assetId}
+                tokenPosition={position.value}
+                lrnaPosition={position.lrna}
+              />
+            </div>
+            <div sx={{ flex: "column", align: "start" }}>
+              <WalletAssetsHydraPositionsData
+                symbol={position.symbol}
+                value={position.value}
+                lrna={position.lrna}
+              />
+              <DollarAssetValue
+                value={position.valueDisplay}
+                wrapper={(children) => (
+                  <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                    {children}
+                  </Text>
+                )}
+              >
+                <DisplayValue value={position.valueDisplay} />
+              </DollarAssetValue>
             </div>
           </div>
         </div>

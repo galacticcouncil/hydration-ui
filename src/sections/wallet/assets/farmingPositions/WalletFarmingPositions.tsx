@@ -3,6 +3,7 @@ import { TableSortHeader } from "components/Table/Table"
 import {
   Table,
   TableBodyContent,
+  TableContainer,
   TableHeaderContent,
   TableRow,
   TableTitle,
@@ -10,7 +11,7 @@ import {
 import { Text } from "components/Typography/Text/Text"
 import { Fragment } from "react"
 import { useTranslation } from "react-i18next"
-import { STableContainer, STableData } from "./WalletFarmingPositions.styled"
+import { STableData, tableStyles } from "./WalletFarmingPositions.styled"
 import {
   FarmingPositionsTableData,
   useFarmingPositionsTable,
@@ -23,7 +24,7 @@ export const WalletFarmingPositions = ({ data }: Props) => {
   const table = useFarmingPositionsTable(data)
 
   return (
-    <STableContainer>
+    <TableContainer css={tableStyles}>
       <TableTitle>
         <Text
           fs={[16, 20]}
@@ -69,6 +70,6 @@ export const WalletFarmingPositions = ({ data }: Props) => {
           ))}
         </TableBodyContent>
       </Table>
-    </STableContainer>
+    </TableContainer>
   )
 }

@@ -1,16 +1,14 @@
-import { useApiPromise } from "utils/api"
-import { OmnipoolAssetsTableWrapper } from "./components/OmnipoolAssetsTable/OmnipoolAssetsTableWrapper"
 import { PieWrapper } from "./components/PieWrapper/PieWrapper"
-import { StatsTiles } from "../../components/StatsTiles/StatsTiles"
-import { isApiLoaded } from "utils/helpers"
+import { StatsTiles } from "sections/stats/components/StatsTiles/StatsTiles"
 import { useOmnipoolOverviewData } from "./data/OmnipoolOverview.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { SContainerVertical } from "./StatsOverview.styled"
-import { RecentTradesTableWrapper } from "../../components/RecentTradesTable/RecentTradesTableWrapper"
+import { RecentTradesTableWrapper } from "sections/stats/components/RecentTradesTable/RecentTradesTableWrapper"
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
+import { OmnipoolAssetsTableWrapper } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
 
-export const StatsOverviewData = () => {
+export const StatsOverview = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const omnipoolOverview = useOmnipoolOverviewData()
 
@@ -36,18 +34,8 @@ export const StatsOverviewData = () => {
       </div>
 
       <StatsTiles />
-
       <OmnipoolAssetsTableWrapper />
-
       <RecentTradesTableWrapper />
     </div>
   )
-}
-
-export const StatsOverview = () => {
-  const api = useApiPromise()
-
-  if (!isApiLoaded(api)) return null
-
-  return <StatsOverviewData />
 }

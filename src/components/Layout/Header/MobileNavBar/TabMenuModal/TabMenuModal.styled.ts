@@ -1,17 +1,17 @@
 import styled from "@emotion/styled"
-import { DialogContent } from "@radix-ui/react-dialog"
 import { IconButton } from "components/IconButton/IconButton"
+import { motion } from "framer-motion"
 import { theme } from "theme"
 
-export const SModalContent = styled(DialogContent)`
+export const SModalContent = styled(motion.div)`
   position: absolute;
   right: 0;
   bottom: 0;
 
   width: 70%;
+  max-width: 300px;
 
   margin: 20px 17px 1px 0;
-  padding-top: 20px;
   outline: 1px solid rgba(48, 52, 76, 0.5);
 
   border-radius: 4px;
@@ -25,7 +25,7 @@ export const SModalContent = styled(DialogContent)`
   }
 `
 
-export const SBackdrop = styled.div`
+export const SBackdrop = styled(motion.div)`
   width: 100%;
   height: 100vh;
 
@@ -42,8 +42,8 @@ export const CloseButton = styled(IconButton)`
   background: ${theme.colors.darkBlue700};
 
   position: absolute;
-  top: -10px;
-  right: -10px;
+  top: -16px;
+  right: -8px;
 
   :focus-visible {
     outline: none;

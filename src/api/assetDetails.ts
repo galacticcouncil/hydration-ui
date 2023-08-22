@@ -5,9 +5,14 @@ import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
 import { useQuery } from "@tanstack/react-query"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useAccountStore } from "state/store"
-import { NATIVE_ASSET_ID, useApiPromise, useTradeRouter } from "utils/api"
+import {
+  DEPOSIT_CLASS_ID,
+  NATIVE_ASSET_ID,
+  useApiPromise,
+  useTradeRouter,
+} from "utils/api"
 import { BN_0 } from "utils/constants"
-import { Maybe, isNotNil, normalizeId } from "utils/helpers"
+import { Maybe, isNotNil, normalizeId, isApiLoaded } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { getAccountBalances, useAccountBalances } from "./accountBalances"
 import { getTokenLock } from "./balances"
@@ -18,7 +23,7 @@ import { getAcceptedCurrency, getAccountCurrency } from "./payments"
 export const useAssetDetails = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
   return useQuery(QUERY_KEYS.assets, getAssetDetails(api), {
-    enabled: !!id,
+    enabled: !!id && !!isApiLoaded(api),
     select: (data) => data.find((i) => i.id === id?.toString()),
   })
 }
@@ -87,7 +92,6 @@ export const useAssetDetailsList = (
   noRefresh?: boolean,
 ) => {
   const api = useApiPromise()
-
   const normalizedIds = ids?.filter(isNotNil).map(normalizeId)
 
   return useQuery(
@@ -104,6 +108,7 @@ export const useAssetDetailsList = (
           filter.assetType.includes(asset.assetType),
         )
       },
+      enabled: !!isApiLoaded(api),
     },
   )
 }
@@ -178,13 +183,13 @@ export const getAssetsDetails = (api: ApiPromise) => async () => {
   }
 
   const assets = rawAssetsData.map(([key, data]) => {
+    const id = key.args[0].toString()
+
     const { symbol = "N/A", decimals } =
-      assetsMeta.find(
-        (assetMeta) => assetMeta.id.toString() === key.args[0].toString(),
-      ) || {}
+      assetsMeta.find((assetMeta) => assetMeta.id.toString() === id) || {}
 
     return {
-      id: key.args[0].toString(),
+      id,
       name: data.unwrap().name.toUtf8() || getAssetName(symbol),
       assetType: data.unwrap().assetType.type,
       symbol,
@@ -227,4 +232,64 @@ export const useAssetList = () => {
       .filter(isNotNil)
       .sort((a, b) => a.symbol.localeCompare(b.symbol))
   })
+}
+
+export const useAssetsLocation = () => {
+  const api = useApiPromise()
+  return useQuery(QUERY_KEYS.assetsLocation, getAssetsLocation(api))
+}
+
+const getAssetsLocation = (api: ApiPromise) => async () => {
+  const [metas, locationsRaw] = await Promise.all([
+    api.query.assetRegistry.assetMetadataMap.entries(),
+    api.query.assetRegistry.assetLocations.entries(),
+  ])
+
+  const nativeToken = {
+    id: NATIVE_ASSET_ID,
+    parachainId: undefined,
+    symbol: "HDX",
+  }
+
+  const hubToken = {
+    id: DEPOSIT_CLASS_ID,
+    parachainId: undefined,
+    symbol: "LRNA",
+  }
+
+  const locations = locationsRaw.map(([key, raw]) => {
+    const id = key.args[0].toString()
+    const data = raw.unwrap()
+    const type = data.interior.type
+
+    const symbol = metas
+      .find(([key]) => key.args[0].toString() === id)?.[1]
+      .unwrap()
+      .symbol.toUtf8()
+
+    if (data.interior && type !== "Here") {
+      const xcm = data.interior[`as${type}`]
+
+      const parachainId = !Array.isArray(xcm)
+        ? xcm.asParachain.unwrap().toNumber()
+        : xcm
+            .find((el) => el.isParachain)
+            ?.asParachain.unwrap()
+            .toNumber()
+
+      return {
+        id,
+        parachainId,
+        symbol,
+      }
+    }
+
+    return {
+      id: key.args[0].toString(),
+      parachainId: undefined,
+      symbol,
+    }
+  })
+
+  return [nativeToken, hubToken, ...locations]
 }

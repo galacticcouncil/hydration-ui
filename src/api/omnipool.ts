@@ -4,8 +4,8 @@ import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u128, u32 } from "@polkadot/types-codec"
 import { ITuple } from "@polkadot/types-codec/types"
-import { undefinedNoop } from "utils/helpers"
-import { REFETCH_INTERVAL } from "../utils/constants"
+import { isApiLoaded, undefinedNoop } from "utils/helpers"
+import { REFETCH_INTERVAL } from "utils/constants"
 
 export const useOmnipoolAsset = (id: u32 | string) => {
   const api = useApiPromise()
@@ -17,6 +17,7 @@ export const useOmnipoolAssets = (noRefresh?: boolean) => {
   return useQuery(
     noRefresh ? QUERY_KEYS.omnipoolAssets : QUERY_KEYS.omnipoolAssetsLive,
     getOmnipoolAssets(api),
+    { enabled: !!isApiLoaded(api) },
   )
 }
 
@@ -138,7 +139,7 @@ export const useHubAssetImbalance = () => {
     QUERY_KEYS.hubAssetImbalance(),
     () => getHubAssetImbalance(api),
     {
-      enabled: !!api,
+      enabled: !!isApiLoaded(api),
       refetchInterval: REFETCH_INTERVAL,
     },
   )

@@ -1,40 +1,23 @@
-import {
-  SortingState,
-  VisibilityState,
-  createColumnHelper,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table"
-import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.svg"
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
-import { ButtonTransparent } from "components/Button/Button"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useMedia } from "react-use"
 import { theme } from "theme"
-import { TUseOmnipoolAssetDetailsData } from "../../../../StatsPage.utils"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { ButtonTransparent } from "components/Button/Button"
+import { createColumnHelper } from "@tanstack/react-table"
+import { useTranslation } from "react-i18next"
+import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.svg"
+import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
+import { OmnipoolAssetsTableColumn } from "sections/stats/components/OmnipoolAssetsTable/OmnipoolAssetsTable.utils"
+import { useMedia } from "react-use"
 
-export const useOmnipoolAssetsTable = (data: TUseOmnipoolAssetDetailsData) => {
-  const { t } = useTranslation()
+export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
   const { accessor, display } =
     createColumnHelper<TUseOmnipoolAssetDetailsData[number]>()
-  const [sorting, setSorting] = useState<SortingState>([])
-
+  const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const columnVisibility: VisibilityState = {
-    symbol: true,
-    tvl: true,
-    volume: isDesktop,
-    fee: isDesktop,
-    pol: isDesktop,
-    actions: true,
-  }
 
-  const columns = [
+  return [
     accessor("symbol", {
       id: "symbol",
       header: t("stats.overview.table.assets.header.asset"),
@@ -48,7 +31,7 @@ export const useOmnipoolAssetsTable = (data: TUseOmnipoolAssetDetailsData) => {
             justify: "start",
           }}
         >
-          <Icon size={26} icon={getAssetLogo(row.original.symbol)} />
+          <Icon size={26} icon={<AssetLogo id={row.original.id} />} />
           <div sx={{ flex: "column" }}>
             <Text fs={[14, 16]} color="white">
               {row.original.symbol}
@@ -119,15 +102,4 @@ export const useOmnipoolAssetsTable = (data: TUseOmnipoolAssetDetailsData) => {
       ),
     }),
   ]
-
-  const table = useReactTable({
-    data,
-    columns,
-    state: { sorting, columnVisibility },
-    onSortingChange: setSorting,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-  })
-
-  return table
 }

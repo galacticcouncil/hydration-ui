@@ -1,5 +1,5 @@
 import BN from "bignumber.js"
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
@@ -11,36 +11,34 @@ export const OrderPairColumn = (props: {
   pol: boolean
 }) => {
   return (
-    <div>
-      <div sx={{ flex: "row", gap: 4, align: "center" }}>
-        <MultipleIcons
-          icons={[
-            { icon: getAssetLogo(props.offering.symbol) },
-            { icon: getAssetLogo(props.accepting.symbol) },
-          ]}
-        />
-        <div sx={{ display: "box", ml: 8 }}>
-          <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="basic400">
-            {props.offering.symbol} / {props.accepting.symbol}
-          </Text>
-          {props.pol && (
-            <span
-              css={{
-                fontSize: 10,
-                fontWeight: 600,
-                border: "1px solid #FC408C",
-                borderRadius: "4px",
-                width: "31px",
-                height: "16px",
-                padding: "1px 6px",
-                color: "#fff",
-                background: "rgba(255, 2, 103, 0.6)",
-              }}
-            >
-              POL
-            </span>
-          )}
-        </div>
+    <div sx={{ flex: "row", gap: 4, align: "center" }}>
+      <MultipleIcons
+        icons={[
+          { icon: <AssetLogo id={props.offering.asset} /> },
+          { icon: <AssetLogo id={props.accepting.asset} /> },
+        ]}
+      />
+      <div sx={{ display: "box", ml: 8 }}>
+        <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="basic400">
+          {props.offering.symbol} / {props.accepting.symbol}
+        </Text>
+        {props.pol && (
+          <span
+            css={{
+              fontSize: 10,
+              fontWeight: 600,
+              border: "1px solid #FC408C",
+              borderRadius: "4px",
+              width: "31px",
+              height: "16px",
+              padding: "1px 6px",
+              color: "#fff",
+              background: "rgba(255, 2, 103, 0.6)",
+            }}
+          >
+            POL
+          </span>
+        )}
       </div>
     </div>
   )
@@ -53,15 +51,13 @@ export const OrderAssetColumn = (props: {
   const { t } = useTranslation()
 
   return (
-    <div>
-      <div sx={{ flex: "row", gap: 4, align: "center" }}>
-        <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
-          {t("value.token", { value: props.pair.amount })}
-        </Text>
-        <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
-          {props.pair.symbol}
-        </Text>
-      </div>
+    <div sx={{ flex: "row", gap: 4, align: "center" }}>
+      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
+        {t("value.token", { value: props.pair.amount })}
+      </Text>
+      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
+        {props.pair.symbol}
+      </Text>
     </div>
   )
 }

@@ -9,7 +9,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { OrderCapacity } from "../capacity/OrderCapacity"
+import { OrderCapacity } from "sections/otc/capacity/OrderCapacity"
 import { OtcOrderActions } from "./actions/OtcOrderActions"
 import {
   OrderAssetColumn,
@@ -18,6 +18,7 @@ import {
 } from "./OtcOrdersData"
 import { OrderTableData } from "./OtcOrdersData.utils"
 import Skeleton from "react-loading-skeleton"
+import { useMemo } from "react"
 
 export const useOrdersTable = (
   data: OrderTableData[],
@@ -39,93 +40,95 @@ export const useOrdersTable = (
     actions: true,
   }
 
-  const columns = [
-    accessor("id", {
-      id: "pair",
-      header: t("otc.offers.table.header.assets"),
-      cell: ({ row }) => (
-        <OrderPairColumn
-          offering={row.original.offering}
-          accepting={row.original.accepting}
-          pol={row.original.pol}
-        />
-      ),
-    }),
-    accessor("price", {
-      id: "price",
-      header: t("otc.offers.table.header.price"),
-      cell: ({ row }) => (
-        <OrderPriceColumn
-          symbol={row.original.accepting.symbol}
-          price={row.original.price}
-        />
-      ),
-    }),
-    accessor("offering", {
-      id: "offering",
-      header: isDesktop
-        ? t("otc.offers.table.header.offering")
-        : t("selectAssets.asset"),
-      cell: ({ row }) => <OrderAssetColumn pair={row.original.offering} />,
-    }),
-    accessor("accepting", {
-      id: "accepting",
-      header: t("otc.offers.table.header.accepting"),
-      cell: ({ row }) => <OrderAssetColumn pair={row.original.accepting} />,
-    }),
-    accessor("filled", {
-      id: "filled",
-      header: () => (
-        <div
-          style={{
-            textAlign: "center",
-            width: "100%",
-          }}
-        >
-          {t("otc.offers.table.header.status")}
-        </div>
-      ),
-      cell: ({ row }) =>
-        row.original.accepting.initial && row.original.partiallyFillable ? (
+  const columns = useMemo(
+    () => [
+      accessor("id", {
+        id: "pair",
+        header: t("otc.offers.table.header.assets"),
+        cell: ({ row }) => (
+          <OrderPairColumn
+            offering={row.original.offering}
+            accepting={row.original.accepting}
+            pol={row.original.pol}
+          />
+        ),
+      }),
+      accessor("price", {
+        id: "price",
+        header: t("otc.offers.table.header.price"),
+        cell: ({ row }) => (
+          <OrderPriceColumn
+            symbol={row.original.accepting.symbol}
+            price={row.original.price}
+          />
+        ),
+      }),
+      accessor("offering", {
+        id: "offering",
+        header: isDesktop
+          ? t("otc.offers.table.header.offering")
+          : t("selectAssets.asset"),
+        cell: ({ row }) => <OrderAssetColumn pair={row.original.offering} />,
+      }),
+      accessor("accepting", {
+        id: "accepting",
+        header: t("otc.offers.table.header.accepting"),
+        cell: ({ row }) => <OrderAssetColumn pair={row.original.accepting} />,
+      }),
+      accessor("filled", {
+        id: "filled",
+        header: () => (
           <div
             style={{
               textAlign: "center",
-              margin: "0 -20px",
+              width: "100%",
             }}
           >
-            <OrderCapacity
-              total={row.original.accepting.initial}
-              free={row.original.accepting.amount}
-              symbol={row.original.accepting.symbol}
-            />
+            {t("otc.offers.table.header.status")}
           </div>
-        ) : (
-          <Text fs={12} fw={400} color="basic400" tAlign={"center"} as="div">
-            N / A
-          </Text>
         ),
-    }),
-    display({
-      id: "actions",
-      cell: ({ row }) => (
-        <OtcOrderActions
-          data={row.original}
-          onClose={actions.onClose}
-          onFill={actions.onFill}
-        />
-      ),
-    }),
-  ]
+        cell: ({ row }) =>
+          row.original.accepting.initial && row.original.partiallyFillable ? (
+            <div
+              style={{
+                textAlign: "center",
+                margin: "0 -20px",
+              }}
+            >
+              <OrderCapacity
+                total={row.original.accepting.initial}
+                free={row.original.accepting.amount}
+                symbol={row.original.accepting.symbol}
+              />
+            </div>
+          ) : (
+            <Text fs={12} fw={400} color="basic400" tAlign={"center"} as="div">
+              N / A
+            </Text>
+          ),
+      }),
+      display({
+        id: "actions",
+        cell: ({ row }) => (
+          <OtcOrderActions
+            data={row.original}
+            onClose={actions.onClose}
+            onFill={actions.onFill}
+          />
+        ),
+      }),
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [actions, isDesktop],
+  )
 
-  const table = useReactTable({
+  return useReactTable({
     data,
     columns,
     state: { columnVisibility },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
-
-  return table
 }
 
 export const useOrdersTableSkeleton = () => {
@@ -142,54 +145,56 @@ export const useOrdersTableSkeleton = () => {
     actions: true,
   }
 
-  const columns = [
-    display({
-      id: "pair",
-      header: "Assets",
-      cell: () => <Skeleton width="100%" height="100%" />,
-    }),
-    display({
-      id: "price",
-      header: t("otc.offers.table.header.price"),
-      cell: () => <Skeleton width="100%" height="100%" />,
-    }),
-    display({
-      id: "offering",
-      header: isDesktop
-        ? t("otc.offers.table.header.offering")
-        : t("selectAssets.asset"),
-      cell: () => <Skeleton width="100%" height="100%" />,
-    }),
-    display({
-      id: "accepting",
-      header: t("otc.offers.table.header.accepting"),
-      cell: () => <Skeleton width="100%" height="100%" />,
-    }),
-    display({
-      id: "filled",
-      header: () => (
-        <div
-          style={{
-            textAlign: "center",
-            width: "100%",
-          }}
-        >
-          {t("otc.offers.table.header.status")}
-        </div>
-      ),
-      cell: () => <Skeleton width="100%" height="100%" />,
-    }),
-  ]
+  const columns = useMemo(
+    () => [
+      display({
+        id: "pair",
+        header: "Assets",
+        cell: () => <Skeleton width="100%" height="100%" />,
+      }),
+      display({
+        id: "price",
+        header: t("otc.offers.table.header.price"),
+        cell: () => <Skeleton width="100%" height="100%" />,
+      }),
+      display({
+        id: "offering",
+        header: isDesktop
+          ? t("otc.offers.table.header.offering")
+          : t("selectAssets.asset"),
+        cell: () => <Skeleton width="100%" height="100%" />,
+      }),
+      display({
+        id: "accepting",
+        header: t("otc.offers.table.header.accepting"),
+        cell: () => <Skeleton width="100%" height="100%" />,
+      }),
+      display({
+        id: "filled",
+        header: () => (
+          <div
+            style={{
+              textAlign: "center",
+              width: "100%",
+            }}
+          >
+            {t("otc.offers.table.header.status")}
+          </div>
+        ),
+        cell: () => <Skeleton width="100%" height="100%" />,
+      }),
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isDesktop],
+  )
 
-  const table = useReactTable({
+  return useReactTable({
     data: mockData,
     columns,
     state: { columnVisibility },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
-
-  return table
 }
 
 const mockData = [1, 2, 3, 4]

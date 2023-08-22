@@ -61,8 +61,6 @@ export const SContent = styled.span`
   justify-content: center;
 
   font-size: 13px;
-
-  height: 20px;
 `
 export const SButtonTransparent = styled.button`
   background: transparent;
@@ -233,6 +231,8 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
 
     -webkit-transition: all 0.3s, background 0.1s, border 0.1s;
     transition: all 0.3s, background 0.1s, border 0.1s;
+
+    box-shadow: 0px 13px 40px -12px #29a0f673;
 
     border: 1px solid transparent;
 

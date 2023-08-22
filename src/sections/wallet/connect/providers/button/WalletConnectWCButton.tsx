@@ -2,7 +2,7 @@ import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { ReactComponent as WalletConnect } from "assets/icons/WalletConnect.svg"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { SWalletButton } from "../WalletConnectProviders.styled"
+import { SWalletButton } from "sections/wallet/connect/providers/WalletConnectProviders.styled"
 import { Icon } from "components/Icon/Icon"
 
 type Props = { onClick: () => void }

@@ -11,6 +11,7 @@ import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useApiPromise } from "utils/api"
+import { PoolType } from "@galacticcouncil/sdk"
 
 export const TradeApp = createComponent({
   tagName: "gc-trade-app",
@@ -18,6 +19,8 @@ export const TradeApp = createComponent({
   react: React,
   events: {
     onTxNew: "gc:tx:new" as EventName<CustomEvent<TxInfo>>,
+    onDcaSchedule: "gc:tx:scheduleDca" as EventName<CustomEvent<TxInfo>>,
+    onDcaTerminate: "gc:tx:terminateDca" as EventName<CustomEvent<TxInfo>>,
   },
 })
 
@@ -36,6 +39,8 @@ type SearchGenerics = MakeGenerics<{
   Search: z.infer<typeof TradeAppSearch>
 }>
 
+const isTwapEnabled = import.meta.env.VITE_FF_TWAP_ENABLED === "true"
+const indexerUrl = import.meta.env.VITE_INDEXER_URL
 const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
 const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
@@ -92,19 +97,25 @@ export function TradePage() {
       <SContainer>
         <TradeApp
           ref={(r) => {
-            r && r.setAttribute("chart", "")
+            if (r) {
+              r.setAttribute("chart", "")
+              isTwapEnabled && r.setAttribute("twap", "")
+            }
           }}
           assetIn={search.success ? search.data.assetIn : undefined}
           assetOut={search.success ? search.data.assetOut : undefined}
           apiAddress={rpcUrl}
-          pools="Omni"
+          pools={PoolType.Omni}
           stableCoinAssetId={stableCoinAssetId}
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}
+          indexerUrl={indexerUrl}
           grafanaUrl={grafanaUrl}
           grafanaDsn={grafanaDsn}
           onTxNew={(e) => handleSubmit(e)}
+          onDcaSchedule={(e) => handleSubmit(e)}
+          onDcaTerminate={(e) => handleSubmit(e)}
         />
       </SContainer>
     </Page>

@@ -1,15 +1,19 @@
 import { PalletDemocracyReferendumInfo } from "@polkadot/types/lookup"
 import { useReferendumInfo } from "api/democracy"
-import { ReactComponent as LinkIcon } from "assets/icons/LinkPixeled.svg"
+import { ReactComponent as IconArrow } from "assets/icons/IconArrow.svg"
+import { ReactComponent as GovernanceIcon } from "assets/icons/GovernanceIcon.svg"
 import { Separator } from "components/Separator/Separator"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { BN_0, BN_10 } from "utils/constants"
-import { SBar, SContainer, SHeader } from "./ReferendumCard.styled"
+import { BN_0, BN_10, PARACHAIN_BLOCK_TIME } from "utils/constants"
+import { SBar, SContainer, SHeader, SVotedBage } from "./ReferendumCard.styled"
 import { ReferendumCardSkeleton } from "./ReferendumCardSkeleton"
 import { Icon } from "components/Icon/Icon"
+import BN from "bignumber.js"
+import { useBestNumber } from "api/chain"
+import { customFormatDuration } from "utils/formatting"
 
 const REFERENDUM_LINK = import.meta.env.VITE_REFERENDUM_LINK as string
 
@@ -17,12 +21,14 @@ type Props = {
   id: string
   referendum: PalletDemocracyReferendumInfo
   type: "toast" | "staking"
+  voted: boolean
 }
 
-export const ReferendumCard = ({ id, referendum, type }: Props) => {
+export const ReferendumCard = ({ id, referendum, type, voted }: Props) => {
   const { t } = useTranslation()
 
   const info = useReferendumInfo(id)
+  const bestNumber = useBestNumber()
 
   const votes = useMemo(() => {
     if (!referendum.isOngoing)
@@ -49,11 +55,21 @@ export const ReferendumCard = ({ id, referendum, type }: Props) => {
   }, [referendum])
 
   const isNoVotes = votes.percAyes.eq(0) && votes.percNays.eq(0)
+  const diff = BN(info?.data?.onchainData.meta.end ?? 0)
+    .minus(bestNumber.data?.parachainBlockNumber.toBigNumber() ?? 0)
+    .times(PARACHAIN_BLOCK_TIME)
+    .toNumber()
+  const endDate = customFormatDuration({ end: diff * 1000 })
 
   return info.isLoading || !info.data ? (
     <ReferendumCardSkeleton type={type} />
   ) : (
-    <SContainer type={type}>
+    <SContainer
+      type={type}
+      href={`${REFERENDUM_LINK}/${info.data.referendumIndex}`}
+      target="_blank"
+      rel="noreferrer"
+    >
       <SHeader>
         <div sx={{ flex: "row", align: "center", gap: 8 }}>
           <Text color="brightBlue200" fs={14} fw={500}>
@@ -63,18 +79,26 @@ export const ReferendumCard = ({ id, referendum, type }: Props) => {
             {"//"}
           </Text>
           <Text color="basic500" fs={13} fw={500}>
-            {info.data.lastActivityAt &&
-              t("toast.date", { value: new Date(info.data.lastActivityAt) })}
+            {endDate &&
+              t(`duration.${endDate.isPositive ? "left" : "ago"}`, {
+                duration: endDate.duration,
+              })}
           </Text>
         </div>
 
-        <a
-          href={`${REFERENDUM_LINK}/${info.data.referendumIndex}`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <Icon sx={{ color: "brightBlue300" }} icon={<LinkIcon />} />
-        </a>
+        <div sx={{ flex: "row", gap: 20, align: "center" }}>
+          {voted && (
+            <SVotedBage>
+              {t("toast.sidebar.referendums.voted")}
+              <Icon
+                size={11}
+                sx={{ color: "basic900" }}
+                icon={<GovernanceIcon />}
+              />
+            </SVotedBage>
+          )}
+          <Icon sx={{ color: "brightBlue300" }} icon={<IconArrow />} />
+        </div>
       </SHeader>
 
       <Separator color="primaryA15Blue" opacity={0.35} sx={{ my: 16 }} />

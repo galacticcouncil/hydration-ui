@@ -1,4 +1,4 @@
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
@@ -25,7 +25,7 @@ export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
             {t("liquidity.asset.title")}
           </Text>
           <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
-            <Icon size={27} icon={getAssetLogo(pool.symbol)} />
+            <Icon size={27} icon={<AssetLogo id={pool.id.toString()} />} />
             <div sx={{ flex: "column", gap: 2 }}>
               <Text color="white" fs={16}>
                 {pool.symbol}

@@ -19,7 +19,6 @@ export const SContainer = styled.div`
     align-items: end;
     grid-template-columns: 5fr 2fr;
     grid-column-gap: 16px;
-    padding: 22px 44px;
     border: 1px solid rgba(114, 131, 165, 0.6);
     background: rgba(${theme.rgbColors.primaryA15Blue}, 0.35);
   }

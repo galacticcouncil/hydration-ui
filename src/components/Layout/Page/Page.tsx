@@ -1,6 +1,6 @@
 import { Header } from "components/Layout/Header/Header"
 import { ReactNode, useEffect, useRef } from "react"
-import { MobileNavBar } from "../Header/MobileNavBar/MobileNavBar"
+import { MobileNavBar } from "components/Layout/Header/MobileNavBar/MobileNavBar"
 import { SPage, SPageContent, SPageGrid, SPageInner } from "./Page.styled"
 import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
 import { useLocation } from "react-use"
@@ -19,7 +19,6 @@ export const Page = ({ variant = "default", className, children }: Props) => {
     ref.current?.scrollTo({
       top: 0,
       left: 0,
-      behavior: "smooth",
     })
   }, [location.pathname])
 

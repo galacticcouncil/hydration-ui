@@ -1,7 +1,7 @@
 import { u32 } from "@polkadot/types"
 import { UseAssetModel, useAsset } from "api/asset"
 import { useTokenBalance } from "api/balances"
-import { getAssetName } from "components/AssetIcon/AssetIcon"
+import { AssetLogo, getAssetName } from "components/AssetIcon/AssetIcon"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Icon } from "components/Icon/Icon"
@@ -40,7 +40,11 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({ id, onClick }) => {
   return (
     <SAssetRow onClick={() => asset.data && onClick?.(asset.data)}>
       <div sx={{ display: "flex", align: "center" }}>
-        <Icon icon={asset.data.icon} sx={{ mr: 10 }} size={30} />
+        <Icon
+          icon={<AssetLogo id={asset.data.id} />}
+          sx={{ mr: 10 }}
+          size={30}
+        />
         <div sx={{ mr: 6 }}>
           <Text fw={700} color="white" fs={16} lh={22}>
             {asset.data?.symbol}

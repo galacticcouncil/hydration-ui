@@ -16,27 +16,32 @@ import { CategoricalChartState } from "recharts/types/chart/generateCategoricalC
 import { Text } from "components/Typography/Text/Text"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { AreaChartSkeleton } from "./AreaChartSkeleton"
-import { StatsData } from "api/stats"
+import { StatsData, StatsTimeframe } from "api/stats"
 import { Maybe } from "utils/helpers"
 
 const MIN_TO_SHOW_CHART = 5
 
-type CustomTooltipProps = { active: boolean; label: string }
+type CustomTooltipProps = { active: boolean; label: string; x: number }
 
 type AreaChartProps = {
   data: Maybe<Array<StatsData>>
+  dataKey: "tvl_usd" | "tvl_pol_usd"
   loading: boolean
   error: boolean
+  timeframe: StatsTimeframe
 }
 
-export const CustomTooltip = ({ active, label }: CustomTooltipProps) => {
+export const CustomTooltip = ({ active, label, x }: CustomTooltipProps) => {
   const { t } = useTranslation()
 
   if (active) {
     const date = new Date(label)
 
     return (
-      <div sx={{ flex: "column", align: "center" }}>
+      <div
+        sx={{ flex: "column", align: "center" }}
+        css={{ position: "absolute", top: 15, left: x - 40 }}
+      >
         <Text
           fs={12}
           css={{
@@ -81,7 +86,12 @@ const Label = ({ value }: { value: number }) => {
   )
 }
 
-export const AreaChart = ({ data, loading, error }: AreaChartProps) => {
+export const AreaChart = ({
+  data,
+  loading,
+  error,
+  dataKey,
+}: AreaChartProps) => {
   const { t } = useTranslation()
   const [activePoint, setActivePoint] = useState<CategoricalChartState | null>(
     null,
@@ -95,10 +105,28 @@ export const AreaChart = ({ data, loading, error }: AreaChartProps) => {
     return <AreaChartSkeleton state="noData" />
 
   return (
-    <div css={{ width: "100%", height: "100%", position: "relative" }}>
-      {activePoint?.isTooltipActive && (
-        <Label value={activePoint.activePayload?.[0].value} />
-      )}
+    <div
+      css={{
+        width: "100%",
+        height: "100%",
+        position: "relative",
+        ".yAxis .recharts-cartesian-axis-tick:first-of-type": {
+          display: "none",
+        },
+      }}
+    >
+      {activePoint &&
+        activePoint?.activeLabel &&
+        activePoint.activeCoordinate?.x && (
+          <>
+            <Label value={activePoint.activePayload?.[0].value} />
+            <CustomTooltip
+              label={activePoint.activeLabel}
+              active
+              x={activePoint.activeCoordinate?.x}
+            />
+          </>
+        )}
       <ResponsiveContainer>
         <AreaRecharts
           data={data}
@@ -114,14 +142,8 @@ export const AreaChart = ({ data, loading, error }: AreaChartProps) => {
               <stop offset="95%" stopColor="#000" stopOpacity={0} />
             </linearGradient>
           </defs>
-
           <Tooltip
-            wrapperStyle={{
-              outline: "unset",
-            }}
-            content={(props) => (
-              <CustomTooltip active={!!props.active} label={props.label} />
-            )}
+            content={() => null}
             cursor={{
               stroke: "#66697C",
               strokeWidth: 1,
@@ -130,22 +152,26 @@ export const AreaChart = ({ data, loading, error }: AreaChartProps) => {
           />
           <Area
             type="monotone"
-            dataKey="tvl_usd"
+            dataKey={dataKey}
             stroke="#85D1FF"
             fill="url(#color)"
             activeDot={(props) => <CustomizedDot {...props} />}
           />
           <XAxis
-            dataKey="interval"
+            dataKey="timestamp"
             tick={{ fontSize: 12, fill: "white" }}
-            tickFormatter={(data) => format(new Date(data), "MMM  dd")}
+            tickFormatter={(data) => {
+              const date = new Date(data)
+              return format(date, "MMM  dd")
+            }}
           />
           <YAxis
-            dataKey="tvl_usd"
+            dataKey={dataKey}
             tick={{ fontSize: 12, fill: "white" }}
             orientation="right"
             mirror
             tickFormatter={(data) => t("value.usd", { amount: data })}
+            domain={[0, (dataMax: number) => Math.round(dataMax * 1.2)]}
           />
           <ReferenceLine
             y={activePoint?.activePayload?.[0].value}

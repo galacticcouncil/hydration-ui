@@ -1,6 +1,6 @@
 import { ElementType, FC, ReactNode } from "react"
 import { SText } from "./Text.styled"
-import { TypographyProps } from "../Typography.utils"
+import { TypographyProps } from "components/Typography/Typography.utils"
 
 export interface TextProps extends TypographyProps {
   children?: ReactNode

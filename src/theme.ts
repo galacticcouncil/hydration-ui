@@ -11,8 +11,10 @@ const colors = {
   pink600: "#FC408C",
   pink700: "#F6297C",
   pink400Alpha: "#FF0369",
+  paleBlue: "#DDE5FF",
   brightBlue100: "#A6DDFF",
   brightBlue200: "#9CDDFF",
+  brightBlue200Alpha: "#01A8FF",
   brightBlue300: "#85D1FF",
   brightBlue400: "#3192CD",
   brightBlue500: "#1A7AB4",
@@ -136,7 +138,7 @@ const zIndices = {
 const breakpoints = {
   xs: 480,
   sm: 768,
-  md: 1024,
+  md: 1200, //value represents navigation bar for tablet
   lg: 1440,
   xl: 1536,
 } as const

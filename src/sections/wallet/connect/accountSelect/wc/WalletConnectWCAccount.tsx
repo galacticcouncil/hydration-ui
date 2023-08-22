@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { Account } from "state/store"
-import { WalletConnectAccountSelectItem } from "../item/WalletConnectAccountSelectItem"
+import { WalletConnectAccountSelectItem } from "sections/wallet/connect/accountSelect/item/WalletConnectAccountSelectItem"
 import { useWalletConnect } from "components/OnboardProvider/OnboardProvider"
 
 type Props = {

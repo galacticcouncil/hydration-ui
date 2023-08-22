@@ -22,7 +22,7 @@ import {
 } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useOmnipoolPools } from "../PoolsPage.utils"
+import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
 
 export const useTotalInPools = () => {
   const displayAsset = useDisplayAssetStore()

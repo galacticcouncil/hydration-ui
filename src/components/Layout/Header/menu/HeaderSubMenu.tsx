@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { TabItemWithSubItems } from "utils/navigation"
-import { MobileNavBarItem } from "../MobileNavBar/MobileNavBar"
+import { MobileNavBarItem } from "components/Layout/Header/MobileNavBar/MobileNavBar"
 import {
   SArrow,
   SItem,
@@ -24,7 +24,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
   const { account } = useSearch()
   const [open, setOpen] = useState(false)
 
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isDesktop = useMedia(theme.viewport.gte.md)
   const match = useMatchRoute()
 
   const { key, subItems } = item

@@ -3,11 +3,11 @@ import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
-import { QUERY_KEYS } from "../utils/queryKeys"
+import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { Maybe, undefinedNoop } from "utils/helpers"
-import { useAccountStore } from "../state/store"
+import { useAccountStore } from "state/store"
 import { BN_0 } from "utils/constants"
 
 function calculateFreeBalance(
@@ -131,6 +131,19 @@ export const useTokensLocks = (ids: Maybe<u32 | string>[]) => {
   })
 }
 
+export const useTokenLocks = (id: Maybe<u32 | string>) => {
+  const api = useApiPromise()
+  const { account } = useAccountStore()
+
+  return useQuery(
+    QUERY_KEYS.lock(account?.address, id),
+    account?.address != null
+      ? getTokenLock(api, account.address, id?.toString() ?? "")
+      : undefinedNoop,
+    { enabled: !!account?.address && !!id },
+  )
+}
+
 export const getTokenLock =
   (api: ApiPromise, address: AccountId32 | string, id: string) => async () => {
     if (id === NATIVE_ASSET_ID) {
@@ -138,7 +151,7 @@ export const getTokenLock =
       return res.map((lock) => ({
         id: id,
         amount: lock.amount.toBigNumber(),
-        type: lock.id.toString(),
+        type: lock.id.toHuman(),
       }))
     }
 

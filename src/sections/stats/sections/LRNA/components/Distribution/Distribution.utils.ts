@@ -6,8 +6,9 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
 import BigNumber from "bignumber.js"
 import { getLRNAMeta } from "api/assetMeta"
-import { formatValue } from "../../StatsLRNA.utils"
+import { formatValue } from "sections/stats/sections/LRNA/StatsLRNA.utils"
 import { REFETCH_INTERVAL } from "utils/constants"
+import { isApiLoaded } from "utils/helpers"
 
 const getLRNATotalIssuance = async (api: ApiPromise) => {
   const meta = await getLRNAMeta(api)
@@ -34,7 +35,7 @@ export const useLRNATotalIssuance = () => {
     QUERY_KEYS.LRNATotalIssuance(),
     () => getLRNATotalIssuance(api),
     {
-      enabled: !!api,
+      enabled: !!isApiLoaded(api),
       refetchInterval: REFETCH_INTERVAL,
     },
   )
@@ -46,7 +47,7 @@ export const useLRNAOmnipoolBalance = () => {
   return useQuery(
     QUERY_KEYS.LRNAOmnipoolBalance(),
     () => getLRNAOmnipoolBalance(api),
-    { enabled: !!api, refetchInterval: REFETCH_INTERVAL },
+    { enabled: !!isApiLoaded(api), refetchInterval: REFETCH_INTERVAL },
   )
 }
 

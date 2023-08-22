@@ -2,18 +2,14 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SContainer = styled.div<{ type: "staking" | "toast" }>`
+export const SContainer = styled.a<{ type: "staking" | "toast" }>`
   padding: 16px;
   ${({ type }) =>
     type === "toast"
       ? css`
-          background: rgba(${theme.rgbColors.darkBlue401}, 0.8);
-
           border-radius: ${theme.borderRadius.default}px;
         `
       : css`
-          background: ${theme.colors.darkBlue700};
-
           border-radius: ${theme.borderRadius.stakingCard}px;
 
           position: relative;
@@ -39,6 +35,20 @@ export const SContainer = styled.div<{ type: "staking" | "toast" }>`
             pointer-events: none;
           }
         `}
+
+  background: ${theme.colors.darkBlue700};
+
+  transition: background ${theme.transitions.default};
+
+  cursor: pointer;
+
+  &:hover {
+    background: ${theme.colors.darkBlue401};
+  }
+
+  &:active {
+    background: ${theme.colors.darkBlue400};
+  }
 `
 
 export const SHeader = styled.div`
@@ -75,4 +85,22 @@ export const SBar = styled.div<{
       : css`
           background: rgba(${theme.rgbColors.darkBlue300}, 0.5);
         `}
+`
+
+export const SVotedBage = styled.div`
+  display: flex;
+  gap: 4px;
+  align-items: center;
+
+  color: ${theme.colors.basic900};
+  background: ${theme.colors.brightBlue600};
+
+  text-transform: uppercase;
+  font-size: 13px;
+  line-height: normal;
+  font-family: ChakraPetchSemiBold;
+
+  border-radius: 2px;
+
+  padding: 4px 8px;
 `

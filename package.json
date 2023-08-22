@@ -25,18 +25,18 @@
     "@emotion/is-prop-valid": "^1.2.0",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
-    "@galacticcouncil/api-augment": "^0.0.4",
-    "@galacticcouncil/apps": "1.5.2",
-    "@galacticcouncil/bridge": "0.0.7",
+    "@galacticcouncil/apps": "1.6.7",
+    "@galacticcouncil/bridge": "0.0.8",
     "@galacticcouncil/math-lbp": "^0.1.3",
     "@galacticcouncil/math-liquidity-mining": "^0.1.3",
+    "@galacticcouncil/math-staking": "^0.1.4",
     "@galacticcouncil/math-xyk": "^0.1.3",
-    "@galacticcouncil/sdk": "^0.5.0",
-    "@galacticcouncil/ui": "^1.2.13",
+    "@galacticcouncil/sdk": "^0.5.2",
+    "@galacticcouncil/ui": "^1.2.20",
     "@lit-labs/react": "^1.1.0",
     "@polkadot/api": "10.9.1",
-    "@polkadot/ui-shared": "^3.1.4",
     "@polkadot/extension-inject": "^0.44.5",
+    "@polkadot/ui-shared": "^3.1.4",
     "@radix-ui/react-dialog": "^1.0.0",
     "@radix-ui/react-dropdown-menu": "^2.0.1",
     "@radix-ui/react-label": "^1.0.0",
@@ -83,7 +83,7 @@
     "recharts": "^2.1.13",
     "typescript": "^4.7.4",
     "uuid": "^9.0.0",
-    "vite-plugin-wasm": "^2.1.0",
+    "vite-plugin-wasm": "^3.2.2",
     "web-vitals": "^2.1.4",
     "zod": "^3.19.1",
     "zustand": "^4.1.1"
@@ -95,32 +95,13 @@
     "build": "vite build && cp ./build/index.html ./build/404.html",
     "preview": "vite preview",
     "postinstall": "patch-package",
-    "storybook": "start-storybook -p 6006 ./src",
-    "build-storybook": "SENTRY_DISABLED=true build-storybook ./src",
+    "storybook": "storybook dev -p 6006 ./src",
+    "build-storybook": "SENTRY_DISABLED=true storybook build ./src",
     "test": "vitest",
     "lint": "run-p -lsc 'lint:*'",
     "lint:ts": "tsc --noEmit -p tsconfig.json",
     "lint:eslint": "eslint src",
-    "lint:prettier": "prettier -l \"src/**/*.{ts,tsx,json}\"",
-    "fix": "run-p -lsc 'fix:*'",
-    "fix:eslint": "eslint --fix src",
-    "fix:prettier": "prettier --write \"src/**/*.{ts,tsx,json}\""
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ],
-    "overrides": [
-      {
-        "files": [
-          "**/*.stories.*"
-        ],
-        "rules": {
-          "import/no-anonymous-default-export": "off"
-        }
-      }
-    ]
+    "fix": "eslint --fix src"
   },
   "browserslist": {
     "production": [
@@ -139,32 +120,39 @@
     "@babel/plugin-transform-typescript": "^7.18.12",
     "@babel/preset-typescript": "^7.18.6",
     "@emotion/babel-plugin": "^11.10.2",
+    "@galacticcouncil/api-augment": "^0.0.4",
     "@open-web3/orml-types": "^2.0.1",
-    "@storybook/addon-actions": "^6.5.9",
-    "@storybook/addon-essentials": "^6.5.9",
-    "@storybook/addon-interactions": "^6.5.9",
-    "@storybook/addon-links": "^6.5.9",
-    "@storybook/builder-vite": "^0.2.2",
-    "@storybook/react": "^6.5.9",
-    "@storybook/testing-library": "^0.0.13",
+    "@storybook/addon-actions": "^7.1.1",
+    "@storybook/addon-essentials": "^7.1.1",
+    "@storybook/addon-interactions": "^7.1.1",
+    "@storybook/addon-links": "^7.1.1",
+    "@storybook/addon-mdx-gfm": "^7.1.1",
+    "@storybook/addon-styling": "^1.3.5",
+    "@storybook/cli": "^7.1.1",
+    "@storybook/react-vite": "^7.1.1",
+    "@storybook/testing-library": "^0.2.0",
     "@types/color": "^3.0.3",
     "@types/jest": "^27.5.2",
     "@types/md5": "^2.3.2",
     "@types/node": "^16.11.47",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
-    "@vitejs/plugin-react": "^2.2.0",
+    "@vitejs/plugin-react": "^4.0.3",
     "babel-plugin-named-exports-order": "^0.0.2",
     "eslint": "^8.22.0",
     "eslint-config-react-app": "^7.0.1",
+    "eslint-plugin-no-relative-import-paths": "^1.5.2",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.7.1",
     "prop-types": "^15.8.1",
+    "storybook": "^7.1.1",
     "ts-node": "^10.9.1",
-    "vite": "^3.2.3",
-    "vite-plugin-sentry": "^1.1.6",
-    "vite-plugin-svgr": "^2.2.1",
-    "vite-tsconfig-paths": "^3.5.0",
-    "vitest": "^0.29.1"
+    "vite": "^4.4.6",
+    "vite-plugin-sentry": "^1.3.0",
+    "vite-plugin-svgr": "^3.2.0",
+    "vite-tsconfig-paths": "^4.2.0",
+    "vitest": "^0.33.0"
   }
 }
