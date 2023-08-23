@@ -42,7 +42,7 @@ export const SBond = styled.div<{ view: "card" | "list" }>`
     ${({ view }) =>
       view === "list" &&
       css`
-        grid-template-columns: repeat(4, 1fr) 150px;
+        grid-template-columns: 2fr repeat(3, 1fr) 150px;
         padding: 16px 30px;
         align-items: center;
         column-gap: 16px;
@@ -52,7 +52,9 @@ export const SBond = styled.div<{ view: "card" | "list" }>`
         }
 
         ${SItem} {
-          display: block;
+          display: flex;
+          flex-flow: column;
+          gap: 4px;
         }
       `}
   }

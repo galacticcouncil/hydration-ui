@@ -15,7 +15,7 @@ export const Default: Story = {
     <>
       <Bond
         view="list"
-        title="HDX2024"
+        title="HDXb08112024"
         icon={<PolkaLogo />}
         discount="10"
         maturity="22.6.2024"
@@ -25,7 +25,7 @@ export const Default: Story = {
       <br />
       <Bond
         view="card"
-        title="HDX2024"
+        title="HDXb08112024"
         icon={<PolkaLogo />}
         discount="10"
         maturity="22.6.2024"

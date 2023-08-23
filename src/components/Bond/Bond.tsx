@@ -5,6 +5,7 @@ import { MouseEventHandler, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { SBond, SItem } from "./Bond.styled"
 import { Icon } from "components/Icon/Icon"
+import { ReactComponent as ClockIcon } from "assets/icons/ClockIcon.svg"
 
 type BondView = "card" | "list"
 
@@ -47,21 +48,18 @@ export const Bond = ({
         </Heading>
       </div>
       <SItem>
-        <Text color="basic400" sx={{ mb: 4 }}>
-          {t("bond.maturity")}
-        </Text>
-        <Text color="white">{maturity}</Text>
-      </SItem>
-      <SItem>
-        <Text color="basic400" sx={{ mb: 4 }}>
-          {t("bond.endingIn")}
-        </Text>
+        <div sx={{ flex: "row", align: "center", gap: 6 }}>
+          <Icon icon={<ClockIcon />} sx={{ color: "brightBlue300" }} />
+          <Text color="basic400">{t("bond.endingIn")}</Text>
+        </div>
         <Text color="white">{endingIn}</Text>
       </SItem>
       <SItem>
-        <Text color="basic400" sx={{ mb: 4 }}>
-          {t("bond.discount")}
-        </Text>
+        <Text color="basic400">{t("bond.maturity")}</Text>
+        <Text color="white">{maturity}</Text>
+      </SItem>
+      <SItem>
+        <Text color="basic400">{t("bond.discount")}</Text>
         <Text color="white">{t("value.percentage", { value: discount })}</Text>
       </SItem>
       <Button
