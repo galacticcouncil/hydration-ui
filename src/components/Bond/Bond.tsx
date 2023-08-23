@@ -52,7 +52,7 @@ export const Bond = ({
           <Icon icon={<ClockIcon />} sx={{ color: "brightBlue300" }} />
           <Text color="basic400">{t("bond.endingIn")}</Text>
         </div>
-        <Text color="white">{endingIn}</Text>
+        <Text color="brightBlue300">{endingIn}</Text>
       </SItem>
       <SItem>
         <Text color="basic400">{t("bond.maturity")}</Text>
