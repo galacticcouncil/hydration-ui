@@ -9,23 +9,21 @@ export const Navigation = () => {
   const navigate = useNavigate();
 
   return (
-    <>
-      <div sx={{ flex: "row", gap: 10, align: "center" }}>
-        <IconButton
-          name="Back"
-          icon={<ChevronDownIcon />}
-          onClick={() => navigate({ to: "" })}
-          css={{
-            borderColor: "rgba(114, 131, 165, 0.6)",
-            color: "white",
-            transform: "rotate(180deg)",
-          }}
-          size={24}
-        />
-        <Text fs={13} tTransform="uppercase" color="white">
-          {t("voting.referenda.navigation.btn")}
-        </Text>
-      </div>
-    </>
+    <div sx={{ flex: "row", gap: 10, align: "center" }}>
+      <IconButton
+        name="Back"
+        icon={<ChevronDownIcon />}
+        onClick={() => navigate({ to: "" })}
+        css={{
+          borderColor: "rgba(114, 131, 165, 0.6)",
+          color: "white",
+          transform: "rotate(180deg)",
+        }}
+        size={24}
+      />
+      <Text fs={13} tTransform="uppercase" color="white">
+        {t("voting.referenda.navigation.btn")}
+      </Text>
+    </div>
   );
 };
