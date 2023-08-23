@@ -1,12 +1,12 @@
-import { Text } from "components/Typography/Text/Text";
-import { useTranslation } from "react-i18next";
-import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronRight.svg";
-import { useNavigate } from "@tanstack/react-location";
-import { IconButton } from "components/IconButton/IconButton";
+import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
+import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronRight.svg"
+import { useNavigate } from "@tanstack/react-location"
+import { IconButton } from "components/IconButton/IconButton"
 
 export const Navigation = () => {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { t } = useTranslation()
+  const navigate = useNavigate()
 
   return (
     <div sx={{ flex: "row", gap: 10, align: "center" }}>
@@ -25,5 +25,5 @@ export const Navigation = () => {
         {t("voting.referenda.navigation.btn")}
       </Text>
     </div>
-  );
-};
+  )
+}

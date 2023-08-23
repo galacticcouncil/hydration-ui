@@ -1,6 +1,6 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
-import { theme } from "theme";
+import { css } from "@emotion/react"
+import styled from "@emotion/styled"
+import { theme } from "theme"
 
 export const SPage = styled.div<{ variant?: "stats" | "default" }>`
   --mobile-nav-height: calc(60px + env(safe-area-inset-bottom));
@@ -36,7 +36,7 @@ export const SPage = styled.div<{ variant?: "stats" | "default" }>`
 
     overflow-y: overlay;
   }
-`;
+`
 
 export const SPageContent = styled.main`
   position: relative;
@@ -75,7 +75,7 @@ export const SPageContent = styled.main`
 
     display: block;
   }
-`;
+`
 
 export const SPageInner = styled.div`
   padding: 16px 12px;
@@ -92,7 +92,7 @@ export const SPageInner = styled.div`
 
     display: block;
   }
-`;
+`
 
 export const SPageGrid = styled.div`
   position: absolute;
@@ -106,7 +106,7 @@ export const SPageGrid = styled.div`
   background-image: linear-gradient(to right, white 1px, transparent 1px),
     linear-gradient(to bottom, white 1px, transparent 1px);
   mask-image: linear-gradient(180deg, #d9d9d9 0%, rgba(217, 217, 217, 0) 100%);
-`;
+`
 
 export const SSubHeader = styled.div`
   border-bottom: solid 1px rgba(114, 131, 165, 0.6);
@@ -121,4 +121,4 @@ export const SSubHeader = styled.div`
       display: block;
     }
   }
-`;
+`

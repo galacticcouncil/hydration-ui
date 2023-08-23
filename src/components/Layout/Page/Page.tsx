@@ -1,24 +1,24 @@
-import { Header } from "components/Layout/Header/Header";
-import { ReactNode, useEffect, useRef } from "react";
-import { MobileNavBar } from "components/Layout/Header/MobileNavBar/MobileNavBar";
+import { Header } from "components/Layout/Header/Header"
+import { ReactNode, useEffect, useRef } from "react"
+import { MobileNavBar } from "components/Layout/Header/MobileNavBar/MobileNavBar"
 import {
   SPage,
   SPageContent,
   SPageGrid,
   SPageInner,
   SSubHeader,
-} from "./Page.styled";
-import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton";
-import { useLocation } from "react-use";
-import { useNavigate } from "@tanstack/react-location";
-import { ToastSidebar } from "components/Toast/sidebar/ToastSidebar";
+} from "./Page.styled"
+import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
+import { useLocation } from "react-use"
+import { useNavigate } from "@tanstack/react-location"
+import { ToastSidebar } from "components/Toast/sidebar/ToastSidebar"
 
 type Props = {
-  variant?: "stats" | "default";
-  className?: string;
-  children: ReactNode;
-  subHeader?: ReactNode;
-};
+  variant?: "stats" | "default"
+  className?: string
+  children: ReactNode
+  subHeader?: ReactNode
+}
 
 export const Page = ({
   variant = "default",
@@ -26,15 +26,15 @@ export const Page = ({
   children,
   subHeader,
 }: Props) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const ref = useRef<HTMLDivElement>(null)
+  const location = useLocation()
+  const navigate = useNavigate()
   useEffect(() => {
     ref.current?.scrollTo({
       top: 0,
       left: 0,
-    });
-  }, [location.pathname]);
+    })
+  }, [location.pathname])
 
   return (
     <>
@@ -56,5 +56,5 @@ export const Page = ({
       </SPage>
       <ToastSidebar />
     </>
-  );
-};
+  )
+}

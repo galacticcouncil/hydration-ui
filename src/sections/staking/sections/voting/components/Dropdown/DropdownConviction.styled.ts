@@ -1,7 +1,7 @@
-import { keyframes } from "@emotion/react";
-import styled from "@emotion/styled";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { theme } from "theme";
+import { keyframes } from "@emotion/react"
+import styled from "@emotion/styled"
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
+import { theme } from "theme"
 
 const fadeInKeyframes = keyframes`
   0% {
@@ -13,7 +13,7 @@ const fadeInKeyframes = keyframes`
     opacity: 1;
     height: 200px;
   }
-`;
+`
 
 export const STrigger = styled(DropdownMenu.Trigger)`
   all: unset;
@@ -31,7 +31,7 @@ export const STrigger = styled(DropdownMenu.Trigger)`
   border: 1px solid ${theme.colors.darkBlue400};
 
   background: rgba(${theme.rgbColors.whiteish500}, 0.06);
-`;
+`
 
 export const SContent = styled(DropdownMenu.Content)`
   background: #191c29;
@@ -46,7 +46,7 @@ export const SContent = styled(DropdownMenu.Content)`
   overflow: scroll;
 
   z-index: ${theme.zIndices.toast};
-`;
+`
 
 export const Item = styled(DropdownMenu.Item)<{ selected: boolean }>`
   color: ${theme.colors.white};
@@ -77,4 +77,4 @@ export const Item = styled(DropdownMenu.Item)<{ selected: boolean }>`
     outline: none;
     background: rgba(${theme.rgbColors.white}, 0.03);
   }
-`;
+`

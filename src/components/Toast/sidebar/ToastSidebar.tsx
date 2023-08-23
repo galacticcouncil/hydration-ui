@@ -1,15 +1,15 @@
-import { Dialog, DialogPortal } from "@radix-ui/react-dialog";
-import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg";
-import { Backdrop } from "components/Backdrop/Backdrop";
-import { Spacer } from "components/Spacer/Spacer";
-import { Heading } from "components/Typography/Heading/Heading";
-import { Text } from "components/Typography/Text/Text";
-import { useTranslation } from "react-i18next";
-import { RemoveScroll } from "react-remove-scroll";
-import { useToast } from "state/toasts";
-import { useApiPromise } from "utils/api";
-import { isApiLoaded } from "utils/helpers";
-import { ToastContent } from "components/Toast/ToastContent";
+import { Dialog, DialogPortal } from "@radix-ui/react-dialog"
+import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import { Backdrop } from "components/Backdrop/Backdrop"
+import { Spacer } from "components/Spacer/Spacer"
+import { Heading } from "components/Typography/Heading/Heading"
+import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
+import { RemoveScroll } from "react-remove-scroll"
+import { useToast } from "state/toasts"
+import { useApiPromise } from "utils/api"
+import { isApiLoaded } from "utils/helpers"
+import { ToastContent } from "components/Toast/ToastContent"
 import {
   SCloseButton,
   SDialogContent,
@@ -17,24 +17,24 @@ import {
   SNoActivitiesIcon,
   SSidebarBody,
   SWrapper,
-} from "./ToastSidebar.styled";
-import { ToastSidebarGroup } from "./group/ToastSidebarGroup";
-import { ToastSidebarReferendums } from "./referendums/ToastSidebarReferendums";
+} from "./ToastSidebar.styled"
+import { ToastSidebarGroup } from "./group/ToastSidebarGroup"
+import { ToastSidebarReferendums } from "./referendums/ToastSidebarReferendums"
 
 export function ToastSidebar() {
-  const { t } = useTranslation();
-  const api = useApiPromise();
+  const { t } = useTranslation()
+  const api = useApiPromise()
 
-  const store = useToast();
-  const onClose = () => store.setSidebar(false);
+  const store = useToast()
+  const onClose = () => store.setSidebar(false)
 
   const sortedToasts = store.toasts.sort(
     (a, b) =>
-      new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
-  );
+      new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime(),
+  )
 
-  const pendingToasts = sortedToasts.filter((x) => x.variant === "progress");
-  const completedToasts = sortedToasts.filter((x) => x.variant !== "progress");
+  const pendingToasts = sortedToasts.filter((x) => x.variant === "progress")
+  const completedToasts = sortedToasts.filter((x) => x.variant !== "progress")
 
   return (
     <Dialog open={store.sidebar}>
@@ -128,5 +128,5 @@ export function ToastSidebar() {
         </SWrapper>
       </DialogPortal>
     </Dialog>
-  );
+  )
 }

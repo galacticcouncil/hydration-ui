@@ -1,4 +1,4 @@
-import { keys } from "utils/helpers";
+import { keys } from "utils/helpers"
 
 const colors = {
   white: "#ffffff",
@@ -84,7 +84,7 @@ const colors = {
   graphGradient0: "#FC408C",
   graphGradient100: "#57B3EB",
   bg: "#060917",
-} as const;
+} as const
 
 const gradients = {
   background:
@@ -114,7 +114,7 @@ const gradients = {
     "conic-gradient(from -60.84deg at 50% 50%, rgba(10, 13, 26, 0) 0deg, rgba(10, 13, 26, 0) 134.49deg, #00C2FF 185.07deg, #004DE2 243.24deg, #FC408C 294.78deg, #FC408C 358.13deg, rgba(10, 13, 26, 0) 360deg)",
   lightGreenOrange:
     "linear-gradient(90deg, #4FFFB0 1.27%, #B3FF8F 93.06%, #FF984E 199.27%)",
-} as const;
+} as const
 
 const shadows = {
   boxShadow: "3px 3px 0px rgba(199, 199, 199, 0.27)",
@@ -125,7 +125,7 @@ const shadows = {
   internalBoxDark: "4px 4px 0px #0A0C17;",
   modal: "3px 4px 0px rgba(102, 181, 255, 0.19)",
   contentBox: `3px 4px 0px rgba(102, 181, 255, 0.19);`,
-} as const;
+} as const
 
 const zIndices = {
   chainedIcon: 1,
@@ -135,7 +135,7 @@ const zIndices = {
   tablePlaceholder: 4,
   modal: 10,
   toast: 11,
-} as const;
+} as const
 
 const breakpoints = {
   xs: 480,
@@ -143,54 +143,51 @@ const breakpoints = {
   md: 1200, //value represents navigation bar for tablet
   lg: 1440,
   xl: 1536,
-} as const;
-type BreakpointKey = keyof typeof breakpoints;
+} as const
+type BreakpointKey = keyof typeof breakpoints
 
 const mediaGte = <Key extends BreakpointKey>(key: Key) =>
-  `(min-width: ${breakpoints[key]}px)` as const;
+  `(min-width: ${breakpoints[key]}px)` as const
 const mediaLt = <Key extends BreakpointKey>(key: Key) =>
-  `(max-width: calc(${breakpoints[key]}px - 1px))` as const;
+  `(max-width: calc(${breakpoints[key]}px - 1px))` as const
 
 const viewport = {
   gte: Object.fromEntries(keys(breakpoints).map((i) => [i, mediaGte(i)])) as {
-    [Key in BreakpointKey]: ReturnType<typeof mediaGte<Key>>;
+    [Key in BreakpointKey]: ReturnType<typeof mediaGte<Key>>
   },
   lt: Object.fromEntries(keys(breakpoints).map((i) => [i, mediaLt(i)])) as {
-    [Key in BreakpointKey]: ReturnType<typeof mediaLt<Key>>;
+    [Key in BreakpointKey]: ReturnType<typeof mediaLt<Key>>
   },
-} as const;
+} as const
 
 // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
 const hexToRgb = (hex: string) => {
-  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-  const tmp = hex.replace(
-    shorthandRegex,
-    (m, r, g, b) => r + r + g + g + b + b
-  );
+  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i
+  const tmp = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b)
 
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(tmp);
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(tmp)
   return [
     parseInt(result![1], 16),
     parseInt(result![2], 16),
     parseInt(result![3], 16),
-  ].join(",");
-};
+  ].join(",")
+}
 
 const rgbColors = Object.fromEntries(
-  keys(colors).map((i) => [i, hexToRgb(colors[i])])
+  keys(colors).map((i) => [i, hexToRgb(colors[i])]),
 ) as {
-  [Key in keyof typeof colors]: string;
-};
+  [Key in keyof typeof colors]: string
+}
 
 const transitions = {
   slow: "0.30s ease-in-out",
   default: "0.15s ease-in-out",
-} as const;
+} as const
 
 const borderRadius = {
   stakingCard: 8,
   default: 4,
-} as const;
+} as const
 
 export const theme = {
   colors,
@@ -201,4 +198,4 @@ export const theme = {
   viewport,
   shadows,
   borderRadius,
-};
+}

@@ -1,55 +1,55 @@
-import { DECIMAL_PLACES } from "@galacticcouncil/sdk";
-import { useTokenBalance } from "api/balances";
-import { useBestNumber } from "api/chain";
-import { useReferendumInfo, useReferendumInfoOf } from "api/democracy";
-import { useMemo } from "react";
-import { useAccountStore } from "state/store";
-import { NATIVE_ASSET_ID } from "utils/api";
-import { BN_0, PARACHAIN_BLOCK_TIME } from "utils/constants";
-import { customFormatDuration } from "utils/formatting";
-import BN from "bignumber.js";
+import { DECIMAL_PLACES } from "@galacticcouncil/sdk"
+import { useTokenBalance } from "api/balances"
+import { useBestNumber } from "api/chain"
+import { useReferendumInfo, useReferendumInfoOf } from "api/democracy"
+import { useMemo } from "react"
+import { useAccountStore } from "state/store"
+import { NATIVE_ASSET_ID } from "utils/api"
+import { BN_0, PARACHAIN_BLOCK_TIME } from "utils/constants"
+import { customFormatDuration } from "utils/formatting"
+import BN from "bignumber.js"
 
 export const useVotingData = (id: string, isRococo: boolean) => {
-  const { account } = useAccountStore();
+  const { account } = useAccountStore()
 
-  const bestNumber = useBestNumber();
-  const balance = useTokenBalance(NATIVE_ASSET_ID, account?.address);
-  const referenda = useReferendumInfoOf(id);
-  const referendaInfo = useReferendumInfo(isRococo ? undefined : id);
+  const bestNumber = useBestNumber()
+  const balance = useTokenBalance(NATIVE_ASSET_ID, account?.address)
+  const referenda = useReferendumInfoOf(id)
+  const referendaInfo = useReferendumInfo(isRococo ? undefined : id)
 
   const isLoading =
     referenda.isLoading ||
     referendaInfo.isInitialLoading ||
     bestNumber.isLoading ||
-    balance.isLoading;
+    balance.isLoading
 
   const data = useMemo(() => {
     if (isLoading || !referenda.data || !bestNumber.data || !balance.data)
-      return undefined;
+      return undefined
 
-    const { isOngoing } = referenda.data;
-    const { freeBalance, reservedBalance } = balance.data;
+    const { isOngoing } = referenda.data
+    const { freeBalance, reservedBalance } = balance.data
 
-    const computedBalance = freeBalance.minus(reservedBalance ?? 0);
+    const computedBalance = freeBalance.minus(reservedBalance ?? 0)
 
-    let ayes = BN_0;
-    let nays = BN_0;
-    let percAyes = BN_0;
-    let percNays = BN_0;
+    let ayes = BN_0
+    let nays = BN_0
+    let percAyes = BN_0
+    let percNays = BN_0
 
     if (isOngoing) {
       ayes = referenda.data.asOngoing.tally.ayes
         .toBigNumber()
-        .shiftedBy(-DECIMAL_PLACES);
+        .shiftedBy(-DECIMAL_PLACES)
       nays = referenda.data.asOngoing.tally.nays
         .toBigNumber()
-        .shiftedBy(-DECIMAL_PLACES);
+        .shiftedBy(-DECIMAL_PLACES)
 
-      const votesSum = ayes.plus(nays);
+      const votesSum = ayes.plus(nays)
 
       if (!votesSum.isZero()) {
-        percAyes = ayes.div(votesSum).times(100);
-        percNays = nays.div(votesSum).times(100);
+        percAyes = ayes.div(votesSum).times(100)
+        percNays = nays.div(votesSum).times(100)
       }
     }
 
@@ -61,7 +61,7 @@ export const useVotingData = (id: string, isRococo: boolean) => {
       author: { address: "" },
       authorDisplay: { name: "unknown author", verified: false },
       referendumIndex: 0,
-    };
+    }
 
     const diff = (
       isRococo
@@ -72,13 +72,13 @@ export const useVotingData = (id: string, isRococo: boolean) => {
     )
       .minus(bestNumber.data?.parachainBlockNumber.toBigNumber() ?? 0)
       .times(PARACHAIN_BLOCK_TIME)
-      .toNumber();
+      .toNumber()
 
-    const endDate = customFormatDuration({ end: diff * 1000 });
+    const endDate = customFormatDuration({ end: diff * 1000 })
 
-    if (!isRococo && referendaInfo.data) referendaData = referendaInfo.data;
+    if (!isRococo && referendaInfo.data) referendaData = referendaInfo.data
 
-    const isNoVotes = percAyes.eq(0) && percNays.eq(0);
+    const isNoVotes = percAyes.eq(0) && percNays.eq(0)
 
     return {
       ayes,
@@ -89,8 +89,8 @@ export const useVotingData = (id: string, isRococo: boolean) => {
       isNoVotes,
       endDate,
       ...referendaData,
-    };
-  }, [isLoading, referenda.data, bestNumber.data, balance.data, referendaInfo]);
+    }
+  }, [isLoading, referenda.data, bestNumber.data, balance.data, referendaInfo])
 
-  return { data, isLoading, isOngoing: referenda.data?.isOngoing };
-};
+  return { data, isLoading, isOngoing: referenda.data?.isOngoing }
+}

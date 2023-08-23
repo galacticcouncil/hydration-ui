@@ -1,11 +1,11 @@
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { SContent, Item, STrigger } from "./DropdownConviction.styled";
-import { useTranslation } from "react-i18next";
-import { Text } from "components/Typography/Text/Text";
-import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg";
-import { Icon } from "components/Icon/Icon";
-import { useState } from "react";
-import { theme } from "theme";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
+import { SContent, Item, STrigger } from "./DropdownConviction.styled"
+import { useTranslation } from "react-i18next"
+import { Text } from "components/Typography/Text/Text"
+import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
+import { Icon } from "components/Icon/Icon"
+import { useState } from "react"
+import { theme } from "theme"
 
 const CONVICTIONS = [
   "none",
@@ -15,19 +15,19 @@ const CONVICTIONS = [
   "locked4x",
   "locked5x",
   "locked6x",
-] as const;
+] as const
 
-export type TConviction = (typeof CONVICTIONS)[number];
+export type TConviction = (typeof CONVICTIONS)[number]
 
 export const ConvictionDropdown = ({
   value,
   onChange,
 }: {
-  value: TConviction;
-  onChange: (value: TConviction) => void;
+  value: TConviction
+  onChange: (value: TConviction) => void
 }) => {
-  const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
 
   return (
     <DropdownMenu.Root onOpenChange={(open) => setOpen(open)}>
@@ -63,5 +63,5 @@ export const ConvictionDropdown = ({
         </SContent>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
-  );
-};
+  )
+}
