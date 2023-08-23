@@ -1,7 +1,7 @@
-import { css, SerializedStyles } from "@emotion/react"
-import styled from "@emotion/styled"
-import { theme } from "theme"
-import { ButtonProps, ButtonSize, ButtonVariant } from "./Button"
+import { css, SerializedStyles } from "@emotion/react";
+import styled from "@emotion/styled";
+import { theme } from "theme";
+import { ButtonProps, ButtonSize, ButtonVariant } from "./Button";
 
 export const SButton = styled.button<ButtonProps>`
   cursor: pointer;
@@ -52,7 +52,7 @@ export const SButton = styled.button<ButtonProps>`
     css`
       background: rgba(218, 255, 238, 0.06);
     `}
-`
+`;
 
 export const SContent = styled.span`
   display: flex;
@@ -61,7 +61,7 @@ export const SContent = styled.span`
   justify-content: center;
 
   font-size: 13px;
-`
+`;
 export const SButtonTransparent = styled.button`
   background: transparent;
   margin: 0;
@@ -76,7 +76,7 @@ export const SButtonTransparent = styled.button`
   &[disabled] {
     cursor: unset;
   }
-`
+`;
 
 const variantStyles: Record<ButtonVariant, SerializedStyles> = {
   primary: css`
@@ -276,7 +276,25 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
       transform: translate3d(3px, 3px, -1px);
     }
   `,
-}
+  green: css`
+    background: ${theme.colors.green};
+    color: ${theme.colors.white};
+
+    border-radius: 4px;
+
+    box-shadow: unset;
+
+    :hover {
+      background: #71f8c5;
+      color: ${theme.colors.darkBlue900};
+    }
+
+    :active {
+      background: #c0fbe5;
+      color: ${theme.colors.darkBlue900};
+    }
+  `,
+};
 
 const sizeStyles: Record<ButtonSize, SerializedStyles> = {
   medium: css`
@@ -293,4 +311,4 @@ const sizeStyles: Record<ButtonSize, SerializedStyles> = {
     font-size: 12px;
     line-height: 16px;
   `,
-}
+};

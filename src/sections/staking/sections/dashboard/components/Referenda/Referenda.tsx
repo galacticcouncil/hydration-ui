@@ -53,7 +53,6 @@ export const Referenda = ({ data, loading }: ReferendaProps) => {
               <ReferendumCardRococo
                 key={referendum.id}
                 type="staking"
-                rpc={rococoProvider}
                 {...referendum}
               />
             ) : (

@@ -1,6 +1,6 @@
-import { Spinner } from "components/Spinner/Spinner.styled"
-import { ComponentProps, forwardRef } from "react"
-import { SButton, SButtonTransparent, SContent } from "./Button.styled"
+import { Spinner } from "components/Spinner/Spinner.styled";
+import { ComponentProps, forwardRef } from "react";
+import { SButton, SButtonTransparent, SContent } from "./Button.styled";
 
 export type ButtonVariant =
   | "primary"
@@ -10,18 +10,19 @@ export type ButtonVariant =
   | "outline"
   | "transparent"
   | "blue"
-export type ButtonSize = "small" | "medium" | "micro"
+  | "green";
+export type ButtonSize = "small" | "medium" | "micro";
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: ButtonVariant
-  size?: ButtonSize
-  text?: string
-  isLoading?: boolean
-  children?: React.ReactNode
-  active?: boolean
-  transform?: "uppercase" | "lowercase" | "none"
-  fullWidth?: boolean
-}
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  text?: string;
+  isLoading?: boolean;
+  children?: React.ReactNode;
+  active?: boolean;
+  transform?: "uppercase" | "lowercase" | "none";
+  fullWidth?: boolean;
+};
 
 export const Button: React.FC<ButtonProps> = ({
   variant = "secondary",
@@ -35,12 +36,12 @@ export const Button: React.FC<ButtonProps> = ({
         {props.text || props.children}
       </SContent>
     </SButton>
-  )
-}
+  );
+};
 
 export const ButtonTransparent = forwardRef<
   HTMLButtonElement,
   ComponentProps<typeof SButtonTransparent>
 >((props, ref) => {
-  return <SButtonTransparent ref={ref} type="button" {...props} />
-})
+  return <SButtonTransparent ref={ref} type="button" {...props} />;
+});

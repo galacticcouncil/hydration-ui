@@ -27,7 +27,6 @@ export const ToastSidebarReferendums = () => {
             <ReferendumCardRococo
               key={referendum.id}
               type="toast"
-              rpc={rococoProvider}
               {...referendum}
             />
           ) : (

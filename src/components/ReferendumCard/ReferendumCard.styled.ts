@@ -1,8 +1,8 @@
-import { css } from "@emotion/react"
-import styled from "@emotion/styled"
-import { theme } from "theme"
+import { css } from "@emotion/react";
+import styled from "@emotion/styled";
+import { theme } from "theme";
 
-export const SContainer = styled.a<{ type: "staking" | "toast" }>`
+export const SContainer = styled.div<{ type: "staking" | "toast" }>`
   padding: 16px;
   ${({ type }) =>
     type === "toast"
@@ -49,19 +49,20 @@ export const SContainer = styled.a<{ type: "staking" | "toast" }>`
   &:active {
     background: ${theme.colors.darkBlue400};
   }
-`
+`;
 
 export const SHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-`
+`;
 
 export const SBar = styled.div<{
-  variant: "aye" | "nay" | "neutral"
-  percentage: number
+  variant: "aye" | "nay" | "neutral";
+  percentage: number;
+  height?: number;
 }>`
-  height: 4px;
+  height: ${({ height }) => (height ? `${height}px` : "4px")};
   width: ${({ percentage }) => percentage}%;
 
   border-radius: 4px;
@@ -85,7 +86,7 @@ export const SBar = styled.div<{
       : css`
           background: rgba(${theme.rgbColors.darkBlue300}, 0.5);
         `}
-`
+`;
 
 export const SVotedBage = styled.div`
   display: flex;
@@ -103,4 +104,4 @@ export const SVotedBage = styled.div`
   border-radius: 2px;
 
   padding: 4px 8px;
-`
+`;

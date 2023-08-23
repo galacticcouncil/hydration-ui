@@ -1,10 +1,11 @@
-import { css } from "@emotion/react"
-import styled from "@emotion/styled"
-import { theme } from "theme"
+import { css } from "@emotion/react";
+import styled from "@emotion/styled";
+import { theme } from "theme";
 
 export const SPage = styled.div<{ variant?: "stats" | "default" }>`
   --mobile-nav-height: calc(60px + env(safe-area-inset-bottom));
   --nav-height: 65px;
+  --content-width: 1109px;
 
   position: relative;
 
@@ -18,13 +19,13 @@ export const SPage = styled.div<{ variant?: "stats" | "default" }>`
   ${({ variant }) =>
     variant === "stats"
       ? css`
-          & > div {
+          & > div:first-of-type {
             height: 1360px;
             background: ${theme.gradients.backgroundStats};
           }
         `
       : css`
-          & > div {
+          & > div:first-of-type {
             height: 474px;
             background: ${theme.gradients.background};
           }
@@ -35,13 +36,12 @@ export const SPage = styled.div<{ variant?: "stats" | "default" }>`
 
     overflow-y: overlay;
   }
-`
+`;
 
 export const SPageContent = styled.main`
   position: relative;
 
   overflow-y: auto;
-  padding: 0 12px;
   overflow-x: hidden;
 
   display: flex;
@@ -60,7 +60,6 @@ export const SPageContent = styled.main`
   }
 
   @media ${theme.viewport.gte.sm} {
-    padding: 0 20px;
     padding-top: var(--nav-height);
     padding-bottom: var(--mobile-nav-height);
 
@@ -76,24 +75,24 @@ export const SPageContent = styled.main`
 
     display: block;
   }
-`
+`;
 
 export const SPageInner = styled.div`
-  padding: 16px 0;
+  padding: 16px 12px;
 
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 
   @media ${theme.viewport.gte.sm} {
-    padding: 44px 0;
+    padding: 44px 20px;
 
-    max-width: 1109px;
+    max-width: var(--content-width);
     margin: 0 auto;
 
     display: block;
   }
-`
+`;
 
 export const SPageGrid = styled.div`
   position: absolute;
@@ -107,4 +106,19 @@ export const SPageGrid = styled.div`
   background-image: linear-gradient(to right, white 1px, transparent 1px),
     linear-gradient(to bottom, white 1px, transparent 1px);
   mask-image: linear-gradient(180deg, #d9d9d9 0%, rgba(217, 217, 217, 0) 100%);
-`
+`;
+
+export const SSubHeader = styled.div`
+  border-bottom: solid 1px rgba(114, 131, 165, 0.6);
+
+  padding: 12px;
+
+  & > div {
+    @media ${theme.viewport.gte.sm} {
+      max-width: var(--content-width);
+      margin: 0 auto;
+
+      display: block;
+    }
+  }
+`;
