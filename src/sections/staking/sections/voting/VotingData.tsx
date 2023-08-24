@@ -395,13 +395,12 @@ export const VotingData = ({ id }: { id: string }) => {
             <a
               href={
                 rococoProvider
-                  ? undefined
+                  ? "foo"
                   : `${REFERENDUM_LINK}/${referenda.referendumIndex}`
               }
               target="_blank"
               rel="noreferrer"
               sx={{ width: "100%" }}
-              role="link"
             >
               <Button type="button" fullWidth disabled={rococoProvider}>
                 {t("voting.referenda.btn.subsquare")}
