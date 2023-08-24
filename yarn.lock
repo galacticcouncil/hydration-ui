@@ -3042,10 +3042,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.4.tgz#08b43392b3aa5602e0ebc098ff07dfc9999dfd9f"
   integrity sha512-lwGqEqEuCOoTXmVwovWHTjDPM9FUBsmvn0Q7FRg7/059OcWGTUEVkV+//FaXevz3Fkl/toP2ocOuIK5JG8MxRw==
 
-"@galacticcouncil/apps@1.6.7":
-  version "1.6.7"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.6.7.tgz#5e96bbf152e8f8e7d67c71b70ce6644afa6855cc"
-  integrity sha512-LnkUkOfgz+vidAityf7Z/ewkPXsj3GKolw4w8Les7zOiEUzOnXW6wX2vv7gpknDbk4BPVu8CDl7TT49hO8ZhjQ==
+"@galacticcouncil/apps@1.6.8":
+  version "1.6.8"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.6.8.tgz#3427a8f18cfe9d70aa85a84a55fd23869f9576d5"
+  integrity sha512-cZK46M7B8YTqwdDMHGZDHcS/CBfadyyoI97AA9wFPLg7q1zVpQmqYUYotyiXy8ub+7Jpj5K/Pa07cuv9qxqLlw==
   dependencies:
     "@talismn/connect-wallets" "^1.2.1"
     "@tanstack/table-core" "^8.5.17"
@@ -3109,10 +3109,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^1.2.20":
-  version "1.2.20"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.2.20.tgz#cc47d4c7e3d8efb6cc8be5f43d90bd14b04f20a3"
-  integrity sha512-KrJlTSsZJ36D6oTxc4e5+5//2QTfmNsOd5pmo01a3lKvW9DCsTPgNX20Z0+AvoyM+nYmsN6bNHLWEPb88YbpbQ==
+"@galacticcouncil/ui@^1.2.21":
+  version "1.2.21"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.2.21.tgz#908882fc59c9cbf6aa189eca7c77e0ec71a7d2ab"
+  integrity sha512-kE5ufxuVvXmUICUvdzXdHzqzBlgOZb/z4tWBeRrHD6zB7tIaF8M4Q/nzzWeQlzP5DwNemA9hFKUj1CjSHmMJZA==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
