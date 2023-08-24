@@ -32,6 +32,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { useVotingData } from "./Voting.utils"
 import { Navigate } from "@tanstack/react-location"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { VotingSkeleton } from "./VotingSkeleton"
 
 const REFERENDUM_LINK = import.meta.env.VITE_REFERENDUM_LINK as string
 
@@ -51,7 +52,8 @@ export const VotingData = ({ id }: { id: string }) => {
     "mining-rpc.hydradx.io",
   ].some(
     (rpc) =>
-      providers.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL === `wss://${rpc}`,
+      (providers.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL) ===
+      `wss://${rpc}`,
   )
 
   const referendaQuery = useVotingData(id, rococoProvider)
@@ -112,7 +114,7 @@ export const VotingData = ({ id }: { id: string }) => {
 
   const referenda = referendaQuery.data
 
-  if (referendaQuery.isLoading || !referenda) return null
+  if (referendaQuery.isLoading || !referenda) return <VotingSkeleton />
 
   return (
     <div sx={{ flex: ["column", "row"], gap: 30 }}>
@@ -164,8 +166,7 @@ export const VotingData = ({ id }: { id: string }) => {
               })}
             </Text>
           </div>
-          {/*Maybe get the actual value from the query, because a referenda can be finished */}
-          <SBage>started</SBage>
+          <SBage>{t("voting.referenda.badge")}</SBage>
         </div>
         <Separator
           css={{
@@ -188,7 +189,7 @@ export const VotingData = ({ id }: { id: string }) => {
 
       <SVotingBox css={{ flex: 2 }}>
         <GradientText fs={19} gradient="pinkLightBlue" sx={{ my: 12 }}>
-          Votes
+          {t("voting.referenda.votes")}
         </GradientText>
 
         <div sx={{ flex: "column", gap: 12 }}>
@@ -377,6 +378,9 @@ export const VotingData = ({ id }: { id: string }) => {
                 variant="green"
                 fullWidth
                 onClick={form.handleSubmit((data) => onSubmit(data, true))}
+                disabled={
+                  !account?.address || account.isExternalWalletConnected
+                }
               >
                 {t("voting.referenda.btn.aye")}
               </Button>
@@ -385,27 +389,38 @@ export const VotingData = ({ id }: { id: string }) => {
                 variant="primary"
                 fullWidth
                 onClick={form.handleSubmit((data) => onSubmit(data, false))}
+                disabled={
+                  !account?.address || account.isExternalWalletConnected
+                }
               >
                 {t("voting.referenda.btn.nay")}
               </Button>
             </div>
-            <Text color="basic400" fs={14}>
-              {t("or")}
-            </Text>
-            <a
-              href={
-                rococoProvider
-                  ? "foo"
-                  : `${REFERENDUM_LINK}/${referenda.referendumIndex}`
-              }
-              target="_blank"
-              rel="noreferrer"
-              sx={{ width: "100%" }}
-            >
-              <Button type="button" fullWidth disabled={rococoProvider}>
-                {t("voting.referenda.btn.subsquare")}
-              </Button>
-            </a>
+            {!rococoProvider && (
+              <>
+                <Text color="basic400" fs={14}>
+                  {t("or")}
+                </Text>
+                <a
+                  href={`${REFERENDUM_LINK}/${referenda.referendumIndex}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  sx={{ width: "100%" }}
+                >
+                  <Button
+                    type="button"
+                    fullWidth
+                    disabled={
+                      rococoProvider ||
+                      !account?.address ||
+                      account.isExternalWalletConnected
+                    }
+                  >
+                    {t("voting.referenda.btn.subsquare")}
+                  </Button>
+                </a>
+              </>
+            )}
           </div>
         </form>
       </SVotingBox>

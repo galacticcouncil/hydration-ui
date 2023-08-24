@@ -13,9 +13,9 @@ export const Voting = () => {
   const search = useSearch<SearchGenerics>()
   const id = search.id?.toString()
 
-  //if (!id) return <Navigate to="/staking" />;
+  if (!id) return <Navigate to="/staking" />
 
-  if (!isApiLoaded(api) || !id) return <VotingSkeleton />
+  if (!isApiLoaded(api)) return <VotingSkeleton />
 
   return <VotingData id={id} />
 }

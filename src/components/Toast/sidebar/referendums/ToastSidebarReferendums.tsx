@@ -14,7 +14,8 @@ export const ToastSidebarReferendums = () => {
     "mining-rpc.hydradx.io",
   ].find(
     (rpc) =>
-      providers.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL === `wss://${rpc}`,
+      (providers.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL) ===
+      `wss://${rpc}`,
   )
 
   if (!referendums.data?.length) return null

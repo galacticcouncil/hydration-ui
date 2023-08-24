@@ -21,17 +21,19 @@ export type TConviction = (typeof CONVICTIONS)[number]
 
 export const ConvictionDropdown = ({
   value,
+  disabled,
   onChange,
 }: {
   value: TConviction
   onChange: (value: TConviction) => void
+  disabled?: boolean
 }) => {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
 
   return (
     <DropdownMenu.Root onOpenChange={(open) => setOpen(open)}>
-      <STrigger>
+      <STrigger disabled={disabled}>
         <div sx={{ flex: "column", gap: 4 }}>
           <Text fs={10} tTransform="uppercase" color="basic500">
             {t("voting.referenda.conviction.label")}

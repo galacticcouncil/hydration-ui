@@ -541,6 +541,8 @@
   "addressbook.remove.cancel": "Back",
   "addressbook.remove.submit": "Yes, remove",
   "voting.referenda.navigation.btn": "Back to staking",
+  "voting.referenda.badge": "started",
+  "voting.referenda.votes": "Votes",
   "voting.referenda.aye": "Aye",
   "voting.referenda.nay": "Nay",
   "voting.referenda.value.percentage": "({{ value, bignumber(type: 'percentage') }}%)",

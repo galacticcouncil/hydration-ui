@@ -21,16 +21,15 @@ export const useVotingData = (id: string, isRococo: boolean) => {
     referenda.isLoading ||
     referendaInfo.isInitialLoading ||
     bestNumber.isLoading ||
-    balance.isLoading
+    balance.isInitialLoading
 
   const data = useMemo(() => {
-    if (isLoading || !referenda.data || !bestNumber.data || !balance.data)
-      return undefined
+    if (isLoading || !referenda.data || !bestNumber.data) return undefined
 
     const { isOngoing } = referenda.data
-    const { freeBalance, reservedBalance } = balance.data
+    const { freeBalance, reservedBalance } = balance.data ?? {}
 
-    const computedBalance = freeBalance.minus(reservedBalance ?? 0)
+    const computedBalance = freeBalance?.minus(reservedBalance ?? 0) ?? BN_0
 
     let ayes = BN_0
     let nays = BN_0
@@ -90,7 +89,14 @@ export const useVotingData = (id: string, isRococo: boolean) => {
       endDate,
       ...referendaData,
     }
-  }, [isLoading, referenda.data, bestNumber.data, balance.data, referendaInfo])
+  }, [
+    isLoading,
+    referenda.data,
+    bestNumber.data,
+    balance.data,
+    isRococo,
+    referendaInfo.data,
+  ])
 
   return { data, isLoading, isOngoing: referenda.data?.isOngoing }
 }
