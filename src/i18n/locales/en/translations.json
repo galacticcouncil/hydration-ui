@@ -1,6 +1,9 @@
 {
   "and": "and",
   "back": "Back",
+  "bond.maturity": "Maturity",
+  "bond.discount": "Discount",
+  "bond.endingIn": "Ending In",
   "duration.left": "{{duration}} left",
   "duration.ago": "{{duration}} ago",
   "toast.close": "Close",
