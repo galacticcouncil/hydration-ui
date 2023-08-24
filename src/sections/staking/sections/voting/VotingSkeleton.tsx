@@ -42,7 +42,7 @@ export const VotingSkeleton = () => {
                 borderRadius: "9999px",
               }}
             />
-            <Skeleton width={150} height={13} />
+            <Skeleton sx={{ width: [100, 150], height: 13 }} />
           </div>
           <SBage>{t("voting.referenda.badge")}</SBage>
         </div>
@@ -52,7 +52,7 @@ export const VotingSkeleton = () => {
             marginBottom: 12,
           }}
         />
-        <Skeleton width={400} height={20} />
+        <Skeleton sx={{ width: [200, 400], height: 20 }} />
       </SDetailsBox>
 
       <SVotingBox css={{ flex: 2 }}>
