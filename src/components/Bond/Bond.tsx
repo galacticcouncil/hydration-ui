@@ -7,7 +7,7 @@ import { SBond, SItem } from "./Bond.styled"
 import { Icon } from "components/Icon/Icon"
 import { ReactComponent as ClockIcon } from "assets/icons/ClockIcon.svg"
 
-type BondView = "card" | "list"
+export type BondView = "card" | "list"
 
 type Props = {
   view?: BondView

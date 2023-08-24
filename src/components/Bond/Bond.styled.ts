@@ -1,6 +1,7 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 import { css } from "@emotion/react"
+import { BondView } from "./Bond"
 
 export const SItem = styled.div`
   padding: 9px 0;
@@ -8,7 +9,7 @@ export const SItem = styled.div`
   justify-content: space-between;
 `
 
-export const SBond = styled.div<{ view: "card" | "list" }>`
+export const SBond = styled.div<{ view: BondView }>`
   width: 100%;
   padding: 30px 20px;
   border-radius: 8px;
