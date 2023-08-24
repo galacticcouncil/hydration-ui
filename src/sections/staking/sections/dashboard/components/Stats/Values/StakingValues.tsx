@@ -18,7 +18,7 @@ import { isApiLoaded } from "utils/helpers"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "sections/pools/pool/Pool.styled"
 
-const StakingValue = ({
+export const StakingValue = ({
   logo,
   title,
   value,
@@ -227,7 +227,7 @@ export const StakingValues = ({
   )
 }
 
-const AprStatValue = ({
+export const AprStatValue = ({
   availableBalance,
 }: {
   availableBalance: BN | undefined
