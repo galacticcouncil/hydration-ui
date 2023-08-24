@@ -5,12 +5,9 @@ import { withThemeFromJSXProvider } from "@storybook/addon-styling"
 import { GlobalStyle } from "../src/components/GlobalStyle"
 import "../src/i18n/i18n"
 
-const GlobalStyles = () => {
-  return (
-    <Global styles={GlobalStyle} />
-  )
-}
-
+const GlobalStyles = () => (
+  <Global styles={GlobalStyle} />
+)
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
   controls: {
