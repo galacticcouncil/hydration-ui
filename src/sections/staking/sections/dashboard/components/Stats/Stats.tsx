@@ -38,27 +38,31 @@ export const Stats = ({
             circulatigSupply={data?.circulatingSupply.toNumber() ?? 0}
             loading={!!loading}
           />
-          {loading && <Spacer size={32} />}
-          <StakingValue
-            logo={
-              <Icon
-                size={24}
-                sx={{ color: "brightBlue300" }}
-                icon={<ProjectedRewardsIcon />}
+          {!account?.address && !loading && (
+            <>
+              <Spacer size={32} />
+              <StakingValue
+                logo={
+                  <Icon
+                    size={24}
+                    sx={{ color: "brightBlue300" }}
+                    icon={<ProjectedRewardsIcon />}
+                  />
+                }
+                title={t("staking.dashboard.stats.projectedRewards")}
+                tooltip={t(`staking.dashboard.stats.apr.tooltip`)}
+                value={
+                  loading ? (
+                    <div sx={{ flex: "column", gap: 2 }}>
+                      <Skeleton width={100} height={24} />
+                    </div>
+                  ) : (
+                    <AprStatValue availableBalance={data?.availableBalance} />
+                  )
+                }
               />
-            }
-            title={t("staking.dashboard.stats.projectedRewards")}
-            tooltip={t(`staking.dashboard.stats.apr.tooltip`)}
-            value={
-              loading ? (
-                <div sx={{ flex: "column", gap: 2 }}>
-                  <Skeleton width={100} height={24} />
-                </div>
-              ) : (
-                <AprStatValue availableBalance={data?.availableBalance} />
-              )
-            }
-          />
+            </>
+          )}
         </div>
 
         {account && data && (
