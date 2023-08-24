@@ -38,7 +38,7 @@ export const Stats = ({
             circulatigSupply={data?.circulatingSupply.toNumber() ?? 0}
             loading={!!loading}
           />
-          {loading && (
+          {!account?.address && !loading && (
             <>
               <Spacer size={32} />
               <StakingValue
