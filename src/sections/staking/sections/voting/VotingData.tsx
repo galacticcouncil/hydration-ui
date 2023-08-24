@@ -1,72 +1,72 @@
-import { Text } from "components/Typography/Text/Text";
-import { SBage, SDetailsBox, SVotingBox } from "./Voting.styled";
-import { theme } from "theme";
-import { BN_1, BN_10 } from "utils/constants";
-import BN from "bignumber.js";
-import { Separator } from "components/Separator/Separator";
-import { AccountAvatar } from "components/AccountAvatar/AccountAvatar";
-import { Trans, useTranslation } from "react-i18next";
-import { useProviderRpcUrlStore } from "api/provider";
-import ReactMarkdown from "react-markdown";
-import { GradientText } from "components/Typography/GradientText/GradientText";
-import { SBar } from "components/ReferendumCard/ReferendumCard.styled";
-import { Icon } from "components/Icon/Icon";
-import { ReactComponent as AyeIcon } from "assets/icons/SuccessIcon.svg";
-import { ReactComponent as NayIcon } from "assets/icons/FailIcon.svg";
-import { Controller, useForm } from "react-hook-form";
-import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton";
-import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect";
-import { NATIVE_ASSET_ID, useApiPromise } from "utils/api";
-import { Button } from "components/Button/Button";
-import { ToastMessage, useStore } from "state/store";
-import { useQueryClient } from "@tanstack/react-query";
-import { FormValues } from "utils/helpers";
+import { Text } from "components/Typography/Text/Text"
+import { SBage, SDetailsBox, SVotingBox } from "./Voting.styled"
+import { theme } from "theme"
+import { BN_1, BN_10 } from "utils/constants"
+import BN from "bignumber.js"
+import { Separator } from "components/Separator/Separator"
+import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
+import { Trans, useTranslation } from "react-i18next"
+import { useProviderRpcUrlStore } from "api/provider"
+import ReactMarkdown from "react-markdown"
+import { GradientText } from "components/Typography/GradientText/GradientText"
+import { SBar } from "components/ReferendumCard/ReferendumCard.styled"
+import { Icon } from "components/Icon/Icon"
+import { ReactComponent as AyeIcon } from "assets/icons/SuccessIcon.svg"
+import { ReactComponent as NayIcon } from "assets/icons/FailIcon.svg"
+import { Controller, useForm } from "react-hook-form"
+import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
+import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
+import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
+import { Button } from "components/Button/Button"
+import { ToastMessage, useStore } from "state/store"
+import { useQueryClient } from "@tanstack/react-query"
+import { FormValues } from "utils/helpers"
 import {
   ConvictionDropdown,
   TConviction,
-} from "./components/Dropdown/DropdownConviction";
-import { useAccountStore } from "state/store";
-import { getFixedPointAmount } from "utils/balance";
-import { ReactComponent as VerifiedAccount } from "assets/icons/VerifiedAccount.svg";
-import { TOAST_MESSAGES } from "state/toasts";
-import { useVotingData } from "./Voting.utils";
-import { Navigate } from "@tanstack/react-location";
-import { QUERY_KEYS } from "utils/queryKeys";
+} from "./components/Dropdown/DropdownConviction"
+import { useAccountStore } from "state/store"
+import { getFixedPointAmount } from "utils/balance"
+import { ReactComponent as VerifiedAccount } from "assets/icons/VerifiedAccount.svg"
+import { TOAST_MESSAGES } from "state/toasts"
+import { useVotingData } from "./Voting.utils"
+import { Navigate } from "@tanstack/react-location"
+import { QUERY_KEYS } from "utils/queryKeys"
 
-const REFERENDUM_LINK = import.meta.env.VITE_REFERENDUM_LINK as string;
+const REFERENDUM_LINK = import.meta.env.VITE_REFERENDUM_LINK as string
 
 export const VotingData = ({ id }: { id: string }) => {
-  const { t } = useTranslation();
-  const { account } = useAccountStore();
+  const { t } = useTranslation()
+  const { account } = useAccountStore()
 
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
-  const api = useApiPromise();
-  const { createTransaction } = useStore();
+  const api = useApiPromise()
+  const { createTransaction } = useStore()
 
   // need it for rococo and mining-rpc rpcs
-  const providers = useProviderRpcUrlStore();
+  const providers = useProviderRpcUrlStore()
   const rococoProvider = [
     "hydradx-rococo-rpc.play.hydration.cloud",
     "mining-rpc.hydradx.io",
   ].some(
     (rpc) =>
-      providers.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL === `wss://${rpc}`
-  );
+      providers.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL === `wss://${rpc}`,
+  )
 
-  const referendaQuery = useVotingData(id, rococoProvider);
+  const referendaQuery = useVotingData(id, rococoProvider)
 
   const form = useForm<{ amount: string; conviction: TConviction }>({
     defaultValues: { conviction: "locked1x" },
-  });
+  })
 
-  if (referendaQuery.isOngoing === false) return <Navigate to="/staking" />;
+  if (referendaQuery.isOngoing === false) return <Navigate to="/staking" />
 
   const onSubmit = async (values: FormValues<typeof form>, aye: boolean) => {
-    const amount = getFixedPointAmount(values.amount, 12).toString();
+    const amount = getFixedPointAmount(values.amount, 12).toString()
 
     const toast = TOAST_MESSAGES.reduce((memo, type) => {
-      const msType = type === "onError" ? "onLoading" : type;
+      const msType = type === "onError" ? "onLoading" : type
       memo[type] = (
         <Trans
           t={t}
@@ -80,9 +80,9 @@ export const VotingData = ({ id }: { id: string }) => {
           <span />
           <span className="highlight" />
         </Trans>
-      );
-      return memo;
-    }, {} as ToastMessage);
+      )
+      return memo
+    }, {} as ToastMessage)
 
     const transaction = await createTransaction(
       {
@@ -96,23 +96,23 @@ export const VotingData = ({ id }: { id: string }) => {
           },
         }),
       },
-      { toast }
-    );
+      { toast },
+    )
 
     if (!transaction.isError) {
-      form.reset();
+      form.reset()
     }
 
-    await queryClient.invalidateQueries(QUERY_KEYS.referendumInfoOf(id));
-    await queryClient.invalidateQueries(QUERY_KEYS.referendumInfo(id));
+    await queryClient.invalidateQueries(QUERY_KEYS.referendumInfoOf(id))
+    await queryClient.invalidateQueries(QUERY_KEYS.referendumInfo(id))
     await queryClient.invalidateQueries(
-      QUERY_KEYS.tokenBalance(NATIVE_ASSET_ID, account?.address)
-    );
-  };
+      QUERY_KEYS.tokenBalance(NATIVE_ASSET_ID, account?.address),
+    )
+  }
 
-  const referenda = referendaQuery.data;
+  const referenda = referendaQuery.data
 
-  if (referendaQuery.isLoading || !referenda) return null;
+  if (referendaQuery.isLoading || !referenda) return null
 
   return (
     <div sx={{ flex: ["column", "row"], gap: 30 }}>
@@ -309,32 +309,32 @@ export const VotingData = ({ id }: { id: string }) => {
               validate: {
                 validNumber: (value) => {
                   try {
-                    if (!new BN(value).isNaN()) return true;
+                    if (!new BN(value).isNaN()) return true
                   } catch {}
-                  return t("error.validNumber");
+                  return t("error.validNumber")
                 },
                 positive: (value) => new BN(value).gt(0) || t("error.positive"),
                 maxBalance: (value) => {
                   try {
                     if (
                       referenda.computedBalance.gte(
-                        BN(value).multipliedBy(BN_10.pow(12))
+                        BN(value).multipliedBy(BN_10.pow(12)),
                       )
                     )
-                      return true;
+                      return true
                   } catch {}
-                  return t("liquidity.add.modal.validation.notEnoughBalance");
+                  return t("liquidity.add.modal.validation.notEnoughBalance")
                 },
                 minValue: (value) => {
-                  const minValue = BN_1;
+                  const minValue = BN_1
 
                   try {
-                    if (!new BN(value).lt(minValue ?? 0)) return true;
+                    if (!new BN(value).lt(minValue ?? 0)) return true
                   } catch {}
                   return t("error.minValue", {
                     value: minValue,
                     symbol: "HDX",
-                  });
+                  })
                 },
               },
             }}
@@ -411,5 +411,5 @@ export const VotingData = ({ id }: { id: string }) => {
         </form>
       </SVotingBox>
     </div>
-  );
-};
+  )
+}
