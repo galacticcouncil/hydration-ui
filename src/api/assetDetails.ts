@@ -19,6 +19,7 @@ import { getTokenLock } from "./balances"
 import { getApiIds } from "./consts"
 import { getHubAssetTradability, getOmnipoolAssets } from "./omnipool"
 import { getAcceptedCurrency, getAccountCurrency } from "./payments"
+import BN from "bignumber.js"
 
 export const useAssetDetails = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
@@ -26,6 +27,21 @@ export const useAssetDetails = (id: Maybe<u32 | string>) => {
     enabled: !!id && !!isApiLoaded(api),
     select: (data) => data.find((i) => i.id === id?.toString()),
   })
+}
+
+type TAssetsDetails = {
+  id: string
+  name: string
+  assetType: PalletAssetRegistryAssetType["type"]
+  symbol: string
+  decimals: u32 | u8 | undefined
+}
+
+type TAssetDetails = {
+  id: string
+  name: string
+  assetType: PalletAssetRegistryAssetType["type"]
+  existentialDeposit: BN
 }
 
 interface AssetDetailsListFilter {
@@ -131,14 +147,19 @@ const getAssetDetails = (api: ApiPromise) => async () => {
     api.query.assetRegistry.assets.entries(),
   ])
 
-  const assets = entries.map(([key, data]) => {
-    return {
-      id: key.args[0].toString(),
-      name: data.unwrap().name.toUtf8(),
-      assetType: data.unwrap().assetType.type,
-      existentialDeposit: data.unwrap().existentialDeposit.toBigNumber(),
+  const assets = entries.reduce((acc, [key, dataRaw]) => {
+    const data = dataRaw.unwrap()
+
+    if (data.assetType.isToken) {
+      acc.push({
+        id: key.args[0].toString(),
+        name: data.name.toUtf8(),
+        assetType: data.assetType.type,
+        existentialDeposit: data.existentialDeposit.toBigNumber(),
+      })
     }
-  })
+    return acc
+  }, [] as TAssetDetails[])
 
   if (!assets.find((i) => i.id === NATIVE_ASSET_ID)) {
     assets.push({
@@ -182,20 +203,25 @@ export const getAssetsDetails = (api: ApiPromise) => async () => {
     })
   }
 
-  const assets = rawAssetsData.map(([key, data]) => {
+  const assets = rawAssetsData.reduce((acc, [key, dataRaw]) => {
     const id = key.args[0].toString()
+    const data = dataRaw.unwrap()
 
-    const { symbol = "N/A", decimals } =
-      assetsMeta.find((assetMeta) => assetMeta.id.toString() === id) || {}
+    if (data.assetType.isToken) {
+      const { symbol = "N/A", decimals } =
+        assetsMeta.find((assetMeta) => assetMeta.id.toString() === id) || {}
 
-    return {
-      id,
-      name: data.unwrap().name.toUtf8() || getAssetName(symbol),
-      assetType: data.unwrap().assetType.type,
-      symbol,
-      decimals,
+      acc.push({
+        id,
+        name: data.name.toUtf8() || getAssetName(symbol),
+        assetType: data.assetType.type,
+        symbol,
+        decimals,
+      })
     }
-  })
+
+    return acc
+  }, [] as TAssetsDetails[])
 
   if (!assets.find((i) => i.id === NATIVE_ASSET_ID)) {
     const { symbol = "N/A", decimals } =
