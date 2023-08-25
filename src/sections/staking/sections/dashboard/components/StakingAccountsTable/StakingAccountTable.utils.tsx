@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-table"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -22,23 +22,19 @@ import { shortenAccountAddress } from "utils/formatting"
 const dummyData = [
   {
     account: "7NPoMQbiA6trJKkjB35uk96MeJD4PGWkLQLH7k7hXEkZpiba",
-    amount: BN(1000000),
-    dollarValue: BN(2000),
+    actionPoints: BN(2000),
   },
   {
     account: "7NPoMQbiA6trJKkjB32kk96MeJD4PGWkLQLH7k7hXEkZpipo",
-    amount: BN(2300000),
-    dollarValue: BN(900),
+    actionPoints: BN(900),
   },
   {
     account: "7NPoMQbiA6trJKkjB32kk96MeJD4PGWkLQLHhXEkZ2jd",
-    amount: BN(20000),
-    dollarValue: BN(9100),
+    actionPoints: BN(9100),
   },
   {
     account: "7NPoMQbiA6trJKkjB32kk96MeJD4PGWkLQLH7k7hXEk3oPo",
-    amount: BN(2340000),
-    dollarValue: BN(9200),
+    actionPoints: BN(9200),
   },
 ]
 
@@ -57,63 +53,54 @@ export const useStakingAccountsTable = () => {
     link: isDesktop,
   }
 
-  const columns = [
-    accessor("account", {
-      id: "account",
-      header: t("staking.dashboard.table.account"),
-      sortingFn: (a, b) => a.original.account.localeCompare(b.original.account),
-      cell: ({ row }) => (
-        <div
-          sx={{
-            flex: "row",
-            gap: 8,
-            align: "center",
-            justify: "start",
-          }}
-        >
-          <Icon size={26} icon={<StakingAccountIcon />} />
-          <Text fs={[14]} color="basic300">
-            {shortenAccountAddress(row.original.account)}
+  const columns = useMemo(
+    () => [
+      accessor("account", {
+        id: "account",
+        header: t("staking.dashboard.table.account"),
+        sortingFn: (a, b) =>
+          a.original.account.localeCompare(b.original.account),
+        cell: ({ row }) => (
+          <div
+            sx={{
+              flex: "row",
+              gap: 8,
+              align: "center",
+              justify: "start",
+            }}
+          >
+            <Icon size={26} icon={<StakingAccountIcon />} />
+            <Text fs={[14]} color="basic300">
+              {shortenAccountAddress(row.original.account)}
+            </Text>
+          </div>
+        ),
+      }),
+      accessor("actionPoints", {
+        id: "actionPoints",
+        header: t("staking.dashboard.table.actionPoints"),
+        sortingFn: (a, b) =>
+          a.original.actionPoints.gt(b.original.actionPoints) ? 1 : -1,
+        cell: ({ row }) => (
+          <Text tAlign="right" color="white">
+            {t("value.usd", { amount: row.original.actionPoints })}
           </Text>
-        </div>
-      ),
-    }),
-    accessor("amount", {
-      id: "amount",
-      header: t("staking.dashboard.table.stakedAmount"),
-      sortingFn: (a, b) => (a.original.amount.gt(b.original.amount) ? 1 : -1),
-      cell: ({ row }) => (
-        <Text
-          tAlign={isDesktop ? "center" : "right"}
-          color="white"
-          fs={[13, 16]}
-        >
-          {t("value.usd", { amount: row.original.amount })}
-        </Text>
-      ),
-    }),
-    accessor("dollarValue", {
-      id: "dollarValue",
-      header: t("staking.dashboard.table.currentValue"),
-      sortingFn: (a, b) =>
-        a.original.dollarValue.gt(b.original.dollarValue) ? 1 : -1,
-      cell: ({ row }) => (
-        <Text tAlign="center" color="white">
-          {t("value.usd", { amount: row.original.dollarValue })}
-        </Text>
-      ),
-    }),
-    display({
-      id: "link",
-      cell: () => (
-        <ButtonTransparent>
-          <Icon size={12} sx={{ color: "darkBlue300" }} icon={<LinkIcon />} />
-        </ButtonTransparent>
-      ),
-    }),
-  ]
+        ),
+      }),
+      display({
+        id: "link",
+        cell: () => (
+          <ButtonTransparent>
+            <Icon size={12} sx={{ color: "darkBlue300" }} icon={<LinkIcon />} />
+          </ButtonTransparent>
+        ),
+      }),
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
 
-  const table = useReactTable({
+  return useReactTable({
     data: dummyData,
     columns,
     state: { sorting, columnVisibility },
@@ -121,6 +108,4 @@ export const useStakingAccountsTable = () => {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
-
-  return table
 }

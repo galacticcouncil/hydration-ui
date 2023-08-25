@@ -2,7 +2,7 @@ import { Wallet } from "@talismn/connect-wallets"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { WalletConnectProviders } from "sections/wallet/connect/providers/WalletConnectProviders"
-import { ExternalWalletConnectProviderButton } from "../providers/button/ExternalWalletConnectProviderButton"
+import { ExternalWalletConnectProviderButton } from "sections/wallet/connect/providers/button/ExternalWalletConnectProviderButton"
 
 type Props = {
   onWalletSelect: (wallet: Wallet) => void

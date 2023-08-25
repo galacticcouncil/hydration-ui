@@ -30,10 +30,8 @@ export function WalletTransferCrosschainList(props: {
         <SList>
           {CROSSCHAINS.map((chain) => (
             <WalletTransferCrosschainListItem
+              {...chain}
               key={chain.name}
-              icon={chain.icon}
-              name={chain.name}
-              type={chain.type}
               onClick={() => props.onSelect(chain.name)}
             />
           ))}

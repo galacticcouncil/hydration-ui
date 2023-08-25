@@ -68,12 +68,19 @@ export const SPageContent = styled.main`
   @media ${theme.viewport.gte.sm} {
     padding: 0 20px;
     padding-top: var(--nav-height);
+    padding-bottom: var(--mobile-nav-height);
 
     display: block;
 
     ::-webkit-scrollbar {
       width: 6px;
     }
+  }
+
+  @media ${theme.viewport.gte.md} {
+    padding-bottom: 0;
+
+    display: block;
   }
 `
 
@@ -101,7 +108,6 @@ export const SPageGrid = styled.div`
   position: absolute;
   inset: 0;
   z-index: 0;
-  height: 843px;
 
   opacity: 0.06;
   pointer-events: none;

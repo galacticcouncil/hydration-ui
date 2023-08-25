@@ -2,8 +2,10 @@ import type { u32 } from "@polkadot/types"
 import { u128 } from "@polkadot/types-codec"
 import type { AccountId32 } from "@polkadot/types/interfaces"
 import { CodecHash } from "@polkadot/types/interfaces/runtime"
+import { StatsTimeframe } from "api/stats"
 import type BigNumber from "bignumber.js"
 import { Maybe } from "utils/helpers"
+import { ChartType } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 
 export const QUERY_KEY_PREFIX = "@block"
 
@@ -95,6 +97,9 @@ export const QUERY_KEYS = {
     "totalIssuance",
     lpToken?.toString(),
   ],
+  LRNATotalIssuance: () => ["LRNATotalIssuance"],
+  LRNAOmnipoolBalance: () => ["LRNAOmnipoolBalance"],
+  LRNAMeta: () => ["LRNAMeta"],
   totalLiquidities: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "totalLiquidities",
@@ -196,25 +201,37 @@ export const QUERY_KEYS = {
     address,
   ],
   lock: (address: Maybe<AccountId32 | string>, asset: Maybe<u32 | string>) => [
-    QUERY_KEY_PREFIX,
     "lock",
     address,
     asset,
   ],
-  uniques: (address: string | AccountId32, collectionId: string | u128) => [
+  uniques: (address?: string | AccountId32, collectionId?: string | u128) => [
     "uniques",
-    address.toString(),
-    collectionId.toString(),
+    address?.toString(),
+    collectionId?.toString(),
   ],
-  uniquesLive: (address: string | AccountId32, collectionId: string | u128) => [
+  uniquesLive: (
+    address?: string | AccountId32,
+    collectionId?: string | u128,
+  ) => [
     QUERY_KEY_PREFIX,
     "uniques",
-    address.toString(),
+    address?.toString(),
+    collectionId?.toString(),
+  ],
+  uniquesAsset: (collectionId: string | u128) => [
+    "uniquesAsset",
+    collectionId.toString(),
+  ],
+  uniquesAssetLive: (collectionId: string | u128) => [
+    QUERY_KEY_PREFIX,
+    "uniquesAsset",
     collectionId.toString(),
   ],
   omnipoolAssets: ["omnipoolAssets"],
   omnipoolAssetsLive: [QUERY_KEY_PREFIX, "omnipoolAssets"],
   hubAssetTradability: [QUERY_KEY_PREFIX, "hubAssetTradability"],
+  hubAssetImbalance: () => ["hubAssetImbalance"],
   omnipoolFee: [QUERY_KEY_PREFIX, "omnipoolFee"],
   omnipoolAsset: (id: u32 | string) => [
     QUERY_KEY_PREFIX,
@@ -267,4 +284,34 @@ export const QUERY_KEYS = {
   maxAddLiquidityLimit: ["maxAddLiquidityLimit"],
   coingeckoUsd: ["coingeckoUsd"],
   assetList: ["assetList"],
+  assetsLocation: ["assetsLocation"],
+  polStats: ["polStats"],
+  referendums: (accountAddress?: string) => [
+    QUERY_KEY_PREFIX,
+    accountAddress,
+    "referendums",
+  ],
+  referendumInfo: (id: string) => [QUERY_KEY_PREFIX, id, "referendumInfo"],
+  stats: (
+    type: ChartType,
+    timeframe?: StatsTimeframe,
+    assetSymbol?: string,
+  ) => {
+    const key = ["stats", type]
+
+    if (timeframe) key.push(timeframe)
+    if (assetSymbol) key.push(assetSymbol)
+
+    return key
+  },
+  circulatingSupply: ["circulatingSupply"],
+  stake: (address: string | undefined) => ["stake", address],
+  staking: ["staking"],
+  stakingPosition: (id: number | undefined) => ["totalStaking", id],
+  stakingConsts: ["stakingConsts"],
+  stakingEvents: ["stakingEvents"],
+  stakingPositionBalances: (positionId: Maybe<string>) => [
+    "positionBalances",
+    positionId,
+  ],
 } as const

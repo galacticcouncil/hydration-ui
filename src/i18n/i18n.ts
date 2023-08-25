@@ -8,7 +8,7 @@ import {
   formatRelativeTime,
   getFormatSeparators,
 } from "utils/formatting"
-import { normalizeBigNumber } from "../utils/balance"
+import { normalizeBigNumber } from "utils/balance"
 import { resources } from "./locales"
 import { isRecord } from "utils/helpers"
 

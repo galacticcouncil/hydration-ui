@@ -4,7 +4,8 @@ import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u128, u32 } from "@polkadot/types-codec"
 import { ITuple } from "@polkadot/types-codec/types"
-import { undefinedNoop } from "utils/helpers"
+import { isApiLoaded, undefinedNoop } from "utils/helpers"
+import { REFETCH_INTERVAL } from "utils/constants"
 
 export const useOmnipoolAsset = (id: u32 | string) => {
   const api = useApiPromise()
@@ -16,6 +17,7 @@ export const useOmnipoolAssets = (noRefresh?: boolean) => {
   return useQuery(
     noRefresh ? QUERY_KEYS.omnipoolAssets : QUERY_KEYS.omnipoolAssetsLive,
     getOmnipoolAssets(api),
+    { enabled: !!isApiLoaded(api) },
   )
 }
 
@@ -62,7 +64,9 @@ export const useOmnipoolPositions = (
   })
 }
 
-export const useOmnipoolPosition = (itemId: u128 | u32 | undefined) => {
+export const useOmnipoolPosition = (
+  itemId: u128 | u32 | string | undefined,
+) => {
   const api = useApiPromise()
 
   return useQuery(
@@ -80,9 +84,16 @@ export const useOmnipoolFee = () => {
 }
 
 export const getOmnipoolFee = (api: ApiPromise) => async () => {
-  const assetFee = await api.consts.omnipool.assetFee
+  let assetFee
+  try {
+    assetFee = await api.consts.dynamicFees.assetFeeParameters.minFee
+  } catch {
+    // TODO: Fallback to mainnet (remove when merged)
+    assetFee = await api.consts.omnipool.assetFee
+  }
 
   return {
+    // @ts-ignore
     fee: assetFee.toBigNumber().div(1000000),
   }
 }
@@ -117,3 +128,19 @@ export const getOmnipoolPositions =
 
     return data
   }
+
+export const getHubAssetImbalance = (api: ApiPromise) =>
+  api.query.omnipool.hubAssetImbalance()
+
+export const useHubAssetImbalance = () => {
+  const api = useApiPromise()
+
+  return useQuery(
+    QUERY_KEYS.hubAssetImbalance(),
+    () => getHubAssetImbalance(api),
+    {
+      enabled: !!isApiLoaded(api),
+      refetchInterval: REFETCH_INTERVAL,
+    },
+  )
+}

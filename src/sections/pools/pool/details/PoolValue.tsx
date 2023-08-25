@@ -7,7 +7,7 @@ import Skeleton from "react-loading-skeleton"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { usePoolDetailsTradeVolume } from "sections/pools/pool/details/PoolDetails.utils"
 import { BN_NAN } from "utils/constants"
-import { SInfoIcon } from "./PoolValue.styled"
+import { SInfoIcon } from "sections/pools/pool/Pool.styled"
 
 type PoolValueProps = { pool: OmnipoolPool; className?: string }
 

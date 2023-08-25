@@ -16,6 +16,7 @@ export const DAY_IN_MILLISECONDS = new BN(86400000)
 
 // block time in seconds
 export const BLOCK_TIME = new BN(6)
+export const PARACHAIN_BLOCK_TIME = new BN(12)
 
 // ms until toast closes
 export const TOAST_CLOSE_TIME = 5000
@@ -32,6 +33,7 @@ export const MIN_WITHDRAWAL_FEE = new BN(100).div(1000000)
 
 export const MAX_WITHDRAWAL_FEE = new BN(10000).div(1000000).multipliedBy(100)
 
-export const STABLECOIN_ID = import.meta.env.VITE_STABLECOIN_ASSET_ID as string
 export const STABLECOIN_SYMBOL = import.meta.env
   .VITE_STABLECOIN_ASSET_SYMBOL as string
+
+export const REFETCH_INTERVAL = 60000

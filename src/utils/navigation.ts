@@ -5,6 +5,8 @@ import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
 import { ReactComponent as IconDCA } from "assets/icons/navigation/IconDCA.svg"
 import { ReactComponent as IconOTC } from "assets/icons/navigation/IconOTC.svg"
 import { ReactComponent as IconSwap } from "assets/icons/navigation/IconSwap.svg"
+import { ReactComponent as StatsIcon } from "assets/icons/ChartIcon.svg"
+import { ReactComponent as StakingIcon } from "assets/icons/StakingIcon.svg"
 
 export const LINKS = {
   home: "/",
@@ -21,6 +23,7 @@ export const LINKS = {
   statsOverview: "/stats/overview",
   statsPOL: "/stats/POL",
   statsLRNA: "/stats/LRNA",
+  statsOmnipool: "/stats/overview/omnipool",
   staking: "/staking",
   stakingDashboard: "/staking/dashboard",
   stakingGovernance: "/staking/governance",
@@ -46,7 +49,8 @@ export const MENU_ITEMS = [
     enabled: true,
     external: false,
     mobVisible: true,
-    mobOrder: 0,
+    tabVisible: true,
+    mobOrder: 1,
   },
   {
     key: "liquidity",
@@ -56,6 +60,7 @@ export const MENU_ITEMS = [
     enabled: isPoolsPageEnabled,
     external: false,
     mobVisible: true,
+    tabVisible: true,
     mobOrder: 2,
   },
   {
@@ -66,7 +71,8 @@ export const MENU_ITEMS = [
     enabled: true,
     external: false,
     mobVisible: true,
-    mobOrder: 1,
+    tabVisible: true,
+    mobOrder: 0,
   },
   {
     key: "xcm",
@@ -76,26 +82,29 @@ export const MENU_ITEMS = [
     enabled: isXcmPageEnabled,
     external: false,
     mobVisible: false,
-    mobOrder: 3,
+    tabVisible: false,
+    mobOrder: 5,
   },
   {
     key: "stats",
     href: LINKS.stats,
-    Icon: TransferIcon,
+    Icon: StatsIcon,
     subItems: undefined,
     enabled: isStatsEnabled,
     external: false,
     mobVisible: false,
-    mobOrder: 4,
+    tabVisible: true,
+    mobOrder: 3,
   },
   {
     key: "staking",
     href: LINKS.staking,
-    Icon: TransferIcon,
+    Icon: StakingIcon,
     subItems: undefined,
     enabled: isStakingEnabled,
     external: false,
     mobVisible: false,
+    tabVisible: true,
     mobOrder: 4,
   },
 ] as const

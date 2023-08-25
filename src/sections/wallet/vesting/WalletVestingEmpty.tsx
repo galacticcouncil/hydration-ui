@@ -1,5 +1,5 @@
 import { ReactComponent as VestingIcon } from "assets/icons/PositionsIcon.svg"
-import { Text } from "../../../components/Typography/Text/Text"
+import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 
 export const WalletVestingEmpty = () => {

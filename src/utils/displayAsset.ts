@@ -5,7 +5,7 @@ import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import { STABLECOIN_ID, STABLECOIN_SYMBOL } from "./constants"
+import { STABLECOIN_SYMBOL } from "./constants"
 import { QUERY_KEYS } from "./queryKeys"
 
 type Props = { id: string; amount: BigNumber }
@@ -27,7 +27,7 @@ export const useDisplayValue = (props: Props) => {
   return { amount, symbol, isLoading }
 }
 
-export const useDisplayPrice = (id: string | u32) => {
+export const useDisplayPrice = (id: string | u32 | undefined) => {
   const displayAsset = useDisplayAssetStore()
   const spotPrice = useSpotPrice(id, displayAsset.id)
   const usdPrice = useCoingeckoUsdPrice()
@@ -48,7 +48,7 @@ export const useDisplayPrice = (id: string | u32) => {
     return spotPrice.data
   }, [displayAsset.isRealUSD, isLoading, spotPrice.data, usdPrice.data])
 
-  return { data, isLoading }
+  return { data, isLoading, isInitialLoading: isLoading }
 }
 
 export const useDisplayPrices = (
@@ -79,11 +79,12 @@ export const useDisplayPrices = (
 }
 
 type Asset = {
-  id: string
+  id: string | undefined
   symbol: string
   isRealUSD: boolean
   isStableCoin: boolean
   isDollar?: boolean
+  stableCoinId: string | undefined
 }
 export type DisplayAssetStore = Asset & {
   update: (asset: Asset) => void
@@ -92,7 +93,8 @@ export type DisplayAssetStore = Asset & {
 export const useDisplayAssetStore = create<DisplayAssetStore>()(
   persist(
     (set) => ({
-      id: STABLECOIN_ID,
+      id: undefined,
+      stableCoinId: undefined,
       symbol: "$",
       isDollar: true,
       isRealUSD: false,

@@ -5,7 +5,7 @@ import { Maybe, normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types-codec"
 import BN from "bignumber.js"
-import { BN_0 } from "../utils/constants"
+import { BN_0 } from "utils/constants"
 import { PROVIDERS, useProviderRpcUrlStore } from "./provider"
 
 export type TradeType = {
@@ -24,8 +24,8 @@ export type TradeType = {
 }
 
 export const getTradeVolume =
-  (indexerUrl: string, assetId: u32) => async () => {
-    const assetIn = assetId.toNumber()
+  (indexerUrl: string, assetId: string) => async () => {
+    const assetIn = Number(assetId)
     const after = addDays(new Date(), -1).toISOString()
 
     // This is being typed manually, as GraphQL schema does not
@@ -102,10 +102,15 @@ export const getAllTrades = (indexerUrl: string) => async () => {
   }
 }
 
-export function useTradeVolumes(assetIds: Maybe<u32>[], noRefresh?: boolean) {
+export function useTradeVolumes(
+  assetIds: Maybe<u32 | string>[],
+  noRefresh?: boolean,
+) {
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+  const selectedProvider = PROVIDERS.find(
+    (provider) => new URL(provider.url).hostname === new URL(rpcUrl).hostname,
+  )
 
   const indexerUrl =
     selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
@@ -116,7 +121,9 @@ export function useTradeVolumes(assetIds: Maybe<u32>[], noRefresh?: boolean) {
         ? QUERY_KEYS.tradeVolume(assetId)
         : QUERY_KEYS.tradeVolumeLive(assetId),
       queryFn:
-        assetId != null ? getTradeVolume(indexerUrl, assetId) : undefinedNoop,
+        assetId != null
+          ? getTradeVolume(indexerUrl, assetId.toString())
+          : undefinedNoop,
       enabled: !!assetId,
     })),
   })
@@ -125,7 +132,9 @@ export function useTradeVolumes(assetIds: Maybe<u32>[], noRefresh?: boolean) {
 export function useAllTrades() {
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+  const selectedProvider = PROVIDERS.find(
+    (provider) => new URL(provider.url).hostname === new URL(rpcUrl).hostname,
+  )
 
   const indexerUrl =
     selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL

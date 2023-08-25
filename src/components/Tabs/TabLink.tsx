@@ -1,6 +1,6 @@
 import { Link, useSearch } from "@tanstack/react-location"
 import { ReactNode } from "react"
-import { ButtonProps } from "../Button/Button"
+import { ButtonProps } from "components/Button/Button"
 import { SButton } from "./TabLink.styled"
 
 type Props = ButtonProps & {

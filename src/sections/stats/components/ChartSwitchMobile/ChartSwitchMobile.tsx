@@ -16,7 +16,7 @@ export const ChartSwitchMobile = ({
 }: ChartSwitchMobileProps) => {
   const { t } = useTranslation()
   return (
-    <div sx={{ flex: "row", gap: 12, flexWrap: "wrap" }}>
+    <div sx={{ flex: "row", gap: 12 }}>
       <SSwitchButton
         active={active === "overview"}
         onClick={() => onClick("overview")}

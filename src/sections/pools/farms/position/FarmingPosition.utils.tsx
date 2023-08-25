@@ -22,6 +22,8 @@ import { useAccountStore } from "state/store"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { BN_10, BN_NAN } from "utils/constants"
 import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
+import { normalizeBigNumber } from "utils/balance"
+import { DECIMAL_PLACES } from "@galacticcouncil/sdk"
 
 export const useAllUserDepositShare = () => {
   const { account } = useAccountStore()
@@ -71,101 +73,130 @@ export const useAllUserDepositShare = () => {
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    const rows = positions.reduce((memo, position) => {
-      const { data: omnipoolBalance } =
-        omnipoolBalances.find(
-          (omnipoolBalance) =>
-            omnipoolBalance.data?.assetId.toString() ===
-            position.data?.assetId.toString(),
-        ) ?? {}
+    const rows = positions.reduce(
+      (memo, position) => {
+        const { data: omnipoolBalance } =
+          omnipoolBalances.find(
+            (omnipoolBalance) =>
+              omnipoolBalance.data?.assetId.toString() ===
+              position.data?.assetId.toString(),
+          ) ?? {}
 
-      const omnipoolAsset = omnipoolAssets.data?.find(
-        (omnipoolAsset) =>
-          omnipoolAsset.id.toString() === position.data?.assetId.toString(),
-      )
+        const omnipoolAsset = omnipoolAssets.data?.find(
+          (omnipoolAsset) =>
+            omnipoolAsset.id.toString() === position.data?.assetId.toString(),
+        )
 
-      const spotPrice = spotPrices.data?.find(
-        (spotPrice) => spotPrice?.tokenIn === position.data?.assetId.toString(),
-      )
+        const spotPrice = spotPrices.data?.find(
+          (spotPrice) =>
+            spotPrice?.tokenIn === position.data?.assetId.toString(),
+        )
 
-      const meta = metas.data?.find(
-        (meta) => meta.id === position.data?.assetId.toString(),
-      )
+        const meta = metas.data?.find(
+          (meta) => meta.id === position.data?.assetId.toString(),
+        )
 
-      if (
-        omnipoolBalance &&
-        meta &&
-        omnipoolAsset?.data &&
-        position.data &&
-        lrnaMeta.data &&
-        spotPrice &&
-        lrnaSp.data
-      ) {
-        let lernaOutResult = "-1"
-        let liquidityOutResult = "-1"
+        if (
+          omnipoolBalance &&
+          meta &&
+          omnipoolAsset?.data &&
+          position.data &&
+          lrnaMeta.data &&
+          spotPrice &&
+          lrnaSp.data
+        ) {
+          let lernaOutResult = "-1"
+          let liquidityOutResult = "-1"
 
-        const [nom, denom] =
-          position.data.price.map((n) => new BN(n.toString())) ?? []
-        const price = nom.div(denom)
-        const positionPrice = price.times(BN_10.pow(18))
+          const [nom, denom] =
+            position.data.price.map((n) => new BN(n.toString())) ?? []
+          const price = nom.div(denom)
+          const positionPrice = price.times(BN_10.pow(18))
 
-        const params: Parameters<typeof calculate_liquidity_out> = [
-          omnipoolBalance.balance.toString(),
-          omnipoolAsset.data.hubReserve.toString(),
-          omnipoolAsset.data.shares.toString(),
-          position.data.amount.toString(),
-          position.data.shares.toString(),
-          positionPrice.toFixed(0),
-          position.data.shares.toString(),
-          "0", // fee zero
-        ]
+          const params: Parameters<typeof calculate_liquidity_out> = [
+            omnipoolBalance.balance.toString(),
+            omnipoolAsset.data.hubReserve.toString(),
+            omnipoolAsset.data.shares.toString(),
+            position.data.amount.toString(),
+            position.data.shares.toString(),
+            positionPrice.toFixed(0),
+            position.data.shares.toString(),
+            "0", // fee zero
+          ]
 
-        lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
-        liquidityOutResult = calculate_liquidity_out.apply(this, params)
+          lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
+          liquidityOutResult = calculate_liquidity_out.apply(this, params)
 
-        const lrnaDp = BN_10.pow(lrnaMeta.data.decimals.toNumber() ?? 12)
-        const lrna =
-          lernaOutResult !== "-1" ? new BN(lernaOutResult).div(lrnaDp) : BN_NAN
+          const lrnaDp = BN_10.pow(lrnaMeta.data.decimals.toNumber() ?? 12)
+          const lrna =
+            lernaOutResult !== "-1"
+              ? new BN(lernaOutResult).div(lrnaDp)
+              : BN_NAN
 
-        const valueDp = BN_10.pow(meta.decimals.toNumber() ?? 12)
-        const value =
-          liquidityOutResult !== "-1"
-            ? new BN(liquidityOutResult).div(valueDp)
+          const valueDp = BN_10.pow(meta.decimals.toNumber() ?? 12)
+          const value =
+            liquidityOutResult !== "-1"
+              ? new BN(liquidityOutResult).div(valueDp)
+              : BN_NAN
+
+          let valueDisplay = BN_NAN
+
+          if (liquidityOutResult !== "-1" && spotPrice) {
+            valueDisplay = value.times(spotPrice.spotPrice)
+
+            if (lrna.gt(0)) {
+              valueDisplay = !lrnaSp
+                ? BN_NAN
+                : valueDisplay.plus(lrna.times(lrnaSp.data.spotPrice))
+            }
+          }
+
+          const providedAmount = normalizeBigNumber(
+            position.data.amount,
+          ).shiftedBy(-1 * meta.decimals.toNumber() ?? DECIMAL_PLACES)
+          const providedAmountDisplay = spotPrice?.spotPrice
+            ? providedAmount.times(spotPrice.spotPrice)
             : BN_NAN
 
-        let valueDisplay = BN_NAN
+          const index = position.data?.assetId.toString()
 
-        if (liquidityOutResult !== "-1" && spotPrice) {
-          valueDisplay = value.times(spotPrice.spotPrice)
-
-          if (lrna.gt(0)) {
-            valueDisplay = !lrnaSp
-              ? BN_NAN
-              : valueDisplay.plus(lrna.times(lrnaSp.data.spotPrice))
-          }
+          memo[index] = [
+            ...(memo[index] ?? []),
+            {
+              ...position.data,
+              depositId: positionIds
+                .find(
+                  (pos) =>
+                    pos.data?.value.toString() === position.data?.id.toString(),
+                )
+                ?.data?.depositionId.toString(),
+              value,
+              valueDisplay,
+              providedAmount,
+              providedAmountDisplay,
+              lrna,
+              symbol: meta.symbol,
+            },
+          ]
         }
-        const index = position.data?.assetId.toString()
 
-        memo[index] = [
-          ...(memo[index] ?? []),
-          {
-            ...position.data,
-            depositId: positionIds
-              .find(
-                (pos) =>
-                  pos.data?.value.toString() === position.data?.id.toString(),
-              )
-              ?.data?.depositionId.toString(),
-            value,
-            valueDisplay,
-            lrna,
-            symbol: meta.symbol,
-          },
-        ]
-      }
-
-      return memo
-    }, {} as Record<string, Array<OmnipoolPosition & { value: BN; valueDisplay: BN; lrna: BN; symbol: string; depositId: string | undefined }>>)
+        return memo
+      },
+      {} as Record<
+        string,
+        Array<
+          OmnipoolPosition & {
+            value: BN
+            valueDisplay: BN
+            lrna: BN
+            symbol: string
+            depositId: string | undefined
+            providedAmountDisplay: BN
+            providedAmount: BN
+          }
+        >
+      >,
+    )
 
     return rows
   }, [

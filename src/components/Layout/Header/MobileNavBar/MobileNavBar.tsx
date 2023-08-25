@@ -3,13 +3,15 @@ import { Icon } from "components/Icon/Icon"
 import { useTranslation } from "react-i18next"
 
 import { MENU_ITEMS, TabItem } from "utils/navigation"
-import { HeaderSubMenu } from "../menu/HeaderSubMenu"
+import { HeaderSubMenu } from "components/Layout/Header/menu/HeaderSubMenu"
 import {
   SMobileNavBar,
   SNavBarItem,
   SNavBarItemHidden,
 } from "./MobileNavBar.styled"
 import { MoreButton } from "./MoreButton"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export const MobileNavBarItem = ({
   item,
@@ -31,12 +33,13 @@ export const MobileNavBarItem = ({
 export const MobileNavBar = () => {
   const { t } = useTranslation()
   const { account } = useSearch()
+  const isMediumMedia = useMedia(theme.viewport.gte.sm)
 
   const [visibleTabs, hiddenTabs] = MENU_ITEMS.filter(
     (item) => item.enabled,
   ).reduce(
     (result, value) => {
-      const isVisible = value.mobVisible
+      const isVisible = isMediumMedia ? value.tabVisible : value.mobVisible
       result[isVisible ? 0 : 1].push(value)
       return result
     },

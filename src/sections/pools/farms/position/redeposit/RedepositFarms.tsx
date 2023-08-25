@@ -2,14 +2,14 @@ import { Text } from "components/Typography/Text/Text"
 import { SContainer, SJoinButton } from "./RedepositFarms.styled"
 import { Trans, useTranslation } from "react-i18next"
 import { Icon } from "components/Icon/Icon"
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { ReactElement, useState } from "react"
-import { SSeparator } from "../FarmingPosition.styled"
+import { SSeparator } from "sections/pools/farms/position/FarmingPosition.styled"
 import { DepositNftType } from "api/deposits"
 import { useFarmApr, useFarms } from "api/farms"
 import { useAssetMeta } from "api/assetMeta"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
-import { JoinFarmModal } from "../../modals/join/JoinFarmsModal"
+import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import { useAccountStore } from "state/store"
@@ -24,7 +24,7 @@ const RedepositFarm = ({ availableYieldFarm }: RedepositFarmProps) => {
   const { data: assetMeta } = useAssetMeta(farmApr?.assetId)
   return (
     <div sx={{ flex: "row", align: "center", gap: 8 }}>
-      <Icon size={24} icon={getAssetLogo(assetMeta?.symbol)} />
+      <Icon size={24} icon={<AssetLogo id={assetMeta?.id} />} />
       <Text>{assetMeta?.symbol}</Text>
     </div>
   )

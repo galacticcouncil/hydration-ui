@@ -1,5 +1,5 @@
 import BN from "bignumber.js"
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
@@ -12,18 +12,20 @@ export const WalletAssetsTableName = ({
   symbol,
   name,
   isPaymentFee,
+  id,
 }: {
   symbol: string
   name: string
   large?: boolean
   isPaymentFee?: boolean
+  id: string
 }) => {
   const { t } = useTranslation()
 
   return (
     <div>
       <div sx={{ flex: "row", gap: 8, align: "center" }}>
-        <SIcon large={large}>{getAssetLogo(symbol)}</SIcon>
+        <SIcon large={large}>{<AssetLogo id={id} />}</SIcon>
         <div sx={{ flex: "column", width: "100%", gap: [0, 4] }}>
           <Text
             fs={[large ? 18 : 14, 16]}
@@ -37,7 +39,7 @@ export const WalletAssetsTableName = ({
             fs={[large ? 13 : 12, 13]}
             lh={[large ? 17 : 14, 13]}
             fw={500}
-            css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
+            css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.61)` }}
           >
             {name}
           </Text>
@@ -80,7 +82,7 @@ export const WalletAssetsTableBalance = (props: {
             fs={[11, 13]}
             lh={[14, 16]}
             fw={500}
-            css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
+            css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.61)` }}
           >
             {children}
           </Text>

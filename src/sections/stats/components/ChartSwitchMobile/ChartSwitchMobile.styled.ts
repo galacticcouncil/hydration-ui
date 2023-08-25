@@ -10,6 +10,7 @@ export const SSwitchButton = styled.button<{ active: boolean }>`
   display: flex;
   align-items: center;
   gap: 32px;
+  justify-content: center;
 
   font-size: 12px;
 
@@ -20,6 +21,8 @@ export const SSwitchButton = styled.button<{ active: boolean }>`
   position: relative;
 
   cursor: pointer;
+
+  width: 100%;
 
   & > span {
     position: absolute;

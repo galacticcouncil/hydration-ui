@@ -4,7 +4,8 @@ import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { HeaderSettingsContents } from "../HeaderSettings"
+import { HeaderSettingsContents } from "components/Layout/Header/settings/HeaderSettings"
+import { theme } from "theme"
 
 export const HeaderSettingsMobile = () => {
   const { t } = useTranslation()
@@ -14,9 +15,14 @@ export const HeaderSettingsMobile = () => {
     <>
       <div sx={{ flex: "row", align: "center", gap: 10 }}>
         <IconButton
+          size={34}
           onClick={() => setOpen(true)}
           icon={<IconSettings />}
-          sx={{ color: "brightBlue100" }}
+          css={{
+            border: "none",
+            color: theme.colors.brightBlue100,
+            background: `rgba(${theme.rgbColors.darkBlue401}, 0.8)`,
+          }}
           round
         />
         <Text fs={12} fw={500} color="brightBlue200">

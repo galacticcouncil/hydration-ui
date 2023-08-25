@@ -11,7 +11,7 @@ import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPosi
 import { theme } from "theme"
 import { useEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
-import { JoinedFarmsDetails } from "../modals/joinedFarmDetails/JoinedFarmsDetails"
+import { JoinedFarmsDetails } from "sections/pools/farms/modals/joinedFarmDetails/JoinedFarmsDetails"
 import {
   SContainer,
   SSeparator,
@@ -21,6 +21,10 @@ import { useDepositShare } from "./FarmingPosition.utils"
 import { JoinedFarms } from "./joined/JoinedFarms"
 import { RedepositFarms } from "./redeposit/RedepositFarms"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { useOmnipoolPosition } from "api/omnipool"
+import { useDisplayPrice } from "utils/displayAsset"
+import { getFloatingPointAmount } from "utils/balance"
+import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 
 function FarmingPositionDetailsButton(props: {
   pool: OmnipoolPool
@@ -58,10 +62,21 @@ export const FarmingPosition = ({
 }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-
-  const meta = useAssetMeta(pool.id)
-
   const position = useDepositShare(pool.id, depositNft.id.toString())
+
+  const lpPosition = useOmnipoolPosition(position.data?.id)
+  const meta = useAssetMeta(lpPosition.data?.assetId)
+  const spotPrice = useDisplayPrice(lpPosition.data?.assetId)
+
+  const initialPosValue =
+    getFloatingPointAmount(
+      lpPosition.data?.amount.toBigNumber() ?? 0,
+      meta.data?.decimals.toNumber() ?? 12,
+    ) ?? BN_0
+
+  const initialPosPrice = initialPosValue.multipliedBy(
+    spotPrice.data?.spotPrice ?? 1,
+  )
 
   // use latest entry date
   const enteredDate = useEnteredDate(
@@ -119,21 +134,33 @@ export const FarmingPosition = ({
           <SSeparator orientation={isDesktop ? "vertical" : "horizontal"} />
           <SValueContainer>
             <Text color="basic500" fs={14} lh={16} fw={400}>
-              {t("farms.positions.labels.lockedShares")}
+              {t("farms.positions.labels.initialValue")}
             </Text>
-            <Text>
-              {t("value", {
-                value: depositNft.deposit.shares,
-                fixedPointScale: meta.data?.decimals.toString() ?? 12,
-                type: "token",
-              })}
-            </Text>
+            <div>
+              <Text>
+                {t("value.tokenWithSymbol", {
+                  value: initialPosValue,
+                  symbol: meta.data?.symbol,
+                })}
+              </Text>
+              <Text fs={11} css={{ color: "rgba(221, 229, 255, 0.61)" }}>
+                <DisplayValue value={initialPosPrice} />
+              </Text>
+            </div>
           </SValueContainer>
           <SSeparator orientation={isDesktop ? "vertical" : "horizontal"} />
-          <SValueContainer sx={{ width: ["100%", 150] }}>
-            <Text color="basic500" fs={14} lh={16} fw={400}>
-              {t("farms.positions.labels.currentValue")}
-            </Text>
+          <SValueContainer sx={{ width: ["100%", 250] }}>
+            <div sx={{ flex: "row", gap: 6, align: "center" }}>
+              <Text color="basic500" fs={14} lh={16} fw={400}>
+                {t("farms.positions.labels.currentValue")}
+              </Text>
+              <LrnaPositionTooltip
+                assetId={position.data?.assetId}
+                tokenPosition={position.data?.value}
+                lrnaPosition={position.data?.lrna}
+              />
+            </div>
+
             {position.data && (
               <div>
                 <WalletAssetsHydraPositionsData

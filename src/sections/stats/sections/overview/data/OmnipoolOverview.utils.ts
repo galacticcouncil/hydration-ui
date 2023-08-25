@@ -11,7 +11,8 @@ import BN from "bignumber.js"
 import { useMemo } from "react"
 import { HYDRA_TREASURE_ACCOUNT, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
-import { BN_0, BN_10, BN_NAN, STABLECOIN_ID } from "utils/constants"
+import { BN_0, BN_10, BN_NAN, BN_QUINTILL } from "utils/constants"
+import { useDisplayAssetStore } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 
 const withoutRefresh = true
@@ -19,6 +20,7 @@ const withoutRefresh = true
 export const useOmnipoolOverviewData = () => {
   const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
   const apiIds = useApiIds()
+  const displayAsset = useDisplayAssetStore()
 
   const omnipoolAssetsIds = omnipoolAssets.data?.map((a) => a.id) ?? []
 
@@ -29,7 +31,10 @@ export const useOmnipoolOverviewData = () => {
     undefined,
     withoutRefresh,
   )
-  const metas = useAssetMetaList([STABLECOIN_ID, ...omnipoolAssetsIds])
+  const metas = useAssetMetaList([
+    displayAsset.stableCoinId,
+    ...omnipoolAssetsIds,
+  ])
 
   // get all NFTs on HYDRA_TREASURE_ACCOUNT to calculate POL
   const uniques = useUniques(
@@ -52,7 +57,7 @@ export const useOmnipoolOverviewData = () => {
 
   const spotPrices = useSpotPrices(
     omnipoolAssetsIds,
-    STABLECOIN_ID,
+    displayAsset.stableCoinId,
     withoutRefresh,
   )
 
@@ -67,7 +72,7 @@ export const useOmnipoolOverviewData = () => {
     ...positions,
     ...omnipoolAssetBalances,
   ]
-  const isInitialLoading = queries.some((q) => q.isInitialLoading)
+  const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
     if (
@@ -134,6 +139,9 @@ export const useOmnipoolOverviewData = () => {
       const omnipoolAssetId = omnipoolAsset.id.toString()
       const shares = omnipoolAsset.data.shares.toBigNumber()
       const protocolShares = omnipoolAsset.data.protocolShares.toBigNumber()
+      const omnipoolAssetCap = omnipoolAsset.data.cap
+        .toBigNumber()
+        .div(BN_QUINTILL)
 
       const details = assetDetails.data.find(
         (d) => d.id.toString() === omnipoolAssetId,
@@ -185,6 +193,7 @@ export const useOmnipoolOverviewData = () => {
         volume,
         fee: BN(0),
         pol,
+        cap: omnipoolAssetCap,
       }
     })
     return rows
@@ -199,7 +208,7 @@ export const useOmnipoolOverviewData = () => {
     volumes,
   ]).filter(isNotNil)
 
-  return { data, isLoading: isInitialLoading }
+  return { data, isLoading }
 }
 
 export type TOmnipoolOverview = typeof useOmnipoolOverviewData

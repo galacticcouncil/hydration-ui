@@ -1,28 +1,76 @@
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Controller, useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { useAccountStore } from "state/store"
-import { FormValues } from "utils/helpers"
+import { Trans, useTranslation } from "react-i18next"
+import { ToastMessage, useAccountStore, useStore } from "state/store"
 import BigNumber from "bignumber.js"
-import { SummaryRow } from "components/Summary/SummaryRow"
 import { Button } from "components/Button/Button"
-import { Separator } from "components/Separator/Separator"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { Text } from "components/Typography/Text/Text"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
-import Skeleton from "react-loading-skeleton"
 import { UnstakeAssetSelect } from "./UnstakeAssetSelect"
+import { Spacer } from "components/Spacer/Spacer"
+import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
+import { useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { TOAST_MESSAGES } from "state/toasts"
 
-const stakeTokenId = "0"
-
-export const Unstake = ({ loading }: { loading: boolean }) => {
+export const Unstake = ({
+  loading,
+  staked,
+  positionId,
+}: {
+  loading: boolean
+  positionId?: number
+  staked: BigNumber
+}) => {
   const { t } = useTranslation()
 
-  const { account } = useAccountStore()
-  const form = useForm<{ amount: string }>()
+  const queryClient = useQueryClient()
 
-  const onSubmit = async (values: FormValues<typeof form>) => {
-    console.log("TODO: submitted", values)
+  const api = useApiPromise()
+  const { createTransaction } = useStore()
+
+  const { account } = useAccountStore()
+  const form = useForm<{ amount: string }>({
+    values: {
+      amount: staked.toString(),
+    },
+  })
+
+  const onSubmit = async () => {
+    const toast = TOAST_MESSAGES.reduce((memo, type) => {
+      const msType = type === "onError" ? "onLoading" : type
+      memo[type] = (
+        <Trans
+          t={t}
+          i18nKey={`staking.toasts.unstake.${msType}`}
+          tOptions={{
+            value: staked,
+          }}
+        >
+          <span />
+          <span className="highlight" />
+        </Trans>
+      )
+      return memo
+    }, {} as ToastMessage)
+
+    const transaction = await createTransaction(
+      {
+        tx: api.tx.staking.unstake(positionId),
+      },
+      { toast },
+    )
+
+    await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
+    await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)
+    await queryClient.invalidateQueries(
+      QUERY_KEYS.tokenBalance(NATIVE_ASSET_ID, account?.address),
+    )
+
+    if (!transaction.isError) {
+      form.reset({ amount: "0" })
+    }
   }
 
   return (
@@ -57,12 +105,6 @@ export const Unstake = ({ loading }: { loading: boolean }) => {
               },
               positive: (value) =>
                 new BigNumber(value).gt(0) || t("error.positive"),
-              maxBalance: (value) => {
-                try {
-                  if (false) return true
-                } catch {}
-                return t("liquidity.add.modal.validation.notEnoughBalance")
-              },
             },
           }}
           render={({
@@ -81,31 +123,32 @@ export const Unstake = ({ loading }: { loading: boolean }) => {
                 name={name}
                 value={value}
                 onChange={onChange}
-                assetId={stakeTokenId}
+                assetId={NATIVE_ASSET_ID}
                 error={error?.message}
               />
             )
           }
         />
-        <SummaryRow
-          label={t("staking.dashboard.form.stake.transactionCost")}
-          content={
-            loading ? <Skeleton height={12} width={30} /> : <Text>TODO</Text>
-          }
-          /*content={t("value.percentage", {
-            value: 0,
-          })}*/
-        />
 
-        <Separator sx={{ mb: 12 }} />
+        <Spacer size={20} />
 
         {account ? (
-          <Button variant="blue" type="submit" disabled={loading}>
+          <Button
+            variant="blue"
+            type="submit"
+            disabled={
+              loading || staked.isZero() || account?.isExternalWalletConnected
+            }
+          >
             {t("staking.dashboard.form.unstake.button")}
           </Button>
         ) : (
           <WalletConnectButton />
         )}
+
+        <Text color="brightBlue200Alpha" fs={14} sx={{ p: 10 }}>
+          {t("staking.dashboard.form.unstake.msg")}
+        </Text>
       </form>
     </div>
   )

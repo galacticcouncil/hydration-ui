@@ -90,7 +90,7 @@ function ProviderStatusSuccess() {
 
 export function ProviderStatus(props: {
   timestamp: Maybe<u64>
-  relaychainBlockNumber: Maybe<u32>
+  parachainBlockNumber: Maybe<u32>
   className?: string
   side?: "left" | "top" | "bottom" | "right"
 }) {
@@ -118,7 +118,7 @@ export function ProviderStatus(props: {
         css={{ letterSpacing: "1px", color }}
         className={props.className}
       >
-        <span>{t("value", { value: props.relaychainBlockNumber })}</span>
+        <span>{t("value", { value: props.parachainBlockNumber })}</span>
 
         {status === "online" && (
           <ProviderStatusSuccess key={props.timestamp?.toNumber() ?? 0} />

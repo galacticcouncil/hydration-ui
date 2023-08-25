@@ -3,11 +3,14 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { u32, u8 } from "@polkadot/types"
-import { Maybe } from "utils/helpers"
+import { isApiLoaded, Maybe } from "utils/helpers"
+import { getApiIds } from "./consts"
 
 export const useAssetMeta = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
+
   return useQuery(QUERY_KEYS.assetsMeta, getAllAssetMeta(api), {
+    enabled: !!id,
     select: (data) => data.find((i) => i.id === id?.toString()),
   })
 }
@@ -20,6 +23,7 @@ export const useAssetMetaList = (ids: Array<Maybe<u32 | string>>) => {
     .map((i) => i?.toString())
 
   return useQuery(QUERY_KEYS.assetsMeta, getAllAssetMeta(api), {
+    enabled: !!isApiLoaded(api),
     select: (data) => data.filter((i) => normalizedIds.includes(i.id)),
   })
 }
@@ -68,5 +72,26 @@ export const getAssetMeta = (api: ApiPromise, id: u32 | string) => async () => {
   }
 
   const res = await api.query.assetRegistry.assetMetadataMap(id)
-  return { id, data: res.unwrapOr(null) }
+  return {
+    id,
+    data: {
+      symbol: res.unwrap().symbol.toUtf8(),
+      decimals: res.unwrap().decimals,
+    },
+  }
+}
+
+export const getLRNAMeta = async (api: ApiPromise) => {
+  const apiIds = await getApiIds(api)()
+  const hubId = apiIds?.hubId
+
+  return getAssetMeta(api, hubId)()
+}
+
+export const useLRNAMeta = () => {
+  const api = useApiPromise()
+
+  return useQuery(QUERY_KEYS.LRNAMeta(), () => getLRNAMeta(api), {
+    enabled: !!isApiLoaded(api),
+  })
 }

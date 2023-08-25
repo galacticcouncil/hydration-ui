@@ -4,7 +4,7 @@ import type { Notification } from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
 import { useToast } from "state/toasts"
 import type { TemplateResult } from "lit-html"
-import { useTransactionLink } from "../../api/transaction"
+import { useTransactionLink } from "api/transaction"
 
 const TransactionCenter = createComponent({
   tagName: "gc-transaction-center",

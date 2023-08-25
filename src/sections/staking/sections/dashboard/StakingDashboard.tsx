@@ -5,8 +5,8 @@ import { AvailableRewards } from "./components/AvailableRewards/AvailableRewards
 import { StakingInputSection } from "./components/StakingInputSection/StakingInputSection"
 import { useAccountStore } from "state/store"
 import { Stats } from "./components/Stats/Stats"
-import { OmnipoolAssetsTableWrapperData } from "./components/StakingAccountsTable/StakingAcoountsTableWrapper"
-import { StakingAccountSkeleton } from "./components/StakingAccountsTable/skeleton/StakingAccountSkeleton"
+import { Referenda, ReferendaWrapper } from "./components/Referenda/Referenda"
+import { useStakeData } from "sections/staking/StakingPage.utils"
 
 export const StakingDashboard = () => {
   const api = useApiPromise()
@@ -16,35 +16,12 @@ export const StakingDashboard = () => {
   return <StakingData />
 }
 
-export const StakingData = () => {
-  const { account } = useAccountStore()
-
-  return (
-    <div sx={{ flex: ["column-reverse", "row"], gap: 30 }}>
-      <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
-        <StakingGuide />
-        <Stats isConnected={!!account} />
-        <OmnipoolAssetsTableWrapperData />
-      </div>
-
-      <div
-        sx={{ flex: ["column-reverse", "column"], gap: 28 }}
-        css={{ flex: 2 }}
-      >
-        <StakingInputSection />
-        {account && <AvailableRewards />}
-      </div>
-    </div>
-  )
-}
-
 export const StakingSkeleton = () => {
   return (
     <div sx={{ flex: ["column-reverse", "row"], gap: 30, flexWrap: "wrap" }}>
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
-        <StakingGuide />
-        <Stats isConnected={false} loading />
-        <StakingAccountSkeleton />
+        <Stats loading />
+        <Referenda loading />
       </div>
 
       <div
@@ -52,6 +29,31 @@ export const StakingSkeleton = () => {
         css={{ flex: 2 }}
       >
         <StakingInputSection loading />
+      </div>
+    </div>
+  )
+}
+
+export const StakingData = () => {
+  const { account } = useAccountStore()
+  const staking = useStakeData()
+
+  const showGuide = staking.data && !staking.data.stakePosition
+
+  return (
+    <div sx={{ flex: ["column-reverse", "row"], gap: 30 }}>
+      <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
+        {showGuide && <StakingGuide />}
+        <Stats data={staking.data} loading={staking.isLoading} />
+        <ReferendaWrapper />
+      </div>
+
+      <div
+        sx={{ flex: ["column-reverse", "column"], gap: 28 }}
+        css={{ flex: 2 }}
+      >
+        <StakingInputSection data={staking.data} loading={staking.isLoading} />
+        {account && staking.data?.positionId && <AvailableRewards />}
       </div>
     </div>
   )

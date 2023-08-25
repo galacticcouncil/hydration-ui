@@ -39,7 +39,7 @@ export const ProviderSelectButton = () => {
           <Separator orientation="vertical" sx={{ height: 14, mr: 10 }} />
         </SName>
         <ProviderStatus
-          relaychainBlockNumber={number.data?.relaychainBlockNumber}
+          parachainBlockNumber={number.data?.parachainBlockNumber}
           timestamp={number.data?.timestamp}
         />
       </SButton>

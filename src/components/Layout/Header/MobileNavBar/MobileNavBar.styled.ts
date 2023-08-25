@@ -26,6 +26,10 @@ export const SMobileNavBar = styled.div`
   backdrop-filter: blur(12px);
 
   @media ${theme.viewport.gte.sm} {
+    display: flex;
+  }
+
+  @media ${theme.viewport.gte.md} {
     display: none;
   }
 `
@@ -42,9 +46,11 @@ export const SNavBarItem = styled.span<{ active?: boolean }>`
   font-size: 12px;
 
   height: 100%;
+  width: 60px;
+  margin: 0 17px;
 
   color: ${({ active }) =>
-    active ? theme.colors.brightBlue300 : theme.colors.basic400};
+    active ? theme.colors.brightBlue300 : theme.colors.white};
 
   ${({ active }) =>
     active &&

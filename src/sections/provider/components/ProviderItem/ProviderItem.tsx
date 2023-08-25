@@ -1,5 +1,5 @@
 import { useProviderRpcUrlStore } from "api/provider"
-import { SCircle, SItem } from "./ProviderItem.styled"
+import { SCircle, SCircleThumb, SItem } from "./ProviderItem.styled"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
@@ -12,7 +12,7 @@ import { useEffect, useState } from "react"
 import { WsProvider } from "@polkadot/rpc-provider"
 import { ApiPromise } from "@polkadot/api"
 import { u32, u64 } from "@polkadot/types"
-import { ProviderItemEdit } from "../ProviderItemEdit/ProviderItemEdit"
+import { ProviderItemEdit } from "sections/provider/components/ProviderItemEdit/ProviderItemEdit"
 
 type ProviderItemProps = {
   name: string
@@ -47,7 +47,7 @@ export const ProviderItem = ({
     )
 
   return (
-    <SItem isActive={isActive} onClick={onClick}>
+    <SItem onClick={onClick}>
       <div>
         <Text
           color={isActive ? "pink600" : "white"}
@@ -85,7 +85,7 @@ export const ProviderItem = ({
           {new URL(url).hostname}
         </Text>
 
-        <SCircle />
+        <SCircle>{isActive && <SCircleThumb />}</SCircle>
         {custom && (
           <div sx={{ flex: "row", align: "center", gap: 12, ml: 8 }}>
             <InfoTooltip text="Remove" type="black">
@@ -123,10 +123,10 @@ const ProviderSelectItemLive = ({ className }: { className?: string }) => {
 
   return (
     <>
-      {number.data?.relaychainBlockNumber != null ? (
+      {number.data?.parachainBlockNumber != null ? (
         <ProviderStatus
           timestamp={number.data.timestamp}
-          relaychainBlockNumber={number.data?.relaychainBlockNumber}
+          parachainBlockNumber={number.data?.parachainBlockNumber}
           className={className}
           side="left"
         />
@@ -145,7 +145,7 @@ const ProviderSelectItemExternal = ({
   className?: string
 }) => {
   const [bestNumberState, setBestNumberState] = useState<
-    { relaychainBlockNumber: u32; timestamp: u64 } | undefined
+    { parachainBlockNumber: u32; timestamp: u64 } | undefined
   >(undefined)
 
   useEffect(() => {
@@ -158,13 +158,13 @@ const ProviderSelectItemExternal = ({
       const api = await ApiPromise.create({ provider })
 
       async function onNewBlock() {
-        const [relay, timestamp] = await Promise.all([
-          api.query.parachainSystem.validationData(),
+        const [parachain, timestamp] = await Promise.all([
+          api.derive.chain.bestNumber(),
           api.query.timestamp.now(),
         ])
 
         setBestNumberState({
-          relaychainBlockNumber: relay.unwrap().relayParentNumber,
+          parachainBlockNumber: parachain,
           timestamp: timestamp,
         })
       }
@@ -188,7 +188,7 @@ const ProviderSelectItemExternal = ({
       {bestNumberState != null ? (
         <ProviderStatus
           timestamp={bestNumberState.timestamp}
-          relaychainBlockNumber={bestNumberState.relaychainBlockNumber}
+          parachainBlockNumber={bestNumberState.parachainBlockNumber}
           className={className}
           side="left"
         />

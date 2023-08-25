@@ -1,15 +1,15 @@
 import { PieChart } from "sections/stats/components/PieChart/PieChart"
-import { PieTotalValue } from "../PieTotalValue/PieTotalValue"
+import { PieTotalValue } from "sections/stats/sections/overview/components/PieTotalValue/PieTotalValue"
 import { PieSkeleton } from "sections/stats/components/PieChart/components/Skeleton/Skeleton"
 import { ChartSwitchMobile } from "sections/stats/components/ChartSwitchMobile/ChartSwitchMobile"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useMemo, useState } from "react"
-import { SContainerVertical } from "../../StatsOverview.styled"
-import { TOmnipoolOverviewData } from "../../data/OmnipoolOverview.utils"
+import { SContainerVertical } from "sections/stats/sections/overview/StatsOverview.styled"
+import { TOmnipoolOverviewData } from "sections/stats/sections/overview/data/OmnipoolOverview.utils"
 import { BN_0 } from "utils/constants"
-import { ChartWrapper } from "../ChartWrapper/ChartWrapper"
 import { useTranslation } from "react-i18next"
+import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 
 type PieWrapperProps = {
   data: TOmnipoolOverviewData
@@ -67,23 +67,26 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
   )
 
   return (
-    <SContainerVertical sx={{ width: ["100%", "fit-content"], p: [20, 40] }}>
+    <SContainerVertical
+      sx={{
+        width: ["100%", "fit-content"],
+        height: [500, "100%"],
+        p: [20, 40],
+      }}
+    >
       {!isDesktop && (
         <ChartSwitchMobile onClick={setActiveSection} active={activeSection} />
       )}
 
       {activeSection === "overview" ? (
-        !isLoading ? (
-          <>
-            <PieChart data={data} />
-            {pieChartValues}
-          </>
-        ) : (
-          <>
+        <>
+          {!isLoading ? (
+            <PieChart data={data} property="tvl" />
+          ) : (
             <PieSkeleton />
-            {pieChartValues}
-          </>
-        )
+          )}
+          {pieChartValues}
+        </>
       ) : (
         <ChartWrapper />
       )}
