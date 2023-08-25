@@ -1,27 +1,40 @@
 import { WalletPage } from "./sections/wallet/WalletPage"
-
 import { Navigate } from "@tanstack/react-location"
-import { TradePage } from "sections/trade/TradePage"
 import { XcmPage } from "sections/xcm/XcmPage"
-
-import { OtcPageWrapper } from "sections/otc/OtcPageWrappet"
 import { PoolsPage } from "sections/pools/PoolsPage"
 import { StatsPage } from "sections/stats/StatsPage"
-import { DcaPage } from "sections/dca/DcaPage"
 import { StakingPage } from "./sections/staking/StakingPage"
+import { TradePage } from "sections/trade/TradePage"
 
 export const routes = [
   {
     path: "/",
-    element: <Navigate to="/trade" />,
+    element: <Navigate to="/trade/swap" />,
   },
   {
     path: "trade",
-    element: <TradePage />,
-  },
-  {
-    path: "dca",
-    element: <DcaPage />,
+    children: [
+      {
+        path: "/",
+        element: <Navigate to="swap" />,
+      },
+      {
+        path: "swap",
+        element: <TradePage />,
+      },
+      {
+        path: "otc",
+        element: <TradePage />,
+      },
+      {
+        path: "dca",
+        element: <TradePage />,
+      },
+      {
+        path: "bonds",
+        element: <TradePage />,
+      },
+    ],
   },
   {
     path: "wallet",
@@ -47,10 +60,6 @@ export const routes = [
   {
     path: "cross-chain",
     element: <XcmPage />,
-  },
-  {
-    path: "otc",
-    element: <OtcPageWrapper />,
   },
   {
     path: "stats",

@@ -1,123 +1,26 @@
 import { Page } from "components/Layout/Page/Page"
-import { SContainer } from "./TradePage.styled"
+import { LINKS } from "utils/navigation"
+import { SwapPage } from "./sections/swap/SwapPage"
+import { useMatchRoute } from "@tanstack/react-location"
+import { BondsPageWrapper } from "./sections/bonds/BondsPageWrapper"
+import { OtcPageWrapper } from "./sections/otc/OtcPageWrappet"
+import { DcaApp } from "./sections/dca/DcaPage"
+import { SubNavigation } from "./SubNavigation"
 
-import type { TxInfo } from "@galacticcouncil/apps"
-
-import * as React from "react"
-import * as Apps from "@galacticcouncil/apps"
-import { createComponent, EventName } from "@lit-labs/react"
-import { useAccountStore, useStore } from "state/store"
-import { z } from "zod"
-import { MakeGenerics, useSearch } from "@tanstack/react-location"
-import { useProviderRpcUrlStore } from "api/provider"
-import { useApiPromise } from "utils/api"
-import { PoolType } from "@galacticcouncil/sdk"
-
-export const TradeApp = createComponent({
-  tagName: "gc-trade-app",
-  elementClass: Apps.TradeApp,
-  react: React,
-  events: {
-    onTxNew: "gc:tx:new" as EventName<CustomEvent<TxInfo>>,
-    onDcaSchedule: "gc:tx:scheduleDca" as EventName<CustomEvent<TxInfo>>,
-    onDcaTerminate: "gc:tx:terminateDca" as EventName<CustomEvent<TxInfo>>,
-  },
-})
-
-const TradeAppSearch = z.object({
-  assetIn: z
-    .number()
-    .transform((value) => String(value))
-    .optional(),
-  assetOut: z
-    .number()
-    .transform((value) => String(value))
-    .optional(),
-})
-
-type SearchGenerics = MakeGenerics<{
-  Search: z.infer<typeof TradeAppSearch>
-}>
-
-const isTwapEnabled = import.meta.env.VITE_FF_TWAP_ENABLED === "true"
-const indexerUrl = import.meta.env.VITE_INDEXER_URL
-const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
-const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
-const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
-
-export function TradePage() {
-  const api = useApiPromise()
-  const { account } = useAccountStore()
-  const { createTransaction } = useStore()
-
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-
-  const rawSearch = useSearch<SearchGenerics>()
-  const search = TradeAppSearch.safeParse(rawSearch)
-
-  const handleSubmit = async (e: CustomEvent<TxInfo>) => {
-    const { transaction, notification } = e.detail
-    await createTransaction(
-      {
-        tx: api.tx(transaction.hex),
-      },
-      {
-        onSuccess: () => {},
-        onSubmitted: () => {},
-        toast: {
-          onLoading: (
-            <span
-              dangerouslySetInnerHTML={{
-                __html: notification.processing.rawHtml,
-              }}
-            />
-          ),
-          onSuccess: (
-            <span
-              dangerouslySetInnerHTML={{
-                __html: notification.success.rawHtml,
-              }}
-            />
-          ),
-          onError: (
-            <span
-              dangerouslySetInnerHTML={{
-                __html: notification.failure.rawHtml,
-              }}
-            />
-          ),
-        },
-      },
-    )
-  }
-
+export const TradePage = () => {
+  const matchRoute = useMatchRoute()
   return (
-    <Page>
-      <SContainer>
-        <TradeApp
-          ref={(r) => {
-            if (r) {
-              r.setAttribute("chart", "")
-              isTwapEnabled && r.setAttribute("twap", "")
-            }
-          }}
-          assetIn={search.success ? search.data.assetIn : undefined}
-          assetOut={search.success ? search.data.assetOut : undefined}
-          apiAddress={rpcUrl}
-          pools={PoolType.Omni}
-          stableCoinAssetId={stableCoinAssetId}
-          accountName={account?.name}
-          accountProvider={account?.provider}
-          accountAddress={account?.address}
-          indexerUrl={indexerUrl}
-          grafanaUrl={grafanaUrl}
-          grafanaDsn={grafanaDsn}
-          onTxNew={(e) => handleSubmit(e)}
-          onDcaSchedule={(e) => handleSubmit(e)}
-          onDcaTerminate={(e) => handleSubmit(e)}
-        />
-      </SContainer>
+    <Page
+      subHeader={<SubNavigation />}
+      subHeaderStyle={{
+        background: "rgba(9, 9, 9, 0.09)",
+        borderTop: "1px solid rgba(114, 131, 165, 0.6)",
+      }}
+    >
+      {matchRoute({ to: LINKS.swap }) && <SwapPage />}
+      {matchRoute({ to: LINKS.bonds }) && <BondsPageWrapper />}
+      {matchRoute({ to: LINKS.otc }) && <OtcPageWrapper />}
+      {matchRoute({ to: LINKS.dca }) && <DcaApp />}
     </Page>
   )
 }

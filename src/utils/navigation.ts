@@ -2,23 +2,21 @@ import { ReactComponent as PoolsAndFarmsIcon } from "assets/icons/PoolsAndFarms.
 import { ReactComponent as TradeIcon } from "assets/icons/Trade.svg"
 import { ReactComponent as TransferIcon } from "assets/icons/TransferTabIcon.svg"
 import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
-import { ReactComponent as IconDCA } from "assets/icons/navigation/IconDCA.svg"
-import { ReactComponent as IconOTC } from "assets/icons/navigation/IconOTC.svg"
-import { ReactComponent as IconSwap } from "assets/icons/navigation/IconSwap.svg"
 import { ReactComponent as StatsIcon } from "assets/icons/ChartIcon.svg"
 import { ReactComponent as StakingIcon } from "assets/icons/StakingIcon.svg"
 
 export const LINKS = {
   home: "/",
   liquidity: "/liquidity",
-  trade: "/trade",
+  swap: "/trade/swap",
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
   walletVesting: "/wallet/vesting",
   cross_chain: "/cross-chain",
-  otc: "/otc",
-  dca: "/dca",
+  otc: "/trade/otc",
+  dca: "/trade/dca",
+  bonds: "/trade/bonds",
   stats: "/stats",
   statsOverview: "/stats/overview",
   statsPOL: "/stats/POL",
@@ -39,13 +37,8 @@ const isStakingEnabled = import.meta.env.VITE_FF_STAKING_ENABLED === "true"
 export const MENU_ITEMS = [
   {
     key: "trade",
-    href: undefined,
+    href: LINKS.swap,
     Icon: TradeIcon,
-    subItems: [
-      { key: "swap", href: LINKS.trade, Icon: IconSwap, enabled: true },
-      { key: "dca", href: LINKS.dca, Icon: IconDCA, enabled: isDcaPageEnabled },
-      { key: "otc", href: LINKS.otc, Icon: IconOTC, enabled: isOtcPageEnabled },
-    ],
     enabled: true,
     external: false,
     mobVisible: true,
