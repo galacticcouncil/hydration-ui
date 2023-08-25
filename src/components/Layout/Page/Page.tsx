@@ -29,7 +29,7 @@ export const Page = ({ variant = "default", className, children }: Props) => {
   }, [location.pathname])
 
   return (
-    <SPage variant={variant} ref={ref}>
+    <SPage ref={ref}>
       <div>
         {variant === "stats" && <SPageGrid />}
         <Header />

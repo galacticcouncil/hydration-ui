@@ -107,7 +107,7 @@ export const SPageInner = styled.div`
 export const SPageGrid = styled.div`
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
 
   opacity: 0.06;
   pointer-events: none;
