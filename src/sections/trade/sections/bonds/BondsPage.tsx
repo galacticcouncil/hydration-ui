@@ -67,21 +67,20 @@ export const BondsPage = () => {
             description="As your bonds reach maturity date, you can redeem them for underlying asset 1:1."
           />
         </div>
-        <div>
-          <Text
-            color="brightBlue300"
-            fs={12}
-            css={{
-              borderBottom: `1px solid ${theme.colors.brightBlue300}`,
-              display: "inline-block",
-            }}
-          >
-            <a href="https://hydradx.io" target="_blank" rel="noreferrer">
-              Want to learn more? Check Documentation
-              <LinkIcon height={10} sx={{ ml: 6 }} />
-            </a>
-          </Text>
-        </div>
+        <Text
+          color="brightBlue300"
+          fs={12}
+          sx={{ mt: 30 }}
+          css={{
+            borderBottom: `1px solid ${theme.colors.brightBlue300}`,
+            display: "inline-block",
+          }}
+        >
+          <a href="https://hydradx.io" target="_blank" rel="noreferrer">
+            Want to learn more? Check Documentation
+            <LinkIcon height={10} sx={{ ml: 6 }} />
+          </a>
+        </Text>
       </div>
     </>
   )
