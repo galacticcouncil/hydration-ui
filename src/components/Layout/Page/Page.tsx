@@ -1,7 +1,13 @@
 import { Header } from "components/Layout/Header/Header"
 import { ReactNode, useEffect, useRef } from "react"
 import { MobileNavBar } from "components/Layout/Header/MobileNavBar/MobileNavBar"
-import { SPage, SPageContent, SPageGrid, SPageInner } from "./Page.styled"
+import {
+  SGradientBg,
+  SPage,
+  SPageContent,
+  SPageGrid,
+  SPageInner,
+} from "./Page.styled"
 import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
 import { useLocation } from "react-use"
 
@@ -23,11 +29,12 @@ export const Page = ({ variant = "default", className, children }: Props) => {
   }, [location.pathname])
 
   return (
-    <SPage variant={variant} ref={ref}>
+    <SPage ref={ref}>
       <div>
         {variant === "stats" && <SPageGrid />}
         <Header />
         <SPageContent>
+          <SGradientBg variant={variant} />
           <SPageInner className={className}>{children}</SPageInner>
           <ProviderSelectButton />
         </SPageContent>
