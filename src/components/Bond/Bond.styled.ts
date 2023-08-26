@@ -13,22 +13,10 @@ export const SBond = styled.div<{ view: BondView }>`
   width: 100%;
   padding: 30px 20px;
   border-radius: 8px;
-
-  border: 1px solid;
-  border-image-source: linear-gradient(
-    180deg,
-    rgba(152, 176, 214, 0.27) 0%,
-    rgba(163, 177, 199, 0.15) 66.67%,
-    rgba(158, 167, 180, 0.2) 100%
-  );
-
-  background: linear-gradient(
-      180deg,
-      rgba(152, 176, 214, 0.27) 0%,
-      rgba(163, 177, 199, 0.15) 66.67%,
-      rgba(158, 167, 180, 0.2) 100%
-    ),
-    linear-gradient(0deg, #111320, #111320);
+  background-clip: padding-box !important;
+  border: 1px solid rgba(152, 176, 214, 0.1);
+  background: rgba(17, 19, 32, 1);
+  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
 
   display: grid;
   grid-template-columns: 1fr;
