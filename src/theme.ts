@@ -1,4 +1,5 @@
 import { keys } from "utils/helpers"
+import { css } from "@emotion/react"
 
 const colors = {
   white: "#ffffff",
@@ -187,6 +188,33 @@ const borderRadius = {
   default: 4,
 } as const
 
+export const gradientBorder = css`
+  position: relative;
+  border-radius: ${borderRadius.default}px;
+
+  :before {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    border-radius: ${borderRadius.default}px;
+    padding: 1px;
+
+    background: linear-gradient(
+      180deg,
+      rgba(152, 176, 214, 0.27) 0%,
+      rgba(163, 177, 199, 0.15) 66.67%,
+      rgba(158, 167, 180, 0.2) 100%
+    );
+
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+`
+
 export const theme = {
   colors,
   gradients,
@@ -196,4 +224,5 @@ export const theme = {
   viewport,
   shadows,
   borderRadius,
+  gradientBorder,
 }

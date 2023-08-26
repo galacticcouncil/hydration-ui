@@ -10,11 +10,12 @@ export const SItem = styled.div`
 `
 
 export const SBond = styled.div<{ view: BondView }>`
+  ${theme.gradientBorder};
+
   width: 100%;
   padding: 30px 20px;
   border-radius: 8px;
-  background-clip: padding-box !important;
-  border: 1px solid rgba(152, 176, 214, 0.1);
+
   background: rgba(17, 19, 32, 1);
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
 
