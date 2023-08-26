@@ -8,15 +8,19 @@ import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
 import { useApiPromise } from "utils/api"
 import { PoolSkeleton } from "./skeleton/PoolSkeleton"
-import { StablePool } from "./stablepool/StablePool"
+import { Stablepools } from "./stablepool/Stablepools"
+
+const isStablepoolsEnabled =
+  import.meta.env.VITE_FF_STABLEPOOLS_ENABLED === "true"
 
 const PoolPageContent = () => {
   const [filter, setFilter] = useState({ showMyPositions: false })
-  const stablePools = useStablePools()
 
   const { data, hasPositionsOrDeposits, isLoading } = useOmnipoolPools(
     filter.showMyPositions,
   )
+
+  console.log(isStablepoolsEnabled)
 
   return (
     <Page>
@@ -32,9 +36,7 @@ const PoolPageContent = () => {
       />
 
       <div sx={{ flex: "column", gap: 20 }}>
-        {stablePools.data?.map((stablePool) => (
-          <StablePool key={stablePool.id.toString()} {...stablePool} />
-        ))}
+        {isStablepoolsEnabled && <Stablepools />}
         {!isLoading && data
           ? data.map((pool) => <Pool key={pool.id.toString()} pool={pool} />)
           : [...Array(3)].map((_, index) => (
