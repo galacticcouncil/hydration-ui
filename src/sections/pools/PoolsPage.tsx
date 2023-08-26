@@ -1,9 +1,6 @@
 import { Page } from "components/Layout/Page/Page"
 import { useState } from "react"
-import {
-  useOmnipoolPools,
-  useStablePools,
-} from "sections/pools/PoolsPage.utils"
+import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
 import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
 import { useApiPromise } from "utils/api"
@@ -19,8 +16,6 @@ const PoolPageContent = () => {
   const { data, hasPositionsOrDeposits, isLoading } = useOmnipoolPools(
     filter.showMyPositions,
   )
-
-  console.log(isStablepoolsEnabled)
 
   return (
     <Page>

@@ -1,6 +1,5 @@
 import { Text } from "components/Typography/Text/Text"
 import { ReactNode } from "react"
-import { useTranslation } from "react-i18next"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 
 import { SContainer } from "./WalletTransferCrosschainListItem.styled"
@@ -20,7 +19,6 @@ export function WalletTransferCrosschainListItem({
   name,
   description,
 }: Props) {
-  const { t } = useTranslation()
   return (
     <SContainer onClick={onClick}>
       <WalletTransferCrosschainLogo icon={icon} />
