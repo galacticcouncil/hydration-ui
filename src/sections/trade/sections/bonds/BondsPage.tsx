@@ -1,6 +1,8 @@
 import { Heading } from "components/Typography/Heading/Heading"
 import { Bond } from "components/Bond/Bond"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { gradientBorder } from "theme"
+import { Text } from "components/Typography/Text/Text"
 
 export const BondsPage = () => {
   return (
@@ -32,8 +34,10 @@ export const BondsPage = () => {
           onDetailClick={console.log}
         />
       </div>
-      <div>
-
+      <div css={gradientBorder} sx={{ mt: 40, p: 30 }}>
+        <Text color="white" fs={20} fw={600}>
+          Why use Bonds?
+        </Text>
       </div>
     </>
   )
