@@ -1,6 +1,5 @@
 import { useAssetMeta } from "./assetMeta"
 import { useAssetDetails } from "./assetDetails"
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { u32 } from "@polkadot/types"
 import { Maybe, useQueryReduce } from "utils/helpers"
 import { useTradeRouter } from "utils/api"
@@ -20,7 +19,6 @@ export const useAsset = (id: Maybe<u32 | string>) => {
       ...detail,
       decimals: meta.decimals,
       symbol: meta.symbol,
-      icon: getAssetLogo(meta.symbol),
     }
   })
 }

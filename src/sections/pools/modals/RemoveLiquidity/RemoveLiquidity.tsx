@@ -21,7 +21,11 @@ import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useStore } from "state/store"
-import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
+import {
+  DEPOSIT_CLASS_ID,
+  OMNIPOOL_ACCOUNT_ADDRESS,
+  useApiPromise,
+} from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_10, BN_QUINTILL } from "utils/constants"
 import { FormValues } from "utils/helpers"
@@ -286,6 +290,7 @@ export const RemoveLiquidity = ({
                   </Text>
 
                   <RemoveLiquidityReward
+                    id={position.assetId}
                     name={position.name}
                     symbol={position.symbol}
                     amount={t("value", {
@@ -297,6 +302,7 @@ export const RemoveLiquidity = ({
                   {removeLiquidityValues &&
                     !BN(removeLiquidityValues.lrnaToGet).isZero() && (
                       <RemoveLiquidityReward
+                        id={DEPOSIT_CLASS_ID}
                         name="Lerna"
                         symbol="LRNA"
                         amount={t("value", {

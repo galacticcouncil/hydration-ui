@@ -5,6 +5,7 @@ import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
 import BN from "bignumber.js"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
 export const WalletTransferAssetSelect = (props: {
   name: string
@@ -36,6 +37,7 @@ export const WalletTransferAssetSelect = (props: {
       onChange={props.onChange}
       onBlur={props.onBlur}
       asset={props.asset}
+      assetIcon={<AssetLogo id={asset.data?.id} />}
       decimals={asset.data?.decimals?.toNumber()}
       balance={props.balance ?? balance.data?.balance}
       assetName={asset.data?.name?.toString()}

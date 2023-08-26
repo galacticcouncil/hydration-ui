@@ -86,3 +86,21 @@ export const SBar = styled.div<{
           background: rgba(${theme.rgbColors.darkBlue300}, 0.5);
         `}
 `
+
+export const SVotedBage = styled.div`
+  display: flex;
+  gap: 4px;
+  align-items: center;
+
+  color: ${theme.colors.basic900};
+  background: ${theme.colors.brightBlue600};
+
+  text-transform: uppercase;
+  font-size: 13px;
+  line-height: normal;
+  font-family: ChakraPetchSemiBold;
+
+  border-radius: 2px;
+
+  padding: 4px 8px;
+`

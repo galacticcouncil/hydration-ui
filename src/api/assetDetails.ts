@@ -5,7 +5,12 @@ import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
 import { useQuery } from "@tanstack/react-query"
 import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useAccountStore } from "state/store"
-import { NATIVE_ASSET_ID, useApiPromise, useTradeRouter } from "utils/api"
+import {
+  DEPOSIT_CLASS_ID,
+  NATIVE_ASSET_ID,
+  useApiPromise,
+  useTradeRouter,
+} from "utils/api"
 import { BN_0 } from "utils/constants"
 import { Maybe, isNotNil, normalizeId, isApiLoaded } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -14,6 +19,7 @@ import { getTokenLock } from "./balances"
 import { getApiIds } from "./consts"
 import { getHubAssetTradability, getOmnipoolAssets } from "./omnipool"
 import { getAcceptedCurrency, getAccountCurrency } from "./payments"
+import BN from "bignumber.js"
 
 export const useAssetDetails = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
@@ -21,6 +27,21 @@ export const useAssetDetails = (id: Maybe<u32 | string>) => {
     enabled: !!id && !!isApiLoaded(api),
     select: (data) => data.find((i) => i.id === id?.toString()),
   })
+}
+
+type TAssetsDetails = {
+  id: string
+  name: string
+  assetType: PalletAssetRegistryAssetType["type"]
+  symbol: string
+  decimals: u32 | u8 | undefined
+}
+
+type TAssetDetails = {
+  id: string
+  name: string
+  assetType: PalletAssetRegistryAssetType["type"]
+  existentialDeposit: BN
 }
 
 interface AssetDetailsListFilter {
@@ -126,14 +147,19 @@ const getAssetDetails = (api: ApiPromise) => async () => {
     api.query.assetRegistry.assets.entries(),
   ])
 
-  const assets = entries.map(([key, data]) => {
-    return {
-      id: key.args[0].toString(),
-      name: data.unwrap().name.toUtf8(),
-      assetType: data.unwrap().assetType.type,
-      existentialDeposit: data.unwrap().existentialDeposit.toBigNumber(),
+  const assets = entries.reduce<TAssetDetails[]>((acc, [key, dataRaw]) => {
+    const data = dataRaw.unwrap()
+
+    if (data.assetType.isToken) {
+      acc.push({
+        id: key.args[0].toString(),
+        name: data.name.toUtf8(),
+        assetType: data.assetType.type,
+        existentialDeposit: data.existentialDeposit.toBigNumber(),
+      })
     }
-  })
+    return acc
+  }, [])
 
   if (!assets.find((i) => i.id === NATIVE_ASSET_ID)) {
     assets.push({
@@ -177,20 +203,28 @@ export const getAssetsDetails = (api: ApiPromise) => async () => {
     })
   }
 
-  const assets = rawAssetsData.map(([key, data]) => {
-    const { symbol = "N/A", decimals } =
-      assetsMeta.find(
-        (assetMeta) => assetMeta.id.toString() === key.args[0].toString(),
-      ) || {}
+  const assets = rawAssetsData.reduce<TAssetsDetails[]>(
+    (acc, [key, dataRaw]) => {
+      const id = key.args[0].toString()
+      const data = dataRaw.unwrap()
 
-    return {
-      id: key.args[0].toString(),
-      name: data.unwrap().name.toUtf8() || getAssetName(symbol),
-      assetType: data.unwrap().assetType.type,
-      symbol,
-      decimals,
-    }
-  })
+      if (data.assetType.isToken) {
+        const { symbol = "N/A", decimals } =
+          assetsMeta.find((assetMeta) => assetMeta.id.toString() === id) || {}
+
+        acc.push({
+          id,
+          name: data.name.toUtf8() || getAssetName(symbol),
+          assetType: data.assetType.type,
+          symbol,
+          decimals,
+        })
+      }
+
+      return acc
+    },
+    [],
+  )
 
   if (!assets.find((i) => i.id === NATIVE_ASSET_ID)) {
     const { symbol = "N/A", decimals } =
@@ -227,4 +261,64 @@ export const useAssetList = () => {
       .filter(isNotNil)
       .sort((a, b) => a.symbol.localeCompare(b.symbol))
   })
+}
+
+export const useAssetsLocation = () => {
+  const api = useApiPromise()
+  return useQuery(QUERY_KEYS.assetsLocation, getAssetsLocation(api))
+}
+
+const getAssetsLocation = (api: ApiPromise) => async () => {
+  const [metas, locationsRaw] = await Promise.all([
+    api.query.assetRegistry.assetMetadataMap.entries(),
+    api.query.assetRegistry.assetLocations.entries(),
+  ])
+
+  const nativeToken = {
+    id: NATIVE_ASSET_ID,
+    parachainId: undefined,
+    symbol: "HDX",
+  }
+
+  const hubToken = {
+    id: DEPOSIT_CLASS_ID,
+    parachainId: undefined,
+    symbol: "LRNA",
+  }
+
+  const locations = locationsRaw.map(([key, raw]) => {
+    const id = key.args[0].toString()
+    const data = raw.unwrap()
+    const type = data.interior.type
+
+    const symbol = metas
+      .find(([key]) => key.args[0].toString() === id)?.[1]
+      .unwrap()
+      .symbol.toUtf8()
+
+    if (data.interior && type !== "Here") {
+      const xcm = data.interior[`as${type}`]
+
+      const parachainId = !Array.isArray(xcm)
+        ? xcm.asParachain.unwrap().toNumber()
+        : xcm
+            .find((el) => el.isParachain)
+            ?.asParachain.unwrap()
+            .toNumber()
+
+      return {
+        id,
+        parachainId,
+        symbol,
+      }
+    }
+
+    return {
+      id: key.args[0].toString(),
+      parachainId: undefined,
+      symbol,
+    }
+  })
+
+  return [nativeToken, hubToken, ...locations]
 }
