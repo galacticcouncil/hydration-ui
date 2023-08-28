@@ -1,6 +1,6 @@
 import { Heading } from "components/Typography/Heading/Heading"
 import { Icon } from "components/Icon/Icon"
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
 import BigNumber from "bignumber.js"
 import { BN_0, BN_100 } from "utils/constants"
@@ -30,7 +30,7 @@ export const CurrencyReserves = ({ assets }: Props) => {
       {assets.map(({ id, symbol, balance, value }) => (
         <SRow key={id}>
           <div sx={{ flex: "row", align: "center", gap: 8 }}>
-            <Icon size={24} icon={getAssetLogo(symbol)} />
+            <Icon size={24} icon={<AssetLogo id={id} />} />
             <Text color="white">{symbol}</Text>
           </div>
           <div sx={{ flex: "row", align: "center", gap: 8 }}>

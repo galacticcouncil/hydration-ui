@@ -1,4 +1,4 @@
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
@@ -43,7 +43,7 @@ export const PoolDetails = ({
           <div sx={{ flex: "column", gap: 5 }}>
             <MultipleIcons
               icons={assets.map((asset) => ({
-                icon: getAssetLogo(asset.symbol),
+                icon: <AssetLogo id={asset.id} />,
               }))}
             />
             <div sx={{ flex: "row" }}>

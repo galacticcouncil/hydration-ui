@@ -1,4 +1,3 @@
-import { getAssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
@@ -11,6 +10,7 @@ import { u32, u8 } from "@polkadot/types"
 import { ReactComponent as DropletIcon } from "assets/icons/DropletIcon.svg"
 import { SPositions } from "sections/pools/pool/Pool.styled"
 import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
 type Props = {
   refetchPosition: () => void
@@ -54,7 +54,7 @@ export const LiquidityPosition = ({
               <MultipleIcons
                 size={15}
                 icons={assets.map((asset) => ({
-                  icon: getAssetLogo(asset.symbol),
+                  icon: <AssetLogo id={asset.id} />,
                 }))}
               />
               <Text fs={18} color="white">

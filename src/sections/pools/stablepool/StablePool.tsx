@@ -2,7 +2,6 @@ import { SContainer, SGridContainer } from "sections/pools/pool/Pool.styled"
 import { PoolDetails } from "./details/PoolDetails"
 import { PoolValue } from "./details/PoolValue"
 import { PoolActions } from "./actions/PoolActions"
-import { PoolIncentives } from "./details/PoolIncentives"
 import { useStablePools } from "sections/pools/PoolsPage.utils"
 import { useState } from "react"
 import { useMedia } from "react-use"
@@ -17,8 +16,6 @@ type Props = Exclude<
   ReturnType<typeof useStablePools>["data"],
   undefined
 >[number]
-
-const STABLEPOOL_INCENTIVES_ENABLED = false
 
 export const StablePool = ({
   id,
@@ -47,11 +44,6 @@ export const StablePool = ({
           tradeFee={tradeFee}
           css={{ gridArea: "details" }}
         />
-        {STABLEPOOL_INCENTIVES_ENABLED ? (
-          <PoolIncentives poolId={id} css={{ gridArea: "incentives" }} />
-        ) : (
-          <div css={{ gridArea: "incentives" }} />
-        )}
         <PoolValue total={total.value} css={{ gridArea: "values" }} />
         <PoolActions
           poolId={id}
