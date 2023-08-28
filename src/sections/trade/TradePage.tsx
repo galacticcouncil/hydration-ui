@@ -7,6 +7,10 @@ import { OtcPageWrapper } from "./sections/otc/OtcPageWrappet"
 import { DcaApp } from "./sections/dca/DcaPage"
 import { SubNavigation } from "./SubNavigation"
 
+const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
+const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
+const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
+
 export const TradePage = () => {
   const matchRoute = useMatchRoute()
   return (
@@ -18,9 +22,11 @@ export const TradePage = () => {
       }}
     >
       {matchRoute({ to: LINKS.swap }) && <SwapPage />}
-      {matchRoute({ to: LINKS.bonds }) && <BondsPageWrapper />}
-      {matchRoute({ to: LINKS.otc }) && <OtcPageWrapper />}
-      {matchRoute({ to: LINKS.dca }) && <DcaApp />}
+      {isBondsPageEnabled && matchRoute({ to: LINKS.bonds }) && (
+        <BondsPageWrapper />
+      )}
+      {isOtcPageEnabled && matchRoute({ to: LINKS.otc }) && <OtcPageWrapper />}
+      {isDcaPageEnabled && matchRoute({ to: LINKS.dca }) && <DcaApp />}
     </Page>
   )
 }

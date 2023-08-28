@@ -10,6 +10,10 @@ import { Text } from "components/Typography/Text/Text"
 import { Icon } from "components/Icon/Icon"
 import { theme } from "theme"
 
+const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
+const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
+const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
+
 const Tab = ({
   to,
   icon,
@@ -75,9 +79,15 @@ export const SubNavigation = () => {
       }}
     >
       <Tab to={LINKS.swap} icon={<IconSwap />} label="SWAP" />
-      <Tab to={LINKS.otc} icon={<IconOTC />} label="Trade OTC" />
-      <Tab to={LINKS.dca} icon={<IconDCA />} label="Trade DCA" />
-      <Tab to={LINKS.bonds} icon={<IconBonds />} label="Bonds" />
+      {isOtcPageEnabled && (
+        <Tab to={LINKS.otc} icon={<IconOTC />} label="Trade OTC" />
+      )}
+      {isDcaPageEnabled && (
+        <Tab to={LINKS.dca} icon={<IconDCA />} label="Trade DCA" />
+      )}
+      {isBondsPageEnabled && (
+        <Tab to={LINKS.bonds} icon={<IconBonds />} label="Bonds" />
+      )}
     </div>
   )
 }
