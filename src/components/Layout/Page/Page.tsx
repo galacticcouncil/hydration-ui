@@ -2,6 +2,7 @@ import { Header } from "components/Layout/Header/Header"
 import { ReactNode, useEffect, useRef } from "react"
 import { MobileNavBar } from "components/Layout/Header/MobileNavBar/MobileNavBar"
 import {
+  SGradientBg,
   SPage,
   SPageContent,
   SPageGrid,
@@ -10,7 +11,6 @@ import {
 } from "./Page.styled"
 import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
 import { useLocation } from "react-use"
-import { useNavigate } from "@tanstack/react-location"
 import { ToastSidebar } from "components/Toast/sidebar/ToastSidebar"
 
 type Props = {
@@ -28,7 +28,7 @@ export const Page = ({
 }: Props) => {
   const ref = useRef<HTMLDivElement>(null)
   const location = useLocation()
-  const navigate = useNavigate()
+
   useEffect(() => {
     ref.current?.scrollTo({
       top: 0,
@@ -38,7 +38,7 @@ export const Page = ({
 
   return (
     <>
-      <SPage variant={variant} ref={ref} id="page">
+      <SPage ref={ref}>
         <div>
           {variant === "stats" && <SPageGrid />}
           <Header />
@@ -48,6 +48,7 @@ export const Page = ({
                 <div>{subHeader}</div>
               </SSubHeader>
             )}
+            <SGradientBg variant={variant} />
             <SPageInner className={className}>{children}</SPageInner>
             <ProviderSelectButton />
           </SPageContent>

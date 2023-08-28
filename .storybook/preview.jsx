@@ -1,13 +1,13 @@
 import { theme } from "../src/theme"
 
-import { Global, css } from "@emotion/react"
+import { Global } from "@emotion/react"
 import { withThemeFromJSXProvider } from "@storybook/addon-styling"
 import { GlobalStyle } from "../src/components/GlobalStyle"
+import "../src/i18n/i18n"
 
 const GlobalStyles = () => (
   <Global styles={GlobalStyle} />
 )
-
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
   controls: {
