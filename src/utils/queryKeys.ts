@@ -314,4 +314,5 @@ export const QUERY_KEYS = {
     "positionBalances",
     positionId,
   ],
+  bonds: ["bonds"],
 } as const
