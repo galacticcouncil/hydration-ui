@@ -37,7 +37,7 @@ const Tab = ({
       to={to}
       search={search}
       css={{
-        "& > div > p:hover": { color: theme.colors.white },
+        "&:hover > div > p": { color: theme.colors.white },
         height: "100%",
       }}
     >
