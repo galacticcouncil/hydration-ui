@@ -1,8 +1,8 @@
 import { Page } from "components/Layout/Page/Page"
 import { SubNavigation } from "./SubNavigation"
-import { ReactNode } from "react"
+import { Outlet } from "@tanstack/react-location"
 
-export const TradePage = ({ children }: { children: ReactNode }) => (
+export const TradePage = () => (
   <Page
     subHeader={<SubNavigation />}
     subHeaderStyle={{
@@ -10,6 +10,6 @@ export const TradePage = ({ children }: { children: ReactNode }) => (
       borderTop: "1px solid rgba(114, 131, 165, 0.6)",
     }}
   >
-    {children}
+    <Outlet />
   </Page>
 )

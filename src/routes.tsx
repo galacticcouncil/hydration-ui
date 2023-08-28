@@ -21,6 +21,7 @@ export const routes = [
   },
   {
     path: "trade",
+    element: <TradePage />,
     children: [
       {
         path: "/",
@@ -28,41 +29,25 @@ export const routes = [
       },
       {
         path: "swap",
-        element: (
-          <TradePage>
-            <SwapPage />
-          </TradePage>
-        ),
+        element: <SwapPage />,
       },
       {
         ...(isOtcPageEnabled && {
           path: "otc",
-          element: (
-            <TradePage>
-              <OtcPageWrapper />
-            </TradePage>
-          ),
+          element: <OtcPageWrapper />,
         }),
       },
       {
         ...(isDcaPageEnabled && {
           path: "dca",
-          element: (
-            <TradePage>
-              <DcaApp />
-            </TradePage>
-          ),
+          element: <DcaApp />,
         }),
       },
 
       {
         ...(isBondsPageEnabled && {
           path: "bonds",
-          element: (
-            <TradePage>
-              <BondsPageWrapper />
-            </TradePage>
-          ),
+          element: <BondsPageWrapper />,
         }),
       },
     ],
