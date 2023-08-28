@@ -14,6 +14,7 @@ export const LINKS = {
   walletTransactions: "/wallet/transactions",
   walletVesting: "/wallet/vesting",
   cross_chain: "/cross-chain",
+  trade: "/trade",
   otc: "/trade/otc",
   dca: "/trade/dca",
   bonds: "/trade/bonds",
@@ -29,14 +30,13 @@ export const LINKS = {
 
 const isPoolsPageEnabled = import.meta.env.VITE_FF_POOLS_ENABLED === "true"
 const isXcmPageEnabled = import.meta.env.VITE_FF_XCM_ENABLED === "true"
-
 const isStatsEnabled = import.meta.env.VITE_FF_STATS_ENABLED === "true"
 const isStakingEnabled = import.meta.env.VITE_FF_STAKING_ENABLED === "true"
 
 export const MENU_ITEMS = [
   {
     key: "trade",
-    href: LINKS.swap,
+    href: LINKS.trade,
     Icon: TradeIcon,
     enabled: true,
     external: false,
@@ -57,7 +57,7 @@ export const MENU_ITEMS = [
   },
   {
     key: "wallet",
-    href: LINKS.walletAssets,
+    href: LINKS.wallet,
     Icon: WalletIcon,
     subItems: undefined,
     enabled: true,
