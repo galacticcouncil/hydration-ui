@@ -9,6 +9,11 @@ import { ReactNode } from "react"
 import { Text } from "components/Typography/Text/Text"
 import { Icon } from "components/Icon/Icon"
 import { theme } from "theme"
+import {
+  SBadge,
+  STabContainer,
+  SubNavigationContainer,
+} from "./sections/SubNavigation.styled"
 
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
@@ -18,10 +23,12 @@ const Tab = ({
   to,
   icon,
   label,
+  withBadge,
 }: {
   to: string
   icon: ReactNode
   label: string
+  withBadge?: boolean
 }) => {
   const search = useSearch()
 
@@ -29,26 +36,20 @@ const Tab = ({
     <Link
       to={to}
       search={search}
-      sx={{ height: "100%" }}
-      css={{ "& > div > p:hover": { color: theme.colors.white } }}
+      css={{
+        "& > div > p:hover": { color: theme.colors.white },
+        height: "100%",
+      }}
     >
       {({ isActive }) => (
         <>
-          <div
-            sx={{
-              flex: "row",
-              gap: 6,
-              align: "center",
-              justify: "space-between",
-              height: "100%",
-            }}
-            css={{ position: "relative" }}
-          >
+          <STabContainer>
             <Icon sx={{ color: "brightBlue300" }} icon={icon} />
             <Text fs={13} color={isActive ? "white" : "iconGray"}>
               {label}
             </Text>
-          </div>
+            {withBadge && <SBadge>Sale</SBadge>}
+          </STabContainer>
           {isActive && (
             <div
               sx={{ height: 1, bg: "brightBlue300", width: "100%" }}
@@ -64,30 +65,34 @@ const Tab = ({
 export const SubNavigation = () => {
   const { t } = useTranslation()
   return (
-    <div
-      sx={{
-        flex: "row",
-        gap: [0, 42],
-        justify: ["space-between", "flex-start"],
-        align: "center",
-        height: 42,
-        px: [8, 20],
-      }}
-      css={{
-        maxWidth: "var(--content-width)",
-        margin: "0 auto",
-      }}
-    >
-      <Tab to={LINKS.swap} icon={<IconSwap />} label="SWAP" />
+    <SubNavigationContainer>
+      <Tab
+        to={LINKS.swap}
+        icon={<IconSwap />}
+        label={t("header.trade.swap.title")}
+      />
       {isOtcPageEnabled && (
-        <Tab to={LINKS.otc} icon={<IconOTC />} label="Trade OTC" />
+        <Tab
+          to={LINKS.otc}
+          icon={<IconOTC />}
+          label={t("header.trade.otc.title")}
+        />
       )}
       {isDcaPageEnabled && (
-        <Tab to={LINKS.dca} icon={<IconDCA />} label="Trade DCA" />
+        <Tab
+          to={LINKS.dca}
+          icon={<IconDCA />}
+          label={t("header.trade.dca.title")}
+        />
       )}
       {isBondsPageEnabled && (
-        <Tab to={LINKS.bonds} icon={<IconBonds />} label="Bonds" />
+        <Tab
+          to={LINKS.bonds}
+          icon={<IconBonds />}
+          label={t("header.trade.bonds.title")}
+          withBadge
+        />
       )}
-    </div>
+    </SubNavigationContainer>
   )
 }
