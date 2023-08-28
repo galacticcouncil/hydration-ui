@@ -66,7 +66,9 @@ export const AddStablepoolLiquidity = ({
       {
         onSuccess,
         onSubmitted: () => {
-          onClose()
+          // onClose()
+          onSuccess()
+          console.log("--submitted--")
           form.reset()
         },
         onClose,

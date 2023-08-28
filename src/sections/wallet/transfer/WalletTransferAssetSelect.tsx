@@ -5,7 +5,6 @@ import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
 import BN from "bignumber.js"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
 export const WalletTransferAssetSelect = (props: {
   name: string

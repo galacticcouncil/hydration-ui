@@ -10,6 +10,7 @@ import { CurrencyReserves } from "./components/CurrencyReserves"
 import { AssetMetaById, BalanceByAsset } from "sections/pools/PoolsPage.utils"
 import { u32 } from "@polkadot/types-codec"
 import BigNumber from "bignumber.js"
+import { Stepper } from "components/Stepper/Stepper"
 
 type Props = {
   poolId: u32
@@ -28,6 +29,7 @@ enum Page {
   OMNIPOOL,
   STABLEPOOL,
   ASSETS,
+  MOVE_TO_OMNIPOOL,
 }
 
 export const TransferModal = ({
@@ -67,8 +69,30 @@ export const TransferModal = ({
       open={isOpen}
       onClose={onClose}
       disableCloseOutside={true}
+      topContent={
+        <Stepper
+          steps={[
+            {
+              label: "Select Pool",
+              state: "done",
+            },
+            {
+              label: "Provide Liquidity",
+              state: "active",
+            },
+            {
+              label: "Confirm 1/2",
+              state: "todo",
+            },
+            {
+              label: "Confirm 2/2",
+              state: "todo",
+            },
+          ]}
+        />
+      }
       bottomContent={
-        page === Page.STABLEPOOL ? (
+        [Page.STABLEPOOL, Page.OMNIPOOL].includes(page) ? (
           <CurrencyReserves
             assets={Array.from(balanceByAsset?.entries() ?? []).map(
               ([id, balance]) => ({
@@ -117,7 +141,22 @@ export const TransferModal = ({
           {
             title: t("liquidity.stablepool.transfer.omnipool"),
             headerVariant: "gradient",
-            content: <div />,
+            content: (
+              <AddStablepoolLiquidity
+                poolId={poolId}
+                onClose={() => {
+                  console.log("CLOSE")
+                }}
+                onSuccess={() => {
+                  console.log("SUCCESS")
+                  setPage(Page.MOVE_TO_OMNIPOOL)
+                }}
+                reserves={reserves}
+                onAssetOpen={() => setPage(Page.ASSETS)}
+                asset={assetMetaById?.get(assetId)}
+                tradeFee={tradeFee}
+              />
+            ),
           },
           {
             title: t("liquidity.add.modal.title"),
@@ -147,6 +186,11 @@ export const TransferModal = ({
                 }}
               />
             ),
+          },
+          {
+            title: "Move to omnipool",
+            headerVariant: "gradient",
+            content: <div></div>,
           },
         ]}
       />
