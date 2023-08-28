@@ -8,7 +8,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { useApiPromise } from "utils/api"
 import { BN_10 } from "utils/constants"
 import { useAccountStore, useStore } from "state/store"
-import { OfferingPair } from "sections/otc/orders/OtcOrdersData.utils"
+import { OfferingPair } from "sections/trade/sections/otc/orders/OtcOrdersData.utils"
 import { OrderAssetPrice } from "./cmp/AssetPrice"
 import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
 

@@ -1,5 +1,5 @@
-import { OtcHeader } from "sections/otc/header/OtcHeader"
-import { OtcOrderTable } from "sections/otc/orders/OtcOrders"
+import { OtcHeader } from "sections/trade/sections/otc/header/OtcHeader"
+import { OtcOrderTable } from "sections/trade/sections/otc/orders/OtcOrders"
 
 import { useState } from "react"
 import { useOrdersTableData } from "./orders/OtcOrdersData.utils"

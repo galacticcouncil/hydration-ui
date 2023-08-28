@@ -9,7 +9,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { OrderCapacity } from "sections/otc/capacity/OrderCapacity"
+import { OrderCapacity } from "sections/trade/sections/otc/capacity/OrderCapacity"
 import { OtcOrderActions } from "./actions/OtcOrderActions"
 import {
   OrderAssetColumn,

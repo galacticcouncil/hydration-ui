@@ -5,7 +5,7 @@ import { Modal } from "components/Modal/Modal"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { OrderCapacity } from "sections/otc/capacity/OrderCapacity"
+import { OrderCapacity } from "sections/trade/sections/otc/capacity/OrderCapacity"
 import { useAccountStore } from "state/store"
 import { theme } from "theme"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
@@ -14,8 +14,8 @@ import {
   OrderAssetColumn,
   OrderPairColumn,
   OrderPriceColumn,
-} from "sections/otc/orders/OtcOrdersData"
-import { OrderTableData } from "sections/otc/orders/OtcOrdersData.utils"
+} from "sections/trade/sections/otc/orders/OtcOrdersData"
+import { OrderTableData } from "sections/trade/sections/otc/orders/OtcOrdersData.utils"
 import { SActionButtonsContainer } from "./OtcOrderActions.styled"
 
 type Props = {
