@@ -5,6 +5,14 @@ import { PoolsPage } from "sections/pools/PoolsPage"
 import { StatsPage } from "sections/stats/StatsPage"
 import { StakingPage } from "./sections/staking/StakingPage"
 import { TradePage } from "sections/trade/TradePage"
+import { SwapPage } from "sections/trade/sections/swap/SwapPage"
+import { OtcPageWrapper } from "sections/trade/sections/otc/OtcPageWrappet"
+import { DcaApp } from "sections/trade/sections/dca/DcaPage"
+import { BondsPageWrapper } from "sections/trade/sections/bonds/BondsPageWrapper"
+
+const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
+const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
+const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
 
 export const routes = [
   {
@@ -20,19 +28,42 @@ export const routes = [
       },
       {
         path: "swap",
-        element: <TradePage />,
+        element: (
+          <TradePage>
+            <SwapPage />
+          </TradePage>
+        ),
       },
       {
-        path: "otc",
-        element: <TradePage />,
+        ...(isOtcPageEnabled && {
+          path: "otc",
+          element: (
+            <TradePage>
+              <OtcPageWrapper />
+            </TradePage>
+          ),
+        }),
       },
       {
-        path: "dca",
-        element: <TradePage />,
+        ...(isDcaPageEnabled && {
+          path: "dca",
+          element: (
+            <TradePage>
+              <DcaApp />
+            </TradePage>
+          ),
+        }),
       },
+
       {
-        path: "bonds",
-        element: <TradePage />,
+        ...(isBondsPageEnabled && {
+          path: "bonds",
+          element: (
+            <TradePage>
+              <BondsPageWrapper />
+            </TradePage>
+          ),
+        }),
       },
     ],
   },
