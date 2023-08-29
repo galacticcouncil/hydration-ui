@@ -29,7 +29,7 @@ export const useMyActiveBondsSkeleton = (config?: Config) => {
       display({
         id: "actions",
         cell: () => (
-          <div sx={{ flex: "row", gap: 8, mr: 32, display: ["none", "flex"] }}>
+          <div>
             {config?.showTransactions && <Skeleton width={72} height={32} />}
           </div>
         ),
