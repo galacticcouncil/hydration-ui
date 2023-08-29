@@ -552,5 +552,12 @@
   "bonds.whyBonds.second.title": "Wait for Maturity",
   "bonds.whyBonds.second.desc": "Bond needs to reach its maturity before you can redeem it.Maturity is specified at bond creation",
   "bonds.whyBonds.third.title": "Profit",
-  "bonds.whyBonds.third.desc": "As your bonds reach maturity date, you can redeem them for underlying asset 1:1."
+  "bonds.whyBonds.third.desc": "As your bonds reach maturity date, you can redeem them for underlying asset 1:1.",
+  "bonds.table.bond": "Bond",
+  "bonds.table.maturity": "Maturity",
+  "bonds.table.balance": "Total Balance",
+  "bonds.transactions.table.date": "Date",
+  "bonds.transactions.table.transaction": "Amount in/out",
+  "bonds.transactions.table.price": "Price",
+  "bonds.transactions.table.link": "Subscan link"
 }
