@@ -542,5 +542,15 @@
   "addressbook.remove.title": "Remove address",
   "addressbook.remove.subtitle": "Are you sure you want to remove this account address?",
   "addressbook.remove.cancel": "Back",
-  "addressbook.remove.submit": "Yes, remove"
+  "addressbook.remove.submit": "Yes, remove",
+  "bonds.title": "Hydradx bonds",
+  "bonds.whyBonds.title": "Why use Bonds?",
+  "bonds.whyBonds.desc": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec commodo libero. Nulla facilisi. Donec venenatis fringilla elit, ac feugiat sem volutpat id. Nam consectetur viverra feugiat.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec commodo libero. Nulla facilisi.",
+  "bonds.whyBonds.link": " Want to learn more? Check Documentation",
+  "bonds.whyBonds.first.title": "Buy bonded assets with discount",
+  "bonds.whyBonds.first.desc": "Buy bonds at a discounted rate, giving you an instant edge.",
+  "bonds.whyBonds.second.title": "Wait for Maturity",
+  "bonds.whyBonds.second.desc": "Bond needs to reach its maturity before you can redeem it.Maturity is specified at bond creation",
+  "bonds.whyBonds.third.title": "Profit",
+  "bonds.whyBonds.third.desc": "As your bonds reach maturity date, you can redeem them for underlying asset 1:1."
 }
