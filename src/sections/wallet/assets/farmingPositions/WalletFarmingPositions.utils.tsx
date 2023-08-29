@@ -25,9 +25,9 @@ import { getFloatingPointAmount } from "utils/balance"
 import { getEnteredDate } from "utils/block"
 import { BN_0, BN_NAN } from "utils/constants"
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
-import { WalletAssetsTableName } from "sections/wallet/assets/table/data/WalletAssetsTableData"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
+import { AssetTableName } from "components/AssetTableName/AssetTableName"
 
 export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
   const { t } = useTranslation()
@@ -51,7 +51,7 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
           : t("selectAssets.asset"),
         sortingFn: (a, b) => a.original.symbol.localeCompare(b.original.symbol),
         cell: ({ row }) => (
-          <WalletAssetsTableName {...row.original} id={row.original.assetId} />
+          <AssetTableName {...row.original} id={row.original.assetId} />
         ),
       }),
       accessor("date", {

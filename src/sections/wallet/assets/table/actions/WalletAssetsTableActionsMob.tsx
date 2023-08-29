@@ -14,8 +14,8 @@ import { useAccountStore } from "state/store"
 import { theme } from "theme"
 import { LINKS } from "utils/navigation"
 import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
-import { WalletAssetsTableName } from "sections/wallet/assets/table/data/WalletAssetsTableData"
 import { SActionButtonsContainer } from "./WalletAssetsTable.styled"
+import { AssetTableName } from "components/AssetTableName/AssetTableName"
 
 type Props = {
   row?: AssetsTableData
@@ -41,7 +41,7 @@ export const WalletAssetsTableActionsMob = ({
     <Modal open={!!row} isDrawer onClose={onClose} title="">
       <div>
         <div sx={{ pb: 30 }}>
-          <WalletAssetsTableName {...row} large />
+          <AssetTableName {...row} large />
         </div>
         <Separator
           css={{ background: `rgba(${theme.rgbColors.alpha0}, 0.06)` }}

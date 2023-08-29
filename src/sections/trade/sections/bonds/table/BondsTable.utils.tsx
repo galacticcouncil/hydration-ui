@@ -10,9 +10,9 @@ import { theme } from "theme"
 import { ButtonTransparent } from "components/Button/Button"
 import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronDown.svg"
 import { useTranslation } from "react-i18next"
-import { WalletAssetsTableName } from "sections/wallet/assets/table/data/WalletAssetsTableData"
 import { useAssetMeta } from "api/assetMeta"
 import { formatDate } from "utils/formatting"
+import { AssetTableName } from "components/AssetTableName/AssetTableName"
 
 export type Bond = {
   assetId: string
@@ -36,7 +36,7 @@ const BondCell = ({
   const meta = useAssetMeta(assetId)
 
   return (
-    <WalletAssetsTableName
+    <AssetTableName
       id={assetId}
       name={`${meta.data?.symbol}B-${maturityToBondName(maturity)}`}
       symbol={`${meta.data?.symbol} ${t("bond")}`}
