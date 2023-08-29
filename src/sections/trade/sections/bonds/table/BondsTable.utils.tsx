@@ -25,9 +25,6 @@ export type Config = {
   showTransactions?: boolean
 }
 
-const maturityToBondName = (maturity: number) =>
-  new Date(maturity).toISOString().split("T")[0].replaceAll("-", "")
-
 const BondCell = ({
   assetId,
   maturity,
@@ -35,10 +32,12 @@ const BondCell = ({
   const { t } = useTranslation()
   const meta = useAssetMeta(assetId)
 
+  const formattedMaturity = formatDate(new Date(maturity), "yyyyMMdd")
+
   return (
     <AssetTableName
       id={assetId}
-      name={`${meta.data?.symbol}B-${maturityToBondName(maturity)}`}
+      name={`${meta.data?.symbol}B-${formattedMaturity}`}
       symbol={`${meta.data?.symbol} ${t("bond")}`}
     />
   )
