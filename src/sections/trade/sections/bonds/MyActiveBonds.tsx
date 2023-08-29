@@ -1,39 +1,48 @@
 import { BondsTable } from "./table/BondsTable"
 import { Skeleton } from "./table/skeleton/Skeleton"
 import { useQuery } from "@tanstack/react-query"
-import { Bond } from "./table/BondsTable.utils"
+import { useTokensBalances } from "api/balances"
+import { useAccountStore } from "state/store"
+import { Bond } from "api/bonds"
+import { pluck } from "utils/rx"
+import { BondTableItem } from "./table/BondsTable.utils"
 
-export const MyActiveBonds = () => {
-  // TODO: replace mocked values with fetched data
-  const { data, isLoading } = useQuery(["dummy"], () => {
-    return new Promise<Bond[]>((resolve) =>
-      setTimeout(() => {
-        resolve([
-          {
-            assetId: "1",
-            maturity: 1693314639000,
-            balance: "300 845 HDX",
-            price: "1$",
-          },
-          {
-            assetId: "2",
-            maturity: 1693314639000,
-            balance: "300 845 HDX",
-            price: "1$",
-          },
-        ])
-      }, 2000),
-    )
-  })
+interface Props {
+  bonds: Bond[]
+  isLoading?: boolean
+}
 
-  const props = {
+export const MyActiveBonds = ({ bonds, ...props }: Props) => {
+  const { account } = useAccountStore()
+  const balances = useTokensBalances(pluck("id", bonds), account?.address)
+
+  const isLoading =
+    pluck("isLoading", balances).some(Boolean) || props.isLoading
+
+  const tableProps = {
     title: "My Active Bonds",
     showTransactions: false,
   }
 
   if (isLoading) {
-    return <Skeleton {...props} />
+    return <Skeleton {...tableProps} />
   }
 
-  return <BondsTable {...props} data={data ?? []} />
+  const bondMap = new Map(bonds.map((bond) => [bond.id, bond]))
+
+  const data = balances
+    .filter((balance) => balance.data?.assetId)
+    .map<BondTableItem>((balance) => {
+      const id = balance.data?.assetId?.toString() ?? ""
+      const assetId = bondMap.get(id)?.assetId ?? ""
+
+      return {
+        assetId,
+        maturity: bondMap.get(id)?.maturity,
+        balance: balance.data?.total?.toString(),
+        price: "",
+      }
+    })
+
+  return <BondsTable {...tableProps} data={data} />
 }

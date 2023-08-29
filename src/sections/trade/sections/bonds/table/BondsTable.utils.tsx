@@ -14,10 +14,10 @@ import { useAssetMeta } from "api/assetMeta"
 import { formatDate } from "utils/formatting"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
 
-export type Bond = {
+export type BondTableItem = {
   assetId: string
-  maturity: number
-  balance: string
+  maturity?: number
+  balance?: string
   price: string
 }
 
@@ -28,11 +28,13 @@ export type Config = {
 const BondCell = ({
   assetId,
   maturity,
-}: Pick<Bond, "assetId" | "maturity">) => {
+}: Pick<BondTableItem, "assetId" | "maturity">) => {
   const { t } = useTranslation()
   const meta = useAssetMeta(assetId)
 
-  const formattedMaturity = formatDate(new Date(maturity), "yyyyMMdd")
+  const formattedMaturity = maturity
+    ? formatDate(new Date(maturity), "yyyyMMdd")
+    : ""
 
   return (
     <AssetTableName
@@ -43,9 +45,9 @@ const BondCell = ({
   )
 }
 
-export const useActiveBondsTable = (data: Bond[], config: Config) => {
+export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
   const { t } = useTranslation()
-  const { accessor, display } = createColumnHelper<Bond>()
+  const { accessor, display } = createColumnHelper<BondTableItem>()
 
   const columns = useMemo(
     () => [
@@ -60,11 +62,15 @@ export const useActiveBondsTable = (data: Bond[], config: Config) => {
         header: () => (
           <div sx={{ textAlign: "right" }}>{t("bonds.table.maturity")}</div>
         ),
-        cell: ({ getValue }) => (
-          <Text color="white" tAlign="right">
-            {formatDate(new Date(getValue()), "dd/MM/yyyy")}
-          </Text>
-        ),
+        cell: ({ getValue }) => {
+          const value = getValue()
+
+          return value !== undefined ? (
+            <Text color="white" tAlign="right">
+              {formatDate(new Date(value), "dd/MM/yyyy")}
+            </Text>
+          ) : null
+        },
       }),
       accessor("balance", {
         header: () => (

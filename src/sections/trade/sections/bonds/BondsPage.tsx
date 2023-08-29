@@ -44,7 +44,7 @@ export const BondsPage = () => {
       </div>
       <WhyBonds />
       <div sx={{ mt: 40 }}>
-        <MyActiveBonds />
+        <MyActiveBonds isLoading={bonds.isLoading} bonds={bonds.data ?? []} />
       </div>
     </>
   )
