@@ -6,6 +6,7 @@ import { useAccountStore } from "state/store"
 import { Bond } from "api/bonds"
 import { pluck } from "utils/rx"
 import { BondTableItem } from "./table/BondsTable.utils"
+import { useTranslation } from "react-i18next"
 
 interface Props {
   bonds: Bond[]
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export const MyActiveBonds = ({ bonds, ...props }: Props) => {
+  const { t } = useTranslation()
   const { account } = useAccountStore()
   const balances = useTokensBalances(pluck("id", bonds), account?.address)
 
@@ -20,7 +22,7 @@ export const MyActiveBonds = ({ bonds, ...props }: Props) => {
     pluck("isLoading", balances).some(Boolean) || props.isLoading
 
   const tableProps = {
-    title: "My Active Bonds",
+    title: t("bonds.table.title"),
     showTransactions: false,
   }
 

@@ -554,6 +554,7 @@
   "bonds.whyBonds.third.title": "Profit",
   "bonds.whyBonds.third.desc": "As your bonds reach maturity date, you can redeem them for underlying asset 1:1.",
   "bond": "Bond",
+  "bonds.table.title": "My Active Bonds",
   "bonds.table.bond": "Bond",
   "bonds.table.maturity": "Maturity",
   "bonds.table.balance": "Total Balance",
