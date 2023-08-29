@@ -34,8 +34,8 @@ export const useMyActiveBondsSkeleton = (config?: Config) => {
           </div>
         ),
       }),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [config?.showTransactions],
   )
 
