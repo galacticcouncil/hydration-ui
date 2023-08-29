@@ -10,16 +10,16 @@ export const MyActiveBonds = () => {
       setTimeout(() => {
         resolve([
           {
-            id: "1",
-            bond: "bond",
-            maturity: "June  2024",
+            assetId: "1",
+            maturity: 1693314639000,
             balance: "300 845 HDX",
+            price: "1$",
           },
           {
-            id: "2",
-            bond: "bond2",
-            maturity: "June  2024",
+            assetId: "2",
+            maturity: 1693314639000,
             balance: "300 845 HDX",
+            price: "1$",
           },
         ])
       }, 2000),

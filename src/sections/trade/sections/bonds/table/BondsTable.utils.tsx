@@ -10,16 +10,38 @@ import { theme } from "theme"
 import { ButtonTransparent } from "components/Button/Button"
 import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronDown.svg"
 import { useTranslation } from "react-i18next"
+import { WalletAssetsTableName } from "sections/wallet/assets/table/data/WalletAssetsTableData"
+import { useAssetMeta } from "api/assetMeta"
+import { formatDate } from "utils/formatting"
 
 export type Bond = {
-  id: string
-  bond: string
-  maturity: string
+  assetId: string
+  maturity: number
   balance: string
+  price: string
 }
 
 export type Config = {
   showTransactions?: boolean
+}
+
+const maturityToBondName = (maturity: number) =>
+  new Date(maturity).toISOString().split("T")[0].replaceAll("-", "")
+
+const BondCell = ({
+  assetId,
+  maturity,
+}: Pick<Bond, "assetId" | "maturity">) => {
+  const { t } = useTranslation()
+  const meta = useAssetMeta(assetId)
+
+  return (
+    <WalletAssetsTableName
+      id={assetId}
+      name={`${meta.data?.symbol}B-${maturityToBondName(maturity)}`}
+      symbol={`${meta.data?.symbol} ${t("bond")}`}
+    />
+  )
 }
 
 export const useActiveBondsTable = (data: Bond[], config: Config) => {
@@ -28,11 +50,12 @@ export const useActiveBondsTable = (data: Bond[], config: Config) => {
 
   const columns = useMemo(
     () => [
-      accessor("bond", {
+      accessor("assetId", {
         header: t("bonds.table.bond"),
-        cell: ({ getValue }) => (
-          <Text color="white">{getValue()?.toString()}</Text>
-        ),
+        cell: ({ getValue, row }) =>
+          getValue() ? (
+            <BondCell assetId={getValue()} maturity={row.original.maturity} />
+          ) : null,
       }),
       accessor("maturity", {
         header: () => (
@@ -40,7 +63,7 @@ export const useActiveBondsTable = (data: Bond[], config: Config) => {
         ),
         cell: ({ getValue }) => (
           <Text color="white" tAlign="right">
-            {getValue()?.toString()}
+            {formatDate(new Date(getValue()), "dd/MM/yyyy")}
           </Text>
         ),
       }),
@@ -50,7 +73,17 @@ export const useActiveBondsTable = (data: Bond[], config: Config) => {
         ),
         cell: ({ getValue }) => (
           <Text color="white" tAlign="center">
-            {getValue()?.toString()}
+            {getValue()}
+          </Text>
+        ),
+      }),
+      accessor("price", {
+        header: () => (
+          <div sx={{ textAlign: "center" }}>{t("bonds.table.price")}</div>
+        ),
+        cell: ({ getValue }) => (
+          <Text color="white" tAlign="center">
+            {getValue()}
           </Text>
         ),
       }),

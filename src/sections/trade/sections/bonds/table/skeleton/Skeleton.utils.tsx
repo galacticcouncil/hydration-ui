@@ -27,6 +27,10 @@ export const useMyActiveBondsSkeleton = (config?: Config) => {
         cell: () => <Skeleton width="100%" height={32} />,
       }),
       display({
+        header: t("bonds.table.price"),
+        cell: () => <Skeleton width="100%" height={32} />,
+      }),
+      display({
         id: "actions",
         cell: () => (
           <div>
