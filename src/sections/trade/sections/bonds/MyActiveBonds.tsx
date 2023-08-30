@@ -25,7 +25,7 @@ export const MyActiveBonds = ({ bonds, ...props }: Props) => {
     showTransactions: false,
   }
 
-  if (isLoading || (true as any)) {
+  if (isLoading) {
     return <Skeleton {...tableProps} />
   }
 
