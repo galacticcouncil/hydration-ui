@@ -7,7 +7,7 @@ import {
 import { useMemo } from "react"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
-import { ButtonTransparent } from "components/Button/Button"
+import { Button, ButtonTransparent } from "components/Button/Button"
 import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronDown.svg"
 import { useTranslation } from "react-i18next"
 import { useAssetMeta } from "api/assetMeta"
@@ -96,6 +96,15 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
         id: "actions",
         cell: ({ row }) => (
           <>
+            {!!row.original.maturity &&
+              row.original.maturity <= new Date().getTime() && (
+                <Button
+                  size="small"
+                  sx={{ mr: config.showTransactions ? 0 : 14 }}
+                >
+                  {t("bonds.table.claim")}
+                </Button>
+              )}
             {config.showTransactions && (
               <ButtonTransparent
                 onClick={() => row.toggleSelected()}
