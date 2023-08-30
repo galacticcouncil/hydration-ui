@@ -1,16 +1,17 @@
-import { gradientBorder, theme } from "theme"
+import { theme } from "theme"
 import { Text } from "components/Typography/Text/Text"
 import { Step } from "./Step"
 import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
 import { Icon } from "components/Icon/Icon"
 import { whyBonds } from "sections/trade/sections/bonds/Bonds.utils"
 import { useTranslation } from "react-i18next"
+import { SWhyBonds } from "./WhyBonds.styled"
 
 export const WhyBonds = () => {
   const { t } = useTranslation()
 
   return (
-    <div css={gradientBorder} sx={{ mt: 40, p: 30 }}>
+    <SWhyBonds>
       <Text color="white" fs={20} fw={600}>
         {t("bonds.whyBonds.title")}
       </Text>
@@ -41,6 +42,6 @@ export const WhyBonds = () => {
           <LinkIcon height={10} sx={{ ml: 6 }} />
         </a>
       </Text>
-    </div>
+    </SWhyBonds>
   )
 }

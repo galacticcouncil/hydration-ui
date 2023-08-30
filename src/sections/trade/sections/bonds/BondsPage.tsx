@@ -18,6 +18,7 @@ export const BondsPage = () => {
       <Heading fs={19} sx={{ mb: 33 }}>
         {t("bonds.title")}
       </Heading>
+      <WhyBonds />
       <div sx={{ flex: "column", gap: 12 }}>
         {bonds.data
           ? bonds.data.map((bond) => {
@@ -30,9 +31,9 @@ export const BondsPage = () => {
                   icon={<AssetLogo id={bond.assetId} />}
                   title={`${meta?.symbol.toLocaleUpperCase()}b${format(
                     date,
-                    "yyyymmdd",
+                    "yyyyMMdd",
                   )}`}
-                  maturity={format(date, "dd.mm.yyyy")}
+                  maturity={format(date, "dd/MM/yyyy")}
                   endingIn="23H 22m"
                   discount="5"
                   onDetailClick={console.log}
@@ -41,7 +42,6 @@ export const BondsPage = () => {
             })
           : null}
       </div>
-      <WhyBonds />
     </>
   )
 }
