@@ -1,6 +1,5 @@
 import { BondsTable } from "./table/BondsTable"
 import { Skeleton } from "./table/skeleton/Skeleton"
-import { useQuery } from "@tanstack/react-query"
 import { useTokensBalances } from "api/balances"
 import { useAccountStore } from "state/store"
 import { Bond } from "api/bonds"
