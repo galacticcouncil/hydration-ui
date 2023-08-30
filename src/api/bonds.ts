@@ -3,13 +3,20 @@ import { useQuery } from "@tanstack/react-query"
 import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 
+export type Bond = {
+  assetId: string
+  id: string
+  name: string
+  maturity: number
+}
+
 export const useBonds = () => {
   const api = useApiPromise()
 
   return useQuery(QUERY_KEYS.bonds, async () => {
     const raw = await api.query.assetRegistry.assets.entries()
 
-    const bonds = await raw.reduce(async (acc, [key, dataRaw]) => {
+    return raw.reduce<Promise<Bond[]>>(async (acc, [key, dataRaw]) => {
       const prevAcc = await acc
       const data = dataRaw.unwrap()
 
@@ -30,8 +37,6 @@ export const useBonds = () => {
       }
 
       return prevAcc
-    }, Promise.resolve([] as Array<{ assetId: string; id: string; name: string; maturity: number }>))
-
-    return bonds
+    }, Promise.resolve([]))
   })
 }
