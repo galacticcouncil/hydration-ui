@@ -18,6 +18,7 @@ export const LINKS = {
   otc: "/trade/otc",
   dca: "/trade/dca",
   bonds: "/trade/bonds",
+  bond: "/trade/bond",
   stats: "/stats",
   statsOverview: "/stats/overview",
   statsPOL: "/stats/POL",

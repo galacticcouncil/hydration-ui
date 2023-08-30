@@ -9,6 +9,7 @@ import { SwapPage } from "sections/trade/sections/swap/SwapPage"
 import { OtcPageWrapper } from "sections/trade/sections/otc/OtcPageWrappet"
 import { DcaApp } from "sections/trade/sections/dca/DcaPage"
 import { BondsPageWrapper } from "sections/trade/sections/bonds/BondsPageWrapper"
+import { BondDetailsPage } from "sections/trade/sections/bonds/details/BondDetailsPage"
 
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
@@ -43,7 +44,12 @@ export const routes = [
           element: <DcaApp />,
         }),
       },
-
+      {
+        ...(isBondsPageEnabled && {
+          path: "bond",
+          element: <BondDetailsPage />,
+        }),
+      },
       {
         ...(isBondsPageEnabled && {
           path: "bonds",

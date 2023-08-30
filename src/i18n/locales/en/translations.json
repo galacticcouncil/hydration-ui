@@ -561,5 +561,7 @@
   "bonds.transactions.table.date": "Date",
   "bonds.transactions.table.transaction": "Amount in/out",
   "bonds.transactions.table.price": "Price",
-  "bonds.transactions.table.link": "Subscan link"
+  "bonds.transactions.table.link": "Subscan link",
+  "bonds.details.header.end": "Ending in <0>{{date}}<0/>",
+  "bonds.details.progressBar.label": "Bond sold/total issuance: <0>{{sold, bignumber}}</0><1>/{{total, bignumber}}</1>"
 }

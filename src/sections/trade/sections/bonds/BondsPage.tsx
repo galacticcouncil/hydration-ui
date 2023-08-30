@@ -7,9 +7,12 @@ import { useAssetMetaList } from "api/assetMeta"
 import { WhyBonds } from "./components/WhyBonds"
 import { useTranslation } from "react-i18next"
 import { MyActiveBonds } from "./MyActiveBonds"
+import { useNavigate } from "@tanstack/react-location"
+import { LINKS } from "utils/navigation"
 
 export const BondsPage = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   const bonds = useBonds()
   const metas = useAssetMetaList(bonds.data?.map((bond) => bond.assetId) ?? [])
@@ -37,7 +40,12 @@ export const BondsPage = () => {
                   maturity={format(date, "dd/MM/yyyy")}
                   endingIn="23H 22m"
                   discount="5"
-                  onDetailClick={console.log}
+                  onDetailClick={() =>
+                    navigate({
+                      to: LINKS.bond,
+                      search: { id: bond.id },
+                    })
+                  }
                 />
               )
             })
