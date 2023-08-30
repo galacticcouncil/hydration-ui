@@ -6,6 +6,7 @@ import { format } from "date-fns"
 import { useAssetMetaList } from "api/assetMeta"
 import { WhyBonds } from "./components/WhyBonds"
 import { useTranslation } from "react-i18next"
+import { MyActiveBonds } from "./MyActiveBonds"
 
 export const BondsPage = () => {
   const { t } = useTranslation()
@@ -41,6 +42,9 @@ export const BondsPage = () => {
               )
             })
           : null}
+      </div>
+      <div sx={{ mt: 40 }}>
+        <MyActiveBonds />
       </div>
     </>
   )
