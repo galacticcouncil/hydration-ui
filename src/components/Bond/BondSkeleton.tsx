@@ -8,6 +8,7 @@ import Skeleton from "react-loading-skeleton"
 import * as React from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { Button } from "components/Button/Button"
 
 type Props = {
   view?: BondView
@@ -18,6 +19,7 @@ export const BondSkeleton = ({ view }: Props) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const isCard = view === "card"
 
+  const isColumnView = !isDesktop || isCard
   const height = 13
 
   return (
@@ -40,21 +42,27 @@ export const BondSkeleton = ({ view }: Props) => {
             {t("bond.endingIn")}
           </Text>
         </div>
-        <Skeleton width={isCard ? 100 : "100%"} height={height} />
+        <Skeleton width={isColumnView ? 100 : "100%"} height={height} />
       </SItem>
       <SItem>
         <Text color="basic400" fs={14}>
           {t("bond.maturity")}
         </Text>
-        <Skeleton width={isCard ? 100 : "100%"} height={height} />
+        <Skeleton width={isColumnView ? 100 : "100%"} height={height} />
       </SItem>
       <SItem>
         <Text color="basic400" fs={14}>
           {t("bond.discount")}
         </Text>
-        <Skeleton width={isCard ? 100 : "100%"} height={height} />
+        <Skeleton width={isColumnView ? 100 : "100%"} height={height} />
       </SItem>
-      <Skeleton width="100%" height={40} sx={{ mt: 3 }} />
+      <Button
+        disabled={true}
+        fullWidth={true}
+        sx={{ mt: view === "card" ? 12 : [12, 0] }}
+      >
+        Details
+      </Button>
     </SBond>
   )
 }
