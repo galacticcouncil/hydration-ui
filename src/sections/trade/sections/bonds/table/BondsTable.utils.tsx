@@ -23,6 +23,7 @@ export type BondTableItem = {
 
 export type Config = {
   showTransactions?: boolean
+  enableAnimation?: boolean
 }
 
 const BondCell = ({

@@ -8,33 +8,60 @@ import Skeleton from "react-loading-skeleton"
 import { useMemo } from "react"
 import { Config } from "sections/trade/sections/bonds/table/BondsTable.utils"
 
-export const useMyActiveBondsSkeleton = (config?: Config) => {
+export const useBondsSkeleton = (config?: Config) => {
   const { t } = useTranslation()
   const { display } = createColumnHelper()
+  const enableAnimation = config?.enableAnimation ?? true
 
   const columns = useMemo(
     () => [
       display({
         header: t("bonds.table.bond"),
-        cell: () => <Skeleton width={64} height={32} />,
+        cell: () => (
+          <Skeleton width={64} height={32} enableAnimation={enableAnimation} />
+        ),
       }),
       display({
         header: t("bonds.table.maturity"),
-        cell: () => <Skeleton width="100%" height={32} />,
+        cell: () => (
+          <Skeleton
+            width="100%"
+            height={32}
+            enableAnimation={enableAnimation}
+          />
+        ),
       }),
       display({
         header: t("bonds.table.balance"),
-        cell: () => <Skeleton width="100%" height={32} />,
+        cell: () => (
+          <Skeleton
+            width="100%"
+            height={32}
+            enableAnimation={enableAnimation}
+          />
+        ),
       }),
       display({
         header: t("bonds.table.price"),
-        cell: () => <Skeleton width="100%" height={32} />,
+        cell: () => (
+          <Skeleton
+            width="100%"
+            height={32}
+            enableAnimation={enableAnimation}
+          />
+        ),
       }),
       display({
         id: "actions",
         cell: () => (
           <div>
-            {config?.showTransactions && <Skeleton width={72} height={32} />}
+            {config?.showTransactions && (
+              <Skeleton
+                width={72}
+                height={32}
+                enableAnimation={enableAnimation}
+              />
+            )}
           </div>
         ),
       }),

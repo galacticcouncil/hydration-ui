@@ -8,6 +8,7 @@ import { BondTableItem } from "./table/BondsTable.utils"
 import { useTranslation } from "react-i18next"
 import { u32 } from "@polkadot/types-codec"
 import { u8 } from "@polkadot/types"
+import { Placeholder } from "./table/placeholder/Placeholder"
 
 interface Props {
   bonds: Bond[]
@@ -26,6 +27,10 @@ export const MyActiveBonds = ({ bonds, metas, ...props }: Props) => {
   const tableProps = {
     title: t("bonds.table.title"),
     showTransactions: false,
+  }
+
+  if (!account) {
+    return <Placeholder {...tableProps} />
   }
 
   if (isLoading) {

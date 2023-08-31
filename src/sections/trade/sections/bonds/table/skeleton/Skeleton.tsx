@@ -1,5 +1,5 @@
 import { TableSkeleton } from "components/Table/TableSkeleton"
-import { useMyActiveBondsSkeleton } from "./Skeleton.utils"
+import { useBondsSkeleton } from "./Skeleton.utils"
 
 type Props = {
   title: string
@@ -7,7 +7,7 @@ type Props = {
 }
 
 export const Skeleton = ({ title, showTransactions }: Props) => {
-  const table = useMyActiveBondsSkeleton({ showTransactions })
+  const table = useBondsSkeleton({ showTransactions })
 
   return <TableSkeleton table={table} title={title} />
 }
