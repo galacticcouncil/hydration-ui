@@ -12,7 +12,8 @@ export const BondsPageSkeleton = () => {
       </Heading>
       <Skeleton width="100%" height={350} sx={{ mb: 40 }} />
       <Skeleton width="100%" height={90} sx={{ mb: 12 }} />
-      <Skeleton width="100%" height={90} sx={{ mb: 12 }} />
+      <Skeleton width="100%" height={90} sx={{ mb: 40 }} />
+      <Skeleton width="100%" height={460} />
     </>
   )
 }

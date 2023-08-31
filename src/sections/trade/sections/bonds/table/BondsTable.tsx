@@ -12,18 +12,18 @@ import {
 import { Fragment, useState } from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { Bond, useActiveBondsTable } from "./BondsTable.utils"
+import { BondTableItem, useActiveBondsTable } from "./BondsTable.utils"
 import { Transactions } from "./transactions/Transactions"
 import { Heading } from "components/Typography/Heading/Heading"
 
 type Props = {
   title: string
-  data: Bond[]
+  data: BondTableItem[]
   showTransactions?: boolean
 }
 
 export const BondsTable = ({ title, data, showTransactions }: Props) => {
-  const [, setRow] = useState<Bond | undefined>(undefined)
+  const [, setRow] = useState<BondTableItem | undefined>(undefined)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const table = useActiveBondsTable(data, { showTransactions })

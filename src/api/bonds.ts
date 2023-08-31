@@ -3,6 +3,13 @@ import { useQuery } from "@tanstack/react-query"
 import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 
+export type Bond = {
+  assetId: string
+  id: string
+  name: string
+  maturity: number
+}
+
 export const useBonds = (id?: string) => {
   const api = useApiPromise()
 
@@ -11,7 +18,7 @@ export const useBonds = (id?: string) => {
     async () => {
       const raw = await api.query.assetRegistry.assets.entries()
 
-      const bonds = await raw.reduce(async (acc, [key, dataRaw]) => {
+      return raw.reduce<Promise<Bond[]>>(async (acc, [key, dataRaw]) => {
         const prevAcc = await acc
         const data = dataRaw.unwrap()
 
@@ -32,9 +39,7 @@ export const useBonds = (id?: string) => {
         }
 
         return prevAcc
-      }, Promise.resolve([] as Array<{ assetId: string; id: string; name: string; maturity: number }>))
-
-      return bonds
+      }, Promise.resolve([]))
     },
     {
       select: (bonds) => {
@@ -44,4 +49,32 @@ export const useBonds = (id?: string) => {
       },
     },
   )
+}
+
+export const useLbpPool = () => {
+  const api = useApiPromise()
+
+  return useQuery(QUERY_KEYS.lbpPool, async () => {
+    const raw = await api.query.lbp.poolData.entries()
+
+    const data = raw.map(([key, rawData]) => {
+      const data = rawData.unwrap()
+
+      return {
+        id: key.toHuman()[0] as string,
+        owner: data.owner.toString() as string,
+        start: data.start.toString() as string,
+        end: data.end.toString() as string,
+        assets: data.assets.map((asset) => asset.toString()) as string[],
+        initialWeight: data.initialWeight.toString() as string,
+        finalWeight: data.finalWeight.toString() as string,
+        weightCurve: data.weightCurve.toString() as string,
+        fee: data.fee.map((el) => el.toString()) as string[],
+        feeCollector: data.feeCollector.toString() as string,
+        repayTarget: data.repayTarget.toString() as string,
+      }
+    })
+
+    return data
+  })
 }
