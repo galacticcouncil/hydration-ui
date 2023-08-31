@@ -5,7 +5,6 @@ import {
 } from "@tanstack/react-location"
 import { AppProviders } from "components/AppProviders/AppProviders"
 import { useEffect } from "react"
-import { TestnetModal } from "sections/testnet/TestnetModal"
 import { routes } from "./routes"
 
 const history = createBrowserHistory()
@@ -32,11 +31,6 @@ export const App = () => {
   return (
     <AppProviders>
       <Router location={location} routes={routes} />
-      {import.meta.env.VITE_SENTRY_DSN && (
-        <TestnetModal
-          onBack={() => (window.location.href = "https://bsx.fi/")}
-        />
-      )}
     </AppProviders>
   )
 }
