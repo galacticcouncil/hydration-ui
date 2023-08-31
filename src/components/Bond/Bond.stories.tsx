@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { ReactComponent as PolkaLogo } from "assets/icons/PolkadotLogo.svg"
 
 import { Bond } from "./Bond"
+import { BondSkeleton } from "./BondSkeleton"
 
 const meta: Meta<typeof Bond> = {
   component: Bond,
@@ -10,9 +11,11 @@ const meta: Meta<typeof Bond> = {
 export default meta
 type Story = StoryObj<typeof Bond>
 
-export const Default: Story = {
+export const List: Story = {
   render: () => (
     <>
+      <BondSkeleton view="list" />
+      <br />
       <Bond
         view="list"
         title="HDXb08112024"
@@ -22,6 +25,14 @@ export const Default: Story = {
         end="11111111"
         onDetailClick={() => console.log("click")}
       />
+    </>
+  ),
+}
+
+export const Card: Story = {
+  render: () => (
+    <>
+      <BondSkeleton view="card" />
       <br />
       <Bond
         view="card"

@@ -7,7 +7,6 @@ import { u8 } from "@polkadot/types"
 import { LINKS } from "utils/navigation"
 import { useLbpPool } from "api/bonds"
 import { useNavigate } from "@tanstack/react-location"
-import Skeleton from "react-loading-skeleton"
 import { BondListSkeleton } from "./BondListSkeleton"
 
 type Props = {
