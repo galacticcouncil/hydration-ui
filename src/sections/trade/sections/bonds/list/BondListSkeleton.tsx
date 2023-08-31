@@ -1,8 +1,8 @@
-import Skeleton from "react-loading-skeleton"
+import { BondSkeleton } from "components/Bond/BondSkeleton"
 
 export const BondListSkeleton = () => (
-  <>
-    <Skeleton width="100%" height={90} sx={{ mb: 12 }} />
-    <Skeleton width="100%" height={90} sx={{ mb: 40 }} />
-  </>
+  <div sx={{ flex: "column", gap: 12 }}>
+    <BondSkeleton />
+    <BondSkeleton />
+  </div>
 )

@@ -69,7 +69,9 @@ export const Bond = ({
       <SItem>
         <div sx={{ flex: "row", align: "center", gap: 6 }}>
           <Icon icon={<ClockIcon />} sx={{ color: "brightBlue300" }} />
-          <Text color="basic400">{t("bond.endingIn")}</Text>
+          <Text color="basic400" fs={14}>
+            {t("bond.endingIn")}
+          </Text>
           {ending?.date && (
             <InfoTooltip text={formatDate(ending.date, "dd.MM.yyyy HH:mm")}>
               <SInfoIcon />
@@ -79,11 +81,15 @@ export const Bond = ({
         <Text color="brightBlue300">{ending?.distance}</Text>
       </SItem>
       <SItem>
-        <Text color="basic400">{t("bond.maturity")}</Text>
+        <Text color="basic400" fs={14}>
+          {t("bond.maturity")}
+        </Text>
         <Text color="white">{maturity}</Text>
       </SItem>
       <SItem>
-        <Text color="basic400">{t("bond.discount")}</Text>
+        <Text color="basic400" fs={14}>
+          {t("bond.discount")}
+        </Text>
         <Text color="white">{t("value.percentage", { value: discount })}</Text>
       </SItem>
       <Button

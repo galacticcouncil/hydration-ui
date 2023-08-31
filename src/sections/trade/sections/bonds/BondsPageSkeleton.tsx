@@ -14,7 +14,9 @@ export const BondsPageSkeleton = () => {
       </Heading>
       <WhyBonds />
       <BondListSkeleton />
-      <BondTableSkeleton title={t("bonds.table.title")} />
+      <div sx={{ mt: 40 }}>
+        <BondTableSkeleton title={t("bonds.table.title")} />
+      </div>
     </>
   )
 }
