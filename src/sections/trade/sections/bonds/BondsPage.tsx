@@ -1,7 +1,7 @@
 import { Heading } from "components/Typography/Heading/Heading"
 import { Bond } from "components/Bond/Bond"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { useBonds } from "api/bonds"
+import { useBonds, useLbpPool } from "api/bonds"
 import { format } from "date-fns"
 import { useAssetMetaList } from "api/assetMeta"
 import { WhyBonds } from "./components/WhyBonds"
@@ -12,6 +12,7 @@ export const BondsPage = () => {
   const { t } = useTranslation()
 
   const bonds = useBonds()
+  const lbpPool = useLbpPool()
   const metas = useAssetMetaList(bonds.data?.map((bond) => bond.assetId) ?? [])
 
   return (
@@ -25,6 +26,9 @@ export const BondsPage = () => {
           ? bonds.data.map((bond) => {
               const meta = metas.data?.find((meta) => meta.id === bond.assetId)
               const date = new Date(bond.maturity)
+              const pool = lbpPool?.data?.find((pool) =>
+                pool.assets.some((assetId) => assetId === bond.id),
+              )
 
               return (
                 <Bond
@@ -35,7 +39,7 @@ export const BondsPage = () => {
                     "yyyyMMdd",
                   )}`}
                   maturity={format(date, "dd/MM/yyyy")}
-                  endingIn="23H 22m"
+                  end={pool?.end}
                   discount="5"
                   onDetailClick={console.log}
                 />

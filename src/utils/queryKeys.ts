@@ -315,4 +315,5 @@ export const QUERY_KEYS = {
     positionId,
   ],
   bonds: ["bonds"],
+  lbpPool: ["lbpPool"],
 } as const

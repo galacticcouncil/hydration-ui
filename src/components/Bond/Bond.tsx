@@ -1,11 +1,17 @@
 import { Button } from "components/Button/Button"
 import { Heading } from "components/Typography/Heading/Heading"
 import { Text } from "components/Typography/Text/Text"
-import { MouseEventHandler, ReactNode } from "react"
+import { MouseEventHandler, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { SBond, SItem } from "./Bond.styled"
 import { Icon } from "components/Icon/Icon"
 import { ReactComponent as ClockIcon } from "assets/icons/ClockIcon.svg"
+import { useBestNumber } from "api/chain"
+import { BLOCK_TIME } from "utils/constants"
+import { addSeconds, intlFormatDistance } from "date-fns"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "sections/pools/pool/Pool.styled"
+import { formatDate } from "utils/formatting"
 
 export type BondView = "card" | "list"
 
@@ -14,7 +20,7 @@ type Props = {
   icon: ReactNode
   title: string
   maturity: string
-  endingIn: string
+  end?: string
   discount: string
   onDetailClick: MouseEventHandler<HTMLButtonElement>
 }
@@ -24,11 +30,24 @@ export const Bond = ({
   icon,
   title,
   maturity,
-  endingIn,
+  end,
   onDetailClick,
   discount,
 }: Props) => {
   const { t } = useTranslation()
+  const bestNumber = useBestNumber()
+
+  const ending = useMemo(() => {
+    if (!end || !bestNumber.data) return undefined
+
+    const remainingSeconds = BLOCK_TIME.multipliedBy(
+      Number(end) - bestNumber.data?.relaychainBlockNumber.toNumber() ?? 0,
+    ).toNumber()
+
+    const date = addSeconds(new Date(), remainingSeconds)
+    const distance = intlFormatDistance(date, new Date())
+    return { distance, date }
+  }, [end, bestNumber])
 
   const headingFs = view === "card" ? ([19, 26] as const) : ([19, 21] as const)
 
@@ -51,8 +70,13 @@ export const Bond = ({
         <div sx={{ flex: "row", align: "center", gap: 6 }}>
           <Icon icon={<ClockIcon />} sx={{ color: "brightBlue300" }} />
           <Text color="basic400">{t("bond.endingIn")}</Text>
+          {ending?.date && (
+            <InfoTooltip text={formatDate(ending.date, "dd.MM.yyyy HH:mm")}>
+              <SInfoIcon />
+            </InfoTooltip>
+          )}
         </div>
-        <Text color="brightBlue300">{endingIn}</Text>
+        <Text color="brightBlue300">{ending?.distance}</Text>
       </SItem>
       <SItem>
         <Text color="basic400">{t("bond.maturity")}</Text>
