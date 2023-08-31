@@ -5,7 +5,7 @@ import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
 import { Icon } from "components/Icon/Icon"
 import { whyBonds } from "sections/trade/sections/bonds/Bonds.utils"
 import { useTranslation } from "react-i18next"
-import { SWhyBonds } from "./WhyBonds.styled"
+import { SBondSteps, SWhyBonds } from "./WhyBonds.styled"
 
 export const WhyBonds = () => {
   const { t } = useTranslation()
@@ -18,7 +18,7 @@ export const WhyBonds = () => {
       <Text color="darkBlue200" sx={{ mt: 16 }}>
         {t("bonds.whyBonds.desc")}
       </Text>
-      <div sx={{ mt: 41, flex: "row", gap: 20 }}>
+      <SBondSteps>
         {whyBonds.map((whyBond, i) => (
           <Step
             key={whyBond.index}
@@ -27,7 +27,7 @@ export const WhyBonds = () => {
             description={t(`bonds.whyBonds.${whyBond.index}.desc`)}
           />
         ))}
-      </div>
+      </SBondSteps>
       <Text
         color="brightBlue300"
         fs={12}
