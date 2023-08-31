@@ -40,3 +40,31 @@ export const useBonds = () => {
     }, Promise.resolve([]))
   })
 }
+
+export const useLbpPool = () => {
+  const api = useApiPromise()
+
+  return useQuery(QUERY_KEYS.lbpPool, async () => {
+    const raw = await api.query.lbp.poolData.entries()
+
+    const data = raw.map(([key, rawData]) => {
+      const data = rawData.unwrap()
+
+      return {
+        id: key.toHuman()[0] as string,
+        owner: data.owner.toString() as string,
+        start: data.start.toString() as string,
+        end: data.end.toString() as string,
+        assets: data.assets.map((asset) => asset.toString()) as string[],
+        initialWeight: data.initialWeight.toString() as string,
+        finalWeight: data.finalWeight.toString() as string,
+        weightCurve: data.weightCurve.toString() as string,
+        fee: data.fee.map((el) => el.toString()) as string[],
+        feeCollector: data.feeCollector.toString() as string,
+        repayTarget: data.repayTarget.toString() as string,
+      }
+    })
+
+    return data
+  })
+}
