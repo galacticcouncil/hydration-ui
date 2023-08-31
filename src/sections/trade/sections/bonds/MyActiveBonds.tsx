@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next"
 import { u32 } from "@polkadot/types-codec"
 import { u8 } from "@polkadot/types"
 import { Placeholder } from "./table/placeholder/Placeholder"
+import { BN_0 } from "utils/constants"
 
 interface Props {
   bonds: Bond[]
@@ -41,7 +42,7 @@ export const MyActiveBonds = ({ bonds, metas, ...props }: Props) => {
   const metaMap = new Map(metas.map((meta) => [meta.id, meta]))
 
   const data = balances
-    .filter((balance) => balance.data?.assetId)
+    .filter((balance) => balance.data?.assetId && balance.data?.total?.gt(BN_0))
     .map<BondTableItem>((balance) => {
       const id = balance.data?.assetId?.toString() ?? ""
       const assetId = bondMap.get(id)?.assetId ?? ""
