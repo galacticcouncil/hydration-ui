@@ -4,7 +4,11 @@ import { format } from "date-fns"
 import * as api from "api/bonds"
 import { u32 } from "@polkadot/types-codec"
 import { u8 } from "@polkadot/types"
-import { Text } from "components/Typography/Text/Text"
+import { LINKS } from "utils/navigation"
+import { useLbpPool } from "api/bonds"
+import { useNavigate } from "@tanstack/react-location"
+import Skeleton from "react-loading-skeleton"
+import { BondListSkeleton } from "./BondListSkeleton"
 
 type Props = {
   isLoading?: boolean
@@ -13,12 +17,11 @@ type Props = {
 }
 
 export const BondList = ({ isLoading, bonds, metas }: Props) => {
+  const lbpPool = useLbpPool()
+  const navigate = useNavigate()
+
   if (isLoading) {
-    return (
-      <>
-        <Text color="white">loading</Text>
-      </>
-    )
+    return <BondListSkeleton />
   }
 
   return (
@@ -26,6 +29,9 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
       {bonds.map((bond) => {
         const meta = metas.find((meta) => meta.id === bond.assetId)
         const date = new Date(bond.maturity)
+        const pool = lbpPool?.data?.find((pool) =>
+          pool.assets.some((assetId) => assetId === bond.id),
+        )
 
         return (
           <Bond
@@ -36,9 +42,14 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
               "yyyyMMdd",
             )}`}
             maturity={format(date, "dd/MM/yyyy")}
-            endingIn="23H 22m"
+            end={pool?.end}
             discount="5"
-            onDetailClick={console.log}
+            onDetailClick={() =>
+              navigate({
+                to: LINKS.bond,
+                search: { id: bond.id },
+              })
+            }
           />
         )
       })}

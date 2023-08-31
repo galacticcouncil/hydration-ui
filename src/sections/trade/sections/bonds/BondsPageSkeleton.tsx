@@ -1,7 +1,8 @@
-import Skeleton from "react-loading-skeleton"
 import { Heading } from "components/Typography/Heading/Heading"
 import { useTranslation } from "react-i18next"
 import { WhyBonds } from "./components/WhyBonds"
+import { BondListSkeleton } from "./list/BondListSkeleton"
+import { Skeleton as BondTableSkeleton } from "./table/skeleton/Skeleton"
 
 export const BondsPageSkeleton = () => {
   const { t } = useTranslation()
@@ -12,9 +13,8 @@ export const BondsPageSkeleton = () => {
         {t("bonds.title")}
       </Heading>
       <WhyBonds />
-      <Skeleton width="100%" height={90} sx={{ mb: 12 }} />
-      <Skeleton width="100%" height={90} sx={{ mb: 40 }} />
-      <Skeleton width="100%" height={460} />
+      <BondListSkeleton />
+      <BondTableSkeleton title={t("bonds.table.title")} />
     </>
   )
 }
