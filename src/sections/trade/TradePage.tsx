@@ -3,8 +3,10 @@ import { SubNavigation } from "./SubNavigation"
 import { Outlet, useMatchRoute } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
 import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
+import { useTranslation } from "react-i18next"
 
 export const TradePage = () => {
+  const { t } = useTranslation()
   const matchRoute = useMatchRoute()
   const isBondPage = matchRoute({ to: LINKS.bond })
 
@@ -12,7 +14,10 @@ export const TradePage = () => {
     <Page
       subHeader={
         isBondPage ? (
-          <BackSubHeader label="Back to bond sale" to={LINKS.bonds} />
+          <BackSubHeader
+            label={t("bonds.details.navigation.label")}
+            to={LINKS.bonds}
+          />
         ) : (
           <SubNavigation />
         )

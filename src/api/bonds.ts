@@ -43,9 +43,13 @@ export const useBonds = (id?: string) => {
     },
     {
       select: (bonds) => {
-        const bond = id ? bonds.find((bond) => bond.id === id) : undefined
+        if (id) {
+          const bond = bonds.find((bond) => bond.id === id)
 
-        return id ? (bond ? [bond] : undefined) : bonds
+          return bond ? [bond] : undefined
+        }
+
+        return bonds
       },
     },
   )
