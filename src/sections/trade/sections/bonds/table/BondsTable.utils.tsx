@@ -3,6 +3,7 @@ import {
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
+  VisibilityState,
 } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { Text } from "components/Typography/Text/Text"
@@ -13,6 +14,7 @@ import { useTranslation } from "react-i18next"
 import { useAssetMeta } from "api/assetMeta"
 import { formatDate } from "utils/formatting"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
+import { useMedia } from "react-use"
 
 export type BondTableItem = {
   assetId: string
@@ -49,6 +51,15 @@ const BondCell = ({
 export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<BondTableItem>()
+
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const columnVisibility: VisibilityState = {
+    assetId: true,
+    maturity: isDesktop,
+    balance: true,
+    price: isDesktop,
+    actions: true,
+  }
 
   const columns = useMemo(
     () => [
@@ -129,6 +140,7 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
   return useReactTable({
     data,
     columns,
+    state: { columnVisibility },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
