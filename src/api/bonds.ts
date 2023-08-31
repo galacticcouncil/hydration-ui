@@ -10,35 +10,49 @@ export type Bond = {
   maturity: number
 }
 
-export const useBonds = () => {
+export const useBonds = (id?: string) => {
   const api = useApiPromise()
 
-  return useQuery(QUERY_KEYS.bonds, async () => {
-    const raw = await api.query.assetRegistry.assets.entries()
+  return useQuery(
+    QUERY_KEYS.bonds,
+    async () => {
+      const raw = await api.query.assetRegistry.assets.entries()
 
-    return raw.reduce<Promise<Bond[]>>(async (acc, [key, dataRaw]) => {
-      const prevAcc = await acc
-      const data = dataRaw.unwrap()
+      return raw.reduce<Promise<Bond[]>>(async (acc, [key, dataRaw]) => {
+        const prevAcc = await acc
+        const data = dataRaw.unwrap()
 
-      if (data.assetType.isBond) {
-        const id = key.args[0].toString()
+        if (data.assetType.isBond) {
+          const id = key.args[0].toString()
 
-        const detailsRaw = await api.query.bonds.bonds(id)
-        const details = detailsRaw.unwrap()
+          const detailsRaw = await api.query.bonds.bonds(id)
+          const details = detailsRaw.unwrap()
 
-        const [assetId, maturity] = details ?? []
+          const [assetId, maturity] = details ?? []
 
-        prevAcc.push({
-          id,
-          name: data.name.toString(),
-          assetId: assetId?.toString(),
-          maturity: maturity?.toNumber(),
-        })
-      }
+          prevAcc.push({
+            id,
+            name: data.name.toString(),
+            assetId: assetId?.toString(),
+            maturity: maturity?.toNumber(),
+          })
+        }
 
-      return prevAcc
-    }, Promise.resolve([]))
-  })
+        return prevAcc
+      }, Promise.resolve([]))
+    },
+    {
+      select: (bonds) => {
+        if (id) {
+          const bond = bonds.find((bond) => bond.id === id)
+
+          return bond ? [bond] : undefined
+        }
+
+        return bonds
+      },
+    },
+  )
 }
 
 export const useLbpPool = () => {
