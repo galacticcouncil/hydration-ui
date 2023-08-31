@@ -19,7 +19,7 @@ export const Default: Story = {
         icon={<PolkaLogo />}
         discount="10"
         maturity="22.6.2024"
-        endingIn="23H 22m"
+        end="11111111"
         onDetailClick={() => console.log("click")}
       />
       <br />
@@ -29,7 +29,7 @@ export const Default: Story = {
         icon={<PolkaLogo />}
         discount="10"
         maturity="22.6.2024"
-        endingIn="23H 22m"
+        end="11111111"
         onDetailClick={() => console.log("click")}
       />
     </>
