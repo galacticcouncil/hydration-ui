@@ -12,10 +12,10 @@ export const SWhyBonds = styled.div`
 export const SBondSteps = styled.div`
   margin-top: 41px;
   display: flex;
-  flex-flow: column;
+  flex-direction: column;
   gap: 20px;
 
   @media ${theme.viewport.gte.sm} {
-    flex-flow: row;
+    flex-direction: row;
   }
 `
