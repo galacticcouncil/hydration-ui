@@ -9,7 +9,7 @@ export const DetailCard = ({
 }: {
   label: string
   icon: ReactNode
-  value: string
+  value: string | ReactNode
 }) => {
   return (
     <DetailCardContainer>

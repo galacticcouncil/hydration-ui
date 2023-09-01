@@ -13,13 +13,18 @@ import { useAssetMetaList } from "api/assetMeta"
 type Props = {
   showTransactions?: boolean
   showTransfer?: boolean
+  id?: string
 }
 
-export const MyActiveBonds = ({ showTransactions, showTransfer }: Props) => {
+export const MyActiveBonds = ({
+  showTransactions,
+  showTransfer,
+  id,
+}: Props) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
 
-  const bonds = useBonds()
+  const bonds = useBonds(id)
   const metas = useAssetMetaList(bonds.data?.map((bond) => bond.assetId) ?? [])
 
   const bondsData = bonds?.data ?? []
