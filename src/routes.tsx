@@ -7,7 +7,7 @@ import { StakingPage } from "./sections/staking/StakingPage"
 import { TradePage } from "sections/trade/TradePage"
 import { SwapPage } from "sections/trade/sections/swap/SwapPage"
 import { OtcPageWrapper } from "sections/trade/sections/otc/OtcPageWrappet"
-import { DcaApp } from "sections/trade/sections/dca/DcaPage"
+import { DcaPage } from "sections/trade/sections/dca/DcaPage"
 import { BondsPageWrapper } from "sections/trade/sections/bonds/BondsPageWrapper"
 import { BondDetailsPage } from "sections/trade/sections/bonds/details/BondDetailsPage"
 
@@ -41,7 +41,7 @@ export const routes = [
       {
         ...(isDcaPageEnabled && {
           path: "dca",
-          element: <DcaApp />,
+          element: <DcaPage />,
         }),
       },
       {
