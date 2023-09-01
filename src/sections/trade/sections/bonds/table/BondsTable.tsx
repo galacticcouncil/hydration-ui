@@ -14,7 +14,7 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { BondTableItem, useActiveBondsTable } from "./BondsTable.utils"
 import { Transactions } from "./transactions/Transactions"
-import { Heading } from "components/Typography/Heading/Heading"
+import { Text } from "components/Typography/Text/Text"
 
 type Props = {
   title: string
@@ -40,9 +40,15 @@ export const BondsTable = ({
   return (
     <TableContainer>
       <TableTitle>
-        <Heading fs={16} fw={500} color="white">
+        <Text
+          fs={[16, 20]}
+          lh={[20, 26]}
+          css={{ fontFamily: "FontOver" }}
+          fw={500}
+          color="white"
+        >
           {title}
-        </Heading>
+        </Text>
       </TableTitle>
       <Table>
         <TableHeaderContent>
