@@ -92,7 +92,7 @@ export const useLbpPool = (id?: string) => {
           const pool = pools.find((pool) =>
             pool.assets.some((asset) => asset === id),
           )
-          console.log(pool, pools, id)
+
           return pool ? [pool] : undefined
         }
 
