@@ -128,9 +128,7 @@ export const BondDetailsData = () => {
 
       <BondInfoCards assetId={bond?.assetId} maturity={data?.maturityValue} />
 
-      <div sx={{ mt: 40 }}>
-        <MyActiveBonds id={bond.id} />
-      </div>
+      <MyActiveBonds id={bond.id} />
     </div>
   )
 }
