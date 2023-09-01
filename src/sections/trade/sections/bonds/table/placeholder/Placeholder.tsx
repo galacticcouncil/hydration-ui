@@ -10,11 +10,20 @@ import { useBondsSkeleton } from "sections/trade/sections/bonds/table/skeleton/S
 type Props = {
   title: string
   showTransactions?: boolean
+  showTransfer?: boolean
 }
 
-export const Placeholder = ({ title, showTransactions }: Props) => {
+export const Placeholder = ({
+  title,
+  showTransactions,
+  showTransfer,
+}: Props) => {
   const { t } = useTranslation()
-  const table = useBondsSkeleton({ showTransactions, enableAnimation: false })
+  const table = useBondsSkeleton({
+    showTransactions,
+    showTransfer,
+    enableAnimation: false,
+  })
 
   return (
     <TableSkeleton

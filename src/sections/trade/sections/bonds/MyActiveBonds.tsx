@@ -2,32 +2,38 @@ import { BondsTable } from "./table/BondsTable"
 import { Skeleton } from "./table/skeleton/Skeleton"
 import { useTokensBalances } from "api/balances"
 import { useAccountStore } from "state/store"
-import { Bond } from "api/bonds"
+import { useBonds } from "api/bonds"
 import { pluck } from "utils/rx"
 import { BondTableItem } from "./table/BondsTable.utils"
 import { useTranslation } from "react-i18next"
-import { u32 } from "@polkadot/types-codec"
-import { u8 } from "@polkadot/types"
 import { Placeholder } from "./table/placeholder/Placeholder"
 import { BN_0 } from "utils/constants"
+import { useAssetMetaList } from "api/assetMeta"
 
-interface Props {
-  bonds: Bond[]
-  metas: { id: string; decimals: u32 | u8 }[]
-  isLoading?: boolean
+type Props = {
+  showTransactions?: boolean
+  showTransfer?: boolean
 }
 
-export const MyActiveBonds = ({ bonds, metas, ...props }: Props) => {
+export const MyActiveBonds = ({ showTransactions, showTransfer }: Props) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
-  const balances = useTokensBalances(pluck("id", bonds), account?.address)
+
+  const bonds = useBonds()
+  const metas = useAssetMetaList(bonds.data?.map((bond) => bond.assetId) ?? [])
+
+  const bondsData = bonds?.data ?? []
+  const metasData = metas?.data ?? []
+
+  const balances = useTokensBalances(pluck("id", bondsData), account?.address)
 
   const isLoading =
-    pluck("isLoading", balances).some(Boolean) || props.isLoading
+    pluck("isLoading", balances).some(Boolean) || bonds.isLoading
 
   const tableProps = {
     title: t("bonds.table.title"),
-    showTransactions: false,
+    showTransactions,
+    showTransfer,
   }
 
   if (!account) {
@@ -38,8 +44,8 @@ export const MyActiveBonds = ({ bonds, metas, ...props }: Props) => {
     return <Skeleton {...tableProps} />
   }
 
-  const bondMap = new Map(bonds.map((bond) => [bond.id, bond]))
-  const metaMap = new Map(metas.map((meta) => [meta.id, meta]))
+  const bondMap = new Map(bondsData.map((bond) => [bond.id, bond]))
+  const metaMap = new Map(metasData.map((meta) => [meta.id, meta]))
 
   const data = balances
     .filter((balance) => balance.data?.assetId && balance.data?.total?.gt(BN_0))

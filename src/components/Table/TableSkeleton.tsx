@@ -15,7 +15,6 @@ import {
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
 import { Fragment, ReactNode } from "react"
-import { Heading } from "components/Typography/Heading/Heading"
 
 type Props = {
   table: ReactTable<unknown>
@@ -36,9 +35,15 @@ export const TableSkeleton = ({
     <TableContainer className={className}>
       {title && (
         <TableTitle>
-          <Heading fs={16} fw={500} color="white">
+          <Text
+            fs={[16, 20]}
+            lh={[20, 26]}
+            css={{ fontFamily: "FontOver" }}
+            fw={500}
+            color="white"
+          >
             {title}
-          </Heading>
+          </Text>
         </TableTitle>
       )}
       <div css={{ position: "relative" }}>

@@ -560,6 +560,7 @@
   "bonds.table.balance": "Total Balance",
   "bonds.table.price": "Average purchase price",
   "bonds.table.claim": "Claim",
+  "bonds.table.transfer": "Transfer",
   "bonds.transactions.table.date": "Date",
   "bonds.transactions.table.transaction": "Amount in/out",
   "bonds.transactions.table.price": "Price",

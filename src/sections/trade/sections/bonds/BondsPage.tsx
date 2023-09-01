@@ -5,6 +5,7 @@ import { WhyBonds } from "./components/WhyBonds"
 import { useTranslation } from "react-i18next"
 import { MyActiveBonds } from "./MyActiveBonds"
 import { BondList } from "./list/BondList"
+import { Spacer } from "components/Spacer/Spacer"
 
 export const BondsPage = () => {
   const { t } = useTranslation()
@@ -13,22 +14,16 @@ export const BondsPage = () => {
 
   return (
     <>
-      <Heading fs={19} sx={{ mb: 33 }}>
-        {t("bonds.title")}
-      </Heading>
+      <Heading fs={19}>{t("bonds.title")}</Heading>
+      <Spacer axis="vertical" size={33} />
       <WhyBonds />
       <BondList
         isLoading={bonds.isLoading}
         bonds={bonds.data ?? []}
         metas={metas.data ?? []}
       />
-      <div sx={{ mt: 40 }}>
-        <MyActiveBonds
-          isLoading={bonds.isLoading}
-          bonds={bonds.data ?? []}
-          metas={metas.data ?? []}
-        />
-      </div>
+      <Spacer axis="vertical" size={40} />
+      <MyActiveBonds />
     </>
   )
 }
