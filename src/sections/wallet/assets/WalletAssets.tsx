@@ -10,6 +10,7 @@ import { WalletAssetsTableSkeleton } from "./table/skeleton/WalletAssetsTableSke
 import { WalletAssetsHydraPositionsSkeleton } from "./hydraPositions/skeleton/WalletAssetsHydraPositionsSkeleton"
 import { WalletFarmingPositionsSkeleton } from "./farmingPositions/skeleton/WalletFarmingPositionsSkeleton"
 import { isApiLoaded } from "utils/helpers"
+import { MyActiveBonds } from "sections/trade/sections/bonds/MyActiveBonds"
 
 const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
@@ -42,6 +43,10 @@ export const WalletAssets = () => {
           <WalletAssetsHeader />
 
           <WalletAssetsTableWrapper />
+
+          <Spacer axis="vertical" size={20} />
+
+          <MyActiveBonds showTransfer={true} />
 
           <Spacer axis="vertical" size={20} />
 

@@ -20,13 +20,22 @@ type Props = {
   title: string
   data: BondTableItem[]
   showTransactions?: boolean
+  showTransfer?: boolean
 }
 
-export const BondsTable = ({ title, data, showTransactions }: Props) => {
+export const BondsTable = ({
+  title,
+  data,
+  showTransactions,
+  showTransfer,
+}: Props) => {
   const [, setRow] = useState<BondTableItem | undefined>(undefined)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const table = useActiveBondsTable(data, { showTransactions })
+  const table = useActiveBondsTable(data, {
+    showTransactions,
+    showTransfer,
+  })
 
   return (
     <TableContainer>

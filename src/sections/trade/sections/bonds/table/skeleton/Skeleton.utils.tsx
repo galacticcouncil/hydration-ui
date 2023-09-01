@@ -55,10 +55,17 @@ export const useBondsSkeleton = (config?: Config) => {
         id: "actions",
         cell: () => (
           <div>
-            {config?.showTransactions && (
+            {config?.showTransfer && (
               <Skeleton
                 width={72}
                 height={32}
+                enableAnimation={enableAnimation}
+              />
+            )}
+            {config?.showTransactions && (
+              <Skeleton
+                width={24}
+                height={24}
                 enableAnimation={enableAnimation}
               />
             )}

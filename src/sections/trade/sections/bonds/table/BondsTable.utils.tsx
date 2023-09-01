@@ -5,6 +5,8 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
+import { ReactComponent as TransferIcon } from "assets/icons/TransferIcon.svg"
+
 import { useMemo } from "react"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
@@ -15,6 +17,8 @@ import { useAssetMeta } from "api/assetMeta"
 import { formatDate } from "utils/formatting"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { useMedia } from "react-use"
+import { TableAction } from "components/Table/Table"
+import { Spacer } from "components/Spacer/Spacer"
 
 export type BondTableItem = {
   assetId: string
@@ -26,6 +30,7 @@ export type BondTableItem = {
 export type Config = {
   showTransactions?: boolean
   enableAnimation?: boolean
+  showTransfer?: boolean
 }
 
 const BondCell = ({
@@ -107,16 +112,19 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
       display({
         id: "actions",
         cell: ({ row }) => (
-          <>
+          <div sx={{ flex: "row" }}>
             {!!row.original.maturity &&
               row.original.maturity <= new Date().getTime() && (
-                <Button
-                  size="small"
-                  sx={{ mr: config.showTransactions ? 0 : 14 }}
-                >
+                <TableAction icon={<TransferIcon />} onClick={console.log}>
                   {t("bonds.table.claim")}
-                </Button>
+                </TableAction>
               )}
+            {config.showTransfer && (
+              <TableAction icon={<TransferIcon />} onClick={console.log}>
+                {t("bonds.table.transfer")}
+              </TableAction>
+            )}
+            {!config.showTransactions && <Spacer axis="horizontal" size={14} />}
             {config.showTransactions && (
               <ButtonTransparent
                 onClick={() => row.toggleSelected()}
@@ -129,12 +137,12 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
                 <ChevronDownIcon />
               </ButtonTransparent>
             )}
-          </>
+          </div>
         ),
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config.showTransactions],
+    [config.showTransactions, config.showTransfer],
   )
 
   return useReactTable({
