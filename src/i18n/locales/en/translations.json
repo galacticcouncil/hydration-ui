@@ -567,5 +567,6 @@
   "bonds.transactions.table.link": "Subscan link",
   "bonds.details.navigation.label": "Back to bond sale",
   "bonds.details.header.end": "Ending in <0>{{date}}<0/>",
-  "bonds.details.progressBar.label": "Bond sold/total issuance: <0>{{sold, bignumber}}</0><1>/{{total, bignumber}}</1>"
+  "bonds.details.progressBar.label": "Bond sold/total issuance:",
+  "bonds.details.progressBar.value": "<0>{{sold, bignumber}}</0><1>/{{total, bignumber}}</1>"
 }

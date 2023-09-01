@@ -7,7 +7,7 @@ import { u32 } from "@polkadot/types"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { AnyNumber } from "@polkadot/types-codec/types"
 
-export const useTotalIssuance = (token: Maybe<u32>) => {
+export const useTotalIssuance = (token: Maybe<u32 | AnyNumber>) => {
   const api = useApiPromise()
 
   return useQuery(
