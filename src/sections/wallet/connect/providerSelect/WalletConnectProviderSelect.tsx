@@ -8,12 +8,14 @@ type Props = {
   onWalletSelect: (wallet: Wallet) => void
   onExternalWallet: () => void
   onWalletConnect: () => void
+  onMetamask: () => void
 }
 
 export const WalletConnectProviderSelect = ({
   onWalletSelect,
   onExternalWallet,
   onWalletConnect,
+  onMetamask,
 }: Props) => {
   const { t } = useTranslation()
 
@@ -26,6 +28,7 @@ export const WalletConnectProviderSelect = ({
         onConnect={onWalletSelect}
         onDownload={(wallet) => window.open(wallet.installUrl, "_blank")}
         onWalletConnect={onWalletConnect}
+        onMetamask={onMetamask}
       />
       {import.meta.env.VITE_FF_EXTERNAL_WALLET_ENABLED === "true" && (
         <>

@@ -13,6 +13,7 @@ import { ExternalWalletConnectModal } from "./ExternalWalletConnectModal"
 import { WalletConnectActiveFooter } from "./WalletConnectActiveFooter"
 import { useEnableWallet } from "./WalletConnectModal.utils"
 import { useWalletConnect } from "components/OnboardProvider/OnboardProvider"
+import { connectMetamask } from "utils/evm"
 
 type Props = { isOpen: boolean; onClose: () => void }
 
@@ -57,6 +58,22 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
     setIsWCConnecting(false)
   }
 
+  const onMetamask = async () => {
+    setIsWCConnecting(true)
+
+    setUserSelectedProvider("Metamask")
+    const address = await connectMetamask(window.ethereum)
+    setAccount({
+      address: address.toAccount(),
+      name: address.address,
+      provider: "metamask",
+      isExternalWalletConnected: false,
+    })
+    onModalClose()
+
+    setIsWCConnecting(false)
+  }
+
   const isConnecting = enableWallet.isLoading || isWCConnecting
 
   return (
@@ -87,6 +104,7 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
                     }}
                     onExternalWallet={() => paginateTo(1)}
                     onWalletConnect={onWalletConnect}
+                    onMetamask={onMetamask}
                   />
                 }
               />

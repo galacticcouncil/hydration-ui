@@ -4,17 +4,20 @@ import { WalletConnectProvidersButton } from "sections/wallet/connect/providers/
 import { theme } from "theme"
 import { getWalletMeta } from "sections/wallet/connect/modal/WalletConnectModal.utils"
 import { WalletConnectWCButton } from "./button/WalletConnectWCButton"
+import { Metamask } from "./button/Metamask"
 
 type Props = {
   onConnect: (provider: Wallet) => void
   onDownload: (provider: { installUrl: string }) => void
   onWalletConnect: () => void
+  onMetamask: () => void
 }
 
 export const WalletConnectProviders = ({
   onConnect,
   onDownload,
   onWalletConnect,
+  onMetamask,
 }: Props) => {
   const wallets = getWallets()
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -22,6 +25,7 @@ export const WalletConnectProviders = ({
 
   return (
     <div sx={{ flex: "column", align: "stretch", mt: 8, gap: 8 }}>
+      <Metamask key="Metamask" onClick={onMetamask} />
       {wallets.map((wallet) => (
         <WalletConnectProvidersButton
           key={wallet.extensionName}

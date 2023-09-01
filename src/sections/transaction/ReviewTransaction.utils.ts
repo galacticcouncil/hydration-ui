@@ -7,6 +7,7 @@ import { useMutation } from "@tanstack/react-query"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useMountedState } from "react-use"
 import { useTransactionLink } from "api/transaction"
+import { useAccountStore } from "state/store"
 
 type TxMethod = AnyJson & {
   method: string
@@ -63,58 +64,67 @@ export class UnknownTransactionState extends Error {}
 
 export const useSendTransactionMutation = () => {
   const api = useApiPromise()
+  const { account } = useAccountStore()
   const isMounted = useMountedState()
   const link = useTransactionLink()
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
 
-  const sendTx = useMutation(async (sign: SubmittableExtrinsic<"promise">) => {
+  const sendTx = useMutation(async (sign) => {
     return await new Promise<ISubmittableResult & { transactionLink?: string }>(
       async (resolve, reject) => {
-        const unsubscribe = await sign.send(async (result) => {
-          if (!result || !result.status) return
+        if (account?.provider === "metamask") {
+          setTxState("Broadcast")
+          const receipt = await sign.wait()
+          setTxState("InBlock")
+          // TODO: handle errors
+          resolve({ receipt })
+        } else {
+          const unsubscribe = await sign.send(async (result) => {
+            if (!result || !result.status) return
 
-          const timeout = setTimeout(() => {
-            clearTimeout(timeout)
-            reject(new UnknownTransactionState())
-          }, 60000)
-
-          if (isMounted()) {
-            setTxState(result.status.type)
-          } else {
-            clearTimeout(timeout)
-          }
-
-          if (result.isCompleted) {
-            if (result.dispatchError) {
-              let errorMessage = result.dispatchError.toString()
-
-              if (result.dispatchError.isModule) {
-                const decoded = api.registry.findMetaError(
-                  result.dispatchError.asModule,
-                )
-                errorMessage = `${decoded.section}.${
-                  decoded.method
-                }: ${decoded.docs.join(" ")}`
-              }
-
+            const timeout = setTimeout(() => {
               clearTimeout(timeout)
-              reject(new Error(errorMessage))
+              reject(new UnknownTransactionState())
+            }, 60000)
+
+            if (isMounted()) {
+              setTxState(result.status.type)
             } else {
-              const transactionLink = await link.mutateAsync({
-                blockHash: result.status.asInBlock.toString(),
-                txIndex: result.txIndex?.toString(),
-              })
-
               clearTimeout(timeout)
-              resolve({
-                transactionLink,
-                ...result,
-              })
             }
 
-            unsubscribe()
-          }
-        })
+            if (result.isCompleted) {
+              if (result.dispatchError) {
+                let errorMessage = result.dispatchError.toString()
+
+                if (result.dispatchError.isModule) {
+                  const decoded = api.registry.findMetaError(
+                    result.dispatchError.asModule,
+                  )
+                  errorMessage = `${decoded.section}.${
+                    decoded.method
+                  }: ${decoded.docs.join(" ")}`
+                }
+
+                clearTimeout(timeout)
+                reject(new Error(errorMessage))
+              } else {
+                const transactionLink = await link.mutateAsync({
+                  blockHash: result.status.asInBlock.toString(),
+                  txIndex: result.txIndex?.toString(),
+                })
+
+                clearTimeout(timeout)
+                resolve({
+                  transactionLink,
+                  ...result,
+                })
+              }
+
+              unsubscribe()
+            }
+          })
+        }
       },
     )
   })

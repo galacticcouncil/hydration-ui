@@ -34,6 +34,7 @@
     "@galacticcouncil/sdk": "^0.5.2",
     "@galacticcouncil/ui": "^1.2.21",
     "@lit-labs/react": "^1.1.0",
+    "@metamask/sdk": "^0.6.0",
     "@polkadot/api": "10.9.1",
     "@polkadot/extension-inject": "^0.44.5",
     "@polkadot/ui-shared": "^3.1.4",
@@ -61,6 +62,7 @@
     "color": "^4.2.3",
     "comlink": "^4.3.1",
     "date-fns": "^2.29.1",
+    "ethers": "^5",
     "framer-motion": "^7.3.6",
     "graphql": "^16.6.0",
     "graphql-request": "^5.0.0",
@@ -87,7 +89,7 @@
     "zustand": "^4.1.1"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "dev:rococo": "vite -m rococo",
     "dev:production": "vite -m production",
     "build": "vite build && cp ./build/index.html ./build/404.html",

@@ -33,6 +33,7 @@ import { BN_0, BN_1 } from "utils/constants"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
 import { useWalletConnect } from "components/OnboardProvider/OnboardProvider"
 import Skeleton from "react-loading-skeleton"
+import { sendDispatch } from "utils/evm"
 
 export const ReviewTransactionForm = (
   props: {
@@ -77,6 +78,9 @@ export const ReviewTransactionForm = (
 
       const signature = await props.tx.signAsync(address, { signer, nonce: -1 })
       return await props.onSigned(signature)
+    } else if (provider === "metamask") {
+      const tx = await sendDispatch(account?.name, props.tx)
+      return await props.onSigned(tx)
     } else {
       const wallet = getWalletBySource(provider)
 
