@@ -11,10 +11,13 @@ import { WalletAssetsHydraPositionsSkeleton } from "./hydraPositions/skeleton/Wa
 import { WalletFarmingPositionsSkeleton } from "./farmingPositions/skeleton/WalletFarmingPositionsSkeleton"
 import { isApiLoaded } from "utils/helpers"
 import { MyActiveBonds } from "sections/trade/sections/bonds/MyActiveBonds"
+import { Skeleton as BondsTableSkeleton } from "sections/trade/sections/bonds/table/skeleton/Skeleton"
+import { useTranslation } from "react-i18next"
 
 const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
 export const WalletAssets = () => {
+  const { t } = useTranslation()
   const { account } = useAccountStore()
   const api = useApiPromise()
 
@@ -23,6 +26,8 @@ export const WalletAssets = () => {
       <div sx={{ mt: [34, 56] }}>
         <WalletAssetsHeader />
         <WalletAssetsTableSkeleton />
+        <Spacer axis="vertical" size={20} />
+        <BondsTableSkeleton title={t("bonds.table.title")} />
         <Spacer axis="vertical" size={20} />
         <WalletAssetsHydraPositionsSkeleton />
         <Spacer axis="vertical" size={20} />
