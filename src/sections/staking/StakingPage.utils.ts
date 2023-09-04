@@ -39,16 +39,23 @@ export type TStakingData = NonNullable<ReturnType<typeof useStakeData>["data"]>
 const getCurrentActionPoints = (
   votes: TStakingPosition["votes"],
   initialActionPoints: number,
+  stakePosition: BN,
 ) => {
   let currentActionPoints = 0
+
+  const maxVotingPower = stakePosition.multipliedBy(CONVICTIONS["locked6x"])
+  const maxActionPointsPerRef = 100
 
   votes?.forEach((vote) => {
     const convictionIndex = CONVICTIONS[vote.conviction.toLowerCase()]
 
-    currentActionPoints += vote.amount
-      .multipliedBy(convictionIndex)
-      .div(BN_BILL)
-      .toNumber()
+    currentActionPoints += Math.floor(
+      vote.amount
+        .multipliedBy(convictionIndex)
+        .multipliedBy(maxActionPointsPerRef)
+        .div(maxVotingPower)
+        .toNumber(),
+    )
   })
 
   const actionMultipliers = {
@@ -149,6 +156,7 @@ export const useStakeData = () => {
       currentActionPoints = getCurrentActionPoints(
         stakePosition.votes,
         stakePosition.actionPoints.toNumber(),
+        stakePosition.stake,
       )
 
       const initialPositionBalance = BN(
@@ -495,6 +503,7 @@ export const useClaimReward = () => {
     const actionPoints = getCurrentActionPoints(
       stakePosition.votes,
       stakePosition.actionPoints.toNumber(),
+      stakePosition.stake,
     )
 
     const points = wasm.calculate_points(
