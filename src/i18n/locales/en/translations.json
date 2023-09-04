@@ -73,6 +73,7 @@
   "header.xcm": "Cross-chain",
   "header.otc": "OTC",
   "header.trade.bonds.title": "Bonds",
+  "header.trade.bonds.subtitle": "Bonds",
   "header.trade": "Trade",
   "header.trade.swap.title": "SWAP",
   "header.trade.swap.subtitle": "Trade instantly using the Omnipool",
