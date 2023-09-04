@@ -2,6 +2,7 @@ import { Link, useSearch } from "@tanstack/react-location"
 import { SItem, SList } from "components/Layout/Header/menu/HeaderMenu.styled"
 import { useTranslation } from "react-i18next"
 import { MENU_ITEMS } from "utils/navigation"
+import { HeaderSubMenu } from "./HeaderSubMenu"
 
 export const HeaderMenu = () => {
   const { t } = useTranslation()
@@ -12,6 +13,10 @@ export const HeaderMenu = () => {
       {MENU_ITEMS.map((item, i) => {
         if (!item.enabled) {
           return null
+        }
+
+        if (item.subItems?.length) {
+          return <HeaderSubMenu key={i} item={item} />
         }
 
         if (item.external) {

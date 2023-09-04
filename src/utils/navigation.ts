@@ -4,6 +4,10 @@ import { ReactComponent as TransferIcon } from "assets/icons/TransferTabIcon.svg
 import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
 import { ReactComponent as StatsIcon } from "assets/icons/ChartIcon.svg"
 import { ReactComponent as StakingIcon } from "assets/icons/StakingIcon.svg"
+import { ReactComponent as IconDCA } from "assets/icons/navigation/IconDCA.svg"
+import { ReactComponent as IconOTC } from "assets/icons/navigation/IconOTC.svg"
+import { ReactComponent as IconSwap } from "assets/icons/navigation/IconSwap.svg"
+import { ReactComponent as IconBonds } from "assets/icons/Bonds.svg"
 
 export const LINKS = {
   home: "/",
@@ -33,12 +37,26 @@ const isPoolsPageEnabled = import.meta.env.VITE_FF_POOLS_ENABLED === "true"
 const isXcmPageEnabled = import.meta.env.VITE_FF_XCM_ENABLED === "true"
 const isStatsEnabled = import.meta.env.VITE_FF_STATS_ENABLED === "true"
 const isStakingEnabled = import.meta.env.VITE_FF_STAKING_ENABLED === "true"
+const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
+const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
+const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
 
 export const MENU_ITEMS = [
   {
     key: "trade",
     href: LINKS.trade,
     Icon: TradeIcon,
+    subItems: [
+      { key: "swap", href: LINKS.trade, Icon: IconSwap, enabled: true },
+      { key: "dca", href: LINKS.dca, Icon: IconDCA, enabled: isDcaPageEnabled },
+      { key: "otc", href: LINKS.otc, Icon: IconOTC, enabled: isOtcPageEnabled },
+      {
+        key: "bonds",
+        href: LINKS.bonds,
+        Icon: IconBonds,
+        enabled: isBondsPageEnabled,
+      },
+    ],
     enabled: true,
     external: false,
     mobVisible: true,
@@ -104,3 +122,7 @@ export const MENU_ITEMS = [
 
 export type TabKey = (typeof MENU_ITEMS)[number]["key"]
 export type TabItem = (typeof MENU_ITEMS)[number]
+export type TabSubItem = (typeof MENU_ITEMS)[number]["subItems"]
+export type TabItemWithSubItems = TabItem & {
+  subItems: NonNullable<TabSubItem>
+}

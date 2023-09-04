@@ -46,7 +46,7 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
             onDetailClick={() =>
               navigate({
                 to: LINKS.bond,
-                search: { id: bond.id },
+                search: { assetOut: bond.id },
               })
             }
           />

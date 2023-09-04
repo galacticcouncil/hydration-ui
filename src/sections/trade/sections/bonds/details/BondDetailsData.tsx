@@ -17,7 +17,7 @@ import { MyActiveBonds } from "sections/trade/sections/bonds/MyActiveBonds"
 import { BondDetailsSkeleton } from "./BondDetailsSkeleton"
 
 type SearchGenerics = MakeGenerics<{
-  Search: { id: number }
+  Search: { assetOut: number }
 }>
 
 export const BondDetailsHeader = ({
@@ -80,7 +80,7 @@ export const BondDetailsHeader = ({
 
 export const BondDetailsData = () => {
   const search = useSearch<SearchGenerics>()
-  const id = search.id?.toString()
+  const id = search.assetOut?.toString()
 
   const bonds = useBonds(id)
   const bond = bonds?.data?.[0]
