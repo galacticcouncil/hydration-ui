@@ -26,66 +26,85 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
   const navigate = useNavigate()
   const bestNumber = useBestNumber()
 
-  const { active } = bonds.reduce<{
-    active: ReactNode[]
-    upcoming: ReactNode[]
-  }>(
-    (acc, bond) => {
-      const meta = metas.find((meta) => meta.id === bond.assetId)
-      const date = new Date(bond.maturity)
-      const pool = lbpPool?.data?.find((pool) =>
-        pool.assets.some((assetId) => assetId === bond.id),
+  const currentBlockNumber = bestNumber.data?.relaychainBlockNumber.toNumber()
+
+  const { active, upcoming } = currentBlockNumber
+    ? bonds.reduce<{
+        active: ReactNode[]
+        upcoming: ReactNode[]
+      }>(
+        (acc, bond) => {
+          const meta = metas.find((meta) => meta.id === bond.assetId)
+          const date = new Date(bond.maturity)
+          const pool = lbpPool?.data?.find((pool) =>
+            pool.assets.some((assetId) => assetId === bond.id),
+          )
+
+          if (pool && pool.start) {
+            const assetIn = pool.assets.find((asset) => asset !== bond.id)
+            const state =
+              currentBlockNumber > Number(pool.start) ? "active" : "upcoming"
+
+            acc[state].push(
+              <Bond
+                key={`${bond.assetId}_${bond.maturity}`}
+                icon={<AssetLogo id={bond.assetId} />}
+                ticker={`${meta?.symbol}b`}
+                name={getBondName(meta?.symbol ?? "", date, true)}
+                maturity={format(date, "dd/MM/yyyy")}
+                end={pool.end}
+                start={pool.start}
+                state={state}
+                discount="5"
+                onDetailClick={() =>
+                  navigate({
+                    to: LINKS.bond,
+                    search: { assetIn, assetOut: bond.id },
+                  })
+                }
+              />,
+            )
+          }
+
+          return acc
+        },
+        { active: [], upcoming: [] },
       )
-
-      if (pool) {
-        const currentBlockNumber =
-          bestNumber.data?.relaychainBlockNumber.toNumber()
-
-        const sortedBond = (
-          <Bond
-            key={`${bond.assetId}_${bond.maturity}`}
-            icon={<AssetLogo id={bond.assetId} />}
-            ticker={`${meta?.symbol}b`}
-            name={getBondName(meta?.symbol ?? "", date, true)}
-            maturity={format(date, "dd/MM/yyyy")}
-            end={pool?.end}
-            discount="5"
-            onDetailClick={() =>
-              navigate({
-                to: LINKS.bond,
-                search: { assetOut: bond.id },
-              })
-            }
-          />
-        )
-
-        if (currentBlockNumber && currentBlockNumber > Number(pool.start)) {
-          acc.active.push(sortedBond)
-        } else {
-          acc.upcoming.push(sortedBond)
-        }
-      }
-
-      return acc
-    },
-    { active: [], upcoming: [] },
-  )
+    : { active: [], upcoming: [] }
 
   if (isLoading || bestNumber.isLoading) {
     return <BondListSkeleton />
   }
 
   return (
-    <div sx={{ flex: "column", gap: 12 }}>
-      <Text
-        color="brightBlue300"
-        tTransform="uppercase"
-        fs={15}
-        font="FontOver"
-      >
-        {t("bonds.section.activeBonds")}
-      </Text>
-      {active}
+    <div sx={{ flex: "column", gap: 30 }}>
+      {active.length && (
+        <div sx={{ flex: "column", gap: 12 }}>
+          <Text
+            color="brightBlue300"
+            tTransform="uppercase"
+            fs={15}
+            font="FontOver"
+          >
+            {t("bonds.section.activeBonds")}
+          </Text>
+          {active}
+        </div>
+      )}
+
+      {upcoming.length && (
+        <div sx={{ flex: "column", gap: 12 }}>
+          <Text
+            color="brightBlue300"
+            tTransform="uppercase"
+            fs={15}
+            font="FontOver"
+          >
+            {t("bonds.section.upcomingBonds")}
+          </Text>
+          {upcoming}
+        </div>
+      )}
     </div>
   )
 }

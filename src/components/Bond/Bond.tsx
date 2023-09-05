@@ -4,7 +4,6 @@ import { MouseEventHandler, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { SBond, SItem } from "./Bond.styled"
 import { Icon } from "components/Icon/Icon"
-import { ReactComponent as ClockIcon } from "assets/icons/ClockIcon.svg"
 import { useBestNumber } from "api/chain"
 import { BLOCK_TIME } from "utils/constants"
 import { addSeconds, intlFormatDistance } from "date-fns"
@@ -20,7 +19,9 @@ type Props = {
   name: string
   ticker: string
   maturity: string
-  end?: string
+  end: string
+  start: string
+  state: "active" | "upcoming"
   discount: string
   onDetailClick: MouseEventHandler<HTMLButtonElement>
 }
@@ -31,12 +32,16 @@ export const Bond = ({
   name,
   maturity,
   end,
+  start,
+  state,
   onDetailClick,
   discount,
   ticker,
 }: Props) => {
   const { t } = useTranslation()
   const bestNumber = useBestNumber()
+
+  const isActive = state === "active"
 
   const ending = useMemo(() => {
     if (!end || !bestNumber.data) return undefined
@@ -79,9 +84,8 @@ export const Bond = ({
       </div>
       <SItem>
         <div sx={{ flex: "row", align: "center", gap: 6 }}>
-          <Icon icon={<ClockIcon />} sx={{ color: "brightBlue300" }} />
           <Text color="basic400" fs={14}>
-            {t("bond.endingIn")}
+            {t(`bond.${isActive ? "endingIn" : "startingIn"}`)}
           </Text>
           {ending?.date && (
             <InfoTooltip text={formatDate(ending.date, "dd.MM.yyyy HH:mm")}>
@@ -97,19 +101,26 @@ export const Bond = ({
         </Text>
         <Text color="white">{maturity}</Text>
       </SItem>
-      <SItem>
-        <Text color="basic400" fs={14}>
-          {t("bond.discount")}
-        </Text>
-        <Text color="white">{t("value.percentage", { value: discount })}</Text>
-      </SItem>
-      <Button
-        fullWidth={true}
-        onClick={onDetailClick}
-        sx={{ mt: view === "card" ? 12 : [12, 0] }}
-      >
-        Details
-      </Button>
+
+      {state === "active" && (
+        <>
+          <SItem>
+            <Text color="basic400" fs={14}>
+              {t("bond.discount")}
+            </Text>
+            <Text color="white">
+              {t("value.percentage", { value: discount })}
+            </Text>
+          </SItem>
+          <Button
+            fullWidth
+            onClick={onDetailClick}
+            sx={{ mt: view === "card" ? 12 : [12, 0] }}
+          >
+            Trade
+          </Button>
+        </>
+      )}
     </SBond>
   )
 }
