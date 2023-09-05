@@ -148,26 +148,59 @@ export const useStakeData = () => {
     )
 
     const stakePosition = stake.data?.stakePosition
+    let averagePercentage = BN_0
     let amountOfReferends = 0
 
     if (stakePosition) {
-      amountOfReferends =
+      const initialPositionBalance = BN(
+        positionBalances.data?.events.find(
+          (event) => event.name === "Staking.PositionCreated",
+        )?.args.stake ?? 0,
+      )
+
+      const allReferendaPercentages =
         referendas.data?.reduce((acc, referenda) => {
           const endReferendaBlockNumber =
             referenda.referendum.asFinished.end.toBigNumber()
 
           if (endReferendaBlockNumber.gt(stakePosition.createdAt)) {
-            return ++acc
+            amountOfReferends++
+
+            if (referenda.amount && referenda.conviction) {
+              /* staked position value when a referenda is over */
+              let positionBalance = initialPositionBalance
+
+              positionBalances.data?.events.forEach((event) => {
+                if (event.name === "Staking.StakeAdded") {
+                  const eventOccurBlockNumber = BN(event.block.height)
+
+                  if (
+                    endReferendaBlockNumber.gte(eventOccurBlockNumber) &&
+                    positionBalance.lt(event.args.totalStake)
+                  ) {
+                    positionBalance = BN(event.args.totalStake)
+                  }
+                }
+              })
+
+              const percentageOfVotedReferenda = referenda.amount
+                .div(positionBalance)
+                .multipliedBy(CONVICTIONS[referenda.conviction.toLowerCase()])
+                .div(CONVICTIONS["locked6x"])
+                .multipliedBy(100)
+
+              return acc.plus(percentageOfVotedReferenda)
+            }
           }
 
           return acc
-        }, 0) ?? 0
+        }, BN_0) ?? BN(0)
+
+      averagePercentage = allReferendaPercentages.div(amountOfReferends)
     }
 
-    const rewardBoostPersentage = !(
-      stakePosition?.actionPoints.isZero() && !amountOfReferends
-    )
-      ? stakePosition?.actionPoints.div(amountOfReferends)
+    const rewardBoostPersentage = referendas.data?.length
+      ? averagePercentage
       : BN_100
 
     return {
@@ -190,9 +223,13 @@ export const useStakeData = () => {
     circulatingSupply.data,
     isLoading,
     meta.data?.decimals,
+    positionBalances.data?.events,
     referendas.data,
     spotPrice.data?.spotPrice,
-    stake.data,
+    stake.data?.minStake,
+    stake.data?.positionId,
+    stake.data?.stakePosition,
+    stake.data?.totalStake,
   ])
 
   return {
