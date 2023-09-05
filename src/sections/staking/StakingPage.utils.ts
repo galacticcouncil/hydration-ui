@@ -196,7 +196,10 @@ export const useStakeData = () => {
           return acc
         }, BN_0) ?? BN(0)
 
-      averagePercentage = allReferendaPercentages.div(amountOfReferends)
+      averagePercentage =
+        allReferendaPercentages.isZero() && !amountOfReferends
+          ? BN_100
+          : allReferendaPercentages.div(amountOfReferends)
     }
 
     const rewardBoostPersentage = referendas.data?.length
