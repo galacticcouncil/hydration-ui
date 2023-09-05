@@ -43,7 +43,7 @@ export const getReferendums =
 
     const referendums = referendumRaw.map(([key, codec]) => {
       const id = key.args[0].toString()
-      const vote = votesRaw?.asDirect.votes.some(
+      const vote = votesRaw?.asDirect.votes.find(
         (vote) => vote[0].toString() === id,
       )
 
@@ -51,6 +51,8 @@ export const getReferendums =
         id: key.args[0].toString(),
         referendum: codec.unwrap(),
         voted: !!vote,
+        amount: vote?.[1].asStandard?.balance.toBigNumber(),
+        conviction: vote?.[1].asStandard?.vote.conviction.toString(),
       }
     })
 
