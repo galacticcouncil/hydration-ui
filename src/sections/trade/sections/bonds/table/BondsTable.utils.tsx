@@ -19,6 +19,7 @@ import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { useMedia } from "react-use"
 import { TableAction } from "components/Table/Table"
 import { Spacer } from "components/Spacer/Spacer"
+import { getBondName } from "sections/trade/sections/bonds/Bonds.utils"
 
 export type BondTableItem = {
   assetId: string
@@ -37,18 +38,15 @@ const BondCell = ({
   assetId,
   maturity,
 }: Pick<BondTableItem, "assetId" | "maturity">) => {
-  const { t } = useTranslation()
   const meta = useAssetMeta(assetId)
 
-  const formattedMaturity = maturity
-    ? formatDate(new Date(maturity), "yyyyMMdd")
-    : ""
+  const date = maturity ? new Date(maturity) : new Date()
 
   return (
     <AssetTableName
       id={assetId}
-      name={`${meta.data?.symbol}B-${formattedMaturity}`}
-      symbol={`${meta.data?.symbol} ${t("bond")}`}
+      name={getBondName(meta.data?.symbol ?? "", date, true)}
+      symbol={`${meta.data?.symbol}b`}
     />
   )
 }

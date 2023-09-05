@@ -1,7 +1,7 @@
 import { gradientBorder, theme } from "theme"
 import styled from "@emotion/styled"
 
-export const SWhyBonds = styled.div`
+export const SWhyBonds = styled.div<{ expanded: boolean }>`
   ${gradientBorder};
 
   background: rgba(17, 19, 32, 1);

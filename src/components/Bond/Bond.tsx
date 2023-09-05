@@ -1,5 +1,4 @@
 import { Button } from "components/Button/Button"
-import { Heading } from "components/Typography/Heading/Heading"
 import { Text } from "components/Typography/Text/Text"
 import { MouseEventHandler, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -18,7 +17,8 @@ export type BondView = "card" | "list"
 type Props = {
   view?: BondView
   icon: ReactNode
-  title: string
+  name: string
+  ticker: string
   maturity: string
   end?: string
   discount: string
@@ -28,11 +28,12 @@ type Props = {
 export const Bond = ({
   view,
   icon,
-  title,
+  name,
   maturity,
   end,
   onDetailClick,
   discount,
+  ticker,
 }: Props) => {
   const { t } = useTranslation()
   const bestNumber = useBestNumber()
@@ -61,10 +62,20 @@ export const Bond = ({
           mb: view === "card" ? 12 : [12, 0],
         }}
       >
-        <Icon icon={icon} size={26} />
-        <Heading fs={headingFs} lh={headingFs} sx={{ mt: 3 }}>
-          {title}
-        </Heading>
+        <Icon icon={icon} size={32} />
+        <div sx={{ flex: "column" }}>
+          <Text
+            fs={headingFs}
+            lh={headingFs}
+            sx={{ mt: 3 }}
+            font="ChakraPetchSemiBold"
+          >
+            {ticker}
+          </Text>
+          <Text fs={13} sx={{ mt: 3 }} color={"whiteish500"}>
+            {name}
+          </Text>
+        </div>
       </div>
       <SItem>
         <div sx={{ flex: "row", align: "center", gap: 6 }}>

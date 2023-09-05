@@ -16,12 +16,14 @@ export const BondsPage = () => {
     <>
       <Heading fs={19}>{t("bonds.title")}</Heading>
       <Spacer axis="vertical" size={33} />
-      <WhyBonds />
       <BondList
         isLoading={bonds.isLoading}
         bonds={bonds.data ?? []}
         metas={metas.data ?? []}
       />
+      <Spacer axis="vertical" size={33} />
+      <WhyBonds />
+
       <Spacer axis="vertical" size={40} />
       <MyActiveBonds />
     </>

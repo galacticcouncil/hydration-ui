@@ -15,6 +15,7 @@ import Skeleton from "react-loading-skeleton"
 import { BondInfoCards } from "./components/BondInfoCards/BondInfoCards"
 import { MyActiveBonds } from "sections/trade/sections/bonds/MyActiveBonds"
 import { BondDetailsSkeleton } from "./BondDetailsSkeleton"
+import { getBondName } from "sections/trade/sections/bonds/Bonds.utils"
 
 type SearchGenerics = MakeGenerics<{
   Search: { assetOut: number }
@@ -90,10 +91,9 @@ export const BondDetailsData = () => {
     if (!bond) return undefined
 
     const maturityDate = new Date(bond.maturity)
-    const maturityTitle = formatDate(maturityDate, "yyyyMMdd")
     const maturityValue = formatDate(maturityDate, "dd.MM.yyyy")
 
-    return { maturityTitle, maturityValue }
+    return { maturityDate, maturityValue }
   }, [bond])
 
   if (!bond || !data || !meta.data) return <BondDetailsSkeleton />
@@ -101,7 +101,7 @@ export const BondDetailsData = () => {
   return (
     <div sx={{ flex: "column", gap: 40 }}>
       <BondDetailsHeader
-        title={`${meta.data.symbol}B-${data.maturityTitle}`}
+        title={getBondName(meta.data.symbol, data.maturityDate, true)}
         bondId={bond.id}
       />
 

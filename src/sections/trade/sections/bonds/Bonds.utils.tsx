@@ -2,6 +2,7 @@ import { ReactComponent as ClockIcon } from "assets/icons/ClockIcon.svg"
 import { ReactComponent as TickIcon } from "assets/icons/TickIcon.svg"
 import { ReactComponent as DollarIcon } from "assets/icons/Dollar2Icon.svg"
 import { ReactNode } from "react"
+import { format } from "date-fns"
 
 const steps = ["first", "second", "third"] as const
 
@@ -22,3 +23,9 @@ export const whyBonds: Array<{
     icon: <DollarIcon sx={{ color: "green600" }} />,
   },
 ]
+
+export const getBondName = (symbol: string, date: Date, long?: boolean) =>
+  `${symbol.toLocaleUpperCase()}${long ? " Bond" : "b"} ${format(
+    date,
+    "dd/MM/yyyy",
+  )}`
