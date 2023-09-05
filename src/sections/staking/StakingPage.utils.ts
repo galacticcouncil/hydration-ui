@@ -148,62 +148,26 @@ export const useStakeData = () => {
     )
 
     const stakePosition = stake.data?.stakePosition
-
-    let maxActionPoints = BN_0
-    let currentActionPoints = BN_0
+    let amountOfReferends = 0
 
     if (stakePosition) {
-      currentActionPoints = getCurrentActionPoints(
-        stakePosition.votes,
-        stakePosition.actionPoints.toNumber(),
-        stakePosition.stake,
-      )
-
-      const initialPositionBalance = BN(
-        positionBalances.data?.events.find(
-          (event) => event.name === "Staking.PositionCreated",
-        )?.args.stake ?? 0,
-      )
-
-      const maxStakedReferendasBalance =
+      amountOfReferends =
         referendas.data?.reduce((acc, referenda) => {
           const endReferendaBlockNumber =
             referenda.referendum.asFinished.end.toBigNumber()
 
           if (endReferendaBlockNumber.gt(stakePosition.createdAt)) {
-            /* staked position value when a referenda is over */
-            let positionBalance = initialPositionBalance
-
-            positionBalances.data?.events.forEach((event) => {
-              if (event.name === "Staking.StakeAdded") {
-                const eventOccurBlockNumber = BN(event.block.height)
-
-                if (
-                  endReferendaBlockNumber.gte(eventOccurBlockNumber) &&
-                  positionBalance.lt(event.args.totalStake)
-                ) {
-                  positionBalance = BN(event.args.totalStake)
-                }
-              }
-            })
-
-            return acc.plus(positionBalance)
+            return ++acc
           }
 
           return acc
-        }, BN_0) ?? BN(0)
-
-      maxActionPoints = maxStakedReferendasBalance.isZero()
-        ? currentActionPoints
-        : maxStakedReferendasBalance
-            .div(BN_BILL)
-            .multipliedBy(CONVICTIONS["locked6x"])
+        }, 0) ?? 0
     }
 
     const rewardBoostPersentage = !(
-      currentActionPoints.isZero() && maxActionPoints.isZero()
+      stakePosition?.actionPoints.isZero() && !amountOfReferends
     )
-      ? currentActionPoints.div(maxActionPoints).multipliedBy(100)
+      ? stakePosition?.actionPoints.div(amountOfReferends)
       : BN_100
 
     return {
@@ -226,7 +190,6 @@ export const useStakeData = () => {
     circulatingSupply.data,
     isLoading,
     meta.data?.decimals,
-    positionBalances.data?.events,
     referendas.data,
     spotPrice.data?.spotPrice,
     stake.data,
