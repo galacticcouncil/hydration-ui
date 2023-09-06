@@ -18,11 +18,15 @@ export const List: Story = {
       <br />
       <Bond
         view="list"
-        title="HDXb08112024"
+        ticker="HDX Bond 08/11/2024"
+        name="HDXb"
         icon={<PolkaLogo />}
-        discount="10"
         maturity="22.6.2024"
         end="11111111"
+        start="1111100"
+        assetId="0"
+        bondId="1000018"
+        state="active"
         onDetailClick={() => console.log("click")}
       />
     </>
@@ -35,12 +39,16 @@ export const Card: Story = {
       <BondSkeleton view="card" />
       <br />
       <Bond
-        view="card"
-        title="HDXb08112024"
+        view="list"
+        ticker="HDX Bond 08/11/2024"
+        name="HDXb"
         icon={<PolkaLogo />}
-        discount="10"
         maturity="22.6.2024"
         end="11111111"
+        start="1111100"
+        assetId="0"
+        bondId="1000018"
+        state="active"
         onDetailClick={() => console.log("click")}
       />
     </>

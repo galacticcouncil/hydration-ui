@@ -7,7 +7,7 @@ import { ReactComponent as ClockIcon } from "assets/icons/ClockIcon.svg"
 import { Icon } from "components/Icon/Icon"
 import { Trans, useTranslation } from "react-i18next"
 import { BondProgreesBar } from "./components/BondProgressBar/BondProgressBar"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { BLOCK_TIME } from "utils/constants"
 import { useBestNumber } from "api/chain"
 import Skeleton from "react-loading-skeleton"
@@ -17,9 +17,35 @@ import { BondDetailsSkeleton } from "./BondDetailsSkeleton"
 import { getBondName } from "sections/trade/sections/bonds/Bonds.utils"
 import { BondsTrade } from "./components/BondTrade/BondsTradeApp"
 
+export const useQueryParamChange = () => {
+  const printOut = () => null
+
+  useEffect(() => {
+    window.addEventListener("pushstate", printOut)
+    return () => {
+      window.removeEventListener("pushstate", printOut)
+    }
+  }, [])
+
+  return new URLSearchParams(window.location.search)
+}
+
 type SearchGenerics = MakeGenerics<{
-  Search: { assetOut: number }
+  Search: { assetOut: number; assetIn: number }
 }>
+
+export const BondsDetailsHeaderSkeleton = () => {
+  return (
+    <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
+      <Skeleton width={200} height={26} />
+      <div sx={{ flex: "row", align: "center", gap: 4 }}>
+        <Icon sx={{ color: "brightBlue300" }} icon={<ClockIcon />} />
+
+        <Skeleton width={150} height={22} />
+      </div>
+    </div>
+  )
+}
 
 export const BondDetailsHeader = ({
   bondId,
@@ -36,6 +62,8 @@ export const BondDetailsHeader = ({
 
   const isLoading = lbpPool.isLoading || bestNumber.isLoading || loading
 
+  if (isLoading) return <BondsDetailsHeaderSkeleton />
+
   let endingDuration
 
   if (bestNumber.data && lbpPool.data?.length && !isLoading) {
@@ -49,13 +77,9 @@ export const BondDetailsHeader = ({
 
   return (
     <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
-      {loading ? (
-        <Skeleton width={200} height={26} />
-      ) : (
-        <Text fs={24} color="white" font="FontOver">
-          {title}
-        </Text>
-      )}
+      <Text fs={24} color="white" font="FontOver">
+        {title}
+      </Text>
 
       <div sx={{ flex: "row", align: "center", gap: 4 }}>
         <Icon sx={{ color: "brightBlue300" }} icon={<ClockIcon />} />
@@ -105,14 +129,18 @@ export const BondDetailsData = () => {
         bondId={bond.id}
       />
 
-      <BondsTrade></BondsTrade>
+      <BondsTrade />
 
       <BondProgreesBar
         bondId={bond?.id}
         decimals={meta.data?.decimals.toNumber()}
       />
 
-      <BondInfoCards assetId={bond?.assetId} maturity={data?.maturityValue} />
+      <BondInfoCards
+        assetId={bond?.assetId}
+        maturity={data?.maturityValue}
+        bondId={bond.id}
+      />
 
       <MyActiveBonds id={bond.id} />
     </div>

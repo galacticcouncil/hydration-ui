@@ -19,13 +19,19 @@ import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { useMedia } from "react-use"
 import { TableAction } from "components/Table/Table"
 import { Spacer } from "components/Spacer/Spacer"
-import { getBondName } from "sections/trade/sections/bonds/Bonds.utils"
+import {
+  getBondName,
+  useClaimBond,
+} from "sections/trade/sections/bonds/Bonds.utils"
+import BN from "bignumber.js"
 
 export type BondTableItem = {
   assetId: string
   maturity?: number
-  balance?: string
+  balance?: BN
   price: string
+  balanceHuman?: string
+  bondId?: string
 }
 
 export type Config = {
@@ -54,6 +60,8 @@ const BondCell = ({
 export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<BondTableItem>()
+
+  const claim = useClaimBond()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
@@ -87,13 +95,13 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
           ) : null
         },
       }),
-      accessor("balance", {
+      accessor("balanceHuman", {
         header: () => (
           <div sx={{ textAlign: "center" }}>{t("bonds.table.balance")}</div>
         ),
         cell: ({ getValue }) => (
           <Text color="white" tAlign="center">
-            {getValue()}
+            {t("value.token", { value: getValue() })}
           </Text>
         ),
       }),
@@ -109,38 +117,54 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
       }),
       display({
         id: "actions",
-        cell: ({ row }) => (
-          <div sx={{ flex: "row" }}>
-            {!!row.original.maturity &&
-              row.original.maturity <= new Date().getTime() && (
-                <TableAction icon={<TransferIcon />} onClick={console.log}>
+        cell: ({ row }) => {
+          const { maturity, bondId, balance } = row.original
+
+          return (
+            <div sx={{ flex: "row" }}>
+              {!!maturity && maturity <= new Date().getTime() && (
+                <TableAction
+                  variant="primary"
+                  isLoading={claim.isLoading}
+                  disabled={!bondId || !balance || claim.isLoading}
+                  onClick={() =>
+                    bondId &&
+                    balance &&
+                    claim.mutate({ bondId, amount: balance.toString() })
+                  }
+                >
                   {t("bonds.table.claim")}
                 </TableAction>
               )}
-            {config.showTransfer && (
-              <TableAction icon={<TransferIcon />} onClick={console.log}>
-                {t("bonds.table.transfer")}
-              </TableAction>
-            )}
-            {!config.showTransactions && <Spacer axis="horizontal" size={14} />}
-            {config.showTransactions && (
-              <ButtonTransparent
-                onClick={() => row.toggleSelected()}
-                css={{
-                  color: theme.colors.iconGray,
-                  opacity: row.getIsSelected() ? "1" : "0.5",
-                  transform: row.getIsSelected() ? "rotate(180deg)" : undefined,
-                }}
-              >
-                <ChevronDownIcon />
-              </ButtonTransparent>
-            )}
-          </div>
-        ),
+              {config.showTransfer && (
+                <TableAction icon={<TransferIcon />} onClick={console.log}>
+                  {t("bonds.table.transfer")}
+                </TableAction>
+              )}
+              {!config.showTransactions && (
+                <Spacer axis="horizontal" size={14} />
+              )}
+              {config.showTransactions && (
+                <ButtonTransparent
+                  onClick={() => row.toggleSelected()}
+                  css={{
+                    color: theme.colors.iconGray,
+                    opacity: row.getIsSelected() ? "1" : "0.5",
+                    transform: row.getIsSelected()
+                      ? "rotate(180deg)"
+                      : undefined,
+                  }}
+                >
+                  <ChevronDownIcon />
+                </ButtonTransparent>
+              )}
+            </div>
+          )
+        },
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config.showTransactions, config.showTransfer],
+    [config.showTransactions, config.showTransfer, claim.isLoading],
   )
 
   return useReactTable({

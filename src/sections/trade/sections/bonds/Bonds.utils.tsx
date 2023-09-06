@@ -3,6 +3,10 @@ import { ReactComponent as TickIcon } from "assets/icons/TickIcon.svg"
 import { ReactComponent as DollarIcon } from "assets/icons/Dollar2Icon.svg"
 import { ReactNode } from "react"
 import { format } from "date-fns"
+import { useApiPromise } from "utils/api"
+import { useAccountStore, useStore } from "state/store"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 const steps = ["first", "second", "third"] as const
 
@@ -29,3 +33,25 @@ export const getBondName = (symbol: string, date: Date, long?: boolean) =>
     date,
     "dd/MM/yyyy",
   )}`
+
+export const useClaimBond = () => {
+  const api = useApiPromise()
+  const { createTransaction } = useStore()
+  const queryClient = useQueryClient()
+  const { account } = useAccountStore()
+
+  return useMutation(
+    async ({ bondId, amount }: { bondId: string; amount: string }) => {
+      return await createTransaction(
+        { tx: api.tx.bonds.redeem(bondId, amount) },
+        { toast: {} },
+      )
+    },
+    {
+      onSuccess: (_, variables) =>
+        queryClient.invalidateQueries(
+          QUERY_KEYS.tokenBalanceLive(variables.bondId, account?.address),
+        ),
+    },
+  )
+}

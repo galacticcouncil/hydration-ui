@@ -40,13 +40,15 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
             pool.assets.some((assetId) => assetId === bond.id),
           )
 
-          if (pool && pool.start) {
+          if (pool && pool.start && pool.end) {
             const assetIn = pool.assets.find((asset) => asset !== bond.id)
             const state =
               currentBlockNumber > Number(pool.start) ? "active" : "upcoming"
 
             acc[state].push(
               <Bond
+                assetId={bond.assetId}
+                bondId={bond.id}
                 key={`${bond.assetId}_${bond.maturity}`}
                 icon={<AssetLogo id={bond.assetId} />}
                 ticker={`${meta?.symbol}b`}
@@ -55,7 +57,6 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
                 end={pool.end}
                 start={pool.start}
                 state={state}
-                discount="5"
                 onDetailClick={() =>
                   navigate({
                     to: LINKS.bond,

@@ -26,7 +26,7 @@ export const useTradeRouter = () => {
   const router = useMemo(() => {
     const poolService = new PoolService(api)
     const tradeRouter = new TradeRouter(poolService, {
-      includeOnly: [PoolType.Omni],
+      includeOnly: [PoolType.Omni, PoolType.LBP],
     })
 
     return tradeRouter

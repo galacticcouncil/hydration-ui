@@ -5,13 +5,16 @@ import { useTranslation } from "react-i18next"
 import { SBond, SItem } from "./Bond.styled"
 import { Icon } from "components/Icon/Icon"
 import { useBestNumber } from "api/chain"
-import { BLOCK_TIME } from "utils/constants"
-import { addSeconds, intlFormatDistance } from "date-fns"
+import { BLOCK_TIME, BN_1 } from "utils/constants"
+import { addSeconds } from "date-fns"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "sections/pools/pool/Pool.styled"
-import { formatDate } from "utils/formatting"
+import { customFormatDuration, formatDate } from "utils/formatting"
 import { SSeparator } from "components/Separator/Separator.styled"
 import { theme } from "theme"
+import { useDisplayPrice } from "utils/displayAsset"
+import { useMedia } from "react-use"
+import Skeleton from "react-loading-skeleton"
 
 export type BondView = "card" | "list"
 
@@ -24,8 +27,64 @@ type Props = {
   end: string
   start: string
   state: "active" | "upcoming"
-  discount: string
+  assetId: string
+  bondId: string
   onDetailClick: MouseEventHandler<HTMLButtonElement>
+}
+
+const Discount = ({
+  assetId,
+  bondId,
+  view,
+}: {
+  assetId: string
+  bondId: string
+  view?: BondView
+}) => {
+  const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isCard = view === "card"
+
+  const isColumnView = !isDesktop || isCard
+  const spotPrice = useDisplayPrice(assetId)
+  const spotPriceBond = useDisplayPrice(bondId)
+
+  const isLoading = spotPrice.isLoading || spotPriceBond.isLoading
+
+  const currentSpotPrice = spotPrice.data?.spotPrice ?? BN_1
+  const currentBondPrice = spotPriceBond.data?.spotPrice ?? BN_1
+
+  const isDiscount = currentSpotPrice.gt(currentBondPrice)
+
+  const discount = isDiscount
+    ? currentSpotPrice
+        .minus(currentBondPrice)
+        .div(currentSpotPrice)
+        .multipliedBy(100)
+    : currentBondPrice
+        .minus(currentSpotPrice)
+        .div(currentBondPrice)
+        .multipliedBy(100)
+
+  return (
+    <SItem>
+      {isLoading ? (
+        <>
+          <Skeleton width={isColumnView ? 100 : 60} height={13} />
+          <Skeleton width={isColumnView ? 100 : 60} height={13} />
+        </>
+      ) : (
+        <>
+          <Text color="basic400" fs={14}>
+            {isDiscount ? t("bond.discount") : t("bond.premium")}
+          </Text>
+          <Text color="white">
+            {t("value.percentage", { value: discount })}
+          </Text>
+        </>
+      )}
+    </SItem>
+  )
 }
 
 export const Bond = ({
@@ -37,7 +96,8 @@ export const Bond = ({
   start,
   state,
   onDetailClick,
-  discount,
+  assetId,
+  bondId,
   ticker,
 }: Props) => {
   const { t } = useTranslation()
@@ -56,7 +116,12 @@ export const Bond = ({
     ).toNumber()
 
     const date = addSeconds(new Date(), diff)
-    const distance = intlFormatDistance(date, new Date())
+
+    const distance = customFormatDuration({
+      end: diff * 1000,
+      isShort: true,
+    })
+
     return { distance, date }
   }, [end, start, bestNumber.data, isActive])
 
@@ -105,7 +170,7 @@ export const Bond = ({
               </InfoTooltip>
             )}
           </div>
-          <Text color="white">{timestamp?.distance}</Text>
+          <Text color="white">{timestamp?.distance.duration}</Text>
         </SItem>
         <SSeparator
           orientation="vertical"
@@ -123,14 +188,7 @@ export const Bond = ({
               orientation="vertical"
               css={{ background: `rgba(${theme.rgbColors.white}, 0.06)` }}
             />
-            <SItem>
-              <Text color="basic400" fs={14}>
-                {t("bond.discount")}
-              </Text>
-              <Text color="white">
-                {t("value.percentage", { value: discount })}
-              </Text>
-            </SItem>
+            <Discount assetId={assetId} bondId={bondId} view={view} />
           </>
         )}
       </div>

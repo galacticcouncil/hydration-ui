@@ -56,7 +56,8 @@ export const MyActiveBonds = ({
     .filter((balance) => balance.data?.assetId && balance.data?.total?.gt(BN_0))
     .map<BondTableItem>((balance) => {
       const id = balance.data?.assetId?.toString() ?? ""
-      const assetId = bondMap.get(id)?.assetId ?? ""
+      const bond = bondMap.get(id)
+      const assetId = bond?.assetId ?? ""
 
       const assetMeta = metaMap.get(assetId)
       const shiftBy = assetMeta?.decimals
@@ -66,8 +67,10 @@ export const MyActiveBonds = ({
       return {
         assetId,
         maturity: bondMap.get(id)?.maturity,
-        balance: balance.data?.total?.shiftedBy(shiftBy).toString(),
+        balance: balance.data?.total,
+        balanceHuman: balance.data?.total?.shiftedBy(shiftBy).toString(),
         price: "",
+        bondId: bond?.id,
       }
     })
 
