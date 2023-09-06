@@ -5,7 +5,6 @@ import { Text } from "components/Typography/Text/Text"
 import { customFormatDuration, formatDate } from "utils/formatting"
 import { ReactComponent as ClockIcon } from "assets/icons/ClockIcon.svg"
 import { Icon } from "components/Icon/Icon"
-import { gradientBorder } from "theme"
 import { Trans, useTranslation } from "react-i18next"
 import { BondProgreesBar } from "./components/BondProgressBar/BondProgressBar"
 import { useMemo } from "react"
@@ -16,6 +15,7 @@ import { BondInfoCards } from "./components/BondInfoCards/BondInfoCards"
 import { MyActiveBonds } from "sections/trade/sections/bonds/MyActiveBonds"
 import { BondDetailsSkeleton } from "./BondDetailsSkeleton"
 import { getBondName } from "sections/trade/sections/bonds/Bonds.utils"
+import { BondsTrade } from "./components/BondTrade/BondsTradeApp"
 
 type SearchGenerics = MakeGenerics<{
   Search: { assetOut: number }
@@ -105,21 +105,7 @@ export const BondDetailsData = () => {
         bondId={bond.id}
       />
 
-      {/*Ignore it*/}
-      <div
-        sx={{
-          height: 490,
-          flex: "row",
-          justify: "center",
-          align: "center",
-          bg: "basic900",
-        }}
-        css={{ ...gradientBorder }}
-      >
-        <Text font="FontOver" fs={30}>
-          Palo's components
-        </Text>
-      </div>
+      <BondsTrade></BondsTrade>
 
       <BondProgreesBar
         bondId={bond?.id}

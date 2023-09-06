@@ -5,13 +5,11 @@ import {
   ChainLogo as ChainLogoUi,
   PlaceholderLogo,
 } from "@galacticcouncil/ui"
-import { PolkadotRegistry } from "@galacticcouncil/sdk"
+import { chains } from "@galacticcouncil/xcm"
 import { useAssetsLocation } from "api/assetDetails"
 import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
 import Skeleton from "react-loading-skeleton"
-
-const registry = new PolkadotRegistry()
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -63,12 +61,12 @@ export const AssetLogo = ({ id }: { id?: string }) => {
 
     const location = locations.data?.find((location) => location.id === id)
 
-    const chain = registry
-      .getChains()
-      .find((chain) => chain.paraID === location?.parachainId)
+    const chain = chains.find(
+      (chain) => chain.parachainId === location?.parachainId,
+    )
 
     return {
-      chain: chain?.id,
+      chain: chain?.key,
       symbol: location?.symbol,
     }
   }, [id, locations])
