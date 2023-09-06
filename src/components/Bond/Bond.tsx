@@ -10,6 +10,8 @@ import { addSeconds, intlFormatDistance } from "date-fns"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "sections/pools/pool/Pool.styled"
 import { formatDate } from "utils/formatting"
+import { SSeparator } from "components/Separator/Separator.styled"
+import { theme } from "theme"
 
 export type BondView = "card" | "list"
 
@@ -43,17 +45,20 @@ export const Bond = ({
 
   const isActive = state === "active"
 
-  const ending = useMemo(() => {
-    if (!end || !bestNumber.data) return undefined
+  const timestamp = useMemo(() => {
+    if (!end || !start || !bestNumber.data) return undefined
 
-    const remainingSeconds = BLOCK_TIME.multipliedBy(
-      Number(end) - bestNumber.data?.relaychainBlockNumber.toNumber() ?? 0,
+    const currentBLockNumber =
+      bestNumber.data?.relaychainBlockNumber.toNumber() ?? 0
+
+    const diff = BLOCK_TIME.multipliedBy(
+      Number(isActive ? end : start) - currentBLockNumber,
     ).toNumber()
 
-    const date = addSeconds(new Date(), remainingSeconds)
+    const date = addSeconds(new Date(), diff)
     const distance = intlFormatDistance(date, new Date())
     return { distance, date }
-  }, [end, bestNumber])
+  }, [end, start, bestNumber.data, isActive])
 
   const headingFs = view === "card" ? ([19, 26] as const) : ([19, 21] as const)
 
@@ -82,44 +87,62 @@ export const Bond = ({
           </Text>
         </div>
       </div>
-      <SItem>
-        <div sx={{ flex: "row", align: "center", gap: 6 }}>
-          <Text color="basic400" fs={14}>
-            {t(`bond.${isActive ? "endingIn" : "startingIn"}`)}
-          </Text>
-          {ending?.date && (
-            <InfoTooltip text={formatDate(ending.date, "dd.MM.yyyy HH:mm")}>
-              <SInfoIcon />
-            </InfoTooltip>
-          )}
-        </div>
-        <Text color="brightBlue300">{ending?.distance}</Text>
-      </SItem>
-      <SItem>
-        <Text color="basic400" fs={14}>
-          {t("bond.maturity")}
-        </Text>
-        <Text color="white">{maturity}</Text>
-      </SItem>
 
-      {state === "active" && (
-        <>
-          <SItem>
+      <div
+        sx={{ flex: ["column", "row"], justify: "space-evenly" }}
+        css={{ flex: "1 0 auto" }}
+      >
+        <SItem>
+          <div sx={{ flex: "row", align: "center", gap: 6 }}>
             <Text color="basic400" fs={14}>
-              {t("bond.discount")}
+              {t(`bond.${isActive ? "endingIn" : "startingIn"}`)}
             </Text>
-            <Text color="white">
-              {t("value.percentage", { value: discount })}
-            </Text>
-          </SItem>
-          <Button
-            fullWidth
-            onClick={onDetailClick}
-            sx={{ mt: view === "card" ? 12 : [12, 0] }}
-          >
-            Trade
-          </Button>
-        </>
+            {timestamp?.date && (
+              <InfoTooltip
+                text={formatDate(timestamp.date, "dd.MM.yyyy HH:mm")}
+              >
+                <SInfoIcon />
+              </InfoTooltip>
+            )}
+          </div>
+          <Text color="white">{timestamp?.distance}</Text>
+        </SItem>
+        <SSeparator
+          orientation="vertical"
+          css={{ background: `rgba(${theme.rgbColors.white}, 0.06)` }}
+        />
+        <SItem>
+          <Text color="basic400" fs={14}>
+            {t("bond.maturity")}
+          </Text>
+          <Text color="white">{maturity}</Text>
+        </SItem>
+        {isActive && (
+          <>
+            <SSeparator
+              orientation="vertical"
+              css={{ background: `rgba(${theme.rgbColors.white}, 0.06)` }}
+            />
+            <SItem>
+              <Text color="basic400" fs={14}>
+                {t("bond.discount")}
+              </Text>
+              <Text color="white">
+                {t("value.percentage", { value: discount })}
+              </Text>
+            </SItem>
+          </>
+        )}
+      </div>
+
+      {isActive && (
+        <Button
+          fullWidth
+          onClick={onDetailClick}
+          sx={{ mt: view === "card" ? 12 : [12, 0], maxWidth: ["none", 150] }}
+        >
+          {t("bond.btn")}
+        </Button>
       )}
     </SBond>
   )

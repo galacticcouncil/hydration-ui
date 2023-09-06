@@ -90,7 +90,7 @@ export const useProvider = (rpcUrl?: string) => {
 
       const poolService = new PoolService(api)
       const tradeRouter = new TradeRouter(poolService, {
-        includeOnly: [PoolType.Omni],
+        includeOnly: [PoolType.Omni, PoolType.LBP],
       })
       const assets = await tradeRouter.getAllAssets()
 

@@ -16,8 +16,8 @@ export const SBond = styled.div<{ view: BondView }>`
   padding: 30px 20px;
   border-radius: 8px;
 
-  background: rgba(17, 19, 32, 1);
-  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+  background: ${theme.colors.darkBlue700};
+  box-shadow: 3px 4px 0px 0px rgba(102, 181, 255, 0.19);
 
   display: grid;
   grid-template-columns: 1fr;
@@ -32,7 +32,7 @@ export const SBond = styled.div<{ view: BondView }>`
     ${({ view }) =>
       view === "list" &&
       css`
-        grid-template-columns: 2fr repeat(3, 1fr) 150px;
+        display: flex;
         padding: 16px 30px;
         align-items: center;
         column-gap: 16px;
