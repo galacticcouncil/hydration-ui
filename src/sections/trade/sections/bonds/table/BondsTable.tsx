@@ -15,6 +15,7 @@ import { theme } from "theme"
 import { BondTableItem, useActiveBondsTable } from "./BondsTable.utils"
 import { Transactions } from "./transactions/Transactions"
 import { Text } from "components/Typography/Text/Text"
+import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 
 type Props = {
   title: string
@@ -30,70 +31,85 @@ export const BondsTable = ({
   showTransfer,
 }: Props) => {
   const [, setRow] = useState<BondTableItem | undefined>(undefined)
+  const [transferAsset, setTransferAsset] = useState<string | null>(null)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const table = useActiveBondsTable(data, {
     showTransactions,
     showTransfer,
+    onTransfer: setTransferAsset,
   })
 
   return (
-    <TableContainer
-      css={{ backgroundColor: `rgba(${theme.rgbColors.bg}, 0.4)` }}
-    >
-      <TableTitle>
-        <Text
-          fs={[16, 20]}
-          lh={[20, 26]}
-          css={{ fontFamily: "FontOver" }}
-          fw={500}
-          color="white"
-        >
-          {title}
-        </Text>
-      </TableTitle>
-      <Table>
-        <TableHeaderContent>
-          {table.getHeaderGroups().map((hg) => (
-            <TableRow key={hg.id}>
-              {hg.headers.map((header) => (
-                <TableHeader key={header.id}>
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext(),
-                  )}
-                </TableHeader>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeaderContent>
-        <TableBodyContent>
-          {table.getRowModel().rows.map((row, i) => (
-            <Fragment key={row.id}>
-              <TableRow
-                isOdd={!(i % 2)}
-                onClick={() => {
-                  isDesktop && row.toggleSelected()
-                  !isDesktop && setRow(row.original)
-                }}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableData key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableData>
+    <>
+      <TableContainer
+        css={{ backgroundColor: `rgba(${theme.rgbColors.bg}, 0.4)` }}
+      >
+        <TableTitle>
+          <Text
+            fs={[16, 20]}
+            lh={[20, 26]}
+            css={{ fontFamily: "FontOver" }}
+            fw={500}
+            color="white"
+          >
+            {title}
+          </Text>
+        </TableTitle>
+        <Table>
+          <TableHeaderContent>
+            {table.getHeaderGroups().map((hg) => (
+              <TableRow key={hg.id}>
+                {hg.headers.map((header) => (
+                  <TableHeader key={header.id}>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+                  </TableHeader>
                 ))}
               </TableRow>
-              {row.getIsSelected() && showTransactions && (
-                <TableRow isSub={true}>
-                  <td colSpan={table.getAllColumns().length}>
-                    <Transactions />
-                  </td>
+            ))}
+          </TableHeaderContent>
+          <TableBodyContent>
+            {table.getRowModel().rows.map((row, i) => (
+              <Fragment key={row.id}>
+                <TableRow
+                  isOdd={!(i % 2)}
+                  onClick={() => {
+                    isDesktop && row.toggleSelected()
+                    !isDesktop && setRow(row.original)
+                  }}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableData key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableData>
+                  ))}
                 </TableRow>
-              )}
-            </Fragment>
-          ))}
-        </TableBodyContent>
-      </Table>
-    </TableContainer>
+                {row.getIsSelected() && showTransactions && (
+                  <TableRow isSub={true}>
+                    <td colSpan={table.getAllColumns().length}>
+                      <Transactions />
+                    </td>
+                  </TableRow>
+                )}
+              </Fragment>
+            ))}
+          </TableBodyContent>
+        </Table>
+      </TableContainer>
+
+      {transferAsset && (
+        <WalletTransferModal
+          open
+          initialAsset={transferAsset}
+          onClose={() => setTransferAsset(null)}
+        />
+      )}
+    </>
   )
 }

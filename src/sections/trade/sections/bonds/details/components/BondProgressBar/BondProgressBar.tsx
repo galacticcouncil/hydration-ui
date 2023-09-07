@@ -1,11 +1,11 @@
 import { Trans, useTranslation } from "react-i18next"
 import { ProgressBarContainer, SBar, SFill } from "./BondProgressBar.styled"
 import { Text } from "components/Typography/Text/Text"
-import { useTotalIssuance } from "api/totalIssuance"
-import { useBondEvents } from "api/bonds"
+import { useBondEvents, useLBPPoolTotal } from "api/bonds"
 import { BN_0 } from "utils/constants"
 import { useMemo } from "react"
 import Skeleton from "react-loading-skeleton"
+import BN from "bignumber.js"
 
 export const BondProgreesBar = ({
   bondId,
@@ -15,17 +15,17 @@ export const BondProgreesBar = ({
   decimals?: number
 }) => {
   const { t } = useTranslation()
-  const totalIssuance = useTotalIssuance(Number(bondId))
+  const lbpPoolTotal = useLBPPoolTotal(bondId)
   const bondEvents = useBondEvents(bondId)
 
-  const isLoading = totalIssuance.isLoading && bondEvents.isLoading
+  const isLoading = bondEvents.isLoading || lbpPoolTotal.isLoading
 
   const {
     sold = BN_0,
     percentage = BN_0,
-    issuance = BN_0,
+    total = BN_0,
   } = useMemo(() => {
-    if (!totalIssuance.data || !bondEvents.data || !decimals) return {}
+    if (!lbpPoolTotal.data || !bondEvents.data || !decimals) return {}
 
     const sold = bondEvents.data?.events
       .reduce((acc, event) => {
@@ -41,11 +41,15 @@ export const BondProgreesBar = ({
       }, BN_0)
       .shiftedBy(-decimals)
 
-    const issuance = totalIssuance.data.total.shiftedBy(-decimals).toString()
-    const percentage = sold.div(issuance).multipliedBy(100)
+    const totalAmount = lbpPoolTotal.data?.events[0].args.amountB
 
-    return { percentage, issuance, sold }
-  }, [bondEvents.data, bondId, decimals, totalIssuance.data])
+    const total = totalAmount
+      ? BN(totalAmount).shiftedBy(-decimals).toString()
+      : BN_0
+    const percentage = sold.div(total).multipliedBy(100)
+
+    return { percentage, total, sold }
+  }, [bondEvents.data, bondId, decimals, lbpPoolTotal.data])
 
   return (
     <ProgressBarContainer>
@@ -62,7 +66,7 @@ export const BondProgreesBar = ({
               i18nKey="bonds.details.progressBar.value"
               tOptions={{
                 sold,
-                total: issuance,
+                total: total,
               }}
             >
               <span sx={{ color: "white" }} css={{ fontFamily: "FontOver" }} />

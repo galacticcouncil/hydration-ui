@@ -142,7 +142,7 @@ export const BondDetailsData = () => {
         bondId={bond.id}
       />
 
-      <MyActiveBonds id={bond.id} />
+      <MyActiveBonds assetId={bond.assetId} />
     </div>
   )
 }

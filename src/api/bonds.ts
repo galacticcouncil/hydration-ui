@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { PROVIDERS, useProviderRpcUrlStore } from "./provider"
+import { useIndexerUrl } from "./provider"
 import { Maybe } from "utils/helpers"
 import request, { gql } from "graphql-request"
 
@@ -103,13 +103,7 @@ export const useLbpPool = (id?: string) => {
 }
 
 export const useBondEvents = (bondId: Maybe<string>) => {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
-
-  const indexerUrl =
-    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
-
+  const indexerUrl = useIndexerUrl()
   return useQuery(
     QUERY_KEYS.bondEvents(bondId),
     getBondEvents(indexerUrl, bondId),
@@ -166,3 +160,47 @@ const getBondEvents =
       )),
     }
   }
+
+export const useLBPPoolTotal = (bondId: Maybe<string>) => {
+  const indexerUrl = useIndexerUrl()
+
+  return useQuery(
+    QUERY_KEYS.lbpPoolTotal(bondId),
+    getLbpPoolBalance(indexerUrl, bondId),
+    { enabled: !!bondId },
+  )
+}
+
+type LBPPoolTotalEvent = {
+  args: {
+    assetA: string
+    assetB: string
+    amountA: string
+    amountB: string
+    who: string
+  }
+}
+
+const getLbpPoolBalance = (indexerUrl: string, bondId?: string) => async () => {
+  return {
+    ...(await request<{
+      events: Array<LBPPoolTotalEvent>
+    }>(
+      indexerUrl,
+      gql`
+        query LBPLiquidityAdded($bondId: Int) {
+          events(
+            where: {
+              name_eq: "LBP.LiquidityAdded"
+              args_jsonContains: { assetB: $bondId }
+            }
+            orderBy: [block_height_ASC]
+          ) {
+            args
+          }
+        }
+      `,
+      { bondId: Number(bondId) },
+    )),
+  }
+}

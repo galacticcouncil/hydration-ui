@@ -120,3 +120,13 @@ export const useProvider = (rpcUrl?: string) => {
     { staleTime: Infinity },
   )
 }
+
+export const useIndexerUrl = () => {
+  const preference = useProviderRpcUrlStore()
+  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+
+  const indexerUrl =
+    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
+  return indexerUrl
+}

@@ -17,7 +17,6 @@ import { useAssetMeta } from "api/assetMeta"
 import { formatDate } from "utils/formatting"
 import { useMedia } from "react-use"
 import { TableAction } from "components/Table/Table"
-import { Spacer } from "components/Spacer/Spacer"
 import {
   getBondName,
   useClaimBond,
@@ -25,6 +24,8 @@ import {
 import BN from "bignumber.js"
 import { Icon } from "components/Icon/Icon"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { useNavigate } from "@tanstack/react-location"
+import { LINKS } from "utils/navigation"
 
 export type BondTableItem = {
   assetId: string
@@ -33,12 +34,15 @@ export type BondTableItem = {
   price: string
   balanceHuman?: string
   bondId?: string
+  isSale: boolean
+  assetIn?: string
 }
 
 export type Config = {
   showTransactions?: boolean
   enableAnimation?: boolean
   showTransfer?: boolean
+  onTransfer: (assetId: string) => void
 }
 
 const BondCell = ({
@@ -75,6 +79,7 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
   const { accessor, display } = createColumnHelper<BondTableItem>()
 
   const claim = useClaimBond()
+  const navigate = useNavigate()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
@@ -131,13 +136,26 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
       display({
         id: "actions",
         cell: ({ row }) => {
-          const { maturity, bondId, balance } = row.original
+          const { maturity, bondId, balance, isSale, assetIn } = row.original
 
           return (
-            <div sx={{ flex: "row" }}>
+            <div sx={{ flex: "row", gap: 10, justify: "end", pr: 16 }}>
+              {config.showTransfer && (
+                <TableAction
+                  onClick={() =>
+                    navigate({
+                      to: LINKS.bond,
+                      search: { assetIn, assetOut: bondId },
+                    })
+                  }
+                  disabled={!isSale}
+                >
+                  {t("bond.btn")}
+                </TableAction>
+              )}
               {!!maturity && maturity <= new Date().getTime() && (
                 <TableAction
-                  variant="primary"
+                  variant={config.showTransfer ? "secondary" : "primary"}
                   isLoading={claim.isLoading}
                   disabled={!bondId || !balance || claim.isLoading}
                   onClick={() =>
@@ -149,13 +167,13 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
                   {t("bonds.table.claim")}
                 </TableAction>
               )}
-              {config.showTransfer && (
-                <TableAction icon={<TransferIcon />} onClick={console.log}>
+              {config.showTransfer && bondId && (
+                <TableAction
+                  icon={<TransferIcon />}
+                  onClick={() => config.onTransfer(bondId)}
+                >
                   {t("bonds.table.transfer")}
                 </TableAction>
-              )}
-              {!config.showTransactions && (
-                <Spacer axis="horizontal" size={14} />
               )}
               {config.showTransactions && (
                 <ButtonTransparent
