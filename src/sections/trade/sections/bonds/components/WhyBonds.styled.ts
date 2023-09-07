@@ -4,8 +4,14 @@ import styled from "@emotion/styled"
 export const SWhyBonds = styled.div<{ expanded: boolean }>`
   ${gradientBorder};
 
-  background: rgba(17, 19, 32, 1);
+  background: rgba(${theme.rgbColors.bg}, 0.4);
   padding: 30px;
+
+  cursor: pointer;
+
+  :hover {
+    background-color: rgba(${theme.rgbColors.alpha0}, 0.03);
+  }
 `
 
 export const SBondSteps = styled.div`

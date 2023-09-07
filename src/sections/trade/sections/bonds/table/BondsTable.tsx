@@ -38,7 +38,9 @@ export const BondsTable = ({
   })
 
   return (
-    <TableContainer>
+    <TableContainer
+      css={{ backgroundColor: `rgba(${theme.rgbColors.bg}, 0.4)` }}
+    >
       <TableTitle>
         <Text
           fs={[16, 20]}

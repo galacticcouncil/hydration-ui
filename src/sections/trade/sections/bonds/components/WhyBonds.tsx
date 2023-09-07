@@ -17,7 +17,10 @@ export const WhyBonds = () => {
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <SWhyBonds expanded={expanded}>
+    <SWhyBonds
+      expanded={expanded}
+      onClick={() => setExpanded((state) => !state)}
+    >
       <div sx={{ flex: "row", justify: "space-between", height: 24 }}>
         <div sx={{ flex: "row", gap: 8, align: "center" }}>
           <Icon icon={<WhyBondsIcon />} />
@@ -32,16 +35,20 @@ export const WhyBonds = () => {
           </Text>
         </div>
 
-        <ButtonTransparent
-          onClick={() => setExpanded((state) => !state)}
-          css={{
-            color: theme.colors.iconGray,
-            transform: expanded ? "rotate(180deg)" : undefined,
-            transition: theme.transitions.default,
-          }}
-        >
-          <Icon icon={<ChevronDownIcon />} sx={{ color: "basic400" }} />
-        </ButtonTransparent>
+        <div sx={{ flex: "row", align: "center" }}>
+          <Text fs={13} color="darkBlue300">
+            {t(expanded ? "hide" : "show")}
+          </Text>
+          <ButtonTransparent
+            css={{
+              color: theme.colors.iconGray,
+              transform: expanded ? "rotate(180deg)" : undefined,
+              transition: theme.transitions.default,
+            }}
+          >
+            <Icon icon={<ChevronDownIcon />} sx={{ color: "darkBlue300" }} />
+          </ButtonTransparent>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -53,9 +60,6 @@ export const WhyBonds = () => {
             transition={{ duration: 0.3, ease: "easeInOut" }}
             css={{ overflow: "hidden" }}
           >
-            <Text color="darkBlue200" sx={{ mt: 16 }}>
-              {t("bonds.whyBonds.desc")}
-            </Text>
             <SBondSteps>
               {whyBonds.map((whyBond) => (
                 <Step
