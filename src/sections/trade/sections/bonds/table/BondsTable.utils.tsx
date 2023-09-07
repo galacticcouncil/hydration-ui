@@ -15,7 +15,6 @@ import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronDown.svg"
 import { useTranslation } from "react-i18next"
 import { useAssetMeta } from "api/assetMeta"
 import { formatDate } from "utils/formatting"
-import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { useMedia } from "react-use"
 import { TableAction } from "components/Table/Table"
 import { Spacer } from "components/Spacer/Spacer"
@@ -24,6 +23,8 @@ import {
   useClaimBond,
 } from "sections/trade/sections/bonds/Bonds.utils"
 import BN from "bignumber.js"
+import { Icon } from "components/Icon/Icon"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
 export type BondTableItem = {
   assetId: string
@@ -49,11 +50,23 @@ const BondCell = ({
   const date = maturity ? new Date(maturity) : new Date()
 
   return (
-    <AssetTableName
-      id={assetId}
-      name={getBondName(meta.data?.symbol ?? "", date, true)}
-      symbol={`${meta.data?.symbol}b`}
-    />
+    <div
+      sx={{
+        flex: "row",
+        align: "center",
+        gap: 16,
+      }}
+    >
+      <Icon icon={<AssetLogo id={assetId} />} size={30} />
+      <div sx={{ flex: "column" }}>
+        <Text fs={16} sx={{ mt: 3 }} font="ChakraPetchSemiBold">
+          {`${meta.data?.symbol}b`}
+        </Text>
+        <Text fs={13} sx={{ mt: 3 }} color={"whiteish500"}>
+          {getBondName(meta.data?.symbol ?? "", date, true)}
+        </Text>
+      </div>
+    </div>
   )
 }
 

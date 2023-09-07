@@ -26,7 +26,7 @@ type Props = {
   maturity: string
   end: string
   start: string
-  state: "active" | "upcoming"
+  state: "active" | "upcoming" | "past"
   assetId: string
   bondId: string
   onDetailClick: MouseEventHandler<HTMLButtonElement>
@@ -104,6 +104,7 @@ export const Bond = ({
   const bestNumber = useBestNumber()
 
   const isActive = state === "active"
+  const isPast = state === "past"
 
   const timestamp = useMemo(() => {
     if (!end || !start || !bestNumber.data) return undefined
@@ -112,7 +113,7 @@ export const Bond = ({
       bestNumber.data?.relaychainBlockNumber.toNumber() ?? 0
 
     const diff = BLOCK_TIME.multipliedBy(
-      Number(isActive ? end : start) - currentBLockNumber,
+      Number(isActive || isPast ? end : start) - currentBLockNumber,
     ).toNumber()
 
     const date = addSeconds(new Date(), diff)
@@ -123,9 +124,9 @@ export const Bond = ({
     })
 
     return { distance, date }
-  }, [end, start, bestNumber.data, isActive])
+  }, [end, start, bestNumber.data, isActive, isPast])
 
-  const headingFs = view === "card" ? ([19, 26] as const) : ([19, 21] as const)
+  const headingFs = view === "card" ? ([19, 26] as const) : ([19, 16] as const)
 
   return (
     <SBond view={view ?? "list"}>
@@ -137,7 +138,7 @@ export const Bond = ({
           mb: view === "card" ? 12 : [12, 0],
         }}
       >
-        <Icon icon={icon} size={32} />
+        <Icon icon={icon} size={30} />
         <div sx={{ flex: "column" }}>
           <Text
             fs={headingFs}
@@ -157,21 +158,31 @@ export const Bond = ({
         sx={{ flex: ["column", "row"], justify: "space-evenly" }}
         css={{ flex: "1 0 auto" }}
       >
-        <SItem>
-          <div sx={{ flex: "row", align: "center", gap: 6 }}>
-            <Text color="basic400" fs={14}>
-              {t(`bond.${isActive ? "endingIn" : "startingIn"}`)}
+        {timestamp && (
+          <SItem>
+            <div sx={{ flex: "row", align: "center", gap: 6 }}>
+              <Text color="basic400" fs={14}>
+                {t(
+                  `bond.${
+                    isActive ? "endingIn" : isPast ? "ended" : "startingIn"
+                  }`,
+                )}
+              </Text>
+              {!isPast && (
+                <InfoTooltip
+                  text={formatDate(timestamp.date, "dd.MM.yyyy HH:mm")}
+                >
+                  <SInfoIcon />
+                </InfoTooltip>
+              )}
+            </div>
+            <Text color="white">
+              {isPast
+                ? formatDate(timestamp.date, "dd.MM.yyyy HH:mm")
+                : timestamp.distance.duration}
             </Text>
-            {timestamp?.date && (
-              <InfoTooltip
-                text={formatDate(timestamp.date, "dd.MM.yyyy HH:mm")}
-              >
-                <SInfoIcon />
-              </InfoTooltip>
-            )}
-          </div>
-          <Text color="white">{timestamp?.distance.duration}</Text>
-        </SItem>
+          </SItem>
+        )}
         <SSeparator
           orientation="vertical"
           css={{ background: `rgba(${theme.rgbColors.white}, 0.06)` }}
@@ -193,13 +204,14 @@ export const Bond = ({
         )}
       </div>
 
-      {isActive && (
+      {(isActive || isPast) && (
         <Button
           fullWidth
+          disabled={isPast}
           onClick={onDetailClick}
           sx={{ mt: view === "card" ? 12 : [12, 0], maxWidth: ["none", 150] }}
         >
-          {t("bond.btn")}
+          {t(isActive ? "bond.btn" : "bond.details.btn")}
         </Button>
       )}
     </SBond>

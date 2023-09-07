@@ -28,10 +28,11 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
 
   const currentBlockNumber = bestNumber.data?.relaychainBlockNumber.toNumber()
 
-  const { active, upcoming } = currentBlockNumber
+  const { active, upcoming, past } = currentBlockNumber
     ? bonds.reduce<{
         active: ReactNode[]
         upcoming: ReactNode[]
+        past: ReactNode[]
       }>(
         (acc, bond) => {
           const meta = metas.find((meta) => meta.id === bond.assetId)
@@ -43,7 +44,11 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
           if (pool && pool.start && pool.end) {
             const assetIn = pool.assets.find((asset) => asset !== bond.id)
             const state =
-              currentBlockNumber > Number(pool.start) ? "active" : "upcoming"
+              currentBlockNumber > Number(pool.start)
+                ? currentBlockNumber > Number(pool.end)
+                  ? "past"
+                  : "active"
+                : "upcoming"
 
             acc[state].push(
               <Bond
@@ -69,9 +74,9 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
 
           return acc
         },
-        { active: [], upcoming: [] },
+        { active: [], upcoming: [], past: [] },
       )
-    : { active: [], upcoming: [] }
+    : { active: [], upcoming: [], past: [] }
 
   if (isLoading || bestNumber.isLoading) {
     return <BondListSkeleton />
@@ -79,7 +84,7 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
 
   return (
     <div sx={{ flex: "column", gap: 30 }}>
-      {active.length && (
+      {active.length ? (
         <div sx={{ flex: "column", gap: 12 }}>
           <Text
             color="brightBlue300"
@@ -91,9 +96,9 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
           </Text>
           {active}
         </div>
-      )}
+      ) : null}
 
-      {upcoming.length && (
+      {upcoming.length ? (
         <div sx={{ flex: "column", gap: 12 }}>
           <Text
             color="brightBlue300"
@@ -105,7 +110,16 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
           </Text>
           {upcoming}
         </div>
-      )}
+      ) : null}
+
+      {past.length ? (
+        <div sx={{ flex: "column", gap: 12 }}>
+          <Text color="basic200" tTransform="uppercase" fs={15} font="FontOver">
+            {t("bonds.section.pastBonds")}
+          </Text>
+          {past}
+        </div>
+      ) : null}
     </div>
   )
 }
