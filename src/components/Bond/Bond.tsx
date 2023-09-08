@@ -1,6 +1,6 @@
 import { Button } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
-import { MouseEventHandler, ReactNode, useMemo } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { SBond, SItem } from "./Bond.styled"
 import { Icon } from "components/Icon/Icon"
@@ -15,21 +15,24 @@ import { theme } from "theme"
 import { useDisplayPrice } from "utils/displayAsset"
 import { useMedia } from "react-use"
 import Skeleton from "react-loading-skeleton"
+import { isPoolUpdateEvent, useLBPPoolEvents } from "api/bonds"
+import { useNavigate } from "@tanstack/react-location"
+import { LINKS } from "utils/navigation"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
 export type BondView = "card" | "list"
 
 type Props = {
   view?: BondView
-  icon: ReactNode
   name: string
   ticker: string
   maturity: string
-  end: string
-  start: string
+  end?: number
+  start?: number
   state: "active" | "upcoming" | "past"
   assetId: string
   bondId: string
-  onDetailClick: MouseEventHandler<HTMLButtonElement>
+  assetIn?: number
 }
 
 const Discount = ({
@@ -89,44 +92,82 @@ const Discount = ({
 
 export const Bond = ({
   view,
-  icon,
   name,
   maturity,
   end,
   start,
   state,
-  onDetailClick,
   assetId,
   bondId,
   ticker,
+  assetIn,
 }: Props) => {
   const { t } = useTranslation()
   const bestNumber = useBestNumber()
+  const navigate = useNavigate()
 
   const isActive = state === "active"
   const isPast = state === "past"
 
-  const timestamp = useMemo(() => {
-    if (!end || !start || !bestNumber.data) return undefined
+  const lbpPool = useLBPPoolEvents(isPast ? bondId : undefined)
 
+  const data = useMemo(() => {
+    if (!bestNumber.data) return undefined
     const currentBLockNumber =
       bestNumber.data?.relaychainBlockNumber.toNumber() ?? 0
 
-    const diff = BLOCK_TIME.multipliedBy(
-      Number(isActive || isPast ? end : start) - currentBLockNumber,
-    ).toNumber()
+    if (end && start) {
+      const diff = BLOCK_TIME.multipliedBy(
+        Number(isActive || isPast ? end : start) - currentBLockNumber,
+      ).toNumber()
 
-    const date = addSeconds(new Date(), diff)
+      const date = addSeconds(new Date(), diff)
 
-    const distance = customFormatDuration({
-      end: diff * 1000,
-      isShort: true,
-    })
+      const distance = customFormatDuration({
+        end: diff * 1000,
+        isShort: true,
+      })
 
-    return { distance, date }
-  }, [end, start, bestNumber.data, isActive, isPast])
+      return { distance, date }
+    } else if (lbpPool.data) {
+      const isRemovedLiquidity = lbpPool.data.events.some(
+        (event) => event.name === "LBP.LiquidityRemoved",
+      )
+
+      if (isRemovedLiquidity) {
+        const lbpPoolData = lbpPool.data.events
+          .filter(isPoolUpdateEvent)
+          .reverse()?.[0]
+
+        if (lbpPoolData) {
+          const assetIn = lbpPoolData.args.data.assets.find(
+            (asset) => String(asset) !== bondId,
+          )
+
+          const diff = BLOCK_TIME.multipliedBy(
+            Number(lbpPoolData.args.data.end) - currentBLockNumber,
+          ).toNumber()
+
+          const date = addSeconds(new Date(), diff)
+
+          const distance = customFormatDuration({
+            end: diff * 1000,
+            isShort: true,
+          })
+
+          return { distance, date, assetIn }
+        }
+      }
+
+      return undefined
+    }
+
+    return undefined
+  }, [bestNumber.data, end, start, lbpPool.data, isActive, isPast, bondId])
 
   const headingFs = view === "card" ? ([19, 26] as const) : ([19, 16] as const)
+
+  if (!data) return null
 
   return (
     <SBond view={view ?? "list"}>
@@ -138,7 +179,7 @@ export const Bond = ({
           mb: view === "card" ? 12 : [12, 0],
         }}
       >
-        <Icon icon={icon} size={30} />
+        <Icon icon={<AssetLogo id={assetId} />} size={30} />
         <div sx={{ flex: "column" }}>
           <Text
             fs={headingFs}
@@ -158,31 +199,28 @@ export const Bond = ({
         sx={{ flex: ["column", "row"], justify: "space-evenly" }}
         css={{ flex: "1 0 auto" }}
       >
-        {timestamp && (
-          <SItem>
-            <div sx={{ flex: "row", align: "center", gap: 6 }}>
-              <Text color="basic400" fs={14}>
-                {t(
-                  `bond.${
-                    isActive ? "endingIn" : isPast ? "ended" : "startingIn"
-                  }`,
-                )}
-              </Text>
-              {!isPast && (
-                <InfoTooltip
-                  text={formatDate(timestamp.date, "dd.MM.yyyy HH:mm")}
-                >
-                  <SInfoIcon />
-                </InfoTooltip>
+        <SItem>
+          <div sx={{ flex: "row", align: "center", gap: 6 }}>
+            <Text color="basic400" fs={14}>
+              {t(
+                `bond.${
+                  isActive ? "endingIn" : isPast ? "ended" : "startingIn"
+                }`,
               )}
-            </div>
-            <Text color="white">
-              {isPast
-                ? formatDate(timestamp.date, "dd.MM.yyyy HH:mm")
-                : timestamp.distance.duration}
             </Text>
-          </SItem>
-        )}
+            {!isPast && (
+              <InfoTooltip text={formatDate(data.date, "dd.MM.yyyy HH:mm")}>
+                <SInfoIcon />
+              </InfoTooltip>
+            )}
+          </div>
+          <Text color="white">
+            {isPast
+              ? formatDate(data.date, "dd.MM.yyyy HH:mm")
+              : data.distance.duration}
+          </Text>
+        </SItem>
+
         <SSeparator
           orientation="vertical"
           css={{ background: `rgba(${theme.rgbColors.white}, 0.06)` }}
@@ -208,7 +246,12 @@ export const Bond = ({
         <Button
           fullWidth
           disabled={isPast}
-          onClick={onDetailClick}
+          onClick={() =>
+            navigate({
+              to: LINKS.bond,
+              search: { assetIn: assetIn ?? data?.assetIn, assetOut: bondId },
+            })
+          }
           sx={{ mt: view === "card" ? 12 : [12, 0], maxWidth: ["none", 150] }}
         >
           {t(isActive ? "bond.btn" : "bond.details.btn")}

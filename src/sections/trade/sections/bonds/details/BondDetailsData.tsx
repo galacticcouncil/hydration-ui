@@ -1,13 +1,18 @@
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
 import { useAssetMeta } from "api/assetMeta"
-import { useBonds, useLbpPool } from "api/bonds"
+import {
+  isPoolUpdateEvent,
+  useBonds,
+  useLBPPoolEvents,
+  useLbpPool,
+} from "api/bonds"
 import { Text } from "components/Typography/Text/Text"
 import { customFormatDuration, formatDate } from "utils/formatting"
 import { ReactComponent as ClockIcon } from "assets/icons/ClockIcon.svg"
 import { Icon } from "components/Icon/Icon"
 import { Trans, useTranslation } from "react-i18next"
 import { BondProgreesBar } from "./components/BondProgressBar/BondProgressBar"
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import { BLOCK_TIME } from "utils/constants"
 import { useBestNumber } from "api/chain"
 import Skeleton from "react-loading-skeleton"
@@ -16,19 +21,7 @@ import { MyActiveBonds } from "sections/trade/sections/bonds/MyActiveBonds"
 import { BondDetailsSkeleton } from "./BondDetailsSkeleton"
 import { getBondName } from "sections/trade/sections/bonds/Bonds.utils"
 import { BondsTrade } from "./components/BondTrade/BondsTradeApp"
-
-export const useQueryParamChange = () => {
-  const printOut = () => null
-
-  useEffect(() => {
-    window.addEventListener("pushstate", printOut)
-    return () => {
-      window.removeEventListener("pushstate", printOut)
-    }
-  }, [])
-
-  return new URLSearchParams(window.location.search)
-}
+import { addSeconds } from "date-fns"
 
 type SearchGenerics = MakeGenerics<{
   Search: { assetOut: number; assetIn: number }
@@ -48,32 +41,34 @@ export const BondsDetailsHeaderSkeleton = () => {
 }
 
 export const BondDetailsHeader = ({
-  bondId,
   title,
-  loading,
+  end,
 }: {
-  bondId: string
   title: string
-  loading?: boolean
+  end?: number
 }) => {
   const { t } = useTranslation()
-  const lbpPool = useLbpPool(bondId)
+
   const bestNumber = useBestNumber()
 
-  const isLoading = lbpPool.isLoading || bestNumber.isLoading || loading
+  const isLoading = bestNumber.isLoading
 
-  if (isLoading) return <BondsDetailsHeaderSkeleton />
+  if (isLoading || !bestNumber.data) return <BondsDetailsHeaderSkeleton />
 
   let endingDuration
+  let date
 
-  if (bestNumber.data && lbpPool.data?.length && !isLoading) {
+  if (end && !isLoading) {
     const remainingSeconds = BLOCK_TIME.multipliedBy(
-      Number(lbpPool.data[0].end ?? 0) -
-        bestNumber.data?.relaychainBlockNumber.toNumber() ?? 0,
+      end - bestNumber.data?.relaychainBlockNumber.toNumber() ?? 0,
     ).toNumber()
 
     endingDuration = customFormatDuration({ end: remainingSeconds * 1000 })
+
+    date = addSeconds(new Date(), remainingSeconds)
   }
+
+  const isPast = bestNumber.data?.relaychainBlockNumber.toNumber() > (end ?? 0)
 
   return (
     <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
@@ -87,9 +82,12 @@ export const BondDetailsHeader = ({
           <Text fs={20} color="white" font="ChakraPetchSemiBold">
             <Trans
               t={t}
-              i18nKey="bonds.details.header.end"
+              i18nKey={`bonds.details.header.${isPast ? "endPast" : "end"}`}
               tOptions={{
-                date: endingDuration.duration,
+                date:
+                  isPast && date
+                    ? formatDate(date, "dd.MM.yyyy HH:mm")
+                    : endingDuration.duration,
               }}
             >
               <span sx={{ color: "brightBlue300", fontSize: 20 }} />
@@ -105,11 +103,30 @@ export const BondDetailsHeader = ({
 
 export const BondDetailsData = () => {
   const search = useSearch<SearchGenerics>()
+  //TODO: check both assetIn and assetOut
   const id = search.assetOut?.toString()
 
-  const bonds = useBonds(id)
+  const bonds = useBonds({ id })
   const bond = bonds?.data?.[0]
   const meta = useAssetMeta(bond?.assetId)
+
+  const lbpPool = useLbpPool({ id: bond?.id })
+  const isPast = !lbpPool.isLoading && !lbpPool.data
+  const lbpPoolEvents = useLBPPoolEvents(isPast ? bond?.id : undefined)
+
+  const lbpPoolData = useMemo(() => {
+    if (lbpPool.data) return lbpPool.data[0]
+
+    if (lbpPoolEvents.data) {
+      const lbpPoolData = lbpPoolEvents.data.events
+        .filter(isPoolUpdateEvent)
+        .reverse()?.[0]
+
+      return lbpPoolData.args.data
+    }
+
+    return undefined
+  }, [lbpPool.data, lbpPoolEvents.data])
 
   const data = useMemo(() => {
     if (!bond) return undefined
@@ -126,7 +143,7 @@ export const BondDetailsData = () => {
     <div sx={{ flex: "column", gap: 40 }}>
       <BondDetailsHeader
         title={getBondName(meta.data.symbol, data.maturityDate, true)}
-        bondId={bond.id}
+        end={lbpPoolData?.end}
       />
 
       <BondsTrade />

@@ -13,8 +13,9 @@ export type Bond = {
   maturity: number
 }
 
-export const useBonds = (id?: string) => {
+export const useBonds = (params?: { id?: string; disable?: boolean }) => {
   const api = useApiPromise()
+  const { id, disable } = params ?? {}
 
   return useQuery(
     QUERY_KEYS.bonds,
@@ -35,7 +36,7 @@ export const useBonds = (id?: string) => {
 
           prevAcc.push({
             id,
-            name: data.name.toString(),
+            //name: data.name.toString(),
             assetId: assetId?.toString(),
             maturity: maturity?.toNumber(),
           })
@@ -45,6 +46,7 @@ export const useBonds = (id?: string) => {
       }, Promise.resolve([]))
     },
     {
+      enabled: !disable,
       select: (bonds) => {
         if (id) {
           const bond = bonds.find((bond) => bond.id === id)
@@ -58,8 +60,10 @@ export const useBonds = (id?: string) => {
   )
 }
 
-export const useLbpPool = (id?: string) => {
+export const useLbpPool = (params?: { id?: string }) => {
   const api = useApiPromise()
+
+  const { id } = params ?? {}
 
   return useQuery(
     QUERY_KEYS.lbpPool,
@@ -70,23 +74,24 @@ export const useLbpPool = (id?: string) => {
         const data = rawData.unwrap()
 
         return {
-          id: key.toHuman()[0] as string,
-          owner: data.owner.toString() as string,
-          start: data.start.toString() as string,
-          end: data.end.toString() as string,
-          assets: data.assets.map((asset) => asset.toString()) as string[],
-          initialWeight: data.initialWeight.toString() as string,
-          finalWeight: data.finalWeight.toString() as string,
-          weightCurve: data.weightCurve.toString() as string,
-          fee: data.fee.map((el) => el.toString()) as string[],
-          feeCollector: data.feeCollector.toString() as string,
-          repayTarget: data.repayTarget.toString() as string,
+          id: key.toHuman()[0],
+          owner: data.owner.toString(),
+          start: Number(data.start.toString()),
+          end: Number(data.end.toString()),
+          assets: data.assets.map((asset) => asset.toNumber()),
+          initialWeight: data.initialWeight.toNumber(),
+          finalWeight: data.finalWeight.toNumber(),
+          weightCurve: data.weightCurve.toString(),
+          fee: data.fee.map((el) => el.toNumber()),
+          feeCollector: data.feeCollector.toString(),
+          repayTarget: data.repayTarget.toString(),
         }
       })
 
       return data
     },
     {
+      enabled: !(params && !id),
       select: (pools) => {
         if (id) {
           const pool = pools.find((pool) =>
@@ -161,7 +166,7 @@ const getBondEvents =
     }
   }
 
-export const useLBPPoolTotal = (bondId: Maybe<string>) => {
+export const useLBPPoolEvents = (bondId: Maybe<string>) => {
   const indexerUrl = useIndexerUrl()
 
   return useQuery(
@@ -171,7 +176,15 @@ export const useLBPPoolTotal = (bondId: Maybe<string>) => {
   )
 }
 
-type LBPPoolTotalEvent = {
+export const isPoolUpdateEvent = (
+  event: LBPPoolEvents,
+): event is LBPPoolUpdate => event.name === "LBP.PoolUpdated"
+
+export const isPoolLiquidityEvent = (
+  event: LBPPoolEvents,
+): event is LBPPoolLiquidityEvent => event.name !== "LBP.PoolUpdated"
+
+type LBPPoolLiquidityEvent = {
   args: {
     assetA: string
     assetB: string
@@ -179,12 +192,20 @@ type LBPPoolTotalEvent = {
     amountB: string
     who: string
   }
+  name: "LBP.LiquidityAdded" | "LBP.LiquidityRemoved"
 }
+
+type LBPPoolUpdate = {
+  name: "LBP.PoolUpdated"
+  args: { data: NonNullable<ReturnType<typeof useLbpPool>["data"]>[0] }
+}
+
+type LBPPoolEvents = LBPPoolLiquidityEvent | LBPPoolUpdate
 
 const getLbpPoolBalance = (indexerUrl: string, bondId?: string) => async () => {
   return {
     ...(await request<{
-      events: Array<LBPPoolTotalEvent>
+      events: Array<LBPPoolEvents>
     }>(
       indexerUrl,
       gql`
@@ -193,10 +214,19 @@ const getLbpPoolBalance = (indexerUrl: string, bondId?: string) => async () => {
             where: {
               name_eq: "LBP.LiquidityAdded"
               args_jsonContains: { assetB: $bondId }
+              OR: {
+                args_jsonContains: { assetB: $bondId }
+                name_contains: "LBP.LiquidityRemoved"
+                OR: {
+                  name_contains: "LBP.PoolUpdated"
+                  args_jsonContains: { data: { assets: [$bondId] } }
+                }
+              }
             }
             orderBy: [block_height_ASC]
           ) {
             args
+            name
           }
         }
       `,

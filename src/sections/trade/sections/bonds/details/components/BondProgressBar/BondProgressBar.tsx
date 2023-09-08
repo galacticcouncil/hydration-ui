@@ -1,7 +1,11 @@
 import { Trans, useTranslation } from "react-i18next"
 import { ProgressBarContainer, SBar, SFill } from "./BondProgressBar.styled"
 import { Text } from "components/Typography/Text/Text"
-import { useBondEvents, useLBPPoolTotal } from "api/bonds"
+import {
+  useBondEvents,
+  useLBPPoolEvents,
+  isPoolLiquidityEvent,
+} from "api/bonds"
 import { BN_0 } from "utils/constants"
 import { useMemo } from "react"
 import Skeleton from "react-loading-skeleton"
@@ -15,17 +19,17 @@ export const BondProgreesBar = ({
   decimals?: number
 }) => {
   const { t } = useTranslation()
-  const lbpPoolTotal = useLBPPoolTotal(bondId)
+  const lbpPoolEvents = useLBPPoolEvents(bondId)
   const bondEvents = useBondEvents(bondId)
 
-  const isLoading = bondEvents.isLoading || lbpPoolTotal.isLoading
+  const isLoading = bondEvents.isLoading || lbpPoolEvents.isLoading
 
   const {
     sold = BN_0,
     percentage = BN_0,
     total = BN_0,
   } = useMemo(() => {
-    if (!lbpPoolTotal.data || !bondEvents.data || !decimals) return {}
+    if (!lbpPoolEvents.data || !bondEvents.data || !decimals) return {}
 
     const sold = bondEvents.data?.events
       .reduce((acc, event) => {
@@ -41,7 +45,9 @@ export const BondProgreesBar = ({
       }, BN_0)
       .shiftedBy(-decimals)
 
-    const totalAmount = lbpPoolTotal.data?.events[0].args.amountB
+    const totalAmount = lbpPoolEvents.data?.events
+      .filter(isPoolLiquidityEvent)
+      .find((event) => event.name === "LBP.LiquidityAdded")?.args.amountB
 
     const total = totalAmount
       ? BN(totalAmount).shiftedBy(-decimals).toString()
@@ -49,7 +55,7 @@ export const BondProgreesBar = ({
     const percentage = sold.div(total).multipliedBy(100)
 
     return { percentage, total, sold }
-  }, [bondEvents.data, bondId, decimals, lbpPoolTotal.data])
+  }, [bondEvents.data, bondId, decimals, lbpPoolEvents.data])
 
   return (
     <ProgressBarContainer>
