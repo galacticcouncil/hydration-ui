@@ -33,7 +33,7 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
         (acc, bond) => {
           const meta = metas.find((meta) => meta.id === bond.assetId)
           const date = new Date(bond.maturity)
-          const pool = lbpPool?.data?.find((pool) =>
+          const pool = lbpPool.data?.find((pool) =>
             pool.assets.some((assetId) => assetId === Number(bond.id)),
           )
 
