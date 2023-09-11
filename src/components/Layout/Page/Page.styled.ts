@@ -2,7 +2,7 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SPage = styled.div`
+export const SPage = styled.div<{ variant?: "stats" | "default" }>`
   --mobile-nav-height: calc(60px + env(safe-area-inset-bottom));
   --nav-height: 65px;
 
@@ -18,7 +18,7 @@ export const SPage = styled.div`
   @media ${theme.viewport.gte.sm} {
     --nav-height: 70px;
 
-    overflow-y: overlay;
+    overflow-y: auto;
   }
 `
 
@@ -28,8 +28,6 @@ export const SGradientBg = styled.div<{ variant?: "stats" | "default" }>`
   left: 0;
 
   width: 100%;
-
-  overflow: overlay;
 
   ${({ variant }) =>
     variant === "stats"
