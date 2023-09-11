@@ -11,7 +11,7 @@ import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useMemo } from "react"
 import { useAssetsTradability } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useAccountStore } from "state/store"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
+import { NATIVE_ASSET_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
@@ -147,11 +147,11 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
   )
 
   data?.sort((poolA, poolB) => {
-    if (poolA.name === "HDX") {
+    if (poolA.id.toString() === NATIVE_ASSET_ID) {
       return -1
     }
 
-    if (poolB.name === "HDX") {
+    if (poolB.id.toString() === NATIVE_ASSET_ID) {
       return 1
     }
 
