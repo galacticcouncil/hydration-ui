@@ -18,6 +18,7 @@ export const BondsApp = createComponent({
   react: React,
   events: {
     onTxNew: "gc:tx:new" as EventName<CustomEvent<TxInfo>>,
+    onQueryUpdate: "gc:query:update" as EventName<CustomEvent>,
   },
 })
 
@@ -36,9 +37,7 @@ type SearchGenerics = MakeGenerics<{
   Search: z.infer<typeof BondsAppSearch>
 }>
 
-const indexerUrl = import.meta.env.VITE_INDEXER_URL
-const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
-const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
+const squidUrl = import.meta.env.VITE_SQUID_URL
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export function BondsTrade() {
@@ -51,6 +50,10 @@ export function BondsTrade() {
 
   const rawSearch = useSearch<SearchGenerics>()
   const search = BondsAppSearch.safeParse(rawSearch)
+
+  const handleQueryUpdate = async (e: CustomEvent) => {
+    console.log(e.detail)
+  }
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
     const { transaction, notification } = e.detail
@@ -104,10 +107,9 @@ export function BondsTrade() {
         accountName={account?.name}
         accountProvider={account?.provider}
         accountAddress={account?.address}
-        indexerUrl={indexerUrl}
-        grafanaUrl={grafanaUrl}
-        grafanaDsn={grafanaDsn}
+        squidUrl={squidUrl}
         onTxNew={(e) => handleSubmit(e)}
+        onQueryUpdate={(e) => handleQueryUpdate(e)}
       />
     </SContainer>
   )
