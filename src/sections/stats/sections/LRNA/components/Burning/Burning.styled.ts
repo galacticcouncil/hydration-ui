@@ -1,6 +1,6 @@
 import styled from "@emotion/styled"
-import { SContainerVertical } from "sections/stats/sections/LRNA/StatsLRNA.styled"
 import { theme } from "theme"
+import { SContainerVertical } from "sections/stats/StatsPage.styled"
 
 export const SBurnContainer = styled(SContainerVertical)`
   justify-content: space-evenly;
