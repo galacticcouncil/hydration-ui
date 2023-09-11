@@ -146,6 +146,18 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     [pools],
   )
 
+  data?.sort((poolA, poolB) => {
+    if (poolA.name === "HDX") {
+      return -1
+    }
+
+    if (poolB.name === "HDX") {
+      return 1
+    }
+
+    return poolA.totalDisplay.gt(poolB.totalDisplay) ? -1 : 1
+  })
+
   return { data, hasPositionsOrDeposits, isLoading: isInitialLoading }
 }
 
