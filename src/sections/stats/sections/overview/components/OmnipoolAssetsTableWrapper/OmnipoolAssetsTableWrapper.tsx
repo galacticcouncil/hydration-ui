@@ -23,8 +23,6 @@ export const OmnipoolAssetsTableWrapperData = () => {
     return <OmnipoolAssetsTableSkeleton />
 
   const handleRowSelect = (assetId: string) => {
-    // TODO
-    console.log(assetId)
     navigate({
       to: "omnipool",
       search: { asset: assetId },
