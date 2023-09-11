@@ -137,6 +137,12 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
         id: "actions",
         cell: ({ row }) => {
           const { maturity, bondId, balance, isSale, assetIn } = row.original
+          const isClaimDisabled =
+            !bondId ||
+            !balance ||
+            claim.isLoading ||
+            !maturity ||
+            maturity >= new Date().getTime()
 
           return (
             <div sx={{ flex: "row", gap: 10, justify: "end", pr: 16 }}>
@@ -153,11 +159,11 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
                   {t("bond.btn")}
                 </TableAction>
               )}
-              {!!maturity && maturity <= new Date().getTime() && (
+              {
                 <TableAction
                   variant={config.showTransfer ? "secondary" : "primary"}
                   isLoading={claim.isLoading}
-                  disabled={!bondId || !balance || claim.isLoading}
+                  disabled={isClaimDisabled}
                   onClick={() =>
                     bondId &&
                     balance &&
@@ -166,7 +172,7 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
                 >
                   {t("bonds.table.claim")}
                 </TableAction>
-              )}
+              }
               {config.showTransfer && bondId && (
                 <TableAction
                   icon={<TransferIcon />}
