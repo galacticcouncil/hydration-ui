@@ -74,7 +74,7 @@ export const useLbpPool = (params?: { id?: string }) => {
         const data = rawData.unwrap()
 
         return {
-          id: key.toHuman()[0],
+          id: key.toHuman()[0] as string,
           owner: data.owner.toString(),
           start: Number(data.start.toString()),
           end: Number(data.end.toString()),
