@@ -141,7 +141,7 @@ export const Bond = ({
 
         if (lbpPoolData) {
           const assetIn = lbpPoolData.args.data.assets.find(
-            (asset) => asset !== Number(bondId),
+            (asset: number) => asset !== Number(bondId),
           )
 
           const diff = BLOCK_TIME.multipliedBy(

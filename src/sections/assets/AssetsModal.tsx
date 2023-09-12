@@ -98,7 +98,7 @@ export const AssetsModalContent = ({
           </SAssetsModalHeader>
           {bonds.data?.map((bond) => {
             const isLbpPool = lbpPools.data?.find((pool) =>
-              pool.assets.some((asset) => asset === Number(bond.id)),
+              pool.assets.some((asset: number) => asset === Number(bond.id)),
             )
 
             return (

@@ -85,7 +85,7 @@ export const MyActiveBonds = ({
         const bondAssetId = bond?.assetId ?? ""
 
         const lbpPool = lbpPools.data?.find((lbpPool) =>
-          lbpPool.assets.some((asset) => asset === Number(bond?.id)),
+          lbpPool.assets.some((asset: number) => asset === Number(bond?.id)),
         )
 
         const isSale = lbpPool
@@ -94,7 +94,7 @@ export const MyActiveBonds = ({
           : false
 
         const assetIn = lbpPool?.assets
-          .find((asset) => asset !== Number(bond?.id))
+          .find((asset: number) => asset !== Number(bond?.id))
           ?.toString()
 
         const assetMeta = metaMap.get(bondAssetId)

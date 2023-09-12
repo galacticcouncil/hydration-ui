@@ -34,12 +34,12 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
           const meta = metas.find((meta) => meta.id === bond.assetId)
           const date = new Date(bond.maturity)
           const pool = lbpPool.data?.find((pool) =>
-            pool.assets.some((assetId) => assetId === Number(bond.id)),
+            pool.assets.some((assetId: number) => assetId === Number(bond.id)),
           )
 
           if (pool && pool.start && pool.end) {
             const assetIn = pool.assets.find(
-              (asset) => asset !== Number(bond.id),
+              (asset: number) => asset !== Number(bond.id),
             )
             const state =
               currentBlockNumber > Number(pool.start)
