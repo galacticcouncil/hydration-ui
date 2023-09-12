@@ -65,6 +65,7 @@ const colors = {
   green400: "#01F397",
   green500: "#4BFFBB",
   green600: "#30FFB1",
+  green700: "#00FFA0",
   warningYellow400: "#F7BF06",
   alarmRed400: "#FF6868",
   iconGray: "#BDCCD4",

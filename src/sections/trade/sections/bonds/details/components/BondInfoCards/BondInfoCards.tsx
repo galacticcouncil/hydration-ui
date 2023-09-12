@@ -41,22 +41,38 @@ export const BondInfoCards = ({
     {
       label: t("bonds.details.card.bondPrice"),
       value: <DisplayValue value={currentBondPrice} type="token" />,
-      icon: <Icon sx={{ color: "basic600" }} icon={<GraphIcon />} />,
+      icon: (
+        <Icon size={[16, 22]} sx={{ color: "basic600" }} icon={<GraphIcon />} />
+      ),
     },
     {
       label: t("bonds.details.card.spotPrice"),
       value: <DisplayValue value={currentSpotPrice} />,
-      icon: <Icon sx={{ color: "basic600" }} icon={<DollarIcon />} />,
+      icon: (
+        <Icon
+          size={[16, 22]}
+          sx={{ color: "basic600" }}
+          icon={<DollarIcon />}
+        />
+      ),
     },
     {
       label: isDiscount ? t("bond.discount") : t("bond.premium"),
       value: t("value.percentage", { value: discount.toString() }),
-      icon: <Icon sx={{ color: "basic600" }} icon={<PercentageIcon />} />,
+      icon: (
+        <Icon
+          size={[16, 22]}
+          sx={{ color: "basic600" }}
+          icon={<PercentageIcon />}
+        />
+      ),
     },
     {
       label: t("bonds.details.card.maturity"),
       value: maturity,
-      icon: <Icon sx={{ color: "basic600" }} icon={<ClockIcon />} />,
+      icon: (
+        <Icon size={[16, 22]} sx={{ color: "basic600" }} icon={<ClockIcon />} />
+      ),
     },
   ]
 

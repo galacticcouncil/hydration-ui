@@ -13,12 +13,18 @@ export const DetailCard = ({
 }) => {
   return (
     <DetailCardContainer>
-      <Text fs={14} color="white">
+      <Text fs={[12, 14]} color="brightBlue300">
         {label}
       </Text>
-      <div sx={{ flex: "column", gap: 10 }}>
+      <div
+        sx={{
+          flex: ["row-reverse", "column"],
+          align: ["end", "start"],
+          gap: 10,
+        }}
+      >
         {icon}
-        <Text fs={24} color="brightBlue300">
+        <Text fs={[13, 24]} font="FontOver" color="white" lh={[13, 24]}>
           {value}
         </Text>
       </div>

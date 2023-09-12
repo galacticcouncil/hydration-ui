@@ -7,6 +7,8 @@ export const SContainer = styled.div`
 
   @media ${theme.viewport.gte.sm} {
     margin: 0 -20px;
+
+    margin-bottom: -20px;
   }
 
   @media ${theme.viewport.lt.xs} {
