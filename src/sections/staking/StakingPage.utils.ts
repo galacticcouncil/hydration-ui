@@ -39,16 +39,23 @@ export type TStakingData = NonNullable<ReturnType<typeof useStakeData>["data"]>
 const getCurrentActionPoints = (
   votes: TStakingPosition["votes"],
   initialActionPoints: number,
+  stakePosition: BN,
 ) => {
   let currentActionPoints = 0
+
+  const maxVotingPower = stakePosition.multipliedBy(CONVICTIONS["locked6x"])
+  const maxActionPointsPerRef = 100
 
   votes?.forEach((vote) => {
     const convictionIndex = CONVICTIONS[vote.conviction.toLowerCase()]
 
-    currentActionPoints += vote.amount
-      .multipliedBy(convictionIndex)
-      .div(BN_BILL)
-      .toNumber()
+    currentActionPoints += Math.floor(
+      vote.amount
+        .multipliedBy(convictionIndex)
+        .multipliedBy(maxActionPointsPerRef)
+        .div(maxVotingPower)
+        .toNumber(),
+    )
   })
 
   const actionMultipliers = {
@@ -141,61 +148,62 @@ export const useStakeData = () => {
     )
 
     const stakePosition = stake.data?.stakePosition
-
-    let maxActionPoints = BN_0
-    let currentActionPoints = BN_0
+    let averagePercentage = BN_0
+    let amountOfReferends = 0
 
     if (stakePosition) {
-      currentActionPoints = getCurrentActionPoints(
-        stakePosition.votes,
-        stakePosition.actionPoints.toNumber(),
-      )
-
       const initialPositionBalance = BN(
         positionBalances.data?.events.find(
           (event) => event.name === "Staking.PositionCreated",
         )?.args.stake ?? 0,
       )
 
-      const maxStakedReferendasBalance =
+      const allReferendaPercentages =
         referendas.data?.reduce((acc, referenda) => {
           const endReferendaBlockNumber =
             referenda.referendum.asFinished.end.toBigNumber()
 
           if (endReferendaBlockNumber.gt(stakePosition.createdAt)) {
-            /* staked position value when a referenda is over */
-            let positionBalance = initialPositionBalance
+            amountOfReferends++
 
-            positionBalances.data?.events.forEach((event) => {
-              if (event.name === "Staking.StakeAdded") {
-                const eventOccurBlockNumber = BN(event.block.height)
+            if (referenda.amount && referenda.conviction) {
+              /* staked position value when a referenda is over */
+              let positionBalance = initialPositionBalance
 
-                if (
-                  endReferendaBlockNumber.gte(eventOccurBlockNumber) &&
-                  positionBalance.lt(event.args.totalStake)
-                ) {
-                  positionBalance = BN(event.args.totalStake)
+              positionBalances.data?.events.forEach((event) => {
+                if (event.name === "Staking.StakeAdded") {
+                  const eventOccurBlockNumber = BN(event.block.height)
+
+                  if (
+                    endReferendaBlockNumber.gte(eventOccurBlockNumber) &&
+                    positionBalance.lt(event.args.totalStake)
+                  ) {
+                    positionBalance = BN(event.args.totalStake)
+                  }
                 }
-              }
-            })
+              })
 
-            return acc.plus(positionBalance)
+              const percentageOfVotedReferenda = referenda.amount
+                .div(positionBalance)
+                .multipliedBy(CONVICTIONS[referenda.conviction.toLowerCase()])
+                .div(CONVICTIONS["locked6x"])
+                .multipliedBy(100)
+
+              return acc.plus(percentageOfVotedReferenda)
+            }
           }
 
           return acc
         }, BN_0) ?? BN(0)
 
-      maxActionPoints = maxStakedReferendasBalance.isZero()
-        ? currentActionPoints
-        : maxStakedReferendasBalance
-            .div(BN_BILL)
-            .multipliedBy(CONVICTIONS["locked6x"])
+      averagePercentage =
+        allReferendaPercentages.isZero() && !amountOfReferends
+          ? BN_100
+          : allReferendaPercentages.div(amountOfReferends)
     }
 
-    const rewardBoostPersentage = !(
-      currentActionPoints.isZero() && maxActionPoints.isZero()
-    )
-      ? currentActionPoints.div(maxActionPoints).multipliedBy(100)
+    const rewardBoostPersentage = referendas.data?.length
+      ? averagePercentage
       : BN_100
 
     return {
@@ -221,7 +229,10 @@ export const useStakeData = () => {
     positionBalances.data?.events,
     referendas.data,
     spotPrice.data?.spotPrice,
-    stake.data,
+    stake.data?.minStake,
+    stake.data?.positionId,
+    stake.data?.stakePosition,
+    stake.data?.totalStake,
   ])
 
   return {
@@ -495,6 +506,7 @@ export const useClaimReward = () => {
     const actionPoints = getCurrentActionPoints(
       stakePosition.votes,
       stakePosition.actionPoints.toNumber(),
+      stakePosition.stake,
     )
 
     const points = wasm.calculate_points(

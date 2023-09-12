@@ -2,7 +2,7 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SPage = styled.div<{ variant?: "stats" | "default" }>`
+export const SPage = styled.div`
   --mobile-nav-height: calc(60px + env(safe-area-inset-bottom));
   --nav-height: 65px;
 
@@ -15,26 +15,32 @@ export const SPage = styled.div<{ variant?: "stats" | "default" }>`
 
   background: ${theme.colors.bg};
 
-  ${({ variant }) =>
-    variant === "stats"
-      ? css`
-          & > div {
-            height: 1360px;
-            background: ${theme.gradients.backgroundStats};
-          }
-        `
-      : css`
-          & > div {
-            height: 474px;
-            background: ${theme.gradients.background};
-          }
-        `}
-
   @media ${theme.viewport.gte.sm} {
     --nav-height: 70px;
 
     overflow-y: overlay;
   }
+`
+
+export const SGradientBg = styled.div<{ variant?: "stats" | "default" }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+
+  overflow: overlay;
+
+  ${({ variant }) =>
+    variant === "stats"
+      ? css`
+          height: 1360px;
+          background: ${theme.gradients.backgroundStats};
+        `
+      : css`
+          height: 474px;
+          background: ${theme.gradients.background};
+        `}
 `
 
 export const SPageContent = styled.main`
@@ -85,6 +91,9 @@ export const SPageInner = styled.div`
   flex-direction: column;
   flex-grow: 1;
 
+  position: relative;
+  z-index: 2;
+
   @media ${theme.viewport.gte.sm} {
     padding: 44px 0;
 
@@ -98,7 +107,7 @@ export const SPageInner = styled.div`
 export const SPageGrid = styled.div`
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
 
   opacity: 0.06;
   pointer-events: none;
