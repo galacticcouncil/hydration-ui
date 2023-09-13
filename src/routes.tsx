@@ -98,10 +98,11 @@ export const routes = [
         path: "POL",
         element: <StatsPage />,
       },
-      {
-        path: "LRNA",
-        element: <StatsPage />,
-      },
+      // TODO: Not ready. Requested in #861n9ffe4
+      // {
+      //   path: "LRNA",
+      //   element: <StatsPage />,
+      // },
     ],
   },
   {

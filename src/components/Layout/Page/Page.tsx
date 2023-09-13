@@ -43,11 +43,11 @@ export const Page = ({
       <div>
         {variant === "stats" && <SPageGrid />}
         <Header />
+        <SGradientBg variant={variant} />
         <SPageContent>
-          {subHeader && (
+        {subHeader && (
             <SSubHeader css={subHeaderStyle}>{subHeader}</SSubHeader>
           )}
-          <SGradientBg variant={variant} />
           <SPageInner className={className}>{children}</SPageInner>
           <ProviderSelectButton />
         </SPageContent>
