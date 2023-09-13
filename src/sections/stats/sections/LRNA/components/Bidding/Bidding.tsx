@@ -1,4 +1,4 @@
-import { SContainerVertical } from "sections/stats/sections/LRNA/StatsLRNA.styled"
+import { SContainerVertical } from "sections/stats/StatsPage.styled"
 
 export const Bidding = () => {
   return <SContainerVertical>Bidding</SContainerVertical>
