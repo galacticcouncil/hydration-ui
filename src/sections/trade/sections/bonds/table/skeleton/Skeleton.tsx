@@ -8,7 +8,11 @@ type Props = {
 }
 
 export const Skeleton = ({ title, showTransactions, showTransfer }: Props) => {
-  const table = useBondsSkeleton({ showTransactions, showTransfer })
+  const table = useBondsSkeleton({
+    showTransactions,
+    showTransfer,
+    onTransfer: () => null,
+  })
 
   return <TableSkeleton table={table} title={title} />
 }

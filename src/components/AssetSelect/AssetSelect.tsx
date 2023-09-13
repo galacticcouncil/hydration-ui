@@ -18,6 +18,7 @@ import {
   SMaxButton,
   SSelectAssetButton,
 } from "./AssetSelect.styled"
+import { Bond, useLbpPool } from "api/bonds"
 
 export const AssetSelect = (props: {
   name: string
@@ -36,6 +37,7 @@ export const AssetSelect = (props: {
   balance: Maybe<BigNumber>
   balanceLabel: string
   withoutMaxValue?: boolean
+  bond?: Bond
 
   onBlur?: (v: string) => void
   onChange: (v: string) => void
@@ -43,7 +45,12 @@ export const AssetSelect = (props: {
 }) => {
   const { t } = useTranslation()
 
-  const spotPrice = useDisplayPrice(props.asset)
+  const lbpPool = useLbpPool({ id: props.bond?.id })
+  const isLbpPool = lbpPool.data?.[0]
+  const spotPriceId =
+    props.bond && !isLbpPool ? props.bond.assetId : props.asset
+
+  const spotPrice = useDisplayPrice(spotPriceId)
 
   const displayValue = useMemo(() => {
     if (!props.value) return 0

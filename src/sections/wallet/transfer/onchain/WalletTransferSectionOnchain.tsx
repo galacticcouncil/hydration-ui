@@ -25,6 +25,8 @@ import {
   CloseIcon,
   PasteAddressIcon,
 } from "./WalletTransferSectionOnchain.styled"
+import { useBonds } from "api/bonds"
+import { useTokenBalance } from "api/balances"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -40,13 +42,17 @@ export function WalletTransferSectionOnchain({
   openAddressBook: () => void
 }) {
   const { t } = useTranslation()
-
+  const { account } = useAccountStore()
   const api = useApiPromise()
   const { createTransaction } = useStore()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const assetMeta = useAssetMeta(asset)
-  const { account } = useAccountStore()
+  const bond = useBonds({ id: asset.toString() })
+
+  const bondData = bond.data?.[0]
+  const balance = useTokenBalance(asset, account?.address)
+  const assetMeta = useAssetMeta(bondData ? bondData.assetId : asset)
+
   const accountCurrency = useAccountCurrency(account?.address)
   const accountCurrencyMeta = useAssetMeta(accountCurrency.data)
 
@@ -208,6 +214,21 @@ export function WalletTransferSectionOnchain({
                 } catch {}
                 return t("error.validNumber")
               },
+              maxBalance: (value) => {
+                try {
+                  if (assetMeta.data?.decimals == null)
+                    throw new Error("Missing asset meta")
+                  if (
+                    balance.data?.balance.gte(
+                      BigNumber(value).multipliedBy(
+                        BN_10.pow(assetMeta.data?.decimals.toNumber()),
+                      ),
+                    )
+                  )
+                    return true
+                } catch {}
+                return t("liquidity.add.modal.validation.notEnoughBalance")
+              },
               positive: (value) =>
                 new BigNumber(value).gt(0) || t("error.positive"),
             },
@@ -228,6 +249,7 @@ export function WalletTransferSectionOnchain({
               asset={asset}
               error={error?.message}
               onAssetOpen={openAssets}
+              bond={bondData}
             />
           )}
         />
