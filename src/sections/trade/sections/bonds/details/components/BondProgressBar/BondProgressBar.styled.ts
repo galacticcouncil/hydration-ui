@@ -8,7 +8,6 @@ export const ProgressBarContainer = styled.div`
   flex-direction: column;
 
   gap: 12px;
-  align-items: center;
 
   padding: 20px 30px;
 
@@ -16,6 +15,10 @@ export const ProgressBarContainer = styled.div`
 
   &:before {
     border-radius: 8px;
+  }
+
+  @media (${theme.viewport.gte.sm}) {
+    align-items: center;
   }
 `
 

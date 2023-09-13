@@ -105,6 +105,7 @@ export const Bond = ({
   const { t } = useTranslation()
   const bestNumber = useBestNumber()
   const navigate = useNavigate()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const isActive = state === "active"
   const isPast = state === "past"
@@ -222,7 +223,7 @@ export const Bond = ({
         </SItem>
 
         <SSeparator
-          orientation="vertical"
+          orientation={isDesktop ? "vertical" : "horizontal"}
           css={{ background: `rgba(${theme.rgbColors.white}, 0.06)` }}
         />
         <SItem>
@@ -234,7 +235,7 @@ export const Bond = ({
         {isActive && (
           <>
             <SSeparator
-              orientation="vertical"
+              orientation={isDesktop ? "vertical" : "horizontal"}
               css={{ background: `rgba(${theme.rgbColors.white}, 0.06)` }}
             />
             <Discount assetId={assetId} bondId={bondId} view={view} />

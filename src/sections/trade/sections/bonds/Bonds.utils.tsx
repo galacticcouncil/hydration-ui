@@ -1,6 +1,6 @@
 import { ReactComponent as ClockIcon } from "assets/icons/ClockIcon.svg"
-import { ReactComponent as TickIcon } from "assets/icons/TickIcon.svg"
-import { ReactComponent as DollarIcon } from "assets/icons/Dollar2Icon.svg"
+import { ReactComponent as Percentage } from "assets/icons/Percentage.svg"
+import { ReactComponent as Cake } from "assets/icons/Cake.svg"
 import { ReactNode } from "react"
 import { format } from "date-fns"
 import { useApiPromise } from "utils/api"
@@ -16,7 +16,7 @@ export const whyBonds: Array<{
 }> = [
   {
     index: "first",
-    icon: <TickIcon sx={{ color: "vibrantBlue200" }} />,
+    icon: <Percentage sx={{ color: "vibrantBlue200" }} />,
   },
   {
     index: "second",
@@ -24,7 +24,7 @@ export const whyBonds: Array<{
   },
   {
     index: "third",
-    icon: <DollarIcon sx={{ color: "green600" }} />,
+    icon: <Cake sx={{ color: "green700" }} />,
   },
 ]
 

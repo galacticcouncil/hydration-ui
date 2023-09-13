@@ -71,12 +71,15 @@ export const WhyBonds = () => {
               ))}
             </SBondSteps>
             <Text
-              color="brightBlue300"
+              color="brightBlue600"
               fs={12}
               sx={{ mt: 30 }}
               css={{
-                borderBottom: `1px solid ${theme.colors.brightBlue300}`,
+                borderBottom: `1px solid ${theme.colors.brightBlue600}`,
                 display: "inline-block",
+                "&:hover": {
+                  color: theme.colors.brightBlue100,
+                },
               }}
             >
               <a href="https://hydradx.io" target="_blank" rel="noreferrer">

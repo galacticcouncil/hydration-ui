@@ -59,14 +59,14 @@ export const BondProgreesBar = ({
 
   return (
     <ProgressBarContainer>
-      <div sx={{ flex: "row", gap: 8 }}>
+      <div sx={{ flex: ["column", "row"], gap: 8 }}>
         <Text color="brightBlue300">
           {t("bonds.details.progressBar.label")}
         </Text>
         {isLoading ? (
           <Skeleton width={200} height={20} />
         ) : (
-          <>
+          <div>
             <Trans
               t={t}
               i18nKey="bonds.details.progressBar.value"
@@ -81,7 +81,7 @@ export const BondProgreesBar = ({
                 css={{ fontFamily: "FontOver" }}
               />
             </Trans>
-          </>
+          </div>
         )}
       </div>
 
