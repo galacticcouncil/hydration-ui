@@ -5,7 +5,7 @@ import { ChartSwitchMobile } from "sections/stats/components/ChartSwitchMobile/C
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useMemo, useState } from "react"
-import { SContainerVertical } from "sections/stats/sections/overview/StatsOverview.styled"
+import { SContainerVertical } from "sections/stats/StatsPage.styled"
 import { TOmnipoolOverviewData } from "sections/stats/sections/overview/data/OmnipoolOverview.utils"
 import { BN_0 } from "utils/constants"
 import { useTranslation } from "react-i18next"

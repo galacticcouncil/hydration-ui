@@ -1,4 +1,4 @@
-import { PolkadotRegistry } from "@galacticcouncil/sdk"
+import { chains } from "@galacticcouncil/xcm"
 import { useAssetsLocation } from "api/assetDetails"
 import BN from "bignumber.js"
 import { ChainLogo } from "components/AssetIcon/AssetIcon"
@@ -18,8 +18,6 @@ type Props = {
   id: string
 }
 
-const registry = new PolkadotRegistry()
-
 export const WalletAssetsTableDetails = ({
   lockedMax,
   lockedMaxDisplay,
@@ -36,12 +34,12 @@ export const WalletAssetsTableDetails = ({
 
     const location = locations.data?.find((location) => location.id === id)
 
-    const chain = registry
-      .getChains()
-      .find((chain) => chain.paraID === location?.parachainId)
+    const chain = chains.find(
+      (chain) => chain.parachainId === location?.parachainId,
+    )
 
     return {
-      chain: chain?.id,
+      chain: chain?.key,
       name: chain?.name,
       symbol: location?.symbol,
     }

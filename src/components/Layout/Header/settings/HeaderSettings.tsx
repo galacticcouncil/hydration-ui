@@ -24,7 +24,7 @@ export const HeaderSettings = () => {
       <AnimatePresence>
         {open && (
           <Portal forceMount>
-            <Content align="end" sideOffset={18}>
+            <Content align="end" sideOffset={18} css={{ zIndex: 2 }}>
               <SContent
                 initial={{ opacity: 0, height: 50, x: 200 }}
                 animate={{ opacity: 1, height: "auto", x: 0 }}

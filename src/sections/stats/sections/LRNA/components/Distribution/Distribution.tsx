@@ -4,7 +4,6 @@ import { ChartSwitchMobile } from "sections/stats/components/ChartSwitchMobile/C
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useState } from "react"
-import { SContainerVertical } from "sections/stats/sections/LRNA/StatsLRNA.styled"
 import { ChartWrapper } from "sections/stats/sections/LRNA/components/ChartWrapper/ChartWrapper"
 import { useTranslation } from "react-i18next"
 import { ChartLabel } from "./ChartLabel"
@@ -17,6 +16,7 @@ import {
 import { DistributionSliceLabel } from "./DistributionSliceLabel"
 import { useLRNAMeta } from "api/assetMeta"
 import { DEPOSIT_CLASS_ID } from "utils/api"
+import { SContainerVertical } from "sections/stats/StatsPage.styled"
 
 export const Distribution = () => {
   const { t } = useTranslation()
