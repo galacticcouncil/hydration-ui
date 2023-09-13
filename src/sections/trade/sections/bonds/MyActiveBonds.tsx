@@ -10,6 +10,7 @@ import { Placeholder } from "./table/placeholder/Placeholder"
 import { BN_0 } from "utils/constants"
 import { useAssetMetaList } from "api/assetMeta"
 import { useBestNumber } from "api/chain"
+import { useState } from "react"
 
 type Props = {
   showTransactions?: boolean
@@ -24,6 +25,8 @@ export const MyActiveBonds = ({
 }: Props) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
+
+  const [allAssets, setAllAssets] = useState(false)
 
   const bestNumber = useBestNumber()
   const lbpPools = useLbpPool()
@@ -68,39 +71,58 @@ export const MyActiveBonds = ({
   const currentBlockNumber =
     bestNumber.data?.relaychainBlockNumber.toNumber() ?? 0
 
-  const data = balances
-    .filter((balance) => balance.data?.assetId && balance.data?.total?.gt(BN_0))
-    .map<BondTableItem>((balance) => {
-      const id = balance.data?.assetId?.toString() ?? ""
-      const bond = bondMap.get(id)
-      const assetId = bond?.assetId ?? ""
-
-      const lbpPool = lbpPools.data?.find((lbpPool) =>
-        lbpPool.assets.some((asset) => asset === bond?.id),
+  const data =
+    bonds.data?.reduce<BondTableItem[]>((acc, item) => {
+      const balance = balances.find(
+        (balance) => balance.data?.assetId.toString() === item.id,
       )
-      const isSale = lbpPool
-        ? currentBlockNumber > Number(lbpPool.start) &&
-          currentBlockNumber < Number(lbpPool.end)
-        : false
 
-      const assetIn = lbpPool?.assets.find((asset) => asset !== bond?.id)
+      const { assetId, total } = balance?.data ?? {}
 
-      const assetMeta = metaMap.get(assetId)
-      const shiftBy = assetMeta?.decimals
-        ? assetMeta.decimals.neg().toNumber()
-        : -12
+      if (balance && (allAssets ? total?.gte(BN_0) : total?.gt(BN_0))) {
+        const id = assetId?.toString() ?? ""
+        const bond = bondMap.get(id)
+        const bondAssetId = bond?.assetId ?? ""
 
-      return {
-        assetId,
-        assetIn,
-        maturity: bondMap.get(id)?.maturity,
-        balance: balance.data?.total,
-        balanceHuman: balance.data?.total?.shiftedBy(shiftBy).toString(),
-        price: "",
-        bondId: bond?.id,
-        isSale,
+        const lbpPool = lbpPools.data?.find((lbpPool) =>
+          lbpPool.assets.some((asset: number) => asset === Number(bond?.id)),
+        )
+
+        const isSale = lbpPool
+          ? currentBlockNumber > Number(lbpPool.start) &&
+            currentBlockNumber < Number(lbpPool.end)
+          : false
+
+        const assetIn = lbpPool?.assets
+          .find((asset: number) => asset !== Number(bond?.id))
+          ?.toString()
+
+        const assetMeta = metaMap.get(bondAssetId)
+        const shiftBy = assetMeta?.decimals
+          ? assetMeta.decimals.neg().toNumber()
+          : -12
+
+        acc.push({
+          assetId: bondAssetId,
+          assetIn,
+          maturity: bondMap.get(id)?.maturity,
+          balance: balance.data?.total,
+          balanceHuman: balance.data?.total?.shiftedBy(shiftBy).toString(),
+          price: "",
+          bondId: bond?.id,
+          isSale,
+        })
       }
-    })
 
-  return <BondsTable {...tableProps} data={data} />
+      return acc
+    }, []) ?? []
+
+  return (
+    <BondsTable
+      {...tableProps}
+      data={data}
+      allAssets={allAssets}
+      setAllAssets={setAllAssets}
+    />
+  )
 }

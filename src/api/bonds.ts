@@ -36,7 +36,7 @@ export const useBonds = (params?: { id?: string; disable?: boolean }) => {
 
           prevAcc.push({
             id,
-            //name: data.name.toString(),
+            name: data.name.toString(),
             assetId: assetId?.toString(),
             maturity: maturity?.toNumber(),
           })
@@ -74,7 +74,7 @@ export const useLbpPool = (params?: { id?: string }) => {
         const data = rawData.unwrap()
 
         return {
-          id: key.toHuman()[0],
+          id: key.toHuman()[0] as string,
           owner: data.owner.toString(),
           start: Number(data.start.toString()),
           end: Number(data.end.toString()),
@@ -95,7 +95,7 @@ export const useLbpPool = (params?: { id?: string }) => {
       select: (pools) => {
         if (id) {
           const pool = pools.find((pool) =>
-            pool.assets.some((asset) => asset === id),
+            pool.assets.some((asset) => asset === Number(id)),
           )
 
           return pool ? [pool] : undefined

@@ -23,6 +23,7 @@ export const Placeholder = ({
     showTransactions,
     showTransfer,
     enableAnimation: false,
+    onTransfer: () => null,
   })
 
   return (

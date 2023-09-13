@@ -1,6 +1,7 @@
 {
   "and": "and",
   "back": "Back",
+  "bonds": "Bonds",
   "bond.maturity": "Maturity",
   "bond.discount": "Discount",
   "bond.premium": "Premium",
@@ -572,6 +573,7 @@
   "bonds.table.price": "Average purchase price",
   "bonds.table.claim": "Cash in",
   "bonds.table.transfer": "Transfer",
+  "bonds.table.switcher": "Show all bonds",
   "bonds.transactions.table.date": "Date",
   "bonds.transactions.table.transaction": "Amount in/out",
   "bonds.transactions.table.price": "Price",

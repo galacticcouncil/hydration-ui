@@ -16,12 +16,16 @@ import { BondTableItem, useActiveBondsTable } from "./BondsTable.utils"
 import { Transactions } from "./transactions/Transactions"
 import { Text } from "components/Typography/Text/Text"
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
+import { Switch } from "components/Switch/Switch"
+import { useTranslation } from "react-i18next"
 
 type Props = {
   title: string
   data: BondTableItem[]
   showTransactions?: boolean
   showTransfer?: boolean
+  allAssets: boolean
+  setAllAssets: (allAssets: boolean) => void
 }
 
 export const BondsTable = ({
@@ -29,7 +33,10 @@ export const BondsTable = ({
   data,
   showTransactions,
   showTransfer,
+  allAssets,
+  setAllAssets,
 }: Props) => {
+  const { t } = useTranslation()
   const [, setRow] = useState<BondTableItem | undefined>(undefined)
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
 
@@ -43,7 +50,11 @@ export const BondsTable = ({
   return (
     <>
       <TableContainer
-        css={{ backgroundColor: `rgba(${theme.rgbColors.bg}, 0.4)` }}
+        css={
+          showTransfer
+            ? undefined
+            : { backgroundColor: `rgba(${theme.rgbColors.bg}, 0.4)` }
+        }
       >
         <TableTitle>
           <Text
@@ -55,6 +66,15 @@ export const BondsTable = ({
           >
             {title}
           </Text>
+          {showTransfer && (
+            <Switch
+              value={allAssets}
+              onCheckedChange={(value) => setAllAssets(value)}
+              size="small"
+              name="showAll"
+              label={t("bonds.table.switcher")}
+            />
+          )}
         </TableTitle>
         <Table>
           <TableHeaderContent>

@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
 import BN from "bignumber.js"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { Bond } from "api/bonds"
+import { getBondName } from "sections/trade/sections/bonds/Bonds.utils"
 
 export const WalletTransferAssetSelect = (props: {
   name: string
@@ -20,13 +22,27 @@ export const WalletTransferAssetSelect = (props: {
   title?: string
   className?: string
   balance?: BN
+  bond?: Bond
 
   error?: string
 }) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
-  const asset = useAsset(props.asset)
+
+  const asset = useAsset(props.bond ? props.bond.assetId : props.asset)
   const balance = useTokenBalance(props.asset, account?.address)
+
+  let name = asset.data?.name
+  let symbol = asset.data?.symbol
+
+  if (props.bond) {
+    name = getBondName(
+      asset.data?.symbol ?? "",
+      new Date(props.bond.maturity),
+      true,
+    )
+    symbol = `${asset.data?.symbol}b`
+  }
 
   return (
     <AssetSelect
@@ -40,11 +56,12 @@ export const WalletTransferAssetSelect = (props: {
       assetIcon={<AssetLogo id={asset.data?.id} />}
       decimals={asset.data?.decimals?.toNumber()}
       balance={props.balance ?? balance.data?.balance}
-      assetName={asset.data?.name?.toString()}
-      assetSymbol={asset.data?.symbol?.toString()}
+      assetName={name}
+      assetSymbol={symbol}
       onSelectAssetClick={props.onAssetOpen}
       error={props.error}
       balanceLabel={t("selectAsset.balance.label")}
+      bond={props.bond}
     />
   )
 }
