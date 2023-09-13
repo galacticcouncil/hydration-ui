@@ -180,7 +180,7 @@ export const BondDetailsData = () => {
       <BondDetailsHeader
         title={getBondName(meta.data.symbol, data.maturityDate, true)}
         accumulatedAssetId={lbpPoolData?.assets.find(
-          (asset) => asset !== Number(bond?.id),
+          (asset: number) => asset !== Number(bond?.id),
         )}
         end={lbpPoolData?.end}
       />
