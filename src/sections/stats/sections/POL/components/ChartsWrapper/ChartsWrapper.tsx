@@ -34,14 +34,15 @@ export const ChartsWrapper = ({ assetSymbol }: Props) => {
         }}
       >
         <div sx={{ flex: "row", gap: [4, 12], justify: ["end", "start"] }}>
-          <SChartTab
-            disabled={!isApi || true}
-            aria-label="total value locked"
-            active={chartType === "pol"}
-            onClick={() => setChartType("pol")}
-          >
-            {t("stats.pol.chart.switcher.pol")}
-          </SChartTab>
+          {/* TODO: Not ready. Requested in #861n9ffe4 */}
+          {/*<SChartTab*/}
+          {/*  disabled={!isApi || true}*/}
+          {/*  aria-label="total value locked"*/}
+          {/*  active={chartType === "pol"}*/}
+          {/*  onClick={() => setChartType("pol")}*/}
+          {/*>*/}
+          {/*  {t("stats.pol.chart.switcher.pol")}*/}
+          {/*</SChartTab>*/}
           <SChartTab
             disabled={!isApi}
             aria-label="24 volume"
