@@ -42,6 +42,7 @@ export const useStablePools = () => {
   const poolAddressById = new Map(
     (pools.data ?? []).map((pool) => [pool.id, derivePoolAccount(pool.id)]),
   )
+
   const poolsBalances = useAccountsBalances(
     Array.from(poolAddressById.values()),
   )
