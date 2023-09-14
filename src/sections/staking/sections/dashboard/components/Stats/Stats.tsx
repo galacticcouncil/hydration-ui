@@ -33,7 +33,10 @@ export const Stats = ({
           gap: 40,
         }}
       >
-        <div css={{ alignSelf: "center" }}>
+        <div
+          sx={{ flex: "column", align: "center" }}
+          css={{ alignSelf: "center" }}
+        >
           <PieChart
             percentage={data?.supplyStaked?.toNumber() ?? 0}
             circulatigSupply={data?.circulatingSupply.toNumber() ?? 0}
