@@ -29,7 +29,7 @@ export const PieChart = styled(
           height="100%"
           css={{ position: "relative" }}
         >
-          <div css={{ margin: 15 }}>
+          <div css={{ padding: 15, position: "relative" }}>
             <SClipPath
               radius={RADIUS}
               className={className}
