@@ -9,7 +9,7 @@ import { Separator } from "components/Separator/Separator"
 import { SStakingValuesContainer } from "./StakingValues.styled"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { TStakingData, useStakeARP } from "sections/staking/StakingPage.utils"
 import BN from "bignumber.js"
@@ -27,7 +27,7 @@ export const StakingValue = ({
   logo: JSX.Element
   title: string
   value: string | JSX.Element
-  tooltip?: string
+  tooltip?: string | JSX.Element
 }) => {
   return (
     <div sx={{ flex: ["row", "column"], align: ["start", "center"], gap: 6 }}>
@@ -120,11 +120,18 @@ export const StakingValues = ({
         />
       }
       title={t("staking.dashboard.stats.projectedRewards")}
-      tooltip={t(
-        `staking.dashboard.stats.${
-          isStakingPosition ? "aprWithPos" : "apr"
-        }.tooltip`,
-      )}
+      tooltip={
+        <Text fs={11} fw={500}>
+          <Trans
+            t={t}
+            i18nKey={`staking.dashboard.stats.${
+              isStakingPosition ? "aprWithPos" : "apr"
+            }.tooltip`}
+          >
+            <div />
+          </Trans>
+        </Text>
+      }
       value={
         loading || !isApiLoaded(api) ? (
           <div sx={{ flex: "column", gap: 2 }}>

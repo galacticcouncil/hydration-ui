@@ -10,8 +10,9 @@ import { TStakingData } from "sections/staking/StakingPage.utils"
 import { Icon } from "components/Icon/Icon"
 import { ReactComponent as ProjectedRewardsIcon } from "assets/icons/ProjectedRewardsIcon.svg"
 import Skeleton from "react-loading-skeleton"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { Spacer } from "components/Spacer/Spacer"
+import { Text } from "components/Typography/Text/Text"
 
 export const Stats = ({
   loading,
@@ -50,7 +51,13 @@ export const Stats = ({
                   />
                 }
                 title={t("staking.dashboard.stats.projectedRewards")}
-                tooltip={t(`staking.dashboard.stats.apr.tooltip`)}
+                tooltip={
+                  <Text fs={11} fw={500}>
+                    <Trans t={t} i18nKey="staking.dashboard.stats.apr.tooltip">
+                      <div />
+                    </Trans>
+                  </Text>
+                }
                 value={
                   loading ? (
                     <div sx={{ flex: "column", gap: 2 }}>
