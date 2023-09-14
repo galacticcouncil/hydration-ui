@@ -239,16 +239,16 @@ export const AprStatValue = ({
 }: {
   availableBalance: BN | undefined
 }) => {
-  //const { t } = useTranslation()
+  const { t } = useTranslation()
   const stakeApr = useStakeARP(availableBalance)
 
   return (
     <Text fs={[19]} color="white" font="FontOver">
-      {
-        stakeApr.isLoading ? <Skeleton width={100} height={24} /> : "< 5%" /*(
+      {stakeApr.isLoading ? (
+        <Skeleton width={100} height={24} />
+      ) : (
         t("value.percentage", { value: stakeApr?.data?.apr })
-      )*/
-      }
+      )}
     </Text>
   )
 }
