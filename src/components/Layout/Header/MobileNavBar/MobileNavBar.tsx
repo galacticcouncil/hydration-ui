@@ -12,11 +12,6 @@ import {
 import { MoreButton } from "./MoreButton"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { useProviderRpcUrlStore } from "api/provider"
-import { useApiPromise } from "utils/api"
-import { useBestNumber } from "api/chain"
-import { isApiLoaded } from "utils/helpers"
-import { enableStakingBlock } from "utils/constants"
 
 export const MobileNavBarItem = ({
   item,
@@ -40,29 +35,10 @@ export const MobileNavBar = () => {
   const { account } = useSearch()
   const isMediumMedia = useMedia(theme.viewport.gte.sm)
 
-  const providers = useProviderRpcUrlStore()
-  const api = useApiPromise()
-  const bestNumber = useBestNumber(!isApiLoaded(api))
-
-  const isMainnet =
-    (providers.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL) ===
-      "wss://rpc.hydradx.cloud" || import.meta.env.VITE_ENV === "production"
-
-  const blockNumber = bestNumber.data?.parachainBlockNumber.toNumber()
-
-  if (!blockNumber) return null
-
   const [visibleTabs, hiddenTabs] = MENU_ITEMS.filter(
     (item) => item.enabled,
   ).reduce(
     (result, value) => {
-      if (
-        value.key === "staking" &&
-        isMainnet &&
-        blockNumber < enableStakingBlock
-      )
-        return result
-
       const isVisible = isMediumMedia ? value.tabVisible : value.mobVisible
       result[isVisible ? 0 : 1].push(value)
       return result
