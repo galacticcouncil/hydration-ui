@@ -64,7 +64,7 @@ export const RemoveLiquidity = ({
     fee: position.fee,
   })
 
-  const fee = position.fee.times(liquidityOut).div(100)
+  const fee = position.fee.times(liquidityOut)
 
   const feeDisplay = useMemo(
     () => position.fee.times(BN_100).toString(),
