@@ -13,7 +13,7 @@ import { useAssetsTradability } from "sections/wallet/assets/table/data/WalletAs
 import { useAccountStore } from "state/store"
 import { NATIVE_ASSET_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
-import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
+import { BN_0, BN_MILL, BN_NAN, TRADING_FEE } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { useStableswapPools } from "api/stableswap"
 import { pool_account_name } from "@galacticcouncil/math-stableswap"
@@ -132,7 +132,7 @@ export const useStablePools = () => {
       balanceByAsset,
       assetMetaById,
       reserves,
-      fee: normalizeBigNumber(pool.data.fee).div(10000),
+      fee: normalizeBigNumber(pool.data.fee).div(BN_MILL),
     }
   })
 

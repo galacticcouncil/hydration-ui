@@ -3,10 +3,11 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { Fragment } from "react"
+import { Fragment, useMemo } from "react"
 import { SBadge } from "sections/pools/stablepool/StablePool.styled"
 import { u32, u8 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
+import { BN_100 } from "utils/constants"
 
 type PoolDetailsProps = {
   assets: {
@@ -19,8 +20,7 @@ type PoolDetailsProps = {
 }
 export const PoolDetails = ({ assets, fee, className }: PoolDetailsProps) => {
   const { t } = useTranslation()
-
-  const feeDisplay = fee.toString()
+  const feeDisplay = useMemo(() => fee.times(BN_100).toString(), [fee])
 
   return (
     <div sx={{ flex: "column" }} className={className}>

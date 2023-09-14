@@ -9,10 +9,10 @@ import { useTotalIssuance } from "api/totalIssuance"
 import { normalizeBigNumber } from "utils/balance"
 import { BalanceByAsset } from "sections/pools/PoolsPage.utils"
 import { u8 } from "@polkadot/types"
-import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import { BN_0, BN_MILL, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import BigNumber from "bignumber.js"
 
-type Asset = { asset_id: number; amount: string; decimals: number }
+type Asset = { asset_id: number; amount: string }
 
 type Args = {
   poolId: u32
@@ -44,7 +44,6 @@ export const useStablepoolShares = ({ poolId, asset, reserves }: Args) => {
       ? [
           {
             asset_id: Number(asset.id),
-            decimals: Number(asset.decimals),
             amount: normalizeBigNumber(asset.amount)
               .shiftedBy(normalizeBigNumber(asset.decimals).toNumber())
               .toString(),
@@ -57,7 +56,7 @@ export const useStablepoolShares = ({ poolId, asset, reserves }: Args) => {
     JSON.stringify(assets),
     amplification,
     shareIssuance.data.total.toString(),
-    new BigNumber(pool.data.fee).div(10000).toString(),
+    new BigNumber(pool.data.fee).div(BN_MILL).toString(),
   )
 
   return {

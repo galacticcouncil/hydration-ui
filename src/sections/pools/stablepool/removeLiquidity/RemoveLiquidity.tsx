@@ -9,7 +9,11 @@ import { Trans, useTranslation } from "react-i18next"
 import { useStore } from "state/store"
 import { useApiPromise } from "utils/api"
 import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
-import { SLIPPAGE_LIMIT, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import {
+  BN_100,
+  SLIPPAGE_LIMIT,
+  STABLEPOOL_TOKEN_DECIMALS,
+} from "utils/constants"
 import { theme } from "theme"
 import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
 import { u32 } from "@polkadot/types-codec"
@@ -61,6 +65,12 @@ export const RemoveLiquidity = ({
   })
 
   const fee = position.fee.times(liquidityOut).div(100)
+
+  const feeDisplay = useMemo(
+    () => position.fee.times(BN_100).toString(),
+    [position.fee],
+  )
+
   const slippage = SLIPPAGE_LIMIT.times(liquidityOut).div(100)
   const minAmountOut = normalizeBigNumber(liquidityOut)
     .minus(fee)
@@ -211,7 +221,7 @@ export const RemoveLiquidity = ({
                 {t("liquidity.remove.modal.tokenFee.label")}
               </Text>
               <Text color="white">
-                {t("value.percentage", { value: position.fee })}
+                {t("value.percentage", { value: feeDisplay })}
               </Text>
             </div>
           </>
