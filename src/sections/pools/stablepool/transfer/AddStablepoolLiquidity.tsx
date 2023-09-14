@@ -22,7 +22,7 @@ import { positive, validNumber } from "utils/validators"
 
 type Props = {
   poolId: u32
-  tradeFee: BigNumber
+  fee: BigNumber
   asset?: { id: string; symbol: string; decimals: u32 | u8 }
   onSuccess: () => void
   onClose: () => void
@@ -37,7 +37,7 @@ export const AddStablepoolLiquidity = ({
   onAssetOpen,
   onClose,
   reserves,
-  tradeFee,
+  fee,
 }: Props) => {
   const api = useApiPromise()
   const { createTransaction } = useStore()
@@ -177,7 +177,7 @@ export const AddStablepoolLiquidity = ({
             />
             <SummaryRow
               label={t("liquidity.add.modal.tradeFee")}
-              content={t("value.percentage", { value: tradeFee })}
+              content={t("value.percentage", { value: fee })}
               description={t("liquidity.add.modal.tradeFee.description")}
             />
             <Spacer size={69} />

@@ -19,12 +19,11 @@ type Props = Exclude<
 
 export const StablePool = ({
   id,
-  tradeFee,
+  fee,
   assets,
   total,
   balanceByAsset,
   assetMetaById,
-  withdrawFee,
   reserves,
 }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -39,16 +38,12 @@ export const StablePool = ({
   return (
     <SContainer id={id.toString()}>
       <SGridContainer>
-        <PoolDetails
-          assets={assets}
-          tradeFee={tradeFee}
-          css={{ gridArea: "details" }}
-        />
+        <PoolDetails assets={assets} fee={fee} css={{ gridArea: "details" }} />
         <PoolValue total={total.value} css={{ gridArea: "values" }} />
         <PoolActions
           poolId={id}
           assets={assets}
-          tradeFee={tradeFee}
+          fee={fee}
           css={{ gridArea: "actions" }}
           balanceByAsset={balanceByAsset}
           assetMetaById={assetMetaById}
@@ -57,7 +52,6 @@ export const StablePool = ({
           canExpand={hasPosition}
           refetchPositions={position.refetch}
           reserves={reserves}
-          withdrawFee={withdrawFee}
           amount={amount}
         />
       </SGridContainer>
@@ -75,7 +69,7 @@ export const StablePool = ({
                 poolId={id}
                 assets={assets}
                 amount={amount}
-                withdrawFee={withdrawFee}
+                fee={fee}
                 reserves={reserves}
                 refetchPosition={position.refetch}
               />

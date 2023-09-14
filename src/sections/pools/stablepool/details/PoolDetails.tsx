@@ -14,17 +14,13 @@ type PoolDetailsProps = {
     symbol: string
     decimals: u8 | u32
   }[]
-  tradeFee: BigNumber
+  fee: BigNumber
   className?: string
 }
-export const PoolDetails = ({
-  assets,
-  tradeFee,
-  className,
-}: PoolDetailsProps) => {
+export const PoolDetails = ({ assets, fee, className }: PoolDetailsProps) => {
   const { t } = useTranslation()
 
-  const tradeFeeDisplay = tradeFee.toString()
+  const feeDisplay = fee.toString()
 
   return (
     <div sx={{ flex: "column" }} className={className}>
@@ -68,7 +64,7 @@ export const PoolDetails = ({
             {t("liquidity.asset.details.fee")}
           </Text>
           <Text lh={22} color="white" fs={18}>
-            {t("value.percentage", { value: tradeFeeDisplay })}
+            {t("value.percentage", { value: feeDisplay })}
           </Text>
         </div>
       </div>

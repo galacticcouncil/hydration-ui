@@ -15,7 +15,7 @@ type Props = {
   poolId: u32
   isOpen: boolean
   onClose: () => void
-  tradeFee: BigNumber
+  fee: BigNumber
   assetMetaById?: AssetMetaById
   balanceByAsset?: BalanceByAsset
   refetchPositions: () => void
@@ -33,7 +33,7 @@ enum Page {
 export const TransferModal = ({
   assets,
   poolId,
-  tradeFee,
+  fee,
   isOpen,
   onClose,
   balanceByAsset,
@@ -130,7 +130,7 @@ export const TransferModal = ({
                 reserves={reserves}
                 onAssetOpen={() => setPage(Page.ASSETS)}
                 asset={assetMetaById?.get(assetId)}
-                tradeFee={tradeFee}
+                fee={fee}
               />
             ),
           },

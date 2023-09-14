@@ -120,6 +120,7 @@ export const useStablePools = () => {
     const reserves = Array.from(balanceByAsset.entries()).map(
       ([assetId, balance]) => ({
         asset_id: Number(assetId),
+        decimals: Number(assetMetaById.get(assetId)?.decimals ?? 0),
         amount: balance.free.toString(),
       }),
     )
@@ -131,8 +132,7 @@ export const useStablePools = () => {
       balanceByAsset,
       assetMetaById,
       reserves,
-      tradeFee: normalizeBigNumber(pool.data.tradeFee).div(10000),
-      withdrawFee: normalizeBigNumber(pool.data.withdrawFee).div(10000),
+      fee: normalizeBigNumber(pool.data.fee).div(10000),
     }
   })
 

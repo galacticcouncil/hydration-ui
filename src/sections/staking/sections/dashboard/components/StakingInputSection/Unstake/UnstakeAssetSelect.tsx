@@ -32,7 +32,6 @@ export const UnstakeAssetSelect = ({
       value={value}
       onChange={onChange}
       asset={assetId}
-      assetIcon={<AssetLogo id={asset.data?.id} />}
       decimals={asset.data?.decimals?.toNumber()}
       balance={balance}
       assetName={asset.data?.name?.toString()}

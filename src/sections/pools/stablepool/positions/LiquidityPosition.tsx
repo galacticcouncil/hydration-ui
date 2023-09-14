@@ -16,7 +16,7 @@ type Props = {
   refetchPosition: () => void
   amount: BN
   poolId: u32
-  withdrawFee: BN
+  fee: BN
   reserves: { asset_id: number; amount: string }[]
   assets: {
     id: string
@@ -29,7 +29,7 @@ export const LiquidityPosition = ({
   amount,
   assets,
   poolId,
-  withdrawFee,
+  fee,
   reserves,
   refetchPosition,
 }: Props) => {
@@ -104,7 +104,7 @@ export const LiquidityPosition = ({
               assets={assets}
               position={{
                 reserves,
-                withdrawFee,
+                fee,
                 poolId,
                 amount,
               }}

@@ -1,7 +1,7 @@
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
-import { getAssetName } from "components/AssetIcon/AssetIcon"
+import { AssetLogo, getAssetName } from "components/AssetIcon/AssetIcon"
 import { SSelectAssetButton } from "./AssetSelect.styled"
 import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
 import { u32 } from "@polkadot/types-codec"
@@ -15,13 +15,12 @@ type Props = {
 export const AssetSelectButton = ({ onClick, assetId }: Props) => {
   const asset = useAsset(assetId)
 
-  const icon = asset?.data?.icon
   const symbol = asset?.data?.symbol
   const name = asset?.data?.name
 
   return (
     <SSelectAssetButton size="small" onClick={onClick} type="button">
-      <Icon icon={icon} size={30} />
+      <Icon icon={<AssetLogo id={asset?.data?.id} />} size={30} />
       {symbol && (
         <div sx={{ flex: "column", justify: "space-between" }}>
           <Text fw={700} lh={16} color="white">

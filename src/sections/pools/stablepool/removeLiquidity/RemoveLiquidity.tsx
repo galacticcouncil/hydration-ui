@@ -14,7 +14,7 @@ import { theme } from "theme"
 import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
 import { u32 } from "@polkadot/types-codec"
 import { useAssetMeta } from "api/assetMeta"
-import { useStablepoolLiquidiyOut } from "./RemoveLiquidity.utils"
+import { useStablepoolLiquidityOut } from "./RemoveLiquidity.utils"
 import { RemoveLiquidityReward } from "sections/pools/modals/RemoveLiquidity/components/RemoveLiquidityReward"
 import { STradingPairContainer } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.styled"
 import { RemoveLiquidityInput } from "sections/pools/modals/RemoveLiquidity/components/RemoveLiquidityInput"
@@ -26,7 +26,7 @@ type RemoveLiquidityProps = {
     reserves: { asset_id: number; amount: string }[]
     poolId: u32
     amount: BigNumber
-    withdrawFee: BigNumber
+    fee: BigNumber
   }
   onSuccess: () => void
   onAssetOpen: () => void
@@ -52,15 +52,15 @@ export const RemoveLiquidity = ({
     return position.amount.div(100).times(value)
   }, [value, position])
 
-  const liquidityOut = useStablepoolLiquidiyOut({
+  const liquidityOut = useStablepoolLiquidityOut({
     shares: removeSharesValue,
     reserves: position.reserves,
     poolId: position.poolId,
     asset: meta.data,
-    withdrawFee: position.withdrawFee,
+    fee: position.fee,
   })
 
-  const fee = position.withdrawFee.times(liquidityOut).div(100)
+  const fee = position.fee.times(liquidityOut).div(100)
   const slippage = SLIPPAGE_LIMIT.times(liquidityOut).div(100)
   const minAmountOut = normalizeBigNumber(liquidityOut)
     .minus(fee)
@@ -193,6 +193,7 @@ export const RemoveLiquidity = ({
                 </Text>
                 {meta.data && (
                   <RemoveLiquidityReward
+                    id={meta.data.id}
                     name={meta.data.symbol}
                     symbol={meta.data.symbol}
                     amount={t("value", {
@@ -210,7 +211,7 @@ export const RemoveLiquidity = ({
                 {t("liquidity.remove.modal.tokenFee.label")}
               </Text>
               <Text color="white">
-                {t("value.percentage", { value: position.withdrawFee })}
+                {t("value.percentage", { value: position.fee })}
               </Text>
             </div>
           </>

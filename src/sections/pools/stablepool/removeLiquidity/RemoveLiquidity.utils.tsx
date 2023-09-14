@@ -15,14 +15,14 @@ type Args = {
   poolId: u32
   shares: BigNumber
   asset?: { id: string; decimals: u32 | u8 }
-  withdrawFee: BigNumber
+  fee: BigNumber
   reserves: { asset_id: number; amount: string }[]
 }
 
-export const useStablepoolLiquidiyOut = ({
+export const useStablepoolLiquidityOut = ({
   poolId,
   asset,
-  withdrawFee,
+  fee,
   reserves,
   shares,
 }: Args) => {
@@ -49,7 +49,7 @@ export const useStablepoolLiquidiyOut = ({
     Number(asset.id),
     amplification,
     shareIssuance.data.total.toString(),
-    withdrawFee.times(10000).toString(),
+    fee.toString(),
   )
 
   return BigNumber.maximum(

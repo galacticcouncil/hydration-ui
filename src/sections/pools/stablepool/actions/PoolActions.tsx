@@ -25,7 +25,7 @@ type PoolActionsProps = {
     symbol: string
     decimals: u8 | u32
   }[]
-  tradeFee: BigNumber
+  fee: BigNumber
   balanceByAsset?: BalanceByAsset
   assetMetaById?: AssetMetaById
   className?: string
@@ -34,7 +34,6 @@ type PoolActionsProps = {
   canExpand?: boolean
   refetchPositions: () => void
   reserves: { asset_id: number; amount: string }[]
-  withdrawFee: BigNumber
   amount: BigNumber
 }
 
@@ -43,7 +42,7 @@ export const PoolActions = ({
   className,
   balanceByAsset,
   assetMetaById,
-  tradeFee,
+  fee,
   onExpandClick,
   isExpanded,
   canExpand,
@@ -51,7 +50,6 @@ export const PoolActions = ({
   assets,
   reserves,
   amount,
-  withdrawFee,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
@@ -78,7 +76,7 @@ export const PoolActions = ({
             assets={assets}
             reserves={reserves}
             amount={amount}
-            withdrawFee={withdrawFee}
+            fee={fee}
             refetchPosition={refetchPositions}
           />
         )}
@@ -104,7 +102,7 @@ export const PoolActions = ({
         <TransferModal
           poolId={poolId}
           assets={assets}
-          tradeFee={tradeFee}
+          fee={fee}
           isOpen={openAdd}
           reserves={reserves}
           onClose={() => setOpenAdd(false)}
