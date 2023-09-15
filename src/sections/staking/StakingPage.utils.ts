@@ -439,9 +439,9 @@ export const useClaimReward = () => {
   const stakingConsts = useStakingConsts()
   const potAddress = getHydraAccountAddress(stakingConsts.data?.palletId)
   const potBalance = useTokenBalance(NATIVE_ASSET_ID, potAddress)
-  console.log(potAddress)
-  const queries = [bestNumber, stake, stakingConsts, potBalance]
 
+  const queries = [bestNumber, stake, stakingConsts, potBalance]
+  console.log(stake, "stake")
   const isLoading = queries.some((query) => query.isLoading)
 
   const data = useMemo(() => {
@@ -472,11 +472,7 @@ export const useClaimReward = () => {
     } = stakingConsts.data
 
     const pendingRewards = potBalance.data.balance.minus(potReservedBalance)
-    console.log(
-      potBalance.data.balance.shiftedBy(-12).toString(),
-      pendingRewards.shiftedBy(-12).toString(),
-      potReservedBalance.shiftedBy(-12).toString(),
-    )
+
     let rewardPerStake = accumulatedRewardPerStake.toString()
 
     if (!pendingRewards.isZero() && !totalStake.isZero()) {
@@ -496,9 +492,14 @@ export const useClaimReward = () => {
       periodLength.toString(),
       stakePosition.createdAt.toString(),
     )
-
+    console.log(
+      unclaimablePeriods.toString(),
+      BN(currentPeriod).minus(enteredAt).toString(),
+      currentPeriod,
+      enteredAt,
+    )
     if (BN(currentPeriod).minus(enteredAt).lte(unclaimablePeriods)) {
-      return { rewards: BN_0, unlockedRewards: BN_0 }
+      return { rewards: BN_0, unlockedRewards: BN_0, positionId }
     }
 
     const maxRewards = wasm.calculate_rewards(
@@ -544,7 +545,13 @@ export const useClaimReward = () => {
         payablePercentage,
       ),
     )
-
+    console.log({
+      positionId,
+      rewards: rewards.div(BN_BILL),
+      unlockedRewards: unlockedRewards.div(BN_BILL),
+      actionPoints,
+      allocatedRewardsPercentage,
+    })
     return {
       positionId,
       rewards: rewards.div(BN_BILL),
@@ -553,6 +560,6 @@ export const useClaimReward = () => {
       allocatedRewardsPercentage,
     }
   }, [bestNumber.data, potBalance.data, stake, stakingConsts])
-  console.log(data)
+  // console.log(data)
   return { data, isLoading }
 }
