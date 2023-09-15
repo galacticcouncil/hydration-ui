@@ -439,7 +439,7 @@ export const useClaimReward = () => {
   const stakingConsts = useStakingConsts()
   const potAddress = getHydraAccountAddress(stakingConsts.data?.palletId)
   const potBalance = useTokenBalance(NATIVE_ASSET_ID, potAddress)
-
+  console.log(potAddress)
   const queries = [bestNumber, stake, stakingConsts, potBalance]
 
   const isLoading = queries.some((query) => query.isLoading)
@@ -472,7 +472,11 @@ export const useClaimReward = () => {
     } = stakingConsts.data
 
     const pendingRewards = potBalance.data.balance.minus(potReservedBalance)
-
+    console.log(
+      potBalance.data.balance.shiftedBy(-12).toString(),
+      pendingRewards.shiftedBy(-12).toString(),
+      potReservedBalance.shiftedBy(-12).toString(),
+    )
     let rewardPerStake = accumulatedRewardPerStake.toString()
 
     if (!pendingRewards.isZero() && !totalStake.isZero()) {
@@ -549,6 +553,6 @@ export const useClaimReward = () => {
       allocatedRewardsPercentage,
     }
   }, [bestNumber.data, potBalance.data, stake, stakingConsts])
-
+  console.log(data)
   return { data, isLoading }
 }

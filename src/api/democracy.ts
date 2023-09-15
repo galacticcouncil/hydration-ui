@@ -43,6 +43,7 @@ export const getReferendums =
 
     const referendums = referendumRaw.map(([key, codec]) => {
       const id = key.args[0].toString()
+      //console.log(votesRaw)
       const vote = votesRaw?.asDirect.votes.find(
         (vote) => vote[0].toString() === id,
       )
