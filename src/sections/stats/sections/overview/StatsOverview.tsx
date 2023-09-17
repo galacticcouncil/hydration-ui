@@ -1,12 +1,13 @@
 import { PieWrapper } from "./components/PieWrapper/PieWrapper"
-import { StatsTiles } from "sections/stats/components/StatsTiles/StatsTiles"
+// TODO: Not ready. Requested in #861n9ffe4
+// import { StatsTiles } from "sections/stats/components/StatsTiles/StatsTiles"
 import { useOmnipoolOverviewData } from "./data/OmnipoolOverview.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { SContainerVertical } from "./StatsOverview.styled"
 import { RecentTradesTableWrapper } from "sections/stats/components/RecentTradesTable/RecentTradesTableWrapper"
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 import { OmnipoolAssetsTableWrapper } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
+import { SContainerVertical } from "sections/stats/StatsPage.styled"
 
 export const StatsOverview = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -33,7 +34,8 @@ export const StatsOverview = () => {
         )}
       </div>
 
-      <StatsTiles />
+      {/* TODO: Not ready. Requested in #861n9ffe4 */}
+      {/*<StatsTiles />*/}
       <OmnipoolAssetsTableWrapper />
       <RecentTradesTableWrapper />
     </div>
