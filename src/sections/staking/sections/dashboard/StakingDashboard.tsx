@@ -53,7 +53,7 @@ export const StakingData = () => {
         css={{ flex: 2 }}
       >
         <StakingInputSection data={staking.data} loading={staking.isLoading} />
-        {account && staking.data?.positionId && <AvailableRewards />}
+        {<AvailableRewards />}
       </div>
     </div>
   )
