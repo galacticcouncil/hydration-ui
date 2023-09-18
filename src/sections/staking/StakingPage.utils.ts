@@ -18,7 +18,6 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { BN_0, BN_100, BN_BILL, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
 import { useReferendums } from "api/democracy"
-import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
 //import { usePaymentInfo } from "api/transaction"
 //import { useAccountCurrency } from "api/payments"
 
@@ -82,11 +81,6 @@ export const useStakeData = () => {
     stake.data?.positionId?.toString(),
   )
   const referendas = useReferendums("finished")
-
-  const {
-    warnings: { staking: stakingMsg },
-    setWarnings,
-  } = useWarningsStore()
 
   //const accountCurrency = useAccountCurrency(account?.address)
 
@@ -156,7 +150,6 @@ export const useStakeData = () => {
     const stakePosition = stake.data?.stakePosition
     let averagePercentage = BN_0
     let amountOfReferends = 0
-    let isDelegatingVote: boolean | undefined
 
     if (stakePosition) {
       const initialPositionBalance = BN(
@@ -172,14 +165,6 @@ export const useStakeData = () => {
 
           if (endReferendaBlockNumber.gt(stakePosition.createdAt)) {
             amountOfReferends++
-
-            if (referenda.isDelegating === true) {
-              if (stakingMsg.visible == null) {
-                setWarnings("staking", true)
-              }
-
-              isDelegatingVote = true
-            }
 
             if (referenda.amount && referenda.conviction) {
               /* staked position value when a referenda is over */
@@ -235,8 +220,6 @@ export const useStakeData = () => {
             rewardBoostPersentage,
           }
         : undefined,
-
-      isDelegatingVote,
     }
   }, [
     availableBalance,
@@ -250,8 +233,6 @@ export const useStakeData = () => {
     stake.data?.positionId,
     stake.data?.stakePosition,
     stake.data?.totalStake,
-    setWarnings,
-    stakingMsg.visible,
   ])
 
   return {

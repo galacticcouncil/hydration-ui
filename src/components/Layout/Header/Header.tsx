@@ -23,12 +23,6 @@ export const Header = () => {
 
   return (
     <div css={{ position: "sticky", top: 0, zIndex: 5 }}>
-      {warnings.warnings.staking.visible && (
-        <WarningMessage
-          type="staking"
-          text="Delegated votes are currently not eligible for Action Points."
-        />
-      )}
       <SHeader>
         <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
           <div sx={{ flex: "row", align: "center" }}>
