@@ -30,11 +30,11 @@ export const Page = ({ variant = "default", className, children }: Props) => {
 
   return (
     <SPage ref={ref}>
-      <div>
+      <div css={{ position: "relative" }}>
         {variant === "stats" && <SPageGrid />}
+        <SGradientBg variant={variant} />
         <Header />
         <SPageContent>
-          <SGradientBg variant={variant} />
           <SPageInner className={className}>{children}</SPageInner>
           <ProviderSelectButton />
         </SPageContent>

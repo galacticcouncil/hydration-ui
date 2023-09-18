@@ -75,6 +75,7 @@ export const StakingValues = ({
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const api = useApiPromise()
+  const isDelegatingVote = data.isDelegatingVote
 
   const availableBalanceValue = (
     <StakingValue
@@ -203,32 +204,36 @@ export const StakingValues = ({
         sx={{ height: 1, m: "auto", display: ["inherit", "none"] }}
       />
 
-      <StakingValue
-        logo={
-          <Icon
-            size={18}
-            sx={{ color: "brightBlue300", m: 3 }}
-            icon={<StakedMultiplier />}
+      {!isDelegatingVote && (
+        <>
+          <StakingValue
+            logo={
+              <Icon
+                size={18}
+                sx={{ color: "brightBlue300", m: 3 }}
+                icon={<StakedMultiplier />}
+              />
+            }
+            tooltip={t("staking.dashboard.stats.rewardBoost.tooltip")}
+            title={t("staking.dashboard.stats.rewardBoost")}
+            value={
+              loading ? (
+                <div sx={{ flex: "column", gap: 2 }}>
+                  <Skeleton width={100} height={24} />
+                </div>
+              ) : (
+                t("value.percentage", {
+                  value: data?.stakePosition?.rewardBoostPersentage,
+                })
+              )
+            }
           />
-        }
-        tooltip={t("staking.dashboard.stats.rewardBoost.tooltip")}
-        title={t("staking.dashboard.stats.rewardBoost")}
-        value={
-          loading ? (
-            <div sx={{ flex: "column", gap: 2 }}>
-              <Skeleton width={100} height={24} />
-            </div>
-          ) : (
-            t("value.percentage", {
-              value: data?.stakePosition?.rewardBoostPersentage,
-            })
-          )
-        }
-      />
-      <Separator
-        orientation={isDesktop ? "vertical" : "horizontal"}
-        sx={{ height: [1, 35], m: "auto" }}
-      />
+          <Separator
+            orientation={isDesktop ? "vertical" : "horizontal"}
+            sx={{ height: [1, 35], m: "auto" }}
+          />
+        </>
+      )}
       {projectedRewards}
     </SStakingValuesContainer>
   )
