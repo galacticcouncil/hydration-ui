@@ -546,6 +546,7 @@ export const useClaimReward = () => {
       unlockedRewards: unlockedRewards.div(BN_BILL),
       actionPoints,
       allocatedRewardsPercentage,
+      maxRewards: BN(maxRewards).div(BN_BILL),
     }
   }, [bestNumber.data, potBalance.data, stake, stakingConsts])
 

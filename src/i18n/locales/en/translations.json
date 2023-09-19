@@ -500,7 +500,9 @@
   "staking.dashboard.form.unstake.button": "Unstake all",
   "staking.dashboard.form.unstake.balanceLabel": "Staked",
   "staking.dashboard.form.unstake.msg": "Currently, you can only unstake the full amount.",
-  "staking.dashboard.rewards.title": "Available rewards",
+  "staking.dashboard.rewards.title": "Staking rewards",
+  "staking.dashboard.rewards.allocated": "Allocated rewards:",
+  "staking.dashboard.rewards.available": "Available rewards:",
   "staking.dashboard.rewards.desc": "Don't claim rewards too early. Claiming resets your boost and forfeits any pending locked rewards.",
   "staking.dashboard.rewards.allocatedRewards": "of allocated rewards",
   "staking.dashboard.rewards.button": "Claim",
@@ -535,5 +537,5 @@
   "addressbook.remove.subtitle": "Are you sure you want to remove this account address?",
   "addressbook.remove.cancel": "Back",
   "addressbook.remove.submit": "Yes, remove",
-  "warningMessage.hdxLiquidity.title": "We advise you to exit Your HDX LP positions - HDX LPs are not rewarded"
+  "warningMessage.hdxLiquidity.title": "Your HDX LP position is not yielding rewards - to earn rewards on HDX you can use staking"
 }

@@ -18,7 +18,6 @@ import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Separator } from "components/Separator/Separator"
-import { theme } from "theme"
 
 export const AvailableRewards = () => {
   const { t } = useTranslation()
@@ -79,6 +78,34 @@ export const AvailableRewards = () => {
         </Text>
       </SRewartCardHeader>
       <div sx={{ p: "28px 25px", flex: "column", gap: 20 }}>
+        <div sx={{ flex: "column" }}>
+          <div sx={{ flex: "row", justify: "space-between" }}>
+            <Text color="white">
+              {t("staking.dashboard.rewards.allocated")}
+            </Text>
+            {isLoading || !reward.data ? (
+              <Skeleton width={90} height={25} />
+            ) : (
+              <Text
+                fs={19}
+                color="white"
+                font="FontOver"
+                tTransform="uppercase"
+                css={{ whiteSpace: "nowrap" }}
+              >
+                {t("value.tokenWithSymbol", {
+                  value: reward.data.maxRewards,
+                  symbol: "HDX",
+                  decimalPlaces: 2,
+                })}
+              </Text>
+            )}
+          </div>
+        </div>
+
+        <Separator orientation="horizontal" css={{ background: "#55394E" }} />
+
+        <Text color="white">{t("staking.dashboard.rewards.available")}</Text>
         <div sx={{ flex: "row", justify: "space-between" }}>
           <div sx={{ flex: "column", justify: "space-around" }}>
             {isLoading || !reward.data ? (
@@ -136,7 +163,7 @@ export const AvailableRewards = () => {
           </div>
         </div>
 
-        <Text css={{ color: `rgba(${theme.rgbColors.white}, 0.6)` }}>
+        <Text color="warningYellow200">
           {t("staking.dashboard.rewards.desc")}
         </Text>
 
