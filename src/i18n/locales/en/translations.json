@@ -503,7 +503,7 @@
   "staking.dashboard.rewards.title": "Staking rewards",
   "staking.dashboard.rewards.allocated": "Allocated rewards:",
   "staking.dashboard.rewards.available": "Available rewards:",
-  "staking.dashboard.rewards.desc": "Don't claim rewards too early. Claiming resets your boost and forfeits any pending locked rewards.",
+  "staking.dashboard.rewards.desc": "Don't claim rewards too early. Claiming resets your boost and forfeits {{value, bignumber(type: token)}} unclaimable HDX rewards.",
   "staking.dashboard.rewards.allocatedRewards": "of allocated rewards",
   "staking.dashboard.rewards.button": "Claim",
   "staking.dashboard.stats.chart.label": "Staked HDX",

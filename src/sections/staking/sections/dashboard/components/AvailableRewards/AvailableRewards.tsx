@@ -179,7 +179,9 @@ export const AvailableRewards = () => {
         <Separator orientation="horizontal" css={{ background: "#55394E" }} />
 
         <Text color="warningYellow200">
-          {t("staking.dashboard.rewards.desc")}
+          {t("staking.dashboard.rewards.desc", {
+            value: reward.data?.maxRewards?.minus(reward.data.rewards),
+          })}
         </Text>
 
         <Button
