@@ -34,6 +34,7 @@ export const Page = ({ variant = "default", className, children }: Props) => {
         {variant === "stats" && <SPageGrid />}
         <SGradientBg variant={variant} />
         <Header />
+        <SGradientBg variant={variant} />
         <SPageContent>
           <SPageInner className={className}>{children}</SPageInner>
           <ProviderSelectButton />

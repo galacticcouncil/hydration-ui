@@ -18,7 +18,7 @@ export const SPage = styled.div`
   @media ${theme.viewport.gte.sm} {
     --nav-height: 70px;
 
-    overflow-y: overlay;
+    overflow-y: auto;
   }
 `
 
@@ -28,8 +28,6 @@ export const SGradientBg = styled.div<{ variant?: "stats" | "default" }>`
   left: 0;
 
   width: 100%;
-
-  overflow: overlay;
 
   ${({ variant }) =>
     variant === "stats"
