@@ -4,13 +4,13 @@ import { SContainer } from "sections/staking/StakingPage.styled"
 export const SRewardCardContainer = styled(SContainer)`
   gap: 0;
 
-  background: radial-gradient(
-      48.95% 140.75% at 21.29% 131.36%,
-      rgba(255, 97, 144, 0.217) 0%,
-      rgba(73, 105, 132, 0.021) 100%,
-      rgba(132, 73, 91, 0.021) 100%
+  background: linear-gradient(
+      0deg,
+      rgba(255, 97, 144, 0.22) -0.13%,
+      rgba(73, 105, 132, 0.02) 101.13%,
+      rgba(132, 73, 91, 0.02) 101.13%
     ),
-    rgba(66, 13, 38, 0.4);
+    rgba(67, 22, 43, 0.7);
 
   :before {
     background: linear-gradient(
