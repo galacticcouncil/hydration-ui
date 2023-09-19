@@ -154,7 +154,7 @@ export const TransferModal = ({
                 reserves={reserves}
                 onAssetOpen={() => setPage(Page.ASSETS)}
                 asset={assetMetaById?.get(assetId)}
-                tradeFee={tradeFee}
+                fee={fee}
               />
             ),
           },
