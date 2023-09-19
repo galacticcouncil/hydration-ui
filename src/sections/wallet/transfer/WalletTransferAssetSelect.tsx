@@ -20,6 +20,7 @@ export const WalletTransferAssetSelect = (props: {
   title?: string
   className?: string
   balance?: BN
+  withoutMaxBtn?: boolean
 
   error?: string
 }) => {
@@ -45,6 +46,7 @@ export const WalletTransferAssetSelect = (props: {
       onSelectAssetClick={props.onAssetOpen}
       error={props.error}
       balanceLabel={t("selectAsset.balance.label")}
+      withoutMaxBtn={props.withoutMaxBtn}
     />
   )
 }

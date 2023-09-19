@@ -36,6 +36,7 @@ export const AssetSelect = (props: {
   balance: Maybe<BigNumber>
   balanceLabel: string
   withoutMaxValue?: boolean
+  withoutMaxBtn?: boolean
 
   onBlur?: (v: string) => void
   onChange: (v: string) => void
@@ -89,21 +90,23 @@ export const AssetSelect = (props: {
                 })}
               </Text>
 
-              <SMaxButton
-                size="micro"
-                text={t("selectAsset.button.max")}
-                onClick={(e) => {
-                  e.preventDefault()
-                  if (props.decimals != null && props.balance != null) {
-                    const value = getFloatingPointAmount(
-                      props.balance,
-                      props.decimals,
-                    ).toString()
-                    props.onChange(value)
-                    props.onBlur?.(value)
-                  }
-                }}
-              />
+              {!props.withoutMaxBtn && (
+                <SMaxButton
+                  size="micro"
+                  text={t("selectAsset.button.max")}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    if (props.decimals != null && props.balance != null) {
+                      const value = getFloatingPointAmount(
+                        props.balance,
+                        props.decimals,
+                      ).toString()
+                      props.onChange(value)
+                      props.onBlur?.(value)
+                    }
+                  }}
+                />
+              )}
             </div>
           )}
         </div>

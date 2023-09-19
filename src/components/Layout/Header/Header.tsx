@@ -8,36 +8,28 @@ import { useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { useMedia } from "react-use"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { css } from "@emotion/react"
-import { useDepegStore, DepegWarningModal } from "./DepegWarningModal"
 import { HeaderSettings } from "./settings/HeaderSettings"
 import { Bell } from "./Bell"
+import { WarningMessage } from "components/WarningMessage/WarningMessage"
+import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
 
-const depegEnabled = import.meta.env.VITE_FF_DEPEG_WARNING === "true"
 const settingsEanbled = import.meta.env.VITE_FF_SETTINGS_ENABLED === "true"
 
 export const Header = () => {
   const isMediumMedia = useMedia(theme.viewport.lt.md)
   const { t } = useTranslation()
 
-  const depeg = useDepegStore()
+  const warnings = useWarningsStore()
 
   return (
-    <>
-      {depeg.depegOpen && depegEnabled && (
-        <DepegWarningModal onClose={() => depeg.setDepegOpen(false)} />
+    <div css={{ position: "sticky", top: 0, zIndex: 5 }}>
+      {warnings.warnings.hdxLiquidity.visible && (
+        <WarningMessage
+          text={t("warningMessage.hdxLiquidity.title")}
+          type="hdxLiquidity"
+        />
       )}
-      <SHeader
-        css={
-          depeg.depegOpen && depegEnabled
-            ? css`
-                @media ${theme.viewport.gte.md} {
-                  top: 40px;
-                }
-              `
-            : undefined
-        }
-      >
+      <SHeader>
         <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
           <div sx={{ flex: "row", align: "center" }}>
             <Icon
@@ -69,6 +61,6 @@ export const Header = () => {
           </div>
         </div>
       </SHeader>
-    </>
+    </div>
   )
 }

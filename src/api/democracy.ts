@@ -41,11 +41,14 @@ export const getReferendums =
       accountId ? api.query.democracy.votingOf(accountId) : undefined,
     ])
 
+    const isDelegating = votesRaw?.isDelegating
+
     const referendums = referendumRaw.map(([key, codec]) => {
       const id = key.args[0].toString()
-      const vote = votesRaw?.asDirect.votes.find(
-        (vote) => vote[0].toString() === id,
-      )
+
+      const vote = !isDelegating
+        ? votesRaw?.asDirect.votes.find((vote) => vote[0].toString() === id)
+        : undefined
 
       return {
         id: key.args[0].toString(),
@@ -53,6 +56,7 @@ export const getReferendums =
         voted: !!vote,
         amount: vote?.[1].asStandard?.balance.toBigNumber(),
         conviction: vote?.[1].asStandard?.vote.conviction.toString(),
+        isDelegating,
       }
     })
 
