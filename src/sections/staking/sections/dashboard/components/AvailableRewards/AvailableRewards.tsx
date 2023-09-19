@@ -18,6 +18,8 @@ import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Separator } from "components/Separator/Separator"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export const AvailableRewards = () => {
   const { t } = useTranslation()
@@ -28,6 +30,8 @@ export const AvailableRewards = () => {
   const api = useApiPromise()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
+
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const isLoading = !reward.data || spotPrice.isLoading
 
@@ -106,7 +110,13 @@ export const AvailableRewards = () => {
         <Separator orientation="horizontal" css={{ background: "#55394E" }} />
 
         <Text color="white">{t("staking.dashboard.rewards.available")}</Text>
-        <div sx={{ flex: "row", justify: "space-between" }}>
+        <div
+          sx={{
+            flex: ["column", "row"],
+            justify: "space-between",
+            gap: [20, 0],
+          }}
+        >
           <div sx={{ flex: "column", justify: "space-around" }}>
             {isLoading || !reward.data ? (
               <Skeleton width={90} height={25} />
@@ -138,7 +148,10 @@ export const AvailableRewards = () => {
             )}
           </div>
 
-          <Separator orientation="vertical" css={{ background: "#55394E" }} />
+          <Separator
+            orientation={isDesktop ? "vertical" : "horizontal"}
+            css={{ background: "#55394E" }}
+          />
 
           <div sx={{ flex: "column" }}>
             {isLoading || !reward.data ? (
@@ -162,6 +175,8 @@ export const AvailableRewards = () => {
             </Text>
           </div>
         </div>
+
+        <Separator orientation="horizontal" css={{ background: "#55394E" }} />
 
         <Text color="warningYellow200">
           {t("staking.dashboard.rewards.desc")}
