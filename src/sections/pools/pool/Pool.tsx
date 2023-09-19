@@ -2,7 +2,7 @@ import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { SContainer, SGridContainer } from "./Pool.styled"
 import { PoolDetails } from "./details/PoolDetails"
 import { PoolValue } from "./details/PoolValue"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { PoolActions } from "./actions/PoolActions"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -15,6 +15,8 @@ import { LiquidityPositionWrapper } from "./positions/LiquidityPositionWrapper"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
 import { useAccountDeposits } from "api/deposits"
 import { PoolFooterWithNoFarms } from "./footer/PoolFooterWithNoFarms"
+import { NATIVE_ASSET_ID } from "utils/api"
+import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
 
 type Props = { pool: OmnipoolPool }
 
@@ -24,11 +26,32 @@ export const Pool = ({ pool }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
+  const { warnings, setWarnings } = useWarningsStore()
+
   const positions = usePoolPositions(pool)
   const accountDeposits = useAccountDeposits(enabledFarms ? pool.id : undefined)
 
   const hasExpandContent =
     !!positions.data?.length || !!accountDeposits.data?.length
+
+  const poolId = pool.id.toString()
+
+  useEffect(() => {
+    if (poolId === NATIVE_ASSET_ID) {
+      if (positions.data.length && warnings.hdxLiquidity.visible == null) {
+        setWarnings("hdxLiquidity", true)
+      }
+
+      if (warnings.hdxLiquidity.visible != null && !positions.data.length) {
+        setWarnings("hdxLiquidity", false)
+      }
+    }
+  }, [
+    poolId,
+    warnings.hdxLiquidity.visible,
+    setWarnings,
+    positions.data?.length,
+  ])
 
   return (
     <SContainer id={pool.id.toString()}>

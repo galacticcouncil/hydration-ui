@@ -23,6 +23,12 @@ export const Header = () => {
 
   return (
     <div css={{ position: "sticky", top: 0, zIndex: 5 }}>
+      {warnings.warnings.hdxLiquidity.visible && (
+        <WarningMessage
+          text={t("warningMessage.hdxLiquidity.title")}
+          type="hdxLiquidity"
+        />
+      )}
       <SHeader>
         <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
           <div sx={{ flex: "row", align: "center" }}>

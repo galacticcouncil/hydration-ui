@@ -4,7 +4,7 @@ import { persist } from "zustand/middleware"
 
 type TWarningStore = {
   warnings: {
-    staking: { visible?: boolean; visibility: (keyof typeof LINKS)[] }
+    hdxLiquidity: { visible?: boolean; visibility: (keyof typeof LINKS)[] }
   }
   setWarnings: (key: TWarningsType, isOpen: boolean) => void
 }
@@ -15,7 +15,10 @@ export const useWarningsStore = create(
   persist<TWarningStore>(
     (set) => ({
       warnings: {
-        staking: { visible: undefined, visibility: ["staking"] },
+        hdxLiquidity: {
+          visible: undefined,
+          visibility: ["liquidity", "walletAssets", "walletVesting"],
+        },
       },
       setWarnings: (key, isOpen) =>
         set(({ warnings }) => ({
@@ -27,6 +30,7 @@ export const useWarningsStore = create(
     }),
     {
       name: "warnings",
+      version: 0.1,
       getStorage: () => window.sessionStorage,
     },
   ),

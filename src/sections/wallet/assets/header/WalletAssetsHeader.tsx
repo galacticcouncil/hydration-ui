@@ -2,7 +2,7 @@ import BN from "bignumber.js"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Text } from "components/Typography/Text/Text"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
@@ -11,6 +11,8 @@ import { BN_0 } from "utils/constants"
 import { useHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useAssetsTableData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { SInfoIcon } from "sections/pools/pool/Pool.styled"
+import { NATIVE_ASSET_ID } from "utils/api"
+import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
 
 type Props = { disconnected?: boolean }
 
@@ -47,6 +49,31 @@ const WalletAssetsHeaderBalance = ({ label }: { label: string }) => {
   const assets = useAssetsTableData(false)
   const lpPositions = useHydraPositionsData()
   const farmsPositions = useAllUserDepositShare()
+
+  const { warnings, setWarnings } = useWarningsStore()
+
+  const isHdxPosition = lpPositions.data.some(
+    (position) => position.assetId === NATIVE_ASSET_ID,
+  )
+
+  useEffect(() => {
+    if (lpPositions.data.length) {
+      if (isHdxPosition && warnings.hdxLiquidity.visible == null) {
+        setWarnings("hdxLiquidity", true)
+      }
+
+      if (warnings.hdxLiquidity.visible != null && !isHdxPosition) {
+        setWarnings("hdxLiquidity", false)
+      }
+    } else if (warnings.hdxLiquidity.visible != null) {
+      setWarnings("hdxLiquidity", false)
+    }
+  }, [
+    warnings.hdxLiquidity.visible,
+    setWarnings,
+    lpPositions.data.length,
+    isHdxPosition,
+  ])
 
   const totalDisplay = useMemo(() => {
     if (!assets.data) return BN_0
