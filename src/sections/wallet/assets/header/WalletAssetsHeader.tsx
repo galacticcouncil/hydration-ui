@@ -61,12 +61,6 @@ const WalletAssetsHeaderBalance = ({ label }: { label: string }) => {
       if (isHdxPosition && warnings.hdxLiquidity.visible == null) {
         setWarnings("hdxLiquidity", true)
       }
-
-      if (warnings.hdxLiquidity.visible != null && !isHdxPosition) {
-        setWarnings("hdxLiquidity", false)
-      }
-    } else if (warnings.hdxLiquidity.visible != null) {
-      setWarnings("hdxLiquidity", false)
     }
   }, [
     warnings.hdxLiquidity.visible,

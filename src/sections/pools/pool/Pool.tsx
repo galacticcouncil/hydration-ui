@@ -41,10 +41,6 @@ export const Pool = ({ pool }: Props) => {
       if (positions.data.length && warnings.hdxLiquidity.visible == null) {
         setWarnings("hdxLiquidity", true)
       }
-
-      if (warnings.hdxLiquidity.visible != null && !positions.data.length) {
-        setWarnings("hdxLiquidity", false)
-      }
     }
   }, [
     poolId,
