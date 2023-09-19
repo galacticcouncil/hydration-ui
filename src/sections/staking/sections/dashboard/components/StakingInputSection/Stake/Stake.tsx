@@ -158,6 +158,7 @@ export const Stake = ({
                 onChange={onChange}
                 asset={NATIVE_ASSET_ID}
                 error={error?.message}
+                withoutMaxBtn
               />
             )
           }
