@@ -441,7 +441,6 @@ export const useClaimReward = () => {
   const potBalance = useTokenBalance(NATIVE_ASSET_ID, potAddress)
 
   const queries = [bestNumber, stake, stakingConsts, potBalance]
-
   const isLoading = queries.some((query) => query.isLoading)
 
   const data = useMemo(() => {
@@ -494,7 +493,7 @@ export const useClaimReward = () => {
     )
 
     if (BN(currentPeriod).minus(enteredAt).lte(unclaimablePeriods)) {
-      return { rewards: BN_0, unlockedRewards: BN_0 }
+      return { rewards: BN_0, unlockedRewards: BN_0, positionId }
     }
 
     const maxRewards = wasm.calculate_rewards(
@@ -547,6 +546,7 @@ export const useClaimReward = () => {
       unlockedRewards: unlockedRewards.div(BN_BILL),
       actionPoints,
       allocatedRewardsPercentage,
+      maxRewards: BN(maxRewards).div(BN_BILL),
     }
   }, [bestNumber.data, potBalance.data, stake, stakingConsts])
 

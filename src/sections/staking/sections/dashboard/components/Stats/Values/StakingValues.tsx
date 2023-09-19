@@ -229,6 +229,7 @@ export const StakingValues = ({
         orientation={isDesktop ? "vertical" : "horizontal"}
         sx={{ height: [1, 35], m: "auto" }}
       />
+
       {projectedRewards}
     </SStakingValuesContainer>
   )
