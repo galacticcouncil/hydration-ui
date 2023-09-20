@@ -19,7 +19,13 @@ export const useAssetMeta = (id: Maybe<u32 | string>) => {
         return {
           id: id.toString(),
           symbol: "STS",
-          decimals: new BigNumber(STABLEPOOL_TOKEN_DECIMALS) as any,
+          decimals: {
+            toString: () => STABLEPOOL_TOKEN_DECIMALS,
+            // @ts-ignore
+            toNumber: () => STABLEPOOL_TOKEN_DECIMALS,
+            // @ts-ignore
+            toBigNumber: () => STABLEPOOL_TOKEN_DECIMALS,
+          },
         }
       }
 
@@ -37,7 +43,27 @@ export const useAssetMetaList = (ids: Array<Maybe<u32 | string>>) => {
 
   return useQuery(QUERY_KEYS.assetsMeta, getAllAssetMeta(api), {
     enabled: !!isApiLoaded(api),
-    select: (data) => data.filter((i) => normalizedIds.includes(i.id)),
+    select: (data) => {
+      const d = data.filter((i) => normalizedIds.includes(i.id))
+
+      if (normalizedIds.includes("123")) {
+        return [
+          ...d,
+          // TODO: Temporary workaround. Fetch asset details, based on type if stableswap then decimals === constant
+          {
+            id: "123",
+            symbol: "STS",
+            decimals: {
+              toString: () => STABLEPOOL_TOKEN_DECIMALS,
+              toNumber: () => STABLEPOOL_TOKEN_DECIMALS,
+              toBigNumber: () => STABLEPOOL_TOKEN_DECIMALS,
+            },
+          },
+        ]
+      }
+
+      return d
+    },
   })
 }
 
