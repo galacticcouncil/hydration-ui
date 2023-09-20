@@ -5,13 +5,26 @@ import { ApiPromise } from "@polkadot/api"
 import { u32, u8 } from "@polkadot/types"
 import { isApiLoaded, Maybe } from "utils/helpers"
 import { getApiIds } from "./consts"
+import BigNumber from "bignumber.js"
+import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 
 export const useAssetMeta = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
 
   return useQuery(QUERY_KEYS.assetsMeta, getAllAssetMeta(api), {
     enabled: !!id,
-    select: (data) => data.find((i) => i.id === id?.toString()),
+    select: (data) => {
+      // TODO: Temporary workaround. Fetch asset details, based on type if stableswap then decimals === constant
+      if (id?.toString() === "123") {
+        return {
+          id: id.toString(),
+          symbol: "STS",
+          decimals: new BigNumber(STABLEPOOL_TOKEN_DECIMALS) as any,
+        }
+      }
+
+      return data.find((i) => i.id === id?.toString())
+    },
   })
 }
 

@@ -11,6 +11,9 @@ import { AssetMetaById, BalanceByAsset } from "sections/pools/PoolsPage.utils"
 import { u32 } from "@polkadot/types-codec"
 import BigNumber from "bignumber.js"
 import { Stepper } from "components/Stepper/Stepper"
+import { BN_0 } from "utils/constants"
+import { TypeRegistry, U32 } from "@polkadot/types"
+import { AddLiquidityForm } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
 
 type Props = {
   poolId: u32
@@ -44,7 +47,7 @@ export const TransferModal = ({
   refetchPositions,
 }: Props) => {
   const { t } = useTranslation()
-  const [page, setPage] = useState<Page>(Page.OPTIONS)
+  const [page, setPage] = useState<Page>(Page.MOVE_TO_OMNIPOOL)
   const [assetId, setAssetId] = useState<string>(assets[0]?.id)
 
   const [selectedOption, setSelectedOption] =
@@ -139,7 +142,7 @@ export const TransferModal = ({
             ),
           },
           {
-            title: t("liquidity.stablepool.transfer.omnipool"),
+            title: t("liquidity.add.modal.title"),
             headerVariant: "gradient",
             content: (
               <AddStablepoolLiquidity
@@ -190,7 +193,13 @@ export const TransferModal = ({
           {
             title: "Move to omnipool",
             headerVariant: "gradient",
-            content: <div></div>,
+            content: (
+              <AddLiquidityForm
+                assetId={poolId}
+                onSuccess={() => console.log("-success")}
+                onClose={() => console.log("-close")}
+              />
+            ),
           },
         ]}
       />

@@ -150,7 +150,9 @@ const getAssetDetails = (api: ApiPromise) => async () => {
   const assets = entries.reduce<TAssetDetails[]>((acc, [key, dataRaw]) => {
     const data = dataRaw.unwrap()
 
-    if (data.assetType.isToken) {
+    // TODO: load correct types
+    // @ts-ignore
+    if (data.assetType.isToken || data.assetType.isStableSwap) {
       acc.push({
         id: key.args[0].toString(),
         name: data.name.toUtf8(),
