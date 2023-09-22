@@ -5,7 +5,7 @@ import { useDisplayAssetStore } from "utils/displayAsset"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import { getAssetsNew } from "./assetDetails"
+import { getAssets } from "./assetDetails"
 
 export const PROVIDERS = [
   {
@@ -88,7 +88,7 @@ export const useProviderData = (rpcUrl?: string) => {
 
       const { id, isStableCoin, update } = displayAsset
 
-      const assets = await getAssetsNew(api)
+      const assets = await getAssets(api)
 
       console.log(assets.assets)
 

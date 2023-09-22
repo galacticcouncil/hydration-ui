@@ -28,7 +28,9 @@ export const AssetsModalContent = ({
 
   const assetsRows = useAcountAssets(account?.address)
 
-  const assetsDetails = allAssets ? assets.tokens : assetsRows
+  const assetsDetails = allAssets
+    ? assets.tokens
+    : assetsRows.filter((asset) => asset.isToken)
 
   const mainAssets =
     (allowedAssets != null

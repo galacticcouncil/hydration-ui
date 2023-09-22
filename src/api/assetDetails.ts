@@ -16,6 +16,7 @@ import BN from "bignumber.js"
 import { format } from "date-fns"
 import { useRpcProvider } from "providers/rpcProvider"
 import { PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
+import { BN_0 } from "utils/constants"
 
 export const useAssetTable = () => {
   const { api, assets } = useRpcProvider()
@@ -131,7 +132,21 @@ export type TStableSwap = TAssetCommon & {
 
 export type TAsset = TToken | TBond | TStableSwap
 
-export const getAssetsNew = async (api: ApiPromise) => {
+const fallbackAsset: TToken = {
+  id: "",
+  name: "N/A",
+  symbol: "N/a",
+  decimals: 12,
+  assetType: "Token",
+  existentialDeposit: BN_0,
+  parachainId: undefined,
+  isToken: false,
+  isBond: false,
+  isStableSwap: false,
+  isNative: false,
+}
+
+export const getAssets = async (api: ApiPromise) => {
   const poolService = new PoolService(api)
   const tradeRouter = new TradeRouter(poolService, {
     includeOnly: [PoolType.Omni],
@@ -165,20 +180,25 @@ export const getAssetsNew = async (api: ApiPromise) => {
     const isBond = assetType === "Bond"
     const isStableSwap = assetType === "StableSwap"
 
+    const assetCommon = {
+      id,
+      isToken,
+      isBond,
+      isStableSwap,
+      isNative: false,
+      existentialDeposit: data.existentialDeposit.toBigNumber(),
+      parachainId: undefined,
+    }
+
     if (isToken) {
       if (id === NATIVE_ASSET_ID) {
         const asset: TToken = {
-          id,
+          ...assetCommon,
           name: "Hydra",
           symbol: system.tokenSymbol.unwrap()[0].toString(),
           decimals: system.tokenDecimals.unwrap()[0].toNumber(),
-          assetType,
-          existentialDeposit: data.existentialDeposit.toBigNumber(),
-          parachainId: undefined,
-          isToken,
-          isBond,
-          isStableSwap,
           isNative: true,
+          assetType,
         }
         tokens.push(asset)
       }
@@ -195,15 +215,10 @@ export const getAssetsNew = async (api: ApiPromise) => {
       /* meta data should exist for each Token asset */
       if (meta) {
         const asset: TToken = {
-          id,
+          ...assetCommon,
           name,
           assetType,
-          existentialDeposit: data.existentialDeposit.toBigNumber(),
           parachainId: location ? getTokenParachainId(location) : undefined,
-          isToken,
-          isBond,
-          isStableSwap,
-          isNative: false,
           decimals: meta.decimals.toNumber(),
           symbol: meta.symbol.toUtf8(),
         }
@@ -250,16 +265,11 @@ export const getAssetsNew = async (api: ApiPromise) => {
         )?.[1]
 
         const asset: TBond = {
+          ...assetCommon,
           assetId: assetId.toString(),
-          id,
           name,
           assetType: "Bond",
-          existentialDeposit: data.existentialDeposit.toBigNumber(),
           parachainId: location ? getTokenParachainId(location) : undefined,
-          isToken,
-          isBond,
-          isStableSwap,
-          isNative: false,
           decimals,
           symbol,
           maturity: maturity.toNumber(),
@@ -295,18 +305,12 @@ export const getAssetsNew = async (api: ApiPromise) => {
         .join("/")
 
       const asset: TStableSwap = {
-        id,
+        ...assetCommon,
         assetType: "StableSwap",
-        existentialDeposit: data.existentialDeposit.toBigNumber(),
-        isToken,
-        isBond,
-        isStableSwap,
-        isNative: false,
         symbol,
         decimals,
         assets,
         name,
-        parachainId: undefined,
       }
       stableswap.push(asset)
     }
@@ -321,10 +325,9 @@ export const getAssetsNew = async (api: ApiPromise) => {
     {} as Record<string, TAsset>,
   )
 
-  //TODO: add a fallback asset
-  const getAsset = (id: string) => allTokensObject[id]
+  const getAsset = (id: string) => allTokensObject[id] ?? fallbackAsset
 
-  const getAssets = (ids: string[]) => ids.map((id) => allTokensObject[id])
+  const getAssets = (ids: string[]) => ids.map((id) => getAsset(id))
 
   const tradeAssets = rawTradeAssets.map((tradeAsset) =>
     getAsset(tradeAsset.id),
