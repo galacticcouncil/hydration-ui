@@ -64,34 +64,30 @@ export const AssetsModalContent = ({
 
   return (
     <>
-      {!!mainAssets?.length && (
-        <>
-          <div sx={{ p: 24 }}>
-            <Input
-              value={search}
-              onChange={setSearch}
-              name="search"
-              label="x"
-              placeholder={t("selectAssets.search")}
-            />
-          </div>
-          <SAssetsModalHeader>
-            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-              {t("selectAssets.asset")}
-            </Text>
-            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-              {t("selectAssets.your_balance")}
-            </Text>
-          </SAssetsModalHeader>
-          {mainAssets?.map((asset) => (
-            <AssetsModalRow
-              key={asset.id}
-              id={asset.id}
-              onClick={(assetData) => onSelect?.(assetData)}
-            />
-          ))}
-        </>
-      )}
+      <div sx={{ p: 24 }}>
+        <Input
+          value={search}
+          onChange={setSearch}
+          name="search"
+          label="x"
+          placeholder={t("selectAssets.search")}
+        />
+      </div>
+      <SAssetsModalHeader>
+        <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+          {t("selectAssets.asset")}
+        </Text>
+        <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+          {t("selectAssets.your_balance")}
+        </Text>
+      </SAssetsModalHeader>
+      {mainAssets?.map((asset) => (
+        <AssetsModalRow
+          key={asset.id}
+          id={asset.id}
+          onClick={(assetData) => onSelect?.(assetData)}
+        />
+      ))}
       {!hideInactiveAssets && !!otherAssets?.length && (
         <>
           <SAssetsModalHeader shadowed>
