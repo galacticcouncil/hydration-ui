@@ -1,12 +1,11 @@
 import { LiquidityProvidersTable } from "./LiquidityProvidersTable"
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
 import { useLiquidityProvidersTableData } from "./data/LiquidityProvidersTableData.utils"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const LiquidityProvidersTableWrapper = () => {
-  const api = useApiPromise()
+  const { isLoaded } = useRpcProvider()
 
-  if (!isApiLoaded(api)) return null
+  if (!isLoaded) return null
 
   return <LiquidityProvidersTableWrapperData />
 }

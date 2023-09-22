@@ -3,9 +3,9 @@ import { u128, u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { useAccountStore } from "state/store"
-import { useApiPromise } from "utils/api"
 import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const DEPOSIT_NFT_COLLECTION_ID = "2584"
 
@@ -18,7 +18,7 @@ export type DepositNftType = Awaited<
 export const useAccountDepositIds = (
   accountId: Maybe<AccountId32 | string>,
 ) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.accountDepositIds(accountId),
     accountId != null ? getAccountDepositIds(api, accountId) : undefinedNoop,
@@ -41,14 +41,14 @@ const getAccountDepositIds =
   }
 
 export const useAllDeposits = () => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(QUERY_KEYS.allDeposits, getDeposits(api), {
     enabled: enabledFarms,
   })
 }
 
 export const usePoolDeposits = (poolId?: u32 | string) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(QUERY_KEYS.poolDeposits(poolId), getDeposits(api), {
     enabled: !!poolId,
     select: (data) =>
@@ -59,7 +59,7 @@ export const usePoolDeposits = (poolId?: u32 | string) => {
 }
 
 export const useOmniPositionId = (positionId: u128 | string) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.omniPositionId(positionId),
@@ -68,7 +68,7 @@ export const useOmniPositionId = (positionId: u128 | string) => {
 }
 
 export const useOmniPositionIds = (positionIds: Array<u32 | string>) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return useQueries({
     queries: positionIds.map((id) => ({

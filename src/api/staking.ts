@@ -1,13 +1,13 @@
-// @ts-nocheck
+//@ts-nocheck
 import { ApiPromise } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
-import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { getUniques } from "./uniques"
 import { getReferendumInfoOf } from "./democracy"
 import request, { gql } from "graphql-request"
 import { PROVIDERS, useProviderRpcUrlStore } from "./provider"
+import { useRpcProvider } from "providers/rpcProvider"
 
 interface ISubscanData {
   code: number
@@ -67,7 +67,7 @@ const getCirculatingSupply = () => async () => {
 }
 
 export const useStake = (address: string | undefined) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(QUERY_KEYS.stake(address), getStake(api, address))
 }
 
@@ -144,7 +144,7 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
 }
 
 export const useStakingConsts = () => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return useQuery(QUERY_KEYS.stakingConsts, getStakingConsts(api))
 }

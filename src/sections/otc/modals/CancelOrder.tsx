@@ -2,10 +2,10 @@ import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
-import { useApiPromise } from "utils/api"
 import { useStore } from "state/store"
 import { OfferingPair } from "sections/otc/orders/OtcOrdersData.utils"
 import { SContainer } from "./CancelOrder.styled"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type CancelOrderProps = {
   orderId: string
@@ -22,7 +22,7 @@ export const CancelOrder = ({
 }: CancelOrderProps) => {
   const { t } = useTranslation()
 
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
 
   const handleClose = async () => {

@@ -1,12 +1,12 @@
 import type { AnyJson } from "@polkadot/types-codec/types"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
-import { useApiPromise } from "utils/api"
 import { useState } from "react"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { useMutation } from "@tanstack/react-query"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useMountedState } from "react-use"
 import { useTransactionLink } from "api/transaction"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type TxMethod = AnyJson & {
   method: string
@@ -62,7 +62,7 @@ export function getTransactionJSON(tx: SubmittableExtrinsic<"promise">) {
 export class UnknownTransactionState extends Error {}
 
 export const useSendTransactionMutation = () => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const isMounted = useMountedState()
   const link = useTransactionLink()
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)

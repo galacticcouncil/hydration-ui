@@ -1,18 +1,11 @@
 import { ApiPromise } from "@polkadot/api"
-import { u32, u8 } from "@polkadot/types"
+import { Option } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
-import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
+import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import { useQuery } from "@tanstack/react-query"
-import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useAccountStore } from "state/store"
-import {
-  DEPOSIT_CLASS_ID,
-  NATIVE_ASSET_ID,
-  useApiPromise,
-  useTradeRouter,
-} from "utils/api"
-import { BN_0 } from "utils/constants"
-import { Maybe, isNotNil, normalizeId, isApiLoaded } from "utils/helpers"
+import { NATIVE_ASSET_ID } from "utils/api"
+import { Maybe } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { getAccountBalances, useAccountBalances } from "./accountBalances"
 import { getTokenLock } from "./balances"
@@ -20,37 +13,12 @@ import { getApiIds } from "./consts"
 import { getHubAssetTradability, getOmnipoolAssets } from "./omnipool"
 import { getAcceptedCurrency, getAccountCurrency } from "./payments"
 import BN from "bignumber.js"
-
-export const useAssetDetails = (id: Maybe<u32 | string>) => {
-  const api = useApiPromise()
-  return useQuery(QUERY_KEYS.assets, getAssetDetails(api), {
-    enabled: !!id && !!isApiLoaded(api),
-    select: (data) => data.find((i) => i.id === id?.toString()),
-  })
-}
-
-type TAssetsDetails = {
-  id: string
-  name: string
-  assetType: PalletAssetRegistryAssetType["type"]
-  symbol: string
-  decimals: u32 | u8 | undefined
-}
-
-type TAssetDetails = {
-  id: string
-  name: string
-  assetType: PalletAssetRegistryAssetType["type"]
-  existentialDeposit: BN
-}
-
-interface AssetDetailsListFilter {
-  assetType: PalletAssetRegistryAssetType["type"][]
-}
+import { format } from "date-fns"
+import { useRpcProvider } from "providers/rpcProvider"
+import { PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 
 export const useAssetTable = () => {
-  const api = useApiPromise()
-  const tradeRouter = useTradeRouter()
+  const { api, assets } = useRpcProvider()
   const { account } = useAccountStore()
 
   return useQuery(
@@ -71,9 +39,7 @@ export const useAssetTable = () => {
 
       const apiIds = await getApiIds(api)()
 
-      const allAssets = await getAssetsDetails(api)()
-
-      const tradeAssets = await tradeRouter.getAllAssets()
+      const tradeAssets = assets.tradeAssets
 
       const tokenLockPromises = acceptedTokens.map((token) =>
         getTokenLock(api, account.address, token.id)(),
@@ -86,7 +52,6 @@ export const useAssetTable = () => {
 
       return {
         balances,
-        allAssets,
         accountTokenId,
         tradeAssets,
         acceptedTokens,
@@ -100,225 +65,282 @@ export const useAssetTable = () => {
   )
 }
 
-export const useAssetDetailsList = (
-  ids?: Maybe<u32 | string>[],
-  filter: AssetDetailsListFilter = {
-    assetType: ["Token"],
-  },
-  noRefresh?: boolean,
-) => {
-  const api = useApiPromise()
-  const normalizedIds = ids?.filter(isNotNil).map(normalizeId)
-
-  return useQuery(
-    noRefresh ? QUERY_KEYS.assets : QUERY_KEYS.assetsLive,
-    getAssetDetails(api),
-    {
-      select: (data) => {
-        const normalized =
-          normalizedIds != null
-            ? data.filter((i) => normalizedIds?.includes(i.id))
-            : data
-
-        return normalized.filter((asset) =>
-          filter.assetType.includes(asset.assetType),
-        )
-      },
-      enabled: !!isApiLoaded(api),
-    },
-  )
-}
-
-export const useAssetAccountDetails = (
-  address: Maybe<AccountId32 | string>,
-) => {
+export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
+  const { assets } = useRpcProvider()
   const accountBalances = useAccountBalances(address)
 
   const ids = accountBalances.data?.balances
-    ? [NATIVE_ASSET_ID, ...accountBalances.data.balances.map((b) => b.id)]
+    ? [
+        NATIVE_ASSET_ID,
+        ...accountBalances.data.balances.map((b) => b.id.toString()),
+      ]
     : []
 
-  return useAssetDetailsList(ids)
+  return assets.getAssets(ids)
 }
 
-const getAssetDetails = (api: ApiPromise) => async () => {
-  const [system, entries] = await Promise.all([
-    api.rpc.system.properties(),
-    api.query.assetRegistry.assets.entries(),
-  ])
+type AssetType = "Token" | "Bond" | "StableSwap" | "PoolShare"
 
-  const assets = entries.reduce<TAssetDetails[]>((acc, [key, dataRaw]) => {
-    const data = dataRaw.unwrap()
+const getTokenParachainId = (
+  rawLocation: Option<HydradxRuntimeXcmAssetLocation>,
+) => {
+  const location = rawLocation.unwrap()
 
-    if (data.assetType.isToken) {
-      acc.push({
-        id: key.args[0].toString(),
-        name: data.name.toUtf8(),
-        assetType: data.assetType.type,
-        existentialDeposit: data.existentialDeposit.toBigNumber(),
-      })
-    }
-    return acc
-  }, [])
+  const type = location.interior.type
+  if (location.interior && type !== "Here") {
+    const xcm = location.interior[`as${type}`]
 
-  if (!assets.find((i) => i.id === NATIVE_ASSET_ID)) {
-    assets.push({
-      id: NATIVE_ASSET_ID,
-      name: system.tokenSymbol.unwrap()[0].toString(),
-      assetType: "Token",
-      existentialDeposit: BN_0,
-    })
+    const parachainId = !Array.isArray(xcm)
+      ? xcm.asParachain.unwrap().toString()
+      : xcm
+          .find((el) => el.isParachain)
+          ?.asParachain.unwrap()
+          .toString()
+
+    return parachainId
   }
-
-  return assets
 }
 
-export const getAssetsDetails = (api: ApiPromise) => async () => {
-  const [system, rawAssetsData, rawAssetsMeta] = await Promise.all([
-    api.rpc.system.properties(),
-    api.query.assetRegistry.assets.entries(),
-    api.query.assetRegistry.assetMetadataMap.entries(),
-  ])
+type TAssetCommon = {
+  id: string
+  existentialDeposit: BN
+  isToken: boolean
+  isBond: boolean
+  isStableSwap: boolean
+  isNative: boolean
+  symbol: string
+  decimals: number
+  name: string
+  parachainId: string | undefined
+}
 
-  const assetsMeta: Array<{
-    id: string
-    symbol: string
-    decimals: u8 | u32
-  }> = rawAssetsMeta.map(([key, data]) => {
-    return {
-      id: key.args[0].toString(),
-      symbol: data.unwrap().symbol.toUtf8(),
-      decimals: data.unwrap().decimals,
-    }
+export type TBond = TAssetCommon & {
+  assetType: "Bond"
+  assetId: string
+  maturity: number
+}
+
+export type TToken = TAssetCommon & {
+  assetType: "Token"
+}
+
+export type TStableSwap = TAssetCommon & {
+  assetType: "StableSwap"
+  assets: string[]
+}
+
+export type TAsset = TToken | TBond | TStableSwap
+
+export const getAssetsNew = async (api: ApiPromise) => {
+  const poolService = new PoolService(api)
+  const tradeRouter = new TradeRouter(poolService, {
+    includeOnly: [PoolType.Omni],
   })
 
-  if (!assetsMeta.find((i) => i.id === NATIVE_ASSET_ID)) {
-    const [decimals] = system.tokenDecimals.unwrap()
-    const [symbol] = system.tokenSymbol.unwrap()
-
-    assetsMeta.push({
-      id: NATIVE_ASSET_ID,
-      symbol: symbol.toString(),
-      decimals,
-    })
-  }
-
-  const assets = rawAssetsData.reduce<TAssetsDetails[]>(
-    (acc, [key, dataRaw]) => {
-      const id = key.args[0].toString()
-      const data = dataRaw.unwrap()
-
-      if (data.assetType.isToken) {
-        const { symbol = "N/A", decimals } =
-          assetsMeta.find((assetMeta) => assetMeta.id.toString() === id) || {}
-
-        acc.push({
-          id,
-          name: data.name.toUtf8() || getAssetName(symbol),
-          assetType: data.assetType.type,
-          symbol,
-          decimals,
-        })
-      }
-
-      return acc
-    },
-    [],
-  )
-
-  if (!assets.find((i) => i.id === NATIVE_ASSET_ID)) {
-    const { symbol = "N/A", decimals } =
-      assetsMeta.find(
-        (assetMeta) => assetMeta.id.toString() === NATIVE_ASSET_ID,
-      ) || {}
-
-    assets.push({
-      id: NATIVE_ASSET_ID,
-      name: system.tokenSymbol.unwrap()[0].toString() || getAssetName(symbol),
-      assetType: "Token",
-      symbol,
-      decimals,
-    })
-  }
-
-  return assets
-}
-
-export const useAssetList = () => {
-  const api = useApiPromise()
-  return useQuery(QUERY_KEYS.assetList, async () => {
-    const [assets, details] = await Promise.all([
-      api.query.omnipool.assets.entries(),
-      getAssetsDetails(api)(),
-    ])
-
-    const list = assets.map(([key]) => {
-      const id = key.args[0].toString()
-      return details.find((d) => d.id === id)
-    })
-
-    return list
-      .filter(isNotNil)
-      .sort((a, b) => a.symbol.localeCompare(b.symbol))
-  })
-}
-
-export const useAssetsLocation = () => {
-  const api = useApiPromise()
-  return useQuery(QUERY_KEYS.assetsLocation, getAssetsLocation(api))
-}
-
-const getAssetsLocation = (api: ApiPromise) => async () => {
-  const [metas, locationsRaw] = await Promise.all([
+  const [
+    system,
+    rawAssetsData,
+    rawAssetsMeta,
+    rawAssetsLocations,
+    rawTradeAssets,
+  ] = await Promise.all([
+    api.rpc.system.properties(),
+    api.query.assetRegistry.assets.entries(),
     api.query.assetRegistry.assetMetadataMap.entries(),
     api.query.assetRegistry.assetLocations.entries(),
+    tradeRouter.getAllAssets(),
   ])
 
-  const nativeToken = {
-    id: NATIVE_ASSET_ID,
-    parachainId: undefined,
-    symbol: "HDX",
-  }
+  const tokens: TToken[] = []
+  const bonds: TBond[] = []
+  const stableswap: TStableSwap[] = []
 
-  const hubToken = {
-    id: DEPOSIT_CLASS_ID,
-    parachainId: undefined,
-    symbol: "LRNA",
-  }
-
-  const locations = locationsRaw.map(([key, raw]) => {
+  for (const [key, dataRaw] of rawAssetsData) {
+    const data = dataRaw.unwrap()
     const id = key.args[0].toString()
-    const data = raw.unwrap()
-    const type = data.interior.type
 
-    const symbol = metas
-      .find(([key]) => key.args[0].toString() === id)?.[1]
-      .unwrap()
-      .symbol.toUtf8()
+    const assetType: AssetType = data.assetType.type
 
-    if (data.interior && type !== "Here") {
-      const xcm = data.interior[`as${type}`]
+    const isToken = assetType === "Token"
+    const isBond = assetType === "Bond"
+    const isStableSwap = assetType === "StableSwap"
 
-      const parachainId = !Array.isArray(xcm)
-        ? xcm.asParachain.unwrap().toNumber()
-        : xcm
-            .find((el) => el.isParachain)
-            ?.asParachain.unwrap()
-            .toNumber()
-
-      return {
-        id,
-        parachainId,
-        symbol,
+    if (isToken) {
+      if (id === NATIVE_ASSET_ID) {
+        const asset: TToken = {
+          id,
+          name: "Hydra",
+          symbol: system.tokenSymbol.unwrap()[0].toString(),
+          decimals: system.tokenDecimals.unwrap()[0].toNumber(),
+          assetType,
+          existentialDeposit: data.existentialDeposit.toBigNumber(),
+          parachainId: undefined,
+          isToken,
+          isBond,
+          isStableSwap,
+          isNative: true,
+        }
+        tokens.push(asset)
       }
-    }
+      const name = data.name.toUtf8()
 
-    return {
-      id: key.args[0].toString(),
-      parachainId: undefined,
-      symbol,
-    }
-  })
+      const location = rawAssetsLocations.find(
+        (location) => location[0].args[0].toString() === id,
+      )?.[1]
 
-  return [nativeToken, hubToken, ...locations]
+      const meta = rawAssetsMeta
+        .find((meta) => meta[0].args[0].toString() === id)?.[1]
+        .unwrap()
+
+      /* meta data should exist for each Token asset */
+      if (meta) {
+        const asset: TToken = {
+          id,
+          name,
+          assetType,
+          existentialDeposit: data.existentialDeposit.toBigNumber(),
+          parachainId: location ? getTokenParachainId(location) : undefined,
+          isToken,
+          isBond,
+          isStableSwap,
+          isNative: false,
+          decimals: meta.decimals.toNumber(),
+          symbol: meta.symbol.toUtf8(),
+        }
+
+        tokens.push(asset)
+      }
+    } else if (isBond) {
+      const detailsRaw = await api.query.bonds.bonds(id)
+      // @ts-ignore
+      const details = detailsRaw.unwrap()
+
+      const [assetId, maturity] = details ?? []
+
+      let underlyingAsset: { symbol: string; decimals: number } | undefined
+
+      if (assetId.toString() === NATIVE_ASSET_ID) {
+        underlyingAsset = {
+          symbol: system.tokenSymbol.unwrap()[0].toString(),
+          decimals: system.tokenDecimals.unwrap()[0].toNumber(),
+        }
+      } else {
+        const meta = rawAssetsMeta.find(
+          (meta) => meta[0].args[0].toString() === assetId.toString(),
+        )
+        if (meta) {
+          const underlyingAssetMeta = meta[1].unwrap()
+          underlyingAsset = {
+            symbol: underlyingAssetMeta.symbol.toUtf8(),
+            decimals: underlyingAssetMeta.decimals.toNumber(),
+          }
+        }
+      }
+
+      if (underlyingAsset) {
+        const symbol = `${underlyingAsset.symbol}b`
+        const name = `${underlyingAsset.symbol} Bond ${format(
+          new Date(maturity.toNumber()),
+          "dd/MM/yyyy",
+        )}`
+        const decimals = underlyingAsset.decimals
+
+        const location = rawAssetsLocations.find(
+          (location) => location[0].args[0].toString() === assetId.toString(),
+        )?.[1]
+
+        const asset: TBond = {
+          assetId: assetId.toString(),
+          id,
+          name,
+          assetType: "Bond",
+          existentialDeposit: data.existentialDeposit.toBigNumber(),
+          parachainId: location ? getTokenParachainId(location) : undefined,
+          isToken,
+          isBond,
+          isStableSwap,
+          isNative: false,
+          decimals,
+          symbol,
+          maturity: maturity.toNumber(),
+        }
+
+        bonds.push(asset)
+      }
+    } else if (isStableSwap) {
+      const symbol = "SPS"
+      const decimals = 18
+
+      const detailsRaw = await api.query.stableswap.pools(id)
+      // @ts-ignore
+      const details = detailsRaw.unwrap()
+      const assets = details.assets.map((asset: any) => asset.toString())
+
+      const name = assets
+        .map((assetId: string) => {
+          if (assetId === NATIVE_ASSET_ID) {
+            return system.tokenSymbol.unwrap()[0].toString()
+          }
+
+          const meta = rawAssetsMeta
+            .find((meta) => meta[0].args[0].toString() === assetId)?.[1]
+            .unwrap()
+
+          if (meta) {
+            return meta.symbol.toUtf8()
+          }
+
+          return "N/A"
+        })
+        .join("/")
+
+      const asset: TStableSwap = {
+        id,
+        assetType: "StableSwap",
+        existentialDeposit: data.existentialDeposit.toBigNumber(),
+        isToken,
+        isBond,
+        isStableSwap,
+        isNative: false,
+        symbol,
+        decimals,
+        assets,
+        name,
+        parachainId: undefined,
+      }
+      stableswap.push(asset)
+    }
+  }
+
+  const native = tokens.find((token) => token.id === NATIVE_ASSET_ID) as TToken
+
+  const all = [...tokens, ...bonds, ...stableswap]
+
+  const allTokensObject = all.reduce(
+    (acc, asset) => ({ ...acc, [asset.id]: asset }),
+    {} as Record<string, TAsset>,
+  )
+
+  //TODO: add a fallback asset
+  const getAsset = (id: string) => allTokensObject[id]
+
+  const getAssets = (ids: string[]) => ids.map((id) => allTokensObject[id])
+
+  const tradeAssets = rawTradeAssets.map((tradeAsset) =>
+    getAsset(tradeAsset.id),
+  )
+
+  return {
+    assets: {
+      all,
+      tokens,
+      bonds,
+      stableswap,
+      native,
+      tradeAssets,
+      getAsset,
+      getAssets,
+    },
+    tradeRouter,
+  }
 }

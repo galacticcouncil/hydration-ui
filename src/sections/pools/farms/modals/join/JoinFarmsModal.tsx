@@ -1,5 +1,4 @@
 import { u32 } from "@polkadot/types"
-import { useAssetMeta } from "api/assetMeta"
 import { DepositNftType } from "api/deposits"
 import { Farm } from "api/farms"
 import BigNumber from "bignumber.js"
@@ -17,6 +16,7 @@ import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/Far
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
 import { SJoinFarmContainer } from "./JoinFarmsModal.styled"
 import { useBestNumber } from "api/chain"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type JoinFarmModalProps = {
   isOpen: boolean
@@ -40,11 +40,12 @@ export const JoinFarmModal = ({
   farms,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const [selectedFarmId, setSelectedFarmId] = useState<{
     yieldFarmId: u32
     globalFarmId: u32
   } | null>(null)
-  const meta = useAssetMeta(pool.id)
+  const meta = assets.getAsset(pool.id.toString())
   const bestNumber = useBestNumber()
 
   const selectedFarm = farms.find(
@@ -76,7 +77,7 @@ export const JoinFarmModal = ({
         contents={[
           {
             title: t("farms.modal.join.title", {
-              assetSymbol: meta.data?.symbol,
+              assetSymbol: meta.symbol,
             }),
             content: (
               <ModalScrollableContent
@@ -85,7 +86,7 @@ export const JoinFarmModal = ({
                     {isRedeposit && (
                       <Text color="basic400">
                         {t("farms.modal.join.description", {
-                          assets: meta.data?.symbol,
+                          assets: meta.symbol,
                         })}
                       </Text>
                     )}
@@ -132,8 +133,7 @@ export const JoinFarmModal = ({
                         >
                           {t("value.token", {
                             value: shares,
-                            fixedPointScale:
-                              meta.data?.decimals.toString() ?? 12,
+                            fixedPointScale: meta.decimals,
                           })}
                         </Text>
                       </div>

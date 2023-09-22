@@ -1,4 +1,3 @@
-import { useAssetMeta } from "api/assetMeta"
 import { DepositNftType } from "api/deposits"
 import { Button } from "components/Button/Button"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
@@ -25,6 +24,7 @@ import { useOmnipoolPosition } from "api/omnipool"
 import { useDisplayPrice } from "utils/displayAsset"
 import { getFloatingPointAmount } from "utils/balance"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
+import { useRpcProvider } from "providers/rpcProvider"
 
 function FarmingPositionDetailsButton(props: {
   pool: OmnipoolPool
@@ -61,17 +61,20 @@ export const FarmingPosition = ({
   depositNft: DepositNftType
 }) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const position = useDepositShare(pool.id, depositNft.id.toString())
 
   const lpPosition = useOmnipoolPosition(position.data?.id)
-  const meta = useAssetMeta(lpPosition.data?.assetId)
+  const meta = lpPosition.data?.assetId
+    ? assets.getAsset(lpPosition.data.assetId.toString())
+    : undefined
   const spotPrice = useDisplayPrice(lpPosition.data?.assetId)
 
   const initialPosValue =
     getFloatingPointAmount(
       lpPosition.data?.amount.toBigNumber() ?? 0,
-      meta.data?.decimals.toNumber() ?? 12,
+      meta?.decimals ?? 12,
     ) ?? BN_0
 
   const initialPosPrice = initialPosValue.multipliedBy(
@@ -140,7 +143,7 @@ export const FarmingPosition = ({
               <Text>
                 {t("value.tokenWithSymbol", {
                   value: initialPosValue,
-                  symbol: meta.data?.symbol,
+                  symbol: meta?.symbol,
                 })}
               </Text>
               <Text fs={11} css={{ color: "rgba(221, 229, 255, 0.61)" }}>

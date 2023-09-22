@@ -1,5 +1,4 @@
 import { u32 } from "@polkadot/types"
-import { useAssetMeta } from "api/assetMeta"
 import { useBestNumber } from "api/chain"
 import { DepositNftType } from "api/deposits"
 import { Farm, useFarms } from "api/farms"
@@ -18,6 +17,7 @@ import { ToastMessage, useAccountStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useFarmExitAllMutation } from "utils/farms/exit"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
+import { useRpcProvider } from "providers/rpcProvider"
 
 function isFarmJoined(depositNft: DepositNftType, farm: Farm) {
   return depositNft.deposit.yieldFarmEntries.find(
@@ -34,9 +34,10 @@ function JoinedFarmsDetailsRedeposit(props: {
   onTxClose: () => void
 }) {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
   const farms = useFarms([props.pool.id])
-  const meta = useAssetMeta(props.pool.id)
+  const meta = assets.getAsset(props.pool.id.toString())
 
   const availableFarms = farms.data?.filter(
     (farm) => !isFarmJoined(props.depositNft, farm),
@@ -50,7 +51,7 @@ function JoinedFarmsDetailsRedeposit(props: {
         i18nKey={`farms.modal.join.toast.${msType}`}
         tOptions={{
           amount: props.depositNft.deposit.shares.toBigNumber(),
-          fixedPointScale: meta.data?.decimals ?? 12,
+          fixedPointScale: meta.decimals,
         }}
       >
         <span />
@@ -113,9 +114,10 @@ function JoinedFarmsDetailsPositions(props: {
   onTxClose: () => void
 }) {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
   const farms = useFarms([props.pool.id])
-  const meta = useAssetMeta(props.pool.id)
+  const meta = assets.getAsset(props.pool.id.toString())
   const joinedFarms = farms.data?.filter((farm) =>
     isFarmJoined(props.depositNft, farm),
   )
@@ -128,7 +130,7 @@ function JoinedFarmsDetailsPositions(props: {
         i18nKey={`farms.modal.exit.toast.${msType}`}
         tOptions={{
           amount: props.depositNft.deposit.shares.toBigNumber(),
-          fixedPointScale: meta.data?.decimals ?? 12,
+          fixedPointScale: meta.decimals,
         }}
       >
         <span />
@@ -194,6 +196,7 @@ export const JoinedFarmsDetails = (props: {
   depositNft: DepositNftType
 }) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const [selectedFarmIds, setSelectedFarmIds] = useState<{
     globalFarm: u32
     yieldFarm: u32
@@ -201,7 +204,7 @@ export const JoinedFarmsDetails = (props: {
   } | null>(null)
 
   const bestNumber = useBestNumber()
-  const meta = useAssetMeta(props.pool.id)
+  const meta = assets.getAsset(props.pool.id.toString())
 
   const farms = useFarms([props.pool.id])
   const selectedFarm =
@@ -235,7 +238,7 @@ export const JoinedFarmsDetails = (props: {
         contents={[
           {
             title: t("farms.modal.join.title", {
-              assetSymbol: meta.data?.symbol,
+              assetSymbol: meta.symbol,
             }),
             content: (
               <div sx={{ flex: "column" }}>

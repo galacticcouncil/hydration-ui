@@ -1,16 +1,15 @@
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
 import { OmnipoolAssetsTable } from "sections/stats/components/OmnipoolAssetsTable/OmnipoolAssetsTable"
 import { OmnipoolAssetsTableSkeleton } from "sections/stats/components/OmnipoolAssetsTable/skeleton/OmnipoolAssetsTableSkeleton"
 import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
 import { useOmnipoolAssetsColumns } from "./OmnipoolAssetsTableWrapper.utils"
 import { useNavigate } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const OmnipoolAssetsTableWrapper = () => {
-  const api = useApiPromise()
+  const { isLoaded } = useRpcProvider()
 
-  if (!isApiLoaded(api)) return <OmnipoolAssetsTableSkeleton />
+  if (!isLoaded) return <OmnipoolAssetsTableSkeleton />
 
   return <OmnipoolAssetsTableWrapperData />
 }

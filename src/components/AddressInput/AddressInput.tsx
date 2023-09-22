@@ -1,11 +1,11 @@
-import { useAsset } from "api/asset"
 import { Text } from "components/Typography/Text/Text"
 import { InputHTMLAttributes, forwardRef, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { HYDRA_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
+import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { Maybe } from "utils/helpers"
 import { SInput, SInputWrapper } from "./AddressInput.styled"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type InputProps = {
   onBlur?: () => void
@@ -25,7 +25,10 @@ type InputProps = {
 
 export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
   (props, ref) => {
-    const asset = useAsset(NATIVE_ASSET_ID)
+    const {
+      assets: { native },
+    } = useRpcProvider()
+
     const { t } = useTranslation()
 
     const nativeAddress = safeConvertAddressSS58(
@@ -56,7 +59,7 @@ export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
               css={{ wordWrap: "break-word" }}
             >
               {t("address.input.native", {
-                symbol: asset.data?.symbol,
+                symbol: native.symbol,
                 address: nativeAddress,
               })}
             </Text>
