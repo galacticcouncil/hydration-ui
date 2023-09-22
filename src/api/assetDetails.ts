@@ -159,7 +159,7 @@ export const getAssetsNew = async (api: ApiPromise) => {
     const data = dataRaw.unwrap()
     const id = key.args[0].toString()
 
-    const assetType: AssetType = data.assetType.type
+    const assetType = data.assetType.type as AssetType
 
     const isToken = assetType === "Token"
     const isBond = assetType === "Bond"
