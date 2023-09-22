@@ -8,6 +8,8 @@ import { SAssetsModalHeader } from "./AssetsModal.styled"
 import { AssetsModalRow } from "./AssetsModalRow"
 import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
 import { useRpcProvider } from "providers/rpcProvider"
+import { Input } from "components/Input/Input"
+import { useState } from "react"
 
 type Props = {
   allowedAssets?: Maybe<u32 | string>[]
@@ -25,6 +27,7 @@ export const AssetsModalContent = ({
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const { account } = useAccountStore()
+  const [search, setSearch] = useState("")
 
   const assetsRows = useAcountAssets(account?.address)
 
@@ -63,6 +66,15 @@ export const AssetsModalContent = ({
     <>
       {!!mainAssets?.length && (
         <>
+          <div sx={{ p: 24 }}>
+            <Input
+              value={search}
+              onChange={setSearch}
+              name="search"
+              label="x"
+              placeholder={t("selectAssets.search")}
+            />
+          </div>
           <SAssetsModalHeader>
             <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
               {t("selectAssets.asset")}

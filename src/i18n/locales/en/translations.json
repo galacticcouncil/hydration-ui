@@ -64,6 +64,7 @@
   "selectAssets.asset": "Asset",
   "selectAssets.your_balance": "Your balance",
   "selectAssets.asset_without_pair": "Assets without subpool",
+  "selectAssets.search": "Search by name",
   "selectAsset.input.label": "Deposit amount",
   "selectAsset.title": "Select asset",
   "selectAsset.balance.label": "Balance:",
