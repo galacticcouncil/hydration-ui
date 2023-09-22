@@ -5,8 +5,8 @@ import { ApiPromise } from "@polkadot/api"
 import { u32, u8 } from "@polkadot/types"
 import { isApiLoaded, Maybe } from "utils/helpers"
 import { getApiIds } from "./consts"
-import BigNumber from "bignumber.js"
 import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import BigNumber from "bignumber.js"
 
 export const useAssetMeta = (id: Maybe<u32 | string>) => {
   const api = useApiPromise()
@@ -18,14 +18,8 @@ export const useAssetMeta = (id: Maybe<u32 | string>) => {
       if (id?.toString() === "123") {
         return {
           id: id.toString(),
-          symbol: "STS",
-          decimals: {
-            toString: () => STABLEPOOL_TOKEN_DECIMALS,
-            // @ts-ignore
-            toNumber: () => STABLEPOOL_TOKEN_DECIMALS,
-            // @ts-ignore
-            toBigNumber: () => STABLEPOOL_TOKEN_DECIMALS,
-          },
+          symbol: "SPS",
+          decimals: new BigNumber(STABLEPOOL_TOKEN_DECIMALS),
         }
       }
 
@@ -52,7 +46,7 @@ export const useAssetMetaList = (ids: Array<Maybe<u32 | string>>) => {
           // TODO: Temporary workaround. Fetch asset details, based on type if stableswap then decimals === constant
           {
             id: "123",
-            symbol: "STS",
+            symbol: "SPS",
             decimals: {
               toString: () => STABLEPOOL_TOKEN_DECIMALS,
               toNumber: () => STABLEPOOL_TOKEN_DECIMALS,

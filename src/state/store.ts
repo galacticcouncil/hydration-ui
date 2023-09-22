@@ -50,7 +50,7 @@ interface Store {
   createTransaction: (
     transaction: TransactionInput,
     options?: {
-      onSuccess?: () => void
+      onSuccess?: (result: ISubmittableResult) => void
       onSubmitted?: () => void
       toast?: ToastMessage
       isProxy?: boolean
@@ -176,7 +176,7 @@ export const useStore = create<Store>((set) => ({
               },
               onSuccess: (value) => {
                 resolve(value)
-                options?.onSuccess?.()
+                options?.onSuccess?.(value)
               },
               onError: () => reject(new Error("Transaction rejected")),
               isProxy: !!options?.isProxy,

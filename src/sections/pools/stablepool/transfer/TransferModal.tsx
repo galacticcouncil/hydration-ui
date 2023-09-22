@@ -1,7 +1,7 @@
 import { Modal } from "components/Modal/Modal"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { TransferOptions } from "./components/TransferOptions"
-import { ComponentProps, useState } from "react"
+import { ComponentProps, useRef, useState } from "react"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
@@ -11,9 +11,17 @@ import { AssetMetaById, BalanceByAsset } from "sections/pools/PoolsPage.utils"
 import { u32 } from "@polkadot/types-codec"
 import BigNumber from "bignumber.js"
 import { Stepper } from "components/Stepper/Stepper"
-import { BN_0 } from "utils/constants"
-import { TypeRegistry, U32 } from "@polkadot/types"
 import { AddLiquidityForm } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
+import { Spinner } from "components/Spinner/Spinner.styled"
+import { Text } from "components/Typography/Text/Text"
+
+export enum Page {
+  OPTIONS,
+  ADD_LIQUIDITY,
+  ASSETS,
+  WAIT,
+  MOVE_TO_OMNIPOOL,
+}
 
 type Props = {
   poolId: u32
@@ -25,14 +33,28 @@ type Props = {
   refetchPositions: () => void
   assets: { id: string }[]
   reserves: { asset_id: number; amount: string }[]
+  defaultPage?: Page
 }
 
-enum Page {
-  OPTIONS,
-  OMNIPOOL,
-  STABLEPOOL,
-  ASSETS,
-  MOVE_TO_OMNIPOOL,
+const usePage = (initial: Page) => {
+  const [current, setCurrent] = useState(initial)
+  const prevPage = useRef<Page[]>([])
+
+  const prev = () => {
+    setCurrent(prevPage.current.pop() ?? initial)
+  }
+
+  const set = (p: Page) => {
+    prevPage.current.push(current)
+    setCurrent(p)
+  }
+
+  return {
+    currentPage: current,
+    setPage: set,
+    goBack: prev,
+    path: prevPage.current,
+  }
 }
 
 export const TransferModal = ({
@@ -45,26 +67,38 @@ export const TransferModal = ({
   assetMetaById,
   reserves,
   refetchPositions,
+  defaultPage,
 }: Props) => {
   const { t } = useTranslation()
-  const [page, setPage] = useState<Page>(Page.MOVE_TO_OMNIPOOL)
+  const { currentPage, setPage, goBack, path } = usePage(
+    defaultPage ?? Page.OPTIONS,
+  )
   const [assetId, setAssetId] = useState<string>(assets[0]?.id)
+  const [sharesAmount, setSharesAmount] = useState<string>()
 
   const [selectedOption, setSelectedOption] =
     useState<ComponentProps<typeof TransferOptions>["selected"]>("STABLEPOOL")
 
-  const handleBack = () => {
-    if (page === Page.OMNIPOOL || page === Page.STABLEPOOL) {
-      return setPage(Page.OPTIONS)
+  const steps =
+    selectedOption === "STABLEPOOL"
+      ? [
+          { text: "Select Pool", page: Page.OPTIONS },
+          { text: "Provide Liquidity", page: Page.ADD_LIQUIDITY },
+          { text: "Confirm", page: Page.ADD_LIQUIDITY + 1 },
+        ]
+      : [
+          { text: "Select Pool", page: Page.OPTIONS },
+          { text: "Provide Liquidity", page: Page.ADD_LIQUIDITY },
+          { text: "Wait For Transaction", page: Page.WAIT },
+          { text: "Move to Omnipool", page: Page.MOVE_TO_OMNIPOOL },
+        ]
+
+  const getStepState = (stepPage: Page) => {
+    if (stepPage === currentPage) {
+      return "active" as const
     }
 
-    if (selectedOption === "OMNIPOOL") {
-      return setPage(Page.OMNIPOOL)
-    }
-
-    if (selectedOption === "STABLEPOOL") {
-      return setPage(Page.STABLEPOOL)
-    }
+    return path.includes(stepPage) ? ("done" as const) : ("todo" as const)
   }
 
   return (
@@ -73,29 +107,17 @@ export const TransferModal = ({
       onClose={onClose}
       disableCloseOutside={true}
       topContent={
-        <Stepper
-          steps={[
-            {
-              label: "Select Pool",
-              state: "done",
-            },
-            {
-              label: "Provide Liquidity",
-              state: "active",
-            },
-            {
-              label: "Confirm 1/2",
-              state: "todo",
-            },
-            {
-              label: "Confirm 2/2",
-              state: "todo",
-            },
-          ]}
-        />
+        ![Page.OPTIONS, Page.ASSETS].includes(currentPage) && (
+          <Stepper
+            steps={steps.map((step) => ({
+              label: step.text,
+              state: getStepState(step.page),
+            }))}
+          />
+        )
       }
       bottomContent={
-        [Page.STABLEPOOL, Page.OMNIPOOL].includes(page) ? (
+        currentPage === Page.ADD_LIQUIDITY ? (
           <CurrencyReserves
             assets={Array.from(balanceByAsset?.entries() ?? []).map(
               ([id, balance]) => ({
@@ -113,8 +135,10 @@ export const TransferModal = ({
     >
       <ModalContents
         onClose={onClose}
-        page={page}
-        onBack={page ? handleBack : undefined}
+        page={currentPage}
+        onBack={
+          ![Page.OPTIONS, Page.WAIT].includes(currentPage) ? goBack : undefined
+        }
         contents={[
           {
             title: t("liquidity.stablepool.transfer.options"),
@@ -128,13 +152,7 @@ export const TransferModal = ({
                 <Button
                   variant="primary"
                   sx={{ mt: 21 }}
-                  onClick={() =>
-                    setPage(
-                      selectedOption === "OMNIPOOL"
-                        ? Page.OMNIPOOL
-                        : Page.STABLEPOOL,
-                    )
-                  }
+                  onClick={() => setPage(Page.ADD_LIQUIDITY)}
                 >
                   {t("next")}
                 </Button>
@@ -148,27 +166,26 @@ export const TransferModal = ({
               <AddStablepoolLiquidity
                 poolId={poolId}
                 onClose={() => {
-                  console.log("CLOSE")
+                  if (selectedOption === "STABLEPOOL") {
+                    onClose()
+                  }
+                }}
+                onSubmitted={(shares) => {
+                  if (selectedOption === "STABLEPOOL") {
+                    onClose()
+                  }
+
+                  setSharesAmount(shares)
+                  setPage(Page.WAIT)
                 }}
                 onSuccess={() => {
-                  console.log("SUCCESS")
+                  console.log("-- success --")
+                  if (selectedOption === "STABLEPOOL") {
+                    return refetchPositions()
+                  }
+
                   setPage(Page.MOVE_TO_OMNIPOOL)
                 }}
-                reserves={reserves}
-                onAssetOpen={() => setPage(Page.ASSETS)}
-                asset={assetMetaById?.get(assetId)}
-                fee={fee}
-              />
-            ),
-          },
-          {
-            title: t("liquidity.add.modal.title"),
-            headerVariant: "gradient",
-            content: (
-              <AddStablepoolLiquidity
-                poolId={poolId}
-                onClose={onClose}
-                onSuccess={refetchPositions}
                 reserves={reserves}
                 onAssetOpen={() => setPage(Page.ASSETS)}
                 asset={assetMetaById?.get(assetId)}
@@ -185,7 +202,7 @@ export const TransferModal = ({
                 allowedAssets={assets.map((asset) => asset.id)}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
-                  handleBack()
+                  goBack()
                 }}
               />
             ),
@@ -194,7 +211,26 @@ export const TransferModal = ({
             title: "Move to omnipool",
             headerVariant: "gradient",
             content: (
+              <div
+                sx={{
+                  flex: "column",
+                  gap: 50,
+                  align: "center",
+                  justify: "center",
+                  height: 240,
+                }}
+              >
+                <Spinner width={50} height={50} />
+                <Text color="whiteish500">Waiting for transaction</Text>
+              </div>
+            ),
+          },
+          {
+            title: "Move to omnipool",
+            headerVariant: "gradient",
+            content: (
               <AddLiquidityForm
+                initialAmount={sharesAmount}
                 assetId={poolId}
                 onSuccess={() => console.log("-success")}
                 onClose={() => console.log("-close")}

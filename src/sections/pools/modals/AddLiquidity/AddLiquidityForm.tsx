@@ -23,6 +23,7 @@ import { u32 } from "@polkadot/types-codec"
 
 type Props = {
   assetId: string | u32
+  initialAmount?: string
   onSuccess: () => void
   onClose: () => void
   onAssetOpen?: () => void
@@ -33,11 +34,15 @@ export const AddLiquidityForm = ({
   onClose,
   onSuccess,
   onAssetOpen,
+  initialAmount,
 }: Props) => {
   const { t } = useTranslation()
   const [assetValue, setAssetValue] = useState("")
 
-  const form = useForm<{ amount: string }>({ mode: "onChange" })
+  const form = useForm<{ amount: string }>({
+    mode: "onChange",
+    defaultValues: { amount: initialAmount },
+  })
   const amountIn = form.watch("amount")
 
   const { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance } =

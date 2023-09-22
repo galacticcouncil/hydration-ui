@@ -19,14 +19,16 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useDisplayPrice } from "utils/displayAsset"
 import { useTokenBalance } from "api/balances"
 import { positive, validNumber } from "utils/validators"
+import { ISubmittableResult } from "@polkadot/types/types"
 
 type Props = {
   poolId: u32
   fee: BigNumber
   asset?: { id: string; symbol: string; decimals: u32 | u8 }
-  onSuccess: () => void
+  onSuccess: (result: ISubmittableResult) => void
   onClose: () => void
   onAssetOpen: () => void
+  onSubmitted: (shares: string) => void
   reserves: { asset_id: number; amount: string }[]
 }
 
@@ -35,6 +37,7 @@ export const AddStablepoolLiquidity = ({
   asset,
   onSuccess,
   onAssetOpen,
+  onSubmitted,
   onClose,
   reserves,
   fee,
@@ -66,9 +69,7 @@ export const AddStablepoolLiquidity = ({
       {
         onSuccess,
         onSubmitted: () => {
-          // onClose()
-          onSuccess()
-          console.log("--submitted--")
+          onSubmitted(shares)
           form.reset()
         },
         onClose,
