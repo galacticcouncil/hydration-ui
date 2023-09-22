@@ -81,13 +81,19 @@ export const AssetsModalContent = ({
           {t("selectAssets.your_balance")}
         </Text>
       </SAssetsModalHeader>
-      {mainAssets?.map((asset) => (
-        <AssetsModalRow
-          key={asset.id}
-          id={asset.id}
-          onClick={(assetData) => onSelect?.(assetData)}
-        />
-      ))}
+      {mainAssets?.length ? (
+        mainAssets.map((asset) => (
+          <AssetsModalRow
+            key={asset.id}
+            id={asset.id}
+            onClick={(assetData) => onSelect?.(assetData)}
+          />
+        ))
+      ) : (
+        <Text color="whiteish500" sx={{ textAlign: "center", p: 20 }}>
+          {t("selectAssets.empty")}
+        </Text>
+      )}
       {!hideInactiveAssets && !!otherAssets?.length && (
         <>
           <SAssetsModalHeader shadowed>
