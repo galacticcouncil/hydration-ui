@@ -19,7 +19,8 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
   const { assets } = useRpcProvider()
   const sortedTokens = assets.tradeAssets
     .filter((tradeAsset) => tradeAsset.isToken)
-    .toSorted((a, b) => a.symbol.localeCompare(b.symbol))
+    .sort((a, b) => a.symbol.localeCompare(b.symbol))
+
   const displayAsset = useDisplayAssetStore()
 
   const onSelectUSD = () => {
