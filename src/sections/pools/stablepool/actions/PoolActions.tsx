@@ -26,8 +26,6 @@ type PoolActionsProps = {
     decimals: u8 | u32
   }[]
   fee: BigNumber
-  balanceByAsset?: BalanceByAsset
-  assetMetaById?: AssetMetaById
   className?: string
   onExpandClick: () => void
   isExpanded: boolean
@@ -35,13 +33,12 @@ type PoolActionsProps = {
   refetchPositions: () => void
   reserves: { asset_id: number; amount: string }[]
   amount: BigNumber
+  onTransferOpen: () => void
 }
 
 export const PoolActions = ({
   poolId,
   className,
-  balanceByAsset,
-  assetMetaById,
   fee,
   onExpandClick,
   isExpanded,
@@ -50,9 +47,9 @@ export const PoolActions = ({
   assets,
   reserves,
   amount,
+  onTransferOpen,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
-  const [openAdd, setOpenAdd] = useState(false)
   const { account } = useAccountStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -63,7 +60,7 @@ export const PoolActions = ({
           fullWidth
           size="small"
           disabled={!account || account.isExternalWalletConnected}
-          onClick={() => setOpenAdd(true)}
+          onClick={onTransferOpen}
         >
           <div sx={{ flex: "row", align: "center", justify: "center" }}>
             <Icon icon={<PlusIcon />} sx={{ mr: 8, height: 16 }} />
@@ -85,32 +82,17 @@ export const PoolActions = ({
   )
 
   return (
-    <>
-      <SActionsContainer className={className}>
-        {actionButtons}
-        {isDesktop && (
-          <SButtonOpen
-            name="Expand"
-            icon={<ChevronDown />}
-            isActive={isExpanded}
-            onClick={onExpandClick}
-            disabled={!account || !canExpand}
-          />
-        )}
-      </SActionsContainer>
-      {openAdd && (
-        <TransferModal
-          poolId={poolId}
-          assets={assets}
-          fee={fee}
-          isOpen={openAdd}
-          reserves={reserves}
-          onClose={() => setOpenAdd(false)}
-          balanceByAsset={balanceByAsset}
-          assetMetaById={assetMetaById}
-          refetchPositions={refetchPositions}
+    <SActionsContainer className={className}>
+      {actionButtons}
+      {isDesktop && (
+        <SButtonOpen
+          name="Expand"
+          icon={<ChevronDown />}
+          isActive={isExpanded}
+          onClick={onExpandClick}
+          disabled={!account || !canExpand}
         />
       )}
-    </>
+    </SActionsContainer>
   )
 }

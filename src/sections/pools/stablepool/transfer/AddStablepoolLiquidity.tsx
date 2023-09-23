@@ -28,7 +28,7 @@ type Props = {
   onSuccess: (result: ISubmittableResult) => void
   onClose: () => void
   onAssetOpen: () => void
-  onSubmitted: (shares: string) => void
+  onSubmitted: (shares?: string) => void
   reserves: { asset_id: number; amount: string }[]
 }
 

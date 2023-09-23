@@ -2,15 +2,17 @@ import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { SContainer } from "./LiquidityPosition.styled"
+import { SContainer, SOmnipoolButton } from "./LiquidityPosition.styled"
 import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import BN from "bignumber.js"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { u32, u8 } from "@polkadot/types"
 import { ReactComponent as DropletIcon } from "assets/icons/DropletIcon.svg"
+import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
 import { SPositions } from "sections/pools/pool/Pool.styled"
 import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { SButton } from "sections/pools/pool/positions/LiquidityPosition.styled"
 
 type Props = {
   refetchPosition: () => void
@@ -18,6 +20,7 @@ type Props = {
   poolId: u32
   fee: BN
   reserves: { asset_id: number; amount: string }[]
+  onTransferOpen: () => void
   assets: {
     id: string
     symbol: string
@@ -32,6 +35,7 @@ export const LiquidityPosition = ({
   fee,
   reserves,
   refetchPosition,
+  onTransferOpen,
 }: Props) => {
   const { t } = useTranslation()
 
@@ -98,8 +102,15 @@ export const LiquidityPosition = ({
               align: "end",
               height: "100%",
               justify: "center",
+              gap: 8,
             }}
           >
+            <SOmnipoolButton size="small" onClick={onTransferOpen}>
+              <div sx={{ flex: "row", align: "center", justify: "center" }}>
+                <Icon icon={<PlusIcon />} sx={{ mr: 8 }} />
+                {t("liquidity.stablepool.move")}
+              </div>
+            </SOmnipoolButton>
             <RemoveLiquidityButton
               assets={assets}
               position={{

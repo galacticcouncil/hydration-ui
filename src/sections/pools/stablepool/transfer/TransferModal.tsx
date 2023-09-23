@@ -175,11 +175,12 @@ export const TransferModal = ({
                     onClose()
                   }
 
+                  console.log("-- onSubmitted --")
                   setSharesAmount(shares)
                   setPage(Page.WAIT)
                 }}
                 onSuccess={() => {
-                  console.log("-- success --")
+                  console.log("-- onSuccess --")
                   if (selectedOption === "STABLEPOOL") {
                     return refetchPositions()
                   }
