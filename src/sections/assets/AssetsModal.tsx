@@ -33,14 +33,14 @@ export const AssetsModalContent = ({
     : assetsRows.filter((asset) => asset.isToken)
 
   const mainAssets =
-    (allowedAssets != null
-      ? assetsDetails?.filter((asset) => allowedAssets.includes(asset.id))
-      : assetsDetails) ?? []
+    allowedAssets != null
+      ? assetsDetails.filter((asset) => allowedAssets.includes(asset.id))
+      : assetsDetails
 
   const otherAssets =
-    (allowedAssets != null
-      ? assetsDetails?.filter((asset) => !allowedAssets?.includes(asset.id))
-      : []) ?? []
+    allowedAssets != null
+      ? assetsDetails.filter((asset) => !allowedAssets?.includes(asset.id))
+      : []
 
   if (!mainAssets.length)
     return (

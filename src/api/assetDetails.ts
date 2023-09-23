@@ -320,9 +320,9 @@ export const getAssets = async (api: ApiPromise) => {
 
   const all = [...tokens, ...bonds, ...stableswap]
 
-  const allTokensObject = all.reduce(
+  const allTokensObject = all.reduce<Record<string, TAsset>>(
     (acc, asset) => ({ ...acc, [asset.id]: asset }),
-    {} as Record<string, TAsset>,
+    {},
   )
 
   const getAsset = (id: string) => allTokensObject[id] ?? fallbackAsset

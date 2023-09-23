@@ -90,8 +90,6 @@ export const useProviderData = (rpcUrl?: string) => {
 
       const assets = await getAssets(api)
 
-      console.log(assets.assets)
-
       let stableCoinId: string | undefined
 
       // set USDT as a stable token
