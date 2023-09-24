@@ -27,6 +27,7 @@ type Props = {
   asset?: { id: string; symbol: string; decimals: u32 | u8 }
   onSuccess: (result: ISubmittableResult) => void
   onClose: () => void
+  onCancel: () => void
   onAssetOpen: () => void
   onSubmitted: (shares?: string) => void
   reserves: { asset_id: number; amount: string }[]
@@ -39,6 +40,7 @@ export const AddStablepoolLiquidity = ({
   onAssetOpen,
   onSubmitted,
   onClose,
+  onCancel,
   reserves,
   fee,
 }: Props) => {
@@ -233,7 +235,7 @@ export const AddStablepoolLiquidity = ({
               mb: [24, 0],
             }}
           >
-            <Button variant="secondary" type="button" onClick={onClose}>
+            <Button variant="secondary" type="button" onClick={onCancel}>
               {t("cancel")}
             </Button>
             <Button

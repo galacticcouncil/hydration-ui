@@ -23,6 +23,8 @@ export enum Page {
   MOVE_TO_OMNIPOOL,
 }
 
+type PathOption = ComponentProps<typeof TransferOptions>["selected"]
+
 type Props = {
   poolId: u32
   isOpen: boolean
@@ -34,11 +36,12 @@ type Props = {
   assets: { id: string }[]
   reserves: { asset_id: number; amount: string }[]
   defaultPage?: Page
+  defaultSelectedOption?: PathOption
 }
 
 const usePage = (initial: Page) => {
   const [current, setCurrent] = useState(initial)
-  const prevPage = useRef<Page[]>([])
+  const prevPage = useRef<Page[]>([initial])
 
   const prev = () => {
     setCurrent(prevPage.current.pop() ?? initial)
@@ -68,6 +71,7 @@ export const TransferModal = ({
   reserves,
   refetchPositions,
   defaultPage,
+  defaultSelectedOption,
 }: Props) => {
   const { t } = useTranslation()
   const { currentPage, setPage, goBack, path } = usePage(
@@ -76,8 +80,9 @@ export const TransferModal = ({
   const [assetId, setAssetId] = useState<string>(assets[0]?.id)
   const [sharesAmount, setSharesAmount] = useState<string>()
 
-  const [selectedOption, setSelectedOption] =
-    useState<ComponentProps<typeof TransferOptions>["selected"]>("STABLEPOOL")
+  const [selectedOption, setSelectedOption] = useState<PathOption>(
+    defaultSelectedOption ?? "OMNIPOOL",
+  )
 
   const steps =
     selectedOption === "STABLEPOOL"
@@ -107,6 +112,7 @@ export const TransferModal = ({
       onClose={onClose}
       disableCloseOutside={true}
       topContent={
+        !defaultPage &&
         ![Page.OPTIONS, Page.ASSETS].includes(currentPage) && (
           <Stepper
             steps={steps.map((step) => ({
@@ -137,7 +143,9 @@ export const TransferModal = ({
         onClose={onClose}
         page={currentPage}
         onBack={
-          ![Page.OPTIONS, Page.WAIT].includes(currentPage) ? goBack : undefined
+          !defaultPage && ![Page.OPTIONS, Page.WAIT].includes(currentPage)
+            ? goBack
+            : undefined
         }
         contents={[
           {
@@ -165,6 +173,7 @@ export const TransferModal = ({
             content: (
               <AddStablepoolLiquidity
                 poolId={poolId}
+                onCancel={onClose}
                 onClose={() => {
                   if (selectedOption === "STABLEPOOL") {
                     onClose()
@@ -175,12 +184,10 @@ export const TransferModal = ({
                     onClose()
                   }
 
-                  console.log("-- onSubmitted --")
                   setSharesAmount(shares)
                   setPage(Page.WAIT)
                 }}
                 onSuccess={() => {
-                  console.log("-- onSuccess --")
                   if (selectedOption === "STABLEPOOL") {
                     return refetchPositions()
                   }
@@ -233,8 +240,11 @@ export const TransferModal = ({
               <AddLiquidityForm
                 initialAmount={sharesAmount}
                 assetId={poolId}
-                onSuccess={() => console.log("-success")}
-                onClose={() => console.log("-close")}
+                onSuccess={() => {
+                  refetchPositions()
+                  onClose()
+                }}
+                onClose={onClose}
               />
             ),
           },
