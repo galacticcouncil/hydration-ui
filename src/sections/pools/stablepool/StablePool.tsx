@@ -11,7 +11,8 @@ import { LiquidityPosition } from "./positions/LiquidityPosition"
 import { useTokenBalance } from "api/balances"
 import { useAccountStore } from "state/store"
 import { BN_0 } from "utils/constants"
-import { Page, TransferModal } from "./transfer/TransferModal"
+import { TransferModal } from "./transfer/TransferModal"
+import { Page } from "./transfer/TransferModal.utils"
 
 type Props = Exclude<
   ReturnType<typeof useStablePools>["data"],

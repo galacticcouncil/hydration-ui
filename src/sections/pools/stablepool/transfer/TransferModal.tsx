@@ -1,7 +1,7 @@
 import { Modal } from "components/Modal/Modal"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { TransferOptions } from "./components/TransferOptions"
-import { ComponentProps, useRef, useState } from "react"
+import { useState } from "react"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
@@ -14,16 +14,7 @@ import { Stepper } from "components/Stepper/Stepper"
 import { AddLiquidityForm } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { Text } from "components/Typography/Text/Text"
-
-export enum Page {
-  OPTIONS,
-  ADD_LIQUIDITY,
-  ASSETS,
-  WAIT,
-  MOVE_TO_OMNIPOOL,
-}
-
-type PathOption = ComponentProps<typeof TransferOptions>["selected"]
+import { Page, PathOption, usePage } from "./TransferModal.utils"
 
 type Props = {
   poolId: u32
@@ -37,27 +28,6 @@ type Props = {
   reserves: { asset_id: number; amount: string }[]
   defaultPage?: Page
   defaultSelectedOption?: PathOption
-}
-
-const usePage = (initial: Page) => {
-  const [current, setCurrent] = useState(initial)
-  const prevPage = useRef<Page[]>([initial])
-
-  const prev = () => {
-    setCurrent(prevPage.current.pop() ?? initial)
-  }
-
-  const set = (p: Page) => {
-    prevPage.current.push(current)
-    setCurrent(p)
-  }
-
-  return {
-    currentPage: current,
-    setPage: set,
-    goBack: prev,
-    path: prevPage.current,
-  }
 }
 
 export const TransferModal = ({
@@ -74,9 +44,7 @@ export const TransferModal = ({
   defaultSelectedOption,
 }: Props) => {
   const { t } = useTranslation()
-  const { currentPage, setPage, goBack, path } = usePage(
-    defaultPage ?? Page.OPTIONS,
-  )
+  const { currentPage, setPage, goBack, path } = usePage(defaultPage)
   const [assetId, setAssetId] = useState<string>(assets[0]?.id)
   const [sharesAmount, setSharesAmount] = useState<string>()
 
