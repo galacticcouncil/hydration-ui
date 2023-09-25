@@ -23,6 +23,7 @@ export const LrnaPositionTooltip = ({
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const apiIds = useApiIds()
+
   const meta = assetId ? assets.getAsset(assetId.toString()) : undefined
 
   const lrnaSpotPrice = useSpotPrice(apiIds.data?.hubId, assetId)

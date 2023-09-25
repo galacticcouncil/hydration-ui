@@ -29,7 +29,7 @@ export const LiquidityPositionWrapper = ({
         {positions.data.map((position, i) => (
           <LiquidityPosition
             pool={pool}
-            key={`${i}-${position.assetId}`}
+            key={position.id}
             position={position}
             index={i + 1}
             onSuccess={positions.refetch}

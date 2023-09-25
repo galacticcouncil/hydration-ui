@@ -5,7 +5,7 @@ import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
-import { useMemo, useState } from "react"
+import { forwardRef, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { HeaderSeparator } from "sections/pools/header/PoolsHeader"
@@ -21,15 +21,12 @@ import {
   STriggerButton,
 } from "./ClaimAllDrowpdown.styled"
 
-export const ClaimAllDropdown = () => {
+type Props = { onClose: () => void }
+
+const ClaimAllBox = forwardRef<HTMLDivElement, Props>(({ onClose }, ref) => {
+  const { account } = useAccountStore()
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
-
-  const [open, setOpen] = useState(false)
-
-  const isDesktop = useMedia(theme.viewport.gte.sm)
-
   const claimable = useClaimableAmount()
 
   const { claimableAssets } = useMemo(() => {
@@ -63,12 +60,9 @@ export const ClaimAllDropdown = () => {
 
   const claimAll = useClaimAllMutation(undefined, undefined, toast)
 
-  const depositShares = useAllUserDepositShare()
-
-  if (!Object.keys(depositShares.data).length) return null
-
-  const claimAllBox = (
+  return (
     <SContent
+      ref={ref}
       initial={{ height: 0 }}
       animate={{ height: "auto" }}
       transition={{
@@ -115,7 +109,7 @@ export const ClaimAllDropdown = () => {
           }
           onClick={() => {
             claimAll.mutate()
-            setOpen(false)
+            onClose()
           }}
         >
           <Text fs={13} tTransform="uppercase" tAlign="center">
@@ -125,6 +119,21 @@ export const ClaimAllDropdown = () => {
       </div>
     </SContent>
   )
+})
+
+export const ClaimAllDropdown = () => {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const depositShares = useAllUserDepositShare()
+
+  if (!Object.keys(depositShares.data).length) {
+    return null
+  }
+
+  const handleClose = () => {
+    setOpen(false)
+  }
 
   return (
     <>
@@ -159,13 +168,20 @@ export const ClaimAllDropdown = () => {
                 }
               />
             </STriggerButton>
-            {open && !isDesktop && claimAllBox}
+            {open && !isDesktop && <ClaimAllBox onClose={handleClose} />}
           </div>
-          <Tooltip.Portal>
-            <Tooltip.Content asChild side="bottom" align="end" sideOffset={-2}>
-              {isDesktop && claimAllBox}
-            </Tooltip.Content>
-          </Tooltip.Portal>
+          {isDesktop && (
+            <Tooltip.Portal>
+              <Tooltip.Content
+                asChild
+                side="bottom"
+                align="end"
+                sideOffset={-2}
+              >
+                <ClaimAllBox onClose={handleClose} />
+              </Tooltip.Content>
+            </Tooltip.Portal>
+          )}
         </Tooltip.Root>
       </div>
     </>
