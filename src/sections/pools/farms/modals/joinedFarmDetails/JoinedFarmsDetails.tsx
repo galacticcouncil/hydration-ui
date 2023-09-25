@@ -1,5 +1,4 @@
 import { u32 } from "@polkadot/types"
-import { useAssetMeta } from "api/assetMeta"
 import { useBestNumber } from "api/chain"
 import { DepositNftType } from "api/deposits"
 import { Farm, useFarms } from "api/farms"
@@ -10,6 +9,7 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { ClaimRewardsCard } from "sections/pools/farms/components/claimableCard/ClaimRewardsCard"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
@@ -17,6 +17,7 @@ import { ToastMessage, useAccountStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useFarmExitAllMutation } from "utils/farms/exit"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
+import { useRpcProvider } from "providers/rpcProvider"
 
 function isFarmJoined(depositNft: DepositNftType, farm: Farm) {
   return depositNft.deposit.yieldFarmEntries.find(
@@ -27,15 +28,16 @@ function isFarmJoined(depositNft: DepositNftType, farm: Farm) {
 }
 
 function JoinedFarmsDetailsRedeposit(props: {
-  poolId: u32
+  pool: OmnipoolPool
   depositNft: DepositNftType
   onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
   onTxClose: () => void
 }) {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
-  const farms = useFarms([props.poolId])
-  const meta = useAssetMeta(props.poolId)
+  const farms = useFarms([props.pool.id])
+  const meta = assets.getAsset(props.pool.id.toString())
 
   const availableFarms = farms.data?.filter(
     (farm) => !isFarmJoined(props.depositNft, farm),
@@ -49,7 +51,7 @@ function JoinedFarmsDetailsRedeposit(props: {
         i18nKey={`farms.modal.join.toast.${msType}`}
         tOptions={{
           amount: props.depositNft.deposit.shares.toBigNumber(),
-          fixedPointScale: meta.data?.decimals ?? 12,
+          fixedPointScale: meta.decimals,
         }}
       >
         <span />
@@ -76,7 +78,7 @@ function JoinedFarmsDetailsRedeposit(props: {
         {availableFarms?.map((farm, i) => (
           <FarmDetailsCard
             key={i}
-            poolId={props.poolId}
+            poolId={props.pool.id}
             farm={farm}
             onSelect={() =>
               props.onSelect({
@@ -102,7 +104,7 @@ function JoinedFarmsDetailsRedeposit(props: {
 }
 
 function JoinedFarmsDetailsPositions(props: {
-  poolId: u32
+  pool: OmnipoolPool
   depositNft: DepositNftType
   onSelect: (value: {
     globalFarm: u32
@@ -112,9 +114,10 @@ function JoinedFarmsDetailsPositions(props: {
   onTxClose: () => void
 }) {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
-  const farms = useFarms([props.poolId])
-  const meta = useAssetMeta(props.poolId)
+  const farms = useFarms([props.pool.id])
+  const meta = assets.getAsset(props.pool.id.toString())
   const joinedFarms = farms.data?.filter((farm) =>
     isFarmJoined(props.depositNft, farm),
   )
@@ -127,7 +130,7 @@ function JoinedFarmsDetailsPositions(props: {
         i18nKey={`farms.modal.exit.toast.${msType}`}
         tOptions={{
           amount: props.depositNft.deposit.shares.toBigNumber(),
-          fixedPointScale: meta.data?.decimals ?? 12,
+          fixedPointScale: meta.decimals,
         }}
       >
         <span />
@@ -150,7 +153,7 @@ function JoinedFarmsDetailsPositions(props: {
       </Text>
 
       <ClaimRewardsCard
-        poolId={props.poolId}
+        pool={props.pool}
         depositNft={props.depositNft}
         onTxClose={props.onTxClose}
       />
@@ -159,7 +162,7 @@ function JoinedFarmsDetailsPositions(props: {
         {joinedFarms?.map((farm, i) => (
           <FarmDetailsCard
             key={i}
-            poolId={props.poolId}
+            poolId={props.pool.id}
             farm={farm}
             depositNft={props.depositNft}
             onSelect={() =>
@@ -189,10 +192,11 @@ function JoinedFarmsDetailsPositions(props: {
 export const JoinedFarmsDetails = (props: {
   isOpen: boolean
   onClose: () => void
-  poolId: u32
+  pool: OmnipoolPool
   depositNft: DepositNftType
 }) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const [selectedFarmIds, setSelectedFarmIds] = useState<{
     globalFarm: u32
     yieldFarm: u32
@@ -200,9 +204,9 @@ export const JoinedFarmsDetails = (props: {
   } | null>(null)
 
   const bestNumber = useBestNumber()
-  const meta = useAssetMeta(props.poolId)
+  const meta = assets.getAsset(props.pool.id.toString())
 
-  const farms = useFarms([props.poolId])
+  const farms = useFarms([props.pool.id])
   const selectedFarm =
     selectedFarmIds != null
       ? farms.data?.find(
@@ -234,12 +238,12 @@ export const JoinedFarmsDetails = (props: {
         contents={[
           {
             title: t("farms.modal.join.title", {
-              assetSymbol: meta.data?.symbol,
+              assetSymbol: meta.symbol,
             }),
             content: (
               <div sx={{ flex: "column" }}>
                 <JoinedFarmsDetailsPositions
-                  poolId={props.poolId}
+                  pool={props.pool}
                   depositNft={props.depositNft}
                   onSelect={(value) => {
                     setSelectedFarmIds(value)
@@ -249,7 +253,7 @@ export const JoinedFarmsDetails = (props: {
                 />
 
                 <JoinedFarmsDetailsRedeposit
-                  poolId={props.poolId}
+                  pool={props.pool}
                   depositNft={props.depositNft}
                   onSelect={(value) => {
                     setSelectedFarmIds(value)
@@ -263,7 +267,7 @@ export const JoinedFarmsDetails = (props: {
           {
             content: selectedFarm && (
               <FarmDetailsModal
-                poolId={props.poolId}
+                pool={props.pool}
                 farm={selectedFarm}
                 depositNft={selectedFarmIds?.depositNft}
                 currentBlock={currentBlock?.toNumber()}

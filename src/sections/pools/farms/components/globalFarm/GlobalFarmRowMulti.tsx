@@ -3,13 +3,14 @@ import { Farm, useFarmAprs, getMinAndMaxAPR } from "api/farms"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { useAssetMeta } from "api/assetMeta"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const FarmAssetIcon = ({ assetId }: { assetId: u32 }) => {
-  const { data: asset } = useAssetMeta(assetId)
+  const { assets } = useRpcProvider()
+  const asset = assets.getAsset(assetId.toString())
 
-  return <AssetLogo id={asset?.id} />
+  return <AssetLogo id={asset.id} />
 }
 
 export const GlobalFarmRowMulti = ({ farms }: { farms: Farm[] }) => {

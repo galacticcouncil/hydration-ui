@@ -13,10 +13,10 @@ import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPosi
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { useState } from "react"
 import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
-import { useAssetMeta } from "api/assetMeta"
 import { Button } from "components/Button/Button"
 import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useFarms } from "api/farms"
 import { useFarmDepositMutation } from "utils/farms/deposit"
 import { TOAST_MESSAGES } from "state/toasts"
@@ -27,23 +27,26 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { BN_0 } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
-import { u32 } from "@polkadot/types-codec"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
-  poolId: u32
+  pool: OmnipoolPool
   position: HydraPositionsTableData
   onSuccess: () => void
   index: number
 }
 
-function LiquidityPositionJoinFarmButton(
-  props: Pick<Props, "poolId" | "position" | "onSuccess">,
-) {
+function LiquidityPositionJoinFarmButton(props: {
+  pool: OmnipoolPool
+  position: HydraPositionsTableData
+  onSuccess: () => void
+}) {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
   const [joinFarm, setJoinFarm] = useState(false)
-  const farms = useFarms([props.poolId])
-  const meta = useAssetMeta(props.poolId)
+  const farms = useFarms([props.pool.id])
+  const meta = assets.getAsset(props.pool.id.toString())
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type
@@ -53,7 +56,7 @@ function LiquidityPositionJoinFarmButton(
         i18nKey={`farms.modal.join.toast.${msType}`}
         tOptions={{
           amount: props.position.shares,
-          fixedPointScale: meta.data?.decimals ?? 12,
+          fixedPointScale: meta.decimals,
         }}
       >
         <span />
@@ -64,7 +67,7 @@ function LiquidityPositionJoinFarmButton(
   }, {} as ToastMessage)
 
   const joinFarmMutation = useFarmDepositMutation(
-    props.poolId,
+    props.pool.id,
     props.position.id,
     toast,
     () => setJoinFarm(false),
@@ -87,7 +90,7 @@ function LiquidityPositionJoinFarmButton(
         <JoinFarmModal
           farms={farms.data}
           isOpen={joinFarm}
-          poolId={props.poolId}
+          pool={props.pool}
           shares={props.position.shares}
           onClose={() => setJoinFarm(false)}
           mutation={joinFarmMutation}
@@ -130,22 +133,23 @@ function LiquidityPositionRemoveLiquidity(props: {
 }
 
 export const LiquidityPosition = ({
-  poolId,
+  pool,
   position,
   index,
   onSuccess,
 }: Props) => {
   const { t } = useTranslation()
-  const meta = useAssetMeta(position.assetId)
-  const price = useDisplayPrice(meta.data?.id)
+  const { assets } = useRpcProvider()
+  const meta = assets.getAsset(position.assetId)
+  const price = useDisplayPrice(meta.id)
 
-  const shiftBy = meta?.data ? meta.data.decimals.neg().toNumber() : 12
+  const shiftBy = meta.decimals
   const spotPrice = price.data?.spotPrice
   const providedAmountPrice = spotPrice
-    ? position.providedAmount.multipliedBy(spotPrice).shiftedBy(shiftBy)
+    ? position.providedAmount.multipliedBy(spotPrice).shiftedBy(-shiftBy)
     : BN_0
 
-  const providedAmountPriceLoading = meta.isLoading || price.isLoading
+  const providedAmountPriceLoading = price.isLoading
 
   return (
     <SContainer>
@@ -165,8 +169,8 @@ export const LiquidityPosition = ({
               <Text>
                 {t("value.token", {
                   value: position.providedAmount,
-                  fixedPointScale: meta.data?.decimals.toString() ?? 12,
-                  numberSuffix: ` ${meta.data?.symbol ?? "N/A"}`,
+                  fixedPointScale: meta.decimals,
+                  numberSuffix: meta.symbol,
                 })}
               </Text>
               {providedAmountPriceLoading ? (
@@ -226,7 +230,7 @@ export const LiquidityPosition = ({
       >
         {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
           <LiquidityPositionJoinFarmButton
-            poolId={poolId}
+            pool={pool}
             position={position}
             onSuccess={onSuccess}
           />

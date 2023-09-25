@@ -3,7 +3,7 @@ import * as UI from "@galacticcouncil/ui"
 import { createComponent, EventName } from "@lit-labs/react"
 import { useTranslation } from "react-i18next"
 import { useSpotPrice } from "api/spotPrice"
-import { useAssetMeta } from "api/assetMeta"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const UigcAssetXRate = createComponent({
   tagName: "uigc-asset-x-rate",
@@ -27,9 +27,14 @@ export function OrderAssetRate(props: {
   onChange: (value: string) => void
 }) {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
 
-  const inputMeta = useAssetMeta(props.inputAsset)
-  const outputMeta = useAssetMeta(props.outputAsset)
+  const inputMeta = props.inputAsset
+    ? assets.getAsset(props.inputAsset)
+    : undefined
+  const outputMeta = props.outputAsset
+    ? assets.getAsset(props.outputAsset)
+    : undefined
 
   const sp = useSpotPrice(props.inputAsset, props.outputAsset)
   const spotPrice = sp.data?.spotPrice
@@ -37,8 +42,8 @@ export function OrderAssetRate(props: {
   return (
     <UigcAssetXRate
       onAssetInputChanged={(e) => props.onChange(e.detail.value)}
-      title={t("otc.order.place.price", { symbol: inputMeta.data?.symbol })}
-      asset={outputMeta.data?.symbol}
+      title={t("otc.order.place.price", { symbol: inputMeta?.symbol })}
+      asset={outputMeta?.symbol}
       amount={props.price}
     >
       {!spotPrice?.isNaN() && (

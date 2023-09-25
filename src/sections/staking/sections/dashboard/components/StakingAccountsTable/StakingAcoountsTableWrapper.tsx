@@ -1,12 +1,11 @@
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
 import { StakingAccountTable } from "./StakingAccountTable"
 import { StakingAccountSkeleton } from "./skeleton/StakingAccountSkeleton"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const StakingAccountsTableWrapper = () => {
-  const api = useApiPromise()
+  const { isLoaded } = useRpcProvider()
 
-  if (!isApiLoaded(api)) return <StakingAccountSkeleton />
+  if (!isLoaded) return <StakingAccountSkeleton />
 
   return <StakingAccountsTableWrapperData />
 }

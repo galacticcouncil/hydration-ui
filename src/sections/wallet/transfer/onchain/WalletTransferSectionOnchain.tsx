@@ -1,5 +1,4 @@
 import { u32 } from "@polkadot/types"
-import { useAssetMeta } from "api/assetMeta"
 import { useAccountCurrency } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
 import { usePaymentInfo } from "api/transaction"
@@ -17,10 +16,10 @@ import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTrans
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useAccountStore, useStore } from "state/store"
 import { theme } from "theme"
-import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import { BN_1, BN_10 } from "utils/constants"
 import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
 import { FormValues } from "utils/helpers"
+import { useRpcProvider } from "providers/rpcProvider"
 import {
   CloseIcon,
   PasteAddressIcon,
@@ -41,34 +40,36 @@ export function WalletTransferSectionOnchain({
 }) {
   const { t } = useTranslation()
 
-  const api = useApiPromise()
+  const { api, assets } = useRpcProvider()
   const { createTransaction } = useStore()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const assetMeta = useAssetMeta(asset)
+  const assetMeta = assets.getAsset(asset.toString())
   const { account } = useAccountStore()
   const accountCurrency = useAccountCurrency(account?.address)
-  const accountCurrencyMeta = useAssetMeta(accountCurrency.data)
+  const accountCurrencyMeta = accountCurrency.data
+    ? assets.getAsset(accountCurrency.data)
+    : undefined
 
-  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, accountCurrencyMeta.data?.id)
+  const spotPrice = useSpotPrice(assets.native.id, accountCurrencyMeta?.id)
 
   const { data: paymentInfoData } = usePaymentInfo(
-    asset.toString() === NATIVE_ASSET_ID
+    asset.toString() === assets.native.id
       ? api.tx.balances.transferKeepAlive("", "0")
       : api.tx.tokens.transferKeepAlive("", asset, "0"),
   )
 
   const onSubmit = async (values: FormValues<typeof form>) => {
-    if (assetMeta.data?.decimals == null) throw new Error("Missing asset meta")
+    if (assetMeta.decimals == null) throw new Error("Missing asset meta")
 
     const amount = new BigNumber(values.amount).multipliedBy(
-      BN_10.pow(assetMeta.data?.decimals?.toString()),
+      BN_10.pow(assetMeta.decimals),
     )
 
     return await createTransaction(
       {
         tx:
-          asset.toString() === NATIVE_ASSET_ID
+          asset.toString() === assets.native.id
             ? api.tx.balances.transferKeepAlive(values.dest, amount.toFixed())
             : api.tx.tokens.transferKeepAlive(
                 values.dest,
@@ -86,7 +87,7 @@ export function WalletTransferSectionOnchain({
               i18nKey="wallet.assets.transfer.toast.onLoading"
               tOptions={{
                 value: values.amount,
-                symbol: assetMeta.data?.symbol,
+                symbol: assetMeta.symbol,
                 address: shortenAccountAddress(values.dest, 12),
               }}
             >
@@ -100,7 +101,7 @@ export function WalletTransferSectionOnchain({
               i18nKey="wallet.assets.transfer.toast.onSuccess"
               tOptions={{
                 value: values.amount,
-                symbol: assetMeta.data?.symbol,
+                symbol: assetMeta.symbol,
                 address: shortenAccountAddress(values.dest, 12),
               }}
             >
@@ -114,7 +115,7 @@ export function WalletTransferSectionOnchain({
               i18nKey="wallet.assets.transfer.toast.onLoading"
               tOptions={{
                 value: values.amount,
-                symbol: assetMeta.data?.symbol,
+                symbol: assetMeta.symbol,
                 address: shortenAccountAddress(values.dest, 12),
               }}
             >
@@ -245,7 +246,7 @@ export function WalletTransferSectionOnchain({
                   amount: new BigNumber(
                     paymentInfoData.partialFee.toHex(),
                   ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
-                  symbol: accountCurrencyMeta.data?.symbol,
+                  symbol: accountCurrencyMeta?.symbol,
                   fixedPointScale: 12,
                 })
               : ""

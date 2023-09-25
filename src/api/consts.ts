@@ -1,12 +1,12 @@
-import { useApiPromise } from "utils/api"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { MIN_WITHDRAWAL_FEE } from "utils/constants"
 import { isApiLoaded } from "utils/helpers"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const useApiIds = () => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return useQuery(QUERY_KEYS.apiIds, getApiIds(api), {
     enabled: !!isApiLoaded(api),
@@ -28,7 +28,7 @@ export const getApiIds = (api: ApiPromise) => async () => {
 }
 
 export const useTVLCap = () => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return useQuery(QUERY_KEYS.tvlCap, getTvlCap(api))
 }
@@ -38,7 +38,7 @@ const getTvlCap = (api: ApiPromise) => async () => {
 }
 
 export const useMinWithdrawalFee = () => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return useQuery(QUERY_KEYS.minWithdrawalFee, getMinWithdrawalFee(api))
 }
@@ -50,7 +50,7 @@ const getMinWithdrawalFee = (api: ApiPromise) => async () => {
 }
 
 export const useMaxAddLiquidityLimit = () => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return useQuery(QUERY_KEYS.maxAddLiquidityLimit, getMaxAddLiquidityLimit(api))
 }

@@ -9,14 +9,14 @@ import { Separator } from "components/Separator/Separator"
 import { SStakingValuesContainer } from "./StakingValues.styled"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { TStakingData, useStakeARP } from "sections/staking/StakingPage.utils"
 import BN from "bignumber.js"
-import { useApiPromise } from "utils/api"
 import { isApiLoaded } from "utils/helpers"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "sections/pools/pool/Pool.styled"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const StakingValue = ({
   logo,
@@ -27,7 +27,7 @@ export const StakingValue = ({
   logo: JSX.Element
   title: string
   value: string | JSX.Element
-  tooltip?: string
+  tooltip?: string | JSX.Element
 }) => {
   return (
     <div sx={{ flex: ["row", "column"], align: ["start", "center"], gap: 6 }}>
@@ -74,7 +74,7 @@ export const StakingValues = ({
 }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   const availableBalanceValue = (
     <StakingValue
@@ -120,11 +120,18 @@ export const StakingValues = ({
         />
       }
       title={t("staking.dashboard.stats.projectedRewards")}
-      tooltip={t(
-        `staking.dashboard.stats.${
-          isStakingPosition ? "aprWithPos" : "apr"
-        }.tooltip`,
-      )}
+      tooltip={
+        <Text fs={11} fw={500}>
+          <Trans
+            t={t}
+            i18nKey={`staking.dashboard.stats.${
+              isStakingPosition ? "aprWithPos" : "apr"
+            }.tooltip`}
+          >
+            <div />
+          </Trans>
+        </Text>
+      }
       value={
         loading || !isApiLoaded(api) ? (
           <div sx={{ flex: "column", gap: 2 }}>
@@ -222,6 +229,7 @@ export const StakingValues = ({
         orientation={isDesktop ? "vertical" : "horizontal"}
         sx={{ height: [1, 35], m: "auto" }}
       />
+
       {projectedRewards}
     </SStakingValuesContainer>
   )

@@ -1,10 +1,10 @@
-import { useAsset } from "api/asset"
 import { Farm, useFarmApr } from "api/farms"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const GlobalFarmRow = ({
   farm,
@@ -14,8 +14,11 @@ export const GlobalFarmRow = ({
   isLastElement?: boolean
 }) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { data: apr } = useFarmApr(farm)
-  const { data: asset } = useAsset(apr?.assetId)
+  const asset = apr?.assetId
+    ? assets.getAsset(apr.assetId.toString())
+    : undefined
 
   if (!apr || !asset) return null
 

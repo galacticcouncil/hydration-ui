@@ -4,8 +4,8 @@ import { AccountId32 } from "@polkadot/types/interfaces"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Maybe, undefinedNoop } from "utils/helpers"
-import { useApiPromise } from "utils/api"
 import { ApiPromise } from "@polkadot/api"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const getPaymentInfo =
   (tx: SubmittableExtrinsic, account: AccountId32 | string) => async () => {
@@ -25,7 +25,7 @@ export function usePaymentInfo(tx: SubmittableExtrinsic) {
 }
 
 export function useNextNonce(account: Maybe<AccountId32 | string>) {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.nextNonce(account),
     account != null
@@ -45,7 +45,7 @@ export function getSubscanLink(blockNumber: string, txIndex: string) {
 }
 
 export function useTransactionLink() {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useMutation(
     async ({
       blockHash,

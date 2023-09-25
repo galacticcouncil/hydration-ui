@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query"
 import { DepositNftType } from "api/deposits"
 import { Farm } from "api/farms"
 import { ToastMessage, useStore } from "state/store"
-import { useApiPromise } from "utils/api"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export type FarmRedepositMutationType = ReturnType<
   typeof useFarmRedepositMutation
@@ -14,7 +14,7 @@ export const useFarmRedepositMutation = (
   toast: ToastMessage,
   onClose?: () => void,
 ) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
 
   return useMutation(async () => {

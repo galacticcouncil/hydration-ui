@@ -4,7 +4,6 @@ import {
   calculate_lrna_spot_price,
   calculate_withdrawal_fee,
 } from "@galacticcouncil/math-omnipool"
-import { useAssetMetaList } from "api/assetMeta"
 import { useTokenBalance } from "api/balances"
 import { useApiIds, useMinWithdrawalFee } from "api/consts"
 import { useOraclePrice } from "api/farms"
@@ -21,11 +20,7 @@ import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useStore } from "state/store"
-import {
-  DEPOSIT_CLASS_ID,
-  OMNIPOOL_ACCOUNT_ADDRESS,
-  useApiPromise,
-} from "utils/api"
+import { DEPOSIT_CLASS_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_10, BN_QUINTILL } from "utils/constants"
 import { FormValues } from "utils/helpers"
@@ -34,6 +29,7 @@ import { STradingPairContainer } from "./RemoveLiquidity.styled"
 import { FeeRange } from "./components/FeeRange/FeeRange"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 import { RemoveLiquidityInput } from "./components/RemoveLiquidityInput"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
@@ -51,19 +47,18 @@ export const RemoveLiquidity = ({
   const { t } = useTranslation()
   const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
 
-  const api = useApiPromise()
+  const { api, assets } = useRpcProvider()
   const { createTransaction } = useStore()
 
   const apiIds = useApiIds()
-  const metas = useAssetMetaList([apiIds.data?.hubId, position.assetId])
 
   const spotPrice = useSpotPrice(apiIds.data?.hubId, position.assetId)
   const oracle = useOraclePrice(position.assetId, apiIds.data?.hubId)
   const minWithdrawalFee = useMinWithdrawalFee()
-  const meta = metas.data?.find((m) => m.id.toString() === position.assetId)
-  const lrnaMeta = metas.data?.find(
-    (m) => m.id.toString() === apiIds.data?.hubId,
-  )
+  const meta = assets.getAsset(position.assetId)
+  const lrnaMeta = apiIds.data?.hubId
+    ? assets.getAsset(apiIds.data.hubId)
+    : undefined
 
   const value = form.watch("value")
 
@@ -193,12 +188,12 @@ export const RemoveLiquidity = ({
               tOptions={{
                 value: value,
                 amount: removeLiquidityValues.tokensToGet,
-                fixedPointScale: meta.decimals ?? 12,
+                fixedPointScale: meta.decimals,
                 symbol: position.symbol,
                 withLrna: lrnaAsBigNumber.isGreaterThan(0)
                   ? t("liquidity.remove.modal.toast.withLrna", {
                       lrna: lrnaAsBigNumber,
-                      fixedPointScale: lrnaMeta.decimals.toString() ?? 12,
+                      fixedPointScale: lrnaMeta.decimals,
                     })
                   : "",
               }}
@@ -214,12 +209,12 @@ export const RemoveLiquidity = ({
               tOptions={{
                 value: value,
                 amount: removeLiquidityValues.tokensToGet,
-                fixedPointScale: meta.decimals ?? 12,
+                fixedPointScale: meta.decimals,
                 symbol: position.symbol,
                 withLrna: lrnaAsBigNumber.isGreaterThan(0)
                   ? t("liquidity.remove.modal.toast.withLrna", {
                       lrna: lrnaAsBigNumber,
-                      fixedPointScale: lrnaMeta.decimals.toString() ?? 12,
+                      fixedPointScale: lrnaMeta.decimals,
                     })
                   : "",
               }}
@@ -260,7 +255,7 @@ export const RemoveLiquidity = ({
                   {t("liquidity.remove.modal.value", {
                     value: getFloatingPointAmount(
                       removeSharesValue,
-                      meta?.decimals.toNumber() ?? 12,
+                      meta.decimals,
                     ),
                   })}
                 </Text>
@@ -277,7 +272,7 @@ export const RemoveLiquidity = ({
                       balance={t("liquidity.remove.modal.shares", {
                         shares: getFloatingPointAmount(
                           position.shares,
-                          meta?.decimals.toNumber() ?? 12,
+                          meta.decimals,
                         ),
                       })}
                     />
@@ -295,7 +290,7 @@ export const RemoveLiquidity = ({
                     symbol={position.symbol}
                     amount={t("value", {
                       value: removeLiquidityValues?.tokensToGet,
-                      fixedPointScale: meta?.decimals.toString() ?? 12,
+                      fixedPointScale: meta.decimals,
                       type: "token",
                     })}
                   />
@@ -307,7 +302,7 @@ export const RemoveLiquidity = ({
                         symbol="LRNA"
                         amount={t("value", {
                           value: removeLiquidityValues?.lrnaToGet,
-                          fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
+                          fixedPointScale: lrnaMeta?.decimals ?? 12,
                           type: "token",
                         })}
                       />
@@ -322,13 +317,13 @@ export const RemoveLiquidity = ({
                   !BN(removeLiquidityValues?.lrnaPayWith ?? 0).isZero()
                     ? t("value.token", {
                         value: removeLiquidityValues?.lrnaPayWith,
-                        fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
+                        fixedPointScale: lrnaMeta?.decimals ?? 12,
                       })
                     : undefined
                 }
                 assetFeeValue={t("value.token", {
                   value: removeLiquidityValues?.tokensPayWith,
-                  fixedPointScale: meta?.decimals.toString() ?? 12,
+                  fixedPointScale: meta.decimals,
                 })}
                 assetSymbol={meta?.symbol}
               />

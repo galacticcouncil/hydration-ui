@@ -2,15 +2,15 @@ import { ApiPromise } from "@polkadot/api"
 import { u32 } from "@polkadot/types"
 import { useQuery } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
-import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Maybe, undefinedNoop } from "utils/helpers"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export function useTimestamp(
   blockNumber?: Maybe<u32 | BigNumber>,
   enabled = true,
 ) {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.timestamp(blockNumber),
     () =>

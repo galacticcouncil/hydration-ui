@@ -10,7 +10,6 @@ import { Icon } from "components/Icon/Icon"
 import { Trans, useTranslation } from "react-i18next"
 import { useDisplayPrice } from "utils/displayAsset"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import Skeleton from "react-loading-skeleton"
 import { useClaimReward } from "sections/staking/StakingPage.utils"
 import { ToastMessage, useAccountStore, useStore } from "state/store"
@@ -18,17 +17,21 @@ import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Separator } from "components/Separator/Separator"
+import { useMedia } from "react-use"
 import { theme } from "theme"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const AvailableRewards = () => {
+  const { api, assets } = useRpcProvider()
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const reward = useClaimReward()
-  const spotPrice = useDisplayPrice(NATIVE_ASSET_ID)
+  const spotPrice = useDisplayPrice(assets.native.id)
 
-  const api = useApiPromise()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
+
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const isLoading = !reward.data || spotPrice.isLoading
 
@@ -59,7 +62,7 @@ export const AvailableRewards = () => {
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
     await queryClient.invalidateQueries(
-      QUERY_KEYS.tokenBalance(NATIVE_ASSET_ID, account?.address),
+      QUERY_KEYS.tokenBalance(assets.native.id, account?.address),
     )
   }
 
@@ -79,7 +82,41 @@ export const AvailableRewards = () => {
         </Text>
       </SRewartCardHeader>
       <div sx={{ p: "28px 25px", flex: "column", gap: 20 }}>
-        <div sx={{ flex: "row", justify: "space-between" }}>
+        <div sx={{ flex: "column" }}>
+          <div sx={{ flex: "row", justify: "space-between" }}>
+            <Text color="white">
+              {t("staking.dashboard.rewards.allocated")}
+            </Text>
+            {isLoading || !reward.data ? (
+              <Skeleton width={90} height={25} />
+            ) : (
+              <Text
+                fs={19}
+                color="white"
+                font="FontOver"
+                tTransform="uppercase"
+                css={{ whiteSpace: "nowrap" }}
+              >
+                {t("value.tokenWithSymbol", {
+                  value: reward.data.maxRewards,
+                  symbol: "HDX",
+                  decimalPlaces: 2,
+                })}
+              </Text>
+            )}
+          </div>
+        </div>
+
+        <Separator orientation="horizontal" css={{ background: "#55394E" }} />
+
+        <Text color="white">{t("staking.dashboard.rewards.available")}</Text>
+        <div
+          sx={{
+            flex: ["column", "row"],
+            justify: "space-between",
+            gap: [20, 0],
+          }}
+        >
           <div sx={{ flex: "column", justify: "space-around" }}>
             {isLoading || !reward.data ? (
               <Skeleton width={90} height={25} />
@@ -111,7 +148,10 @@ export const AvailableRewards = () => {
             )}
           </div>
 
-          <Separator orientation="vertical" css={{ background: "#55394E" }} />
+          <Separator
+            orientation={isDesktop ? "vertical" : "horizontal"}
+            css={{ background: "#55394E" }}
+          />
 
           <div sx={{ flex: "column" }}>
             {isLoading || !reward.data ? (
@@ -135,9 +175,11 @@ export const AvailableRewards = () => {
             </Text>
           </div>
         </div>
-
-        <Text css={{ color: `rgba(${theme.rgbColors.white}, 0.6)` }}>
-          {t("staking.dashboard.rewards.desc")}
+        <Separator orientation="horizontal" css={{ background: "#55394E" }} />
+        <Text color="warningYellow200">
+          {t("staking.dashboard.rewards.desc", {
+            value: reward.data?.maxRewards?.minus(reward.data.rewards),
+          })}
         </Text>
 
         <Button
