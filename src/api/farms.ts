@@ -31,9 +31,8 @@ export function useActiveYieldFarms(poolIds: Array<Maybe<u32 | string>>) {
 
 export const getActiveYieldFarms =
   (api: ApiPromise, poolId: u32 | string) => async () => {
-    const res = await api.query.omnipoolWarehouseLM.activeYieldFarm.entries(
-      poolId,
-    )
+    const res =
+      await api.query.omnipoolWarehouseLM.activeYieldFarm.entries(poolId)
     return res.map(([storageKey, codec]) => {
       const [poolId, globalFarmId] = storageKey.args
       const yieldFarmId = codec.unwrap()
@@ -161,10 +160,13 @@ export const useFarms = (poolIds: Array<u32 | string>) => {
   const activeYieldFarms = useActiveYieldFarms(poolIds)
 
   const data = activeYieldFarms
-    .reduce((acc, farm) => {
-      if (farm.data) acc.push(farm.data)
-      return acc
-    }, [] as Array<Array<FarmIds>>)
+    .reduce(
+      (acc, farm) => {
+        if (farm.data) acc.push(farm.data)
+        return acc
+      },
+      [] as Array<Array<FarmIds>>,
+    )
     .flat(2)
 
   const globalFarms = useGlobalFarms(data)

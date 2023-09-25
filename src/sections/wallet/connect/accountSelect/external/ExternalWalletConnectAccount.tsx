@@ -57,12 +57,16 @@ export const ExternalWalletConnectAccount = ({
   )
 
   const filteredAccounts =
-    accounts.data?.filter((myAccount) =>
-      externalWalletData.data?.delegates.find(
-        (delegate) =>
-          delegate.toString() ===
-          encodeAddress(decodeAddress(myAccount.address), HYDRA_ADDRESS_PREFIX),
-      ),
+    accounts.data?.filter(
+      (myAccount) =>
+        externalWalletData.data?.delegates.find(
+          (delegate) =>
+            delegate.toString() ===
+            encodeAddress(
+              decodeAddress(myAccount.address),
+              HYDRA_ADDRESS_PREFIX,
+            ),
+        ),
     ) ?? []
 
   if (!account) return null

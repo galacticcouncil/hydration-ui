@@ -56,8 +56,8 @@ export const useMaxAddLiquidityLimit = () => {
 }
 
 const getMaxAddLiquidityLimit = (api: ApiPromise) => async () => {
-  const data = await api.consts.circuitBreaker
-    .defaultMaxAddLiquidityLimitPerBlock
+  const data =
+    await api.consts.circuitBreaker.defaultMaxAddLiquidityLimitPerBlock
 
   const [n, d] = data.unwrap()
   const minWithdrawalFee = n.toBigNumber().div(d.toNumber())

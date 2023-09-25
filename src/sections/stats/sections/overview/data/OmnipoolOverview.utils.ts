@@ -88,52 +88,55 @@ export const useOmnipoolOverviewData = () => {
       return []
 
     // get a price of each position of HYDRA_TREASURE_ACCOUNT and filter it
-    const treasurePositionsValue = positions.reduce((acc, query) => {
-      const position = query.data
-      if (!position) return {}
+    const treasurePositionsValue = positions.reduce(
+      (acc, query) => {
+        const position = query.data
+        if (!position) return {}
 
-      const assetId = position.assetId.toString()
-      const meta = metas.data.find((m) => m.id.toString() === assetId)
+        const assetId = position.assetId.toString()
+        const meta = metas.data.find((m) => m.id.toString() === assetId)
 
-      const omnipoolAsset = omnipoolAssets.data.find(
-        (a) => a.id.toString() === assetId,
-      )
-      const omnipoolBalance = omnipoolAssetBalances.find(
-        (b) => b.data?.assetId.toString() === assetId,
-      )
+        const omnipoolAsset = omnipoolAssets.data.find(
+          (a) => a.id.toString() === assetId,
+        )
+        const omnipoolBalance = omnipoolAssetBalances.find(
+          (b) => b.data?.assetId.toString() === assetId,
+        )
 
-      const [nom, denom] = position.price.map((n) => new BN(n.toString()))
-      const price = nom.div(denom)
-      const positionPrice = price.times(BN_10.pow(18))
+        const [nom, denom] = position.price.map((n) => new BN(n.toString()))
+        const price = nom.div(denom)
+        const positionPrice = price.times(BN_10.pow(18))
 
-      let liquidityOutResult = "-1"
+        let liquidityOutResult = "-1"
 
-      if (omnipoolBalance?.data && omnipoolAsset?.data) {
-        const params: Parameters<typeof calculate_liquidity_out> = [
-          omnipoolBalance.data.balance.toString(),
-          omnipoolAsset.data.hubReserve.toString(),
-          omnipoolAsset.data.shares.toString(),
-          position.amount.toString(),
-          position.shares.toString(),
-          positionPrice.toFixed(0),
-          position.shares.toString(),
-          "0", // fee zero
-        ]
-        liquidityOutResult = calculate_liquidity_out.apply(this, params)
-      }
+        if (omnipoolBalance?.data && omnipoolAsset?.data) {
+          const params: Parameters<typeof calculate_liquidity_out> = [
+            omnipoolBalance.data.balance.toString(),
+            omnipoolAsset.data.hubReserve.toString(),
+            omnipoolAsset.data.shares.toString(),
+            position.amount.toString(),
+            position.shares.toString(),
+            positionPrice.toFixed(0),
+            position.shares.toString(),
+            "0", // fee zero
+          ]
+          liquidityOutResult = calculate_liquidity_out.apply(this, params)
+        }
 
-      const valueSp = spotPrices.find((sp) => sp?.data?.tokenIn === assetId)
-      const valueDp = BN_10.pow(meta?.decimals.toNumber() ?? 12)
-      let dollarValue = BN_NAN
+        const valueSp = spotPrices.find((sp) => sp?.data?.tokenIn === assetId)
+        const valueDp = BN_10.pow(meta?.decimals.toNumber() ?? 12)
+        let dollarValue = BN_NAN
 
-      if (liquidityOutResult !== "-1" && valueSp?.data) {
-        dollarValue = BN(liquidityOutResult)
-          .div(valueDp)
-          .times(valueSp.data.spotPrice)
-      }
+        if (liquidityOutResult !== "-1" && valueSp?.data) {
+          dollarValue = BN(liquidityOutResult)
+            .div(valueDp)
+            .times(valueSp.data.spotPrice)
+        }
 
-      return { ...acc, [assetId]: dollarValue.plus(acc[assetId] ?? BN_0) }
-    }, {} as { [key: string]: BN })
+        return { ...acc, [assetId]: dollarValue.plus(acc[assetId] ?? BN_0) }
+      },
+      {} as { [key: string]: BN },
+    )
 
     const rows = omnipoolAssets.data.map((omnipoolAsset) => {
       const omnipoolAssetId = omnipoolAsset.id.toString()

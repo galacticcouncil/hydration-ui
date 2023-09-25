@@ -89,9 +89,8 @@ const getDeposits = (api: ApiPromise) => async () => {
 
 const getOmniPositionId =
   (api: ApiPromise, depositionId: u128 | string) => async () => {
-    const res = await api.query.omnipoolLiquidityMining.omniPositionId(
-      depositionId,
-    )
+    const res =
+      await api.query.omnipoolLiquidityMining.omniPositionId(depositionId)
     return { depositionId, value: res.value }
   }
 
@@ -119,10 +118,11 @@ export const useUserDeposits = () => {
   const query = useQueryReduce(
     [accountDepositIds, deposits] as const,
     (accountDepositIds, deposits) => {
-      return deposits.filter((deposit) =>
-        accountDepositIds?.some(
-          (id) => id.instanceId.toString() === deposit.id.toString(),
-        ),
+      return deposits.filter(
+        (deposit) =>
+          accountDepositIds?.some(
+            (id) => id.instanceId.toString() === deposit.id.toString(),
+          ),
       )
     },
   )
