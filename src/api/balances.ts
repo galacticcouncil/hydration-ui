@@ -11,7 +11,7 @@ import { useAccountStore } from "state/store"
 import { BN_0 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 
-function calculateFreeBalance(
+export function calculateFreeBalance(
   free: BigNumber,
   miscFrozen: BigNumber,
   feeFrozen: BigNumber,

@@ -8,7 +8,9 @@ import { SAssetsModalHeader } from "./AssetsModal.styled"
 import { AssetsModalRow } from "./AssetsModalRow"
 import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useBonds, useLbpPool } from "api/bonds"
+import BN from "bignumber.js"
+import { TBond } from "api/assetDetails"
+import { TToken } from "api/assetDetails"
 
 type Props = {
   allowedAssets?: Maybe<u32 | string>[]
@@ -17,6 +19,8 @@ type Props = {
   allAssets?: boolean
   withBonds?: boolean
 }
+
+type TBalance = ReturnType<typeof useAcountAssets>[number]["balance"]
 
 export const AssetsModalContent = ({
   allowedAssets,
@@ -28,26 +32,52 @@ export const AssetsModalContent = ({
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const { account } = useAccountStore()
-  const bonds = useBonds({ disable: !withBonds })
-  const lbpPools = useLbpPool()
 
-  const assetsRows = useAcountAssets(account?.address)
+  const accountAssets = useAcountAssets(account?.address)
 
-  const assetsDetails = allAssets
-    ? assets.tokens
-    : assetsRows.filter((asset) => asset.isToken)
+  const getAssetBalances = <T extends TAsset>(assets: T[]) => {
+    return assets.reduce<{ asset: T; balance: TBalance }[]>((acc, asset) => {
+      const balance = accountAssets.find(
+        (accountAsset) => accountAsset.asset.id === asset.id,
+      )?.balance ?? {
+        accountId: account?.address ?? "",
+        id: asset.id,
+        balance: BN(0),
+        total: BN(0),
+        freeBalance: BN(0),
+      }
 
-  const mainAssets =
+      acc.push({ asset, balance })
+
+      return acc
+    }, [])
+  }
+
+  const tokens = allAssets
+    ? getAssetBalances(assets.tokens)
+    : accountAssets.filter(
+        (accountAsset): accountAsset is { balance: TBalance; asset: TToken } =>
+          accountAsset.asset.isToken,
+      )
+
+  const bonds = allAssets
+    ? getAssetBalances(assets.bonds)
+    : accountAssets.filter(
+        (accountAsset): accountAsset is { balance: TBalance; asset: TBond } =>
+          accountAsset.asset.isBond,
+      )
+
+  const allowedTokens =
     allowedAssets != null
-      ? assetsDetails.filter((asset) => allowedAssets.includes(asset.id))
-      : assetsDetails
+      ? tokens.filter(({ asset }) => allowedAssets.includes(asset.id))
+      : tokens
 
-  const otherAssets =
+  const notAllowedTokens =
     allowedAssets != null
-      ? assetsDetails.filter((asset) => !allowedAssets?.includes(asset.id))
+      ? tokens.filter(({ asset }) => !allowedAssets.includes(asset.id))
       : []
 
-  if (!mainAssets.length)
+  if (!allowedTokens.length)
     return (
       <>
         <SAssetsModalHeader>
@@ -66,7 +96,7 @@ export const AssetsModalContent = ({
 
   return (
     <>
-      {!!mainAssets?.length && (
+      {!!allowedTokens?.length && (
         <>
           <SAssetsModalHeader>
             <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
@@ -76,18 +106,18 @@ export const AssetsModalContent = ({
               {t("selectAssets.your_balance")}
             </Text>
           </SAssetsModalHeader>
-          {mainAssets?.map((asset) => (
+          {allowedTokens.map(({ balance, asset }) => (
             <AssetsModalRow
+              balance={balance.balance}
               key={asset.id}
-              id={asset.id}
-              name={asset.name}
-              balanceId={asset.id}
+              asset={asset}
+              spotPriceId={asset.id}
               onClick={(assetData) => onSelect?.(assetData)}
             />
           ))}
         </>
       )}
-      {withBonds && bonds.data?.length && (
+      {withBonds && bonds.length && (
         <>
           <SAssetsModalHeader>
             <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
@@ -97,37 +127,30 @@ export const AssetsModalContent = ({
               {t("selectAssets.your_balance")}
             </Text>
           </SAssetsModalHeader>
-          {bonds.data?.map((bond) => {
-            const isLbpPool = lbpPools.data?.find((pool) =>
-              pool.assets.some((asset: number) => asset === Number(bond.id)),
-            )
-
-            return (
-              <AssetsModalRow
-                key={bond.id}
-                id={bond.assetId}
-                balanceId={bond.id}
-                bond={bond}
-                spotPriceId={isLbpPool ? bond.id : bond.assetId}
-                onClick={(assetData) => onSelect?.(assetData)}
-              />
-            )
-          })}
+          {bonds.map(({ asset, balance }) => (
+            <AssetsModalRow
+              key={asset.id}
+              asset={asset}
+              balance={balance.balance}
+              spotPriceId={asset.isPast ? asset.assetId : asset.id}
+              onClick={(assetData) => onSelect?.(assetData)}
+            />
+          ))}
         </>
       )}
-      {!hideInactiveAssets && !!otherAssets?.length && (
+      {!hideInactiveAssets && !!notAllowedTokens?.length && (
         <>
           <SAssetsModalHeader shadowed>
             <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
               {t("selectAssets.asset_without_pair")}
             </Text>
           </SAssetsModalHeader>
-          {otherAssets?.map((asset) => (
+          {notAllowedTokens.map(({ balance, asset }) => (
             <AssetsModalRow
+              balance={balance.balance}
               key={asset.id}
-              id={asset.id}
-              balanceId={asset.id}
-              name={asset.name}
+              asset={asset}
+              spotPriceId={asset.id}
             />
           ))}
         </>

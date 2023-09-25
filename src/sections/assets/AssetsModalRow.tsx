@@ -1,52 +1,42 @@
-import { u32 } from "@polkadot/types"
-import { useTokenBalance } from "api/balances"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
-import { FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useAccountStore } from "state/store"
-import { BN_10, BN_NAN } from "utils/constants"
+import { BN_0 } from "utils/constants"
 import { useDisplayPrice } from "utils/displayAsset"
-import { Maybe } from "utils/helpers"
 import { SAssetRow } from "./AssetsModalRow.styled"
-import { useRpcProvider } from "providers/rpcProvider"
 import { TAsset } from "api/assetDetails"
+import BN from "bignumber.js"
+import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
 
-interface AssetsModalRowProps {
-  id: Maybe<u32 | string>
+type AssetsModalRowProps = {
+  asset: TAsset
+  balance: BN
+  spotPriceId: string
   onClick?: (asset: NonNullable<TAsset>) => void
 }
 
-export const AssetsModalRow: FC<AssetsModalRowProps> = ({
-  id,
-  balanceId,
+export const AssetsModalRow = ({
+  asset,
   spotPriceId,
-  name,
   onClick,
-  bond,
-}) => {
-  const { account } = useAccountStore()
+  balance,
+}: AssetsModalRowProps) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
-  const asset = id ? assets.getAsset(id.toString()) : undefined
-  const balance = useTokenBalance(id, account?.address)
 
-  const totalDisplay = useMemo(() => {
-    if (balance.data && spotPrice.data) {
-      return balance.data.balance
-        .times(spotPrice.data.spotPrice)
-        .div(BN_10.pow(asset?.decimals ?? 12))
-    }
-    return BN_NAN
-  }, [asset?.decimals, balance.data, spotPrice.data])
+  const spotPrice = useDisplayPrice(spotPriceId)
+  const totalDisplay = !balance?.isZero()
+    ? balance
+        .multipliedBy(spotPrice.data?.spotPrice ?? 1)
+        .shiftedBy(-asset.decimals)
+    : BN_0
 
-  if (!asset) return null
+  if (!asset || spotPrice.isInitialLoading) return <AssetsModalRowSkeleton />
 
   return (
-    <SAssetRow onClick={() => asset && onClick?.(asset)}>
+    <SAssetRow onClick={() => onClick?.(asset)}>
       <div sx={{ display: "flex", align: "center" }}>
         <Icon icon={<AssetLogo id={asset.id} />} sx={{ mr: 10 }} size={30} />
         <div sx={{ mr: 6 }}>
@@ -58,15 +48,15 @@ export const AssetsModalRow: FC<AssetsModalRowProps> = ({
           </Text>
         </div>
       </div>
-      {balance.data && (
+      {balance && (
         <div sx={{ display: "flex", flexDirection: "column", align: "end" }}>
           <Trans
             t={t}
             i18nKey="selectAssets.balance"
             tOptions={{
-              balance: balance.data.balance,
+              balance: balance,
               fixedPointScale: asset.decimals,
-              numberSuffix: ` ${asset.symbol}`,
+              numberSuffix: asset.symbol,
               type: "token",
             }}
           >
