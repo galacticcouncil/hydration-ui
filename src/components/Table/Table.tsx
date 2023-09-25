@@ -1,5 +1,5 @@
 import { SortDirection } from "@tanstack/react-table"
-import { ReactComponent as CaretIcon } from "assets/icons/CaretIcon.svg"
+import CaretIcon from "assets/icons/CaretIcon.svg?react"
 import { Button, ButtonVariant } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { TableHeader } from "components/Table/Table.styled"

@@ -1,6 +1,6 @@
 import { PieChart } from "sections/stats/sections/LRNA/components/PieChart/PieChart"
-import { ReactComponent as StakingRewardIcon } from "assets/icons/StakingRewardIcon.svg"
-import { ReactComponent as StakedAPRIcon } from "assets/icons/StakedAPR.svg"
+import StakingRewardIcon from "assets/icons/StakingRewardIcon.svg?react"
+import StakedAPRIcon from "assets/icons/StakedAPR.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { SBurnContainer } from "./Burning.styled"

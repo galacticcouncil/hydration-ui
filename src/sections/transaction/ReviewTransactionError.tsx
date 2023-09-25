@@ -1,6 +1,6 @@
 import { Text } from "components/Typography/Text/Text"
 import { Button, ButtonTransparent } from "components/Button/Button"
-import { ReactComponent as FullFailIcon } from "assets/icons/FullFailIcon.svg"
+import FullFailIcon from "assets/icons/FullFailIcon.svg?react"
 import { css } from "@emotion/react"
 import { useTranslation } from "react-i18next"
 import { SButtons } from "./ReviewTransactionError.styled"

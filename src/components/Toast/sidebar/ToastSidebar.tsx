@@ -1,5 +1,5 @@
 import { Dialog, DialogPortal } from "@radix-ui/react-dialog"
-import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import { Backdrop } from "components/Backdrop/Backdrop"
 import { Spacer } from "components/Spacer/Spacer"
 import { Heading } from "components/Typography/Heading/Heading"

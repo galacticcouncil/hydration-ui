@@ -8,7 +8,7 @@ import { PieChart } from "sections/staking/sections/dashboard/components/PieChar
 import { useAccountStore } from "state/store"
 import { TStakingData } from "sections/staking/StakingPage.utils"
 import { Icon } from "components/Icon/Icon"
-import { ReactComponent as ProjectedRewardsIcon } from "assets/icons/ProjectedRewardsIcon.svg"
+import ProjectedRewardsIcon from "assets/icons/ProjectedRewardsIcon.svg?react"
 import Skeleton from "react-loading-skeleton"
 import { Trans, useTranslation } from "react-i18next"
 import { Spacer } from "components/Spacer/Spacer"

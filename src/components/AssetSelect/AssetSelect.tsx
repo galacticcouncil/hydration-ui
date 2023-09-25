@@ -1,6 +1,6 @@
 import { css } from "@emotion/react"
 import { u32 } from "@polkadot/types"
-import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
+import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import BigNumber from "bignumber.js"
 import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
 import { getAssetName } from "components/AssetIcon/AssetIcon"

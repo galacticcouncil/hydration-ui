@@ -1,7 +1,7 @@
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { useNavigate } from "@tanstack/react-location"
-import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import { AddressInput } from "components/AddressInput/AddressInput"
 import { SErrorMessage } from "components/AssetInput/AssetInput.styled"
 import { Button } from "components/Button/Button"

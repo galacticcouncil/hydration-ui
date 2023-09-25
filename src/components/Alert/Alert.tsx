@@ -1,7 +1,7 @@
 import styled from "@emotion/styled"
 import { ReactNode } from "react"
-import { ReactComponent as ErrorIcon } from "assets/icons/ErrorIcon.svg"
-import { ReactComponent as WarningIcon } from "assets/icons/WarningIcon.svg"
+import ErrorIcon from "assets/icons/ErrorIcon.svg?react"
+import WarningIcon from "assets/icons/WarningIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 

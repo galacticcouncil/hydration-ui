@@ -152,7 +152,7 @@
     "storybook": "^7.1.1",
     "ts-node": "^10.9.1",
     "vite": "^4.4.6",
-    "vite-plugin-svgr": "^3.2.0",
+    "vite-plugin-svgr": "^4.0.0",
     "vite-tsconfig-paths": "^4.2.0",
     "vitest": "^0.33.0"
   }

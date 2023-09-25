@@ -1,6 +1,6 @@
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { ReactComponent as IconEdit } from "assets/icons/IconEdit.svg"
-import { ReactComponent as IconRemove } from "assets/icons/IconRemove.svg"
+import IconEdit from "assets/icons/IconEdit.svg?react"
+import IconRemove from "assets/icons/IconRemove.svg?react"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { useState } from "react"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"

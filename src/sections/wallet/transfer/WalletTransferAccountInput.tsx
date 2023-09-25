@@ -1,6 +1,6 @@
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { ReactComponent as GuestIcon } from "assets/icons/GuestIcon.svg"
-import { ReactComponent as IconWalletSmall } from "assets/icons/IconWalletSmall.svg"
+import GuestIcon from "assets/icons/GuestIcon.svg?react"
+import IconWalletSmall from "assets/icons/IconWalletSmall.svg?react"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { AddressInput } from "components/AddressInput/AddressInput"
 import { SErrorMessage } from "components/AddressInput/AddressInput.styled"

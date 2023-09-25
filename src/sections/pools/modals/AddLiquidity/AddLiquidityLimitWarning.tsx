@@ -1,4 +1,4 @@
-import { ReactComponent as IconWarning } from "assets/icons/WarningIcon.svg"
+import IconWarning from "assets/icons/WarningIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 

@@ -66,7 +66,7 @@ function ProviderStatusSuccess() {
         height="11"
         viewBox="0 0 11 11"
         fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+        xmlns="http://www.w3.org/2000.svg?react"
         css={{
           position: "absolute",
           top: -2,
@@ -137,7 +137,7 @@ export function ProviderStatus(props: {
             height="7"
             viewBox="0 0 9 7"
             fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+            xmlns="http://www.w3.org/2000.svg?react"
           >
             <path
               d="M4.49999 0L8.3971 6.75H0.602875L4.49999 0Z"

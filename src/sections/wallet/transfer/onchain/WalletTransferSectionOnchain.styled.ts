@@ -1,6 +1,6 @@
 import styled from "@emotion/styled"
 import { IconButton } from "components/IconButton/IconButton"
-import { ReactComponent as PasteIcon } from "assets/icons/PasteAddressIcon.svg"
+import PasteIcon from "assets/icons/PasteAddressIcon.svg?react"
 import { theme } from "theme"
 
 export const CloseIcon = styled(IconButton)`

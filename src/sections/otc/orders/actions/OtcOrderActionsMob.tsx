@@ -1,5 +1,5 @@
-import { ReactComponent as FillIcon } from "assets/icons/Fill.svg"
-import { ReactComponent as PauseIcon } from "assets/icons/PauseIcon.svg"
+import FillIcon from "assets/icons/Fill.svg?react"
+import PauseIcon from "assets/icons/PauseIcon.svg?react"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Separator } from "components/Separator/Separator"

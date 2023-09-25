@@ -4,7 +4,7 @@ import { ReferendumCardSkeleton } from "components/ReferendumCard/ReferendumCard
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SContainer } from "sections/staking/StakingPage.styled"
-import { ReactComponent as GovernanceIcon } from "assets/icons/GovernanceIcon.svg"
+import GovernanceIcon from "assets/icons/GovernanceIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { ReferendumCardRococo } from "components/ReferendumCard/ReferendumCardRococo"
 import { useProviderRpcUrlStore } from "api/provider"
