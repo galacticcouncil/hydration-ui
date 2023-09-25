@@ -3,10 +3,10 @@ import { ReactComponent as Percentage } from "assets/icons/Percentage.svg"
 import { ReactComponent as Cake } from "assets/icons/Cake.svg"
 import { ReactNode } from "react"
 import { format } from "date-fns"
-import { useApiPromise } from "utils/api"
 import { useAccountStore, useStore } from "state/store"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const steps = ["first", "second", "third"] as const
 
@@ -35,7 +35,7 @@ export const getBondName = (symbol: string, date: Date, long?: boolean) =>
   )}`
 
 export const useClaimBond = () => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
   const { account } = useAccountStore()

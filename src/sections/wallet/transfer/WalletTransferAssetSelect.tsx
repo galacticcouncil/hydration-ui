@@ -1,5 +1,4 @@
 import { u32 } from "@polkadot/types"
-import { useAsset } from "api/asset"
 import { useTokenBalance } from "api/balances"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { useTranslation } from "react-i18next"
@@ -8,6 +7,7 @@ import BN from "bignumber.js"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Bond } from "api/bonds"
 import { getBondName } from "sections/trade/sections/bonds/Bonds.utils"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const WalletTransferAssetSelect = (props: {
   name: string
@@ -23,13 +23,14 @@ export const WalletTransferAssetSelect = (props: {
   className?: string
   balance?: BN
   bond?: Bond
+  withoutMaxBtn?: boolean
 
   error?: string
 }) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
-
-  const asset = useAsset(props.bond ? props.bond.assetId : props.asset)
+  const asset = assets.getAsset(props.asset.toString())
   const balance = useTokenBalance(props.asset, account?.address)
 
   let name = asset.data?.name
@@ -53,14 +54,15 @@ export const WalletTransferAssetSelect = (props: {
       onChange={props.onChange}
       onBlur={props.onBlur}
       asset={props.asset}
-      assetIcon={<AssetLogo id={asset.data?.id} />}
-      decimals={asset.data?.decimals?.toNumber()}
+      assetIcon={<AssetLogo id={asset.id} />}
+      decimals={asset.decimals}
       balance={props.balance ?? balance.data?.balance}
-      assetName={name}
-      assetSymbol={symbol}
+      assetName={asset.name}
+      assetSymbol={asset.symbol}
       onSelectAssetClick={props.onAssetOpen}
       error={props.error}
       balanceLabel={t("selectAsset.balance.label")}
+      withoutMaxBtn={props.withoutMaxBtn}
       bond={props.bond}
     />
   )

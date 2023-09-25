@@ -1,5 +1,4 @@
 import * as Tooltip from "@radix-ui/react-tooltip"
-import { useAssetMetaList } from "api/assetMeta"
 import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
@@ -15,6 +14,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
 import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
+import { useRpcProvider } from "providers/rpcProvider"
 import {
   SClaimButton,
   SContent,
@@ -23,6 +23,7 @@ import {
 
 export const ClaimAllDropdown = () => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
 
   const [open, setOpen] = useState(false)
@@ -31,25 +32,21 @@ export const ClaimAllDropdown = () => {
 
   const claimable = useClaimableAmount()
 
-  const assetsMeta = useAssetMetaList(Object.keys(claimable.data?.assets || {}))
-
   const { claimableAssets } = useMemo(() => {
     const claimableAssets = []
 
-    if (assetsMeta.data) {
-      for (let key in claimable.data?.assets) {
-        const asset = assetsMeta.data?.find((meta) => meta.id === key)
+    for (let key in claimable.data?.assets) {
+      const asset = assets.getAsset(key)
 
-        claimableAssets.push({
-          value: claimable.data?.assets[key],
-          symbol: asset?.symbol,
-          decimals: asset?.decimals ?? 12,
-        })
-      }
+      claimableAssets.push({
+        value: claimable.data?.assets[key],
+        symbol: asset.symbol,
+        decimals: asset.decimals,
+      })
     }
 
     return { claimableAssets }
-  }, [assetsMeta.data, claimable.data?.assets])
+  }, [assets, claimable.data?.assets])
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type

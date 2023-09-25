@@ -1,28 +1,28 @@
-import { useApiPromise } from "utils/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u128, u32 } from "@polkadot/types-codec"
 import { ITuple } from "@polkadot/types-codec/types"
-import { isApiLoaded, undefinedNoop } from "utils/helpers"
+import { undefinedNoop } from "utils/helpers"
 import { REFETCH_INTERVAL } from "utils/constants"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const useOmnipoolAsset = (id: u32 | string) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(QUERY_KEYS.omnipoolAsset(id), getOmnipoolAsset(api, id))
 }
 
 export const useOmnipoolAssets = (noRefresh?: boolean) => {
-  const api = useApiPromise()
+  const { api, isLoaded } = useRpcProvider()
   return useQuery(
     noRefresh ? QUERY_KEYS.omnipoolAssets : QUERY_KEYS.omnipoolAssetsLive,
     getOmnipoolAssets(api),
-    { enabled: !!isApiLoaded(api) },
+    { enabled: isLoaded },
   )
 }
 
 export const useHubAssetTradability = () => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(QUERY_KEYS.hubAssetTradability, getHubAssetTradability(api))
 }
 
@@ -50,7 +50,7 @@ export const useOmnipoolPositions = (
   itemIds: Array<u128 | u32 | undefined>,
   noRefresh?: boolean,
 ) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return useQueries({
     queries: itemIds.map((id) => ({
@@ -67,7 +67,7 @@ export const useOmnipoolPositions = (
 export const useOmnipoolPosition = (
   itemId: u128 | u32 | string | undefined,
 ) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.omnipoolPosition(itemId?.toString()),
@@ -79,7 +79,7 @@ export const useOmnipoolPosition = (
 }
 
 export const useOmnipoolFee = () => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(QUERY_KEYS.omnipoolFee, getOmnipoolFee(api))
 }
 
@@ -133,13 +133,13 @@ export const getHubAssetImbalance = (api: ApiPromise) =>
   api.query.omnipool.hubAssetImbalance()
 
 export const useHubAssetImbalance = () => {
-  const api = useApiPromise()
+  const { api, isLoaded } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.hubAssetImbalance(),
     () => getHubAssetImbalance(api),
     {
-      enabled: !!isApiLoaded(api),
+      enabled: isLoaded,
       refetchInterval: REFETCH_INTERVAL,
     },
   )

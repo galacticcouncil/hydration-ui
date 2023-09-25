@@ -2,8 +2,8 @@ import * as React from "react"
 import * as UI from "@galacticcouncil/ui"
 import { createComponent, EventName } from "@lit-labs/react"
 import { u32 } from "@polkadot/types"
-import { useAsset } from "api/asset"
 import BN from "bignumber.js"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const UigcAssetTransfer = createComponent({
   tagName: "uigc-asset-transfer",
@@ -37,14 +37,17 @@ export function OrderAssetSelect(props: {
   onOpen: () => void
   error?: string
 }) {
-  const asset = useAsset(props.asset)
+  const { assets } = useRpcProvider()
+  const asset = props.asset
+    ? assets.getAsset(props.asset.toString())
+    : undefined
 
   const assetBalance = props.balance
-  const assetDecimals = asset.data?.decimals
+  const assetDecimals = asset?.decimals
 
   let blnc: string = ""
   if (assetBalance && assetDecimals) {
-    blnc = assetBalance.shiftedBy(-1 * assetDecimals.toNumber()).toFixed()
+    blnc = assetBalance.shiftedBy(-1 * assetDecimals).toFixed()
   }
 
   return (
@@ -64,7 +67,7 @@ export function OrderAssetSelect(props: {
       onAssetSelectorClicked={props.onOpen}
       id={props.name}
       title={props.title}
-      asset={asset.data?.symbol}
+      asset={asset?.symbol}
       amount={props.value}
     >
       <UigcAssetBalance
@@ -86,14 +89,15 @@ export function OrderAssetPay(props: {
   error?: string
   readonly?: boolean
 }) {
-  const asset = useAsset(props.asset)
+  const { assets } = useRpcProvider()
+  const asset = assets.getAsset(props.asset.toString())
 
   const assetBalance = props.balance
-  const assetDecimals = asset.data?.decimals
+  const assetDecimals = asset.decimals
 
   let blnc: string = ""
   if (assetBalance && assetDecimals) {
-    blnc = assetBalance.shiftedBy(-1 * assetDecimals.toNumber()).toFixed()
+    blnc = assetBalance.shiftedBy(-1 * assetDecimals).toFixed()
   }
 
   return (
@@ -114,7 +118,7 @@ export function OrderAssetPay(props: {
       }
       id={props.name}
       title={props.title}
-      asset={asset.data?.symbol}
+      asset={asset.symbol}
       amount={props.value}
       selectable={false}
       readonly={props.readonly || false}
@@ -155,7 +159,8 @@ export function OrderAssetGet(props: {
   error?: string
   readonly?: boolean
 }) {
-  const asset = useAsset(props.asset)
+  const { assets } = useRpcProvider()
+  const asset = assets.getAsset(props.asset.toString())
   return (
     <UigcAssetTransfer
       ref={(el) => {
@@ -175,7 +180,7 @@ export function OrderAssetGet(props: {
       }
       id={props.name}
       title={props.title}
-      asset={asset.data?.symbol}
+      asset={asset.symbol}
       amount={props.value}
       selectable={false}
       readonly={props.readonly || false}

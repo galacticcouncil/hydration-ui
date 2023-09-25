@@ -1,4 +1,3 @@
-import { useAssetMeta } from "api/assetMeta"
 import { useTokenBalance } from "api/balances"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
@@ -7,7 +6,6 @@ import { Text } from "components/Typography/Text/Text"
 import { useEffect } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { useApiPromise } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
 import { BN_0, BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
@@ -16,6 +14,7 @@ import { OrderCapacity } from "sections/trade/sections/otc/capacity/OrderCapacit
 import { OfferingPair } from "sections/trade/sections/otc/orders/OtcOrdersData.utils"
 import { OrderAssetPrice } from "./cmp/AssetPrice"
 import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const FULL_ORDER_PCT_LBOUND = 99
 
@@ -51,10 +50,10 @@ export const PartialFillOrder = ({
     form.trigger()
   }, [form])
 
-  const api = useApiPromise()
-  const assetInMeta = useAssetMeta(accepting.asset)
+  const { api, assets } = useRpcProvider()
+  const assetInMeta = assets.getAsset(accepting.asset)
   const assetInBalance = useTokenBalance(accepting.asset, account?.address)
-  const assetOutMeta = useAssetMeta(offering.asset)
+  const assetOutMeta = assets.getAsset(offering.asset)
 
   const { createTransaction } = useStore()
 
@@ -87,12 +86,11 @@ export const PartialFillOrder = ({
   }
 
   const handleSubmit = async (values: FormValues<typeof form>) => {
-    if (assetInMeta.data?.decimals == null)
-      throw new Error("Missing assetIn meta")
+    if (assetInMeta.decimals == null) throw new Error("Missing assetIn meta")
 
     const amountIn = getFixedPointAmount(
       values.amountIn,
-      assetInMeta.data.decimals.toString(),
+      assetInMeta.decimals,
     ).decimalPlaces(0, 1)
 
     const filledPct = new BigNumber(values.amountIn)
@@ -120,7 +118,7 @@ export const PartialFillOrder = ({
               i18nKey="otc.order.fill.toast.onLoading"
               tOptions={{
                 amount: values.amountOut,
-                symbol: assetOutMeta.data?.symbol,
+                symbol: assetOutMeta.symbol,
               }}
             >
               <span />
@@ -133,7 +131,7 @@ export const PartialFillOrder = ({
               i18nKey="otc.order.fill.toast.onSuccess"
               tOptions={{
                 amount: values.amountOut,
-                symbol: assetOutMeta.data?.symbol,
+                symbol: assetOutMeta.symbol,
               }}
             >
               <span />
@@ -203,7 +201,7 @@ export const PartialFillOrder = ({
             validate: {
               maxBalance: (value) => {
                 const balance = assetInBalance.data?.balance
-                const decimals = assetInMeta.data?.decimals.toString()
+                const decimals = assetInMeta.decimals.toString()
                 if (
                   balance &&
                   decimals &&
@@ -237,8 +235,8 @@ export const PartialFillOrder = ({
           )}
         />
         <OrderAssetPrice
-          inputAsset={assetOutMeta.data?.symbol}
-          outputAsset={assetInMeta.data?.symbol}
+          inputAsset={assetOutMeta.symbol}
+          outputAsset={assetInMeta.symbol}
           price={price && price.toFixed()}
         />
         <Controller

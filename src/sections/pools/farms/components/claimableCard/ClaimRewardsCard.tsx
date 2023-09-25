@@ -1,5 +1,4 @@
 import { css } from "@emotion/react"
-import { useAssetMetaList } from "api/assetMeta"
 import { DepositNftType } from "api/deposits"
 import { Button } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -14,6 +13,7 @@ import { theme } from "theme"
 import { separateBalance } from "utils/balance"
 import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
 import { SContainer } from "./ClaimRewardsCard.styled"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const ClaimRewardsCard = (props: {
   pool: OmnipoolPool
@@ -21,24 +21,22 @@ export const ClaimRewardsCard = (props: {
   onTxClose?: () => void
 }) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
 
   const claimable = useClaimableAmount(props.pool, props.depositNft)
-  const assetsMeta = useAssetMetaList(Object.keys(claimable.data?.assets || {}))
 
   const { claimableAssets, toastValue } = useMemo(() => {
     const claimableAssets = []
 
-    if (assetsMeta.data) {
-      for (let key in claimable.data?.assets) {
-        const asset = assetsMeta.data?.find((meta) => meta.id === key)
-        const balance = separateBalance(claimable.data?.assets[key], {
-          fixedPointScale: asset?.decimals.toString() ?? 12,
-          type: "token",
-        })
+    for (let key in claimable.data?.assets) {
+      const asset = assets.getAsset(key)
+      const balance = separateBalance(claimable.data?.assets[key], {
+        fixedPointScale: asset.decimals,
+        type: "token",
+      })
 
-        claimableAssets.push({ ...balance, symbol: asset?.symbol })
-      }
+      claimableAssets.push({ ...balance, symbol: asset?.symbol })
     }
 
     const toastValue = claimableAssets.map((asset, index) => {
@@ -54,7 +52,7 @@ export const ClaimRewardsCard = (props: {
     })
 
     return { claimableAssets, toastValue }
-  }, [assetsMeta.data, claimable.data?.assets, t])
+  }, [assets, claimable.data?.assets, t])
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type

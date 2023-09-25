@@ -8,9 +8,9 @@ import { BondTableItem } from "./table/BondsTable.utils"
 import { useTranslation } from "react-i18next"
 import { Placeholder } from "./table/placeholder/Placeholder"
 import { BN_0 } from "utils/constants"
-import { useAssetMetaList } from "api/assetMeta"
 import { useBestNumber } from "api/chain"
 import { useState } from "react"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   showTransactions?: boolean
@@ -24,6 +24,7 @@ export const MyActiveBonds = ({
   assetId,
 }: Props) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
 
   const [allAssets, setAllAssets] = useState(false)
@@ -36,11 +37,11 @@ export const MyActiveBonds = ({
       ? bonds.data?.filter((bond) => bond.assetId === assetId)
       : bonds.data) ?? []
 
-  const metas = useAssetMetaList(
+  const metas = assets.getAssets(
     assetId ? [assetId] : bonds.data?.map((bond) => bond.assetId) ?? [],
   )
 
-  const metasData = metas?.data ?? []
+  const metasData = metas ?? []
 
   const balances = useTokensBalances(pluck("id", bondsData), account?.address)
 
@@ -98,16 +99,14 @@ export const MyActiveBonds = ({
           ?.toString()
 
         const assetMeta = metaMap.get(bondAssetId)
-        const shiftBy = assetMeta?.decimals
-          ? assetMeta.decimals.neg().toNumber()
-          : -12
+        const shiftBy = assetMeta?.decimals ? assetMeta.decimals : 12
 
         acc.push({
           assetId: bondAssetId,
           assetIn,
           maturity: bondMap.get(id)?.maturity,
           balance: balance.data?.total,
-          balanceHuman: balance.data?.total?.shiftedBy(shiftBy).toString(),
+          balanceHuman: balance.data?.total?.shiftedBy(-shiftBy).toString(),
           price: "",
           bondId: bond?.id,
           isSale,

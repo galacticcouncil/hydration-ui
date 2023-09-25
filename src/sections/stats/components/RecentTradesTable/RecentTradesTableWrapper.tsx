@@ -1,13 +1,12 @@
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
 import { RecentTradesTable } from "./RecentTradesTable"
 import { useRecentTradesTableData } from "./data/RecentTradesTableData.utils"
 import { RecentTradesTableSkeleton } from "./skeleton/RecentTradesTableSkeleton"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const RecentTradesTableWrapper = ({ assetId }: { assetId?: string }) => {
-  const api = useApiPromise()
+  const { isLoaded } = useRpcProvider()
 
-  if (!isApiLoaded(api)) return <RecentTradesTableSkeleton />
+  if (!isLoaded) return <RecentTradesTableSkeleton />
 
   return <RecentTradesTableWrapperData assetId={assetId} />
 }

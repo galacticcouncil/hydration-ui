@@ -13,19 +13,16 @@ import { theme } from "theme"
 import { ButtonTransparent } from "components/Button/Button"
 import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronDown.svg"
 import { useTranslation } from "react-i18next"
-import { useAssetMeta } from "api/assetMeta"
 import { formatDate } from "utils/formatting"
 import { useMedia } from "react-use"
 import { TableAction } from "components/Table/Table"
-import {
-  getBondName,
-  useClaimBond,
-} from "sections/trade/sections/bonds/Bonds.utils"
+import { useClaimBond } from "sections/trade/sections/bonds/Bonds.utils"
 import BN from "bignumber.js"
 import { Icon } from "components/Icon/Icon"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useNavigate } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export type BondTableItem = {
   assetId: string
@@ -49,9 +46,8 @@ const BondCell = ({
   assetId,
   maturity,
 }: Pick<BondTableItem, "assetId" | "maturity">) => {
-  const meta = useAssetMeta(assetId)
-
-  const date = maturity ? new Date(maturity) : new Date()
+  const { assets } = useRpcProvider()
+  const meta = assets.getAsset(assetId)
 
   return (
     <div
@@ -64,10 +60,10 @@ const BondCell = ({
       <Icon icon={<AssetLogo id={assetId} />} size={30} />
       <div sx={{ flex: "column" }}>
         <Text fs={16} sx={{ mt: 3 }} font="ChakraPetchSemiBold">
-          {`${meta.data?.symbol}b`}
+          {meta.symbol}
         </Text>
         <Text fs={13} sx={{ mt: 3 }} color={"whiteish500"}>
-          {getBondName(meta.data?.symbol ?? "", date, true)}
+          {meta.name}
         </Text>
       </div>
     </div>

@@ -4,12 +4,12 @@ import { SSeparator } from "sections/pools/farms/position/FarmingPosition.styled
 import { ReactElement } from "react"
 import { Icon } from "components/Icon/Icon"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { useAssetMeta } from "api/assetMeta"
 import { useFarmApr, useFarms } from "api/farms"
 import { DepositNftType } from "api/deposits"
 import { u32 } from "@polkadot/types"
 import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type DepositedYieldFarmProps = {
   activeYieldFarm: NonNullable<ReturnType<typeof useFarms>["data"]>[0]
@@ -21,9 +21,12 @@ export const DepositedYieldFarm = ({
   joinedYieldFarm,
 }: DepositedYieldFarmProps) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
 
   const { data: farmApr } = useFarmApr(activeYieldFarm)
-  const { data: assetMeta } = useAssetMeta(farmApr?.assetId)
+  const assetMeta = farmApr?.assetId
+    ? assets.getAsset(farmApr.assetId.toString())
+    : undefined
 
   if (!assetMeta || !farmApr || !joinedYieldFarm) return null
 

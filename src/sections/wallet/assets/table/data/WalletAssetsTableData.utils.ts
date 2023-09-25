@@ -1,7 +1,7 @@
 import { u32 } from "@polkadot/types"
 import { PalletBalancesAccountData } from "@polkadot/types/lookup"
 import { getAccountBalances } from "api/accountBalances"
-import { getAssetsDetails, useAssetTable } from "api/assetDetails"
+import { useAssetTable } from "api/assetDetails"
 import { getTokenLock } from "api/balances"
 import { SpotPrice } from "api/spotPrice"
 import BN from "bignumber.js"
@@ -20,8 +20,11 @@ import { useApiIds } from "api/consts"
 import { useHubAssetTradability, useOmnipoolAssets } from "api/omnipool"
 import { useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
+import { useRpcProvider } from "providers/rpcProvider"
+import { TToken } from "api/assetDetails"
 
 export const useAssetsTableData = (isAllAssets: boolean) => {
+  const { assets } = useRpcProvider()
   const myTableData = useAssetTable()
   const spotPrices = useDisplayPrices(
     myTableData.data?.acceptedTokens.map((t) => t.id) ?? [],
@@ -33,7 +36,6 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
     const {
       balances,
       tradeAssets,
-      allAssets,
       accountTokenId,
       acceptedTokens,
       tokenLocks,
@@ -41,6 +43,8 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
       omnipoolAssets,
       hubAssetTradability,
     } = myTableData.data
+
+    const allAssets = assets.tokens
 
     const assetsBalances = getAssetsBalances(
       balances.balances,
@@ -149,7 +153,7 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
 
         return a.symbol.localeCompare(b.symbol)
       })
-  }, [myTableData.data, spotPrices.data, isAllAssets])
+  }, [myTableData.data, spotPrices.data, assets.tokens, isAllAssets])
 
   return { data, isLoading: myTableData.isLoading }
 }
@@ -159,7 +163,7 @@ export const getAssetsBalances = (
     ReturnType<ReturnType<typeof getAccountBalances>>
   >["balances"],
   spotPrices: SpotPrice[],
-  assetMetas: Awaited<ReturnType<ReturnType<typeof getAssetsDetails>>>,
+  assetMetas: TToken[],
   locksQueries: Array<Awaited<ReturnType<ReturnType<typeof getTokenLock>>>>,
   nativeData: Awaited<
     ReturnType<ReturnType<typeof getAccountBalances>>
@@ -179,7 +183,7 @@ export const getAssetsBalances = (
 
       if (!spotPrice || !meta || !assetMetas) return null
 
-      const dp = BN_10.pow(meta.decimals?.toBigNumber() || 12)
+      const dp = BN_10.pow(meta.decimals)
       const free = ab.data.free.toBigNumber()
 
       const reservedBN = ab.data.reserved.toBigNumber()
@@ -235,9 +239,9 @@ export const getAssetsBalances = (
 
   const nativeBalance = nativeData.data
 
-  const nativeDecimals = assetMetas
-    .find((am) => am?.id === NATIVE_ASSET_ID)
-    ?.decimals?.toBigNumber()
+  const nativeDecimals = BN(
+    assetMetas.find((am) => am?.id === NATIVE_ASSET_ID)?.decimals ?? 12,
+  )
 
   const nativeSpotPrice = spotPrices.find(
     (sp) => sp.tokenIn === NATIVE_ASSET_ID,

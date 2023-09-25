@@ -1,16 +1,15 @@
-import { useAssetMeta } from "api/assetMeta"
 import { useTokenBalance } from "api/balances"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useApiPromise } from "utils/api"
 import { BN_10 } from "utils/constants"
 import { useAccountStore, useStore } from "state/store"
 import { OfferingPair } from "sections/trade/sections/otc/orders/OtcOrdersData.utils"
 import { OrderAssetPrice } from "./cmp/AssetPrice"
 import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type FillOrderProps = {
   orderId: string
@@ -30,10 +29,10 @@ export const FillOrder = ({
   const { t } = useTranslation()
   const { account } = useAccountStore()
 
-  const api = useApiPromise()
-  const assetInMeta = useAssetMeta(accepting.asset)
+  const { api, assets } = useRpcProvider()
+  const assetInMeta = assets.getAsset(accepting.asset)
   const assetInBalance = useTokenBalance(accepting.asset, account?.address)
-  const assetOutMeta = useAssetMeta(offering.asset)
+  const assetOutMeta = assets.getAsset(offering.asset)
   const [error, setError] = useState<string | undefined>(undefined)
 
   const { createTransaction } = useStore()
@@ -41,14 +40,13 @@ export const FillOrder = ({
   const price = accepting.amount.div(offering.amount)
 
   const handleSubmit = async () => {
-    if (assetInMeta.data?.decimals == null)
-      throw new Error("Missing assetIn meta")
+    if (assetInMeta.decimals == null) throw new Error("Missing assetIn meta")
 
     if (assetInBalance.data?.balance == null)
       throw new Error("Missing assetIn balance")
 
     const aInBalance = assetInBalance.data?.balance
-    const aInDecimals = assetInMeta.data?.decimals.toString()
+    const aInDecimals = assetInMeta.decimals
 
     if (aInBalance.gte(accepting.amount.multipliedBy(BN_10.pow(aInDecimals)))) {
       setError(undefined)
@@ -125,8 +123,8 @@ export const FillOrder = ({
           error={error}
         />
         <OrderAssetPrice
-          inputAsset={assetOutMeta.data?.symbol}
-          outputAsset={assetInMeta.data?.symbol}
+          inputAsset={assetOutMeta.symbol}
+          outputAsset={assetInMeta.symbol}
           price={price && price.toFixed()}
         />
         <OrderAssetGet

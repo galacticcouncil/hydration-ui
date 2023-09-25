@@ -1,8 +1,6 @@
 import { Bond } from "components/Bond/Bond"
 import { format } from "date-fns"
 import * as api from "api/bonds"
-import { u32 } from "@polkadot/types-codec"
-import { u8 } from "@polkadot/types"
 import { useLbpPool } from "api/bonds"
 import { BondListSkeleton } from "./BondListSkeleton"
 import { getBondName } from "sections/trade/sections/bonds/Bonds.utils"
@@ -10,15 +8,16 @@ import { ReactNode } from "react"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useBestNumber } from "api/chain"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   isLoading?: boolean
   bonds: api.Bond[]
-  metas: { id: string; decimals: u32 | u8; symbol: string }[]
 }
 
-export const BondList = ({ isLoading, bonds, metas }: Props) => {
+export const BondList = ({ isLoading, bonds }: Props) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const lbpPool = useLbpPool()
   const bestNumber = useBestNumber()
 
@@ -31,7 +30,7 @@ export const BondList = ({ isLoading, bonds, metas }: Props) => {
         past: ReactNode[]
       }>(
         (acc, bond) => {
-          const meta = metas.find((meta) => meta.id === bond.assetId)
+          const meta = assets.getAsset(bond.assetId)
           const date = new Date(bond.maturity)
           const pool = lbpPool.data?.find((pool) =>
             pool.assets.some((assetId: number) => assetId === Number(bond.id)),

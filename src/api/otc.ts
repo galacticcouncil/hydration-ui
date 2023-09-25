@@ -1,10 +1,9 @@
-import { useApiPromise } from "utils/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { getAssetsDetails } from "./assetDetails"
 import { gql, request } from "graphql-request"
 import { Maybe, undefinedNoop } from "utils/helpers"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const getOrders = (api: ApiPromise) => async () => {
   const res = await api.query.otc.orders.entries()
@@ -29,24 +28,25 @@ export const getOrders = (api: ApiPromise) => async () => {
 }
 
 export const useOrders = () => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(QUERY_KEYS.otcOrders, getOrders(api))
 }
 
 export const useOrdersData = () => {
-  const api = useApiPromise()
+  const { api, assets } = useRpcProvider()
 
   return useQuery(QUERY_KEYS.otcOrdersTable, async () => {
     const orders = await getOrders(api)()
-    const allAssets = await getAssetsDetails(api)()
 
     return orders
       .filter((order) => order.amountIn && order.amountOut)
       .map((order) => {
         return {
           ...order,
-          assetIn: allAssets.find((ass) => order.assetIn === ass.id),
-          assetOut: allAssets.find((ass) => order.assetOut === ass.id),
+          assetIn: order.assetIn ? assets.getAsset(order.assetIn) : undefined,
+          assetOut: order.assetOut
+            ? assets.getAsset(order.assetOut)
+            : undefined,
         }
       })
   })

@@ -1,10 +1,9 @@
-// @ts-nocheck
 import { useQuery } from "@tanstack/react-query"
-import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useIndexerUrl } from "./provider"
 import { Maybe } from "utils/helpers"
 import request, { gql } from "graphql-request"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export type Bond = {
   assetId: string
@@ -14,7 +13,7 @@ export type Bond = {
 }
 
 export const useBonds = (params?: { id?: string; disable?: boolean }) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { id, disable } = params ?? {}
 
   return useQuery(
@@ -26,10 +25,12 @@ export const useBonds = (params?: { id?: string; disable?: boolean }) => {
         const prevAcc = await acc
         const data = dataRaw.unwrap()
 
+        // @ts-ignore
         if (data.assetType.isBond) {
           const id = key.args[0].toString()
 
           const detailsRaw = await api.query.bonds.bonds(id)
+          // @ts-ignore
           const details = detailsRaw.unwrap()
 
           const [assetId, maturity] = details ?? []
@@ -61,7 +62,7 @@ export const useBonds = (params?: { id?: string; disable?: boolean }) => {
 }
 
 export const useLbpPool = (params?: { id?: string }) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   const { id } = params ?? {}
 
@@ -71,18 +72,20 @@ export const useLbpPool = (params?: { id?: string }) => {
       const raw = await api.query.lbp.poolData.entries()
 
       const data = raw.map(([key, rawData]) => {
+        // @ts-ignore
         const data = rawData.unwrap()
 
         return {
+          // @ts-ignore
           id: key.toHuman()[0] as string,
           owner: data.owner.toString(),
           start: Number(data.start.toString()),
           end: Number(data.end.toString()),
-          assets: data.assets.map((asset) => asset.toNumber()),
+          assets: data.assets.map((asset: any) => asset.toNumber()),
           initialWeight: data.initialWeight.toNumber(),
           finalWeight: data.finalWeight.toNumber(),
           weightCurve: data.weightCurve.toString(),
-          fee: data.fee.map((el) => el.toNumber()),
+          fee: data.fee.map((el: any) => el.toNumber()),
           feeCollector: data.feeCollector.toString(),
           repayTarget: data.repayTarget.toString(),
         }
@@ -95,7 +98,7 @@ export const useLbpPool = (params?: { id?: string }) => {
       select: (pools) => {
         if (id) {
           const pool = pools.find((pool) =>
-            pool.assets.some((asset) => asset === Number(id)),
+            pool.assets.some((asset: any) => asset === Number(id)),
           )
 
           return pool ? [pool] : undefined
@@ -166,7 +169,7 @@ const getBondEvents =
     }
   }
 
-export const useLBPPoolEvents = (bondId: Maybe<string>) => {
+export const useLBPPoolEvents = (bondId?: string) => {
   const indexerUrl = useIndexerUrl()
 
   return useQuery(

@@ -1,6 +1,3 @@
-import { ApiPromise } from "@polkadot/api"
-import { createContext, useContext, useMemo } from "react"
-import { PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { encodeAddress } from "@polkadot/util-crypto"
@@ -16,23 +13,6 @@ export const HYDRA_TREASURE_ACCOUNT =
   "7L53bUTBopuwFt3mKUfmkzgGLayYa1Yvn1hAg9v5UMrQzTfh"
 export const DEPOSIT_CLASS_ID = "1" // TODO: replace with constant from api
 export const POLKADOT_APP_NAME = "HydraDX"
-
-export const ApiPromiseContext = createContext<ApiPromise>({} as ApiPromise)
-export const useApiPromise = () => useContext(ApiPromiseContext)
-
-export const useTradeRouter = () => {
-  const api = useApiPromise()
-
-  const router = useMemo(() => {
-    const poolService = new PoolService(api)
-    const tradeRouter = new TradeRouter(poolService, {
-      includeOnly: [PoolType.Omni, PoolType.LBP],
-    })
-
-    return tradeRouter
-  }, [api])
-  return router
-}
 
 export const getMath = () => async () => {
   const [xyk, lbp, liquidityMining, omnipool] = await Promise.all([

@@ -4,7 +4,7 @@ import { useFarms } from "api/farms"
 import { StepProps } from "components/Stepper/Stepper"
 import { useTranslation } from "react-i18next"
 import { ToastMessage, useStore } from "state/store"
-import { useApiPromise } from "utils/api"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export type FarmDepositMutationType = ReturnType<typeof useFarmDepositMutation>
 
@@ -15,7 +15,7 @@ export const useFarmDepositMutation = (
   onClose: () => void,
 ) => {
   const { createTransaction } = useStore()
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const farms = useFarms([poolId])
   const { t } = useTranslation()
 

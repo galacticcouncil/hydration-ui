@@ -1,12 +1,11 @@
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
 import { BondDetailsSkeleton } from "./BondDetailsSkeleton"
 import { BondDetailsData } from "./BondDetailsData"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const BondDetailsPage = () => {
-  const api = useApiPromise()
+  const { isLoaded } = useRpcProvider()
 
-  if (!isApiLoaded(api)) return <BondDetailsSkeleton />
+  if (!isLoaded) return <BondDetailsSkeleton />
 
   return <BondDetailsData />
 }

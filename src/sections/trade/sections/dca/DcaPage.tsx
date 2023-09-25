@@ -7,8 +7,8 @@ import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
 import { useAccountStore, useStore } from "state/store"
 import { useProviderRpcUrlStore } from "api/provider"
-import { useApiPromise } from "utils/api"
 import { PoolType } from "@galacticcouncil/sdk"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const DcaApp = createComponent({
   tagName: "gc-dca-app",
@@ -26,7 +26,7 @@ const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export function DcaPage() {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { account } = useAccountStore()
   const { createTransaction } = useStore()
   const preference = useProviderRpcUrlStore()

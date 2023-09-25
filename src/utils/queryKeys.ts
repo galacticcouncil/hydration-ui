@@ -93,14 +93,11 @@ export const QUERY_KEYS = {
     "totalLiquidity",
     id?.toString(),
   ],
-  totalIssuance: (lpToken: Maybe<u32 | AnyNumber>) => [
+  totalIssuance: (lpToken: Maybe<u32 | string | AnyNumber>) => [
     QUERY_KEY_PREFIX,
     "totalIssuance",
     lpToken?.toString(),
   ],
-  LRNATotalIssuance: () => ["LRNATotalIssuance"],
-  LRNAOmnipoolBalance: () => ["LRNAOmnipoolBalance"],
-  LRNAMeta: () => ["LRNAMeta"],
   totalLiquidities: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "totalLiquidities",
@@ -126,10 +123,6 @@ export const QUERY_KEYS = {
     address,
     ...ids,
   ],
-  assets: ["assets"],
-  assetsLive: [QUERY_KEY_PREFIX, "assets"],
-  assetsMeta: ["assetsMeta"],
-  tradeAssets: [QUERY_KEY_PREFIX, "tradeAssets"],
   exchangeFee: [QUERY_KEY_PREFIX, "exchangeFee"],
   calculateTotalLiqInPools: [QUERY_KEY_PREFIX, "totalLiqInPools"],
   spotPrice: (assetA: string, assetB: string) => ["spotPrice", assetA, assetB],
@@ -284,8 +277,6 @@ export const QUERY_KEYS = {
   polkadotAccounts: ["polkadotAccounts"],
   maxAddLiquidityLimit: ["maxAddLiquidityLimit"],
   coingeckoUsd: ["coingeckoUsd"],
-  assetList: ["assetList"],
-  assetsLocation: ["assetsLocation"],
   polStats: ["polStats"],
   referendums: (accountAddress?: string) => [
     QUERY_KEY_PREFIX,

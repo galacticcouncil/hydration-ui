@@ -1,12 +1,11 @@
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
 import { BondsPageSkeleton } from "./BondsPageSkeleton"
 import { BondsPage } from "./BondsPage"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const BondsPageWrapper = () => {
-  const api = useApiPromise()
+  const { isLoaded } = useRpcProvider()
 
-  if (!isApiLoaded(api)) {
+  if (!isLoaded) {
     return <BondsPageSkeleton />
   }
 

@@ -1,5 +1,4 @@
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
-import { useAssetMeta } from "api/assetMeta"
 import {
   isPoolUpdateEvent,
   useBonds,
@@ -24,6 +23,7 @@ import { BondsTrade } from "./components/BondTrade/BondsTradeApp"
 import { addSeconds } from "date-fns"
 import { theme } from "theme"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type SearchGenerics = MakeGenerics<{
   Search: { assetOut: number; assetIn: number }
@@ -52,14 +52,14 @@ export const BondDetailsHeader = ({
   accumulatedAssetId?: number
 }) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
 
   const bestNumber = useBestNumber()
-  const accumulatedAssetMeta = useAssetMeta(String(accumulatedAssetId))
+  const accumulatedAssetMeta = assets.getAsset(String(accumulatedAssetId))
 
   const isLoading = bestNumber.isLoading
 
-  if (isLoading || !bestNumber.data || !accumulatedAssetMeta.data)
-    return <BondsDetailsHeaderSkeleton />
+  if (isLoading || !bestNumber.data) return <BondsDetailsHeaderSkeleton />
 
   let endingDuration
   let date
@@ -90,7 +90,7 @@ export const BondDetailsHeader = ({
         <Text fs={[15, 24]} color="white" font="FontOver">
           {title}
         </Text>
-        {accumulatedAssetId && accumulatedAssetMeta.data && (
+        {accumulatedAssetId && (
           <div sx={{ flex: "row", gap: 4 }}>
             <Text
               fs={[13, 16]}
@@ -98,15 +98,12 @@ export const BondDetailsHeader = ({
             >
               {t("bonds.details.header.accumulatedAsset")}
             </Text>
-            <Icon
-              size={16}
-              icon={<AssetLogo id={accumulatedAssetMeta.data.id} />}
-            />
+            <Icon size={16} icon={<AssetLogo id={accumulatedAssetMeta.id} />} />
             <Text
               fs={[13, 16]}
               css={{ color: `rgba(${theme.rgbColors.white}, 0.7)` }}
             >
-              {accumulatedAssetMeta.data.symbol}
+              {accumulatedAssetMeta.symbol}
             </Text>
           </div>
         )}
@@ -138,13 +135,14 @@ export const BondDetailsHeader = ({
 }
 
 export const BondDetailsData = () => {
+  const { assets } = useRpcProvider()
   const search = useSearch<SearchGenerics>()
   //TODO: check both assetIn and assetOut
   const id = search.assetOut?.toString()
 
   const bonds = useBonds({ id })
   const bond = bonds?.data?.[0]
-  const meta = useAssetMeta(bond?.assetId)
+  const meta = bond?.assetId ? assets.getAsset(bond.assetId) : undefined
 
   const lbpPool = useLbpPool({ id: bond?.id })
   const isPast = !lbpPool.isLoading && !lbpPool.data
@@ -173,12 +171,12 @@ export const BondDetailsData = () => {
     return { maturityDate, maturityValue }
   }, [bond])
 
-  if (!bond || !data || !meta.data) return <BondDetailsSkeleton />
+  if (!bond || !data || !meta) return <BondDetailsSkeleton />
 
   return (
     <div sx={{ flex: "column", gap: [20, 40] }}>
       <BondDetailsHeader
-        title={getBondName(meta.data.symbol, data.maturityDate, true)}
+        title={getBondName(meta.symbol, data.maturityDate, true)}
         accumulatedAssetId={lbpPoolData?.assets.find(
           (asset: number) => asset !== Number(bond?.id),
         )}
@@ -187,10 +185,7 @@ export const BondDetailsData = () => {
 
       <BondsTrade />
 
-      <BondProgreesBar
-        bondId={bond?.id}
-        decimals={meta.data?.decimals.toNumber()}
-      />
+      <BondProgreesBar bondId={bond?.id} decimals={meta.decimals} />
 
       <BondInfoCards
         assetId={bond?.assetId}

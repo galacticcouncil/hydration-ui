@@ -1,5 +1,5 @@
 import { u32 } from "@polkadot/types"
-import { useAssetAccountDetails, useAssetDetailsList } from "api/assetDetails"
+import { TAsset, useAcountAssets } from "api/assetDetails"
 import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
 import { Maybe } from "utils/helpers"
@@ -7,11 +7,12 @@ import { Text } from "components/Typography/Text/Text"
 import { SAssetsModalHeader } from "./AssetsModal.styled"
 import { AssetsModalRow } from "./AssetsModalRow"
 import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
+import { useRpcProvider } from "providers/rpcProvider"
 import { useBonds, useLbpPool } from "api/bonds"
 
 type Props = {
   allowedAssets?: Maybe<u32 | string>[]
-  onSelect?: (asset: { id: string; symbol: string }) => void
+  onSelect?: (asset: NonNullable<TAsset>) => void
   hideInactiveAssets?: boolean
   allAssets?: boolean
   withBonds?: boolean
@@ -25,28 +26,28 @@ export const AssetsModalContent = ({
   withBonds,
 }: Props) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
   const bonds = useBonds({ disable: !withBonds })
   const lbpPools = useLbpPool()
 
-  const assetsRows = useAssetAccountDetails(account?.address)
-  const assetsRowsAll = useAssetDetailsList(allAssets ? undefined : [])
+  const assetsRows = useAcountAssets(account?.address)
 
-  const assets = allAssets ? assetsRowsAll : assetsRows
+  const assetsDetails = allAssets
+    ? assets.tokens
+    : assetsRows.filter((asset) => asset.isToken)
 
   const mainAssets =
-    (allowedAssets != null
-      ? assets.data?.filter((asset) => allowedAssets.includes(asset.id))
-      : assets.data) ?? []
+    allowedAssets != null
+      ? assetsDetails.filter((asset) => allowedAssets.includes(asset.id))
+      : assetsDetails
 
   const otherAssets =
-    (allowedAssets != null
-      ? assets.data?.filter((asset) => !allowedAssets?.includes(asset.id))
-      : []) ?? []
+    allowedAssets != null
+      ? assetsDetails.filter((asset) => !allowedAssets?.includes(asset.id))
+      : []
 
-  const isLoading = assetsRows.isLoading || assetsRowsAll.isLoading
-
-  if (isLoading || !mainAssets.length)
+  if (!mainAssets.length)
     return (
       <>
         <SAssetsModalHeader>

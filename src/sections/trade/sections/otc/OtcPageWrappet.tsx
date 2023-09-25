@@ -1,10 +1,9 @@
-import { useApiPromise } from "utils/api"
 import { OtcPageSkeleton } from "./OtcPageSkeleton"
 import { OtcPage } from "./OtcPage"
-import { isApiLoaded } from "utils/helpers"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const OtcPageWrapper = () => {
-  const api = useApiPromise()
+  const { isLoaded } = useRpcProvider()
 
-  return !isApiLoaded(api) ? <OtcPageSkeleton /> : <OtcPage />
+  return !isLoaded ? <OtcPageSkeleton /> : <OtcPage />
 }
