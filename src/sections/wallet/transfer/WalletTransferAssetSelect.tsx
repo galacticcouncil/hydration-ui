@@ -4,10 +4,6 @@ import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
 import BN from "bignumber.js"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { Bond } from "api/bonds"
-import { getBondName } from "sections/trade/sections/bonds/Bonds.utils"
-import { useRpcProvider } from "providers/rpcProvider"
 
 export const WalletTransferAssetSelect = (props: {
   name: string
@@ -22,28 +18,13 @@ export const WalletTransferAssetSelect = (props: {
   title?: string
   className?: string
   balance?: BN
-  bond?: Bond
   withoutMaxBtn?: boolean
 
   error?: string
 }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
-  const asset = assets.getAsset(props.asset.toString())
   const balance = useTokenBalance(props.asset, account?.address)
-
-  let name = asset.data?.name
-  let symbol = asset.data?.symbol
-
-  if (props.bond) {
-    name = getBondName(
-      asset.data?.symbol ?? "",
-      new Date(props.bond.maturity),
-      true,
-    )
-    symbol = `${asset.data?.symbol}b`
-  }
 
   return (
     <AssetSelect
@@ -53,17 +34,12 @@ export const WalletTransferAssetSelect = (props: {
       value={props.value}
       onChange={props.onChange}
       onBlur={props.onBlur}
-      asset={props.asset}
-      assetIcon={<AssetLogo id={asset.id} />}
-      decimals={asset.decimals}
+      id={props.asset.toString()}
       balance={props.balance ?? balance.data?.balance}
-      assetName={asset.name}
-      assetSymbol={asset.symbol}
       onSelectAssetClick={props.onAssetOpen}
       error={props.error}
       balanceLabel={t("selectAsset.balance.label")}
       withoutMaxBtn={props.withoutMaxBtn}
-      bond={props.bond}
     />
   )
 }

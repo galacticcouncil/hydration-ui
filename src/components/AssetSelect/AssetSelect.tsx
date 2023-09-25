@@ -1,9 +1,7 @@
 import { css } from "@emotion/react"
-import { u32 } from "@polkadot/types"
 import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
 import BigNumber from "bignumber.js"
 import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
-import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { AssetInput } from "components/AssetInput/AssetInput"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
@@ -18,7 +16,8 @@ import {
   SMaxButton,
   SSelectAssetButton,
 } from "./AssetSelect.styled"
-import { Bond, useLbpPool } from "api/bonds"
+import { useRpcProvider } from "providers/rpcProvider"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
 export const AssetSelect = (props: {
   name: string
@@ -29,15 +28,10 @@ export const AssetSelect = (props: {
   className?: string
   disabled?: boolean
 
-  asset: u32 | string
-  assetName: Maybe<string>
-  assetSymbol: Maybe<string>
-  assetIcon: Maybe<ReactNode>
-  decimals: Maybe<number>
+  id: string
   balance: Maybe<BigNumber>
   balanceLabel: string
   withoutMaxValue?: boolean
-  bond?: Bond
   withoutMaxBtn?: boolean
 
   onBlur?: (v: string) => void
@@ -45,11 +39,14 @@ export const AssetSelect = (props: {
   onSelectAssetClick?: () => void
 }) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
+  const asset = assets.getAsset(props.id)
+  const { decimals, name, symbol } = asset
 
-  const lbpPool = useLbpPool({ id: props.bond?.id })
-  const isLbpPool = lbpPool.data?.[0]
   const spotPriceId =
-    props.bond && !isLbpPool ? props.bond.assetId : props.asset
+    assets.isBond(asset) && asset.isPast ? asset.assetId : asset.id
+
+  const iconId = assets.isBond(asset) ? asset.assetId : asset.id
 
   const spotPrice = useDisplayPrice(spotPriceId)
 
@@ -92,7 +89,7 @@ export const AssetSelect = (props: {
               <Text fs={11} lh={16} sx={{ mr: 5 }}>
                 {t("selectAsset.balance.value", {
                   balance: props.balance,
-                  fixedPointScale: props.decimals ?? 12,
+                  fixedPointScale: decimals,
                   type: "token",
                 })}
               </Text>
@@ -103,10 +100,10 @@ export const AssetSelect = (props: {
                   text={t("selectAsset.button.max")}
                   onClick={(e) => {
                     e.preventDefault()
-                    if (props.decimals != null && props.balance != null) {
+                    if (props.balance != null) {
                       const value = getFloatingPointAmount(
                         props.balance,
-                        props.decimals,
+                        decimals,
                       ).toString()
                       props.onChange(value)
                       props.onBlur?.(value)
@@ -134,24 +131,24 @@ export const AssetSelect = (props: {
               props.onSelectAssetClick?.()
             }}
           >
-            <Icon icon={props.assetIcon} size={30} />
-            {props.assetSymbol && (
-              <div sx={{ flex: "column", justify: "space-between" }}>
-                <Text fw={700} lh={16} color="white">
-                  {props.assetSymbol}
-                </Text>
-                <Text
-                  fs={13}
-                  lh={13}
-                  css={{
-                    whiteSpace: "nowrap",
-                    color: `rgba(${theme.rgbColors.whiteish500}, 0.6)`,
-                  }}
-                >
-                  {props.assetName || getAssetName(props.assetSymbol)}
-                </Text>
-              </div>
-            )}
+            <Icon icon={<AssetLogo id={iconId} />} size={30} />
+
+            <div sx={{ flex: "column", justify: "space-between" }}>
+              <Text fw={700} lh={16} color="white">
+                {symbol}
+              </Text>
+              <Text
+                fs={13}
+                lh={13}
+                css={{
+                  whiteSpace: "nowrap",
+                  color: `rgba(${theme.rgbColors.whiteish500}, 0.6)`,
+                }}
+              >
+                {name}
+              </Text>
+            </div>
+
             {props.onSelectAssetClick && <Icon icon={<ChevronDown />} />}
           </SSelectAssetButton>
 
@@ -164,7 +161,7 @@ export const AssetSelect = (props: {
             onChange={props.onChange}
             displayValue={displayValue}
             placeholder="0.00"
-            unit={props.assetSymbol}
+            unit={symbol}
             error={props.error}
             css={css`
               & > label {

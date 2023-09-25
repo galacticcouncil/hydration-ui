@@ -24,7 +24,6 @@ import {
   CloseIcon,
   PasteAddressIcon,
 } from "./WalletTransferSectionOnchain.styled"
-import { useBonds } from "api/bonds"
 import { useTokenBalance } from "api/balances"
 
 export function WalletTransferSectionOnchain({
@@ -46,9 +45,7 @@ export function WalletTransferSectionOnchain({
   const { createTransaction } = useStore()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const bond = useBonds({ id: asset.toString() })
 
-  const bondData = bond.data?.[0]
   const balance = useTokenBalance(asset, account?.address)
   const assetMeta = assets.getAsset(asset.toString())
 
@@ -250,7 +247,6 @@ export function WalletTransferSectionOnchain({
               asset={asset}
               error={error?.message}
               onAssetOpen={openAssets}
-              bond={bondData}
             />
           )}
         />

@@ -345,6 +345,8 @@ export const getAssets = async (api: ApiPromise) => {
     getAsset(tradeAsset.id),
   )
 
+  const isBond = (asset: TAsset): asset is TBond => asset.isBond
+
   return {
     assets: {
       all,
@@ -355,6 +357,7 @@ export const getAssets = async (api: ApiPromise) => {
       tradeAssets,
       getAsset,
       getAssets,
+      isBond,
     },
     tradeRouter,
   }

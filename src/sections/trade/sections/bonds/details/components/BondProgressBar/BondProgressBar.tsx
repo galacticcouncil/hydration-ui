@@ -49,9 +49,8 @@ export const BondProgreesBar = ({
       .filter(isPoolLiquidityEvent)
       .find((event) => event.name === "LBP.LiquidityAdded")?.args.amountB
 
-    const total = totalAmount
-      ? BN(totalAmount).shiftedBy(-decimals).toString()
-      : BN_0
+    const total = totalAmount ? BN(totalAmount).shiftedBy(-decimals) : BN_0
+
     const percentage = sold.div(total).multipliedBy(100)
 
     return { percentage, total, sold }

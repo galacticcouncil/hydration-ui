@@ -1,10 +1,5 @@
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
-import {
-  isPoolUpdateEvent,
-  useBonds,
-  useLBPPoolEvents,
-  useLbpPool,
-} from "api/bonds"
+import { isPoolUpdateEvent, useLBPPoolEvents, useLbpPool } from "api/bonds"
 import { Text } from "components/Typography/Text/Text"
 import { customFormatDuration, formatDate } from "utils/formatting"
 import { ReactComponent as ClockIcon } from "assets/icons/ClockIcon.svg"
@@ -139,14 +134,12 @@ export const BondDetailsData = () => {
   const search = useSearch<SearchGenerics>()
   //TODO: check both assetIn and assetOut
   const id = search.assetOut?.toString()
+  const asset = id ? assets.getAsset(id) : undefined
+  const bond = asset && assets.isBond(asset) ? asset : undefined
 
-  const bonds = useBonds({ id })
-  const bond = bonds?.data?.[0]
-  const meta = bond?.assetId ? assets.getAsset(bond.assetId) : undefined
-
-  const lbpPool = useLbpPool({ id: bond?.id })
-  const isPast = !lbpPool.isLoading && !lbpPool.data
+  const isPast = !!bond?.isPast
   const lbpPoolEvents = useLBPPoolEvents(isPast ? bond?.id : undefined)
+  const lbpPool = useLbpPool({ id: bond?.id })
 
   const lbpPoolData = useMemo(() => {
     if (lbpPool.data) return lbpPool.data[0]
@@ -160,7 +153,7 @@ export const BondDetailsData = () => {
     }
 
     return undefined
-  }, [lbpPool.data, lbpPoolEvents.data])
+  }, [lbpPool.data, lbpPoolEvents.data?.events])
 
   const data = useMemo(() => {
     if (!bond) return undefined
@@ -171,12 +164,12 @@ export const BondDetailsData = () => {
     return { maturityDate, maturityValue }
   }, [bond])
 
-  if (!bond || !data || !meta) return <BondDetailsSkeleton />
+  if (!bond || !data) return <BondDetailsSkeleton />
 
   return (
     <div sx={{ flex: "column", gap: [20, 40] }}>
       <BondDetailsHeader
-        title={getBondName(meta.symbol, data.maturityDate, true)}
+        title={getBondName(bond.symbol, data.maturityDate, true)}
         accumulatedAssetId={lbpPoolData?.assets.find(
           (asset: number) => asset !== Number(bond?.id),
         )}
@@ -185,7 +178,7 @@ export const BondDetailsData = () => {
 
       <BondsTrade />
 
-      <BondProgreesBar bondId={bond?.id} decimals={meta.decimals} />
+      <BondProgreesBar bondId={bond?.id} decimals={bond.decimals} />
 
       <BondInfoCards
         assetId={bond?.assetId}

@@ -1,21 +1,12 @@
 import { TradeRouter } from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
-import { TAsset, TBond, TStableSwap, TToken } from "api/assetDetails"
+import { getAssets } from "api/assetDetails"
 import { useProviderData, useProviderRpcUrlStore } from "api/provider"
 import { ReactNode, createContext, useContext } from "react"
 
 type TProviderContext = {
   api: ApiPromise
-  assets: {
-    all: TAsset[]
-    tokens: TToken[]
-    bonds: TBond[]
-    stableswap: TStableSwap[]
-    native: TToken
-    tradeAssets: TAsset[]
-    getAsset: (assetId: string) => TAsset
-    getAssets: (assetIds: string[]) => TAsset[]
-  }
+  assets: Awaited<ReturnType<typeof getAssets>>["assets"]
   tradeRouter: TradeRouter
   isLoaded: boolean
 }

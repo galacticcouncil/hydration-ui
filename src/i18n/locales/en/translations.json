@@ -579,7 +579,7 @@
   "bonds.details.header.end": "Ending in <0>{{date}}<0/>",
   "bonds.details.header.endPast": "Ended <0>{{date}}<0/>",
   "bonds.details.progressBar.label": "Bond sold/total issuance:",
-  "bonds.details.progressBar.value": "<0>{{sold, bignumber}}</0><1>/{{total, bignumber}}</1>",
+  "bonds.details.progressBar.value": "<0>{{sold, bignumber(type: token)}}</0><1>/{{total, bignumber(type: token)}}</1>",
   "bonds.details.card.bondPrice": "Current bond price",
   "bonds.details.card.spotPrice": "Current spot price",
   "bonds.details.card.maturity": "Maturity date"
