@@ -9,12 +9,12 @@ import { BN_10 } from "utils/constants"
 import { Button } from "components/Button/Button"
 import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
-import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Spacer } from "components/Spacer/Spacer"
 import { TOAST_MESSAGES } from "state/toasts"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const Stake = ({
   loading,
@@ -30,7 +30,7 @@ export const Stake = ({
   const { t } = useTranslation()
   const queryClient = useQueryClient()
 
-  const api = useApiPromise()
+  const { api, assets } = useRpcProvider()
   const { createTransaction } = useStore()
   const { account } = useAccountStore()
   const form = useForm<{ amount: string }>()
@@ -83,7 +83,7 @@ export const Stake = ({
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
     await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)
     await queryClient.invalidateQueries(
-      QUERY_KEYS.tokenBalance(NATIVE_ASSET_ID, account?.address),
+      QUERY_KEYS.tokenBalance(assets.native.id, account?.address),
     )
   }
 
@@ -156,7 +156,7 @@ export const Stake = ({
                 name={name}
                 value={value}
                 onChange={onChange}
-                asset={NATIVE_ASSET_ID}
+                asset={assets.native.id}
                 error={error?.message}
                 withoutMaxBtn
               />

@@ -3,7 +3,6 @@ import {
   calculate_liquidity_out,
 } from "@galacticcouncil/math-omnipool"
 import { useQueries } from "@tanstack/react-query"
-import { useAssetMetaList } from "api/assetMeta"
 import { useTokensBalances } from "api/balances"
 import { useApiIds } from "api/consts"
 import { FarmIds, getActiveYieldFarms, useYieldFarms } from "api/farms"
@@ -12,55 +11,48 @@ import { useUniques } from "api/uniques"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { useAccountStore } from "state/store"
-import { OMNIPOOL_ACCOUNT_ADDRESS, useApiPromise } from "utils/api"
+import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_10, BN_NAN } from "utils/constants"
-import {
-  useDisplayAssetStore,
-  useDisplayPrice,
-  useDisplayPrices,
-} from "utils/displayAsset"
+import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const useTotalInPools = () => {
-  const displayAsset = useDisplayAssetStore()
-  const assets = useOmnipoolAssets()
-  const metas = useAssetMetaList([
-    displayAsset.id,
-    ...(assets.data?.map((a) => a.id) ?? []),
-  ])
+  const { assets } = useRpcProvider()
+  const omnipoolAssets = useOmnipoolAssets()
+
   const balances = useTokensBalances(
-    assets.data?.map((a) => a.id.toString()) ?? [],
+    omnipoolAssets.data?.map((a) => a.id.toString()) ?? [],
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
   const spotPrices = useDisplayPrices(
-    assets.data?.map((a) => a.id.toString()) ?? [],
+    omnipoolAssets.data?.map((a) => a.id.toString()) ?? [],
   )
 
-  const queries = [assets, metas, ...balances, spotPrices]
+  const queries = [omnipoolAssets, ...balances, spotPrices]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
     if (
-      !assets.data ||
-      !metas.data ||
+      !omnipoolAssets.data ||
       !spotPrices.data ||
       balances.some((q) => !q.data)
     )
       return undefined
 
-    const total = assets.data
+    const total = omnipoolAssets.data
       .map((asset) => {
         const id = asset.id.toString()
-        const meta = metas.data.find((m) => m.id === id)
+        const meta = assets.getAsset(id)
         const balance = balances.find((b) => b.data?.assetId.toString() === id)
         const sp = spotPrices.data?.find((sp) => sp?.tokenIn === id)
 
         if (!meta || !balance?.data?.balance || !sp?.spotPrice) return BN_0
 
-        const dp = BN_10.pow(meta.decimals.toString())
+        const dp = BN_10.pow(meta.decimals)
         const value = balance.data.balance.times(sp?.spotPrice).div(dp)
 
         return value
@@ -68,14 +60,14 @@ export const useTotalInPools = () => {
       .reduce((acc, curr) => acc.plus(curr), BN_0)
 
     return total
-  }, [assets.data, metas.data, balances, spotPrices])
+  }, [omnipoolAssets.data, spotPrices.data, balances, assets])
 
   return { data, isLoading }
 }
 
 export const useUsersTotalInPools = () => {
   const { account } = useAccountStore()
-  const displayAsset = useDisplayAssetStore()
+  const { assets } = useRpcProvider()
   const apiIds = useApiIds()
   const uniques = useUniques(
     account?.address ?? "",
@@ -86,11 +78,7 @@ export const useUsersTotalInPools = () => {
   )
   const assetIds =
     positions.map((p) => p.data?.assetId.toString()).filter(isNotNil) ?? []
-  const metas = useAssetMetaList([
-    displayAsset.id,
-    apiIds.data?.hubId,
-    ...assetIds,
-  ])
+
   const omnipoolAssets = useOmnipoolAssets()
   const omnipoolBalances = useTokensBalances(assetIds, OMNIPOOL_ACCOUNT_ADDRESS)
   const spotPrices = useDisplayPrices([apiIds.data?.hubId ?? "", ...assetIds])
@@ -98,7 +86,6 @@ export const useUsersTotalInPools = () => {
   const queries = [
     apiIds,
     uniques,
-    metas,
     spotPrices,
     omnipoolAssets,
     ...positions,
@@ -110,7 +97,6 @@ export const useUsersTotalInPools = () => {
     if (
       !apiIds.data ||
       !uniques.data ||
-      !metas.data ||
       !omnipoolAssets.data ||
       !spotPrices.data ||
       positions.some((q) => !q.data) ||
@@ -123,13 +109,8 @@ export const useUsersTotalInPools = () => {
 
       const position = query.data
 
-      const meta = metas.data.find(
-        (m) => m.id.toString() === position.assetId.toString(),
-      )
-
-      const lrnaMeta = metas.data.find(
-        (m) => m.id.toString() === apiIds.data.hubId,
-      )
+      const meta = assets.getAsset(position.assetId.toString())
+      const lrnaMeta = assets.getAsset(apiIds.data.hubId)
 
       const omnipoolAsset = omnipoolAssets.data.find(
         (a) => a.id.toString() === position.assetId.toString(),
@@ -138,7 +119,8 @@ export const useUsersTotalInPools = () => {
         (b) => b.data?.assetId.toString() === position.assetId.toString(),
       )
 
-      if (!meta || !omnipoolAsset?.data || !omnipoolBalance?.data) return BN_0
+      if (!meta || !lrnaMeta || !omnipoolAsset?.data || !omnipoolBalance?.data)
+        return BN_0
 
       const id = position.assetId.toString()
 
@@ -166,13 +148,13 @@ export const useUsersTotalInPools = () => {
         (sp) => sp?.tokenIn === apiIds.data.hubId,
       )
 
-      const lrnaDp = BN_10.pow(lrnaMeta?.decimals.toNumber() ?? 12)
+      const lrnaDp = BN_10.pow(lrnaMeta.decimals)
 
       const lrna =
         lernaOutResult !== "-1" ? new BN(lernaOutResult).div(lrnaDp) : BN_0
 
       const valueSp = spotPrices.data?.find((sp) => sp?.tokenIn === id)
-      const valueDp = BN_10.pow(meta.decimals.toBigNumber())
+      const valueDp = BN_10.pow(meta.decimals)
 
       const value = new BN(liquidityOutResult).div(valueDp)
 
@@ -191,20 +173,20 @@ export const useUsersTotalInPools = () => {
 
     return totals.reduce((acc, total) => acc.plus(total), BN_0)
   }, [
-    uniques.data,
-    positions,
-    metas.data,
-    omnipoolAssets.data,
     apiIds.data,
+    uniques.data,
+    omnipoolAssets.data,
+    spotPrices.data,
+    positions,
     omnipoolBalances,
-    spotPrices,
+    assets,
   ])
 
   return { data, isLoading }
 }
 
 export const useTotalInFarms = () => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const pools = useOmnipoolPools()
 
   const apiIds = useApiIds()

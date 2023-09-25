@@ -8,17 +8,16 @@ import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { theme } from "theme"
-import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import { separateBalance } from "utils/balance"
 import { useDisplayPrice } from "utils/displayAsset"
 import { isApiLoaded } from "utils/helpers"
-import { useAssetMeta } from "api/assetMeta"
 import { BN_0, BN_10, DAY_IN_MILLISECONDS } from "utils/constants"
 import { SSeparator, STable } from "./WalletVestingHeader.styled"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const WalletVestingHeader = () => {
   const { t } = useTranslation()
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return (
     <div
@@ -48,13 +47,15 @@ export const WalletVestingHeader = () => {
 }
 
 const WalletVestingHeaderContent = () => {
+  const {
+    assets: { native },
+  } = useRpcProvider()
   const { t } = useTranslation()
 
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
   const { data: vestingScheduleEnd } = useVestingScheduleEnd()
 
-  const spotPrice = useDisplayPrice(NATIVE_ASSET_ID)
-  const { data: nativeAsset } = useAssetMeta(NATIVE_ASSET_ID)
+  const spotPrice = useDisplayPrice(native.id)
 
   const totalVestedValue = totalVestedAmount ?? BN_0
 
@@ -62,10 +63,10 @@ const WalletVestingHeaderContent = () => {
     if (totalVestedValue && spotPrice.data) {
       return totalVestedValue
         .times(spotPrice.data.spotPrice)
-        .div(BN_10.pow(nativeAsset?.decimals.toBigNumber() ?? 12))
+        .div(BN_10.pow(native.decimals))
     }
     return null
-  }, [totalVestedValue, spotPrice.data, nativeAsset?.decimals])
+  }, [totalVestedValue, spotPrice.data, native])
 
   return (
     <>
@@ -84,10 +85,10 @@ const WalletVestingHeaderContent = () => {
               i18nKey="wallet.vesting.total_vested.value"
               tOptions={{
                 ...separateBalance(totalVestedValue, {
-                  fixedPointScale: nativeAsset?.decimals.toString() ?? 12,
+                  fixedPointScale: native.decimals,
                   type: "token",
                 }),
-                symbol: nativeAsset?.symbol,
+                symbol: native.symbol,
               }}
             >
               <span

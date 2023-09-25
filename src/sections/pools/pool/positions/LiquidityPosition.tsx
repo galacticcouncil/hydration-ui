@@ -13,7 +13,6 @@ import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPosi
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { useState } from "react"
 import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
-import { useAssetMeta } from "api/assetMeta"
 import { Button } from "components/Button/Button"
 import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
@@ -28,6 +27,7 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { BN_0 } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   pool: OmnipoolPool
@@ -42,10 +42,11 @@ function LiquidityPositionJoinFarmButton(props: {
   onSuccess: () => void
 }) {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
   const [joinFarm, setJoinFarm] = useState(false)
   const farms = useFarms([props.pool.id])
-  const meta = useAssetMeta(props.pool.id)
+  const meta = assets.getAsset(props.pool.id.toString())
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type
@@ -55,7 +56,7 @@ function LiquidityPositionJoinFarmButton(props: {
         i18nKey={`farms.modal.join.toast.${msType}`}
         tOptions={{
           amount: props.position.shares,
-          fixedPointScale: meta.data?.decimals ?? 12,
+          fixedPointScale: meta.decimals,
         }}
       >
         <span />
@@ -138,16 +139,17 @@ export const LiquidityPosition = ({
   onSuccess,
 }: Props) => {
   const { t } = useTranslation()
-  const meta = useAssetMeta(position.assetId)
-  const price = useDisplayPrice(meta.data?.id)
+  const { assets } = useRpcProvider()
+  const meta = assets.getAsset(position.assetId)
+  const price = useDisplayPrice(meta.id)
 
-  const shiftBy = meta?.data ? meta.data.decimals.neg().toNumber() : 12
+  const shiftBy = meta.decimals
   const spotPrice = price.data?.spotPrice
   const providedAmountPrice = spotPrice
-    ? position.providedAmount.multipliedBy(spotPrice).shiftedBy(shiftBy)
+    ? position.providedAmount.multipliedBy(spotPrice).shiftedBy(-shiftBy)
     : BN_0
 
-  const providedAmountPriceLoading = meta.isLoading || price.isLoading
+  const providedAmountPriceLoading = price.isLoading
 
   return (
     <SContainer>
@@ -167,8 +169,8 @@ export const LiquidityPosition = ({
               <Text>
                 {t("value.token", {
                   value: position.providedAmount,
-                  fixedPointScale: meta.data?.decimals.toString() ?? 12,
-                  numberSuffix: ` ${meta.data?.symbol ?? "N/A"}`,
+                  fixedPointScale: meta.decimals,
+                  numberSuffix: meta.symbol,
                 })}
               </Text>
               {providedAmountPriceLoading ? (

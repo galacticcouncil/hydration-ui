@@ -1,14 +1,15 @@
 import { AccountId32 } from "@polkadot/types/interfaces"
-import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
+import { NATIVE_ASSET_ID } from "utils/api"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { u32 } from "@polkadot/types"
 import BN from "bn.js"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const useAccountBalances = (id: Maybe<AccountId32 | string>) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.accountBalances(id),
     !!id ? getAccountBalances(api, id) : undefinedNoop,
@@ -33,7 +34,7 @@ export const getAccountBalances =
 export const useAccountAssetBalances = (
   pairs: Array<[address: AccountId32 | string, assetId: u32 | string]>,
 ) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.accountAssetBalances(pairs),
     pairs != null ? getAccountAssetBalances(api, pairs) : undefinedNoop,
