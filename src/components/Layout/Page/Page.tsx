@@ -46,7 +46,7 @@ export const Page = ({
         <Header />
         <SGradientBg variant={variant} />
         <SPageContent>
-        {subHeader && (
+          {subHeader && (
             <SSubHeader css={subHeaderStyle}>{subHeader}</SSubHeader>
           )}
           <SPageInner className={className}>{children}</SPageInner>

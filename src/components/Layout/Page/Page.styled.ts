@@ -45,11 +45,6 @@ export const SGradientBg = styled.div<{ variant?: "stats" | "default" }>`
 export const SPageContent = styled.main`
   position: relative;
 
-  overflow-y: scroll;
-
-  height: 100vh;
-
-  overflow-y: auto;
   overflow-x: hidden;
 
   display: flex;
@@ -126,4 +121,6 @@ export const SSubHeader = styled.div`
 
   position: relative;
   z-index: 1;
+
+  margin: 0 -20px;
 `
