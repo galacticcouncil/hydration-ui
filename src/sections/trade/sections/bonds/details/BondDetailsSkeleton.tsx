@@ -15,7 +15,7 @@ export const BondDetailsSkeleton = () => {
     <div sx={{ flex: "column", gap: 40 }}>
       <BondsDetailsHeaderSkeleton />
 
-      <BondsTrade />
+      <BondsTrade setBondId={() => null} />
 
       <BondProgreesBar />
 
