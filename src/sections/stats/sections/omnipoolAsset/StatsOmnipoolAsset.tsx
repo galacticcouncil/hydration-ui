@@ -14,7 +14,8 @@ import { Icon } from "components/Icon/Icon"
 import { useOmnipoolOverviewData } from "sections/stats/sections/overview/data/OmnipoolOverview.utils"
 import { useTranslation } from "react-i18next"
 import { AssetStats } from "./stats/AssetStats"
-import { LiquidityProvidersTableWrapper } from "./LiquidityProvidersTable/LiquidityProvidersTableWrapper"
+// TODO: temporarily hidden
+// import { LiquidityProvidersTableWrapper } from "./LiquidityProvidersTable/LiquidityProvidersTableWrapper"
 import { Spacer } from "components/Spacer/Spacer"
 import BN from "bignumber.js"
 import Skeleton from "react-loading-skeleton"
@@ -185,7 +186,8 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
           <ChartWrapper assetSymbol={omnipoolAsset.symbol} />
         </SStatsCardContainer>
       </div>
-      <LiquidityProvidersTableWrapper />
+      {/* TODO: temporarily hidden */}
+      {/*<LiquidityProvidersTableWrapper />*/}
       <Spacer size={[24, 60]} />
       <RecentTradesTableWrapperData assetId={assetId} />
     </SOmnipoolAssetContainer>
@@ -206,8 +208,8 @@ const StatsOmnipoolAssetSkeleton = () => {
           <ChartWrapper />
         </SStatsCardContainer>
       </div>
-
-      <LiquidityProvidersTableWrapper />
+      {/* TODO: temporarily hidden */}
+      {/*<LiquidityProvidersTableWrapper />*/}
       <Spacer size={[24, 60]} />
       <RecentTradesTableSkeleton />
     </SOmnipoolAssetContainer>
