@@ -29,7 +29,8 @@ export const Referenda = ({ data, loading }: ReferendaProps) => {
     "mining-rpc.hydradx.io",
   ].find(
     (rpc) =>
-      providers.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL === `wss://${rpc}`,
+      (providers.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL) ===
+      `wss://${rpc}`,
   )
 
   return (

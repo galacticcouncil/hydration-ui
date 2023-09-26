@@ -7,12 +7,12 @@ import { ReactElement, useState } from "react"
 import { SSeparator } from "sections/pools/farms/position/FarmingPosition.styled"
 import { DepositNftType } from "api/deposits"
 import { useFarmApr, useFarms } from "api/farms"
-import { useAssetMeta } from "api/assetMeta"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import { useAccountStore } from "state/store"
+import { useRpcProvider } from "providers/rpcProvider"
 import { u32 } from "@polkadot/types-codec"
 
 type RedepositFarmProps = {
@@ -20,8 +20,11 @@ type RedepositFarmProps = {
 }
 
 const RedepositFarm = ({ availableYieldFarm }: RedepositFarmProps) => {
+  const { assets } = useRpcProvider()
   const { data: farmApr } = useFarmApr(availableYieldFarm)
-  const { data: assetMeta } = useAssetMeta(farmApr?.assetId)
+  const assetMeta = farmApr?.assetId
+    ? assets.getAsset(farmApr.assetId.toString())
+    : undefined
   return (
     <div sx={{ flex: "row", align: "center", gap: 8 }}>
       <Icon size={24} icon={<AssetLogo id={assetMeta?.id} />} />
@@ -37,11 +40,12 @@ type RedepositFarmsProps = {
 
 export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
   const [joinFarm, setJoinFarm] = useState(false)
 
   const farms = useFarms([poolId])
-  const meta = useAssetMeta(poolId)
+  const meta = assets.getAsset(poolId.toString())
 
   let availableYieldFarms =
     farms.data?.filter(
@@ -61,7 +65,7 @@ export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
         i18nKey={`farms.modal.join.toast.${msType}`}
         tOptions={{
           amount: depositNft.deposit.shares.toBigNumber(),
-          fixedPointScale: meta.data?.decimals ?? 12,
+          fixedPointScale: meta.decimals,
         }}
       >
         <span />

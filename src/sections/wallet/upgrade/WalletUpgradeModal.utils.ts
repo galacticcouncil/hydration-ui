@@ -8,8 +8,8 @@ import { getWalletBySource } from "@talismn/connect-wallets"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useCacheApiMetadataStore } from "state/metadata"
 import { useAccountStore } from "state/store"
-import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export type ChainMetadata = ReturnType<typeof getChainMetadata>
 
@@ -32,7 +32,7 @@ function getChainMetadata(api: ApiPromise) {
 
 export const useUpdateMetadataMutation = () => {
   const { account } = useAccountStore()
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   const cache = useCacheApiMetadataStore()
 

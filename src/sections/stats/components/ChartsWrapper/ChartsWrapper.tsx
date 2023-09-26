@@ -1,6 +1,4 @@
 import { useState } from "react"
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
 import { useTranslation } from "react-i18next"
 import { StatsTimeframe } from "api/stats"
 import {
@@ -10,6 +8,7 @@ import {
 } from "./ChartsWrapper.styled"
 import { Charts } from "./Charts"
 import { Spacer } from "components/Spacer/Spacer"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export type ChartType = "tvl" | "volume"
 
@@ -21,8 +20,7 @@ export const ChartWrapper = ({ assetSymbol }: Props) => {
   const [timeframe, setTimeframe] = useState<StatsTimeframe>(
     StatsTimeframe.HOURLY,
   )
-  const api = useApiPromise()
-  const isApi = isApiLoaded(api)
+  const { isLoaded } = useRpcProvider()
 
   return (
     <>
@@ -35,7 +33,7 @@ export const ChartWrapper = ({ assetSymbol }: Props) => {
       >
         <div sx={{ flex: "row", gap: [4, 12], justify: ["end", "start"] }}>
           <SChartTab
-            disabled={!isApi}
+            disabled={!isLoaded}
             aria-label="total value locked"
             active={chartType === "tvl"}
             onClick={() => setChartType("tvl")}
@@ -43,7 +41,7 @@ export const ChartWrapper = ({ assetSymbol }: Props) => {
             {t("stats.overview.chart.switcher.tvl")}
           </SChartTab>
           <SChartTab
-            disabled={!isApi}
+            disabled={!isLoaded}
             aria-label="24 volume"
             active={chartType === "volume"}
             onClick={() => setChartType("volume")}
@@ -54,14 +52,14 @@ export const ChartWrapper = ({ assetSymbol }: Props) => {
         {chartType === "volume" ? (
           <STimeframeContainer>
             <STimeframeEl
-              disabled={!isApi}
+              disabled={!isLoaded}
               active={timeframe === StatsTimeframe["DAILY"]}
               onClick={() => setTimeframe(StatsTimeframe["DAILY"])}
             >
               {t("stats.chart.timeframe.month")}
             </STimeframeEl>
             <STimeframeEl
-              disabled={!isApi}
+              disabled={!isLoaded}
               active={timeframe === StatsTimeframe["HOURLY"]}
               onClick={() => setTimeframe(StatsTimeframe["HOURLY"])}
             >

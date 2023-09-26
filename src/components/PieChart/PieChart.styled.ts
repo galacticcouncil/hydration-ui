@@ -23,6 +23,6 @@ export const SPieLabelContainer = styled.div`
 
   position: absolute;
   left: 50%;
-  bottom: 0;
+  top: 60%;
   transform: translate(-50%, -40%);
 `

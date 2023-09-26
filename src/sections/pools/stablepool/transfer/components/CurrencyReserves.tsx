@@ -5,8 +5,8 @@ import { Text } from "components/Typography/Text/Text"
 import BigNumber from "bignumber.js"
 import { BN_0, BN_100 } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
-import { useAssetMeta } from "api/assetMeta"
 import { SRow } from "./CurrencyReserves.styled"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   assets: Array<{
@@ -20,7 +20,11 @@ type Props = {
 export const CurrencyReserves = ({ assets }: Props) => {
   const totalValue = assets.reduce((t, asset) => t.plus(asset.value), BN_0)
   const displayAsset = useDisplayAssetStore()
-  const meta = useAssetMeta(displayAsset.id)
+
+  const rpcProvider = useRpcProvider()
+  const asset = displayAsset.id
+    ? rpcProvider.assets.getAsset(displayAsset.id)
+    : undefined
 
   return (
     <div sx={{ p: 30 }}>
@@ -50,7 +54,7 @@ export const CurrencyReserves = ({ assets }: Props) => {
       >
         <Text color="basic400">Total:</Text>
         <Text color="white">
-          ≈ {totalValue.toNumber()} {meta.data?.symbol}
+          ≈ {totalValue.toNumber()} {asset?.symbol}
         </Text>
       </div>
     </div>

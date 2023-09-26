@@ -2,32 +2,23 @@ import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
 import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
   SActionsContainer,
   SButtonOpen,
 } from "sections/pools/pool/actions/PoolActions.styled"
 import { useAccountStore } from "state/store"
-import { TransferModal } from "sections/pools/stablepool/transfer/TransferModal"
-import { AssetMetaById, BalanceByAsset } from "sections/pools/PoolsPage.utils"
 import { u32 } from "@polkadot/types-codec"
 import BigNumber from "bignumber.js"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { u8 } from "@polkadot/types"
 import { LiquidityPositionButton } from "sections/pools/stablepool/positions/LiquidityPositionButton"
+import { TAsset } from "api/assetDetails"
 
 type PoolActionsProps = {
   poolId: u32
-  assets: {
-    id: string
-    symbol: string
-    decimals: u8 | u32
-  }[]
+  assets: TAsset[]
   fee: BigNumber
-  balanceByAsset?: BalanceByAsset
-  assetMetaById?: AssetMetaById
   className?: string
   onExpandClick: () => void
   isExpanded: boolean
@@ -35,13 +26,12 @@ type PoolActionsProps = {
   refetchPositions: () => void
   reserves: { asset_id: number; amount: string }[]
   amount: BigNumber
+  onTransferOpen: () => void
 }
 
 export const PoolActions = ({
   poolId,
   className,
-  balanceByAsset,
-  assetMetaById,
   fee,
   onExpandClick,
   isExpanded,
@@ -50,9 +40,9 @@ export const PoolActions = ({
   assets,
   reserves,
   amount,
+  onTransferOpen,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
-  const [openAdd, setOpenAdd] = useState(false)
   const { account } = useAccountStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -63,7 +53,7 @@ export const PoolActions = ({
           fullWidth
           size="small"
           disabled={!account || account.isExternalWalletConnected}
-          onClick={() => setOpenAdd(true)}
+          onClick={onTransferOpen}
         >
           <div sx={{ flex: "row", align: "center", justify: "center" }}>
             <Icon icon={<PlusIcon />} sx={{ mr: 8, height: 16 }} />
@@ -78,6 +68,7 @@ export const PoolActions = ({
             amount={amount}
             fee={fee}
             refetchPosition={refetchPositions}
+            onTransferOpen={onTransferOpen}
           />
         )}
       </div>
@@ -85,32 +76,17 @@ export const PoolActions = ({
   )
 
   return (
-    <>
-      <SActionsContainer className={className}>
-        {actionButtons}
-        {isDesktop && (
-          <SButtonOpen
-            name="Expand"
-            icon={<ChevronDown />}
-            isActive={isExpanded}
-            onClick={onExpandClick}
-            disabled={!account || !canExpand}
-          />
-        )}
-      </SActionsContainer>
-      {openAdd && (
-        <TransferModal
-          poolId={poolId}
-          assets={assets}
-          fee={fee}
-          isOpen={openAdd}
-          reserves={reserves}
-          onClose={() => setOpenAdd(false)}
-          balanceByAsset={balanceByAsset}
-          assetMetaById={assetMetaById}
-          refetchPositions={refetchPositions}
+    <SActionsContainer className={className}>
+      {actionButtons}
+      {isDesktop && (
+        <SButtonOpen
+          name="Expand"
+          icon={<ChevronDown />}
+          isActive={isExpanded}
+          onClick={onExpandClick}
+          disabled={!account || !canExpand}
         />
       )}
-    </>
+    </SActionsContainer>
   )
 }

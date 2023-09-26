@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useTradeRouter } from "utils/api"
 import { TradeRouter } from "@galacticcouncil/sdk"
 import { useMemo } from "react"
 import { u32 } from "@polkadot/types"
 import { useTotalIssuances } from "./totalIssuance"
 import { useTokensBalances } from "./balances"
 import { useAccountStore } from "state/store"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const usePools = () => {
-  const tradeRouter = useTradeRouter()
+  const { tradeRouter } = useRpcProvider()
   return useQuery(QUERY_KEYS.pools, getPools(tradeRouter))
 }
 

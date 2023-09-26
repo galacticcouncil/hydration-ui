@@ -5,8 +5,6 @@ import { u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 import { useMutation } from "@tanstack/react-query"
 import { useAccountAssetBalances } from "api/accountBalances"
-import { useAssetDetailsList } from "api/assetDetails"
-import { useAssetMetaList } from "api/assetMeta"
 import { useBestNumber } from "api/chain"
 import { DepositNftType, useUserDeposits } from "api/deposits"
 import { useFarms, useOraclePrices } from "api/farms"
@@ -14,7 +12,6 @@ import { useOmnipoolAssets } from "api/omnipool"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { ToastMessage, useStore } from "state/store"
-import { useApiPromise } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0 } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
@@ -22,6 +19,7 @@ import { getAccountResolver } from "./claiming/accountResolver"
 import { OmnipoolLiquidityMiningClaimSim } from "./claiming/claimSimulator"
 import { MultiCurrencyContainer } from "./claiming/multiCurrency"
 import { createMutableFarmEntries } from "./claiming/mutableFarms"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const useClaimableAmount = (
   poolId?: u32,
@@ -42,33 +40,35 @@ export const useClaimableAmount = (
       }
     : allDeposits
 
-  const assets = useOmnipoolAssets()
+  const omnipoolAssets = useOmnipoolAssets()
 
   const farms = useFarms(
-    poolId ? [poolId] : assets.data?.map((asset) => asset.id) ?? [],
+    poolId ? [poolId] : omnipoolAssets.data?.map((asset) => asset.id) ?? [],
   )
 
-  const api = useApiPromise()
+  const { api, assets } = useRpcProvider()
   const accountResolver = getAccountResolver(api.registry)
 
   const assetIds = [
     ...new Set(farms.data?.map((i) => i.globalFarm.rewardCurrency.toString())),
   ]
 
-  const assetList = useAssetDetailsList(assetIds)
+  const metas = assets.getAssets(assetIds)
   const spotPrices = useDisplayPrices(assetIds)
-  const metas = useAssetMetaList(assetIds)
 
-  const accountAddresses =
-    farms.data
-      ?.map(
-        ({ globalFarm }) =>
-          [
-            [accountResolver(0), globalFarm.rewardCurrency],
-            [accountResolver(globalFarm.id), globalFarm.rewardCurrency],
-          ] as [AccountId32, u32][],
-      )
-      .flat(1) ?? []
+  const accountAddresses = useMemo(
+    () =>
+      farms.data
+        ?.map(
+          ({ globalFarm }) =>
+            [
+              [accountResolver(0), globalFarm.rewardCurrency],
+              [accountResolver(globalFarm.id), globalFarm.rewardCurrency],
+            ] as [AccountId32, u32][],
+        )
+        .flat(1) ?? [],
+    [accountResolver, farms.data],
+  )
 
   const oracleAssetIds = farms.data?.map((farm) => ({
     rewardCurrency: farm.globalFarm.rewardCurrency.toString(),
@@ -82,9 +82,7 @@ export const useClaimableAmount = (
     bestNumberQuery,
     filteredDeposits,
     farms,
-    assetList,
     accountBalances,
-    metas,
     spotPrices,
   ]
   const isLoading = queries.some((q) => q.isLoading)
@@ -94,9 +92,7 @@ export const useClaimableAmount = (
       !bestNumberQuery.data ||
       !filteredDeposits.data ||
       !farms.data ||
-      !assetList.data ||
       !accountBalances.data ||
-      !metas.data ||
       !spotPrices.data
     )
       return undefined
@@ -112,7 +108,7 @@ export const useClaimableAmount = (
     const simulator = new OmnipoolLiquidityMiningClaimSim(
       getAccountResolver(api.registry),
       multiCurrency,
-      assetList.data ?? [],
+      metas ?? [],
     )
 
     const { globalFarms, yieldFarms } = createMutableFarmEntries(
@@ -152,14 +148,16 @@ export const useClaimableAmount = (
             (spot) => spot?.tokenIn === reward?.assetId,
           )
 
-          const meta = metas.data.find((meta) => meta.id === reward?.assetId)
+          const meta = reward?.assetId
+            ? assets.getAsset(reward.assetId)
+            : undefined
 
           if (!reward || !spotPrice) return null
 
           return {
             displayValue: getFloatingPointAmount(
               reward.value.multipliedBy(spotPrice.spotPrice),
-              meta?.decimals.toNumber() ?? 12,
+              meta?.decimals ?? 12,
             ),
             asset: {
               id: reward?.assetId,
@@ -198,12 +196,12 @@ export const useClaimableAmount = (
     accountAddresses,
     accountBalances.data,
     api.registry,
-    assetList.data,
+    assets,
     bestNumberQuery,
     depositNft,
     farms.data,
     filteredDeposits.data,
-    metas.data,
+    metas,
     oraclePrices,
     spotPrices.data,
   ])
@@ -218,7 +216,7 @@ export const useClaimAllMutation = (
   onClose?: () => void,
   onBack?: () => void,
 ) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
 
   const allUserDeposits = useUserDeposits()

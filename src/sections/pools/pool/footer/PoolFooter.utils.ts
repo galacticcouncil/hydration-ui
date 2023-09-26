@@ -1,5 +1,4 @@
 import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
-import { useAssetMetaList } from "api/assetMeta"
 import { useTokensBalances } from "api/balances"
 import { useApiIds } from "api/consts"
 import {
@@ -15,13 +14,14 @@ import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPos
 import { useAccountStore } from "state/store"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { BN_0, BN_10, BN_NAN } from "utils/constants"
-import { useDisplayAssetStore, useDisplayPrices } from "utils/displayAsset"
+import { useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const useUsersTotalInPool = (pool: OmnipoolPool) => {
   const { account } = useAccountStore()
+  const { assets } = useRpcProvider()
   const apiIds = useApiIds()
-  const displayAsset = useDisplayAssetStore()
   const uniques = useUniques(
     account?.address ?? "",
     apiIds.data?.omnipoolCollectionId ?? "",
@@ -31,7 +31,7 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
   )
   const assetIds =
     positions.map((p) => p.data?.assetId.toString()).filter(isNotNil) ?? []
-  const metas = useAssetMetaList([displayAsset.id, ...assetIds])
+
   const omnipoolAssets = useOmnipoolAssets()
   const omnipoolBalances = useTokensBalances(assetIds, OMNIPOOL_ACCOUNT_ADDRESS)
   const spotPrices = useDisplayPrices(assetIds)
@@ -39,7 +39,6 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
   const queries = [
     apiIds,
     uniques,
-    metas,
     omnipoolAssets,
     spotPrices,
     ...positions,
@@ -51,7 +50,6 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
     if (
       !apiIds.data ||
       !uniques.data ||
-      !metas.data ||
       !omnipoolAssets.data ||
       !spotPrices.data ||
       positions.some((q) => !q.data) ||
@@ -68,9 +66,8 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
         [] as OmnipoolPosition[],
       )
       .map((position) => {
-        const meta = metas.data.find(
-          (m) => m.id.toString() === position.assetId.toString(),
-        )
+        const meta = assets.getAsset(position.assetId.toString())
+
         const omnipoolAsset = omnipoolAssets.data.find(
           (a) => a.id.toString() === position.assetId.toString(),
         )
@@ -102,7 +99,7 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
         if (liquidityOutResult === "-1") return BN_NAN
 
         const valueSp = spotPrices.data?.find((sp) => sp?.tokenIn === id)
-        const valueDp = BN_10.pow(meta.decimals.toBigNumber())
+        const valueDp = BN_10.pow(meta.decimals)
         const value = new BN(liquidityOutResult).div(valueDp)
 
         if (!valueSp?.spotPrice) return BN_NAN
@@ -116,12 +113,12 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
   }, [
     apiIds.data,
     uniques.data,
-    metas.data,
     omnipoolAssets.data,
+    spotPrices.data,
     positions,
     omnipoolBalances,
-    spotPrices,
     pool.id,
+    assets,
   ])
 
   return { data, isLoading }

@@ -21,10 +21,10 @@ export const useOrdersTableData = () => {
       )
       const orderStateValue = getOrderStateValue(orderState?.data)
 
-      const amountInDp: number = order.assetIn?.decimals?.toNumber() || 12
+      const amountInDp: number = order.assetIn?.decimals ?? 12
       const amountIn: BN = order.amountIn!.shiftedBy(-1 * amountInDp)
       const amountInInitial: string | undefined = orderStateValue?.amountIn
-      const amountOutDp: number = order.assetOut?.decimals?.toNumber() || 12
+      const amountOutDp: number = order.assetOut?.decimals ?? 12
       const amountOut: BN = order.amountOut!.shiftedBy(-1 * amountOutDp)
       const amountOutInitial: string | undefined = orderStateValue?.amountOut
 

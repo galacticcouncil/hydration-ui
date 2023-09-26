@@ -6,10 +6,9 @@ import {
   PlaceholderLogo,
 } from "@galacticcouncil/ui"
 import { chains } from "@galacticcouncil/xcm"
-import { useAssetsLocation } from "api/assetDetails"
 import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
-import Skeleton from "react-loading-skeleton"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -54,35 +53,20 @@ export function getAssetName(symbol: string | null | undefined) {
 }
 
 export const AssetLogo = ({ id }: { id?: string }) => {
-  const locations = useAssetsLocation()
+  const { assets } = useRpcProvider()
 
   const asset = useMemo(() => {
-    if (!locations.data) return { chain: undefined, symbol: undefined }
-
-    const location = locations.data?.find((location) => location.id === id)
+    const assetDetails = id ? assets.getAsset(id) : undefined
 
     const chain = chains.find(
-      (chain) => chain.parachainId === location?.parachainId,
+      (chain) => chain.parachainId === Number(assetDetails?.parachainId),
     )
 
     return {
       chain: chain?.key,
-      symbol: location?.symbol,
+      symbol: assetDetails?.symbol,
     }
-  }, [id, locations])
-
-  if (locations.isLoading) {
-    return (
-      <div
-        sx={{
-          width: "100%",
-          height: "100%",
-        }}
-      >
-        <Skeleton circle width="100%" height="100%" />
-      </div>
-    )
-  }
+  }, [assets, id])
 
   if (!asset || !asset.symbol)
     return (

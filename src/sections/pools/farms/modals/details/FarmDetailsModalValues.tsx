@@ -1,4 +1,3 @@
-import { useAssetMeta } from "api/assetMeta"
 import { DepositNftType } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { useTranslation } from "react-i18next"
@@ -7,6 +6,7 @@ import { useClaimableAmount } from "utils/farms/claiming"
 import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { Summary } from "components/Summary/Summary"
+import { useRpcProvider } from "providers/rpcProvider"
 import { u32 } from "@polkadot/types-codec"
 
 type FarmDetailsModalValuesProps = {
@@ -23,12 +23,15 @@ export const FarmDetailsModalValues = ({
   yieldFarmId,
 }: FarmDetailsModalValuesProps) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const claimable = useClaimableAmount(poolId, depositNft)
   const depositReward = claimable.data?.depositRewards.find(
     (reward) => reward.yieldFarmId === yieldFarmId,
   )
 
-  const meta = useAssetMeta(depositReward?.assetId)
+  const meta = depositReward?.assetId
+    ? assets.getAsset(depositReward.assetId)
+    : undefined
   const entered = useEnteredDate(enteredBlock)
 
   const position = useDepositShare(poolId, depositNft.id.toString())
@@ -60,8 +63,8 @@ export const FarmDetailsModalValues = ({
             label: t("farms.modal.details.mined.label"),
             content: t("farms.modal.details.mined.value", {
               value: depositReward?.value,
-              symbol: meta.data?.symbol,
-              fixedPointScale: meta.data?.decimals.toString(),
+              symbol: meta?.symbol,
+              fixedPointScale: meta?.decimals,
             }),
           },
         ]}

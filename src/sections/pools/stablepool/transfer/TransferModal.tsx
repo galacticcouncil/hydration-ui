@@ -1,33 +1,33 @@
 import { Modal } from "components/Modal/Modal"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { TransferOptions } from "./components/TransferOptions"
-import { ComponentProps, useState } from "react"
+import { useState } from "react"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { CurrencyReserves } from "./components/CurrencyReserves"
-import { AssetMetaById, BalanceByAsset } from "sections/pools/PoolsPage.utils"
+import { BalanceByAsset } from "sections/pools/PoolsPage.utils"
 import { u32 } from "@polkadot/types-codec"
 import BigNumber from "bignumber.js"
+import { Stepper } from "components/Stepper/Stepper"
+import { AddLiquidityForm } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
+import { Spinner } from "components/Spinner/Spinner.styled"
+import { Text } from "components/Typography/Text/Text"
+import { Page, PathOption, usePage } from "./TransferModal.utils"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   poolId: u32
   isOpen: boolean
   onClose: () => void
   fee: BigNumber
-  assetMetaById?: AssetMetaById
   balanceByAsset?: BalanceByAsset
   refetchPositions: () => void
   assets: { id: string }[]
   reserves: { asset_id: number; amount: string }[]
-}
-
-enum Page {
-  OPTIONS,
-  OMNIPOOL,
-  STABLEPOOL,
-  ASSETS,
+  defaultPage?: Page
+  defaultSelectedOption?: PathOption
 }
 
 export const TransferModal = ({
@@ -37,29 +37,42 @@ export const TransferModal = ({
   isOpen,
   onClose,
   balanceByAsset,
-  assetMetaById,
   reserves,
   refetchPositions,
+  defaultPage,
+  defaultSelectedOption,
 }: Props) => {
   const { t } = useTranslation()
-  const [page, setPage] = useState<Page>(Page.OPTIONS)
+  const { currentPage, setPage, goBack, path } = usePage(defaultPage)
   const [assetId, setAssetId] = useState<string>(assets[0]?.id)
+  const [sharesAmount, setSharesAmount] = useState<string>()
 
-  const [selectedOption, setSelectedOption] =
-    useState<ComponentProps<typeof TransferOptions>["selected"]>("STABLEPOOL")
+  const rpcProvider = useRpcProvider()
 
-  const handleBack = () => {
-    if (page === Page.OMNIPOOL || page === Page.STABLEPOOL) {
-      return setPage(Page.OPTIONS)
+  const [selectedOption, setSelectedOption] = useState<PathOption>(
+    defaultSelectedOption ?? "OMNIPOOL",
+  )
+
+  const steps =
+    selectedOption === "STABLEPOOL"
+      ? [
+          { text: "Select Pool", page: Page.OPTIONS },
+          { text: "Provide Liquidity", page: Page.ADD_LIQUIDITY },
+          { text: "Confirm", page: Page.ADD_LIQUIDITY + 1 },
+        ]
+      : [
+          { text: "Select Pool", page: Page.OPTIONS },
+          { text: "Provide Liquidity", page: Page.ADD_LIQUIDITY },
+          { text: "Wait For Transaction", page: Page.WAIT },
+          { text: "Move to Omnipool", page: Page.MOVE_TO_OMNIPOOL },
+        ]
+
+  const getStepState = (stepPage: Page) => {
+    if (stepPage === currentPage) {
+      return "active" as const
     }
 
-    if (selectedOption === "OMNIPOOL") {
-      return setPage(Page.OMNIPOOL)
-    }
-
-    if (selectedOption === "STABLEPOOL") {
-      return setPage(Page.STABLEPOOL)
-    }
+    return path.includes(stepPage) ? ("done" as const) : ("todo" as const)
   }
 
   return (
@@ -67,15 +80,26 @@ export const TransferModal = ({
       open={isOpen}
       onClose={onClose}
       disableCloseOutside={true}
+      topContent={
+        !defaultPage &&
+        ![Page.OPTIONS, Page.ASSETS].includes(currentPage) && (
+          <Stepper
+            steps={steps.map((step) => ({
+              label: step.text,
+              state: getStepState(step.page),
+            }))}
+          />
+        )
+      }
       bottomContent={
-        page === Page.STABLEPOOL ? (
+        currentPage === Page.ADD_LIQUIDITY ? (
           <CurrencyReserves
             assets={Array.from(balanceByAsset?.entries() ?? []).map(
               ([id, balance]) => ({
                 id,
-                symbol: assetMetaById?.get(id)?.symbol,
+                symbol: rpcProvider.assets.getAsset(id).symbol,
                 balance: balance.free?.shiftedBy(
-                  assetMetaById?.get(id)?.decimals?.neg()?.toNumber() ?? -12,
+                  -rpcProvider.assets.getAsset(id).decimals,
                 ),
                 value: balance.value,
               }),
@@ -86,8 +110,12 @@ export const TransferModal = ({
     >
       <ModalContents
         onClose={onClose}
-        page={page}
-        onBack={page ? handleBack : undefined}
+        page={currentPage}
+        onBack={
+          !defaultPage && ![Page.OPTIONS, Page.WAIT].includes(currentPage)
+            ? goBack
+            : undefined
+        }
         contents={[
           {
             title: t("liquidity.stablepool.transfer.options"),
@@ -101,13 +129,7 @@ export const TransferModal = ({
                 <Button
                   variant="primary"
                   sx={{ mt: 21 }}
-                  onClick={() =>
-                    setPage(
-                      selectedOption === "OMNIPOOL"
-                        ? Page.OMNIPOOL
-                        : Page.STABLEPOOL,
-                    )
-                  }
+                  onClick={() => setPage(Page.ADD_LIQUIDITY)}
                 >
                   {t("next")}
                 </Button>
@@ -115,21 +137,35 @@ export const TransferModal = ({
             ),
           },
           {
-            title: t("liquidity.stablepool.transfer.omnipool"),
-            headerVariant: "gradient",
-            content: <div />,
-          },
-          {
             title: t("liquidity.add.modal.title"),
             headerVariant: "gradient",
             content: (
               <AddStablepoolLiquidity
                 poolId={poolId}
-                onClose={onClose}
-                onSuccess={refetchPositions}
+                onCancel={onClose}
+                onClose={() => {
+                  if (selectedOption === "STABLEPOOL") {
+                    onClose()
+                  }
+                }}
+                onSubmitted={(shares) => {
+                  if (selectedOption === "STABLEPOOL") {
+                    onClose()
+                  }
+
+                  setSharesAmount(shares)
+                  setPage(Page.WAIT)
+                }}
+                onSuccess={() => {
+                  if (selectedOption === "STABLEPOOL") {
+                    return refetchPositions()
+                  }
+
+                  setPage(Page.MOVE_TO_OMNIPOOL)
+                }}
                 reserves={reserves}
                 onAssetOpen={() => setPage(Page.ASSETS)}
-                asset={assetMetaById?.get(assetId)}
+                asset={rpcProvider.assets.getAsset(assetId)}
                 fee={fee}
               />
             ),
@@ -143,8 +179,41 @@ export const TransferModal = ({
                 allowedAssets={assets.map((asset) => asset.id)}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
-                  handleBack()
+                  goBack()
                 }}
+              />
+            ),
+          },
+          {
+            title: "Move to omnipool",
+            headerVariant: "gradient",
+            content: (
+              <div
+                sx={{
+                  flex: "column",
+                  gap: 50,
+                  align: "center",
+                  justify: "center",
+                  height: 240,
+                }}
+              >
+                <Spinner width={50} height={50} />
+                <Text color="whiteish500">Waiting for transaction</Text>
+              </div>
+            ),
+          },
+          {
+            title: "Move to omnipool",
+            headerVariant: "gradient",
+            content: (
+              <AddLiquidityForm
+                initialAmount={sharesAmount}
+                assetId={poolId.toString()}
+                onSuccess={() => {
+                  refetchPositions()
+                  onClose()
+                }}
+                onClose={onClose}
               />
             ),
           },

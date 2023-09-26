@@ -11,6 +11,8 @@ import { LiquidityPosition } from "./positions/LiquidityPosition"
 import { useTokenBalance } from "api/balances"
 import { useAccountStore } from "state/store"
 import { BN_0 } from "utils/constants"
+import { TransferModal } from "./transfer/TransferModal"
+import { Page } from "./transfer/TransferModal.utils"
 
 type Props = Exclude<
   ReturnType<typeof useStablePools>["data"],
@@ -23,9 +25,9 @@ export const StablePool = ({
   assets,
   total,
   balanceByAsset,
-  assetMetaById,
   reserves,
 }: Props) => {
+  const [transferOpen, setTransferOpen] = useState<Page>()
   const [isExpanded, setIsExpanded] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -45,16 +47,28 @@ export const StablePool = ({
           assets={assets}
           fee={fee}
           css={{ gridArea: "actions" }}
-          balanceByAsset={balanceByAsset}
-          assetMetaById={assetMetaById}
           onExpandClick={() => setIsExpanded((prev) => !prev)}
           isExpanded={isExpanded}
           canExpand={hasPosition}
           refetchPositions={position.refetch}
           reserves={reserves}
           amount={amount}
+          onTransferOpen={() => setTransferOpen(Page.OPTIONS)}
         />
       </SGridContainer>
+      {transferOpen !== undefined && (
+        <TransferModal
+          poolId={id}
+          assets={assets}
+          fee={fee}
+          isOpen={true}
+          defaultPage={transferOpen}
+          reserves={reserves}
+          onClose={() => setTransferOpen(undefined)}
+          balanceByAsset={balanceByAsset}
+          refetchPositions={position.refetch}
+        />
+      )}
       {isDesktop && hasPosition && (
         <AnimatePresence>
           {isExpanded && (
@@ -72,6 +86,7 @@ export const StablePool = ({
                 fee={fee}
                 reserves={reserves}
                 refetchPosition={position.refetch}
+                onTransferOpen={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
               />
             </motion.div>
           )}

@@ -5,11 +5,7 @@ import {
 } from "state/store"
 import { WalletConnectAccountSelectItem } from "sections/wallet/connect/accountSelect/item/WalletConnectAccountSelectItem"
 import { useQuery } from "@tanstack/react-query"
-import {
-  HYDRA_ADDRESS_PREFIX,
-  POLKADOT_APP_NAME,
-  useApiPromise,
-} from "utils/api"
+import { HYDRA_ADDRESS_PREFIX, POLKADOT_APP_NAME } from "utils/api"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import {
@@ -19,6 +15,7 @@ import {
   SGroupContainer,
 } from "./ExternalWalletConnectAccount.styled"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const ExternalWalletConnectAccount = ({
   address,
@@ -27,7 +24,7 @@ export const ExternalWalletConnectAccount = ({
   address: string
   onClose: () => void
 }) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { account, setAccount } = useAccountStore()
   const isHydraAddress = address[0] === "7"
   const hydraAddress = isHydraAddress

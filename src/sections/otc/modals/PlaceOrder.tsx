@@ -1,5 +1,4 @@
 import { u32 } from "@polkadot/types"
-import { useAssetMeta } from "api/assetMeta"
 import { useTokenBalance } from "api/balances"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
@@ -11,7 +10,6 @@ import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
-import { useApiPromise } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
 import { BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
@@ -19,6 +17,7 @@ import { useAccountStore, useStore } from "state/store"
 import { OrderAssetSelect } from "./cmp/AssetSelect"
 import { OrderAssetRate } from "./cmp/AssetXRate"
 import { PartialOrderToggle } from "./cmp/PartialOrderToggle"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type PlaceOrderProps = {
   assetOut?: u32 | string
@@ -55,10 +54,10 @@ export const PlaceOrder = ({
     form.trigger()
   }, [form])
 
-  const api = useApiPromise()
-  const assetOutMeta = useAssetMeta(aOut)
+  const { api, assets } = useRpcProvider()
+  const assetOutMeta = aOut ? assets.getAsset(aOut.toString()) : undefined
   const assetOutBalance = useTokenBalance(aOut, account?.address)
-  const assetInMeta = useAssetMeta(aIn)
+  const assetInMeta = aIn ? assets.getAsset(aIn.toString()) : undefined
   const assetInBalance = useTokenBalance(aIn, account?.address)
 
   const { createTransaction } = useStore()
@@ -95,20 +94,18 @@ export const PlaceOrder = ({
   }
 
   const handleSubmit = async (values: FormValues<typeof form>) => {
-    if (assetOutMeta.data?.decimals == null)
-      throw new Error("Missing assetOut meta")
+    if (assetOutMeta?.decimals == null) throw new Error("Missing assetOut meta")
 
-    if (assetInMeta.data?.decimals == null)
-      throw new Error("Missing assetIn meta")
+    if (assetInMeta?.decimals == null) throw new Error("Missing assetIn meta")
 
     const amountOut = getFixedPointAmount(
       values.amountOut,
-      assetOutMeta.data.decimals.toString(),
+      assetOutMeta.decimals,
     ).decimalPlaces(0, 1)
 
     const amountIn = getFixedPointAmount(
       values.amountIn,
-      assetInMeta.data.decimals.toString(),
+      assetInMeta.decimals,
     ).decimalPlaces(0, 1)
 
     await createTransaction(
@@ -134,7 +131,7 @@ export const PlaceOrder = ({
               i18nKey="otc.order.place.toast.onLoading"
               tOptions={{
                 amount: values.amountOut,
-                symbol: assetOutMeta.data?.symbol,
+                symbol: assetOutMeta.symbol,
               }}
             >
               <span />
@@ -147,7 +144,7 @@ export const PlaceOrder = ({
               i18nKey="otc.order.place.toast.onSuccess"
               tOptions={{
                 amount: values.amountOut,
-                symbol: assetOutMeta.data?.symbol,
+                symbol: assetOutMeta.symbol,
               }}
             >
               <span />
@@ -196,8 +193,7 @@ export const PlaceOrder = ({
                       validate: {
                         maxBalance: (value) => {
                           const balance = assetOutBalance.data?.balance
-                          const decimals =
-                            assetOutMeta.data?.decimals.toString()
+                          const decimals = assetOutMeta?.decimals
                           if (
                             balance &&
                             decimals &&
@@ -235,14 +231,14 @@ export const PlaceOrder = ({
                     )}
                   />
                   <div sx={{ pt: 10, pb: 10 }}>
-                    {assetOutMeta.data && assetInMeta.data && (
+                    {assetOutMeta && assetInMeta && (
                       <Controller
                         name="price"
                         control={form.control}
                         render={({ field: { value, onChange } }) => (
                           <OrderAssetRate
-                            inputAsset={assetOutMeta.data?.id}
-                            outputAsset={assetInMeta.data?.id}
+                            inputAsset={assetOutMeta.id}
+                            outputAsset={assetInMeta.id}
                             price={value!}
                             onChange={(e) => {
                               onChange(e)

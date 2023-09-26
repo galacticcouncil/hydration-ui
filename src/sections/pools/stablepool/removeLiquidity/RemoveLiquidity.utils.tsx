@@ -9,12 +9,12 @@ import { useTotalIssuance } from "api/totalIssuance"
 import { normalizeBigNumber } from "utils/balance"
 import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
-import { u8 } from "@polkadot/types"
+import { TAsset } from "api/assetDetails"
 
 type Args = {
   poolId: u32
   shares: BigNumber
-  asset?: { id: string; decimals: u32 | u8 }
+  asset?: TAsset
   fee: BigNumber
   reserves: { asset_id: number; amount: string }[]
 }

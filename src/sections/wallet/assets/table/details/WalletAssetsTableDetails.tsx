@@ -1,5 +1,4 @@
 import { chains } from "@galacticcouncil/xcm"
-import { useAssetsLocation } from "api/assetDetails"
 import BN from "bignumber.js"
 import { ChainLogo } from "components/AssetIcon/AssetIcon"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -8,6 +7,7 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   lockedMax: BN
@@ -27,23 +27,21 @@ export const WalletAssetsTableDetails = ({
   id,
 }: Props) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
 
-  const locations = useAssetsLocation()
   const asset = useMemo(() => {
-    if (!locations.data) return undefined
-
-    const location = locations.data?.find((location) => location.id === id)
+    const assetDetails = assets.getAsset(id)
 
     const chain = chains.find(
-      (chain) => chain.parachainId === location?.parachainId,
+      (chain) => chain.parachainId === Number(assetDetails.parachainId),
     )
 
     return {
       chain: chain?.key,
       name: chain?.name,
-      symbol: location?.symbol,
+      symbol: assetDetails.symbol,
     }
-  }, [id, locations])
+  }, [assets, id])
 
   return (
     <div sx={{ flex: "row" }}>
