@@ -136,7 +136,7 @@ export const PoolActions = ({
         <AddLiquidity
           isOpen={openAdd}
           onClose={() => setOpenAdd(false)}
-          pool={pool}
+          poolId={pool.id}
           onSuccess={refetch}
         />
       )}

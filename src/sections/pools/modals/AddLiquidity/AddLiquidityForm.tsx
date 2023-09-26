@@ -16,13 +16,12 @@ import { Button } from "components/Button/Button"
 import { FormValues } from "utils/helpers"
 import { getFixedPointAmount } from "utils/balance"
 import { useAddLiquidity, useVerifyLimits } from "./AddLiquidity.utils"
-import { useApiPromise } from "utils/api"
 import { useStore } from "state/store"
 import { useEffect, useState } from "react"
-import { u32 } from "@polkadot/types-codec"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
-  assetId: string | u32
+  assetId: string
   initialAmount?: string
   onSuccess: () => void
   onClose: () => void
@@ -48,21 +47,21 @@ export const AddLiquidityForm = ({
   const { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance } =
     useAddLiquidity(assetId, assetValue)
 
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
 
   const { data: limits } = useVerifyLimits({
     assetId: assetId.toString(),
     amount: amountIn,
-    decimals: assetMeta?.decimals.toNumber() ?? 12,
+    decimals: assetMeta.decimals,
   })
 
   const onSubmit = async (values: FormValues<typeof form>) => {
-    if (assetMeta?.decimals == null) throw new Error("Missing asset meta")
+    if (assetMeta.decimals == null) throw new Error("Missing asset meta")
 
     const amount = getFixedPointAmount(
       values.amount,
-      assetMeta.decimals.toNumber(),
+      assetMeta.decimals,
     ).toString()
 
     return await createTransaction(
@@ -166,7 +165,7 @@ export const AddLiquidityForm = ({
                       if (
                         assetBalance?.balance.gte(
                           BigNumber(value).multipliedBy(
-                            BN_10.pow(assetMeta?.decimals.toNumber()),
+                            BN_10.pow(assetMeta?.decimals),
                           ),
                         )
                       )
@@ -183,7 +182,7 @@ export const AddLiquidityForm = ({
                         api.consts.omnipool.minimumPoolLiquidity.toBigNumber()
 
                       const amount = BigNumber(value).multipliedBy(
-                        BN_10.pow(assetMeta?.decimals.toNumber()),
+                        BN_10.pow(assetMeta?.decimals),
                       )
 
                       if (amount.gte(minimumPoolLiquidity)) return true

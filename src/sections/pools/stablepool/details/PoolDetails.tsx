@@ -5,16 +5,12 @@ import { useTranslation } from "react-i18next"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Fragment, useMemo } from "react"
 import { SBadge } from "sections/pools/stablepool/StablePool.styled"
-import { u32, u8 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 import { BN_100 } from "utils/constants"
+import { TAsset } from "api/assetDetails"
 
 type PoolDetailsProps = {
-  assets: {
-    id: string
-    symbol: string
-    decimals: u8 | u32
-  }[]
+  assets: TAsset[]
   fee: BigNumber
   className?: string
 }

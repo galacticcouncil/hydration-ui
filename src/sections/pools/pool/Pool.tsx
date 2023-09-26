@@ -28,7 +28,7 @@ export const Pool = ({ pool }: Props) => {
 
   const { warnings, setWarnings } = useWarningsStore()
 
-  const positions = usePoolPositions(pool)
+  const positions = usePoolPositions(pool.id)
   const accountDeposits = useAccountDeposits(enabledFarms ? pool.id : undefined)
 
   const hasExpandContent =
@@ -79,10 +79,13 @@ export const Pool = ({ pool }: Props) => {
               transition={{ duration: 0.5, ease: "easeInOut" }}
               css={{ overflow: "hidden" }}
             >
-              <LiquidityPositionWrapper pool={pool} positions={positions} />
+              <LiquidityPositionWrapper
+                poolId={pool.id}
+                positions={positions}
+              />
               {enabledFarms && (
                 <FarmingPositionWrapper
-                  pool={pool}
+                  poolId={pool.id}
                   deposits={accountDeposits.data}
                 />
               )}

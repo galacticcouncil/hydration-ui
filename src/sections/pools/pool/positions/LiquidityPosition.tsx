@@ -16,7 +16,6 @@ import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiq
 import { Button } from "components/Button/Button"
 import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useFarms } from "api/farms"
 import { useFarmDepositMutation } from "utils/farms/deposit"
 import { TOAST_MESSAGES } from "state/toasts"
@@ -28,16 +27,17 @@ import { BN_0 } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { useRpcProvider } from "providers/rpcProvider"
+import { u32 } from "@polkadot/types-codec"
 
 type Props = {
-  pool: OmnipoolPool
+  poolId: u32
   position: HydraPositionsTableData
   onSuccess: () => void
   index: number
 }
 
 function LiquidityPositionJoinFarmButton(props: {
-  pool: OmnipoolPool
+  poolId: u32
   position: HydraPositionsTableData
   onSuccess: () => void
 }) {
@@ -45,8 +45,8 @@ function LiquidityPositionJoinFarmButton(props: {
   const { assets } = useRpcProvider()
   const { account } = useAccountStore()
   const [joinFarm, setJoinFarm] = useState(false)
-  const farms = useFarms([props.pool.id])
-  const meta = assets.getAsset(props.pool.id.toString())
+  const farms = useFarms([props.poolId])
+  const meta = assets.getAsset(props.poolId.toString())
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type
@@ -67,7 +67,7 @@ function LiquidityPositionJoinFarmButton(props: {
   }, {} as ToastMessage)
 
   const joinFarmMutation = useFarmDepositMutation(
-    props.pool.id,
+    props.poolId,
     props.position.id,
     toast,
     () => setJoinFarm(false),
@@ -90,7 +90,7 @@ function LiquidityPositionJoinFarmButton(props: {
         <JoinFarmModal
           farms={farms.data}
           isOpen={joinFarm}
-          pool={props.pool}
+          poolId={props.poolId}
           shares={props.position.shares}
           onClose={() => setJoinFarm(false)}
           mutation={joinFarmMutation}
@@ -133,7 +133,7 @@ function LiquidityPositionRemoveLiquidity(props: {
 }
 
 export const LiquidityPosition = ({
-  pool,
+  poolId,
   position,
   index,
   onSuccess,
@@ -230,7 +230,7 @@ export const LiquidityPosition = ({
       >
         {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
           <LiquidityPositionJoinFarmButton
-            pool={pool}
+            poolId={poolId}
             position={position}
             onSuccess={onSuccess}
           />

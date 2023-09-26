@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { CurrencyReserves } from "./components/CurrencyReserves"
-import { AssetMetaById, BalanceByAsset } from "sections/pools/PoolsPage.utils"
+import { BalanceByAsset } from "sections/pools/PoolsPage.utils"
 import { u32 } from "@polkadot/types-codec"
 import BigNumber from "bignumber.js"
 import { Stepper } from "components/Stepper/Stepper"
@@ -15,13 +15,13 @@ import { AddLiquidityForm } from "sections/pools/modals/AddLiquidity/AddLiquidit
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { Text } from "components/Typography/Text/Text"
 import { Page, PathOption, usePage } from "./TransferModal.utils"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   poolId: u32
   isOpen: boolean
   onClose: () => void
   fee: BigNumber
-  assetMetaById?: AssetMetaById
   balanceByAsset?: BalanceByAsset
   refetchPositions: () => void
   assets: { id: string }[]
@@ -37,7 +37,6 @@ export const TransferModal = ({
   isOpen,
   onClose,
   balanceByAsset,
-  assetMetaById,
   reserves,
   refetchPositions,
   defaultPage,
@@ -47,6 +46,8 @@ export const TransferModal = ({
   const { currentPage, setPage, goBack, path } = usePage(defaultPage)
   const [assetId, setAssetId] = useState<string>(assets[0]?.id)
   const [sharesAmount, setSharesAmount] = useState<string>()
+
+  const rpcProvider = useRpcProvider()
 
   const [selectedOption, setSelectedOption] = useState<PathOption>(
     defaultSelectedOption ?? "OMNIPOOL",
@@ -96,9 +97,9 @@ export const TransferModal = ({
             assets={Array.from(balanceByAsset?.entries() ?? []).map(
               ([id, balance]) => ({
                 id,
-                symbol: assetMetaById?.get(id)?.symbol,
+                symbol: rpcProvider.assets.getAsset(id).symbol,
                 balance: balance.free?.shiftedBy(
-                  assetMetaById?.get(id)?.decimals?.neg()?.toNumber() ?? -12,
+                  -rpcProvider.assets.getAsset(id).decimals,
                 ),
                 value: balance.value,
               }),
@@ -164,7 +165,7 @@ export const TransferModal = ({
                 }}
                 reserves={reserves}
                 onAssetOpen={() => setPage(Page.ASSETS)}
-                asset={assetMetaById?.get(assetId)}
+                asset={rpcProvider.assets.getAsset(assetId)}
                 fee={fee}
               />
             ),
@@ -207,7 +208,7 @@ export const TransferModal = ({
             content: (
               <AddLiquidityForm
                 initialAmount={sharesAmount}
-                assetId={poolId}
+                assetId={poolId.toString()}
                 onSuccess={() => {
                   refetchPositions()
                   onClose()

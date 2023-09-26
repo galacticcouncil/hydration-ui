@@ -25,7 +25,6 @@ export const StablePool = ({
   assets,
   total,
   balanceByAsset,
-  assetMetaById,
   reserves,
 }: Props) => {
   const [transferOpen, setTransferOpen] = useState<Page>()
@@ -67,7 +66,6 @@ export const StablePool = ({
           reserves={reserves}
           onClose={() => setTransferOpen(undefined)}
           balanceByAsset={balanceByAsset}
-          assetMetaById={assetMetaById}
           refetchPositions={position.refetch}
         />
       )}

@@ -6,13 +6,13 @@ import { SContainer, SOmnipoolButton } from "./LiquidityPosition.styled"
 import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import BN from "bignumber.js"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { u32, u8 } from "@polkadot/types"
+import { u32 } from "@polkadot/types"
 import { ReactComponent as DropletIcon } from "assets/icons/DropletIcon.svg"
 import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
 import { SPositions } from "sections/pools/pool/Pool.styled"
 import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { SButton } from "sections/pools/pool/positions/LiquidityPosition.styled"
+import { TAsset } from "api/assetDetails"
 
 type Props = {
   refetchPosition: () => void
@@ -21,11 +21,7 @@ type Props = {
   fee: BN
   reserves: { asset_id: number; amount: string }[]
   onTransferOpen: () => void
-  assets: {
-    id: string
-    symbol: string
-    decimals: u8 | u32
-  }[]
+  assets: TAsset[]
 }
 
 export const LiquidityPosition = ({

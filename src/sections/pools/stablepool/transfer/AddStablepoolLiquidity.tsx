@@ -9,22 +9,22 @@ import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useAccountStore, useStore } from "state/store"
-import { useApiPromise } from "utils/api"
 import { FormValues } from "utils/helpers"
 import { PoolAddLiquidityInformationCard } from "sections/pools/modals/AddLiquidity/AddLiquidityInfoCard"
 import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
-import { u8 } from "@polkadot/types"
 import { u32 } from "@polkadot/types-codec"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useDisplayPrice } from "utils/displayAsset"
 import { useTokenBalance } from "api/balances"
 import { positive, validNumber } from "utils/validators"
 import { ISubmittableResult } from "@polkadot/types/types"
+import { TAsset } from "api/assetDetails"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   poolId: u32
   fee: BigNumber
-  asset?: { id: string; symbol: string; decimals: u32 | u8 }
+  asset?: TAsset
   onSuccess: (result: ISubmittableResult) => void
   onClose: () => void
   onCancel: () => void
@@ -44,7 +44,7 @@ export const AddStablepoolLiquidity = ({
   reserves,
   fee,
 }: Props) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const { t } = useTranslation()
   const form = useForm<{ amount: string }>({ mode: "onChange" })
@@ -153,9 +153,7 @@ export const AddStablepoolLiquidity = ({
 
                       if (
                         walletBalance.data?.balance?.gte(
-                          BigNumber(value).shiftedBy(
-                            asset?.decimals.toNumber(),
-                          ),
+                          BigNumber(value).shiftedBy(asset?.decimals),
                         )
                       ) {
                         return true

@@ -1,10 +1,8 @@
-import { u32 } from "@polkadot/types"
 import { useTokenBalance } from "api/balances"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
 import BN from "bignumber.js"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const WalletTransferAssetSelect = (props: {
@@ -14,7 +12,7 @@ export const WalletTransferAssetSelect = (props: {
   onBlur?: (value: string) => void
   onChange: (value: string) => void
 
-  asset: u32 | string
+  asset?: string
 
   onAssetOpen?: () => void
   title?: string
@@ -27,7 +25,7 @@ export const WalletTransferAssetSelect = (props: {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const { account } = useAccountStore()
-  const asset = assets.getAsset(props.asset.toString())
+  const asset = props?.asset ? assets.getAsset(props?.asset) : undefined
   const balance = useTokenBalance(props.asset, account?.address)
 
   return (
@@ -39,11 +37,10 @@ export const WalletTransferAssetSelect = (props: {
       onChange={props.onChange}
       onBlur={props.onBlur}
       asset={props.asset}
-      assetIcon={<AssetLogo id={asset.id} />}
-      decimals={asset.decimals}
+      decimals={asset?.decimals}
       balance={props.balance ?? balance.data?.balance}
-      assetName={asset.name}
-      assetSymbol={asset.symbol}
+      assetName={asset?.name}
+      assetSymbol={asset?.symbol}
       onSelectAssetClick={props.onAssetOpen}
       error={props.error}
       balanceLabel={t("selectAsset.balance.label")}

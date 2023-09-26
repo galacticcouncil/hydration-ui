@@ -7,7 +7,6 @@ import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useStore } from "state/store"
-import { useApiPromise } from "utils/api"
 import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
 import {
   BN_100,
@@ -17,11 +16,11 @@ import {
 import { theme } from "theme"
 import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
 import { u32 } from "@polkadot/types-codec"
-import { useAssetMeta } from "api/assetMeta"
 import { useStablepoolLiquidityOut } from "./RemoveLiquidity.utils"
 import { RemoveLiquidityReward } from "sections/pools/modals/RemoveLiquidity/components/RemoveLiquidityReward"
 import { STradingPairContainer } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.styled"
 import { RemoveLiquidityInput } from "sections/pools/modals/RemoveLiquidity/components/RemoveLiquidityInput"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type RemoveLiquidityProps = {
   assetId?: string
@@ -45,9 +44,9 @@ export const RemoveLiquidity = ({
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
   const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
-  const meta = useAssetMeta(assetId)
+  const { api, assets } = useRpcProvider()
+  const asset = assetId ? assets.getAsset(assetId) : undefined
 
-  const api = useApiPromise()
   const { createTransaction } = useStore()
 
   const value = form.watch("value")
@@ -60,7 +59,7 @@ export const RemoveLiquidity = ({
     shares: removeSharesValue,
     reserves: position.reserves,
     poolId: position.poolId,
-    asset: meta.data,
+    asset,
     fee: position.fee,
   })
 
@@ -103,7 +102,7 @@ export const RemoveLiquidity = ({
                 out: liquidityOut,
                 amount: removeSharesValue,
                 fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
-                symbol: meta?.data?.symbol,
+                symbol: asset?.symbol,
               }}
             >
               <span />
@@ -118,7 +117,7 @@ export const RemoveLiquidity = ({
                 out: liquidityOut,
                 amount: removeSharesValue,
                 fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
-                symbol: meta?.data?.symbol,
+                symbol: asset?.symbol,
               }}
             >
               <span />
@@ -201,15 +200,15 @@ export const RemoveLiquidity = ({
                 <Text color="brightBlue300">
                   {t("liquidity.remove.modal.receive")}
                 </Text>
-                {meta.data && (
+                {asset && (
                   <RemoveLiquidityReward
-                    id={meta.data.id}
-                    name={meta.data.symbol}
-                    symbol={meta.data.symbol}
+                    id={asset.id}
+                    name={asset.symbol}
+                    symbol={asset.symbol}
                     amount={t("value", {
                       value: liquidityOut,
                       type: "token",
-                      numberSuffix: ` ${meta.data.symbol}`,
+                      numberSuffix: ` ${asset.symbol}`,
                     })}
                   />
                 )}

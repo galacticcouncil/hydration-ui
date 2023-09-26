@@ -5,18 +5,17 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { AddLiquidityForm } from "./AddLiquidityForm"
 
 type Props = {
-  pool: OmnipoolPool
+  poolId: u32
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
 }
 
-export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
-  const [assetId, setAssetId] = useState<u32 | string>(pool?.id.toString())
+export const AddLiquidity = ({ poolId, isOpen, onClose, onSuccess }: Props) => {
+  const [assetId, setAssetId] = useState<string>(poolId.toString())
   const { t } = useTranslation()
   const { page, direction, back, next } = useModalPagination()
 

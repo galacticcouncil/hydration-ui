@@ -1,18 +1,18 @@
 // TODO: remove this before merging
 // @ts-nocheck
-import { useApiPromise } from "utils/api"
 import { useQuery } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types-codec"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const useStableswapPools = () => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(QUERY_KEYS.stableswapPools, getStableswapPools(api))
 }
 
 export const useStableswapPool = (poolId: u32) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.stableswapPool(poolId),
     getStableswapPool(api, poolId),

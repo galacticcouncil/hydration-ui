@@ -24,17 +24,13 @@ export const derivePoolAccount = (assetId: u32) => {
   return encodeAddress(blake2AsHex(name), HYDRADX_SS58_PREFIX)
 }
 
-export type AssetMetaById = Exclude<
-  ReturnType<typeof useStablePools>["data"],
-  undefined
->[number]["assetMetaById"]
-
 export type BalanceByAsset = Exclude<
   ReturnType<typeof useStablePools>["data"],
   undefined
 >[number]["balanceByAsset"]
 
 export const useStablePools = () => {
+  const { assets } = useRpcProvider()
   const pools = useStableswapPools()
 
   const poolAddressById = new Map(
@@ -56,11 +52,6 @@ export const useStablePools = () => {
     ...new Set([].concat(...assetsByPool.values())),
   ]
 
-  const assetMetas = useAssetMetaList(uniqueAssetIds)
-  const assetMetaById = new Map(
-    (assetMetas?.data ?? []).map((asset) => [asset.id, asset]),
-  )
-
   const spotPrices = useDisplayPrices(uniqueAssetIds)
   const spotPriceByAsset = new Map(
     (spotPrices?.data ?? []).map((spotPrice) => [
@@ -69,19 +60,14 @@ export const useStablePools = () => {
     ]),
   )
 
-  if (
-    pools.isLoading ||
-    assetMetas.isLoading ||
-    spotPrices.isLoading ||
-    poolsBalances.isLoading
-  ) {
+  if (pools.isLoading || spotPrices.isLoading || poolsBalances.isLoading) {
     return { data: undefined, isLoading: true }
   }
 
   const data = (pools.data ?? []).map((pool) => {
-    const poolAssets = (assetMetas.data ?? []).filter((asset) =>
-      assetsByPool.get(pool.id).includes(asset.id),
-    )
+    const poolAssets = assets
+      .getAssets(uniqueAssetIds)
+      .filter((asset) => assetsByPool.get(pool.id).includes(asset.id))
 
     const poolBalances = (poolsBalances.data ?? []).find(
       (p) => p.accountId === poolAddressById.get(pool.id),
@@ -91,9 +77,7 @@ export const useStablePools = () => {
       (poolBalances?.balances ?? []).map((balance) => {
         const id = balance.id.toString()
         const spotPrice = spotPriceByAsset.get(id)
-        const decimals = normalizeBigNumber(
-          assetMetaById.get(id)?.decimals ?? 12,
-        )
+        const decimals = normalizeBigNumber(assets.getAsset(id).decimals)
 
         const free = normalizeBigNumber(balance.data.free)
         const value =
@@ -118,7 +102,7 @@ export const useStablePools = () => {
     const reserves = Array.from(balanceByAsset.entries()).map(
       ([assetId, balance]) => ({
         asset_id: Number(assetId),
-        decimals: Number(assetMetaById.get(assetId)?.decimals ?? 0),
+        decimals: assets.getAsset(assetId).decimals,
         amount: balance.free.toString(),
       }),
     )
@@ -128,7 +112,6 @@ export const useStablePools = () => {
       assets: poolAssets,
       total,
       balanceByAsset,
-      assetMetaById,
       reserves,
       fee: normalizeBigNumber(pool.data.fee).div(BN_MILL),
     }
