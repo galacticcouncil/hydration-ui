@@ -2,7 +2,6 @@ import { ReactComponent as ClockIcon } from "assets/icons/ClockIcon.svg"
 import { ReactComponent as Percentage } from "assets/icons/Percentage.svg"
 import { ReactComponent as Cake } from "assets/icons/Cake.svg"
 import { ReactNode } from "react"
-import { format } from "date-fns"
 import { useAccountStore, useStore } from "state/store"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -27,12 +26,6 @@ export const whyBonds: Array<{
     icon: <Cake sx={{ color: "green700" }} />,
   },
 ]
-
-export const getBondName = (symbol: string, date: Date, long?: boolean) =>
-  `${symbol.toLocaleUpperCase()}${long ? " Bond" : "b"} ${format(
-    date,
-    "dd/MM/yyyy",
-  )}`
 
 export const useClaimBond = () => {
   const { api } = useRpcProvider()

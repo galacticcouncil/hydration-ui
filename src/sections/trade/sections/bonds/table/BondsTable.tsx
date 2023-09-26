@@ -41,6 +41,7 @@ export const BondsTable = ({
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
+
   const table = useActiveBondsTable(data, {
     showTransactions,
     showTransfer,
@@ -110,13 +111,18 @@ export const BondsTable = ({
                     </TableData>
                   ))}
                 </TableRow>
-                {row.getIsSelected() && showTransactions && (
-                  <TableRow isSub={true}>
-                    <td colSpan={table.getAllColumns().length}>
-                      <Transactions />
-                    </td>
-                  </TableRow>
-                )}
+                {row.getIsSelected() &&
+                  showTransactions &&
+                  row.original.events.length && (
+                    <TableRow isSub={true}>
+                      <td colSpan={table.getAllColumns().length}>
+                        <Transactions
+                          data={row.original.events}
+                          onHide={() => row.toggleSelected()}
+                        />
+                      </td>
+                    </TableRow>
+                  )}
               </Fragment>
             ))}
           </TableBodyContent>

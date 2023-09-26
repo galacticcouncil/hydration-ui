@@ -1,64 +1,18 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueries } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useIndexerUrl } from "./provider"
 import { Maybe } from "utils/helpers"
 import request, { gql } from "graphql-request"
 import { useRpcProvider } from "providers/rpcProvider"
+import { u8aToHex } from "@polkadot/util"
+import { decodeAddress } from "@polkadot/util-crypto"
+import { useAccountStore } from "state/store"
 
 export type Bond = {
   assetId: string
   id: string
   name: string
   maturity: number
-}
-
-export const useBonds = (params?: { id?: string; disable?: boolean }) => {
-  const { api } = useRpcProvider()
-  const { id, disable } = params ?? {}
-
-  return useQuery(
-    QUERY_KEYS.bonds,
-    async () => {
-      const raw = await api.query.assetRegistry.assets.entries()
-
-      return raw.reduce<Promise<Bond[]>>(async (acc, [key, dataRaw]) => {
-        const prevAcc = await acc
-        const data = dataRaw.unwrap()
-
-        // @ts-ignore
-        if (data.assetType.isBond) {
-          const id = key.args[0].toString()
-
-          const detailsRaw = await api.query.bonds.bonds(id)
-          // @ts-ignore
-          const details = detailsRaw.unwrap()
-
-          const [assetId, maturity] = details ?? []
-
-          prevAcc.push({
-            id,
-            name: data.name.toString(),
-            assetId: assetId?.toString(),
-            maturity: maturity?.toNumber(),
-          })
-        }
-
-        return prevAcc
-      }, Promise.resolve([]))
-    },
-    {
-      enabled: !disable,
-      select: (bonds) => {
-        if (id) {
-          const bond = bonds.find((bond) => bond.id === id)
-
-          return bond ? [bond] : undefined
-        }
-
-        return bonds
-      },
-    },
-  )
 }
 
 export const useLbpPool = (params?: { id?: string }) => {
@@ -110,7 +64,31 @@ export const useLbpPool = (params?: { id?: string }) => {
   )
 }
 
-export const useBondEvents = (bondId: Maybe<string>) => {
+export const useBondsEvents = (
+  bondIds: (string | undefined)[],
+  isMyEvents?: boolean,
+) => {
+  const indexerUrl = useIndexerUrl()
+  const { account } = useAccountStore()
+  const accountHash = u8aToHex(decodeAddress(account?.address, false, 42))
+
+  return useQueries({
+    queries: bondIds.map((bondId) => ({
+      queryKey: QUERY_KEYS.bondEvents(bondId),
+      queryFn: async () => {
+        const { events } = await getBondEvents(
+          indexerUrl,
+          bondId,
+          isMyEvents ? accountHash : undefined,
+        )()
+        return { events, bondId }
+      },
+      enabled: !!bondId,
+    })),
+  })
+}
+
+export const useBondEvents = (bondId?: string) => {
   const indexerUrl = useIndexerUrl()
   return useQuery(
     QUERY_KEYS.bondEvents(bondId),
@@ -130,11 +108,17 @@ type BondEvent = {
     feeAsset: number
     who: string
   }
+  block: {
+    timestamp: string
+  }
+  extrinsic: {
+    hash: string
+  }
   name: string
 }
 
 const getBondEvents =
-  (indexerUrl: string, bondId: Maybe<string>) => async () => {
+  (indexerUrl: string, bondId: Maybe<string>, who?: string) => async () => {
     //TODO: remove block filter argument, when it is tested on rococo rpc
 
     return {
@@ -143,28 +127,35 @@ const getBondEvents =
       }>(
         indexerUrl,
         gql`
-          query BondTrades($bondId: Int!) {
+          query BondTrades($bondId: Int!, $who: String) {
             events(
               where: {
-                args_jsonContains: { assetIn: $bondId }
+                args_jsonContains: { assetIn: $bondId, who: $who }
                 block: { timestamp_gte: "2023-08-31T20:00:00.177000Z" }
                 name_contains: "LBP"
                 OR: {
-                  args_jsonContains: { assetOut: $bondId }
+                  args_jsonContains: { assetOut: $bondId, who: $who }
                   block: { timestamp_gte: "2023-08-31T20:00:00.177000Z" }
                   name_contains: "LBP"
                 }
               }
+              orderBy: [block_height_ASC]
             ) {
               name
               args
               block {
                 timestamp
               }
+              extrinsic {
+                hash
+              }
             }
           }
         `,
-        { bondId: Number(bondId) },
+        {
+          bondId: Number(bondId),
+          who,
+        },
       )),
     }
   }
@@ -230,6 +221,9 @@ const getLbpPoolBalance = (indexerUrl: string, bondId?: string) => async () => {
           ) {
             args
             name
+            block {
+              timestamp
+            }
           }
         }
       `,

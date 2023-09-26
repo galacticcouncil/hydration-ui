@@ -10,12 +10,14 @@ import { Icon } from "components/Icon/Icon"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useTranslation } from "react-i18next"
 import { ReactComponent as TradeIcon } from "assets/icons/TradeTypeIcon.svg"
-import { ExternalLink } from "components/Link/ExternalLink"
+import { ReactComponent as SuccessIcon } from "assets/icons/SuccessIcon.svg"
+import { ReactComponent as Link } from "assets/icons/LinkPixeled.svg"
+import BN from "bignumber.js"
+import { theme } from "theme"
 
 export type Transaction = {
-  id: string
   date: string
-  price: string
+  price: BN
   in: {
     assetId: string
     symbol: string
@@ -27,22 +29,36 @@ export type Transaction = {
     amount: string
   }
   link: string
+  isBuy: boolean
 }
 
 export const useTransactionsTable = (data: Transaction[]) => {
   const { t } = useTranslation()
+
   const { accessor, display } = createColumnHelper<Transaction>()
 
   const columns = useMemo(
     () => [
       accessor("date", {
         header: t("bonds.transactions.table.date"),
-        cell: ({ getValue }) => <Text color="basic400">{getValue()}</Text>,
+        cell: ({ getValue }) => (
+          <Text color="basic400" tAlign="center">
+            {getValue()}
+          </Text>
+        ),
+      }),
+      accessor("price", {
+        header: t("bonds.transactions.table.price"),
+        cell: ({ row }) => (
+          <Text color="basic400" tAlign="center">
+            {t("value.token", { value: row.original.price })}
+          </Text>
+        ),
       }),
       display({
         header: t("bonds.transactions.table.transaction"),
         cell: ({ row }) => (
-          <div sx={{ flex: "row", align: "center", gap: 6 }}>
+          <div sx={{ flex: "row", align: "center", gap: 6, justify: "center" }}>
             <Icon size={18} icon={<AssetLogo id={row.original.in.assetId} />} />
             <Text>
               {t("value.tokenWithSymbol", {
@@ -64,9 +80,16 @@ export const useTransactionsTable = (data: Transaction[]) => {
           </div>
         ),
       }),
-      accessor("price", {
-        header: t("bonds.transactions.table.price"),
-        cell: ({ getValue }) => <Text color="basic400">{getValue()}</Text>,
+      display({
+        header: t("bonds.transactions.table.status"),
+        cell: () => (
+          <div sx={{ flex: "row", gap: 4, align: "center", justify: "center" }}>
+            <Icon icon={<SuccessIcon />} />
+            <Text fs={13} color="green600">
+              {t("complete")}
+            </Text>
+          </div>
+        ),
       }),
       accessor("link", {
         header: () => (
@@ -75,15 +98,22 @@ export const useTransactionsTable = (data: Transaction[]) => {
           </div>
         ),
         cell: ({ getValue }) => (
-          <ExternalLink
-            sx={{
-              color: "brightBlue300",
-              textAlign: "center",
-              display: "block",
-            }}
-            css={{ textDecoration: "none" }}
+          <a
             href={getValue()}
-          />
+            target="_blank"
+            rel="noreferrer"
+            sx={{ width: "min-content", display: "block", m: "auto" }}
+          >
+            <Icon
+              sx={{ color: "brightBlue300" }}
+              icon={<Link />}
+              css={{
+                "&:hover": {
+                  color: theme.colors.brightBlue100,
+                },
+              }}
+            />
+          </a>
         ),
       }),
     ],

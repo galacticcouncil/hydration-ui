@@ -23,6 +23,7 @@ import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useNavigate } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
 import { useRpcProvider } from "providers/rpcProvider"
+import { Transaction } from "./transactions/Transactions.utils"
 
 export type BondTableItem = {
   assetId: string
@@ -30,9 +31,11 @@ export type BondTableItem = {
   balance?: BN
   price: string
   balanceHuman?: string
-  bondId?: string
+  bondId: string
   isSale: boolean
   assetIn?: string
+  averagePrice: BN | undefined
+  events: Transaction[]
 }
 
 export type Config = {
@@ -42,12 +45,11 @@ export type Config = {
   onTransfer: (assetId: string) => void
 }
 
-const BondCell = ({
-  assetId,
-  maturity,
-}: Pick<BondTableItem, "assetId" | "maturity">) => {
+const BondCell = ({ bondId }: { bondId: string }) => {
   const { assets } = useRpcProvider()
-  const meta = assets.getAsset(assetId)
+  const bond = assets.getBond(bondId)
+
+  if (!bond) return null
 
   return (
     <div
@@ -57,13 +59,13 @@ const BondCell = ({
         gap: 16,
       }}
     >
-      <Icon icon={<AssetLogo id={assetId} />} size={30} />
+      <Icon icon={<AssetLogo id={bond.assetId} />} size={30} />
       <div sx={{ flex: "column" }}>
         <Text fs={16} sx={{ mt: 3 }} font="ChakraPetchSemiBold">
-          {meta.symbol}
+          {bond.symbol}
         </Text>
         <Text fs={13} sx={{ mt: 3 }} color={"whiteish500"}>
-          {meta.name}
+          {bond.name}
         </Text>
       </div>
     </div>
@@ -88,16 +90,16 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
 
   const columns = useMemo(
     () => [
-      accessor("assetId", {
+      accessor("bondId", {
         header: t("bonds.table.bond"),
-        cell: ({ getValue, row }) =>
-          getValue() ? (
-            <BondCell assetId={getValue()} maturity={row.original.maturity} />
-          ) : null,
+        cell: ({ getValue }) =>
+          getValue() ? <BondCell bondId={getValue()} /> : null,
       }),
       accessor("maturity", {
         header: () => (
-          <div sx={{ textAlign: "right" }}>{t("bonds.table.maturity")}</div>
+          <div sx={{ textAlign: ["right", "center"] }}>
+            {t("bonds.table.maturity")}
+          </div>
         ),
         cell: ({ getValue }) => {
           const value = getValue()
@@ -119,13 +121,15 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
           </Text>
         ),
       }),
-      accessor("price", {
+      accessor("averagePrice", {
         header: () => (
-          <div sx={{ textAlign: "center" }}>{t("bonds.table.price")}</div>
+          <div sx={{ textAlign: "center" }} css={{ whiteSpace: "normal" }}>
+            {t("bonds.table.price")}
+          </div>
         ),
         cell: ({ getValue }) => (
           <Text color="white" tAlign="center">
-            {getValue()}
+            {t("value.token", { value: getValue() })}
           </Text>
         ),
       }),

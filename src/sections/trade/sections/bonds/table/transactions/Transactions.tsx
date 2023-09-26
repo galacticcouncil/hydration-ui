@@ -11,34 +11,26 @@ import { flexRender } from "@tanstack/react-table"
 import { Fragment } from "react"
 import { Text } from "components/Typography/Text/Text"
 import { STableData } from "./Transactions.styled"
+import { ButtonTransparent } from "components/Button/Button"
+import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronDown.svg"
+import { theme } from "theme"
+import { useTranslation } from "react-i18next"
 
-const mockedTransactionData: Transaction[] = [
-  {
-    id: "1",
-    date: "25.12.2023",
-    price: "2855.24",
-    in: {
-      assetId: "0",
-      symbol: "HDX",
-      amount: "2855.24",
-    },
-    out: {
-      assetId: "2",
-      symbol: "DAI",
-      amount: "2855.24",
-    },
-    link: "",
-  },
-]
-
-export const Transactions = () => {
-  const table = useTransactionsTable(mockedTransactionData)
+export const Transactions = ({
+  data,
+  onHide,
+}: {
+  data: Transaction[]
+  onHide: () => void
+}) => {
+  const { t } = useTranslation()
+  const table = useTransactionsTable(data)
 
   return (
     <>
       <TableTitle>
         <Text fs={16} fw={500}>
-          Past transactions
+          {t("bonds.transactions.table.pastTransactions")}
         </Text>
       </TableTitle>
       <Table>
@@ -46,7 +38,7 @@ export const Transactions = () => {
           {table.getHeaderGroups().map((hg) => (
             <TableRow key={hg.id}>
               {hg.headers.map((header) => (
-                <TableHeader key={header.id}>
+                <TableHeader key={header.id} css={{ textAlign: "center" }}>
                   {flexRender(
                     header.column.columnDef.header,
                     header.getContext(),
@@ -66,17 +58,30 @@ export const Transactions = () => {
                   </STableData>
                 ))}
               </TableRow>
-              {row.getIsSelected() && (
-                <TableRow isSub={true}>
-                  <STableData colSpan={table.getAllColumns().length}>
-                    <Transactions />
-                  </STableData>
-                </TableRow>
-              )}
             </Fragment>
           ))}
         </TableBodyContent>
       </Table>
+      <div
+        sx={{ flex: "row", align: "center", justify: "center", py: 10 }}
+        onClick={onHide}
+        css={{
+          cursor: "pointer",
+          "&:hover > p": { color: theme.colors.white },
+        }}
+      >
+        <Text fs={14} fw={500} color="basic400">
+          {t("bonds.transactions.table.hide")}
+        </Text>
+        <ButtonTransparent
+          css={{
+            color: theme.colors.basic400,
+            transform: "rotate(180deg)",
+          }}
+        >
+          <ChevronDownIcon />
+        </ButtonTransparent>
+      </div>
     </>
   )
 }

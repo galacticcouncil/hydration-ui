@@ -40,8 +40,14 @@ type SearchGenerics = MakeGenerics<{
 const squidUrl = import.meta.env.VITE_SQUID_URL
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
-export function BondsTrade() {
-  const { api } = useRpcProvider()
+export const BondsTrade = ({
+  bondId,
+  setBondId,
+}: {
+  bondId?: string
+  setBondId: (bondId: string) => void
+}) => {
+  const { api, assets } = useRpcProvider()
   const { account } = useAccountStore()
   const { createTransaction } = useStore()
 
@@ -52,7 +58,14 @@ export function BondsTrade() {
   const search = BondsAppSearch.safeParse(rawSearch)
 
   const handleQueryUpdate = async (e: CustomEvent) => {
-    console.log(e.detail)
+    const assetIn = e.detail.assetIn.toString() as string
+    const assetOut = e.detail.assetOut.toString() as string
+
+    const bond = assets.getAssets([assetIn, assetOut]).find(assets.isBond)
+
+    if (bond && bondId !== bond.id) {
+      setBondId(bond.id)
+    }
   }
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {

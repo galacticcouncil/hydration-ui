@@ -6,14 +6,13 @@ import { ReactComponent as ClockIcon } from "assets/icons/ClockIcon.svg"
 import { Icon } from "components/Icon/Icon"
 import { Trans, useTranslation } from "react-i18next"
 import { BondProgreesBar } from "./components/BondProgressBar/BondProgressBar"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { BLOCK_TIME } from "utils/constants"
 import { useBestNumber } from "api/chain"
 import Skeleton from "react-loading-skeleton"
 import { BondInfoCards } from "./components/BondInfoCards/BondInfoCards"
 import { MyActiveBonds } from "sections/trade/sections/bonds/MyActiveBonds"
 import { BondDetailsSkeleton } from "./BondDetailsSkeleton"
-import { getBondName } from "sections/trade/sections/bonds/Bonds.utils"
 import { BondsTrade } from "./components/BondTrade/BondsTradeApp"
 import { addSeconds } from "date-fns"
 import { theme } from "theme"
@@ -132,10 +131,20 @@ export const BondDetailsHeader = ({
 export const BondDetailsData = () => {
   const { assets } = useRpcProvider()
   const search = useSearch<SearchGenerics>()
-  //TODO: check both assetIn and assetOut
-  const id = search.assetOut?.toString()
-  const asset = id ? assets.getAsset(id) : undefined
-  const bond = asset && assets.isBond(asset) ? asset : undefined
+
+  const [bondId, setBondId] = useState(() => {
+    const assetOutId = search.assetOut?.toString()
+    const assetInId = search.assetIn?.toString()
+    const isBond = assetOutId ? assets.getAsset(assetOutId).isBond : undefined
+
+    if (isBond) {
+      return assetOutId
+    } else {
+      return assetInId
+    }
+  })
+
+  const bond = bondId ? assets.getBond(bondId) : undefined
 
   const isPast = !!bond?.isPast
   const lbpPoolEvents = useLBPPoolEvents(isPast ? bond?.id : undefined)
@@ -169,14 +178,14 @@ export const BondDetailsData = () => {
   return (
     <div sx={{ flex: "column", gap: [20, 40] }}>
       <BondDetailsHeader
-        title={getBondName(bond.symbol, data.maturityDate, true)}
+        title={bond.name}
         accumulatedAssetId={lbpPoolData?.assets.find(
           (asset: number) => asset !== Number(bond?.id),
         )}
         end={lbpPoolData?.end}
       />
 
-      <BondsTrade />
+      <BondsTrade bondId={bondId} setBondId={setBondId} />
 
       <BondProgreesBar bondId={bond?.id} decimals={bond.decimals} />
 

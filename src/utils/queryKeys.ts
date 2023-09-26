@@ -306,7 +306,6 @@ export const QUERY_KEYS = {
     "positionBalances",
     positionId,
   ],
-  bonds: ["bonds"],
   lbpPool: ["lbpPool"],
   bondEvents: (id?: Maybe<string>) => ["bondEvents", id],
   lbpPoolTotal: (id?: Maybe<string>) => ["lbpPoolTotal", id],

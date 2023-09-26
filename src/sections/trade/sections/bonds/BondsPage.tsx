@@ -20,7 +20,7 @@ export const BondsPage = () => {
       <Spacer axis="vertical" size={33} />
       <WhyBonds />
       <Spacer axis="vertical" size={40} />
-      <MyActiveBonds />
+      <MyActiveBonds showTransactions />
     </>
   )
 }

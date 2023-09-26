@@ -2,15 +2,19 @@ import { BondsTable } from "./table/BondsTable"
 import { Skeleton } from "./table/skeleton/Skeleton"
 import { useTokensBalances } from "api/balances"
 import { useAccountStore } from "state/store"
-import { useBonds, useLbpPool } from "api/bonds"
+import { useBondsEvents, useLbpPool } from "api/bonds"
 import { pluck } from "utils/rx"
-import { BondTableItem } from "./table/BondsTable.utils"
 import { useTranslation } from "react-i18next"
 import { Placeholder } from "./table/placeholder/Placeholder"
-import { BN_0 } from "utils/constants"
 import { useBestNumber } from "api/chain"
 import { useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
+import { isNotNil } from "utils/helpers"
+import { BN_0 } from "utils/constants"
+import BN from "bignumber.js"
+import { format } from "date-fns"
+import { Transaction } from "./table/transactions/Transactions.utils"
+import { BondTableItem } from "./table/BondsTable.utils"
 
 type Props = {
   showTransactions?: boolean
@@ -31,28 +35,31 @@ export const MyActiveBonds = ({
 
   const bestNumber = useBestNumber()
   const lbpPools = useLbpPool()
-  const bonds = useBonds()
+  const bonds = assets.bonds
   const bondsData =
-    (assetId
-      ? bonds.data?.filter((bond) => bond.assetId === assetId)
-      : bonds.data) ?? []
-
-  const metas = assets.getAssets(
-    assetId ? [assetId] : bonds.data?.map((bond) => bond.assetId) ?? [],
-  )
-
-  const metasData = metas ?? []
+    (assetId ? bonds.filter((bond) => bond.assetId === assetId) : bonds) ?? []
 
   const balances = useTokensBalances(pluck("id", bondsData), account?.address)
 
+  const bondsBalances = balances.filter((balance) => balance.data?.total.gt(0))
+
   const isLoading =
-    pluck("isLoading", balances).some(Boolean) ||
-    bonds.isLoading ||
-    lbpPools.isLoading
+    pluck("isLoading", balances).some(Boolean) || lbpPools.isLoading
+
+  const bondEvents = useBondsEvents(
+    !showTransfer
+      ? bondsBalances.map((bondBalance) =>
+          bondBalance.data?.assetId.toString(),
+        ) ?? []
+      : [],
+    true,
+  )
 
   const tableProps = {
     title: assetId
-      ? t("bonds.table.title.withSymbol", { symbol: metasData[0].symbol })
+      ? t("bonds.table.title.withSymbol", {
+          symbol: assets.getAsset(bondsData[0].assetId).symbol,
+        })
       : t("bonds.table.title"),
     showTransactions,
     showTransfer,
@@ -67,24 +74,118 @@ export const MyActiveBonds = ({
   }
 
   const bondMap = new Map(bondsData.map((bond) => [bond.id, bond]))
-  const metaMap = new Map(metasData.map((meta) => [meta.id, meta]))
 
   const currentBlockNumber =
     bestNumber.data?.relaychainBlockNumber.toNumber() ?? 0
 
-  const data =
-    bonds.data?.reduce<BondTableItem[]>((acc, item) => {
-      const balance = balances.find(
-        (balance) => balance.data?.assetId.toString() === item.id,
+  let data: BondTableItem[]
+
+  const bondsWithBalance = bondsBalances
+    .map((bondBalance) => {
+      const id = bondBalance.data?.assetId.toString() ?? ""
+      const bond = bondMap.get(id)
+
+      const isLoaded = bondEvents.every((bondEvent) => bondEvent.data)
+
+      if (!bond || !isLoaded) return undefined
+
+      const eventsQuery = bondEvents.find(
+        (bondEvent) => bondEvent.data?.bondId === id,
       )
 
-      const { assetId, total } = balance?.data ?? {}
+      const events = showTransfer
+        ? []
+        : eventsQuery?.data?.events.reduce((acc, event) => {
+            const date = format(new Date(event.block.timestamp), "dd.MM.yyyy")
+            const assetInId = event.args.assetIn
+            const assetOutId = event.args.assetOut
 
-      if (balance && (allAssets ? total?.gte(BN_0) : total?.gt(BN_0))) {
-        const id = assetId?.toString() ?? ""
-        const bond = bondMap.get(id)
-        const bondAssetId = bond?.assetId ?? ""
+            const metaIn = assets.getAsset(assetInId.toString())
+            const metaOut = assets.getAsset(assetOutId.toString())
 
+            const isBuy = event.name === "LBP.BuyExecuted"
+            const amountIn = BN(event.args.amount).shiftedBy(-metaIn.decimals)
+
+            const amountOut = BN(
+              event.args[isBuy ? "buyPrice" : "salePrice"],
+            ).shiftedBy(-metaOut.decimals)
+
+            const price =
+              event.args.assetOut !== Number(id)
+                ? amountOut.div(amountIn)
+                : amountIn.div(amountOut)
+
+            const assetIn = {
+              assetId: assets.isBond(metaIn) ? metaIn.assetId : metaIn.id,
+              symbol: metaIn.symbol,
+              amount: amountIn.toString(),
+            }
+
+            const assetOut = {
+              assetId: assets.isBond(metaOut) ? metaOut.assetId : metaOut.id,
+              symbol: metaOut.symbol,
+              amount: amountOut.toString(),
+            }
+
+            const link = `https://hydradx.subscan.io/extrinsic/${event.extrinsic.hash}`
+
+            acc.push({
+              date,
+              in: assetIn,
+              out: assetOut,
+              isBuy,
+              price,
+              link,
+            })
+
+            return acc
+          }, [] as Transaction[]) ?? []
+
+      const averagePrice = events
+        ?.reduce((acc, event) => acc.plus(event.price), BN_0)
+        .div(events.length)
+
+      const bondAssetId = bond.assetId
+      const lbpPool = lbpPools.data?.find((lbpPool) =>
+        lbpPool.assets.some((asset: number) => asset === Number(bond?.id)),
+      )
+
+      const isSale = lbpPool
+        ? currentBlockNumber > Number(lbpPool.start) &&
+          currentBlockNumber < Number(lbpPool.end)
+        : false
+
+      const assetIn = lbpPool?.assets
+        .find((asset: number) => asset !== Number(bond?.id))
+        ?.toString()
+
+      return {
+        assetId: bondAssetId,
+        assetIn,
+        maturity: bondMap.get(id)?.maturity,
+        balance: bondBalance.data?.total,
+        balanceHuman: bondBalance.data?.total
+          ?.shiftedBy(-bond.decimals)
+          .toString(),
+        price: "",
+        bondId: bond.id,
+        isSale,
+        averagePrice,
+        events,
+      }
+    })
+    .filter(isNotNil)
+
+  data = bondsWithBalance
+
+  if (allAssets) {
+    const bondsWithoutBalance = bonds.reduce<BondTableItem[]>((acc, bond) => {
+      const isBalance = bondsWithBalance.some(
+        (bondWithBalance) => bondWithBalance.bondId === bond.id,
+      )
+
+      if (!isBalance) {
+        const id = bond.id
         const lbpPool = lbpPools.data?.find((lbpPool) =>
           lbpPool.assets.some((asset: number) => asset === Number(bond?.id)),
         )
@@ -98,23 +199,25 @@ export const MyActiveBonds = ({
           .find((asset: number) => asset !== Number(bond?.id))
           ?.toString()
 
-        const assetMeta = metaMap.get(bondAssetId)
-        const shiftBy = assetMeta?.decimals ? assetMeta.decimals : 12
-
         acc.push({
-          assetId: bondAssetId,
+          assetId: bond.assetId,
           assetIn,
           maturity: bondMap.get(id)?.maturity,
-          balance: balance.data?.total,
-          balanceHuman: balance.data?.total?.shiftedBy(-shiftBy).toString(),
+          balance: BN_0,
+          balanceHuman: "0",
           price: "",
-          bondId: bond?.id,
+          bondId: id,
           isSale,
+          averagePrice: BN_0,
+          events: [],
         })
       }
 
       return acc
-    }, []) ?? []
+    }, [])
+
+    data = [...bondsWithBalance, ...bondsWithoutBalance]
+  }
 
   return (
     <BondsTable

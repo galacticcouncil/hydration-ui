@@ -2,6 +2,7 @@
   "and": "and",
   "back": "Back",
   "bonds": "Bonds",
+  "complete": "Complete",
   "bond.maturity": "Maturity",
   "bond.discount": "Discount",
   "bond.premium": "Premium",
@@ -571,9 +572,12 @@
   "bonds.table.transfer": "Transfer",
   "bonds.table.switcher": "Show all bonds",
   "bonds.transactions.table.date": "Date",
-  "bonds.transactions.table.transaction": "Amount in/out",
+  "bonds.transactions.table.transaction": "Transaction",
   "bonds.transactions.table.price": "Price",
+  "bonds.transactions.table.status": "Status",
   "bonds.transactions.table.link": "Subscan link",
+  "bonds.transactions.table.pastTransactions": "Past transactions",
+  "bonds.transactions.table.hide": "Hide Details",
   "bonds.details.navigation.label": "Back to bonds overview",  
   "bonds.details.header.accumulatedAsset": "Accumulated Asset -",  
   "bonds.details.header.end": "Ending in <0>{{date}}<0/>",
@@ -583,4 +587,5 @@
   "bonds.details.card.bondPrice": "Current bond price",
   "bonds.details.card.spotPrice": "Current spot price",
   "bonds.details.card.maturity": "Maturity date"
+
 }
