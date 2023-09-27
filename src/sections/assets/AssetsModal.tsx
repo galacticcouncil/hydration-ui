@@ -25,15 +25,17 @@ export const AssetsModalContent = ({
   allAssets,
 }: Props) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { assets, isLoaded } = useRpcProvider()
   const { account } = useAccountStore()
   const [search, setSearch] = useState("")
 
   const assetsRows = useAcountAssets(account?.address)
 
-  const assetsDetails = allAssets
-    ? assets.tokens
-    : assetsRows.filter((asset) => asset.isToken)
+  const assetsDetails = (
+    allAssets ? assets.tokens : assetsRows.filter((asset) => asset.isToken)
+  ).filter((asset) =>
+    search ? asset.name.toLowerCase().includes(search.toLowerCase()) : true,
+  )
 
   const mainAssets =
     allowedAssets != null
@@ -45,7 +47,7 @@ export const AssetsModalContent = ({
       ? assetsDetails.filter((asset) => !allowedAssets?.includes(asset.id))
       : []
 
-  if (!mainAssets.length)
+  if (!isLoaded)
     return (
       <>
         <SAssetsModalHeader>
