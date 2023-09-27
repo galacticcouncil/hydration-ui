@@ -150,10 +150,11 @@ export const useFarmingPositionsData = () => {
 
   const accountDeposits = useMemo(
     () =>
-      allDeposits.data?.filter((deposit) =>
-        accountDepositIds.data?.some(
-          (d) => d.instanceId.toString() === deposit.id.toString(),
-        ),
+      allDeposits.data?.filter(
+        (deposit) =>
+          accountDepositIds.data?.some(
+            (d) => d.instanceId.toString() === deposit.id.toString(),
+          ),
       ),
     [allDeposits.data, accountDepositIds.data],
   )

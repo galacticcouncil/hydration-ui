@@ -45,9 +45,20 @@ export const TableContainer = styled.div`
       transparent 4px
     ),
     linear-gradient(to top, rgba(158, 167, 180, 0), rgba(144, 165, 198, 0.3));
-  background-size: 4px 4px, calc(100% - 8px) 1px, 4px 4px, 1px calc(100% - 8px);
-  background-position: top left, top center, top right, center right,
-    bottom right, bottom center, bottom left, center left;
+  background-size:
+    4px 4px,
+    calc(100% - 8px) 1px,
+    4px 4px,
+    1px calc(100% - 8px);
+  background-position:
+    top left,
+    top center,
+    top right,
+    center right,
+    bottom right,
+    bottom center,
+    bottom left,
+    center left;
 
   background-repeat: no-repeat;
 
@@ -97,9 +108,20 @@ export const StatsTableContainer = styled.div`
       transparent 4px
     ),
     linear-gradient(to top, rgba(158, 167, 180, 0), rgba(144, 165, 198, 0.3));
-  background-size: 4px 4px, calc(100% - 8px) 1px, 4px 4px, 1px calc(100% - 8px);
-  background-position: top left, top center, top right, center right,
-    bottom right, bottom center, bottom left, center left;
+  background-size:
+    4px 4px,
+    calc(100% - 8px) 1px,
+    4px 4px,
+    1px calc(100% - 8px);
+  background-position:
+    top left,
+    top center,
+    top right,
+    center right,
+    bottom right,
+    bottom center,
+    bottom left,
+    center left;
 
   background-repeat: no-repeat;
 

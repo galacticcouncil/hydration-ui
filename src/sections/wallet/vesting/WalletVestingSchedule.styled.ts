@@ -35,7 +35,8 @@ export const SSchedule = styled.div`
       rgba(144, 165, 198, 0.3) 50%,
       rgba(158, 167, 180, 0) 100%
     );
-    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
       linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;

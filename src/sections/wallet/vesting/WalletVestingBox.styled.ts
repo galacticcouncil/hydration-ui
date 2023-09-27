@@ -26,7 +26,8 @@ export const SBox = styled.div`
       rgba(158, 167, 180, 0) 100%
     );
 
-    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
       linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
@@ -34,7 +35,8 @@ export const SBox = styled.div`
   }
 
   @media ${theme.viewport.gte.sm} {
-    box-shadow: 0px 10px 30px rgba(91, 144, 172, 0.12),
+    box-shadow:
+      0px 10px 30px rgba(91, 144, 172, 0.12),
       3px 3px 0px rgba(126, 161, 194, 0.12);
     margin: 0;
   }

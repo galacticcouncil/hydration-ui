@@ -13,9 +13,8 @@ import { useRpcProvider } from "providers/rpcProvider"
 export const getAcceptedCurrency =
   (api: ApiPromise, id: u32 | string) => async () => {
     const normalizedId = normalizeId(id)
-    const result = await api.query.multiTransactionPayment.acceptedCurrencies(
-      normalizedId,
-    )
+    const result =
+      await api.query.multiTransactionPayment.acceptedCurrencies(normalizedId)
 
     return {
       id: normalizedId,
@@ -66,9 +65,8 @@ export const useSetAsFeePayment = () => {
 
 export const getAccountCurrency =
   (api: ApiPromise, address: string | AccountId32) => async () => {
-    const result = await api.query.multiTransactionPayment.accountCurrencyMap(
-      address,
-    )
+    const result =
+      await api.query.multiTransactionPayment.accountCurrencyMap(address)
 
     if (!result.isEmpty) {
       return result.toString()
