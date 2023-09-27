@@ -45,6 +45,7 @@ export function OrderAssetRate(props: {
       title={t("otc.order.place.price", { symbol: inputMeta?.symbol })}
       asset={outputMeta?.symbol}
       amount={props.price}
+      unit={outputMeta?.symbol}
     >
       {!spotPrice?.isNaN() && (
         <UigcButton
