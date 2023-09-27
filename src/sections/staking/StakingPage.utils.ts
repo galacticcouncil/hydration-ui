@@ -12,14 +12,14 @@ import {
   useStakingPositionBalances,
 } from "api/staking"
 import { useTokenBalance, useTokenLocks } from "api/balances"
-import { NATIVE_ASSET_ID, getHydraAccountAddress } from "utils/api"
-import { useAssetMeta } from "api/assetMeta"
+import { getHydraAccountAddress } from "utils/api"
 import { useDisplayPrice } from "utils/displayAsset"
 import { BN_0, BN_100, BN_BILL, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
 import { useReferendums } from "api/democracy"
 //import { usePaymentInfo } from "api/transaction"
 //import { useAccountCurrency } from "api/payments"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const CONVICTIONS: { [key: string]: number } = {
   none: 0.1,
@@ -69,14 +69,15 @@ const getCurrentActionPoints = (
 }
 
 export const useStakeData = () => {
+  const {
+    assets: { native },
+  } = useRpcProvider()
   const { account } = useAccountStore()
-  //const api = useApiPromise()
   const stake = useStake(account?.address)
   const circulatingSupply = useCirculatingSupply()
-  const balance = useTokenBalance(NATIVE_ASSET_ID, account?.address)
-  const locks = useTokenLocks(NATIVE_ASSET_ID)
-  const meta = useAssetMeta(NATIVE_ASSET_ID)
-  const spotPrice = useDisplayPrice(NATIVE_ASSET_ID)
+  const balance = useTokenBalance(native.id, account?.address)
+  const locks = useTokenLocks(native.id)
+  const spotPrice = useDisplayPrice(native.id)
   const positionBalances = useStakingPositionBalances(
     stake.data?.positionId?.toString(),
   )
@@ -126,11 +127,9 @@ export const useStakeData = () => {
   const data = useMemo(() => {
     if (isLoading) return undefined
 
-    const decimals = meta.data?.decimals.neg().toNumber() ?? -12
-
     const availableBalanceDollar = availableBalance
       ?.multipliedBy(spotPrice.data?.spotPrice ?? 1)
-      .shiftedBy(decimals)
+      .shiftedBy(-native.decimals)
 
     const totalStake = stake.data?.totalStake ?? 0
 
@@ -141,10 +140,10 @@ export const useStakeData = () => {
 
     const stakeDollar = stake.data?.stakePosition?.stake
       .multipliedBy(spotPrice.data?.spotPrice ?? 1)
-      .shiftedBy(decimals)
+      .shiftedBy(-native.decimals)
 
     const circulatingSupplyData = BN(circulatingSupply.data ?? 0).shiftedBy(
-      decimals,
+      -native.decimals,
     )
 
     const stakePosition = stake.data?.stakePosition
@@ -225,7 +224,6 @@ export const useStakeData = () => {
     availableBalance,
     circulatingSupply.data,
     isLoading,
-    meta.data?.decimals,
     positionBalances.data?.events,
     referendas.data,
     spotPrice.data?.spotPrice,
@@ -233,6 +231,7 @@ export const useStakeData = () => {
     stake.data?.positionId,
     stake.data?.stakePosition,
     stake.data?.totalStake,
+    native,
   ])
 
   return {
@@ -242,13 +241,16 @@ export const useStakeData = () => {
 }
 
 export const useStakeARP = (availableUserBalance: BN | undefined) => {
+  const {
+    assets: { native },
+  } = useRpcProvider()
   const { account } = useAccountStore()
   const bestNumber = useBestNumber()
   const stake = useStake(account?.address)
   const stakingEvents = useStakingEvents()
   const stakingConsts = useStakingConsts()
   const potAddress = getHydraAccountAddress(stakingConsts.data?.palletId)
-  const potBalance = useTokenBalance(NATIVE_ASSET_ID, potAddress)
+  const potBalance = useTokenBalance(native.id, potAddress)
 
   const queries = [bestNumber, stake, stakingConsts, potBalance, stakingEvents]
 
@@ -433,12 +435,15 @@ export const useClaimReward = () => {
   const a = "20000000000000000"
   const b = "2000"
 
+  const {
+    assets: { native },
+  } = useRpcProvider()
   const { account } = useAccountStore()
   const bestNumber = useBestNumber()
   const stake = useStake(account?.address)
   const stakingConsts = useStakingConsts()
   const potAddress = getHydraAccountAddress(stakingConsts.data?.palletId)
-  const potBalance = useTokenBalance(NATIVE_ASSET_ID, potAddress)
+  const potBalance = useTokenBalance(native.id, potAddress)
 
   const queries = [bestNumber, stake, stakingConsts, potBalance]
   const isLoading = queries.some((query) => query.isLoading)

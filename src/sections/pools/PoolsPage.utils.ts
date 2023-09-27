@@ -1,13 +1,10 @@
 import { u32 } from "@polkadot/types-codec"
-import { useAssetDetailsList } from "api/assetDetails"
-import { useAssetMetaList } from "api/assetMeta"
 import { useTokensBalances } from "api/balances"
 import { useApiIds } from "api/consts"
 import { useUserDeposits } from "api/deposits"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useUniques } from "api/uniques"
 import BN from "bignumber.js"
-import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useMemo } from "react"
 import { useAssetsTradability } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useAccountStore } from "state/store"
@@ -15,17 +12,20 @@ import { NATIVE_ASSET_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const useOmnipoolPools = (withPositions?: boolean) => {
   const { account } = useAccountStore()
-  const assets = useOmnipoolAssets()
-  const assetDetails = useAssetDetailsList(assets.data?.map((a) => a.id) ?? [])
-  const metas = useAssetMetaList(assets.data?.map((a) => a.id) ?? [])
+  const { assets } = useRpcProvider()
+  const omnipoolAssets = useOmnipoolAssets()
+
   const apiIds = useApiIds()
-  const spotPrices = useDisplayPrices(assets.data?.map((a) => a.id) ?? [])
+  const spotPrices = useDisplayPrices(
+    omnipoolAssets.data?.map((a) => a.id) ?? [],
+  )
   const assetsTradability = useAssetsTradability()
   const balances = useTokensBalances(
-    assets.data?.map((a) => a.id) ?? [],
+    omnipoolAssets.data?.map((a) => a.id) ?? [],
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
   const uniques = useUniques(
@@ -38,9 +38,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
   const userDeposits = useUserDeposits()
 
   const queries = [
-    assets,
-    assetDetails,
-    metas,
+    omnipoolAssets,
     apiIds,
     uniques,
     assetsTradability,
@@ -53,9 +51,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
 
   const pools = useMemo(() => {
     if (
-      !assets.data ||
-      !assetDetails.data ||
-      !metas.data ||
+      !omnipoolAssets.data ||
       !apiIds.data ||
       !assetsTradability.data ||
       !spotPrices.data ||
@@ -64,14 +60,10 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     )
       return undefined
 
-    const rows: OmnipoolPool[] = assets.data
+    const rows: OmnipoolPool[] = omnipoolAssets.data
       .map((asset) => {
-        const details = assetDetails.data.find(
-          (d) => d.id.toString() === asset.id.toString(),
-        )
-        const meta = metas.data?.find(
-          (m) => m.id.toString() === asset.id.toString(),
-        )
+        const meta = assets.getAsset(asset.id.toString())
+
         const spotPrice = spotPrices.data?.find(
           (sp) => sp?.tokenIn === asset.id.toString(),
         )?.spotPrice
@@ -89,14 +81,11 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
         }
 
         const id = asset.id
-        const symbol = meta?.symbol ?? "N/A"
-        const name = details?.name || getAssetName(meta?.symbol)
+        const symbol = meta.symbol
+        const name = meta.name
         const tradeFee = TRADING_FEE
 
-        const total = getFloatingPointAmount(
-          balance ?? BN_0,
-          meta?.decimals?.toNumber() ?? 12,
-        )
+        const total = getFloatingPointAmount(balance ?? BN_0, meta.decimals)
         const totalDisplay = !spotPrice ? BN_NAN : total.times(spotPrice)
 
         const hasPositions = positions.some(
@@ -122,14 +111,13 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
 
     return rows
   }, [
-    assets.data,
-    assetDetails.data,
-    metas.data,
+    omnipoolAssets.data,
     apiIds.data,
-    spotPrices,
+    assetsTradability.data,
+    spotPrices.data,
     balances,
     positions,
-    assetsTradability.data,
+    assets,
     userDeposits.data,
   ])
 

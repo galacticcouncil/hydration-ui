@@ -6,12 +6,9 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { useAssetDetailsList } from "api/assetDetails"
-import { useAssetMetaList } from "api/assetMeta"
 import { useBestNumber } from "api/chain"
 import { useAccountDepositIds, useAllDeposits } from "api/deposits"
 import BN from "bignumber.js"
-import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
 import { isAfter } from "date-fns"
@@ -28,6 +25,7 @@ import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPosi
 import { WalletAssetsTableName } from "sections/wallet/assets/table/data/WalletAssetsTableData"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
   const { t } = useTranslation()
@@ -144,6 +142,7 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
 }
 
 export const useFarmingPositionsData = () => {
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
   const allDeposits = useAllDeposits()
   const accountDepositIds = useAccountDepositIds(account?.address)
@@ -159,12 +158,6 @@ export const useFarmingPositionsData = () => {
       ),
     [allDeposits.data, accountDepositIds.data],
   )
-  const tokens = accountDeposits?.map((deposit) =>
-    deposit.deposit.ammPoolId.toString(),
-  )
-
-  const assetMetas = useAssetMetaList(tokens ?? [])
-  const assetDetails = useAssetDetailsList(tokens)
 
   const bestNumber = useBestNumber()
 
@@ -172,27 +165,18 @@ export const useFarmingPositionsData = () => {
     allDeposits,
     accountDepositIds,
     accountDepositsShare,
-    assetMetas,
-    assetDetails,
     bestNumber,
   ]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (
-      !accountDeposits ||
-      !accountDepositsShare.data ||
-      !assetMetas.data ||
-      !assetDetails.data ||
-      !bestNumber.data
-    )
+    if (!accountDeposits || !accountDepositsShare.data || !bestNumber.data)
       return []
 
     const rows: FarmingPositionsTableData[] = accountDeposits.map((deposit) => {
       const id = deposit.id.toString()
       const assetId = deposit.deposit.ammPoolId.toString()
-      const meta = assetMetas.data.find((am) => am.id === assetId)
-      const details = assetDetails.data.find((ad) => ad.id === assetId)
+      const meta = assets.getAsset(assetId)
       const latestEnteredAtBlock = deposit.deposit.yieldFarmEntries.reduce(
         (acc, curr) =>
           acc.lt(curr.enteredAt.toBigNumber())
@@ -201,15 +185,15 @@ export const useFarmingPositionsData = () => {
         BN_0,
       )
 
-      const symbol = meta?.symbol ?? "N/A"
-      const name = details?.name || getAssetName(meta?.symbol)
+      const symbol = meta.symbol
+      const name = meta.name
       const date = getEnteredDate(
         latestEnteredAtBlock,
         bestNumber.data.relaychainBlockNumber.toBigNumber(),
       )
       const shares = getFloatingPointAmount(
         deposit.deposit.shares.toBigNumber(),
-        meta?.decimals.toNumber() ?? 12,
+        meta.decimals,
       )
       const position = accountDepositsShare.data[assetId]?.find(
         (d) => d.depositId?.toString() === deposit.id.toString(),
@@ -235,13 +219,7 @@ export const useFarmingPositionsData = () => {
     })
 
     return rows
-  }, [
-    accountDeposits,
-    accountDepositsShare.data,
-    assetMetas.data,
-    assetDetails.data,
-    bestNumber.data,
-  ])
+  }, [accountDeposits, accountDepositsShare.data, assets, bestNumber.data])
 
   return { data, isLoading }
 }

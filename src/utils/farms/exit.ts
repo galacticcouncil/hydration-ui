@@ -1,14 +1,14 @@
 import { useMutation } from "@tanstack/react-query"
 import { DepositNftType } from "api/deposits"
 import { ToastMessage, useStore } from "state/store"
-import { useApiPromise } from "utils/api"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const useFarmExitAllMutation = (
   depositNfts: DepositNftType[],
   toast: ToastMessage,
   onClose?: () => void,
 ) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
 
   return useMutation(async () => {

@@ -1,13 +1,13 @@
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { useAssetMeta } from "api/assetMeta"
 import { useTokenBalance } from "api/balances"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { WalletConnectAccountSelectAddress } from "sections/wallet/connect/accountSelect/item/address/WalletConnectAccountSelectAddress"
-import { HYDRA_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
+import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { SSelectItem } from "./WalletConnectAccountSelectItem.styled"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   isActive: boolean
@@ -35,8 +35,10 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
     ? encodeAddress(decodeAddress(address))
     : address
 
-  const { data } = useTokenBalance(NATIVE_ASSET_ID, polkadotAddress)
-  const { data: meta } = useAssetMeta(NATIVE_ASSET_ID)
+  const {
+    assets: { native },
+  } = useRpcProvider()
+  const { data } = useTokenBalance(native.id, polkadotAddress)
 
   const { t } = useTranslation()
 
@@ -48,12 +50,12 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
           <Text color="basic200" fw={400}>
             {t("value.token", {
               value: data?.balance,
-              fixedPointScale: meta?.decimals.toString(),
+              fixedPointScale: native.decimals,
               type: "token",
             })}
           </Text>
           <Text color="graySoft" tTransform="uppercase">
-            {meta?.symbol}
+            {native.symbol}
           </Text>
         </div>
       </div>

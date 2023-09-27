@@ -5,19 +5,18 @@ import { WalletFarmingPositionsWrapper } from "./farmingPositions/wrapper/Wallet
 import { WalletAssetsPositionsWrapper } from "./hydraPositions/WalletAssetsPositionsWrapper"
 import { WalletAssetsTableWrapper } from "./table/WalletAssetsTableWrapper"
 import { WalletAssetsHeader } from "./header/WalletAssetsHeader"
-import { useApiPromise } from "utils/api"
 import { WalletAssetsTableSkeleton } from "./table/skeleton/WalletAssetsTableSkeleton"
 import { WalletAssetsHydraPositionsSkeleton } from "./hydraPositions/skeleton/WalletAssetsHydraPositionsSkeleton"
 import { WalletFarmingPositionsSkeleton } from "./farmingPositions/skeleton/WalletFarmingPositionsSkeleton"
-import { isApiLoaded } from "utils/helpers"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
 export const WalletAssets = () => {
   const { account } = useAccountStore()
-  const api = useApiPromise()
+  const { isLoaded } = useRpcProvider()
 
-  if (!isApiLoaded(api)) {
+  if (!isLoaded) {
     return (
       <div sx={{ mt: [34, 56] }}>
         <WalletAssetsHeader />

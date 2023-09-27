@@ -8,16 +8,16 @@ import {
 import { useQueries, useQuery } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import { secondsInYear } from "date-fns"
-import { useApiPromise } from "utils/api"
 import { BLOCK_TIME, BN_0, BN_QUINTILL } from "utils/constants"
 import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useBestNumber } from "./chain"
 import { fixed_from_rational } from "@galacticcouncil/math-liquidity-mining"
 import BN from "bignumber.js"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export function useActiveYieldFarms(poolIds: Array<Maybe<u32 | string>>) {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return useQueries({
     queries: poolIds.map((poolId) => ({
@@ -49,7 +49,7 @@ export function useYieldFarms(
     }[]
   >,
 ) {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.yieldFarms(ids),
     ids != null ? getYieldFarms(api, ids) : undefinedNoop,
@@ -85,7 +85,7 @@ export function useYieldFarm(data: {
   globalFarmId: Maybe<u32 | string>
   yieldFarmId: Maybe<u32 | string>
 }) {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.yieldFarm(data),
     data.poolId != null && data.globalFarmId != null && data.yieldFarmId != null
@@ -117,7 +117,7 @@ const getYieldFarm =
   }
 
 export function useGlobalFarm(id: Maybe<u32 | string>) {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.globalFarm(id),
     id != null ? getGlobalFarm(api, id) : undefinedNoop,
@@ -131,7 +131,7 @@ const getGlobalFarm = (api: ApiPromise, id: u32 | string) => async () => {
 }
 
 export function useGlobalFarms(ids: Maybe<{ globalFarmId: u32 }[]>) {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.globalFarms(ids),
     ids != null ? getGlobalFarms(api, ids) : undefinedNoop,
@@ -335,7 +335,7 @@ export const useOraclePrices = (
     incentivizedAsset: string | undefined
   }>,
 ) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQueries({
     queries: assets.map(({ rewardCurrency, incentivizedAsset }) => ({
       queryKey: QUERY_KEYS.oraclePrice(rewardCurrency, incentivizedAsset),
@@ -352,7 +352,7 @@ export const useOraclePrice = (
   rewardCurrency: string | undefined,
   incentivizedAsset: string | undefined,
 ) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.oraclePrice(rewardCurrency, incentivizedAsset),
     rewardCurrency != null && incentivizedAsset != null

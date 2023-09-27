@@ -1,4 +1,3 @@
-import { useAssetMetaList } from "api/assetMeta"
 import { useApiIds } from "api/consts"
 import { useOmnipoolAssets } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
@@ -7,11 +6,13 @@ import BN from "bignumber.js"
 import { useMemo } from "react"
 import { getFloatingPointAmount } from "utils/balance"
 import { useDisplayAssetStore } from "utils/displayAsset"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const withoutRefresh = true
 const VISIBLE_TRADE_NUMBER = 10
 
 export const useRecentTradesTableData = (assetId?: string) => {
+  const { assets } = useRpcProvider()
   const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
   const apiIds = useApiIds()
   const allTrades = useAllTrades()
@@ -19,14 +20,13 @@ export const useRecentTradesTableData = (assetId?: string) => {
 
   const omnipoolAssetsIds = omnipoolAssets.data?.map((a) => a.id) ?? []
 
-  const assetMetas = useAssetMetaList(omnipoolAssetsIds)
   const spotPrices = useSpotPrices(
     omnipoolAssetsIds,
     displayAsset.stableCoinId,
     withoutRefresh,
   )
 
-  const queries = [omnipoolAssets, apiIds, assetMetas, allTrades, ...spotPrices]
+  const queries = [omnipoolAssets, apiIds, allTrades, ...spotPrices]
 
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
@@ -35,7 +35,6 @@ export const useRecentTradesTableData = (assetId?: string) => {
       !allTrades.data ||
       !omnipoolAssets.data ||
       !apiIds.data ||
-      !assetMetas.data ||
       spotPrices.some((q) => !q.data)
     )
       return []
@@ -67,12 +66,8 @@ export const useRecentTradesTableData = (assetId?: string) => {
             const assetOut = trade.args.assetOut.toString()
             const amountOutRaw = new BN(trade.args.amountOut)
 
-            const assetMetaIn = assetMetas.data.find(
-              (assetMeta) => assetMeta.id === assetIn,
-            )
-            const assetMetaOut = assetMetas.data.find(
-              (assetMeta) => assetMeta.id === assetOut,
-            )
+            const assetMetaIn = assets.getAsset(assetIn)
+            const assetMetaOut = assets.getAsset(assetOut)
 
             const spotPriceIn = spotPrices.find(
               (spotPrice) => spotPrice?.data?.tokenIn === assetIn,
@@ -83,11 +78,11 @@ export const useRecentTradesTableData = (assetId?: string) => {
 
             const amountIn = getFloatingPointAmount(
               amountInRaw,
-              assetMetaIn?.decimals.toNumber() ?? 12,
+              assetMetaIn.decimals,
             )
             const amountOut = getFloatingPointAmount(
               amountOutRaw,
-              assetMetaOut?.decimals.toNumber() ?? 12,
+              assetMetaOut.decimals,
             )
 
             const totalValue = amountIn
@@ -131,11 +126,11 @@ export const useRecentTradesTableData = (assetId?: string) => {
     return trades
   }, [
     allTrades.data,
-    apiIds.data,
-    assetMetas.data,
     omnipoolAssets.data,
+    apiIds.data,
     spotPrices,
     assetId,
+    assets,
   ])
 
   return { data, isLoading: isInitialLoading }

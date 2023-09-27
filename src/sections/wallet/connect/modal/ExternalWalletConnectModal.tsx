@@ -19,13 +19,10 @@ import {
   externalWallet,
   useAccountStore,
 } from "state/store"
-import {
-  HYDRA_ADDRESS_PREFIX,
-  POLKADOT_APP_NAME,
-  useApiPromise,
-} from "utils/api"
+import { HYDRA_ADDRESS_PREFIX, POLKADOT_APP_NAME } from "utils/api"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { FormValues } from "utils/helpers"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type ExternalWalletConnectModalProps = {
   onClose: () => void
@@ -36,7 +33,7 @@ export const ExternalWalletConnectModal = ({
   onClose,
   onSelect,
 }: ExternalWalletConnectModalProps) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { t } = useTranslation()
   const { setAccount } = useAccountStore()
   const navigate = useNavigate()
