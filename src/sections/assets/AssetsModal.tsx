@@ -34,7 +34,10 @@ export const AssetsModalContent = ({
   const assetsDetails = (
     allAssets ? assets.tokens : assetsRows.filter((asset) => asset.isToken)
   ).filter((asset) =>
-    search ? asset.name.toLowerCase().includes(search.toLowerCase()) : true,
+    search
+      ? asset.name.toLowerCase().includes(search.toLowerCase()) ||
+        asset.symbol.toLowerCase().includes(search.toLowerCase())
+      : true,
   )
 
   const mainAssets =
