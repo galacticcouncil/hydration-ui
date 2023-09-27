@@ -1,4 +1,4 @@
-import { ReactComponent as IconAddressBook } from "assets/icons/IconAddressBook.svg"
+import IconAddressBook from "assets/icons/IconAddressBook.svg?react"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"

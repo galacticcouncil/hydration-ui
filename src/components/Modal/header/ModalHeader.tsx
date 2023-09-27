@@ -1,5 +1,5 @@
-import { ReactComponent as ChevronIcon } from "assets/icons/ChevronRight.svg"
-import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import ChevronIcon from "assets/icons/ChevronRight.svg?react"
+import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
 import { forwardRef, useMemo } from "react"
 import {

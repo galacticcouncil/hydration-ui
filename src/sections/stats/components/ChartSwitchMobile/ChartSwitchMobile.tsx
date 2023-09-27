@@ -1,8 +1,8 @@
 import { Icon } from "components/Icon/Icon"
 import { SSwitchButton } from "./ChartSwitchMobile.styled"
-import { ReactComponent as Overview } from "assets/icons/OverviewMobile.svg"
-import { ReactComponent as Chart } from "assets/icons/ChartMobile.svg"
-import { ReactComponent as ChartActive } from "assets/icons/ChartMobileActive.svg"
+import Overview from "assets/icons/OverviewMobile.svg?react"
+import Chart from "assets/icons/ChartMobile.svg?react"
+import ChartActive from "assets/icons/ChartMobileActive.svg?react"
 import { useTranslation } from "react-i18next"
 
 type ChartSwitchMobileProps = {

@@ -2,7 +2,7 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SContainer = styled.div`
-  --scrollbar-url: url("images/Scrollbar.svg");
+  --scrollbar-url: url("images/Scrollbar.svg?react");
   margin: 0 -12px;
 
   @media ${theme.viewport.gte.sm} {

@@ -1,7 +1,7 @@
 import { Dialog, DialogPortal, DialogContent } from "@radix-ui/react-dialog"
 import { PropsWithChildren } from "react"
 import { RemoveScroll } from "react-remove-scroll"
-import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import { CloseButton, SModalContent, SBackdrop } from "./TabMenuModal.styled"
 import { useTranslation } from "react-i18next"
 import { AnimatePresence } from "framer-motion"

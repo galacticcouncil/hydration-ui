@@ -1,6 +1,6 @@
 import { PalletDemocracyReferendumInfo } from "@polkadot/types/lookup"
-import { ReactComponent as IconArrow } from "assets/icons/IconArrow.svg"
-import { ReactComponent as GovernanceIcon } from "assets/icons/GovernanceIcon.svg"
+import IconArrow from "assets/icons/IconArrow.svg?react"
+import GovernanceIcon from "assets/icons/GovernanceIcon.svg?react"
 import { Separator } from "components/Separator/Separator"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"

@@ -1,5 +1,5 @@
 import { Text } from "components/Typography/Text/Text"
-import { ReactComponent as RewardIcon } from "assets/icons/StakingRewardIcon.svg"
+import RewardIcon from "assets/icons/StakingRewardIcon.svg?react"
 
 import {
   SRewardCardContainer,

@@ -1,5 +1,5 @@
 import * as Tooltip from "@radix-ui/react-tooltip"
-import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
+import ChevronRight from "assets/icons/ChevronRight.svg?react"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"

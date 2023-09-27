@@ -1,4 +1,4 @@
-import { ReactComponent as UpdateMetadataIcon } from "assets/icons/UpdateMetadataIcon.svg"
+import UpdateMetadataIcon from "assets/icons/UpdateMetadataIcon.svg?react"
 import { Button } from "components/Button/Button"
 import { ExternalLink } from "components/Link/ExternalLink"
 import { Modal } from "components/Modal/Modal"
@@ -75,7 +75,7 @@ export function WalletUpgradeModal() {
               height="11"
               viewBox="0 0 118 11"
               fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+              xmlns="http://www.w3.org/2000.svg?react"
             >
               <path
                 d="M0 5.5H117M117 5.5L112 0.5M117 5.5L112 10.5"

@@ -6,7 +6,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { ButtonTransparent } from "components/Button/Button"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useTranslation } from "react-i18next"
-import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.svg"
+import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
 import { OmnipoolAssetsTableColumn } from "sections/stats/components/OmnipoolAssetsTable/OmnipoolAssetsTable.utils"
 

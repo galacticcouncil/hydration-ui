@@ -16,9 +16,9 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { shortenAccountAddress } from "utils/formatting"
 import { TRecentTradesTableData } from "./data/RecentTradesTableData.utils"
-import { ReactComponent as BuyIcon } from "assets/icons/BuyIcon.svg"
-import { ReactComponent as SellIcon } from "assets/icons/SellIcon.svg"
-import { ReactComponent as TradeIcon } from "assets/icons/TradeTypeIcon.svg"
+import BuyIcon from "assets/icons/BuyIcon.svg?react"
+import SellIcon from "assets/icons/SellIcon.svg?react"
+import TradeIcon from "assets/icons/TradeTypeIcon.svg?react"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 
 export const useRecentTradesTable = (data: TRecentTradesTableData) => {

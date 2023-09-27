@@ -3,7 +3,7 @@ import { SPositions } from "sections/pools/pool/Pool.styled"
 import { useTranslation } from "react-i18next"
 import { LiquidityPosition } from "./LiquidityPosition"
 import { Positions } from "sections/pools/pool/Pool.utils"
-import { ReactComponent as ChartIcon } from "assets/icons/ChartIcon.svg"
+import ChartIcon from "assets/icons/ChartIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 

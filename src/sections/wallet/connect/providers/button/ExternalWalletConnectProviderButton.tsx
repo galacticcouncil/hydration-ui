@@ -1,5 +1,5 @@
-import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
-import { ReactComponent as ExternalWalletIcon } from "assets/icons/ExternalWalletIcon.svg"
+import ChevronRight from "assets/icons/ChevronRight.svg?react"
+import ExternalWalletIcon from "assets/icons/ExternalWalletIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"

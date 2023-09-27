@@ -15,8 +15,8 @@ import { theme } from "theme"
 
 import BN from "bignumber.js"
 import { ButtonTransparent } from "components/Button/Button"
-import { ReactComponent as StakingAccountIcon } from "assets/icons/StakingAccountIcon.svg"
-import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
+import StakingAccountIcon from "assets/icons/StakingAccountIcon.svg?react"
+import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { shortenAccountAddress } from "utils/formatting"
 
 const dummyData = [
