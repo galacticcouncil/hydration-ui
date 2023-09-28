@@ -3042,10 +3042,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.4.tgz#08b43392b3aa5602e0ebc098ff07dfc9999dfd9f"
   integrity sha512-lwGqEqEuCOoTXmVwovWHTjDPM9FUBsmvn0Q7FRg7/059OcWGTUEVkV+//FaXevz3Fkl/toP2ocOuIK5JG8MxRw==
 
-"@galacticcouncil/apps@1.6.10":
-  version "1.6.10"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.6.10.tgz#f0e2e265af1d05f53e356bcc30c51f615f5cfe9e"
-  integrity sha512-z9JUgUJr488rLqd+dyGA/qeodVW+TGM1U42PCikLRtgoyIqH7SEMPd7Lxc4fGO5heFPadCggbuEv+7Y0w0ARWw==
+"@galacticcouncil/apps@1.6.11":
+  version "1.6.11"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.6.11.tgz#d3bb8c8f23a1d7b4d2edb0bd0d5ece682a7e79fb"
+  integrity sha512-1mwZT/PS1Aye6oNOv6bnTf17Lf15gPRxEMnYLonb2mgkbbiRipWTYuQ+V0vmQk2obInFwyLK6713W48RHFiVGA==
   dependencies:
     "@talismn/connect-wallets" "^1.2.1"
     "@tanstack/table-core" "^8.5.17"
@@ -3057,10 +3057,10 @@
     lightweight-charts "^4.0.1"
     short-uuid "^4.2.0"
 
-"@galacticcouncil/bridge@0.0.9":
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.9.tgz#e559fb1a372c9b05ead50444c26234e3784237c3"
-  integrity sha512-28Zyq8NPMcttVVs0IB5Hr3X4xqVGgE3mjAatfmcBG3HwNgEdw5VyH7Bt57TNAO1c+1En46wjFp0oLFFerCXwrQ==
+"@galacticcouncil/bridge@0.0.11":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.11.tgz#0a550a3368cfe0f1f52590b5c1d7ce129b12468d"
+  integrity sha512-NyNyHRbmmrAfa9i/vWmViiGIACyUxeF8s2mnm8UYoSLRxSxyfBIE2breK4UY/piJ2YZZCID2p8Yq0jUlECi9WQ==
   dependencies:
     "@acala-network/api" "^5"
     "@acala-network/sdk" "^4.1.9-2"
