@@ -1,5 +1,4 @@
 import { css } from "@emotion/react"
-import { useAssetMeta } from "api/assetMeta"
 import { useExistentialDeposit, useTokenBalance } from "api/balances"
 import { usePaymentInfo } from "api/transaction"
 import {
@@ -14,15 +13,18 @@ import { Trans, useTranslation } from "react-i18next"
 import { ToastMessage, useAccountStore, useStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
-import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import { separateBalance } from "utils/balance"
 import { BN_10 } from "utils/constants"
 import { useDisplayPrice } from "utils/displayAsset"
 import { SClaimButton, SInner, SSchedule } from "./WalletVestingSchedule.styled"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const WalletVestingSchedule = () => {
   const { t } = useTranslation()
-  const api = useApiPromise()
+  const {
+    api,
+    assets: { native },
+  } = useRpcProvider()
   const { createTransaction } = useStore()
   const { account } = useAccountStore()
   const { data: claimableBalance } = useVestingTotalClaimableBalance()
@@ -30,19 +32,18 @@ export const WalletVestingSchedule = () => {
   const { data: nextClaimableDate } = useNextClaimableDate()
   const { data: paymentInfoData } = usePaymentInfo(api.tx.vesting.claim())
   const { data: existentialDeposit } = useExistentialDeposit()
-  const { data: meta } = useAssetMeta(NATIVE_ASSET_ID)
 
-  const spotPrice = useDisplayPrice(NATIVE_ASSET_ID)
-  const balance = useTokenBalance(NATIVE_ASSET_ID, account?.address)
+  const spotPrice = useDisplayPrice(native.id)
+  const balance = useTokenBalance(native.id, account?.address)
 
   const claimableDisplay = useMemo(() => {
     if (claimableBalance && spotPrice.data) {
       return claimableBalance
         .times(spotPrice.data.spotPrice)
-        .div(BN_10.pow(meta?.decimals.toBigNumber() ?? 12))
+        .div(BN_10.pow(native.decimals))
     }
     return null
-  }, [claimableBalance, meta?.decimals, spotPrice.data])
+  }, [claimableBalance, native, spotPrice.data])
 
   const isClaimAllowed = useMemo(() => {
     if (paymentInfoData && existentialDeposit && claimableBalance) {
@@ -63,8 +64,8 @@ export const WalletVestingSchedule = () => {
           i18nKey={`wallet.vesting.toast.${msType}`}
           tOptions={{
             amount: claimableBalance,
-            fixedPointScale: meta?.decimals.toNumber() ?? 12,
-            symbol: meta?.symbol,
+            fixedPointScale: native.decimals,
+            symbol: native.symbol,
           }}
         >
           <span />
@@ -91,7 +92,7 @@ export const WalletVestingSchedule = () => {
           },
           { toast },
         )
-  }, [api, account, createTransaction, claimableBalance, meta, t])
+  }, [api, account, createTransaction, claimableBalance, native, t])
 
   return (
     <SSchedule>
@@ -111,10 +112,10 @@ export const WalletVestingSchedule = () => {
               i18nKey="wallet.vesting.claimable_now_value"
               tOptions={{
                 ...separateBalance(claimableBalance, {
-                  fixedPointScale: meta?.decimals.toNumber() ?? 12,
+                  fixedPointScale: native.decimals,
                   type: "token",
                 }),
-                symbol: meta?.symbol,
+                symbol: native.symbol,
               }}
             >
               <span

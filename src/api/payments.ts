@@ -3,18 +3,18 @@ import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Maybe, undefinedNoop, normalizeId } from "utils/helpers"
-import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
+import { NATIVE_ASSET_ID } from "utils/api"
 import { ToastMessage, useAccountStore, useStore } from "state/store"
 import { u32 } from "@polkadot/types-codec"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { usePaymentInfo } from "./transaction"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const getAcceptedCurrency =
   (api: ApiPromise, id: u32 | string) => async () => {
     const normalizedId = normalizeId(id)
-    const result = await api.query.multiTransactionPayment.acceptedCurrencies(
-      normalizedId,
-    )
+    const result =
+      await api.query.multiTransactionPayment.acceptedCurrencies(normalizedId)
 
     return {
       id: normalizedId,
@@ -23,7 +23,7 @@ export const getAcceptedCurrency =
   }
 
 export const useAcceptedCurrencies = (ids: Maybe<string | u32>[]) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return useQueries({
     queries: ids.map((id) => ({
@@ -35,7 +35,7 @@ export const useAcceptedCurrencies = (ids: Maybe<string | u32>[]) => {
 }
 
 export const useSetAsFeePayment = () => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { account } = useAccountStore()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
@@ -65,9 +65,8 @@ export const useSetAsFeePayment = () => {
 
 export const getAccountCurrency =
   (api: ApiPromise, address: string | AccountId32) => async () => {
-    const result = await api.query.multiTransactionPayment.accountCurrencyMap(
-      address,
-    )
+    const result =
+      await api.query.multiTransactionPayment.accountCurrencyMap(address)
 
     if (!result.isEmpty) {
       return result.toString()
@@ -77,7 +76,7 @@ export const getAccountCurrency =
   }
 
 export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.accountCurrency(address),
     !!address ? getAccountCurrency(api, address) : undefinedNoop,

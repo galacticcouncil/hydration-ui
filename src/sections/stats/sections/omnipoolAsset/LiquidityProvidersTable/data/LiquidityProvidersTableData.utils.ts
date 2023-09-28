@@ -6,7 +6,7 @@ import BN from "bignumber.js"
 const withoutRefresh = true
 
 export const useLiquidityProvidersTableData = () => {
-  /* const apiIds = useApiIds()
+  /*const apiIds = useApiIds()
   const uniques = useUniquesAsset(
     apiIds.data?.omnipoolCollectionId ?? "",
     withoutRefresh,

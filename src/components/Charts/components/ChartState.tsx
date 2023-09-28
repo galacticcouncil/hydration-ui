@@ -1,5 +1,5 @@
-import { ReactComponent as NoDataIcon } from "assets/icons/ChartNoDataIcon.svg"
-import { ReactComponent as ErrorIcon } from "assets/icons/ChartErrorIcon.svg"
+import NoDataIcon from "assets/icons/ChartNoDataIcon.svg?react"
+import ErrorIcon from "assets/icons/ChartErrorIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"

@@ -1,21 +1,20 @@
 import { ApiPromise } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
-import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { isApiLoaded } from "utils/helpers"
 import { useAccountStore } from "state/store"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
 
 export const useReferendums = (type?: "ongoing" | "finished") => {
-  const api = useApiPromise()
+  const { api, isLoaded } = useRpcProvider()
   const { account } = useAccountStore()
 
   return useQuery(
     QUERY_KEYS.referendums(account?.address),
     getReferendums(api, account?.address),
     {
-      enabled: !!isApiLoaded(api),
+      enabled: isLoaded,
       select: (data) =>
         type
           ? data.filter(

@@ -3,23 +3,21 @@ import { PROVIDERS, useProviderRpcUrlStore } from "api/provider"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
-import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRightIcon.svg"
+import ChevronRightIcon from "assets/icons/ChevronRightIcon.svg?react"
 import { ProviderSelectModal } from "sections/provider/ProviderSelectModal"
 import { ProviderStatus } from "sections/provider/ProviderStatus"
 import { SButton, SName } from "./ProviderSelectButton.styled"
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const ProviderSelectButton = () => {
   const [open, setOpen] = useState(false)
   const store = useProviderRpcUrlStore()
 
-  const api = useApiPromise()
-  const isApi = isApiLoaded(api)
+  const { isLoaded } = useRpcProvider()
 
   const rpcUrl = store.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
   const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
-  const number = useBestNumber(!isApi)
+  const number = useBestNumber(!isLoaded)
 
   return (
     <>

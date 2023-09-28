@@ -1,4 +1,3 @@
-import { useApiPromise } from "utils/api"
 import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -6,9 +5,10 @@ import BigNumber from "bignumber.js"
 import { u32 } from "@polkadot/types"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { AnyNumber } from "@polkadot/types-codec/types"
+import { useRpcProvider } from "providers/rpcProvider"
 
-export const useTotalIssuance = (token: Maybe<u32>) => {
-  const api = useApiPromise()
+export const useTotalIssuance = (token: Maybe<u32 | string>) => {
+  const { api } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.totalIssuance(token),
@@ -18,7 +18,7 @@ export const useTotalIssuance = (token: Maybe<u32>) => {
 }
 
 export const useTotalIssuances = (tokens: Maybe<u32 | string>[]) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   const tokenIds = tokens.filter((token): token is u32 => !!token)
 

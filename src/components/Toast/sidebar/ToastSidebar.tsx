@@ -1,5 +1,5 @@
 import { Dialog, DialogPortal } from "@radix-ui/react-dialog"
-import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import { Backdrop } from "components/Backdrop/Backdrop"
 import { Spacer } from "components/Spacer/Spacer"
 import { Heading } from "components/Typography/Heading/Heading"
@@ -7,8 +7,6 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { RemoveScroll } from "react-remove-scroll"
 import { useToast } from "state/toasts"
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
 import { ToastContent } from "components/Toast/ToastContent"
 import {
   SCloseButton,
@@ -22,10 +20,11 @@ import { ToastSidebarGroup } from "./group/ToastSidebarGroup"
 import { ToastSidebarReferendums } from "./referendums/ToastSidebarReferendums"
 import { SkeletonTheme } from "react-loading-skeleton"
 import { theme } from "theme"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export function ToastSidebar() {
   const { t } = useTranslation()
-  const api = useApiPromise()
+  const { isLoaded } = useRpcProvider()
 
   const store = useToast()
   const onClose = () => store.setSidebar(false)
@@ -62,7 +61,7 @@ export function ToastSidebar() {
                   />
                 </div>
                 <SSidebarBody>
-                  {isApiLoaded(api) && <ToastSidebarReferendums />}
+                  {isLoaded && <ToastSidebarReferendums />}
                   {!sortedToasts.length ? (
                     <SNoActivitiesContainer>
                       <SNoActivitiesIcon />

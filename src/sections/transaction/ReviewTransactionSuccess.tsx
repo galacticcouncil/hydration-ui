@@ -1,6 +1,6 @@
 import { Text } from "components/Typography/Text/Text"
 import { Button } from "components/Button/Button"
-import { ReactComponent as FullSuccessIcon } from "assets/icons/FullSuccessIcon.svg"
+import FullSuccessIcon from "assets/icons/FullSuccessIcon.svg?react"
 import { useTranslation } from "react-i18next"
 import { Heading } from "components/Typography/Heading/Heading"
 import { ReviewTransactionProgress } from "./ReviewTransactionProgress"

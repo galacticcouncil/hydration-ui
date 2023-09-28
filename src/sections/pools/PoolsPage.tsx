@@ -3,8 +3,8 @@ import { useState } from "react"
 import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
 import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
-import { useApiPromise } from "utils/api"
 import { PoolSkeleton } from "./skeleton/PoolSkeleton"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const PoolPageContent = () => {
   const [filter, setFilter] = useState({ showMyPositions: false })
@@ -38,9 +38,9 @@ const PoolPageContent = () => {
 }
 
 export const PoolsPage = () => {
-  const api = useApiPromise()
+  const { isLoaded } = useRpcProvider()
 
-  if (!Object.keys(api).length) {
+  if (!isLoaded) {
     return (
       <Page>
         <PoolsHeader

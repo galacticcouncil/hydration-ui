@@ -4,7 +4,7 @@ import { useScroll } from "react-use"
 import { Spacer } from "components/Spacer/Spacer"
 import { TSlice } from "sections/stats/components/DoughnutChart/DoughnutChart"
 import { Text } from "components/Typography/Text/Text"
-import { ReactComponent as ArrowIcon } from "assets/icons/ChevronRightSmall.svg"
+import ArrowIcon from "assets/icons/ChevronRightSmall.svg?react"
 import { Icon } from "components/Icon/Icon"
 
 const ITEM_HEIGHT = 45

@@ -1,9 +1,9 @@
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
-import { ReactComponent as AvailableBalance } from "assets/icons/HydraLogo.svg"
-import { ReactComponent as StakedBalance } from "assets/icons/StakedBalanceIcon.svg"
-import { ReactComponent as StakedMultiplier } from "assets/icons/StakedMultiplier.svg"
-import { ReactComponent as ProjectedRewardsIcon } from "assets/icons/ProjectedRewardsIcon.svg"
+import AvailableBalance from "assets/icons/HydraLogo.svg?react"
+import StakedBalance from "assets/icons/StakedBalanceIcon.svg?react"
+import StakedMultiplier from "assets/icons/StakedMultiplier.svg?react"
+import ProjectedRewardsIcon from "assets/icons/ProjectedRewardsIcon.svg?react"
 import Skeleton from "react-loading-skeleton"
 import { Separator } from "components/Separator/Separator"
 import { SStakingValuesContainer } from "./StakingValues.styled"
@@ -13,10 +13,10 @@ import { Trans, useTranslation } from "react-i18next"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { TStakingData, useStakeARP } from "sections/staking/StakingPage.utils"
 import BN from "bignumber.js"
-import { useApiPromise } from "utils/api"
 import { isApiLoaded } from "utils/helpers"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "sections/pools/pool/Pool.styled"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const StakingValue = ({
   logo,
@@ -74,7 +74,7 @@ export const StakingValues = ({
 }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   const availableBalanceValue = (
     <StakingValue

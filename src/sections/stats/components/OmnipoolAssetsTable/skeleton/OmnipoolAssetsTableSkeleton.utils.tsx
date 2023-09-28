@@ -9,7 +9,7 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import Skeleton from "react-loading-skeleton"
 import { ButtonTransparent } from "components/Button/Button"
-import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.svg"
+import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { useMemo } from "react"
 
 export const useOmnipoolAssetsTableSkeleton = (enableAnimation = true) => {

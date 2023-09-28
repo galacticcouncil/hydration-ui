@@ -2,8 +2,8 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
-import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
-import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
+import ChevronDown from "assets/icons/ChevronDown.svg?react"
+import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import {
   SActionsContainer,
   SButtonOpen,

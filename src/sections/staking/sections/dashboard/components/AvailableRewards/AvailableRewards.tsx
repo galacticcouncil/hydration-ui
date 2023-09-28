@@ -1,5 +1,5 @@
 import { Text } from "components/Typography/Text/Text"
-import { ReactComponent as RewardIcon } from "assets/icons/StakingRewardIcon.svg"
+import RewardIcon from "assets/icons/StakingRewardIcon.svg?react"
 
 import {
   SRewardCardContainer,
@@ -10,7 +10,6 @@ import { Icon } from "components/Icon/Icon"
 import { Trans, useTranslation } from "react-i18next"
 import { useDisplayPrice } from "utils/displayAsset"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import Skeleton from "react-loading-skeleton"
 import { useClaimReward } from "sections/staking/StakingPage.utils"
 import { ToastMessage, useAccountStore, useStore } from "state/store"
@@ -20,14 +19,15 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { Separator } from "components/Separator/Separator"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const AvailableRewards = () => {
+  const { api, assets } = useRpcProvider()
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const reward = useClaimReward()
-  const spotPrice = useDisplayPrice(NATIVE_ASSET_ID)
+  const spotPrice = useDisplayPrice(assets.native.id)
 
-  const api = useApiPromise()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
 
@@ -62,7 +62,7 @@ export const AvailableRewards = () => {
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
     await queryClient.invalidateQueries(
-      QUERY_KEYS.tokenBalance(NATIVE_ASSET_ID, account?.address),
+      QUERY_KEYS.tokenBalance(assets.native.id, account?.address),
     )
   }
 

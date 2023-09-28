@@ -1,5 +1,5 @@
-import { ReactComponent as Wormhole } from "assets/icons/crosschains/Wormhole.svg"
-import { ReactComponent as Carrier } from "assets/icons/crosschains/Carrier.svg"
+import Wormhole from "assets/icons/crosschains/Wormhole.svg?react"
+import Carrier from "assets/icons/crosschains/Carrier.svg?react"
 import i18n from "i18n/i18n"
 
 export const CROSSCHAINS = [

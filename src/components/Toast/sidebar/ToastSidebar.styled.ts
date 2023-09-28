@@ -4,7 +4,7 @@ import { IconButton } from "components/IconButton/IconButton"
 import styled from "@emotion/styled"
 import { keyframes } from "@emotion/react"
 import { Text } from "components/Typography/Text/Text"
-import { ReactComponent as NoActivities } from "assets/icons/NoActivities.svg"
+import NoActivities from "assets/icons/NoActivities.svg?react"
 
 const slideKeyframe = keyframes`
   0% {

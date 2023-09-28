@@ -1,5 +1,5 @@
 import { useMatchRoute } from "@tanstack/react-location"
-import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import { ExternalLink } from "components/Link/ExternalLink"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
@@ -62,7 +62,7 @@ export const WarningMessage = (props: {
             height="15"
             viewBox="0 0 18 15"
             fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+            xmlns="http://www.w3.org/2000.svg?react"
             css={{ flexShrink: 0 }}
           >
             <path

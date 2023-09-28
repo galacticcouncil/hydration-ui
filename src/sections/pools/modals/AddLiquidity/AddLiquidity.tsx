@@ -18,12 +18,12 @@ import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { AddLiquidityLimitWarning } from "sections/pools/modals/AddLiquidity/AddLiquidityLimitWarning"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useStore } from "state/store"
-import { useApiPromise } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
 import { BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { useAddLiquidity, useVerifyLimits } from "./AddLiquidity.utils"
 import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   pool: OmnipoolPool
@@ -39,7 +39,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   const { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance } =
     useAddLiquidity(assetId, assetValue)
 
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const { t } = useTranslation()
   const form = useForm<{ amount: string }>({ mode: "onChange" })
@@ -48,7 +48,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   const { data: limits } = useVerifyLimits({
     assetId: assetId.toString(),
     amount: amountIn,
-    decimals: assetMeta?.decimals.toNumber() ?? 12,
+    decimals: assetMeta.decimals,
   })
 
   const onSubmit = async (values: FormValues<typeof form>) => {
@@ -56,7 +56,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
 
     const amount = getFixedPointAmount(
       values.amount,
-      assetMeta.decimals.toNumber(),
+      assetMeta.decimals,
     ).toString()
 
     return await createTransaction(
@@ -177,7 +177,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
                                 if (
                                   assetBalance?.balance.gte(
                                     BigNumber(value).multipliedBy(
-                                      BN_10.pow(assetMeta?.decimals.toNumber()),
+                                      BN_10.pow(assetMeta.decimals),
                                     ),
                                   )
                                 )
@@ -196,7 +196,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
                                   api.consts.omnipool.minimumPoolLiquidity.toBigNumber()
 
                                 const amount = BigNumber(value).multipliedBy(
-                                  BN_10.pow(assetMeta?.decimals.toNumber()),
+                                  BN_10.pow(assetMeta.decimals),
                                 )
 
                                 if (amount.gte(minimumPoolLiquidity))

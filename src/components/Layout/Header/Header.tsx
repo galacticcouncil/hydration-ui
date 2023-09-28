@@ -1,5 +1,5 @@
-import { ReactComponent as HydraLogoFull } from "assets/icons/HydraLogoFull.svg"
-import { ReactComponent as HydraLogo } from "assets/icons/HydraLogo.svg"
+import HydraLogoFull from "assets/icons/HydraLogoFull.svg?react"
+import HydraLogo from "assets/icons/HydraLogo.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { HeaderMenu } from "components/Layout/Header/menu/HeaderMenu"
 import { SHeader, SQuestionmark } from "components/Layout/Header/Header.styled"

@@ -10,8 +10,8 @@ import { useAccountStore, useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
 import { useProviderRpcUrlStore } from "api/provider"
-import { useApiPromise } from "utils/api"
 import { PoolType } from "@galacticcouncil/sdk"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const TradeApp = createComponent({
   tagName: "gc-trade-app",
@@ -46,7 +46,7 @@ const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export function TradePage() {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { account } = useAccountStore()
   const { createTransaction } = useStore()
 
