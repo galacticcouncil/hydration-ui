@@ -3057,10 +3057,10 @@
     lightweight-charts "^4.0.1"
     short-uuid "^4.2.0"
 
-"@galacticcouncil/bridge@0.0.10":
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.10.tgz#c8600c50d9ad39fa18eda96cf14f83c5ee28a5e4"
-  integrity sha512-Sj9hcTcgfR7zPWZrWa//2m2DryL8EXS0MzxsalkgU7GjgEDVFavj6xx6/VV4blUZbLPgNU24nt7YtN8214nRXg==
+"@galacticcouncil/bridge@0.0.11":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/bridge/-/bridge-0.0.11.tgz#0a550a3368cfe0f1f52590b5c1d7ce129b12468d"
+  integrity sha512-NyNyHRbmmrAfa9i/vWmViiGIACyUxeF8s2mnm8UYoSLRxSxyfBIE2breK4UY/piJ2YZZCID2p8Yq0jUlECi9WQ==
   dependencies:
     "@acala-network/api" "^5"
     "@acala-network/sdk" "^4.1.9-2"
