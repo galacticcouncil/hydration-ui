@@ -57,15 +57,27 @@ export const TransferModal = ({
 
   const steps = isStablepool
     ? [
-        { text: "Select Pool", page: Page.OPTIONS },
-        { text: "Provide Liquidity", page: Page.ADD_LIQUIDITY },
-        { text: "Confirm", page: Page.ADD_LIQUIDITY + 1 },
+        { text: t("liquidity.stablepool.transfer.select"), page: Page.OPTIONS },
+        {
+          text: t("liquidity.stablepool.transfer.provide"),
+          page: Page.ADD_LIQUIDITY,
+        },
+        {
+          text: t("liquidity.stablepool.transfer.confirm"),
+          page: Page.ADD_LIQUIDITY + 1,
+        },
       ]
     : [
-        { text: "Select Pool", page: Page.OPTIONS },
-        { text: "Provide Liquidity", page: Page.ADD_LIQUIDITY },
-        { text: "Wait For Transaction", page: Page.WAIT },
-        { text: "Move to Omnipool", page: Page.MOVE_TO_OMNIPOOL },
+        { text: t("liquidity.stablepool.transfer.select"), page: Page.OPTIONS },
+        {
+          text: t("liquidity.stablepool.transfer.provide"),
+          page: Page.ADD_LIQUIDITY,
+        },
+        { text: t("liquidity.stablepool.transfer.wait"), page: Page.WAIT },
+        {
+          text: t("liquidity.stablepool.transfer.move"),
+          page: Page.MOVE_TO_OMNIPOOL,
+        },
       ]
 
   const getStepState = (stepPage: Page) => {
