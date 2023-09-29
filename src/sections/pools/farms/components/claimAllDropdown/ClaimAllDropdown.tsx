@@ -1,4 +1,4 @@
-import * as Tooltip from "@radix-ui/react-tooltip"
+import * as Popover from "@radix-ui/react-popover"
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
@@ -25,22 +25,22 @@ export const ClaimAllDropdown = () => {
     setOpen(false)
   }
 
+  const handleOpen = () => {
+    setOpen(true)
+  }
+
   return (
     <>
       <HeaderSeparator />
-      <div sx={{ flex: "row" }} css={{ textAlign: "right" }}>
-        <Tooltip.Root
-          delayDuration={0}
-          open={open}
-          onOpenChange={(open) => {
-            isDesktop && setOpen(open)
-          }}
-        >
+      <div
+        sx={{ flex: "row" }}
+        css={{ textAlign: "right" }}
+        onMouseEnter={handleOpen}
+        onMouseLeave={handleClose}
+      >
+        <Popover.Root open={open} onOpenChange={(open) => setOpen(open)}>
           <div sx={{ flex: "column", flexGrow: [1, 0] }}>
-            <STriggerButton
-              onMouseOver={() => setOpen(true)}
-              onClick={() => !isDesktop && setOpen(!open)}
-            >
+            <STriggerButton>
               <Text
                 fs={13}
                 lh={13}
@@ -61,18 +61,18 @@ export const ClaimAllDropdown = () => {
             {open && !isDesktop && <ClaimAllContent onClose={handleClose} />}
           </div>
           {isDesktop && (
-            <Tooltip.Portal>
-              <Tooltip.Content
-                asChild
+            <Popover.Portal>
+              <Popover.Content
+                css={{ zIndex: theme.zIndices.modal }}
                 side="bottom"
                 align="end"
                 sideOffset={-2}
               >
                 <ClaimAllContent onClose={handleClose} />
-              </Tooltip.Content>
-            </Tooltip.Portal>
+              </Popover.Content>
+            </Popover.Portal>
           )}
-        </Tooltip.Root>
+        </Popover.Root>
       </div>
     </>
   )
