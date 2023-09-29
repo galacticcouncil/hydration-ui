@@ -1,5 +1,5 @@
 import { css } from "@emotion/react"
-import { ReactComponent as TablePlaceholderIcon } from "assets/icons/TablePlaceholderIcon.svg"
+import TablePlaceholderIcon from "assets/icons/TablePlaceholderIcon.svg?react"
 import { TableSkeleton } from "components/Table/TableSkeleton"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"

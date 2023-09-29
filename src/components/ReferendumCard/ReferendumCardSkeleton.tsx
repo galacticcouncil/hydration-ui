@@ -1,5 +1,5 @@
 import Skeleton from "react-loading-skeleton"
-import { ReactComponent as IconArrow } from "assets/icons/IconArrow.svg"
+import IconArrow from "assets/icons/IconArrow.svg?react"
 import { Separator } from "components/Separator/Separator"
 import { SContainer, SHeader } from "./ReferendumCard.styled"
 import { Spacer } from "components/Spacer/Spacer"

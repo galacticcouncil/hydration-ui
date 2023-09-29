@@ -1,4 +1,4 @@
-import { ReactComponent as IconSettings } from "assets/icons/IconSettings.svg"
+import IconSettings from "assets/icons/IconSettings.svg?react"
 import { IconButton } from "components/IconButton/IconButton"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"

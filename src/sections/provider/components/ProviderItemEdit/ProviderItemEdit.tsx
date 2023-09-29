@@ -1,7 +1,7 @@
 import { FormEvent, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { SButton, SContainer, SInput } from "./ProviderItemEdit.styled"
-import { ReactComponent as IconEnter } from "assets/icons/IconEnter.svg"
+import IconEnter from "assets/icons/IconEnter.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcStore } from "state/store"

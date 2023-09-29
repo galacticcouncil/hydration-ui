@@ -1,4 +1,4 @@
-import { ReactComponent as IconRemove } from "assets/icons/IconRemove.svg"
+import IconRemove from "assets/icons/IconRemove.svg?react"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
 import { Button } from "components/Button/Button"
 import { Spacer } from "components/Spacer/Spacer"

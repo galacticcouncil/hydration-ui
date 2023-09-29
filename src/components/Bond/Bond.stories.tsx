@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { ReactComponent as PolkaLogo } from "assets/icons/PolkadotLogo.svg"
+import PolkaLogo from "assets/icons/PolkadotLogo.svg?react"
 
 import { Bond } from "./Bond"
 

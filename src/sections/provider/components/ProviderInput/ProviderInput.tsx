@@ -1,6 +1,6 @@
 import { SContainer, SInput } from "./ProviderInput.styled"
 import { ChangeEvent, ReactNode } from "react"
-import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
+import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
 import { useTranslation } from "react-i18next"

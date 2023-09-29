@@ -5,7 +5,7 @@ import { MouseEventHandler, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { SBond, SItem } from "./Bond.styled"
 import { Icon } from "components/Icon/Icon"
-import { ReactComponent as ClockIcon } from "assets/icons/ClockIcon.svg"
+import ClockIcon from "assets/icons/ClockIcon.svg?react"
 
 export type BondView = "card" | "list"
 

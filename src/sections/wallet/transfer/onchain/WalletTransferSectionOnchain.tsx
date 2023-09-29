@@ -1,7 +1,7 @@
 import { useAccountCurrency } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
 import { usePaymentInfo } from "api/transaction"
-import { ReactComponent as CrossIcon } from "assets/icons/CrossIcon.svg"
+import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import BigNumber from "bignumber.js"
 import { Alert } from "components/Alert/Alert"
 import { Button } from "components/Button/Button"

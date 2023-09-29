@@ -1,4 +1,4 @@
-import { ReactComponent as MoreTabIcon } from "assets/icons/MoreTabIcon.svg"
+import MoreTabIcon from "assets/icons/MoreTabIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"

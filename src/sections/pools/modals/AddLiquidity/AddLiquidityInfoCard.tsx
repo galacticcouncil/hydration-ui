@@ -1,5 +1,5 @@
 import { Text } from "components/Typography/Text/Text"
-import { ReactComponent as InfoIcon } from "assets/icons/LPInfoIcon.svg"
+import InfoIcon from "assets/icons/LPInfoIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { SCardContainer, SLink } from "./AddLiquidity.styled"
 import { useTranslation } from "react-i18next"

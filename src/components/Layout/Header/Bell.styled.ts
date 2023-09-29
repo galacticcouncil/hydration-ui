@@ -1,7 +1,7 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
-import { ReactComponent as BellIcon } from "assets/icons/BellIcon.svg"
-import { ReactComponent as ActiveReferendumIcon } from "assets/icons/ActiveReferendumIcon.svg"
+import BellIcon from "assets/icons/BellIcon.svg?react"
+import ActiveReferendumIcon from "assets/icons/ActiveReferendumIcon.svg?react"
 import { css } from "@emotion/react"
 
 export const SActiveReferendumIcon = styled(ActiveReferendumIcon)`

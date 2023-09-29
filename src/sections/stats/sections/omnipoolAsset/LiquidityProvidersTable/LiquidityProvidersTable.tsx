@@ -16,7 +16,7 @@ import { theme } from "theme"
 import { useTranslation } from "react-i18next"
 import { useLiquidityProvidersTable } from "./LiquidityProvidersTable.utils"
 import { Icon } from "components/Icon/Icon"
-import { ReactComponent as TitleIcon } from "assets/icons/StakingTableIcon.svg"
+import TitleIcon from "assets/icons/StakingTableIcon.svg?react"
 
 type Props = {
   data: any

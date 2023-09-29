@@ -15,8 +15,8 @@ import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { shortenAccountAddress } from "utils/formatting"
-import { ReactComponent as AccountIcon } from "assets/icons/StakingAccountIcon.svg"
-import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
+import AccountIcon from "assets/icons/StakingAccountIcon.svg?react"
+import LinkIcon from "assets/icons/LinkIcon.svg?react"
 
 export const useLiquidityProvidersTable = (data: any) => {
   const { t } = useTranslation()

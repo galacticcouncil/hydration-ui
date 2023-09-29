@@ -1,6 +1,6 @@
 import { Text } from "components/Typography/Text/Text"
 import { ReactNode } from "react"
-import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
+import ChevronRight from "assets/icons/ChevronRight.svg?react"
 
 import { SContainer } from "./WalletTransferCrosschainListItem.styled"
 import { WalletTransferCrosschainLogo } from "./WalletTransferCrosschainLogo"

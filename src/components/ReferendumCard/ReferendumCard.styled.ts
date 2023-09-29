@@ -28,7 +28,8 @@ export const SContainer = styled.a<{ type: "staking" | "toast" }>`
               rgba(163, 177, 199, 0.15) 66.67%,
               rgba(158, 167, 180, 0.2) 100%
             );
-            -webkit-mask: linear-gradient(#fff 0 0) content-box,
+            -webkit-mask:
+              linear-gradient(#fff 0 0) content-box,
               linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;

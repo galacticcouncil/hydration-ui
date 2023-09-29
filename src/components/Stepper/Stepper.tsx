@@ -1,4 +1,4 @@
-import { ReactComponent as DoneIcon } from "assets/icons/StepperDoneIcon.svg"
+import DoneIcon from "assets/icons/StepperDoneIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { Fragment } from "react"

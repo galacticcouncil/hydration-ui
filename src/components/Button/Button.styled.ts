@@ -85,10 +85,17 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
 
     position: relative;
 
-    -webkit-transition: all 0.3s, background 0.1s, border 0.1s;
-    transition: all 0.3s, background 0.1s, border 0.1s;
+    -webkit-transition:
+      all 0.3s,
+      background 0.1s,
+      border 0.1s;
+    transition:
+      all 0.3s,
+      background 0.1s,
+      border 0.1s;
 
-    box-shadow: rgb(246 40 124 / 45%) 0px 13px 40px -12px,
+    box-shadow:
+      rgb(246 40 124 / 45%) 0px 13px 40px -12px,
       rgb(195 145 199 / 30%) 0px 0px 0px -1px;
 
     border: 1px solid transparent;
@@ -229,8 +236,14 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
 
     position: relative;
 
-    -webkit-transition: all 0.3s, background 0.1s, border 0.1s;
-    transition: all 0.3s, background 0.1s, border 0.1s;
+    -webkit-transition:
+      all 0.3s,
+      background 0.1s,
+      border 0.1s;
+    transition:
+      all 0.3s,
+      background 0.1s,
+      border 0.1s;
 
     box-shadow: 0px 13px 40px -12px #29a0f673;
 

@@ -6,7 +6,7 @@ import { FillBar } from "components/FillBar/FillBar"
 import { getFloatingPointAmount } from "utils/balance"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { addSeconds } from "date-fns"
-import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
+import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import { Icon } from "components/Icon/Icon"
 import {
   PalletLiquidityMiningGlobalFarmData,
