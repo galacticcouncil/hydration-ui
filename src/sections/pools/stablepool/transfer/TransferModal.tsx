@@ -53,19 +53,20 @@ export const TransferModal = ({
     defaultSelectedOption ?? "OMNIPOOL",
   )
 
-  const steps =
-    selectedOption === "STABLEPOOL"
-      ? [
-          { text: "Select Pool", page: Page.OPTIONS },
-          { text: "Provide Liquidity", page: Page.ADD_LIQUIDITY },
-          { text: "Confirm", page: Page.ADD_LIQUIDITY + 1 },
-        ]
-      : [
-          { text: "Select Pool", page: Page.OPTIONS },
-          { text: "Provide Liquidity", page: Page.ADD_LIQUIDITY },
-          { text: "Wait For Transaction", page: Page.WAIT },
-          { text: "Move to Omnipool", page: Page.MOVE_TO_OMNIPOOL },
-        ]
+  const isStablepool = selectedOption === "STABLEPOOL"
+
+  const steps = isStablepool
+    ? [
+        { text: "Select Pool", page: Page.OPTIONS },
+        { text: "Provide Liquidity", page: Page.ADD_LIQUIDITY },
+        { text: "Confirm", page: Page.ADD_LIQUIDITY + 1 },
+      ]
+    : [
+        { text: "Select Pool", page: Page.OPTIONS },
+        { text: "Provide Liquidity", page: Page.ADD_LIQUIDITY },
+        { text: "Wait For Transaction", page: Page.WAIT },
+        { text: "Move to Omnipool", page: Page.MOVE_TO_OMNIPOOL },
+      ]
 
   const getStepState = (stepPage: Page) => {
     if (stepPage === currentPage) {
@@ -137,19 +138,21 @@ export const TransferModal = ({
             ),
           },
           {
-            title: t("liquidity.add.modal.title"),
+            title: isStablepool
+              ? t("liquidity.add.modal.title")
+              : t("liquidity.stablepool.add.modal.title"),
             headerVariant: "gradient",
             content: (
               <AddStablepoolLiquidity
                 poolId={poolId}
                 onCancel={onClose}
                 onClose={() => {
-                  if (selectedOption === "STABLEPOOL") {
+                  if (isStablepool) {
                     onClose()
                   }
                 }}
                 onSubmitted={(shares) => {
-                  if (selectedOption === "STABLEPOOL") {
+                  if (isStablepool) {
                     onClose()
                   }
 
@@ -157,7 +160,7 @@ export const TransferModal = ({
                   setPage(Page.WAIT)
                 }}
                 onSuccess={() => {
-                  if (selectedOption === "STABLEPOOL") {
+                  if (isStablepool) {
                     return refetchPositions()
                   }
 
@@ -185,7 +188,7 @@ export const TransferModal = ({
             ),
           },
           {
-            title: "Move to omnipool",
+            title: t("liquidity.stablepool.move.modal.title"),
             headerVariant: "gradient",
             content: (
               <div
@@ -203,7 +206,7 @@ export const TransferModal = ({
             ),
           },
           {
-            title: "Move to omnipool",
+            title: t("liquidity.stablepool.move.modal.title"),
             headerVariant: "gradient",
             content: (
               <AddLiquidityForm
