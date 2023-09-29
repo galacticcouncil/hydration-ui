@@ -1,5 +1,5 @@
-import { ReactComponent as WaterRippleIcon } from "assets/icons/WaterRippleIcon.svg"
-import { ReactComponent as DropletIcon } from "assets/icons/DropletIcon.svg"
+import WaterRippleIcon from "assets/icons/WaterRippleIcon.svg?react"
+import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import { TransferOption } from "./TransferOption"
 import { ListItem } from "./ListItem"
 import { useTranslation } from "react-i18next"

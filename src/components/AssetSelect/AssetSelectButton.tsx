@@ -3,7 +3,7 @@ import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 import { AssetLogo, getAssetName } from "components/AssetIcon/AssetIcon"
 import { SSelectAssetButton } from "./AssetSelect.styled"
-import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
+import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import { u32 } from "@polkadot/types-codec"
 import { useRpcProvider } from "providers/rpcProvider"
 

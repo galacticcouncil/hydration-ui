@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
 import { SButton } from "sections/pools/pool/positions/LiquidityPosition.styled"
 import { Icon } from "components/Icon/Icon"
-import { ReactComponent as MinusIcon } from "assets/icons/MinusIcon.svg"
+import MinusIcon from "assets/icons/MinusIcon.svg?react"
 
 type Props = Pick<
   ComponentProps<typeof RemoveLiquidityModal>,
