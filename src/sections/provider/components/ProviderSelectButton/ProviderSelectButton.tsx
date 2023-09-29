@@ -8,6 +8,7 @@ import { ProviderSelectModal } from "sections/provider/ProviderSelectModal"
 import { ProviderStatus } from "sections/provider/ProviderStatus"
 import { SButton, SName } from "./ProviderSelectButton.styled"
 import { useRpcProvider } from "providers/rpcProvider"
+import { theme } from "theme"
 
 export const ProviderSelectButton = () => {
   const [open, setOpen] = useState(false)
@@ -21,7 +22,12 @@ export const ProviderSelectButton = () => {
 
   return (
     <>
-      <SButton tabIndex={0} onClick={() => setOpen(true)} whileHover="animate">
+      <SButton
+        tabIndex={0}
+        onClick={() => setOpen(true)}
+        whileHover="animate"
+        css={{ zIndex: theme.zIndices.modal }}
+      >
         <SName
           variants={{
             initial: { width: 0 },
