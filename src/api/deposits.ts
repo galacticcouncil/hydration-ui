@@ -58,15 +58,6 @@ export const usePoolDeposits = (poolId?: u32 | string) => {
   })
 }
 
-export const useOmniPositionId = (positionId: u128 | string) => {
-  const { api } = useRpcProvider()
-
-  return useQuery(
-    QUERY_KEYS.omniPositionId(positionId),
-    getOmniPositionId(api, positionId),
-  )
-}
-
 export const useOmniPositionIds = (positionIds: Array<u32 | string>) => {
   const { api } = useRpcProvider()
 

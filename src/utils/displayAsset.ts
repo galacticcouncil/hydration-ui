@@ -1,31 +1,11 @@
 import { u32 } from "@polkadot/types-codec"
 import { useQuery } from "@tanstack/react-query"
 import { useSpotPrice, useSpotPrices } from "api/spotPrice"
-import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { STABLECOIN_SYMBOL } from "./constants"
 import { QUERY_KEYS } from "./queryKeys"
-
-type Props = { id: string; amount: BigNumber }
-
-export const useDisplayValue = (props: Props) => {
-  const displayAsset = useDisplayAssetStore()
-  const spotPrice = useSpotPrice(props.id, displayAsset.id)
-
-  const isLoading = spotPrice.isInitialLoading
-
-  const symbol = displayAsset.symbol
-  const amount = useMemo(() => {
-    if (!displayAsset.id || !spotPrice.data || spotPrice.data.spotPrice.isNaN())
-      return undefined
-
-    return props.amount.times(spotPrice.data.spotPrice)
-  }, [props.amount, displayAsset, spotPrice.data])
-
-  return { amount, symbol, isLoading }
-}
 
 export const useDisplayPrice = (id: string | u32 | undefined) => {
   const displayAsset = useDisplayAssetStore()

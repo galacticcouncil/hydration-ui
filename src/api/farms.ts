@@ -80,56 +80,6 @@ const getYieldFarms =
     return res.map((data) => data.unwrap())
   }
 
-export function useYieldFarm(data: {
-  poolId: Maybe<u32 | string>
-  globalFarmId: Maybe<u32 | string>
-  yieldFarmId: Maybe<u32 | string>
-}) {
-  const { api } = useRpcProvider()
-  return useQuery(
-    QUERY_KEYS.yieldFarm(data),
-    data.poolId != null && data.globalFarmId != null && data.yieldFarmId != null
-      ? getYieldFarm(api, data.poolId, data.globalFarmId, data.yieldFarmId)
-      : undefinedNoop,
-    {
-      enabled:
-        data.poolId != null &&
-        data.globalFarmId != null &&
-        data.yieldFarmId != null,
-    },
-  )
-}
-
-const getYieldFarm =
-  (
-    api: ApiPromise,
-    poolId: u32 | string,
-    globalFarmId: u32 | string,
-    yieldFarmId: u32 | string,
-  ) =>
-  async () => {
-    const yieldFarm = await api.query.omnipoolWarehouseLM.yieldFarm(
-      poolId,
-      globalFarmId,
-      yieldFarmId,
-    )
-    return yieldFarm.unwrap()
-  }
-
-export function useGlobalFarm(id: Maybe<u32 | string>) {
-  const { api } = useRpcProvider()
-  return useQuery(
-    QUERY_KEYS.globalFarm(id),
-    id != null ? getGlobalFarm(api, id) : undefinedNoop,
-    { enabled: id != null },
-  )
-}
-
-const getGlobalFarm = (api: ApiPromise, id: u32 | string) => async () => {
-  const globalFarm = await api.query.omnipoolWarehouseLM.globalFarm(id)
-  return globalFarm.unwrap()
-}
-
 export function useGlobalFarms(ids: Maybe<{ globalFarmId: u32 }[]>) {
   const { api } = useRpcProvider()
   return useQuery(
@@ -153,8 +103,6 @@ export interface Farm {
 }
 
 export type FarmAprs = ReturnType<typeof useFarmAprs>
-
-export type FarmQueryType = ReturnType<typeof useFarms>
 
 export const useFarms = (poolIds: Array<u32 | string>) => {
   const activeYieldFarms = useActiveYieldFarms(poolIds)

@@ -67,7 +67,7 @@ export const OmnipoolAssetsTable = ({ data, columns, onRowSelect }: Props) => {
           ))}
         </TableHeaderContent>
         <TableBodyContent>
-          {table.getRowModel().rows.map((row, i) => (
+          {table.getRowModel().rows.map((row) => (
             <TableRowStats
               onClick={() => onRowSelect?.(row.original.id)}
               key={row.id}

@@ -54,15 +54,3 @@ export const Spinner = styled.span<{
     getResponsiveStyles(p.height, (height) => ({ height })),
   ]}
 `
-
-export const ToastSpinner = styled(Spinner)`
-  background: conic-gradient(
-    from 0deg,
-    rgba(10, 13, 26, 0) 28.46deg,
-    rgba(43, 166, 255, 0.14) 44.98deg,
-    rgba(146, 183, 255, 0.38) 57.63deg,
-    #ffffff 88deg,
-    #ffffff 100deg,
-    #ffffff 200deg
-  );
-`

@@ -109,7 +109,6 @@ export const MENU_ITEMS = [
   },
 ] as const
 
-export type TabKey = (typeof MENU_ITEMS)[number]["key"]
 export type TabItem = (typeof MENU_ITEMS)[number]
 export type TabSubItem = (typeof MENU_ITEMS)[number]["subItems"]
 export type TabItemWithSubItems = TabItem & {

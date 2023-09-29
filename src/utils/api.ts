@@ -1,5 +1,3 @@
-import { useQuery } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { encodeAddress } from "@polkadot/util-crypto"
 import { stringToU8a } from "@polkadot/util"
 
@@ -29,15 +27,6 @@ export const getMath = () => async () => {
     omnipool,
   }
 }
-export const useMath = () => {
-  const { data, ...rest } = useQuery(QUERY_KEYS.math, getMath())
-
-  return {
-    ...data,
-    ...rest,
-  }
-}
-
 export const getHydraAccountAddress = (seed?: string) =>
   seed
     ? encodeAddress(

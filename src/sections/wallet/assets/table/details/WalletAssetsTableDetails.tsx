@@ -14,7 +14,6 @@ type Props = {
   lockedMaxDisplay: BN
   reserved: BN
   reservedDisplay: BN
-  symbol: string
   id: string
 }
 
@@ -23,7 +22,6 @@ export const WalletAssetsTableDetails = ({
   lockedMaxDisplay,
   reserved,
   reservedDisplay,
-  symbol,
   id,
 }: Props) => {
   const { t } = useTranslation()

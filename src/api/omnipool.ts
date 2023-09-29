@@ -121,14 +121,6 @@ export const getOmnipoolPosition =
     return position
   }
 
-export const getOmnipoolPositions =
-  (api: ApiPromise, itemIds: u128[]) => async () => {
-    const res = await api.query.omnipool.positions.multi(itemIds)
-    const data = res.map((entry) => entry.unwrap())
-
-    return data
-  }
-
 export const getHubAssetImbalance = (api: ApiPromise) =>
   api.query.omnipool.hubAssetImbalance()
 
