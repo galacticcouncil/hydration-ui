@@ -1,4 +1,4 @@
-import { forwardRef, useMemo } from "react"
+import { forwardRef } from "react"
 import { ToastMessage, useAccountStore } from "state/store"
 import { Trans, useTranslation } from "react-i18next"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -21,21 +21,16 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
     const { assets } = useRpcProvider()
     const claimable = useClaimableAmount()
 
-    const { claimableAssets } = useMemo(() => {
-      const claimableAssets = []
-
-      for (let key in claimable.data?.assets) {
+    const claimableAssets = Object.keys(claimable.data?.assets ?? {}).map(
+      (key) => {
         const asset = assets.getAsset(key)
-
-        claimableAssets.push({
+        return {
           value: claimable.data?.assets[key],
           symbol: asset.symbol,
           decimals: asset.decimals,
-        })
-      }
-
-      return { claimableAssets }
-    }, [assets, claimable.data?.assets])
+        }
+      },
+    )
 
     const toast = TOAST_MESSAGES.reduce((memo, type) => {
       const msType = type === "onError" ? "onLoading" : type

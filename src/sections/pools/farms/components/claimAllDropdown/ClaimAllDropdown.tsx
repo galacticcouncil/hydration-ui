@@ -63,7 +63,7 @@ export const ClaimAllDropdown = () => {
           {isDesktop && (
             <Popover.Portal>
               <Popover.Content
-                css={{ zIndex: theme.zIndices.modal }}
+                css={{ zIndex: theme.zIndices.modal, outline: "none" }}
                 side="bottom"
                 align="end"
                 sideOffset={-2}
