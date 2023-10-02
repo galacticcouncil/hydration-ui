@@ -8,6 +8,8 @@ import { SAssetsModalHeader } from "./AssetsModal.styled"
 import { AssetsModalRow } from "./AssetsModalRow"
 import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
 import { useRpcProvider } from "providers/rpcProvider"
+import { Input } from "components/Input/Input"
+import { useState } from "react"
 
 type Props = {
   allowedAssets?: Maybe<u32 | string>[]
@@ -23,14 +25,20 @@ export const AssetsModalContent = ({
   allAssets,
 }: Props) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { assets, isLoaded } = useRpcProvider()
   const { account } = useAccountStore()
+  const [search, setSearch] = useState("")
 
   const assetsRows = useAcountAssets(account?.address)
 
-  const assetsDetails = allAssets
-    ? assets.tokens
-    : assetsRows.filter((asset) => asset.isToken)
+  const assetsDetails = (
+    allAssets ? assets.tokens : assetsRows.filter((asset) => asset.isToken)
+  ).filter((asset) =>
+    search
+      ? asset.name.toLowerCase().includes(search.toLowerCase()) ||
+        asset.symbol.toLowerCase().includes(search.toLowerCase())
+      : true,
+  )
 
   const mainAssets =
     allowedAssets != null
@@ -42,7 +50,7 @@ export const AssetsModalContent = ({
       ? assetsDetails.filter((asset) => !allowedAssets?.includes(asset.id))
       : []
 
-  if (!mainAssets.length)
+  if (!isLoaded)
     return (
       <>
         <SAssetsModalHeader>
@@ -61,24 +69,35 @@ export const AssetsModalContent = ({
 
   return (
     <>
-      {!!mainAssets?.length && (
-        <>
-          <SAssetsModalHeader>
-            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-              {t("selectAssets.asset")}
-            </Text>
-            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-              {t("selectAssets.your_balance")}
-            </Text>
-          </SAssetsModalHeader>
-          {mainAssets?.map((asset) => (
-            <AssetsModalRow
-              key={asset.id}
-              id={asset.id}
-              onClick={(assetData) => onSelect?.(assetData)}
-            />
-          ))}
-        </>
+      <div sx={{ p: 24 }}>
+        <Input
+          value={search}
+          onChange={setSearch}
+          name="search"
+          label="x"
+          placeholder={t("selectAssets.search")}
+        />
+      </div>
+      <SAssetsModalHeader>
+        <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+          {t("selectAssets.asset")}
+        </Text>
+        <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+          {t("selectAssets.your_balance")}
+        </Text>
+      </SAssetsModalHeader>
+      {mainAssets?.length ? (
+        mainAssets.map((asset) => (
+          <AssetsModalRow
+            key={asset.id}
+            id={asset.id}
+            onClick={(assetData) => onSelect?.(assetData)}
+          />
+        ))
+      ) : (
+        <Text color="whiteish500" sx={{ textAlign: "center", p: 20 }}>
+          {t("selectAssets.empty")}
+        </Text>
       )}
       {!hideInactiveAssets && !!otherAssets?.length && (
         <>
