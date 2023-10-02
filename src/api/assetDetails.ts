@@ -70,14 +70,20 @@ export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
   const { assets } = useRpcProvider()
   const accountBalances = useAccountBalances(address)
 
-  const ids = accountBalances.data?.balances
-    ? [
-        NATIVE_ASSET_ID,
-        ...accountBalances.data.balances.map((b) => b.id.toString()),
-      ]
-    : []
+  const tokenBalances = accountBalances.data?.balances
+    ? accountBalances.data.balances.map((balance) => {
+        const asset = assets.getAsset(balance.id)
 
-  return assets.getAssets(ids)
+        return { asset, balance }
+      })
+    : []
+  if (accountBalances.data?.native)
+    tokenBalances.unshift({
+      balance: accountBalances.data.native,
+      asset: assets.native,
+    })
+
+  return tokenBalances
 }
 
 type AssetType = "Token" | "Bond" | "StableSwap" | "PoolShare"
@@ -119,6 +125,7 @@ export type TBond = TAssetCommon & {
   assetType: "Bond"
   assetId: string
   maturity: number
+  isPast: boolean
 }
 
 export type TToken = TAssetCommon & {
@@ -149,7 +156,7 @@ const fallbackAsset: TToken = {
 export const getAssets = async (api: ApiPromise) => {
   const poolService = new PoolService(api)
   const tradeRouter = new TradeRouter(poolService, {
-    includeOnly: [PoolType.Omni],
+    includeOnly: [PoolType.Omni, PoolType.LBP],
   })
 
   const [
@@ -264,6 +271,10 @@ export const getAssets = async (api: ApiPromise) => {
           (location) => location[0].args[0].toString() === assetId.toString(),
         )?.[1]
 
+        const isPast = !rawTradeAssets.some(
+          (tradeAsset) => tradeAsset.id === id,
+        )
+
         const asset: TBond = {
           ...assetCommon,
           assetId: assetId.toString(),
@@ -273,6 +284,7 @@ export const getAssets = async (api: ApiPromise) => {
           decimals,
           symbol,
           maturity: maturity.toNumber(),
+          isPast,
         }
 
         bonds.push(asset)
@@ -324,8 +336,14 @@ export const getAssets = async (api: ApiPromise) => {
     (acc, asset) => ({ ...acc, [asset.id]: asset }),
     {},
   )
-
+  const isBond = (asset: TAsset): asset is TBond => asset.isBond
   const getAsset = (id: string) => allTokensObject[id] ?? fallbackAsset
+
+  const getBond = (id: string) => {
+    const asset = allTokensObject[id] ?? fallbackAsset
+
+    if (isBond(asset)) return asset
+  }
 
   const getAssets = (ids: string[]) => ids.map((id) => getAsset(id))
 
@@ -342,7 +360,9 @@ export const getAssets = async (api: ApiPromise) => {
       native,
       tradeAssets,
       getAsset,
+      getBond,
       getAssets,
+      isBond,
     },
     tradeRouter,
   }

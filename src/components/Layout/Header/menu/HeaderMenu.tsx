@@ -15,7 +15,7 @@ export const HeaderMenu = () => {
           return null
         }
 
-        if (!item.href && item.subItems?.length) {
+        if (item.subItems?.length) {
           return <HeaderSubMenu key={i} item={item} />
         }
 

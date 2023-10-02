@@ -6,14 +6,16 @@ import { TableHeader } from "components/Table/Table.styled"
 import { ReactNode } from "react"
 
 export const TableAction = (props: {
-  icon: ReactNode
+  icon?: ReactNode
   onClick?: () => void
   children: ReactNode
   disabled?: boolean
   variant?: ButtonVariant
+  isLoading?: boolean
 }) => {
   return (
     <Button
+      isLoading={props.isLoading}
       disabled={props.disabled}
       size="small"
       variant={props.variant}
@@ -25,7 +27,7 @@ export const TableAction = (props: {
         props.onClick?.()
       }}
     >
-      <Icon size={16} icon={props.icon}></Icon>
+      {props.icon && <Icon size={16} icon={props.icon} />}
       {props.children}
     </Button>
   )

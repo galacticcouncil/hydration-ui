@@ -8,8 +8,8 @@ import {
 import BN from "bignumber.js"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { WalletAssetsTableName } from "sections/wallet/assets/table/data/WalletAssetsTableData"
 import { WalletAssetsHydraPositionsDetails } from "./details/WalletAssetsHydraPositionsDetails"
+import { AssetTableName } from "components/AssetTableName/AssetTableName"
 
 export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
   const { t } = useTranslation()
@@ -22,7 +22,7 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
         id: "name",
         header: t("wallet.assets.hydraPositions.header.name"),
         cell: ({ row }) => (
-          <WalletAssetsTableName {...row.original} id={row.original.assetId} />
+          <AssetTableName {...row.original} id={row.original.assetId} />
         ),
       }),
       accessor("providedAmount", {

@@ -1,9 +1,7 @@
 import { u32 } from "@polkadot/types"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { useTranslation } from "react-i18next"
 import { BN_0 } from "utils/constants"
-import { useRpcProvider } from "providers/rpcProvider"
 
 export const UnstakeAssetSelect = ({
   title,
@@ -21,9 +19,6 @@ export const UnstakeAssetSelect = ({
   value: string
 }) => {
   const { t } = useTranslation()
-  const {
-    assets: { native },
-  } = useRpcProvider()
 
   return (
     <AssetSelect
@@ -32,12 +27,8 @@ export const UnstakeAssetSelect = ({
       title={title}
       value={value}
       onChange={onChange}
-      asset={assetId}
-      assetIcon={<AssetLogo id={native.id} />}
-      decimals={native.decimals}
+      id={assetId.toString()}
       balance={BN_0}
-      assetName={native.name}
-      assetSymbol={native.symbol}
       error={error}
       balanceLabel={t("staking.dashboard.form.unstake.balanceLabel")}
       withoutMaxValue

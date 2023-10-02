@@ -33,7 +33,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
   return (
     <Root delayDuration={0} open={open} onOpenChange={setOpen}>
       <Trigger
-        css={{ all: "unset", height: "100%" }}
+        css={{ all: "unset", height: "100%", cursor: "pointer" }}
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()

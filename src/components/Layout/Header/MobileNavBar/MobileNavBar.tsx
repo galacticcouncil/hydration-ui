@@ -3,7 +3,6 @@ import { Icon } from "components/Icon/Icon"
 import { useTranslation } from "react-i18next"
 
 import { MENU_ITEMS, TabItem } from "utils/navigation"
-import { HeaderSubMenu } from "components/Layout/Header/menu/HeaderSubMenu"
 import {
   SMobileNavBar,
   SNavBarItem,
@@ -12,6 +11,7 @@ import {
 import { MoreButton } from "./MoreButton"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { HeaderSubMenu } from "components/Layout/Header/menu/HeaderSubMenu"
 
 export const MobileNavBarItem = ({
   item,
@@ -62,10 +62,9 @@ export const MobileNavBar = () => {
       {visibleTabs
         .sort((a, b) => a.mobOrder - b.mobOrder)
         .map((item, index) => {
-          if (!item.href && item.subItems?.length) {
+          if (item.subItems?.length) {
             return <HeaderSubMenu key={index} item={item} />
           }
-
           if (item.external) {
             return (
               <a href={item.href} key={index} sx={{ height: "100%" }}>
