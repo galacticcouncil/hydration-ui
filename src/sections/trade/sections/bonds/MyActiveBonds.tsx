@@ -48,8 +48,8 @@ export const MyActiveBonds = ({
 
   const bondEvents = useBondsEvents(
     !showTransfer
-      ? bondsBalances.map((bondBalance) =>
-          bondBalance.data?.assetId.toString(),
+      ? bondsBalances.map(
+          (bondBalance) => bondBalance.data?.assetId.toString(),
         ) ?? []
       : [],
     true,
