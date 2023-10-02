@@ -1,6 +1,6 @@
 import { getCircleCoordinates } from "sections/stats/components/PieChart/PieChart.utils"
 import { SClipPath, SPieLabelContainer } from "./PieChart.styled"
-import { ReactComponent as ChartBackground } from "assets/icons/StakingChart.svg"
+import ChartBackground from "assets/icons/StakingChart.svg?react"
 import { getRuleScaleLines } from "./PieChart.utils"
 import { Skeleton } from "./Skeleton"
 import styled from "@emotion/styled"

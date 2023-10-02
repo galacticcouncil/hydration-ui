@@ -5,6 +5,18 @@ import { u32 } from "@polkadot/types"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
 
+export const UigcAsset = createComponent({
+  tagName: "uigc-asset",
+  elementClass: UI.Asset,
+  react: React,
+})
+
+export const UigcAssetId = createComponent({
+  tagName: "uigc-asset-id",
+  elementClass: UI.AssetId,
+  react: React,
+})
+
 export const UigcAssetTransfer = createComponent({
   tagName: "uigc-asset-transfer",
   elementClass: UI.AssetTransfer,
@@ -68,8 +80,12 @@ export function OrderAssetSelect(props: {
       id={props.name}
       title={props.title}
       asset={asset?.symbol}
+      unit={asset?.symbol}
       amount={props.value}
     >
+      <UigcAsset slot="asset" symbol={asset?.symbol}>
+        <UigcAssetId slot="icon" symbol={asset?.symbol} />
+      </UigcAsset>
       <UigcAssetBalance
         slot="balance"
         balance={blnc}
@@ -119,10 +135,14 @@ export function OrderAssetPay(props: {
       id={props.name}
       title={props.title}
       asset={asset.symbol}
+      unit={asset.symbol}
       amount={props.value}
       selectable={false}
       readonly={props.readonly || false}
     >
+      <UigcAsset slot="asset" symbol={asset?.symbol}>
+        <UigcAssetId slot="icon" symbol={asset?.symbol} />
+      </UigcAsset>
       <UigcAssetBalance slot="balance" balance={blnc} visible={false} />
     </UigcAssetTransfer>
   )
@@ -181,10 +201,14 @@ export function OrderAssetGet(props: {
       id={props.name}
       title={props.title}
       asset={asset.symbol}
+      unit={asset.symbol}
       amount={props.value}
       selectable={false}
       readonly={props.readonly || false}
     >
+      <UigcAsset slot="asset" symbol={asset?.symbol}>
+        <UigcAssetId slot="icon" symbol={asset?.symbol} />
+      </UigcAsset>
       {props.onChange && (
         <div slot="balance" sx={{ display: "flex", justify: "end", gap: 2 }}>
           {OrderAssetPctBtn(25, props.remaining, props.onChange)}

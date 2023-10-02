@@ -1,5 +1,5 @@
 import { css } from "@emotion/react"
-import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
+import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import BigNumber from "bignumber.js"
 import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
 import { AssetInput } from "components/AssetInput/AssetInput"

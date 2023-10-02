@@ -1,6 +1,6 @@
 import styled from "@emotion/styled"
 import { useNavigate } from "@tanstack/react-location"
-import { ReactComponent as EmptyStateIcon } from "assets/icons/EmptyStateLPIcon.svg"
+import EmptyStateIcon from "assets/icons/EmptyStateLPIcon.svg?react"
 import { Button } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"

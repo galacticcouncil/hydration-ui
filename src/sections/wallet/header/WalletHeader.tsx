@@ -1,5 +1,5 @@
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { ReactComponent as CopyIcon } from "assets/icons/CopyIcon.svg"
+import CopyIcon from "assets/icons/CopyIcon.svg?react"
 import { Button } from "components/Button/Button"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Separator } from "components/Separator/Separator"

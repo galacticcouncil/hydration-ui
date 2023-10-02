@@ -1,8 +1,8 @@
 import { TabLink } from "components/Tabs/TabLink"
 import { useTranslation } from "react-i18next"
 import { LINKS } from "utils/navigation"
-import { ReactComponent as AssetsIcon } from "assets/icons/AssetsIcon.svg"
-import { ReactComponent as PositionsIcon } from "assets/icons/PositionsIcon.svg"
+import AssetsIcon from "assets/icons/AssetsIcon.svg?react"
+import PositionsIcon from "assets/icons/PositionsIcon.svg?react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 

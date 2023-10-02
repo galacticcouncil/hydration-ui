@@ -9,7 +9,7 @@ import {
 } from "recharts"
 import { SChart } from "components/Graph/Graph.styled"
 import { theme } from "theme"
-import { ReactComponent as CurrentLoyaltyFactor } from "assets/icons/CurrentLoyaltyFactor.svg"
+import CurrentLoyaltyFactor from "assets/icons/CurrentLoyaltyFactor.svg?react"
 
 const tickProps = {
   stroke: theme.colors.white,

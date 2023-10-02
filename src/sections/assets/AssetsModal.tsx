@@ -10,6 +10,8 @@ import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
 import { useRpcProvider } from "providers/rpcProvider"
 import BN from "bignumber.js"
 import { TToken } from "api/assetDetails"
+import { Input } from "components/Input/Input"
+import { useState } from "react"
 
 type Props = {
   allowedAssets?: Maybe<u32 | string>[]
@@ -29,6 +31,7 @@ export const AssetsModalContent = ({
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const { account } = useAccountStore()
+  const [search, setSearch] = useState("")
 
   const accountAssets = useAcountAssets(account?.address)
 
@@ -57,14 +60,21 @@ export const AssetsModalContent = ({
           accountAsset.asset.isToken,
       )
 
+  const searchedTokens = tokens.filter((token) =>
+    search
+      ? token.asset.name.toLowerCase().includes(search.toLowerCase()) ||
+        token.asset.symbol.toLowerCase().includes(search.toLowerCase())
+      : true,
+  )
+
   const allowedTokens =
     allowedAssets != null
-      ? tokens.filter(({ asset }) => allowedAssets.includes(asset.id))
-      : tokens
+      ? searchedTokens.filter(({ asset }) => allowedAssets.includes(asset.id))
+      : searchedTokens
 
   const notAllowedTokens =
     allowedAssets != null
-      ? tokens.filter(({ asset }) => !allowedAssets.includes(asset.id))
+      ? searchedTokens.filter(({ asset }) => !allowedAssets.includes(asset.id))
       : []
 
   if (!allowedTokens.length)
@@ -86,6 +96,15 @@ export const AssetsModalContent = ({
 
   return (
     <>
+      <div sx={{ p: 24 }}>
+        <Input
+          value={search}
+          onChange={setSearch}
+          name="search"
+          label="x"
+          placeholder={t("selectAssets.search")}
+        />
+      </div>
       {!!allowedTokens?.length && (
         <>
           <SAssetsModalHeader>

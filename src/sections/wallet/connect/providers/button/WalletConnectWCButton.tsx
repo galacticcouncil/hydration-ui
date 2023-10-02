@@ -1,5 +1,5 @@
-import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
-import { ReactComponent as WalletConnect } from "assets/icons/WalletConnect.svg"
+import ChevronRight from "assets/icons/ChevronRight.svg?react"
+import WalletConnect from "assets/icons/WalletConnect.svg?react"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SWalletButton } from "sections/wallet/connect/providers/WalletConnectProviders.styled"

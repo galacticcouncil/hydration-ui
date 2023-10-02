@@ -1,4 +1,4 @@
-import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronRight.svg"
+import ChevronDownIcon from "assets/icons/ChevronRight.svg?react"
 import {
   BackButton,
   SOmnipoolAssetContainer,

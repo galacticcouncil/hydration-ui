@@ -1,4 +1,4 @@
-import { ReactComponent as IconEnter } from "assets/icons/IconEnter.svg"
+import IconEnter from "assets/icons/IconEnter.svg?react"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
 import { FormEvent, useState } from "react"

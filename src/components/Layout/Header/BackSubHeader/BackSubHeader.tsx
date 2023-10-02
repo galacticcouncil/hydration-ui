@@ -1,5 +1,5 @@
 import { Text } from "components/Typography/Text/Text"
-import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronRight.svg"
+import ChevronDownIcon from "assets/icons/ChevronRight.svg?react"
 import { useNavigate } from "@tanstack/react-location"
 import { IconButton } from "components/IconButton/IconButton"
 import { NavigationContainer } from "./BackSubHeader.styled"

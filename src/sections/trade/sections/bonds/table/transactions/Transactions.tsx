@@ -12,7 +12,7 @@ import { Fragment } from "react"
 import { Text } from "components/Typography/Text/Text"
 import { STableData } from "./Transactions.styled"
 import { ButtonTransparent } from "components/Button/Button"
-import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronDown.svg"
+import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
 

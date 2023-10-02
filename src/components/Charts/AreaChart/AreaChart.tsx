@@ -9,7 +9,7 @@ import {
 } from "recharts"
 import { theme } from "theme"
 import { format } from "date-fns"
-import { ReactComponent as CustomDot } from "assets/icons/ChartDot.svg"
+import CustomDot from "assets/icons/ChartDot.svg?react"
 import { useTranslation } from "react-i18next"
 import { useState } from "react"
 import { CategoricalChartState } from "recharts/types/chart/generateCategoricalChart"

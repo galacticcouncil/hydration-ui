@@ -1,5 +1,5 @@
 import styled from "@emotion/styled"
-import { ReactComponent as IconSearch } from "assets/icons/IconSearch.svg"
+import IconSearch from "assets/icons/IconSearch.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
 import { theme } from "theme"
 

@@ -9,7 +9,7 @@ import {
   SLine,
   SRentagle,
 } from "./FeeRange.styled"
-import { ReactComponent as ChevronDown } from "assets/icons/Chevron.svg"
+import ChevronDown from "assets/icons/Chevron.svg?react"
 import { Icon } from "components/Icon/Icon"
 import BN from "bignumber.js"
 import { Text } from "components/Typography/Text/Text"

@@ -1,13 +1,13 @@
-import { ReactComponent as PoolsAndFarmsIcon } from "assets/icons/PoolsAndFarms.svg"
-import { ReactComponent as TradeIcon } from "assets/icons/Trade.svg"
-import { ReactComponent as TransferIcon } from "assets/icons/TransferTabIcon.svg"
-import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
-import { ReactComponent as StatsIcon } from "assets/icons/ChartIcon.svg"
-import { ReactComponent as StakingIcon } from "assets/icons/StakingIcon.svg"
-import { ReactComponent as IconDCA } from "assets/icons/navigation/IconDCA.svg"
-import { ReactComponent as IconOTC } from "assets/icons/navigation/IconOTC.svg"
-import { ReactComponent as IconSwap } from "assets/icons/navigation/IconSwap.svg"
-import { ReactComponent as IconBonds } from "assets/icons/Bonds.svg"
+import PoolsAndFarmsIcon from "assets/icons/PoolsAndFarms.svg?react"
+import TradeIcon from "assets/icons/Trade.svg?react"
+import TransferIcon from "assets/icons/TransferTabIcon.svg?react"
+import WalletIcon from "assets/icons/Wallet.svg?react"
+import IconDCA from "assets/icons/navigation/IconDCA.svg?react"
+import IconOTC from "assets/icons/navigation/IconOTC.svg?react"
+import IconSwap from "assets/icons/navigation/IconSwap.svg?react"
+import StatsIcon from "assets/icons/ChartIcon.svg?react"
+import StakingIcon from "assets/icons/StakingIcon.svg?react"
+import IconBonds from "assets/icons/Bonds.svg?react"
 
 export const LINKS = {
   home: "/",

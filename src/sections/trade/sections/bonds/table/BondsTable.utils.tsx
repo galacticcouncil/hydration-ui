@@ -5,13 +5,12 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { ReactComponent as TransferIcon } from "assets/icons/TransferIcon.svg"
-
+import TransferIcon from "assets/icons/TransferIcon.svg?react"
 import { useMemo } from "react"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 import { ButtonTransparent } from "components/Button/Button"
-import { ReactComponent as ChevronDownIcon } from "assets/icons/ChevronDown.svg"
+import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
 import { useTranslation } from "react-i18next"
 import { formatDate } from "utils/formatting"
 import { useMedia } from "react-use"
