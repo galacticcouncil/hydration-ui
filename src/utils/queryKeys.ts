@@ -309,4 +309,9 @@ export const QUERY_KEYS = {
   lbpPool: ["lbpPool"],
   bondEvents: (id?: Maybe<string>) => ["bondEvents", id],
   lbpPoolTotal: (id?: Maybe<string>) => ["lbpPoolTotal", id],
+  poolHistoricalBalance: (pool?: string, block?: number) => [
+    "poolHistoricalBalance",
+    pool,
+    block,
+  ],
 } as const

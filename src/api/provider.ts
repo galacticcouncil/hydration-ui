@@ -12,30 +12,40 @@ export const PROVIDERS = [
     name: "Mainnet via GC",
     url: "wss://rpc.hydradx.cloud",
     indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: "production",
   },
   {
     name: "Mainnet via Dwellir",
     url: "wss://hydradx-rpc.dwellir.com",
     indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: "production",
   },
   {
     name: "Mainnet via ZeePrime",
     url: "wss://rpc-lb.data6.zp-labs.net:8443/hydradx/ws/?token=2ZGuGivPJJAxXiT1hR1Yg2MXGjMrhEBYFjgbdPi",
     indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: "production",
   },
   {
     name: "Rococo via GC",
     url: "wss://hydradx-rococo-rpc.play.hydration.cloud",
     indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: ["rococo", "development"],
   },
   {
     name: "Testnet",
     url: "wss://mining-rpc.hydradx.io",
     indexerUrl: "https://mining-explorer.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: "development",
   },
 ]
@@ -128,5 +138,15 @@ export const useIndexerUrl = () => {
 
   const indexerUrl =
     selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
+  return indexerUrl
+}
+
+export const useSquidUrl = () => {
+  const preference = useProviderRpcUrlStore()
+  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_SQUID_URL
+  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+
+  const indexerUrl =
+    selectedProvider?.squidUrl ?? import.meta.env.VITE_SQUID_URL
   return indexerUrl
 }

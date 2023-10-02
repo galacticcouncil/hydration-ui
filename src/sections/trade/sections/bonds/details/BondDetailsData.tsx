@@ -151,38 +151,42 @@ export const BondDetailsData = () => {
   const lbpPool = useLbpPool({ id: bond?.id })
 
   const lbpPoolData = useMemo(() => {
-    if (lbpPool.data) return lbpPool.data[0]
+    if (lbpPool.data && !isPast)
+      return {
+        data: lbpPool.data[0],
+        poolId: undefined,
+        removeBlock: undefined,
+      }
 
     if (lbpPoolEvents.data?.events.length) {
       const lbpPoolData = lbpPoolEvents.data.events
         .filter(isPoolUpdateEvent)
         .reverse()?.[0]
 
-      return lbpPoolData.args.data
+      const lbpPoolRemoved = lbpPoolEvents.data.events.find(
+        (event) => event.name === "LBP.LiquidityRemoved",
+      )
+
+      return {
+        data: lbpPoolData.args.data,
+        poolId: lbpPoolData.args.pool,
+        removeBlock: lbpPoolRemoved?.block.height,
+      }
     }
 
     return undefined
-  }, [lbpPool.data, lbpPoolEvents.data?.events])
+  }, [isPast, lbpPool.data, lbpPoolEvents.data?.events])
 
-  const data = useMemo(() => {
-    if (!bond) return undefined
-
-    const maturityDate = new Date(bond.maturity)
-    const maturityValue = formatDate(maturityDate, "dd.MM.yyyy")
-
-    return { maturityDate, maturityValue }
-  }, [bond])
-
-  if (!bond || !data) return <BondDetailsSkeleton />
+  if (!bond) return <BondDetailsSkeleton />
 
   return (
     <div sx={{ flex: "column", gap: [20, 40] }}>
       <BondDetailsHeader
         title={bond.name}
-        accumulatedAssetId={lbpPoolData?.assets.find(
+        accumulatedAssetId={lbpPoolData?.data.assets.find(
           (asset: number) => asset !== Number(bond?.id),
         )}
-        end={lbpPoolData?.end}
+        end={lbpPoolData?.data.end}
       />
 
       <BondsTrade bondId={bondId} setBondId={setBondId} />
@@ -190,9 +194,9 @@ export const BondDetailsData = () => {
       <BondProgreesBar bondId={bond?.id} decimals={bond.decimals} />
 
       <BondInfoCards
-        assetId={bond?.assetId}
-        maturity={data?.maturityValue}
-        bondId={bond.id}
+        bond={bond}
+        poolId={lbpPoolData?.poolId}
+        removeBlock={lbpPoolData?.removeBlock}
       />
 
       <MyActiveBonds assetId={bond.assetId} />

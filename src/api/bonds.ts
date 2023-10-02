@@ -1,7 +1,7 @@
 import { useQuery, useQueries } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useIndexerUrl } from "./provider"
-import { Maybe } from "utils/helpers"
+import { useIndexerUrl, useSquidUrl } from "./provider"
+import { Maybe, undefinedNoop } from "utils/helpers"
 import request, { gql } from "graphql-request"
 import { useRpcProvider } from "providers/rpcProvider"
 import { u8aToHex } from "@polkadot/util"
@@ -187,11 +187,16 @@ type LBPPoolLiquidityEvent = {
     who: string
   }
   name: "LBP.LiquidityAdded" | "LBP.LiquidityRemoved"
+  block: { height: number; timestamp: string }
 }
 
 type LBPPoolUpdate = {
   name: "LBP.PoolUpdated"
-  args: { data: NonNullable<ReturnType<typeof useLbpPool>["data"]>[0] }
+  args: {
+    data: NonNullable<ReturnType<typeof useLbpPool>["data"]>[0]
+    pool: string
+  }
+  block: { height: number; timestamp: string }
 }
 
 type LBPPoolEvents = LBPPoolLiquidityEvent | LBPPoolUpdate
@@ -223,6 +228,7 @@ const getLbpPoolBalance = (indexerUrl: string, bondId?: string) => async () => {
             name
             block {
               timestamp
+              height
             }
           }
         }
@@ -231,3 +237,50 @@ const getLbpPoolBalance = (indexerUrl: string, bondId?: string) => async () => {
     )),
   }
 }
+
+export const useHistoricalPoolBalance = (pool?: string, block?: number) => {
+  const url = useSquidUrl()
+
+  return useQuery(
+    QUERY_KEYS.poolHistoricalBalance(pool, block),
+    !!pool && !!block
+      ? getHistoricalPoolBalance(url, pool, block)
+      : undefinedNoop,
+    { enabled: !!pool && !!block },
+  )
+}
+
+type THistoricalPoolBalance = {
+  id: string
+  assetBId: number
+  assetAId: number
+  historicalBalances: Array<{
+    assetABalance: string
+    assetBBalance: string
+  }>
+}
+
+const getHistoricalPoolBalance =
+  (url: string, pool: string, block: number) => async () => {
+    return {
+      ...(await request<{
+        pools: Array<THistoricalPoolBalance>
+      }>(
+        url,
+        gql`
+          query PoolHistoricalBalance($pool: String, $block: Int) {
+            pools(where: { id_eq: $pool }) {
+              id
+              assetBId
+              assetAId
+              historicalBalances(where: { paraChainBlockHeight_eq: $block }) {
+                assetABalance
+                assetBBalance
+              }
+            }
+          }
+        `,
+        { pool: pool, block },
+      )),
+    }
+  }

@@ -246,7 +246,6 @@ export const Bond = ({
       {(isActive || isPast) && (
         <Button
           fullWidth
-          disabled={isPast}
           onClick={() =>
             navigate({
               to: LINKS.bond,

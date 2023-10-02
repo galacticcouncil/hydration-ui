@@ -4,26 +4,78 @@ import { ReactComponent as ClockIcon } from "assets/icons/ClockIcon.svg"
 import { ReactComponent as DollarIcon } from "assets/icons/Dollar2Icon.svg"
 import { ReactComponent as PercentageIcon } from "assets/icons/Percentage.svg"
 import { ReactComponent as GraphIcon } from "assets/icons/Graph.svg"
+import { ReactComponent as AccumulatedAsset } from "assets/icons/AccumulatedAsset.svg"
+import { ReactComponent as AvgPrice } from "assets/icons/PriceChart.svg"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useDisplayPrice } from "utils/displayAsset"
-import { BN_1 } from "utils/constants"
+import { BN_0, BN_1 } from "utils/constants"
 import { useTranslation } from "react-i18next"
+import { TBond } from "api/assetDetails"
+import { formatDate } from "utils/formatting"
+import { useHistoricalPoolBalance } from "api/bonds"
+import { useRpcProvider } from "providers/rpcProvider"
+import { useBondEvents } from "api/bonds"
+import BN from "bignumber.js"
 
 export const BondInfoCards = ({
-  assetId,
-  bondId,
-  maturity,
+  bond,
+  poolId,
+  removeBlock,
 }: {
-  assetId: string
-  bondId: string
-  maturity: string
+  bond: TBond
+  poolId?: string
+  removeBlock?: number
 }) => {
   const { t } = useTranslation()
-  const spotPrice = useDisplayPrice(assetId)
-  const spotPriceBond = useDisplayPrice(bondId)
+  const { assets } = useRpcProvider()
+  const spotPrice = useDisplayPrice(bond.assetId)
+  const spotPriceBond = useDisplayPrice(bond.id)
+
+  const balance = useHistoricalPoolBalance(
+    poolId,
+    removeBlock ? removeBlock - 1 : undefined,
+  )
+  const isPast = bond.isPast
+
+  const bondEvents = useBondEvents(isPast ? bond.id : undefined)
+
+  const priceTotal = bondEvents.data?.events.reduce((acc, event) => {
+    const assetInId = event.args.assetIn
+    const assetOutId = event.args.assetOut
+
+    const metaIn = assets.getAsset(assetInId.toString())
+    const metaOut = assets.getAsset(assetOutId.toString())
+
+    const isBuy = event.name === "LBP.BuyExecuted"
+
+    const amountIn = BN(event.args.amount).shiftedBy(-metaIn.decimals)
+
+    const amountOut = BN(
+      event.args[isBuy ? "buyPrice" : "salePrice"],
+    ).shiftedBy(-metaOut.decimals)
+
+    const price =
+      event.args.assetOut !== Number(bond.id)
+        ? amountOut.div(amountIn)
+        : amountIn.div(amountOut)
+
+    return acc.plus(price)
+  }, BN_0)
+
+  const averagePrice = priceTotal?.div(bondEvents.data?.events.length ?? 1)
 
   const currentSpotPrice = spotPrice.data?.spotPrice ?? BN_1
   const currentBondPrice = spotPriceBond.data?.spotPrice ?? BN_1
+
+  const accumulatedAssetId = isPast
+    ? balance.data?.pools[0].assetAId
+    : undefined
+  const accumulatedAsset = accumulatedAssetId
+    ? assets.getAsset(accumulatedAssetId.toString())
+    : undefined
+  const accumulatedAssetBalance = isPast
+    ? balance.data?.pools[0].historicalBalances[0].assetABalance
+    : undefined
 
   const isDiscount = currentSpotPrice.gt(currentBondPrice)
 
@@ -38,24 +90,56 @@ export const BondInfoCards = ({
         .multipliedBy(100)
 
   const cards = [
-    {
-      label: t("bonds.details.card.bondPrice"),
-      value: <DisplayValue value={currentBondPrice} type="token" />,
-      icon: (
-        <Icon size={[16, 22]} sx={{ color: "basic600" }} icon={<GraphIcon />} />
-      ),
-    },
-    {
-      label: t("bonds.details.card.spotPrice"),
-      value: <DisplayValue value={currentSpotPrice} />,
-      icon: (
-        <Icon
-          size={[16, 22]}
-          sx={{ color: "basic600" }}
-          icon={<DollarIcon />}
-        />
-      ),
-    },
+    isPast
+      ? {
+          label: "Avg purchase price",
+          value: <DisplayValue value={averagePrice} type="token" />,
+          icon: (
+            <Icon
+              size={[16, 22]}
+              sx={{ color: "basic600" }}
+              icon={<AvgPrice />}
+            />
+          ),
+        }
+      : {
+          label: t("bonds.details.card.bondPrice"),
+          value: <DisplayValue value={currentBondPrice} type="token" />,
+          icon: (
+            <Icon
+              size={[16, 22]}
+              sx={{ color: "basic600" }}
+              icon={<GraphIcon />}
+            />
+          ),
+        },
+    isPast
+      ? {
+          label: "Accumulated asset",
+          value: t("value.tokenWithSymbol", {
+            value: accumulatedAssetBalance,
+            symbol: accumulatedAsset?.symbol,
+            fixedPointScale: accumulatedAsset?.decimals,
+          }),
+          icon: (
+            <Icon
+              size={[16, 22]}
+              sx={{ color: "basic600" }}
+              icon={<AccumulatedAsset />}
+            />
+          ),
+        }
+      : {
+          label: t("bonds.details.card.spotPrice"),
+          value: <DisplayValue value={currentSpotPrice} />,
+          icon: (
+            <Icon
+              size={[16, 22]}
+              sx={{ color: "basic600" }}
+              icon={<DollarIcon />}
+            />
+          ),
+        },
     {
       label: isDiscount ? t("bond.discount") : t("bond.premium"),
       value: t("value.percentage", { value: discount.toString() }),
@@ -69,7 +153,7 @@ export const BondInfoCards = ({
     },
     {
       label: t("bonds.details.card.maturity"),
-      value: maturity,
+      value: formatDate(new Date(bond.maturity), "dd.MM.yyyy"),
       icon: (
         <Icon size={[16, 22]} sx={{ color: "basic600" }} icon={<ClockIcon />} />
       ),
