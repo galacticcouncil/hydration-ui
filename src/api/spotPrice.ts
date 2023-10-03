@@ -32,6 +32,8 @@ export const useSpotPrices = (
   const assets = assetsIn
     .filter((a): a is u32 | string => !!a)
     .map((a) => a.toString())
+    .filter((v, i, a) => a.indexOf(v) === i)
+
   const tokenOut = assetOut?.toString() ?? ""
 
   return useQueries({

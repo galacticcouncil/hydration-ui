@@ -92,8 +92,8 @@ export const useRecentTradesTableSkeleton = (enableAnimation = true) => {
         ),
       }),
       display({
-        id: "totalValue",
-        header: t("stats.overview.table.trades.header.totalValue"),
+        id: "amountIn",
+        header: t("stats.overview.table.trades.header.tradeValue"),
         cell: () =>
           isDesktop ? (
             <div sx={{ flex: "row", justify: "center" }}>
