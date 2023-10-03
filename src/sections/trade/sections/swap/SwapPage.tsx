@@ -103,7 +103,7 @@ export function SwapPage() {
         assetIn={search.success ? search.data.assetIn : undefined}
         assetOut={search.success ? search.data.assetOut : undefined}
         apiAddress={rpcUrl}
-        pools={PoolType.Omni}
+        pools={[PoolType.Omni, PoolType.Stable].join(',')}
         stableCoinAssetId={stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
