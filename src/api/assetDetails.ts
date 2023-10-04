@@ -201,36 +201,37 @@ export const getAssets = async (api: ApiPromise) => {
       if (id === NATIVE_ASSET_ID) {
         const asset: TToken = {
           ...assetCommon,
-          name: "Hydra",
+          name: "HydraDX",
           symbol: system.tokenSymbol.unwrap()[0].toString(),
           decimals: system.tokenDecimals.unwrap()[0].toNumber(),
           isNative: true,
           assetType,
         }
         tokens.push(asset)
-      }
-      const name = data.name.toUtf8()
+      } else {
+        const name = data.name.toUtf8()
 
-      const location = rawAssetsLocations.find(
-        (location) => location[0].args[0].toString() === id,
-      )?.[1]
+        const location = rawAssetsLocations.find(
+          (location) => location[0].args[0].toString() === id,
+        )?.[1]
 
-      const meta = rawAssetsMeta
-        .find((meta) => meta[0].args[0].toString() === id)?.[1]
-        .unwrap()
+        const meta = rawAssetsMeta
+          .find((meta) => meta[0].args[0].toString() === id)?.[1]
+          .unwrap()
 
-      /* meta data should exist for each Token asset */
-      if (meta) {
-        const asset: TToken = {
-          ...assetCommon,
-          name,
-          assetType,
-          parachainId: location ? getTokenParachainId(location) : undefined,
-          decimals: meta.decimals.toNumber(),
-          symbol: meta.symbol.toUtf8(),
+        /* meta data should exist for each Token asset */
+        if (meta) {
+          const asset: TToken = {
+            ...assetCommon,
+            name,
+            assetType,
+            parachainId: location ? getTokenParachainId(location) : undefined,
+            decimals: meta.decimals.toNumber(),
+            symbol: meta.symbol.toUtf8(),
+          }
+
+          tokens.push(asset)
         }
-
-        tokens.push(asset)
       }
     } else if (isBond) {
       const detailsRaw = await api.query.bonds.bonds(id)
