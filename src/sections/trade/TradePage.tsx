@@ -21,9 +21,9 @@ export const TradePage = () => {
             label={isDesktop ? t("bonds.details.navigation.label") : ""}
             to={LINKS.bonds}
           />
-        ) : (
+        ) : isDesktop ? (
           <SubNavigation />
-        )
+        ) : null
       }
       subHeaderStyle={
         !isBondPage && {
