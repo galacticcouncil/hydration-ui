@@ -135,7 +135,7 @@ export type TStableSwap = TAssetCommon & {
   assets: string[]
 }
 
-export type TAsset = TToken | TBond | TStableSwap
+export type TAsset = TToken | TStableSwap
 
 const fallbackAsset: TToken = {
   id: "",
