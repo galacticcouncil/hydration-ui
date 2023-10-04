@@ -10,7 +10,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
@@ -24,6 +24,7 @@ import { FormValues } from "utils/helpers"
 import { useAddLiquidity, useVerifyLimits } from "./AddLiquidity.utils"
 import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useDebouncedState } from "utils/useDebouncedState"
 
 type Props = {
   pool: OmnipoolPool
@@ -34,16 +35,20 @@ type Props = {
 
 export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   const [assetId, setAssetId] = useState<u32 | string>(pool?.id.toString())
-  const [assetValue, setAssetValue] = useState("")
+  const [, debouncedAssetValue, setAssetValue] = useDebouncedState("")
 
   const { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance } =
-    useAddLiquidity(assetId, assetValue)
+    useAddLiquidity(assetId, debouncedAssetValue)
 
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const { t } = useTranslation()
   const form = useForm<{ amount: string }>({ mode: "onChange" })
   const amountIn = form.watch("amount")
+
+  useEffect(() => {
+    setAssetValue(amountIn)
+  }, [amountIn])
 
   const { data: limits } = useVerifyLimits({
     assetId: assetId.toString(),
@@ -216,7 +221,6 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
                             title={t("wallet.assets.transfer.asset.label_mob")}
                             name={name}
                             value={value}
-                            onBlur={setAssetValue}
                             onChange={onChange}
                             asset={assetId}
                             error={error?.message}
