@@ -70,7 +70,9 @@ export const useBondsEvents = (
 ) => {
   const indexerUrl = useIndexerUrl()
   const { account } = useAccountStore()
-  const accountHash = "ddwdw" //u8aToHex(decodeAddress(account?.address, false, 42))
+  const accountHash = account?.address
+    ? u8aToHex(decodeAddress(account.address, false, 42))
+    : undefined
 
   return useQueries({
     queries: bondIds.map((bondId) => ({
