@@ -13,6 +13,7 @@ import { getApiIds } from "./consts"
 import { getHubAssetTradability, getOmnipoolAssets } from "./omnipool"
 import { getAcceptedCurrency, getAccountCurrency } from "./payments"
 import BN from "bignumber.js"
+import { format } from "date-fns"
 import { useRpcProvider } from "providers/rpcProvider"
 import { PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { BN_0 } from "utils/constants"
@@ -111,6 +112,7 @@ type TAssetCommon = {
   id: string
   existentialDeposit: BN
   isToken: boolean
+  isBond: boolean
   isStableSwap: boolean
   isNative: boolean
   symbol: string
@@ -135,7 +137,7 @@ export type TStableSwap = TAssetCommon & {
   assets: string[]
 }
 
-export type TAsset = TToken | TStableSwap
+export type TAsset = TToken | TBond | TStableSwap
 
 const fallbackAsset: TToken = {
   id: "",
@@ -146,6 +148,7 @@ const fallbackAsset: TToken = {
   existentialDeposit: BN_0,
   parachainId: undefined,
   isToken: false,
+  isBond: false,
   isStableSwap: false,
   isNative: false,
 }
@@ -171,6 +174,7 @@ export const getAssets = async (api: ApiPromise) => {
   ])
 
   const tokens: TToken[] = []
+  const bonds: TBond[] = []
   const stableswap: TStableSwap[] = []
 
   for (const [key, dataRaw] of rawAssetsData) {
@@ -180,11 +184,13 @@ export const getAssets = async (api: ApiPromise) => {
     const assetType = data.assetType.type as AssetType
 
     const isToken = assetType === "Token"
+    const isBond = assetType === "Bond"
     const isStableSwap = assetType === "StableSwap"
 
     const assetCommon = {
       id,
       isToken,
+      isBond,
       isStableSwap,
       isNative: false,
       existentialDeposit: data.existentialDeposit.toBigNumber(),
@@ -225,6 +231,63 @@ export const getAssets = async (api: ApiPromise) => {
         }
 
         tokens.push(asset)
+      }
+    } else if (isBond) {
+      const detailsRaw = await api.query.bonds.bonds(id)
+      // @ts-ignore
+      const details = detailsRaw.unwrap()
+
+      const [assetId, maturity] = details ?? []
+
+      let underlyingAsset: { symbol: string; decimals: number } | undefined
+
+      if (assetId.toString() === NATIVE_ASSET_ID) {
+        underlyingAsset = {
+          symbol: system.tokenSymbol.unwrap()[0].toString(),
+          decimals: system.tokenDecimals.unwrap()[0].toNumber(),
+        }
+      } else {
+        const meta = rawAssetsMeta.find(
+          (meta) => meta[0].args[0].toString() === assetId.toString(),
+        )
+        if (meta) {
+          const underlyingAssetMeta = meta[1].unwrap()
+          underlyingAsset = {
+            symbol: underlyingAssetMeta.symbol.toUtf8(),
+            decimals: underlyingAssetMeta.decimals.toNumber(),
+          }
+        }
+      }
+
+      if (underlyingAsset) {
+        const symbol = `${underlyingAsset.symbol}b`
+        const name = `${underlyingAsset.symbol} Bond ${format(
+          new Date(maturity.toNumber()),
+          "dd/MM/yyyy",
+        )}`
+        const decimals = underlyingAsset.decimals
+
+        const location = rawAssetsLocations.find(
+          (location) => location[0].args[0].toString() === assetId.toString(),
+        )?.[1]
+
+        const isPast = !rawTradeAssets.some(
+          (tradeAsset) => tradeAsset.id === id,
+        )
+
+        const asset: TBond = {
+          ...assetCommon,
+          assetId: assetId.toString(),
+          name,
+          assetType: "Bond",
+          parachainId: location ? getTokenParachainId(location) : undefined,
+          decimals,
+          symbol,
+          maturity: maturity.toNumber(),
+          isPast,
+        }
+
+        bonds.push(asset)
       }
     } else if (isStableSwap) {
       const symbol = "SPS"
