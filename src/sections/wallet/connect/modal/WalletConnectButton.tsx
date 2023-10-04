@@ -13,7 +13,6 @@ import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
 
 import { SContainer, SLoginButton } from "./WalletConnectButton.styled"
 import { WalletConnectModal } from "./WalletConnectModal"
-import { useRpcProvider } from "providers/rpcProvider"
 
 const WalletActiveButton = (props: {
   onOpen: () => void
@@ -100,7 +99,6 @@ export const WalletInactiveButton = (props: {
 }
 
 export const WalletConnectButton = (props: { className?: string }) => {
-  const { isLoaded } = useRpcProvider()
   const [open, setOpen] = useState(false)
   const { account } = useAccountStore()
   return (
@@ -109,12 +107,12 @@ export const WalletConnectButton = (props: { className?: string }) => {
         <WalletActiveButton
           className={props.className}
           account={account}
-          onOpen={() => isLoaded && setOpen(true)}
+          onOpen={() => setOpen(true)}
         />
       ) : (
         <WalletInactiveButton
           className={props.className}
-          onOpen={() => isLoaded && setOpen(true)}
+          onOpen={() => setOpen(true)}
         />
       )}
       {open && (
