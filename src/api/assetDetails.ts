@@ -340,7 +340,15 @@ export const getAssets = async (api: ApiPromise) => {
   const isStableSwap = (asset: TAsset): asset is TStableSwap =>
     asset.isStableSwap
 
+  const isBond = (asset: TAsset): asset is TBond => asset.isBond
   const getAsset = (id: string) => allTokensObject[id] ?? fallbackAsset
+
+  const getBond = (id: string) => {
+    const asset = allTokensObject[id] ?? fallbackAsset
+
+    if (isBond(asset)) return asset
+  }
+
   const getAssets = (ids: string[]) => ids.map((id) => getAsset(id))
 
   const tradeAssets = rawTradeAssets.map((tradeAsset) =>
@@ -351,12 +359,15 @@ export const getAssets = async (api: ApiPromise) => {
     assets: {
       all,
       tokens,
+      bonds,
       stableswap,
       native,
       tradeAssets,
       getAsset,
+      getBond,
       getAssets,
       isStableSwap,
+      isBond,
     },
     tradeRouter,
   }
