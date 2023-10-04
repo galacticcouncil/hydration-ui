@@ -9,7 +9,6 @@ import { useAccountStore, useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
 import { useProviderRpcUrlStore } from "api/provider"
-import { PoolType } from "@galacticcouncil/sdk"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const SwapApp = createComponent({
@@ -38,6 +37,7 @@ type SearchGenerics = MakeGenerics<{
   Search: z.infer<typeof TradeAppSearch>
 }>
 
+const swapPools = import.meta.env.VITE_FF_SWAP_POOLS
 const isTwapEnabled = import.meta.env.VITE_FF_TWAP_ENABLED === "true"
 const indexerUrl = import.meta.env.VITE_INDEXER_URL
 const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
@@ -103,7 +103,7 @@ export function SwapPage() {
         assetIn={search.success ? search.data.assetIn : undefined}
         assetOut={search.success ? search.data.assetOut : undefined}
         apiAddress={rpcUrl}
-        pools={PoolType.Omni}
+        pools={swapPools}
         stableCoinAssetId={stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}

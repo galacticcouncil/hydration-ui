@@ -7,7 +7,6 @@ import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
 import { useAccountStore, useStore } from "state/store"
 import { useProviderRpcUrlStore } from "api/provider"
-import { PoolType } from "@galacticcouncil/sdk"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const DcaApp = createComponent({
@@ -20,6 +19,7 @@ export const DcaApp = createComponent({
   },
 })
 
+const dcaPools = import.meta.env.VITE_FF_DCA_POOLS
 const indexerUrl = import.meta.env.VITE_INDEXER_URL
 const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
 const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
@@ -75,7 +75,7 @@ export function DcaPage() {
           r && r.setAttribute("chart", "")
         }}
         apiAddress={rpcUrl}
-        pools={PoolType.Omni}
+        pools={dcaPools}
         stableCoinAssetId={stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
