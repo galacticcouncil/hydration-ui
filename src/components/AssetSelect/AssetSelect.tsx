@@ -1,10 +1,7 @@
 import { css } from "@emotion/react"
-import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import BigNumber from "bignumber.js"
 import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
-import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { AssetInput } from "components/AssetInput/AssetInput"
-import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -12,13 +9,8 @@ import { theme } from "theme"
 import { getFloatingPointAmount } from "utils/balance"
 import { useDisplayPrice } from "utils/displayAsset"
 import { Maybe } from "utils/helpers"
-import {
-  SContainer,
-  SMaxButton,
-  SSelectAssetButton,
-} from "./AssetSelect.styled"
+import { SContainer, SMaxButton } from "./AssetSelect.styled"
 import { useRpcProvider } from "providers/rpcProvider"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { AssetSelectButton } from "./AssetSelectButton"
 
 export const AssetSelect = (props: {
@@ -43,12 +35,10 @@ export const AssetSelect = (props: {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(props.id)
-  const { decimals, name, symbol } = asset
+  const { decimals, symbol } = asset
 
   const spotPriceId =
     assets.isBond(asset) && asset.isPast ? asset.assetId : asset.id
-
-  const iconId = assets.isBond(asset) ? asset.assetId : asset.id
 
   const spotPrice = useDisplayPrice(spotPriceId)
 
@@ -127,7 +117,7 @@ export const AssetSelect = (props: {
           }}
         >
           <AssetSelectButton
-            assetId={props.asset}
+            assetId={props.id}
             onClick={props.onSelectAssetClick}
           />
           <AssetInput

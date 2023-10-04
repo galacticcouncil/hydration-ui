@@ -23,7 +23,7 @@ import { RemoveLiquidityInput } from "sections/pools/modals/RemoveLiquidity/comp
 import { useRpcProvider } from "providers/rpcProvider"
 
 type RemoveLiquidityProps = {
-  assetId?: string
+  assetId: string
   onClose: () => void
   position: {
     reserves: { asset_id: number; amount: string }[]
@@ -45,7 +45,7 @@ export const RemoveLiquidity = ({
   const { t } = useTranslation()
   const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
   const { api, assets } = useRpcProvider()
-  const asset = assetId ? assets.getAsset(assetId) : undefined
+  const asset = assets.getAsset(assetId)
 
   const { createTransaction } = useStore()
 

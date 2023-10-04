@@ -1,3 +1,4 @@
+import { u32 } from "@polkadot/types"
 import { useTokenBalance } from "api/balances"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { useTranslation } from "react-i18next"
@@ -11,7 +12,7 @@ export const WalletTransferAssetSelect = (props: {
   onBlur?: (value: string) => void
   onChange: (value: string) => void
 
-  asset?: string
+  asset: u32 | string
 
   onAssetOpen?: () => void
   title?: string
@@ -23,7 +24,6 @@ export const WalletTransferAssetSelect = (props: {
 }) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
-  const asset = props?.asset ? assets.getAsset(props?.asset) : undefined
   const balance = useTokenBalance(props.asset, account?.address)
 
   return (

@@ -24,7 +24,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 type Props = {
   poolId: u32
   fee: BigNumber
-  asset?: TAsset
+  asset: TAsset
   onSuccess: (result: ISubmittableResult) => void
   onClose: () => void
   onCancel: () => void
@@ -48,21 +48,21 @@ export const AddStablepoolLiquidity = ({
   const { createTransaction } = useStore()
   const { t } = useTranslation()
   const form = useForm<{ amount: string }>({ mode: "onChange" })
-  const displayPrice = useDisplayPrice(asset?.id)
+  const displayPrice = useDisplayPrice(asset.id)
 
   const amountIn = form.watch("amount")
 
   const { shares, assets } = useStablepoolShares({
     poolId,
-    asset: { id: asset?.id, decimals: asset?.decimals, amount: amountIn },
+    asset: { id: asset.id, decimals: asset.decimals, amount: amountIn },
     reserves,
   })
 
   const { account } = useAccountStore()
-  const walletBalance = useTokenBalance(asset?.id, account?.address)
+  const walletBalance = useTokenBalance(asset.id, account?.address)
 
   const onSubmit = async (values: FormValues<typeof form>) => {
-    if (asset?.decimals == null) {
+    if (asset.decimals == null) {
       throw new Error("Missing asset meta")
     }
 
@@ -83,7 +83,7 @@ export const AddStablepoolLiquidity = ({
               i18nKey="liquidity.add.modal.toast.onLoading"
               tOptions={{
                 value: values.amount,
-                symbol: asset?.symbol,
+                symbol: asset.symbol,
                 shares,
               }}
             >
@@ -111,7 +111,7 @@ export const AddStablepoolLiquidity = ({
               i18nKey="liquidity.add.modal.toast.onLoading"
               tOptions={{
                 value: values.amount,
-                symbol: asset?.symbol,
+                symbol: asset.symbol,
                 shares,
               }}
             >
@@ -147,13 +147,13 @@ export const AddStablepoolLiquidity = ({
                   positive,
                   maxBalance: (value) => {
                     try {
-                      if (asset?.decimals == null) {
+                      if (asset.decimals == null) {
                         throw new Error("Missing asset meta")
                       }
 
                       if (
                         walletBalance.data?.balance?.gte(
-                          BigNumber(value).shiftedBy(asset?.decimals),
+                          BigNumber(value).shiftedBy(asset.decimals),
                         )
                       ) {
                         return true
@@ -172,7 +172,7 @@ export const AddStablepoolLiquidity = ({
                   name={name}
                   value={value}
                   onChange={onChange}
-                  asset={asset?.id}
+                  asset={asset.id}
                   error={error?.message}
                   onAssetOpen={onAssetOpen}
                 />
@@ -210,7 +210,7 @@ export const AddStablepoolLiquidity = ({
                         i18nKey="liquidity.add.modal.row.spotPrice"
                         tOptions={{
                           firstAmount: 1,
-                          firstCurrency: asset?.symbol,
+                          firstCurrency: asset.symbol,
                         }}
                       >
                         <DisplayValue value={displayPrice.data?.spotPrice} />

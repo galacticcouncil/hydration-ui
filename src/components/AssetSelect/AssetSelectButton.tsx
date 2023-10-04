@@ -4,24 +4,25 @@ import { theme } from "theme"
 import { AssetLogo, getAssetName } from "components/AssetIcon/AssetIcon"
 import { SSelectAssetButton } from "./AssetSelect.styled"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
-import { u32 } from "@polkadot/types-codec"
 import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   onClick?: () => void
-  assetId?: string | u32
+  assetId: string
 }
 
 export const AssetSelectButton = ({ onClick, assetId }: Props) => {
   const { assets } = useRpcProvider()
-  const meta = assetId ? assets.getAsset(assetId.toString()) : undefined
+  const asset = assets.getAsset(assetId)
 
-  const symbol = meta?.symbol
-  const name = meta?.name
+  const symbol = asset?.symbol
+  const name = asset?.name
+
+  const iconId = assets.isBond(asset) ? asset.assetId : asset.id
 
   return (
     <SSelectAssetButton size="small" onClick={onClick} type="button">
-      <Icon icon={<AssetLogo id={meta?.id} />} size={30} />
+      <Icon icon={<AssetLogo id={iconId} />} size={30} />
       {symbol && (
         <div sx={{ flex: "column", justify: "space-between" }}>
           <Text fw={700} lh={16} color="white">
