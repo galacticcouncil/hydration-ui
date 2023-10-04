@@ -88,7 +88,6 @@ export const SPageInner = styled.div`
   flex-grow: 1;
 
   position: relative;
-  z-index: 2;
 
   @media ${theme.viewport.gte.sm} {
     padding: 44px 0;
