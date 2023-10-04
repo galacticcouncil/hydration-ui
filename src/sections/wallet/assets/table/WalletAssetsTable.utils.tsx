@@ -131,7 +131,6 @@ export type AssetsTableData = {
   lockedDemocracyDisplay: BN
   reserved: BN
   reservedDisplay: BN
-  origin: string
   assetType: PalletAssetRegistryAssetType["type"]
   couldBeSetAsPaymentFee: boolean
   isPaymentFee: boolean

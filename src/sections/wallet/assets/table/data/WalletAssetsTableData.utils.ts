@@ -22,6 +22,7 @@ import { useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TToken } from "api/assetDetails"
+import { TStableSwap } from "api/assetDetails"
 
 export const useAssetsTableData = (isAllAssets: boolean) => {
   const { assets } = useRpcProvider()
@@ -44,7 +45,7 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
       hubAssetTradability,
     } = myTableData.data
 
-    const allAssets = assets.tokens
+    const allAssets = [...assets.tokens, ...assets.stableswap]
 
     const assetsBalances = getAssetsBalances(
       balances.balances,
@@ -125,7 +126,6 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
         name,
         isPaymentFee,
         couldBeSetAsPaymentFee,
-        origin: "TODO",
         transferable: balance?.transferable ?? BN_0,
         transferableDisplay: balance?.transferableDisplay ?? BN_0,
         total: balance?.total ?? BN_0,
@@ -153,7 +153,13 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
 
         return a.symbol.localeCompare(b.symbol)
       })
-  }, [myTableData.data, spotPrices.data, assets.tokens, isAllAssets])
+  }, [
+    myTableData.data,
+    spotPrices.data,
+    assets.tokens,
+    assets.stableswap,
+    isAllAssets,
+  ])
 
   return { data, isLoading: myTableData.isLoading }
 }
@@ -163,7 +169,7 @@ export const getAssetsBalances = (
     ReturnType<ReturnType<typeof getAccountBalances>>
   >["balances"],
   spotPrices: SpotPrice[],
-  assetMetas: TToken[],
+  assetMetas: (TToken | TStableSwap)[],
   locksQueries: Array<Awaited<ReturnType<ReturnType<typeof getTokenLock>>>>,
   nativeData: Awaited<
     ReturnType<ReturnType<typeof getAccountBalances>>

@@ -10,8 +10,6 @@ import { WalletAssetsHydraPositionsSkeleton } from "./hydraPositions/skeleton/Wa
 import { WalletFarmingPositionsSkeleton } from "./farmingPositions/skeleton/WalletFarmingPositionsSkeleton"
 import { useRpcProvider } from "providers/rpcProvider"
 
-const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
-
 export const WalletAssets = () => {
   const { account } = useAccountStore()
   const { isLoaded } = useRpcProvider()
@@ -24,7 +22,7 @@ export const WalletAssets = () => {
         <Spacer axis="vertical" size={20} />
         <WalletAssetsHydraPositionsSkeleton />
         <Spacer axis="vertical" size={20} />
-        {enabledFarms && <WalletFarmingPositionsSkeleton />}
+        <WalletFarmingPositionsSkeleton />
       </div>
     )
   }
@@ -48,7 +46,7 @@ export const WalletAssets = () => {
 
           <Spacer axis="vertical" size={20} />
 
-          {enabledFarms && <WalletFarmingPositionsWrapper />}
+          <WalletFarmingPositionsWrapper />
         </>
       )}
     </div>
