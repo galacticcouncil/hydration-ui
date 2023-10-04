@@ -3,7 +3,6 @@ import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
 import BN from "bignumber.js"
-import { useRpcProvider } from "providers/rpcProvider"
 
 export const WalletTransferAssetSelect = (props: {
   name: string
@@ -23,7 +22,6 @@ export const WalletTransferAssetSelect = (props: {
   error?: string
 }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
   const asset = props?.asset ? assets.getAsset(props?.asset) : undefined
   const balance = useTokenBalance(props.asset, account?.address)
@@ -36,11 +34,8 @@ export const WalletTransferAssetSelect = (props: {
       value={props.value}
       onChange={props.onChange}
       onBlur={props.onBlur}
-      asset={props.asset}
-      decimals={asset?.decimals}
+      id={props.asset.toString()}
       balance={props.balance ?? balance.data?.balance}
-      assetName={asset?.name}
-      assetSymbol={asset?.symbol}
       onSelectAssetClick={props.onAssetOpen}
       error={props.error}
       balanceLabel={t("selectAsset.balance.label")}

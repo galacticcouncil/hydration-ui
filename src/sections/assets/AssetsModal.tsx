@@ -8,6 +8,10 @@ import { SAssetsModalHeader } from "./AssetsModal.styled"
 import { AssetsModalRow } from "./AssetsModalRow"
 import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
 import { useRpcProvider } from "providers/rpcProvider"
+import BN from "bignumber.js"
+import { TToken } from "api/assetDetails"
+import { Input } from "components/Input/Input"
+import { useState } from "react"
 
 type Props = {
   allowedAssets?: Maybe<u32 | string>[]
@@ -15,6 +19,8 @@ type Props = {
   hideInactiveAssets?: boolean
   allAssets?: boolean
 }
+
+type TBalance = ReturnType<typeof useAcountAssets>[number]["balance"]
 
 export const AssetsModalContent = ({
   allowedAssets,
@@ -25,24 +31,53 @@ export const AssetsModalContent = ({
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const { account } = useAccountStore()
+  const [search, setSearch] = useState("")
 
-  const assetsRows = useAcountAssets(account?.address)
+  const accountAssets = useAcountAssets(account?.address)
 
-  const assetsDetails = allAssets
-    ? assets.tokens
-    : assetsRows.filter((asset) => asset.isToken)
+  const getAssetBalances = <T extends TAsset>(assets: T[]) => {
+    return assets.reduce<{ asset: T; balance: TBalance }[]>((acc, asset) => {
+      const balance = accountAssets.find(
+        (accountAsset) => accountAsset.asset.id === asset.id,
+      )?.balance ?? {
+        accountId: account?.address ?? "",
+        id: asset.id,
+        balance: BN(0),
+        total: BN(0),
+        freeBalance: BN(0),
+      }
 
-  const mainAssets =
+      acc.push({ asset, balance })
+
+      return acc
+    }, [])
+  }
+
+  const tokens = allAssets
+    ? getAssetBalances(assets.tokens)
+    : accountAssets.filter(
+        (accountAsset): accountAsset is { balance: TBalance; asset: TToken } =>
+          accountAsset.asset.isToken,
+      )
+
+  const searchedTokens = tokens.filter((token) =>
+    search
+      ? token.asset.name.toLowerCase().includes(search.toLowerCase()) ||
+        token.asset.symbol.toLowerCase().includes(search.toLowerCase())
+      : true,
+  )
+
+  const allowedTokens =
     allowedAssets != null
-      ? assetsDetails.filter((asset) => allowedAssets.includes(asset.id))
-      : assetsDetails
+      ? searchedTokens.filter(({ asset }) => allowedAssets.includes(asset.id))
+      : searchedTokens
 
-  const otherAssets =
+  const notAllowedTokens =
     allowedAssets != null
-      ? assetsDetails.filter((asset) => !allowedAssets?.includes(asset.id))
+      ? searchedTokens.filter(({ asset }) => !allowedAssets.includes(asset.id))
       : []
 
-  if (!mainAssets.length)
+  if (!allowedTokens.length)
     return (
       <>
         <SAssetsModalHeader>
@@ -61,7 +96,16 @@ export const AssetsModalContent = ({
 
   return (
     <>
-      {!!mainAssets?.length && (
+      <div sx={{ p: 24 }}>
+        <Input
+          value={search}
+          onChange={setSearch}
+          name="search"
+          label="x"
+          placeholder={t("selectAssets.search")}
+        />
+      </div>
+      {!!allowedTokens?.length && (
         <>
           <SAssetsModalHeader>
             <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
@@ -71,24 +115,31 @@ export const AssetsModalContent = ({
               {t("selectAssets.your_balance")}
             </Text>
           </SAssetsModalHeader>
-          {mainAssets?.map((asset) => (
+          {allowedTokens.map(({ balance, asset }) => (
             <AssetsModalRow
+              balance={balance.balance}
               key={asset.id}
-              id={asset.id}
+              asset={asset}
+              spotPriceId={asset.id}
               onClick={(assetData) => onSelect?.(assetData)}
             />
           ))}
         </>
       )}
-      {!hideInactiveAssets && !!otherAssets?.length && (
+      {!hideInactiveAssets && !!notAllowedTokens?.length && (
         <>
           <SAssetsModalHeader shadowed>
             <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
               {t("selectAssets.asset_without_pair")}
             </Text>
           </SAssetsModalHeader>
-          {otherAssets?.map((asset) => (
-            <AssetsModalRow key={asset.id} id={asset.id} />
+          {notAllowedTokens.map(({ balance, asset }) => (
+            <AssetsModalRow
+              balance={balance.balance}
+              key={asset.id}
+              asset={asset}
+              spotPriceId={asset.id}
+            />
           ))}
         </>
       )}

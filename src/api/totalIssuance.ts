@@ -7,7 +7,7 @@ import { Maybe, undefinedNoop } from "utils/helpers"
 import { AnyNumber } from "@polkadot/types-codec/types"
 import { useRpcProvider } from "providers/rpcProvider"
 
-export const useTotalIssuance = (token: Maybe<u32 | string>) => {
+export const useTotalIssuance = (token: Maybe<u32 | string | AnyNumber>) => {
   const { api } = useRpcProvider()
 
   return useQuery(

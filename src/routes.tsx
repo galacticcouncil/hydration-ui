@@ -1,27 +1,62 @@
 import { WalletPage } from "./sections/wallet/WalletPage"
-
 import { Navigate } from "@tanstack/react-location"
-import { TradePage } from "sections/trade/TradePage"
 import { XcmPage } from "sections/xcm/XcmPage"
-
-import { OtcPageWrapper } from "sections/otc/OtcPageWrappet"
 import { PoolsPage } from "sections/pools/PoolsPage"
 import { StatsPage } from "sections/stats/StatsPage"
-import { DcaPage } from "sections/dca/DcaPage"
 import { StakingPage } from "./sections/staking/StakingPage"
+import { TradePage } from "sections/trade/TradePage"
+import { SwapPage } from "sections/trade/sections/swap/SwapPage"
+import { OtcPageWrapper } from "sections/trade/sections/otc/OtcPageWrappet"
+import { DcaPage } from "sections/trade/sections/dca/DcaPage"
+import { BondsPageWrapper } from "sections/trade/sections/bonds/BondsPageWrapper"
+import { BondDetailsPage } from "sections/trade/sections/bonds/details/BondDetailsPage"
+
+const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
+const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
+const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
 
 export const routes = [
   {
     path: "/",
-    element: <Navigate to="/trade" />,
+    element: <Navigate to="/trade/swap" />,
   },
   {
     path: "trade",
     element: <TradePage />,
-  },
-  {
-    path: "dca",
-    element: <DcaPage />,
+    children: [
+      {
+        path: "/",
+        element: <Navigate to="swap" />,
+      },
+      {
+        path: "swap",
+        element: <SwapPage />,
+      },
+      {
+        ...(isOtcPageEnabled && {
+          path: "otc",
+          element: <OtcPageWrapper />,
+        }),
+      },
+      {
+        ...(isDcaPageEnabled && {
+          path: "dca",
+          element: <DcaPage />,
+        }),
+      },
+      {
+        ...(isBondsPageEnabled && {
+          path: "bond",
+          element: <BondDetailsPage />,
+        }),
+      },
+      {
+        ...(isBondsPageEnabled && {
+          path: "bonds",
+          element: <BondsPageWrapper />,
+        }),
+      },
+    ],
   },
   {
     path: "wallet",
@@ -47,10 +82,6 @@ export const routes = [
   {
     path: "cross-chain",
     element: <XcmPage />,
-  },
-  {
-    path: "otc",
-    element: <OtcPageWrapper />,
   },
   {
     path: "stats",
