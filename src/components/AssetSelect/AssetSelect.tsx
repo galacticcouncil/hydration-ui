@@ -18,6 +18,7 @@ import {
 } from "./AssetSelect.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 export const AssetSelect = (props: {
   name: string
@@ -46,7 +47,15 @@ export const AssetSelect = (props: {
   const spotPriceId =
     assets.isBond(asset) && asset.isPast ? asset.assetId : asset.id
 
-  const iconId = assets.isBond(asset) ? asset.assetId : asset.id
+  let iconIds: string | string[]
+
+  if (assets.isStableSwap(asset)) {
+    iconIds = asset.assets
+  } else if (assets.isBond(asset)) {
+    iconIds = asset.assetId
+  } else {
+    iconIds = asset.id
+  }
 
   const spotPrice = useDisplayPrice(spotPriceId)
 
@@ -131,7 +140,15 @@ export const AssetSelect = (props: {
               props.onSelectAssetClick?.()
             }}
           >
-            <Icon icon={<AssetLogo id={iconId} />} size={30} />
+            {typeof iconIds === "string" ? (
+              <Icon icon={<AssetLogo id={iconIds} />} size={30} />
+            ) : (
+              <MultipleIcons
+                icons={iconIds.map((asset) => ({
+                  icon: <AssetLogo id={asset} />,
+                }))}
+              />
+            )}
 
             <div sx={{ flex: "column", justify: "space-between" }}>
               <Text fw={700} lh={16} color="white">

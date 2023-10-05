@@ -59,10 +59,10 @@ export const AssetsModalContent = ({
   }
 
   const tokens = allAssets
-    ? getAssetBalances(assets.tokens)
+    ? getAssetBalances([...assets.tokens, ...assets.stableswap])
     : accountAssets.filter(
         (accountAsset): accountAsset is { balance: TBalance; asset: TToken } =>
-          accountAsset.asset.isToken,
+          accountAsset.asset.isToken || accountAsset.asset.isStableSwap,
       )
 
   const bonds = allAssets
@@ -79,6 +79,13 @@ export const AssetsModalContent = ({
       : true,
   )
 
+  const searchedBonds = bonds.filter((token) =>
+    search
+      ? token.asset.name.toLowerCase().includes(search.toLowerCase()) ||
+        token.asset.symbol.toLowerCase().includes(search.toLowerCase())
+      : true,
+  )
+
   const allowedTokens =
     allowedAssets != null
       ? searchedTokens.filter(({ asset }) => allowedAssets.includes(asset.id))
@@ -89,7 +96,7 @@ export const AssetsModalContent = ({
       ? searchedTokens.filter(({ asset }) => !allowedAssets.includes(asset.id))
       : []
 
-  if (!allowedTokens.length)
+  if (!tokens.length)
     return (
       <>
         <SAssetsModalHeader>
@@ -138,7 +145,7 @@ export const AssetsModalContent = ({
           ))}
         </>
       )}
-      {enabledBonds && withBonds && bonds.length && (
+      {enabledBonds && withBonds && searchedBonds.length && (
         <>
           <SAssetsModalHeader>
             <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
@@ -148,7 +155,7 @@ export const AssetsModalContent = ({
               {t("selectAssets.your_balance")}
             </Text>
           </SAssetsModalHeader>
-          {bonds.map(({ asset, balance }) => (
+          {searchedBonds.map(({ asset, balance }) => (
             <AssetsModalRow
               key={asset.id}
               asset={asset}
