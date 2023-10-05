@@ -19,8 +19,16 @@ export async function sendDispatch(from: string, extrinsic) {
   const signer = provider.getSigner()
   const data = extrinsic.method.toHex()
   const tx = { to: DISPATCH_ADDRESS, data, from }
-  const gas = await provider.estimateGas(tx)
-  return signer.sendTransaction({ ...tx, gasLimit: gas.mul(2) })
+  const [gas, gasPrice] = await Promise.all([
+    provider.estimateGas(tx),
+    provider.getGasPrice(),
+  ])
+  return signer.sendTransaction({
+    ...tx,
+    maxPriorityFeePerGas: gasPrice,
+    maxFeePerGas: gasPrice,
+    gasLimit: gas.mul(2),
+  })
 }
 
 class H160 {
