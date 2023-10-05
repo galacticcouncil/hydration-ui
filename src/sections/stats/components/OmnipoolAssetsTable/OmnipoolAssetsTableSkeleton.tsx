@@ -1,10 +1,11 @@
 import { TableStatsSkeleton } from "components/Table/TableSkeleton"
 import { useTranslation } from "react-i18next"
-import { useOmnipoolAssetsTableSkeleton } from "./OmnipoolAssetsTableSkeleton.utils"
+import { Table } from "@tanstack/react-table"
 
-export const OmnipoolAssetsTableSkeleton = () => {
+type Props = { table: Table<unknown> }
+
+export const OmnipoolAssetsTableSkeleton = ({ table }: Props) => {
   const { t } = useTranslation()
-  const table = useOmnipoolAssetsTableSkeleton()
 
   return (
     <TableStatsSkeleton
