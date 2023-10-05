@@ -24,7 +24,7 @@ import { FormValues } from "utils/helpers"
 import { useAddLiquidity, useVerifyLimits } from "./AddLiquidity.utils"
 import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useDebouncedState } from "utils/useDebouncedState"
+import { useDebounce } from "react-use"
 
 type Props = {
   pool: OmnipoolPool
@@ -35,20 +35,25 @@ type Props = {
 
 export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   const [assetId, setAssetId] = useState<u32 | string>(pool?.id.toString())
-  const [, debouncedAssetValue, setAssetValue] = useDebouncedState("")
+  const [assetValue, setAssetValue] = useState("")
 
   const { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance } =
-    useAddLiquidity(assetId, debouncedAssetValue)
+    useAddLiquidity(assetId, assetValue)
 
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const { t } = useTranslation()
   const form = useForm<{ amount: string }>({ mode: "onChange" })
+
   const amountIn = form.watch("amount")
 
+  const [, cancel] = useDebounce(() => setAssetValue(amountIn), 300, [amountIn])
+
   useEffect(() => {
-    setAssetValue(amountIn)
-  }, [amountIn])
+    return () => {
+      cancel()
+    }
+  }, [])
 
   const { data: limits } = useVerifyLimits({
     assetId: assetId.toString(),
