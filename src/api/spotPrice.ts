@@ -29,15 +29,14 @@ export const useSpotPrices = (
 ) => {
   const { tradeRouter } = useRpcProvider()
 
-  const assets = assetsIn
-    .filter((a): a is u32 | string => !!a)
-    .map((a) => a.toString())
-    .filter((v, i, a) => a.indexOf(v) === i)
+  const assets = new Set(
+    assetsIn.filter((a): a is u32 | string => !!a).map((a) => a.toString()),
+  )
 
   const tokenOut = assetOut?.toString() ?? ""
 
   return useQueries({
-    queries: assets.map((tokenIn) => ({
+    queries: Array.from(assets).map((tokenIn) => ({
       queryKey: noRefresh
         ? QUERY_KEYS.spotPrice(tokenIn, tokenOut)
         : QUERY_KEYS.spotPriceLive(tokenIn, tokenOut),

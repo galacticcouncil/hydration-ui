@@ -7,6 +7,9 @@ import { useMemo } from "react"
 import { getFloatingPointAmount } from "utils/balance"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
+import { isHydraAddress } from "utils/formatting"
+import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 
 const withoutRefresh = true
 const VISIBLE_TRADE_NUMBER = 10
@@ -72,9 +75,6 @@ export const useRecentTradesTableData = (assetId?: string) => {
             const spotPriceIn = spotPrices.find(
               (spotPrice) => spotPrice?.data?.tokenIn === assetIn,
             )?.data
-            const spotPriceOut = spotPrices.find(
-              (spotPrice) => spotPrice?.data?.tokenIn === assetOut,
-            )?.data
 
             const amountIn = getFloatingPointAmount(
               amountInRaw,
@@ -85,9 +85,16 @@ export const useRecentTradesTableData = (assetId?: string) => {
               assetMetaOut.decimals,
             )
 
-            const totalValue = amountIn
-              .multipliedBy(spotPriceIn?.spotPrice ?? 1)
-              .plus(amountOut.multipliedBy(spotPriceOut?.spotPrice ?? 1))
+            const tradeValue = amountIn.multipliedBy(
+              spotPriceIn?.spotPrice ?? 1,
+            )
+
+            const account = isHydraAddress(trade.args.who)
+              ? trade.args.who
+              : encodeAddress(
+                  decodeAddress(trade.args.who),
+                  HYDRA_ADDRESS_PREFIX,
+                )
 
             if (assetMetaIn && assetMetaOut)
               memo.push({
@@ -100,8 +107,8 @@ export const useRecentTradesTableData = (assetId?: string) => {
                 assetOutSymbol: assetMetaOut?.symbol,
                 assetInId: assetMetaIn.id,
                 assetOutId: assetMetaOut.id,
-                totalValue,
-                account: trade.args.who,
+                tradeValue,
+                account,
                 date: new Date(trade.block.timestamp),
               })
           }
@@ -113,7 +120,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
           isSell: boolean
           amountIn: BN
           amountOut: BN
-          totalValue: BN
+          tradeValue: BN
           account: string
           assetInSymbol: string
           assetOutSymbol: string

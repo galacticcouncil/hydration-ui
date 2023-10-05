@@ -10,7 +10,7 @@ import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { isAfter } from "date-fns"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -20,18 +20,11 @@ import BuyIcon from "assets/icons/BuyIcon.svg?react"
 import SellIcon from "assets/icons/SellIcon.svg?react"
 import TradeIcon from "assets/icons/TradeTypeIcon.svg?react"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useRpcProvider } from "providers/rpcProvider"
-import { useSpotPrices } from "api/spotPrice"
-import { useDisplayAssetStore } from "utils/displayAsset"
-import { BN_1 } from "utils/constants"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { u8aToHex } from "@polkadot/util"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 
 export const useRecentTradesTable = (data: TRecentTradesTableData) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
-  const displayAsset = useDisplayAssetStore()
 
   const { accessor, display } =
     createColumnHelper<TRecentTradesTableData[number]>()
@@ -41,18 +34,10 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
   const columnVisibility: VisibilityState = {
     isBuy: true,
     account: isDesktop,
-    amountIn: true,
+    tradeValue: true,
     trade: isDesktop,
     date: isDesktop,
   }
-
-  const spot = useSpotPrices(
-    data.map((d) => d.assetInId),
-    displayAsset.stableCoinId,
-    true,
-  )
-
-  const spotMap = new Map(spot.map((s) => [s.data?.tokenIn, s.data?.spotPrice]))
 
   const columns = [
     accessor("isBuy", {
@@ -104,47 +89,26 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
       id: "account",
       header: t("stats.overview.table.trades.header.account"),
       sortingFn: (a, b) => a.original.account.localeCompare(b.original.account),
-      cell: ({ row }) => {
-        const address = row.original.account
-
-        const hydraAddress = isHydraAddress(address)
-          ? address
-          : encodeAddress(decodeAddress(address), HYDRA_ADDRESS_PREFIX)
-
-        return (
-          <Text tAlign={isDesktop ? "center" : "right"} color="white">
-            {shortenAccountAddress(hydraAddress, 10)}
-          </Text>
-        )
-      },
+      cell: ({ getValue }) => (
+        <Text tAlign={isDesktop ? "center" : "right"} color="white">
+          {shortenAccountAddress(getValue(), 10)}
+        </Text>
+      ),
     }),
-    accessor("amountIn", {
-      id: "amountIn",
+    accessor("tradeValue", {
+      id: "tradeValue",
       header: t("stats.overview.table.trades.header.tradeValue"),
-      sortingFn: (a, b) => {
-        const aValue = a.original.amountIn.multipliedBy(
-          spotMap.get(a.original.assetInId) ?? BN_1,
-        )
-
-        const bValue = b.original.amountIn.multipliedBy(
-          spotMap.get(b.original.assetInId) ?? BN_1,
-        )
-
-        return aValue.gt(bValue) ? 1 : -1
-      },
-      cell: ({ row }) => {
-        const value = row.original.amountIn.multipliedBy(
-          spotMap.get(row.original.assetInId) ?? BN_1,
-        )
-
+      sortingFn: (a, b) =>
+        a.original.tradeValue.gt(b.original.tradeValue) ? 1 : -1,
+      cell: ({ row, getValue }) => {
         return isDesktop ? (
           <Text tAlign="center" color="white">
-            <DisplayValue value={value} isUSD={true} />
+            <DisplayValue value={getValue()} isUSD />
           </Text>
         ) : (
           <div sx={{ flex: "column", align: "flex-end" }}>
             <Text tAlign="center" color="white" fs={14}>
-              <DisplayValue value={value} isUSD={true} />
+              <DisplayValue value={getValue()} isUSD />
             </Text>
             <Text fs={11} color="darkBlue200">
               {t("stats.overview.table.trades.value.totalValueTime", {
@@ -192,7 +156,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
       header: t("stats.overview.table.trades.header.timeStamp"),
       sortingFn: (a, b) => (isAfter(a.original.date, b.original.date) ? 1 : -1),
       cell: ({ row }) => (
-        <Text tAlign="center" color="white">
+        <Text tAlign="center" color="white" css={{ whiteSpace: "nowrap" }}>
           {t("stats.overview.table.trades.value.totalValueTime", {
             date: new Date(row.original.date),
           })}
