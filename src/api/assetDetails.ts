@@ -331,7 +331,7 @@ export const getAssets = async (api: ApiPromise) => {
 
   const native = tokens.find((token) => token.id === NATIVE_ASSET_ID) as TToken
 
-  const all = [...tokens, ...stableswap]
+  const all = [...tokens, ...bonds, ...stableswap]
 
   const allTokensObject = all.reduce<Record<string, TAsset>>(
     (acc, asset) => ({ ...acc, [asset.id]: asset }),
