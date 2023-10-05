@@ -3,6 +3,8 @@ import { SIcon } from "sections/wallet/assets/table/data/WalletAssetsTableData.s
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const AssetTableName = ({
   large,
@@ -18,11 +20,30 @@ export const AssetTableName = ({
   id: string
 }) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
+  const asset = assets.getAsset(id)
+
+  const iconIds = assets.isStableSwap(asset) ? asset.assets : asset.id
 
   return (
     <div>
       <div sx={{ flex: "row", gap: 8, align: "center" }}>
-        <SIcon large={large}>{<AssetLogo id={id} />}</SIcon>
+        {typeof iconIds === "string" ? (
+          <SIcon large={large}>
+            <AssetLogo id={iconIds} />
+          </SIcon>
+        ) : (
+          <MultipleIcons
+            icons={iconIds.map((asset) => ({
+              icon: (
+                <SIcon large={large}>
+                  <AssetLogo id={asset} />
+                </SIcon>
+              ),
+            }))}
+          />
+        )}
+
         <div sx={{ flex: "column", width: "100%", gap: [0, 4] }}>
           <Text
             fs={[large ? 18 : 14, 16]}
