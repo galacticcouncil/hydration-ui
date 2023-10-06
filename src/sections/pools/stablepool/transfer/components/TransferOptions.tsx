@@ -4,7 +4,7 @@ import { TransferOption } from "./TransferOption"
 import { ListItem } from "./ListItem"
 import { useTranslation } from "react-i18next"
 
-type Option = "OMNIPOOL" | "STABLEPOOL"
+export type Option = "OMNIPOOL" | "STABLEPOOL"
 
 type Props = {
   selected: Option

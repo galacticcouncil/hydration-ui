@@ -1,6 +1,6 @@
 import { Modal } from "components/Modal/Modal"
 import { ModalContents } from "components/Modal/contents/ModalContents"
-import { TransferOptions } from "./components/TransferOptions"
+import { TransferOptions, Option } from "./components/TransferOptions"
 import { useState } from "react"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
@@ -14,8 +14,15 @@ import { Stepper } from "components/Stepper/Stepper"
 import { AddLiquidityForm } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { Text } from "components/Typography/Text/Text"
-import { Page, PathOption, usePage } from "./TransferModal.utils"
 import { useRpcProvider } from "providers/rpcProvider"
+
+export enum Page {
+  OPTIONS,
+  ADD_LIQUIDITY,
+  WAIT,
+  MOVE_TO_OMNIPOOL,
+  ASSETS,
+}
 
 type Props = {
   poolId: u32
@@ -27,7 +34,6 @@ type Props = {
   assets: { id: string }[]
   reserves: { asset_id: number; amount: string }[]
   defaultPage?: Page
-  defaultSelectedOption?: PathOption
 }
 
 export const TransferModal = ({
@@ -40,52 +46,48 @@ export const TransferModal = ({
   reserves,
   refetchPositions,
   defaultPage,
-  defaultSelectedOption,
 }: Props) => {
   const { t } = useTranslation()
-  const { currentPage, setPage, goBack, path } = usePage(defaultPage)
+  const [page, setPage] = useState(defaultPage ?? Page.OPTIONS)
   const [assetId, setAssetId] = useState<string>(assets[0]?.id)
   const [sharesAmount, setSharesAmount] = useState<string>()
 
   const rpcProvider = useRpcProvider()
 
-  const [selectedOption, setSelectedOption] = useState<PathOption>(
-    defaultSelectedOption ?? "OMNIPOOL",
-  )
-
+  const [selectedOption, setSelectedOption] = useState<Option>("OMNIPOOL")
   const isStablepool = selectedOption === "STABLEPOOL"
 
   const steps = isStablepool
     ? [
-        { text: t("liquidity.stablepool.transfer.select"), page: Page.OPTIONS },
-        {
-          text: t("liquidity.stablepool.transfer.provide"),
-          page: Page.ADD_LIQUIDITY,
-        },
-        {
-          text: t("liquidity.stablepool.transfer.confirm"),
-          page: Page.ADD_LIQUIDITY + 1,
-        },
+        t("liquidity.stablepool.transfer.select"),
+        t("liquidity.stablepool.transfer.provide"),
+        t("liquidity.stablepool.transfer.confirm"),
       ]
     : [
-        { text: t("liquidity.stablepool.transfer.select"), page: Page.OPTIONS },
-        {
-          text: t("liquidity.stablepool.transfer.provide"),
-          page: Page.ADD_LIQUIDITY,
-        },
-        { text: t("liquidity.stablepool.transfer.wait"), page: Page.WAIT },
-        {
-          text: t("liquidity.stablepool.transfer.move"),
-          page: Page.MOVE_TO_OMNIPOOL,
-        },
+        t("liquidity.stablepool.transfer.select"),
+        t("liquidity.stablepool.transfer.provide"),
+        t("liquidity.stablepool.transfer.adding"),
+        t("liquidity.stablepool.transfer.move"),
       ]
 
   const getStepState = (stepPage: Page) => {
-    if (stepPage === currentPage) {
+    if (stepPage === page) {
       return "active" as const
     }
 
-    return path.includes(stepPage) ? ("done" as const) : ("todo" as const)
+    return page > stepPage ? ("done" as const) : ("todo" as const)
+  }
+
+  const goBack = () => {
+    if (page === Page.ASSETS) {
+      return setPage(Page.ADD_LIQUIDITY)
+    }
+
+    if (page === Page.MOVE_TO_OMNIPOOL) {
+      return setPage(Page.ADD_LIQUIDITY)
+    }
+
+    setPage(page - 1)
   }
 
   return (
@@ -95,17 +97,17 @@ export const TransferModal = ({
       disableCloseOutside={true}
       topContent={
         !defaultPage &&
-        ![Page.OPTIONS, Page.ASSETS].includes(currentPage) && (
+        ![Page.OPTIONS, Page.ASSETS].includes(page) && (
           <Stepper
-            steps={steps.map((step) => ({
-              label: step.text,
-              state: getStepState(step.page),
+            steps={steps.map((step, idx) => ({
+              label: step,
+              state: getStepState(idx),
             }))}
           />
         )
       }
       bottomContent={
-        currentPage === Page.ADD_LIQUIDITY ? (
+        page === Page.ADD_LIQUIDITY ? (
           <CurrencyReserves
             assets={Array.from(balanceByAsset?.entries() ?? []).map(
               ([id, balance]) => ({
@@ -123,9 +125,9 @@ export const TransferModal = ({
     >
       <ModalContents
         onClose={onClose}
-        page={currentPage}
+        page={page}
         onBack={
-          !defaultPage && ![Page.OPTIONS, Page.WAIT].includes(currentPage)
+          !defaultPage && ![Page.OPTIONS, Page.WAIT].includes(page)
             ? goBack
             : undefined
         }
@@ -150,9 +152,7 @@ export const TransferModal = ({
             ),
           },
           {
-            title: isStablepool
-              ? t("liquidity.add.modal.title")
-              : t("liquidity.stablepool.add.modal.title"),
+            title: t("liquidity.add.modal.title"),
             headerVariant: "gradient",
             content: (
               <AddStablepoolLiquidity
@@ -186,20 +186,6 @@ export const TransferModal = ({
             ),
           },
           {
-            title: t("selectAsset.title"),
-            headerVariant: "gradient",
-            content: (
-              <AssetsModalContent
-                hideInactiveAssets={true}
-                allowedAssets={assets.map((asset) => asset.id)}
-                onSelect={(asset) => {
-                  setAssetId(asset.id)
-                  goBack()
-                }}
-              />
-            ),
-          },
-          {
             title: t("liquidity.stablepool.move.modal.title"),
             headerVariant: "gradient",
             content: (
@@ -213,7 +199,9 @@ export const TransferModal = ({
                 }}
               >
                 <Spinner width={50} height={50} />
-                <Text color="whiteish500">Waiting for transaction</Text>
+                <Text color="whiteish500">
+                  {t("liquidity.stablepool.transfer.adding")}
+                </Text>
               </div>
             ),
           },
@@ -229,6 +217,20 @@ export const TransferModal = ({
                   onClose()
                 }}
                 onClose={onClose}
+              />
+            ),
+          },
+          {
+            title: t("selectAsset.title"),
+            headerVariant: "gradient",
+            content: (
+              <AssetsModalContent
+                hideInactiveAssets={true}
+                allowedAssets={assets.map((asset) => asset.id)}
+                onSelect={(asset) => {
+                  setAssetId(asset.id)
+                  setPage(Page.ADD_LIQUIDITY)
+                }}
               />
             ),
           },
