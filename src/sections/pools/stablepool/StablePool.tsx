@@ -13,6 +13,8 @@ import { useAccountStore } from "state/store"
 import { BN_0 } from "utils/constants"
 import { TransferModal } from "./transfer/TransferModal"
 import { Page } from "./transfer/TransferModal.utils"
+import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
+import { usePoolPositions } from "sections/pools/pool/Pool.utils"
 
 type Props = Exclude<
   ReturnType<typeof useStablePools>["data"],
@@ -33,6 +35,7 @@ export const StablePool = ({
 
   const { account } = useAccountStore()
   const position = useTokenBalance(id.toString(), account?.address)
+  const positions = usePoolPositions(id)
 
   const amount = position?.data?.freeBalance ?? BN_0
   const hasPosition = amount.isGreaterThan(BN_0)
@@ -88,6 +91,7 @@ export const StablePool = ({
                 refetchPosition={position.refetch}
                 onTransferOpen={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
               />
+              <LiquidityPositionWrapper poolId={id} positions={positions} />
             </motion.div>
           )}
         </AnimatePresence>
