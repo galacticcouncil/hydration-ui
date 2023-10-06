@@ -183,7 +183,7 @@ export const AddStablepoolLiquidity = ({
               content={t("value.percentage", { value: fee })}
               description={t("liquidity.add.modal.tradeFee.description")}
             />
-            <Spacer size={69} />
+            <Spacer size={20} />
             <Text
               color="pink500"
               fs={15}

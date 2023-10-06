@@ -152,7 +152,7 @@
   "liquidity.stablepool.position.token": "share tokens",
   "liquidity.stablepool.remove.onLoading": "<0>Withdrawing </0><1> {{amount, bignumber(type: 'token')}} shares to {{out}} {{symbol}}</1>",
   "liquidity.stablepool.remove.onSuccess": "<0>You withdrawed </0><1> {{amount, bignumber(type: 'token')}} shares to {{out}} {{symbol}}</1>",
-  "liquidity.stablepool.add.modal.title": "Add Liquidity to Omnipool",
+  "liquidity.stablepool.add.modal.title": "Add Liquidity",
   "liquidity.stablepool.move.modal.title": "Move to Omnipool",
   "liquidity.asset.details.24hours": "24h volume",
   "liquidity.stablepool.remove.confirm": "Confirm removal",
