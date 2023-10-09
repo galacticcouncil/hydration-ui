@@ -12,7 +12,6 @@ import { Maybe } from "utils/helpers"
 import { SContainer, SMaxButton } from "./AssetSelect.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { AssetSelectButton } from "./AssetSelectButton"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 export const AssetSelect = (props: {
   name: string

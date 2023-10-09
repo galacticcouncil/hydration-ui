@@ -52,7 +52,7 @@ export const PoolDetails = ({ id, className }: PoolDetailsProps) => {
               />
               <div sx={{ flex: "row" }}>
                 {meta.name.split("/").map((asset, index) => (
-                  <Fragment key={asset}>
+                  <Fragment key={`${asset}-${index}`}>
                     {index ? <Text color="whiteish500">/</Text> : null}
                     <Text color="white">{asset}</Text>
                   </Fragment>

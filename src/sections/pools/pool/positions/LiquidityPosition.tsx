@@ -28,6 +28,7 @@ import Skeleton from "react-loading-skeleton"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { useRpcProvider } from "providers/rpcProvider"
 import { u32 } from "@polkadot/types-codec"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 type Props = {
   poolId: u32
@@ -155,7 +156,15 @@ export const LiquidityPosition = ({
     <SContainer>
       <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
         <div sx={{ flex: "row", gap: 7, align: "center" }}>
-          <Icon size={18} icon={<AssetLogo id={position.assetId} />} />
+          {assets.isStableSwap(meta) ? (
+            <MultipleIcons
+              icons={meta.assets.map((asset: string) => ({
+                icon: <AssetLogo id={asset} />,
+              }))}
+            />
+          ) : (
+            <Icon size={18} icon={<AssetLogo id={position.assetId} />} />
+          )}
           <Text fs={[14, 18]} color={["white", "basic100"]}>
             {t("liquidity.asset.positions.position.title", { index })}
           </Text>
