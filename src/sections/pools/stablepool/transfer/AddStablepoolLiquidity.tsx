@@ -180,7 +180,7 @@ export const AddStablepoolLiquidity = ({
             />
             <SummaryRow
               label={t("liquidity.add.modal.tradeFee")}
-              content={t("value.percentage", { value: fee })}
+              content={t("value.percentage", { value: fee.multipliedBy(100) })}
               description={t("liquidity.add.modal.tradeFee.description")}
             />
             <Spacer size={20} />
