@@ -12,7 +12,7 @@ export const MultipleIcons: FC<DualAssetIconsProps> = ({
   icons,
   size = 28,
 }) => (
-  <IconsWrapper size={size}>
+  <IconsWrapper size={size} sx={{ flexDirection: "row" }}>
     {icons.map((icon, index) => (
       <Icon {...icon} key={index} />
     ))}

@@ -6,13 +6,29 @@ import { motion } from "framer-motion"
 import { TSlice } from "sections/stats/components/DoughnutChart/DoughnutChart"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const DefaultSliceLabel = ({ slices }: { slices: TSlice[] }) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
 
   const sortedSlices = [...slices].sort((a, b) => b.percentage - a.percentage)
+  const firstToken = assets.getAsset(sortedSlices[0].id)
+  const secondToken = assets.getAsset(sortedSlices[1].id)
+  const thirdToken = assets.getAsset(sortedSlices[2].id)
 
+  const firstTokenIconIds = assets.isStableSwap(firstToken)
+    ? firstToken.assets
+    : firstToken.id
+  const secondTokenIconIds = assets.isStableSwap(secondToken)
+    ? secondToken.assets
+    : secondToken.id
+  const thirdTokenIconIds = assets.isStableSwap(thirdToken)
+    ? thirdToken.assets
+    : thirdToken.id
+
+  console.log(firstTokenIconIds, secondTokenIconIds, thirdTokenIconIds)
   return (
     <motion.div
       sx={{ flex: "column", align: "center" }}
@@ -25,8 +41,32 @@ export const DefaultSliceLabel = ({ slices }: { slices: TSlice[] }) => {
         <MultipleIcons
           size={[20, 36]}
           icons={[
-            { icon: <AssetLogo id={sortedSlices[0]?.id} /> },
-            { icon: <AssetLogo id={sortedSlices[1]?.id} /> },
+            {
+              icon:
+                typeof firstTokenIconIds === "string" ? (
+                  <AssetLogo id={firstTokenIconIds} />
+                ) : (
+                  <MultipleIcons
+                    size={[20, 36]}
+                    icons={firstTokenIconIds.map((id) => ({
+                      icon: <AssetLogo id={id} />,
+                    }))}
+                  />
+                ),
+            },
+            {
+              icon:
+                typeof secondTokenIconIds === "string" ? (
+                  <AssetLogo id={secondTokenIconIds} />
+                ) : (
+                  <MultipleIcons
+                    size={[20, 36]}
+                    icons={secondTokenIconIds.map((id) => ({
+                      icon: <AssetLogo id={id} />,
+                    }))}
+                  />
+                ),
+            },
             { icon: <AssetLogo id={sortedSlices[2]?.id} /> },
           ]}
         />

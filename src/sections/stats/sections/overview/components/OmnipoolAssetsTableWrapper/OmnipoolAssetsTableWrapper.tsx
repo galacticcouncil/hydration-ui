@@ -33,7 +33,7 @@ export const OmnipoolAssetsTableWrapperData = () => {
       search: { asset: assetId },
     })
   }
-
+  console.log(omnipoolAssets.data)
   return (
     <OmnipoolAssetsTable
       columns={columns}
