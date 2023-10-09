@@ -44,18 +44,22 @@ export const routes = [
           element: <DcaPage />,
         }),
       },
-      {
-        ...(isBondsPageEnabled && {
-          path: "bond",
-          element: <BondDetailsPage />,
-        }),
-      },
-      {
-        ...(isBondsPageEnabled && {
-          path: "bonds",
-          element: <BondsPageWrapper />,
-        }),
-      },
+      ...(isBondsPageEnabled
+        ? [
+            {
+              path: "bond",
+              element: <BondDetailsPage />,
+            },
+          ]
+        : []),
+      ...(isBondsPageEnabled
+        ? [
+            {
+              path: "bonds",
+              element: <BondsPageWrapper />,
+            },
+          ]
+        : []),
     ],
   },
   {

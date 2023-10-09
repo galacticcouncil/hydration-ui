@@ -8,7 +8,6 @@ import { Icon } from "components/Icon/Icon"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-//import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import TradeIcon from "assets/icons/TradeTypeIcon.svg?react"
 import Skeleton from "react-loading-skeleton"
 import { useMemo } from "react"
@@ -21,7 +20,7 @@ export const useRecentTradesTableSkeleton = (enableAnimation = true) => {
   const columnVisibility: VisibilityState = {
     isBuy: true,
     account: isDesktop,
-    totalValue: true,
+    tradeValue: true,
     trade: isDesktop,
     date: isDesktop,
   }
@@ -92,8 +91,8 @@ export const useRecentTradesTableSkeleton = (enableAnimation = true) => {
         ),
       }),
       display({
-        id: "totalValue",
-        header: t("stats.overview.table.trades.header.totalValue"),
+        id: "amountIn",
+        header: t("stats.overview.table.trades.header.tradeValue"),
         cell: () =>
           isDesktop ? (
             <div sx={{ flex: "row", justify: "center" }}>
@@ -161,13 +160,6 @@ export const useRecentTradesTableSkeleton = (enableAnimation = true) => {
           <Skeleton width={72} height={26} enableAnimation={enableAnimation} />
         ),
       }),
-      /* display({
-        id: "pol",
-        header: t("stats.overview.table.trades.header.subscan"),
-        cell: () => (
-            <Skeleton width={22} height={22}  circle enableAnimation={enableAnimation} />
-        ),
-      }),*/
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [enableAnimation, isDesktop],

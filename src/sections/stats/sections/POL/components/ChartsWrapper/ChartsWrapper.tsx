@@ -18,7 +18,7 @@ export const ChartsWrapper = ({ assetSymbol }: Props) => {
   const { t } = useTranslation()
   const [chartType, setChartType] = useState<ChartType>("volume")
   const [timeframe, setTimeframe] = useState<StatsTimeframe>(
-    StatsTimeframe.HOURLY,
+    StatsTimeframe.DAILY,
   )
   const { isLoaded } = useRpcProvider()
 
@@ -43,7 +43,7 @@ export const ChartsWrapper = ({ assetSymbol }: Props) => {
           {/*</SChartTab>*/}
           <SChartTab
             disabled={!isLoaded}
-            aria-label="24 volume"
+            aria-label="24h volume"
             active={chartType === "volume"}
             onClick={() => setChartType("volume")}
           >

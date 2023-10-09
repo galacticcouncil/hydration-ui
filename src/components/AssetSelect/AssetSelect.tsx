@@ -12,6 +12,7 @@ import { Maybe } from "utils/helpers"
 import { SContainer, SMaxButton } from "./AssetSelect.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { AssetSelectButton } from "./AssetSelectButton"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 export const AssetSelect = (props: {
   name: string
@@ -39,6 +40,16 @@ export const AssetSelect = (props: {
 
   const spotPriceId =
     assets.isBond(asset) && asset.isPast ? asset.assetId : asset.id
+
+  let iconIds: string | string[]
+
+  if (assets.isStableSwap(asset)) {
+    iconIds = asset.assets
+  } else if (assets.isBond(asset)) {
+    iconIds = asset.assetId
+  } else {
+    iconIds = asset.id
+  }
 
   const spotPrice = useDisplayPrice(spotPriceId)
 

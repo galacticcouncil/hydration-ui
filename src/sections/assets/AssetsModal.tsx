@@ -9,6 +9,7 @@ import { AssetsModalRow } from "./AssetsModalRow"
 import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
 import { useRpcProvider } from "providers/rpcProvider"
 import BN from "bignumber.js"
+import { TBond } from "api/assetDetails"
 import { TToken } from "api/assetDetails"
 import { Input } from "components/Input/Input"
 import { useState } from "react"
@@ -18,15 +19,19 @@ type Props = {
   onSelect?: (asset: NonNullable<TAsset>) => void
   hideInactiveAssets?: boolean
   allAssets?: boolean
+  withBonds?: boolean
 }
 
 type TBalance = ReturnType<typeof useAcountAssets>[number]["balance"]
+
+const enabledBonds = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
 
 export const AssetsModalContent = ({
   allowedAssets,
   onSelect,
   hideInactiveAssets,
   allAssets,
+  withBonds,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -54,13 +59,27 @@ export const AssetsModalContent = ({
   }
 
   const tokens = allAssets
-    ? getAssetBalances(assets.tokens)
+    ? getAssetBalances([...assets.tokens, ...assets.stableswap])
     : accountAssets.filter(
         (accountAsset): accountAsset is { balance: TBalance; asset: TToken } =>
-          accountAsset.asset.isToken,
+          accountAsset.asset.isToken || accountAsset.asset.isStableSwap,
+      )
+
+  const bonds = allAssets
+    ? getAssetBalances(assets.bonds)
+    : accountAssets.filter(
+        (accountAsset): accountAsset is { balance: TBalance; asset: TBond } =>
+          accountAsset.asset.isBond,
       )
 
   const searchedTokens = tokens.filter((token) =>
+    search
+      ? token.asset.name.toLowerCase().includes(search.toLowerCase()) ||
+        token.asset.symbol.toLowerCase().includes(search.toLowerCase())
+      : true,
+  )
+
+  const searchedBonds = bonds.filter((token) =>
     search
       ? token.asset.name.toLowerCase().includes(search.toLowerCase()) ||
         token.asset.symbol.toLowerCase().includes(search.toLowerCase())
@@ -77,7 +96,7 @@ export const AssetsModalContent = ({
       ? searchedTokens.filter(({ asset }) => !allowedAssets.includes(asset.id))
       : []
 
-  if (!allowedTokens.length)
+  if (!tokens.length)
     return (
       <>
         <SAssetsModalHeader>
@@ -121,6 +140,27 @@ export const AssetsModalContent = ({
               key={asset.id}
               asset={asset}
               spotPriceId={asset.id}
+              onClick={(assetData) => onSelect?.(assetData)}
+            />
+          ))}
+        </>
+      )}
+      {enabledBonds && withBonds && searchedBonds.length && (
+        <>
+          <SAssetsModalHeader>
+            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+              {t("bonds")}
+            </Text>
+            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+              {t("selectAssets.your_balance")}
+            </Text>
+          </SAssetsModalHeader>
+          {searchedBonds.map(({ asset, balance }) => (
+            <AssetsModalRow
+              key={asset.id}
+              asset={asset}
+              balance={balance.balance}
+              spotPriceId={asset.isPast ? asset.assetId : asset.id}
               onClick={(assetData) => onSelect?.(assetData)}
             />
           ))}

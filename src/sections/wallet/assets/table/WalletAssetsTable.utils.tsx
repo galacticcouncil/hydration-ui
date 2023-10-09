@@ -77,7 +77,7 @@ export const useAssetsTable = (
               row.original.tradability.canBuy
                 ? () =>
                     navigate({
-                      to: "/trade",
+                      to: "/trade/swap",
                       search: { assetOut: row.original.id },
                     })
                 : undefined
@@ -87,7 +87,7 @@ export const useAssetsTable = (
               row.original.tradability.canSell
                 ? () =>
                     navigate({
-                      to: "/trade",
+                      to: "/trade/swap",
                       search: { assetIn: row.original.id },
                     })
                 : undefined
@@ -131,7 +131,6 @@ export type AssetsTableData = {
   lockedDemocracyDisplay: BN
   reserved: BN
   reservedDisplay: BN
-  origin: string
   assetType: PalletAssetRegistryAssetType["type"]
   couldBeSetAsPaymentFee: boolean
   isPaymentFee: boolean

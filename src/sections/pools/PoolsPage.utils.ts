@@ -193,6 +193,8 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
       .map((asset) => {
         const meta = assets.getAsset(asset.id.toString())
 
+        if (!meta.isToken) return null
+
         const spotPrice = spotPrices.data?.find(
           (sp) => sp?.tokenIn === asset.id.toString(),
         )?.spotPrice

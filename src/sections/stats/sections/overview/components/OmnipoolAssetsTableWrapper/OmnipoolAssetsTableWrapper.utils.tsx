@@ -71,16 +71,6 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
         </Text>
       ),
     }),
-    /*accessor("fee", {
-      id: "fee",
-      header: t("stats.overview.table.assets.header.fee"),
-      sortingFn: (a, b) => (a.original.fee.gt(b.original.fee) ? 1 : -1),
-      cell: ({ row }) => (
-        <Text tAlign="center" color="white">
-          <DisplayValue value={row.original.fee} isUSD />
-        </Text>
-      ),
-    }),*/
     accessor("pol", {
       id: "pol",
       header: t("stats.overview.table.assets.header.pol"),

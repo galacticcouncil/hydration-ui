@@ -58,7 +58,11 @@ const BondCell = ({ bondId }: { bondId: string }) => {
         gap: 16,
       }}
     >
-      <Icon icon={<AssetLogo id={bond.assetId} />} size={30} />
+      <Icon
+        icon={<AssetLogo id={bond.assetId} />}
+        size={[24, 30]}
+        css={{ flex: "1 0 auto" }}
+      />
       <div sx={{ flex: "column" }}>
         <Text fs={16} sx={{ mt: 3 }} font="ChakraPetchSemiBold">
           {bond.symbol}

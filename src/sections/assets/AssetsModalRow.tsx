@@ -10,6 +10,8 @@ import { SAssetRow } from "./AssetsModalRow.styled"
 import { TAsset } from "api/assetDetails"
 import BN from "bignumber.js"
 import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
+import { useRpcProvider } from "providers/rpcProvider"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 type AssetsModalRowProps = {
   asset: TAsset
@@ -25,6 +27,7 @@ export const AssetsModalRow = ({
   balance,
 }: AssetsModalRowProps) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
 
   const spotPrice = useDisplayPrice(spotPriceId)
   const totalDisplay = !balance?.isZero()
@@ -33,12 +36,31 @@ export const AssetsModalRow = ({
         .shiftedBy(-asset.decimals)
     : BN_0
 
+  let iconIds: string | string[]
+
+  if (assets.isStableSwap(asset)) {
+    iconIds = asset.assets
+  } else if (assets.isBond(asset)) {
+    iconIds = asset.assetId
+  } else {
+    iconIds = asset.id
+  }
+
   if (!asset || spotPrice.isInitialLoading) return <AssetsModalRowSkeleton />
 
   return (
     <SAssetRow onClick={() => onClick?.(asset)}>
-      <div sx={{ display: "flex", align: "center" }}>
-        <Icon icon={<AssetLogo id={asset.id} />} sx={{ mr: 10 }} size={30} />
+      <div sx={{ display: "flex", align: "center", gap: 10 }}>
+        {typeof iconIds === "string" ? (
+          <Icon icon={<AssetLogo id={iconIds} />} size={30} />
+        ) : (
+          <MultipleIcons
+            icons={iconIds.map((asset) => ({
+              icon: <AssetLogo id={asset} />,
+            }))}
+          />
+        )}
+
         <div sx={{ mr: 6 }}>
           <Text fw={700} color="white" fs={16} lh={22}>
             {asset.symbol}
