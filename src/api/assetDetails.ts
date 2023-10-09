@@ -139,6 +139,8 @@ export type TStableSwap = TAssetCommon & {
 
 export type TAsset = TToken | TBond | TStableSwap
 
+export const isStableswap = (asset: TAsset): asset is TStableSwap => asset.isStableSwap
+
 const fallbackAsset: TToken = {
   id: "",
   name: "N/A",

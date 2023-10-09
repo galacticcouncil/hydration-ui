@@ -1,5 +1,4 @@
 import { SContainer, SGridContainer } from "sections/pools/pool/Pool.styled"
-import { PoolDetails } from "./details/PoolDetails"
 import { PoolValue } from "./details/PoolValue"
 import { PoolActions } from "./actions/PoolActions"
 import { useStablePools } from "sections/pools/PoolsPage.utils"
@@ -14,6 +13,7 @@ import { BN_0 } from "utils/constants"
 import { TransferModal, Page } from "./transfer/TransferModal"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
 import { usePoolPositions } from "sections/pools/pool/Pool.utils"
+import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
 
 type Props = Exclude<
   ReturnType<typeof useStablePools>["data"],
@@ -43,7 +43,7 @@ export const StablePool = ({
   return (
     <SContainer id={id.toString()}>
       <SGridContainer noCapacity={true}>
-        <PoolDetails id={id} assets={assets} css={{ gridArea: "details" }} />
+        <PoolDetails id={id} css={{ gridArea: "details" }} />
         <PoolValue
           totalOmnipoolDisplay={totalOmnipoolDisplay}
           total={total.value}

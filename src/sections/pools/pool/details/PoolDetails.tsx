@@ -5,36 +5,72 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useDisplayPrice } from "utils/displayAsset"
+import { useRpcProvider } from "providers/rpcProvider"
+import { u32 } from "@polkadot/types-codec"
+import { SBadge } from "./PoolDetails.styled"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { Fragment } from "react"
+import { isStableswap } from "api/assetDetails"
 
 type PoolDetailsProps = {
-  pool: OmnipoolPool
+  id: u32
   className?: string
 }
 
-export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
+export const PoolDetails = ({ id, className }: PoolDetailsProps) => {
   const { t } = useTranslation()
-  const spotPrice = useDisplayPrice(pool.id)
+
+  const rpc = useRpcProvider()
+  const meta = rpc.assets.getAsset(id.toString())
+  const spotPrice = useDisplayPrice(id)
 
   return (
     <div sx={{ flex: "column" }} className={className}>
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div sx={{ flex: "column", gap: 10 }}>
-          <Text fs={13} color="basic400">
-            {t("liquidity.asset.title")}
-          </Text>
-          <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
-            <Icon size={27} icon={<AssetLogo id={pool.id.toString()} />} />
-            <div sx={{ flex: "column", gap: 2 }}>
-              <Text color="white" fs={16}>
-                {pool.symbol}
-              </Text>
-              <Text color="whiteish500" fs={13}>
-                {pool.name}
-              </Text>
-            </div>
+          <div sx={{ flex: "row", gap: 8, align: "center" }}>
+            {isStableswap(meta) && (
+              <SBadge>
+                <Text fs={11} fw={700} color="basic900">
+                  {t("liquidity.stablepool")}
+                </Text>
+              </SBadge>
+            )}
+            <Text fs={13} color="basic400">
+              {t("liquidity.assets.title")}
+            </Text>
           </div>
+
+          {isStableswap(meta) ? (
+            <div sx={{ flex: "column", gap: 5 }}>
+              <MultipleIcons
+                icons={meta.assets.map((asset: string) => ({
+                  icon: <AssetLogo id={asset} />,
+                }))}
+              />
+              <div sx={{ flex: "row" }}>
+                {meta.name.split("/").map((asset, index) => (
+                  <Fragment key={asset}>
+                    {index ? <Text color="whiteish500">/</Text> : null}
+                    <Text color="white">{asset}</Text>
+                  </Fragment>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
+              <Icon size={27} icon={<AssetLogo id={id.toString()} />} />
+              <div sx={{ flex: "column", gap: 2 }}>
+                <Text color="white" fs={16}>
+                  {meta.symbol}
+                </Text>
+                <Text color="whiteish500" fs={13}>
+                  {meta.name}
+                </Text>
+              </div>
+            </div>
+          )}
         </div>
         <div
           sx={{

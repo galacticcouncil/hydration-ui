@@ -52,7 +52,7 @@ export const Pool = ({ pool }: Props) => {
   return (
     <SContainer id={pool.id.toString()}>
       <SGridContainer>
-        <PoolDetails pool={pool} css={{ gridArea: "details" }} />
+        <PoolDetails id={pool.id} css={{ gridArea: "details" }} />
         {enabledFarms ? (
           <PoolIncentives poolId={pool.id} css={{ gridArea: "incentives" }} />
         ) : (
