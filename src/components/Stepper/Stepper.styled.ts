@@ -8,12 +8,11 @@ export const SStepperContainer = styled.div`
   justify-content: center;
 
   @media (${theme.viewport.gte.sm}) {
-    width: 222px;
+    width: 400px;
   }
 `
 
 export const SCircle = styled.div`
-  display: block;
   width: 26px;
   height: 26px;
 

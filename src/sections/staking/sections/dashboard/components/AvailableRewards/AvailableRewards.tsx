@@ -55,7 +55,7 @@ export const AvailableRewards = () => {
 
     await createTransaction(
       {
-        tx: api.tx.staking.claim(reward.data?.positionId),
+        tx: api.tx.staking.claim(reward.data?.positionId!),
       },
       { toast },
     )

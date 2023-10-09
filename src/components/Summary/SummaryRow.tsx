@@ -5,6 +5,7 @@ import { ReactNode } from "react"
 export type RowModel = {
   label: string
   content: ReactNode | string
+  description?: string
 }
 
 type SummaryRowProps = RowModel & {
@@ -14,27 +15,34 @@ type SummaryRowProps = RowModel & {
 export const SummaryRow = ({
   label,
   content,
+  description,
   withSeparator,
 }: SummaryRowProps) => {
   return (
     <>
-      <div
-        sx={{
-          flex: "row",
-          justify: "space-between",
-          align: "center",
-          my: 8,
-        }}
-      >
-        <Text color="basic400" fs={14} tAlign="left">
-          {label}
-        </Text>
-        {typeof content === "string" ? (
-          <Text fs={14} color="white" tAlign="right">
-            {content}
+      <div sx={{ my: 8 }}>
+        <div
+          sx={{
+            flex: "row",
+            justify: "space-between",
+            align: "center",
+          }}
+        >
+          <Text color="basic400" fs={14} tAlign="left">
+            {label}
           </Text>
-        ) : (
-          content
+          {typeof content === "string" ? (
+            <Text fs={14} color="white" tAlign="right">
+              {content}
+            </Text>
+          ) : (
+            content
+          )}
+        </div>
+        {description && (
+          <Text color="darkBlue300" fs={12} lh={15} sx={{ mt: 6 }}>
+            {description}
+          </Text>
         )}
       </div>
       {withSeparator && <Separator color="darkBlue401" />}

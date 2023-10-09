@@ -1,9 +1,7 @@
 import { css } from "@emotion/react"
-import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import BigNumber from "bignumber.js"
 import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
 import { AssetInput } from "components/AssetInput/AssetInput"
-import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -11,14 +9,9 @@ import { theme } from "theme"
 import { getFloatingPointAmount } from "utils/balance"
 import { useDisplayPrice } from "utils/displayAsset"
 import { Maybe } from "utils/helpers"
-import {
-  SContainer,
-  SMaxButton,
-  SSelectAssetButton,
-} from "./AssetSelect.styled"
+import { SContainer, SMaxButton } from "./AssetSelect.styled"
 import { useRpcProvider } from "providers/rpcProvider"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { AssetSelectButton } from "./AssetSelectButton"
 
 export const AssetSelect = (props: {
   name: string
@@ -42,20 +35,10 @@ export const AssetSelect = (props: {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(props.id)
-  const { decimals, name, symbol } = asset
+  const { decimals, symbol } = asset
 
   const spotPriceId =
     assets.isBond(asset) && asset.isPast ? asset.assetId : asset.id
-
-  let iconIds: string | string[]
-
-  if (assets.isStableSwap(asset)) {
-    iconIds = asset.assets
-  } else if (assets.isBond(asset)) {
-    iconIds = asset.assetId
-  } else {
-    iconIds = asset.id
-  }
 
   const spotPrice = useDisplayPrice(spotPriceId)
 
@@ -133,42 +116,10 @@ export const AssetSelect = (props: {
             mt: [16, 0],
           }}
         >
-          <SSelectAssetButton
-            size="small"
-            onClick={(e) => {
-              e.preventDefault()
-              props.onSelectAssetClick?.()
-            }}
-          >
-            {typeof iconIds === "string" ? (
-              <Icon icon={<AssetLogo id={iconIds} />} size={30} />
-            ) : (
-              <MultipleIcons
-                icons={iconIds.map((asset) => ({
-                  icon: <AssetLogo id={asset} />,
-                }))}
-              />
-            )}
-
-            <div sx={{ flex: "column", justify: "space-between" }}>
-              <Text fw={700} lh={16} color="white">
-                {symbol}
-              </Text>
-              <Text
-                fs={13}
-                lh={13}
-                css={{
-                  whiteSpace: "nowrap",
-                  color: `rgba(${theme.rgbColors.whiteish500}, 0.6)`,
-                }}
-              >
-                {name}
-              </Text>
-            </div>
-
-            {props.onSelectAssetClick && <Icon icon={<ChevronDown />} />}
-          </SSelectAssetButton>
-
+          <AssetSelectButton
+            assetId={props.id}
+            onClick={props.onSelectAssetClick}
+          />
           <AssetInput
             disabled={props.disabled}
             value={props.value}

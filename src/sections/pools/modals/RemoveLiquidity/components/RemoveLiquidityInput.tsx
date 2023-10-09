@@ -1,4 +1,3 @@
-import BigNumber from "bignumber.js"
 import { BoxSwitch } from "components/BoxSwitch/BoxSwitch"
 import { Input } from "components/Input/Input"
 import { Slider } from "components/Slider/Slider"
@@ -10,7 +9,7 @@ import { SSlippage } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity
 type RemoveLiquidityInputProps = {
   value: number
   onChange: (value: number) => void
-  shares: BigNumber
+  balance: string
 }
 
 const options = [
@@ -23,7 +22,7 @@ const options = [
 export const RemoveLiquidityInput = ({
   value,
   onChange,
-  shares,
+  balance,
 }: RemoveLiquidityInputProps) => {
   const { t } = useTranslation()
   const [input, setInput] = useState("")
@@ -58,8 +57,8 @@ export const RemoveLiquidityInput = ({
           value={input}
           onChange={handleOnChange}
           name="custom"
-          label="Custom"
-          placeholder="Custom"
+          label={t("custom")}
+          placeholder={t("custom")}
           unit="%"
         />
         <div
@@ -69,7 +68,7 @@ export const RemoveLiquidityInput = ({
           <Text fs={11} css={{ opacity: 0.7 }}>
             {t("balance")}
           </Text>
-          <Text fs={11}>{t("liquidity.remove.modal.shares", { shares })}</Text>
+          <Text fs={11}>{balance}</Text>
         </div>
       </SSlippage>
     </>
