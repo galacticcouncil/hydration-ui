@@ -19,6 +19,7 @@ import { useAddLiquidity, useVerifyLimits } from "./AddLiquidity.utils"
 import { useStore } from "state/store"
 import { useEffect, useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useDebounce } from "react-use"
 
 type Props = {
   assetId: string
@@ -42,7 +43,16 @@ export const AddLiquidityForm = ({
     mode: "onChange",
     defaultValues: { amount: initialAmount },
   })
+
   const amountIn = form.watch("amount")
+
+  const [, cancel] = useDebounce(() => setAssetValue(amountIn), 300, [amountIn])
+
+  useEffect(() => {
+    return () => {
+      cancel()
+    }
+  }, [])
 
   const { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance } =
     useAddLiquidity(assetId, assetValue)

@@ -11,7 +11,6 @@ import { u32 } from "@polkadot/types-codec"
 import { SBadge } from "./PoolDetails.styled"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Fragment } from "react"
-import { isStableswap } from "api/assetDetails"
 
 type PoolDetailsProps = {
   id: u32
@@ -30,7 +29,7 @@ export const PoolDetails = ({ id, className }: PoolDetailsProps) => {
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div sx={{ flex: "column", gap: 10 }}>
           <div sx={{ flex: "row", gap: 8, align: "center" }}>
-            {isStableswap(meta) && (
+            {rpc.assets.isStableSwap(meta) && (
               <SBadge>
                 <Text fs={11} fw={700} color="basic900">
                   {t("liquidity.stablepool")}
@@ -38,11 +37,13 @@ export const PoolDetails = ({ id, className }: PoolDetailsProps) => {
               </SBadge>
             )}
             <Text fs={13} color="basic400">
-              {t("liquidity.assets.title")}
+              {rpc.assets.isStableSwap(meta)
+                ? t("liquidity.assets.title")
+                : t("liquidity.asset.title")}
             </Text>
           </div>
 
-          {isStableswap(meta) ? (
+          {rpc.assets.isStableSwap(meta) ? (
             <div sx={{ flex: "column", gap: 5 }}>
               <MultipleIcons
                 icons={meta.assets.map((asset: string) => ({

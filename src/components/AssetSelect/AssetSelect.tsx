@@ -41,16 +41,6 @@ export const AssetSelect = (props: {
   const spotPriceId =
     assets.isBond(asset) && asset.isPast ? asset.assetId : asset.id
 
-  let iconIds: string | string[]
-
-  if (assets.isStableSwap(asset)) {
-    iconIds = asset.assets
-  } else if (assets.isBond(asset)) {
-    iconIds = asset.assetId
-  } else {
-    iconIds = asset.id
-  }
-
   const spotPrice = useDisplayPrice(spotPriceId)
 
   const displayValue = useMemo(() => {
