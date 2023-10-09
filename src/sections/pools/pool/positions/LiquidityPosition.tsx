@@ -179,7 +179,7 @@ export const LiquidityPosition = ({
                 {t("value.token", {
                   value: position.providedAmount,
                   fixedPointScale: meta.decimals,
-                  numberSuffix: meta.symbol,
+                  numberSuffix: ` ${meta.symbol}`,
                 })}
               </Text>
               {providedAmountPriceLoading ? (
