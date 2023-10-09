@@ -3,20 +3,22 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { Fragment, useMemo } from "react"
+import { Fragment } from "react"
 import { SBadge } from "sections/pools/stablepool/StablePool.styled"
-import BigNumber from "bignumber.js"
-import { BN_100 } from "utils/constants"
 import { TAsset } from "api/assetDetails"
+import { useDisplayPrice } from "utils/displayAsset"
+import Skeleton from "react-loading-skeleton"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { u32 } from "@polkadot/types-codec"
 
 type PoolDetailsProps = {
+  id: u32
   assets: TAsset[]
-  fee: BigNumber
   className?: string
 }
-export const PoolDetails = ({ assets, fee, className }: PoolDetailsProps) => {
+export const PoolDetails = ({ id, assets, className }: PoolDetailsProps) => {
   const { t } = useTranslation()
-  const feeDisplay = useMemo(() => fee.times(BN_100).toString(), [fee])
+  const spotPrice = useDisplayPrice(id)
 
   return (
     <div sx={{ flex: "column" }} className={className}>
@@ -51,20 +53,24 @@ export const PoolDetails = ({ assets, fee, className }: PoolDetailsProps) => {
         <div
           sx={{
             flex: "column",
-            gap: 8,
+            gap: 10,
             align: ["end", "start"],
             width: ["auto", 118],
           }}
         >
           <Text fs={13} color="basic400">
-            {t("liquidity.asset.details.fee")}
+            {t("liquidity.asset.details.price")}
           </Text>
-          <Text lh={22} color="white" fs={18}>
-            {t("value.percentage", { value: feeDisplay })}
-          </Text>
+          {spotPrice.isLoading ? (
+            <Skeleton width={118} height={21} />
+          ) : (
+            <Text lh={22} color="white" fs={18}>
+              <DisplayValue value={spotPrice.data?.spotPrice} type="token" />
+            </Text>
+          )}
         </div>
       </div>
-      <Separator sx={{ mt: 20 }} color="white" opacity={0.06} />
+      <Separator sx={{ mt: [18, 20] }} />
     </div>
   )
 }

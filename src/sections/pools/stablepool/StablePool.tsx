@@ -43,7 +43,7 @@ export const StablePool = ({
   return (
     <SContainer id={id.toString()}>
       <SGridContainer noCapacity={true}>
-        <PoolDetails assets={assets} fee={fee} css={{ gridArea: "details" }} />
+        <PoolDetails id={id} assets={assets} css={{ gridArea: "details" }} />
         <PoolValue
           totalOmnipoolDisplay={totalOmnipoolDisplay}
           total={total.value}
