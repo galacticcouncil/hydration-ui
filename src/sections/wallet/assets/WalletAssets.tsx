@@ -9,10 +9,14 @@ import { WalletAssetsTableSkeleton } from "./table/skeleton/WalletAssetsTableSke
 import { WalletAssetsHydraPositionsSkeleton } from "./hydraPositions/skeleton/WalletAssetsHydraPositionsSkeleton"
 import { WalletFarmingPositionsSkeleton } from "./farmingPositions/skeleton/WalletFarmingPositionsSkeleton"
 import { useRpcProvider } from "providers/rpcProvider"
+import { MyActiveBonds } from "sections/trade/sections/bonds/MyActiveBonds"
+import { Skeleton as BondsTableSkeleton } from "sections/trade/sections/bonds/table/skeleton/Skeleton"
+import { useTranslation } from "react-i18next"
 
-const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
+const enabledBonds = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
 
 export const WalletAssets = () => {
+  const { t } = useTranslation()
   const { account } = useAccountStore()
   const { isLoaded } = useRpcProvider()
 
@@ -22,9 +26,16 @@ export const WalletAssets = () => {
         <WalletAssetsHeader />
         <WalletAssetsTableSkeleton />
         <Spacer axis="vertical" size={20} />
+        {enabledBonds && (
+          <>
+            <BondsTableSkeleton title={t("bonds.table.title")} />
+            <Spacer axis="vertical" size={20} />
+          </>
+        )}
+
         <WalletAssetsHydraPositionsSkeleton />
         <Spacer axis="vertical" size={20} />
-        {enabledFarms && <WalletFarmingPositionsSkeleton />}
+        <WalletFarmingPositionsSkeleton />
       </div>
     )
   }
@@ -44,11 +55,19 @@ export const WalletAssets = () => {
 
           <Spacer axis="vertical" size={20} />
 
+          {enabledBonds && (
+            <>
+              <MyActiveBonds showTransfer={true} />
+
+              <Spacer axis="vertical" size={20} />
+            </>
+          )}
+
           <WalletAssetsPositionsWrapper />
 
           <Spacer axis="vertical" size={20} />
 
-          {enabledFarms && <WalletFarmingPositionsWrapper />}
+          <WalletFarmingPositionsWrapper />
         </>
       )}
     </div>

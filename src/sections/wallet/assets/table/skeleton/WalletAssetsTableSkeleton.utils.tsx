@@ -94,8 +94,8 @@ export const useAssetsTableSkeleton = (enableAnimation = true) => {
           </div>
         ),
       }),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [enableAnimation],
   )
 

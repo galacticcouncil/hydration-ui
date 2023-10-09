@@ -10,7 +10,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
@@ -24,6 +24,7 @@ import { FormValues } from "utils/helpers"
 import { useAddLiquidity, useVerifyLimits } from "./AddLiquidity.utils"
 import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useDebounce } from "react-use"
 
 type Props = {
   pool: OmnipoolPool
@@ -43,7 +44,16 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
   const { createTransaction } = useStore()
   const { t } = useTranslation()
   const form = useForm<{ amount: string }>({ mode: "onChange" })
+
   const amountIn = form.watch("amount")
+
+  const [, cancel] = useDebounce(() => setAssetValue(amountIn), 300, [amountIn])
+
+  useEffect(() => {
+    return () => {
+      cancel()
+    }
+  }, [])
 
   const { data: limits } = useVerifyLimits({
     assetId: assetId.toString(),
@@ -216,7 +226,6 @@ export const AddLiquidity = ({ pool, isOpen, onClose, onSuccess }: Props) => {
                             title={t("wallet.assets.transfer.asset.label_mob")}
                             name={name}
                             value={value}
-                            onBlur={setAssetValue}
                             onChange={onChange}
                             asset={assetId}
                             error={error?.message}

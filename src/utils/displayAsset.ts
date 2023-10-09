@@ -6,8 +6,9 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { STABLECOIN_SYMBOL } from "./constants"
 import { QUERY_KEYS } from "./queryKeys"
+import { Maybe } from "./helpers"
 
-export const useDisplayPrice = (id: string | u32 | undefined) => {
+export const useDisplayPrice = (id: Maybe<string | u32>) => {
   const displayAsset = useDisplayAssetStore()
   const spotPrice = useSpotPrice(id, displayAsset.id)
   const usdPrice = useCoingeckoUsdPrice()

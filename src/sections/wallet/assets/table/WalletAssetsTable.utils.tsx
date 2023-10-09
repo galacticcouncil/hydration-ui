@@ -9,15 +9,13 @@ import {
 } from "@tanstack/react-table"
 import { useTranslation } from "react-i18next"
 import { useMemo, useState } from "react"
-import {
-  WalletAssetsTableBalance,
-  WalletAssetsTableName,
-} from "sections/wallet/assets/table/data/WalletAssetsTableData"
+import { WalletAssetsTableBalance } from "sections/wallet/assets/table/data/WalletAssetsTableData"
 import { WalletAssetsTableActions } from "sections/wallet/assets/table/actions/WalletAssetsTableActions"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
 import { useNavigate } from "@tanstack/react-location"
+import { AssetTableName } from "components/AssetTableName/AssetTableName"
 
 export const useAssetsTable = (
   data: AssetsTableData[],
@@ -44,7 +42,7 @@ export const useAssetsTable = (
           ? t("wallet.assets.table.header.name")
           : t("selectAssets.asset"),
         sortingFn: (a, b) => a.original.symbol.localeCompare(b.original.symbol),
-        cell: ({ row }) => <WalletAssetsTableName {...row.original} />,
+        cell: ({ row }) => <AssetTableName {...row.original} />,
       }),
       accessor("transferable", {
         id: "transferable",
@@ -79,7 +77,7 @@ export const useAssetsTable = (
               row.original.tradability.canBuy
                 ? () =>
                     navigate({
-                      to: "/trade",
+                      to: "/trade/swap",
                       search: { assetOut: row.original.id },
                     })
                 : undefined
@@ -89,7 +87,7 @@ export const useAssetsTable = (
               row.original.tradability.canSell
                 ? () =>
                     navigate({
-                      to: "/trade",
+                      to: "/trade/swap",
                       search: { assetIn: row.original.id },
                     })
                 : undefined
@@ -104,7 +102,7 @@ export const useAssetsTable = (
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [actions, isDesktop],
+    [isDesktop],
   )
 
   return useReactTable({
@@ -133,7 +131,6 @@ export type AssetsTableData = {
   lockedDemocracyDisplay: BN
   reserved: BN
   reservedDisplay: BN
-  origin: string
   assetType: PalletAssetRegistryAssetType["type"]
   couldBeSetAsPaymentFee: boolean
   isPaymentFee: boolean

@@ -106,7 +106,7 @@ export const ReviewTransactionForm = (
   )
 
   const acceptedFeeAssets = useAcceptedCurrencies(
-    feeAssets.map((feeAsset) => feeAsset.id) ?? [],
+    feeAssets.map((feeAsset) => feeAsset.asset.id) ?? [],
   )
   const isLoading = feeAssetBalance.isLoading
   const {

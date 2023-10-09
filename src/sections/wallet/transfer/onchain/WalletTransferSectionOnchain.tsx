@@ -24,6 +24,7 @@ import {
   CloseIcon,
   PasteAddressIcon,
 } from "./WalletTransferSectionOnchain.styled"
+import { useTokenBalance } from "api/balances"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -39,13 +40,15 @@ export function WalletTransferSectionOnchain({
   openAddressBook: () => void
 }) {
   const { t } = useTranslation()
-
+  const { account } = useAccountStore()
   const { api, assets } = useRpcProvider()
   const { createTransaction } = useStore()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const balance = useTokenBalance(asset, account?.address)
   const assetMeta = assets.getAsset(asset.toString())
-  const { account } = useAccountStore()
+
   const accountCurrency = useAccountCurrency(account?.address)
   const accountCurrencyMeta = accountCurrency.data
     ? assets.getAsset(accountCurrency.data)
@@ -208,6 +211,21 @@ export function WalletTransferSectionOnchain({
                   if (!new BigNumber(value).isNaN()) return true
                 } catch {}
                 return t("error.validNumber")
+              },
+              maxBalance: (value) => {
+                try {
+                  if (assetMeta.decimals == null)
+                    throw new Error("Missing asset meta")
+                  if (
+                    balance.data?.balance.gte(
+                      BigNumber(value).multipliedBy(
+                        BN_10.pow(assetMeta.decimals),
+                      ),
+                    )
+                  )
+                    return true
+                } catch {}
+                return t("liquidity.add.modal.validation.notEnoughBalance")
               },
               positive: (value) =>
                 new BigNumber(value).gt(0) || t("error.positive"),
