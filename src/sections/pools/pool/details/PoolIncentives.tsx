@@ -31,13 +31,15 @@ export const PoolIncentives = ({
         {t("liquidity.asset.incentives.title")}
       </Text>
       <Spacer size={[10, 27]} />
-      {isDesktop ? (
-        farms.data.map((farm) => (
-          <GlobalFarmRow key={farm.yieldFarm.id.toString()} farm={farm} />
-        ))
-      ) : (
-        <GlobalFarmRowMulti farms={farms.data} />
-      )}
+      <div sx={{ flex: "column", gap: "15px" }}>
+        {isDesktop ? (
+          farms.data.map((farm) => (
+            <GlobalFarmRow key={farm.yieldFarm.id.toString()} farm={farm} />
+          ))
+        ) : (
+          <GlobalFarmRowMulti farms={farms.data} />
+        )}
+      </div>
     </SInventivesContainer>
   )
 }
