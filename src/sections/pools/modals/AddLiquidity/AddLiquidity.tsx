@@ -2,11 +2,10 @@ import { u32 } from "@polkadot/types"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { AddLiquidityForm } from "./AddLiquidityForm"
-import { useDebounce } from "react-use"
 
 type Props = {
   poolId: u32
