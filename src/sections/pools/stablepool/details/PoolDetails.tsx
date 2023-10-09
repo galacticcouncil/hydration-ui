@@ -64,7 +64,7 @@ export const PoolDetails = ({ assets, fee, className }: PoolDetailsProps) => {
           </Text>
         </div>
       </div>
-      <Separator sx={{ mt: 44, mb: 34 }} color="white" opacity={0.06} />
+      <Separator sx={{ mt: 20 }} color="white" opacity={0.06} />
     </div>
   )
 }

@@ -33,12 +33,19 @@ export const useStablePools = () => {
   const { assets } = useRpcProvider()
   const pools = useStableswapPools()
 
+  const poolIds = (pools.data ?? []).map((pool) => pool.id.toString())
+
   const poolAddressById = new Map(
     (pools.data ?? []).map((pool) => [pool.id, derivePoolAccount(pool.id)]),
   )
 
   const poolsBalances = useAccountsBalances(
     Array.from(poolAddressById.values()),
+  )
+
+  const omnipoolBalances = useTokensBalances(
+    Array.from(poolAddressById.keys()),
+    OMNIPOOL_ACCOUNT_ADDRESS,
   )
 
   const assetsByPool = new Map(
@@ -49,7 +56,7 @@ export const useStablePools = () => {
   )
 
   const uniqueAssetIds: string[] = [
-    ...new Set([].concat(...assetsByPool.values())),
+    ...new Set(poolIds.concat(...assetsByPool.values())),
   ]
 
   const spotPrices = useDisplayPrices(uniqueAssetIds)
@@ -107,10 +114,26 @@ export const useStablePools = () => {
       }),
     )
 
+    const balance = omnipoolBalances.find(
+      (o) => o.data?.assetId.toString() === pool.id.toString(),
+    )?.data?.balance
+
+    const meta = assets.getAsset(pool.id.toString())
+    const spotPrice = spotPrices.data?.find(
+      (sp) => sp?.tokenIn === pool.id.toString(),
+    )?.spotPrice
+
+    const totalOmnipool = getFloatingPointAmount(balance ?? BN_0, meta.decimals)
+    const totalOmnipoolDisplay = !spotPrice
+      ? BN_NAN
+      : totalOmnipool.times(spotPrice)
+
     return {
       id: pool.id,
       assets: poolAssets,
       total,
+      totalOmnipool,
+      totalOmnipoolDisplay,
       balanceByAsset,
       reserves,
       fee: normalizeBigNumber(pool.data.fee).div(BN_MILL),

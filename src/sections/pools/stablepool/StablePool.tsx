@@ -27,6 +27,7 @@ export const StablePool = ({
   total,
   balanceByAsset,
   reserves,
+  totalOmnipoolDisplay,
 }: Props) => {
   const [transferOpen, setTransferOpen] = useState<Page>()
   const [isExpanded, setIsExpanded] = useState(false)
@@ -41,9 +42,13 @@ export const StablePool = ({
 
   return (
     <SContainer id={id.toString()}>
-      <SGridContainer>
+      <SGridContainer noCapacity={true}>
         <PoolDetails assets={assets} fee={fee} css={{ gridArea: "details" }} />
-        <PoolValue total={total.value} css={{ gridArea: "values" }} />
+        <PoolValue
+          totalOmnipoolDisplay={totalOmnipoolDisplay}
+          total={total.value}
+          css={{ gridArea: "values" }}
+        />
         <PoolActions
           poolId={id}
           assets={assets}

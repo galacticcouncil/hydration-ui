@@ -1,6 +1,7 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 import InfoIcon from "assets/icons/InfoIconBlue.svg?react"
+import { css } from "@emotion/react"
 
 export const SContainer = styled.div`
   width: calc(100% + 24px);
@@ -45,7 +46,7 @@ export const SContainer = styled.div`
   }
 `
 
-export const SGridContainer = styled.div`
+export const SGridContainer = styled.div<{ noCapacity?: boolean }>`
   position: relative;
 
   display: grid;
@@ -61,10 +62,19 @@ export const SGridContainer = styled.div`
 
     display: grid;
 
-    grid-template-areas:
-      "details incentives actions"
-      "values incentives actions"
-      "capacity capacity capacity";
+    ${(props) =>
+      props.noCapacity
+        ? css`
+            grid-template-areas:
+              "details incentives actions"
+              "values incentives actions";
+          `
+        : css`
+            grid-template-areas:
+              "details incentives actions"
+              "values incentives actions"
+              "capacity capacity capacity";
+          `}
   }
 `
 
