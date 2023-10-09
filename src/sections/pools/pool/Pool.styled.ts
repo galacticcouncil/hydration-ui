@@ -46,7 +46,7 @@ export const SContainer = styled.div`
   }
 `
 
-export const SGridContainer = styled.div<{ noCapacity?: boolean }>`
+export const SGridContainer = styled.div`
   position: relative;
 
   display: grid;
@@ -62,19 +62,10 @@ export const SGridContainer = styled.div<{ noCapacity?: boolean }>`
 
     display: grid;
 
-    ${(props) =>
-      props.noCapacity
-        ? css`
-            grid-template-areas:
-              "details incentives actions"
-              "values incentives actions";
-          `
-        : css`
-            grid-template-areas:
-              "details incentives actions"
-              "values incentives actions"
-              "capacity capacity capacity";
-          `}
+    grid-template-areas:
+      "details incentives actions"
+      "values incentives actions"
+      "capacity capacity capacity";
   }
 `
 

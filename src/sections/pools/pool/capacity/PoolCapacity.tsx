@@ -6,10 +6,10 @@ import { Trans } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
 import { Separator } from "components/Separator/Separator"
 
-type Props = { pool: OmnipoolPool; className?: string }
+type Props = { id: string; className?: string }
 
-export const PoolCapacity = ({ pool, className }: Props) => {
-  const capacity = usePoolCapacity(pool)
+export const PoolCapacity = ({ id, className }: Props) => {
+  const capacity = usePoolCapacity(id)
   const [ref, { width }] = useMeasure<HTMLDivElement>()
 
   if (capacity.isLoading || !capacity.data) return null

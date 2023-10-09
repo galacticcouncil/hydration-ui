@@ -13,16 +13,16 @@ import {
 import { getFloatingPointAmount } from "utils/balance"
 import { useRpcProvider } from "providers/rpcProvider"
 
-export const usePoolCapacity = (pool: OmnipoolPool) => {
+export const usePoolCapacity = (id: string) => {
   const { assets } = useRpcProvider()
   const apiIds = useApiIds()
   const tvlCap = useTVLCap()
   const omnipoolAssets = useOmnipoolAssets()
   const balances = useTokensBalances(
-    [apiIds.data?.hubId ?? "", apiIds?.data?.stableCoinId ?? "", pool.id],
+    [apiIds.data?.hubId ?? "", apiIds?.data?.stableCoinId ?? "", id],
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
-  const meta = assets.getAsset(pool.id.toString())
+  const meta = assets.getAsset(id.toString())
 
   const queries = [apiIds, tvlCap, omnipoolAssets, ...balances]
   const isLoading = queries.some((q) => q.isLoading)
@@ -37,13 +37,13 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
       return undefined
 
     const asset = omnipoolAssets.data.find(
-      (a) => a.id.toString() === pool.id.toString(),
+      (a) => a.id.toString() === id.toString(),
     )
     const assetUsd = omnipoolAssets.data.find(
       (a) => a.id.toString() === apiIds.data.stableCoinId.toString(),
     )
     const assetBalance = balances.find(
-      (b) => b.data?.assetId.toString() === pool.id.toString(),
+      (b) => b.data?.assetId.toString() === id.toString(),
     )
     const hubBalance = balances.find(
       (b) => b.data?.assetId.toString() === apiIds.data.hubId.toString(),
@@ -118,7 +118,7 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
     const filledPercent = filled.div(capacity).times(100)
 
     return { capacity, filled, filledPercent, symbol }
-  }, [apiIds.data, omnipoolAssets.data, balances, meta, pool.id, tvlCap.data])
+  }, [apiIds.data, omnipoolAssets.data, balances, meta, id, tvlCap.data])
 
   return { data, isLoading }
 }

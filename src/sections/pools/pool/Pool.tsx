@@ -67,7 +67,7 @@ export const Pool = ({ pool }: Props) => {
           onExpandClick={() => setIsExpanded((prev) => !prev)}
           css={{ gridArea: "actions" }}
         />
-        <PoolCapacity pool={pool} css={{ gridArea: "capacity" }} />
+        <PoolCapacity id={pool.id.toString()} css={{ gridArea: "capacity" }} />
       </SGridContainer>
       {isDesktop && hasExpandContent && (
         <AnimatePresence>

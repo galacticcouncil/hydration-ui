@@ -14,6 +14,7 @@ import { TransferModal, Page } from "./transfer/TransferModal"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
 import { usePoolPositions } from "sections/pools/pool/Pool.utils"
 import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
+import { PoolCapacity } from "sections/pools/pool/capacity/PoolCapacity"
 
 type Props = Exclude<
   ReturnType<typeof useStablePools>["data"],
@@ -42,7 +43,7 @@ export const StablePool = ({
 
   return (
     <SContainer id={id.toString()}>
-      <SGridContainer noCapacity={true}>
+      <SGridContainer>
         <PoolDetails id={id} css={{ gridArea: "details" }} />
         <PoolValue
           totalOmnipoolDisplay={totalOmnipoolDisplay}
@@ -62,6 +63,7 @@ export const StablePool = ({
           amount={amount}
           onTransferOpen={() => setTransferOpen(Page.OPTIONS)}
         />
+        <PoolCapacity id={id.toString()} css={{ gridArea: "capacity" }} />
       </SGridContainer>
       {transferOpen !== undefined && (
         <TransferModal
