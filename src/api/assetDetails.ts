@@ -156,7 +156,7 @@ const fallbackAsset: TToken = {
 export const getAssets = async (api: ApiPromise) => {
   const poolService = new PoolService(api)
   const tradeRouter = new TradeRouter(poolService, {
-    includeOnly: [PoolType.Omni, PoolType.LBP],
+    includeOnly: [PoolType.Omni, PoolType.LBP, PoolType.Stable],
   })
 
   const [
