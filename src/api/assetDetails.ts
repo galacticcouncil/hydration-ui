@@ -172,7 +172,13 @@ export const getAssets = async (api: ApiPromise) => {
     api.query.assetRegistry.assetLocations.entries(),
     tradeRouter.getAllAssets(),
   ])
-
+  console.log(
+    system,
+    rawAssetsData,
+    rawAssetsMeta,
+    rawAssetsLocations,
+    rawTradeAssets,
+  )
   const tokens: TToken[] = []
   const bonds: TBond[] = []
   const stableswap: TStableSwap[] = []
