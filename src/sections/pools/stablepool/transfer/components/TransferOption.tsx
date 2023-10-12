@@ -13,6 +13,7 @@ type Props = {
   heading: string
   subheading: string
   icon: ReactNode
+  disabled?: boolean
 }
 
 export const TransferOption = ({
@@ -22,8 +23,9 @@ export const TransferOption = ({
   heading,
   subheading,
   icon,
+  disabled,
 }: Props) => (
-  <SBlock selected={selected} onClick={onSelect}>
+  <SBlock selected={selected} {...(!disabled && { onClick: onSelect })}>
     <div
       sx={{ flex: "row", align: "center", justify: "space-between", mb: 26 }}
     >

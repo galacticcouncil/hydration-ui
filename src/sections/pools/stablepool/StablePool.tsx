@@ -29,6 +29,7 @@ export const StablePool = ({
   balanceByAsset,
   reserves,
   totalOmnipoolDisplay,
+  tradability,
 }: Props) => {
   const [transferOpen, setTransferOpen] = useState<Page>()
   const [isExpanded, setIsExpanded] = useState(false)
@@ -76,6 +77,7 @@ export const StablePool = ({
           onClose={() => setTransferOpen(undefined)}
           balanceByAsset={balanceByAsset}
           refetchPositions={position.refetch}
+          canAddLiquidity={tradability?.canAddLiquidity}
         />
       )}
       {isDesktop && hasPosition && (

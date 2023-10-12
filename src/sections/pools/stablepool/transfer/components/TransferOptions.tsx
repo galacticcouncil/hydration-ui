@@ -9,9 +9,14 @@ export type Option = "OMNIPOOL" | "STABLEPOOL"
 type Props = {
   selected: Option
   onSelect: (selected: Option) => void
+  disableOmnipool?: boolean
 }
 
-export const TransferOptions = ({ selected, onSelect }: Props) => {
+export const TransferOptions = ({
+  selected,
+  onSelect,
+  disableOmnipool,
+}: Props) => {
   const { t } = useTranslation()
   return (
     <>
@@ -21,6 +26,7 @@ export const TransferOptions = ({ selected, onSelect }: Props) => {
         heading={t("liquidity.add.omnipool")}
         subheading={t("liquidity.add.benefits")}
         icon={<WaterRippleIcon />}
+        disabled={disableOmnipool}
       >
         <ListItem>
           First benefit mentioned here. A line of of text would be enough.

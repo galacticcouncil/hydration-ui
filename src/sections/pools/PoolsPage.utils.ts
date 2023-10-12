@@ -31,6 +31,7 @@ export type BalanceByAsset = Exclude<
 
 export const useStablePools = () => {
   const { assets } = useRpcProvider()
+  const assetsTradability = useAssetsTradability()
   const pools = useStableswapPools()
 
   const poolIds = (pools.data ?? []).map((pool) => pool.id.toString())
@@ -72,6 +73,11 @@ export const useStablePools = () => {
   }
 
   const data = (pools.data ?? []).map((pool) => {
+    const tradability = assetsTradability.data?.find(
+      (assetTradability) =>
+        assetTradability.id.toString() === pool.id.toString(),
+    )
+
     const poolAssets = assets
       .getAssets(uniqueAssetIds)
       .filter((asset) => assetsByPool.get(pool.id).includes(asset.id))
@@ -131,6 +137,7 @@ export const useStablePools = () => {
     return {
       id: pool.id,
       assets: poolAssets,
+      tradability,
       total,
       totalOmnipool,
       totalOmnipoolDisplay,
