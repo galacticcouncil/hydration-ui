@@ -134,119 +134,108 @@ export const AddStablepoolLiquidity = ({
         minHeight: "100%",
       }}
     >
-      <ModalScrollableContent
-        content={
-          <div sx={{ flex: "column" }}>
-            <Controller
-              name="amount"
-              control={form.control}
-              rules={{
-                required: t("wallet.assets.transfer.error.required"),
-                validate: {
-                  validNumber,
-                  positive,
-                  maxBalance: (value) => {
-                    try {
-                      if (asset.decimals == null) {
-                        throw new Error("Missing asset meta")
-                      }
+      <div sx={{ flex: "column" }}>
+        <Controller
+          name="amount"
+          control={form.control}
+          rules={{
+            required: t("wallet.assets.transfer.error.required"),
+            validate: {
+              validNumber,
+              positive,
+              maxBalance: (value) => {
+                try {
+                  if (asset.decimals == null) {
+                    throw new Error("Missing asset meta")
+                  }
 
-                      if (
-                        walletBalance.data?.balance?.gte(
-                          BigNumber(value).shiftedBy(asset.decimals),
-                        )
-                      ) {
-                        return true
-                      }
-                    } catch {}
-                    return t("liquidity.add.modal.validation.notEnoughBalance")
-                  },
-                },
-              }}
-              render={({
-                field: { name, value, onChange },
-                fieldState: { error },
-              }) => (
-                <WalletTransferAssetSelect
-                  title={t("wallet.assets.transfer.asset.label_mob")}
-                  name={name}
-                  value={value}
-                  onChange={onChange}
-                  asset={asset.id}
-                  error={error?.message}
-                  onAssetOpen={onAssetOpen}
-                />
-              )}
+                  if (
+                    walletBalance.data?.balance?.gte(
+                      BigNumber(value).shiftedBy(asset.decimals),
+                    )
+                  ) {
+                    return true
+                  }
+                } catch {}
+                return t("liquidity.add.modal.validation.notEnoughBalance")
+              },
+            },
+          }}
+          render={({
+            field: { name, value, onChange },
+            fieldState: { error },
+          }) => (
+            <WalletTransferAssetSelect
+              title={t("wallet.assets.transfer.asset.label_mob")}
+              name={name}
+              value={value}
+              onChange={onChange}
+              asset={asset.id}
+              error={error?.message}
+              onAssetOpen={onAssetOpen}
             />
-            <SummaryRow
-              label={t("liquidity.add.modal.tradeFee")}
-              content={t("value.percentage", { value: fee.multipliedBy(100) })}
-              description={t("liquidity.add.modal.tradeFee.description")}
-            />
-            <Spacer size={20} />
-            <Text
-              color="pink500"
-              fs={15}
-              font="FontOver"
-              tTransform="uppercase"
-            >
-              {t("liquidity.add.modal.positionDetails")}
-            </Text>
-            <Summary
-              rows={[
-                {
-                  label: t("liquidity.add.modal.shareTokens"),
-                  content: t("value", {
-                    value: shares,
-                    type: "token",
-                  }),
-                },
-                {
-                  label: t("liquidity.remove.modal.price"),
-                  content: (
-                    <Text fs={14} color="white" tAlign="right">
-                      <Trans
-                        t={t}
-                        i18nKey="liquidity.add.modal.row.spotPrice"
-                        tOptions={{
-                          firstAmount: 1,
-                          firstCurrency: asset.symbol,
-                        }}
-                      >
-                        <DisplayValue value={displayPrice.data?.spotPrice} />
-                      </Trans>
-                    </Text>
-                  ),
-                },
-              ]}
-            />
-            <PoolAddLiquidityInformationCard />
-            <Spacer size={20} />
-          </div>
-        }
-        footer={
-          <div
-            sx={{
-              flex: "row",
-              justify: "space-between",
-              gap: "100px",
-              mb: [24, 0],
-            }}
-          >
-            <Button variant="secondary" type="button" onClick={onCancel}>
-              {t("cancel")}
-            </Button>
-            <Button
-              sx={{ width: "300px" }}
-              variant="primary"
-              type="submit"
-              disabled={!form.formState.isValid}
-            >
-              {t("confirm")}
-            </Button>
-          </div>
-        }
-      />
+          )}
+        />
+        <SummaryRow
+          label={t("liquidity.add.modal.tradeFee")}
+          content={t("value.percentage", { value: fee.multipliedBy(100) })}
+          description={t("liquidity.add.modal.tradeFee.description")}
+        />
+        <Spacer size={20} />
+        <Text color="pink500" fs={15} font="FontOver" tTransform="uppercase">
+          {t("liquidity.add.modal.positionDetails")}
+        </Text>
+        <Summary
+          rows={[
+            {
+              label: t("liquidity.add.modal.shareTokens"),
+              content: t("value", {
+                value: shares,
+                type: "token",
+              }),
+            },
+            {
+              label: t("liquidity.remove.modal.price"),
+              content: (
+                <Text fs={14} color="white" tAlign="right">
+                  <Trans
+                    t={t}
+                    i18nKey="liquidity.add.modal.row.spotPrice"
+                    tOptions={{
+                      firstAmount: 1,
+                      firstCurrency: asset.symbol,
+                    }}
+                  >
+                    <DisplayValue value={displayPrice.data?.spotPrice} />
+                  </Trans>
+                </Text>
+              ),
+            },
+          ]}
+        />
+        <PoolAddLiquidityInformationCard />
+        <Spacer size={20} />
+      </div>
+      <div
+        sx={{
+          flex: "row",
+          justify: "space-between",
+          gap: "100px",
+          mb: [24, 0],
+        }}
+      >
+        <Button variant="secondary" type="button" onClick={onCancel}>
+          {t("cancel")}
+        </Button>
+        <Button
+          sx={{ width: "300px" }}
+          variant="primary"
+          type="submit"
+          disabled={!form.formState.isValid}
+        >
+          {t("confirm")}
+        </Button>
+      </div>
     </form>
   )
 }
