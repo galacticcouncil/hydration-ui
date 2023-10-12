@@ -98,6 +98,7 @@ export const StablePool = ({
                 reserves={reserves}
                 refetchPosition={position.refetch}
                 onTransferOpen={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
+                canAddLiquidity={tradability?.canAddLiquidity}
               />
               <LiquidityPositionWrapper poolId={id} positions={positions} />
             </motion.div>
