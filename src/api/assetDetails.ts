@@ -153,10 +153,20 @@ const fallbackAsset: TToken = {
   isNative: false,
 }
 
+const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
+const isStablepoolsEnabled =
+  import.meta.env.VITE_FF_STABLEPOOLS_ENABLED === "true"
+
 export const getAssets = async (api: ApiPromise) => {
   const poolService = new PoolService(api)
+  const traderRoutes = [PoolType.Omni]
+
+  if (isBondsPageEnabled) traderRoutes.push(PoolType.LBP)
+
+  if (isStablepoolsEnabled) traderRoutes.push(PoolType.Stable)
+
   const tradeRouter = new TradeRouter(poolService, {
-    includeOnly: [PoolType.Omni, PoolType.LBP, PoolType.Stable],
+    includeOnly: traderRoutes,
   })
 
   const [
