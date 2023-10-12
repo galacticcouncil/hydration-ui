@@ -95,11 +95,11 @@ export const useProviderData = (rpcUrl?: string) => {
       )
 
       const api = await ApiPromise.create({ provider, types })
-      console.log(api)
+
       const { id, isStableCoin, update } = displayAsset
 
       const assets = await getAssets(api)
-      console.log(assets)
+
       let stableCoinId: string | undefined
 
       // set USDT as a stable token

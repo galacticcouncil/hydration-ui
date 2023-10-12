@@ -22,12 +22,11 @@ export function ProviderSelectModal(props: {
 }) {
   const preference = useProviderRpcUrlStore()
   const activeRpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-
   const [userRpcUrl, setUserRpcUrl] = useState(activeRpcUrl)
   const [removeRpcUrl, setRemoveRpcUrl] = useState<string | undefined>()
   const { t } = useTranslation()
   const { rpcList, addRpc, removeRpc } = useRpcStore()
-  console.log(preference, activeRpcUrl, userRpcUrl)
+
   const form = useForm<{ address: string }>({
     defaultValues: { address: "wss://" },
     mode: "onChange",
@@ -43,7 +42,7 @@ export function ProviderSelectModal(props: {
 
       const relay = await api.query.parachainSystem.validationData()
       const relayParentNumber = relay.unwrap().relayParentNumber
-      console.log(relay, relayParentNumber)
+
       if (relayParentNumber.toNumber()) {
         addRpc(value.address)
         form.reset()
