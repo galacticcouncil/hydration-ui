@@ -3074,6 +3074,7 @@
   version "1.7.7"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.7.7.tgz#03081ce67cf67e28c0c15cc0b058a696e78ca857"
   integrity sha512-QSucAaErnGFLDGBGPlB5m47wA7IrRoSCfIISI94m6Tcj+LOV6cZ3QhPdxEeF5eOZ9hp080cbZU5kJH8PdL5qEg==
+
   dependencies:
     "@talismn/connect-wallets" "^1.2.1"
     "@tanstack/table-core" "^8.5.17"
