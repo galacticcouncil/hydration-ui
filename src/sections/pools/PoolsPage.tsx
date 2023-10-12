@@ -5,6 +5,10 @@ import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
 import { PoolSkeleton } from "./skeleton/PoolSkeleton"
 import { useRpcProvider } from "providers/rpcProvider"
+import { Stablepools } from "./stablepool/Stablepools"
+
+const isStablepoolsEnabled =
+  import.meta.env.VITE_FF_STABLEPOOLS_ENABLED === "true"
 
 const PoolPageContent = () => {
   const [filter, setFilter] = useState({ showMyPositions: false })
@@ -27,6 +31,7 @@ const PoolPageContent = () => {
       />
 
       <div sx={{ flex: "column", gap: 20 }}>
+        {isStablepoolsEnabled && <Stablepools />}
         {!isLoading && data
           ? data.map((pool) => <Pool key={pool.id.toString()} pool={pool} />)
           : [...Array(3)].map((_, index) => (

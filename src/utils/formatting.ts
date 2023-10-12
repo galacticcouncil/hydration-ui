@@ -263,12 +263,27 @@ export const formatAssetValue = (value: string) => {
 
 export const isHydraAddress = (address: string) => address[0] === "7"
 
+const formatDistanceLocale = {
+  xSeconds: "{{count}}sec",
+  xMinutes: "{{count}}min",
+  xHours: "{{count}}h",
+  xDays: "{{count}}d",
+  xMonths: "{{count}}m",
+  xYears: "{{count}}y",
+}
+const shortEnLocale = {
+  formatDistance: (token: "xSeconds" | "xMinutes" | "xHours", count: string) =>
+    formatDistanceLocale[token].replace("{{count}}", count),
+}
+
 export const customFormatDuration = ({
   start = 0,
   end,
+  isShort,
 }: {
   start?: number
   end: number
+  isShort?: boolean
 }) => {
   const isPositive = BigNumber(end).isPositive()
   const durations = intervalToDuration({ start, end })
@@ -276,6 +291,7 @@ export const customFormatDuration = ({
   return {
     duration: formatDuration(durations, {
       format: ["months", "weeks", "days", "hours", "minutes"],
+      locale: isShort ? shortEnLocale : undefined,
     }),
     isPositive,
   }

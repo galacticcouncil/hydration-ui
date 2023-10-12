@@ -11,9 +11,9 @@ import { useRpcProvider } from "providers/rpcProvider"
 
 const VestingBoxContent = () => {
   const { account } = useAccountStore()
-  const { data, isLoading } = useVestingSchedules(account?.address)
+  const { data, isInitialLoading } = useVestingSchedules(account?.address)
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <div
         sx={{ flex: "row", align: "center", justify: "center", height: 240 }}

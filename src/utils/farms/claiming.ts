@@ -11,7 +11,6 @@ import { useFarms, useOraclePrices } from "api/farms"
 import { useOmnipoolAssets } from "api/omnipool"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { ToastMessage, useStore } from "state/store"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0 } from "utils/constants"
@@ -23,20 +22,20 @@ import { createMutableFarmEntries } from "./claiming/mutableFarms"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const useClaimableAmount = (
-  pool?: OmnipoolPool,
+  poolId?: u32,
   depositNft?: DepositNftType,
 ) => {
   const bestNumberQuery = useBestNumber()
 
   const allDeposits = useUserDeposits()
 
-  const filteredDeposits = pool
+  const filteredDeposits = poolId
     ? {
         ...allDeposits,
         data:
           allDeposits.data?.filter(
             (deposit) =>
-              deposit.deposit.ammPoolId.toString() === pool?.id.toString(),
+              deposit.deposit.ammPoolId.toString() === poolId.toString(),
           ) ?? [],
       }
     : allDeposits
@@ -44,7 +43,7 @@ export const useClaimableAmount = (
   const omnipoolAssets = useOmnipoolAssets()
 
   const farms = useFarms(
-    pool?.id ? [pool.id] : omnipoolAssets.data?.map((asset) => asset.id) ?? [],
+    poolId ? [poolId] : omnipoolAssets.data?.map((asset) => asset.id) ?? [],
   )
 
   const { api, assets } = useRpcProvider()

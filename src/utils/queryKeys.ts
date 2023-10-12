@@ -1,3 +1,4 @@
+import { AnyNumber } from "@polkadot/types-codec/types"
 import type { u32 } from "@polkadot/types"
 import { u128 } from "@polkadot/types-codec"
 import type { AccountId32 } from "@polkadot/types/interfaces"
@@ -30,6 +31,11 @@ export const QUERY_KEYS = {
     QUERY_KEY_PREFIX,
     "accountBalances",
     id?.toString(),
+  ],
+  accountsBalances: (ids: string[]) => [
+    QUERY_KEY_PREFIX,
+    "accountsBalances",
+    ids.join("."),
   ],
   accountAssetBalances: (
     pairs: Array<[address: AccountId32 | string, assetId: u32 | string]>,
@@ -92,7 +98,7 @@ export const QUERY_KEYS = {
     "totalLiquidity",
     id?.toString(),
   ],
-  totalIssuance: (lpToken: Maybe<u32 | string>) => [
+  totalIssuance: (lpToken: Maybe<u32 | string | AnyNumber>) => [
     QUERY_KEY_PREFIX,
     "totalIssuance",
     lpToken?.toString(),
@@ -304,5 +310,19 @@ export const QUERY_KEYS = {
   stakingPositionBalances: (positionId: Maybe<string>) => [
     "positionBalances",
     positionId,
+  ],
+  stableswapPools: [QUERY_KEY_PREFIX, "stableswapPools"],
+  stableswapPool: (id: u32 | string) => [
+    QUERY_KEY_PREFIX,
+    "stableswapPool",
+    id?.toString(),
+  ],
+  lbpPool: ["lbpPool"],
+  bondEvents: (id?: Maybe<string>) => ["bondEvents", id],
+  lbpPoolTotal: (id?: Maybe<string>) => ["lbpPoolTotal", id],
+  poolHistoricalBalance: (pool?: string, block?: number) => [
+    "poolHistoricalBalance",
+    pool,
+    block,
   ],
 } as const

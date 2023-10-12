@@ -57,7 +57,7 @@ export const Unstake = ({
 
     const transaction = await createTransaction(
       {
-        tx: api.tx.staking.unstake(positionId),
+        tx: api.tx.staking.unstake(positionId!),
       },
       { toast },
     )

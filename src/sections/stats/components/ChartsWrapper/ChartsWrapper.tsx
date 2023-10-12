@@ -42,7 +42,7 @@ export const ChartWrapper = ({ assetSymbol }: Props) => {
           </SChartTab>
           <SChartTab
             disabled={!isLoaded}
-            aria-label="24 volume"
+            aria-label="24h volume"
             active={chartType === "volume"}
             onClick={() => setChartType("volume")}
           >

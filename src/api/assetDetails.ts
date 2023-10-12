@@ -70,14 +70,20 @@ export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
   const { assets } = useRpcProvider()
   const accountBalances = useAccountBalances(address)
 
-  const ids = accountBalances.data?.balances
-    ? [
-        NATIVE_ASSET_ID,
-        ...accountBalances.data.balances.map((b) => b.id.toString()),
-      ]
-    : []
+  const tokenBalances = accountBalances.data?.balances
+    ? accountBalances.data.balances.map((balance) => {
+        const asset = assets.getAsset(balance.id)
 
-  return assets.getAssets(ids)
+        return { asset, balance }
+      })
+    : []
+  if (accountBalances.data?.native)
+    tokenBalances.unshift({
+      balance: accountBalances.data.native,
+      asset: assets.native,
+    })
+
+  return tokenBalances
 }
 
 type AssetType = "Token" | "Bond" | "StableSwap" | "PoolShare"
@@ -119,6 +125,7 @@ export type TBond = TAssetCommon & {
   assetType: "Bond"
   assetId: string
   maturity: number
+  isPast: boolean
 }
 
 export type TToken = TAssetCommon & {
@@ -146,10 +153,20 @@ const fallbackAsset: TToken = {
   isNative: false,
 }
 
+const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
+const isStablepoolsEnabled =
+  import.meta.env.VITE_FF_STABLEPOOLS_ENABLED === "true"
+
 export const getAssets = async (api: ApiPromise) => {
   const poolService = new PoolService(api)
+  const traderRoutes = [PoolType.Omni]
+
+  if (isBondsPageEnabled) traderRoutes.push(PoolType.LBP)
+
+  if (isStablepoolsEnabled) traderRoutes.push(PoolType.Stable)
+
   const tradeRouter = new TradeRouter(poolService, {
-    includeOnly: [PoolType.Omni],
+    includeOnly: traderRoutes,
   })
 
   const [
@@ -194,36 +211,37 @@ export const getAssets = async (api: ApiPromise) => {
       if (id === NATIVE_ASSET_ID) {
         const asset: TToken = {
           ...assetCommon,
-          name: "Hydra",
+          name: "HydraDX",
           symbol: system.tokenSymbol.unwrap()[0].toString(),
           decimals: system.tokenDecimals.unwrap()[0].toNumber(),
           isNative: true,
           assetType,
         }
         tokens.push(asset)
-      }
-      const name = data.name.toUtf8()
+      } else {
+        const name = data.name.toUtf8()
 
-      const location = rawAssetsLocations.find(
-        (location) => location[0].args[0].toString() === id,
-      )?.[1]
+        const location = rawAssetsLocations.find(
+          (location) => location[0].args[0].toString() === id,
+        )?.[1]
 
-      const meta = rawAssetsMeta
-        .find((meta) => meta[0].args[0].toString() === id)?.[1]
-        .unwrap()
+        const meta = rawAssetsMeta
+          .find((meta) => meta[0].args[0].toString() === id)?.[1]
+          .unwrap()
 
-      /* meta data should exist for each Token asset */
-      if (meta) {
-        const asset: TToken = {
-          ...assetCommon,
-          name,
-          assetType,
-          parachainId: location ? getTokenParachainId(location) : undefined,
-          decimals: meta.decimals.toNumber(),
-          symbol: meta.symbol.toUtf8(),
+        /* meta data should exist for each Token asset */
+        if (meta) {
+          const asset: TToken = {
+            ...assetCommon,
+            name,
+            assetType,
+            parachainId: location ? getTokenParachainId(location) : undefined,
+            decimals: meta.decimals.toNumber(),
+            symbol: meta.symbol.toUtf8(),
+          }
+
+          tokens.push(asset)
         }
-
-        tokens.push(asset)
       }
     } else if (isBond) {
       const detailsRaw = await api.query.bonds.bonds(id)
@@ -264,6 +282,10 @@ export const getAssets = async (api: ApiPromise) => {
           (location) => location[0].args[0].toString() === assetId.toString(),
         )?.[1]
 
+        const isPast = !rawTradeAssets.some(
+          (tradeAsset) => tradeAsset.id === id,
+        )
+
         const asset: TBond = {
           ...assetCommon,
           assetId: assetId.toString(),
@@ -273,6 +295,7 @@ export const getAssets = async (api: ApiPromise) => {
           decimals,
           symbol,
           maturity: maturity.toNumber(),
+          isPast,
         }
 
         bonds.push(asset)
@@ -324,8 +347,17 @@ export const getAssets = async (api: ApiPromise) => {
     (acc, asset) => ({ ...acc, [asset.id]: asset }),
     {},
   )
+  const isStableSwap = (asset: TAsset): asset is TStableSwap =>
+    asset.isStableSwap
 
+  const isBond = (asset: TAsset): asset is TBond => asset.isBond
   const getAsset = (id: string) => allTokensObject[id] ?? fallbackAsset
+
+  const getBond = (id: string) => {
+    const asset = allTokensObject[id] ?? fallbackAsset
+
+    if (isBond(asset)) return asset
+  }
 
   const getAssets = (ids: string[]) => ids.map((id) => getAsset(id))
 
@@ -342,7 +374,10 @@ export const getAssets = async (api: ApiPromise) => {
       native,
       tradeAssets,
       getAsset,
+      getBond,
       getAssets,
+      isStableSwap,
+      isBond,
     },
     tradeRouter,
   }

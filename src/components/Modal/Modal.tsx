@@ -1,7 +1,14 @@
 import { Portal, Root } from "@radix-ui/react-dialog"
 import { BackdropVariant } from "components/Backdrop/Backdrop"
 import { ReactNode, useMemo } from "react"
-import { SContainer, SContent, SOverlay, STopContent } from "./Modal.styled"
+import {
+  SBottomContent,
+  SContainer,
+  SContent,
+  SModalSection,
+  SOverlay,
+  STopContent,
+} from "./Modal.styled"
 import { ModalContentProps, ModalContents } from "./contents/ModalContents"
 
 type Props = {
@@ -13,6 +20,7 @@ type Props = {
   disableCloseOutside?: boolean
   backdrop?: BackdropVariant
   topContent?: ReactNode
+  bottomContent?: ReactNode
   className?: string
   children?: ReactNode
 } & ModalContentProps
@@ -26,6 +34,7 @@ export const Modal = ({
   disableCloseOutside,
   backdrop = "default",
   topContent,
+  bottomContent,
   className,
   children,
   ...contentProps
@@ -69,7 +78,8 @@ export const Modal = ({
             hasTopContent={hasTopContent}
             className={!hasContentProps ? className : undefined}
           >
-            {content}
+            <SModalSection>{content}</SModalSection>
+            {bottomContent && <SBottomContent>{bottomContent}</SBottomContent>}
           </SContent>
         </SContainer>
       </Portal>
