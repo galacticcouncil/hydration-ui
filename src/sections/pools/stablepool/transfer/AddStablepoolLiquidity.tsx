@@ -1,6 +1,5 @@
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
-import { ModalScrollableContent } from "components/Modal/Modal"
 import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
 import { SummaryRow } from "components/Summary/SummaryRow"
@@ -33,7 +32,7 @@ type Props = {
   onAssetOpen: () => void
   onSubmitted: (shares?: string) => void
   reserves: { asset_id: number; amount: string }[]
-  balanceByAsset: BalanceByAsset
+  balanceByAsset?: BalanceByAsset
 }
 
 export const AddStablepoolLiquidity = ({
