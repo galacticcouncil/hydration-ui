@@ -39,6 +39,13 @@ const drawerKeyFrames = keyframes`
 
 export const SOverlay = styled(Overlay)<{ variant?: BackdropVariant }>`
   position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
   inset: 0;
   z-index: ${theme.zIndices.modal};
 
@@ -105,14 +112,11 @@ export const SContent = styled.div<{
   hasTopContent?: boolean
 }>`
   position: fixed;
+
   inset: 0;
   ${({ hasTopContent }) =>
     hasTopContent && "top: var(--modal-top-content-height);"}
   z-index: ${theme.zIndices.modal};
-
-  display: flex;
-  flex-flow: column;
-  overflow: hidden;
 
   ${({ isDrawer }) =>
     isDrawer &&
@@ -129,6 +133,7 @@ export const SContent = styled.div<{
   }
 
   @media ${theme.viewport.gte.sm} {
+    overflow: hidden;
     top: 10%;
     right: initial;
     bottom: initial;
@@ -137,7 +142,6 @@ export const SContent = styled.div<{
 
     width: 100%;
     max-width: min(600px, 95vw);
-    max-height: 80%;
 
     border-radius: 4px;
     animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) ${fadeInKeyframes};
