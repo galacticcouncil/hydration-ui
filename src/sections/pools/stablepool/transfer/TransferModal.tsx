@@ -226,6 +226,7 @@ export const TransferModal = ({
             content: (
               <AssetsModalContent
                 hideInactiveAssets={true}
+                allAssets={true}
                 allowedAssets={assets.map((asset) => asset.id)}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
