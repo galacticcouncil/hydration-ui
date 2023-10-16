@@ -43,7 +43,7 @@ const PoolPageContent = () => {
 
         {all.map((pool) =>
           isStablepool(pool) ? (
-            <StablePool key={pool.id.toString()} {...pool} />
+            <StablePool key={pool.id.toString()} pool={pool} />
           ) : (
             <Pool key={pool.id.toString()} pool={pool} />
           ),
