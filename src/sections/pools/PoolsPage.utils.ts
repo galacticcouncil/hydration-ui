@@ -163,9 +163,9 @@ export const useStablePools = (withPositions?: boolean) => {
     const totalOmnipool = getFloatingPointAmount(balance ?? BN_0, meta.decimals)
     const totalDisplay = !spotPrice ? BN_NAN : totalOmnipool.times(spotPrice)
 
-    const hasStablepoolPosition = stablepoolsPosition.some(
-      (p) => p.data?.assetId === pool.id.toString(),
-    )
+    const hasStablepoolPosition = stablepoolsPosition
+      .find((p) => p.data?.assetId === pool.id.toString())
+      ?.data?.balance?.gt(0)
 
     const hasOmnipoolPosition = positions.some(
       (p) => p.data?.assetId.toString() === pool.id.toString(),
