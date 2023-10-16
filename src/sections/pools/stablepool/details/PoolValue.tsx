@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import BigNumber from "bignumber.js"
 
 type PoolValueProps = {
-  totalOmnipoolDisplay: BigNumber
+  totalDisplay: BigNumber
   total: BigNumber
   className?: string
 }
@@ -13,7 +13,7 @@ type PoolValueProps = {
 export const PoolValue = ({
   total,
   className,
-  totalOmnipoolDisplay,
+  totalDisplay,
 }: PoolValueProps) => {
   const { t } = useTranslation()
 
@@ -27,14 +27,14 @@ export const PoolValue = ({
             </Text>
           </div>
           <DollarAssetValue
-            value={totalOmnipoolDisplay}
+            value={totalDisplay}
             wrapper={(children) => (
               <Text fs={18} lh={22} color="white" tAlign={["right", "left"]}>
                 {children}
               </Text>
             )}
           >
-            <DisplayValue value={totalOmnipoolDisplay} />
+            <DisplayValue value={totalDisplay} />
           </DollarAssetValue>
         </div>
 

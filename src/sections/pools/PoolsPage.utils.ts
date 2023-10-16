@@ -19,6 +19,24 @@ import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 import { useAccountsBalances } from "api/accountBalances"
 import { useRpcProvider } from "providers/rpcProvider"
 
+export const isStablepool = (
+  pool: OmnipoolPool | Stablepool,
+): pool is Stablepool => "isStablepool" in pool && pool.isStablepool
+
+export const sortPools = (pools: Array<OmnipoolPool | Stablepool>) => {
+  return pools.toSorted((poolA, poolB) => {
+    if (poolA.id.toString() === NATIVE_ASSET_ID) {
+      return -1
+    }
+
+    if (poolB.id.toString() === NATIVE_ASSET_ID) {
+      return 1
+    }
+
+    return poolA.totalDisplay.gt(poolB.totalDisplay) ? -1 : 1
+  })
+}
+
 export const derivePoolAccount = (assetId: u32) => {
   const name = pool_account_name(Number(assetId))
   return encodeAddress(blake2AsHex(name), HYDRADX_SS58_PREFIX)
@@ -28,6 +46,11 @@ export type BalanceByAsset = Exclude<
   ReturnType<typeof useStablePools>["data"],
   undefined
 >[number]["balanceByAsset"]
+
+export type Stablepool = Exclude<
+  ReturnType<typeof useStablePools>["data"],
+  undefined
+>[number]
 
 export const useStablePools = () => {
   const { assets } = useRpcProvider()
@@ -124,19 +147,18 @@ export const useStablePools = () => {
     )?.spotPrice
 
     const totalOmnipool = getFloatingPointAmount(balance ?? BN_0, meta.decimals)
-    const totalOmnipoolDisplay = !spotPrice
-      ? BN_NAN
-      : totalOmnipool.times(spotPrice)
+    const totalDisplay = !spotPrice ? BN_NAN : totalOmnipool.times(spotPrice)
 
     return {
       id: pool.id,
       assets: poolAssets,
       total,
       totalOmnipool,
-      totalOmnipoolDisplay,
+      totalDisplay,
       balanceByAsset,
       reserves,
       fee: normalizeBigNumber(pool.data.fee).div(BN_MILL),
+      isStablepool: true,
     }
   })
 
@@ -264,18 +286,6 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     () => pools?.some((pool) => pool.hasPositions || pool.hasDeposits),
     [pools],
   )
-
-  data?.sort((poolA, poolB) => {
-    if (poolA.id.toString() === NATIVE_ASSET_ID) {
-      return -1
-    }
-
-    if (poolB.id.toString() === NATIVE_ASSET_ID) {
-      return 1
-    }
-
-    return poolA.totalDisplay.gt(poolB.totalDisplay) ? -1 : 1
-  })
 
   return { data, hasPositionsOrDeposits, isLoading: isInitialLoading }
 }
