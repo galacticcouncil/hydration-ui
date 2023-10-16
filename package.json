@@ -25,7 +25,7 @@
     "@emotion/is-prop-valid": "^1.2.0",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
-    "@galacticcouncil/apps": "1.7.9",
+    "@galacticcouncil/apps": "1.7.10",
     "@galacticcouncil/bridge": "0.0.11",
     "@galacticcouncil/math-lbp": "^0.2.1",
     "@galacticcouncil/math-liquidity-mining": "^0.2.0",
