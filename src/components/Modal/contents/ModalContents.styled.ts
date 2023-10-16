@@ -21,7 +21,9 @@ export const SContainer = styled.div<{ animating: boolean }>`
 `
 
 export const SContent = styled(motion.div)<{ noPadding?: boolean }>`
-  ${({ noPadding }) => !noPadding && "padding: 0 var(--modal-content-padding);"}
+  ${({ noPadding }) =>
+    !noPadding &&
+    "padding: 0 var(--modal-content-padding) var(--modal-content-padding);"}
 
   overflow: auto;
 

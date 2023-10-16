@@ -77,18 +77,14 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
           {
             title: t("walletConnect.provider.title"),
             content: (
-              <ModalScrollableContent
-                content={
-                  <WalletConnectProviderSelect
-                    onWalletSelect={(wallet) => {
-                      setUserSelectedProvider(wallet.extensionName)
-                      enableWallet.mutate(wallet)
-                      paginateTo(2)
-                    }}
-                    onExternalWallet={() => paginateTo(1)}
-                    onWalletConnect={onWalletConnect}
-                  />
-                }
+              <WalletConnectProviderSelect
+                onWalletSelect={(wallet) => {
+                  setUserSelectedProvider(wallet.extensionName)
+                  enableWallet.mutate(wallet)
+                  paginateTo(2)
+                }}
+                onExternalWallet={() => paginateTo(1)}
+                onWalletConnect={onWalletConnect}
               />
             ),
           },
@@ -108,19 +104,15 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
               (activeProvider !== externalWallet.provider && isConnecting ? (
                 <WalletConnectConfirmPending provider={activeProvider} />
               ) : (
-                <ModalScrollableContent
-                  content={
-                    <WalletConnectAccountSelect
-                      currentAddress={account?.address.toString()}
-                      provider={activeProvider}
-                      onClose={onClose}
-                      onSelect={(account) => {
-                        setUserSelectedProvider(null)
-                        setAccount(account)
-                        onClose()
-                      }}
-                    />
-                  }
+                <WalletConnectAccountSelect
+                  currentAddress={account?.address.toString()}
+                  provider={activeProvider}
+                  onClose={onClose}
+                  onSelect={(account) => {
+                    setUserSelectedProvider(null)
+                    setAccount(account)
+                    onClose()
+                  }}
                 />
               )),
           },

@@ -301,7 +301,7 @@ export const getAssets = async (api: ApiPromise) => {
         bonds.push(asset)
       }
     } else if (isStableSwap) {
-      const symbol = "SPS"
+      const symbol = data.name.toUtf8()
       const decimals = 18
 
       const detailsRaw = await api.query.stableswap.pools(id)
