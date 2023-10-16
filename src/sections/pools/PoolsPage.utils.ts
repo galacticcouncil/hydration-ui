@@ -20,8 +20,8 @@ import { useAccountsBalances } from "api/accountBalances"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const isStablepool = (
-  pool: OmnipoolPool | Stablepool,
-): pool is Stablepool => "isStablepool" in pool && pool.isStablepool
+  pool?: OmnipoolPool | Stablepool,
+): pool is Stablepool => !!pool && "isStablepool" in pool && pool.isStablepool
 
 export const sortPools = (pools: Array<OmnipoolPool | Stablepool>) => {
   return pools.toSorted((poolA, poolB) => {

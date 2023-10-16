@@ -1,6 +1,5 @@
 import { default as BigNumber } from "bignumber.js"
 import { Button } from "components/Button/Button"
-import { ModalScrollableContent } from "components/Modal/Modal"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
