@@ -6,7 +6,6 @@ import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
-import { CurrencyReserves } from "./components/CurrencyReserves"
 import { BalanceByAsset } from "sections/pools/PoolsPage.utils"
 import { u32 } from "@polkadot/types-codec"
 import BigNumber from "bignumber.js"
@@ -106,22 +105,6 @@ export const TransferModal = ({
           />
         )
       }
-      bottomContent={
-        page === Page.ADD_LIQUIDITY ? (
-          <CurrencyReserves
-            assets={Array.from(balanceByAsset?.entries() ?? []).map(
-              ([id, balance]) => ({
-                id,
-                symbol: rpcProvider.assets.getAsset(id).symbol,
-                balance: balance.free?.shiftedBy(
-                  -rpcProvider.assets.getAsset(id).decimals,
-                ),
-                value: balance.value,
-              }),
-            )}
-          />
-        ) : null
-      }
     >
       <ModalContents
         onClose={onClose}
@@ -157,6 +140,7 @@ export const TransferModal = ({
             content: (
               <AddStablepoolLiquidity
                 poolId={poolId}
+                balanceByAsset={balanceByAsset}
                 onCancel={onClose}
                 onClose={() => {
                   if (isStablepool) {

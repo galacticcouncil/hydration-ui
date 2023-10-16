@@ -1,6 +1,5 @@
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
-import { ModalScrollableContent } from "components/Modal/Modal"
 import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
 import { SummaryRow } from "components/Summary/SummaryRow"
@@ -20,6 +19,8 @@ import { positive, validNumber } from "utils/validators"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { TAsset } from "api/assetDetails"
 import { useRpcProvider } from "providers/rpcProvider"
+import { CurrencyReserves } from "./components/CurrencyReserves"
+import { BalanceByAsset } from "sections/pools/PoolsPage.utils"
 
 type Props = {
   poolId: u32
@@ -31,6 +32,7 @@ type Props = {
   onAssetOpen: () => void
   onSubmitted: (shares?: string) => void
   reserves: { asset_id: number; amount: string }[]
+  balanceByAsset?: BalanceByAsset
 }
 
 export const AddStablepoolLiquidity = ({
@@ -42,10 +44,13 @@ export const AddStablepoolLiquidity = ({
   onClose,
   onCancel,
   reserves,
+  balanceByAsset,
   fee,
 }: Props) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+  const rpcProvider = useRpcProvider()
+
   const { t } = useTranslation()
   const form = useForm<{ amount: string }>({ mode: "onChange" })
   const displayPrice = useDisplayPrice(asset.id)
@@ -180,6 +185,19 @@ export const AddStablepoolLiquidity = ({
           label={t("liquidity.add.modal.tradeFee")}
           content={t("value.percentage", { value: fee.multipliedBy(100) })}
           description={t("liquidity.add.modal.tradeFee.description")}
+        />
+        <Spacer size={10} />
+        <CurrencyReserves
+          assets={Array.from(balanceByAsset?.entries() ?? []).map(
+            ([id, balance]) => ({
+              id,
+              symbol: rpcProvider.assets.getAsset(id).symbol,
+              balance: balance.free?.shiftedBy(
+                -rpcProvider.assets.getAsset(id).decimals,
+              ),
+              value: balance.value,
+            }),
+          )}
         />
         <Spacer size={20} />
         <Text color="pink500" fs={15} font="FontOver" tTransform="uppercase">
