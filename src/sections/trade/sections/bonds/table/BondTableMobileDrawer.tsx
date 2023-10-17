@@ -120,7 +120,6 @@ export const BondTableMobileDrawer = ({
         </div>
         <Text>Past Transactions</Text>
         <Separator
-          // sx={{ mx: "-24px" }}
           css={{ background: `rgba(${theme.rgbColors.alpha0}, 0.06)` }}
         />
         {events.map((event, index) => (
