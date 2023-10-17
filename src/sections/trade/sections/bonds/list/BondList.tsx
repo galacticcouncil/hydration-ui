@@ -1,12 +1,11 @@
-import { Bond } from "components/Bond/Bond"
-import { format } from "date-fns"
+import { Bond, BondProps } from "components/Bond/Bond"
 import { useLbpPool } from "api/bonds"
 import { BondListSkeleton } from "./BondListSkeleton"
-import { ReactNode } from "react"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useBestNumber } from "api/chain"
 import { TBond } from "api/assetDetails"
+import { PastBondList } from "./PastBondList"
 
 type Props = {
   isLoading?: boolean
@@ -22,9 +21,9 @@ export const BondList = ({ isLoading, bonds }: Props) => {
 
   const { active, upcoming, past } = currentBlockNumber
     ? bonds.reduce<{
-        active: ReactNode[]
-        upcoming: ReactNode[]
-        past: ReactNode[]
+        active: BondProps[]
+        upcoming: BondProps[]
+        past: BondProps[]
       }>(
         (acc, bond) => {
           const pool = lbpPool.data?.find((pool) =>
@@ -32,9 +31,6 @@ export const BondList = ({ isLoading, bonds }: Props) => {
           )
 
           if (pool && pool.start && pool.end) {
-            const assetIn = pool.assets.find(
-              (asset: number) => asset !== Number(bond.id),
-            )
             const state =
               currentBlockNumber > Number(pool.start)
                 ? currentBlockNumber > Number(pool.end)
@@ -42,32 +38,16 @@ export const BondList = ({ isLoading, bonds }: Props) => {
                   : "active"
                 : "upcoming"
 
-            acc[state].push(
-              <Bond
-                assetId={bond.assetId}
-                assetIn={assetIn}
-                bondId={bond.id}
-                key={bond.maturity}
-                ticker={bond.symbol}
-                name={bond.name}
-                maturity={format(new Date(bond.maturity), "dd/MM/yyyy")}
-                end={pool.end}
-                start={pool.start}
-                state={state}
-              />,
-            )
+            acc[state].push({
+              bond,
+              pool,
+              state: state,
+            })
           } else {
-            acc.past.push(
-              <Bond
-                assetId={bond.assetId}
-                bondId={bond.id}
-                key={bond.maturity}
-                ticker={bond.symbol}
-                name={bond.name}
-                maturity={format(new Date(bond.maturity), "dd/MM/yyyy")}
-                state="past"
-              />,
-            )
+            acc.past.push({
+              bond,
+              state: "past",
+            })
           }
           return acc
         },
@@ -91,7 +71,9 @@ export const BondList = ({ isLoading, bonds }: Props) => {
           >
             {t("bonds.section.activeBonds")}
           </Text>
-          {active}
+          {active.map((bond) => (
+            <Bond {...bond} />
+          ))}
         </div>
       ) : null}
 
@@ -105,18 +87,13 @@ export const BondList = ({ isLoading, bonds }: Props) => {
           >
             {t("bonds.section.upcomingBonds")}
           </Text>
-          {upcoming}
+          {upcoming.map((bond) => (
+            <Bond {...bond} />
+          ))}
         </div>
       ) : null}
 
-      {past.length ? (
-        <div sx={{ flex: "column", gap: 12 }}>
-          <Text color="basic200" tTransform="uppercase" fs={15} font="FontOver">
-            {t("bonds.section.pastBonds")}
-          </Text>
-          {past}
-        </div>
-      ) : null}
+      {past.length ? <PastBondList bonds={past} /> : null}
     </div>
   )
 }
