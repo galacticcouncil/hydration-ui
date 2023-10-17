@@ -32,6 +32,7 @@ type RemoveLiquidityProps = {
   }
   onSuccess: () => void
   onAssetOpen: () => void
+  defaultValue?: number
 }
 
 export const RemoveLiquidityForm = ({
@@ -40,9 +41,12 @@ export const RemoveLiquidityForm = ({
   onSuccess,
   position,
   onAssetOpen,
+  defaultValue,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
-  const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
+  const form = useForm<{ value: number }>({
+    defaultValues: { value: defaultValue ?? 25 },
+  })
   const { api, assets } = useRpcProvider()
   const asset = assets.getAsset(assetId)
 
@@ -53,6 +57,8 @@ export const RemoveLiquidityForm = ({
   const removeSharesValue = useMemo(() => {
     return position.amount.div(100).times(value)
   }, [value, position])
+
+  // console.log("--removeSharesValue--", removeSharesValue?.toString())
 
   const liquidityOut = useStablepoolLiquidityOut({
     shares: removeSharesValue,

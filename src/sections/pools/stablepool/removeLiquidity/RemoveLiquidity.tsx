@@ -7,7 +7,7 @@ import { Modal } from "components/Modal/Modal"
 import { Stepper } from "components/Stepper/Stepper"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { RemoveLiquidityForm } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidityForm"
-import { RemoveLiquidityForm as RemoveStablepoolLiquidity } from "./RemoveLiquidityForm"
+import { RemoveLiquidityForm as RemoveStablepoolLiquidityForm } from "./RemoveLiquidityForm"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { RemoveOption, RemoveOptions } from "./RemoveOptions"
@@ -124,21 +124,18 @@ export const RemoveLiquidity = ({
             title: t("liquidity.remove.modal.title"),
             headerVariant: "gradient",
             content: (
-              <>
-                Shares amount: {sharesAmount?.toString()}
-                <RemoveStablepoolLiquidity
-                  assetId={assetId}
-                  onClose={onClose}
-                  position={{
-                    reserves: pool.reserves,
-                    fee: pool.fee,
-                    poolId: pool.id,
-                    amount: position.providedAmount,
-                  }}
-                  onSuccess={onSuccess}
-                  onAssetOpen={() => paginateTo(3)}
-                />
-              </>
+              <RemoveStablepoolLiquidityForm
+                assetId={assetId}
+                onClose={onClose}
+                position={{
+                  reserves: pool.reserves,
+                  fee: pool.fee,
+                  poolId: pool.id,
+                  amount: position.providedAmount,
+                }}
+                onSuccess={onSuccess}
+                onAssetOpen={() => paginateTo(3)}
+              />
             ),
           },
           {
