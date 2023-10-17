@@ -12,6 +12,8 @@ import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { RemoveOption, RemoveOptions } from "./RemoveOptions"
 import { Button } from "components/Button/Button"
+import { BN_0 } from "utils/constants"
+import BigNumber from "bignumber.js"
 
 type RemoveStableSwapAssetProps = {
   isOpen: boolean
@@ -35,6 +37,10 @@ export const RemoveLiquidity = ({
   const [sharesAmount, setSharesAmount] = useState<string>()
 
   const handleBack = () => paginateTo(page - 1)
+
+  const sharesAmountPercent = sharesAmount
+    ? new BigNumber(sharesAmount).div(position.providedAmount).times(100)
+    : BN_0
 
   const steps = [
     t("liquidity.stablepool.remove.options"),
@@ -125,6 +131,7 @@ export const RemoveLiquidity = ({
             headerVariant: "gradient",
             content: (
               <RemoveStablepoolLiquidityForm
+                defaultValue={sharesAmountPercent.toNumber()}
                 assetId={assetId}
                 onClose={onClose}
                 position={{
