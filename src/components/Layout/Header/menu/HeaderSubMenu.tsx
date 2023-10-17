@@ -1,9 +1,14 @@
 import { Portal, Root, Trigger } from "@radix-ui/react-tooltip"
-import { Link, useMatchRoute, useSearch } from "@tanstack/react-location"
+import {
+  Link,
+  useMatchRoute,
+  useLocation,
+  useSearch,
+} from "@tanstack/react-location"
 import IconChevron from "assets/icons/ChevronDown.svg?react"
 import IconArrow from "assets/icons/IconArrow.svg?react"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -29,6 +34,14 @@ export const HeaderSubMenu = ({ item }: Props) => {
 
   const { key, subItems } = item
   const isActive = subItems.some(({ href }) => match({ to: href }))
+
+  const {
+    current: { pathname },
+  } = useLocation()
+
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname])
 
   return (
     <Root delayDuration={0} open={open} onOpenChange={setOpen}>
