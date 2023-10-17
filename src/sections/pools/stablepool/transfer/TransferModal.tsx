@@ -1,6 +1,6 @@
 import { Modal } from "components/Modal/Modal"
 import { ModalContents } from "components/Modal/contents/ModalContents"
-import { TransferOptions, Option } from "./components/TransferOptions"
+import { TransferOptions, Option } from "./TransferOptions"
 import { useState } from "react"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"

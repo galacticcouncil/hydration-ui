@@ -91,11 +91,7 @@ export const StablePool = ({ pool }: Props) => {
                 refetchPosition={position.refetch}
                 onTransferOpen={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
               />
-              <LiquidityPositionWrapper
-                poolId={id}
-                positions={positions}
-                pool={pool}
-              />
+              <LiquidityPositionWrapper positions={positions} pool={pool} />
             </motion.div>
           )}
         </AnimatePresence>

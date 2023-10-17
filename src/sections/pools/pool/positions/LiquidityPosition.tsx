@@ -32,7 +32,6 @@ import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { OmnipoolPool, Stablepool } from "sections/pools/PoolsPage.utils"
 
 type Props = {
-  poolId: u32
   position: HydraPositionsTableData
   onSuccess: () => void
   index: number
@@ -138,7 +137,6 @@ function LiquidityPositionRemoveLiquidity(props: {
 }
 
 export const LiquidityPosition = ({
-  poolId,
   position,
   index,
   onSuccess,
@@ -244,7 +242,7 @@ export const LiquidityPosition = ({
       >
         {!meta.isStableSwap && (
           <LiquidityPositionJoinFarmButton
-            poolId={poolId}
+            poolId={pool.id}
             position={position}
             onSuccess={onSuccess}
           />

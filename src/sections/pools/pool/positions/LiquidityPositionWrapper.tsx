@@ -5,20 +5,14 @@ import { LiquidityPosition } from "./LiquidityPosition"
 import { Positions } from "sections/pools/pool/Pool.utils"
 import ChartIcon from "assets/icons/ChartIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { u32 } from "@polkadot/types-codec"
 import { Stablepool, OmnipoolPool } from "sections/pools/PoolsPage.utils"
 
 type Props = {
-  poolId: u32
   positions: Positions
   pool: Stablepool | OmnipoolPool
 }
 
-export const LiquidityPositionWrapper = ({
-  positions,
-  poolId,
-  pool,
-}: Props) => {
+export const LiquidityPositionWrapper = ({ positions, pool }: Props) => {
   const { t } = useTranslation()
 
   if (!positions.data.length) {
@@ -37,7 +31,6 @@ export const LiquidityPositionWrapper = ({
         {positions.data.map((position, i) => (
           <LiquidityPosition
             key={`${i}-${position.assetId}`}
-            poolId={poolId}
             position={position}
             index={i + 1}
             onSuccess={positions.refetch}

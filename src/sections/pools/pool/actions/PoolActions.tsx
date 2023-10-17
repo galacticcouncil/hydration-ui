@@ -144,7 +144,7 @@ export const PoolActions = ({
         <LiquidityPositions
           isOpen={openLiquidityPositions}
           onClose={() => setOpenLiquidityPositions(false)}
-          poolId={pool.id}
+          pool={pool}
         />
       )}
       {openFarmDefails && farms.data && (

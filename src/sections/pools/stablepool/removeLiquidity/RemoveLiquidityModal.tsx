@@ -3,14 +3,14 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { ComponentProps, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
-import { RemoveLiquidity } from "./RemoveLiquidity"
+import { RemoveLiquidityForm } from "./RemoveLiquidityForm"
 
 type Props = {
   assets: { id: string }[]
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
-  position: ComponentProps<typeof RemoveLiquidity>["position"]
+  position: ComponentProps<typeof RemoveLiquidityForm>["position"]
 }
 
 enum Page {
@@ -44,7 +44,7 @@ export const RemoveLiquidityModal = ({
             title: t("liquidity.remove.modal.title"),
             headerVariant: "gradient",
             content: (
-              <RemoveLiquidity
+              <RemoveLiquidityForm
                 assetId={assetId}
                 onClose={onClose}
                 position={position}
