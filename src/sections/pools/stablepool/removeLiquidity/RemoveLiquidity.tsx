@@ -2,7 +2,6 @@ import { isStablepool, Stablepool } from "sections/pools/PoolsPage.utils"
 import { useTranslation } from "react-i18next"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { useState } from "react"
-import { Page } from "sections/pools/stablepool/transfer/TransferModal"
 import { Modal } from "components/Modal/Modal"
 import { Stepper } from "components/Stepper/Stepper"
 import { ModalContents } from "components/Modal/contents/ModalContents"
@@ -14,6 +13,16 @@ import { RemoveOption, RemoveOptions } from "./RemoveOptions"
 import { Button } from "components/Button/Button"
 import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
+import { Spinner } from "components/Spinner/Spinner.styled"
+import { Text } from "components/Typography/Text/Text"
+
+enum Page {
+  OPTIONS,
+  REMOVE_FROM_OMNIPOOL,
+  WAIT,
+  REMOVE_FROM_STABLEPOOL,
+  ASSETS,
+}
 
 type RemoveStableSwapAssetProps = {
   isOpen: boolean
@@ -36,7 +45,17 @@ export const RemoveLiquidity = ({
   const [selectedOption, setSelectedOption] = useState<RemoveOption>("SHARES")
   const [sharesAmount, setSharesAmount] = useState<string>()
 
-  const handleBack = () => paginateTo(page - 1)
+  const handleBack = () => {
+    if (page === Page.ASSETS) {
+      return paginateTo(Page.REMOVE_FROM_STABLEPOOL)
+    }
+
+    if (page === Page.REMOVE_FROM_STABLEPOOL) {
+      return paginateTo(Page.REMOVE_FROM_OMNIPOOL)
+    }
+
+    paginateTo(page - 1)
+  }
 
   const sharesAmountPercent = sharesAmount
     ? new BigNumber(sharesAmount).div(position.providedAmount).times(100)
@@ -45,6 +64,7 @@ export const RemoveLiquidity = ({
   const steps = [
     t("liquidity.stablepool.remove.options"),
     t("liquidity.stablepool.remove.omnipool"),
+    t("liquidity.stablepool.remove.removing"),
     t("liquidity.stablepool.remove.stablepool"),
   ]
 
@@ -91,7 +111,7 @@ export const RemoveLiquidity = ({
                 <Button
                   variant="primary"
                   sx={{ mt: 21 }}
-                  onClick={() => paginateTo(1)}
+                  onClick={() => paginateTo(Page.REMOVE_FROM_OMNIPOOL)}
                 >
                   {t("next")}
                 </Button>
@@ -114,16 +134,37 @@ export const RemoveLiquidity = ({
                 onSubmitted={(shares) => {
                   if (selectedOption === "STABLE") {
                     setSharesAmount(shares)
+                    paginateTo(Page.WAIT)
                   }
                 }}
                 onSuccess={() => {
                   if (selectedOption === "STABLE") {
-                    paginateTo(2)
+                    paginateTo(Page.REMOVE_FROM_STABLEPOOL)
                   } else {
                     onSuccess()
                   }
                 }}
               />
+            ),
+          },
+          {
+            title: t("liquidity.stablepool.remove.removing"),
+            headerVariant: "gradient",
+            content: (
+              <div
+                sx={{
+                  flex: "column",
+                  gap: 50,
+                  align: "center",
+                  justify: "center",
+                  height: 240,
+                }}
+              >
+                <Spinner width={50} height={50} />
+                <Text color="whiteish500">
+                  {t("liquidity.stablepool.remove.removing")}
+                </Text>
+              </div>
             ),
           },
           {
@@ -141,7 +182,7 @@ export const RemoveLiquidity = ({
                   amount: position.providedAmount,
                 }}
                 onSuccess={onSuccess}
-                onAssetOpen={() => paginateTo(3)}
+                onAssetOpen={() => paginateTo(Page.ASSETS)}
               />
             ),
           },

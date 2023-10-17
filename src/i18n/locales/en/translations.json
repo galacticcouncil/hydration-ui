@@ -171,6 +171,7 @@
   "liquidity.stablepool.remove.shares": "Move to Stablepool shares",
   "liquidity.stablepool.remove.stable": "Remove liquidity",
   "liquidity.asset.details.24hours": "24h volume",
+  "liquidity.stablepool.remove.removing": "Removing liquidity",
   "liquidity.asset.details.24hours.tooltip": "USD value is derived from the last known exchange rate.",
   "liquidity.asset.incentives.title": "Farm rewards",
   "liquidity.asset.actions.addLiquidity": "Add liquidity",
