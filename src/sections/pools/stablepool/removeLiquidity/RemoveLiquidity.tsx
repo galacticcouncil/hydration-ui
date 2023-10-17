@@ -32,6 +32,8 @@ export const RemoveLiquidity = ({
   const { page, direction, paginateTo } = useModalPagination(0)
   const [assetId, setAssetId] = useState<string>(pool.assets[0]?.id)
   const [selectedOption, setSelectedOption] = useState<RemoveOption>("SHARES")
+  const [sharesAmount, setSharesAmount] = useState<string>()
+
   const handleBack = () => paginateTo(page - 1)
 
   const steps = [
@@ -103,6 +105,11 @@ export const RemoveLiquidity = ({
                   onClose()
                 }}
                 position={position}
+                onSubmitted={(shares) => {
+                  if (selectedOption === "STABLE") {
+                    setSharesAmount(shares)
+                  }
+                }}
                 onSuccess={() => {
                   if (selectedOption === "STABLE") {
                     paginateTo(2)
@@ -117,18 +124,21 @@ export const RemoveLiquidity = ({
             title: t("liquidity.remove.modal.title"),
             headerVariant: "gradient",
             content: (
-              <RemoveStablepoolLiquidity
-                assetId={assetId}
-                onClose={onClose}
-                position={{
-                  reserves: pool.reserves,
-                  fee: pool.fee,
-                  poolId: pool.id,
-                  amount: position.providedAmount,
-                }}
-                onSuccess={onSuccess}
-                onAssetOpen={() => paginateTo(3)}
-              />
+              <>
+                Shares amount: {sharesAmount?.toString()}
+                <RemoveStablepoolLiquidity
+                  assetId={assetId}
+                  onClose={onClose}
+                  position={{
+                    reserves: pool.reserves,
+                    fee: pool.fee,
+                    poolId: pool.id,
+                    amount: position.providedAmount,
+                  }}
+                  onSuccess={onSuccess}
+                  onAssetOpen={() => paginateTo(3)}
+                />
+              </>
             ),
           },
           {

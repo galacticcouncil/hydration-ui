@@ -34,11 +34,13 @@ type RemoveLiquidityProps = {
   onClose: () => void
   position: HydraPositionsTableData
   onSuccess: () => void
+  onSubmitted?: (tokensToGet: string) => void
 }
 
 export const RemoveLiquidityForm = ({
   onClose,
   onSuccess,
+  onSubmitted,
   position,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
@@ -174,7 +176,7 @@ export const RemoveLiquidityForm = ({
         onClose,
         onBack: () => {},
         onSubmitted: () => {
-          onClose()
+          onSubmitted?.(removeLiquidityValues?.tokensToGet)
           form.reset()
         },
         toast: {
