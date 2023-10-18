@@ -49,7 +49,6 @@ export const AddLiquidity = ({ poolId, isOpen, onClose, onSuccess }: Props) => {
                 }}
               />
             ),
-            noPadding: true,
             headerVariant: "FontOver",
           },
         ]}
