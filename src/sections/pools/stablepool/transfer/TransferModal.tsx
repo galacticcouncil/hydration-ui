@@ -15,6 +15,9 @@ import { Spinner } from "components/Spinner/Spinner.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useModalPagination } from "components/Modal/Modal.utils"
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import { STitleGradient } from "components/Modal/header/ModalHeader.styled"
 
 export enum Page {
   OPTIONS,
@@ -50,6 +53,7 @@ export const TransferModal = ({
   const { t } = useTranslation()
   const [assetId, setAssetId] = useState<string>(assets[0]?.id)
   const [sharesAmount, setSharesAmount] = useState<string>()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const { page, direction, paginateTo } = useModalPagination(
     defaultPage ?? Page.OPTIONS,
@@ -93,21 +97,31 @@ export const TransferModal = ({
     paginateTo(page - 1)
   }
 
+  const renderStepper = isDesktop ? (
+    <Stepper
+      steps={steps.map((step, idx) => ({
+        label: step,
+        state: getStepState(idx),
+      }))}
+    />
+  ) : (
+    <Text color="whiteish500">
+      {t("liquidity.stablepool.transfer.step", {
+        current: page + 1,
+        total: steps.length,
+      })}
+    </Text>
+  )
+
   return (
     <Modal
       open={isOpen}
       onClose={onClose}
       disableCloseOutside={true}
       topContent={
-        !defaultPage &&
-        ![Page.OPTIONS, Page.ASSETS].includes(page) && (
-          <Stepper
-            steps={steps.map((step, idx) => ({
-              label: step,
-              state: getStepState(idx),
-            }))}
-          />
-        )
+        !defaultPage && ![Page.OPTIONS, Page.ASSETS].includes(page)
+          ? renderStepper
+          : undefined
       }
     >
       <ModalContents
@@ -175,7 +189,7 @@ export const TransferModal = ({
             ),
           },
           {
-            title: t("liquidity.stablepool.move.modal.title"),
+            title: t("liquidity.stablepool.addToOmnipool"),
             headerVariant: "gradient",
             content: (
               <div
@@ -195,7 +209,7 @@ export const TransferModal = ({
             ),
           },
           {
-            title: t("liquidity.stablepool.move.modal.title"),
+            title: t("liquidity.stablepool.addToOmnipool"),
             headerVariant: "gradient",
             content: (
               <AddLiquidityForm
@@ -211,7 +225,7 @@ export const TransferModal = ({
           },
           {
             title: t("selectAsset.title"),
-            headerVariant: "gradient",
+            headerVariant: "FontOver",
             content: (
               <AssetsModalContent
                 hideInactiveAssets={true}

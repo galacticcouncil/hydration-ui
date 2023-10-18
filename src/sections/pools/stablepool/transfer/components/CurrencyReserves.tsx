@@ -31,7 +31,7 @@ export const CurrencyReserves = ({ assets }: Props) => {
   return (
     <>
       <Heading color="white" fs={15} sx={{ mb: 5 }}>
-        {t("liquidity.reserves")}
+        {t("liquidity.stablepool.reserves")}
       </Heading>
       {assets.map(({ id, symbol, balance, value }) => (
         <SRow key={id}>
