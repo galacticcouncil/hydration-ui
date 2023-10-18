@@ -145,7 +145,7 @@ export const LiquidityPosition = ({
             <SOmnipoolButton size="small" onClick={onTransferOpen}>
               <div sx={{ flex: "row", align: "center", justify: "center" }}>
                 <Icon icon={<PlusIcon />} sx={{ mr: 8 }} />
-                {t("liquidity.stablepool.move")}
+                {t("liquidity.stablepool.addToOmnipool")}
               </div>
             </SOmnipoolButton>
             <RemoveLiquidityButton
