@@ -32,7 +32,7 @@ export const StablePool = ({
   const positions = usePoolPositions(id)
 
   const amount = position?.data?.freeBalance ?? BN_0
-  const hasPosition = amount.isGreaterThan(BN_0)
+  const hasPosition = amount.isGreaterThan(BN_0) || !!positions.data?.length
 
   return (
     <SContainer id={id.toString()}>

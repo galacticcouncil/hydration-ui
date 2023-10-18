@@ -43,7 +43,7 @@ export const CurrencyReserves = ({ assets }: Props) => {
           </div>
           <div sx={{ flex: "row", align: "center", gap: 8 }}>
             <Text color="white" fs={14}>
-              {balance.toNumber()}
+              {t("value", { value: balance.dp(0) })}
             </Text>
             <Text color="basic500" fs={14}>
               (
@@ -62,7 +62,11 @@ export const CurrencyReserves = ({ assets }: Props) => {
           {t("total")}:
         </Text>
         <Text color="white" fs={14}>
-          ≈ {totalValue.toNumber()} {asset?.symbol}
+          {t("liquidity.add.modal.row.transactionCostValue", {
+            amount: totalValue,
+            symbol: asset?.symbol,
+            type: "dollar",
+          })}
         </Text>
       </div>
     </>

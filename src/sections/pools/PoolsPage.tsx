@@ -19,7 +19,7 @@ const PoolPageContent = () => {
     filter.showMyPositions,
   )
 
-  const stablePools = useStablePools()
+  const stablePools = useStablePools(filter.showMyPositions)
   const all = sortPools([...(stablePools?.data ?? []), ...(data ?? [])])
 
   return (

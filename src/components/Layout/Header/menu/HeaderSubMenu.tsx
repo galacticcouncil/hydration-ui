@@ -69,6 +69,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
                   key={subItem.key}
                   to={subItem.href}
                   search={account ? { account } : undefined}
+                  onClick={() => setOpen(false)}
                 >
                   <SSubMenuItem>
                     <subItem.Icon sx={{ color: "brightBlue300" }} />
