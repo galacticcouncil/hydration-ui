@@ -26,9 +26,8 @@ export const LiquidityProvidersTable = ({ data }: Props) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const onRowSelect = (assetId: string) => {
-    // TODO
-    console.log(assetId)
+  const onRowSelect = (account: string) => {
+    window.open(`https://hydradx.subscan.io/account/${account}`, "_blank")
   }
 
   const table = useLiquidityProvidersTable(data)
@@ -80,7 +79,7 @@ export const LiquidityProvidersTable = ({ data }: Props) => {
         <TableBodyContent>
           {table.getRowModel().rows.map((row, i) => (
             <TableRowStats
-              onClick={() => onRowSelect(row.original.id)}
+              onClick={() => onRowSelect(row.original.account)}
               key={row.id}
               css={{ cursor: "pointer" }}
             >

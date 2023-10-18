@@ -10,3 +10,20 @@ export const omit = <T, K extends keyof T>(keys: K[], obj: T): Omit<T, K> => {
   })
   return result
 }
+
+export const groupBy = <T>(
+  array: T[],
+  groupByFn: (item: T) => string,
+): Record<string, T[]> => {
+  return array.reduce(
+    (result, item) => {
+      const key = groupByFn(item)
+      if (!result[key]) {
+        result[key] = []
+      }
+      result[key].push(item)
+      return result
+    },
+    {} as Record<string, T[]>,
+  )
+}

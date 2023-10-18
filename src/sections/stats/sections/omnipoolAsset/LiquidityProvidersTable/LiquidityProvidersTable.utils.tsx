@@ -17,6 +17,7 @@ import { theme } from "theme"
 import { shortenAccountAddress } from "utils/formatting"
 import AccountIcon from "assets/icons/StakingAccountIcon.svg?react"
 import LinkIcon from "assets/icons/LinkIcon.svg?react"
+import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 
 export const useLiquidityProvidersTable = (data: any) => {
   const { t } = useTranslation()
@@ -37,7 +38,8 @@ export const useLiquidityProvidersTable = (data: any) => {
       accessor("account", {
         id: "account",
         header: t("account"),
-        sortingFn: (a, b) => a.original.symbol.localeCompare(b.original.symbol),
+        sortingFn: (a, b) =>
+          a.original.account.localeCompare(b.original.account),
         cell: ({ row }) => (
           <div
             sx={{
@@ -57,41 +59,46 @@ export const useLiquidityProvidersTable = (data: any) => {
       accessor("position", {
         id: "position",
         header: t("position"),
-        sortingFn: (a, b) => (a.original.tvl.gt(b.original.tvl) ? 1 : -1),
+        sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
         cell: ({ row }) => (
-          <Text
-            tAlign={isDesktop ? "center" : "right"}
-            color="white"
-            fs={[13, 16]}
-          >
-            {row.original.position}
-          </Text>
+          <div sx={{ flex: "row", justify: isDesktop ? "center" : "right" }}>
+            <WalletAssetsHydraPositionsData
+              symbol={row.original.symbol}
+              value={row.original.value}
+              lrna={row.original.lrna}
+              fontSize={[13, 16]}
+            />
+          </div>
         ),
       }),
       accessor("tvl", {
         id: "tvl",
         header: t("totalValueLocked"),
-        sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
+        sortingFn: (a, b) =>
+          a.original.valueDisplay.gt(b.original.valueDisplay) ? 1 : -1,
         cell: ({ row }) => (
           <Text tAlign="center" color="white">
-            <DisplayValue value={row.original.tvl} isUSD />
+            <DisplayValue value={row.original.valueDisplay} isUSD />
           </Text>
         ),
       }),
       accessor("share", {
         id: "share",
         header: t("stats.omnipool.table.header.share"),
-        sortingFn: (a, b) => (a.original.pol.gt(b.original.pol) ? 1 : -1),
+        sortingFn: (a, b) =>
+          a.original.sharePercent.gt(b.original.sharePercent) ? 1 : -1,
         cell: ({ row }) => (
           <Text tAlign="center" color="white">
-            {row.original.share.toString()}
+            {t("value.percentage", {
+              value: row.original.sharePercent,
+            })}
           </Text>
         ),
       }),
       display({
         id: "actions",
         cell: () => (
-          <div>
+          <div sx={{ pl: [5, 0] }}>
             <ButtonTransparent>
               <Icon size={12} sx={{ color: "iconGray" }} icon={<LinkIcon />} />
             </ButtonTransparent>
