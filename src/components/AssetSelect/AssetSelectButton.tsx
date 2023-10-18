@@ -6,6 +6,7 @@ import { SSelectAssetButton } from "./AssetSelect.styled"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { useMedia } from "react-use"
 
 type Props = {
   onClick?: () => void
@@ -15,6 +16,7 @@ type Props = {
 export const AssetSelectButton = ({ onClick, assetId }: Props) => {
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(assetId)
+  const isTablet = useMedia(theme.viewport.gte.sm)
 
   const symbol = asset?.symbol
   const name = asset?.name
@@ -57,6 +59,7 @@ export const AssetSelectButton = ({ onClick, assetId }: Props) => {
           css={{
             whiteSpace: "nowrap",
             color: `rgba(${theme.rgbColors.whiteish500}, 0.6)`,
+            display: isTablet ? "block" : "none",
           }}
         >
           {name}

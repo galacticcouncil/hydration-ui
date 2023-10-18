@@ -89,7 +89,7 @@ export const AddStablepoolLiquidity = ({
               tOptions={{
                 value: values.amount,
                 symbol: asset.symbol,
-                shares,
+                where: "Stablepool",
               }}
             >
               <span />
@@ -103,7 +103,7 @@ export const AddStablepoolLiquidity = ({
               tOptions={{
                 value: values.amount,
                 symbol: asset.symbol,
-                shares,
+                where: "Stablepool",
               }}
             >
               <span />
@@ -117,7 +117,7 @@ export const AddStablepoolLiquidity = ({
               tOptions={{
                 value: values.amount,
                 symbol: asset.symbol,
-                shares,
+                where: "Stablepool",
               }}
             >
               <span />
