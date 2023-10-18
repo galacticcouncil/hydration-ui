@@ -145,6 +145,7 @@
   "liquidity.stablepool.add.stablepoolAndOmnipool.benefit3": "Your position is exposed to other assets in the Stablepool, as well as LRNA in Omnipool;",
   "liquidity.stablepool.add.stablepoolAndOmnipool.benefit4": "You earn rewards from trading fees in both the Stablepool and the Omnipool.",
   "liquidity.stablepool.add.benefits": "Benefits",
+  "liquidity.stablepool.transfer.step": "Step {{current}} of {{total}}",
   "liquidity.stablepool.transfer.select": "Select pool",
   "liquidity.stablepool.transfer.provide": "Add to Stablepool",
   "liquidity.stablepool.transfer.confirm": "Confirm",
