@@ -186,7 +186,7 @@ export const TransferModal = ({
             ),
           },
           {
-            title: t("liquidity.stablepool.move.modal.title"),
+            title: t("liquidity.stablepool.addToOmnipool"),
             headerVariant: "gradient",
             content: (
               <div
@@ -206,7 +206,7 @@ export const TransferModal = ({
             ),
           },
           {
-            title: t("liquidity.stablepool.move.modal.title"),
+            title: t("liquidity.stablepool.addToOmnipool"),
             headerVariant: "gradient",
             content: (
               <AddLiquidityForm

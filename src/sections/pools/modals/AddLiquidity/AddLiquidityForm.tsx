@@ -92,8 +92,7 @@ export const AddLiquidityForm = ({
               tOptions={{
                 value: values.amount,
                 symbol: assetMeta?.symbol,
-                shares: calculatedShares,
-                fixedPointScale: assetMeta?.decimals.toString(),
+                where: "Omnipool",
               }}
             >
               <span />
@@ -107,8 +106,7 @@ export const AddLiquidityForm = ({
               tOptions={{
                 value: values.amount,
                 symbol: assetMeta?.symbol,
-                shares: calculatedShares,
-                fixedPointScale: assetMeta?.decimals.toString(),
+                where: "Omnipool",
               }}
             >
               <span />
@@ -122,8 +120,7 @@ export const AddLiquidityForm = ({
               tOptions={{
                 value: values.amount,
                 symbol: assetMeta?.symbol,
-                shares: calculatedShares,
-                fixedPointScale: assetMeta?.decimals.toString(),
+                where: "Omnipool",
               }}
             >
               <span />

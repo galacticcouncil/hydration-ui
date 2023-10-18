@@ -7,6 +7,7 @@ import { BN_0, BN_100 } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { SRow } from "./CurrencyReserves.styled"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useTranslation } from "react-i18next"
 
 type Props = {
   assets: Array<{
@@ -25,11 +26,12 @@ export const CurrencyReserves = ({ assets }: Props) => {
   const asset = displayAsset.id
     ? rpcProvider.assets.getAsset(displayAsset.id)
     : undefined
+    const { t } = useTranslation();
 
   return (
     <div sx={{ p: 30 }}>
       <Heading color="white" fs={15}>
-        Currency reserves
+        {t("liquidity.stablepool.reserves")}
       </Heading>
       {assets.map(({ id, symbol, balance, value }) => (
         <SRow key={id}>
