@@ -225,7 +225,7 @@ export const TransferModal = ({
           },
           {
             title: t("selectAsset.title"),
-            headerVariant: "gradient",
+            headerVariant: "FontOver",
             content: (
               <AssetsModalContent
                 hideInactiveAssets={true}
