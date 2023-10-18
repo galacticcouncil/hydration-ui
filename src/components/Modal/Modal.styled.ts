@@ -54,18 +54,25 @@ export const SOverlay = styled(Overlay)<{ variant?: BackdropVariant }>`
 `
 
 export const SContainer = styled(Content)`
-  --modal-header-padding-y: 20px;
-  --modal-header-padding-x: 24px;
+  --modal-header-padding-y: 10px;
+  --modal-header-padding-x: 12px;
   --modal-header-btn-size: 34px;
   --modal-header-height: calc(
     var(--modal-header-btn-size) + var(--modal-header-padding-y) * 2
   );
-  --modal-content-padding: 24px;
+
+  --modal-content-padding: 12px;
   --modal-top-content-height: 64px;
 
   position: fixed;
   inset: 0;
   z-index: ${theme.zIndices.modal};
+
+  @media ${theme.viewport.gte.sm} {
+    --modal-header-padding-y: 20px;
+    --modal-header-padding-x: 24px;
+    --modal-content-padding: 24px;
+  }
 `
 
 export const STopContent = styled.div`
@@ -94,9 +101,12 @@ export const SModalSection = styled.div`
   overflow: hidden;
   background: ${theme.colors.darkBlue700};
   box-shadow: ${theme.shadows.modal};
-  margin: 4px;
-  border-radius: 8px;
-  border: 1px solid rgba(158, 167, 180, 0.2);
+
+  @media ${theme.viewport.gte.sm} {
+    margin: 4px;
+    border-radius: 8px;
+    border: 1px solid rgba(158, 167, 180, 0.2);
+  }
 `
 
 export const SBottomContent = styled.div`
