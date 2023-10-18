@@ -4,17 +4,28 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
+  VisibilityState,
 } from "@tanstack/react-table"
 import BN from "bignumber.js"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { WalletAssetsHydraPositionsDetails } from "./details/WalletAssetsHydraPositionsDetails"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
   const { t } = useTranslation()
   const { accessor } = createColumnHelper<HydraPositionsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
+
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const columnVisibility: VisibilityState = {
+    name: true,
+    providedAmount: isDesktop,
+    valueDisplay: true,
+  }
 
   const columns = useMemo(
     () => [
@@ -65,7 +76,7 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
   return useReactTable({
     data,
     columns,
-    state: { sorting },
+    state: { sorting, columnVisibility },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),

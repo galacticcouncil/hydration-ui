@@ -2,14 +2,25 @@ import {
   createColumnHelper,
   getCoreRowModel,
   useReactTable,
+  VisibilityState,
 } from "@tanstack/react-table"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { useMemo } from "react"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
   const { t } = useTranslation()
   const { display } = createColumnHelper()
+
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const columnVisibility: VisibilityState = {
+    name: true,
+    providedAmount: isDesktop,
+    valueDisplay: true,
+  }
 
   const columns = useMemo(
     () => [
@@ -34,7 +45,7 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
         ),
       }),
       display({
-        id: "value",
+        id: "providedAmount",
         header: t("wallet.assets.hydraPositions.header.providedAmount"),
         cell: () => (
           <div
@@ -49,7 +60,7 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
         ),
       }),
       display({
-        id: "price",
+        id: "valueDisplay",
         header: t("wallet.assets.hydraPositions.header.valueUSD"),
         cell: () => (
           <div>
@@ -68,6 +79,7 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
 
   return useReactTable({
     data: mockData,
+    state: { columnVisibility },
     columns,
     getCoreRowModel: getCoreRowModel(),
   })

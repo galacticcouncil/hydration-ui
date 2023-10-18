@@ -4,6 +4,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Trans } from "react-i18next"
 import { theme } from "theme"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
+import { useMedia } from "react-use"
 
 type Props = {
   assetId: string
@@ -20,6 +21,8 @@ export const WalletAssetsHydraPositionsDetails = ({
   amountDisplay,
   assetId,
 }: Props) => {
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
   const tKey = lrna?.gt(0)
     ? "wallet.assets.hydraPositions.data.valueLrna"
     : "wallet.assets.hydraPositions.data.value"
@@ -27,19 +30,25 @@ export const WalletAssetsHydraPositionsDetails = ({
   return (
     <div sx={{ m: "auto", flex: "column" }}>
       <div sx={{ flex: "row", gap: 4 }}>
-        <Text fs={16} lh={16} fw={500} color="white">
+        <Text
+          fs={16}
+          lh={16}
+          fw={500}
+          color="white"
+          css={{ whiteSpace: "nowrap" }}
+        >
           <Trans
             i18nKey={tKey}
             tOptions={{ value: amount, symbol, lrna, type: "token" }}
-          >
-            <br sx={{ display: ["initial", "none"] }} />
-          </Trans>
+          />
         </Text>
-        <LrnaPositionTooltip
-          lrnaPosition={lrna}
-          tokenPosition={amount}
-          assetId={assetId}
-        />
+        {isDesktop && (
+          <LrnaPositionTooltip
+            lrnaPosition={lrna}
+            tokenPosition={amount}
+            assetId={assetId}
+          />
+        )}
       </div>
       <Text
         fs={13}
