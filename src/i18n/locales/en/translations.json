@@ -139,6 +139,7 @@
   "liquidity.add.stablepool": "Add to Stablepool",
   "liquidity.add.omnipool": "Add to Omnipool",
   "liquidity.add.benefits": "Benefits",
+  "liquidity.stablepool.transfer.step": "Step {{current}} of {{total}}",
   "liquidity.stablepool.transfer.select": "Select pool",
   "liquidity.stablepool.transfer.provide": "Provide liquidity",
   "liquidity.stablepool.transfer.confirm": "Confirm",
