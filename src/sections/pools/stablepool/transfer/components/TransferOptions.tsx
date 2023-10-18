@@ -32,7 +32,7 @@ export const TransferOptions = ({ selected, onSelect }: Props) => {
           {t("liquidity.stablepool.add.stablepoolAndOmnipool.benefit3")}
         </ListItem>
         <ListItem>
-        {t("liquidity.stablepool.add.stablepoolAndOmnipool.benefit4")}
+          {t("liquidity.stablepool.add.stablepoolAndOmnipool.benefit4")}
         </ListItem>
       </TransferOption>
       <TransferOption

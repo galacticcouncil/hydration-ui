@@ -27,12 +27,12 @@ export const CurrencyReserves = ({ assets }: Props) => {
   const asset = displayAsset.id
     ? rpcProvider.assets.getAsset(displayAsset.id)
     : undefined
-    const { t } = useTranslation();
+  const { t } = useTranslation()
 
   return (
     <>
       <Heading color="white" fs={15} sx={{ mb: 5 }}>
-      {t("liquidity.stablepool.reserves")}
+        {t("liquidity.stablepool.reserves")}
       </Heading>
       {assets.map(({ id, symbol, balance, value }) => (
         <SRow key={id}>
