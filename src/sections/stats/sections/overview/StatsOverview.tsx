@@ -15,7 +15,7 @@ export const StatsOverview = () => {
 
   return (
     <div sx={{ flex: "column", gap: 50 }}>
-      <div sx={{ flex: "row", gap: 20 }}>
+      <div sx={{ flex: "row", gap: 20, height: 690 }}>
         <PieWrapper
           data={omnipoolOverview.data}
           isLoading={omnipoolOverview.isLoading}
