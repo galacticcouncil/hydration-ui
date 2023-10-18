@@ -1,6 +1,6 @@
 import { css } from "@emotion/react"
 import { useNavigate } from "@tanstack/react-location"
-import { Modal, ModalScrollableContent } from "components/Modal/Modal"
+import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { useState } from "react"

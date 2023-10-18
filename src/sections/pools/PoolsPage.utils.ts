@@ -1,5 +1,5 @@
 import { u32 } from "@polkadot/types-codec"
-import { useTokensBalances } from "api/balances"
+import { useTokenBalance, useTokensBalances } from "api/balances"
 import { useApiIds } from "api/consts"
 import { useUserDeposits } from "api/deposits"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
@@ -52,9 +52,12 @@ export type Stablepool = Exclude<
   undefined
 >[number]
 
-export const useStablePools = () => {
+export const useStablePools = (withPositions?: boolean) => {
   const { assets } = useRpcProvider()
   const pools = useStableswapPools()
+
+  const { account } = useAccountStore()
+  const apiIds = useApiIds()
 
   const poolIds = (pools.data ?? []).map((pool) => pool.id.toString())
 
@@ -70,6 +73,17 @@ export const useStablePools = () => {
     Array.from(poolAddressById.keys()),
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
+
+  const uniques = useUniques(
+    account?.address ?? "",
+    apiIds.data?.omnipoolCollectionId ?? "",
+  )
+
+  const positions = useOmnipoolPositions(
+    uniques.data?.map((u) => u.itemId) ?? [],
+  )
+  const userDeposits = useUserDeposits()
+  const stablepoolsPosition = useTokensBalances(poolIds, account?.address)
 
   const assetsByPool = new Map(
     (pools.data ?? []).map((pool) => [
@@ -149,6 +163,18 @@ export const useStablePools = () => {
     const totalOmnipool = getFloatingPointAmount(balance ?? BN_0, meta.decimals)
     const totalDisplay = !spotPrice ? BN_NAN : totalOmnipool.times(spotPrice)
 
+    const hasStablepoolPosition = stablepoolsPosition
+      .find((p) => p.data?.assetId === pool.id.toString())
+      ?.data?.balance?.gt(0)
+
+    const hasOmnipoolPosition = positions.some(
+      (p) => p.data?.assetId.toString() === pool.id.toString(),
+    )
+
+    const hasDeposits = userDeposits.data?.some(
+      (deposit) => deposit.deposit.ammPoolId.toString() === pool.id.toString(),
+    )
+
     return {
       id: pool.id,
       assets: poolAssets,
@@ -157,12 +183,18 @@ export const useStablePools = () => {
       totalDisplay,
       balanceByAsset,
       reserves,
+      hasPositions: hasOmnipoolPosition || hasStablepoolPosition,
+      hasDeposits,
       fee: normalizeBigNumber(pool.data.fee).div(BN_MILL),
       isStablepool: true,
     }
   })
 
-  return { data, isLoading: false }
+  const filtered = withPositions
+    ? data?.filter((pool) => pool.hasPositions || pool.hasDeposits)
+    : data
+
+  return { data: filtered, isLoading: false }
 }
 
 export const useOmnipoolPools = (withPositions?: boolean) => {

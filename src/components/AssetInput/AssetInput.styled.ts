@@ -29,6 +29,7 @@ export const SUnit = styled.span`
 
   font-size: 16px;
   line-height: 24px;
+  white-space: nowrap;
 `
 
 export const SDollars = styled.span`
