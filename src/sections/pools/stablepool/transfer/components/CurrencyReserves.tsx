@@ -27,7 +27,6 @@ export const CurrencyReserves = ({ assets }: Props) => {
   const asset = displayAsset.id
     ? rpcProvider.assets.getAsset(displayAsset.id)
     : undefined
-  const { t } = useTranslation()
 
   return (
     <>
