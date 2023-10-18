@@ -4,6 +4,9 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types-codec"
 import { useRpcProvider } from "providers/rpcProvider"
 
+const isStablepoolsEnabled =
+  import.meta.env.VITE_FF_STABLEPOOLS_ENABLED === "true"
+
 export const useStableswapPools = () => {
   const { api } = useRpcProvider()
   return useQuery(QUERY_KEYS.stableswapPools, getStableswapPools(api))
@@ -19,6 +22,10 @@ export const useStableswapPool = (poolId: u32) => {
 
 export const getStableswapPools =
   (api: ApiPromise) => async (): Promise<{ id: u32; data: any }[]> => {
+    if (!isStablepoolsEnabled) {
+      return []
+    }
+
     const res = await api.query.stableswap.pools.entries()
 
     return res.map(([key, codec]) => {

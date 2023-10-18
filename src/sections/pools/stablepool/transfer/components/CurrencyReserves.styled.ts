@@ -5,7 +5,7 @@ export const SRow = styled.div`
   align-items: center;
   justify-content: space-between;
 
-  padding: 15px 0;
+  padding: 12px 0;
   gap: 10px;
   border-bottom: 1px solid ${theme.colors.darkBlue400};
 `

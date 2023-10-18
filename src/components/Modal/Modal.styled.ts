@@ -112,6 +112,7 @@ export const SContent = styled.div<{
   hasTopContent?: boolean
 }>`
   position: fixed;
+  overflow: auto;
 
   inset: 0;
   ${({ hasTopContent }) =>
@@ -133,7 +134,6 @@ export const SContent = styled.div<{
   }
 
   @media ${theme.viewport.gte.sm} {
-    overflow: hidden;
     top: 10%;
     right: initial;
     bottom: initial;

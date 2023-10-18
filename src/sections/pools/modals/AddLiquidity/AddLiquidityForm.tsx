@@ -1,4 +1,3 @@
-import { ModalScrollableContent } from "components/Modal/Modal"
 import { Controller, useForm } from "react-hook-form"
 import BigNumber from "bignumber.js"
 import { BN_10 } from "utils/constants"

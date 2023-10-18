@@ -1,7 +1,7 @@
 import { SContainer, SGridContainer } from "sections/pools/pool/Pool.styled"
 import { PoolValue } from "./details/PoolValue"
 import { PoolActions } from "./actions/PoolActions"
-import { useStablePools } from "sections/pools/PoolsPage.utils"
+import { Stablepool as StablepoolType } from "sections/pools/PoolsPage.utils"
 import { useState } from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -16,19 +16,12 @@ import { usePoolPositions } from "sections/pools/pool/Pool.utils"
 import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
 import { PoolCapacity } from "sections/pools/pool/capacity/PoolCapacity"
 
-type Props = Exclude<
-  ReturnType<typeof useStablePools>["data"],
-  undefined
->[number]
+type Props = {
+  pool: StablepoolType
+}
 
 export const StablePool = ({
-  id,
-  fee,
-  assets,
-  total,
-  balanceByAsset,
-  reserves,
-  totalOmnipoolDisplay,
+  pool: { id, fee, assets, total, balanceByAsset, reserves, totalDisplay },
 }: Props) => {
   const [transferOpen, setTransferOpen] = useState<Page>()
   const [isExpanded, setIsExpanded] = useState(false)
@@ -39,14 +32,14 @@ export const StablePool = ({
   const positions = usePoolPositions(id)
 
   const amount = position?.data?.freeBalance ?? BN_0
-  const hasPosition = amount.isGreaterThan(BN_0)
+  const hasPosition = amount.isGreaterThan(BN_0) || !!positions.data?.length
 
   return (
     <SContainer id={id.toString()}>
       <SGridContainer>
         <PoolDetails id={id} css={{ gridArea: "details" }} />
         <PoolValue
-          totalOmnipoolDisplay={totalOmnipoolDisplay}
+          totalDisplay={totalDisplay}
           total={total.value}
           css={{ gridArea: "values" }}
         />

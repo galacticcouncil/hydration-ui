@@ -169,6 +169,8 @@ export const useOmnipoolAssetDetails = () => {
         meta.decimals,
       ).multipliedBy(spotPrice ?? 1)
 
+      const iconIds = assets.isStableSwap(meta) ? meta.assets : meta.id
+
       return {
         id: omnipoolAssetId,
         name: meta.name,
@@ -177,6 +179,7 @@ export const useOmnipoolAssetDetails = () => {
         volume,
         fee: BN(0),
         pol,
+        iconIds,
       }
     })
     return rows

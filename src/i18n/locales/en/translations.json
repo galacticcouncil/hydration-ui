@@ -3,6 +3,7 @@
   "back": "Back",
   "bonds": "Bonds",
   "complete": "Complete",
+  "total": "Total",
   "bond.maturity": "Maturity",
   "bond.discount": "Discount",
   "bond.premium": "Premium",
@@ -96,6 +97,7 @@
   "header.liquidity": "Liquidity",
   "header.wallet": "Wallet",
   "header.more": "More",
+  "header.menu": "Menu",
   "header.stats": "Stats",
   "header.staking": "Staking",
   "header.documentation.tooltip": "Documentation",
@@ -120,6 +122,7 @@
   "value.multiAPR": "{{minApr, bignumber(type: 'percentage'; decimalPlaces: 0) }}-{{maxApr, bignumber(type: 'percentage'; decimalPlaces: 0) }}% APR",
   "value.token": "{{ value, bignumber(type: 'token') }}",
   "value.tokenWithSymbol": "{{ value, bignumber(type: 'token') }} {{symbol}}",
+  "liquidity.reserves": "Currency reserves",
   "liquidity.stablepool": "Stablepool",
   "liquidity.header.title": "Liquidity",
   "liquidity.header.switch": "Show my positions",
@@ -626,5 +629,4 @@
   "bonds.details.card.bondPrice": "Current bond price",
   "bonds.details.card.spotPrice": "Current spot price",
   "bonds.details.card.maturity": "Maturity date"
-
 }

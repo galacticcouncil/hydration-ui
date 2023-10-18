@@ -22,9 +22,13 @@ import TradeIcon from "assets/icons/TradeTypeIcon.svg?react"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
+import { useRpcProvider } from "providers/rpcProvider"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 export const useRecentTradesTable = (data: TRecentTradesTableData) => {
   const { t } = useTranslation()
+
+  const { assets } = useRpcProvider()
 
   const { accessor, display } =
     createColumnHelper<TRecentTradesTableData[number]>()
@@ -122,9 +126,28 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
     display({
       id: "trade",
       cell: ({ row }) => {
+        const metaIn = assets.getAsset(row.original.assetInId)
+        const iconInIds = assets.isStableSwap(metaIn)
+          ? metaIn.assets
+          : metaIn.id
+
+        const metaOut = assets.getAsset(row.original.assetOutId)
+        const iconOutIds = assets.isStableSwap(metaOut)
+          ? metaOut.assets
+          : metaOut.id
+
         return (
           <div sx={{ flex: "row", align: "center", gap: 6 }}>
-            <Icon size={18} icon={<AssetLogo id={row.original.assetInId} />} />
+            {typeof iconInIds === "string" ? (
+              <Icon size={18} icon={<AssetLogo id={iconInIds} />} />
+            ) : (
+              <MultipleIcons
+                size={18}
+                icons={iconInIds.map((id) => ({
+                  icon: <AssetLogo id={id} />,
+                }))}
+              />
+            )}
             <Text>
               {t("value.tokenWithSymbol", {
                 value: row.original.amountIn,
@@ -140,7 +163,16 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
               }}
             />
 
-            <Icon size={18} icon={<AssetLogo id={row.original.assetOutId} />} />
+            {typeof iconOutIds === "string" ? (
+              <Icon size={18} icon={<AssetLogo id={iconOutIds} />} />
+            ) : (
+              <MultipleIcons
+                size={18}
+                icons={iconOutIds.map((id) => ({
+                  icon: <AssetLogo id={id} />,
+                }))}
+              />
+            )}
             <Text>
               {t("value.tokenWithSymbol", {
                 value: row.original.amountOut,

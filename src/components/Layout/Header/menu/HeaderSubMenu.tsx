@@ -24,7 +24,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
   const { account } = useSearch()
   const [open, setOpen] = useState(false)
 
-  const isDesktop = useMedia(theme.viewport.gte.md)
+  const isTablet = useMedia(theme.viewport.gte.sm)
   const match = useMatchRoute()
 
   const { key, subItems } = item
@@ -44,7 +44,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
           e.stopPropagation()
         }}
       >
-        {isDesktop ? (
+        {isTablet ? (
           <SItem>
             {t(`header.${key}`)}
             <IconChevron />
@@ -57,7 +57,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
         <SSubMenuContainer
           side="bottom"
           align="start"
-          sideOffset={isDesktop ? 4 : 16}
+          sideOffset={isTablet ? 4 : 16}
           alignOffset={-40}
           collisionPadding={16}
         >
@@ -69,6 +69,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
                   key={subItem.key}
                   to={subItem.href}
                   search={account ? { account } : undefined}
+                  onClick={() => setOpen(false)}
                 >
                   <SSubMenuItem>
                     <subItem.Icon sx={{ color: "brightBlue300" }} />
