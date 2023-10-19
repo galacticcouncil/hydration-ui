@@ -83,7 +83,7 @@ export const useBondsEvents = (
 
   return useQueries({
     queries: bondIds.map((bondId) => ({
-      queryKey: QUERY_KEYS.bondEvents(bondId),
+      queryKey: QUERY_KEYS.bondEvents(bondId, isMyEvents),
       queryFn: async () => {
         const { events } = await getBondEvents(
           indexerUrl,
@@ -148,7 +148,7 @@ const getBondEvents =
                   name_contains: "LBP"
                 }
               }
-              orderBy: [block_height_ASC]
+              orderBy: [block_height_DESC]
             ) {
               name
               args
@@ -174,9 +174,33 @@ export const useLBPPoolEvents = (bondId?: string) => {
 
   return useQuery(
     QUERY_KEYS.lbpPoolTotal(bondId),
-    getLbpPoolBalance(indexerUrl, bondId),
+    async () => {
+      const data = await getLbpPoolBalance(indexerUrl, bondId)()
+      return {
+        id: bondId,
+        ...data,
+      }
+    },
     { enabled: !!bondId },
   )
+}
+
+export const useLBPPoolsEvents = (bondIds: string[]) => {
+  const indexerUrl = useIndexerUrl()
+
+  return useQueries({
+    queries: bondIds.map((bondId) => ({
+      queryKey: QUERY_KEYS.lbpPoolTotal(bondId),
+      queryFn: async () => {
+        const data = await getLbpPoolBalance(indexerUrl, bondId)()
+        return {
+          id: bondId,
+          ...data,
+        }
+      },
+      enabled: !!bondId,
+    })),
+  })
 }
 
 export const isPoolUpdateEvent = (

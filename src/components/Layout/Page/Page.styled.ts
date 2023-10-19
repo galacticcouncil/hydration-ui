@@ -44,6 +44,7 @@ export const SGradientBg = styled.div<{ variant?: "stats" | "default" }>`
 
 export const SPageContent = styled.main`
   position: relative;
+  z-index: 1;
 
   overflow-x: hidden;
 
@@ -51,7 +52,6 @@ export const SPageContent = styled.main`
   flex-direction: column;
   flex-grow: 1;
 
-  padding-top: var(--nav-height);
   padding-bottom: var(--mobile-nav-height);
 
   ::-webkit-scrollbar {
@@ -104,7 +104,7 @@ export const SPageGrid = styled.div`
   inset: 0;
   z-index: 1;
 
-  opacity: 0.06;
+  opacity: 0.03;
   pointer-events: none;
 
   background-size: 22px 22px;
@@ -121,5 +121,7 @@ export const SSubHeader = styled.div`
   position: relative;
   z-index: 1;
 
-  margin: 0 -20px;
+  @media (${theme.viewport.gte.sm}) {
+    margin: 0 -20px;
+  }
 `

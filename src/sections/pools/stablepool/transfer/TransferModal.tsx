@@ -6,7 +6,6 @@ import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
-import { CurrencyReserves } from "./components/CurrencyReserves"
 import { BalanceByAsset } from "sections/pools/PoolsPage.utils"
 import { u32 } from "@polkadot/types-codec"
 import BigNumber from "bignumber.js"
@@ -15,6 +14,10 @@ import { AddLiquidityForm } from "sections/pools/modals/AddLiquidity/AddLiquidit
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useModalPagination } from "components/Modal/Modal.utils"
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import { STitleGradient } from "components/Modal/header/ModalHeader.styled"
 
 export enum Page {
   OPTIONS,
@@ -50,9 +53,13 @@ export const TransferModal = ({
   canAddLiquidity,
 }: Props) => {
   const { t } = useTranslation()
-  const [page, setPage] = useState(defaultPage ?? Page.OPTIONS)
   const [assetId, setAssetId] = useState<string>(assets[0]?.id)
   const [sharesAmount, setSharesAmount] = useState<string>()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const { page, direction, paginateTo } = useModalPagination(
+    defaultPage ?? Page.OPTIONS,
+  )
 
   const rpcProvider = useRpcProvider()
 
@@ -85,15 +92,31 @@ export const TransferModal = ({
 
   const goBack = () => {
     if (page === Page.ASSETS) {
-      return setPage(Page.ADD_LIQUIDITY)
+      return paginateTo(Page.ADD_LIQUIDITY)
     }
 
     if (page === Page.MOVE_TO_OMNIPOOL) {
-      return setPage(Page.ADD_LIQUIDITY)
+      return paginateTo(Page.ADD_LIQUIDITY)
     }
 
-    setPage(page - 1)
+    paginateTo(page - 1)
   }
+
+  const renderStepper = isDesktop ? (
+    <Stepper
+      steps={steps.map((step, idx) => ({
+        label: step,
+        state: getStepState(idx),
+      }))}
+    />
+  ) : (
+    <Text color="whiteish500">
+      {t("liquidity.stablepool.transfer.step", {
+        current: page + 1,
+        total: steps.length,
+      })}
+    </Text>
+  )
 
   return (
     <Modal
@@ -101,35 +124,14 @@ export const TransferModal = ({
       onClose={onClose}
       disableCloseOutside={true}
       topContent={
-        !defaultPage &&
-        ![Page.OPTIONS, Page.ASSETS].includes(page) && (
-          <Stepper
-            steps={steps.map((step, idx) => ({
-              label: step,
-              state: getStepState(idx),
-            }))}
-          />
-        )
-      }
-      bottomContent={
-        page === Page.ADD_LIQUIDITY ? (
-          <CurrencyReserves
-            assets={Array.from(balanceByAsset?.entries() ?? []).map(
-              ([id, balance]) => ({
-                id,
-                symbol: rpcProvider.assets.getAsset(id).symbol,
-                balance: balance.free?.shiftedBy(
-                  -rpcProvider.assets.getAsset(id).decimals,
-                ),
-                value: balance.value,
-              }),
-            )}
-          />
-        ) : null
+        !defaultPage && ![Page.OPTIONS, Page.ASSETS].includes(page)
+          ? renderStepper
+          : undefined
       }
     >
       <ModalContents
         onClose={onClose}
+        direction={direction}
         page={page}
         onBack={
           !defaultPage && ![Page.OPTIONS, Page.WAIT].includes(page)
@@ -150,7 +152,7 @@ export const TransferModal = ({
                 <Button
                   variant="primary"
                   sx={{ mt: 21 }}
-                  onClick={() => setPage(Page.ADD_LIQUIDITY)}
+                  onClick={() => paginateTo(Page.ADD_LIQUIDITY)}
                 >
                   {t("next")}
                 </Button>
@@ -163,6 +165,7 @@ export const TransferModal = ({
             content: (
               <AddStablepoolLiquidity
                 poolId={poolId}
+                balanceByAsset={balanceByAsset}
                 onCancel={onClose}
                 onClose={() => {
                   if (isStablepool) {
@@ -175,24 +178,24 @@ export const TransferModal = ({
                   }
 
                   setSharesAmount(shares)
-                  setPage(Page.WAIT)
+                  paginateTo(Page.WAIT)
                 }}
                 onSuccess={() => {
                   if (isStablepool) {
                     return refetchPositions()
                   }
 
-                  setPage(Page.MOVE_TO_OMNIPOOL)
+                  paginateTo(Page.MOVE_TO_OMNIPOOL)
                 }}
                 reserves={reserves}
-                onAssetOpen={() => setPage(Page.ASSETS)}
+                onAssetOpen={() => paginateTo(Page.ASSETS)}
                 asset={rpcProvider.assets.getAsset(assetId)}
                 fee={fee}
               />
             ),
           },
           {
-            title: t("liquidity.stablepool.move.modal.title"),
+            title: t("liquidity.stablepool.addToOmnipool"),
             headerVariant: "gradient",
             content: (
               <div
@@ -212,7 +215,7 @@ export const TransferModal = ({
             ),
           },
           {
-            title: t("liquidity.stablepool.move.modal.title"),
+            title: t("liquidity.stablepool.addToOmnipool"),
             headerVariant: "gradient",
             content: (
               <AddLiquidityForm
@@ -228,14 +231,15 @@ export const TransferModal = ({
           },
           {
             title: t("selectAsset.title"),
-            headerVariant: "gradient",
+            headerVariant: "FontOver",
             content: (
               <AssetsModalContent
                 hideInactiveAssets={true}
+                allAssets={true}
                 allowedAssets={assets.map((asset) => asset.id)}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
-                  setPage(Page.ADD_LIQUIDITY)
+                  paginateTo(Page.ADD_LIQUIDITY)
                 }}
               />
             ),

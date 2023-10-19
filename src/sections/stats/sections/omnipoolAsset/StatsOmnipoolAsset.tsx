@@ -28,6 +28,7 @@ import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrap
 import { SStatsCardContainer } from "sections/stats/StatsPage.styled"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useRpcProvider } from "providers/rpcProvider"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 type SearchGenerics = MakeGenerics<{
   Search: { asset: number }
@@ -78,6 +79,9 @@ const OmnipoolAssetHeader = ({
 
   const isLoading = loading
 
+  const iconIds =
+    asset && assets.isStableSwap(asset) ? asset.assets : asset?.id || []
+
   return (
     <div
       sx={{
@@ -95,7 +99,18 @@ const OmnipoolAssetHeader = ({
             circle
           />
         ) : (
-          <Icon size={[30, 38]} icon={<AssetLogo id={asset.id} />} />
+          <>
+            {typeof iconIds === "string" ? (
+              <Icon size={[30, 38]} icon={<AssetLogo id={iconIds} />} />
+            ) : (
+              <MultipleIcons
+                size={[30, 38]}
+                icons={iconIds.map((id) => ({
+                  icon: <AssetLogo id={id} />,
+                }))}
+              />
+            )}
+          </>
         )}
 
         <div>
@@ -183,7 +198,7 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
           sx={{ width: "100%", height: [500, 600], pt: [60, 20] }}
           css={{ position: "relative" }}
         >
-          <ChartWrapper assetSymbol={omnipoolAsset.symbol} />
+          <ChartWrapper assetId={omnipoolAsset.id} />
         </SStatsCardContainer>
       </div>
       {/* TODO: temporarily hidden */}

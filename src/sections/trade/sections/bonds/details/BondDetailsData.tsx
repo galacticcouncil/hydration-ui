@@ -25,7 +25,15 @@ type SearchGenerics = MakeGenerics<{
 
 export const BondsDetailsHeaderSkeleton = () => {
   return (
-    <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
+    <div
+      sx={{
+        flex: ["column", "row"],
+        justify: "space-between",
+        align: "center",
+        gap: [20, 0],
+        mt: ["-55px", 0],
+      }}
+    >
       <Skeleton width={200} height={26} />
       <div sx={{ flex: "row", align: "center", gap: 4 }}>
         <Icon sx={{ color: "brightBlue300" }} icon={<ClockIcon />} />
@@ -199,7 +207,7 @@ export const BondDetailsData = () => {
         removeBlock={lbpPoolData?.removeBlock}
       />
 
-      <MyActiveBonds assetId={bond.assetId} />
+      <MyActiveBonds id={bond.id} showTransactions />
     </div>
   )
 }

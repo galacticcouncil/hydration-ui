@@ -143,7 +143,7 @@ export const LiquidityPosition = ({
   const { assets } = useRpcProvider()
   const meta = assets.getAsset(position.assetId)
   const price = useDisplayPrice(meta.id)
-
+  console.log(meta)
   const shiftBy = meta.decimals
   const spotPrice = price.data?.spotPrice
   const providedAmountPrice = spotPrice
@@ -237,7 +237,7 @@ export const LiquidityPosition = ({
           gap: 8,
         }}
       >
-        {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
+        {!meta.isStableSwap && (
           <LiquidityPositionJoinFarmButton
             poolId={poolId}
             position={position}

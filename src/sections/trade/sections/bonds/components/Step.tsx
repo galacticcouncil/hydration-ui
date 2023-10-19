@@ -13,6 +13,8 @@ export const Step = ({ icon, title, description }: Props) => (
     <Text color="white" sx={{ my: 10 }}>
       {title}
     </Text>
-    <Text color="darkBlue200">{description}</Text>
+    <Text color="darkBlue200" lh={22}>
+      {description}
+    </Text>
   </div>
 )

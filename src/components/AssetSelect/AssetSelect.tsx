@@ -12,6 +12,7 @@ import { Maybe } from "utils/helpers"
 import { SContainer, SMaxButton } from "./AssetSelect.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { AssetSelectButton } from "./AssetSelectButton"
+import { useMedia } from "react-use"
 
 export const AssetSelect = (props: {
   name: string
@@ -36,6 +37,8 @@ export const AssetSelect = (props: {
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(props.id)
   const { decimals, symbol } = asset
+
+  const isTablet = useMedia(theme.viewport.gte.sm)
 
   const spotPriceId =
     assets.isBond(asset) && asset.isPast ? asset.assetId : asset.id
@@ -109,8 +112,8 @@ export const AssetSelect = (props: {
 
         <div
           sx={{
-            flex: ["column", "row"],
-            align: ["flex-start", "center"],
+            flex: "row",
+            align: "center",
             justify: "space-between",
             gap: [12, 0],
             mt: [16, 0],
@@ -129,7 +132,7 @@ export const AssetSelect = (props: {
             onChange={props.onChange}
             displayValue={displayValue}
             placeholder="0.00"
-            unit={symbol}
+            unit={isTablet ? symbol : ""}
             error={props.error}
             css={css`
               & > label {

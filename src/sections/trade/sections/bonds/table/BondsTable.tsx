@@ -18,6 +18,7 @@ import { Text } from "components/Typography/Text/Text"
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 import { Switch } from "components/Switch/Switch"
 import { useTranslation } from "react-i18next"
+import { BondTableMobileDrawer } from "./BondTableMobileDrawer"
 
 type Props = {
   title: string
@@ -37,7 +38,7 @@ export const BondsTable = ({
   setAllAssets,
 }: Props) => {
   const { t } = useTranslation()
-  const [, setRow] = useState<BondTableItem | undefined>(undefined)
+  const [row, setRow] = useState<BondTableItem | undefined>(undefined)
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -51,6 +52,7 @@ export const BondsTable = ({
   return (
     <>
       <TableContainer
+        sx={showTransfer ? undefined : { m: 0 }}
         css={
           showTransfer
             ? undefined
@@ -114,7 +116,7 @@ export const BondsTable = ({
                 {row.getIsSelected() &&
                   showTransactions &&
                   row.original.events.length && (
-                    <TableRow isSub={true}>
+                    <TableRow isSub>
                       <td colSpan={table.getAllColumns().length}>
                         <Transactions
                           data={row.original.events}
@@ -134,6 +136,18 @@ export const BondsTable = ({
           open
           initialAsset={transferAsset}
           onClose={() => setTransferAsset(null)}
+        />
+      )}
+
+      {!isDesktop && row && (
+        <BondTableMobileDrawer
+          data={row}
+          onClose={() => setRow(undefined)}
+          config={{
+            showTransactions,
+            showTransfer,
+            onTransfer: setTransferAsset,
+          }}
         />
       )}
     </>

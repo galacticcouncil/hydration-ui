@@ -139,105 +139,91 @@ export const RemoveLiquidity = ({
         minHeight: "100%",
       }}
     >
-      <ModalScrollableContent
-        content={
-          <>
-            <div>
-              <div sx={{ flex: "row", justify: "space-between" }}>
-                <div>
-                  <Text
-                    fs={13}
-                    lh={13}
-                    sx={{ mb: 15 }}
-                    css={{
-                      whiteSpace: "nowrap",
-                      textTransform: "uppercase",
-                      color: `rgba(${theme.rgbColors.whiteish500}, 0.6)`,
-                    }}
-                  >
-                    {t("selectAsset.title")}
-                  </Text>
-                  <AssetSelectButton assetId={assetId} onClick={onAssetOpen} />
-                </div>
-                <div>
-                  <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
-                    {t("liquidity.remove.modal.value", {
-                      value: getFloatingPointAmount(
-                        removeSharesValue,
-                        STABLEPOOL_TOKEN_DECIMALS,
-                      ),
-                    })}
-                  </Text>
-                  <Text
-                    fs={18}
-                    font="FontOver"
-                    color="pink500"
-                    sx={{ mb: 20 }}
-                    tAlign="right"
-                  >
-                    {t("value.percentage", { value })}
-                  </Text>
-                </div>
-              </div>
-              <Controller
-                name="value"
-                control={form.control}
-                render={({ field }) => (
-                  <RemoveLiquidityInput
-                    value={field.value}
-                    onChange={field.onChange}
-                    balance={t("value.token", {
-                      value: getFloatingPointAmount(
-                        position.amount,
-                        STABLEPOOL_TOKEN_DECIMALS,
-                      ),
-                    })}
-                  />
-                )}
-              />
-
-              <STradingPairContainer>
-                <Text color="brightBlue300">
-                  {t("liquidity.remove.modal.receive")}
-                </Text>
-                {asset && (
-                  <RemoveLiquidityReward
-                    id={asset.id}
-                    name={asset.symbol}
-                    symbol={asset.symbol}
-                    amount={t("value", {
-                      value: liquidityOut,
-                      type: "token",
-                      numberSuffix: ` ${asset.symbol}`,
-                    })}
-                  />
-                )}
-              </STradingPairContainer>
-            </div>
-            <Spacer size={17} />
-            <div sx={{ flex: "row", justify: "space-between" }}>
-              <Text color="basic400">
-                {t("liquidity.remove.modal.tokenFee.label")}
-              </Text>
-              <Text color="white">
-                {t("value.percentage", { value: feeDisplay })}
-              </Text>
-            </div>
-          </>
-        }
-        footer={
-          <>
-            <Spacer size={20} />
-            <Button
-              fullWidth
-              variant="primary"
-              disabled={removeSharesValue.isZero()}
+      <div>
+        <div sx={{ flex: "row", justify: "space-between" }}>
+          <div>
+            <Text
+              fs={13}
+              lh={13}
+              sx={{ mb: 15 }}
+              css={{
+                whiteSpace: "nowrap",
+                textTransform: "uppercase",
+                color: `rgba(${theme.rgbColors.whiteish500}, 0.6)`,
+              }}
             >
-              {t("liquidity.stablepool.remove.confirm")}
-            </Button>
-          </>
-        }
-      />
+              {t("selectAsset.title")}
+            </Text>
+            <AssetSelectButton assetId={assetId} onClick={onAssetOpen} />
+          </div>
+          <div>
+            <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
+              {t("liquidity.remove.modal.value", {
+                value: getFloatingPointAmount(
+                  removeSharesValue,
+                  STABLEPOOL_TOKEN_DECIMALS,
+                ),
+              })}
+            </Text>
+            <Text
+              fs={18}
+              font="FontOver"
+              color="pink500"
+              sx={{ mb: 20 }}
+              tAlign="right"
+            >
+              {t("value.percentage", { value })}
+            </Text>
+          </div>
+        </div>
+        <Controller
+          name="value"
+          control={form.control}
+          render={({ field }) => (
+            <RemoveLiquidityInput
+              value={field.value}
+              onChange={field.onChange}
+              balance={t("value.token", {
+                value: getFloatingPointAmount(
+                  position.amount,
+                  STABLEPOOL_TOKEN_DECIMALS,
+                ),
+              })}
+            />
+          )}
+        />
+
+        <STradingPairContainer>
+          <Text color="brightBlue300">
+            {t("liquidity.remove.modal.receive")}
+          </Text>
+          {asset && (
+            <RemoveLiquidityReward
+              id={asset.id}
+              name={asset.symbol}
+              symbol={asset.symbol}
+              amount={t("value", {
+                value: liquidityOut,
+                type: "token",
+                numberSuffix: ` ${asset.symbol}`,
+              })}
+            />
+          )}
+        </STradingPairContainer>
+      </div>
+      <Spacer size={17} />
+      <div sx={{ flex: "row", justify: "space-between" }}>
+        <Text color="basic400">
+          {t("liquidity.remove.modal.tokenFee.label")}
+        </Text>
+        <Text color="white">
+          {t("value.percentage", { value: feeDisplay })}
+        </Text>
+      </div>
+      <Spacer size={20} />
+      <Button fullWidth variant="primary" disabled={removeSharesValue.isZero()}>
+        {t("liquidity.stablepool.remove.confirm")}
+      </Button>
     </form>
   )
 }

@@ -10,8 +10,13 @@ export const SList = styled.nav`
 
   @media ${theme.viewport.gte.sm} {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     margin-left: 30px;
+
+    height: 40px;
+
+    overflow: hidden;
   }
 `
 export const SItem = styled.span<{ isActive?: boolean }>`

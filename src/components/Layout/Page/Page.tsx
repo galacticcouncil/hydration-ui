@@ -44,7 +44,6 @@ export const Page = ({
         {variant === "stats" && <SPageGrid />}
         <SGradientBg variant={variant} />
         <Header />
-        <SGradientBg variant={variant} />
         <SPageContent>
           {subHeader && (
             <SSubHeader css={subHeaderStyle}>{subHeader}</SSubHeader>

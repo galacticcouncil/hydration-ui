@@ -23,39 +23,40 @@ export const TransferOptions = ({
       <TransferOption
         selected={selected === "OMNIPOOL"}
         onSelect={() => onSelect("OMNIPOOL")}
-        heading={t("liquidity.add.omnipool")}
-        subheading={t("liquidity.add.benefits")}
+        heading={t("liquidity.stablepool.add.stablepoolAndOmnipool")}
+        subheading={t("liquidity.stablepool.add.benefits")}
         icon={<WaterRippleIcon />}
         disabled={disableOmnipool}
       >
         <ListItem>
-          First benefit mentioned here. A line of of text would be enough.
+          {t("liquidity.stablepool.add.stablepoolAndOmnipool.benefit1")}
         </ListItem>
         <ListItem>
-          Second benefit mentioned here. A line of of text would be enough.
+          {t("liquidity.stablepool.add.stablepoolAndOmnipool.benefit2")}
         </ListItem>
         <ListItem>
-          Third benefit mentioned here. A line of of text would be enough.
+          {t("liquidity.stablepool.add.stablepoolAndOmnipool.benefit3")}
         </ListItem>
-        <ListItem>Fourth benefit mentioned here.</ListItem>
+        <ListItem>
+          {t("liquidity.stablepool.add.stablepoolAndOmnipool.benefit4")}
+        </ListItem>
       </TransferOption>
       <TransferOption
         selected={selected === "STABLEPOOL"}
         onSelect={() => onSelect("STABLEPOOL")}
-        heading={t("liquidity.add.stablepool")}
-        subheading={t("liquidity.add.benefits")}
+        heading={t("liquidity.stablepool.add.stablepoolOnly")}
+        subheading={t("liquidity.stablepool.add.benefits")}
         icon={<DropletIcon />}
       >
         <ListItem>
-          First benefit mentioned here. A line of of text would be enough.
+          {t("liquidity.stablepool.add.stablepoolOnly.benefit1")}
         </ListItem>
         <ListItem>
-          Second benefit mentioned here. A line of of text would be enough.
+          {t("liquidity.stablepool.add.stablepoolOnly.benefit2")}
         </ListItem>
         <ListItem>
-          Third benefit mentioned here. A line of of text would be enough.
+          {t("liquidity.stablepool.add.stablepoolOnly.benefit3")}
         </ListItem>
-        <ListItem>Fourth benefit mentioned here.</ListItem>
       </TransferOption>
     </>
   )
