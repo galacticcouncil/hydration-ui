@@ -17,7 +17,7 @@ export const PoolFooter = ({ pool }: Props) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
 
-  const claimable = useClaimableAmount(pool)
+  const claimable = useClaimableAmount(pool.id)
   const footerValues = useFooterValues(pool)
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {

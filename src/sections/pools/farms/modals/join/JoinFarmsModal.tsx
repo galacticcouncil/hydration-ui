@@ -9,7 +9,6 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { FarmDepositMutationType } from "utils/farms/deposit"
 import { FarmRedepositMutationType } from "utils/farms/redeposit"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
@@ -21,7 +20,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 type JoinFarmModalProps = {
   isOpen: boolean
   onClose: () => void
-  pool: OmnipoolPool
+  poolId: u32
   shares?: BigNumber
   farms: Farm[]
   isRedeposit?: boolean
@@ -33,7 +32,7 @@ export const JoinFarmModal = ({
   isOpen,
   onClose,
   isRedeposit,
-  pool,
+  poolId,
   mutation,
   shares,
   depositNft,
@@ -45,7 +44,7 @@ export const JoinFarmModal = ({
     yieldFarmId: u32
     globalFarmId: u32
   } | null>(null)
-  const meta = assets.getAsset(pool.id.toString())
+  const meta = assets.getAsset(poolId.toString())
   const bestNumber = useBestNumber()
 
   const selectedFarm = farms.find(
@@ -80,84 +79,79 @@ export const JoinFarmModal = ({
               assetSymbol: meta.symbol,
             }),
             content: (
-              <ModalScrollableContent
-                content={
-                  <>
-                    {isRedeposit && (
-                      <Text color="basic400">
-                        {t("farms.modal.join.description", {
-                          assets: meta.symbol,
+              <>
+                <>
+                  {isRedeposit && (
+                    <Text color="basic400">
+                      {t("farms.modal.join.description", {
+                        assets: meta.symbol,
+                      })}
+                    </Text>
+                  )}
+                  <div sx={{ flex: "column", gap: 8, mt: 24 }}>
+                    {farms.map((farm, i) => {
+                      return (
+                        <FarmDetailsCard
+                          key={i}
+                          poolId={poolId}
+                          farm={farm}
+                          depositNft={depositNft}
+                          onSelect={() => {
+                            setSelectedFarmId({
+                              globalFarmId: farm.globalFarm.id,
+                              yieldFarmId: farm.yieldFarm.id,
+                            })
+                            next()
+                          }}
+                        />
+                      )
+                    })}
+                  </div>
+                </>
+                {mutation && shares && (
+                  <SJoinFarmContainer>
+                    <div
+                      sx={{
+                        flex: "row",
+                        justify: "space-between",
+                        p: 30,
+                        gap: 120,
+                      }}
+                    >
+                      <div sx={{ flex: "column", gap: 13 }}>
+                        <Text>{t("farms.modal.footer.title")}</Text>
+                      </div>
+                      <Text
+                        color="pink600"
+                        fs={24}
+                        css={{ whiteSpace: "nowrap" }}
+                      >
+                        {t("value.token", {
+                          value: shares,
+                          fixedPointScale: meta.decimals,
                         })}
                       </Text>
-                    )}
-                    <div sx={{ flex: "column", gap: 8, mt: 24 }}>
-                      {farms.map((farm, i) => {
-                        return (
-                          <FarmDetailsCard
-                            key={i}
-                            poolId={pool.id}
-                            farm={farm}
-                            depositNft={depositNft}
-                            onSelect={() => {
-                              setSelectedFarmId({
-                                globalFarmId: farm.globalFarm.id,
-                                yieldFarmId: farm.yieldFarm.id,
-                              })
-                              next()
-                            }}
-                          />
-                        )
-                      })}
                     </div>
-                  </>
-                }
-                footer={
-                  mutation &&
-                  shares && (
-                    <SJoinFarmContainer>
-                      <div
-                        sx={{
-                          flex: "row",
-                          justify: "space-between",
-                          p: 30,
-                          gap: 120,
-                        }}
-                      >
-                        <div sx={{ flex: "column", gap: 13 }}>
-                          <Text>{t("farms.modal.footer.title")}</Text>
-                        </div>
-                        <Text
-                          color="pink600"
-                          fs={24}
-                          css={{ whiteSpace: "nowrap" }}
-                        >
-                          {t("value.token", {
-                            value: shares,
-                            fixedPointScale: meta.decimals,
-                          })}
-                        </Text>
-                      </div>
-                      <Button
-                        fullWidth
-                        variant="primary"
-                        onClick={() => mutation.mutate()}
-                        isLoading={mutation.isLoading}
-                      >
-                        {t("farms.modal.join.button.label", {
-                          count: farms.length,
-                        })}
-                      </Button>
-                    </SJoinFarmContainer>
-                  )
-                }
-              ></ModalScrollableContent>
+                    <Button
+                      fullWidth
+                      variant="primary"
+                      onClick={() => mutation.mutate()}
+                      isLoading={mutation.isLoading}
+                    >
+                      {t("farms.modal.join.button.label", {
+                        count: farms.length,
+                      })}
+                    </Button>
+                  </SJoinFarmContainer>
+                )}
+              </>
             ),
           },
           {
             title: t("farms.modal.details.title"),
             content: selectedFarm && (
               <FarmDetailsModal
-                pool={pool}
+                poolId={poolId}
                 farm={selectedFarm}
                 depositNft={depositNft}
                 currentBlock={currentBlock?.toNumber()}

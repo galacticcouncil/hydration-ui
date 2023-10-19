@@ -32,6 +32,11 @@ export const QUERY_KEYS = {
     "accountBalances",
     id?.toString(),
   ],
+  accountsBalances: (ids: string[]) => [
+    QUERY_KEY_PREFIX,
+    "accountsBalances",
+    ids.join("."),
+  ],
   accountAssetBalances: (
     pairs: Array<[address: AccountId32 | string, assetId: u32 | string]>,
   ) => [QUERY_KEY_PREFIX, "accountAssetBalances", pairs],
@@ -305,6 +310,12 @@ export const QUERY_KEYS = {
   stakingPositionBalances: (positionId: Maybe<string>) => [
     "positionBalances",
     positionId,
+  ],
+  stableswapPools: [QUERY_KEY_PREFIX, "stableswapPools"],
+  stableswapPool: (id: u32 | string) => [
+    QUERY_KEY_PREFIX,
+    "stableswapPool",
+    id?.toString(),
   ],
   lbpPool: ["lbpPool"],
   bondEvents: (id?: Maybe<string>) => ["bondEvents", id],

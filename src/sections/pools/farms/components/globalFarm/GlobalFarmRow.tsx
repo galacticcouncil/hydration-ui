@@ -11,7 +11,7 @@ export const GlobalFarmRow = ({
   isLastElement,
 }: {
   farm: Farm
-  isLastElement: boolean
+  isLastElement?: boolean
 }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()

@@ -51,7 +51,6 @@ export const SPageContent = styled.main`
   flex-direction: column;
   flex-grow: 1;
 
-  padding-top: var(--nav-height);
   padding-bottom: var(--mobile-nav-height);
 
   ::-webkit-scrollbar {

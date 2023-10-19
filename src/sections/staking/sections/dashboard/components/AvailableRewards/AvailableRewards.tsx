@@ -55,7 +55,7 @@ export const AvailableRewards = () => {
 
     await createTransaction(
       {
-        tx: api.tx.staking.claim(reward.data?.positionId),
+        tx: api.tx.staking.claim(reward.data?.positionId!),
       },
       { toast },
     )
@@ -176,7 +176,7 @@ export const AvailableRewards = () => {
           </div>
         </div>
         <Separator orientation="horizontal" css={{ background: "#55394E" }} />
-        <Text color="warningYellow200">
+        <Text color="warningYellow200" lh={22}>
           {t("staking.dashboard.rewards.desc", {
             value: reward.data?.maxRewards?.minus(reward.data.rewards),
           })}

@@ -131,7 +131,7 @@ export const BondInfoCards = ({
         }
       : {
           label: t("bonds.details.card.spotPrice"),
-          value: <DisplayValue value={currentSpotPrice} />,
+          value: <DisplayValue value={currentSpotPrice} type="token" />,
           icon: (
             <Icon
               size={[16, 22]}

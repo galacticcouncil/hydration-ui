@@ -1,6 +1,7 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 import InfoIcon from "assets/icons/InfoIconBlue.svg?react"
+import { css } from "@emotion/react"
 
 export const SContainer = styled.div`
   width: calc(100% + 24px);

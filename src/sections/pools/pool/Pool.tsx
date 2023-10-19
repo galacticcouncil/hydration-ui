@@ -28,7 +28,7 @@ export const Pool = ({ pool }: Props) => {
 
   const { warnings, setWarnings } = useWarningsStore()
 
-  const positions = usePoolPositions(pool)
+  const positions = usePoolPositions(pool.id)
   const accountDeposits = useAccountDeposits(enabledFarms ? pool.id : undefined)
 
   const hasExpandContent =
@@ -56,7 +56,7 @@ export const Pool = ({ pool }: Props) => {
   return (
     <SContainer id={pool.id.toString()}>
       <SGridContainer>
-        <PoolDetails pool={pool} css={{ gridArea: "details" }} />
+        <PoolDetails id={pool.id} css={{ gridArea: "details" }} />
         {enabledFarms ? (
           <PoolIncentives poolId={pool.id} css={{ gridArea: "incentives" }} />
         ) : (
@@ -71,7 +71,7 @@ export const Pool = ({ pool }: Props) => {
           onExpandClick={handleExpand}
           css={{ gridArea: "actions" }}
         />
-        <PoolCapacity pool={pool} css={{ gridArea: "capacity" }} />
+        <PoolCapacity id={pool.id.toString()} css={{ gridArea: "capacity" }} />
       </SGridContainer>
       {isDesktop && hasExpandContent && (
         <AnimatePresence>
@@ -83,10 +83,13 @@ export const Pool = ({ pool }: Props) => {
               transition={{ duration: 0.5, ease: "easeInOut" }}
               css={{ overflow: "hidden" }}
             >
-              <LiquidityPositionWrapper pool={pool} positions={positions} />
+              <LiquidityPositionWrapper
+                poolId={pool.id}
+                positions={positions}
+              />
               {enabledFarms && (
                 <FarmingPositionWrapper
-                  pool={pool}
+                  poolId={pool.id}
                   deposits={accountDeposits.data}
                 />
               )}

@@ -1,4 +1,3 @@
-import { u32 } from "@polkadot/types"
 import { useAccountCurrency } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
 import { usePaymentInfo } from "api/transaction"
@@ -33,7 +32,7 @@ export function WalletTransferSectionOnchain({
   openAssets,
   openAddressBook,
 }: {
-  asset: string | u32
+  asset: string
   form: UseFormReturn<{ dest: string; amount: string }>
   onClose: () => void
   openAssets: () => void

@@ -56,6 +56,7 @@ const BondCell = ({ bondId }: { bondId: string }) => {
         flex: "row",
         align: "center",
         gap: 16,
+        width: "min-content",
       }}
     >
       <Icon

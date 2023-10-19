@@ -16,7 +16,6 @@ import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiq
 import { Button } from "components/Button/Button"
 import FPIcon from "assets/icons/PoolsAndFarms.svg?react"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useFarms } from "api/farms"
 import { useFarmDepositMutation } from "utils/farms/deposit"
 import { TOAST_MESSAGES } from "state/toasts"
@@ -28,16 +27,18 @@ import { BN_0 } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { useRpcProvider } from "providers/rpcProvider"
+import { u32 } from "@polkadot/types-codec"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 type Props = {
-  pool: OmnipoolPool
+  poolId: u32
   position: HydraPositionsTableData
   onSuccess: () => void
   index: number
 }
 
 function LiquidityPositionJoinFarmButton(props: {
-  pool: OmnipoolPool
+  poolId: u32
   position: HydraPositionsTableData
   onSuccess: () => void
 }) {
@@ -45,8 +46,8 @@ function LiquidityPositionJoinFarmButton(props: {
   const { assets } = useRpcProvider()
   const { account } = useAccountStore()
   const [joinFarm, setJoinFarm] = useState(false)
-  const farms = useFarms([props.pool.id])
-  const meta = assets.getAsset(props.pool.id.toString())
+  const farms = useFarms([props.poolId])
+  const meta = assets.getAsset(props.poolId.toString())
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type
@@ -67,7 +68,7 @@ function LiquidityPositionJoinFarmButton(props: {
   }, {} as ToastMessage)
 
   const joinFarmMutation = useFarmDepositMutation(
-    props.pool.id,
+    props.poolId,
     props.position.id,
     toast,
     () => setJoinFarm(false),
@@ -90,7 +91,7 @@ function LiquidityPositionJoinFarmButton(props: {
         <JoinFarmModal
           farms={farms.data}
           isOpen={joinFarm}
-          pool={props.pool}
+          poolId={props.poolId}
           shares={props.position.shares}
           onClose={() => setJoinFarm(false)}
           mutation={joinFarmMutation}
@@ -133,7 +134,7 @@ function LiquidityPositionRemoveLiquidity(props: {
 }
 
 export const LiquidityPosition = ({
-  pool,
+  poolId,
   position,
   index,
   onSuccess,
@@ -142,7 +143,7 @@ export const LiquidityPosition = ({
   const { assets } = useRpcProvider()
   const meta = assets.getAsset(position.assetId)
   const price = useDisplayPrice(meta.id)
-
+  console.log(meta)
   const shiftBy = meta.decimals
   const spotPrice = price.data?.spotPrice
   const providedAmountPrice = spotPrice
@@ -155,7 +156,15 @@ export const LiquidityPosition = ({
     <SContainer>
       <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
         <div sx={{ flex: "row", gap: 7, align: "center" }}>
-          <Icon size={18} icon={<AssetLogo id={position.assetId} />} />
+          {assets.isStableSwap(meta) ? (
+            <MultipleIcons
+              icons={meta.assets.map((asset: string) => ({
+                icon: <AssetLogo id={asset} />,
+              }))}
+            />
+          ) : (
+            <Icon size={18} icon={<AssetLogo id={position.assetId} />} />
+          )}
           <Text fs={[14, 18]} color={["white", "basic100"]}>
             {t("liquidity.asset.positions.position.title", { index })}
           </Text>
@@ -170,7 +179,7 @@ export const LiquidityPosition = ({
                 {t("value.token", {
                   value: position.providedAmount,
                   fixedPointScale: meta.decimals,
-                  numberSuffix: meta.symbol,
+                  numberSuffix: ` ${meta.symbol}`,
                 })}
               </Text>
               {providedAmountPriceLoading ? (
@@ -228,9 +237,9 @@ export const LiquidityPosition = ({
           gap: 8,
         }}
       >
-        {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
+        {!meta.isStableSwap && (
           <LiquidityPositionJoinFarmButton
-            pool={pool}
+            poolId={poolId}
             position={position}
             onSuccess={onSuccess}
           />

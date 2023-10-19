@@ -10,6 +10,7 @@ import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
 import { OmnipoolAssetsTableColumn } from "sections/stats/components/OmnipoolAssetsTable/OmnipoolAssetsTable.utils"
 import { useMedia } from "react-use"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
   const { accessor, display } =
@@ -31,7 +32,16 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
             justify: "start",
           }}
         >
-          <Icon size={26} icon={<AssetLogo id={row.original.id} />} />
+          {typeof row.original.iconIds === "string" ? (
+            <Icon size={30} icon={<AssetLogo id={row.original.iconIds} />} />
+          ) : (
+            <MultipleIcons
+              size={30}
+              icons={row.original.iconIds.map((id) => ({
+                icon: <AssetLogo id={id} />,
+              }))}
+            />
+          )}
           <div sx={{ flex: "column" }}>
             <Text fs={[14, 16]} color="white">
               {row.original.symbol}

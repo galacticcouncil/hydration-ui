@@ -1,4 +1,3 @@
-import { u32 } from "@polkadot/types"
 import { AddressBook } from "components/AddressBook/AddressBook"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
@@ -17,7 +16,7 @@ import { CROSSCHAINS } from "./crosschain/WalletTransferSectionCrosschain.utils"
 export function WalletTransferModal(props: {
   open: boolean
   onClose: () => void
-  initialAsset: u32 | string
+  initialAsset: string
 }) {
   const { t } = useTranslation()
   const [active, setActive] = useState<

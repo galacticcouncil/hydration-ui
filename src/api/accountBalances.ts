@@ -20,6 +20,14 @@ export const useAccountBalances = (id: Maybe<AccountId32 | string>) => {
   )
 }
 
+export const useAccountsBalances = (ids: string[]) => {
+  const { api } = useRpcProvider()
+
+  return useQuery(QUERY_KEYS.accountsBalances(ids), () =>
+    Promise.all(ids.map((id) => getAccountBalances(api, id)())),
+  )
+}
+
 export const getAccountBalances =
   (api: ApiPromise, accountId: AccountId32 | string) => async () => {
     const [tokens, native] = await Promise.all([
@@ -31,7 +39,7 @@ export const getAccountBalances =
       return { id, data }
     })
 
-    return { native, balances }
+    return { accountId, native, balances }
   }
 
 export const getAccountBalancesNew =

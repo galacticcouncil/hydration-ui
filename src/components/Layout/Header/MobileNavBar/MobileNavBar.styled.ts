@@ -26,10 +26,6 @@ export const SMobileNavBar = styled.div`
   backdrop-filter: blur(12px);
 
   @media ${theme.viewport.gte.sm} {
-    display: flex;
-  }
-
-  @media ${theme.viewport.gte.md} {
     display: none;
   }
 `
