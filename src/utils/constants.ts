@@ -10,6 +10,8 @@ export const BN_NAN = new BN(NaN)
 
 export const TRADING_FEE = new BN(3).div(new BN(1000))
 
+export const SHARE_TOKEN_DECIMALS = new BN(12)
+
 export const DAY_IN_MILLISECONDS = new BN(86400000)
 
 // block time in seconds
@@ -23,6 +25,8 @@ export const TOAST_CLOSE_TIME = 5000
 export const ORMLVEST = "ormlvest"
 
 // asset type
+export const ASSET_TYPE_TOKEN = "Token"
+
 BN.config({ EXPONENTIAL_AT: 666 })
 
 export const MIN_WITHDRAWAL_FEE = new BN(100).div(1000000)

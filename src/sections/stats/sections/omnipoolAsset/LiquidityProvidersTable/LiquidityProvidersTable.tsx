@@ -78,7 +78,7 @@ export const LiquidityProvidersTable = ({ data }: Props) => {
           ))}
         </TableHeaderContent>
         <TableBodyContent>
-          {table.getRowModel().rows.map((row) => (
+          {table.getRowModel().rows.map((row, i) => (
             <TableRowStats
               onClick={() => onRowSelect(row.original.id)}
               key={row.id}

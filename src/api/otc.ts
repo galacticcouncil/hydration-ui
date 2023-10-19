@@ -27,6 +27,11 @@ export const getOrders = (api: ApiPromise) => async () => {
   return data
 }
 
+export const useOrders = () => {
+  const { api } = useRpcProvider()
+  return useQuery(QUERY_KEYS.otcOrders, getOrders(api))
+}
+
 export const useOrdersData = () => {
   const { api, assets } = useRpcProvider()
 

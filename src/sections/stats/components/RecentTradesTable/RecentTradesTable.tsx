@@ -63,7 +63,7 @@ export const RecentTradesTable = ({ data }: Props) => {
           ))}
         </TableHeaderContent>
         <TableBodyContent>
-          {table.getRowModel().rows.map((row) => (
+          {table.getRowModel().rows.map((row, i) => (
             <TableRowStats key={row.id} css={{ cursor: "pointer" }}>
               {row.getVisibleCells().map((cell) => (
                 <TableData

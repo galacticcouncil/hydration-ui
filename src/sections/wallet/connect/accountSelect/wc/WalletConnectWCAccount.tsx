@@ -24,7 +24,7 @@ export const WalletConnectWCAccount = ({ currentAddress, onSelect }: Props) => {
 
   return (
     <>
-      {addresses.map((address) => (
+      {addresses.map((address, i) => (
         <WalletConnectAccountSelectItem
           key={address}
           isActive={currentAddress === address}

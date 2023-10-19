@@ -111,6 +111,27 @@ export function useExistentialDeposit() {
   })
 }
 
+export const useTokensLocks = (ids: Maybe<u32 | string>[]) => {
+  const { api } = useRpcProvider()
+  const { account } = useAccountStore()
+
+  const normalizedIds = ids?.reduce<string[]>((memo, item) => {
+    if (item != null) memo.push(item.toString())
+    return memo
+  }, [])
+
+  return useQueries({
+    queries: normalizedIds?.map((id) => ({
+      queryKey: QUERY_KEYS.lock(account?.address, id),
+      queryFn:
+        account?.address != null
+          ? getTokenLock(api, account.address, id)
+          : undefinedNoop,
+      enabled: !!account?.address,
+    })),
+  })
+}
+
 export const useTokenLocks = (id: Maybe<u32 | string>) => {
   const { api } = useRpcProvider()
   const { account } = useAccountStore()
