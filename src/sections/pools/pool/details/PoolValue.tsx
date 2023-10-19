@@ -22,7 +22,7 @@ export const PoolValue = ({ pool, className }: PoolValueProps) => {
           <Text fs={13} color="basic400">
             {t("liquidity.asset.details.total")}
           </Text>
-          <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
+          <div sx={{ flex: "row", align: "center", gap: 8 }}>
             <Text lh={22} color="white" fs={18}>
               <DisplayValue value={pool.totalDisplay} />
             </Text>

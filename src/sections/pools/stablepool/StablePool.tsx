@@ -21,16 +21,7 @@ type Props = {
 }
 
 export const StablePool = ({ pool }: Props) => {
-  const {
-    id,
-    fee,
-    assets,
-    total,
-    balanceByAsset,
-    reserves,
-    totalDisplay,
-    tradability,
-  } = pool
+  const { id, fee, assets, balanceByAsset, reserves, tradability } = pool
   const [transferOpen, setTransferOpen] = useState<Page>()
   const [isExpanded, setIsExpanded] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -46,11 +37,7 @@ export const StablePool = ({ pool }: Props) => {
     <SContainer id={id.toString()}>
       <SGridContainer>
         <PoolDetails id={id} css={{ gridArea: "details" }} />
-        <PoolValue
-          totalDisplay={totalDisplay}
-          total={total.value}
-          css={{ gridArea: "values" }}
-        />
+        <PoolValue pool={pool} css={{ gridArea: "values" }} />
         <PoolActions
           pool={pool}
           css={{ gridArea: "actions" }}
