@@ -14,5 +14,11 @@ export const Skeleton = ({ title, showTransactions, showTransfer }: Props) => {
     onTransfer: () => null,
   })
 
-  return <TableSkeleton table={table} title={title} />
+  return (
+    <TableSkeleton
+      table={table}
+      title={title}
+      css={showTransfer ? undefined : { margin: 0 }}
+    />
+  )
 }

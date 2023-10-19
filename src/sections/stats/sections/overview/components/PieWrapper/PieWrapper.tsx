@@ -51,6 +51,7 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
           flexWrap: "wrap",
           gap: 20,
         }}
+        css={{ "& > span": { width: "100%" } }}
       >
         <PieTotalValue
           title={t("stats.overview.pie.values.pol")}

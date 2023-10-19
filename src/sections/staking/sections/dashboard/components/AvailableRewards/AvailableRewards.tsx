@@ -166,7 +166,6 @@ export const AvailableRewards = () => {
               >
                 {t("value.percentage", {
                   value: reward.data.allocatedRewardsPercentage,
-                  fixedPointScale: 18,
                 })}
               </Text>
             )}

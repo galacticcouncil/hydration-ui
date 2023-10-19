@@ -15,14 +15,9 @@ export const SBlock = styled.div<{ selected: boolean }>`
     css`
       border-color: ${theme.colors.darkBlue700};
       background: linear-gradient(
-          0deg,
-          rgba(19, 18, 47, 0.52),
-          rgba(19, 18, 47, 0.52)
-        ),
-        radial-gradient(
-          202.95% 202.95% at 30.22% 151.83%,
-          #ff014d 0%,
-          rgba(255, 32, 193, 0) 100%
-        );
+        0deg,
+        rgba(252, 64, 140, 0.7) 0%,
+        #111320 100%
+      );
     `}
 `

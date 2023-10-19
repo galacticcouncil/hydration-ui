@@ -57,7 +57,7 @@ export const WalletAssets = () => {
 
           {enabledBonds && (
             <>
-              <MyActiveBonds showTransfer={true} />
+              <MyActiveBonds showTransfer />
 
               <Spacer axis="vertical" size={20} />
             </>

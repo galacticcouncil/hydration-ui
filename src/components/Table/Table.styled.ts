@@ -236,7 +236,6 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
   text-align: start;
   color: rgba(${theme.rgbColors.white}, 0.7);
   color: ${theme.colors.basic600};
-  white-space: nowrap;
 
   ${({ canSort }) => canSort && "cursor:pointer;"}
 

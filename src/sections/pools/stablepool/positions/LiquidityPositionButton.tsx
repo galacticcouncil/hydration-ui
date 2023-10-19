@@ -7,10 +7,12 @@ import { useAccountStore } from "state/store"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
+import { BN_0 } from "utils/constants"
+import { usePoolPositions } from "sections/pools/pool/Pool.utils"
 
 type Props = Omit<
   ComponentProps<typeof LiquidityPositionModal>,
-  "isOpen" | "onClose"
+  "isOpen" | "onClose" | "positions"
 >
 
 export const LiquidityPositionButton = (props: Props) => {
@@ -18,13 +20,17 @@ export const LiquidityPositionButton = (props: Props) => {
   const { account } = useAccountStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { t } = useTranslation()
+  const positions = usePoolPositions(props.poolId)
+
+  const hasPosition =
+    props.amount.isGreaterThan(BN_0) || !!positions.data?.length
 
   return (
     <>
       <Button
         fullWidth
         size="small"
-        disabled={!account}
+        disabled={!account || !hasPosition}
         onClick={() => {
           setOpenLiquidityPositions(true)
         }}
@@ -36,6 +42,7 @@ export const LiquidityPositionButton = (props: Props) => {
       </Button>
       {openLiquidityPositions && !isDesktop && (
         <LiquidityPositionModal
+          positions={positions}
           isOpen={openLiquidityPositions}
           onClose={() => setOpenLiquidityPositions(false)}
           {...props}

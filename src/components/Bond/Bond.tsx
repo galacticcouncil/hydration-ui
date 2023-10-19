@@ -6,7 +6,7 @@ import { SBond, SItem } from "./Bond.styled"
 import { Icon } from "components/Icon/Icon"
 import { useBestNumber } from "api/chain"
 import { BLOCK_TIME, BN_1 } from "utils/constants"
-import { addSeconds } from "date-fns"
+import { addSeconds, format } from "date-fns"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "sections/pools/pool/Pool.styled"
 import { customFormatDuration, formatDate } from "utils/formatting"
@@ -15,24 +15,21 @@ import { theme } from "theme"
 import { useDisplayPrice } from "utils/displayAsset"
 import { useMedia } from "react-use"
 import Skeleton from "react-loading-skeleton"
-import { isPoolUpdateEvent, useLBPPoolEvents } from "api/bonds"
+import { useLbpPool } from "api/bonds"
 import { useNavigate } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { TBond } from "api/assetDetails"
 
 export type BondView = "card" | "list"
 
-type Props = {
+export type BondState = "active" | "upcoming" | "past"
+
+export type BondProps = {
   view?: BondView
-  name: string
-  ticker: string
-  maturity: string
-  end?: number
-  start?: number
-  state: "active" | "upcoming" | "past"
-  assetId: string
-  bondId: string
-  assetIn?: number
+  bond: TBond
+  pool?: NonNullable<ReturnType<typeof useLbpPool>["data"]>[number]
+  state: BondState
 }
 
 const Discount = ({
@@ -90,27 +87,20 @@ const Discount = ({
   )
 }
 
-export const Bond = ({
-  view,
-  name,
-  maturity,
-  end,
-  start,
-  state,
-  assetId,
-  bondId,
-  ticker,
-  assetIn,
-}: Props) => {
+export const Bond = ({ view, bond, pool, state }: BondProps) => {
   const { t } = useTranslation()
   const bestNumber = useBestNumber()
   const navigate = useNavigate()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
+  const { id: bondId, assetId, symbol, name, maturity } = bond
+  const { start, end, assets } = pool ?? {}
+
+  const assetIn = assets?.find((asset: number) => asset !== Number(bondId))
+  const maturityDate = format(new Date(maturity), "dd/MM/yyyy")
+
   const isActive = state === "active"
   const isPast = state === "past"
-
-  const lbpPool = useLBPPoolEvents(isPast ? bondId : undefined)
 
   const data = useMemo(() => {
     if (!bestNumber.data) return undefined
@@ -130,41 +120,10 @@ export const Bond = ({
       })
 
       return { distance, date }
-    } else if (lbpPool.data) {
-      const isRemovedLiquidity = lbpPool.data.events.some(
-        (event) => event.name === "LBP.LiquidityRemoved",
-      )
-
-      if (isRemovedLiquidity) {
-        const lbpPoolData = lbpPool.data.events
-          .filter(isPoolUpdateEvent)
-          .reverse()?.[0]
-
-        if (lbpPoolData) {
-          const assetIn = lbpPoolData.args.data.assets.find(
-            (asset: number) => asset !== Number(bondId),
-          )
-
-          const diff = BLOCK_TIME.multipliedBy(
-            Number(lbpPoolData.args.data.end) - currentBLockNumber,
-          ).toNumber()
-
-          const date = addSeconds(new Date(), diff)
-
-          const distance = customFormatDuration({
-            end: diff * 1000,
-            isShort: true,
-          })
-
-          return { distance, date, assetIn }
-        }
-      }
-
-      return undefined
     }
 
     return undefined
-  }, [bestNumber.data, end, start, lbpPool.data, isActive, isPast, bondId])
+  }, [bestNumber.data, end, start, isActive, isPast])
 
   const headingFs = view === "card" ? ([19, 26] as const) : ([19, 16] as const)
 
@@ -188,7 +147,7 @@ export const Bond = ({
             sx={{ mt: 3 }}
             font="ChakraPetchSemiBold"
           >
-            {ticker}
+            {symbol}
           </Text>
           <Text fs={13} sx={{ mt: 3 }} color={"whiteish500"}>
             {name}
@@ -230,7 +189,7 @@ export const Bond = ({
           <Text color="basic400" fs={14}>
             {t("bond.maturity")}
           </Text>
-          <Text color="white">{maturity}</Text>
+          <Text color="white">{maturityDate}</Text>
         </SItem>
         {isActive && (
           <>
@@ -249,7 +208,7 @@ export const Bond = ({
           onClick={() =>
             navigate({
               to: LINKS.bond,
-              search: { assetIn: assetIn ?? data?.assetIn, assetOut: bondId },
+              search: { assetIn: assetIn, assetOut: bondId },
             })
           }
           sx={{ mt: view === "card" ? 12 : [12, 0], maxWidth: ["none", 150] }}

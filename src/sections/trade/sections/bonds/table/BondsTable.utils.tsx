@@ -11,6 +11,7 @@ import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 import { ButtonTransparent } from "components/Button/Button"
 import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
+import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { useTranslation } from "react-i18next"
 import { formatDate } from "utils/formatting"
 import { useMedia } from "react-use"
@@ -44,7 +45,7 @@ export type Config = {
   onTransfer: (assetId: string) => void
 }
 
-const BondCell = ({ bondId }: { bondId: string }) => {
+export const BondCell = ({ bondId }: { bondId: string }) => {
   const { assets } = useRpcProvider()
   const bond = assets.getBond(bondId)
 
@@ -56,13 +57,12 @@ const BondCell = ({ bondId }: { bondId: string }) => {
         flex: "row",
         align: "center",
         gap: 16,
-        width: "min-content",
       }}
     >
       <Icon
         icon={<AssetLogo id={bond.assetId} />}
         size={[24, 30]}
-        css={{ flex: "1 0 auto" }}
+        css={{ width: "min-content" }}
       />
       <div sx={{ flex: "column" }}>
         <Text fs={16} sx={{ mt: 3 }} font="ChakraPetchSemiBold">
@@ -89,7 +89,8 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
     maturity: isDesktop,
     balance: true,
     price: isDesktop,
-    actions: true,
+    averagePrice: isDesktop,
+    actions: isDesktop,
   }
 
   const columns = useMemo(
@@ -120,9 +121,21 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
           <div sx={{ textAlign: "center" }}>{t("bonds.table.balance")}</div>
         ),
         cell: ({ getValue }) => (
-          <Text color="white" tAlign="center">
-            {t("value.token", { value: getValue() })}
-          </Text>
+          <div
+            sx={{
+              flex: "row",
+              gap: 1,
+              align: "center",
+              justify: "space-between",
+            }}
+          >
+            <Text color="white" tAlign="center">
+              {t("value.token", { value: getValue() })}
+            </Text>
+            {!isDesktop && (
+              <Icon sx={{ color: "basic400" }} icon={<ChevronRightIcon />} />
+            )}
+          </div>
         ),
       }),
       accessor("averagePrice", {

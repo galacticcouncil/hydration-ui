@@ -19,13 +19,13 @@ import { BondTableItem } from "./table/BondsTable.utils"
 type Props = {
   showTransactions?: boolean
   showTransfer?: boolean
-  assetId?: string
+  id?: string
 }
 
 export const MyActiveBonds = ({
   showTransactions,
   showTransfer,
-  assetId,
+  id,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -36,34 +36,30 @@ export const MyActiveBonds = ({
   const bestNumber = useBestNumber()
   const lbpPools = useLbpPool()
   const bonds = assets.bonds
-  const bondsData =
-    (assetId ? bonds.filter((bond) => bond.assetId === assetId) : bonds) ?? []
+  const bondsData = (id ? bonds.filter((bond) => bond.id === id) : bonds) ?? []
 
   const balances = useTokensBalances(pluck("id", bondsData), account?.address)
 
   const bondsBalances = balances.filter((balance) => balance.data?.total.gt(0))
 
-  const isLoading =
-    pluck("isLoading", balances).some(Boolean) || lbpPools.isLoading
-
   const bondEvents = useBondsEvents(
-    !showTransfer
-      ? bondsBalances.map(
-          (bondBalance) => bondBalance.data?.assetId.toString(),
-        ) ?? []
-      : [],
+    bondsBalances.map((bondBalance) => bondBalance.data?.assetId.toString()) ??
+      [],
     true,
   )
 
+  const isLoading =
+    pluck("isLoading", balances).some(Boolean) ||
+    lbpPools.isLoading ||
+    bondEvents.some((event) => event.isLoading)
+
   const tableProps = {
-    title: assetId
-      ? t("bonds.table.title.withSymbol", {
-          symbol: assets.getAsset(bondsData[0].assetId).symbol,
-        })
-      : t("bonds.table.title"),
+    title: t("bonds.table.title"),
     showTransactions,
     showTransfer,
   }
+
+  if (!isLoading && !bondsBalances.length) return null
 
   if (!account) {
     return <Placeholder {...tableProps} />
@@ -93,53 +89,56 @@ export const MyActiveBonds = ({
         (bondEvent) => bondEvent.data?.bondId === id,
       )
 
-      const events = showTransfer
-        ? []
-        : eventsQuery?.data?.events.reduce((acc, event) => {
-            const date = format(new Date(event.block.timestamp), "dd.MM.yyyy")
-            const assetInId = event.args.assetIn
-            const assetOutId = event.args.assetOut
+      const events =
+        eventsQuery?.data?.events.reduce((acc, event) => {
+          const date = format(
+            new Date(event.block.timestamp),
+            "dd.MM.yyyy HH:mm",
+          )
 
-            const metaIn = assets.getAsset(assetInId.toString())
-            const metaOut = assets.getAsset(assetOutId.toString())
+          const assetInId = event.args.assetIn
+          const assetOutId = event.args.assetOut
 
-            const isBuy = event.name === "LBP.BuyExecuted"
-            const amountIn = BN(event.args.amount).shiftedBy(-metaIn.decimals)
+          const metaIn = assets.getAsset(assetInId.toString())
+          const metaOut = assets.getAsset(assetOutId.toString())
 
-            const amountOut = BN(
-              event.args[isBuy ? "buyPrice" : "salePrice"],
-            ).shiftedBy(-metaOut.decimals)
+          const isBuy = event.name === "LBP.BuyExecuted"
+          const amountIn = BN(event.args.amount).shiftedBy(-metaIn.decimals)
 
-            const price =
-              event.args.assetOut !== Number(id)
-                ? amountOut.div(amountIn)
-                : amountIn.div(amountOut)
+          const amountOut = BN(
+            event.args[isBuy ? "buyPrice" : "salePrice"],
+          ).shiftedBy(-metaOut.decimals)
 
-            const assetIn = {
-              assetId: assets.isBond(metaIn) ? metaIn.assetId : metaIn.id,
-              symbol: metaIn.symbol,
-              amount: amountIn.toString(),
-            }
+          const price =
+            event.args.assetOut !== Number(id)
+              ? amountOut.div(amountIn)
+              : amountIn.div(amountOut)
 
-            const assetOut = {
-              assetId: assets.isBond(metaOut) ? metaOut.assetId : metaOut.id,
-              symbol: metaOut.symbol,
-              amount: amountOut.toString(),
-            }
+          const assetIn = {
+            assetId: assets.isBond(metaIn) ? metaIn.assetId : metaIn.id,
+            symbol: metaIn.symbol,
+            amount: amountIn.toString(),
+          }
 
-            const link = `https://hydradx.subscan.io/extrinsic/${event.extrinsic.hash}`
+          const assetOut = {
+            assetId: assets.isBond(metaOut) ? metaOut.assetId : metaOut.id,
+            symbol: metaOut.symbol,
+            amount: amountOut.toString(),
+          }
 
-            acc.push({
-              date,
-              in: assetIn,
-              out: assetOut,
-              isBuy,
-              price,
-              link,
-            })
+          const link = `https://hydradx.subscan.io/extrinsic/${event.extrinsic.hash}`
 
-            return acc
-          }, [] as Transaction[]) ?? []
+          acc.push({
+            date,
+            in: assetIn,
+            out: assetOut,
+            isBuy,
+            price,
+            link,
+          })
+
+          return acc
+        }, [] as Transaction[]) ?? []
 
       const averagePrice = events
         ?.reduce((acc, event) => acc.plus(event.price), BN_0)
