@@ -14,9 +14,11 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { LiquidityPositionButton } from "sections/pools/stablepool/positions/LiquidityPositionButton"
 import { TAsset } from "api/assetDetails"
+import { OmnipoolPool, Stablepool } from "sections/pools/PoolsPage.utils"
 
 type PoolActionsProps = {
   poolId: u32
+  pool: Stablepool | OmnipoolPool
   assets: TAsset[]
   fee: BigNumber
   className?: string
@@ -31,6 +33,7 @@ type PoolActionsProps = {
 
 export const PoolActions = ({
   poolId,
+  pool,
   className,
   fee,
   onExpandClick,
@@ -63,6 +66,7 @@ export const PoolActions = ({
         {!isDesktop && (
           <LiquidityPositionButton
             poolId={poolId}
+            pool={pool}
             assets={assets}
             reserves={reserves}
             amount={amount}

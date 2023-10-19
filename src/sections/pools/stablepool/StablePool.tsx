@@ -46,6 +46,7 @@ export const StablePool = ({ pool }: Props) => {
         />
         <PoolActions
           poolId={id}
+          pool={pool}
           assets={assets}
           fee={fee}
           css={{ gridArea: "actions" }}

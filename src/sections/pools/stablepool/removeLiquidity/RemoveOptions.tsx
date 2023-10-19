@@ -20,7 +20,7 @@ export const RemoveOptions = ({ selected, onSelect }: Props) => {
         selected={selected === "SHARES"}
         onSelect={() => onSelect("SHARES")}
         heading={t("liquidity.stablepool.remove.shares")}
-        subheading={t("liquidity.add.benefits")}
+        subheading={t("liquidity.stablepool.add.benefits")}
         icon={<WaterRippleIcon />}
       >
         <ListItem>
