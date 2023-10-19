@@ -191,6 +191,7 @@ export const RemoveLiquidity = ({
             headerVariant: "gradient",
             content: (
               <AssetsModalContent
+                allAssets={true}
                 hideInactiveAssets={true}
                 allowedAssets={pool.assets.map((asset) => asset.id)}
                 onSelect={(asset) => {
