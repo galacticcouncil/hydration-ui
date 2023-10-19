@@ -40,14 +40,14 @@ export const PROVIDERS = [
       "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: ["rococo", "development"],
   },
-  {
+  /*{
     name: "Testnet",
     url: "wss://mining-rpc.hydradx.io",
     indexerUrl: "https://mining-explorer.play.hydration.cloud/graphql",
     squidUrl:
       "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: "development",
-  },
+  },*/
 ]
 
 export const useProviderRpcUrlStore = create(

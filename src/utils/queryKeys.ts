@@ -318,7 +318,11 @@ export const QUERY_KEYS = {
     id?.toString(),
   ],
   lbpPool: ["lbpPool"],
-  bondEvents: (id?: Maybe<string>) => ["bondEvents", id],
+  bondEvents: (id?: Maybe<string>, myEvents?: boolean) => [
+    "bondEvents",
+    id,
+    !!myEvents,
+  ],
   lbpPoolTotal: (id?: Maybe<string>) => ["lbpPoolTotal", id],
   poolHistoricalBalance: (pool?: string, block?: number) => [
     "poolHistoricalBalance",

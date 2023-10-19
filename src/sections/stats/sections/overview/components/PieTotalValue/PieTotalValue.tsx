@@ -18,7 +18,8 @@ export const PieTotalValue = ({
 }: PieTotalValueProps) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  if (isLoading) return <Skeleton width={200} height={isDesktop ? 42 : 20} />
+  if (isLoading)
+    return <Skeleton height={isDesktop ? 52 : 20} sx={{ mt: 12 }} />
 
   return (
     <div sx={{ flex: "column", gap: 8 }}>

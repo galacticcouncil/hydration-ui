@@ -198,7 +198,7 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
           sx={{ width: "100%", height: [500, 600], pt: [60, 20] }}
           css={{ position: "relative" }}
         >
-          <ChartWrapper assetSymbol={omnipoolAsset.symbol} />
+          <ChartWrapper assetId={omnipoolAsset.id} />
         </SStatsCardContainer>
       </div>
       {/* TODO: temporarily hidden */}

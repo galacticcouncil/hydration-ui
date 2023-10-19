@@ -1,6 +1,8 @@
 import { Text } from "components/Typography/Text/Text"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   name: string
@@ -10,10 +12,21 @@ type Props = {
 }
 
 export const RemoveLiquidityReward = ({ name, symbol, amount, id }: Props) => {
+  const { assets } = useRpcProvider()
+  const meta = assets.getAsset(id)
+
   return (
     <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
       <div sx={{ flex: "row", align: "center", gap: 8 }}>
-        <Icon size={28} icon={<AssetLogo id={id} />} />
+        {assets.isStableSwap(meta) ? (
+          <MultipleIcons
+            icons={meta.assets.map((asset: string) => ({
+              icon: <AssetLogo id={asset} />,
+            }))}
+          />
+        ) : (
+          <Icon size={28} icon={<AssetLogo id={id} />} />
+        )}
         <div sx={{ flex: "column" }}>
           <Text fs={[14, 16]}>{symbol}</Text>
           <Text fs={[10, 12]} color="neutralGray500">
