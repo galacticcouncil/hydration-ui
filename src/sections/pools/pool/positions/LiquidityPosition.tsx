@@ -143,7 +143,7 @@ export const LiquidityPosition = ({
   const { assets } = useRpcProvider()
   const meta = assets.getAsset(position.assetId)
   const price = useDisplayPrice(meta.id)
-  console.log(meta)
+
   const shiftBy = meta.decimals
   const spotPrice = price.data?.spotPrice
   const providedAmountPrice = spotPrice
