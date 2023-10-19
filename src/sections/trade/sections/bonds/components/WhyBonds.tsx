@@ -26,7 +26,7 @@ export const WhyBonds = () => {
           <Icon icon={<WhyBondsIcon />} />
           <Text
             color="white"
-            fs={19}
+            fs={[15, 19]}
             fw={600}
             font="FontOver"
             tTransform="uppercase"

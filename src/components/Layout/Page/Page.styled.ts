@@ -120,5 +120,7 @@ export const SSubHeader = styled.div`
   position: relative;
   z-index: 1;
 
-  margin: 0 -20px;
+  @media (${theme.viewport.gte.sm}) {
+    margin: 0 -20px;
+  }
 `
