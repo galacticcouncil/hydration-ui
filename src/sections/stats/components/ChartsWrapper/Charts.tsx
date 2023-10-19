@@ -6,15 +6,15 @@ import { ChartType } from "./ChartsWrapper"
 export const Charts = ({
   type,
   timeframe,
-  assetSymbol,
+  assetId,
 }: {
   type: ChartType
   timeframe: StatsTimeframe
-  assetSymbol?: string
+  assetId?: string
 }) => {
   const stats = useStats({
     timeframe,
-    assetSymbol,
+    assetId,
     type,
   })
 

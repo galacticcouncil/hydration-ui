@@ -19,18 +19,18 @@ export enum StatsTimeframe {
 export const useStats = (
   data: Maybe<{
     timeframe?: StatsTimeframe
-    assetSymbol?: string
+    assetId?: string
     type: ChartType
   }>,
 ) => {
-  const { timeframe, assetSymbol, type = "tvl" } = data ?? {}
+  const { timeframe, assetId, type = "tvl" } = data ?? {}
   return useQuery(
-    QUERY_KEYS.stats(type, timeframe, assetSymbol),
+    QUERY_KEYS.stats(type, timeframe, assetId),
     async () => {
       const res =
         type === "volume"
-          ? await getStats(timeframe, assetSymbol)()
-          : await getStatsTvl(assetSymbol)()
+          ? await getStats(timeframe, assetId)()
+          : await getStatsTvl(assetId)()
 
       if (!res.length) {
         throw new Error("Error fetching stats data")
@@ -42,22 +42,21 @@ export const useStats = (
   )
 }
 
-const getStats =
-  (timeframe?: StatsTimeframe, assetSymbol?: string) => async () => {
-    const res = await fetch(
-      `https://api.hydradx.io/hydradx-ui/v1/stats/volume/${assetSymbol ?? ""}${
-        timeframe ? `?timeframe=${timeframe}` : ""
-      }`,
-    )
-
-    const data: Promise<StatsData[]> = res.json()
-
-    return data
-  }
-
-const getStatsTvl = (assetSymbol?: string) => async () => {
+const getStats = (timeframe?: StatsTimeframe, assetId?: string) => async () => {
   const res = await fetch(
-    `https://api.hydradx.io/hydradx-ui/v1/stats/tvl/${assetSymbol ?? ""}`,
+    `https://api.hydradx.io/hydradx-ui/v1/stats/volume/${assetId ?? ""}${
+      timeframe ? `?timeframe=${timeframe}` : ""
+    }`,
+  )
+
+  const data: Promise<StatsData[]> = res.json()
+
+  return data
+}
+
+const getStatsTvl = (assetId?: string) => async () => {
+  const res = await fetch(
+    `https://api.hydradx.io/hydradx-ui/v1/stats/tvl/${assetId ?? ""}`,
   )
 
   const data: Promise<StatsData[]> = res.json()

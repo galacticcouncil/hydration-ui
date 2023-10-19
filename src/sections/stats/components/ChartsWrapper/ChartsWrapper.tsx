@@ -12,9 +12,9 @@ import { useRpcProvider } from "providers/rpcProvider"
 
 export type ChartType = "tvl" | "volume"
 
-type Props = { assetSymbol?: string }
+type Props = { assetId?: string }
 
-export const ChartWrapper = ({ assetSymbol }: Props) => {
+export const ChartWrapper = ({ assetId }: Props) => {
   const { t } = useTranslation()
   const [chartType, setChartType] = useState<ChartType>("tvl")
   const [timeframe, setTimeframe] = useState<StatsTimeframe>(
@@ -70,11 +70,7 @@ export const ChartWrapper = ({ assetSymbol }: Props) => {
           <Spacer size={22} />
         )}
       </div>
-      <Charts
-        type={chartType}
-        timeframe={timeframe}
-        assetSymbol={assetSymbol}
-      />
+      <Charts type={chartType} timeframe={timeframe} assetId={assetId} />
     </>
   )
 }
