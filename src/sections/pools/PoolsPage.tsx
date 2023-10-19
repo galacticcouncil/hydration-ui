@@ -36,11 +36,7 @@ const PoolPageContent = () => {
       />
 
       <div sx={{ flex: "column", gap: 20 }}>
-        {isLoading &&
-          [...Array(3)].map((_, index) => (
-            <PoolSkeleton key={index} length={3} index={index} />
-          ))}
-
+        {isLoading && <PoolsSkeleton />}
         {all.map((pool) =>
           isStablepool(pool) ? (
             <StablePool key={pool.id.toString()} pool={pool} />
