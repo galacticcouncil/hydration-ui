@@ -97,31 +97,20 @@ export const TransferModal = ({
     paginateTo(page - 1)
   }
 
-  const renderStepper = isDesktop ? (
-    <Stepper
-      steps={steps.map((step, idx) => ({
-        label: step,
-        state: getStepState(idx),
-      }))}
-    />
-  ) : (
-    <Text color="whiteish500">
-      {t("liquidity.stablepool.transfer.step", {
-        current: page + 1,
-        total: steps.length,
-      })}
-    </Text>
-  )
-
   return (
     <Modal
       open={isOpen}
       onClose={onClose}
       disableCloseOutside={true}
       topContent={
-        !defaultPage && ![Page.OPTIONS, Page.ASSETS].includes(page)
-          ? renderStepper
-          : undefined
+        !defaultPage && ![Page.OPTIONS, Page.ASSETS].includes(page) ? (
+          <Stepper
+            steps={steps.map((step, idx) => ({
+              label: step,
+              state: getStepState(idx),
+            }))}
+          />
+        ) : undefined
       }
     >
       <ModalContents

@@ -8,6 +8,9 @@ import {
   SStepperLine,
   SThumbContainer,
 } from "./Stepper.styled"
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import { useTranslation } from "react-i18next"
 
 const STEP_STATES = ["active", "done", "todo"] as const
 
@@ -46,14 +49,30 @@ const Step = ({ label, state }: StepProps) => {
 }
 
 export const Stepper = ({ steps }: StepperProps) => {
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const { t } = useTranslation()
+
+  const active = steps.findIndex((step) => step.state === "active")
+
+  if (isDesktop) {
+    return (
+      <SStepperContainer>
+        {steps.map((step, index) => (
+          <Fragment key={index}>
+            <Step {...step} />
+            {index < steps.length - 1 && <SStepperLine />}
+          </Fragment>
+        ))}
+      </SStepperContainer>
+    )
+  }
+
   return (
-    <SStepperContainer>
-      {steps.map((step, index) => (
-        <Fragment key={index}>
-          <Step {...step} />
-          {index < steps.length - 1 && <SStepperLine />}
-        </Fragment>
-      ))}
-    </SStepperContainer>
+    <Text color="whiteish500">
+      {t("stepper.title", {
+        current: active + 1,
+        total: steps.length,
+      })}
+    </Text>
   )
 }
