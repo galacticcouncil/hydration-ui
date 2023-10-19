@@ -3,6 +3,7 @@ import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import { TransferOption } from "./TransferOption"
 import { ListItem } from "./ListItem"
 import { useTranslation } from "react-i18next"
+import { Text } from "components/Typography/Text/Text"
 
 export type Option = "OMNIPOOL" | "STABLEPOOL"
 
@@ -40,6 +41,11 @@ export const TransferOptions = ({
         <ListItem>
           {t("liquidity.stablepool.add.stablepoolAndOmnipool.benefit4")}
         </ListItem>
+        {disableOmnipool && (
+          <Text color="alarmRed400" sx={{ ml: 30, mt: 20 }}>
+            {t("liquidity.stablepool.add.stablepoolAndOmnipool.unavailable")}
+          </Text>
+        )}
       </TransferOption>
       <TransferOption
         selected={selected === "STABLEPOOL"}

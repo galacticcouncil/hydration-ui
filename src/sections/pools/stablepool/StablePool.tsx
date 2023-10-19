@@ -28,8 +28,8 @@ export const StablePool = ({
     total,
     balanceByAsset,
     reserves,
-    totalOmnipoolDisplay,
-    tradability
+    totalDisplay,
+    tradability,
   },
 }: Props) => {
   const [transferOpen, setTransferOpen] = useState<Page>()

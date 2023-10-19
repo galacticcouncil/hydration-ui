@@ -24,28 +24,33 @@ export const TransferOption = ({
   subheading,
   icon,
   disabled,
-}: Props) => (
-  <SBlock selected={selected} {...(!disabled && { onClick: onSelect })}>
-    <div
-      sx={{ flex: "row", align: "center", justify: "space-between", mb: 26 }}
-    >
-      <div sx={{ flex: "row", align: "center", gap: 12, color: "white" }}>
-        <Icon icon={icon} />
-        <Heading fs={15} lh={20} fw={500}>
-          {heading}
-        </Heading>
+}: Props) => {
+  const color = disabled ? "whiteish500" : "white"
+
+  return (
+    <SBlock selected={selected} {...(!disabled && { onClick: onSelect })}>
+      <div
+        sx={{ flex: "row", align: "center", justify: "space-between", mb: 26 }}
+      >
+        <div sx={{ flex: "row", align: "center", gap: 12, color: "white" }}>
+          <Icon icon={icon} sx={{ color }} />
+          <Heading fs={15} lh={20} fw={500} color={color}>
+            {heading}
+          </Heading>
+        </div>
+        <CheckBox disabled={disabled} selected={selected} />
       </div>
-      <CheckBox selected={selected} />
-    </div>
-    <div
-      css={{
-        borderLeft: `1px solid ${theme.colors.white}`,
-        marginBottom: 6,
-        paddingLeft: 25,
-      }}
-    >
-      <Text>{subheading}:</Text>
-    </div>
-    {children}
-  </SBlock>
-)
+      <div
+        css={{
+          borderLeft: `1px solid ${theme.colors.white}`,
+          marginBottom: 6,
+          paddingLeft: 25,
+        }}
+        sx={{ color }}
+      >
+        <Text color={color}>{subheading}:</Text>
+      </div>
+      <div sx={{ color }}>{children}</div>
+    </SBlock>
+  )
+}
