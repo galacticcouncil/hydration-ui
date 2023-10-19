@@ -42,7 +42,7 @@ export const useLiquidityProvidersTableSkeleton = (enableAnimation = true) => {
         id: "position",
         header: t("position"),
         cell: () => (
-          <div sx={{ flex: "row", justify: isDesktop ? "center" : "end" }}>
+          <div sx={{ flex: "row", justify: ["end", "center"] }}>
             <Skeleton
               width={isDesktop ? 72 : 52}
               height={isDesktop ? 26 : 20}

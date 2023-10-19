@@ -6,7 +6,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ButtonTransparent } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
@@ -61,7 +60,7 @@ export const useLiquidityProvidersTable = (data: any) => {
         header: t("position"),
         sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
         cell: ({ row }) => (
-          <div sx={{ flex: "row", justify: isDesktop ? "center" : "right" }}>
+          <div sx={{ flex: "row", justify: ["right", "center"] }}>
             <WalletAssetsHydraPositionsData
               symbol={row.original.symbol}
               value={row.original.value}
@@ -97,11 +96,15 @@ export const useLiquidityProvidersTable = (data: any) => {
       }),
       display({
         id: "actions",
-        cell: () => (
+        cell: ({ row }) => (
           <div sx={{ pl: [5, 0] }}>
-            <ButtonTransparent>
+            <a
+              href={`https://hydradx.subscan.io/account/${row.original.account}`}
+              target="blank"
+              rel="noreferrer"
+            >
               <Icon size={12} sx={{ color: "iconGray" }} icon={<LinkIcon />} />
-            </ButtonTransparent>
+            </a>
           </div>
         ),
       }),

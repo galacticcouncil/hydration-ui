@@ -10,7 +10,6 @@ import {
   TableRowStats,
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
-
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"

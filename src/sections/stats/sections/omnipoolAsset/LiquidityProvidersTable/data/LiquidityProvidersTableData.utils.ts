@@ -1,6 +1,6 @@
-import { useTokensBalances } from "api/balances"
+import { useTokenBalance } from "api/balances"
 import { useApiIds } from "api/consts"
-import { useOmnipoolAssets, useOmnipoolPositionsMulti } from "api/omnipool"
+import { useOmnipoolAsset, useOmnipoolPositionsMulti } from "api/omnipool"
 import { useUniquesAssets } from "api/uniques"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -27,22 +27,12 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
   const itemIds = uniques.data?.map((u) => u.itemId) ?? []
   const positions = useOmnipoolPositionsMulti(itemIds, withoutRefresh)
 
-  const omnipoolAssets = useOmnipoolAssets()
-  const omnipoolBalances = useTokensBalances(
-    [assetId],
-    OMNIPOOL_ACCOUNT_ADDRESS,
-    withoutRefresh,
-  )
+  const omnipoolAsset = useOmnipoolAsset(assetId)
+  const assetBalance = useTokenBalance(assetId, OMNIPOOL_ACCOUNT_ADDRESS)
 
   const spotPrices = useDisplayPrices([apiIds.data?.hubId ?? "", assetId])
 
-  const queries = [
-    uniques,
-    positions,
-    omnipoolAssets,
-    spotPrices,
-    ...omnipoolBalances,
-  ]
+  const queries = [uniques, positions, omnipoolAsset, spotPrices, assetBalance]
 
   const isLoading = queries.some((q) => q.isLoading)
 
@@ -50,9 +40,9 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
     if (
       !apiIds.data ||
       !positions.data ||
-      !omnipoolAssets.data ||
+      !omnipoolAsset.data ||
       !spotPrices.data ||
-      omnipoolBalances.some((q) => !q.data)
+      !assetBalance.data
     ) {
       return []
     }
@@ -68,15 +58,9 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
     const valueSp = spotPrices?.data?.find((sp) => sp?.tokenIn === assetId)
     const valueSpotPrice = valueSp?.spotPrice ?? BN(0)
 
-    const omnipoolBalance =
-      omnipoolBalances.find((b) => b.data?.assetId.toString() === assetId)?.data
-        ?.balance ?? BN(0)
+    const balance = assetBalance?.data?.balance ?? BN(0)
 
-    const omnipoolAsset = omnipoolAssets.data.find(
-      (a) => a.id.toString() === assetId,
-    )
-
-    const omnipoolTvl = getFloatingPointAmount(omnipoolBalance, meta.decimals)
+    const omnipoolTvl = getFloatingPointAmount(balance, meta.decimals)
     const omnipoolTvlPrice = omnipoolTvl.multipliedBy(valueSpotPrice)
 
     const data = positions.data
@@ -94,7 +78,7 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
       .map(({ position, unique }) => {
         const { lrna, value, valueDisplay } = calculatePositionLiquidity({
           position,
-          omnipoolBalance,
+          omnipoolBalance: balance,
           omnipoolHubReserve: omnipoolAsset?.data?.hubReserve,
           omnipoolShares: omnipoolAsset?.data?.shares,
           lrnaSpotPrice,
@@ -153,10 +137,10 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
     return sortedData.slice(0, rowLimit)
   }, [
     apiIds.data,
+    assetBalance.data,
     assetId,
     assets,
-    omnipoolAssets.data,
-    omnipoolBalances,
+    omnipoolAsset.data,
     positions.data,
     spotPrices.data,
     uniques.data,
