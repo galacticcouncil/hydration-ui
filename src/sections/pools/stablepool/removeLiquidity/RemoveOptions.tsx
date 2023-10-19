@@ -24,13 +24,13 @@ export const RemoveOptions = ({ selected, onSelect }: Props) => {
         icon={<WaterRippleIcon />}
       >
         <ListItem>
-          First benefit mentioned here. A line of of text would be enough.
+          {t("liquidity.stablepool.remove.stablepoolOnly.benefit1")}
         </ListItem>
         <ListItem>
-          Second benefit mentioned here. A line of of text would be enough.
+          {t("liquidity.stablepool.remove.stablepoolOnly.benefit2")}
         </ListItem>
         <ListItem>
-          Third benefit mentioned here. A line of of text would be enough.
+          {t("liquidity.stablepool.remove.stablepoolOnly.benefit3")}
         </ListItem>
       </PathOption>
       <PathOption
@@ -40,7 +40,7 @@ export const RemoveOptions = ({ selected, onSelect }: Props) => {
         icon={<DropletIcon />}
       >
         <Text color="white" sx={{ m: 0, ml: 38 }} fs={14} fw={400}>
-          Receive selected stablecoin, after the fees calculated
+          {t("liquidity.stablepool.remove.all")}
         </Text>
       </PathOption>
     </>
