@@ -3,20 +3,21 @@ import { ComponentProps } from "react"
 import { useTranslation } from "react-i18next"
 import { LiquidityPosition } from "./LiquidityPosition"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
-import { usePoolPositions } from "sections/pools/pool/Pool.utils"
+import { Positions } from "sections/pools/pool/Pool.utils"
 
 type Props = ComponentProps<typeof LiquidityPosition> & {
   isOpen: boolean
   onClose: () => void
+  positions: Positions
 }
 
 export const LiquidityPositionModal = ({
   isOpen,
   onClose,
+  positions,
   ...props
 }: Props) => {
   const { t } = useTranslation()
-  const positions = usePoolPositions(props.poolId)
 
   return (
     <Modal
