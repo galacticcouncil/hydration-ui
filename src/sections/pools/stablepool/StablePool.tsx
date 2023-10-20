@@ -52,16 +52,12 @@ export const StablePool = ({ pool }: Props) => {
           css={{ gridArea: "values" }}
         />
         <PoolActions
-          poolId={id}
           pool={pool}
-          assets={assets}
-          fee={fee}
           css={{ gridArea: "actions" }}
           onExpandClick={() => setIsExpanded((prev) => !prev)}
           isExpanded={isExpanded}
           canExpand={hasPosition}
           refetchPositions={position.refetch}
-          reserves={reserves}
           amount={amount}
           onTransferOpen={() => setTransferOpen(Page.OPTIONS)}
         />
@@ -92,11 +88,8 @@ export const StablePool = ({ pool }: Props) => {
               css={{ overflow: "hidden" }}
             >
               <LiquidityPosition
-                poolId={id}
-                assets={assets}
+                pool={pool}
                 amount={amount}
-                fee={fee}
-                reserves={reserves}
                 refetchPosition={position.refetch}
                 onTransferOpen={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
                 canAddLiquidity={tradability?.canAddLiquidity}

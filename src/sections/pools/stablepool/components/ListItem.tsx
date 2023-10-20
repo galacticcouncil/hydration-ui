@@ -1,5 +1,4 @@
 import { Icon } from "components/Icon/Icon"
-import { Text } from "components/Typography/Text/Text"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 import ListIcon from "assets/icons/ListIcon.svg?react"

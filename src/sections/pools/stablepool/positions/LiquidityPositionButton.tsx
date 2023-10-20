@@ -20,7 +20,7 @@ export const LiquidityPositionButton = (props: Props) => {
   const { account } = useAccountStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { t } = useTranslation()
-  const positions = usePoolPositions(props.poolId)
+  const positions = usePoolPositions(props.pool.id)
 
   const hasPosition =
     props.amount.isGreaterThan(BN_0) || !!positions.data?.length

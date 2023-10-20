@@ -15,9 +15,6 @@ import { Spinner } from "components/Spinner/Spinner.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useModalPagination } from "components/Modal/Modal.utils"
-import { useMedia } from "react-use"
-import { theme } from "theme"
-import { STitleGradient } from "components/Modal/header/ModalHeader.styled"
 
 export enum Page {
   OPTIONS,
@@ -55,7 +52,6 @@ export const TransferModal = ({
   const { t } = useTranslation()
   const [assetId, setAssetId] = useState<string>(assets[0]?.id)
   const [sharesAmount, setSharesAmount] = useState<string>()
-  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const { page, direction, paginateTo } = useModalPagination(
     defaultPage ?? Page.OPTIONS,

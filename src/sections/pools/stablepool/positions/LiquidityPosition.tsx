@@ -6,46 +6,41 @@ import { SContainer, SOmnipoolButton } from "./LiquidityPosition.styled"
 import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import BN from "bignumber.js"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { u32 } from "@polkadot/types"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { SPositions } from "sections/pools/pool/Pool.styled"
 import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { TAsset } from "api/assetDetails"
 import Skeleton from "react-loading-skeleton"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useDisplayPrice } from "utils/displayAsset"
+import { Stablepool } from "sections/pools/PoolsPage.utils"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
+  pool: Stablepool
   refetchPosition: () => void
   amount: BN
-  poolId: u32
-  fee: BN
-  reserves: { asset_id: number; amount: string }[]
   onTransferOpen: () => void
-  assets: TAsset[]
   canAddLiquidity?: boolean
 }
 
 export const LiquidityPosition = ({
+  pool,
   amount,
-  assets,
-  poolId,
-  fee,
-  reserves,
   refetchPosition,
   onTransferOpen,
   canAddLiquidity,
 }: Props) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
 
-  const price = useDisplayPrice(poolId)
-  const shiftBy = STABLEPOOL_TOKEN_DECIMALS
+  const meta = assets.getAsset(pool.id.toString())
+  const price = useDisplayPrice(pool.id)
   const spotPrice = price.data?.spotPrice
   const providedAmountPrice = spotPrice
-    ? amount.multipliedBy(spotPrice).shiftedBy(-shiftBy)
+    ? amount.multipliedBy(spotPrice).shiftedBy(-meta.decimals)
     : BN_0
 
   const providedAmountPriceLoading = price.isLoading
@@ -68,7 +63,7 @@ export const LiquidityPosition = ({
             <div sx={{ flex: "row", gap: 7, align: "center" }}>
               <MultipleIcons
                 size={15}
-                icons={assets.map((asset) => ({
+                icons={pool.assets.map((asset) => ({
                   icon: <AssetLogo id={asset.id} />,
                 }))}
               />
@@ -154,16 +149,11 @@ export const LiquidityPosition = ({
                 {t("liquidity.stablepool.addToOmnipool")}
               </div>
             </SOmnipoolButton>
-            <RemoveLiquidityButton
-              assets={assets}
-              position={{
-                reserves,
+            {/*reserves,
                 fee,
                 poolId,
-                amount,
-              }}
-              onSuccess={refetchPosition}
-            />
+                amount*/}
+            <RemoveLiquidityButton onSuccess={refetchPosition} pool={pool} />
           </div>
         </SContainer>
       </div>

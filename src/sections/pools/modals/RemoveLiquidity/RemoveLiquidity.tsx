@@ -2,7 +2,7 @@ import { Modal } from "components/Modal/Modal"
 import { useTranslation } from "react-i18next"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { RemoveLiquidityForm } from "./RemoveLiquidityForm"
-import { RemoveLiquidity as RemoveStablepoolLiquidity } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidity"
+import { RemoveLiquidityModal as RemoveStablepoolLiquidity } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityModal"
 import {
   isStablepool,
   OmnipoolPool,
