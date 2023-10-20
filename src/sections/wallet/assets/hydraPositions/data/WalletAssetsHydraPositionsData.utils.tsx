@@ -15,6 +15,7 @@ import { BN_10, BN_NAN } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
+import { calculatePositionLiquidity } from "utils/omnipool"
 
 export const useHydraPositionsData = () => {
   const { account } = useAccountStore()
@@ -77,74 +78,29 @@ export const useHydraPositionsData = () => {
         const symbol = meta.symbol
         const name = meta.name
 
-        const [nom, denom] = position.price.map((n) => new BN(n.toString()))
-        const price = nom.div(denom)
-        const positionPrice = price.times(BN_10.pow(18))
-
-        let lernaOutResult = "-1"
-        let liquidityOutResult = "-1"
-
-        if (omnipoolBalance?.data && omnipoolAsset?.data) {
-          const params: Parameters<typeof calculate_liquidity_out> = [
-            omnipoolBalance.data.balance.toString(),
-            omnipoolAsset.data.hubReserve.toString(),
-            omnipoolAsset.data.shares.toString(),
-            position.amount.toString(),
-            position.shares.toString(),
-            positionPrice.toFixed(0),
-            position.shares.toString(),
-            "0", // fee zero
-          ]
-          lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
-          liquidityOutResult = calculate_liquidity_out.apply(this, params)
-        }
-
         const lrnaSp = spotPrices.data?.find(
           (sp) => sp?.tokenIn === apiIds.data.hubId,
         )
-        const lrnaDp = BN_10.pow(lrnaMeta.decimals)
-        const lrna =
-          lernaOutResult !== "-1" ? new BN(lernaOutResult).div(lrnaDp) : BN_NAN
 
         const valueSp = spotPrices.data?.find((sp) => sp?.tokenIn === assetId)
-        const valueDp = BN_10.pow(meta.decimals)
-        const value =
-          liquidityOutResult !== "-1"
-            ? new BN(liquidityOutResult).div(valueDp)
-            : BN_NAN
-        let valueDisplay = BN_NAN
 
-        const providedAmount = position.amount.toBigNumber().div(valueDp)
-        let providedAmountDisplay = BN_NAN
-
-        const shares = position.shares.toBigNumber()
-
-        if (liquidityOutResult !== "-1" && valueSp?.spotPrice) {
-          valueDisplay = value.times(valueSp.spotPrice)
-
-          if (lrna.gt(0)) {
-            valueDisplay = !lrnaSp?.spotPrice
-              ? BN_NAN
-              : valueDisplay.plus(lrna.times(lrnaSp.spotPrice))
-          }
-        }
-
-        if (valueSp?.spotPrice)
-          providedAmountDisplay = providedAmount.times(valueSp.spotPrice)
+        const liquidityValues = calculatePositionLiquidity({
+          position,
+          omnipoolBalance: omnipoolBalance?.data?.balance ?? BN(0),
+          omnipoolHubReserve: omnipoolAsset?.data.hubReserve,
+          omnipoolShares: omnipoolAsset?.data.shares,
+          lrnaSpotPrice: lrnaSp?.spotPrice ?? BN(0),
+          valueSpotPrice: valueSp?.spotPrice ?? BN(0),
+          lrnaDecimals: lrnaMeta.decimals,
+          assetDecimals: meta.decimals,
+        })
 
         const result = {
           id: position.id.toString(),
           assetId,
           symbol,
           name,
-          lrna,
-          value,
-          valueDisplay,
-          price,
-          providedAmountShifted: providedAmount,
-          providedAmount: position.amount.toBigNumber(),
-          providedAmountDisplay,
-          shares,
+          ...liquidityValues,
         }
 
         return result

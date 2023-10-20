@@ -21,9 +21,17 @@ type Props = {
 }
 
 export const StablePool = ({ pool }: Props) => {
-  const { id, fee, assets, total, balanceByAsset, reserves, totalDisplay } =
+  const {
+    id,
+    fee,
+    assets,
+    total,
+    balanceByAsset,
+    reserves,
+    totalDisplay,
+    tradability,
+  } =
     pool
-
   const [transferOpen, setTransferOpen] = useState<Page>()
   const [isExpanded, setIsExpanded] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -71,6 +79,7 @@ export const StablePool = ({ pool }: Props) => {
           onClose={() => setTransferOpen(undefined)}
           balanceByAsset={balanceByAsset}
           refetchPositions={position.refetch}
+          canAddLiquidity={tradability?.canAddLiquidity}
         />
       )}
       {isDesktop && hasPosition && (
@@ -91,6 +100,7 @@ export const StablePool = ({ pool }: Props) => {
                 reserves={reserves}
                 refetchPosition={position.refetch}
                 onTransferOpen={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
+                canAddLiquidity={tradability?.canAddLiquidity}
               />
               <LiquidityPositionWrapper positions={positions} pool={pool} />
             </motion.div>

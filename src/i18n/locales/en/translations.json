@@ -149,6 +149,7 @@
   "liquidity.stablepool.remove.stablepoolOnly.benefit2": "Your position is exposed to other assets in the Stablepool;",
   "liquidity.stablepool.remove.stablepoolOnly.benefit3": "You earn rewards from trading fees in the Stablepool.",
   "liquidity.stablepool.remove.all": "Receive selected stablecoin, after the fees calculated.",
+  "liquidity.stablepool.add.stablepoolAndOmnipool.unavailable": "Adding liquidity is temporarily unavailable.",
   "liquidity.stablepool.add.benefits": "Benefits",
   "liquidity.stablepool.transfer.select": "Select pool",
   "liquidity.stablepool.transfer.provide": "Add to Stablepool",

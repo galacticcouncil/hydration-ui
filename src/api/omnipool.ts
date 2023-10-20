@@ -121,8 +121,25 @@ export const getOmnipoolPosition =
     return position
   }
 
+export const useOmnipoolPositionsMulti = (
+  itemIds: Array<u128 | u32 | undefined>,
+  noRefresh?: boolean,
+) => {
+  const { api } = useRpcProvider()
+
+  return useQuery({
+    queryKey: noRefresh
+      ? QUERY_KEYS.omnipoolPositionsMulti(itemIds.map((id) => id?.toString()))
+      : QUERY_KEYS.omnipoolPositionsMultiLive(
+          itemIds.map((id) => id?.toString()),
+        ),
+    queryFn: getOmnipoolPositions(api, itemIds),
+    enabled: itemIds.length > 0,
+  })
+}
+
 export const getOmnipoolPositions =
-  (api: ApiPromise, itemIds: u128[]) => async () => {
+  (api: ApiPromise, itemIds: Array<u128 | u32 | undefined>) => async () => {
     const res = await api.query.omnipool.positions.multi(itemIds)
     const data = res.map((entry) => entry.unwrap())
 

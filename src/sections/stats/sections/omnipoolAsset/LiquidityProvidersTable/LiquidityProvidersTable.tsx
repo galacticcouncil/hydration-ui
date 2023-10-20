@@ -10,7 +10,6 @@ import {
   TableRowStats,
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
-
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
@@ -26,9 +25,8 @@ export const LiquidityProvidersTable = ({ data }: Props) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const onRowSelect = (assetId: string) => {
-    // TODO
-    console.log(assetId)
+  const onRowSelect = (account: string) => {
+    window.open(`https://hydradx.subscan.io/account/${account}`, "_blank")
   }
 
   const table = useLiquidityProvidersTable(data)
@@ -80,7 +78,7 @@ export const LiquidityProvidersTable = ({ data }: Props) => {
         <TableBodyContent>
           {table.getRowModel().rows.map((row, i) => (
             <TableRowStats
-              onClick={() => onRowSelect(row.original.id)}
+              onClick={() => onRowSelect(row.original.account)}
               key={row.id}
               css={{ cursor: "pointer" }}
             >

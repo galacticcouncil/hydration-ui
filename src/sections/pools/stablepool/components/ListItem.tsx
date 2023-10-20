@@ -21,8 +21,6 @@ export const ListItem = ({ children }: { children: string }) => (
       icon={<ListIcon />}
       sx={{ ml: -1, mt: -1, mr: 7, color: "pink500" }}
     />
-    <Text color="white" sx={{ m: 0 }} fs={14} fw={400}>
-      {children}
-    </Text>
+    {children}
   </SItem>
 )

@@ -37,6 +37,7 @@ type Props = {
   assets: { id: string }[]
   reserves: { asset_id: number; amount: string }[]
   defaultPage?: Page
+  canAddLiquidity?: boolean
 }
 
 export const TransferModal = ({
@@ -49,6 +50,7 @@ export const TransferModal = ({
   reserves,
   refetchPositions,
   defaultPage,
+  canAddLiquidity,
 }: Props) => {
   const { t } = useTranslation()
   const [assetId, setAssetId] = useState<string>(assets[0]?.id)
@@ -61,7 +63,10 @@ export const TransferModal = ({
 
   const rpcProvider = useRpcProvider()
 
-  const [selectedOption, setSelectedOption] = useState<Option>("OMNIPOOL")
+  const [selectedOption, setSelectedOption] = useState<Option>(
+    canAddLiquidity ? "OMNIPOOL" : "STABLEPOOL",
+  )
+
   const isStablepool = selectedOption === "STABLEPOOL"
 
   const steps = isStablepool
@@ -129,6 +134,7 @@ export const TransferModal = ({
             content: (
               <>
                 <TransferOptions
+                  disableOmnipool={!canAddLiquidity}
                   onSelect={setSelectedOption}
                   selected={selectedOption}
                 />

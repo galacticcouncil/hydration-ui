@@ -2,7 +2,7 @@ import styled from "@emotion/styled"
 import { css } from "@emotion/react"
 import { theme } from "theme"
 
-export const Outer = styled.div<{ selected?: boolean }>`
+export const Outer = styled.div<{ selected?: boolean; disabled?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10,8 +10,14 @@ export const Outer = styled.div<{ selected?: boolean }>`
   height: 28px;
   border-radius: 8px;
 
-  border: 1px solid rgba(153, 155, 167, 1);
+  border: 1px solid ${theme.colors.darkBlue200};
   background-color: rgba(84, 99, 128, 0.35);
+
+  ${({ disabled }) =>
+    disabled &&
+    css`
+      opacity: 0.2;
+    `}
 
   ${({ selected }) =>
     selected &&
