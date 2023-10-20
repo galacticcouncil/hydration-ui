@@ -116,7 +116,10 @@ function LiquidityPositionRemoveLiquidity(props: {
         variant="secondary"
         size="small"
         onClick={() => setOpenRemove(true)}
-        disabled={account?.isExternalWalletConnected}
+        disabled={
+          account?.isExternalWalletConnected ||
+          !props.pool.tradability?.canRemoveLiquidity
+        }
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
