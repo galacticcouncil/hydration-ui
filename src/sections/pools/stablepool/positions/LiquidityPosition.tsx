@@ -26,6 +26,7 @@ type Props = {
   reserves: { asset_id: number; amount: string }[]
   onTransferOpen: () => void
   assets: TAsset[]
+  canAddLiquidity?: boolean
 }
 
 export const LiquidityPosition = ({
@@ -36,6 +37,7 @@ export const LiquidityPosition = ({
   reserves,
   refetchPosition,
   onTransferOpen,
+  canAddLiquidity,
 }: Props) => {
   const { t } = useTranslation()
 
@@ -142,7 +144,11 @@ export const LiquidityPosition = ({
               gap: 8,
             }}
           >
-            <SOmnipoolButton size="small" onClick={onTransferOpen}>
+            <SOmnipoolButton
+              size="small"
+              onClick={onTransferOpen}
+              disabled={!canAddLiquidity}
+            >
               <div sx={{ flex: "row", align: "center", justify: "center" }}>
                 <Icon icon={<PlusIcon />} sx={{ mr: 8 }} />
                 {t("liquidity.stablepool.addToOmnipool")}

@@ -18,7 +18,7 @@ import { Fragment, ReactNode } from "react"
 
 type Props = {
   table: ReactTable<unknown>
-  title?: string
+  title?: string | ReactNode
   placeholder?: ReactNode
   className?: string
   hideHeader?: boolean

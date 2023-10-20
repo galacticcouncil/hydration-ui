@@ -29,7 +29,11 @@ export const LiquidityPositionModal = ({
     >
       <div sx={{ flex: "column", align: "center", gap: 8 }}>
         <LiquidityPosition {...props} />
-        <LiquidityPositionWrapper poolId={props.poolId} positions={positions} />
+        <LiquidityPositionWrapper
+          poolId={props.poolId}
+          positions={positions}
+          disableRemoveLiquidity={false}
+        />
       </div>
     </Modal>
   )
