@@ -13,7 +13,7 @@ export const StatsPOL = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
-    <div sx={{ flex: "column", gap: 50 }}>
+    <div sx={{ flex: "column", gap: [24, 50] }}>
       <div sx={{ flex: "row", gap: 20 }}>
         <PieWrapper data={data.data} isLoading={data.isLoading} />
         {isDesktop && (

@@ -71,7 +71,7 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
     <SContainerVertical
       sx={{
         width: ["100%", "fit-content"],
-        height: [500, "100%"],
+        height: ["auto", "100%"],
         p: [20, 40],
         gap: [24, 40],
       }}
