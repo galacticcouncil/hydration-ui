@@ -64,6 +64,7 @@ export const StablePool = ({
           reserves={reserves}
           amount={amount}
           onTransferOpen={() => setTransferOpen(Page.OPTIONS)}
+          canAddLiquidity={tradability?.canAddLiquidity}
         />
         <PoolCapacity id={id.toString()} css={{ gridArea: "capacity" }} />
       </SGridContainer>
@@ -101,7 +102,11 @@ export const StablePool = ({
                 onTransferOpen={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
                 canAddLiquidity={tradability?.canAddLiquidity}
               />
-              <LiquidityPositionWrapper poolId={id} positions={positions} />
+              <LiquidityPositionWrapper
+                poolId={id}
+                positions={positions}
+                disableRemoveLiquidity={false}
+              />
             </motion.div>
           )}
         </AnimatePresence>
