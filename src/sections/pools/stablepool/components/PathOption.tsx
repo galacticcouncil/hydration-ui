@@ -41,16 +41,17 @@ export const PathOption = ({
         <CheckBox disabled={disabled} selected={selected} />
       </div>
       {subheading && (
-      <div
-        css={{
-          borderLeft: `1px solid ${theme.colors.white}`,
-          marginBottom: 6,
-          paddingLeft: 25,
-        }}
-      sx={{ color }}>
-        <Text color={color}>{subheading}:</Text>
-      </div>
-    )}
+        <div
+          css={{
+            borderLeft: `1px solid ${theme.colors.white}`,
+            marginBottom: 6,
+            paddingLeft: 25,
+          }}
+          sx={{ color }}
+        >
+          <Text color={color}>{subheading}:</Text>
+        </div>
+      )}
       <div sx={{ color }}>{children}</div>
     </SBlock>
   )

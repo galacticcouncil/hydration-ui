@@ -30,8 +30,7 @@ export const StablePool = ({ pool }: Props) => {
     reserves,
     totalDisplay,
     tradability,
-  } =
-    pool
+  } = pool
   const [transferOpen, setTransferOpen] = useState<Page>()
   const [isExpanded, setIsExpanded] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
