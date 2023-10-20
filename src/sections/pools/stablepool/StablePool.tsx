@@ -21,7 +21,16 @@ type Props = {
 }
 
 export const StablePool = ({
-  pool: { id, fee, assets, total, balanceByAsset, reserves, totalDisplay },
+  pool: {
+    id,
+    fee,
+    assets,
+    total,
+    balanceByAsset,
+    reserves,
+    totalDisplay,
+    tradability,
+  },
 }: Props) => {
   const [transferOpen, setTransferOpen] = useState<Page>()
   const [isExpanded, setIsExpanded] = useState(false)
@@ -55,6 +64,7 @@ export const StablePool = ({
           reserves={reserves}
           amount={amount}
           onTransferOpen={() => setTransferOpen(Page.OPTIONS)}
+          canAddLiquidity={tradability?.canAddLiquidity}
         />
         <PoolCapacity id={id.toString()} css={{ gridArea: "capacity" }} />
       </SGridContainer>
@@ -69,6 +79,7 @@ export const StablePool = ({
           onClose={() => setTransferOpen(undefined)}
           balanceByAsset={balanceByAsset}
           refetchPositions={position.refetch}
+          canAddLiquidity={tradability?.canAddLiquidity}
         />
       )}
       {isDesktop && hasPosition && (
@@ -89,8 +100,13 @@ export const StablePool = ({
                 reserves={reserves}
                 refetchPosition={position.refetch}
                 onTransferOpen={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
+                canAddLiquidity={tradability?.canAddLiquidity}
               />
-              <LiquidityPositionWrapper poolId={id} positions={positions} />
+              <LiquidityPositionWrapper
+                poolId={id}
+                positions={positions}
+                disableRemoveLiquidity={false}
+              />
             </motion.div>
           )}
         </AnimatePresence>

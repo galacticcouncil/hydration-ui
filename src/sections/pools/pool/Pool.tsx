@@ -80,6 +80,7 @@ export const Pool = ({ pool }: Props) => {
               css={{ overflow: "hidden" }}
             >
               <LiquidityPositionWrapper
+                disableRemoveLiquidity={!pool.tradability.canRemoveLiquidity}
                 poolId={pool.id}
                 positions={positions}
               />

@@ -35,6 +35,7 @@ type Props = {
   position: HydraPositionsTableData
   onSuccess: () => void
   index: number
+  disableRemoveLiquidity: boolean
 }
 
 function LiquidityPositionJoinFarmButton(props: {
@@ -104,6 +105,7 @@ function LiquidityPositionJoinFarmButton(props: {
 function LiquidityPositionRemoveLiquidity(props: {
   position: HydraPositionsTableData
   onSuccess: () => void
+  disableRemoveLiquidity: boolean
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -114,7 +116,9 @@ function LiquidityPositionRemoveLiquidity(props: {
         variant="secondary"
         size="small"
         onClick={() => setOpenRemove(true)}
-        disabled={account?.isExternalWalletConnected}
+        disabled={
+          account?.isExternalWalletConnected || props.disableRemoveLiquidity
+        }
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
@@ -138,6 +142,7 @@ export const LiquidityPosition = ({
   position,
   index,
   onSuccess,
+  disableRemoveLiquidity,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -247,6 +252,7 @@ export const LiquidityPosition = ({
         <LiquidityPositionRemoveLiquidity
           position={position}
           onSuccess={onSuccess}
+          disableRemoveLiquidity={disableRemoveLiquidity}
         />
       </div>
     </SContainer>

@@ -14,8 +14,7 @@ import { Icon } from "components/Icon/Icon"
 import { useOmnipoolOverviewData } from "sections/stats/sections/overview/data/OmnipoolOverview.utils"
 import { useTranslation } from "react-i18next"
 import { AssetStats } from "./stats/AssetStats"
-// TODO: temporarily hidden
-// import { LiquidityProvidersTableWrapper } from "./LiquidityProvidersTable/LiquidityProvidersTableWrapper"
+import { LiquidityProvidersTableWrapper } from "./LiquidityProvidersTable/LiquidityProvidersTableWrapper"
 import { Spacer } from "components/Spacer/Spacer"
 import BN from "bignumber.js"
 import Skeleton from "react-loading-skeleton"
@@ -29,6 +28,7 @@ import { SStatsCardContainer } from "sections/stats/StatsPage.styled"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useRpcProvider } from "providers/rpcProvider"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { LiquidityProvidersTableSkeleton } from "sections/stats/sections/omnipoolAsset/LiquidityProvidersTable/skeleton/LiquidityProvidersTableSkeleton"
 
 type SearchGenerics = MakeGenerics<{
   Search: { asset: number }
@@ -201,8 +201,8 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
           <ChartWrapper assetId={omnipoolAsset.id} />
         </SStatsCardContainer>
       </div>
-      {/* TODO: temporarily hidden */}
-      {/*<LiquidityProvidersTableWrapper />*/}
+      <Spacer size={[24, 60]} />
+      <LiquidityProvidersTableWrapper assetId={assetId} />
       <Spacer size={[24, 60]} />
       <RecentTradesTableWrapperData assetId={assetId} />
     </SOmnipoolAssetContainer>
@@ -223,8 +223,8 @@ const StatsOmnipoolAssetSkeleton = () => {
           <ChartWrapper />
         </SStatsCardContainer>
       </div>
-      {/* TODO: temporarily hidden */}
-      {/*<LiquidityProvidersTableWrapper />*/}
+      <Spacer size={[24, 60]} />
+      <LiquidityProvidersTableSkeleton />
       <Spacer size={[24, 60]} />
       <RecentTradesTableSkeleton />
     </SOmnipoolAssetContainer>
