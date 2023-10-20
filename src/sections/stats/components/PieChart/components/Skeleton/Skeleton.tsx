@@ -3,7 +3,7 @@ import { SSkeletonContainer, SkeletonClipPath } from "./Skeleton.styled"
 
 export const PieSkeleton = () => {
   return (
-    <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
+    <div sx={{ flex: "column", justify: "center", align: "center", gap: 10 }}>
       <SSkeletonContainer>
         <svg height="0" width="0" aria-hidden="true">
           <defs>
