@@ -218,6 +218,15 @@ export const QUERY_KEYS = {
     address?.toString(),
     collectionId?.toString(),
   ],
+  uniquesAssets: (collectionId: string | u128) => [
+    "uniquesAssets",
+    collectionId.toString(),
+  ],
+  uniquesAssetsLive: (collectionId: string | u128) => [
+    QUERY_KEY_PREFIX,
+    "uniquesAssets",
+    collectionId.toString(),
+  ],
   uniquesAsset: (collectionId: string | u128) => [
     "uniquesAsset",
     collectionId.toString(),
@@ -238,6 +247,15 @@ export const QUERY_KEYS = {
     id?.toString(),
   ],
   omnipoolPositions: [QUERY_KEY_PREFIX, "omnipoolPositions"],
+  omnipoolPositionsMulti: (itemIds: Array<string | undefined>) => [
+    "omnipoolPositionsMulti",
+    itemIds,
+  ],
+  omnipoolPositionsMultiLive: (itemIds: Array<string | undefined>) => [
+    QUERY_KEY_PREFIX,
+    "omnipoolPositionsMulti",
+    itemIds,
+  ],
   omnipoolPosition: (id: string | undefined) => [
     "omnipoolPosition",
     id?.toString(),
