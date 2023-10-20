@@ -10,9 +10,14 @@ import { u32 } from "@polkadot/types-codec"
 type Props = {
   poolId: u32
   positions: Positions
+  disableRemoveLiquidity: boolean
 }
 
-export const LiquidityPositionWrapper = ({ positions, poolId }: Props) => {
+export const LiquidityPositionWrapper = ({
+  positions,
+  poolId,
+  disableRemoveLiquidity,
+}: Props) => {
   const { t } = useTranslation()
 
   if (!positions.data.length) {
@@ -35,6 +40,7 @@ export const LiquidityPositionWrapper = ({ positions, poolId }: Props) => {
             position={position}
             index={i + 1}
             onSuccess={positions.refetch}
+            disableRemoveLiquidity={disableRemoveLiquidity}
           />
         ))}
       </div>

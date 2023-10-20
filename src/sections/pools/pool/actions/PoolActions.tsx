@@ -56,7 +56,11 @@ export const PoolActions = ({
         <Button
           fullWidth
           size="small"
-          disabled={!account || account.isExternalWalletConnected}
+          disabled={
+            !account ||
+            account.isExternalWalletConnected ||
+            !pool.tradability.canAddLiquidity
+          }
           onClick={() => setOpenAdd(true)}
         >
           <div sx={{ flex: "row", align: "center", justify: "center" }}>
