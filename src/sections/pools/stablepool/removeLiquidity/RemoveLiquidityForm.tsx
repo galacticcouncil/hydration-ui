@@ -58,8 +58,6 @@ export const RemoveLiquidityForm = ({
     return position.amount.div(100).times(value)
   }, [value, position])
 
-  // console.log("--removeSharesValue--", removeSharesValue?.toString())
-
   const liquidityOut = useStablepoolLiquidityOut({
     shares: removeSharesValue,
     reserves: position.reserves,

@@ -2,7 +2,7 @@ import { Modal } from "components/Modal/Modal"
 import { useTranslation } from "react-i18next"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { RemoveLiquidityForm } from "./RemoveLiquidityForm"
-import { RemoveLiquidityModal as RemoveStablepoolLiquidity } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityModal"
+import { RemoveLiquidityModal as RemoveStablepoolLiquidityModal } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityModal"
 import {
   isStablepool,
   OmnipoolPool,
@@ -26,15 +26,19 @@ export const RemoveLiquidity = ({
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
 
-  return isStablepool(pool) ? (
-    <RemoveStablepoolLiquidity
-      isOpen={isOpen}
-      pool={pool}
-      onClose={onClose}
-      onSuccess={onSuccess}
-      position={position}
-    />
-  ) : (
+  if (isStablepool(pool)) {
+    return (
+      <RemoveStablepoolLiquidityModal
+        isOpen={isOpen}
+        pool={pool}
+        onClose={onClose}
+        onSuccess={onSuccess}
+        position={position}
+      />
+    )
+  }
+
+  return (
     <Modal
       open={isOpen}
       disableCloseOutside={true}

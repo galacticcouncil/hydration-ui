@@ -149,10 +149,6 @@ export const LiquidityPosition = ({
                 {t("liquidity.stablepool.addToOmnipool")}
               </div>
             </SOmnipoolButton>
-            {/*reserves,
-                fee,
-                poolId,
-                amount*/}
             <RemoveLiquidityButton onSuccess={refetchPosition} pool={pool} />
           </div>
         </SContainer>
