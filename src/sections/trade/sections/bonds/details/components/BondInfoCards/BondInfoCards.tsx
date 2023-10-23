@@ -92,7 +92,7 @@ export const BondInfoCards = ({
   const cards = [
     isPast
       ? {
-          label: "Avg purchase price",
+          label: t("bonds.table.price"),
           value: <DisplayValue value={averagePrice} type="token" />,
           icon: (
             <Icon
@@ -141,7 +141,7 @@ export const BondInfoCards = ({
           ),
         },
     {
-      label: isDiscount ? t("bond.discount") : t("bond.premium"),
+      label: isDiscount ? t("bonds.discount") : t("bonds.premium"),
       value: t("value.percentage", { value: discount.toString() }),
       icon: (
         <Icon
@@ -153,7 +153,7 @@ export const BondInfoCards = ({
     },
     {
       label: t("bonds.details.card.maturity"),
-      value: formatDate(new Date(bond.maturity), "dd.MM.yyyy"),
+      value: formatDate(new Date(bond.maturity), "dd/MM/yyyy"),
       icon: (
         <Icon size={[16, 22]} sx={{ color: "basic600" }} icon={<ClockIcon />} />
       ),

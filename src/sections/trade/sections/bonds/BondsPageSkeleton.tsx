@@ -11,7 +11,7 @@ export const BondsPageSkeleton = () => {
   return (
     <>
       <Heading fs={19} sx={{ mb: 33 }}>
-        {t("bonds.title")}
+        {t("bonds")}
       </Heading>
       <BondListSkeleton />
       <Spacer size={40} />
