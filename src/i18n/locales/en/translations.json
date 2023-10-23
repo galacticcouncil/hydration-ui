@@ -71,7 +71,7 @@
   "error.positive": "Must be positive",
   "error.validNumber": "Must be a number",
   "modal.closeButton.name": "Close modal button",
-  "selectAssets.balance": "<0>{{ balance, bignumber }}</0>",
+  "selectAssets.balance": "<0>{{ balance, bignumber }} {{symbol}}</0>",
   "selectAssets.asset": "Asset",
   "selectAssets.your_balance": "Your balance",
   "selectAssets.asset_without_pair": "Assets without subpool",
