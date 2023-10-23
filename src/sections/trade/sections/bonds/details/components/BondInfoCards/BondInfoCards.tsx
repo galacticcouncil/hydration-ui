@@ -140,17 +140,21 @@ export const BondInfoCards = ({
             />
           ),
         },
-    {
-      label: isDiscount ? t("bonds.discount") : t("bonds.premium"),
-      value: t("value.percentage", { value: discount.toString() }),
-      icon: (
-        <Icon
-          size={[16, 22]}
-          sx={{ color: "basic600" }}
-          icon={<PercentageIcon />}
-        />
-      ),
-    },
+    ...(!isPast
+      ? [
+          {
+            label: isDiscount ? t("bonds.discount") : t("bonds.premium"),
+            value: t("value.percentage", { value: discount.toString() }),
+            icon: (
+              <Icon
+                size={[16, 22]}
+                sx={{ color: "basic600" }}
+                icon={<PercentageIcon />}
+              />
+            ),
+          },
+        ]
+      : []),
     {
       label: t("bonds.details.card.maturity"),
       value: formatDate(new Date(bond.maturity), "dd/MM/yyyy"),
