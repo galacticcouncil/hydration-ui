@@ -169,14 +169,14 @@ export const Bond = ({ view, bond, pool, state }: BondProps) => {
               )}
             </Text>
             {!isPast && (
-              <InfoTooltip text={formatDate(data.date, "dd.MM.yyyy HH:mm")}>
+              <InfoTooltip text={formatDate(data.date, "dd/MM/yyyy HH:mm")}>
                 <SInfoIcon />
               </InfoTooltip>
             )}
           </div>
           <Text color="white">
             {isPast
-              ? formatDate(data.date, "dd.MM.yyyy HH:mm")
+              ? formatDate(data.date, "dd/MM/yyyy HH:mm")
               : data.distance.duration}
           </Text>
         </SItem>

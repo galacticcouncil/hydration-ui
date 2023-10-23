@@ -153,7 +153,7 @@ export const BondInfoCards = ({
     },
     {
       label: t("bonds.details.card.maturity"),
-      value: formatDate(new Date(bond.maturity), "dd.MM.yyyy"),
+      value: formatDate(new Date(bond.maturity), "dd/MM/yyyy"),
       icon: (
         <Icon size={[16, 22]} sx={{ color: "basic600" }} icon={<ClockIcon />} />
       ),
