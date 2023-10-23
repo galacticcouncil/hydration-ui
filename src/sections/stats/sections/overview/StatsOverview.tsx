@@ -14,8 +14,8 @@ export const StatsOverview = () => {
   const omnipoolOverview = useOmnipoolOverviewData()
 
   return (
-    <div sx={{ flex: "column", gap: 50 }}>
-      <div sx={{ flex: "row", gap: 20, height: 690 }}>
+    <div sx={{ flex: "column", gap: [24, 50] }}>
+      <div sx={{ flex: "row", gap: 20, height: ["auto", 690] }}>
         <PieWrapper
           data={omnipoolOverview.data}
           isLoading={omnipoolOverview.isLoading}

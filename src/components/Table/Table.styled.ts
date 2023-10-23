@@ -71,64 +71,30 @@ export const TableContainer = styled.div`
 
 export const StatsTableContainer = styled.div`
   overflow: hidden;
+  position: relative;
 
-  background-image: radial-gradient(
-      circle at 100% 100%,
-      transparent 3px,
-      rgba(144, 165, 198, 0.3) 3px,
-      rgba(144, 165, 198, 0.3) 4px,
-      transparent 4px
-    ),
-    linear-gradient(
-      to right,
-      rgba(144, 165, 198, 0.3),
-      rgba(144, 165, 198, 0.3)
-    ),
-    radial-gradient(
-      circle at 0% 100%,
-      transparent 3px,
-      rgba(144, 165, 198, 0.3) 3px,
-      rgba(144, 165, 198, 0.3) 4px,
-      transparent 4px
-    ),
-    linear-gradient(to bottom, rgba(144, 165, 198, 0.3), rgba(158, 167, 180, 0)),
-    radial-gradient(
-      circle at 0% 0%,
-      transparent 3px,
-      rgba(158, 167, 180, 0) 3px,
-      rgba(158, 167, 180, 0) 4px,
-      transparent 4px
-    ),
-    linear-gradient(to left, rgba(158, 167, 180, 0), rgba(158, 167, 180, 0)),
-    radial-gradient(
-      circle at 100% 0%,
-      transparent 3px,
-      rgba(158, 167, 180, 0) 3px,
-      rgba(158, 167, 180, 0) 4px,
-      transparent 4px
-    ),
-    linear-gradient(to top, rgba(158, 167, 180, 0), rgba(144, 165, 198, 0.3));
-  background-size:
-    4px 4px,
-    calc(100% - 8px) 1px,
-    4px 4px,
-    1px calc(100% - 8px);
-  background-position:
-    top left,
-    top center,
-    top right,
-    center right,
-    bottom right,
-    bottom center,
-    bottom left,
-    center left;
+  border-radius: ${theme.borderRadius.default}px;
 
-  background-repeat: no-repeat;
+  :before {
+    content: "";
+    position: absolute;
+    inset: 0;
 
-  @media ${theme.viewport.gte.sm} {
-    border-radius: 4px;
+    border-radius: ${theme.borderRadius.default}px;
+    padding: 1px; // a width of the border
 
-    background: transparent;
+    background: linear-gradient(
+      180deg,
+      rgba(152, 176, 214, 0.27) 0%,
+      rgba(163, 177, 199, 0.15) 66.67%,
+      rgba(158, 167, 180, 0.2) 100%
+    );
+
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
   }
 `
 
@@ -161,7 +127,7 @@ export const StatsTableTitle = styled.div`
   border-bottom: 1px solid #202135;
 
   @media ${theme.viewport.gte.sm} {
-    padding: 0px 30px;
+    padding: 24px 30px 0px;
 
     border-bottom: none;
   }
