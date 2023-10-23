@@ -19,6 +19,8 @@ export const SContainer = styled.label<{ error?: boolean; disabled?: boolean }>`
 
   @media ${theme.viewport.gte.sm} {
     padding: 12px;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   ${({ disabled, error }) =>
