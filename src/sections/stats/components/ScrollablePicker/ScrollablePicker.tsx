@@ -1,5 +1,5 @@
 import { Container, InnerContainer, SOption } from "./ScrollablePicker.styled"
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import { useEvent } from "react-use"
 import { TSlice } from "sections/stats/components/DoughnutChart/DoughnutChart"
 import { Text } from "components/Typography/Text/Text"
@@ -15,14 +15,12 @@ export const ScrollablePicker = ({
   values,
   onChange,
 }: ScrollablePickerProps) => {
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const [container, setContainer] = useState<HTMLDivElement | null>(null)
   const [activeOption, setActiveOption] = useState<number | undefined>(
     undefined,
   )
 
   const onScroll = useCallback(() => {
-    const container = scrollRef?.current
-
     if (!container) return
 
     const children = container ? [...container.children] : []
@@ -45,14 +43,14 @@ export const ScrollablePicker = ({
       setActiveOption(newValue)
       onChange(newValue === 0 ? undefined : newValue - 1)
     }
-  }, [activeOption, onChange])
+  }, [activeOption, container, onChange])
 
-  useEvent("scroll", onScroll, scrollRef.current)
+  useEvent("scroll", onScroll, container)
 
   return (
     <Container>
       <Icon sx={{ color: "white", display: "block" }} icon={<ArrowIcon />} />
-      <InnerContainer ref={scrollRef}>
+      <InnerContainer ref={setContainer}>
         {values.map((el, index) => {
           const isActive = index === activeOption
 

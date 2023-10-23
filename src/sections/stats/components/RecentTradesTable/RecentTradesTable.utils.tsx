@@ -112,10 +112,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
             <DisplayValue value={getValue()} isUSD />
           </Text>
         ) : (
-          <div
-            sx={{ flex: "column", align: "flex-end" }}
-            css={{ minWidth: 140 }}
-          >
+          <div sx={{ flex: "column", align: "flex-end" }}>
             <Text tAlign="center" color="white" fs={14}>
               <DisplayValue value={getValue()} isUSD />
             </Text>
