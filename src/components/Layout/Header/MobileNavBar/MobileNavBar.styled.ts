@@ -46,11 +46,16 @@ export const SNavBarItem = styled.span<{ active?: boolean }>`
   margin: 0 17px;
 
   color: ${({ active }) =>
-    active ? theme.colors.brightBlue300 : theme.colors.white};
+    active ? theme.colors.brightBlue300 : theme.colors.darkBlue300};
 
   ${({ active }) =>
     active &&
     "background: radial-gradient(52.5% 52.5% at 46.28% 112.5%, #00579F 0%, #023B6A 25%, rgba(0, 23, 54, 0) 100%);"}
+
+  svg {
+    color: ${({ active }) =>
+      active ? theme.colors.brightBlue300 : theme.colors.white};
+  }
 `
 
 export const SNavBarItemHidden = styled(Link)`

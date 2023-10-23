@@ -5,7 +5,6 @@ import { useAccountStore } from "state/store"
 import { Maybe } from "utils/helpers"
 import { Text } from "components/Typography/Text/Text"
 import {
-  SAssetsModalContentWrapper,
   SAssetsModalHeader,
   SAssetsModalSearchWrapper,
 } from "./AssetsModal.styled"
@@ -120,7 +119,7 @@ export const AssetsModalContent = ({
 
   return (
     <>
-      <SAssetsModalSearchWrapper sx={{ py: 20, px: [0, 12] }}>
+      <SAssetsModalSearchWrapper sx={{ p: 12 }}>
         <IconSearch sx={{ mx: [0, 12] }} />
         <Input
           value={search}
@@ -130,67 +129,66 @@ export const AssetsModalContent = ({
           placeholder={t("selectAssets.search")}
         />
       </SAssetsModalSearchWrapper>
-      <SAssetsModalContentWrapper>
-        {!!allowedTokens?.length && (
-          <>
-            <SAssetsModalHeader>
-              <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-                {t("selectAssets.asset")}
-              </Text>
-              <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-                {t("selectAssets.your_balance")}
-              </Text>
-            </SAssetsModalHeader>
-            {allowedTokens.map(({ balance, asset }) => (
-              <AssetsModalRow
-                balance={balance.balance}
-                key={asset.id}
-                asset={asset}
-                spotPriceId={asset.id}
-                onClick={(assetData) => onSelect?.(assetData)}
-              />
-            ))}
-          </>
-        )}
-        {enabledBonds && withBonds && searchedBonds.length && (
-          <>
-            <SAssetsModalHeader>
-              <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-                {t("bonds")}
-              </Text>
-              <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-                {t("selectAssets.your_balance")}
-              </Text>
-            </SAssetsModalHeader>
-            {searchedBonds.map(({ asset, balance }) => (
-              <AssetsModalRow
-                key={asset.id}
-                asset={asset}
-                balance={balance.balance}
-                spotPriceId={asset.isPast ? asset.assetId : asset.id}
-                onClick={(assetData) => onSelect?.(assetData)}
-              />
-            ))}
-          </>
-        )}
-        {!hideInactiveAssets && !!notAllowedTokens?.length && (
-          <>
-            <SAssetsModalHeader shadowed>
-              <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-                {t("selectAssets.asset_without_pair")}
-              </Text>
-            </SAssetsModalHeader>
-            {notAllowedTokens.map(({ balance, asset }) => (
-              <AssetsModalRow
-                balance={balance.balance}
-                key={asset.id}
-                asset={asset}
-                spotPriceId={asset.id}
-              />
-            ))}
-          </>
-        )}
-      </SAssetsModalContentWrapper>
+
+      {!!allowedTokens?.length && (
+        <>
+          <SAssetsModalHeader>
+            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+              {t("selectAssets.asset")}
+            </Text>
+            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+              {t("selectAssets.your_balance")}
+            </Text>
+          </SAssetsModalHeader>
+          {allowedTokens.map(({ balance, asset }) => (
+            <AssetsModalRow
+              balance={balance.balance}
+              key={asset.id}
+              asset={asset}
+              spotPriceId={asset.id}
+              onClick={(assetData) => onSelect?.(assetData)}
+            />
+          ))}
+        </>
+      )}
+      {enabledBonds && withBonds && searchedBonds.length && (
+        <>
+          <SAssetsModalHeader>
+            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+              {t("bonds")}
+            </Text>
+            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+              {t("selectAssets.your_balance")}
+            </Text>
+          </SAssetsModalHeader>
+          {searchedBonds.map(({ asset, balance }) => (
+            <AssetsModalRow
+              key={asset.id}
+              asset={asset}
+              balance={balance.balance}
+              spotPriceId={asset.isPast ? asset.assetId : asset.id}
+              onClick={(assetData) => onSelect?.(assetData)}
+            />
+          ))}
+        </>
+      )}
+      {!hideInactiveAssets && !!notAllowedTokens?.length && (
+        <>
+          <SAssetsModalHeader shadowed>
+            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+              {t("selectAssets.asset_without_pair")}
+            </Text>
+          </SAssetsModalHeader>
+          {notAllowedTokens.map(({ balance, asset }) => (
+            <AssetsModalRow
+              balance={balance.balance}
+              key={asset.id}
+              asset={asset}
+              spotPriceId={asset.id}
+            />
+          ))}
+        </>
+      )}
     </>
   )
 }

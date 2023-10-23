@@ -26,18 +26,17 @@ export const SAssetsModalSearchWrapper = styled.div`
     position: absolute;
 
     top: 50%;
-    left: 10px;
+    left: 18px;
 
     transform: translateY(-50%);
     color: ${theme.colors.basic600};
+
+    @media ${theme.viewport.gte.sm} {
+      left: 10px;
+    }
   }
 
   input[type="text"] {
     padding-left: 48px;
   }
-`
-
-export const SAssetsModalContentWrapper = styled.div`
-  margin-left: calc(var(--modal-content-padding) * -1);
-  margin-right: calc(var(--modal-content-padding) * -1);
 `
