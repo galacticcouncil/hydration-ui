@@ -77,8 +77,8 @@ export const AssetsModalRow = ({
             i18nKey="selectAssets.balance"
             tOptions={{
               balance: balance,
+              symbol: asset.symbol,
               fixedPointScale: asset.decimals,
-              numberSuffix: asset.symbol,
               type: "token",
             }}
           >
