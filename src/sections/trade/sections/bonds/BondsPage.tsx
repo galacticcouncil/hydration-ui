@@ -14,7 +14,7 @@ export const BondsPage = () => {
 
   return (
     <>
-      <Heading fs={19}>{t("bonds.title")}</Heading>
+      <Heading fs={19}>{t("bonds")}</Heading>
       <Spacer axis="vertical" size={33} />
       <BondList bonds={bonds} />
       <Spacer axis="vertical" size={33} />

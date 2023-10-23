@@ -76,7 +76,7 @@ const Discount = ({
       ) : (
         <>
           <Text color="basic400" fs={14}>
-            {isDiscount ? t("bond.discount") : t("bond.premium")}
+            {isDiscount ? t("bonds.discount") : t("bonds.premium")}
           </Text>
           <Text color="white">
             {t("value.percentage", { value: discount })}
@@ -163,7 +163,7 @@ export const Bond = ({ view, bond, pool, state }: BondProps) => {
           <div sx={{ flex: "row", align: "center", gap: 6 }}>
             <Text color="basic400" fs={14}>
               {t(
-                `bond.${
+                `bonds.${
                   isActive ? "endingIn" : isPast ? "ended" : "startingIn"
                 }`,
               )}
@@ -187,7 +187,7 @@ export const Bond = ({ view, bond, pool, state }: BondProps) => {
         />
         <SItem>
           <Text color="basic400" fs={14}>
-            {t("bond.maturity")}
+            {t("bonds.maturity")}
           </Text>
           <Text color="white">{maturityDate}</Text>
         </SItem>
@@ -213,7 +213,7 @@ export const Bond = ({ view, bond, pool, state }: BondProps) => {
           }
           sx={{ mt: view === "card" ? 12 : [12, 0], maxWidth: ["none", 150] }}
         >
-          {t(isActive ? "bond.btn" : "bond.details.btn")}
+          {t(isActive ? "bonds.btn" : "bonds.details.btn")}
         </Button>
       )}
     </SBond>

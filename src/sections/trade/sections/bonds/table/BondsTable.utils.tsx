@@ -96,14 +96,14 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
   const columns = useMemo(
     () => [
       accessor("bondId", {
-        header: t("bonds.table.bond"),
+        header: t("bond"),
         cell: ({ getValue }) =>
           getValue() ? <BondCell bondId={getValue()} /> : null,
       }),
       accessor("maturity", {
         header: () => (
           <div sx={{ textAlign: ["right", "center"] }}>
-            {t("bonds.table.maturity")}
+            {t("bonds.maturity")}
           </div>
         ),
         cell: ({ getValue }) => {
@@ -173,7 +173,7 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
                   }
                   disabled={!isSale}
                 >
-                  {t("bond.btn")}
+                  {t("bonds.btn")}
                 </TableAction>
               )}
               {

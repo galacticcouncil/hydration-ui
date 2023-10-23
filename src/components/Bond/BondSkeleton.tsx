@@ -43,7 +43,7 @@ export const BondSkeleton = ({ view }: Props) => {
         <SItem>
           <div sx={{ flex: "row", align: "center", gap: 6 }}>
             <Text color="basic400" fs={14}>
-              {t("bond.endingIn")}
+              {t("bonds.endingIn")}
             </Text>
           </div>
           <Skeleton width={isColumnView ? 100 : "100%"} height={height} />
@@ -54,7 +54,7 @@ export const BondSkeleton = ({ view }: Props) => {
         />
         <SItem>
           <Text color="basic400" fs={14}>
-            {t("bond.maturity")}
+            {t("bonds.maturity")}
           </Text>
           <Skeleton width={isColumnView ? 100 : "100%"} height={height} />
         </SItem>
@@ -73,7 +73,7 @@ export const BondSkeleton = ({ view }: Props) => {
         fullWidth={true}
         sx={{ mt: view === "card" ? 12 : [12, 0], maxWidth: ["none", 150] }}
       >
-        {t("bond.btn")}
+        {t("bonds.btn")}
       </Button>
     </SBond>
   )
