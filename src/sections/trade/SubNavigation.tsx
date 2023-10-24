@@ -51,7 +51,7 @@ const Tab = ({
             <Text fs={13} color={isActive ? "white" : "iconGray"}>
               {label}
             </Text>
-            {withBadge && <SBadge>Sale</SBadge>}
+            {withBadge && <SBadge>Active</SBadge>}
           </STabContainer>
           {isActive && (
             <div
