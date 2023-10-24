@@ -1,6 +1,5 @@
 import { Bond, BondProps } from "components/Bond/Bond"
 import { useLbpPool } from "api/bonds"
-import { BondListSkeleton } from "./BondListSkeleton"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useBestNumber } from "api/chain"
@@ -56,7 +55,7 @@ export const BondList = ({ isLoading, bonds }: Props) => {
     : { active: [], upcoming: [], past: [] }
 
   if (isLoading || bestNumber.isLoading) {
-    return <BondListSkeleton />
+    return null
   }
 
   return (
@@ -72,7 +71,7 @@ export const BondList = ({ isLoading, bonds }: Props) => {
             {t("bonds.section.activeBonds")}
           </Text>
           {active.map((bond) => (
-            <Bond {...bond} />
+            <Bond key={bond.bond.id} {...bond} />
           ))}
         </div>
       ) : null}
@@ -88,7 +87,7 @@ export const BondList = ({ isLoading, bonds }: Props) => {
             {t("bonds.section.upcomingBonds")}
           </Text>
           {upcoming.map((bond) => (
-            <Bond {...bond} />
+            <Bond key={bond.bond.id} {...bond} />
           ))}
         </div>
       ) : null}
