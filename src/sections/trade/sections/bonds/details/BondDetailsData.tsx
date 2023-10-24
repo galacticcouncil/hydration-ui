@@ -203,6 +203,7 @@ export const BondDetailsData = () => {
 
       <BondInfoCards
         bond={bond}
+        lbpPool={lbpPoolData?.data}
         poolId={lbpPoolData?.poolId}
         removeBlock={lbpPoolData?.removeBlock}
       />
