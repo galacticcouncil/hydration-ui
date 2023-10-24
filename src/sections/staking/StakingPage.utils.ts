@@ -85,12 +85,21 @@ export const useStakeData = () => {
 
   //const accountCurrency = useAccountCurrency(account?.address)
 
-  const stakeLocks = locks.data?.reduce(
-    (acc, lock) => (lock.type === "stk_stks" ? acc.plus(lock.amount) : acc),
+  const vestLocks = locks.data?.reduce(
+    (acc, lock) => (lock.type === "ormlvest" ? acc.plus(lock.amount) : acc),
     BN_0,
   )
 
-  const availableBalance = balance.data?.freeBalance.minus(stakeLocks ?? 0)
+  const vested = vestLocks ?? BN_0
+  const staked = stake.data?.stakePosition?.stake ?? BN_0
+  const accumulatedLockedRewards =
+    stake.data?.stakePosition?.accumulatedLockedRewards ?? BN_0
+
+  const availableBalance = balance.data?.freeBalance
+    .minus(vested)
+    .minus(staked)
+    .minus(accumulatedLockedRewards)
+
   /*const { data: paymentInfoData } = usePaymentInfo(
     api.tx.staking.increaseStake("0", availableBalance?.toString()),
   )
