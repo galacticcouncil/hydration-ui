@@ -24,7 +24,8 @@ export const isStablepool = (
 ): pool is Stablepool => "isStablepool" in pool && pool.isStablepool
 
 export const sortPools = (pools: Array<OmnipoolPool | Stablepool>) => {
-  return pools.sort((poolA, poolB) => {
+  const newPools = [...pools]
+  return newPools.sort((poolA, poolB) => {
     if (poolA.id.toString() === NATIVE_ASSET_ID) {
       return -1
     }
