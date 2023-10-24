@@ -46,10 +46,12 @@ export const BondInfoCards = ({
     removeBlock ? removeBlock - 1 : undefined,
   )
 
-  const initialAccumulatedAssetValue = lbpPoolEvents.data?.events
+  const initialAccumulatedAsset = lbpPoolEvents.data?.events
     .filter(isPoolLiquidityEvent)
-    .find((event) => event.name === "LBP.LiquidityAdded")?.args.amountA
+    .find((event) => event.name === "LBP.LiquidityAdded")?.args
 
+  const accumulatedAssetId = initialAccumulatedAsset?.assetA
+  const initialAccumulatedAssetValue = initialAccumulatedAsset?.amountA
   const isPast = bond.isPast
 
   const tokenBalance = useTokenBalance(lbpPool?.assets[0], lbpPool?.id)
@@ -83,9 +85,6 @@ export const BondInfoCards = ({
   const currentSpotPrice = spotPrice.data?.spotPrice ?? BN_1
   const currentBondPrice = spotPriceBond.data?.spotPrice ?? BN_1
 
-  const accumulatedAssetId = isPast
-    ? balance.data?.pools[0].assetAId
-    : undefined
   const accumulatedAsset = accumulatedAssetId
     ? assets.getAsset(accumulatedAssetId.toString())
     : undefined
