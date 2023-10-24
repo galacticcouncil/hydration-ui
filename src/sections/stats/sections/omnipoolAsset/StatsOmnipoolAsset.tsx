@@ -185,7 +185,7 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
     <SOmnipoolAssetContainer>
       <OmnipoolAssetNavigation />
       <OmnipoolAssetHeader assetId={assetId} tvl={omnipoolAsset.tvl} />
-      <div sx={{ flex: ["column", "row"], gap: 20, mb: 20 }}>
+      <div sx={{ flex: ["column", "row"], gap: [12, 20] }}>
         <AssetStats
           data={{
             vlm: omnipoolAsset.volume,
@@ -214,7 +214,7 @@ const StatsOmnipoolAssetSkeleton = () => {
     <SOmnipoolAssetContainer>
       <OmnipoolAssetNavigation />
       <OmnipoolAssetHeader loading />
-      <div sx={{ flex: ["column", "row"], gap: 20, mb: 20 }}>
+      <div sx={{ flex: ["column", "row"], gap: [12, 20] }}>
         <AssetStats loading />
         <SStatsCardContainer
           sx={{ width: "100%", height: [500, 600] }}

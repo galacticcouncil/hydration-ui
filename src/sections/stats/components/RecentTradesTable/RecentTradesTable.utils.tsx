@@ -101,7 +101,9 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
     }),
     accessor("tradeValue", {
       id: "tradeValue",
-      header: t("stats.overview.table.trades.header.tradeValue"),
+      header: isDesktop
+        ? t("stats.overview.table.trades.header.tradeValue")
+        : t("stats.overview.table.trades.header.tradeValueTime"),
       sortingFn: (a, b) =>
         a.original.tradeValue.gt(b.original.tradeValue) ? 1 : -1,
       cell: ({ row, getValue }) => {
@@ -114,7 +116,12 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
             <Text tAlign="center" color="white" fs={14}>
               <DisplayValue value={getValue()} isUSD />
             </Text>
-            <Text fs={11} color="darkBlue200">
+            <Text
+              fs={11}
+              color="darkBlue200"
+              tAlign="right"
+              css={{ whiteSpace: "nowrap" }}
+            >
               {t("stats.overview.table.trades.value.totalValueTime", {
                 date: new Date(row.original.date),
               })}

@@ -34,10 +34,10 @@ export const LiquidityProvidersTable = ({ data }: Props) => {
   return (
     <StatsTableContainer>
       <StatsTableTitle>
-        <div sx={{ flex: "row", align: "center", gap: 12, mt: [0, 20] }}>
+        <div sx={{ flex: "row", align: "center", gap: 12 }}>
           <Icon sx={{ color: "white" }} icon={<TitleIcon />} />
           <Text
-            fs={[18, 24]}
+            fs={[16, 24]}
             lh={[24, 26]}
             color="white"
             font="ChakraPetchBold"
