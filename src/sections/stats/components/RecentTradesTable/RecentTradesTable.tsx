@@ -45,11 +45,19 @@ export const RecentTradesTable = ({ data }: Props) => {
                   onSort={header.column.getToggleSortingHandler()}
                   css={
                     !isDesktop
-                      ? {
-                          "&:first-of-type > div": {
-                            justifyContent: "flex-start",
+                      ? [
+                          {
+                            "&:first-of-type > div": {
+                              justifyContent: "flex-start",
+                            },
                           },
-                        }
+                          {
+                            "&:nth-of-type(2) > div": {
+                              justifyContent: "flex-end",
+                              whiteSpace: "nowrap",
+                            },
+                          },
+                        ]
                       : undefined
                   }
                 >

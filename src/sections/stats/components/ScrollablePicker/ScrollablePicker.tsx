@@ -1,15 +1,10 @@
 import { Container, InnerContainer, SOption } from "./ScrollablePicker.styled"
-import { useEffect, useRef, useState } from "react"
-import { useScroll } from "react-use"
-import { Spacer } from "components/Spacer/Spacer"
+import { useCallback, useState } from "react"
+import { useEvent } from "react-use"
 import { TSlice } from "sections/stats/components/DoughnutChart/DoughnutChart"
 import { Text } from "components/Typography/Text/Text"
-import ArrowIcon from "assets/icons/ChevronRightSmall.svg?react"
+import ArrowIcon from "assets/icons/ChevronDownSmall.svg?react"
 import { Icon } from "components/Icon/Icon"
-
-const ITEM_HEIGHT = 45
-const VISIBLE_OPTION_AMOUNT = 5
-const HEIGHT = ITEM_HEIGHT * VISIBLE_OPTION_AMOUNT
 
 type ScrollablePickerProps = {
   values: TSlice[]
@@ -20,65 +15,75 @@ export const ScrollablePicker = ({
   values,
   onChange,
 }: ScrollablePickerProps) => {
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const [container, setContainer] = useState<HTMLDivElement | null>(null)
   const [activeOption, setActiveOption] = useState<number | undefined>(
     undefined,
   )
 
-  const { y } = useScroll(scrollRef)
+  const onScroll = useCallback(() => {
+    if (!container) return
 
-  useEffect(() => {
-    const newValue = Math.floor(y / ITEM_HEIGHT)
+    const children = container ? [...container.children] : []
+
+    const containerRect = container.getBoundingClientRect()
+    const middlePoint = containerRect.left + containerRect.width / 2
+
+    let newValue = 0
+
+    children.forEach((el, i) => {
+      const bounds = el.getBoundingClientRect()
+      const left = bounds.left
+
+      if (left < middlePoint) {
+        newValue = i
+      }
+    })
+
     if (activeOption !== newValue) {
-      setActiveOption(Math.floor(y / ITEM_HEIGHT))
+      setActiveOption(newValue)
       onChange(newValue === 0 ? undefined : newValue - 1)
     }
-  }, [activeOption, y, onChange])
+  }, [activeOption, container, onChange])
 
-  const scrollTo = (number: number) => {
-    scrollRef.current?.scrollTo({
-      top: number,
-      left: 0,
-      behavior: "smooth",
-    })
-  }
+  useEvent("scroll", onScroll, container)
 
   return (
-    <Container height={HEIGHT} ref={scrollRef}>
-      <InnerContainer>
-        <Spacer size={ITEM_HEIGHT * 2} />
+    <Container>
+      <Icon sx={{ color: "white", display: "block" }} icon={<ArrowIcon />} />
+      <InnerContainer ref={setContainer}>
         {values.map((el, index) => {
           const isActive = index === activeOption
-          const currentYCor = index * ITEM_HEIGHT
 
           return (
             <SOption
               key={el.symbol}
               isActive={isActive}
-              onClick={() => scrollTo(currentYCor)}
+              onClick={(e) => {
+                e.currentTarget.scrollIntoView({
+                  behavior: "smooth",
+                  block: "nearest",
+                  inline: "center",
+                })
+              }}
             >
               <div
                 sx={{
                   flex: "row",
                   gap: 6,
                   align: "center",
-                  height: `calc(${ITEM_HEIGHT}px - var(--padding) * 2)`,
                 }}
               >
-                {el.symbol !== "overview" ? (
+                {el.symbol !== "overview" && (
                   <div
                     sx={{ width: 10, height: 10 }}
                     css={{ borderRadius: "50%", background: el.color }}
                   />
-                ) : (
-                  <Icon sx={{ color: "white", mr: 4 }} icon={<ArrowIcon />} />
                 )}
                 <Text fs={12}>{el.name}</Text>
               </div>
             </SOption>
           )
         })}
-        <Spacer size={ITEM_HEIGHT * 2} />
       </InnerContainer>
     </Container>
   )
