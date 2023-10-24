@@ -44,7 +44,6 @@ export const SGradientBg = styled.div<{ variant?: "stats" | "default" }>`
 
 export const SPageContent = styled.main`
   position: relative;
-  z-index: 1;
 
   overflow-x: hidden;
 
