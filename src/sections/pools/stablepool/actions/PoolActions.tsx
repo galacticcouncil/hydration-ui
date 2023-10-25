@@ -23,6 +23,7 @@ type PoolActionsProps = {
   refetchPositions: () => void
   amount: BigNumber
   onTransferOpen: () => void
+  canAddLiquidity?: boolean
 }
 
 export const PoolActions = ({
@@ -34,6 +35,7 @@ export const PoolActions = ({
   refetchPositions,
   amount,
   onTransferOpen,
+  canAddLiquidity,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -45,7 +47,9 @@ export const PoolActions = ({
         <Button
           fullWidth
           size="small"
-          disabled={!account || account.isExternalWalletConnected}
+          disabled={
+            !account || account.isExternalWalletConnected || !canAddLiquidity
+          }
           onClick={onTransferOpen}
         >
           <div sx={{ flex: "row", align: "center", justify: "center" }}>

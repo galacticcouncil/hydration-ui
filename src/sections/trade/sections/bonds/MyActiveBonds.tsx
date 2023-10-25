@@ -93,7 +93,7 @@ export const MyActiveBonds = ({
         eventsQuery?.data?.events.reduce((acc, event) => {
           const date = format(
             new Date(event.block.timestamp),
-            "dd.MM.yyyy HH:mm",
+            "dd/MM/yyyy HH:mm",
           )
 
           const assetInId = event.args.assetIn

@@ -71,7 +71,6 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
     <SContainerVertical
       sx={{
         width: ["100%", "fit-content"],
-        height: [500, "100%"],
         p: [20, 40],
       }}
     >
@@ -89,7 +88,16 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
           {pieChartValues}
         </>
       ) : (
-        <ChartWrapper />
+        <div
+          sx={{
+            flex: "column",
+            height: [500, "100%"],
+            gap: [24, 40],
+            pt: [40, 0],
+          }}
+        >
+          <ChartWrapper />
+        </div>
       )}
     </SContainerVertical>
   )

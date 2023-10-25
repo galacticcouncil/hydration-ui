@@ -10,9 +10,14 @@ import { Stablepool, OmnipoolPool } from "sections/pools/PoolsPage.utils"
 type Props = {
   positions: Positions
   pool: Stablepool | OmnipoolPool
+  disableRemoveLiquidity: boolean
 }
 
-export const LiquidityPositionWrapper = ({ positions, pool }: Props) => {
+export const LiquidityPositionWrapper = ({
+  positions,
+  pool,
+  disableRemoveLiquidity,
+}: Props) => {
   const { t } = useTranslation()
 
   if (!positions.data.length) {
@@ -35,6 +40,7 @@ export const LiquidityPositionWrapper = ({ positions, pool }: Props) => {
             index={i + 1}
             onSuccess={positions.refetch}
             pool={pool}
+            disableRemoveLiquidity={disableRemoveLiquidity}
           />
         ))}
       </div>

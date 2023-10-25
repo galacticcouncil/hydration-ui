@@ -12,31 +12,47 @@ import { BN_0, BN_1 } from "utils/constants"
 import { useTranslation } from "react-i18next"
 import { TBond } from "api/assetDetails"
 import { formatDate } from "utils/formatting"
-import { useHistoricalPoolBalance } from "api/bonds"
+import {
+  isPoolLiquidityEvent,
+  useHistoricalPoolBalance,
+  useLBPPoolEvents,
+  useLbpPool,
+} from "api/bonds"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useBondEvents } from "api/bonds"
 import BN from "bignumber.js"
+import { useTokenBalance } from "api/balances"
 
 export const BondInfoCards = ({
   bond,
   poolId,
+  lbpPool,
   removeBlock,
 }: {
   bond: TBond
   poolId?: string
   removeBlock?: number
+  lbpPool?: NonNullable<ReturnType<typeof useLbpPool>["data"]>[number]
 }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const spotPrice = useDisplayPrice(bond.assetId)
   const spotPriceBond = useDisplayPrice(bond.id)
 
+  const lbpPoolEvents = useLBPPoolEvents(bond?.id)
+
   const balance = useHistoricalPoolBalance(
     poolId,
     removeBlock ? removeBlock - 1 : undefined,
   )
+
+  const initialAccumulatedAssetValue = lbpPoolEvents.data?.events
+    .filter(isPoolLiquidityEvent)
+    .find((event) => event.name === "LBP.LiquidityAdded")?.args.amountA
+
   const isPast = bond.isPast
 
+  const tokenBalance = useTokenBalance(lbpPool?.assets[0], lbpPool?.id)
   const bondEvents = useBondEvents(isPast ? bond.id : undefined)
 
   const priceTotal = bondEvents.data?.events.reduce((acc, event) => {
@@ -77,22 +93,24 @@ export const BondInfoCards = ({
     ? balance.data?.pools[0].historicalBalances[0].assetABalance
     : undefined
 
+  const currentAccumulatedAssetValue = isPast
+    ? accumulatedAssetBalance
+      ? BN(accumulatedAssetBalance).minus(initialAccumulatedAssetValue ?? 0)
+      : undefined
+    : tokenBalance.data?.freeBalance.minus(initialAccumulatedAssetValue ?? 0)
+
   const isDiscount = currentSpotPrice.gt(currentBondPrice)
 
-  const discount = isDiscount
-    ? currentSpotPrice
-        .minus(currentBondPrice)
-        .div(currentSpotPrice)
-        .multipliedBy(100)
-    : currentBondPrice
-        .minus(currentSpotPrice)
-        .div(currentBondPrice)
-        .multipliedBy(100)
+  const discount = currentSpotPrice
+    .minus(currentBondPrice)
+    .div(currentSpotPrice)
+    .multipliedBy(100)
+    .absoluteValue()
 
   const cards = [
     isPast
       ? {
-          label: "Avg purchase price",
+          label: t("bonds.table.price"),
           value: <DisplayValue value={averagePrice} type="token" />,
           icon: (
             <Icon
@@ -113,47 +131,55 @@ export const BondInfoCards = ({
             />
           ),
         },
-    isPast
-      ? {
-          label: "Accumulated asset",
-          value: t("value.tokenWithSymbol", {
-            value: accumulatedAssetBalance,
-            symbol: accumulatedAsset?.symbol,
-            fixedPointScale: accumulatedAsset?.decimals,
-          }),
-          icon: (
-            <Icon
-              size={[16, 22]}
-              sx={{ color: "basic600" }}
-              icon={<AccumulatedAsset />}
-            />
-          ),
-        }
-      : {
-          label: t("bonds.details.card.spotPrice"),
-          value: <DisplayValue value={currentSpotPrice} type="token" />,
-          icon: (
-            <Icon
-              size={[16, 22]}
-              sx={{ color: "basic600" }}
-              icon={<DollarIcon />}
-            />
-          ),
-        },
+
+    ...(!isPast
+      ? [
+          {
+            label: t("bonds.details.card.spotPrice"),
+            value: <DisplayValue value={currentSpotPrice} type="token" />,
+            icon: (
+              <Icon
+                size={[16, 22]}
+                sx={{ color: "basic600" }}
+                icon={<DollarIcon />}
+              />
+            ),
+          },
+        ]
+      : []),
     {
-      label: isDiscount ? t("bond.discount") : t("bond.premium"),
-      value: t("value.percentage", { value: discount.toString() }),
+      label: "Accumulated asset",
+      value: t("value.tokenWithSymbol", {
+        value: currentAccumulatedAssetValue,
+        symbol: accumulatedAsset?.symbol,
+        fixedPointScale: accumulatedAsset?.decimals,
+      }),
       icon: (
         <Icon
           size={[16, 22]}
           sx={{ color: "basic600" }}
-          icon={<PercentageIcon />}
+          icon={<AccumulatedAsset />}
         />
       ),
     },
+    ...(!isPast
+      ? [
+          {
+            label: isDiscount ? t("bonds.discount") : t("bonds.premium"),
+            value: t("value.percentage", { value: discount.toString() }),
+            icon: (
+              <Icon
+                size={[16, 22]}
+                sx={{ color: "basic600" }}
+                icon={<PercentageIcon />}
+              />
+            ),
+          },
+        ]
+      : []),
     {
       label: t("bonds.details.card.maturity"),
-      value: formatDate(new Date(bond.maturity), "dd.MM.yyyy"),
+      value: formatDate(new Date(bond.maturity), "dd/MM/yyyy"),
       icon: (
         <Icon size={[16, 22]} sx={{ color: "basic600" }} icon={<ClockIcon />} />
       ),

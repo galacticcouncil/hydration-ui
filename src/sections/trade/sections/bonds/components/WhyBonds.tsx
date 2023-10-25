@@ -82,7 +82,11 @@ export const WhyBonds = () => {
                 },
               }}
             >
-              <a href="https://hydradx.io" target="_blank" rel="noreferrer">
+              <a
+                href="https://docs.hydradx.io/bonds"
+                target="_blank"
+                rel="noreferrer"
+              >
                 {t("bonds.whyBonds.link")}
                 <LinkIcon height={10} sx={{ ml: 6 }} />
               </a>

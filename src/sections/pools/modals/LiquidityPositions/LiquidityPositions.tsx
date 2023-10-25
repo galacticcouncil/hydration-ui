@@ -11,9 +11,15 @@ interface Props {
   isOpen: boolean
   pool: OmnipoolPool
   onClose: () => void
+  canRemoveLiquidity: boolean
 }
 
-export const LiquidityPositions: FC<Props> = ({ isOpen, pool, onClose }) => {
+export const LiquidityPositions: FC<Props> = ({
+  isOpen,
+  pool,
+  onClose,
+  canRemoveLiquidity,
+}) => {
   const positions = usePoolPositions(pool.id)
   const accountDeposits = useAccountDeposits(pool.id)
   const { t } = useTranslation()
@@ -33,7 +39,11 @@ export const LiquidityPositions: FC<Props> = ({ isOpen, pool, onClose }) => {
           gap: 8,
         }}
       >
-        <LiquidityPositionWrapper pool={pool} positions={positions} />
+        <LiquidityPositionWrapper
+          pool={pool}
+          positions={positions}
+          disableRemoveLiquidity={!canRemoveLiquidity}
+        />
         {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
           <FarmingPositionWrapper
             poolId={pool.id}

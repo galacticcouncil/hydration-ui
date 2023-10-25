@@ -49,7 +49,7 @@ export const SkeletonClipPath = styled.div`
 `
 
 export const SSkeletonContainer = styled.div`
-  align-self: flex-start;
+  align-self: center;
 
   margin: -60px;
 

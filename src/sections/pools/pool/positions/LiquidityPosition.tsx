@@ -36,6 +36,7 @@ type Props = {
   onSuccess: () => void
   index: number
   pool: Stablepool | OmnipoolPool
+  disableRemoveLiquidity: boolean
 }
 
 function LiquidityPositionJoinFarmButton(props: {
@@ -106,6 +107,7 @@ function LiquidityPositionRemoveLiquidity(props: {
   pool: Stablepool | OmnipoolPool
   position: HydraPositionsTableData
   onSuccess: () => void
+  disableRemoveLiquidity: boolean
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -117,8 +119,7 @@ function LiquidityPositionRemoveLiquidity(props: {
         size="small"
         onClick={() => setOpenRemove(true)}
         disabled={
-          account?.isExternalWalletConnected ||
-          !props.pool.tradability?.canRemoveLiquidity
+          account?.isExternalWalletConnected || props.disableRemoveLiquidity
         }
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
@@ -144,12 +145,13 @@ export const LiquidityPosition = ({
   index,
   onSuccess,
   pool,
+  disableRemoveLiquidity,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const meta = assets.getAsset(position.assetId)
   const price = useDisplayPrice(meta.id)
-  console.log(meta)
+
   const shiftBy = meta.decimals
   const spotPrice = price.data?.spotPrice
   const providedAmountPrice = spotPrice
@@ -254,6 +256,7 @@ export const LiquidityPosition = ({
           position={position}
           onSuccess={onSuccess}
           pool={pool}
+          disableRemoveLiquidity={disableRemoveLiquidity}
         />
       </div>
     </SContainer>

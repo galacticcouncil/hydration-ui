@@ -30,14 +30,14 @@ export const useBondsSkeleton = (config?: Config) => {
     () => [
       display({
         id: "assetId",
-        header: t("bonds.table.bond"),
+        header: t("bond"),
         cell: () => (
           <Skeleton width={64} height={32} enableAnimation={enableAnimation} />
         ),
       }),
       display({
         id: "maturity",
-        header: t("bonds.table.maturity"),
+        header: t("bonds.maturity"),
         cell: () => (
           <Skeleton
             width="100%"

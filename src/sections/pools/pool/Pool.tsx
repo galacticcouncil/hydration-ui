@@ -79,7 +79,11 @@ export const Pool = ({ pool }: Props) => {
               transition={{ duration: 0.5, ease: "easeInOut" }}
               css={{ overflow: "hidden" }}
             >
-              <LiquidityPositionWrapper pool={pool} positions={positions} />
+              <LiquidityPositionWrapper
+                disableRemoveLiquidity={!pool.tradability.canRemoveLiquidity}
+                pool={pool}
+                positions={positions}
+              />
               {enabledFarms && (
                 <FarmingPositionWrapper
                   poolId={pool.id}

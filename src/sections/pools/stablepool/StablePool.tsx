@@ -60,6 +60,7 @@ export const StablePool = ({ pool }: Props) => {
           refetchPositions={position.refetch}
           amount={amount}
           onTransferOpen={() => setTransferOpen(Page.OPTIONS)}
+          canAddLiquidity={tradability?.canAddLiquidity}
         />
         <PoolCapacity id={id.toString()} css={{ gridArea: "capacity" }} />
       </SGridContainer>
@@ -94,7 +95,11 @@ export const StablePool = ({ pool }: Props) => {
                 onTransferOpen={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
                 canAddLiquidity={tradability?.canAddLiquidity}
               />
-              <LiquidityPositionWrapper positions={positions} pool={pool} />
+              <LiquidityPositionWrapper
+                pool={pool}
+                positions={positions}
+                disableRemoveLiquidity={false}
+              />
             </motion.div>
           )}
         </AnimatePresence>

@@ -121,7 +121,7 @@ export const BondDetailsHeader = ({
               tOptions={{
                 date:
                   isPast && date
-                    ? formatDate(date, "dd.MM.yyyy HH:mm")
+                    ? formatDate(date, "dd/MM/yyyy HH:mm")
                     : endingDuration.duration,
               }}
             >
@@ -203,6 +203,7 @@ export const BondDetailsData = () => {
 
       <BondInfoCards
         bond={bond}
+        lbpPool={lbpPoolData?.data}
         poolId={lbpPoolData?.poolId}
         removeBlock={lbpPoolData?.removeBlock}
       />

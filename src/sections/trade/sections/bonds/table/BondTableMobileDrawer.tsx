@@ -54,7 +54,7 @@ export const BondTableMobileDrawer = ({
         <div sx={{ flex: "row", justify: "space-between" }}>
           <div sx={{ flex: "column", gap: 6 }}>
             <Text fs={12} color="basic500">
-              {t("bonds.table.maturity")}:
+              {t("bonds.maturity")}:
             </Text>
             <Text fs={14}>
               {data.maturity
@@ -104,7 +104,7 @@ export const BondTableMobileDrawer = ({
               }
               disabled={!isSale}
             >
-              {t("bond.btn")}
+              {t("bonds.btn")}
             </Button>
           )}
           {config.showTransfer && bondId && (

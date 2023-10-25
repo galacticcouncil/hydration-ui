@@ -5,7 +5,7 @@ import IconOTC from "assets/icons/navigation/IconOTC.svg?react"
 import IconSwap from "assets/icons/navigation/IconSwap.svg?react"
 import IconBonds from "assets/icons/Bonds.svg?react"
 import { Link, useSearch } from "@tanstack/react-location"
-import { ReactNode } from "react"
+import { ReactNode, useMemo } from "react"
 import { Text } from "components/Typography/Text/Text"
 import { Icon } from "components/Icon/Icon"
 import { theme } from "theme"
@@ -14,6 +14,9 @@ import {
   STabContainer,
   SubNavigationContainer,
 } from "./sections/SubNavigation.styled"
+import { useRpcProvider } from "providers/rpcProvider"
+import { useLbpPool } from "api/bonds"
+import { useBestNumber } from "api/chain"
 
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
@@ -48,7 +51,7 @@ const Tab = ({
             <Text fs={13} color={isActive ? "white" : "iconGray"}>
               {label}
             </Text>
-            {withBadge && <SBadge>Sale</SBadge>}
+            {withBadge && <SBadge>Active</SBadge>}
           </STabContainer>
           {isActive && (
             <div
@@ -62,8 +65,50 @@ const Tab = ({
   )
 }
 
+const BondsTabLink = () => {
+  const { t } = useTranslation()
+  const {
+    assets: { bonds },
+  } = useRpcProvider()
+
+  const lbpPool = useLbpPool()
+  const bestNumber = useBestNumber()
+
+  const currentBlockNumber = bestNumber.data?.relaychainBlockNumber.toNumber()
+
+  const isActive = useMemo(() => {
+    if (bonds) {
+      return bonds.some((bond) => {
+        const pool = lbpPool.data?.find((pool) =>
+          pool.assets.some((assetId: number) => assetId === Number(bond.id)),
+        )
+
+        if (currentBlockNumber && pool && pool.start && pool.end) {
+          return (
+            currentBlockNumber > Number(pool.start) &&
+            currentBlockNumber < Number(pool.end)
+          )
+        }
+
+        return false
+      })
+    }
+  }, [bonds, currentBlockNumber, lbpPool.data])
+
+  return (
+    <Tab
+      to={LINKS.bonds}
+      icon={<IconBonds />}
+      label={t("header.trade.bonds.title")}
+      withBadge={isActive}
+    />
+  )
+}
+
 export const SubNavigation = () => {
   const { t } = useTranslation()
+  const { isLoaded } = useRpcProvider()
+
   return (
     <SubNavigationContainer>
       <Tab
@@ -85,14 +130,7 @@ export const SubNavigation = () => {
           label={t("header.trade.dca.title")}
         />
       )}
-      {isBondsPageEnabled && (
-        <Tab
-          to={LINKS.bonds}
-          icon={<IconBonds />}
-          label={t("header.trade.bonds.title")}
-          withBadge
-        />
-      )}
+      {isBondsPageEnabled && isLoaded && <BondsTabLink />}
     </SubNavigationContainer>
   )
 }

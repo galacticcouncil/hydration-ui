@@ -56,7 +56,11 @@ export const PoolActions = ({
         <Button
           fullWidth
           size="small"
-          disabled={!account || account.isExternalWalletConnected}
+          disabled={
+            !account ||
+            account.isExternalWalletConnected ||
+            !pool.tradability.canAddLiquidity
+          }
           onClick={() => setOpenAdd(true)}
         >
           <div sx={{ flex: "row", align: "center", justify: "center" }}>
@@ -145,6 +149,7 @@ export const PoolActions = ({
           isOpen={openLiquidityPositions}
           onClose={() => setOpenLiquidityPositions(false)}
           pool={pool}
+          canRemoveLiquidity={pool.tradability.canRemoveLiquidity}
         />
       )}
       {openFarmDefails && farms.data && (

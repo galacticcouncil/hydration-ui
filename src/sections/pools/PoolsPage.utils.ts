@@ -1,5 +1,5 @@
 import { u32 } from "@polkadot/types-codec"
-import { useTokenBalance, useTokensBalances } from "api/balances"
+import { useTokensBalances } from "api/balances"
 import { useApiIds } from "api/consts"
 import { useUserDeposits } from "api/deposits"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
@@ -24,7 +24,8 @@ export const isStablepool = (
 ): pool is Stablepool => !!pool && "isStablepool" in pool && pool.isStablepool
 
 export const sortPools = (pools: Array<OmnipoolPool | Stablepool>) => {
-  return pools.toSorted((poolA, poolB) => {
+  const newPools = [...pools]
+  return newPools.sort((poolA, poolB) => {
     if (poolA.id.toString() === NATIVE_ASSET_ID) {
       return -1
     }
