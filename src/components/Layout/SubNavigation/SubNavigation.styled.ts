@@ -3,7 +3,8 @@ import { theme } from "theme"
 
 export const SubNavigationContainer = styled.div`
   display: flex;
-  justify-content: space-between;
+  gap: 42px;
+  justify-content: flex-start;
   align-items: center;
 
   height: 42px;
@@ -13,9 +14,6 @@ export const SubNavigationContainer = styled.div`
   margin: 0 auto;
 
   @media (${theme.viewport.gte.sm}) {
-    gap: 42px;
-    justify-content: flex-start;
-
     padding: 0 20px;
   }
 `

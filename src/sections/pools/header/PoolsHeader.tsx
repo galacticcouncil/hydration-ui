@@ -91,7 +91,7 @@ export const HeaderValues = ({
     <div
       sx={{
         flex: ["column", "row"],
-        mb: 40,
+        mb: [24, 40],
         flexWrap: "wrap",
         gap: [12, 0],
         align: ["normal", "center"],

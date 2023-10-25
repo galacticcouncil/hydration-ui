@@ -13,7 +13,7 @@ import {
   SBadge,
   STabContainer,
   SubNavigationContainer,
-} from "./sections/SubNavigation.styled"
+} from "components/Layout/SubNavigation/SubNavigation.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useLbpPool } from "api/bonds"
 import { useBestNumber } from "api/chain"
