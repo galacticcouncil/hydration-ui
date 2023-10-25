@@ -85,7 +85,7 @@ export const Pool = ({ pool }: Props) => {
             >
               <LiquidityPositionWrapper
                 disableRemoveLiquidity={!pool.tradability.canRemoveLiquidity}
-                poolId={pool.id}
+                pool={pool}
                 positions={positions}
               />
               {enabledFarms && (

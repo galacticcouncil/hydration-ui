@@ -29,12 +29,13 @@ import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionToolt
 import { useRpcProvider } from "providers/rpcProvider"
 import { u32 } from "@polkadot/types-codec"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { OmnipoolPool, Stablepool } from "sections/pools/PoolsPage.utils"
 
 type Props = {
-  poolId: u32
   position: HydraPositionsTableData
   onSuccess: () => void
   index: number
+  pool: Stablepool | OmnipoolPool
   disableRemoveLiquidity: boolean
 }
 
@@ -103,6 +104,7 @@ function LiquidityPositionJoinFarmButton(props: {
 }
 
 function LiquidityPositionRemoveLiquidity(props: {
+  pool: Stablepool | OmnipoolPool
   position: HydraPositionsTableData
   onSuccess: () => void
   disableRemoveLiquidity: boolean
@@ -127,6 +129,7 @@ function LiquidityPositionRemoveLiquidity(props: {
       </SButton>
       {openRemove && (
         <RemoveLiquidity
+          pool={props.pool}
           isOpen={openRemove}
           onClose={() => setOpenRemove(false)}
           position={props.position}
@@ -138,10 +141,10 @@ function LiquidityPositionRemoveLiquidity(props: {
 }
 
 export const LiquidityPosition = ({
-  poolId,
   position,
   index,
   onSuccess,
+  pool,
   disableRemoveLiquidity,
 }: Props) => {
   const { t } = useTranslation()
@@ -244,7 +247,7 @@ export const LiquidityPosition = ({
       >
         {!meta.isStableSwap && (
           <LiquidityPositionJoinFarmButton
-            poolId={poolId}
+            poolId={pool.id}
             position={position}
             onSuccess={onSuccess}
           />
@@ -252,6 +255,7 @@ export const LiquidityPosition = ({
         <LiquidityPositionRemoveLiquidity
           position={position}
           onSuccess={onSuccess}
+          pool={pool}
           disableRemoveLiquidity={disableRemoveLiquidity}
         />
       </div>
