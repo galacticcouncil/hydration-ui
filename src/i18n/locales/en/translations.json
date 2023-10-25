@@ -80,7 +80,7 @@
   "header.trade.bonds.title": "Bonds",
   "header.trade.bonds.subtitle": "Help HydraDX accumulate POL",
   "header.trade": "Trade",
-  "header.trade.sale": "Sale",
+  "header.trade.active": "Active",
   "header.trade.swap.title": "SWAP",
   "header.trade.swap.subtitle": "Trade instantly using the Omnipool",
   "header.trade.otc.title": "Trade OTC",

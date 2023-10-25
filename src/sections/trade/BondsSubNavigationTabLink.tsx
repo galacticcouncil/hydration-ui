@@ -42,7 +42,7 @@ export const BondsSubNavigationTabLink = () => {
       to={LINKS.bonds}
       icon={<IconBonds />}
       label={t("header.trade.bonds.title")}
-      badge={isActive ? t("header.trade.sale") : ""}
+      badge={isActive ? t("header.trade.active") : ""}
     />
   )
 }
