@@ -36,6 +36,10 @@ export const Pool = ({ pool }: Props) => {
 
   const poolId = pool.id.toString()
 
+  const handleExpand = () => {
+    setIsExpanded((prev) => !prev)
+  }
+
   useEffect(() => {
     if (poolId === NATIVE_ASSET_ID) {
       if (positions.data.length && warnings.hdxLiquidity.visible == null) {
@@ -64,7 +68,7 @@ export const Pool = ({ pool }: Props) => {
           refetch={positions.refetch}
           canExpand={!positions.isLoading && hasExpandContent}
           isExpanded={isExpanded}
-          onExpandClick={() => setIsExpanded((prev) => !prev)}
+          onExpandClick={handleExpand}
           css={{ gridArea: "actions" }}
         />
         <PoolCapacity id={pool.id.toString()} css={{ gridArea: "capacity" }} />

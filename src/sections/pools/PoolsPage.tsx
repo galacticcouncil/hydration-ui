@@ -8,9 +8,9 @@ import {
 } from "sections/pools/PoolsPage.utils"
 import { PoolsHeader } from "sections/pools/header/PoolsHeader"
 import { Pool } from "sections/pools/pool/Pool"
-import { PoolSkeleton } from "./skeleton/PoolSkeleton"
 import { useRpcProvider } from "providers/rpcProvider"
 import { StablePool } from "./stablepool/StablePool"
+import { PoolsSkeleton } from "./skeleton/PoolsSkeleton"
 
 const PoolPageContent = () => {
   const [filter, setFilter] = useState({ showMyPositions: false })
@@ -36,11 +36,7 @@ const PoolPageContent = () => {
       />
 
       <div sx={{ flex: "column", gap: 20 }}>
-        {isLoading &&
-          [...Array(3)].map((_, index) => (
-            <PoolSkeleton key={index} length={3} index={index} />
-          ))}
-
+        {isLoading && <PoolsSkeleton />}
         {all.map((pool) =>
           isStablepool(pool) ? (
             <StablePool key={pool.id.toString()} pool={pool} />
@@ -65,9 +61,7 @@ export const PoolsPage = () => {
           onMyPositionsChange={() => null}
         />
         <div sx={{ flex: "column", gap: 20 }}>
-          {[...Array(3)].map((_, index) => (
-            <PoolSkeleton key={index} length={3} index={index} />
-          ))}
+          <PoolsSkeleton />
         </div>
       </Page>
     )
