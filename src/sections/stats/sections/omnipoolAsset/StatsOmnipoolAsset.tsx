@@ -177,7 +177,7 @@ const StatsOmnipoolAssetSkeleton = () => {
       <div sx={{ flex: ["column", "row"], gap: [12, 20] }}>
         <AssetStats loading />
         <SStatsCardContainer
-          sx={{ width: "100%", height: [500, 570] }}
+          sx={{ width: "100%", height: [500, 570], pt: [60, 20] }}
           css={{ position: "relative" }}
         >
           <ChartWrapper />
