@@ -98,7 +98,8 @@ export const ReviewTransactionForm = (
   })
 
   const json = getTransactionJSON(props.tx)
-  const { data: paymentInfoData } = usePaymentInfo(props.tx)
+  const { data: paymentInfoData, isLoading: isPaymentInfoLoading } =
+    usePaymentInfo(props.tx)
   const era = useEra(
     props.tx.era,
     bestNumber.data?.parachainBlockNumber.toString(),
@@ -108,7 +109,7 @@ export const ReviewTransactionForm = (
   const acceptedFeeAssets = useAcceptedCurrencies(
     feeAssets.map((feeAsset) => feeAsset.asset.id) ?? [],
   )
-  const isLoading = feeAssetBalance.isLoading
+  const isLoading = feeAssetBalance.isLoading || isPaymentInfoLoading
   const {
     openModal,
     modal,
