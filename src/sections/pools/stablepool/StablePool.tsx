@@ -20,8 +20,8 @@ type Props = {
   pool: StablepoolType
 }
 
-export const StablePool = ({
-  pool: {
+export const StablePool = ({ pool }: Props) => {
+  const {
     id,
     fee,
     assets,
@@ -30,8 +30,7 @@ export const StablePool = ({
     reserves,
     totalDisplay,
     tradability,
-  },
-}: Props) => {
+  } = pool
   const [transferOpen, setTransferOpen] = useState<Page>()
   const [isExpanded, setIsExpanded] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -53,15 +52,12 @@ export const StablePool = ({
           css={{ gridArea: "values" }}
         />
         <PoolActions
-          poolId={id}
-          assets={assets}
-          fee={fee}
+          pool={pool}
           css={{ gridArea: "actions" }}
           onExpandClick={() => setIsExpanded((prev) => !prev)}
           isExpanded={isExpanded}
           canExpand={hasPosition}
           refetchPositions={position.refetch}
-          reserves={reserves}
           amount={amount}
           onTransferOpen={() => setTransferOpen(Page.OPTIONS)}
           canAddLiquidity={tradability?.canAddLiquidity}
@@ -93,17 +89,14 @@ export const StablePool = ({
               css={{ overflow: "hidden" }}
             >
               <LiquidityPosition
-                poolId={id}
-                assets={assets}
+                pool={pool}
                 amount={amount}
-                fee={fee}
-                reserves={reserves}
                 refetchPosition={position.refetch}
                 onTransferOpen={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
                 canAddLiquidity={tradability?.canAddLiquidity}
               />
               <LiquidityPositionWrapper
-                poolId={id}
+                pool={pool}
                 positions={positions}
                 disableRemoveLiquidity={false}
               />

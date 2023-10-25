@@ -1,6 +1,5 @@
 import { default as BigNumber } from "bignumber.js"
 import { Button } from "components/Button/Button"
-import { ModalScrollableContent } from "components/Modal/Modal"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
@@ -33,17 +32,21 @@ type RemoveLiquidityProps = {
   }
   onSuccess: () => void
   onAssetOpen: () => void
+  defaultValue?: number
 }
 
-export const RemoveLiquidity = ({
+export const RemoveLiquidityForm = ({
   assetId,
   onClose,
   onSuccess,
   position,
   onAssetOpen,
+  defaultValue,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
-  const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
+  const form = useForm<{ value: number }>({
+    defaultValues: { value: defaultValue ?? 25 },
+  })
   const { api, assets } = useRpcProvider()
   const asset = assets.getAsset(assetId)
 

@@ -3,7 +3,7 @@ import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
 import { theme } from "theme"
 import { Text } from "components/Typography/Text/Text"
-import { SBlock } from "./TransferOption.styled"
+import { SBlock } from "./PathOption.styled"
 import { CheckBox } from "./CheckBox"
 
 type Props = {
@@ -11,12 +11,12 @@ type Props = {
   onSelect: MouseEventHandler<HTMLDivElement>
   children: ReactNode
   heading: string
-  subheading: string
+  subheading?: string
   icon: ReactNode
   disabled?: boolean
 }
 
-export const TransferOption = ({
+export const PathOption = ({
   selected,
   onSelect,
   children,
@@ -40,16 +40,18 @@ export const TransferOption = ({
         </div>
         <CheckBox disabled={disabled} selected={selected} />
       </div>
-      <div
-        css={{
-          borderLeft: `1px solid ${theme.colors.white}`,
-          marginBottom: 6,
-          paddingLeft: 25,
-        }}
-        sx={{ color }}
-      >
-        <Text color={color}>{subheading}:</Text>
-      </div>
+      {subheading && (
+        <div
+          css={{
+            borderLeft: `1px solid ${theme.colors.white}`,
+            marginBottom: 6,
+            paddingLeft: 25,
+          }}
+          sx={{ color }}
+        >
+          <Text color={color}>{subheading}:</Text>
+        </div>
+      )}
       <div sx={{ color }}>{children}</div>
     </SBlock>
   )

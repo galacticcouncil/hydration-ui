@@ -1,6 +1,6 @@
 import { Modal } from "components/Modal/Modal"
 import { ModalContents } from "components/Modal/contents/ModalContents"
-import { TransferOptions, Option } from "./components/TransferOptions"
+import { TransferOptions, Option } from "./TransferOptions"
 import { useState } from "react"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
@@ -15,9 +15,6 @@ import { Spinner } from "components/Spinner/Spinner.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useModalPagination } from "components/Modal/Modal.utils"
-import { useMedia } from "react-use"
-import { theme } from "theme"
-import { STitleGradient } from "components/Modal/header/ModalHeader.styled"
 
 export enum Page {
   OPTIONS,
@@ -55,7 +52,6 @@ export const TransferModal = ({
   const { t } = useTranslation()
   const [assetId, setAssetId] = useState<string>(assets[0]?.id)
   const [sharesAmount, setSharesAmount] = useState<string>()
-  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const { page, direction, paginateTo } = useModalPagination(
     defaultPage ?? Page.OPTIONS,
@@ -102,31 +98,20 @@ export const TransferModal = ({
     paginateTo(page - 1)
   }
 
-  const renderStepper = isDesktop ? (
-    <Stepper
-      steps={steps.map((step, idx) => ({
-        label: step,
-        state: getStepState(idx),
-      }))}
-    />
-  ) : (
-    <Text color="whiteish500">
-      {t("liquidity.stablepool.transfer.step", {
-        current: page + 1,
-        total: steps.length,
-      })}
-    </Text>
-  )
-
   return (
     <Modal
       open={isOpen}
       onClose={onClose}
       disableCloseOutside={true}
       topContent={
-        !defaultPage && ![Page.OPTIONS, Page.ASSETS].includes(page)
-          ? renderStepper
-          : undefined
+        !defaultPage && ![Page.OPTIONS, Page.ASSETS].includes(page) ? (
+          <Stepper
+            steps={steps.map((step, idx) => ({
+              label: step,
+              state: getStepState(idx),
+            }))}
+          />
+        ) : undefined
       }
     >
       <ModalContents
