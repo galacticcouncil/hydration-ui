@@ -1,19 +1,11 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react"
-import { TransferOptions } from "./TransferOptions"
-import { action } from "@storybook/addon-actions"
 import { CurrencyReserves } from "./CurrencyReserves"
 import BigNumber from "bignumber.js"
 
 export default {
   title: "stablepool/Transfer",
-  component: TransferOptions,
-} as ComponentMeta<typeof TransferOptions>
-
-const Template: ComponentStory<typeof TransferOptions> = () => {
-  return <TransferOptions selected="STABLEPOOL" onSelect={action("onSelect")} />
-}
-
-export const TransferOptionsStory = Template.bind({})
+  component: CurrencyReserves,
+} as ComponentMeta<typeof CurrencyReserves>
 
 const CurrencyReservesTemplate: ComponentStory<
   typeof CurrencyReserves

@@ -148,7 +148,7 @@ export const PoolActions = ({
         <LiquidityPositions
           isOpen={openLiquidityPositions}
           onClose={() => setOpenLiquidityPositions(false)}
-          poolId={pool.id}
+          pool={pool}
           canRemoveLiquidity={pool.tradability.canRemoveLiquidity}
         />
       )}

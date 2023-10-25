@@ -4,10 +4,12 @@ import { useTranslation } from "react-i18next"
 import { LiquidityPosition } from "./LiquidityPosition"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
 import { Positions } from "sections/pools/pool/Pool.utils"
+import { OmnipoolPool, Stablepool } from "sections/pools/PoolsPage.utils"
 
 type Props = ComponentProps<typeof LiquidityPosition> & {
   isOpen: boolean
   onClose: () => void
+  pool: Stablepool | OmnipoolPool
   positions: Positions
 }
 
@@ -30,7 +32,7 @@ export const LiquidityPositionModal = ({
       <div sx={{ flex: "column", align: "center", gap: 8 }}>
         <LiquidityPosition {...props} />
         <LiquidityPositionWrapper
-          poolId={props.poolId}
+          pool={props.pool}
           positions={positions}
           disableRemoveLiquidity={false}
         />

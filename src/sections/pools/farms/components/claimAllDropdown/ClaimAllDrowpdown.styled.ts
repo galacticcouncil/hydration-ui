@@ -1,10 +1,10 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
-import * as Tooltip from "@radix-ui/react-tooltip"
+import * as Popover from "@radix-ui/react-popover"
 import { motion } from "framer-motion"
 import { theme } from "theme"
 
-export const STriggerButton = styled(Tooltip.Trigger)`
+export const STriggerButton = styled(Popover.Trigger)`
   all: unset;
 
   border-radius: 4px;

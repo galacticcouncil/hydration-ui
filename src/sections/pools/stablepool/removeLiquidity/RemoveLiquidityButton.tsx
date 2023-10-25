@@ -1,17 +1,18 @@
-import { ComponentProps, useState } from "react"
+import { useState } from "react"
 import { RemoveLiquidityModal } from "./RemoveLiquidityModal"
 import { useTranslation } from "react-i18next"
 import { useAccountStore } from "state/store"
 import { SButton } from "sections/pools/pool/positions/LiquidityPosition.styled"
 import { Icon } from "components/Icon/Icon"
 import MinusIcon from "assets/icons/MinusIcon.svg?react"
+import { Stablepool } from "sections/pools/PoolsPage.utils"
 
-type Props = Pick<
-  ComponentProps<typeof RemoveLiquidityModal>,
-  "assets" | "onSuccess" | "position"
->
+type Props = {
+  pool: Stablepool
+  onSuccess: () => void
+}
 
-export const RemoveLiquidityButton = (props: Props) => {
+export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const [openRemove, setOpenRemove] = useState(false)
@@ -31,7 +32,8 @@ export const RemoveLiquidityButton = (props: Props) => {
       </SButton>
       {openRemove && (
         <RemoveLiquidityModal
-          {...props}
+          pool={pool}
+          onSuccess={onSuccess}
           isOpen={openRemove}
           onClose={() => setOpenRemove(false)}
         />

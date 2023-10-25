@@ -5,23 +5,23 @@ import { useTranslation } from "react-i18next"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
 import { usePoolPositions } from "sections/pools/pool/Pool.utils"
-import { u32 } from "@polkadot/types-codec"
+import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 
 interface Props {
   isOpen: boolean
-  poolId: u32
+  pool: OmnipoolPool
   onClose: () => void
   canRemoveLiquidity: boolean
 }
 
 export const LiquidityPositions: FC<Props> = ({
   isOpen,
-  poolId,
+  pool,
   onClose,
   canRemoveLiquidity,
 }) => {
-  const positions = usePoolPositions(poolId)
-  const accountDeposits = useAccountDeposits(poolId)
+  const positions = usePoolPositions(pool.id)
+  const accountDeposits = useAccountDeposits(pool.id)
   const { t } = useTranslation()
 
   return (
@@ -40,13 +40,13 @@ export const LiquidityPositions: FC<Props> = ({
         }}
       >
         <LiquidityPositionWrapper
-          poolId={poolId}
+          pool={pool}
           positions={positions}
           disableRemoveLiquidity={!canRemoveLiquidity}
         />
         {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
           <FarmingPositionWrapper
-            poolId={poolId}
+            poolId={pool.id}
             deposits={accountDeposits.data}
           />
         )}

@@ -1,4 +1,3 @@
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useApiIds, useTVLCap } from "api/consts"
 import { useOmnipoolAssets } from "api/omnipool"
 import { useTokensBalances } from "api/balances"

@@ -19,7 +19,7 @@ import { positive, validNumber } from "utils/validators"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { TAsset } from "api/assetDetails"
 import { useRpcProvider } from "providers/rpcProvider"
-import { CurrencyReserves } from "./components/CurrencyReserves"
+import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
 import { BalanceByAsset } from "sections/pools/PoolsPage.utils"
 
 type Props = {
