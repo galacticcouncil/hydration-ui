@@ -61,7 +61,7 @@ export const calculatePositionLiquidity = ({
   let valueDisplay = BN_NAN
 
   const providedAmount = position.amount.toBigNumber().div(valueDp)
-  let providedAmountDisplay = BN_NAN
+  let providedAmountDisplay = providedAmount.times(valueSpotPrice)
 
   const shares = position.shares.toBigNumber()
 
