@@ -52,13 +52,6 @@ export const SubNavigationTabLink = ({
   )
 }
 
-export type SubNavigationItem = {
-  to: string
-  icon: ReactNode
-  label: string
-  badge?: string
-}
-
 export const SubNavigation = ({ children }: { children: ReactNode }) => {
   return <SubNavigationContainer>{children}</SubNavigationContainer>
 }
