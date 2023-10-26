@@ -1,42 +1,46 @@
-import BN from "bignumber.js"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { Text } from "components/Typography/Text/Text"
-import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
+import { useWalletAssetsTotals } from "sections/wallet/assets/WalletAssets.utils"
 import { BN_0 } from "utils/constants"
-import { useHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
-import { useAssetsTableData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
-import { SInfoIcon } from "sections/pools/pool/Pool.styled"
-import { NATIVE_ASSET_ID } from "utils/api"
-import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
 
 type Props = { disconnected?: boolean }
 
 export const WalletAssetsHeader = ({ disconnected }: Props) => {
   const { t } = useTranslation()
-
   return (
     <HeaderValues
-      skeletonHeight={[19, 42]}
+      skeletonHeight={[19, 38]}
       values={[
         {
+          label: t("wallet.assets.header.balance"),
           disconnected: disconnected,
           content: (
-            <WalletAssetsHeaderBalance
-              label={t("wallet.assets.header.balance")}
+            <WalletAssetsHeaderDisplay
+              fontSize={[19, 38]}
+              type="balanceTotal"
             />
           ),
         },
         {
+          label: t("wallet.assets.header.assetsBalance"),
           disconnected: disconnected,
           content: (
-            <WalletAssetsHeaderOmnipool
-              label={t("wallet.assets.header.positions")}
-            />
+            <WalletAssetsHeaderDisplay fontSize={[19, 24]} type="assetsTotal" />
+          ),
+        },
+        {
+          label: t("wallet.assets.header.liquidityBalance"),
+          disconnected: disconnected,
+          content: (
+            <WalletAssetsHeaderDisplay fontSize={[19, 24]} type="lpTotal" />
+          ),
+        },
+        {
+          label: t("wallet.assets.header.farmsBalance"),
+          disconnected: disconnected,
+          content: (
+            <WalletAssetsHeaderDisplay fontSize={[19, 24]} type="farmsTotal" />
           ),
         },
       ]}
@@ -44,177 +48,20 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
   )
 }
 
-const WalletAssetsHeaderBalance = ({ label }: { label: string }) => {
-  const { t } = useTranslation()
-  const assets = useAssetsTableData({ isAllAssets: false })
-  const lpPositions = useHydraPositionsData()
-  const farmsPositions = useAllUserDepositShare()
-
-  const { warnings, setWarnings } = useWarningsStore()
-
-  const isHdxPosition = lpPositions.data.some(
-    (position) => position.assetId === NATIVE_ASSET_ID,
-  )
-
-  useEffect(() => {
-    if (lpPositions.data.length) {
-      if (isHdxPosition && warnings.hdxLiquidity.visible == null) {
-        setWarnings("hdxLiquidity", true)
-      }
-    }
-  }, [
-    warnings.hdxLiquidity.visible,
-    setWarnings,
-    lpPositions.data.length,
-    isHdxPosition,
-  ])
-
-  const totalDisplay = useMemo(() => {
-    if (!assets.data) return BN_0
-
-    return assets.data.reduce((acc, cur) => {
-      if (!cur.totalDisplay.isNaN()) {
-        return acc.plus(cur.totalDisplay)
-      }
-      return acc
-    }, BN_0)
-  }, [assets])
-
-  const farmsAmount = useMemo(() => {
-    let calculatedShares = BN_0
-    for (const poolId in farmsPositions.data) {
-      const poolTotal = farmsPositions.data[poolId].reduce((memo, share) => {
-        return memo.plus(share.valueDisplay)
-      }, BN_0)
-      calculatedShares = calculatedShares.plus(poolTotal)
-    }
-    return calculatedShares
-  }, [farmsPositions])
-
-  const lpAmount = useMemo(() => {
-    if (!lpPositions.data) return BN_0
-
-    return lpPositions.data.reduce(
-      (acc, { valueDisplay }) => acc.plus(BN(valueDisplay)),
-      BN_0,
-    )
-  }, [lpPositions.data])
-
-  const tooltip = (
-    <div sx={{ flex: "column", gap: 14, width: 220 }}>
-      <Text fs={11}>{t("wallet.assets.header.balance.tooltip.title")}</Text>
-
-      <div sx={{ flex: "column", gap: 2 }}>
-        <Text fs={8} tTransform="uppercase" color="basic500">
-          {t("wallet.assets.header.balance.tooltip.assets")}
-        </Text>
-        <Text fs={12}>
-          <DisplayValue value={totalDisplay} />
-        </Text>
-      </div>
-
-      <div sx={{ flex: "column", gap: 2 }}>
-        <Text fs={8} tTransform="uppercase" color="basic500">
-          {t("wallet.assets.header.balance.tooltip.positions")}
-        </Text>
-        <Text fs={12}>
-          <DisplayValue value={lpAmount} />
-        </Text>
-      </div>
-
-      <div sx={{ flex: "column", gap: 2 }}>
-        <Text fs={8} tTransform="uppercase" color="basic500">
-          {t("wallet.assets.header.balance.tooltip.farms")}
-        </Text>
-        <Text fs={12}>
-          <DisplayValue value={farmsAmount} />
-        </Text>
-      </div>
-    </div>
-  )
-
+const WalletAssetsHeaderDisplay = ({
+  fontSize,
+  type,
+}: {
+  fontSize?: [number, number]
+  type: "balanceTotal" | "assetsTotal" | "lpTotal" | "farmsTotal"
+}) => {
+  const { isLoading, ...totals } = useWalletAssetsTotals()
   return (
     <div sx={{ flex: ["row", "column"], justify: "space-between" }}>
-      <div sx={{ flex: "row", gap: 8, align: "center", mb: 6 }}>
-        <Text color="brightBlue300">{label}</Text>
-
-        <InfoTooltip text={tooltip}>
-          <SInfoIcon />
-        </InfoTooltip>
-      </div>
-
       <HeaderTotalData
-        value={totalDisplay.plus(farmsAmount).plus(lpAmount)}
-        isLoading={
-          assets.isLoading || lpPositions.isLoading || farmsPositions.isLoading
-        }
-        fontSize={[19, 42]}
-      />
-    </div>
-  )
-}
-
-const WalletAssetsHeaderOmnipool = ({ label }: { label: string }) => {
-  const { t } = useTranslation()
-  const lpPositions = useHydraPositionsData()
-  const farmsPositions = useAllUserDepositShare()
-
-  const farmsAmount = useMemo(() => {
-    let calculatedShares = BN_0
-    for (const poolId in farmsPositions.data) {
-      const poolTotal = farmsPositions.data[poolId].reduce((memo, share) => {
-        return memo.plus(share.valueDisplay)
-      }, BN_0)
-      calculatedShares = calculatedShares.plus(poolTotal)
-    }
-    return calculatedShares
-  }, [farmsPositions])
-
-  const lpAmount = useMemo(() => {
-    if (!lpPositions.data) return BN_0
-
-    return lpPositions.data.reduce(
-      (acc, { valueDisplay }) => acc.plus(BN(valueDisplay)),
-      BN_0,
-    )
-  }, [lpPositions.data])
-
-  const tooltip = (
-    <div sx={{ flex: "column", gap: 14, width: 210 }}>
-      <Text fs={11}>{t("wallet.assets.header.positions.tooltip.title")}</Text>
-
-      <div sx={{ flex: "column", gap: 2 }}>
-        <Text fs={8} tTransform="uppercase" color="basic500">
-          {t("wallet.assets.header.balance.tooltip.positions")}
-        </Text>
-        <Text fs={12}>
-          <DisplayValue value={lpAmount} />
-        </Text>
-      </div>
-
-      <div sx={{ flex: "column", gap: 2 }}>
-        <Text fs={8} tTransform="uppercase" color="basic500">
-          {t("wallet.assets.header.balance.tooltip.farms")}
-        </Text>
-        <Text fs={12}>
-          <DisplayValue value={farmsAmount} />
-        </Text>
-      </div>
-    </div>
-  )
-
-  return (
-    <div sx={{ flex: ["row", "column"], justify: "space-between" }}>
-      <div sx={{ flex: "row", gap: 8, align: "center", mb: 6 }}>
-        <Text color="brightBlue300">{label}</Text>
-        <InfoTooltip text={tooltip}>
-          <SInfoIcon />
-        </InfoTooltip>
-      </div>
-      <HeaderTotalData
-        value={lpAmount.plus(farmsAmount)}
-        isLoading={lpPositions.isLoading || farmsPositions.isLoading}
-        fontSize={[19, 42]}
+        value={totals[type] ?? BN_0}
+        isLoading={isLoading}
+        fontSize={fontSize}
       />
     </div>
   )
