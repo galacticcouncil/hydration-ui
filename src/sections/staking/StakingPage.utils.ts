@@ -1,5 +1,5 @@
 import { useBestNumber } from "api/chain"
-import BN from "bignumber.js"
+import BN, { BigNumber } from "bignumber.js"
 import * as wasm from "@galacticcouncil/math-staking"
 import { useAccountStore } from "state/store"
 import {
@@ -95,10 +95,12 @@ export const useStakeData = () => {
   const accumulatedLockedRewards =
     stake.data?.stakePosition?.accumulatedLockedRewards ?? BN_0
 
-  const availableBalance = balance.data?.freeBalance
+  const rawAvailableBalance = balance.data?.freeBalance
     .minus(vested)
     .minus(staked)
     .minus(accumulatedLockedRewards)
+
+  const availableBalance = BigNumber.max(0, rawAvailableBalance ?? BN_0)
 
   /*const { data: paymentInfoData } = usePaymentInfo(
     api.tx.staking.increaseStake("0", availableBalance?.toString()),
