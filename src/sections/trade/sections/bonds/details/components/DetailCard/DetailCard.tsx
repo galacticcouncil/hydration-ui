@@ -24,7 +24,7 @@ export const DetailCard = ({
         }}
       >
         {icon}
-        <Text fs={[13, 24]} font="FontOver" color="white" lh={[13, 24]}>
+        <Text fs={[13, 19]} font="FontOver" color="white" lh={[13, 24]}>
           {value}
         </Text>
       </div>
