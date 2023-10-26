@@ -36,6 +36,8 @@ export type BondTableItem = {
   assetIn?: string
   averagePrice: BN | undefined
   events: Transaction[]
+  name: string
+  symbol: string
 }
 
 export type Config = {

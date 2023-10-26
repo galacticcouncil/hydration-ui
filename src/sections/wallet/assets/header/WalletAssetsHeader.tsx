@@ -46,7 +46,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
 
 const WalletAssetsHeaderBalance = ({ label }: { label: string }) => {
   const { t } = useTranslation()
-  const assets = useAssetsTableData(false)
+  const assets = useAssetsTableData({ isAllAssets: false })
   const lpPositions = useHydraPositionsData()
   const farmsPositions = useAllUserDepositShare()
 

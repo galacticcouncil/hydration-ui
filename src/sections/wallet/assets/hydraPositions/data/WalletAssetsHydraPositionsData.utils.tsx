@@ -8,11 +8,11 @@ import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/W
 import { useAccountStore } from "state/store"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { useDisplayPrices } from "utils/displayAsset"
-import { isNotNil } from "utils/helpers"
+import { arraySearch, isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 import { calculatePositionLiquidity } from "utils/omnipool"
 
-export const useHydraPositionsData = () => {
+export const useHydraPositionsData = ({ search }: { search?: string } = {}) => {
   const { account } = useAccountStore()
   const { assets } = useRpcProvider()
   const apiIds = useApiIds()
@@ -103,7 +103,7 @@ export const useHydraPositionsData = () => {
       .filter((x): x is HydraPositionsTableData => x !== null)
       .sort((a, b) => b.valueDisplay.minus(a.valueDisplay).toNumber())
 
-    return rows
+    return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
   }, [
     uniques.data,
     omnipoolAssets.data,
@@ -111,6 +111,7 @@ export const useHydraPositionsData = () => {
     spotPrices.data,
     positions,
     omnipoolBalances,
+    search,
     assets,
   ])
 

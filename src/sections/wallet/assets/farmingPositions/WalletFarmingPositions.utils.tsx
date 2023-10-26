@@ -26,6 +26,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { useRpcProvider } from "providers/rpcProvider"
+import { arraySearch } from "utils/helpers"
 
 export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
   const { t } = useTranslation()
@@ -141,7 +142,11 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
   })
 }
 
-export const useFarmingPositionsData = () => {
+export const useFarmingPositionsData = ({
+  search,
+}: {
+  search?: string
+} = {}) => {
   const { assets } = useRpcProvider()
   const { account } = useAccountStore()
   const allDeposits = useAllDeposits()
@@ -222,8 +227,14 @@ export const useFarmingPositionsData = () => {
         b.position.valueDisplay.minus(a.position.valueDisplay).toNumber(),
       )
 
-    return rows
-  }, [accountDeposits, accountDepositsShare.data, assets, bestNumber.data])
+    return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
+  }, [
+    search,
+    accountDeposits,
+    accountDepositsShare.data,
+    assets,
+    bestNumber.data,
+  ])
 
   return { data, isLoading }
 }

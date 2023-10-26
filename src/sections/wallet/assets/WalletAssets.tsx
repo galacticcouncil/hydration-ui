@@ -12,8 +12,8 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { MyActiveBonds } from "sections/trade/sections/bonds/MyActiveBonds"
 import { Skeleton as BondsTableSkeleton } from "sections/trade/sections/bonds/table/skeleton/Skeleton"
 import { useTranslation } from "react-i18next"
-import { WalletAssetsFilter } from "sections/wallet/assets/filter/WalletAssetsFilter"
-import { useSearch } from "@tanstack/react-location"
+import { WalletAssetsFilters } from "sections/wallet/assets/filter/WalletAssetsFilters"
+import { useWalletAssetsFilters } from "sections/wallet/assets/WalletAssets.utils"
 
 const enabledBonds = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
 
@@ -22,19 +22,18 @@ export const WalletAssets = () => {
   const { account } = useAccountStore()
   const { isLoaded } = useRpcProvider()
 
-  const search = useSearch()
-  const activeFilterId = search.filter ?? "all"
+  const { category, search } = useWalletAssetsFilters()
 
-  const isAllVisible = activeFilterId === "all"
-  const isAssetsVisible = isAllVisible || activeFilterId === "assets"
-  const isLiquidityVisible = isAllVisible || activeFilterId === "liquidity"
-  const isFarmingVisible = isAllVisible || activeFilterId === "farming"
+  const isAllVisible = category === "all"
+  const isAssetsVisible = isAllVisible || category === "assets"
+  const isLiquidityVisible = isAllVisible || category === "liquidity"
+  const isFarmingVisible = isAllVisible || category === "farming"
 
   if (!isLoaded) {
     return (
       <div sx={{ mt: [12, 0] }}>
         <WalletAssetsHeader />
-        <WalletAssetsFilter />
+        <WalletAssetsFilters />
         <WalletAssetsTableSkeleton />
         <Spacer axis="vertical" size={20} />
         {enabledBonds && (
@@ -61,7 +60,7 @@ export const WalletAssets = () => {
       ) : (
         <>
           <WalletAssetsHeader />
-          <WalletAssetsFilter />
+          <WalletAssetsFilters />
 
           {isAssetsVisible && (
             <>
@@ -69,7 +68,7 @@ export const WalletAssets = () => {
               {enabledBonds && (
                 <>
                   <Spacer axis="vertical" size={20} />
-                  <MyActiveBonds showTransfer />
+                  <MyActiveBonds showTransfer search={search} />
                 </>
               )}
             </>

@@ -19,12 +19,18 @@ import {
 import { useApiIds } from "api/consts"
 import { useHubAssetTradability, useOmnipoolAssets } from "api/omnipool"
 import { useDisplayPrices } from "utils/displayAsset"
-import { isNotNil } from "utils/helpers"
+import { arraySearch, isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TToken } from "api/assetDetails"
 import { TStableSwap } from "api/assetDetails"
 
-export const useAssetsTableData = (isAllAssets: boolean) => {
+export const useAssetsTableData = ({
+  isAllAssets,
+  search,
+}: {
+  isAllAssets?: boolean
+  search?: string
+} = {}) => {
   const { assets } = useRpcProvider()
   const myTableData = useAssetTable()
   const spotPrices = useDisplayPrices(
@@ -142,7 +148,7 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
       }
     })
 
-    return assetsTableData
+    const rows = assetsTableData
       .filter((x): x is AssetsTableData => x !== null)
       .sort((a, b) => {
         // native asset first
@@ -153,7 +159,10 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
 
         return a.symbol.localeCompare(b.symbol)
       })
+
+    return search ? arraySearch(rows, search, ["name", "symbol"]) : rows
   }, [
+    search,
     myTableData.data,
     spotPrices.data,
     assets.tokens,
