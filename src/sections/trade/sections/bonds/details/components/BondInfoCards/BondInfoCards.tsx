@@ -110,7 +110,10 @@ export const BondInfoCards = ({
     isPast
       ? {
           label: t("bonds.table.price"),
-          value: <DisplayValue value={averagePrice} type="token" />,
+          value: t("value.tokenWithSymbol", {
+            value: averagePrice,
+            symbol: accumulatedAsset?.symbol,
+          }),
           icon: (
             <Icon
               size={[16, 22]}
