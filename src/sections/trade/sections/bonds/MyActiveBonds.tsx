@@ -88,6 +88,7 @@ export const MyActiveBonds = ({
       const eventsQuery = bondEvents.find(
         (bondEvent) => bondEvent.data?.bondId === id,
       )
+      let accumulatedAssetId: string | undefined
 
       const events =
         eventsQuery?.data?.events.reduce((acc, event) => {
@@ -128,6 +129,8 @@ export const MyActiveBonds = ({
 
           const link = `https://hydradx.subscan.io/extrinsic/${event.extrinsic.hash}`
 
+          accumulatedAssetId = assets.isBond(metaIn) ? metaOut.id : metaIn.id
+
           acc.push({
             date,
             in: assetIn,
@@ -154,13 +157,9 @@ export const MyActiveBonds = ({
           currentBlockNumber < Number(lbpPool.end)
         : false
 
-      const assetIn = lbpPool?.assets
-        .find((asset: number) => asset !== Number(bond?.id))
-        ?.toString()
-
       return {
         assetId: bondAssetId,
-        assetIn,
+        assetIn: accumulatedAssetId,
         maturity: bondMap.get(id)?.maturity,
         balance: bondBalance.data?.total,
         balanceHuman: bondBalance.data?.total
