@@ -41,7 +41,7 @@ export const BondInfoCards = ({
 
   const lbpPoolEvents = useLBPPoolEvents(bond?.id)
 
-  const balance = useHistoricalPoolBalance(
+  const hisroticalBalance = useHistoricalPoolBalance(
     poolId,
     removeBlock ? removeBlock - 1 : undefined,
   )
@@ -89,10 +89,10 @@ export const BondInfoCards = ({
     ? assets.getAsset(accumulatedAssetId.toString())
     : undefined
   const accumulatedAssetBalance = isPast
-    ? balance.data?.pools[0].historicalBalances[0].assetABalance
+    ? hisroticalBalance.data?.pools[0].historicalBalances[0].assetABalance
     : undefined
 
-  const currentAccumulatedAssetValue = isPast
+  const currentAccumulatedAssetValue = removeBlock
     ? accumulatedAssetBalance
       ? BN(accumulatedAssetBalance).minus(initialAccumulatedAssetValue ?? 0)
       : undefined

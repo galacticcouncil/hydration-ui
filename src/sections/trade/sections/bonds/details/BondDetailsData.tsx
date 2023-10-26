@@ -159,7 +159,7 @@ export const BondDetailsData = () => {
   const lbpPool = useLbpPool({ id: bond?.id })
 
   const lbpPoolData = useMemo(() => {
-    if (lbpPool.data && !isPast)
+    if (lbpPool.data)
       return {
         data: lbpPool.data[0],
         poolId: undefined,
@@ -183,7 +183,7 @@ export const BondDetailsData = () => {
     }
 
     return undefined
-  }, [isPast, lbpPool.data, lbpPoolEvents.data?.events])
+  }, [lbpPool.data, lbpPoolEvents.data?.events])
 
   if (!bond) return <BondDetailsSkeleton />
 
