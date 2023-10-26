@@ -79,6 +79,7 @@ export const BondCell = ({ bondId }: { bondId: string }) => {
 export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<BondTableItem>()
+  const { assets } = useRpcProvider()
 
   const claim = useClaimBond()
   const navigate = useNavigate()
@@ -126,7 +127,8 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
               flex: "row",
               gap: 1,
               align: "center",
-              justify: "space-between",
+              justify: ["end", "center"],
+              textAlign: "center",
             }}
           >
             <Text color="white" tAlign="center">
@@ -144,11 +146,21 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
             {t("bonds.table.price")}
           </div>
         ),
-        cell: ({ getValue }) => (
-          <Text color="white" tAlign="center">
-            {t("value.token", { value: getValue() })}
-          </Text>
-        ),
+        cell: ({ getValue, row }) => {
+          const accumulatedAssetId = row.original.assetIn
+          const meta = accumulatedAssetId
+            ? assets.getAsset(accumulatedAssetId)
+            : undefined
+
+          return (
+            <Text color="white" tAlign="center">
+              {t("value.tokenWithSymbol", {
+                value: getValue(),
+                symbol: meta?.symbol,
+              })}
+            </Text>
+          )
+        },
       }),
       display({
         id: "actions",
@@ -218,7 +230,7 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config.showTransactions, config.showTransfer, claim.isLoading],
+    [config.showTransactions, config.showTransfer, claim.isLoading, isDesktop],
   )
 
   return useReactTable({
