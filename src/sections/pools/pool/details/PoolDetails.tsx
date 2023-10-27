@@ -7,13 +7,12 @@ import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { useDisplayPrice } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
-import { u32 } from "@polkadot/types-codec"
 import { SBadge } from "./PoolDetails.styled"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Fragment } from "react"
 
 type PoolDetailsProps = {
-  id: u32
+  id: string
   className?: string
 }
 

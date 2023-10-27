@@ -1,6 +1,6 @@
-import { DepositNftType } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { useTranslation } from "react-i18next"
+import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { useEnteredDate } from "utils/block"
 import { useClaimableAmount } from "utils/farms/claiming"
 import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
@@ -10,8 +10,8 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { u32 } from "@polkadot/types-codec"
 
 type FarmDetailsModalValuesProps = {
-  poolId: u32
-  depositNft: DepositNftType
+  poolId: string
+  depositNft: TMiningNftPosition
   enteredBlock: BigNumber
   yieldFarmId: string
 }

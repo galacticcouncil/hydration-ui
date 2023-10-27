@@ -1,7 +1,7 @@
 import { useApiIds } from "api/consts"
 import { useOmnipoolAssets } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
-import { useAllTrades } from "api/volume"
+import { useAllOmnipoolTrades } from "api/volume"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { getFloatingPointAmount } from "utils/balance"
@@ -18,7 +18,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
   const { assets } = useRpcProvider()
   const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
   const apiIds = useApiIds()
-  const allTrades = useAllTrades()
+  const allTrades = useAllOmnipoolTrades()
   const displayAsset = useDisplayAssetStore()
 
   const omnipoolAssetsIds = omnipoolAssets.data?.map((a) => a.id) ?? []
@@ -139,7 +139,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
     assetId,
     assets,
   ])
-
+  console.log(data, "data")
   return { data, isLoading: isInitialLoading }
 }
 

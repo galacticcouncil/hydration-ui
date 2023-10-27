@@ -3,30 +3,26 @@ import { useTranslation } from "react-i18next"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { RemoveLiquidityForm } from "./RemoveLiquidityForm"
 import { RemoveLiquidityModal as RemoveStablepoolLiquidityModal } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityModal"
-import {
-  isStablepool,
-  OmnipoolPool,
-  Stablepool,
-} from "sections/pools/PoolsPage.utils"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
   onClose: () => void
   position: HydraPositionsTableData
   onSuccess: () => void
-  pool: Stablepool | OmnipoolPool
+  pool: TOmnipoolAsset
 }
 
 export const RemoveLiquidity = ({
   isOpen,
   onClose,
-  onSuccess,
   position,
   pool,
+  onSuccess,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
 
-  if (isStablepool(pool)) {
+  if (pool.isStablepool) {
     return (
       <RemoveStablepoolLiquidityModal
         isOpen={isOpen}

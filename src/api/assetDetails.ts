@@ -154,16 +154,12 @@ const fallbackAsset: TToken = {
 }
 
 const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
-const isStablepoolsEnabled =
-  import.meta.env.VITE_FF_STABLEPOOLS_ENABLED === "true"
 
 export const getAssets = async (api: ApiPromise) => {
   const poolService = new PoolService(api)
-  const traderRoutes = [PoolType.Omni]
+  const traderRoutes = [PoolType.Omni, PoolType.Stable]
 
   if (isBondsPageEnabled) traderRoutes.push(PoolType.LBP)
-
-  if (isStablepoolsEnabled) traderRoutes.push(PoolType.Stable)
 
   const tradeRouter = new TradeRouter(poolService, {
     includeOnly: traderRoutes,
@@ -175,12 +171,14 @@ export const getAssets = async (api: ApiPromise) => {
     rawAssetsMeta,
     rawAssetsLocations,
     rawTradeAssets,
+    hubAssetId,
   ] = await Promise.all([
     api.rpc.system.properties(),
     api.query.assetRegistry.assets.entries(),
     api.query.assetRegistry.assetMetadataMap.entries(),
     api.query.assetRegistry.assetLocations.entries(),
     tradeRouter.getAllAssets(),
+    api.consts.omnipool.hubAssetId,
   ])
 
   const tokens: TToken[] = []
@@ -340,6 +338,9 @@ export const getAssets = async (api: ApiPromise) => {
   }
 
   const native = tokens.find((token) => token.id === NATIVE_ASSET_ID) as TToken
+  const hub = tokens.find(
+    (token) => token.id === hubAssetId.toString(),
+  ) as TToken
 
   const all = [...tokens, ...bonds, ...stableswap]
 
@@ -372,6 +373,7 @@ export const getAssets = async (api: ApiPromise) => {
       bonds,
       stableswap,
       native,
+      hub,
       tradeAssets,
       getAsset,
       getBond,

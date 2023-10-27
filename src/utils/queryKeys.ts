@@ -27,10 +27,15 @@ export const QUERY_KEYS = {
     "omniPositionId",
     id?.toString(),
   ],
+  miningPosition: (id: string) => ["miningPosition", id],
   accountBalances: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "accountBalances",
     id?.toString(),
+  ],
+  accountOmnipoolPositions: (id: string | undefined) => [
+    "accountOmnipoolPositions",
+    id,
   ],
   accountsBalances: (ids: string[]) => [
     QUERY_KEY_PREFIX,
@@ -175,7 +180,8 @@ export const QUERY_KEYS = {
     periodsInFarm,
   ],
   minWithdrawalFee: ["minWithdrawalFee"],
-  allTrades: ["allTrades"],
+  allOmnipoolTrades: ["allOmnipoolTrades"],
+  allStableswapTrades: ["allStableswapTrades"],
   tradeVolume: (poolId: Maybe<string | u32>) => [
     "tradeVolume",
     poolId?.toString(),

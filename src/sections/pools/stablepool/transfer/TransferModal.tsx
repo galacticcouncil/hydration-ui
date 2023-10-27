@@ -6,15 +6,14 @@ import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
-import { BalanceByAsset } from "sections/pools/PoolsPage.utils"
-import { u32 } from "@polkadot/types-codec"
-import BigNumber from "bignumber.js"
 import { Stepper } from "components/Stepper/Stepper"
 import { AddLiquidityForm } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useModalPagination } from "components/Modal/Modal.utils"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
+import { BN_0 } from "utils/constants"
 
 export enum Page {
   OPTIONS,
@@ -25,32 +24,30 @@ export enum Page {
 }
 
 type Props = {
-  poolId: u32
+  pool: TOmnipoolAsset
   isOpen: boolean
   onClose: () => void
-  fee: BigNumber
-  balanceByAsset?: BalanceByAsset
   refetchPositions: () => void
-  assets: { id: string }[]
-  reserves: { asset_id: number; amount: string }[]
   defaultPage?: Page
-  canAddLiquidity?: boolean
 }
 
 export const TransferModal = ({
-  assets,
-  poolId,
-  fee,
+  pool,
   isOpen,
   onClose,
-  balanceByAsset,
-  reserves,
   refetchPositions,
   defaultPage,
-  canAddLiquidity,
 }: Props) => {
+  const {
+    assets,
+    id: poolId,
+    stablepoolBalanceByAsset: balanceByAsset,
+    reserves,
+    stablepoolFee: fee,
+    tradability: { canAddLiquidity },
+  } = pool
   const { t } = useTranslation()
-  const [assetId, setAssetId] = useState<string>(assets[0]?.id)
+  const [assetId, setAssetId] = useState<string | undefined>(assets?.[0])
   const [sharesAmount, setSharesAmount] = useState<string>()
 
   const { page, direction, paginateTo } = useModalPagination(
@@ -174,8 +171,8 @@ export const TransferModal = ({
                 }}
                 reserves={reserves}
                 onAssetOpen={() => paginateTo(Page.ASSETS)}
-                asset={rpcProvider.assets.getAsset(assetId)}
-                fee={fee}
+                asset={rpcProvider.assets.getAsset(assetId ?? poolId)}
+                fee={fee ?? BN_0}
               />
             ),
           },
@@ -205,11 +202,7 @@ export const TransferModal = ({
             content: (
               <AddLiquidityForm
                 initialAmount={sharesAmount}
-                assetId={poolId.toString()}
-                onSuccess={() => {
-                  refetchPositions()
-                  onClose()
-                }}
+                assetId={poolId}
                 onClose={onClose}
               />
             ),
@@ -221,7 +214,7 @@ export const TransferModal = ({
               <AssetsModalContent
                 hideInactiveAssets={true}
                 allAssets={true}
-                allowedAssets={assets.map((asset) => asset.id)}
+                allowedAssets={assets}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   paginateTo(Page.ADD_LIQUIDITY)

@@ -1,9 +1,9 @@
 import { WalletAssetsHydraPositions } from "./WalletAssetsHydraPositions"
-import { useHydraPositionsData } from "./data/WalletAssetsHydraPositionsData.utils"
+import { useOmnipoolPositionsData } from "./data/WalletAssetsHydraPositionsData.utils"
 import { WalletAssetsHydraPositionsSkeleton } from "./skeleton/WalletAssetsHydraPositionsSkeleton"
 
 export const WalletAssetsPositionsWrapper = () => {
-  const positionsTable = useHydraPositionsData()
+  const positionsTable = useOmnipoolPositionsData()
 
   if (positionsTable.isLoading) return <WalletAssetsHydraPositionsSkeleton />
 

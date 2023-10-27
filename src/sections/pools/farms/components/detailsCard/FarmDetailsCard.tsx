@@ -13,19 +13,18 @@ import {
   PalletLiquidityMiningYieldFarmData,
 } from "@polkadot/types/lookup"
 import { useFarmApr } from "api/farms"
-import { DepositNftType } from "api/deposits"
 import { useBestNumber } from "api/chain"
 import { BLOCK_TIME, BN_0, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
-import { u32 } from "@polkadot/types"
 import { useOraclePrice } from "api/farms"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useRpcProvider } from "providers/rpcProvider"
+import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 
 type FarmDetailsCardProps = {
-  poolId: u32
-  depositNft?: DepositNftType
+  poolId: string
+  depositNft?: TMiningNftPosition
   farm: {
     globalFarm: PalletLiquidityMiningGlobalFarmData
     yieldFarm: PalletLiquidityMiningYieldFarmData
@@ -68,7 +67,7 @@ export const FarmDetailsCard = ({
 
   const currentApr = useMemo(() => {
     if (depositNft && apr.data != null) {
-      const depositYield = depositNft.deposit.yieldFarmEntries.find(
+      const depositYield = depositNft.data.yieldFarmEntries.find(
         (entry) =>
           entry.yieldFarmId.eq(farm.yieldFarm.id) &&
           entry.globalFarmId.eq(farm.globalFarm.id),
@@ -172,7 +171,7 @@ export const FarmDetailsCard = ({
               >
                 {t("farms.details.card.lockedShares.value", {
                   value: getFloatingPointAmount(
-                    depositNft.deposit.shares,
+                    depositNft.data.shares,
                     assetMeta.decimals,
                   ),
                 })}

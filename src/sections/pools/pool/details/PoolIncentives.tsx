@@ -1,4 +1,3 @@
-import { u32 } from "@polkadot/types"
 import { useFarms } from "api/farms"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
@@ -13,7 +12,7 @@ export const PoolIncentives = ({
   poolId,
   className,
 }: {
-  poolId: u32
+  poolId: string
   className?: string
 }) => {
   const { t } = useTranslation()

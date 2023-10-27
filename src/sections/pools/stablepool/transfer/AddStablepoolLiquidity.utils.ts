@@ -4,7 +4,6 @@ import {
 } from "@galacticcouncil/math-stableswap"
 import { useBestNumber } from "api/chain"
 import { useStableswapPool } from "api/stableswap"
-import { u32 } from "@polkadot/types-codec"
 import { useTotalIssuance } from "api/totalIssuance"
 import { normalizeBigNumber } from "utils/balance"
 import { BalanceByAsset } from "sections/pools/PoolsPage.utils"
@@ -14,7 +13,7 @@ import BigNumber from "bignumber.js"
 type Asset = { asset_id: number; amount: string }
 
 type Args = {
-  poolId: u32
+  poolId: string
   asset?: { id?: string; amount?: string; decimals?: number }
   balanceByAsset?: BalanceByAsset
   reserves: { asset_id: number; amount: string }[]

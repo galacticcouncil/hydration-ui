@@ -1,6 +1,5 @@
 import { useOmnipoolAssets } from "api/omnipool"
 import { usePoolsDetailsTradeVolumes } from "sections/pools/pool/details/PoolDetails.utils"
-import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
 
 export function useTotalVolumesInPools() {
   const assets = useOmnipoolAssets()
@@ -20,7 +19,7 @@ export function useTotalVolumesInPools() {
 }
 
 export function useTotalVolumesInPoolsUser() {
-  const pools = useOmnipoolPools(true)
+  const pools = { data: [] }
   const assetIds = pools.data?.map((pool) => pool.id) ?? []
 
   const totalVolume = usePoolsDetailsTradeVolumes(assetIds)

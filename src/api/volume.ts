@@ -6,7 +6,8 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types-codec"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { PROVIDERS, useProviderRpcUrlStore } from "./provider"
+import { PROVIDERS, useIndexerUrl, useProviderRpcUrlStore } from "./provider"
+import { useCallback } from "react"
 
 export type TradeType = {
   name: "Omnipool.SellExecuted" | "Omnipool.BuyExecuted" | "OTC.Placed"
@@ -66,7 +67,7 @@ export const getTradeVolume =
     }
   }
 
-export const getAllTrades = (indexerUrl: string) => async () => {
+export const getAllOmnipoolTrades = (indexerUrl: string) => async () => {
   const after = addDays(new Date(), -1).toISOString()
 
   // This is being typed manually, as GraphQL schema does not
@@ -80,10 +81,46 @@ export const getAllTrades = (indexerUrl: string) => async () => {
         query TradeVolume($after: DateTime!) {
           events(
             where: {
-              name_eq: "Omnipool.SellExecuted"
+              name_contains: "Omnipool.SellExecuted"
               block: { timestamp_gte: $after }
               OR: {
-                name_eq: "Omnipool.BuyExecuted"
+                name_contains: "Omnipool.BuyExecuted"
+                block: { timestamp_gte: $after }
+              }
+            }
+          ) {
+            id
+            name
+            args
+            block {
+              timestamp
+            }
+          }
+        }
+      `,
+      { after },
+    )),
+  }
+}
+
+export const getAllStableswapTrades = (indexerUrl: string) => async () => {
+  const after = addDays(new Date(), -1).toISOString()
+
+  // This is being typed manually, as GraphQL schema does not
+  // describe the event arguments at all
+  return {
+    ...(await request<{
+      events: Array<TradeType>
+    }>(
+      indexerUrl,
+      gql`
+        query TradeVolume($after: DateTime!) {
+          events(
+            where: {
+              name_eq: "Stableswap.SellExecuted"
+              block: { timestamp_gte: $after }
+              OR: {
+                name_eq: "Stableswap.BuyExecuted"
                 block: { timestamp_gte: $after }
               }
             }
@@ -129,16 +166,58 @@ export function useTradeVolumes(
   })
 }
 
-export function useAllTrades() {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const selectedProvider = PROVIDERS.find(
-    (provider) => new URL(provider.url).hostname === new URL(rpcUrl).hostname,
-  )
+export const useAllTradesSorted = () => {
+  const indexerUrl = useIndexerUrl()
 
-  const indexerUrl =
-    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
-  return useQuery(QUERY_KEYS.allTrades, getAllTrades(indexerUrl))
+  return useQuery(
+    QUERY_KEYS.allOmnipoolTrades,
+    getAllOmnipoolTrades(indexerUrl),
+    {
+      select: useCallback((data: { events: TradeType[] }) => {
+        return data.events.reduce<Record<string, TradeType[]>>((acc, event) => {
+          acc[event.args.assetIn]
+            ? acc[event.args.assetIn].push(event)
+            : (acc[event.args.assetIn] = [event])
+          acc[event.args.assetOut]
+            ? acc[event.args.assetOut].push(event)
+            : (acc[event.args.assetOut] = [event])
+
+          return acc
+        }, {})
+      }, []),
+      refetchInterval: 60000,
+    },
+  )
+}
+
+export function useAllOmnipoolTrades() {
+  const indexerUrl = useIndexerUrl()
+
+  return useQuery(
+    QUERY_KEYS.allOmnipoolTrades,
+    getAllOmnipoolTrades(indexerUrl),
+  )
+}
+
+export function useAllStableswapTrades() {
+  const indexerUrl = useIndexerUrl()
+
+  return useQuery(
+    QUERY_KEYS.allStableswapTrades,
+    getAllStableswapTrades(indexerUrl),
+    {
+      select: useCallback((data: { events: TradeType[] }) => {
+        return data.events.reduce<Record<string, TradeType[]>>((acc, event) => {
+          acc[event.args.assetIn]
+            ? acc[event.args.assetIn].push(event)
+            : (acc[event.args.assetIn] = [event])
+
+          return acc
+        }, {})
+      }, []),
+      refetchInterval: 60000,
+    },
+  )
 }
 
 export function getVolumeAssetTotalValue(

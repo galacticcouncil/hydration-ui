@@ -1,22 +1,10 @@
 import { Separator } from "components/Separator/Separator"
-import { Switch } from "components/Switch/Switch"
-import { Heading } from "components/Typography/Heading/Heading"
 import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
-import { PoolsHeaderTotal } from "sections/pools/header/PoolsHeaderTotal"
-import { useAccountStore } from "state/store"
 import { theme } from "theme"
-import { ClaimAllDropdown } from "sections/pools/farms/components/claimAllDropdown/ClaimAllDropdown"
 import { Fragment, ReactElement } from "react"
 import Skeleton from "react-loading-skeleton"
 import { useRpcProvider } from "providers/rpcProvider"
-
-type Props = {
-  myPositions: boolean
-  onMyPositionsChange: (value: boolean) => void
-  disableMyPositions: boolean
-}
 
 export const HeaderSeparator = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -100,66 +88,5 @@ export const HeaderValues = ({
     >
       {headerValues}
     </div>
-  )
-}
-
-const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
-
-export const PoolsHeader = ({
-  myPositions,
-  onMyPositionsChange,
-  disableMyPositions,
-}: Props) => {
-  const { t } = useTranslation()
-
-  const { account } = useAccountStore()
-
-  return (
-    <>
-      <div sx={{ flex: "row", justify: "space-between", mb: 43 }}>
-        <Heading fs={20} lh={26} fw={500}>
-          {t("liquidity.header.title")}
-        </Heading>
-        {!!account && (
-          <Switch
-            value={myPositions}
-            onCheckedChange={onMyPositionsChange}
-            disabled={disableMyPositions}
-            size="small"
-            name="my-positions"
-            label={t("liquidity.header.switch")}
-          />
-        )}
-      </div>
-      <HeaderValues
-        values={[
-          {
-            label: t("liquidity.header.totalLocked"),
-            content: (
-              <PoolsHeaderTotal variant="pools" myPositions={myPositions} />
-            ),
-          },
-          {
-            hidden: !enabledFarms,
-            label: t("liquidity.header.totalInFarms"),
-            content: (
-              <PoolsHeaderTotal variant="farms" myPositions={myPositions} />
-            ),
-          },
-          {
-            withoutSeparator: true,
-            label: t("liquidity.header.24hours"),
-            content: (
-              <PoolsHeaderTotal myPositions={myPositions} variant="volume" />
-            ),
-          },
-          {
-            initiallyHidden: true,
-            hidden: !enabledFarms || !account?.address,
-            content: <ClaimAllDropdown />,
-          },
-        ]}
-      />
-    </>
   )
 }

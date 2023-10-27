@@ -6,7 +6,7 @@ import { Trans, useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import {
   useTotalInFarms,
-  useTotalInPools,
+  useOmnipoolTotal,
   useUsersTotalInPools,
 } from "sections/pools/header/PoolsHeaderTotal.utils"
 import { theme } from "theme"
@@ -62,7 +62,7 @@ export const HeaderTotalData = ({ value, isLoading, fontSize }: DataProps) => {
 }
 
 const PoolsHeaderTotalPools = () => {
-  const { data, isLoading } = useTotalInPools()
+  const { data, isLoading } = useOmnipoolTotal()
   return <HeaderTotalData value={data} isLoading={isLoading} />
 }
 

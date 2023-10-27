@@ -6,7 +6,7 @@ import { useState } from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { AnimatePresence, motion } from "framer-motion"
-import { LiquidityPosition } from "./positions/LiquidityPosition"
+import { LiquidityPosition } from "./positions/StablepoolPosition"
 import { useTokenBalance } from "api/balances"
 import { useAccountStore } from "state/store"
 import { BN_0 } from "utils/constants"
@@ -36,6 +36,7 @@ export const StablePool = ({ pool }: Props) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const { account } = useAccountStore()
+
   const position = useTokenBalance(id.toString(), account?.address)
   const positions = usePoolPositions(id)
 

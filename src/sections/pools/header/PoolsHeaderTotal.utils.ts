@@ -17,10 +17,9 @@ import { BN_0, BN_10, BN_NAN } from "utils/constants"
 import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 
-export const useTotalInPools = () => {
+export const useOmnipoolTotal = () => {
   const { assets } = useRpcProvider()
   const omnipoolAssets = useOmnipoolAssets()
 
@@ -54,7 +53,7 @@ export const useTotalInPools = () => {
 
         const dp = BN_10.pow(meta.decimals)
         const value = balance.data.balance.times(sp?.spotPrice).div(dp)
-
+        console.log(value.toString(), meta.symbol, "value")
         return value
       })
       .reduce((acc, curr) => acc.plus(curr), BN_0)
@@ -187,7 +186,7 @@ export const useUsersTotalInPools = () => {
 
 export const useTotalInFarms = () => {
   const { api } = useRpcProvider()
-  const pools = useOmnipoolPools()
+  const pools = { data: [] }
 
   const apiIds = useApiIds()
   const poolIds = pools.data?.map((pool) => pool.id) ?? []

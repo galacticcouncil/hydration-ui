@@ -27,20 +27,18 @@ import { BN_0 } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { useRpcProvider } from "providers/rpcProvider"
-import { u32 } from "@polkadot/types-codec"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { OmnipoolPool, Stablepool } from "sections/pools/PoolsPage.utils"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
 
 type Props = {
   position: HydraPositionsTableData
-  onSuccess: () => void
   index: number
-  pool: Stablepool | OmnipoolPool
-  disableRemoveLiquidity: boolean
+  pool: TOmnipoolAsset
+  onSuccess: () => void
 }
 
 function LiquidityPositionJoinFarmButton(props: {
-  poolId: u32
+  poolId: string
   position: HydraPositionsTableData
   onSuccess: () => void
 }) {
@@ -104,10 +102,9 @@ function LiquidityPositionJoinFarmButton(props: {
 }
 
 function LiquidityPositionRemoveLiquidity(props: {
-  pool: Stablepool | OmnipoolPool
+  pool: TOmnipoolAsset
   position: HydraPositionsTableData
   onSuccess: () => void
-  disableRemoveLiquidity: boolean
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -119,7 +116,8 @@ function LiquidityPositionRemoveLiquidity(props: {
         size="small"
         onClick={() => setOpenRemove(true)}
         disabled={
-          account?.isExternalWalletConnected || props.disableRemoveLiquidity
+          account?.isExternalWalletConnected ||
+          !props.pool.tradability.canRemoveLiquidity
         }
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
@@ -145,7 +143,6 @@ export const LiquidityPosition = ({
   index,
   onSuccess,
   pool,
-  disableRemoveLiquidity,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -256,7 +253,6 @@ export const LiquidityPosition = ({
           position={position}
           onSuccess={onSuccess}
           pool={pool}
-          disableRemoveLiquidity={disableRemoveLiquidity}
         />
       </div>
     </SContainer>

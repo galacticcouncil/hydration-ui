@@ -5,15 +5,14 @@ import { Icon } from "components/Icon/Icon"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { ReactElement, useState } from "react"
 import { SSeparator } from "sections/pools/farms/position/FarmingPosition.styled"
-import { DepositNftType } from "api/deposits"
 import { useFarmApr, useFarms } from "api/farms"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import { useAccountStore } from "state/store"
+import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
-import { u32 } from "@polkadot/types-codec"
 
 type RedepositFarmProps = {
   availableYieldFarm: NonNullable<ReturnType<typeof useFarms>["data"]>[0]
@@ -34,8 +33,8 @@ const RedepositFarm = ({ availableYieldFarm }: RedepositFarmProps) => {
 }
 
 type RedepositFarmsProps = {
-  depositNft: DepositNftType
-  poolId: u32
+  depositNft: TMiningNftPosition
+  poolId: string
 }
 
 export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
@@ -50,7 +49,7 @@ export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
   let availableYieldFarms =
     farms.data?.filter(
       (i) =>
-        !depositNft.deposit.yieldFarmEntries.some(
+        !depositNft.data.yieldFarmEntries.some(
           (entry) =>
             entry.globalFarmId.eq(i.globalFarm.id) &&
             entry.yieldFarmId.eq(i.yieldFarm.id),
@@ -64,7 +63,7 @@ export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
         t={t}
         i18nKey={`farms.modal.join.toast.${msType}`}
         tOptions={{
-          amount: depositNft.deposit.shares.toBigNumber(),
+          amount: depositNft.data.shares.toBigNumber(),
           fixedPointScale: meta.decimals,
         }}
       >
