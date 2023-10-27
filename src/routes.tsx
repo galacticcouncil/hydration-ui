@@ -12,7 +12,7 @@ import { BondsPageWrapper } from "sections/trade/sections/bonds/BondsPageWrapper
 import { BondDetailsPage } from "sections/trade/sections/bonds/details/BondDetailsPage"
 import { AllPools } from "sections/pools/sections/AllPools"
 import { MyLiquidity } from "sections/pools/sections/MyLiquidity"
-import { OmnipoolAndStablepool } from "sections/pools/sections/omnipoolAndStablepool"
+import { OmnipoolAndStablepool } from "sections/pools/sections/OmnipoolAndStablepool"
 
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
