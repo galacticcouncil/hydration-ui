@@ -173,50 +173,54 @@ export const useFarmingPositionsData = () => {
     if (!accountDeposits || !accountDepositsShare.data || !bestNumber.data)
       return []
 
-    const rows: FarmingPositionsTableData[] = accountDeposits.map((deposit) => {
-      const id = deposit.id.toString()
-      const assetId = deposit.data.ammPoolId.toString()
-      const meta = assets.getAsset(assetId)
-      const latestEnteredAtBlock = deposit.data.yieldFarmEntries.reduce(
-        (acc, curr) =>
-          acc.lt(curr.enteredAt.toBigNumber())
-            ? curr.enteredAt.toBigNumber()
-            : acc,
-        BN_0,
-      )
+    const rows: FarmingPositionsTableData[] = accountDeposits
+      .map((deposit) => {
+        const id = deposit.id.toString()
+        const assetId = deposit.data.ammPoolId.toString()
+        const meta = assets.getAsset(assetId)
+        const latestEnteredAtBlock = deposit.data.yieldFarmEntries.reduce(
+          (acc, curr) =>
+            acc.lt(curr.enteredAt.toBigNumber())
+              ? curr.enteredAt.toBigNumber()
+              : acc,
+          BN_0,
+        )
 
-      const symbol = meta.symbol
-      const name = meta.name
-      const date = getEnteredDate(
-        latestEnteredAtBlock,
-        bestNumber.data.relaychainBlockNumber.toBigNumber(),
-      )
-      const shares = getFloatingPointAmount(
-        deposit.data.shares.toBigNumber(),
-        meta.decimals,
-      )
-      const position = accountDepositsShare.data[assetId]?.find(
-        (d) => d.depositId?.toString() === deposit.id.toString(),
-      ) ?? {
-        symbol,
-        value: BN_NAN,
-        valueDisplay: BN_NAN,
-        lrna: BN_NAN,
-        amount: BN_NAN,
-        providedAmount: BN_NAN,
-        providedAmountDisplay: BN_NAN,
-      }
+        const symbol = meta.symbol
+        const name = meta.name
+        const date = getEnteredDate(
+          latestEnteredAtBlock,
+          bestNumber.data.relaychainBlockNumber.toBigNumber(),
+        )
+        const shares = getFloatingPointAmount(
+          deposit.data.shares.toBigNumber(),
+          meta.decimals,
+        )
+        const position = accountDepositsShare.data[assetId]?.find(
+          (d) => d.depositId?.toString() === deposit.id.toString(),
+        ) ?? {
+          symbol,
+          value: BN_NAN,
+          valueDisplay: BN_NAN,
+          lrna: BN_NAN,
+          amount: BN_NAN,
+          providedAmount: BN_NAN,
+          providedAmountDisplay: BN_NAN,
+        }
 
-      return {
-        id,
-        symbol,
-        name,
-        date,
-        shares,
-        position,
-        assetId,
-      }
-    })
+        return {
+          id,
+          symbol,
+          name,
+          date,
+          shares,
+          position,
+          assetId,
+        }
+      })
+      .sort((a, b) =>
+        b.position.valueDisplay.minus(a.position.valueDisplay).toNumber(),
+      )
 
     return rows
   }, [accountDeposits, accountDepositsShare.data, assets, bestNumber.data])

@@ -92,6 +92,9 @@ export const BarChart = ({
           <XAxis
             dataKey="timestamp"
             height={30}
+            shapeRendering="crispEdges"
+            stroke={theme.colors.darkBlue400}
+            tickLine={false}
             tick={{ fontSize: 12, fill: "white" }}
             tickFormatter={(data) =>
               format(
@@ -103,6 +106,8 @@ export const BarChart = ({
 
           <YAxis
             dataKey="volume_usd"
+            shapeRendering="crispEdges"
+            stroke={theme.colors.darkBlue400}
             tick={{ fontSize: 12, fill: "white" }}
             orientation="right"
             mirror

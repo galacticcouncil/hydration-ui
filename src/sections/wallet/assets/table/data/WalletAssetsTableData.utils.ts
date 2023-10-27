@@ -148,8 +148,8 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
         // native asset first
         if (a.id === NATIVE_ASSET_ID) return -1
 
-        if (!b.transferable.eq(a.transferable))
-          return b.transferable.minus(a.transferable).toNumber()
+        if (!b.transferableDisplay.eq(a.transferableDisplay))
+          return b.transferableDisplay.minus(a.transferableDisplay).toNumber()
 
         return a.symbol.localeCompare(b.symbol)
       })

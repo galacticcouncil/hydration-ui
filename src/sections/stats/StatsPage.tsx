@@ -10,6 +10,7 @@ import { StatsPOL } from "./sections/POL/StatsPOL"
 import { StatsOverview } from "./sections/overview/StatsOverview"
 import { StatsTabs } from "./components/tabs/StatsTabs"
 import { StatsOmnipoolAsset } from "./sections/omnipoolAsset/StatsOmnipoolAsset"
+import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
 
 const pageEnabled = import.meta.env.VITE_FF_STATS_ENABLED === "true"
 
@@ -24,7 +25,17 @@ export const StatsPage = () => {
   return (
     <Page
       variant="stats"
-      css={isOmnipoolAssetPage && { padding: "10px!important" }}
+      subHeader={
+        isOmnipoolAssetPage ? (
+          <BackSubHeader
+            to={LINKS.stats}
+            label={t("stats.omnipool.navigation.back")}
+          />
+        ) : null
+      }
+      subHeaderStyle={{
+        borderBottom: "1px solid rgba(84, 99, 128, 0.35)",
+      }}
     >
       {!isOmnipoolAssetPage && (
         <>
