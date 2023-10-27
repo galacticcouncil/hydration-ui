@@ -9,8 +9,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 
 const DEPOSIT_NFT_COLLECTION_ID = "2584"
 
-const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
-
 export const useAccountDepositIds = (
   accountId: Maybe<AccountId32 | string>,
 ) => {
@@ -38,9 +36,7 @@ const getAccountDepositIds =
 
 export const useAllDeposits = () => {
   const { api } = useRpcProvider()
-  return useQuery(QUERY_KEYS.allDeposits, getDeposits(api), {
-    enabled: enabledFarms,
-  })
+  return useQuery(QUERY_KEYS.allDeposits, getDeposits(api))
 }
 
 export const usePoolDeposits = (poolId?: u32 | string) => {
