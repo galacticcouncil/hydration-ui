@@ -4,24 +4,22 @@ import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import Skeleton from "react-loading-skeleton"
-import { useDisplayPrice } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { SBadge } from "./PoolDetails.styled"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Fragment } from "react"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
 
 type PoolDetailsProps = {
-  id: string
+  pool: TOmnipoolAsset
   className?: string
 }
 
-export const PoolDetails = ({ id, className }: PoolDetailsProps) => {
+export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
   const { t } = useTranslation()
 
   const rpc = useRpcProvider()
-  const meta = rpc.assets.getAsset(id.toString())
-  const spotPrice = useDisplayPrice(id)
+  const meta = rpc.assets.getAsset(pool.id)
 
   return (
     <div sx={{ flex: "column" }} className={className}>
@@ -60,7 +58,7 @@ export const PoolDetails = ({ id, className }: PoolDetailsProps) => {
             </div>
           ) : (
             <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
-              <Icon size={27} icon={<AssetLogo id={id.toString()} />} />
+              <Icon size={27} icon={<AssetLogo id={pool.id} />} />
               <div sx={{ flex: "column", gap: 2 }}>
                 <Text color="white" fs={16}>
                   {meta.symbol}
@@ -83,13 +81,9 @@ export const PoolDetails = ({ id, className }: PoolDetailsProps) => {
           <Text fs={13} color="basic400">
             {t("liquidity.asset.details.price")}
           </Text>
-          {spotPrice.isLoading ? (
-            <Skeleton width={118} height={21} />
-          ) : (
-            <Text lh={22} color="white" fs={18}>
-              <DisplayValue value={spotPrice.data?.spotPrice} type="token" />
-            </Text>
-          )}
+          <Text lh={22} color="white" fs={18}>
+            <DisplayValue value={pool.spotPrice} type="token" />
+          </Text>
         </div>
       </div>
       <Separator sx={{ mt: [18, 20] }} />
