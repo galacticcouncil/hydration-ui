@@ -132,6 +132,8 @@ export type AssetsTableData = {
   lockedVestingDisplay: BN
   lockedDemocracy: BN
   lockedDemocracyDisplay: BN
+  lockedStaking: BN
+  lockedStakingDisplay: BN
   reserved: BN
   reservedDisplay: BN
   assetType: PalletAssetRegistryAssetType["type"]

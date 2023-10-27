@@ -397,6 +397,7 @@
   "wallet.assets.table.details.locked": "Locked",
   "wallet.assets.table.details.lockedVesting": "Locked in Vesting",
   "wallet.assets.table.details.lockedDemocracy": "Locked in Democracy",
+  "wallet.assets.table.details.lockedStaking": "Total Locked in Staking",
   "wallet.assets.table.details.noprice.tooltip": "Spot price currently not available",
   "wallet.assets.hydraPositions.empty.desc": "You still don't have any liquidity positions. Add liquidity to the Omnipool and begin your hydrated journey.",
   "wallet.assets.hydraPositions.empty.btn": "Add liquidity",

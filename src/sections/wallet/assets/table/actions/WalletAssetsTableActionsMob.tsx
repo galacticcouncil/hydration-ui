@@ -71,8 +71,23 @@ export const WalletAssetsTableActionsMob = ({
           </div>
         </div>
         <SActionButtonsContainer>
-          <div sx={{ flex: "row", justify: "space-between" }}>
-            <div sx={{ flex: "column", gap: 4, pt: 20, pb: 30 }}>
+          <div sx={{ flex: "row", flexWrap: "wrap", py: 20 }}>
+            <div
+              sx={{ flex: "column", gap: 4, pr: 10, mb: 20, flexBasis: "50%" }}
+            >
+              <Text fs={14} lh={16} color="whiteish500">
+                {t("wallet.assets.table.details.lockedStaking")}
+              </Text>
+              <Text fs={14} lh={14} color="white">
+                {t("value", { value: row.lockedStaking })}
+              </Text>
+              <Text fs={12} lh={17} color="whiteish500">
+                <DisplayValue value={row.lockedStaking} />
+              </Text>
+            </div>
+            <div
+              sx={{ flex: "column", gap: 4, pr: 10, mb: 20, flexBasis: "50%" }}
+            >
               <Text fs={14} lh={16} color="whiteish500">
                 {t("wallet.assets.table.details.lockedDemocracy")}
               </Text>
@@ -83,7 +98,18 @@ export const WalletAssetsTableActionsMob = ({
                 <DisplayValue value={row.lockedDemocracyDisplay} />
               </Text>
             </div>
-            <div sx={{ flex: "column", gap: 4, pt: 20, pb: 30 }}>
+            <div sx={{ flex: "column", gap: 4, pr: 10, flexBasis: "50%" }}>
+              <Text fs={14} lh={16} color="whiteish500">
+                {t("wallet.assets.table.details.reserved")}
+              </Text>
+              <Text fs={14} lh={14} color="white">
+                {t("value", { value: row.reserved })}
+              </Text>
+              <Text fs={12} lh={17} color="whiteish500">
+                <DisplayValue value={row.reservedDisplay} />
+              </Text>
+            </div>
+            <div sx={{ flex: "column", gap: 4, pr: 10, flexBasis: "50%" }}>
               <Text fs={14} lh={16} color="whiteish500">
                 {t("wallet.assets.table.details.lockedVesting")}
               </Text>

@@ -142,6 +142,8 @@ export const useAssetsTableData = ({
         lockedVestingDisplay: balance?.lockedVestingDisplay ?? BN_0,
         lockedDemocracy: balance?.lockedDemocracy ?? BN_0,
         lockedDemocracyDisplay: balance?.lockedDemocracyDisplay ?? BN_0,
+        lockedStaking: balance?.lockedStaking ?? BN_0,
+        lockedStakingDisplay: balance?.lockedStakingDisplay ?? BN_0,
         reserved: balance?.reserved ?? BN_0,
         reservedDisplay: balance?.reservedDisplay ?? BN_0,
         tradability,
@@ -234,6 +236,12 @@ export const getAssetsBalances = (
       const lockedDemocracy = lockDemocracy?.amount.div(dp) ?? BN_0
       const lockedDemocracyDisplay = lockedDemocracy.times(spotPrice.spotPrice)
 
+      const lockStaking = locks.find(
+        (lock) => lock.id === id.toString() && lock.type === "stk_stks",
+      )
+      const lockedStaking = lockStaking?.amount.div(dp) ?? BN_0
+      const lockedStakingDisplay = lockedStaking.times(spotPrice.spotPrice)
+
       return {
         id,
         total,
@@ -246,6 +254,8 @@ export const getAssetsBalances = (
         lockedVestingDisplay,
         lockedDemocracy,
         lockedDemocracyDisplay,
+        lockedStaking,
+        lockedStakingDisplay,
         reserved,
         reservedDisplay,
       }
@@ -273,6 +283,9 @@ export const getAssetsBalances = (
   const nativeLockDemocracy = locks.find(
     (lock) => lock.id === NATIVE_ASSET_ID && lock.type === "democrac",
   )?.amount
+  const nativeLockStaking = locks.find(
+    (lock) => lock.id === NATIVE_ASSET_ID && lock.type === "stk_stks",
+  )?.amount
 
   const native = getNativeBalances(
     nativeBalance,
@@ -281,6 +294,7 @@ export const getAssetsBalances = (
     nativeLockMax,
     nativeLockVesting,
     nativeLockDemocracy,
+    nativeLockStaking,
   )
 
   return [native, ...tokens].filter(
@@ -295,6 +309,7 @@ const getNativeBalances = (
   lockMax?: BN,
   lockVesting?: BN,
   lockDemocracy?: BN,
+  lockStaking?: BN,
 ): AssetsTableDataBalances | null => {
   if (!decimals || !spotPrice) return null
 
@@ -322,6 +337,9 @@ const getNativeBalances = (
   const lockedDemocracy = lockDemocracy?.div(dp) ?? BN_0
   const lockedDemocracyDisplay = lockedDemocracy.times(spotPrice)
 
+  const lockedStaking = lockStaking?.div(dp) ?? BN_0
+  const lockedStakingDisplay = lockedStaking.times(spotPrice)
+
   return {
     id: NATIVE_ASSET_ID,
     total,
@@ -334,6 +352,8 @@ const getNativeBalances = (
     lockedVestingDisplay,
     lockedDemocracy,
     lockedDemocracyDisplay,
+    lockedStaking,
+    lockedStakingDisplay,
     reserved,
     reservedDisplay,
   }
@@ -351,6 +371,8 @@ type AssetsTableDataBalances = {
   lockedVestingDisplay: BN
   lockedDemocracy: BN
   lockedDemocracyDisplay: BN
+  lockedStaking: BN
+  lockedStakingDisplay: BN
   reserved: BN
   reservedDisplay: BN
 }
