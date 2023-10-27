@@ -60,7 +60,7 @@ export const WalletAssetsHydraPositions = ({ data }: Props) => {
         <TableBodyContent>
           {table.options.data.length ? (
             table.getRowModel().rows.map((row, i) => (
-              <Fragment key={row.id}>
+              <Fragment key={row.original.id}>
                 <TableRow isOdd={!(i % 2)} onClick={() => row.toggleSelected()}>
                   {row.getVisibleCells().map((cell) => (
                     <STableData key={cell.id}>

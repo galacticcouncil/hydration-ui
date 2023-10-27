@@ -58,7 +58,7 @@ export const WalletFarmingPositions = ({ data }: Props) => {
         </TableHeaderContent>
         <TableBodyContent>
           {table.getRowModel().rows.map((row, i) => (
-            <Fragment key={row.id}>
+            <Fragment key={row.original.id}>
               <TableRow isOdd={!(i % 2)} onClick={() => row.toggleSelected()}>
                 {row.getVisibleCells().map((cell) => (
                   <STableData key={cell.id}>
