@@ -1,9 +1,10 @@
 import { noop } from "utils/helpers"
 import { Icon } from "components/Icon/Icon"
-import { FC, ReactNode } from "react"
+import { FC, ElementType, ReactNode } from "react"
 import { SIconButton } from "./IconButton.styled"
 
 export type IconButtonProps = {
+  as?: ElementType
   name?: string
   round?: boolean
   onClick?: () => void
