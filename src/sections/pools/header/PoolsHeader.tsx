@@ -116,7 +116,15 @@ export const PoolsHeader = ({
 
   return (
     <>
-      <div sx={{ flex: "row", justify: "space-between", mb: 43 }}>
+      <div
+        sx={{
+          flex: "row",
+          flexWrap: "wrap",
+          justify: "space-between",
+          gap: 12,
+          mb: 43,
+        }}
+      >
         <Heading fs={20} lh={26} fw={500}>
           {t("liquidity.header.title")}
         </Heading>
