@@ -88,18 +88,18 @@ export const routes = [
     children: [
       {
         path: "/",
-        element: <Navigate to="allPools" />,
+        element: <Navigate to="all-pools" />,
       },
       {
-        path: "myLiquidity",
+        path: "my-liquidity",
         element: <MyLiquidity />,
       },
       {
-        path: "allPools",
+        path: "all-pools",
         element: <AllPools />,
       },
       {
-        path: "omnipool&stablepools",
+        path: "omnipool-stablepools",
         element: <OmnipoolAndStablepool />,
       },
     ],

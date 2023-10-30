@@ -12,9 +12,9 @@ import IconBonds from "assets/icons/Bonds.svg?react"
 export const LINKS = {
   home: "/",
   liquidity: "/liquidity",
-  myLiquidity: "/liquidity/myLiquidity",
-  allPools: "/liquidity/allPools",
-  omnipool: "/liquidity/omnipool&stablepools",
+  myLiquidity: "/liquidity/my-liquidity",
+  allPools: "/liquidity/all-pools",
+  omnipool: "/liquidity/omnipool-stablepools",
   isolated: "/liquidity/isolated",
   lbp: "/liquidity/lbp",
   swap: "/trade/swap",

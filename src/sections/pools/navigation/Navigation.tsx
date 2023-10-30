@@ -7,13 +7,13 @@ import { Text } from "components/Typography/Text/Text"
 import { LINKS } from "utils/navigation"
 
 import UserIcon from "assets/icons/UserIcon.svg?react"
-import AllPools from "assets/icons/AllPools.svg?react"
-import OmniStablepools from "assets/icons/Omni&Stablepools.svg?react"
+import AllPools from "assets/icons/DropletIcon.svg?react"
+import OmniStablepools from "assets/icons/WaterRippleIcon.svg?react"
 //import IsolatedPools from "assets/icons/PoolsAndFarms.svg?react"
-//import LBPPools from "assets/icons/ChartIcon.svg?react"
 import { SSeparator } from "components/Separator/Separator.styled"
 import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useTranslation } from "react-i18next"
 
 const Tab = ({
   to,
@@ -41,6 +41,7 @@ const Tab = ({
             <Icon
               sx={{ color: isActive ? "brightBlue300" : "white" }}
               icon={icon}
+              size={20}
             />
             <Text fs={13} color={isActive ? "white" : "iconGray"}>
               {label}
@@ -59,27 +60,33 @@ const Tab = ({
 }
 
 export const Navigation = () => {
+  const { t } = useTranslation()
   const { isLoaded } = useRpcProvider()
   return (
     <SNavigationContainer>
       {isLoaded && <MyLiquidity />}
-      <Tab to={LINKS.allPools} label="All pools" icon={<AllPools />} />
+      <Tab
+        to={LINKS.allPools}
+        label={t("liquidity.navigation.allPools")}
+        icon={<AllPools />}
+      />
       <Tab
         to={LINKS.omnipool}
-        label="Omnipool & Stablepool"
+        label={t("liquidity.navigation.omnipoolAndStablepool")}
         icon={<OmniStablepools />}
       />
       {/*<Tab
         to={LINKS.isolated}
-        label="Isolated pools"
+        label={t("liquidity.navigation.isolated")}
         icon={<IsolatedPools />}
       />
-      <Tab to={LINKS.lbp} label="LBP Pools" icon={<LBPPools />} />*/}
+   */}
     </SNavigationContainer>
   )
 }
 
 const MyLiquidity = () => {
+  const { t } = useTranslation()
   const accountPositions = useAccountOmnipoolPositions()
 
   const isOmnipoolPositions =
@@ -90,7 +97,13 @@ const MyLiquidity = () => {
 
   return (
     <>
-      <Tab to={LINKS.myLiquidity} icon={<UserIcon />} label="My liquidity" />
+      <Tab
+        to={LINKS.myLiquidity}
+        icon={
+          <UserIcon style={{ width: 14, height: 14, alignSelf: "center" }} />
+        }
+        label={t("liquidity.navigation.myLiquidity")}
+      />
       <SSeparator
         orientation="vertical"
         sx={{ width: 1, height: "60%" }}
