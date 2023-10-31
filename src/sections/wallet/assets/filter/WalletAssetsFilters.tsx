@@ -50,7 +50,17 @@ export const WalletAssetsFilters = () => {
   )
 
   return (
-    <div sx={{ flex: "column", gap: [16, 20], mb: [16, 30] }}>
+    <div sx={{ flex: "column", gap: [16, 30], mb: [16, 20] }}>
+      <SSearchContainer>
+        <IconSearch />
+        <Input
+          value={searchVal}
+          onChange={setSearchVal}
+          name="search"
+          label="Input"
+          placeholder={t("wallet.header.search")}
+        />
+      </SSearchContainer>
       <SButtonContainer>
         {filters.map(({ id, icon }) => (
           <SButton
@@ -65,16 +75,6 @@ export const WalletAssetsFilters = () => {
           </SButton>
         ))}
       </SButtonContainer>
-      <SSearchContainer>
-        <IconSearch />
-        <Input
-          value={searchVal}
-          onChange={setSearchVal}
-          name="search"
-          label="Input"
-          placeholder={t("wallet.header.search")}
-        />
-      </SSearchContainer>
     </div>
   )
 }

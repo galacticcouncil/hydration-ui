@@ -1,7 +1,10 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SContainer = styled.div<{ hasChain: boolean }>`
+export const SContainer = styled.div<{
+  hasChain: boolean
+  isNativeAsset: boolean
+}>`
   display: grid;
   gap: 12px;
 
@@ -9,13 +12,16 @@ export const SContainer = styled.div<{ hasChain: boolean }>`
     gap: 30px;
   }
 
-  ${({ hasChain }) => {
-    const cols = hasChain ? 3 : 2
+  ${({ hasChain, isNativeAsset }) => {
+    const cols = isNativeAsset ? 2 : hasChain ? 2 : 1
     return `
       grid-template-columns: repeat(${cols}, 1fr);
+      justify-items: ${cols === 1 ? "center" : "normal"};
 
       & > div {
-        &:not(:nth-child(3n)) {
+        text-align: center;
+
+        &:not(:nth-child(${cols}n)) {
           border-right: 1px solid rgba(255, 255, 255, 0.12);
         }
 

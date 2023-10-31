@@ -5,7 +5,7 @@ import { theme } from "theme"
 export const SButtonContainer = styled.div`
   display: flex;
   justify-content: start;
-  gap: 10px;
+  gap: 8px;
 
   margin-left: -12px;
   margin-right: -12px;
@@ -39,10 +39,20 @@ export const SSearchContainer = styled.div`
 
     transform: translateY(-50%);
 
-    color: ${theme.colors.basic600};
+    color: rgba(${theme.rgbColors.white}, 0.4);
   }
 
   input[type="text"] {
+    background: rgba(158, 167, 186, 0.06);
+
+    &:not(:hover):not(:focus) {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
     padding-left: 48px;
+
+    &::placeholder {
+      color: rgba(${theme.rgbColors.white}, 0.4);
+    }
   }
 `

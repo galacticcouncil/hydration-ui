@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next"
 import { useRpcProvider } from "providers/rpcProvider"
 import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { SContainer } from "./WalletAssetsTableDetails.styled"
+import { NATIVE_ASSET_ID } from "utils/api"
 
 export const WalletAssetsTableDetails = ({
   lockedDemocracy,
@@ -37,9 +38,12 @@ export const WalletAssetsTableDetails = ({
     }
   }, [assets, id])
 
+  const isNativeAsset = id === NATIVE_ASSET_ID
+  const hasChain = !!asset?.chain
+
   return (
-    <SContainer hasChain={!!asset?.chain}>
-      {asset?.chain ? (
+    <SContainer hasChain={hasChain} isNativeAsset={isNativeAsset}>
+      {hasChain && (
         <div>
           <Text fs={14} lh={14} fw={500} color="basic300">
             {t("wallet.assets.table.details.origin")}
@@ -51,32 +55,33 @@ export const WalletAssetsTableDetails = ({
             </Text>
           </div>
         </div>
-      ) : (
-        <div aria-hidden></div>
       )}
-      <div>
-        <Text fs={14} lh={14} fw={500} color="basic300">
-          {t("wallet.assets.table.details.lockedStaking")}
-        </Text>
-        <Text fs={16} lh={22} fw={400} color="white" sx={{ mt: 8 }}>
-          {t("value.token", { value: lockedStaking })}
-        </Text>
-        <Text fs={11} lh={16} fw={500} color="whiteish500" sx={{ mt: 2 }}>
-          <DisplayValue value={lockedStakingDisplay} />
-        </Text>
-      </div>
-      <div>
-        <Text fs={14} lh={14} fw={500} color="basic300">
-          {t("wallet.assets.table.details.lockedDemocracy")}
-        </Text>
-        <Text fs={16} lh={22} fw={400} color="white" sx={{ mt: 8 }}>
-          {t("value.token", { value: lockedDemocracy })}
-        </Text>
-        <Text fs={11} lh={16} fw={500} color="whiteish500" sx={{ mt: 2 }}>
-          <DisplayValue value={lockedDemocracyDisplay} />
-        </Text>
-      </div>
-      <div aria-hidden></div>
+      {isNativeAsset && (
+        <div>
+          <Text fs={14} lh={14} fw={500} color="basic300">
+            {t("wallet.assets.table.details.lockedStaking")}
+          </Text>
+          <Text fs={16} lh={22} fw={400} color="white" sx={{ mt: 8 }}>
+            {t("value.token", { value: lockedStaking })}
+          </Text>
+          <Text fs={11} lh={16} fw={500} color="whiteish500" sx={{ mt: 2 }}>
+            <DisplayValue value={lockedStakingDisplay} />
+          </Text>
+        </div>
+      )}
+      {isNativeAsset && (
+        <div>
+          <Text fs={14} lh={14} fw={500} color="basic300">
+            {t("wallet.assets.table.details.lockedDemocracy")}
+          </Text>
+          <Text fs={16} lh={22} fw={400} color="white" sx={{ mt: 8 }}>
+            {t("value.token", { value: lockedDemocracy })}
+          </Text>
+          <Text fs={11} lh={16} fw={500} color="whiteish500" sx={{ mt: 2 }}>
+            <DisplayValue value={lockedDemocracyDisplay} />
+          </Text>
+        </div>
+      )}
       <div>
         <Text fs={14} lh={14} fw={500} color="basic300">
           {t("wallet.assets.table.details.reserved")}
@@ -88,17 +93,19 @@ export const WalletAssetsTableDetails = ({
           <DisplayValue value={reservedDisplay} />
         </Text>
       </div>
-      <div>
-        <Text fs={14} lh={14} fw={500} color="basic300">
-          {t("wallet.assets.table.details.lockedVesting")}
-        </Text>
-        <Text fs={16} lh={22} fw={400} color="white" sx={{ mt: 8 }}>
-          {t("value.token", { value: lockedVesting })}
-        </Text>
-        <Text fs={11} lh={16} fw={500} color="whiteish500" sx={{ mt: 2 }}>
-          <DisplayValue value={lockedVestingDisplay} />
-        </Text>
-      </div>
+      {isNativeAsset && (
+        <div>
+          <Text fs={14} lh={14} fw={500} color="basic300">
+            {t("wallet.assets.table.details.lockedVesting")}
+          </Text>
+          <Text fs={16} lh={22} fw={400} color="white" sx={{ mt: 8 }}>
+            {t("value.token", { value: lockedVesting })}
+          </Text>
+          <Text fs={11} lh={16} fw={500} color="whiteish500" sx={{ mt: 2 }}>
+            <DisplayValue value={lockedVestingDisplay} />
+          </Text>
+        </div>
+      )}
     </SContainer>
   )
 }

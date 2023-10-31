@@ -16,6 +16,7 @@ import { LINKS } from "utils/navigation"
 import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { SActionButtonsContainer } from "./WalletAssetsTable.styled"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
+import { NATIVE_ASSET_ID } from "utils/api"
 
 type Props = {
   row?: AssetsTableData
@@ -36,6 +37,8 @@ export const WalletAssetsTableActionsMob = ({
 
   const canBuy = row.tradability.inTradeRouter && row.tradability.canBuy
   const canSell = row.tradability.inTradeRouter && row.tradability.canSell
+
+  const isNativeAsset = row.id === NATIVE_ASSET_ID
 
   return (
     <Modal open={!!row} isDrawer onClose={onClose} title="">
@@ -72,32 +75,48 @@ export const WalletAssetsTableActionsMob = ({
         </div>
         <SActionButtonsContainer>
           <div sx={{ flex: "row", flexWrap: "wrap", py: 20 }}>
-            <div
-              sx={{ flex: "column", gap: 4, pr: 10, mb: 20, flexBasis: "50%" }}
-            >
-              <Text fs={14} lh={16} color="whiteish500">
-                {t("wallet.assets.table.details.lockedStaking")}
-              </Text>
-              <Text fs={14} lh={14} color="white">
-                {t("value", { value: row.lockedStaking })}
-              </Text>
-              <Text fs={12} lh={17} color="whiteish500">
-                <DisplayValue value={row.lockedStaking} />
-              </Text>
-            </div>
-            <div
-              sx={{ flex: "column", gap: 4, pr: 10, mb: 20, flexBasis: "50%" }}
-            >
-              <Text fs={14} lh={16} color="whiteish500">
-                {t("wallet.assets.table.details.lockedDemocracy")}
-              </Text>
-              <Text fs={14} lh={14} color="white">
-                {t("value", { value: row.lockedDemocracy })}
-              </Text>
-              <Text fs={12} lh={17} color="whiteish500">
-                <DisplayValue value={row.lockedDemocracyDisplay} />
-              </Text>
-            </div>
+            {isNativeAsset && (
+              <div
+                sx={{
+                  flex: "column",
+                  gap: 4,
+                  pr: 10,
+                  mb: 20,
+                  flexBasis: "50%",
+                }}
+              >
+                <Text fs={14} lh={16} color="whiteish500">
+                  {t("wallet.assets.table.details.lockedStaking")}
+                </Text>
+                <Text fs={14} lh={14} color="white">
+                  {t("value", { value: row.lockedStaking })}
+                </Text>
+                <Text fs={12} lh={17} color="whiteish500">
+                  <DisplayValue value={row.lockedStaking} />
+                </Text>
+              </div>
+            )}
+            {isNativeAsset && (
+              <div
+                sx={{
+                  flex: "column",
+                  gap: 4,
+                  pr: 10,
+                  mb: 20,
+                  flexBasis: "50%",
+                }}
+              >
+                <Text fs={14} lh={16} color="whiteish500">
+                  {t("wallet.assets.table.details.lockedDemocracy")}
+                </Text>
+                <Text fs={14} lh={14} color="white">
+                  {t("value", { value: row.lockedDemocracy })}
+                </Text>
+                <Text fs={12} lh={17} color="whiteish500">
+                  <DisplayValue value={row.lockedDemocracyDisplay} />
+                </Text>
+              </div>
+            )}
             <div sx={{ flex: "column", gap: 4, pr: 10, flexBasis: "50%" }}>
               <Text fs={14} lh={16} color="whiteish500">
                 {t("wallet.assets.table.details.reserved")}
@@ -109,17 +128,19 @@ export const WalletAssetsTableActionsMob = ({
                 <DisplayValue value={row.reservedDisplay} />
               </Text>
             </div>
-            <div sx={{ flex: "column", gap: 4, pr: 10, flexBasis: "50%" }}>
-              <Text fs={14} lh={16} color="whiteish500">
-                {t("wallet.assets.table.details.lockedVesting")}
-              </Text>
-              <Text fs={14} lh={14} color="white">
-                {t("value", { value: row.lockedVesting })}
-              </Text>
-              <Text fs={12} lh={17} color="whiteish500">
-                <DisplayValue value={row.lockedVestingDisplay} />
-              </Text>
-            </div>
+            {isNativeAsset && (
+              <div sx={{ flex: "column", gap: 4, pr: 10, flexBasis: "50%" }}>
+                <Text fs={14} lh={16} color="whiteish500">
+                  {t("wallet.assets.table.details.lockedVesting")}
+                </Text>
+                <Text fs={14} lh={14} color="white">
+                  {t("value", { value: row.lockedVesting })}
+                </Text>
+                <Text fs={12} lh={17} color="whiteish500">
+                  <DisplayValue value={row.lockedVestingDisplay} />
+                </Text>
+              </div>
+            )}
           </div>
           <div sx={{ flex: "column", gap: 12 }}>
             <div sx={{ flex: "row", gap: 12 }}>
