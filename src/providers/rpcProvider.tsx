@@ -3,6 +3,7 @@ import { ApiPromise } from "@polkadot/api"
 import { getAssets } from "api/assetDetails"
 import { useProviderData, useProviderRpcUrlStore } from "api/provider"
 import { ReactNode, createContext, useContext } from "react"
+import { useWindowFocus } from "hooks/useWindowFocus"
 
 type TProviderContext = {
   api: ApiPromise
@@ -22,6 +23,16 @@ export const useRpcProvider = () => useContext(ProviderContext)
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const preference = useProviderRpcUrlStore()
   const providerData = useProviderData(preference.rpcUrl)
+
+  useWindowFocus({
+    onFocus: () => {
+      const provider = providerData.data?.provider
+
+      if (provider && !provider.isConnected) {
+        provider.connect()
+      }
+    },
+  })
 
   const value =
     !!providerData.data && preference._hasHydrated
