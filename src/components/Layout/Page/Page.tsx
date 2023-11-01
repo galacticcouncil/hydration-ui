@@ -41,8 +41,8 @@ export const Page = ({
   return (
     <SPage ref={ref}>
       <div css={{ position: "relative" }}>
-        {variant === "stats" && <SPageGrid />}
         <SGradientBg variant={variant} />
+        {variant === "stats" && <SPageGrid />}
         <Header />
         <SPageContent>
           {subHeader && (
