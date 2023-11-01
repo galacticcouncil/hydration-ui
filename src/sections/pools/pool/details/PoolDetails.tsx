@@ -96,7 +96,7 @@ export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
           {isXYKPool(pool) ? (
             <>
               <Text fs={13} color="basic400">
-                Fee
+                {t("liquidity.asset.details.fee")}
               </Text>
               <Text lh={22} color="white" fs={18}>
                 {t("value.percentage", { value: pool.fee })}
@@ -131,7 +131,7 @@ export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
               }}
             >
               <Text fs={13} color="basic400">
-                You pool share
+                {t("liquidity.asset.details.poolShare")}
               </Text>
               <Text lh={22} color="white" fs={18}>
                 {t("value.percentage", {

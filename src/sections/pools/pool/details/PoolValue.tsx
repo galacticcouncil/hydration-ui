@@ -23,7 +23,9 @@ export const PoolValue = ({ pool, className }: PoolValueProps) => {
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div sx={{ flex: "column", gap: 10 }}>
           <Text fs={13} color="basic400">
-            {isXyk ? "Total Value Locked" : t("liquidity.asset.details.total")}
+            {isXyk
+              ? t("liquidity.asset.details.totalLocked")
+              : t("liquidity.asset.details.total")}
           </Text>
           <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
             <Text lh={22} color="white" fs={18}>
