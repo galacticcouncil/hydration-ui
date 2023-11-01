@@ -48,7 +48,9 @@ export const useAssetsTable = (
         id: "transferable",
         header: t("wallet.assets.table.header.transferable"),
         sortingFn: (a, b) =>
-          a.original.transferable.gt(b.original.transferable) ? 1 : -1,
+          a.original.transferableDisplay.gt(b.original.transferableDisplay)
+            ? 1
+            : -1,
         cell: ({ row }) => (
           <WalletAssetsTableBalance
             balance={row.original.transferable}
@@ -59,7 +61,8 @@ export const useAssetsTable = (
       accessor("total", {
         id: "total",
         header: t("wallet.assets.table.header.total"),
-        sortingFn: (a, b) => (a.original.total.gt(b.original.total) ? 1 : -1),
+        sortingFn: (a, b) =>
+          a.original.totalDisplay.gt(b.original.totalDisplay) ? 1 : -1,
         cell: ({ row }) => (
           <WalletAssetsTableBalance
             balance={row.original.total}

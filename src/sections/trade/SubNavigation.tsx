@@ -130,7 +130,17 @@ export const SubNavigation = () => {
           label={t("header.trade.dca.title")}
         />
       )}
-      {isBondsPageEnabled && isLoaded && <BondsTabLink />}
+      {isBondsPageEnabled ? (
+        isLoaded ? (
+          <BondsTabLink />
+        ) : (
+          <Tab
+            to={LINKS.bonds}
+            icon={<IconBonds />}
+            label={t("header.trade.bonds.title")}
+          />
+        )
+      ) : null}
     </SubNavigationContainer>
   )
 }
