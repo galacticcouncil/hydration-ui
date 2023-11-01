@@ -212,7 +212,7 @@ export const useAllUserDepositShare = () => {
   return { data, isLoading }
 }
 
-export const useDepositShare = (poolId: u32, depositNftId: string) => {
+export const useDepositShare = (poolId: u32 | string, depositNftId: string) => {
   const deposits = useAllUserDepositShare()
 
   const deposit = deposits.data[poolId.toString()]?.find(

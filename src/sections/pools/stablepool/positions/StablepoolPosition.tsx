@@ -2,48 +2,42 @@ import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { SContainer, SOmnipoolButton } from "./LiquidityPosition.styled"
+import { SContainer, SOmnipoolButton } from "./StablepoolPosition.styled"
 import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
-import BN from "bignumber.js"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { SPositions } from "sections/pools/pool/Pool.styled"
 import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import Skeleton from "react-loading-skeleton"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useDisplayPrice } from "utils/displayAsset"
-import { Stablepool } from "sections/pools/PoolsPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
+import {
+  Page,
+  TransferModal,
+} from "sections/pools/stablepool/transfer/TransferModal"
+import { useState } from "react"
 
 type Props = {
-  pool: Stablepool
-  refetchPosition: () => void
-  amount: BN
-  onTransferOpen: () => void
-  canAddLiquidity?: boolean
+  pool: TOmnipoolAsset
+  refetchPositions: () => void
 }
 
-export const LiquidityPosition = ({
-  pool,
-  amount,
-  refetchPosition,
-  onTransferOpen,
-  canAddLiquidity,
-}: Props) => {
+export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
 
+  const [transferOpen, setTransferOpen] = useState<Page>()
+
   const meta = assets.getAsset(pool.id.toString())
-  const price = useDisplayPrice(pool.id)
-  const spotPrice = price.data?.spotPrice
+  const amount = pool.stablepoolUserPosition ?? BN_0
+
+  const spotPrice = pool.spotPrice
   const providedAmountPrice = spotPrice
     ? amount.multipliedBy(spotPrice).shiftedBy(-meta.decimals)
     : BN_0
-
-  const providedAmountPriceLoading = price.isLoading
 
   return (
     <SPositions>
@@ -61,12 +55,14 @@ export const LiquidityPosition = ({
         <SContainer>
           <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
             <div sx={{ flex: "row", gap: 7, align: "center" }}>
-              <MultipleIcons
-                size={15}
-                icons={pool.assets.map((asset) => ({
-                  icon: <AssetLogo id={asset.id} />,
-                }))}
-              />
+              {pool.assets && (
+                <MultipleIcons
+                  size={15}
+                  icons={pool.assets.map((assetId) => ({
+                    icon: <AssetLogo id={assetId} />,
+                  }))}
+                />
+              )}
               <Text fs={18} color="white">
                 {t("liquidity.stablepool.position.title")}
               </Text>
@@ -85,20 +81,16 @@ export const LiquidityPosition = ({
                     )}`,
                   })}
                 </Text>
-                {providedAmountPriceLoading ? (
-                  <Skeleton width={50} height={7} />
-                ) : (
-                  <DollarAssetValue
-                    value={providedAmountPrice}
-                    wrapper={(children) => (
-                      <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
-                        {children}
-                      </Text>
-                    )}
-                  >
-                    <DisplayValue value={providedAmountPrice} />
-                  </DollarAssetValue>
-                )}
+                <DollarAssetValue
+                  value={providedAmountPrice}
+                  wrapper={(children) => (
+                    <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                      {children}
+                    </Text>
+                  )}
+                >
+                  <DisplayValue value={providedAmountPrice} />
+                </DollarAssetValue>
               </div>
               <Separator orientation="vertical" />
               <div sx={{ flex: "column", gap: 6 }}>
@@ -113,20 +105,16 @@ export const LiquidityPosition = ({
                     fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
                   })}
                 </Text>
-                {providedAmountPriceLoading ? (
-                  <Skeleton width={50} height={7} />
-                ) : (
-                  <DollarAssetValue
-                    value={providedAmountPrice}
-                    wrapper={(children) => (
-                      <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
-                        {children}
-                      </Text>
-                    )}
-                  >
-                    <DisplayValue value={providedAmountPrice} />
-                  </DollarAssetValue>
-                )}
+                <DollarAssetValue
+                  value={providedAmountPrice}
+                  wrapper={(children) => (
+                    <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                      {children}
+                    </Text>
+                  )}
+                >
+                  <DisplayValue value={providedAmountPrice} />
+                </DollarAssetValue>
               </div>
             </div>
           </div>
@@ -141,18 +129,27 @@ export const LiquidityPosition = ({
           >
             <SOmnipoolButton
               size="small"
-              onClick={onTransferOpen}
-              disabled={!canAddLiquidity}
+              onClick={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
+              disabled={!pool.tradability.canAddLiquidity}
             >
               <div sx={{ flex: "row", align: "center", justify: "center" }}>
                 <Icon icon={<PlusIcon />} sx={{ mr: 8 }} />
                 {t("liquidity.stablepool.addToOmnipool")}
               </div>
             </SOmnipoolButton>
-            <RemoveLiquidityButton onSuccess={refetchPosition} pool={pool} />
+            <RemoveLiquidityButton onSuccess={refetchPositions} pool={pool} />
           </div>
         </SContainer>
       </div>
+      {transferOpen !== undefined && pool.isStablepool && (
+        <TransferModal
+          pool={pool}
+          isOpen={true}
+          defaultPage={transferOpen}
+          onClose={() => setTransferOpen(undefined)}
+          refetchPositions={refetchPositions}
+        />
+      )}
     </SPositions>
   )
 }

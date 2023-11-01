@@ -1,27 +1,24 @@
-import { useAccountDeposits } from "api/deposits"
 import { Modal } from "components/Modal/Modal"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
-import { usePoolPositions } from "sections/pools/pool/Pool.utils"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
+import { StablepoolPosition } from "sections/pools/stablepool/positions/StablepoolPosition"
 
 interface Props {
   isOpen: boolean
-  pool: OmnipoolPool
+  pool: TOmnipoolAsset
   onClose: () => void
-  canRemoveLiquidity: boolean
+  refetchPositions: () => void
 }
 
-export const LiquidityPositions: FC<Props> = ({
+export const PoolPositionsMobile: FC<Props> = ({
   isOpen,
   pool,
   onClose,
-  canRemoveLiquidity,
+  refetchPositions,
 }) => {
-  const positions = usePoolPositions(pool.id)
-  const accountDeposits = useAccountDeposits(pool.id)
   const { t } = useTranslation()
 
   return (
@@ -39,17 +36,14 @@ export const LiquidityPositions: FC<Props> = ({
           gap: 8,
         }}
       >
+        {pool.isStablepool && (
+          <StablepoolPosition pool={pool} refetchPositions={refetchPositions} />
+        )}
         <LiquidityPositionWrapper
           pool={pool}
-          positions={positions}
-          disableRemoveLiquidity={!canRemoveLiquidity}
+          refetchPositions={refetchPositions}
         />
-        {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
-          <FarmingPositionWrapper
-            poolId={pool.id}
-            deposits={accountDeposits.data}
-          />
-        )}
+        <FarmingPositionWrapper pool={pool} />
       </div>
     </Modal>
   )

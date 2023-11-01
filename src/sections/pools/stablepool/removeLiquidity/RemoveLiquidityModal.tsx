@@ -1,4 +1,4 @@
-import { Stablepool } from "sections/pools/PoolsPage.utils"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
 import { useTranslation } from "react-i18next"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { useState } from "react"
@@ -30,7 +30,7 @@ type RemoveStableSwapAssetProps = {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
-  pool: Stablepool
+  pool: TOmnipoolAsset
   position?: HydraPositionsTableData
 }
 
@@ -55,7 +55,7 @@ export const RemoveLiquidityModal = ({
       : RemoveStablepoolLiquidityPage.REMOVE_FROM_STABLEPOOL,
   )
 
-  const [assetId, setAssetId] = useState<string>(pool.assets[0]?.id)
+  const [assetId, setAssetId] = useState<string | undefined>(pool.assets?.[0])
   const [selectedOption, setSelectedOption] = useState<RemoveOption>("SHARES")
   const [sharesAmount, setSharesAmount] = useState<string>()
 
@@ -93,6 +93,8 @@ export const RemoveLiquidityModal = ({
 
   const canGoBack =
     isRemovingOmnipoolPosition || page === RemoveStablepoolLiquidityPage.ASSETS
+
+  if (!assetId || !pool.stablepoolFee || !pool.assets?.length) return null
 
   return (
     <Modal
@@ -200,7 +202,7 @@ export const RemoveLiquidityModal = ({
                 onClose={onClose}
                 position={{
                   reserves: pool.reserves,
-                  fee: pool.fee,
+                  fee: pool.stablepoolFee,
                   poolId: pool.id,
                   amount: stablepoolPositionAmount,
                 }}
@@ -218,7 +220,7 @@ export const RemoveLiquidityModal = ({
               <AssetsModalContent
                 allAssets={true}
                 hideInactiveAssets={true}
-                allowedAssets={pool.assets.map((asset) => asset.id)}
+                allowedAssets={pool.assets.map((asset) => asset)}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   handleBack()

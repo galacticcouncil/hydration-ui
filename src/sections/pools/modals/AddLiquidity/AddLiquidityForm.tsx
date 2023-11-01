@@ -15,15 +15,16 @@ import { Button } from "components/Button/Button"
 import { FormValues } from "utils/helpers"
 import { getFixedPointAmount } from "utils/balance"
 import { useAddLiquidity, useVerifyLimits } from "./AddLiquidity.utils"
-import { useStore } from "state/store"
+import { useAccountStore, useStore } from "state/store"
 import { useEffect, useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useDebounce } from "react-use"
+import { useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 type Props = {
   assetId: string
   initialAmount?: string
-  onSuccess: () => void
   onClose: () => void
   onAssetOpen?: () => void
 }
@@ -31,10 +32,11 @@ type Props = {
 export const AddLiquidityForm = ({
   assetId,
   onClose,
-  onSuccess,
   onAssetOpen,
   initialAmount,
 }: Props) => {
+  const queryClient = useQueryClient()
+  const { account } = useAccountStore()
   const { t } = useTranslation()
   const [assetValue, setAssetValue] = useState("")
 
@@ -76,7 +78,11 @@ export const AddLiquidityForm = ({
     return await createTransaction(
       { tx: api.tx.omnipool.addLiquidity(assetId, amount) },
       {
-        onSuccess,
+        onSuccess: () => {
+          queryClient.refetchQueries(
+            QUERY_KEYS.accountOmnipoolPositions(account?.address),
+          )
+        },
         onSubmitted: () => {
           onClose()
           form.reset()

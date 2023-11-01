@@ -4,14 +4,14 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
 import { useFooterValues } from "sections/pools/pool/footer/PoolFooter.utils"
 import { ToastMessage, useAccountStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
 import { SContainer } from "./PoolFooter.styled"
 
-type Props = { pool: OmnipoolPool }
+type Props = { pool: TOmnipoolAsset }
 
 export const PoolFooter = ({ pool }: Props) => {
   const { t } = useTranslation()

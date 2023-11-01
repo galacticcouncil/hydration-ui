@@ -1,4 +1,4 @@
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
 import { SContainer, SGridContainer } from "./Pool.styled"
 import { PoolDetails } from "./details/PoolDetails"
 import { PoolValue } from "./details/PoolValue"
@@ -9,66 +9,69 @@ import { theme } from "theme"
 import { AnimatePresence, motion } from "framer-motion"
 import { PoolFooter } from "./footer/PoolFooter"
 import { PoolIncentives } from "./details/PoolIncentives"
-import { usePoolPositions } from "sections/pools/pool/Pool.utils"
 import { PoolCapacity } from "sections/pools/pool/capacity/PoolCapacity"
 import { LiquidityPositionWrapper } from "./positions/LiquidityPositionWrapper"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
-import { useAccountDeposits } from "api/deposits"
-import { PoolFooterWithNoFarms } from "./footer/PoolFooterWithNoFarms"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
+import { StablepoolPosition } from "sections/pools/stablepool/positions/StablepoolPosition"
+import { useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { useAccountStore } from "state/store"
 
-type Props = { pool: OmnipoolPool }
-
-const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
+type Props = { pool: TOmnipoolAsset }
 
 export const Pool = ({ pool }: Props) => {
+  const { account } = useAccountStore()
   const [isExpanded, setIsExpanded] = useState(false)
+  const { warnings, setWarnings } = useWarningsStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const { warnings, setWarnings } = useWarningsStore()
-
-  const positions = usePoolPositions(pool.id)
-  const accountDeposits = useAccountDeposits(enabledFarms ? pool.id : undefined)
+  const queryClient = useQueryClient()
 
   const hasExpandContent =
-    !!positions.data?.length || !!accountDeposits.data?.length
-
-  const poolId = pool.id.toString()
+    !!pool.omnipoolNftPositions.length ||
+    !!pool.miningNftPositions.length ||
+    !!pool.stablepoolUserPosition?.gt(0)
 
   const handleExpand = () => {
     setIsExpanded((prev) => !prev)
   }
 
   useEffect(() => {
-    if (poolId === NATIVE_ASSET_ID) {
-      if (positions.data.length && warnings.hdxLiquidity.visible == null) {
+    if (pool.id === NATIVE_ASSET_ID) {
+      if (
+        pool.omnipoolNftPositions.length &&
+        warnings.hdxLiquidity.visible == null
+      ) {
         setWarnings("hdxLiquidity", true)
       }
     }
   }, [
-    poolId,
+    pool.id,
     warnings.hdxLiquidity.visible,
     setWarnings,
-    positions.data?.length,
+    pool.omnipoolNftPositions.length,
   ])
+
+  const refetchPositions = () => {
+    queryClient.refetchQueries(
+      QUERY_KEYS.accountOmnipoolPositions(account?.address),
+    )
+  }
 
   return (
     <SContainer id={pool.id.toString()}>
       <SGridContainer>
-        <PoolDetails id={pool.id} css={{ gridArea: "details" }} />
-        {enabledFarms ? (
-          <PoolIncentives poolId={pool.id} css={{ gridArea: "incentives" }} />
-        ) : (
-          <div css={{ gridArea: "incentives" }} />
-        )}
+        <PoolDetails pool={pool} css={{ gridArea: "details" }} />
+        <PoolIncentives poolId={pool.id} css={{ gridArea: "incentives" }} />
         <PoolValue pool={pool} css={{ gridArea: "values" }} />
         <PoolActions
           pool={pool}
-          refetch={positions.refetch}
-          canExpand={!positions.isLoading && hasExpandContent}
+          canExpand={hasExpandContent}
           isExpanded={isExpanded}
           onExpandClick={handleExpand}
+          refetchPositions={refetchPositions}
           css={{ gridArea: "actions" }}
         />
         <PoolCapacity id={pool.id.toString()} css={{ gridArea: "capacity" }} />
@@ -83,27 +86,22 @@ export const Pool = ({ pool }: Props) => {
               transition={{ duration: 0.5, ease: "easeInOut" }}
               css={{ overflow: "hidden" }}
             >
-              <LiquidityPositionWrapper
-                disableRemoveLiquidity={!pool.tradability.canRemoveLiquidity}
-                pool={pool}
-                positions={positions}
-              />
-              {enabledFarms && (
-                <FarmingPositionWrapper
-                  poolId={pool.id}
-                  deposits={accountDeposits.data}
+              {pool.isStablepool && (
+                <StablepoolPosition
+                  pool={pool}
+                  refetchPositions={refetchPositions}
                 />
               )}
+              <LiquidityPositionWrapper
+                pool={pool}
+                refetchPositions={refetchPositions}
+              />
+              <FarmingPositionWrapper pool={pool} />
             </motion.div>
           )}
         </AnimatePresence>
       )}
-      {isDesktop &&
-        (enabledFarms ? (
-          <PoolFooter pool={pool} />
-        ) : (
-          <PoolFooterWithNoFarms pool={pool} />
-        ))}
+      {isDesktop && <PoolFooter pool={pool} />}
     </SContainer>
   )
 }
