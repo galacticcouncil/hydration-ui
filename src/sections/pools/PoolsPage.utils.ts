@@ -440,22 +440,18 @@ export const useXYKPools = () => {
   const poolsAssets = pools.data?.map((pool) => pool.assets).flat() ?? []
   const spotPrices = useDisplayPrices(poolsAssets)
 
-  const queries = [pools, shareTokens, poolBalances, totalIssuances, spotPrices]
+  const queries = [
+    pools,
+    shareTokens,
+    poolBalances,
+    totalIssuances,
+    xykConsts,
+    spotPrices,
+  ]
 
   const fee = xykConsts.data?.fee ? getTradeFee(xykConsts.data?.fee) : "-"
 
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
-
-  /*console.log({
-    pools: pools.data,
-    poolBalances: poolBalances.data,
-    shareTokens: shareTokens.data,
-    totalIssuances: totalIssuances.data,
-    assets,
-    spotPrices: spotPrices.data,
-    meta: assets.all,
-    xykConsts: xykConsts.data,
-  })*/
 
   const data = useMemo(() => {
     if (

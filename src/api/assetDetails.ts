@@ -177,7 +177,6 @@ export const getAssets = async (api: ApiPromise) => {
     rawAssetsLocations,
     rawTradeAssets,
     hubAssetId,
-    pools,
   ] = await Promise.all([
     api.rpc.system.properties(),
     api.query.assetRegistry.assets.entries(),
@@ -185,9 +184,8 @@ export const getAssets = async (api: ApiPromise) => {
     api.query.assetRegistry.assetLocations.entries(),
     tradeRouter.getAllAssets(),
     api.consts.omnipool.hubAssetId,
-    tradeRouter.getPools(),
   ])
-  console.log(pools, "pools")
+
   const tokens: TToken[] = []
   const bonds: TBond[] = []
   const stableswap: TStableSwap[] = []
@@ -214,7 +212,6 @@ export const getAssets = async (api: ApiPromise) => {
       existentialDeposit: data.existentialDeposit.toBigNumber(),
       parachainId: undefined,
     }
-    if (isShareToken) console.log(id, assetCommon)
 
     if (isToken) {
       if (id === NATIVE_ASSET_ID) {
