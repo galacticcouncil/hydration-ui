@@ -3,6 +3,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
+  isXYKEnabled,
   useOmnipoolAndStablepool,
   useXYKPools,
 } from "sections/pools/PoolsPage.utils"
@@ -30,6 +31,14 @@ export const AllPools = () => {
               label: t("liquidity.header.stablepool"),
               content: <HeaderTotalData isLoading />,
             },
+            ...(isXYKEnabled
+              ? [
+                  {
+                    label: t("liquidity.header.isolated"),
+                    content: <HeaderTotalData isLoading />,
+                  },
+                ]
+              : []),
             {
               withoutSeparator: true,
               label: t("liquidity.header.24hours"),
@@ -48,10 +57,42 @@ export const AllPools = () => {
   return <AllPoolsData />
 }
 
+const XYKPoolHeaderValue = () => {
+  const xylPools = useXYKPools()
+
+  const totalLocked = useMemo(() => {
+    if (xylPools.data) {
+      return xylPools.data.reduce((acc, xykPool) => {
+        return acc.plus(xykPool.totalDisplay ?? BN_0)
+      }, BN_0)
+    }
+    return BN_0
+  }, [xylPools.data])
+
+  return <HeaderTotalData isLoading={xylPools.isLoading} value={totalLocked} />
+}
+
+const XYKPoolsSection = () => {
+  const { t } = useTranslation()
+  const xylPools = useXYKPools()
+
+  if (!xylPools.data) return null
+
+  return (
+    <div sx={{ flex: "column", gap: 20 }}>
+      <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
+        {t("liquidity.section.xyk")}
+      </Text>
+      {xylPools.data.map((pool) => (
+        <XYKPool key={pool.id} pool={pool} />
+      ))}
+    </div>
+  )
+}
+
 const AllPoolsData = () => {
   const { t } = useTranslation()
   const omnipoolAndStablepool = useOmnipoolAndStablepool()
-  const xylPools = useXYKPools()
 
   const omnipoolTotal = useMemo(() => {
     if (omnipoolAndStablepool.data) {
@@ -84,15 +125,6 @@ const AllPoolsData = () => {
     )
   }, [omnipoolAndStablepool.data])
 
-  const totalLocked = useMemo(() => {
-    if (xylPools.data) {
-      return xylPools.data.reduce((acc, xykPool) => {
-        return acc.plus(xykPool.totalDisplay ?? BN_0)
-      }, BN_0)
-    }
-    return BN_0
-  }, [xylPools.data])
-
   return (
     <>
       <HeaderValues
@@ -115,15 +147,15 @@ const AllPoolsData = () => {
               />
             ),
           },
-          {
-            label: "Value in Isolated pools",
-            content: (
-              <HeaderTotalData
-                isLoading={xylPools.isLoading}
-                value={totalLocked}
-              />
-            ),
-          },
+          ...(isXYKEnabled
+            ? [
+                {
+                  label: t("liquidity.header.isolated"),
+                  content: <XYKPoolHeaderValue />,
+                },
+              ]
+            : []),
+
           {
             withoutSeparator: true,
             label: t("liquidity.header.24hours"),
@@ -149,16 +181,7 @@ const AllPoolsData = () => {
                 <Pool key={pool.id} pool={pool} />
               ))}
         </div>
-        {xylPools.data && (
-          <div sx={{ flex: "column", gap: 20 }}>
-            <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
-              {t("liquidity.section.xyk")}
-            </Text>
-            {xylPools.data.map((pool) => (
-              <XYKPool key={pool.id} pool={pool} />
-            ))}
-          </div>
-        )}
+        {isXYKEnabled && <XYKPoolsSection />}
       </div>
     </>
   )

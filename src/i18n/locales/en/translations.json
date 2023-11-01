@@ -124,6 +124,7 @@
   "liquidity.header.switch": "Show my positions",
   "liquidity.header.omnipool": "Value in Omnipool",
   "liquidity.header.stablepool": "Value in Stablepools",
+  "liquidity.header.isolated": "Value in Isolated Pools",
   "liquidity.header.totalInFarms": "Value in farms",
   "liquidity.header.value": "{{num}}<0>{{denom}}</0>",
   "liquidity.header.24hours": "24h volume",

@@ -419,6 +419,8 @@ const getTradeFee = (fee: string[]) => {
   return tradeFee.times(100)
 }
 
+export const isXYKEnabled = import.meta.env.VITE_FF_XYK_ENABLED === "true"
+
 export type TXYKPool = NonNullable<
   ReturnType<typeof useXYKPools>["data"]
 >[number]

@@ -18,7 +18,7 @@ export const IsolatedPools = () => {
         <HeaderValues
           values={[
             {
-              label: "Value in Isolated Pools",
+              label: t("liquidity.header.isolated"),
               content: <HeaderTotalData isLoading />,
             },
             {
@@ -66,7 +66,7 @@ const IsolatedPoolsData = () => {
       <HeaderValues
         values={[
           {
-            label: "Value in Isolated Pools",
+            label: t("liquidity.header.isolated"),
             content: (
               <HeaderTotalData
                 isLoading={xylPools.isLoading}
