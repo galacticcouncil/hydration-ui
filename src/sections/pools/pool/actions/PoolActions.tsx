@@ -7,7 +7,11 @@ import { Icon } from "components/Icon/Icon"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
-import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
+import {
+  TOmnipoolAsset,
+  TXYKPool,
+  isXYKPool,
+} from "sections/pools/PoolsPage.utils"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
 import {
   SActionsContainer,
@@ -25,7 +29,7 @@ import {
 } from "sections/pools/stablepool/transfer/TransferModal"
 
 type PoolActionsProps = {
-  pool: TOmnipoolAsset
+  pool: TOmnipoolAsset | TXYKPool
   canExpand: boolean
   isExpanded: boolean
   onExpandClick: () => void
@@ -51,7 +55,8 @@ export const PoolActions = ({
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const farms = useFarms([pool.id])
 
-  const isStablepool = pool.isStablepool
+  const isXyk = isXYKPool(pool)
+  const isStablepool = isXyk ? false : pool.isStablepool
 
   const actionButtons = (
     <div sx={{ flexGrow: 1 }}>
@@ -62,7 +67,7 @@ export const PoolActions = ({
           disabled={
             !account ||
             account.isExternalWalletConnected ||
-            !pool.tradability.canAddLiquidity
+            !pool.tradability?.canAddLiquidity
           }
           onClick={
             isStablepool
@@ -163,7 +168,7 @@ export const PoolActions = ({
           onClose={() => setOpenFarmDetails(false)}
         />
       )}
-      {transferOpen !== undefined && pool.isStablepool && (
+      {transferOpen !== undefined && isStablepool && !isXyk && (
         <TransferModal
           pool={pool}
           isOpen={true}

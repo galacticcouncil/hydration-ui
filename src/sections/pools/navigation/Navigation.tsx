@@ -9,7 +9,7 @@ import { LINKS } from "utils/navigation"
 import UserIcon from "assets/icons/UserIcon.svg?react"
 import AllPools from "assets/icons/DropletIcon.svg?react"
 import OmniStablepools from "assets/icons/WaterRippleIcon.svg?react"
-//import IsolatedPools from "assets/icons/PoolsAndFarms.svg?react"
+import IsolatedPools from "assets/icons/PoolsAndFarms.svg?react"
 import { SSeparator } from "components/Separator/Separator.styled"
 import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -75,12 +75,11 @@ export const Navigation = () => {
         label={t("liquidity.navigation.omnipoolAndStablepool")}
         icon={<OmniStablepools />}
       />
-      {/*<Tab
+      <Tab
         to={LINKS.isolated}
         label={t("liquidity.navigation.isolated")}
         icon={<IsolatedPools />}
       />
-   */}
     </SNavigationContainer>
   )
 }

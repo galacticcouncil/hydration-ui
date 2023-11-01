@@ -24,6 +24,9 @@ import {
   useAllTradesSorted,
 } from "api/volume"
 import BN from "bignumber.js"
+import { useGetXYKPools, useShareTokens, useXYKConsts } from "api/xyk"
+import { useShareOfPools } from "api/pools"
+import { TShareToken } from "api/assetDetails"
 
 export type TOmnipoolAsset = NonNullable<
   ReturnType<typeof useOmnipoolAndStablepool>["data"]
@@ -405,3 +408,128 @@ export const useStableswapVolume = () => {
 
   return { data, isLoading }
 }
+
+const getTradeFee = (fee: string[]) => {
+  if (fee?.length !== 2) return "-"
+
+  const numerator = new BN(fee[0])
+  const denominator = new BN(fee[1])
+  const tradeFee = numerator.div(denominator)
+
+  return tradeFee.times(100)
+}
+
+export type TXYKPool = NonNullable<
+  ReturnType<typeof useXYKPools>["data"]
+>[number]
+
+export const useXYKPools = () => {
+  const { assets } = useRpcProvider()
+
+  const pools = useGetXYKPools()
+  const xykConsts = useXYKConsts()
+  const shareTokens = useShareTokens()
+
+  const poolsAddress = pools.data?.map((pool) => pool.poolAddress) ?? []
+  const shareTokensId =
+    shareTokens.data?.map((shareToken) => shareToken.shareTokenId) ?? []
+
+  const poolBalances = useAccountsBalances(poolsAddress)
+  const totalIssuances = useShareOfPools(shareTokensId)
+
+  const poolsAssets = pools.data?.map((pool) => pool.assets).flat() ?? []
+  const spotPrices = useDisplayPrices(poolsAssets)
+
+  const queries = [pools, shareTokens, poolBalances, totalIssuances, spotPrices]
+
+  const fee = xykConsts.data?.fee ? getTradeFee(xykConsts.data?.fee) : "-"
+
+  const isInitialLoading = queries.some((q) => q.isInitialLoading)
+
+  /*console.log({
+    pools: pools.data,
+    poolBalances: poolBalances.data,
+    shareTokens: shareTokens.data,
+    totalIssuances: totalIssuances.data,
+    assets,
+    spotPrices: spotPrices.data,
+    meta: assets.all,
+    xykConsts: xykConsts.data,
+  })*/
+
+  const data = useMemo(() => {
+    if (
+      !pools.data ||
+      !shareTokens.data ||
+      !poolBalances.data ||
+      !spotPrices.data
+    )
+      return undefined
+
+    return pools.data
+      .map((pool) => {
+        const shareTokenId = shareTokens.data?.find(
+          (shareToken) => shareToken.poolAddress === pool.poolAddress,
+        )?.shareTokenId
+
+        if (!shareTokenId) return undefined
+
+        const shareTokenMeta = assets.getAsset(shareTokenId) as TShareToken
+        const assetAMeta = assets.getAsset(shareTokenMeta.assets[0])
+
+        const shareTokenIssuance = totalIssuances.data?.find(
+          (issuance) => issuance.asset === shareTokenId,
+        )
+
+        const poolBalance = poolBalances.data.find(
+          (poolBalance) => poolBalance.accountId === pool.poolAddress,
+        )
+
+        const assetABalance = poolBalance?.balances[0]
+        const assetASpotPrice = spotPrices.data?.find(
+          (spotPrice) => spotPrice?.tokenIn === assetABalance?.id.toString(),
+        )
+
+        const totalLocked = assetABalance?.data.free.toBigNumber()
+
+        const totalLockedDisplay = totalLocked
+          ?.shiftedBy(-assetAMeta.decimals)
+          .multipliedBy(assetASpotPrice?.spotPrice ?? 1)
+          .multipliedBy(2)
+
+        const tradability = {
+          canAddLiquidity: false,
+          canRemoveLiquidity: false,
+        }
+
+        return {
+          poolAddress: pool.poolAddress,
+          id: shareTokenMeta.id,
+          symbol: shareTokenMeta.symbol,
+          name: shareTokenMeta.name,
+          assets: shareTokenMeta.assets,
+          shareTokenIssuance,
+          shareTokenMeta,
+          totalDisplay: totalLockedDisplay,
+          fee,
+          isXykPool: true,
+          volumeDisplay: BN_0,
+          tradability,
+        }
+      })
+      .filter(isNotNil)
+  }, [
+    assets,
+    fee,
+    poolBalances.data,
+    pools.data,
+    shareTokens.data,
+    spotPrices.data,
+    totalIssuances.data,
+  ])
+
+  return { data, isLoading: isInitialLoading }
+}
+
+export const isXYKPool = (pool: TOmnipoolAsset | TXYKPool): pool is TXYKPool =>
+  (pool as TXYKPool).isXykPool

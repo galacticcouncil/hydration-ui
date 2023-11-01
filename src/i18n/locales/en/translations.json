@@ -127,6 +127,8 @@
   "liquidity.header.totalInFarms": "Value in farms",
   "liquidity.header.value": "{{num}}<0>{{denom}}</0>",
   "liquidity.header.24hours": "24h volume",
+  "liquidity.section.omnipoolAndStablepool": "Omnipool + Stablepool",
+  "liquidity.section.xyk": "xyk pools",
   "liquidity.asset.title": "Asset",
   "liquidity.assets.title": "Assets",
   "liquidity.asset.details.fee": "Trade fee",

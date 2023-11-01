@@ -1,12 +1,17 @@
+import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useOmnipoolAndStablepool } from "sections/pools/PoolsPage.utils"
+import {
+  useOmnipoolAndStablepool,
+  useXYKPools,
+} from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { Pool } from "sections/pools/pool/Pool"
 import { PoolSkeleton } from "sections/pools/skeleton/PoolSkeleton"
 import { BN_0 } from "utils/constants"
+import { XYKPool } from "sections/pools/pool/xyk/XYKPool"
 
 export const AllPools = () => {
   const { t } = useTranslation()
@@ -46,6 +51,7 @@ export const AllPools = () => {
 const AllPoolsData = () => {
   const { t } = useTranslation()
   const omnipoolAndStablepool = useOmnipoolAndStablepool()
+  const xylPools = useXYKPools()
 
   const omnipoolTotal = useMemo(() => {
     if (omnipoolAndStablepool.data) {
@@ -78,6 +84,15 @@ const AllPoolsData = () => {
     )
   }, [omnipoolAndStablepool.data])
 
+  const totalLocked = useMemo(() => {
+    if (xylPools.data) {
+      return xylPools.data.reduce((acc, xykPool) => {
+        return acc.plus(xykPool.totalDisplay ?? BN_0)
+      }, BN_0)
+    }
+    return BN_0
+  }, [xylPools.data])
+
   return (
     <>
       <HeaderValues
@@ -101,6 +116,15 @@ const AllPoolsData = () => {
             ),
           },
           {
+            label: "Value in Isolated pools",
+            content: (
+              <HeaderTotalData
+                isLoading={xylPools.isLoading}
+                value={totalLocked}
+              />
+            ),
+          },
+          {
             withoutSeparator: true,
             label: t("liquidity.header.24hours"),
             content: (
@@ -113,13 +137,28 @@ const AllPoolsData = () => {
         ]}
       />
       <div sx={{ flex: "column", gap: 20 }}>
-        {omnipoolAndStablepool.isLoading
-          ? [...Array(3)].map((_, index) => (
-              <PoolSkeleton key={index} length={3} index={index} />
-            ))
-          : omnipoolAndStablepool.data?.map((pool) => (
-              <Pool key={pool.id} pool={pool} />
+        <div sx={{ flex: "column", gap: 20 }}>
+          <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
+            {t("liquidity.section.omnipoolAndStablepool")}
+          </Text>
+          {omnipoolAndStablepool.isLoading
+            ? [...Array(3)].map((_, index) => (
+                <PoolSkeleton key={index} length={3} index={index} />
+              ))
+            : omnipoolAndStablepool.data?.map((pool) => (
+                <Pool key={pool.id} pool={pool} />
+              ))}
+        </div>
+        {xylPools.data && (
+          <div sx={{ flex: "column", gap: 20 }}>
+            <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
+              {t("liquidity.section.xyk")}
+            </Text>
+            {xylPools.data.map((pool) => (
+              <XYKPool key={pool.id} pool={pool} />
             ))}
+          </div>
+        )}
       </div>
     </>
   )

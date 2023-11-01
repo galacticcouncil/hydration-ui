@@ -353,4 +353,7 @@ export const QUERY_KEYS = {
     pool,
     block,
   ],
+  xykPools: ["xylPools"], //TODO: refresh each block??
+  xykConsts: ["xykConsts"],
+  shareTokens: ["shareTokens"],
 } as const

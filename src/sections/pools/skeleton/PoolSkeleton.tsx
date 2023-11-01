@@ -55,6 +55,13 @@ export const PoolSkeleton = ({
                 </div>
               </div>
             </div>
+            <Separator
+              sx={{ height: 40 }}
+              css={{ alignSelf: "center" }}
+              orientation="vertical"
+              color="white"
+              opacity={0.06}
+            />
             <div sx={{ flex: "column", gap: 10 }}>
               <Text fs={13} color="basic400">
                 {t("liquidity.asset.details.price")}
@@ -65,7 +72,7 @@ export const PoolSkeleton = ({
             </div>
           </div>
 
-          <Separator sx={{ mt: [18, 34] }} />
+          <Separator sx={{ mt: [18, 34] }} color="white" opacity={0.06} />
         </div>
 
         <div sx={{ minWidth: 200 }} css={{ gridArea: "incentives" }}>
@@ -117,6 +124,13 @@ export const PoolSkeleton = ({
                 <Skeleton width={118} height={21} />
               </div>
             </div>
+            <Separator
+              sx={{ height: 40 }}
+              css={{ alignSelf: "center" }}
+              orientation="vertical"
+              color="white"
+              opacity={0.06}
+            />
             <div sx={{ flex: "column", gap: 10 }}>
               <div sx={{ flex: "row", align: "center", gap: 6 }}>
                 <Text fs={13} color="basic400">
