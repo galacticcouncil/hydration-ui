@@ -21,8 +21,8 @@ export const PoolValue = ({ pool, className }: PoolValueProps) => {
 
   const { total, totalDisplay } = pool
 
-  const percentInOmnipool = total.value
-    .dividedBy(totalDisplay)
+  const percentInOmnipool = totalDisplay
+    .dividedBy(total.value)
     .multipliedBy(100)
 
   return (
