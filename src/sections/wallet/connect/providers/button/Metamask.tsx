@@ -1,5 +1,5 @@
-import { ReactComponent as ChevronRight } from "assets/icons/ChevronRight.svg"
-import { ReactComponent as MetamaskLogo } from "assets/icons/Metamask.svg"
+import ChevronRight from "assets/icons/ChevronRight.svg?react"
+import MetamaskLogo from "assets/icons/Metamask.svg?react"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SWalletButton } from "sections/wallet/connect/providers/WalletConnectProviders.styled"

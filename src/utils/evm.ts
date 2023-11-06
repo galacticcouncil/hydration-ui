@@ -1,6 +1,6 @@
 import { ethers } from "ethers"
 import { SDKProvider } from "@metamask/sdk/dist/browser/es/src/provider/SDKProvider"
-import { encodeAddress } from "@polkadot/util-crypto"
+import { encodeAddress, decodeAddress } from "@polkadot/util-crypto"
 import { Buffer } from "buffer"
 import { HYDRA_ADDRESS_PREFIX } from "./api"
 
@@ -31,7 +31,14 @@ export async function sendDispatch(from: string, extrinsic) {
   })
 }
 
-class H160 {
+export function isEvmAccount(address: string) {
+  const { prefixBytes } = H160
+  const pub = decodeAddress(address, true)
+  return Buffer.from(pub.subarray(0, prefixBytes.length)).equals(prefixBytes)
+}
+
+export class H160 {
+  static prefixBytes = Buffer.from("ETH\0")
   address: string
 
   constructor(address: string) {
@@ -40,10 +47,9 @@ class H160 {
 
   toAccount = () => {
     const addressBytes = Buffer.from(this.address.slice(2), "hex")
-    const prefixBytes = Buffer.from("ETH\0")
     return encodeAddress(
       new Uint8Array(
-        Buffer.concat([prefixBytes, addressBytes, Buffer.alloc(8)]),
+        Buffer.concat([H160.prefixBytes, addressBytes, Buffer.alloc(8)]),
       ),
       HYDRA_ADDRESS_PREFIX,
     )

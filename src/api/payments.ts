@@ -9,6 +9,7 @@ import { u32 } from "@polkadot/types-codec"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { usePaymentInfo } from "./transaction"
 import { useRpcProvider } from "providers/rpcProvider"
+import { isEvmAccount } from "utils/evm"
 
 export const getAcceptedCurrency =
   (api: ApiPromise, id: u32 | string) => async () => {
@@ -65,6 +66,11 @@ export const useSetAsFeePayment = () => {
 
 export const getAccountCurrency =
   (api: ApiPromise, address: string | AccountId32) => async () => {
+    if (isEvmAccount(address)) {
+      // TODO: find WETH on chain by multilocation
+      return "20"
+    }
+
     const result =
       await api.query.multiTransactionPayment.accountCurrencyMap(address)
 
