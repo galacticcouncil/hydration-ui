@@ -122,7 +122,12 @@ export const useProviderData = (rpcUrl?: string) => {
         })
       }
 
-      return { api, assets: assets.assets, tradeRouter: assets.tradeRouter }
+      return {
+        api,
+        assets: assets.assets,
+        tradeRouter: assets.tradeRouter,
+        provider,
+      }
     },
     { staleTime: Infinity, refetchOnWindowFocus: true },
   )
