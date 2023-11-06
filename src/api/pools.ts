@@ -10,7 +10,7 @@ export const useShareOfPools = (assets: string[]) => {
   const totalBalances = useTokensBalances(assets, account?.address)
 
   const queries = [...totalIssuances, ...totalBalances]
-  const isLoading = queries.some((query) => query.isLoading)
+  const isLoading = queries.some((query) => query.isInitialLoading)
 
   const data = useMemo(() => {
     if (!!totalIssuances.length && !!totalBalances.length) {
