@@ -4,7 +4,7 @@ import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import MoreIcon from "assets/icons/MoreDotsIcon.svg?react"
 import SellIcon from "assets/icons/SellIcon.svg?react"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
-//import ClaimIcon from "assets/icons/ClaimIcon.svg?react"
+import MetamaskLogo from "assets/icons/Metamask.svg?react"
 import DollarIcon from "assets/icons/DollarIcon.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
 import { Dropdown } from "components/Dropdown/Dropdown"
@@ -14,6 +14,7 @@ import { theme } from "theme"
 import { isNotNil } from "utils/helpers"
 import { useSetAsFeePayment } from "api/payments"
 import { useAccountStore } from "state/store"
+import { watchAsset } from "utils/evm"
 
 type Props = {
   toggleExpanded: () => void
@@ -29,14 +30,16 @@ type Props = {
 export const WalletAssetsTableActions = (props: Props) => {
   const { t } = useTranslation()
   const setFeeAsPayment = useSetAsFeePayment()
+  // TODO: dynamic
+  const watch = () => watchAsset(0, "HDX", 12)
   const { account } = useAccountStore()
 
   const actionItems = [
-    /*{
-      key: "add",
-      icon: <ClaimIcon />,
-      label: t("wallet.assets.table.actions.claim"),
-    },*/
+    {
+      key: "watch",
+      icon: <MetamaskLogo />,
+      label: "Watch asset in wallet",
+    },
     props.couldBeSetAsPaymentFee
       ? {
           key: "setAsFeePayment",
@@ -130,6 +133,7 @@ export const WalletAssetsTableActions = (props: Props) => {
                 ),
               })
             }
+            if (item === "watch") watch()
           }}
         >
           <MoreIcon />

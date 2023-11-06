@@ -31,6 +31,26 @@ export async function sendDispatch(from: string, extrinsic) {
   })
 }
 
+export async function watchAsset(assetId, symbol, decimals, imageUrl = "") {
+  const tokenAddress = Buffer.from(
+    "0000000000000000000000000000000100000000",
+    "hex",
+  )
+  tokenAddress.copy(numToBuffer(assetId), 0, 16)
+  return await window.ethereum.request({
+    method: "wallet_watchAsset",
+    params: {
+      type: "ERC20",
+      options: {
+        address: "0x" + tokenAddress.toString("hex"),
+        symbol,
+        decimals,
+        image: imageUrl,
+      },
+    },
+  })
+}
+
 export function isEvmAccount(address: string) {
   const { prefixBytes } = H160
   const pub = decodeAddress(address, true)
@@ -54,4 +74,10 @@ export class H160 {
       HYDRA_ADDRESS_PREFIX,
     )
   }
+}
+
+function numToBuffer(num) {
+  const arr = new Uint8Array(4)
+  for (let i = 0; i < 4; i++) arr.set([num / 0x100 ** i], 3 - i)
+  return Buffer.from(arr)
 }
