@@ -451,7 +451,7 @@ export const useXYKPools = () => {
     spotPrices,
   ]
 
-  const fee = xykConsts.data?.fee ? getTradeFee(xykConsts.data?.fee) : "-"
+  const fee = xykConsts.data?.fee ? getTradeFee(xykConsts.data?.fee) : BN_NAN
 
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
