@@ -4,10 +4,32 @@ import { Global } from "@emotion/react"
 import { withThemeFromJSXProvider } from "@storybook/addon-styling"
 import { GlobalStyle } from "../src/components/GlobalStyle"
 import "../src/i18n/i18n"
+import "react-loading-skeleton/dist/skeleton.css"
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SkeletonTheme } from "react-loading-skeleton";
 
 const GlobalStyles = () => (
   <Global styles={GlobalStyle} />
 )
+
+const client = new QueryClient()
+
+const withQueryClient = (Story) => (
+  <QueryClientProvider client={client}>
+      <Story />
+  </QueryClientProvider>
+);
+const withSkeletonTheme = (Story) => (
+  <SkeletonTheme
+    baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
+    highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
+    borderRadius={4}
+  >
+    <Story />
+  </SkeletonTheme>
+);
+
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
   controls: {
@@ -26,6 +48,8 @@ export const parameters = {
 }
 
 export const decorators = [
+  withQueryClient,
+  withSkeletonTheme,
   withThemeFromJSXProvider({
     GlobalStyles,
   }),

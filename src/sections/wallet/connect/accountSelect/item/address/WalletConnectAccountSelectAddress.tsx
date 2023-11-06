@@ -1,5 +1,5 @@
 import { css } from "@emotion/react"
-import { ReactComponent as CopyIcon } from "assets/icons/CopyIcon.svg"
+import CopyIcon from "assets/icons/CopyIcon.svg?react"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Text } from "components/Typography/Text/Text"

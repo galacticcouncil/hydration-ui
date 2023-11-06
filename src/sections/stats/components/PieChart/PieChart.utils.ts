@@ -67,4 +67,6 @@ export const ASSET_COLORS: { [key: string]: string } = {
   wbtc: "#f09241",
   lrna: "#1e70ff",
   eth: "#343434",
+  "2-pool": "#009FFF",
+  "4-pool": "#8D71FF",
 }

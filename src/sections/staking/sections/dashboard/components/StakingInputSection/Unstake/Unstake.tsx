@@ -9,10 +9,10 @@ import { Text } from "components/Typography/Text/Text"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
 import { UnstakeAssetSelect } from "./UnstakeAssetSelect"
 import { Spacer } from "components/Spacer/Spacer"
-import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { TOAST_MESSAGES } from "state/toasts"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const Unstake = ({
   loading,
@@ -27,7 +27,7 @@ export const Unstake = ({
 
   const queryClient = useQueryClient()
 
-  const api = useApiPromise()
+  const { api, assets } = useRpcProvider()
   const { createTransaction } = useStore()
 
   const { account } = useAccountStore()
@@ -57,7 +57,7 @@ export const Unstake = ({
 
     const transaction = await createTransaction(
       {
-        tx: api.tx.staking.unstake(positionId),
+        tx: api.tx.staking.unstake(positionId!),
       },
       { toast },
     )
@@ -65,7 +65,7 @@ export const Unstake = ({
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
     await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)
     await queryClient.invalidateQueries(
-      QUERY_KEYS.tokenBalance(NATIVE_ASSET_ID, account?.address),
+      QUERY_KEYS.tokenBalance(assets.native.id, account?.address),
     )
 
     if (!transaction.isError) {
@@ -123,7 +123,7 @@ export const Unstake = ({
                 name={name}
                 value={value}
                 onChange={onChange}
-                assetId={NATIVE_ASSET_ID}
+                assetId={assets.native.id}
                 error={error?.message}
               />
             )

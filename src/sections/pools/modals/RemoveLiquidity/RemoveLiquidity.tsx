@@ -4,113 +4,38 @@ import {
   calculate_lrna_spot_price,
   calculate_withdrawal_fee,
 } from "@galacticcouncil/math-omnipool"
-import { useAssetMetaList } from "api/assetMeta"
 import { useTokenBalance } from "api/balances"
 import { useApiIds, useMinWithdrawalFee } from "api/consts"
 import { useOraclePrice } from "api/farms"
 import { useOmnipoolAssets } from "api/omnipool"
 import { useSpotPrice } from "api/spotPrice"
-import { ReactComponent as IconWarning } from "assets/icons/WarningIcon.svg"
+import IconWarning from "assets/icons/WarningIcon.svg?react"
 import { default as BN, default as BigNumber } from "bignumber.js"
-import { BoxSwitch } from "components/BoxSwitch/BoxSwitch"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
-import { Input } from "components/Input/Input"
 import { Modal, ModalScrollableContent } from "components/Modal/Modal"
-import { Slider } from "components/Slider/Slider"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useStore } from "state/store"
-import {
-  DEPOSIT_CLASS_ID,
-  OMNIPOOL_ACCOUNT_ADDRESS,
-  useApiPromise,
-} from "utils/api"
+import { DEPOSIT_CLASS_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_10, BN_QUINTILL } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { SSlippage, STradingPairContainer } from "./RemoveLiquidity.styled"
+import { STradingPairContainer } from "./RemoveLiquidity.styled"
 import { FeeRange } from "./components/FeeRange/FeeRange"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
+import { RemoveLiquidityInput } from "./components/RemoveLiquidityInput"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
   onClose: () => void
   position: HydraPositionsTableData
   onSuccess: () => void
-}
-
-type RemoveLiquidityInputProps = {
-  value: number
-  onChange: (value: number) => void
-  shares: BN
-}
-
-const options = [
-  { label: "25%", value: 25 },
-  { label: "50%", value: 50 },
-  { label: "75%", value: 75 },
-  { label: "MAX", value: 100 },
-]
-
-const RemoveLiquidityInput = ({
-  value,
-  onChange,
-  shares,
-}: RemoveLiquidityInputProps) => {
-  const { t } = useTranslation()
-  const [input, setInput] = useState("")
-
-  const handleOnChange = (value: string) => {
-    setInput(value)
-
-    const parsedValue = Number.parseFloat(value)
-    if (!Number.isNaN(parsedValue) && parsedValue >= 0 && parsedValue <= 100) {
-      onChange(parsedValue)
-    }
-  }
-
-  const onSelect = (value: number) => {
-    setInput("")
-    onChange(value)
-  }
-
-  return (
-    <>
-      <Slider
-        value={[value]}
-        onChange={([val]) => onSelect(val)}
-        min={0}
-        max={100}
-        step={1}
-      />
-
-      <SSlippage>
-        <BoxSwitch options={options} selected={value} onSelect={onSelect} />
-        <Input
-          value={input}
-          onChange={handleOnChange}
-          name="custom"
-          label={t("custom")}
-          placeholder={t("custom")}
-          unit="%"
-        />
-        <div
-          sx={{ flex: "row", justify: "end", gap: 4, mt: 9 }}
-          css={{ gridColumn: "span 2" }}
-        >
-          <Text fs={11} css={{ opacity: 0.7 }}>
-            {t("balance")}
-          </Text>
-          <Text fs={11}>{t("liquidity.remove.modal.shares", { shares })}</Text>
-        </div>
-      </SSlippage>
-    </>
-  )
 }
 
 export const RemoveLiquidity = ({
@@ -122,19 +47,18 @@ export const RemoveLiquidity = ({
   const { t } = useTranslation()
   const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
 
-  const api = useApiPromise()
+  const { api, assets } = useRpcProvider()
   const { createTransaction } = useStore()
 
   const apiIds = useApiIds()
-  const metas = useAssetMetaList([apiIds.data?.hubId, position.assetId])
 
   const spotPrice = useSpotPrice(apiIds.data?.hubId, position.assetId)
   const oracle = useOraclePrice(position.assetId, apiIds.data?.hubId)
   const minWithdrawalFee = useMinWithdrawalFee()
-  const meta = metas.data?.find((m) => m.id.toString() === position.assetId)
-  const lrnaMeta = metas.data?.find(
-    (m) => m.id.toString() === apiIds.data?.hubId,
-  )
+  const meta = assets.getAsset(position.assetId)
+  const lrnaMeta = apiIds.data?.hubId
+    ? assets.getAsset(apiIds.data.hubId)
+    : undefined
 
   const value = form.watch("value")
 
@@ -264,12 +188,12 @@ export const RemoveLiquidity = ({
               tOptions={{
                 value: value,
                 amount: removeLiquidityValues.tokensToGet,
-                fixedPointScale: meta.decimals ?? 12,
+                fixedPointScale: meta.decimals,
                 symbol: position.symbol,
                 withLrna: lrnaAsBigNumber.isGreaterThan(0)
                   ? t("liquidity.remove.modal.toast.withLrna", {
                       lrna: lrnaAsBigNumber,
-                      fixedPointScale: lrnaMeta.decimals.toString() ?? 12,
+                      fixedPointScale: lrnaMeta.decimals,
                     })
                   : "",
               }}
@@ -285,12 +209,12 @@ export const RemoveLiquidity = ({
               tOptions={{
                 value: value,
                 amount: removeLiquidityValues.tokensToGet,
-                fixedPointScale: meta.decimals ?? 12,
+                fixedPointScale: meta.decimals,
                 symbol: position.symbol,
                 withLrna: lrnaAsBigNumber.isGreaterThan(0)
                   ? t("liquidity.remove.modal.toast.withLrna", {
                       lrna: lrnaAsBigNumber,
-                      fixedPointScale: lrnaMeta.decimals.toString() ?? 12,
+                      fixedPointScale: lrnaMeta.decimals,
                     })
                   : "",
               }}
@@ -323,122 +247,115 @@ export const RemoveLiquidity = ({
           minHeight: "100%",
         }}
       >
-        <ModalScrollableContent
-          content={
-            <div>
-              <div>
-                <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
-                  {t("liquidity.remove.modal.value", {
-                    value: getFloatingPointAmount(
-                      removeSharesValue,
-                      meta?.decimals.toNumber() ?? 12,
+        <div>
+          <div>
+            <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
+              {t("liquidity.remove.modal.value", {
+                value: getFloatingPointAmount(removeSharesValue, meta.decimals),
+              })}
+            </Text>
+            <Text fs={18} font="FontOver" color="pink500" sx={{ mb: 20 }}>
+              {t("value.percentage", { value })}
+            </Text>
+            <Controller
+              name="value"
+              control={form.control}
+              render={({ field }) => (
+                <RemoveLiquidityInput
+                  value={field.value}
+                  onChange={field.onChange}
+                  balance={t("liquidity.remove.modal.shares", {
+                    shares: getFloatingPointAmount(
+                      position.shares,
+                      meta.decimals,
                     ),
                   })}
-                </Text>
-                <Text fs={18} font="FontOver" color="pink500" sx={{ mb: 20 }}>
-                  {t("value.percentage", { value })}
-                </Text>
-                <Controller
-                  name="value"
-                  control={form.control}
-                  render={({ field }) => (
-                    <RemoveLiquidityInput
-                      value={field.value}
-                      onChange={field.onChange}
-                      shares={getFloatingPointAmount(
-                        position.shares,
-                        meta?.decimals.toNumber() ?? 12,
-                      )}
-                    />
-                  )}
                 />
+              )}
+            />
 
-                <STradingPairContainer>
-                  <Text color="brightBlue300">
-                    {t("liquidity.remove.modal.receive")}
-                  </Text>
+            <STradingPairContainer>
+              <Text color="brightBlue300">
+                {t("liquidity.remove.modal.receive")}
+              </Text>
 
+              <RemoveLiquidityReward
+                id={position.assetId}
+                name={position.name}
+                symbol={position.symbol}
+                amount={t("value", {
+                  value: removeLiquidityValues?.tokensToGet,
+                  fixedPointScale: meta.decimals,
+                  type: "token",
+                })}
+              />
+              {removeLiquidityValues &&
+                !BN(removeLiquidityValues.lrnaToGet).isZero() && (
                   <RemoveLiquidityReward
-                    id={position.assetId}
-                    name={position.name}
-                    symbol={position.symbol}
+                    id={DEPOSIT_CLASS_ID}
+                    name="Lerna"
+                    symbol="LRNA"
                     amount={t("value", {
-                      value: removeLiquidityValues?.tokensToGet,
-                      fixedPointScale: meta?.decimals.toString() ?? 12,
+                      value: removeLiquidityValues?.lrnaToGet,
+                      fixedPointScale: lrnaMeta?.decimals ?? 12,
                       type: "token",
                     })}
                   />
-                  {removeLiquidityValues &&
-                    !BN(removeLiquidityValues.lrnaToGet).isZero() && (
-                      <RemoveLiquidityReward
-                        id={DEPOSIT_CLASS_ID}
-                        name="Lerna"
-                        symbol="LRNA"
-                        amount={t("value", {
-                          value: removeLiquidityValues?.lrnaToGet,
-                          fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
-                          type: "token",
-                        })}
-                      />
-                    )}
-                </STradingPairContainer>
-              </div>
-              <Spacer size={6} />
-              <FeeRange
-                minFee={minWithdrawalFee.data?.multipliedBy(100)}
-                currentFee={removeLiquidityValues?.withdrawalFee}
-                lrnaFeeValue={
-                  !BN(removeLiquidityValues?.lrnaPayWith ?? 0).isZero()
-                    ? t("value.token", {
-                        value: removeLiquidityValues?.lrnaPayWith,
-                        fixedPointScale: lrnaMeta?.decimals.toString() ?? 12,
-                      })
-                    : undefined
-                }
-                assetFeeValue={t("value.token", {
-                  value: removeLiquidityValues?.tokensPayWith,
-                  fixedPointScale: meta?.decimals.toString() ?? 12,
-                })}
-                assetSymbol={meta?.symbol}
-              />
+                )}
+            </STradingPairContainer>
+          </div>
+          <Spacer size={6} />
+          <FeeRange
+            minFee={minWithdrawalFee.data?.multipliedBy(100)}
+            currentFee={removeLiquidityValues?.withdrawalFee}
+            lrnaFeeValue={
+              !BN(removeLiquidityValues?.lrnaPayWith ?? 0).isZero()
+                ? t("value.token", {
+                    value: removeLiquidityValues?.lrnaPayWith,
+                    fixedPointScale: lrnaMeta?.decimals ?? 12,
+                  })
+                : undefined
+            }
+            assetFeeValue={t("value.token", {
+              value: removeLiquidityValues?.tokensPayWith,
+              fixedPointScale: meta.decimals,
+            })}
+            assetSymbol={meta?.symbol}
+          />
 
-              {isFeeExceeded && (
-                <div
-                  sx={{
-                    flex: "row",
-                    align: "center",
-                    gap: 8,
-                    minHeight: 50,
-                    p: "12px 14px",
-                    my: 6,
-                  }}
-                  css={{
-                    borderRadius: 2,
-                    background: "rgba(245, 168, 85, 0.3)",
-                  }}
-                >
-                  <Icon size={24} icon={<IconWarning />} />
+          {isFeeExceeded && (
+            <div
+              sx={{
+                flex: "row",
+                align: "center",
+                gap: 8,
+                minHeight: 50,
+                p: "12px 14px",
+                my: 6,
+              }}
+              css={{
+                borderRadius: 2,
+                background: "rgba(245, 168, 85, 0.3)",
+              }}
+            >
+              <Icon size={24} icon={<IconWarning />} />
 
-                  <Text color="white" fs={13} fw={400}>
-                    {t("liquidity.remove.modal.fee.warning")}
-                  </Text>
-                </div>
-              )}
+              <Text color="white" fs={13} fw={400}>
+                {t("liquidity.remove.modal.fee.warning")}
+              </Text>
             </div>
-          }
-          footer={
-            <div>
-              <Spacer size={20} />
-              <Button
-                fullWidth
-                variant="primary"
-                disabled={removeSharesValue.isZero() || isFeeExceeded}
-              >
-                {t("liquidity.remove.modal.confirm")}
-              </Button>
-            </div>
-          }
-        />
+          )}
+        </div>
+        <div>
+          <Spacer size={20} />
+          <Button
+            fullWidth
+            variant="primary"
+            disabled={removeSharesValue.isZero() || isFeeExceeded}
+          >
+            {t("liquidity.remove.modal.confirm")}
+          </Button>
+        </div>
       </form>
     </Modal>
   )

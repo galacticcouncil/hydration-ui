@@ -15,7 +15,7 @@ import { theme } from "theme"
 import { useTranslation } from "react-i18next"
 import { useStakingAccountsTable } from "./StakingAccountTable.utils"
 import { Icon } from "components/Icon/Icon"
-import { ReactComponent as StakinTableIcon } from "assets/icons/StakingTableIcon.svg"
+import StakinTableIcon from "assets/icons/StakingTableIcon.svg?react"
 import { SContainer } from "sections/staking/StakingPage.styled"
 import { css } from "@emotion/react"
 

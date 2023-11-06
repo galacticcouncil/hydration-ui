@@ -1,4 +1,3 @@
-import { useAssetMeta } from "api/assetMeta"
 import { DepositNftType } from "api/deposits"
 import { Button } from "components/Button/Button"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
@@ -6,7 +5,6 @@ import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { theme } from "theme"
 import { useEnteredDate } from "utils/block"
@@ -25,9 +23,11 @@ import { useOmnipoolPosition } from "api/omnipool"
 import { useDisplayPrice } from "utils/displayAsset"
 import { getFloatingPointAmount } from "utils/balance"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
+import { useRpcProvider } from "providers/rpcProvider"
+import { u32 } from "@polkadot/types-codec"
 
 function FarmingPositionDetailsButton(props: {
-  pool: OmnipoolPool
+  poolId: u32
   depositNft: DepositNftType
 }) {
   const { t } = useTranslation()
@@ -41,7 +41,7 @@ function FarmingPositionDetailsButton(props: {
 
       {farmDetails && (
         <JoinedFarmsDetails
-          pool={props.pool}
+          poolId={props.poolId}
           depositNft={props.depositNft}
           isOpen={farmDetails}
           onClose={() => setFarmDetails(false)}
@@ -53,25 +53,28 @@ function FarmingPositionDetailsButton(props: {
 
 export const FarmingPosition = ({
   index,
-  pool,
+  poolId,
   depositNft,
 }: {
   index: number
-  pool: OmnipoolPool
+  poolId: u32
   depositNft: DepositNftType
 }) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const position = useDepositShare(pool.id, depositNft.id.toString())
+  const position = useDepositShare(poolId, depositNft.id.toString())
 
   const lpPosition = useOmnipoolPosition(position.data?.id)
-  const meta = useAssetMeta(lpPosition.data?.assetId)
+  const meta = lpPosition.data?.assetId
+    ? assets.getAsset(lpPosition.data.assetId.toString())
+    : undefined
   const spotPrice = useDisplayPrice(lpPosition.data?.assetId)
 
   const initialPosValue =
     getFloatingPointAmount(
       lpPosition.data?.amount.toBigNumber() ?? 0,
-      meta.data?.decimals.toNumber() ?? 12,
+      meta?.decimals ?? 12,
     ) ?? BN_0
 
   const initialPosPrice = initialPosValue.multipliedBy(
@@ -102,7 +105,7 @@ export const FarmingPosition = ({
         <Text fw={[500, 400]}>
           {t("farms.positions.position.title", { index })}
         </Text>
-        <FarmingPositionDetailsButton pool={pool} depositNft={depositNft} />
+        <FarmingPositionDetailsButton poolId={poolId} depositNft={depositNft} />
       </div>
       <SSeparator />
       <div
@@ -140,7 +143,7 @@ export const FarmingPosition = ({
               <Text>
                 {t("value.tokenWithSymbol", {
                   value: initialPosValue,
-                  symbol: meta.data?.symbol,
+                  symbol: meta?.symbol,
                 })}
               </Text>
               <Text fs={11} css={{ color: "rgba(221, 229, 255, 0.61)" }}>
@@ -187,8 +190,8 @@ export const FarmingPosition = ({
       <div
         sx={{ flex: ["column", "row"], justify: "space-between", pt: [0, 10] }}
       >
-        <JoinedFarms poolId={pool.id} depositNft={depositNft} />
-        <RedepositFarms pool={pool} depositNft={depositNft} />
+        <JoinedFarms poolId={poolId} depositNft={depositNft} />
+        <RedepositFarms poolId={poolId} depositNft={depositNft} />
       </div>
     </SContainer>
   )

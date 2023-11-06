@@ -2,7 +2,7 @@ import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
-import { ReactComponent as MinusIcon } from "assets/icons/MinusIcon.svg"
+import MinusIcon from "assets/icons/MinusIcon.svg?react"
 import { Trans, useTranslation } from "react-i18next"
 import {
   SButton,
@@ -13,11 +13,9 @@ import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPosi
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { useState } from "react"
 import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
-import { useAssetMeta } from "api/assetMeta"
 import { Button } from "components/Button/Button"
-import { ReactComponent as FPIcon } from "assets/icons/PoolsAndFarms.svg"
+import FPIcon from "assets/icons/PoolsAndFarms.svg?react"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useFarms } from "api/farms"
 import { useFarmDepositMutation } from "utils/farms/deposit"
 import { TOAST_MESSAGES } from "state/toasts"
@@ -28,24 +26,29 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { BN_0 } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
+import { useRpcProvider } from "providers/rpcProvider"
+import { u32 } from "@polkadot/types-codec"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 type Props = {
-  pool: OmnipoolPool
+  poolId: u32
   position: HydraPositionsTableData
   onSuccess: () => void
   index: number
+  disableRemoveLiquidity: boolean
 }
 
 function LiquidityPositionJoinFarmButton(props: {
-  pool: OmnipoolPool
+  poolId: u32
   position: HydraPositionsTableData
   onSuccess: () => void
 }) {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
   const [joinFarm, setJoinFarm] = useState(false)
-  const farms = useFarms([props.pool.id])
-  const meta = useAssetMeta(props.pool.id)
+  const farms = useFarms([props.poolId])
+  const meta = assets.getAsset(props.poolId.toString())
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type
@@ -55,7 +58,7 @@ function LiquidityPositionJoinFarmButton(props: {
         i18nKey={`farms.modal.join.toast.${msType}`}
         tOptions={{
           amount: props.position.shares,
-          fixedPointScale: meta.data?.decimals ?? 12,
+          fixedPointScale: meta.decimals,
         }}
       >
         <span />
@@ -66,7 +69,7 @@ function LiquidityPositionJoinFarmButton(props: {
   }, {} as ToastMessage)
 
   const joinFarmMutation = useFarmDepositMutation(
-    props.pool.id,
+    props.poolId,
     props.position.id,
     toast,
     () => setJoinFarm(false),
@@ -89,7 +92,7 @@ function LiquidityPositionJoinFarmButton(props: {
         <JoinFarmModal
           farms={farms.data}
           isOpen={joinFarm}
-          pool={props.pool}
+          poolId={props.poolId}
           shares={props.position.shares}
           onClose={() => setJoinFarm(false)}
           mutation={joinFarmMutation}
@@ -102,6 +105,7 @@ function LiquidityPositionJoinFarmButton(props: {
 function LiquidityPositionRemoveLiquidity(props: {
   position: HydraPositionsTableData
   onSuccess: () => void
+  disableRemoveLiquidity: boolean
 }) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
@@ -112,7 +116,9 @@ function LiquidityPositionRemoveLiquidity(props: {
         variant="secondary"
         size="small"
         onClick={() => setOpenRemove(true)}
-        disabled={account?.isExternalWalletConnected}
+        disabled={
+          account?.isExternalWalletConnected || props.disableRemoveLiquidity
+        }
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
@@ -132,28 +138,38 @@ function LiquidityPositionRemoveLiquidity(props: {
 }
 
 export const LiquidityPosition = ({
-  pool,
+  poolId,
   position,
   index,
   onSuccess,
+  disableRemoveLiquidity,
 }: Props) => {
   const { t } = useTranslation()
-  const meta = useAssetMeta(position.assetId)
-  const price = useDisplayPrice(meta.data?.id)
+  const { assets } = useRpcProvider()
+  const meta = assets.getAsset(position.assetId)
+  const price = useDisplayPrice(meta.id)
 
-  const shiftBy = meta?.data ? meta.data.decimals.neg().toNumber() : 12
+  const shiftBy = meta.decimals
   const spotPrice = price.data?.spotPrice
   const providedAmountPrice = spotPrice
-    ? position.providedAmount.multipliedBy(spotPrice).shiftedBy(shiftBy)
+    ? position.providedAmount.multipliedBy(spotPrice).shiftedBy(-shiftBy)
     : BN_0
 
-  const providedAmountPriceLoading = meta.isLoading || price.isLoading
+  const providedAmountPriceLoading = price.isLoading
 
   return (
     <SContainer>
       <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
         <div sx={{ flex: "row", gap: 7, align: "center" }}>
-          <Icon size={18} icon={<AssetLogo id={position.assetId} />} />
+          {assets.isStableSwap(meta) ? (
+            <MultipleIcons
+              icons={meta.assets.map((asset: string) => ({
+                icon: <AssetLogo id={asset} />,
+              }))}
+            />
+          ) : (
+            <Icon size={18} icon={<AssetLogo id={position.assetId} />} />
+          )}
           <Text fs={[14, 18]} color={["white", "basic100"]}>
             {t("liquidity.asset.positions.position.title", { index })}
           </Text>
@@ -167,8 +183,8 @@ export const LiquidityPosition = ({
               <Text>
                 {t("value.token", {
                   value: position.providedAmount,
-                  fixedPointScale: meta.data?.decimals.toString() ?? 12,
-                  numberSuffix: ` ${meta.data?.symbol ?? "N/A"}`,
+                  fixedPointScale: meta.decimals,
+                  numberSuffix: ` ${meta.symbol}`,
                 })}
               </Text>
               {providedAmountPriceLoading ? (
@@ -226,9 +242,9 @@ export const LiquidityPosition = ({
           gap: 8,
         }}
       >
-        {import.meta.env.VITE_FF_FARMS_ENABLED === "true" && (
+        {!meta.isStableSwap && (
           <LiquidityPositionJoinFarmButton
-            pool={pool}
+            poolId={poolId}
             position={position}
             onSuccess={onSuccess}
           />
@@ -236,6 +252,7 @@ export const LiquidityPosition = ({
         <LiquidityPositionRemoveLiquidity
           position={position}
           onSuccess={onSuccess}
+          disableRemoveLiquidity={disableRemoveLiquidity}
         />
       </div>
     </SContainer>

@@ -6,12 +6,17 @@ import { motion } from "framer-motion"
 import { TSlice } from "sections/stats/components/DoughnutChart/DoughnutChart"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const DefaultSliceLabel = ({ slices }: { slices: TSlice[] }) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
 
-  const sortedSlices = [...slices].sort((a, b) => b.percentage - a.percentage)
+  const sortedSlices = [...slices]
+    .filter((slice) => assets.getAsset(slice.id).assetType !== "StableSwap")
+    .sort((a, b) => b.percentage - a.percentage)
+    .slice(0, 3)
 
   return (
     <motion.div
@@ -24,11 +29,9 @@ export const DefaultSliceLabel = ({ slices }: { slices: TSlice[] }) => {
       <div sx={{ flex: "column", align: "center", gap: 6 }}>
         <MultipleIcons
           size={[20, 36]}
-          icons={[
-            { icon: <AssetLogo id={sortedSlices[0]?.id} /> },
-            { icon: <AssetLogo id={sortedSlices[1]?.id} /> },
-            { icon: <AssetLogo id={sortedSlices[2]?.id} /> },
-          ]}
+          icons={sortedSlices.map((slice) => ({
+            icon: <AssetLogo id={slice.id} />,
+          }))}
         />
         <Text color="basic100" fs={[12, 18]}>
           {t("stats.overview.pie.defaultLabel.composition")}

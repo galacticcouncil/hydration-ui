@@ -1,4 +1,4 @@
-import { ReactComponent as WalletIcon } from "assets/icons/Wallet.svg"
+import WalletIcon from "assets/icons/Wallet.svg?react"
 import { Button } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
@@ -17,7 +17,7 @@ export const PoolFooter = ({ pool }: Props) => {
   const { t } = useTranslation()
   const { account } = useAccountStore()
 
-  const claimable = useClaimableAmount(pool)
+  const claimable = useClaimableAmount(pool.id)
   const footerValues = useFooterValues(pool)
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {

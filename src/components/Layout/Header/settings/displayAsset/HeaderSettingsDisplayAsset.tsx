@@ -1,4 +1,3 @@
-import { useAssetList } from "api/assetDetails"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
@@ -11,12 +10,17 @@ import {
 } from "./HeaderSettingsDisplayAsset.styled"
 import { HeaderSettingsDisplayAssetSkeleton } from "./skeleton/HeaderSettingsDisplayAssetSkeleton"
 import { Icon } from "components/Icon/Icon"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = { onSelect: () => void }
 
 export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
   const { t } = useTranslation()
-  const assets = useAssetList()
+  const { assets } = useRpcProvider()
+  const sortedTokens = assets.tradeAssets
+    .filter((tradeAsset) => tradeAsset.isToken)
+    .sort((a, b) => a.symbol.localeCompare(b.symbol))
+
   const displayAsset = useDisplayAssetStore()
 
   const onSelectUSD = () => {
@@ -50,8 +54,7 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
     onSelect()
   }
 
-  if (assets.isLoading || !assets.data)
-    return <HeaderSettingsDisplayAssetSkeleton />
+  if (!sortedTokens) return <HeaderSettingsDisplayAssetSkeleton />
 
   return (
     <SItems>
@@ -95,7 +98,7 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
           <SCircle isActive={displayAsset.isStableCoin} />
         </div>
       </SItemUSD>
-      {assets.data.map((asset) => {
+      {sortedTokens.map((asset) => {
         const isActive =
           asset.id === displayAsset.id &&
           !displayAsset.isStableCoin &&

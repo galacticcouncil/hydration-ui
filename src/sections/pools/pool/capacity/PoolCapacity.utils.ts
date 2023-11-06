@@ -10,40 +10,40 @@ import {
   calculate_cap_difference,
   calculate_tvl_cap_difference,
 } from "@galacticcouncil/math-omnipool"
-import { useAssetMeta } from "api/assetMeta"
 import { getFloatingPointAmount } from "utils/balance"
+import { useRpcProvider } from "providers/rpcProvider"
 
-export const usePoolCapacity = (pool: OmnipoolPool) => {
+export const usePoolCapacity = (id: string) => {
+  const { assets } = useRpcProvider()
   const apiIds = useApiIds()
   const tvlCap = useTVLCap()
-  const assets = useOmnipoolAssets()
+  const omnipoolAssets = useOmnipoolAssets()
   const balances = useTokensBalances(
-    [apiIds.data?.hubId ?? "", apiIds?.data?.stableCoinId ?? "", pool.id],
+    [apiIds.data?.hubId ?? "", apiIds?.data?.stableCoinId ?? "", id],
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
-  const meta = useAssetMeta(pool.id)
+  const meta = assets.getAsset(id.toString())
 
-  const queries = [apiIds, tvlCap, assets, meta, ...balances]
+  const queries = [apiIds, tvlCap, omnipoolAssets, ...balances]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
     if (
       !apiIds.data ||
       !tvlCap.data ||
-      !assets.data ||
-      !meta.data ||
+      !omnipoolAssets.data ||
       balances.some((q) => !q.data)
     )
       return undefined
 
-    const asset = assets.data.find(
-      (a) => a.id.toString() === pool.id.toString(),
+    const asset = omnipoolAssets.data.find(
+      (a) => a.id.toString() === id.toString(),
     )
-    const assetUsd = assets.data.find(
+    const assetUsd = omnipoolAssets.data.find(
       (a) => a.id.toString() === apiIds.data.stableCoinId.toString(),
     )
     const assetBalance = balances.find(
-      (b) => b.data?.assetId.toString() === pool.id.toString(),
+      (b) => b.data?.assetId.toString() === id.toString(),
     )
     const hubBalance = balances.find(
       (b) => b.data?.assetId.toString() === apiIds.data.hubId.toString(),
@@ -51,7 +51,7 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
     const usdBalance = balances.find(
       (b) => b.data?.assetId.toString() === apiIds.data.stableCoinId.toString(),
     )
-    const symbol = meta.data?.symbol ?? "N/A"
+    const symbol = meta.symbol
 
     if (
       !asset?.data ||
@@ -109,16 +109,16 @@ export const usePoolCapacity = (pool: OmnipoolPool) => {
 
     const capacity = getFloatingPointAmount(
       assetBalance.data.balance.plus(new BN(capDifference)),
-      meta.data?.decimals.toNumber() ?? 12,
+      meta.decimals,
     )
     const filled = getFloatingPointAmount(
       assetBalance.data.balance,
-      meta.data?.decimals.toNumber() ?? 12,
+      meta.decimals,
     )
     const filledPercent = filled.div(capacity).times(100)
 
     return { capacity, filled, filledPercent, symbol }
-  }, [apiIds.data, assets.data, balances, meta.data, pool.id, tvlCap.data])
+  }, [apiIds.data, omnipoolAssets.data, balances, meta, id, tvlCap.data])
 
   return { data, isLoading }
 }

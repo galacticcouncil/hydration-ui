@@ -1,21 +1,20 @@
 import { ApiPromise } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
-import { useApiPromise } from "utils/api"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { isApiLoaded } from "utils/helpers"
 import { useAccountStore } from "state/store"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
 
 export const useReferendums = (type?: "ongoing" | "finished") => {
-  const api = useApiPromise()
+  const { api, isLoaded } = useRpcProvider()
   const { account } = useAccountStore()
 
   return useQuery(
     QUERY_KEYS.referendums(account?.address),
     getReferendums(api, account?.address),
     {
-      enabled: !!isApiLoaded(api),
+      enabled: isLoaded,
       select: (data) =>
         type
           ? data.filter(
@@ -41,16 +40,22 @@ export const getReferendums =
       accountId ? api.query.democracy.votingOf(accountId) : undefined,
     ])
 
+    const isDelegating = votesRaw?.isDelegating
+
     const referendums = referendumRaw.map(([key, codec]) => {
       const id = key.args[0].toString()
-      const vote = votesRaw?.asDirect.votes.some(
-        (vote) => vote[0].toString() === id,
-      )
+
+      const vote = !isDelegating
+        ? votesRaw?.asDirect.votes.find((vote) => vote[0].toString() === id)
+        : undefined
 
       return {
         id: key.args[0].toString(),
         referendum: codec.unwrap(),
         voted: !!vote,
+        amount: vote?.[1].asStandard?.balance.toBigNumber(),
+        conviction: vote?.[1].asStandard?.vote.conviction.toString(),
+        isDelegating,
       }
     })
 

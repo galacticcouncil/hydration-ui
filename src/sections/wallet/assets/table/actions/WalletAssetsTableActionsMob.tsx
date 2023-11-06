@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-location"
 import { useSetAsFeePayment } from "api/payments"
-import { ReactComponent as BuyIcon } from "assets/icons/BuyIcon.svg"
-import { ReactComponent as DollarIcon } from "assets/icons/DollarIcon.svg"
-import { ReactComponent as SellIcon } from "assets/icons/SellIcon.svg"
-import { ReactComponent as TransferIcon } from "assets/icons/TransferIcon.svg"
+import BuyIcon from "assets/icons/BuyIcon.svg?react"
+import DollarIcon from "assets/icons/DollarIcon.svg?react"
+import SellIcon from "assets/icons/SellIcon.svg?react"
+import TransferIcon from "assets/icons/TransferIcon.svg?react"
 import { Button } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Modal } from "components/Modal/Modal"
@@ -14,8 +14,8 @@ import { useAccountStore } from "state/store"
 import { theme } from "theme"
 import { LINKS } from "utils/navigation"
 import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
-import { WalletAssetsTableName } from "sections/wallet/assets/table/data/WalletAssetsTableData"
 import { SActionButtonsContainer } from "./WalletAssetsTable.styled"
+import { AssetTableName } from "components/AssetTableName/AssetTableName"
 
 type Props = {
   row?: AssetsTableData
@@ -41,7 +41,7 @@ export const WalletAssetsTableActionsMob = ({
     <Modal open={!!row} isDrawer onClose={onClose} title="">
       <div>
         <div sx={{ pb: 30 }}>
-          <WalletAssetsTableName {...row} large />
+          <AssetTableName {...row} large />
         </div>
         <Separator
           css={{ background: `rgba(${theme.rgbColors.alpha0}, 0.06)` }}

@@ -5,7 +5,7 @@ import { ChartSwitchMobile } from "sections/stats/components/ChartSwitchMobile/C
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useMemo, useState } from "react"
-import { SContainerVertical } from "sections/stats/sections/overview/StatsOverview.styled"
+import { SContainerVertical } from "sections/stats/StatsPage.styled"
 import { TOmnipoolOverviewData } from "sections/stats/sections/overview/data/OmnipoolOverview.utils"
 import { BN_0 } from "utils/constants"
 import { useTranslation } from "react-i18next"
@@ -51,6 +51,7 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
           flexWrap: "wrap",
           gap: 20,
         }}
+        css={{ "& > span": { width: "100%" } }}
       >
         <PieTotalValue
           title={t("stats.overview.pie.values.pol")}
@@ -70,7 +71,6 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
     <SContainerVertical
       sx={{
         width: ["100%", "fit-content"],
-        height: [500, "100%"],
         p: [20, 40],
       }}
     >
@@ -88,7 +88,16 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
           {pieChartValues}
         </>
       ) : (
-        <ChartWrapper />
+        <div
+          sx={{
+            flex: "column",
+            height: [500, "100%"],
+            gap: [24, 40],
+            pt: [40, 0],
+          }}
+        >
+          <ChartWrapper />
+        </div>
       )}
     </SContainerVertical>
   )

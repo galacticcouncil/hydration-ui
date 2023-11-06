@@ -6,14 +6,14 @@ import { WalletVestingEmpty } from "./WalletVestingEmpty"
 import { useVestingSchedules } from "api/vesting"
 import { useAccountStore } from "state/store"
 import { Spinner } from "components/Spinner/Spinner.styled"
-import { useApiPromise } from "utils/api"
 import { isApiLoaded } from "utils/helpers"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const VestingBoxContent = () => {
   const { account } = useAccountStore()
-  const { data, isLoading } = useVestingSchedules(account?.address)
+  const { data, isInitialLoading } = useVestingSchedules(account?.address)
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <div
         sx={{ flex: "row", align: "center", justify: "center", height: 240 }}
@@ -32,7 +32,7 @@ const VestingBoxContent = () => {
 
 export const WalletVestingBox = () => {
   const { t } = useTranslation()
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return (
     <div sx={{ flex: "column", flexGrow: 1 }}>

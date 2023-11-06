@@ -1,5 +1,5 @@
 import { Text } from "components/Typography/Text/Text"
-import { ReactComponent as IconRemove } from "assets/icons/IconRemove.svg"
+import IconRemove from "assets/icons/IconRemove.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Button } from "components/Button/Button"
 import { Spacer } from "components/Spacer/Spacer"

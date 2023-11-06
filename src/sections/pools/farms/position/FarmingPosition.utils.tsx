@@ -3,7 +3,6 @@ import {
   calculate_liquidity_out,
 } from "@galacticcouncil/math-omnipool"
 import { u32 } from "@polkadot/types"
-import { useAssetMeta, useAssetMetaList } from "api/assetMeta"
 import { useTokensBalances } from "api/balances"
 import { useApiIds } from "api/consts"
 import {
@@ -23,9 +22,10 @@ import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { BN_10, BN_NAN } from "utils/constants"
 import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { normalizeBigNumber } from "utils/balance"
-import { DECIMAL_PLACES } from "@galacticcouncil/sdk"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const useAllUserDepositShare = () => {
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
   const accountDepositIds = useAccountDepositIds(account?.address)
   const deposits = useAllDeposits()
@@ -48,8 +48,9 @@ export const useAllUserDepositShare = () => {
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
 
-  const metas = useAssetMetaList(omnipoolAssetIds)
-  const lrnaMeta = useAssetMeta(apiIds.data?.hubId)
+  const lrnaMeta = apiIds.data?.hubId
+    ? assets.getAsset(apiIds.data.hubId)
+    : undefined
 
   const positionIds = useOmniPositionIds(depositIds ?? [])
 
@@ -63,8 +64,6 @@ export const useAllUserDepositShare = () => {
   const queries = [
     apiIds,
     omnipoolAssets,
-    metas,
-    lrnaMeta,
     lrnaSp,
     spotPrices,
     ...omnipoolBalances,
@@ -92,16 +91,16 @@ export const useAllUserDepositShare = () => {
             spotPrice?.tokenIn === position.data?.assetId.toString(),
         )
 
-        const meta = metas.data?.find(
-          (meta) => meta.id === position.data?.assetId.toString(),
-        )
+        const meta = position.data?.assetId
+          ? assets.getAsset(position.data?.assetId.toString())
+          : undefined
 
         if (
           omnipoolBalance &&
           meta &&
           omnipoolAsset?.data &&
           position.data &&
-          lrnaMeta.data &&
+          lrnaMeta &&
           spotPrice &&
           lrnaSp.data
         ) {
@@ -127,13 +126,13 @@ export const useAllUserDepositShare = () => {
           lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
           liquidityOutResult = calculate_liquidity_out.apply(this, params)
 
-          const lrnaDp = BN_10.pow(lrnaMeta.data.decimals.toNumber() ?? 12)
+          const lrnaDp = BN_10.pow(lrnaMeta.decimals)
           const lrna =
             lernaOutResult !== "-1"
               ? new BN(lernaOutResult).div(lrnaDp)
               : BN_NAN
 
-          const valueDp = BN_10.pow(meta.decimals.toNumber() ?? 12)
+          const valueDp = BN_10.pow(meta.decimals)
           const value =
             liquidityOutResult !== "-1"
               ? new BN(liquidityOutResult).div(valueDp)
@@ -153,7 +152,7 @@ export const useAllUserDepositShare = () => {
 
           const providedAmount = normalizeBigNumber(
             position.data.amount,
-          ).shiftedBy(-1 * meta.decimals.toNumber() ?? DECIMAL_PLACES)
+          ).shiftedBy(-1 * meta.decimals)
           const providedAmountDisplay = spotPrice?.spotPrice
             ? providedAmount.times(spotPrice.spotPrice)
             : BN_NAN
@@ -202,9 +201,9 @@ export const useAllUserDepositShare = () => {
   }, [
     positions,
     omnipoolBalances,
-    metas,
-    omnipoolAssets,
-    spotPrices,
+    omnipoolAssets.data,
+    spotPrices.data,
+    assets,
     lrnaMeta,
     lrnaSp,
     positionIds,

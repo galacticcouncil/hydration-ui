@@ -14,8 +14,13 @@ export const SContainer = styled.label<{ error?: boolean; disabled?: boolean }>`
   border-bottom: 1px solid
     ${(p) => (p.error ? theme.colors.error : theme.colors.darkBlue400)};
 
+  margin-left: calc(var(--modal-content-padding) * -1);
+  margin-right: calc(var(--modal-content-padding) * -1);
+
   @media ${theme.viewport.gte.sm} {
     padding: 12px;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   ${({ disabled, error }) =>

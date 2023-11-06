@@ -1,16 +1,16 @@
 import { useMemo } from "react"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
+import { u32 } from "@polkadot/types-codec"
 
-export const usePoolPositions = (pool: OmnipoolPool) => {
+export const usePoolPositions = (poolId: u32) => {
   const positions = useHydraPositionsData()
 
   const data = useMemo(
     () =>
       positions.data.filter(
-        (position) => position.assetId === pool.id.toString(),
+        (position) => position.assetId === poolId.toString(),
       ),
-    [pool.id, positions.data],
+    [poolId, positions.data],
   )
 
   return { data, isLoading: positions.isLoading, refetch: positions.refetch }

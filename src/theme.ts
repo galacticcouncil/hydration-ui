@@ -1,4 +1,5 @@
 import { keys } from "utils/helpers"
+import { css } from "@emotion/react"
 
 const colors = {
   white: "#ffffff",
@@ -64,6 +65,8 @@ const colors = {
   green400: "#01F397",
   green500: "#4BFFBB",
   green600: "#30FFB1",
+  green700: "#00FFA0",
+  warningYellow200: "#F4E7B0",
   warningYellow400: "#F7BF06",
   alarmRed400: "#FF6868",
   iconGray: "#BDCCD4",
@@ -92,13 +95,13 @@ const gradients = {
       59.04% 80.58% at 114.9% 36.2%,
       rgba(246, 42, 125, 0.59) 0.48%,
       rgba(246, 42, 125, 0.34) 25%,
-      rgba(6, 9, 23, 0) 100%
+      rgba(6, 9, 23, 0) 80%
     ),
     radial-gradient(
       56.41% 76.99% at -12.28% 29.31%,
       #00579f 0.48%,
       #023b6a 25%,
-      rgba(6, 9, 23, 0) 100%
+      rgba(6, 9, 23, 0) 80%
     ),
     #060917;
   `,
@@ -187,6 +190,34 @@ const borderRadius = {
   default: 4,
 } as const
 
+export const gradientBorder = css`
+  position: relative;
+  border-radius: ${borderRadius.default}px;
+
+  :before {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    border-radius: ${borderRadius.default}px;
+    padding: 1px;
+
+    background: linear-gradient(
+      180deg,
+      rgba(152, 176, 214, 0.27) 0%,
+      rgba(163, 177, 199, 0.15) 66.67%,
+      rgba(158, 167, 180, 0.2) 100%
+    );
+
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+`
+
 export const theme = {
   colors,
   gradients,
@@ -196,4 +227,5 @@ export const theme = {
   viewport,
   shadows,
   borderRadius,
+  gradientBorder,
 }

@@ -1,6 +1,4 @@
 import { useState } from "react"
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
 import { useTranslation } from "react-i18next"
 import { StatsTimeframe } from "api/stats"
 import { Charts } from "./Charts"
@@ -10,19 +8,19 @@ import {
   STimeframeEl,
 } from "sections/stats/components/ChartsWrapper/ChartsWrapper.styled"
 import { Spacer } from "components/Spacer/Spacer"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export type ChartType = "pol" | "volume"
 
-type Props = { assetSymbol?: string }
+type Props = { assetId?: string }
 
-export const ChartsWrapper = ({ assetSymbol }: Props) => {
+export const ChartsWrapper = ({ assetId }: Props) => {
   const { t } = useTranslation()
   const [chartType, setChartType] = useState<ChartType>("volume")
   const [timeframe, setTimeframe] = useState<StatsTimeframe>(
-    StatsTimeframe.HOURLY,
+    StatsTimeframe.DAILY,
   )
-  const api = useApiPromise()
-  const isApi = isApiLoaded(api)
+  const { isLoaded } = useRpcProvider()
 
   return (
     <>
@@ -34,17 +32,18 @@ export const ChartsWrapper = ({ assetSymbol }: Props) => {
         }}
       >
         <div sx={{ flex: "row", gap: [4, 12], justify: ["end", "start"] }}>
+          {/* TODO: Not ready. Requested in #861n9ffe4 */}
+          {/*<SChartTab*/}
+          {/*  disabled={!isApi || true}*/}
+          {/*  aria-label="total value locked"*/}
+          {/*  active={chartType === "pol"}*/}
+          {/*  onClick={() => setChartType("pol")}*/}
+          {/*>*/}
+          {/*  {t("stats.pol.chart.switcher.pol")}*/}
+          {/*</SChartTab>*/}
           <SChartTab
-            disabled={!isApi || true}
-            aria-label="total value locked"
-            active={chartType === "pol"}
-            onClick={() => setChartType("pol")}
-          >
-            {t("stats.pol.chart.switcher.pol")}
-          </SChartTab>
-          <SChartTab
-            disabled={!isApi}
-            aria-label="24 volume"
+            disabled={!isLoaded}
+            aria-label="24h volume"
             active={chartType === "volume"}
             onClick={() => setChartType("volume")}
           >
@@ -54,14 +53,14 @@ export const ChartsWrapper = ({ assetSymbol }: Props) => {
         {chartType === "volume" ? (
           <STimeframeContainer>
             <STimeframeEl
-              disabled={!isApi}
+              disabled={!isLoaded}
               active={timeframe === StatsTimeframe["DAILY"]}
               onClick={() => setTimeframe(StatsTimeframe["DAILY"])}
             >
               {t("stats.chart.timeframe.month")}
             </STimeframeEl>
             <STimeframeEl
-              disabled={!isApi}
+              disabled={!isLoaded}
               active={timeframe === StatsTimeframe["HOURLY"]}
               onClick={() => setTimeframe(StatsTimeframe["HOURLY"])}
             >
@@ -72,11 +71,7 @@ export const ChartsWrapper = ({ assetSymbol }: Props) => {
           <Spacer size={22} />
         )}
       </div>
-      <Charts
-        type={chartType}
-        timeframe={timeframe}
-        assetSymbol={assetSymbol}
-      />
+      <Charts type={chartType} timeframe={timeframe} assetId={assetId} />
     </>
   )
 }

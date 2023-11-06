@@ -39,6 +39,13 @@ const drawerKeyFrames = keyframes`
 
 export const SOverlay = styled(Overlay)<{ variant?: BackdropVariant }>`
   position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
   inset: 0;
   z-index: ${theme.zIndices.modal};
 
@@ -47,18 +54,25 @@ export const SOverlay = styled(Overlay)<{ variant?: BackdropVariant }>`
 `
 
 export const SContainer = styled(Content)`
-  --modal-header-padding-y: 20px;
-  --modal-header-padding-x: 24px;
+  --modal-header-padding-y: 10px;
+  --modal-header-padding-x: 12px;
   --modal-header-btn-size: 34px;
   --modal-header-height: calc(
     var(--modal-header-btn-size) + var(--modal-header-padding-y) * 2
   );
-  --modal-content-padding: 24px;
+
+  --modal-content-padding: 12px;
   --modal-top-content-height: 64px;
 
   position: fixed;
   inset: 0;
   z-index: ${theme.zIndices.modal};
+
+  @media ${theme.viewport.gte.sm} {
+    --modal-header-padding-y: 20px;
+    --modal-header-padding-x: 24px;
+    --modal-content-padding: 24px;
+  }
 `
 
 export const STopContent = styled.div`
@@ -81,46 +95,39 @@ export const STopContent = styled.div`
   }
 `
 
+export const SModalSection = styled.div`
+  display: flex;
+  flex-flow: column;
+  overflow: hidden;
+  background: ${theme.colors.darkBlue700};
+  box-shadow: ${theme.shadows.modal};
+
+  @media ${theme.viewport.gte.sm} {
+    margin: 4px;
+    border-radius: 8px;
+    border: 1px solid rgba(158, 167, 180, 0.2);
+  }
+`
+
+export const SBottomContent = styled.div`
+  margin-top: 16px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: ${theme.colors.darkBlue700};
+  border: 1px solid rgba(158, 167, 180, 0.2);
+`
+
 export const SContent = styled.div<{
   isDrawer?: boolean
   hasTopContent?: boolean
 }>`
   position: fixed;
+  overflow: auto;
+
   inset: 0;
   ${({ hasTopContent }) =>
     hasTopContent && "top: var(--modal-top-content-height);"}
   z-index: ${theme.zIndices.modal};
-
-  display: flex;
-  overflow: hidden;
-
-  background: ${theme.colors.darkBlue700};
-  box-shadow: ${theme.shadows.modal};
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-
-    border-radius: 4px;
-
-    padding: 1px; // a width of the border
-
-    background: linear-gradient(
-      180deg,
-      rgba(102, 151, 227, 0.35) 0%,
-      rgba(68, 109, 174, 0.3) 66.67%,
-      rgba(91, 151, 245, 0) 99.99%,
-      rgba(158, 167, 180, 0) 100%
-    );
-
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-  }
 
   ${({ isDrawer }) =>
     isDrawer &&
@@ -145,10 +152,8 @@ export const SContent = styled.div<{
 
     width: 100%;
     max-width: min(600px, 95vw);
-    max-height: 80%;
 
     border-radius: 4px;
-
     animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) ${fadeInKeyframes};
   }
 `

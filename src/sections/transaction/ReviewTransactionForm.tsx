@@ -1,8 +1,7 @@
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { useMutation } from "@tanstack/react-query"
-import { useAssetAccountDetails } from "api/assetDetails"
-import { useAssetMeta } from "api/assetMeta"
+import { useAcountAssets } from "api/assetDetails"
 import { useTokenBalance } from "api/balances"
 import { useBestNumber } from "api/chain"
 import { useEra } from "api/era"
@@ -34,6 +33,7 @@ import { getTransactionJSON } from "./ReviewTransaction.utils"
 import { useWalletConnect } from "components/OnboardProvider/OnboardProvider"
 import Skeleton from "react-loading-skeleton"
 import { sendDispatch } from "utils/evm"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const ReviewTransactionForm = (
   props: {
@@ -43,22 +43,25 @@ export const ReviewTransactionForm = (
   } & Omit<Transaction, "id">,
 ) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccountStore()
   const bestNumber = useBestNumber()
   const accountCurrency = useAccountCurrency(account?.address)
-  const feeMeta = useAssetMeta(
-    props.overrides?.currencyId ?? accountCurrency.data,
+  const currencyId = [props.overrides?.currencyId, accountCurrency.data].find(
+    (currencyId) => currencyId,
   )
+  const feeMeta = currencyId ? assets.getAsset(currencyId) : undefined
+
   const feeAssetBalance = useTokenBalance(
     props.overrides?.currencyId ?? accountCurrency.data,
     account?.address,
   )
 
-  const feeAssets = useAssetAccountDetails(account?.address)
+  const feeAssets = useAcountAssets(account?.address)
   const setFeeAsPayment = useSetAsFeePayment()
 
   const nonce = useNextNonce(account?.address)
-  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, feeMeta.data?.id)
+  const spotPrice = useSpotPrice(NATIVE_ASSET_ID, feeMeta?.id)
 
   const { wallet } = useWalletConnect()
 
@@ -107,9 +110,9 @@ export const ReviewTransactionForm = (
   )
 
   const acceptedFeeAssets = useAcceptedCurrencies(
-    feeAssets.data?.map((feeAsset) => feeAsset.id) ?? [],
+    feeAssets.map((feeAsset) => feeAsset.asset.id) ?? [],
   )
-  const isLoading = feeAssetBalance.isLoading || feeMeta.isLoading
+  const isLoading = feeAssetBalance.isLoading
   const {
     openModal,
     modal,
@@ -168,7 +171,7 @@ export const ReviewTransactionForm = (
 
   const feePaymentBalance = getFloatingPointAmount(
     feeAssetBalance.data?.balance ?? BN_0,
-    feeMeta.data?.decimals.toString() ?? 12,
+    feeMeta?.decimals ?? 12,
   )
   const paymentFee = paymentInfoData
     ? getFloatingPointAmount(
@@ -231,7 +234,7 @@ export const ReviewTransactionForm = (
                             props.overrides?.fee ??
                             new BigNumber(paymentInfoData.partialFee.toHex())
                           ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
-                          symbol: feeMeta.data?.symbol,
+                          symbol: feeMeta?.symbol,
                           fixedPointScale: 12,
                           type: "token",
                         })}

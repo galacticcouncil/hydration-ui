@@ -6,9 +6,10 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { ButtonTransparent } from "components/Button/Button"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useTranslation } from "react-i18next"
-import { ReactComponent as ChevronRightIcon } from "assets/icons/ChevronRight.svg"
+import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
 import { OmnipoolAssetsTableColumn } from "sections/stats/components/OmnipoolAssetsTable/OmnipoolAssetsTable.utils"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
   const { accessor, display } =
@@ -29,7 +30,16 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
             justify: "start",
           }}
         >
-          <Icon size={26} icon={<AssetLogo id={row.original.id} />} />
+          {typeof row.original.iconIds === "string" ? (
+            <Icon size={30} icon={<AssetLogo id={row.original.iconIds} />} />
+          ) : (
+            <MultipleIcons
+              size={30}
+              icons={row.original.iconIds.map((id) => ({
+                icon: <AssetLogo id={id} />,
+              }))}
+            />
+          )}
           <div sx={{ flex: "column" }}>
             <Text fs={[14, 16]} color="white">
               {row.original.symbol}
@@ -65,16 +75,6 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
         </Text>
       ),
     }),
-    /*accessor("fee", {
-      id: "fee",
-      header: t("stats.overview.table.assets.header.fee"),
-      sortingFn: (a, b) => (a.original.fee.gt(b.original.fee) ? 1 : -1),
-      cell: ({ row }) => (
-        <Text tAlign="center" color="white">
-          <DisplayValue value={row.original.fee} isUSD />
-        </Text>
-      ),
-    }),*/
     display({
       id: "actions",
       cell: () => (

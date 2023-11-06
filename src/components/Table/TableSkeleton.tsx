@@ -18,7 +18,7 @@ import { Fragment, ReactNode } from "react"
 
 type Props = {
   table: ReactTable<unknown>
-  title?: string
+  title?: string | ReactNode
   placeholder?: ReactNode
   className?: string
   hideHeader?: boolean
@@ -36,8 +36,8 @@ export const TableSkeleton = ({
       {title && (
         <TableTitle>
           <Text
-            fs={[15, 19]}
-            lh={[19.5, 24.7]}
+            fs={[16, 20]}
+            lh={[20, 26]}
             css={{ fontFamily: "FontOver" }}
             fw={500}
             color="white"

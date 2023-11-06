@@ -5,11 +5,12 @@ import { theme } from "theme"
 import { useMemo, useState } from "react"
 import { BN_0 } from "utils/constants"
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
-import { SContainerVertical } from "sections/stats/sections/POL/StatsPOL.styled"
+import { SContainerVertical } from "sections/stats/StatsPage.styled"
 import { PieTotalValue } from "sections/stats/sections/overview/components/PieTotalValue/PieTotalValue"
 import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
 import { PieChart } from "sections/stats/components/PieChart/PieChart"
 import { useTranslation } from "react-i18next"
+import { omit } from "utils/rx"
 
 type PieWrapperProps = {
   data: TUseOmnipoolAssetDetailsData
@@ -33,6 +34,11 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
         }),
         { totalPol: BN_0, totalVolume: BN_0 },
       ),
+    [data],
+  )
+
+  const pieChartData = useMemo(
+    () => data.map((props) => omit(["iconIds"], props)),
     [data],
   )
 
@@ -64,7 +70,6 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
     <SContainerVertical
       sx={{
         width: ["100%", "fit-content"],
-        height: [500, "100%"],
         p: [20, 40],
       }}
     >
@@ -75,14 +80,23 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
       {activeSection === "overview" ? (
         <>
           {!isLoading ? (
-            <PieChart data={data} property="pol" />
+            <PieChart data={pieChartData} property="pol" />
           ) : (
             <PieSkeleton />
           )}
           {pieChartValues}
         </>
       ) : (
-        <ChartWrapper />
+        <div
+          sx={{
+            flex: "column",
+            height: [500, "100%"],
+            gap: [24, 40],
+            pt: [40, 0],
+          }}
+        >
+          <ChartWrapper />
+        </div>
       )}
     </SContainerVertical>
   )

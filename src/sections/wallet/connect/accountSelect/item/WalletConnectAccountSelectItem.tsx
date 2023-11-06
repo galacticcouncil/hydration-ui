@@ -1,13 +1,14 @@
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { useAssetMeta } from "api/assetMeta"
 import { useTokenBalance } from "api/balances"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { WalletConnectAccountSelectAddress } from "sections/wallet/connect/accountSelect/item/address/WalletConnectAccountSelectAddress"
-import { HYDRA_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
+import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { SSelectItem } from "./WalletConnectAccountSelectItem.styled"
+import { useRpcProvider } from "providers/rpcProvider"
+import Skeleton from "react-loading-skeleton"
 
 type Props = {
   isActive: boolean
@@ -35,8 +36,11 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
     ? encodeAddress(decodeAddress(address))
     : address
 
-  const { data } = useTokenBalance(NATIVE_ASSET_ID, polkadotAddress)
-  const { data: meta } = useAssetMeta(NATIVE_ASSET_ID)
+  const {
+    isLoaded,
+    assets: { native },
+  } = useRpcProvider()
+  const { data } = useTokenBalance(native?.id, polkadotAddress)
 
   const { t } = useTranslation()
 
@@ -44,18 +48,22 @@ export const WalletConnectAccountSelectItem: FC<Props> = ({
     <SSelectItem isActive={isActive} isProxy={!!isProxy} onClick={onClick}>
       <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
         <Text font="ChakraPetchBold">{name}</Text>
-        <div sx={{ flex: "row", align: "end", gap: 2 }}>
-          <Text color="basic200" fw={400}>
-            {t("value.token", {
-              value: data?.balance,
-              fixedPointScale: meta?.decimals.toString(),
-              type: "token",
-            })}
-          </Text>
-          <Text color="graySoft" tTransform="uppercase">
-            {meta?.symbol}
-          </Text>
-        </div>
+        {isLoaded ? (
+          <div sx={{ flex: "row", align: "end", gap: 2 }}>
+            <Text color="basic200" fw={400}>
+              {t("value.token", {
+                value: data?.balance,
+                fixedPointScale: native?.decimals,
+                type: "token",
+              })}
+            </Text>
+            <Text color="graySoft" tTransform="uppercase">
+              {native?.symbol}
+            </Text>
+          </div>
+        ) : (
+          <Skeleton width={70} height={20} />
+        )}
       </div>
 
       {isProxy && (

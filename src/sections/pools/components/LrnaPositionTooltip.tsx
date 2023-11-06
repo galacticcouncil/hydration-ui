@@ -6,8 +6,8 @@ import { useSpotPrice } from "api/spotPrice"
 import { useApiIds } from "api/consts"
 import BigNumber from "bignumber.js"
 import { BN_0, BN_1 } from "utils/constants"
-import { useAssetMeta } from "api/assetMeta"
 import { u32 } from "@polkadot/types"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   assetId?: string | u32
@@ -21,8 +21,9 @@ export const LrnaPositionTooltip = ({
   lrnaPosition,
 }: Props) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const apiIds = useApiIds()
-  const meta = useAssetMeta(assetId)
+  const meta = assetId ? assets.getAsset(assetId.toString()) : undefined
 
   const lrnaSpotPrice = useSpotPrice(apiIds.data?.hubId, assetId)
 
@@ -41,7 +42,7 @@ export const LrnaPositionTooltip = ({
           <br />
           {t("value.tokenWithSymbol", {
             value: lrnaPositionPrice.plus(tokenPosition ?? BN_0),
-            symbol: meta.data?.symbol,
+            symbol: meta?.symbol,
           })}
         </Text>
       }

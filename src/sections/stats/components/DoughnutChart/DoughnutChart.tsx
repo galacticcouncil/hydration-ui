@@ -33,7 +33,7 @@ type DoughnutChartProps = {
 
 export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const PIE_SIZE = !isDesktop ? 170 : 300
+  const PIE_SIZE = !isDesktop ? 190 : 300
   const config = getPieConfig(PIE_SIZE)
   const { t } = useTranslation()
 
@@ -129,7 +129,7 @@ export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
 
   return (
     <div sx={{ flex: "column", gap: 24 }}>
-      <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
+      <div sx={{ flex: "column", justify: "space-between", align: "center" }}>
         <div css={{ position: "relative" }}>
           <SLabelContainer size={PIE_SIZE - config.shadowInnerRadius}>
             <AnimatePresence>{label}</AnimatePresence>

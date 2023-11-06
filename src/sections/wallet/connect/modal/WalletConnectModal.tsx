@@ -1,6 +1,6 @@
 import { css } from "@emotion/react"
 import { useNavigate } from "@tanstack/react-location"
-import { Modal, ModalScrollableContent } from "components/Modal/Modal"
+import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { useState } from "react"
@@ -94,19 +94,15 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
           {
             title: t("walletConnect.provider.title"),
             content: (
-              <ModalScrollableContent
-                content={
-                  <WalletConnectProviderSelect
-                    onWalletSelect={(wallet) => {
-                      setUserSelectedProvider(wallet.extensionName)
-                      enableWallet.mutate(wallet)
-                      paginateTo(2)
-                    }}
-                    onExternalWallet={() => paginateTo(1)}
-                    onWalletConnect={onWalletConnect}
-                    onMetamask={onMetamask}
-                  />
-                }
+              <WalletConnectProviderSelect
+                onWalletSelect={(wallet) => {
+                  setUserSelectedProvider(wallet.extensionName)
+                  enableWallet.mutate(wallet)
+                  paginateTo(2)
+                }}
+                onExternalWallet={() => paginateTo(1)}
+                onWalletConnect={onWalletConnect}
+                onMetamask={onMetamask}
               />
             ),
           },
@@ -126,19 +122,15 @@ export const WalletConnectModal = ({ isOpen, onClose }: Props) => {
               (activeProvider !== externalWallet.provider && isConnecting ? (
                 <WalletConnectConfirmPending provider={activeProvider} />
               ) : (
-                <ModalScrollableContent
-                  content={
-                    <WalletConnectAccountSelect
-                      currentAddress={account?.address.toString()}
-                      provider={activeProvider}
-                      onClose={onClose}
-                      onSelect={(account) => {
-                        setUserSelectedProvider(null)
-                        setAccount(account)
-                        onClose()
-                      }}
-                    />
-                  }
+                <WalletConnectAccountSelect
+                  currentAddress={account?.address.toString()}
+                  provider={activeProvider}
+                  onClose={onClose}
+                  onSelect={(account) => {
+                    setUserSelectedProvider(null)
+                    setAccount(account)
+                    onClose()
+                  }}
                 />
               )),
           },

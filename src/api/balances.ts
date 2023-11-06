@@ -1,4 +1,4 @@
-import { NATIVE_ASSET_ID, useApiPromise } from "utils/api"
+import { NATIVE_ASSET_ID } from "utils/api"
 
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
@@ -9,8 +9,9 @@ import { AccountId32 } from "@polkadot/types/interfaces"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { useAccountStore } from "state/store"
 import { BN_0 } from "utils/constants"
+import { useRpcProvider } from "providers/rpcProvider"
 
-function calculateFreeBalance(
+export function calculateFreeBalance(
   free: BigNumber,
   miscFrozen: BigNumber,
   feeFrozen: BigNumber,
@@ -68,7 +69,7 @@ export const useTokenBalance = (
   id: Maybe<string | u32>,
   address: Maybe<AccountId32 | string>,
 ) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.tokenBalance(id, address),
@@ -84,7 +85,7 @@ export function useTokensBalances(
   address: Maybe<AccountId32 | string>,
   noRefresh?: boolean,
 ) {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
 
   return useQueries({
     queries: tokenIds.map((id) => ({
@@ -103,7 +104,7 @@ const getExistentialDeposit = (api: ApiPromise) => {
 }
 
 export function useExistentialDeposit() {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   return useQuery(QUERY_KEYS.existentialDeposit, async () => {
     const existentialDeposit = await getExistentialDeposit(api)
     return existentialDeposit.toBigNumber()
@@ -111,7 +112,7 @@ export function useExistentialDeposit() {
 }
 
 export const useTokensLocks = (ids: Maybe<u32 | string>[]) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { account } = useAccountStore()
 
   const normalizedIds = ids?.reduce<string[]>((memo, item) => {
@@ -132,7 +133,7 @@ export const useTokensLocks = (ids: Maybe<u32 | string>[]) => {
 }
 
 export const useTokenLocks = (id: Maybe<u32 | string>) => {
-  const api = useApiPromise()
+  const { api } = useRpcProvider()
   const { account } = useAccountStore()
 
   return useQuery(

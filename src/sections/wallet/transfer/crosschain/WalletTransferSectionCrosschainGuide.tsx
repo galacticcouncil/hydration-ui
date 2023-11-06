@@ -1,4 +1,4 @@
-import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
+import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { Button } from "components/Button/Button"
 import { Spacer } from "components/Spacer/Spacer"
 import { GradientText } from "components/Typography/GradientText/GradientText"

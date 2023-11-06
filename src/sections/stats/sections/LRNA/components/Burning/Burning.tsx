@@ -1,11 +1,10 @@
 import { PieChart } from "sections/stats/sections/LRNA/components/PieChart/PieChart"
-import { ReactComponent as StakingRewardIcon } from "assets/icons/StakingRewardIcon.svg"
-import { ReactComponent as StakedAPRIcon } from "assets/icons/StakedAPR.svg"
+import StakingRewardIcon from "assets/icons/StakingRewardIcon.svg?react"
+import StakedAPRIcon from "assets/icons/StakedAPR.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { SBurnContainer } from "./Burning.styled"
 import { useTranslation } from "react-i18next"
-import { useLRNAMeta } from "api/assetMeta"
 import { useHubAssetImbalance } from "api/omnipool"
 import { formatValue } from "sections/stats/sections/LRNA/StatsLRNA.utils"
 import BigNumber from "bignumber.js"
@@ -13,12 +12,19 @@ import { BN_0 } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useSpotPrice } from "api/spotPrice"
 import { BlockSkeleton } from "./BlockSkeleton"
+import { useRpcProvider } from "providers/rpcProvider"
+import { useApiIds } from "api/consts"
 
 export const Burning = () => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
+  const apiIds = useApiIds()
 
-  const meta = useLRNAMeta()
-  const symbol = meta.data?.data?.symbol
+  const meta = apiIds.data?.hubId
+    ? assets.getAsset(apiIds.data.hubId)
+    : undefined
+
+  const symbol = meta?.symbol
 
   const hubAssetImbalance = useHubAssetImbalance()
   const imbalance = hubAssetImbalance?.data?.value
@@ -26,10 +32,10 @@ export const Burning = () => {
     : BN_0
 
   const displayAsset = useDisplayAssetStore()
-  const spotPrice = useSpotPrice(meta.data?.id, displayAsset.stableCoinId)
+  const spotPrice = useSpotPrice(meta?.id, displayAsset.stableCoinId)
   const toBeBurnedSpotPrice = formatValue(
     spotPrice?.data?.spotPrice.multipliedBy(imbalance),
-    meta.data,
+    meta?.decimals,
   ).toNumber()
 
   // TODO: fetch historical value form indexer
@@ -40,11 +46,10 @@ export const Burning = () => {
   const fees = new BigNumber(14551455145514)
   const feesSpotPrice = formatValue(
     spotPrice?.data?.spotPrice.multipliedBy(fees),
-    meta.data,
+    meta?.decimals,
   ).toNumber()
 
-  const isLoading =
-    meta.isLoading || hubAssetImbalance.isLoading || spotPrice.isLoading
+  const isLoading = hubAssetImbalance.isLoading || spotPrice.isLoading
 
   return (
     <SBurnContainer>
@@ -66,7 +71,7 @@ export const Burning = () => {
           <>
             <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
               {t("value.tokenWithSymbol", {
-                value: formatValue(imbalance, meta.data),
+                value: formatValue(imbalance, meta?.decimals),
                 symbol,
               })}
             </Text>
@@ -92,7 +97,7 @@ export const Burning = () => {
           <>
             <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
               {t("value.tokenWithSymbol", {
-                value: formatValue(fees, meta.data),
+                value: formatValue(fees, meta?.decimals),
                 symbol,
               })}
             </Text>

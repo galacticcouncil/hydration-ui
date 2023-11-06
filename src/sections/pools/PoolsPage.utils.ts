@@ -1,31 +1,222 @@
 import { u32 } from "@polkadot/types-codec"
-import { useAssetDetailsList } from "api/assetDetails"
-import { useAssetMetaList } from "api/assetMeta"
 import { useTokensBalances } from "api/balances"
 import { useApiIds } from "api/consts"
 import { useUserDeposits } from "api/deposits"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useUniques } from "api/uniques"
 import BN from "bignumber.js"
-import { getAssetName } from "components/AssetIcon/AssetIcon"
 import { useMemo } from "react"
 import { useAssetsTradability } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useAccountStore } from "state/store"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { getFloatingPointAmount } from "utils/balance"
-import { BN_0, BN_NAN, TRADING_FEE } from "utils/constants"
+import { NATIVE_ASSET_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
+import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
+import { BN_0, BN_MILL, BN_NAN, TRADING_FEE } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
+import { useStableswapPools } from "api/stableswap"
+import { pool_account_name } from "@galacticcouncil/math-stableswap"
+import { encodeAddress, blake2AsHex } from "@polkadot/util-crypto"
+import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
+import { useAccountsBalances } from "api/accountBalances"
+import { useRpcProvider } from "providers/rpcProvider"
+
+export const isStablepool = (
+  pool: OmnipoolPool | Stablepool,
+): pool is Stablepool => "isStablepool" in pool && pool.isStablepool
+
+export const sortPools = (pools: Array<OmnipoolPool | Stablepool>) => {
+  const newPools = [...pools]
+  return newPools.sort((poolA, poolB) => {
+    if (poolA.id.toString() === NATIVE_ASSET_ID) {
+      return -1
+    }
+
+    if (poolB.id.toString() === NATIVE_ASSET_ID) {
+      return 1
+    }
+
+    return poolA.totalDisplay.gt(poolB.totalDisplay) ? -1 : 1
+  })
+}
+
+export const derivePoolAccount = (assetId: u32) => {
+  const name = pool_account_name(Number(assetId))
+  return encodeAddress(blake2AsHex(name), HYDRADX_SS58_PREFIX)
+}
+
+export type BalanceByAsset = Exclude<
+  ReturnType<typeof useStablePools>["data"],
+  undefined
+>[number]["balanceByAsset"]
+
+export type Stablepool = Exclude<
+  ReturnType<typeof useStablePools>["data"],
+  undefined
+>[number]
+
+export const useStablePools = (withPositions?: boolean) => {
+  const { assets } = useRpcProvider()
+  const assetsTradability = useAssetsTradability()
+  const pools = useStableswapPools()
+
+  const { account } = useAccountStore()
+  const apiIds = useApiIds()
+
+  const poolIds = (pools.data ?? []).map((pool) => pool.id.toString())
+
+  const poolAddressById = new Map(
+    (pools.data ?? []).map((pool) => [pool.id, derivePoolAccount(pool.id)]),
+  )
+
+  const poolsBalances = useAccountsBalances(
+    Array.from(poolAddressById.values()),
+  )
+
+  const omnipoolBalances = useTokensBalances(
+    Array.from(poolAddressById.keys()),
+    OMNIPOOL_ACCOUNT_ADDRESS,
+  )
+
+  const uniques = useUniques(
+    account?.address ?? "",
+    apiIds.data?.omnipoolCollectionId ?? "",
+  )
+
+  const positions = useOmnipoolPositions(
+    uniques.data?.map((u) => u.itemId) ?? [],
+  )
+  const userDeposits = useUserDeposits()
+  const stablepoolsPosition = useTokensBalances(poolIds, account?.address)
+
+  const assetsByPool = new Map(
+    (pools.data ?? []).map((pool) => [
+      pool.id,
+      pool.data.assets.map((asset: u32) => asset.toString()),
+    ]),
+  )
+
+  const uniqueAssetIds: string[] = [
+    ...new Set(poolIds.concat(...assetsByPool.values())),
+  ]
+
+  const spotPrices = useDisplayPrices(uniqueAssetIds)
+  const spotPriceByAsset = new Map(
+    (spotPrices?.data ?? []).map((spotPrice) => [
+      spotPrice?.tokenIn,
+      spotPrice,
+    ]),
+  )
+
+  if (pools.isLoading || spotPrices.isLoading || poolsBalances.isLoading) {
+    return { data: undefined, isLoading: true }
+  }
+
+  const data = (pools.data ?? []).map((pool) => {
+    const tradability = assetsTradability.data?.find(
+      (assetTradability) =>
+        assetTradability.id.toString() === pool.id.toString(),
+    )
+
+    const poolAssets = assets
+      .getAssets(uniqueAssetIds)
+      .filter((asset) => assetsByPool.get(pool.id).includes(asset.id))
+
+    const poolBalances = (poolsBalances.data ?? []).find(
+      (p) => p.accountId === poolAddressById.get(pool.id),
+    )
+
+    const balanceByAsset = new Map(
+      (poolBalances?.balances ?? []).map((balance) => {
+        const id = balance.id.toString()
+        const spotPrice = spotPriceByAsset.get(id)
+        const decimals = normalizeBigNumber(assets.getAsset(id).decimals)
+
+        const free = normalizeBigNumber(balance.data.free)
+        const value =
+          spotPrice && !spotPrice.spotPrice.isNaN()
+            ? free
+                .shiftedBy(decimals.negated().toNumber())
+                .times(spotPrice.spotPrice)
+            : BN_0
+
+        return [id, { free, value }]
+      }),
+    )
+
+    const total = Array.from(balanceByAsset.entries()).reduce(
+      (acc, [, balance]) => ({
+        free: acc.free.plus(balance.free),
+        value: acc.value.plus(balance.value),
+      }),
+      { free: BN_0, value: BN_0 },
+    )
+
+    const reserves = Array.from(balanceByAsset.entries()).map(
+      ([assetId, balance]) => ({
+        asset_id: Number(assetId),
+        decimals: assets.getAsset(assetId).decimals,
+        amount: balance.free.toString(),
+      }),
+    )
+
+    const balance = omnipoolBalances.find(
+      (o) => o.data?.assetId.toString() === pool.id.toString(),
+    )?.data?.balance
+
+    const meta = assets.getAsset(pool.id.toString())
+    const spotPrice = spotPrices.data?.find(
+      (sp) => sp?.tokenIn === pool.id.toString(),
+    )?.spotPrice
+
+    const totalOmnipool = getFloatingPointAmount(balance ?? BN_0, meta.decimals)
+    const totalDisplay = !spotPrice ? BN_NAN : totalOmnipool.times(spotPrice)
+
+    const hasStablepoolPosition = stablepoolsPosition
+      .find((p) => p.data?.assetId === pool.id.toString())
+      ?.data?.balance?.gt(0)
+
+    const hasOmnipoolPosition = positions.some(
+      (p) => p.data?.assetId.toString() === pool.id.toString(),
+    )
+
+    const hasDeposits = userDeposits.data?.some(
+      (deposit) => deposit.deposit.ammPoolId.toString() === pool.id.toString(),
+    )
+
+    return {
+      id: pool.id,
+      assets: poolAssets,
+      tradability,
+      total,
+      totalOmnipool,
+      totalDisplay,
+      balanceByAsset,
+      reserves,
+      hasPositions: hasOmnipoolPosition || hasStablepoolPosition,
+      hasDeposits,
+      fee: normalizeBigNumber(pool.data.fee).div(BN_MILL),
+      isStablepool: true,
+    }
+  })
+
+  const filtered = withPositions
+    ? data?.filter((pool) => pool.hasPositions || pool.hasDeposits)
+    : data
+
+  return { data: filtered, isLoading: false }
+}
 
 export const useOmnipoolPools = (withPositions?: boolean) => {
   const { account } = useAccountStore()
-  const assets = useOmnipoolAssets()
-  const assetDetails = useAssetDetailsList(assets.data?.map((a) => a.id) ?? [])
-  const metas = useAssetMetaList(assets.data?.map((a) => a.id) ?? [])
+  const { assets } = useRpcProvider()
+  const omnipoolAssets = useOmnipoolAssets()
+
   const apiIds = useApiIds()
-  const spotPrices = useDisplayPrices(assets.data?.map((a) => a.id) ?? [])
+  const spotPrices = useDisplayPrices(
+    omnipoolAssets.data?.map((a) => a.id) ?? [],
+  )
   const assetsTradability = useAssetsTradability()
   const balances = useTokensBalances(
-    assets.data?.map((a) => a.id) ?? [],
+    omnipoolAssets.data?.map((a) => a.id) ?? [],
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
   const uniques = useUniques(
@@ -38,9 +229,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
   const userDeposits = useUserDeposits()
 
   const queries = [
-    assets,
-    assetDetails,
-    metas,
+    omnipoolAssets,
     apiIds,
     uniques,
     assetsTradability,
@@ -53,9 +242,7 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
 
   const pools = useMemo(() => {
     if (
-      !assets.data ||
-      !assetDetails.data ||
-      !metas.data ||
+      !omnipoolAssets.data ||
       !apiIds.data ||
       !assetsTradability.data ||
       !spotPrices.data ||
@@ -64,14 +251,12 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
     )
       return undefined
 
-    const rows: OmnipoolPool[] = assets.data
+    const rows: OmnipoolPool[] = omnipoolAssets.data
       .map((asset) => {
-        const details = assetDetails.data.find(
-          (d) => d.id.toString() === asset.id.toString(),
-        )
-        const meta = metas.data?.find(
-          (m) => m.id.toString() === asset.id.toString(),
-        )
+        const meta = assets.getAsset(asset.id.toString())
+
+        if (!meta.isToken) return null
+
         const spotPrice = spotPrices.data?.find(
           (sp) => sp?.tokenIn === asset.id.toString(),
         )?.spotPrice
@@ -89,14 +274,11 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
         }
 
         const id = asset.id
-        const symbol = meta?.symbol ?? "N/A"
-        const name = details?.name || getAssetName(meta?.symbol)
+        const symbol = meta.symbol
+        const name = meta.name
         const tradeFee = TRADING_FEE
 
-        const total = getFloatingPointAmount(
-          balance ?? BN_0,
-          meta?.decimals?.toNumber() ?? 12,
-        )
+        const total = getFloatingPointAmount(balance ?? BN_0, meta.decimals)
         const totalDisplay = !spotPrice ? BN_NAN : total.times(spotPrice)
 
         const hasPositions = positions.some(
@@ -122,14 +304,13 @@ export const useOmnipoolPools = (withPositions?: boolean) => {
 
     return rows
   }, [
-    assets.data,
-    assetDetails.data,
-    metas.data,
+    omnipoolAssets.data,
     apiIds.data,
-    spotPrices,
+    assetsTradability.data,
+    spotPrices.data,
     balances,
     positions,
-    assetsTradability.data,
+    assets,
     userDeposits.data,
   ])
 

@@ -5,13 +5,10 @@ import {
   ChainLogo as ChainLogoUi,
   PlaceholderLogo,
 } from "@galacticcouncil/ui"
-import { PolkadotRegistry } from "@galacticcouncil/sdk"
-import { useAssetsLocation } from "api/assetDetails"
+import { chains } from "@galacticcouncil/xcm"
 import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
-import Skeleton from "react-loading-skeleton"
-
-const registry = new PolkadotRegistry()
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -56,35 +53,20 @@ export function getAssetName(symbol: string | null | undefined) {
 }
 
 export const AssetLogo = ({ id }: { id?: string }) => {
-  const locations = useAssetsLocation()
+  const { assets } = useRpcProvider()
 
   const asset = useMemo(() => {
-    if (!locations.data) return { chain: undefined, symbol: undefined }
+    const assetDetails = id ? assets.getAsset(id) : undefined
 
-    const location = locations.data?.find((location) => location.id === id)
-
-    const chain = registry
-      .getChains()
-      .find((chain) => chain.paraID === location?.parachainId)
+    const chain = chains.find(
+      (chain) => chain.parachainId === Number(assetDetails?.parachainId),
+    )
 
     return {
-      chain: chain?.id,
-      symbol: location?.symbol,
+      chain: chain?.key,
+      symbol: assetDetails?.symbol,
     }
-  }, [id, locations])
-
-  if (locations.isLoading) {
-    return (
-      <div
-        sx={{
-          width: "100%",
-          height: "100%",
-        }}
-      >
-        <Skeleton circle width="100%" height="100%" />
-      </div>
-    )
-  }
+  }, [assets, id])
 
   if (!asset || !asset.symbol)
     return (

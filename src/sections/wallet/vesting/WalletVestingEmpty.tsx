@@ -1,4 +1,4 @@
-import { ReactComponent as VestingIcon } from "assets/icons/PositionsIcon.svg"
+import VestingIcon from "assets/icons/PositionsIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 

@@ -10,25 +10,14 @@ export const SItem = styled.div`
 `
 
 export const SBond = styled.div<{ view: BondView }>`
+  ${theme.gradientBorder};
+
   width: 100%;
   padding: 30px 20px;
   border-radius: 8px;
 
-  border: 1px solid;
-  border-image-source: linear-gradient(
-    180deg,
-    rgba(152, 176, 214, 0.27) 0%,
-    rgba(163, 177, 199, 0.15) 66.67%,
-    rgba(158, 167, 180, 0.2) 100%
-  );
-
-  background: linear-gradient(
-      180deg,
-      rgba(152, 176, 214, 0.27) 0%,
-      rgba(163, 177, 199, 0.15) 66.67%,
-      rgba(158, 167, 180, 0.2) 100%
-    ),
-    linear-gradient(0deg, #111320, #111320);
+  background: ${theme.colors.darkBlue700};
+  box-shadow: 3px 4px 0px 0px rgba(102, 181, 255, 0.19);
 
   display: grid;
   grid-template-columns: 1fr;
@@ -43,7 +32,7 @@ export const SBond = styled.div<{ view: BondView }>`
     ${({ view }) =>
       view === "list" &&
       css`
-        grid-template-columns: 2fr repeat(3, 1fr) 150px;
+        display: flex;
         padding: 16px 30px;
         align-items: center;
         column-gap: 16px;

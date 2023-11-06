@@ -1,7 +1,14 @@
 import { Portal, Root } from "@radix-ui/react-dialog"
 import { BackdropVariant } from "components/Backdrop/Backdrop"
 import { ReactNode, useMemo } from "react"
-import { SContainer, SContent, SOverlay, STopContent } from "./Modal.styled"
+import {
+  SBottomContent,
+  SContainer,
+  SContent,
+  SModalSection,
+  SOverlay,
+  STopContent,
+} from "./Modal.styled"
 import { ModalContentProps, ModalContents } from "./contents/ModalContents"
 
 type Props = {
@@ -13,6 +20,7 @@ type Props = {
   disableCloseOutside?: boolean
   backdrop?: BackdropVariant
   topContent?: ReactNode
+  bottomContent?: ReactNode
   className?: string
   children?: ReactNode
 } & ModalContentProps
@@ -26,6 +34,7 @@ export const Modal = ({
   disableCloseOutside,
   backdrop = "default",
   topContent,
+  bottomContent,
   className,
   children,
   ...contentProps
@@ -54,24 +63,28 @@ export const Modal = ({
   return (
     <Root open={open}>
       <Portal>
-        <SOverlay variant={backdrop} />
-        <SContainer
-          onEscapeKeyDown={!disableClose ? onClose : undefined}
-          onInteractOutside={
-            disableClose || disableCloseOutside || hasTopContent
-              ? undefined
-              : onClose
-          }
-        >
-          <STopContent>{topContent}</STopContent>
-          <SContent
-            isDrawer={isDrawer}
-            hasTopContent={hasTopContent}
-            className={!hasContentProps ? className : undefined}
+        <SOverlay variant={backdrop}>
+          <SContainer
+            onEscapeKeyDown={!disableClose ? onClose : undefined}
+            onInteractOutside={
+              disableClose || disableCloseOutside || hasTopContent
+                ? undefined
+                : onClose
+            }
           >
-            {content}
-          </SContent>
-        </SContainer>
+            <STopContent>{topContent}</STopContent>
+            <SContent
+              isDrawer={isDrawer}
+              hasTopContent={hasTopContent}
+              className={!hasContentProps ? className : undefined}
+            >
+              <SModalSection>{content}</SModalSection>
+              {bottomContent && (
+                <SBottomContent>{bottomContent}</SBottomContent>
+              )}
+            </SContent>
+          </SContainer>
+        </SOverlay>
       </Portal>
     </Root>
   )
@@ -89,6 +102,7 @@ export const ModalScrollableContent = ({
       <div
         css={{
           overflow: "overlay",
+          maxHeight: "80%",
           marginRight: "calc(-1 * var(--modal-content-padding) / 2)",
           paddingRight: "calc(var(--modal-content-padding) / 2)",
         }}

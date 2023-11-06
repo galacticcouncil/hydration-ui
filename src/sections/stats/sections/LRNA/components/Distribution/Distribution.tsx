@@ -4,53 +4,64 @@ import { ChartSwitchMobile } from "sections/stats/components/ChartSwitchMobile/C
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useState } from "react"
-import { SContainerVertical } from "sections/stats/sections/LRNA/StatsLRNA.styled"
 import { ChartWrapper } from "sections/stats/sections/LRNA/components/ChartWrapper/ChartWrapper"
 import { useTranslation } from "react-i18next"
 import { ChartLabel } from "./ChartLabel"
 import { DoughnutChart } from "sections/stats/components/DoughnutChart/DoughnutChart"
-import {
-  makePercent,
-  useLRNAOmnipoolBalance,
-  useLRNATotalIssuance,
-} from "./Distribution.utils"
+import { makePercent } from "./Distribution.utils"
 import { DistributionSliceLabel } from "./DistributionSliceLabel"
-import { useLRNAMeta } from "api/assetMeta"
-import { DEPOSIT_CLASS_ID } from "utils/api"
+import { DEPOSIT_CLASS_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
+import { SContainerVertical } from "sections/stats/StatsPage.styled"
+import { useApiIds } from "api/consts"
+import { useRpcProvider } from "providers/rpcProvider"
+import { useTotalIssuance } from "api/totalIssuance"
+import { useTokenBalance } from "api/balances"
+import { BN_0 } from "utils/constants"
 
 export const Distribution = () => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const apiIds = useApiIds()
 
-  const meta = useLRNAMeta()
-  const totalIssuanceQuery = useLRNATotalIssuance()
-  const omnipoolBalanceQuery = useLRNAOmnipoolBalance()
+  const meta = apiIds.data?.hubId
+    ? assets.getAsset(apiIds.data.hubId)
+    : undefined
 
-  const symbol = meta?.data?.data?.symbol?.toString()
+  const totalIssuanceQuery = useTotalIssuance(apiIds.data?.hubId)
+  const omnipoolBalanceQuery = useTokenBalance(
+    apiIds.data?.hubId,
+    OMNIPOOL_ACCOUNT_ADDRESS,
+  )
+
+  const symbol = meta?.symbol
 
   const [activeSection, setActiveSection] = useState<"overview" | "chart">(
     "overview",
   )
 
-  const hasData = !!(totalIssuanceQuery.data && omnipoolBalanceQuery.data)
   const isLoading =
     totalIssuanceQuery.isLoading || omnipoolBalanceQuery.isLoading
 
-  const outsideOmnipool = hasData
-    ? totalIssuanceQuery.data.minus(omnipoolBalanceQuery.data)
-    : undefined
+  const outsideOmnipool =
+    totalIssuanceQuery.data && omnipoolBalanceQuery.data
+      ? totalIssuanceQuery.data.total.minus(omnipoolBalanceQuery.data.total)
+      : undefined
 
-  const outsidePercent = makePercent(outsideOmnipool, totalIssuanceQuery.data)
+  const outsidePercent = makePercent(
+    outsideOmnipool,
+    totalIssuanceQuery.data?.total ?? BN_0,
+  )
   const insidePercent = makePercent(
-    omnipoolBalanceQuery.data,
-    totalIssuanceQuery.data,
+    omnipoolBalanceQuery.data?.total ?? BN_0,
+    totalIssuanceQuery.data?.total ?? BN_0,
   )
 
   const pieChartValues = (
     <div sx={{ flex: "column", gap: 20 }}>
       <TotalValue
         title={t("stats.lrna.pie.values.total")}
-        data={totalIssuanceQuery.data}
+        data={totalIssuanceQuery.data?.total}
         isLoading={totalIssuanceQuery.isLoading}
       />
       <div
@@ -63,7 +74,7 @@ export const Distribution = () => {
       >
         <TotalValue
           title={t("stats.lrna.pie.values.inside")}
-          data={omnipoolBalanceQuery.data}
+          data={omnipoolBalanceQuery.data?.total}
           isLoading={omnipoolBalanceQuery.isLoading}
           compact={true}
         />

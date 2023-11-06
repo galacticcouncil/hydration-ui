@@ -4,7 +4,6 @@ import {
   verify_asset_cap,
 } from "@galacticcouncil/math-omnipool"
 import { u32 } from "@polkadot/types"
-import { useAssetMeta } from "api/assetMeta"
 import { useTokenBalance } from "api/balances"
 import { useApiIds, useMaxAddLiquidityLimit } from "api/consts"
 import { useOmnipoolAsset, useOmnipoolFee } from "api/omnipool"
@@ -15,11 +14,13 @@ import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
 import { BN_10 } from "utils/constants"
 import { useDisplayPrice } from "utils/displayAsset"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
+  const { assets } = useRpcProvider()
   const omnipoolBalance = useTokenBalance(assetId, OMNIPOOL_ACCOUNT_ADDRESS)
   const ommipoolAsset = useOmnipoolAsset(assetId)
-  const { data: assetMeta } = useAssetMeta(assetId)
+  const assetMeta = assets.getAsset(assetId.toString())
 
   const { data: spotPrice } = useDisplayPrice(assetId)
 
@@ -34,7 +35,7 @@ export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
 
       const assetReserve = omnipoolBalance.data?.balance.toString()
       const amount = BigNumber(assetValue)
-        .multipliedBy(BN_10.pow(assetMeta.decimals.toNumber()))
+        .multipliedBy(BN_10.pow(assetMeta.decimals))
         .toString()
 
       if (assetReserve && hubReserve && shares && amount) {
@@ -61,9 +62,10 @@ export const useVerifyLimits = ({
   amount: string
   decimals: number
 }) => {
+  const { assets } = useRpcProvider()
   const apiIds = useApiIds()
   const asset = useOmnipoolAsset(assetId)
-  const assetMeta = useAssetMeta(assetId)
+  const assetMeta = assets.getAsset(assetId)
   const hubBalance = useTokenBalance(
     apiIds.data?.hubId,
     OMNIPOOL_ACCOUNT_ADDRESS,
@@ -71,7 +73,7 @@ export const useVerifyLimits = ({
   const poolBalance = useTokenBalance(assetId, OMNIPOOL_ACCOUNT_ADDRESS)
   const maxAddLiquidityLimit = useMaxAddLiquidityLimit()
 
-  const queries = [apiIds, hubBalance, maxAddLiquidityLimit, assetMeta]
+  const queries = [apiIds, hubBalance, maxAddLiquidityLimit]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
@@ -93,7 +95,7 @@ export const useVerifyLimits = ({
     const amountIn = getFixedPointAmount(amount, decimals).toFixed(0)
     const circuitBreakerLimit = maxAddLiquidityLimit.data
       .multipliedBy(assetReserve)
-      .div(BN_10.pow(assetMeta.data?.decimals.toString() ?? 12))
+      .div(BN_10.pow(assetMeta.decimals))
       .toFixed(4)
     const isWithinCircuitBreakerLimit =
       BigNumber(circuitBreakerLimit).gte(amount)
@@ -127,7 +129,7 @@ export const useVerifyLimits = ({
     amount,
     decimals,
     maxAddLiquidityLimit.data,
-    assetMeta.data?.decimals,
+    assetMeta,
   ])
 
   return { data, isLoading }

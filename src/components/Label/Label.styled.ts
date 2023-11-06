@@ -1,7 +1,7 @@
 import styled from "@emotion/styled"
 import { Label } from "@radix-ui/react-label"
 import { theme } from "theme"
-import { ReactComponent as InfoIcon } from "assets/icons/InfoIcon.svg"
+import InfoIcon from "assets/icons/InfoIcon.svg?react"
 
 export const SInfoIcon = styled(InfoIcon)`
   padding: 0;

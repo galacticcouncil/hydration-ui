@@ -1,4 +1,3 @@
-import { useAsset } from "api/asset"
 import { Tag } from "components/Tag/Tag"
 import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
@@ -7,7 +6,7 @@ import { FillBar } from "components/FillBar/FillBar"
 import { getFloatingPointAmount } from "utils/balance"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { addSeconds } from "date-fns"
-import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
+import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import { Icon } from "components/Icon/Icon"
 import {
   PalletLiquidityMiningGlobalFarmData,
@@ -19,10 +18,10 @@ import { useBestNumber } from "api/chain"
 import { BLOCK_TIME, BN_0, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
-import { useAssetMeta } from "api/assetMeta"
 import { u32 } from "@polkadot/types"
 import { useOraclePrice } from "api/farms"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type FarmDetailsCardProps = {
   poolId: u32
@@ -43,10 +42,11 @@ export const FarmDetailsCard = ({
   onSelect,
 }: FarmDetailsCardProps) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
 
-  const asset = useAsset(farm.globalFarm.rewardCurrency)
+  const asset = assets.getAsset(farm.globalFarm.rewardCurrency.toString())
   const apr = useFarmApr(farm)
-  const assetMeta = useAssetMeta(poolId)
+  const assetMeta = assets.getAsset(poolId.toString())
 
   const oraclePriceRaw = useOraclePrice(
     apr.data?.rewardCurrency.toString(),
@@ -112,9 +112,9 @@ export const FarmDetailsCard = ({
         css={{ gridArea: "apr" }}
       >
         <div sx={{ flex: "row", align: "center", gap: 6 }}>
-          <Icon size={24} icon={<AssetLogo id={asset.data?.id} />} />
+          <Icon size={24} icon={<AssetLogo id={asset.id} />} />
           <Text fs={[18, 16]} font="ChakraPetchBold">
-            {asset.data?.symbol}
+            {asset.symbol}
           </Text>
         </div>
         <Text fs={19} lh={28} fw={400} font="FontOver">
@@ -173,7 +173,7 @@ export const FarmDetailsCard = ({
                 {t("farms.details.card.lockedShares.value", {
                   value: getFloatingPointAmount(
                     depositNft.deposit.shares,
-                    assetMeta?.data?.decimals.toNumber() ?? 12,
+                    assetMeta.decimals,
                   ),
                 })}
               </GradientText>

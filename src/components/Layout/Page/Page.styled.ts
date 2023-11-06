@@ -5,6 +5,7 @@ import { theme } from "theme"
 export const SPage = styled.div`
   --mobile-nav-height: calc(60px + env(safe-area-inset-bottom));
   --nav-height: 65px;
+  --content-width: 1109px;
 
   position: relative;
 
@@ -18,7 +19,7 @@ export const SPage = styled.div`
   @media ${theme.viewport.gte.sm} {
     --nav-height: 70px;
 
-    overflow-y: overlay;
+    overflow-y: auto;
   }
 `
 
@@ -28,8 +29,6 @@ export const SGradientBg = styled.div<{ variant?: "stats" | "default" }>`
   left: 0;
 
   width: 100%;
-
-  overflow: overlay;
 
   ${({ variant }) =>
     variant === "stats"
@@ -46,15 +45,12 @@ export const SGradientBg = styled.div<{ variant?: "stats" | "default" }>`
 export const SPageContent = styled.main`
   position: relative;
 
-  overflow-y: auto;
-  padding: 0 12px;
   overflow-x: hidden;
 
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 
-  padding-top: var(--nav-height);
   padding-bottom: var(--mobile-nav-height);
 
   ::-webkit-scrollbar {
@@ -67,7 +63,6 @@ export const SPageContent = styled.main`
 
   @media ${theme.viewport.gte.sm} {
     padding: 0 20px;
-    padding-top: var(--nav-height);
     padding-bottom: var(--mobile-nav-height);
 
     display: block;
@@ -85,19 +80,18 @@ export const SPageContent = styled.main`
 `
 
 export const SPageInner = styled.div`
-  padding: 16px 0;
+  padding: 16px 12px;
 
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 
   position: relative;
-  z-index: 2;
 
   @media ${theme.viewport.gte.sm} {
-    padding: 44px 0;
+    padding: 44px 20px;
 
-    max-width: 1109px;
+    max-width: var(--content-width);
     margin: 0 auto;
 
     display: block;
@@ -109,11 +103,24 @@ export const SPageGrid = styled.div`
   inset: 0;
   z-index: 1;
 
-  opacity: 0.06;
+  opacity: 0.03;
   pointer-events: none;
 
   background-size: 22px 22px;
   background-image: linear-gradient(to right, white 1px, transparent 1px),
     linear-gradient(to bottom, white 1px, transparent 1px);
   mask-image: linear-gradient(180deg, #d9d9d9 0%, rgba(217, 217, 217, 0) 100%);
+`
+
+export const SSubHeader = styled.div`
+  border-bottom: solid 1px rgba(114, 131, 165, 0.6);
+
+  width: 100vw;
+
+  position: relative;
+  z-index: 1;
+
+  @media (${theme.viewport.gte.sm}) {
+    margin: 0 -20px;
+  }
 `

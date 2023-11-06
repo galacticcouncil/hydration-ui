@@ -8,10 +8,9 @@ import { PoolsHeaderTotal } from "sections/pools/header/PoolsHeaderTotal"
 import { useAccountStore } from "state/store"
 import { theme } from "theme"
 import { ClaimAllDropdown } from "sections/pools/farms/components/claimAllDropdown/ClaimAllDropdown"
-import { useApiPromise } from "utils/api"
 import { Fragment, ReactElement } from "react"
 import Skeleton from "react-loading-skeleton"
-import { isApiLoaded } from "utils/helpers"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   myPositions: boolean
@@ -47,16 +46,15 @@ export const HeaderValues = ({
     initiallyHidden?: boolean
   }>
 }) => {
-  const api = useApiPromise()
-  const isApi = isApiLoaded(api)
+  const { isLoaded } = useRpcProvider()
 
   const headerValues = values.reduce((acc, item, i, array) => {
     const isLastElement = i + 1 === array.length
 
-    if (!isApi && item.initiallyHidden) return acc
+    if (!isLoaded && item.initiallyHidden) return acc
 
     const content =
-      isApi && !item.disconnected ? (
+      isLoaded && !item.disconnected ? (
         item.content
       ) : (
         <Skeleton

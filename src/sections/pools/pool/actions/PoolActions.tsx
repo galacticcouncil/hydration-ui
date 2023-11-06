@@ -1,7 +1,7 @@
-import { ReactComponent as ChevronDown } from "assets/icons/ChevronDown.svg"
-import { ReactComponent as DetailsIcon } from "assets/icons/DetailsIcon.svg"
-import { ReactComponent as PlusIcon } from "assets/icons/PlusIcon.svg"
-import { ReactComponent as FarmDetailsIcon } from "assets/icons/FarmDetailsIcon.svg"
+import ChevronDown from "assets/icons/ChevronDown.svg?react"
+import DetailsIcon from "assets/icons/DetailsIcon.svg?react"
+import PlusIcon from "assets/icons/PlusIcon.svg?react"
+import FarmDetailsIcon from "assets/icons/FarmDetailsIcon.svg?react"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { useState } from "react"
@@ -46,7 +46,7 @@ export const PoolActions = ({
   const [openFarmDefails, setOpenFarmDefails] = useState(false)
   const { account } = useAccountStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const positions = usePoolPositions(pool)
+  const positions = usePoolPositions(pool.id)
   const farms = useFarms([pool.id])
   const accountDeposits = useAccountDeposits(enabledFarms ? pool.id : undefined)
 
@@ -56,7 +56,11 @@ export const PoolActions = ({
         <Button
           fullWidth
           size="small"
-          disabled={!account || account.isExternalWalletConnected}
+          disabled={
+            !account ||
+            account.isExternalWalletConnected ||
+            !pool.tradability.canAddLiquidity
+          }
           onClick={() => setOpenAdd(true)}
         >
           <div sx={{ flex: "row", align: "center", justify: "center" }}>
@@ -136,7 +140,7 @@ export const PoolActions = ({
         <AddLiquidity
           isOpen={openAdd}
           onClose={() => setOpenAdd(false)}
-          pool={pool}
+          poolId={pool.id}
           onSuccess={refetch}
         />
       )}
@@ -144,14 +148,15 @@ export const PoolActions = ({
         <LiquidityPositions
           isOpen={openLiquidityPositions}
           onClose={() => setOpenLiquidityPositions(false)}
-          pool={pool}
+          poolId={pool.id}
+          canRemoveLiquidity={pool.tradability.canRemoveLiquidity}
         />
       )}
       {openFarmDefails && farms.data && (
         <JoinFarmModal
           farms={farms.data}
           isOpen={openFarmDefails}
-          pool={pool}
+          poolId={pool.id}
           onClose={() => setOpenFarmDefails(false)}
         />
       )}

@@ -1,14 +1,19 @@
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
 import { OmnipoolAssetsTable } from "sections/stats/components/OmnipoolAssetsTable/OmnipoolAssetsTable"
-import { OmnipoolAssetsTableSkeleton } from "sections/stats/components/OmnipoolAssetsTable/skeleton/OmnipoolAssetsTableSkeleton"
+import { OmnipoolAssetsTableSkeleton } from "sections/stats/components/OmnipoolAssetsTable/OmnipoolAssetsTableSkeleton"
 import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
 import { useOmnipoolAssetsColumns } from "./OmnipoolAssetsTableWrapper.utils"
+import { useNavigate } from "@tanstack/react-location"
+import { LINKS } from "utils/navigation"
+import { useRpcProvider } from "providers/rpcProvider"
+import { useOmnipoolAssetsTableSkeleton } from "./OmnipoolAssetsTableSkeleton.utils"
 
 export const OmnipoolAssetsTableWrapper = () => {
-  const api = useApiPromise()
+  const { isLoaded } = useRpcProvider()
+  const skeleton = useOmnipoolAssetsTableSkeleton()
 
-  if (!isApiLoaded(api)) return <OmnipoolAssetsTableSkeleton />
+  if (!isLoaded) {
+    return <OmnipoolAssetsTableSkeleton table={skeleton} />
+  }
 
   return <OmnipoolAssetsTableWrapperData />
 }
@@ -16,9 +21,25 @@ export const OmnipoolAssetsTableWrapper = () => {
 export const OmnipoolAssetsTableWrapperData = () => {
   const omnipoolAssets = useOmnipoolAssetDetails()
   const columns = useOmnipoolAssetsColumns()
+  const skeleton = useOmnipoolAssetsTableSkeleton()
+  const navigate = useNavigate()
 
-  if (omnipoolAssets.isLoading && !omnipoolAssets.data.length)
-    return <OmnipoolAssetsTableSkeleton />
+  if (omnipoolAssets.isLoading && !omnipoolAssets.data.length) {
+    return <OmnipoolAssetsTableSkeleton table={skeleton} />
+  }
 
-  return <OmnipoolAssetsTable columns={columns} data={omnipoolAssets.data} />
+  const handleRowSelect = (assetId: string) => {
+    navigate({
+      to: LINKS.statsOmnipool,
+      search: { asset: assetId },
+    })
+  }
+
+  return (
+    <OmnipoolAssetsTable
+      columns={columns}
+      data={omnipoolAssets.data}
+      onRowSelect={handleRowSelect}
+    />
+  )
 }

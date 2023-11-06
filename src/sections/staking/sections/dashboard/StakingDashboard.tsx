@@ -1,5 +1,3 @@
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
 import { StakingGuide } from "./components/StakingGuide/StakingGuide"
 import { AvailableRewards } from "./components/AvailableRewards/AvailableRewards"
 import { StakingInputSection } from "./components/StakingInputSection/StakingInputSection"
@@ -7,11 +5,12 @@ import { useAccountStore } from "state/store"
 import { Stats } from "./components/Stats/Stats"
 import { Referenda, ReferendaWrapper } from "./components/Referenda/Referenda"
 import { useStakeData } from "sections/staking/StakingPage.utils"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const StakingDashboard = () => {
-  const api = useApiPromise()
+  const { isLoaded } = useRpcProvider()
 
-  if (!isApiLoaded(api)) return <StakingSkeleton />
+  if (!isLoaded) return <StakingSkeleton />
 
   return <StakingData />
 }

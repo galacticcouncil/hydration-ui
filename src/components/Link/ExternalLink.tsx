@@ -1,5 +1,5 @@
 import { ComponentProps, FC, PropsWithChildren } from "react"
-import { ReactComponent as LinkIcon } from "assets/icons/LinkIcon.svg"
+import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { SExternalLink, SExternalLinkAdornment } from "./ExternalLink.styled"
 
 const ExternalLinkAdornment = () => (

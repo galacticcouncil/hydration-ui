@@ -1,3 +1,4 @@
+import { AnyNumber } from "@polkadot/types-codec/types"
 import type { u32 } from "@polkadot/types"
 import { u128 } from "@polkadot/types-codec"
 import type { AccountId32 } from "@polkadot/types/interfaces"
@@ -30,6 +31,11 @@ export const QUERY_KEYS = {
     QUERY_KEY_PREFIX,
     "accountBalances",
     id?.toString(),
+  ],
+  accountsBalances: (ids: string[]) => [
+    QUERY_KEY_PREFIX,
+    "accountsBalances",
+    ids.join("."),
   ],
   accountAssetBalances: (
     pairs: Array<[address: AccountId32 | string, assetId: u32 | string]>,
@@ -92,14 +98,11 @@ export const QUERY_KEYS = {
     "totalLiquidity",
     id?.toString(),
   ],
-  totalIssuance: (lpToken: Maybe<u32>) => [
+  totalIssuance: (lpToken: Maybe<u32 | string | AnyNumber>) => [
     QUERY_KEY_PREFIX,
     "totalIssuance",
     lpToken?.toString(),
   ],
-  LRNATotalIssuance: () => ["LRNATotalIssuance"],
-  LRNAOmnipoolBalance: () => ["LRNAOmnipoolBalance"],
-  LRNAMeta: () => ["LRNAMeta"],
   totalLiquidities: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "totalLiquidities",
@@ -125,10 +128,6 @@ export const QUERY_KEYS = {
     address,
     ...ids,
   ],
-  assets: ["assets"],
-  assetsLive: [QUERY_KEY_PREFIX, "assets"],
-  assetsMeta: ["assetsMeta"],
-  tradeAssets: [QUERY_KEY_PREFIX, "tradeAssets"],
   exchangeFee: [QUERY_KEY_PREFIX, "exchangeFee"],
   calculateTotalLiqInPools: [QUERY_KEY_PREFIX, "totalLiqInPools"],
   spotPrice: (assetA: string, assetB: string) => ["spotPrice", assetA, assetB],
@@ -219,6 +218,15 @@ export const QUERY_KEYS = {
     address?.toString(),
     collectionId?.toString(),
   ],
+  uniquesAssets: (collectionId: string | u128) => [
+    "uniquesAssets",
+    collectionId.toString(),
+  ],
+  uniquesAssetsLive: (collectionId: string | u128) => [
+    QUERY_KEY_PREFIX,
+    "uniquesAssets",
+    collectionId.toString(),
+  ],
   uniquesAsset: (collectionId: string | u128) => [
     "uniquesAsset",
     collectionId.toString(),
@@ -239,6 +247,15 @@ export const QUERY_KEYS = {
     id?.toString(),
   ],
   omnipoolPositions: [QUERY_KEY_PREFIX, "omnipoolPositions"],
+  omnipoolPositionsMulti: (itemIds: Array<string | undefined>) => [
+    "omnipoolPositionsMulti",
+    itemIds,
+  ],
+  omnipoolPositionsMultiLive: (itemIds: Array<string | undefined>) => [
+    QUERY_KEY_PREFIX,
+    "omnipoolPositionsMulti",
+    itemIds,
+  ],
   omnipoolPosition: (id: string | undefined) => [
     "omnipoolPosition",
     id?.toString(),
@@ -283,8 +300,6 @@ export const QUERY_KEYS = {
   polkadotAccounts: ["polkadotAccounts"],
   maxAddLiquidityLimit: ["maxAddLiquidityLimit"],
   coingeckoUsd: ["coingeckoUsd"],
-  assetList: ["assetList"],
-  assetsLocation: ["assetsLocation"],
   polStats: ["polStats"],
   referendums: (accountAddress?: string) => [
     QUERY_KEY_PREFIX,
@@ -313,5 +328,23 @@ export const QUERY_KEYS = {
   stakingPositionBalances: (positionId: Maybe<string>) => [
     "positionBalances",
     positionId,
+  ],
+  stableswapPools: [QUERY_KEY_PREFIX, "stableswapPools"],
+  stableswapPool: (id: u32 | string) => [
+    QUERY_KEY_PREFIX,
+    "stableswapPool",
+    id?.toString(),
+  ],
+  lbpPool: ["lbpPool"],
+  bondEvents: (id?: Maybe<string>, myEvents?: boolean) => [
+    "bondEvents",
+    id,
+    !!myEvents,
+  ],
+  lbpPoolTotal: (id?: Maybe<string>) => ["lbpPoolTotal", id],
+  poolHistoricalBalance: (pool?: string, block?: number) => [
+    "poolHistoricalBalance",
+    pool,
+    block,
   ],
 } as const

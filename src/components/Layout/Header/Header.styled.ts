@@ -1,9 +1,9 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
-import { ReactComponent as Questionmark } from "assets/icons/Questionmark.svg"
+import Questionmark from "assets/icons/Questionmark.svg?react"
 
 export const SHeader = styled.header`
-  position: fixed;
+  position: sticky;
   top: 0;
   left: 0;
   z-index: ${theme.zIndices.header};

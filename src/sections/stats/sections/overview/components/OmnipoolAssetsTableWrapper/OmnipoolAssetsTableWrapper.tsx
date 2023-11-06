@@ -1,30 +1,33 @@
-import { useApiPromise } from "utils/api"
-import { isApiLoaded } from "utils/helpers"
 import { OmnipoolAssetsTable } from "sections/stats/components/OmnipoolAssetsTable/OmnipoolAssetsTable"
-import { OmnipoolAssetsTableSkeleton } from "sections/stats/components/OmnipoolAssetsTable/skeleton/OmnipoolAssetsTableSkeleton"
+import { OmnipoolAssetsTableSkeleton } from "sections/stats/components/OmnipoolAssetsTable/OmnipoolAssetsTableSkeleton"
 import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
 import { useOmnipoolAssetsColumns } from "./OmnipoolAssetsTableWrapper.utils"
 import { useNavigate } from "@tanstack/react-location"
+import { useRpcProvider } from "providers/rpcProvider"
+import { useOmnipoolAssetsTableSkeleton } from "./OmnipoolAssetsTableSkeleton.utils"
 
 export const OmnipoolAssetsTableWrapper = () => {
-  const api = useApiPromise()
+  const { isLoaded } = useRpcProvider()
+  const skeleton = useOmnipoolAssetsTableSkeleton()
 
-  if (!isApiLoaded(api)) return <OmnipoolAssetsTableSkeleton />
+  if (!isLoaded) {
+    return <OmnipoolAssetsTableSkeleton table={skeleton} />
+  }
 
   return <OmnipoolAssetsTableWrapperData />
 }
 
 export const OmnipoolAssetsTableWrapperData = () => {
+  const skeleton = useOmnipoolAssetsTableSkeleton()
+
   const omnipoolAssets = useOmnipoolAssetDetails()
   const columns = useOmnipoolAssetsColumns()
   const navigate = useNavigate()
 
   if (omnipoolAssets.isLoading && !omnipoolAssets.data.length)
-    return <OmnipoolAssetsTableSkeleton />
+    return <OmnipoolAssetsTableSkeleton table={skeleton} />
 
   const handleRowSelect = (assetId: string) => {
-    // TODO
-    console.log(assetId)
     navigate({
       to: "omnipool",
       search: { asset: assetId },

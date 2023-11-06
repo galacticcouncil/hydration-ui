@@ -1,7 +1,7 @@
 import { Portal, Root, Trigger } from "@radix-ui/react-tooltip"
 import { Link, useMatchRoute, useSearch } from "@tanstack/react-location"
-import { ReactComponent as IconChevron } from "assets/icons/ChevronDown.svg"
-import { ReactComponent as IconArrow } from "assets/icons/IconArrow.svg"
+import IconChevron from "assets/icons/ChevronDown.svg?react"
+import IconArrow from "assets/icons/IconArrow.svg?react"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -24,7 +24,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
   const { account } = useSearch()
   const [open, setOpen] = useState(false)
 
-  const isDesktop = useMedia(theme.viewport.gte.md)
+  const isTablet = useMedia(theme.viewport.gte.sm)
   const match = useMatchRoute()
 
   const { key, subItems } = item
@@ -33,7 +33,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
   return (
     <Root delayDuration={0} open={open} onOpenChange={setOpen}>
       <Trigger
-        css={{ all: "unset", height: "100%" }}
+        css={{ all: "unset", height: "100%", cursor: "pointer" }}
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -44,7 +44,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
           e.stopPropagation()
         }}
       >
-        {isDesktop ? (
+        {isTablet ? (
           <SItem>
             {t(`header.${key}`)}
             <IconChevron />
@@ -57,7 +57,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
         <SSubMenuContainer
           side="bottom"
           align="start"
-          sideOffset={isDesktop ? 4 : 16}
+          sideOffset={isTablet ? 4 : 16}
           alignOffset={-40}
           collisionPadding={16}
         >
@@ -69,6 +69,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
                   key={subItem.key}
                   to={subItem.href}
                   search={account ? { account } : undefined}
+                  onClick={() => setOpen(false)}
                 >
                   <SSubMenuItem>
                     <subItem.Icon sx={{ color: "brightBlue300" }} />

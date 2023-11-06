@@ -4,7 +4,8 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Heading } from "components/Typography/Heading/Heading"
 import { useTranslation } from "react-i18next"
 import { LINKS } from "utils/navigation"
-import { StatsLRNA } from "./sections/LRNA/StatsLRNA"
+// TODO: Not ready. Requested in #861n9ffe4
+// import { StatsLRNA } from "./sections/LRNA/StatsLRNA"
 import { StatsPOL } from "./sections/POL/StatsPOL"
 import { StatsOverview } from "./sections/overview/StatsOverview"
 import { StatsTabs } from "./components/tabs/StatsTabs"
@@ -38,7 +39,8 @@ export const StatsPage = () => {
 
       {matchRoute({ to: LINKS.statsOverview }) && <StatsOverview />}
       {matchRoute({ to: LINKS.statsPOL }) && <StatsPOL />}
-      {matchRoute({ to: LINKS.statsLRNA }) && <StatsLRNA />}
+      {/* TODO: Not ready. Requested in #861n9ffe4 */}
+      {/*{matchRoute({ to: LINKS.statsLRNA }) && <StatsLRNA />}*/}
       {isOmnipoolAssetPage && <StatsOmnipoolAsset />}
     </Page>
   )
