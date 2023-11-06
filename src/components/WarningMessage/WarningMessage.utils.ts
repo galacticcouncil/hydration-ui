@@ -21,6 +21,7 @@ export const useWarningsStore = create(
             "allPools",
             "omnipool",
             "myLiquidity",
+            "isolated",
             "walletAssets",
             "walletVesting",
           ],

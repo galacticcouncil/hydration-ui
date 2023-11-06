@@ -38,7 +38,6 @@ export const LINKS = {
   stakingGovernance: "/staking/governance",
 }
 
-const isPoolsPageEnabled = import.meta.env.VITE_FF_POOLS_ENABLED === "true"
 const isXcmPageEnabled = import.meta.env.VITE_FF_XCM_ENABLED === "true"
 const isStatsEnabled = import.meta.env.VITE_FF_STATS_ENABLED === "true"
 const isStakingEnabled = import.meta.env.VITE_FF_STAKING_ENABLED === "true"
@@ -73,7 +72,7 @@ export const MENU_ITEMS = [
     href: LINKS.liquidity,
     Icon: PoolsAndFarmsIcon,
     subItems: undefined,
-    enabled: isPoolsPageEnabled,
+    enabled: true,
     external: false,
     mobVisible: true,
     tabVisible: true,

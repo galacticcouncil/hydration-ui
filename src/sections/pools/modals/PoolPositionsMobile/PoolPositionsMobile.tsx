@@ -3,12 +3,16 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
-import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
+import {
+  isXYKPool,
+  TOmnipoolAsset,
+  TXYKPool,
+} from "sections/pools/PoolsPage.utils"
 import { StablepoolPosition } from "sections/pools/stablepool/positions/StablepoolPosition"
 
 interface Props {
   isOpen: boolean
-  pool: TOmnipoolAsset
+  pool: TOmnipoolAsset | TXYKPool
   onClose: () => void
   refetchPositions: () => void
 }
@@ -29,22 +33,27 @@ export const PoolPositionsMobile: FC<Props> = ({
       noPadding
       onClose={onClose}
     >
-      <div
-        sx={{
-          flex: "column",
-          align: "center",
-          gap: 8,
-        }}
-      >
-        {pool.isStablepool && (
-          <StablepoolPosition pool={pool} refetchPositions={refetchPositions} />
-        )}
-        <LiquidityPositionWrapper
-          pool={pool}
-          refetchPositions={refetchPositions}
-        />
-        <FarmingPositionWrapper pool={pool} />
-      </div>
+      {!isXYKPool(pool) && (
+        <div
+          sx={{
+            flex: "column",
+            align: "center",
+            gap: 8,
+          }}
+        >
+          {pool.isStablepool && (
+            <StablepoolPosition
+              pool={pool}
+              refetchPositions={refetchPositions}
+            />
+          )}
+          <LiquidityPositionWrapper
+            pool={pool}
+            refetchPositions={refetchPositions}
+          />
+          <FarmingPositionWrapper pool={pool} />
+        </div>
+      )}
     </Modal>
   )
 }

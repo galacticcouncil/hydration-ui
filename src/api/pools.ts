@@ -1,22 +1,9 @@
-import { useQuery } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
-import { TradeRouter } from "@galacticcouncil/sdk"
 import { useMemo } from "react"
-import { u32 } from "@polkadot/types"
 import { useTotalIssuances } from "./totalIssuance"
 import { useTokensBalances } from "./balances"
 import { useAccountStore } from "state/store"
-import { useRpcProvider } from "providers/rpcProvider"
 
-export const usePools = () => {
-  const { tradeRouter } = useRpcProvider()
-  return useQuery(QUERY_KEYS.pools, getPools(tradeRouter))
-}
-
-export const getPools = (tradeRouter: TradeRouter) => async () =>
-  tradeRouter.getPools()
-
-export const useShareOfPools = (assets: (u32 | string)[]) => {
+export const useShareOfPools = (assets: string[]) => {
   const { account } = useAccountStore()
 
   const totalIssuances = useTotalIssuances(assets)
@@ -55,7 +42,8 @@ export const useShareOfPools = (assets: (u32 | string)[]) => {
 
         return {
           asset,
-          totalShare: calculateTotalShare(),
+          totalShare: totalIssuance?.data?.total,
+          myPoolShare: calculateTotalShare(),
           transferableShare: calculateTransferableShare(),
         }
       })
@@ -64,5 +52,5 @@ export const useShareOfPools = (assets: (u32 | string)[]) => {
     return null
   }, [assets, totalIssuances, totalBalances])
 
-  return { isLoading, data }
+  return { isLoading, isInitialLoading: isLoading, data }
 }

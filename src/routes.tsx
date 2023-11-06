@@ -13,10 +13,12 @@ import { BondDetailsPage } from "sections/trade/sections/bonds/details/BondDetai
 import { AllPools } from "sections/pools/sections/AllPools"
 import { MyLiquidity } from "sections/pools/sections/MyLiquidity"
 import { OmnipoolAndStablepool } from "sections/pools/sections/OmnipoolAndStablepool"
+import { IsolatedPools } from "sections/pools/sections/IsolatedPools"
 
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
 const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
+const isXYKPageEnabled = import.meta.env.VITE_FF_XYK_ENABLED === "true"
 
 export const routes = [
   {
@@ -102,6 +104,14 @@ export const routes = [
         path: "omnipool-stablepools",
         element: <OmnipoolAndStablepool />,
       },
+      ...(isXYKPageEnabled
+        ? [
+            {
+              path: "isolated",
+              element: <IsolatedPools />,
+            },
+          ]
+        : []),
     ],
   },
   {
