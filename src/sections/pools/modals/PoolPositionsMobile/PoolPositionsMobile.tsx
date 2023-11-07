@@ -3,7 +3,9 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
+import { XYKPosition } from "sections/pools/pool/xyk/position/XYKPosition"
 import {
+  isXYKEnabled,
   isXYKPool,
   TOmnipoolAsset,
   TXYKPool,
@@ -33,7 +35,7 @@ export const PoolPositionsMobile: FC<Props> = ({
       noPadding
       onClose={onClose}
     >
-      {!isXYKPool(pool) && (
+      {!isXYKPool(pool) ? (
         <div
           sx={{
             flex: "column",
@@ -47,12 +49,16 @@ export const PoolPositionsMobile: FC<Props> = ({
               refetchPositions={refetchPositions}
             />
           )}
+
           <LiquidityPositionWrapper
             pool={pool}
             refetchPositions={refetchPositions}
           />
           <FarmingPositionWrapper pool={pool} />
         </div>
+      ) : (
+        isXYKEnabled &&
+        pool.shareTokenUserPosition && <XYKPosition pool={pool} />
       )}
     </Modal>
   )

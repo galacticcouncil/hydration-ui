@@ -28,7 +28,7 @@ import Skeleton from "react-loading-skeleton"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { useRpcProvider } from "providers/rpcProvider"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
+import { TOmnipoolAsset, TXYKPool } from "sections/pools/PoolsPage.utils"
 
 type Props = {
   position: HydraPositionsTableData
@@ -101,11 +101,19 @@ function LiquidityPositionJoinFarmButton(props: {
   )
 }
 
-function LiquidityPositionRemoveLiquidity(props: {
-  pool: TOmnipoolAsset
-  position: HydraPositionsTableData
-  onSuccess: () => void
-}) {
+export function LiquidityPositionRemoveLiquidity(
+  props:
+    | {
+        pool: TOmnipoolAsset
+        position: HydraPositionsTableData
+        onSuccess: () => void
+      }
+    | {
+        pool: TXYKPool
+        position?: never
+        onSuccess: () => void
+      },
+) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const [openRemove, setOpenRemove] = useState(false)

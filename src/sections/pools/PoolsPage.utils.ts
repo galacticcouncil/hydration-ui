@@ -425,8 +425,9 @@ export type TXYKPool = NonNullable<
   ReturnType<typeof useXYKPools>["data"]
 >[number]
 
-export const useXYKPools = () => {
+export const useXYKPools = (withPositions?: boolean) => {
   const { assets } = useRpcProvider()
+  const { account } = useAccountStore()
 
   const pools = useGetXYKPools()
   const xykConsts = useXYKConsts()
@@ -442,6 +443,11 @@ export const useXYKPools = () => {
   const poolsAssets = pools.data?.map((pool) => pool.assets).flat() ?? []
   const spotPrices = useDisplayPrices(poolsAssets)
 
+  const shareTokensUserPositions = useTokensBalances(
+    shareTokensId,
+    account?.address,
+  )
+
   const queries = [
     pools,
     shareTokens,
@@ -449,6 +455,7 @@ export const useXYKPools = () => {
     totalIssuances,
     xykConsts,
     spotPrices,
+    ...shareTokensUserPositions,
   ]
 
   const fee = xykConsts.data?.fee ? getTradeFee(xykConsts.data?.fee) : BN_NAN
@@ -484,6 +491,8 @@ export const useXYKPools = () => {
         )
 
         const assetABalance = poolBalance?.balances[0]
+        const assetBBalance = poolBalance?.balances[1]
+
         const assetASpotPrice = spotPrices.data?.find(
           (spotPrice) => spotPrice?.tokenIn === assetABalance?.id.toString(),
         )
@@ -496,9 +505,14 @@ export const useXYKPools = () => {
           .multipliedBy(2)
 
         const tradability = {
-          canAddLiquidity: false,
-          canRemoveLiquidity: false,
+          canAddLiquidity: true,
+          canRemoveLiquidity: true,
         }
+
+        const shareTokenUserPosition = shareTokensUserPositions.find(
+          (userPosition) =>
+            userPosition.data?.assetId.toString() === shareTokenId,
+        )?.data
 
         return {
           poolAddress: pool.poolAddress,
@@ -513,6 +527,13 @@ export const useXYKPools = () => {
           isXykPool: true,
           volumeDisplay: BN_0,
           tradability,
+          poolBalance: [
+            assetABalance?.data.free.toBigNumber(),
+            assetBBalance?.data.free.toBigNumber(),
+          ],
+          shareTokenUserPosition: shareTokenUserPosition?.balance.gt(0)
+            ? shareTokenUserPosition
+            : undefined,
         }
       })
       .filter(isNotNil)
@@ -522,9 +543,10 @@ export const useXYKPools = () => {
     poolBalances.data,
     pools.data,
     shareTokens.data,
+    shareTokensUserPositions,
     spotPrices.data,
     totalIssuances.data,
-  ])
+  ])?.filter((pool) => (withPositions ? pool.shareTokenUserPosition : true))
 
   return { data, isLoading: isInitialLoading }
 }

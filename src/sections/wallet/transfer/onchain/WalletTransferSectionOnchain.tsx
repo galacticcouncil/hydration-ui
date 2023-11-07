@@ -6,7 +6,6 @@ import BigNumber from "bignumber.js"
 import { Alert } from "components/Alert/Alert"
 import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
-import { Spacer } from "components/Spacer/Spacer"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Controller, UseFormReturn } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -140,7 +139,7 @@ export function WalletTransferSectionOnchain({
         minHeight: "100%",
       }}
     >
-      <div sx={{ flex: "column" }}>
+      <div sx={{ flex: "column", gap: 12 }}>
         <Controller
           name="dest"
           control={form.control}
@@ -254,7 +253,6 @@ export function WalletTransferSectionOnchain({
             {t("wallet.assets.transfer.warning.nonNative")}
           </Alert>
         )}
-        <Spacer size={15} />
         <SummaryRow
           label={t("wallet.assets.transfer.transaction_cost")}
           content={

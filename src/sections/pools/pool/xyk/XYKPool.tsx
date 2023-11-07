@@ -10,6 +10,7 @@ import { SContainer, SGridContainer } from "sections/pools/pool/Pool.styled"
 import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
 import { PoolValue } from "sections/pools/pool/details/PoolValue"
 import { PoolActions } from "sections/pools/pool/actions/PoolActions"
+import { XYKPosition } from "./position/XYKPosition"
 
 type Props = { pool: TXYKPool }
 
@@ -20,7 +21,7 @@ export const XYKPool = ({ pool }: Props) => {
 
   const queryClient = useQueryClient()
 
-  const hasExpandContent = false
+  const hasExpandContent = !!pool.shareTokenUserPosition
 
   const handleExpand = () => {
     setIsExpanded((prev) => !prev)
@@ -29,6 +30,12 @@ export const XYKPool = ({ pool }: Props) => {
   const refetchPositions = () => {
     queryClient.refetchQueries(
       QUERY_KEYS.accountOmnipoolPositions(account?.address),
+    )
+    queryClient.refetchQueries(
+      QUERY_KEYS.tokenBalance(pool.assets[0], account?.address),
+    )
+    queryClient.refetchQueries(
+      QUERY_KEYS.tokenBalance(pool.assets[1], account?.address),
     )
   }
 
@@ -56,7 +63,9 @@ export const XYKPool = ({ pool }: Props) => {
               exit={{ height: 0 }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
               css={{ overflow: "hidden" }}
-            ></motion.div>
+            >
+              {pool.shareTokenUserPosition && <XYKPosition pool={pool} />}
+            </motion.div>
           )}
         </AnimatePresence>
       )}

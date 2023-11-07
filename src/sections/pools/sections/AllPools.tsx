@@ -13,6 +13,9 @@ import { Pool } from "sections/pools/pool/Pool"
 import { PoolSkeleton } from "sections/pools/skeleton/PoolSkeleton"
 import { BN_0 } from "utils/constants"
 import { XYKPool } from "sections/pools/pool/xyk/XYKPool"
+import { SearchFilter } from "sections/pools/filter/SearchFilter"
+import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
+import { arraySearch } from "utils/helpers"
 
 export const AllPools = () => {
   const { t } = useTranslation()
@@ -75,15 +78,21 @@ const XYKPoolHeaderValue = () => {
 const XYKPoolsSection = () => {
   const { t } = useTranslation()
   const xylPools = useXYKPools()
+  const { search } = useSearchFilter()
 
   if (!xylPools.data) return null
+
+  const filteredPools =
+    search && xylPools.data
+      ? arraySearch(xylPools.data, search, ["name", "symbol"])
+      : xylPools.data
 
   return (
     <div sx={{ flex: "column", gap: 20 }}>
       <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
         {t("liquidity.section.xyk")}
       </Text>
-      {xylPools.data.map((pool) => (
+      {filteredPools.map((pool) => (
         <XYKPool key={pool.id} pool={pool} />
       ))}
     </div>
@@ -92,6 +101,7 @@ const XYKPoolsSection = () => {
 
 const AllPoolsData = () => {
   const { t } = useTranslation()
+  const { search } = useSearchFilter()
   const omnipoolAndStablepool = useOmnipoolAndStablepool()
 
   const omnipoolTotal = useMemo(() => {
@@ -124,6 +134,11 @@ const AllPoolsData = () => {
       ) ?? BN_0
     )
   }, [omnipoolAndStablepool.data])
+
+  const filteredPools =
+    search && omnipoolAndStablepool.data
+      ? arraySearch(omnipoolAndStablepool.data, search, ["name", "symbol"])
+      : omnipoolAndStablepool.data
 
   return (
     <>
@@ -168,6 +183,7 @@ const AllPoolsData = () => {
           },
         ]}
       />
+      <SearchFilter />
       <div sx={{ flex: "column", gap: 20 }}>
         <div sx={{ flex: "column", gap: 20 }}>
           <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
@@ -177,9 +193,7 @@ const AllPoolsData = () => {
             ? [...Array(3)].map((_, index) => (
                 <PoolSkeleton key={index} length={3} index={index} />
               ))
-            : omnipoolAndStablepool.data?.map((pool) => (
-                <Pool key={pool.id} pool={pool} />
-              ))}
+            : filteredPools?.map((pool) => <Pool key={pool.id} pool={pool} />)}
         </div>
         {isXYKEnabled && <XYKPoolsSection />}
       </div>

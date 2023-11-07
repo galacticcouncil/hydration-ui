@@ -363,7 +363,9 @@ export const getAssets = async (api: ApiPromise) => {
     const assetA = tokens.find((token) => token.id === assetAId) as TToken
     const assetB = tokens.find((token) => token.id === assetBId) as TToken
 
-    const decimals = assetA.decimals
+    const assetDecimal = Number(assetA.id) > Number(assetB.id) ? assetB : assetA
+
+    const decimals = assetDecimal.decimals
     const symbol = `${assetA.symbol}/${assetB.symbol}`
     const name = `${assetA.name.split(" (")[0]}/${assetB.name.split(" (")[0]}`
 

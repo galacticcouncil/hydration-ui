@@ -149,7 +149,7 @@ export const PoolActions = ({
         <AddLiquidity
           isOpen={openAdd}
           onClose={() => setOpenAdd(false)}
-          poolId={pool.id}
+          pool={pool}
         />
       )}
       {openLiquidityPositions && !isDesktop && (

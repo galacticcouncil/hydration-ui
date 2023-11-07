@@ -136,6 +136,7 @@ export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
               <Text lh={22} color="white" fs={18}>
                 {t("value.percentage", {
                   value: pool.shareTokenIssuance?.myPoolShare,
+                  type: "token",
                 })}
               </Text>
             </div>
