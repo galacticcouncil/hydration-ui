@@ -50,6 +50,8 @@ export const Input: FC<InputProps> = ({
             error={p.error}
             unit={p.unit}
             placeholder={placeholder}
+            role="presentation"
+            autoComplete="off"
           />
         </SWrapper>
       </Label>

@@ -14,6 +14,8 @@ import { SSeparator } from "components/Separator/Separator.styled"
 import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
+import { useTokensBalances } from "api/balances"
+import { useAccountStore } from "state/store"
 
 const Tab = ({
   to,
@@ -62,6 +64,7 @@ const Tab = ({
 export const Navigation = () => {
   const { t } = useTranslation()
   const { isLoaded } = useRpcProvider()
+
   return (
     <SNavigationContainer>
       {isLoaded && <MyLiquidity />}
@@ -86,11 +89,22 @@ export const Navigation = () => {
 
 const MyLiquidity = () => {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
+  const { assets } = useRpcProvider()
   const accountPositions = useAccountOmnipoolPositions()
+
+  const shareTokensId = assets.shareTokens.map((shareToken) => shareToken.id)
+  const stableswapsId = assets.stableswap.map((shareToken) => shareToken.id)
+
+  const userPositions = useTokensBalances(
+    [...shareTokensId, ...stableswapsId],
+    account?.address,
+  )
 
   const isOmnipoolPositions =
     accountPositions.data?.miningNfts.length ||
-    accountPositions.data?.omnipoolNfts.length
+    accountPositions.data?.omnipoolNfts.length ||
+    userPositions.some((userPosition) => userPosition.data?.freeBalance.gt(0))
 
   if (!isOmnipoolPositions) return null
 

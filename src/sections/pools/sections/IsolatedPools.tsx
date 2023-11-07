@@ -7,6 +7,9 @@ import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { useTranslation } from "react-i18next"
 import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
+import { SearchFilter } from "sections/pools/filter/SearchFilter"
+import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
+import { arraySearch } from "utils/helpers"
 
 export const IsolatedPools = () => {
   const { t } = useTranslation()
@@ -41,6 +44,7 @@ export const IsolatedPools = () => {
 
 const IsolatedPoolsData = () => {
   const { t } = useTranslation()
+  const { search } = useSearchFilter()
   const xylPools = useXYKPools()
 
   const totalLocked = useMemo(() => {
@@ -60,6 +64,11 @@ const IsolatedPoolsData = () => {
     }
     return BN_0
   }, [xylPools.data])
+
+  const filteredPools =
+    search && xylPools.data
+      ? arraySearch(xylPools.data, search, ["name", "symbol"])
+      : xylPools.data
 
   return (
     <>
@@ -86,12 +95,13 @@ const IsolatedPoolsData = () => {
           },
         ]}
       />
+      <SearchFilter />
       <div sx={{ flex: "column", gap: 20 }}>
         {xylPools.isLoading
           ? [...Array(3)].map((_, index) => (
               <PoolSkeleton key={index} length={3} index={index} />
             ))
-          : xylPools.data?.map((pool) => <XYKPool key={pool.id} pool={pool} />)}
+          : filteredPools?.map((pool) => <XYKPool key={pool.id} pool={pool} />)}
       </div>
     </>
   )

@@ -7,6 +7,9 @@ import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { Pool } from "sections/pools/pool/Pool"
 import { PoolSkeleton } from "sections/pools/skeleton/PoolSkeleton"
 import { BN_0 } from "utils/constants"
+import { SearchFilter } from "sections/pools/filter/SearchFilter"
+import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
+import { arraySearch } from "utils/helpers"
 
 export const OmnipoolAndStablepool = () => {
   const { t } = useTranslation()
@@ -45,6 +48,7 @@ export const OmnipoolAndStablepool = () => {
 
 const OmnipoolAndStablepoolData = () => {
   const { t } = useTranslation()
+  const { search } = useSearchFilter()
   const omnipoolAndStablepool = useOmnipoolAndStablepool()
 
   const omnipoolTotal = useMemo(() => {
@@ -77,6 +81,11 @@ const OmnipoolAndStablepoolData = () => {
       ) ?? BN_0
     )
   }, [omnipoolAndStablepool.data])
+
+  const filteredPools =
+    search && omnipoolAndStablepool.data
+      ? arraySearch(omnipoolAndStablepool.data, search, ["name", "symbol"])
+      : omnipoolAndStablepool.data
 
   return (
     <>
@@ -112,14 +121,13 @@ const OmnipoolAndStablepoolData = () => {
           },
         ]}
       />
+      <SearchFilter />
       <div sx={{ flex: "column", gap: 20 }}>
         {omnipoolAndStablepool.isLoading
           ? [...Array(3)].map((_, index) => (
               <PoolSkeleton key={index} length={3} index={index} />
             ))
-          : omnipoolAndStablepool.data?.map((pool) => (
-              <Pool key={pool.id} pool={pool} />
-            ))}
+          : filteredPools?.map((pool) => <Pool key={pool.id} pool={pool} />)}
       </div>
     </>
   )

@@ -2,6 +2,8 @@ import { ApiPromise } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import { useRpcProvider } from "providers/rpcProvider"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { default as BigNumber } from "bignumber.js"
+import { undefinedNoop } from "utils/helpers"
 
 const getXYKPools = (api: ApiPromise) => async () => {
   const res = await api.query.xyk.poolAssets.entries()
@@ -52,4 +54,20 @@ const getXYKConsts = (api: ApiPromise) => async () => {
   const data = res?.map((el) => el.toString()) as string[]
 
   return { fee: data }
+}
+
+export const useXYKTotalLiquidity = (address?: string) => {
+  const { api } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.totalXYKLiquidity(address),
+    address != null ? getXYKTotalLiquidity(api, address) : undefinedNoop,
+    { enabled: !!address },
+  )
+}
+
+const getXYKTotalLiquidity = (api: ApiPromise, address: string) => async () => {
+  const res = await api.query.xyk.totalLiquidity(address)
+  //@ts-ignore
+  return res?.toBigNumber() as BigNumber
 }
