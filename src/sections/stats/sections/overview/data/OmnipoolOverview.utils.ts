@@ -4,7 +4,7 @@ import { useApiIds } from "api/consts"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
 import { useUniques } from "api/uniques"
-import { getVolumeAssetTotalValue, useTradeVolumes } from "api/volume"
+import { useVolumes } from "api/volume"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { HYDRA_TREASURE_ACCOUNT, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
@@ -25,7 +25,7 @@ export const useOmnipoolOverviewData = () => {
   const omnipoolAssetsIds =
     omnipoolAssets.data?.map((a) => a.id.toString()) ?? []
 
-  const volumes = useTradeVolumes(omnipoolAssetsIds, withoutRefresh)
+  const volumes = useVolumes(omnipoolAssetsIds)
 
   // get all NFTs on HYDRA_TREASURE_ACCOUNT to calculate POL
   const uniques = useUniques(
@@ -162,15 +162,9 @@ export const useOmnipoolOverviewData = () => {
         meta.decimals,
       ).times(spotPrice)
 
-      // volume calculation
-      const volumeEvents = getVolumeAssetTotalValue(
-        volumes.find((v) => v.data?.assetId === omnipoolAssetId)?.data,
-      )?.[omnipoolAssetId]
-
-      const volume = getFloatingPointAmount(
-        volumeEvents ?? BN_0,
-        meta.decimals,
-      ).multipliedBy(spotPrice ?? 1)
+      const volume = volumes.find(
+        (volume) => volume.data?.assetId === omnipoolAssetId,
+      )?.data?.volume
 
       return {
         id: omnipoolAssetId,

@@ -13,10 +13,8 @@ import { theme } from "theme"
 import { separateBalance } from "utils/balance"
 import { BN_0 } from "utils/constants"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
-import {
-  useTotalVolumesInPools,
-  useTotalVolumesInPoolsUser,
-} from "./PoolsHeaderVolume.utils"
+import { useTotalVolumesInPoolsUser } from "./PoolsHeaderVolume.utils"
+import { useVolume } from "api/volume"
 
 type Props = { myPositions: boolean; variant: "pools" | "farms" | "volume" }
 
@@ -31,9 +29,19 @@ export const PoolsHeaderTotal = ({ myPositions, variant }: Props) => {
   return null
 }
 
-type DataProps = { value?: BN; isLoading: boolean; fontSize?: [number, number] }
+type DataProps = {
+  value?: BN
+  isLoading: boolean
+  fontSize?: [number, number]
+  isOnlyDollar?: boolean
+}
 
-export const HeaderTotalData = ({ value, isLoading, fontSize }: DataProps) => {
+export const HeaderTotalData = ({
+  value,
+  isLoading,
+  fontSize,
+  isOnlyDollar,
+}: DataProps) => {
   const { t } = useTranslation()
 
   if (isLoading)
@@ -45,18 +53,22 @@ export const HeaderTotalData = ({ value, isLoading, fontSize }: DataProps) => {
       sx={{ fontSize: fontSize ?? [19, 28], fontWeight: 500 }}
       css={{ whiteSpace: "nowrap" }}
     >
-      <DisplayValue
-        withGap
-        value={
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.header.value"
-            tOptions={{ ...separateBalance(value, { type: "dollar" }) }}
-          >
-            <span css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }} />
-          </Trans>
-        }
-      />
+      {isOnlyDollar ? (
+        t("value.usd", { amount: value })
+      ) : (
+        <DisplayValue
+          withGap
+          value={
+            <Trans
+              t={t}
+              i18nKey="wallet.assets.header.value"
+              tOptions={{ ...separateBalance(value, { type: "dollar" }) }}
+            >
+              <span css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }} />
+            </Trans>
+          }
+        />
+      )}
     </Heading>
   )
 }
@@ -99,11 +111,15 @@ const PoolsHeaderTotalFarmsUser = () => {
 }
 
 const PoolsHeaderTotalVolume = () => {
-  const { value, isLoading } = useTotalVolumesInPools()
-  return <HeaderTotalData value={value} isLoading={isLoading} />
+  const { data, isLoading } = useVolume()
+  return (
+    <HeaderTotalData value={data?.volume} isLoading={isLoading} isOnlyDollar />
+  )
 }
 
 const PoolsHeaderTotalVolumeUser = () => {
   const { value, isLoading } = useTotalVolumesInPoolsUser()
-  return <HeaderTotalData value={value} isLoading={isLoading} />
+  return (
+    <HeaderTotalData value={value ?? BN_0} isLoading={isLoading} isOnlyDollar />
+  )
 }
