@@ -12,6 +12,7 @@ import { theme } from "theme"
 import IconDCA from "assets/icons/navigation/IconDCA.svg?react"
 import IconOTC from "assets/icons/navigation/IconOTC.svg?react"
 import IconSwap from "assets/icons/navigation/IconSwap.svg?react"
+import IconBonds from "assets/icons/Bonds.svg?react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { BondsSubNavigationTabLink } from "sections/trade/BondsSubNavigationTabLink"
 
@@ -56,7 +57,17 @@ export const TradePage = () => {
                 label={t("header.trade.dca.title")}
               />
             )}
-            {isBondsPageEnabled && isLoaded && <BondsSubNavigationTabLink />}
+            {isBondsPageEnabled ? (
+              isLoaded ? (
+                <BondsSubNavigationTabLink />
+              ) : (
+                <SubNavigationTabLink
+                  to={LINKS.bonds}
+                  icon={<IconBonds />}
+                  label={t("header.trade.bonds.title")}
+                />
+              )
+            ) : null}
           </SubNavigation>
         ) : null
       }
