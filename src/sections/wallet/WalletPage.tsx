@@ -1,6 +1,6 @@
 import { useMatchRoute } from "@tanstack/react-location"
-import DropletIcon from "assets/icons/DropletIcon.svg?react"
-import PersonIcon from "assets/icons/PersonIcon.svg?react"
+import AssetsIcon from "assets/icons/AssetsIcon.svg?react"
+import PositionsIcon from "assets/icons/PositionsIcon.svg?react"
 import { Page } from "components/Layout/Page/Page"
 import {
   SubNavigation,
@@ -21,12 +21,12 @@ export const WalletPage = () => {
         <SubNavigation>
           <SubNavigationTabLink
             to={LINKS.walletAssets}
-            icon={<PersonIcon width={15} height={15} />}
+            icon={<AssetsIcon width={15} height={15} />}
             label={t("wallet.header.yourAssets")}
           />
           <SubNavigationTabLink
             to={LINKS.walletVesting}
-            icon={<DropletIcon width={18} height={18} />}
+            icon={<PositionsIcon width={18} height={18} />}
             label={t("wallet.header.vesting")}
           />
         </SubNavigation>

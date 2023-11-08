@@ -5,67 +5,40 @@ import { theme } from "theme"
 export const TableContainer = styled.div`
   background: #111320;
   overflow: hidden;
-  box-shadow: ${theme.shadows.boxShadowTable};
+  position: relative;
 
   margin: 0 -12px;
 
-  background-image: radial-gradient(
-      circle at 100% 100%,
-      transparent 3px,
-      rgba(144, 165, 198, 0.3) 3px,
-      rgba(144, 165, 198, 0.3) 4px,
-      transparent 4px
-    ),
-    linear-gradient(
-      to right,
-      rgba(144, 165, 198, 0.3),
-      rgba(144, 165, 198, 0.3)
-    ),
-    radial-gradient(
-      circle at 0% 100%,
-      transparent 3px,
-      rgba(144, 165, 198, 0.3) 3px,
-      rgba(144, 165, 198, 0.3) 4px,
-      transparent 4px
-    ),
-    linear-gradient(to bottom, rgba(144, 165, 198, 0.3), rgba(158, 167, 180, 0)),
-    radial-gradient(
-      circle at 0% 0%,
-      transparent 3px,
-      rgba(158, 167, 180, 0) 3px,
-      rgba(158, 167, 180, 0) 4px,
-      transparent 4px
-    ),
-    linear-gradient(to left, rgba(158, 167, 180, 0), rgba(158, 167, 180, 0)),
-    radial-gradient(
-      circle at 100% 0%,
-      transparent 3px,
-      rgba(158, 167, 180, 0) 3px,
-      rgba(158, 167, 180, 0) 4px,
-      transparent 4px
-    ),
-    linear-gradient(to top, rgba(158, 167, 180, 0), rgba(144, 165, 198, 0.3));
-  background-size:
-    4px 4px,
-    calc(100% - 8px) 1px,
-    4px 4px,
-    1px calc(100% - 8px);
-  background-position:
-    top left,
-    top center,
-    top right,
-    center right,
-    bottom right,
-    bottom center,
-    bottom left,
-    center left;
-
-  background-repeat: no-repeat;
+  border-top: 1px solid rgba(152, 176, 214, 0.27);
 
   @media ${theme.viewport.gte.sm} {
-    border-radius: 4px;
+    border-radius: 8px;
 
     margin: unset;
+
+    border-top: 0;
+
+    :before {
+      content: "";
+      position: absolute;
+      inset: 0;
+
+      border-radius: 8px;
+      padding: 1px; // a width of the border
+
+      background: linear-gradient(
+        180deg,
+        rgba(152, 176, 214, 0.27) 0%,
+        rgba(163, 177, 199, 0.15) 66.67%,
+        rgba(158, 167, 180, 0.2) 100%
+      );
+
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
   }
 `
 
@@ -160,6 +133,8 @@ export const TableRow = styled.tr<{
   header?: boolean
 }>`
   transition: ${theme.transitions.slow};
+
+  border-top: 1px solid rgba(32, 33, 53, 1);
 
   :hover {
     ${({ header }) =>
