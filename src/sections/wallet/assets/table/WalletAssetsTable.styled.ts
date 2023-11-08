@@ -3,8 +3,7 @@ import { css } from "@emotion/react"
 
 export const assetsTableStyles = css`
   th {
-    &:nth-last-of-type(2),
-    &:nth-last-of-type(3) {
+    &:nth-last-of-type(2) {
       > div {
         justify-content: flex-end;
       }

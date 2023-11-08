@@ -10,12 +10,8 @@ export const SubNavigationContainer = styled.div`
   height: 42px;
   max-width: var(--content-width);
 
-  padding: 0 8px;
+  padding: 0 20px;
   margin: 0 auto;
-
-  @media (${theme.viewport.gte.sm}) {
-    padding: 0 20px;
-  }
 `
 
 export const STabContainer = styled.div`
