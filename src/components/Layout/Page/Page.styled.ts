@@ -5,7 +5,7 @@ import { theme } from "theme"
 export const SPage = styled.div`
   --mobile-nav-height: calc(60px + env(safe-area-inset-bottom));
   --nav-height: 65px;
-  --content-width: 1109px;
+  --content-width: 1300px;
 
   position: relative;
 

@@ -31,7 +31,7 @@ export const WalletAssets = () => {
 
   if (!isLoaded) {
     return (
-      <div sx={{ mt: [12, 0] }}>
+      <div>
         <WalletAssetsHeader />
         <WalletAssetsFilters />
         <WalletAssetsTableSkeleton />
@@ -51,7 +51,7 @@ export const WalletAssets = () => {
   }
 
   return (
-    <div sx={{ mt: [12, 0] }}>
+    <div>
       {!account ? (
         <>
           <WalletAssetsHeader disconnected />

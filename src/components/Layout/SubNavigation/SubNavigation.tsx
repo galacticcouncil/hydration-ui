@@ -34,7 +34,7 @@ export const SubNavigationTabLink = ({
       {({ isActive }) => (
         <>
           <STabContainer>
-            <Icon sx={{ color: "brightBlue300" }} icon={icon} />
+            <Icon sx={{ color: "brightBlue300", mr: 5 }} icon={icon} />
             <Text fs={13} color={isActive ? "white" : "iconGray"}>
               {label}
             </Text>

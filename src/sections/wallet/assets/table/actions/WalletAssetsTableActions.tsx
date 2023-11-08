@@ -14,6 +14,7 @@ import { theme } from "theme"
 import { isNotNil } from "utils/helpers"
 import { useSetAsFeePayment } from "api/payments"
 import { useAccountStore } from "state/store"
+import { useMedia } from "react-use"
 
 type Props = {
   toggleExpanded: () => void
@@ -31,12 +32,22 @@ export const WalletAssetsTableActions = (props: Props) => {
   const setFeeAsPayment = useSetAsFeePayment()
   const { account } = useAccountStore()
 
+  const isLargeDesktop = useMedia("(min-width: 1100px)")
+
   const actionItems = [
     /*{
       key: "add",
       icon: <ClaimIcon />,
       label: t("wallet.assets.table.actions.claim"),
     },*/
+    !isLargeDesktop
+      ? {
+          key: "transfer",
+          icon: <TransferIcon />,
+          label: t("wallet.assets.table.actions.transfer"),
+          disabled: true,
+        }
+      : null,
     props.couldBeSetAsPaymentFee
       ? {
           key: "setAsFeePayment",
@@ -79,17 +90,22 @@ export const WalletAssetsTableActions = (props: Props) => {
         >
           {t("wallet.assets.table.actions.sell")}
         </TableAction>
-        <TableAction
-          icon={<TransferIcon />}
-          onClick={props.onTransferClick}
-          disabled={account?.isExternalWalletConnected}
-        >
-          {t("wallet.assets.table.actions.transfer")}
-        </TableAction>
+        {isLargeDesktop && (
+          <TableAction
+            icon={<TransferIcon />}
+            onClick={props.onTransferClick}
+            disabled={account?.isExternalWalletConnected}
+          >
+            {t("wallet.assets.table.actions.transfer")}
+          </TableAction>
+        )}
 
         <Dropdown
           items={account?.isExternalWalletConnected ? [] : actionItems}
           onSelect={(item) => {
+            if (item === "transfer") {
+              props.onTransferClick()
+            }
             if (item === "setAsFeePayment") {
               setFeeAsPayment(props.id, {
                 onLoading: (
