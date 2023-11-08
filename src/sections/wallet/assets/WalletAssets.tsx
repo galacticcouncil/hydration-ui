@@ -1,4 +1,3 @@
-import { Spacer } from "components/Spacer/Spacer"
 import { WalletAssetsTablePlaceholder } from "sections/wallet/assets/table/placeholder/WalletAssetsTablePlaceholder"
 import { useAccountStore } from "state/store"
 import { WalletFarmingPositionsWrapper } from "./farmingPositions/wrapper/WalletFarmingPositionsWrapper"
@@ -34,18 +33,16 @@ export const WalletAssets = () => {
       <div>
         <WalletAssetsHeader />
         <WalletAssetsFilters />
-        <WalletAssetsTableSkeleton />
-        <Spacer axis="vertical" size={20} />
-        {enabledBonds && (
-          <>
-            <BondsTableSkeleton title={t("bonds.table.title")} />
-            <Spacer axis="vertical" size={20} />
-          </>
-        )}
 
-        <WalletAssetsHydraPositionsSkeleton />
-        <Spacer axis="vertical" size={20} />
-        <WalletFarmingPositionsSkeleton />
+        <div sx={{ display: "grid", gap: [16, 30] }}>
+          <WalletAssetsTableSkeleton />
+          {enabledBonds && (
+            <BondsTableSkeleton title={t("bonds.table.title")} />
+          )}
+
+          <WalletAssetsHydraPositionsSkeleton />
+          <WalletFarmingPositionsSkeleton />
+        </div>
       </div>
     )
   }
@@ -62,23 +59,17 @@ export const WalletAssets = () => {
           <WalletAssetsHeader />
           <WalletAssetsFilters />
 
-          {isAssetsVisible && (
-            <>
-              <WalletAssetsTableWrapper />
-              {enabledBonds && (
-                <>
-                  <Spacer axis="vertical" size={20} />
-                  <MyActiveBonds showTransfer search={search} />
-                </>
-              )}
-            </>
-          )}
+          <div sx={{ display: "grid", gap: [16, 30] }}>
+            {isAssetsVisible && (
+              <>
+                <WalletAssetsTableWrapper />
+                {enabledBonds && <MyActiveBonds showTransfer search={search} />}
+              </>
+            )}
 
-          {isAllVisible && <Spacer axis="vertical" size={20} />}
-          {isLiquidityVisible && <WalletAssetsPositionsWrapper />}
-
-          {isAllVisible && <Spacer axis="vertical" size={20} />}
-          {isFarmingVisible && <WalletFarmingPositionsWrapper />}
+            {isLiquidityVisible && <WalletAssetsPositionsWrapper />}
+            {isFarmingVisible && <WalletFarmingPositionsWrapper />}
+          </div>
         </>
       )}
     </div>
