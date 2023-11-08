@@ -23,6 +23,8 @@ export const TableContainer = styled.div`
       position: absolute;
       inset: 0;
 
+      pointer-events: none;
+
       border-radius: 8px;
       padding: 1px; // a width of the border
 
@@ -55,6 +57,8 @@ export const StatsTableContainer = styled.div`
 
     border-radius: ${theme.borderRadius.default}px;
     padding: 1px; // a width of the border
+
+    pointer-events: none;
 
     background: linear-gradient(
       180deg,
