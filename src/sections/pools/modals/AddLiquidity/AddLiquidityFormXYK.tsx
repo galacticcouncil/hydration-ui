@@ -9,7 +9,6 @@ import { Trans, useTranslation } from "react-i18next"
 import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
 import { Separator } from "components/Separator/Separator"
 import { Button } from "components/Button/Button"
-import { FormValues } from "utils/helpers"
 import { getFixedPointAmount, getFloatingPointAmount } from "utils/balance"
 import { useAccountStore, useStore } from "state/store"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -119,7 +118,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
 
-  const onSubmit = async (values: FormValues<typeof form>) => {
+  const onSubmit = async () => {
     const lastUpdated = form.watch("lastUpdated")
 
     const inputData = {

@@ -49,11 +49,14 @@ export const useXYKConsts = () => {
 }
 
 const getXYKConsts = (api: ApiPromise) => async () => {
-  const res = await api.consts.xyk.getExchangeFee
+  const [feeRaw, minPoolLiquidity] = await Promise.all([
+    api.consts.xyk.getExchangeFee,
+    api.consts.xyk.minPoolLiquidity,
+  ])
   //@ts-ignore
-  const data = res?.map((el) => el.toString()) as string[]
+  const fee = feeRaw?.map((el) => el.toString()) as string[]
 
-  return { fee: data }
+  return { fee: fee, minPoolLiquidity: minPoolLiquidity.toString() }
 }
 
 export const useXYKTotalLiquidity = (address?: string) => {

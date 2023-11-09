@@ -3,8 +3,9 @@ import { theme } from "theme"
 
 export const SNavigationContainer = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
+  gap: 6px;
 
   height: 42px;
   max-width: var(--content-width);
@@ -12,9 +13,11 @@ export const SNavigationContainer = styled.div`
   padding: 0 8px;
   margin: 0 auto;
 
+  overflow-x: scroll;
+  overflow-y: hidden;
+
   @media (${theme.viewport.gte.sm}) {
     gap: 42px;
-    justify-content: flex-start;
 
     padding: 0 20px;
   }

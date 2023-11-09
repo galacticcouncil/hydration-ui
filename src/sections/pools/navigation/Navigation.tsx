@@ -36,6 +36,7 @@ const Tab = ({
         "&:hover > div > p": { color: theme.colors.white },
         height: "100%",
       }}
+      sx={{ px: 4 }}
     >
       {({ isActive }) => (
         <>
@@ -45,7 +46,11 @@ const Tab = ({
               icon={icon}
               size={20}
             />
-            <Text fs={13} color={isActive ? "white" : "iconGray"}>
+            <Text
+              fs={13}
+              color={isActive ? "white" : "iconGray"}
+              css={{ whiteSpace: "nowrap" }}
+            >
               {label}
             </Text>
           </STabContainer>
@@ -119,8 +124,10 @@ const MyLiquidity = () => {
       />
       <SSeparator
         orientation="vertical"
-        sx={{ width: 1, height: "60%" }}
-        css={{ background: `rgba(${theme.rgbColors.white}, 0.12)` }}
+        sx={{ width: 1, height: "60%", flexShrink: ["0", "inherit"] }}
+        css={{
+          background: `rgba(${theme.rgbColors.white}, 0.12)`,
+        }}
       />
     </>
   )
