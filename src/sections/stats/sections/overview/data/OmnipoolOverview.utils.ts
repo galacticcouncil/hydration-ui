@@ -162,9 +162,9 @@ export const useOmnipoolOverviewData = () => {
         meta.decimals,
       ).times(spotPrice)
 
-      const volume = volumes.find(
-        (volume) => volume.data?.assetId === omnipoolAssetId,
-      )?.data?.volume
+      const volume =
+        volumes.find((volume) => volume.data?.assetId === omnipoolAssetId)?.data
+          ?.volume ?? BN_0
 
       return {
         id: omnipoolAssetId,

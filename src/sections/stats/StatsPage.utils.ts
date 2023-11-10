@@ -159,9 +159,9 @@ export const useOmnipoolAssetDetails = () => {
         meta.decimals,
       ).times(spotPrice)
 
-      const volume = volumes.find(
-        (volume) => volume.data?.assetId === omnipoolAssetId,
-      )?.data?.volume
+      const volume =
+        volumes.find((volume) => volume.data?.assetId === omnipoolAssetId)?.data
+          ?.volume ?? BN_0
 
       const iconIds = assets.isStableSwap(meta) ? meta.assets : meta.id
 
