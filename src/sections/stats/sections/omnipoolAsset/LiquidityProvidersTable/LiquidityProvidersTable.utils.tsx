@@ -62,7 +62,7 @@ export const useLiquidityProvidersTable = (data: any) => {
         cell: ({ row }) => (
           <div sx={{ flex: "row", justify: ["right", "center"] }}>
             <WalletAssetsHydraPositionsData
-              symbol={row.original.symbol}
+              assetId={row.original.assetId}
               value={row.original.value}
               lrna={row.original.lrna}
               fontSize={[13, 16]}
