@@ -57,7 +57,7 @@ export const TableSortHeader = (props: {
         },
       }}
     >
-      <div sx={{ flex: "row", align: "center", gap: 6, justify: "center" }}>
+      <div sx={{ flex: "row", align: "center", gap: 6, justify: "start" }}>
         {children}
         {isSorting && (
           <div sx={{ flex: "column", gap: 2 }}>
