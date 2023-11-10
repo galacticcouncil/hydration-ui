@@ -1,4 +1,5 @@
 import {
+  VisibilityState,
   createColumnHelper,
   getCoreRowModel,
   useReactTable,
@@ -6,15 +7,25 @@ import {
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { useMemo } from "react"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
   const { t } = useTranslation()
   const { display } = createColumnHelper()
 
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const columnVisibility: VisibilityState = {
+    symbol: true,
+    providedAmount: isDesktop,
+    valueDisplay: true,
+  }
+
   const columns = useMemo(
     () => [
       display({
-        id: "name",
+        id: "symbol",
         header: t("wallet.assets.hydraPositions.header.name"),
         cell: () => (
           <div sx={{ flex: "row", gap: 8, height: [24, 32] }}>
@@ -34,7 +45,7 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
         ),
       }),
       display({
-        id: "value",
+        id: "providedAmount",
         header: t("wallet.assets.hydraPositions.header.providedAmount"),
         cell: () => (
           <div
@@ -49,7 +60,7 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
         ),
       }),
       display({
-        id: "price",
+        id: "valueDisplay",
         header: t("wallet.assets.hydraPositions.header.valueUSD"),
         cell: () => (
           <div>
@@ -63,13 +74,14 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [enableAnimation],
+    [enableAnimation, isDesktop],
   )
 
   return useReactTable({
     data: mockData,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    state: { columnVisibility },
   })
 }
 

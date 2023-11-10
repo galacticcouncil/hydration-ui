@@ -7,7 +7,7 @@ export const TableContainer = styled.div`
   overflow: hidden;
   box-shadow: ${theme.shadows.boxShadowTable};
 
-  margin: 0 -12px;
+  margin: 0 -13px;
 
   background-image: radial-gradient(
       circle at 100% 100%,
@@ -218,21 +218,26 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
   }
 `
 
-export const TableData = styled.td<{ isExpanded?: boolean }>`
+export const TableData = styled.td<{
+  isExpanded?: boolean
+  isSkeleton?: boolean
+}>`
   padding: 16px;
-  padding-right: 0;
+  ${({ isSkeleton }) => !isSkeleton && "padding-right: 0px;"}
   text-align: start;
 
   ${({ isExpanded }) =>
     isExpanded && `background: rgba(${theme.rgbColors.white}, 0.06);`}
 
-  // shrink actions column
   &:last-of-type {
     width: 0;
-    padding-right: 10px;
   }
 
   @media ${theme.viewport.gte.sm} {
     padding: 24px 32px;
+
+    &:last-of-type {
+      padding-right: 10px;
+    }
   }
 `
