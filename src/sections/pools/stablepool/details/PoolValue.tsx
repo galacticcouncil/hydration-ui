@@ -70,7 +70,7 @@ export const PoolValue = ({ pool, className }: PoolValueProps) => {
                 </Text>
               )}
             >
-              <DisplayValue value={data?.volume} />
+              {t("value.usd", { amount: data?.volume })}
             </DollarAssetValue>
           )}
         </div>
