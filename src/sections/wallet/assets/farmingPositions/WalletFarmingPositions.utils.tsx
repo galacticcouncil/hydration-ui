@@ -112,7 +112,6 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
           >
             <WalletAssetsHydraPositionsDetails
               assetId={row.original.assetId}
-              symbol={row.original.symbol}
               lrna={row.original.position.lrna}
               amount={row.original.position.value}
               amountDisplay={row.original.position.valueDisplay}

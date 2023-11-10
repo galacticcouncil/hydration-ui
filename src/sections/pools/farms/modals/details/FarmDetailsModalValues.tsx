@@ -53,7 +53,7 @@ export const FarmDetailsModalValues = ({
             content: (
               <WalletAssetsHydraPositionsData
                 fontSize={14}
-                symbol={position.data.symbol}
+                assetId={position.data.assetId.toString()}
                 value={position.data.value}
                 lrna={position.data.lrna}
               />

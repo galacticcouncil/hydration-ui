@@ -1,7 +1,7 @@
 import BN from "bignumber.js"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { useMedia } from "react-use"
@@ -11,14 +11,12 @@ import { BN_0, BN_1 } from "utils/constants"
 
 type Props = {
   assetId: string
-  symbol: string
   amount: BN
   lrna?: BN
   amountDisplay: BN
 }
 
 export const WalletAssetsHydraPositionsDetails = ({
-  symbol,
   amount,
   lrna,
   amountDisplay,
@@ -36,28 +34,16 @@ export const WalletAssetsHydraPositionsDetails = ({
   const lrnaPositionPrice =
     lrna?.multipliedBy(lrnaSpotPrice.data?.spotPrice ?? BN_1) ?? BN_0
 
-  const tKey = lrna?.gt(0)
-    ? "wallet.assets.hydraPositions.data.valueLrna"
-    : "wallet.assets.hydraPositions.data.value"
-
   return (
     <div sx={{ flex: "column", align: ["end", "start"] }}>
       <div sx={{ flex: "row", gap: 4 }}>
         <Text fs={16} lh={16} fw={500} color="white">
-          {!isDesktop ? (
-            t("value.tokenWithSymbol", {
-              value: lrnaPositionPrice.plus(amount ?? BN_0),
-              symbol: meta?.symbol,
-            })
-          ) : (
-            <Trans
-              i18nKey={tKey}
-              tOptions={{ value: amount, symbol, lrna, type: "token" }}
-            >
-              <br sx={{ display: ["none", "none"] }} />
-            </Trans>
-          )}
+          {t("value.tokenWithSymbol", {
+            value: lrnaPositionPrice.plus(amount ?? BN_0),
+            symbol: meta?.symbol,
+          })}
         </Text>
+
         {isDesktop && (
           <LrnaPositionTooltip
             lrnaPosition={lrna}

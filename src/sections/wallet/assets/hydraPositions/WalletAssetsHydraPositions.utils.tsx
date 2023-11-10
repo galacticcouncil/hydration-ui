@@ -46,7 +46,6 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
         cell: ({ row }) => (
           <WalletAssetsHydraPositionsDetails
             assetId={row.original.assetId}
-            symbol={row.original.symbol}
             amount={row.original.providedAmountShifted}
             amountDisplay={row.original.providedAmountDisplay}
           />
@@ -73,7 +72,6 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
           >
             <WalletAssetsHydraPositionsDetails
               assetId={row.original.assetId}
-              symbol={row.original.symbol}
               lrna={row.original.lrna}
               amount={row.original.value}
               amountDisplay={row.original.valueDisplay}
