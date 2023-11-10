@@ -5,16 +5,15 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
-import { usePoolDetailsTradeVolume } from "sections/pools/pool/details/PoolDetails.utils"
 import { BN_NAN } from "utils/constants"
 import { SInfoIcon } from "sections/pools/pool/Pool.styled"
+import { useVolume } from "api/volume"
 
 type PoolValueProps = { pool: OmnipoolPool; className?: string }
 
 export const PoolValue = ({ pool, className }: PoolValueProps) => {
   const { t } = useTranslation()
-
-  const { data, isLoading } = usePoolDetailsTradeVolume(pool.id)
+  const { data, isLoading } = useVolume(pool.id.toString())
 
   return (
     <div sx={{ flex: "column", justify: "end" }} className={className}>
@@ -42,14 +41,14 @@ export const PoolValue = ({ pool, className }: PoolValueProps) => {
             <Skeleton />
           ) : (
             <DollarAssetValue
-              value={data ?? BN_NAN}
+              value={data?.volume ?? BN_NAN}
               wrapper={(children) => (
                 <Text fs={18} lh={22} color="white" tAlign={["right", "left"]}>
                   {children}
                 </Text>
               )}
             >
-              <DisplayValue value={data} />
+              {t("value.usd", { amount: data?.volume })}
             </DollarAssetValue>
           )}
         </div>

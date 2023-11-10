@@ -347,4 +347,5 @@ export const QUERY_KEYS = {
     pool,
     block,
   ],
+  volumeDaily: (assetId?: string) => ["volumeDaily", assetId],
 } as const

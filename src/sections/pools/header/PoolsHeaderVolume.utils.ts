@@ -1,37 +1,24 @@
-import { useOmnipoolAssets } from "api/omnipool"
-import { usePoolsDetailsTradeVolumes } from "sections/pools/pool/details/PoolDetails.utils"
+import { useVolumes } from "api/volume"
 import { useOmnipoolPools } from "sections/pools/PoolsPage.utils"
-
-export function useTotalVolumesInPools() {
-  const assets = useOmnipoolAssets()
-  const totalVolume = usePoolsDetailsTradeVolumes(
-    assets.data?.map((asset) => asset.id) ?? [],
-  )
-
-  const queries = [assets, totalVolume]
-  const isLoading = queries.some((query) => query.isLoading)
-
-  //the value should be divided by two
-  //because the value is summed by assetIn and assetOut
-  return {
-    isLoading,
-    value: totalVolume.data.div(2),
-  }
-}
+import { BN_0 } from "utils/constants"
 
 export function useTotalVolumesInPoolsUser() {
   const pools = useOmnipoolPools(true)
-  const assetIds = pools.data?.map((pool) => pool.id) ?? []
+  const assetIds = pools.data?.map((pool) => pool.id.toString()) ?? []
 
-  const totalVolume = usePoolsDetailsTradeVolumes(assetIds)
+  const totalVolume = useVolumes(assetIds)
+  const sum = totalVolume.reduce(
+    (acc, volume) => acc.plus(volume.data?.volume ?? 0),
+    BN_0,
+  )
 
-  const queries = [pools, totalVolume]
+  const queries = [pools, ...totalVolume]
   const isLoading = queries.some((query) => query.isLoading)
 
   //the value should be divided by two
   //because the value is summed by assetIn and assetOut
   return {
     isLoading,
-    value: totalVolume.data.div(2),
+    value: sum,
   }
 }
