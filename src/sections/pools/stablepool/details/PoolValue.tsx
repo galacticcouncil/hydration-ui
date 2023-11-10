@@ -4,10 +4,10 @@ import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
-import { usePoolDetailsTradeVolume } from "sections/pools/pool/details/PoolDetails.utils"
 import { BN_NAN } from "utils/constants"
 import { SInfoIcon } from "sections/pools/pool/Pool.styled"
 import { Stablepool } from "sections/pools/PoolsPage.utils"
+import { useVolume } from "api/volume"
 
 type PoolValueProps = {
   pool: Stablepool
@@ -17,7 +17,7 @@ type PoolValueProps = {
 export const PoolValue = ({ pool, className }: PoolValueProps) => {
   const { t } = useTranslation()
 
-  const { data, isLoading } = usePoolDetailsTradeVolume(pool.id)
+  const { data, isLoading } = useVolume(pool.id.toString())
 
   const { total, totalDisplay } = pool
 
@@ -63,14 +63,14 @@ export const PoolValue = ({ pool, className }: PoolValueProps) => {
             <Skeleton />
           ) : (
             <DollarAssetValue
-              value={data ?? BN_NAN}
+              value={data?.volume ?? BN_NAN}
               wrapper={(children) => (
                 <Text fs={18} lh={22} color="white" tAlign={["right", "left"]}>
                   {children}
                 </Text>
               )}
             >
-              <DisplayValue value={data} />
+              <DisplayValue value={data?.volume} />
             </DollarAssetValue>
           )}
         </div>
