@@ -23,7 +23,7 @@ export const useBondsSkeleton = (config?: Config) => {
     maturity: isDesktop,
     balance: true,
     price: isDesktop,
-    actions: true,
+    actions: isDesktop,
   }
 
   const columns = useMemo(
@@ -91,7 +91,7 @@ export const useBondsSkeleton = (config?: Config) => {
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config?.showTransactions],
+    [config?.showTransactions, isDesktop],
   )
 
   return useReactTable({

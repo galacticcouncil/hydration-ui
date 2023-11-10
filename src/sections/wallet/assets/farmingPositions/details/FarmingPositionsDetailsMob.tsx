@@ -59,30 +59,38 @@ export const FarmingPositionsDetailsMob = ({ row, onClose }: Props) => {
         <div sx={{ flex: "row", justify: "space-between", py: 30, px: 8 }}>
           <div sx={{ flex: "column", gap: 4 }}>
             <Text fs={14} lh={16} color="whiteish500">
-              {t("wallet.assets.hydraPositions.header.providedAmount")}
-            </Text>
-            <Text fs={14} lh={14} color="white">
-              {t("value.tokenWithSymbol", { value: amount, symbol })}
-            </Text>
-            <Text fs={12} lh={17} color="whiteish500">
-              <DisplayValue value={providedAmountDisplay} />
-            </Text>
-          </div>
-        </div>
-        <SActionButtonsContainer>
-          <div sx={{ flex: "column", gap: 4, py: 20 }}>
-            <Text fs={14} lh={16} color="whiteish500">
               {t("wallet.assets.hydraPositions.header.valueUSD")}
             </Text>
 
             <Text fs={14} lh={14} fw={500} color="white">
-              <Trans
-                i18nKey={tKey}
-                tOptions={{ value, symbol, lrna, type: "token" }}
-              >
-                <br sx={{ display: ["none", "none"] }} />
-              </Trans>
+              {t("value.tokenWithSymbol", {
+                value: lrnaPositionPrice.plus(value ?? BN_0),
+                symbol: meta?.symbol,
+              })}
             </Text>
+
+            {lrnaPositionPrice.gt(0) && (
+              <Text
+                fs={14}
+                lh={14}
+                fw={500}
+                color="brightBlue300"
+                sx={{ flex: "row", align: "center", gap: 1 }}
+              >
+                <p sx={{ height: "min-content" }}>=</p>
+                <Trans
+                  i18nKey={tKey}
+                  tOptions={{
+                    value,
+                    symbol,
+                    lrna,
+                    type: "token",
+                  }}
+                >
+                  <br sx={{ display: ["none", "none"] }} />
+                </Trans>
+              </Text>
+            )}
             <Text
               fs={12}
               lh={14}
@@ -90,6 +98,19 @@ export const FarmingPositionsDetailsMob = ({ row, onClose }: Props) => {
               css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.6)` }}
             >
               <DisplayValue value={valueDisplay} />
+            </Text>
+          </div>
+        </div>
+        <SActionButtonsContainer>
+          <div sx={{ flex: "column", gap: 4, py: 20 }}>
+            <Text fs={14} lh={16} color="whiteish500">
+              {t("wallet.assets.hydraPositions.header.providedAmount")}
+            </Text>
+            <Text fs={14} lh={14} color="white">
+              {t("value.tokenWithSymbol", { value: amount, symbol })}
+            </Text>
+            <Text fs={12} lh={17} color="whiteish500">
+              <DisplayValue value={providedAmountDisplay} />
             </Text>
           </div>
 
@@ -106,25 +127,6 @@ export const FarmingPositionsDetailsMob = ({ row, onClose }: Props) => {
               })}
             </Text>
           </div>
-
-          {lrnaPositionPrice.gt(0) && (
-            <>
-              <Separator css={{ background: `rgba(158, 167, 186, 0.06)` }} />
-
-              <div sx={{ flex: "column", gap: 4, py: 20 }}>
-                <Text fs={14} lh={16} color="whiteish500">
-                  {t("pools.lrnaPosition.tooltip")}
-                </Text>
-
-                <Text fs={14} lh={14} fw={500} color="white">
-                  {t("value.tokenWithSymbol", {
-                    value: lrnaPositionPrice.plus(value ?? BN_0),
-                    symbol: meta?.symbol,
-                  })}
-                </Text>
-              </div>
-            </>
-          )}
         </SActionButtonsContainer>
       </div>
     </Modal>

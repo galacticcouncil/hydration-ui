@@ -1,7 +1,3 @@
-import {
-  calculate_liquidity_lrna_out,
-  calculate_liquidity_out,
-} from "@galacticcouncil/math-omnipool"
 import { useTokensBalances } from "api/balances"
 import { useApiIds } from "api/consts"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
@@ -11,7 +7,6 @@ import { useMemo } from "react"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { useAccountStore } from "state/store"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { BN_10, BN_NAN } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"

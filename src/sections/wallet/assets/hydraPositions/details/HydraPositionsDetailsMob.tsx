@@ -6,7 +6,6 @@ import { Trans, useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { SActionButtonsContainer } from "sections/wallet/assets/table/actions/WalletAssetsTable.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useSpotPrice } from "api/spotPrice"
 import { BN_0, BN_1 } from "utils/constants"
@@ -52,7 +51,61 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
         <Separator
           css={{ background: `rgba(${theme.rgbColors.alpha0}, 0.06)` }}
         />
-        <div sx={{ flex: "row", justify: "space-between", py: 30, px: 8 }}>
+        <div
+          sx={{
+            flex: "column",
+            justify: "space-between",
+            gap: 12,
+            py: 30,
+            px: 8,
+          }}
+        >
+          <div sx={{ flex: "column", gap: 4 }}>
+            <Text fs={14} lh={16} color="whiteish500">
+              {t("wallet.assets.hydraPositions.header.valueUSD")}
+            </Text>
+            <Text fs={14} lh={14} fw={500} color="white">
+              {t("value.tokenWithSymbol", {
+                value: lrnaPositionPrice.plus(value ?? BN_0),
+                symbol: meta?.symbol,
+              })}
+            </Text>
+
+            {lrnaPositionPrice.gt(0) && (
+              <Text
+                fs={14}
+                lh={14}
+                fw={500}
+                color="brightBlue300"
+                sx={{ flex: "row", align: "center", gap: 1 }}
+              >
+                <p sx={{ height: "min-content" }}>=</p>
+                <Trans
+                  i18nKey={tKey}
+                  tOptions={{
+                    value,
+                    symbol,
+                    lrna,
+                    type: "token",
+                  }}
+                >
+                  <br sx={{ display: ["none", "none"] }} />
+                </Trans>
+              </Text>
+            )}
+
+            <Text
+              fs={12}
+              lh={14}
+              fw={500}
+              css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.6)` }}
+            >
+              <DisplayValue value={valueDisplay} />
+            </Text>
+          </div>
+
+          <Separator css={{ background: `rgba(158, 167, 186, 0.06)` }} />
+
           <div sx={{ flex: "column", gap: 4 }}>
             <Text fs={14} lh={16} color="whiteish500">
               {t("wallet.assets.hydraPositions.header.providedAmount")}
@@ -65,49 +118,6 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
             </Text>
           </div>
         </div>
-        <SActionButtonsContainer>
-          <div sx={{ flex: "column", gap: 4, py: 20 }}>
-            <Text fs={14} lh={16} color="whiteish500">
-              {t("wallet.assets.hydraPositions.header.valueUSD")}
-            </Text>
-
-            <Text fs={14} lh={14} fw={500} color="white">
-              <Trans
-                i18nKey={tKey}
-                tOptions={{ value, symbol, lrna, type: "token" }}
-              >
-                <br sx={{ display: ["none", "none"] }} />
-              </Trans>
-            </Text>
-            <Text
-              fs={12}
-              lh={14}
-              fw={500}
-              css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.6)` }}
-            >
-              <DisplayValue value={valueDisplay} />
-            </Text>
-          </div>
-
-          {lrnaPositionPrice.gt(0) && (
-            <>
-              <Separator css={{ background: `rgba(158, 167, 186, 0.06)` }} />
-
-              <div sx={{ flex: "column", gap: 4, py: 20 }}>
-                <Text fs={14} lh={16} color="whiteish500">
-                  {t("pools.lrnaPosition.tooltip")}
-                </Text>
-
-                <Text fs={14} lh={14} fw={500} color="white">
-                  {t("value.tokenWithSymbol", {
-                    value: lrnaPositionPrice.plus(value ?? BN_0),
-                    symbol: meta?.symbol,
-                  })}
-                </Text>
-              </div>
-            </>
-          )}
-        </SActionButtonsContainer>
       </div>
     </Modal>
   )

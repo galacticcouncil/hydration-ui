@@ -218,9 +218,12 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
   }
 `
 
-export const TableData = styled.td<{ isExpanded?: boolean }>`
+export const TableData = styled.td<{
+  isExpanded?: boolean
+  isSkeleton?: boolean
+}>`
   padding: 16px;
-  padding-right: 0px;
+  ${({ isSkeleton }) => !isSkeleton && "padding-right: 0px;"}
   text-align: start;
 
   ${({ isExpanded }) =>
