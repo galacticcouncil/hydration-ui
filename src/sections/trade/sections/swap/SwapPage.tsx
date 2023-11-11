@@ -5,11 +5,15 @@ import type { TxInfo } from "@galacticcouncil/apps"
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useAccountCurrency } from "api/payments"
+import { isEvmAccount } from "utils/evm"
+import { NATIVE_ASSET_ID } from "utils/api"
 
 export const SwapApp = createComponent({
   tagName: "gc-trade-app",
@@ -45,9 +49,10 @@ const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export function SwapPage() {
-  const { api } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { api, isLoaded } = useRpcProvider()
+  const { account } = useAccount()
   const { createTransaction } = useStore()
+  const accountCurrency = useAccountCurrency(isLoaded ? account?.address : "")
 
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
@@ -91,6 +96,20 @@ export function SwapPage() {
     )
   }
 
+  const assetInDefault =
+    search.success && search.data.assetIn
+      ? search.data.assetIn
+      : isEvmAccount(account?.address) && accountCurrency.isSuccess
+      ? accountCurrency.data
+      : undefined
+
+  const assetOutDefault =
+    search.success && search.data.assetOut
+      ? search.data.assetOut
+      : isEvmAccount(account?.address) && accountCurrency.isSuccess
+      ? NATIVE_ASSET_ID
+      : undefined
+
   return (
     <SContainer>
       <SwapApp
@@ -100,8 +119,8 @@ export function SwapPage() {
             isTwapEnabled && r.setAttribute("twap", "")
           }
         }}
-        assetIn={search.success ? search.data.assetIn : undefined}
-        assetOut={search.success ? search.data.assetOut : undefined}
+        assetIn={assetInDefault}
+        assetOut={assetOutDefault}
         apiAddress={rpcUrl}
         pools={swapPools}
         stableCoinAssetId={stableCoinAssetId}

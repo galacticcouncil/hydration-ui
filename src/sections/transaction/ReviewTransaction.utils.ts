@@ -1,12 +1,19 @@
-import type { AnyJson } from "@polkadot/types-codec/types"
+import {
+  TransactionReceipt,
+  TransactionResponse,
+} from "@ethersproject/providers"
+import { Hash } from "@open-web3/orml-types/interfaces"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
-import { useState } from "react"
+import type { AnyJson } from "@polkadot/types-codec/types"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
-import { useMutation } from "@tanstack/react-query"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { useMountedState } from "react-use"
+import { MutationObserverOptions, useMutation } from "@tanstack/react-query"
 import { useTransactionLink } from "api/transaction"
+import { decodeError } from "ethers-decode-error"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useState } from "react"
+import { useMountedState } from "react-use"
+import { getEvmTxLink } from "utils/evm"
 
 type TxMethod = AnyJson & {
   method: string
@@ -61,63 +68,62 @@ export function getTransactionJSON(tx: SubmittableExtrinsic<"promise">) {
 
 export class UnknownTransactionState extends Error {}
 
-export const useSendTransactionMutation = () => {
-  const { api } = useRpcProvider()
-  const isMounted = useMountedState()
-  const link = useTransactionLink()
+function evmTxReceiptToSubmittableResult(txReceipt: TransactionReceipt) {
+  const isSuccess = txReceipt.status === 1
+  const submittableResult: ISubmittableResult = {
+    status: {} as ExtrinsicStatus,
+    events: [],
+    isCompleted: isSuccess,
+    isError: !isSuccess,
+    isFinalized: isSuccess,
+    isInBlock: isSuccess,
+    isWarning: false,
+    txHash: txReceipt.transactionHash as unknown as Hash,
+    txIndex: txReceipt.transactionIndex,
+    filterRecords: () => [],
+    findRecord: () => undefined,
+    toHuman: () => ({}),
+  }
+
+  return submittableResult
+}
+export const useSendEvmTransactionMutation = (
+  options: MutationObserverOptions<
+    ISubmittableResult & {
+      transactionLink?: string
+    },
+    unknown,
+    TransactionResponse
+  > = {},
+) => {
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
 
-  const sendTx = useMutation(async (sign: SubmittableExtrinsic<"promise">) => {
-    return await new Promise<ISubmittableResult & { transactionLink?: string }>(
-      async (resolve, reject) => {
-        const unsubscribe = await sign.send(async (result) => {
-          if (!result || !result.status) return
+  const sendTx = useMutation(async (tx) => {
+    return await new Promise(async (resolve, reject) => {
+      const timeout = setTimeout(() => {
+        clearTimeout(timeout)
+        reject(new UnknownTransactionState())
+      }, 60000)
 
-          const timeout = setTimeout(() => {
-            clearTimeout(timeout)
-            reject(new UnknownTransactionState())
-          }, 60000)
+      try {
+        setTxState("Broadcast")
+        const receipt = await tx.wait()
+        setTxState("InBlock")
 
-          if (isMounted()) {
-            setTxState(result.status.type)
-          } else {
-            clearTimeout(timeout)
-          }
+        const transactionLink = getEvmTxLink(receipt.transactionHash)
 
-          if (result.isCompleted) {
-            if (result.dispatchError) {
-              let errorMessage = result.dispatchError.toString()
-
-              if (result.dispatchError.isModule) {
-                const decoded = api.registry.findMetaError(
-                  result.dispatchError.asModule,
-                )
-                errorMessage = `${decoded.section}.${
-                  decoded.method
-                }: ${decoded.docs.join(" ")}`
-              }
-
-              clearTimeout(timeout)
-              reject(new Error(errorMessage))
-            } else {
-              const transactionLink = await link.mutateAsync({
-                blockHash: result.status.asInBlock.toString(),
-                txIndex: result.txIndex?.toString(),
-              })
-
-              clearTimeout(timeout)
-              resolve({
-                transactionLink,
-                ...result,
-              })
-            }
-
-            unsubscribe()
-          }
+        return resolve({
+          transactionLink,
+          ...evmTxReceiptToSubmittableResult(receipt),
         })
-      },
-    )
-  })
+      } catch (err) {
+        const { error } = decodeError(err)
+        reject(new Error(error))
+      } finally {
+        clearTimeout(timeout)
+      }
+    })
+  }, options)
 
   return {
     ...sendTx,
@@ -126,5 +132,98 @@ export const useSendTransactionMutation = () => {
       setTxState(null)
       sendTx.reset()
     },
+  }
+}
+
+export const useSendTransactionMutation = (
+  options: MutationObserverOptions<
+    ISubmittableResult & { transactionLink?: string },
+    unknown,
+    SubmittableExtrinsic<"promise">
+  > = {},
+) => {
+  const { api } = useRpcProvider()
+  const isMounted = useMountedState()
+  const link = useTransactionLink()
+  const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
+
+  const sendTx = useMutation(async (sign) => {
+    return await new Promise(async (resolve, reject) => {
+      const unsubscribe = await sign.send(async (result) => {
+        if (!result || !result.status) return
+
+        const timeout = setTimeout(() => {
+          clearTimeout(timeout)
+          reject(new UnknownTransactionState())
+        }, 60000)
+
+        if (isMounted()) {
+          setTxState(result.status.type)
+        } else {
+          clearTimeout(timeout)
+        }
+
+        if (result.isCompleted) {
+          if (result.dispatchError) {
+            let errorMessage = result.dispatchError.toString()
+
+            if (result.dispatchError.isModule) {
+              const decoded = api.registry.findMetaError(
+                result.dispatchError.asModule,
+              )
+              errorMessage = `${decoded.section}.${
+                decoded.method
+              }: ${decoded.docs.join(" ")}`
+            }
+
+            clearTimeout(timeout)
+            reject(new Error(errorMessage))
+          } else {
+            const transactionLink = await link.mutateAsync({
+              blockHash: result.status.asInBlock.toString(),
+              txIndex: result.txIndex?.toString(),
+            })
+
+            clearTimeout(timeout)
+            resolve({
+              transactionLink,
+              ...result,
+            })
+          }
+
+          unsubscribe()
+        }
+      })
+    })
+  }, options)
+
+  return {
+    ...sendTx,
+    txState: txState,
+    reset: () => {
+      setTxState(null)
+      sendTx.reset()
+    },
+  }
+}
+
+export const useSendTx = () => {
+  const [txType, setTxType] = useState<"default" | "evm" | null>(null)
+  const sendTx = useSendTransactionMutation({
+    onMutate: () => setTxType("default"),
+    onSettled: () => setTxType(null),
+  })
+
+  const sendEvmTx = useSendEvmTransactionMutation({
+    onMutate: () => setTxType("evm"),
+    onSettled: () => setTxType(null),
+  })
+
+  const activeMutation = txType === "default" ? sendTx : sendEvmTx
+
+  return {
+    sendTx: sendTx.mutateAsync,
+    sendEvmTx: sendEvmTx.mutateAsync,
+    ...activeMutation,
   }
 }

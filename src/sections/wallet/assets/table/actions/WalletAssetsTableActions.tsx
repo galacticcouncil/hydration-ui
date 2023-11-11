@@ -3,6 +3,7 @@ import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
 import MoreIcon from "assets/icons/MoreDotsIcon.svg?react"
 import SellIcon from "assets/icons/SellIcon.svg?react"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
+import MetamaskLogo from "assets/icons/MetaMask.svg?react"
 //import ClaimIcon from "assets/icons/ClaimIcon.svg?react"
 import DollarIcon from "assets/icons/DollarIcon.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
@@ -13,10 +14,13 @@ import { theme } from "theme"
 import { isNotNil } from "utils/helpers"
 import { useSetAsFeePayment } from "api/payments"
 import { useAccountStore } from "state/store"
+import { isMetaMaskInstalled, watchAsset } from "utils/metamask"
+import { NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
 
 type Props = {
   toggleExpanded: () => void
   symbol: string
+  decimals: number
   id: string
   onBuyClick: (() => void) | undefined
   onSellClick: (() => void) | undefined
@@ -41,6 +45,13 @@ export const WalletAssetsTableActions = (props: Props) => {
           key: "setAsFeePayment",
           icon: <DollarIcon />,
           label: t("wallet.assets.table.actions.payment.asset"),
+        }
+      : null,
+    isMetaMaskInstalled && props.symbol !== NATIVE_EVM_ASSET_SYMBOL
+      ? {
+          key: "watch",
+          icon: <MetamaskLogo width={18} height={18} />,
+          label: t("wallet.assets.table.actions.watch"),
         }
       : null,
   ].filter(isNotNil)
@@ -122,6 +133,13 @@ export const WalletAssetsTableActions = (props: Props) => {
                     <span className="highlight" />
                   </Trans>
                 ),
+              })
+            }
+
+            if (item === "watch") {
+              watchAsset(props.id, {
+                symbol: props.symbol,
+                decimals: props.decimals,
               })
             }
           }}

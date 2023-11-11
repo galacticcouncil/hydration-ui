@@ -106,7 +106,7 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
         (b) => b.id.toString() === assetValue.id.toString(),
       )
 
-      const { id, symbol, name } = assetValue
+      const { id, symbol, name, decimals } = assetValue
 
       const tradabilityData = assetsTradability.find(
         (t) => t.id === assetValue.id.toString(),
@@ -124,6 +124,7 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
         id,
         symbol,
         name,
+        decimals,
         isPaymentFee,
         couldBeSetAsPaymentFee,
         transferable: balance?.transferable ?? BN_0,

@@ -4,9 +4,10 @@ import { SContainer } from "./XcmPage.styled"
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent } from "@lit-labs/react"
-import { useAccountStore } from "state/store"
 
 import { GcTransactionCenter } from "sections/xcm/TransactionCenter"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { isEvmAccount } from "utils/evm"
 
 export const XcmApp = createComponent({
   tagName: "gc-xcm-app",
@@ -15,7 +16,7 @@ export const XcmApp = createComponent({
 })
 
 export function XcmPage() {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   const ref = React.useRef<Apps.XcmApp>(null)
   return (
@@ -29,7 +30,11 @@ export function XcmPage() {
             chains="polkadot,hydradx,acala,statemint,interlay,zeitgeist,astar,centrifuge,bifrost"
             accountName={account?.name}
             accountProvider={account?.provider}
-            accountAddress={account?.address}
+            accountAddress={
+              isEvmAccount(account?.address)
+                ? account?.evmAddress
+                : account?.address
+            }
           />
         </SContainer>
       </Page>

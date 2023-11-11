@@ -348,4 +348,9 @@ export const QUERY_KEYS = {
     block,
   ],
   volumeDaily: (assetId?: string) => ["volumeDaily", assetId],
+  nativeEvmTokenBalance: (address?: string) => [
+    "nativeEvmTokenBalance",
+    address,
+  ],
+  nativeEvmAssetId: ["nativeEvmAssetId"],
 } as const

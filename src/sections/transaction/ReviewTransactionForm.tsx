@@ -1,5 +1,5 @@
+import { TransactionResponse } from "@ethersproject/providers"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
-import { getWalletBySource } from "@talismn/connect-wallets"
 import { useMutation } from "@tanstack/react-query"
 import { useAcountAssets } from "api/assetDetails"
 import { useTokenBalance } from "api/balances"
@@ -19,31 +19,29 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
 import { TransactionCode } from "components/TransactionCode/TransactionCode"
 import { Text } from "components/Typography/Text/Text"
+import { useRpcProvider } from "providers/rpcProvider"
 import { Trans, useTranslation } from "react-i18next"
+import Skeleton from "react-loading-skeleton"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
-import {
-  PROXY_WALLET_PROVIDER,
-  Transaction,
-  useAccountStore,
-} from "state/store"
-import { NATIVE_ASSET_ID, POLKADOT_APP_NAME } from "utils/api"
+import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
+import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
+import { Transaction } from "state/store"
+import { NATIVE_ASSET_ID } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_1 } from "utils/constants"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
-import { useWalletConnect } from "components/OnboardProvider/OnboardProvider"
-import Skeleton from "react-loading-skeleton"
-import { useRpcProvider } from "providers/rpcProvider"
 
 export const ReviewTransactionForm = (
   props: {
     title?: string
     onCancel: () => void
+    onEvmSigned: (tx: TransactionResponse) => void
     onSigned: (signed: SubmittableExtrinsic<"promise">) => void
   } & Omit<Transaction, "id">,
 ) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const bestNumber = useBestNumber()
   const accountCurrency = useAccountCurrency(account?.address)
   const currencyId = [props.overrides?.currencyId, accountCurrency.data].find(
@@ -62,39 +60,28 @@ export const ReviewTransactionForm = (
   const nonce = useNextNonce(account?.address)
   const spotPrice = useSpotPrice(NATIVE_ASSET_ID, feeMeta?.id)
 
-  const { wallet } = useWalletConnect()
+  const { wallet } = useWallet()
 
   const signTx = useMutation(async () => {
     const address = props.isProxy ? account?.delegate : account?.address
-    const provider =
-      account?.provider === "external" && props.isProxy
-        ? PROXY_WALLET_PROVIDER
-        : account?.provider
-
     if (!address) throw new Error("Missing active account")
+    if (!wallet) throw new Error("Missing wallet")
+    if (!wallet.signer) throw new Error("Missing signer")
 
-    if (provider === "WalletConnect") {
-      if (wallet == null) throw new Error("Missing wallet for Wallet Connect")
-      const signer = wallet.signer
-      if (!signer) throw new Error("Missing signer for Wallet Connect")
-
-      const signature = await props.tx.signAsync(address, { signer, nonce: -1 })
-      return await props.onSigned(signature)
-    } else {
-      const wallet = getWalletBySource(provider)
-
-      if (wallet == null) throw new Error("Missing wallet")
-
-      if (props.isProxy) {
-        await wallet.enable(POLKADOT_APP_NAME)
-      }
-      const signature = await props.tx.signAsync(address, {
-        signer: wallet.signer,
-        // defer to polkadot/api to handle nonce w/ regard to mempool
-        nonce: -1,
-      })
-      return await props.onSigned(signature)
+    if (wallet.signer instanceof MetaMaskSigner) {
+      const tx = await wallet.signer.sendDispatch(props.tx.method.toHex())
+      return props.onEvmSigned(tx)
     }
+
+    // @TODO handle proxy
+
+    const signature = await props.tx.signAsync(address, {
+      signer: wallet.signer,
+      // defer to polkadot/api to handle nonce w/ regard to mempool
+      nonce: -1,
+    })
+
+    return props.onSigned(signature)
   })
 
   const json = getTransactionJSON(props.tx)

@@ -8,18 +8,20 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useCopyToClipboard } from "react-use"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
-import { useAccountStore } from "state/store"
 import { WalletConnectModal } from "sections/wallet/connect/modal/WalletConnectModal"
 import { SWalletHeader } from "./WalletHeader.styled"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const WalletHeader = () => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const [, copy] = useCopyToClipboard()
   const [open, setOpen] = useState(false)
 
-  const hydraAddress = account
-    ? encodeAddress(decodeAddress(account?.address), HYDRA_ADDRESS_PREFIX)
+  const addressDisplay = account?.evmAddress
+    ? account?.evmAddress
+    : account?.address
+    ? encodeAddress(decodeAddress(account.address), HYDRA_ADDRESS_PREFIX)
     : ""
 
   return (
@@ -28,7 +30,7 @@ export const WalletHeader = () => {
         <Text fs={20} fw={500} lh={20} font="FontOver">
           {account?.name ?? t("wallet.header.noAccountSelected")}
         </Text>
-        {account?.address && (
+        {addressDisplay && (
           <div sx={{ flex: "row", align: "center" }}>
             <div
               sx={{
@@ -45,7 +47,7 @@ export const WalletHeader = () => {
                 sx={{ maxWidth: ["calc(100vw - 60px)", "fit-content"] }}
                 css={{ wordWrap: "break-word" }}
               >
-                {hydraAddress}
+                {addressDisplay}
               </Text>
               <InfoTooltip
                 text={t("wallet.header.copyAddress.hover")}
@@ -54,7 +56,7 @@ export const WalletHeader = () => {
                 <CopyIcon
                   sx={{ color: "brightBlue300" }}
                   css={{ cursor: "pointer" }}
-                  onClick={() => copy(hydraAddress)}
+                  onClick={() => copy(addressDisplay)}
                 />
               </InfoTooltip>
             </div>

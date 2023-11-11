@@ -15,6 +15,7 @@ import { HeaderMenuTabletButton } from "components/Layout/Header/menu/HeaderMenu
 import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
 import { useVisibleElements } from "hooks/useVisibleElements"
 import { useMemo } from "react"
+import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 
 const settingsEanbled = import.meta.env.VITE_FF_SETTINGS_ENABLED === "true"
 
@@ -69,6 +70,7 @@ export const Header = () => {
               )}
               <Bell />
             </div>
+            <Web3ConnectModalButton />
             <WalletConnectButton />
             {!isSmallMedia && isMediumMedia && (
               <HeaderMenuTabletButton items={visibleTabletItems} />

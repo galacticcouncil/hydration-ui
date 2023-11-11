@@ -9,6 +9,7 @@ import { u32 } from "@polkadot/types-codec"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { usePaymentInfo } from "./transaction"
 import { useRpcProvider } from "providers/rpcProvider"
+import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
 
 export const getAcceptedCurrency =
   (api: ApiPromise, id: u32 | string) => async () => {
@@ -63,8 +64,23 @@ export const useSetAsFeePayment = () => {
   }
 }
 
+export const getNativeEvmAssetId = async (api: ApiPromise) => {
+  const assets = await api.query.assetRegistry.assetMetadataMap.entries()
+  const weth = assets.find(([_, dataRaw]) => {
+    return dataRaw.unwrap().symbol.toUtf8() === NATIVE_EVM_ASSET_SYMBOL
+  })
+
+  const assetId = weth?.[0].args[0].toString()
+
+  return assetId
+}
+
 export const getAccountCurrency =
   (api: ApiPromise, address: string | AccountId32) => async () => {
+    if (typeof address === "string" && isEvmAccount(address)) {
+      return await getNativeEvmAssetId(api)
+    }
+
     const result =
       await api.query.multiTransactionPayment.accountCurrencyMap(address)
 

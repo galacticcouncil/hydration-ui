@@ -4,6 +4,8 @@ import { TalismanAvatar } from "components/AccountAvatar/TalismanAvatar"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { JdenticonAvatar } from "./JdenticonAvatar"
 import { PolkadotAvatar } from "./PolkadotAvatar"
+import { MetaMaskAvatar } from "./MetaMaskAvatar"
+import { isEvmAddress } from "utils/evm"
 
 export function AccountAvatar(props: {
   address: string
@@ -12,6 +14,16 @@ export function AccountAvatar(props: {
   className?: string
   prefix?: number
 }) {
+  if (props.theme === "metamask" || isEvmAddress(props.address)) {
+    return (
+      <MetaMaskAvatar
+        address={props.address}
+        size={props.size}
+        className={props.className}
+      />
+    )
+  }
+
   if (safeConvertAddressSS58(props.address, 0) === null) return null
 
   const address =
