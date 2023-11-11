@@ -13,7 +13,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { theme } from "theme"
 import { BN_1, BN_10 } from "utils/constants"
 import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
@@ -24,6 +24,7 @@ import {
   PasteAddressIcon,
 } from "./WalletTransferSectionOnchain.styled"
 import { useTokenBalance } from "api/balances"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -39,7 +40,7 @@ export function WalletTransferSectionOnchain({
   openAddressBook: () => void
 }) {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { api, assets } = useRpcProvider()
   const { createTransaction } = useStore()
 

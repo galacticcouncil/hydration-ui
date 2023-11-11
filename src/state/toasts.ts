@@ -2,9 +2,9 @@ import { create } from "zustand"
 import { ReactElement, ReactNode, useMemo } from "react"
 import { v4 as uuid } from "uuid"
 import { renderToString } from "react-dom/server"
-import { useAccountStore } from "./store"
 import { createJSONStorage, persist } from "zustand/middleware"
 import { Maybe, safelyParse } from "utils/helpers"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const TOAST_MESSAGES = ["onLoading", "onSuccess", "onError"] as const
 export type ToastVariant = "info" | "success" | "error" | "progress" | "unknown"
@@ -162,7 +162,7 @@ const useToastsStore = create<ToastStore>()(
 
 export const useToast = () => {
   const store = useToastsStore()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   const toasts = useMemo(() => {
     if (account?.address) {

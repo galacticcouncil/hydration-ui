@@ -1,7 +1,7 @@
 import { u32 } from "@polkadot/types"
 import { TAsset, useAcountAssets } from "api/assetDetails"
 import { useTranslation } from "react-i18next"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Maybe } from "utils/helpers"
 import { Text } from "components/Typography/Text/Text"
 import {
@@ -39,7 +39,7 @@ export const AssetsModalContent = ({
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const [search, setSearch] = useState("")
 
   const accountAssets = useAcountAssets(account?.address)

@@ -13,7 +13,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { isNotNil } from "utils/helpers"
 import { useSetAsFeePayment } from "api/payments"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { isMetaMaskInstalled, watchAsset } from "utils/metamask"
 import { NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
 
@@ -32,7 +32,7 @@ type Props = {
 export const WalletAssetsTableActions = (props: Props) => {
   const { t } = useTranslation()
   const setFeeAsPayment = useSetAsFeePayment()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   const actionItems = [
     /*{

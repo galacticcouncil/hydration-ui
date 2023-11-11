@@ -3,7 +3,7 @@ import { Button } from "components/Button/Button"
 import { ComponentProps, useState } from "react"
 import { LiquidityPositionModal } from "./LiquidityPositionModal"
 import DetailsIcon from "assets/icons/DetailsIcon.svg?react"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
@@ -17,7 +17,7 @@ type Props = Omit<
 
 export const LiquidityPositionButton = (props: Props) => {
   const [openLiquidityPositions, setOpenLiquidityPositions] = useState(false)
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { t } = useTranslation()
   const positions = usePoolPositions(props.pool.id)

@@ -8,7 +8,7 @@ import { theme } from "theme"
 import { AnimatePresence, motion } from "framer-motion"
 import { LiquidityPosition } from "./positions/LiquidityPosition"
 import { useTokenBalance } from "api/balances"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_0 } from "utils/constants"
 import { TransferModal, Page } from "./transfer/TransferModal"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
@@ -26,7 +26,7 @@ export const StablePool = ({ pool }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const position = useTokenBalance(id.toString(), account?.address)
   const positions = usePoolPositions(id)
 

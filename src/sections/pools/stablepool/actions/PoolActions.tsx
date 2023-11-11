@@ -7,7 +7,7 @@ import {
   SActionsContainer,
   SButtonOpen,
 } from "sections/pools/pool/actions/PoolActions.styled"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BigNumber from "bignumber.js"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -38,7 +38,7 @@ export const PoolActions = ({
   canAddLiquidity,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const actionButtons = (

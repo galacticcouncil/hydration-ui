@@ -16,7 +16,7 @@ import BigNumber from "bignumber.js"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useTokenBalance } from "api/balances"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 enum RemoveStablepoolLiquidityPage {
   OPTIONS,
@@ -44,7 +44,7 @@ export const RemoveLiquidityModal = ({
   const id = pool.id.toString()
   const isRemovingOmnipoolPosition = !!position
 
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const stablepoolPosition = useTokenBalance(id, account?.address)
   const stablepoolPositionAmount = stablepoolPosition?.data?.freeBalance ?? BN_0
 

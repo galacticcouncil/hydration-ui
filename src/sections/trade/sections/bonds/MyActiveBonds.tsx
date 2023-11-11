@@ -1,7 +1,7 @@
 import { BondsTable } from "./table/BondsTable"
 import { Skeleton } from "./table/skeleton/Skeleton"
 import { useTokensBalances } from "api/balances"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useBondsEvents, useLbpPool } from "api/bonds"
 import { pluck } from "utils/rx"
 import { useTranslation } from "react-i18next"
@@ -29,7 +29,7 @@ export const MyActiveBonds = ({
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   const [allAssets, setAllAssets] = useState(false)
 

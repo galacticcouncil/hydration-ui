@@ -7,7 +7,7 @@ import { useUniques } from "api/uniques"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { useAssetsTradability } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NATIVE_ASSET_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
 import { BN_0, BN_MILL, BN_NAN, TRADING_FEE } from "utils/constants"
@@ -58,7 +58,7 @@ export const useStablePools = (withPositions?: boolean) => {
   const assetsTradability = useAssetsTradability()
   const pools = useStableswapPools()
 
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const apiIds = useApiIds()
 
   const poolIds = (pools.data ?? []).map((pool) => pool.id.toString())
@@ -206,7 +206,7 @@ export const useStablePools = (withPositions?: boolean) => {
 }
 
 export const useOmnipoolPools = (withPositions?: boolean) => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { assets } = useRpcProvider()
   const omnipoolAssets = useOmnipoolAssets()
 

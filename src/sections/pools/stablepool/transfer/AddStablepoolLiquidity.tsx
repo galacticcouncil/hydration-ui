@@ -7,7 +7,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { FormValues } from "utils/helpers"
 import { PoolAddLiquidityInformationCard } from "sections/pools/modals/AddLiquidity/AddLiquidityInfoCard"
 import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
@@ -21,6 +21,7 @@ import { TAsset } from "api/assetDetails"
 import { useRpcProvider } from "providers/rpcProvider"
 import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
 import { BalanceByAsset } from "sections/pools/PoolsPage.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = {
   poolId: u32
@@ -63,7 +64,7 @@ export const AddStablepoolLiquidity = ({
     reserves,
   })
 
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const walletBalance = useTokenBalance(asset.id, account?.address)
 
   const onSubmit = async (values: FormValues<typeof form>) => {

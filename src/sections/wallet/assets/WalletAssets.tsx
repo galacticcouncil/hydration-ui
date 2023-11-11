@@ -1,6 +1,6 @@
 import { Spacer } from "components/Spacer/Spacer"
 import { WalletAssetsTablePlaceholder } from "sections/wallet/assets/table/placeholder/WalletAssetsTablePlaceholder"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { WalletFarmingPositionsWrapper } from "./farmingPositions/wrapper/WalletFarmingPositionsWrapper"
 import { WalletAssetsPositionsWrapper } from "./hydraPositions/WalletAssetsPositionsWrapper"
 import { WalletAssetsTableWrapper } from "./table/WalletAssetsTableWrapper"
@@ -17,7 +17,7 @@ const enabledBonds = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
 
 export const WalletAssets = () => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { isLoaded } = useRpcProvider()
 
   if (!isLoaded) {

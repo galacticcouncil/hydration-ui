@@ -3,7 +3,7 @@ import HydraLogo from "assets/icons/HydraLogo.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { HeaderMenu } from "components/Layout/Header/menu/HeaderMenu"
 import { SHeader, SQuestionmark } from "components/Layout/Header/Header.styled"
-import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
+import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { useMedia } from "react-use"
@@ -15,7 +15,6 @@ import { HeaderMenuTabletButton } from "components/Layout/Header/menu/HeaderMenu
 import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
 import { useVisibleElements } from "hooks/useVisibleElements"
 import { useMemo } from "react"
-import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 
 const settingsEanbled = import.meta.env.VITE_FF_SETTINGS_ENABLED === "true"
 
@@ -71,7 +70,6 @@ export const Header = () => {
               <Bell />
             </div>
             <Web3ConnectModalButton />
-            <WalletConnectButton />
             {!isSmallMedia && isMediumMedia && (
               <HeaderMenuTabletButton items={visibleTabletItems} />
             )}

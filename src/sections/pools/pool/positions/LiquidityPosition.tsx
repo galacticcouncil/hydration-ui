@@ -20,7 +20,7 @@ import { useFarms } from "api/farms"
 import { useFarmDepositMutation } from "utils/farms/deposit"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useDisplayPrice } from "utils/displayAsset"
 import { BN_0 } from "utils/constants"
@@ -46,7 +46,7 @@ function LiquidityPositionJoinFarmButton(props: {
 }) {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const [joinFarm, setJoinFarm] = useState(false)
   const farms = useFarms([props.poolId])
   const meta = assets.getAsset(props.poolId.toString())
@@ -110,7 +110,7 @@ function LiquidityPositionRemoveLiquidity(props: {
   disableRemoveLiquidity: boolean
 }) {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const [openRemove, setOpenRemove] = useState(false)
   return (
     <>

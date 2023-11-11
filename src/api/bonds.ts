@@ -6,7 +6,7 @@ import request, { gql } from "graphql-request"
 import { useRpcProvider } from "providers/rpcProvider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { isHydraAddress } from "utils/formatting"
 
 export type Bond = {
@@ -70,7 +70,7 @@ export const useBondsEvents = (
   isMyEvents?: boolean,
 ) => {
   const indexerUrl = useIndexerUrl()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const accountHash = account?.address
     ? u8aToHex(
         decodeAddress(

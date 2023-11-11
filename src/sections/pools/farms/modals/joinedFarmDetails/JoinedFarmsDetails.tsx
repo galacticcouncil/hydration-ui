@@ -12,11 +12,12 @@ import { Trans, useTranslation } from "react-i18next"
 import { ClaimRewardsCard } from "sections/pools/farms/components/claimableCard/ClaimRewardsCard"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
-import { ToastMessage, useAccountStore } from "state/store"
+import { ToastMessage } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useFarmExitAllMutation } from "utils/farms/exit"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 function isFarmJoined(depositNft: DepositNftType, farm: Farm) {
   return depositNft.deposit.yieldFarmEntries.find(
@@ -34,7 +35,7 @@ function JoinedFarmsDetailsRedeposit(props: {
 }) {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const farms = useFarms([props.poolId])
   const meta = assets.getAsset(props.poolId.toString())
 
@@ -114,7 +115,7 @@ function JoinedFarmsDetailsPositions(props: {
 }) {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const farms = useFarms([props.poolId])
   const meta = assets.getAsset(props.poolId.toString())
   const joinedFarms = farms.data?.filter((farm) =>

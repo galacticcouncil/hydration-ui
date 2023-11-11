@@ -11,7 +11,7 @@ import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { u32 } from "@polkadot/types-codec"
 
@@ -41,7 +41,7 @@ type RedepositFarmsProps = {
 export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const [joinFarm, setJoinFarm] = useState(false)
 
   const farms = useFarms([poolId])

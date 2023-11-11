@@ -6,16 +6,17 @@ import { Trans, useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useFooterValues } from "sections/pools/pool/footer/PoolFooter.utils"
-import { ToastMessage, useAccountStore } from "state/store"
+import { ToastMessage } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
 import { SContainer } from "./PoolFooter.styled"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = { pool: OmnipoolPool }
 
 export const PoolFooter = ({ pool }: Props) => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   const claimable = useClaimableAmount(pool.id)
   const footerValues = useFooterValues(pool)

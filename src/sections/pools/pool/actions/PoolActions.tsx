@@ -13,7 +13,7 @@ import {
   SActionsContainer,
   SButtonOpen,
 } from "sections/pools/pool/actions/PoolActions.styled"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { LiquidityPositions } from "sections/pools/modals/LiquidityPositions/LiquidityPositions"
 import { usePoolPositions } from "sections/pools/pool/Pool.utils"
@@ -44,7 +44,7 @@ export const PoolActions = ({
   const [openAdd, setOpenAdd] = useState(false)
   const [openLiquidityPositions, setOpenLiquidityPositions] = useState(false)
   const [openFarmDefails, setOpenFarmDefails] = useState(false)
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const positions = usePoolPositions(pool.id)
   const farms = useFarms([pool.id])

@@ -5,9 +5,10 @@ import type { TxInfo } from "@galacticcouncil/apps"
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const DcaApp = createComponent({
   tagName: "gc-dca-app",
@@ -27,7 +28,7 @@ const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export function DcaPage() {
   const { api } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { createTransaction } = useStore()
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL

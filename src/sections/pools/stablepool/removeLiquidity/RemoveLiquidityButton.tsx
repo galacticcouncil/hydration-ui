@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { RemoveLiquidityModal } from "./RemoveLiquidityModal"
 import { useTranslation } from "react-i18next"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { SButton } from "sections/pools/pool/positions/LiquidityPosition.styled"
 import { Icon } from "components/Icon/Icon"
 import MinusIcon from "assets/icons/MinusIcon.svg?react"
@@ -14,7 +14,7 @@ type Props = {
 
 export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const [openRemove, setOpenRemove] = useState(false)
 
   return (

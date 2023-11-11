@@ -2,7 +2,7 @@ import { ApiPromise } from "@polkadot/api"
 import { u128, u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { useQueries, useQuery } from "@tanstack/react-query"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -95,7 +95,7 @@ const getOmniPositionId =
   }
 
 export const useAccountDeposits = (poolId?: u32) => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const accountDepositIds = useAccountDepositIds(account?.address)
   const deposits = usePoolDeposits(poolId)
 
@@ -111,7 +111,7 @@ export const useAccountDeposits = (poolId?: u32) => {
 }
 
 export const useUserDeposits = () => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const accountDepositIds = useAccountDepositIds(account?.address)
   const deposits = useAllDeposits()
 

@@ -5,7 +5,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { PoolsHeaderTotal } from "sections/pools/header/PoolsHeaderTotal"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { ClaimAllDropdown } from "sections/pools/farms/components/claimAllDropdown/ClaimAllDropdown"
 import { Fragment, ReactElement } from "react"
@@ -112,7 +112,7 @@ export const PoolsHeader = ({
 }: Props) => {
   const { t } = useTranslation()
 
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   return (
     <>

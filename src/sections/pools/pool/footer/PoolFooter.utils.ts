@@ -11,7 +11,7 @@ import BN from "bignumber.js"
 import { useMemo } from "react"
 import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { BN_0, BN_10, BN_NAN } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
@@ -19,7 +19,7 @@ import { isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const useUsersTotalInPool = (pool: OmnipoolPool) => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { assets } = useRpcProvider()
   const apiIds = useApiIds()
   const uniques = useUniques(

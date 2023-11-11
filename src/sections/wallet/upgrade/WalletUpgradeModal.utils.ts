@@ -7,7 +7,7 @@ import { defaults as addressDefaults } from "@polkadot/util-crypto/address/defau
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useCacheApiMetadataStore } from "state/metadata"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useRpcProvider } from "providers/rpcProvider"
 
@@ -31,7 +31,7 @@ function getChainMetadata(api: ApiPromise) {
 }
 
 export const useUpdateMetadataMutation = () => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { api } = useRpcProvider()
 
   const cache = useCacheApiMetadataStore()

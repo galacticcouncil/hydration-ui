@@ -5,7 +5,7 @@ import { useMemo } from "react"
 import { u32 } from "@polkadot/types"
 import { useTotalIssuances } from "./totalIssuance"
 import { useTokensBalances } from "./balances"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const usePools = () => {
@@ -17,7 +17,7 @@ export const getPools = (tradeRouter: TradeRouter) => async () =>
   tradeRouter.getPools()
 
 export const useShareOfPools = (assets: (u32 | string)[]) => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   const totalIssuances = useTotalIssuances(assets)
   const totalBalances = useTokensBalances(assets, account?.address)

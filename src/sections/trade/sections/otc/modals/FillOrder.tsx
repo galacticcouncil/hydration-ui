@@ -5,11 +5,12 @@ import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { BN_10 } from "utils/constants"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { OfferingPair } from "sections/trade/sections/otc/orders/OtcOrdersData.utils"
 import { OrderAssetPrice } from "./cmp/AssetPrice"
 import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type FillOrderProps = {
   orderId: string
@@ -27,7 +28,7 @@ export const FillOrder = ({
   onSuccess,
 }: FillOrderProps) => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   const { api, assets } = useRpcProvider()
   const assetInMeta = assets.getAsset(accepting.asset)

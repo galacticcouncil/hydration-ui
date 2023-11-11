@@ -10,7 +10,7 @@ import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useUniques } from "api/uniques"
 import BN from "bignumber.js"
 import { useMemo } from "react"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_10, BN_NAN } from "utils/constants"
@@ -66,7 +66,7 @@ export const useTotalInPools = () => {
 }
 
 export const useUsersTotalInPools = () => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { assets } = useRpcProvider()
   const apiIds = useApiIds()
   const uniques = useUniques(
