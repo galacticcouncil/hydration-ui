@@ -25,6 +25,7 @@ import {
 } from "./WalletTransferSectionOnchain.styled"
 import { useTokenBalance } from "api/balances"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { H160, isEvmAddress } from "utils/evm"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -69,13 +70,20 @@ export function WalletTransferSectionOnchain({
       BN_10.pow(assetMeta.decimals),
     )
 
+    const normalizedDest = isEvmAddress(values.dest)
+      ? new H160(values.dest).toAccount()
+      : values.dest
+
     return await createTransaction(
       {
         tx:
           asset.toString() === assets.native.id
-            ? api.tx.balances.transferKeepAlive(values.dest, amount.toFixed())
+            ? api.tx.balances.transferKeepAlive(
+                normalizedDest,
+                amount.toFixed(),
+              )
             : api.tx.tokens.transferKeepAlive(
-                values.dest,
+                normalizedDest,
                 asset,
                 amount.toFixed(),
               ),
@@ -150,6 +158,7 @@ export function WalletTransferSectionOnchain({
             validate: {
               validAddress: (value) =>
                 safeConvertAddressSS58(value, 0) != null ||
+                isEvmAddress(value) ||
                 t("wallet.assets.transfer.error.validAddress"),
               notSame: (value) => {
                 if (!account?.address) return true

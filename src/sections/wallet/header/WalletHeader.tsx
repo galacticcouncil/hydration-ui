@@ -4,19 +4,18 @@ import { Button } from "components/Button/Button"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useCopyToClipboard } from "react-use"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
-import { WalletConnectModal } from "sections/wallet/connect/modal/WalletConnectModal"
 import { SWalletHeader } from "./WalletHeader.styled"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 
 export const WalletHeader = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
+  const { toggle: toggleWeb3Connect } = useWeb3ConnectStore()
   const [, copy] = useCopyToClipboard()
-  const [open, setOpen] = useState(false)
 
   const addressDisplay = account?.evmAddress
     ? account?.evmAddress
@@ -64,7 +63,7 @@ export const WalletHeader = () => {
               size="small"
               variant="primary"
               sx={{ display: ["none", "inherit"] }}
-              onClick={() => setOpen(true)}
+              onClick={toggleWeb3Connect}
             >
               {t("wallet.header.switchAccount")}
             </Button>
@@ -76,10 +75,6 @@ export const WalletHeader = () => {
         opacity={0.12}
         sx={{ display: ["none", "inherit"] }}
       />
-
-      {open && (
-        <WalletConnectModal isOpen={open} onClose={() => setOpen(false)} />
-      )}
     </>
   )
 }

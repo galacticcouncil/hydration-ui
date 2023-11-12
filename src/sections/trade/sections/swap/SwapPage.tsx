@@ -113,6 +113,7 @@ export function SwapPage() {
   return (
     <SContainer>
       <SwapApp
+        key={account?.provider}
         ref={(r) => {
           if (r) {
             r.setAttribute("chart", "")

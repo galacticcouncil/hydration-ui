@@ -103,8 +103,7 @@ export class MetaMask implements Wallet {
 
       if (this.onAccountsChanged)
         await this.subscribeAccounts(this.onAccountsChanged)
-      if (this.onChainChanged)
-        await this.subscribeChainChanged(this.onChainChanged)
+      if (this.onChainChanged) await this.subscribeChain(this.onChainChanged)
     } catch (err: any) {
       throw this.transformError(err as Error)
     }
@@ -164,7 +163,7 @@ export class MetaMask implements Wallet {
     })
   }
 
-  subscribeChainChanged = async (callback: ChainSubscriptionFn) => {
+  subscribeChain = async (callback: ChainSubscriptionFn) => {
     if (!this._extension) {
       throw new Error(
         `The 'Wallet.enable(dappname)' function should be called first.`,
@@ -175,5 +174,9 @@ export class MetaMask implements Wallet {
       const chainId = typeof payload === "string" ? parseInt(payload) : null
       callback(chainId)
     })
+  }
+
+  unsubscribe = () => {
+    this._extension?.removeAllListeners()
   }
 }

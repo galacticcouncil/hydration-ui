@@ -6,17 +6,13 @@ import { ButtonProps } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  useAccount,
-  useWeb3ConnectEagerEnable,
-} from "sections/web3-connect/Web3Connect.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import {
   Account,
   useWeb3ConnectStore,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
-import { Web3ConnectModal } from "./Web3ConnectModal"
 import { SContainer, SLoginButton } from "./Web3ConnectModalButton.styled"
 
 const Web3ConnectActiveButton: FC<{
@@ -110,9 +106,7 @@ export const Web3ConnectInactiveButton: FC<{
 }
 
 export const Web3ConnectModalButton: FC<{ className?: string }> = (props) => {
-  useWeb3ConnectEagerEnable()
-
-  const { open, toggle } = useWeb3ConnectStore()
+  const { toggle } = useWeb3ConnectStore()
   const { account } = useAccount()
 
   return (
@@ -129,7 +123,6 @@ export const Web3ConnectModalButton: FC<{ className?: string }> = (props) => {
           onOpen={toggle}
         />
       )}
-      {open && <Web3ConnectModal />}
     </>
   )
 }

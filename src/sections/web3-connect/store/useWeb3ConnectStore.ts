@@ -1,6 +1,7 @@
 import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { omit } from "utils/rx"
 
 export enum WalletProviderStatus {
   Connected = "connected",
@@ -71,6 +72,7 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
     }),
     {
       name: "web3-connect",
+      partialize: (state) => omit(["open"], state),
     },
   ),
 )

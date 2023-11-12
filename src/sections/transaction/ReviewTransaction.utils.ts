@@ -13,7 +13,7 @@ import { decodeError } from "ethers-decode-error"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useState } from "react"
 import { useMountedState } from "react-use"
-import { getEvmTxLink } from "utils/evm"
+import { H160, getEvmTxLink, isEvmAccount } from "utils/evm"
 
 type TxMethod = AnyJson & {
   method: string
@@ -62,7 +62,17 @@ export function getTransactionJSON(tx: SubmittableExtrinsic<"promise">) {
   const res = isTxExtrinsic(txEx) ? getTxHuman(txEx.method) : null
   if (res == null || Object.entries(res).length !== 1) return null
 
-  const [method, { args }] = Object.entries(res)[0]
+  const [method, { args: argsRaw }] = Object.entries(res)[0]
+
+  const args = Object.fromEntries(
+    Object.entries(argsRaw).map(([key, value]) => [
+      key,
+      // format EVM account address to EVM H160
+      typeof value === "string" && isEvmAccount(value)
+        ? H160.fromAccount(value)
+        : value,
+    ]),
+  )
   return { method, args }
 }
 

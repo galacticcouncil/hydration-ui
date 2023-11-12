@@ -1,7 +1,10 @@
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import {
+  useAccount,
+  useWalletAccounts,
+} from "sections/web3-connect/Web3Connect.utils"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
@@ -9,7 +12,7 @@ import { persist } from "zustand/middleware"
 export const useWalletAddresses = () => {
   const { account } = useAccount()
   const storageAddresses = useAddressStore()
-  const providerAddresses = useProviderAccounts(account?.provider)
+  const providerAddresses = useWalletAccounts(account?.provider ?? null)
 
   const data = useMemo(() => {
     if (!providerAddresses.data) return []

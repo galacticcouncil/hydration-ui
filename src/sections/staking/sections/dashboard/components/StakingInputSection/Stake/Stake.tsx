@@ -7,7 +7,6 @@ import { FormValues } from "utils/helpers"
 import BigNumber from "bignumber.js"
 import { BN_10 } from "utils/constants"
 import { Button } from "components/Button/Button"
-import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
 import { getFixedPointAmount } from "utils/balance"
 import { useQueryClient } from "@tanstack/react-query"
@@ -16,6 +15,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 
 export const Stake = ({
   loading,
@@ -178,7 +178,7 @@ export const Stake = ({
               : t("staking.dashboard.form.restake.button")}
           </Button>
         ) : (
-          <WalletConnectButton />
+          <Web3ConnectModalButton />
         )}
       </form>
     </div>

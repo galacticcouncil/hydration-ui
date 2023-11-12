@@ -68,7 +68,7 @@ export const ReviewTransactionForm = (
     if (!wallet) throw new Error("Missing wallet")
     if (!wallet.signer) throw new Error("Missing signer")
 
-    if (wallet.signer instanceof MetaMaskSigner) {
+    if (wallet?.signer instanceof MetaMaskSigner) {
       const tx = await wallet.signer.sendDispatch(props.tx.method.toHex())
       return props.onEvmSigned(tx)
     }
@@ -223,16 +223,18 @@ export const ReviewTransactionForm = (
                           type: "token",
                         })}
                       </Text>
-                      <div
-                        tabIndex={0}
-                        role="button"
-                        onClick={openModal}
-                        css={{ cursor: "pointer" }}
-                      >
-                        <Text color="brightBlue300">
-                          {t("liquidity.reviewTransaction.modal.edit")}
-                        </Text>
-                      </div>
+                      {!account?.evmAddress && (
+                        <div
+                          tabIndex={0}
+                          role="button"
+                          onClick={openModal}
+                          css={{ cursor: "pointer" }}
+                        >
+                          <Text color="brightBlue300">
+                            {t("liquidity.reviewTransaction.modal.edit")}
+                          </Text>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <Skeleton width={100} height={16} />

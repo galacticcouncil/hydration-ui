@@ -1,7 +1,10 @@
-import { AuthError, Wallet, WalletAccount } from "@talismn/connect-wallets"
+import { Wallet, WalletAccount } from "@talismn/connect-wallets"
 import { WalletConnectModal } from "@walletconnect/modal"
 import { SessionTypes } from "@walletconnect/types"
-import { UniversalProvider } from "@walletconnect/universal-provider"
+import {
+  IUniversalProvider,
+  UniversalProvider,
+} from "@walletconnect/universal-provider"
 import WalletConnectLogo from "assets/icons/WalletConnect.svg"
 import {
   PolkadotNamespaceChainId,
@@ -53,7 +56,7 @@ export class WalletConnect implements Wallet {
     alt: "WalletConnect Logo",
   }
 
-  _extension: any
+  _extension: IUniversalProvider | undefined
   _signer: WalletConnectSigner | undefined
   _session: SessionTypes.Struct | undefined
 
@@ -85,14 +88,7 @@ export class WalletConnect implements Wallet {
     return provider
   }
 
-  static onModalClose = () => {
-    return new Error("user closed modal")
-  }
-
   transformError = (err: Error): Error => {
-    if (err.message.includes("user closed modal")) {
-      return new AuthError(err.message, this)
-    }
     return err
   }
 

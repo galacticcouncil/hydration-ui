@@ -12,9 +12,14 @@ export const NATIVE_EVM_ASSET_DECIMALS = 18
 
 export function isEvmAccount(address?: string) {
   if (!address) return false
-  const { prefixBytes } = H160
-  const pub = decodeAddress(address, true)
-  return Buffer.from(pub.subarray(0, prefixBytes.length)).equals(prefixBytes)
+
+  try {
+    const { prefixBytes } = H160
+    const pub = decodeAddress(address, true)
+    return Buffer.from(pub.subarray(0, prefixBytes.length)).equals(prefixBytes)
+  } catch {
+    return false
+  }
 }
 
 export class H160 {
@@ -33,6 +38,12 @@ export class H160 {
       ),
       HYDRA_ADDRESS_PREFIX,
     )
+  }
+
+  static fromAccount = (address: string) => {
+    const decodedBytes = decodeAddress(address)
+    const addressBytes = decodedBytes.slice(H160.prefixBytes.length, -8)
+    return "0x" + Buffer.from(addressBytes).toString("hex")
   }
 }
 

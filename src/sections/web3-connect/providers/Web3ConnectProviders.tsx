@@ -1,11 +1,13 @@
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
+import {
+  WalletProviderType,
+  getSupportedWallets,
+} from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectProviderButton } from "sections/web3-connect/providers/Web3ConnectProviderButton"
 import { useMemo } from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { SUPPORTED_WALLET_PROVIDERS } from "sections/web3-connect/Web3Connect.utils"
 
 const MOBILE_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Talisman,
@@ -31,13 +33,14 @@ const ALTERNATIVE_PROVIDERS: WalletProviderType[] = [
 const useWalletProviders = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   return useMemo(() => {
-    const defaultProviders = SUPPORTED_WALLET_PROVIDERS.filter((provider) => {
+    const wallets = getSupportedWallets()
+    const defaultProviders = wallets.filter((provider) => {
       return isDesktop
         ? DESKTOP_PROVIDERS.includes(provider.type)
         : MOBILE_PROVIDERS.includes(provider.type)
     })
 
-    const alternativeProviders = SUPPORTED_WALLET_PROVIDERS.filter((provider) =>
+    const alternativeProviders = wallets.filter((provider) =>
       ALTERNATIVE_PROVIDERS.includes(provider.type),
     )
 

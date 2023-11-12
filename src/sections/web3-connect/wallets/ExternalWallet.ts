@@ -18,8 +18,8 @@ export class ExternalWallet implements Wallet {
 
   accounts: WalletAccount[] = []
 
-  static accountName: string = "External Account"
-  static proxyAccountName: string = "Proxy Account"
+  static accountName = "External Account"
+  static proxyAccountName = "Proxy Account"
 
   get extension() {
     return this._extension
@@ -41,7 +41,7 @@ export class ExternalWallet implements Wallet {
     return Promise.resolve(dappName)
   }
 
-  setAddress = async (address: string) => {
+  setAddress = async (address?: string) => {
     this.accounts = address
       ? [
           {
@@ -59,5 +59,5 @@ export class ExternalWallet implements Wallet {
     return Promise.resolve(this.accounts)
   }
 
-  subscribeAccounts = async () => {}
+  subscribeAccounts = async () => Promise.resolve()
 }

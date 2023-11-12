@@ -15,6 +15,7 @@ import {
 } from "./AddressBookItem.styled"
 import { AddressBookItemEdit } from "./edit/AddressBookItemEdit"
 import { AddressBookItemRemove } from "./remove/AddressBookItemRemove"
+import { H160, isEvmAccount, isEvmAddress } from "utils/evm"
 
 type Props = {
   address: string
@@ -32,14 +33,19 @@ export const AddressBookItem = ({
   const [editting, setEditting] = useState(false)
   const [removing, setRemoving] = useState(false)
 
-  const hydraAddress = isHydraAddress(address)
-    ? address
-    : encodeAddress(decodeAddress(address), HYDRA_ADDRESS_PREFIX)
+  const encodedAddress =
+    isEvmAddress(address) || isHydraAddress(address)
+      ? address
+      : encodeAddress(decodeAddress(address), HYDRA_ADDRESS_PREFIX)
+
+  const addressDisplay = isEvmAccount(encodedAddress)
+    ? H160.fromAccount(encodedAddress)
+    : encodedAddress
 
   if (editting)
     return (
       <AddressBookItemEdit
-        address={hydraAddress}
+        address={addressDisplay}
         name={name}
         provider={provider}
         onEdit={() => setEditting(false)}
@@ -48,13 +54,13 @@ export const AddressBookItem = ({
 
   return (
     <>
-      <SItem onClick={() => onSelect(hydraAddress)}>
+      <SItem onClick={() => onSelect(addressDisplay)}>
         <SNameContainer>
-          <AccountAvatar address={hydraAddress} size={30} />
+          <AccountAvatar address={addressDisplay} size={30} />
           <SName>{name}</SName>
         </SNameContainer>
         <SAddressContainer>
-          <SAddress>{hydraAddress}</SAddress>
+          <SAddress>{addressDisplay}</SAddress>
           {provider === "external" && (
             <div sx={{ flex: "row" }}>
               <SButton
@@ -79,7 +85,7 @@ export const AddressBookItem = ({
       </SItem>
       {removing && (
         <AddressBookItemRemove
-          address={hydraAddress}
+          address={addressDisplay}
           onDone={() => setRemoving(false)}
         />
       )}

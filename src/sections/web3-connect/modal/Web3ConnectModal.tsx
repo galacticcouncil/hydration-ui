@@ -4,10 +4,6 @@ import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  WalletProviderType,
-  useProviderAccounts,
-} from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectAccounts } from "sections/web3-connect/accounts/Web3ConnectAccounts"
 import { Web3ConnectErrorModal } from "sections/web3-connect/modal/Web3ConnectErrorModal"
 import { Web3ConnectExternalModal } from "sections/web3-connect/modal/Web3ConnectExternalModal"
@@ -15,6 +11,10 @@ import { Web3ConnectFooter } from "sections/web3-connect/modal/Web3ConnectFooter
 import { Web3ConnectProviderPending } from "sections/web3-connect/providers/Web3ConnectProviderPending"
 import { Web3ConnectProviders } from "sections/web3-connect/providers/Web3ConnectProviders"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import {
+  WalletProviderType,
+  useWalletAccounts,
+} from "sections/web3-connect/Web3Connect.utils"
 
 enum ModalPage {
   ProviderSelect,
@@ -34,7 +34,7 @@ export const Web3ConnectModal = () => {
     toggle,
     error,
   } = useWeb3ConnectStore()
-  const { data: accounts, isLoading } = useProviderAccounts(activeProvider)
+  const { data: accounts, isLoading } = useWalletAccounts(activeProvider)
 
   const initialPage = activeProvider
     ? ModalPage.AccountSelect

@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
 import { SButton, SContainer, SIcon, SInput } from "./AddressBookInput.styled"
+import { isEvmAddress } from "utils/evm"
 
 type Props = {
   search: string
@@ -20,7 +21,10 @@ export const AddressBookInput = ({
   const { add } = useAddressStore()
 
   const onSubmit = () => {
-    if (safeConvertAddressSS58(search, 0) === null) return
+    const isValidAddress =
+      safeConvertAddressSS58(search, 0) !== null || isEvmAddress(search)
+
+    if (!isValidAddress) return
 
     const name = t("addressbook.add.name")
     const address = search

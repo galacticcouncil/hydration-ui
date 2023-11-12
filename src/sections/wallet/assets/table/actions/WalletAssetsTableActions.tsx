@@ -15,7 +15,7 @@ import { isNotNil } from "utils/helpers"
 import { useSetAsFeePayment } from "api/payments"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { isMetaMaskInstalled, watchAsset } from "utils/metamask"
-import { NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
+import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
 
 type Props = {
   toggleExpanded: () => void
@@ -34,6 +34,11 @@ export const WalletAssetsTableActions = (props: Props) => {
   const setFeeAsPayment = useSetAsFeePayment()
   const { account } = useAccount()
 
+  const couldWatchMetaMaskAsset =
+    isMetaMaskInstalled &&
+    isEvmAccount(account?.address) &&
+    props.symbol !== NATIVE_EVM_ASSET_SYMBOL
+
   const actionItems = [
     /*{
       key: "add",
@@ -47,7 +52,7 @@ export const WalletAssetsTableActions = (props: Props) => {
           label: t("wallet.assets.table.actions.payment.asset"),
         }
       : null,
-    isMetaMaskInstalled && props.symbol !== NATIVE_EVM_ASSET_SYMBOL
+    couldWatchMetaMaskAsset
       ? {
           key: "watch",
           icon: <MetamaskLogo width={18} height={18} />,
