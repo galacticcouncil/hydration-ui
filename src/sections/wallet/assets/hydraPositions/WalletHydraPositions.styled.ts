@@ -12,6 +12,6 @@ export const STableData = styled(TableData)`
   // remove column shrinking because there's no actions column
   &:last-of-type {
     width: unset;
-    padding-right: 16px;
+    //padding-right: 16px;
   }
 `

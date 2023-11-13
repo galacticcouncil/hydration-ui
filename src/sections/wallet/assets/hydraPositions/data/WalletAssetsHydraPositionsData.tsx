@@ -1,25 +1,35 @@
 import BN from "bignumber.js"
-import { Trans } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
 import { ResponsiveValue } from "utils/responsive"
+import { useRpcProvider } from "providers/rpcProvider"
+import { useApiIds } from "api/consts"
+import { BN_0, BN_1 } from "utils/constants"
+import { useSpotPrice } from "api/spotPrice"
 
 type Props = {
-  symbol: string
   lrna: BN
   value: BN
+  assetId: string
   fontSize?: ResponsiveValue<number>
 }
 
 export const WalletAssetsHydraPositionsData = ({
-  symbol,
+  assetId,
   value,
   lrna,
   fontSize = [14, 16],
 }: Props) => {
-  const tKey =
-    !lrna.isNaN() && lrna.gt(0)
-      ? "wallet.assets.hydraPositions.data.valueLrna"
-      : "wallet.assets.hydraPositions.data.value"
+  const { t } = useTranslation()
+  const { assets } = useRpcProvider()
+  const apiIds = useApiIds()
+
+  const meta = assetId ? assets.getAsset(assetId.toString()) : undefined
+
+  const lrnaSpotPrice = useSpotPrice(apiIds.data?.hubId, assetId)
+
+  const lrnaPositionPrice =
+    lrna?.multipliedBy(lrnaSpotPrice.data?.spotPrice ?? BN_1) ?? BN_0
 
   return (
     <Text
@@ -29,9 +39,10 @@ export const WalletAssetsHydraPositionsData = ({
       color="white"
       tAlign={["right", "left"]}
     >
-      <Trans i18nKey={tKey} tOptions={{ value, symbol, lrna, type: "token" }}>
-        <br sx={{ display: ["initial", "none"] }} />
-      </Trans>
+      {t("value.tokenWithSymbol", {
+        value: lrnaPositionPrice.plus(value ?? BN_0),
+        symbol: meta?.symbol,
+      })}
     </Text>
   )
 }

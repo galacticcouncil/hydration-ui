@@ -42,7 +42,7 @@ export function usePoolDetailsTradeVolume(assetId: u32 | string) {
   return { data, isLoading }
 }
 
-export function usePoolsDetailsTradeVolumes(assetIds: u32[]) {
+export function usePoolsDetailsTradeVolumes(assetIds: string[]) {
   const { assets } = useRpcProvider()
   const volumes = useTradeVolumes(assetIds)
   const spotPrices = useDisplayPrices(assetIds)

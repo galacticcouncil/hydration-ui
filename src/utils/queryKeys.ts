@@ -1,14 +1,14 @@
-import { AnyNumber } from "@polkadot/types-codec/types"
-import type { u32 } from "@polkadot/types"
-import { u128 } from "@polkadot/types-codec"
-import type { AccountId32 } from "@polkadot/types/interfaces"
-import { CodecHash } from "@polkadot/types/interfaces/runtime"
-import { StatsTimeframe } from "api/stats"
-import type BigNumber from "bignumber.js"
-import { Maybe } from "utils/helpers"
-import { ChartType } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
+import { AnyNumber } from "@polkadot/types-codec/types";
+import type { u32 } from "@polkadot/types";
+import { u128 } from "@polkadot/types-codec";
+import type { AccountId32 } from "@polkadot/types/interfaces";
+import { CodecHash } from "@polkadot/types/interfaces/runtime";
+import { StatsTimeframe } from "api/stats";
+import type BigNumber from "bignumber.js";
+import { Maybe } from "utils/helpers";
+import { ChartType } from "sections/stats/components/ChartsWrapper/ChartsWrapper";
 
-export const QUERY_KEY_PREFIX = "@block"
+export const QUERY_KEY_PREFIX = "@block";
 
 export const QUERY_KEYS = {
   providerAccounts: (provider: string | undefined) => [
@@ -76,9 +76,9 @@ export const QUERY_KEYS = {
   yieldFarms: (
     ids: Maybe<
       {
-        poolId: u32 | string
-        globalFarmId: u32 | string
-        yieldFarmId: u32 | string
+        poolId: u32 | string;
+        globalFarmId: u32 | string;
+        yieldFarmId: u32 | string;
       }[]
     >,
   ) => [QUERY_KEY_PREFIX, "yieldFarms", ids],
@@ -93,9 +93,9 @@ export const QUERY_KEYS = {
     id?.toString(),
   ],
   yieldFarm: (ids: {
-    poolId: Maybe<u32 | string>
-    globalFarmId: Maybe<u32 | string>
-    yieldFarmId: Maybe<u32 | string>
+    poolId: Maybe<u32 | string>;
+    globalFarmId: Maybe<u32 | string>;
+    yieldFarmId: Maybe<u32 | string>;
   }) => [QUERY_KEY_PREFIX, "yieldFarm", ids],
   activeYieldFarm: (id: string) => [QUERY_KEY_PREFIX, "activeYieldFarm", id],
   totalLiquidity: (id: Maybe<AccountId32 | string>) => [
@@ -318,12 +318,12 @@ export const QUERY_KEYS = {
     timeframe?: StatsTimeframe,
     assetSymbol?: string,
   ) => {
-    const key = ["stats", type]
+    const key = ["stats", type];
 
-    if (timeframe) key.push(timeframe)
-    if (assetSymbol) key.push(assetSymbol)
+    if (timeframe) key.push(timeframe);
+    if (assetSymbol) key.push(assetSymbol);
 
-    return key
+    return key;
   },
   circulatingSupply: ["circulatingSupply"],
   stake: (address: string | undefined) => ["stake", address],
@@ -361,4 +361,5 @@ export const QUERY_KEYS = {
     "totalXYKLiquidity",
     address,
   ],
-} as const
+  volumeDaily: (assetId?: string) => ["volumeDaily", assetId],
+} as const;

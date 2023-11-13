@@ -166,7 +166,7 @@ export const FarmingPosition = ({
             {position.data && (
               <div>
                 <WalletAssetsHydraPositionsData
-                  symbol={position.data.symbol}
+                  assetId={position.data.assetId.toString()}
                   value={position.data.value}
                   lrna={position.data.lrna}
                 />

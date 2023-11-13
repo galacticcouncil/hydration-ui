@@ -27,7 +27,7 @@ export const PoolValue = ({ pool, className }: PoolValueProps) => {
               ? t("liquidity.asset.details.totalLocked")
               : t("liquidity.asset.details.total")}
           </Text>
-          <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
+          <div sx={{ flex: "row", align: "center", gap: 8 }}>
             <Text lh={22} color="white" fs={18}>
               <DisplayValue value={pool.totalDisplay} />
             </Text>

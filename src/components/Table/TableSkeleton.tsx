@@ -72,7 +72,7 @@ export const TableSkeleton = ({
               <Fragment key={row.id}>
                 <TableRow isOdd={!(i % 2)}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableData key={cell.id}>
+                    <TableData key={cell.id} isSkeleton>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),

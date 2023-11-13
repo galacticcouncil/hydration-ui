@@ -225,7 +225,7 @@ export const LiquidityPosition = ({
             </div>
             <div sx={{ flex: "column", align: "start" }}>
               <WalletAssetsHydraPositionsData
-                symbol={position.symbol}
+                assetId={position.assetId}
                 value={position.value}
                 lrna={position.lrna}
               />

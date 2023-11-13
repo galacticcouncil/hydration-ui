@@ -12,24 +12,14 @@ export const PROVIDERS = [
     name: "Mainnet via GC",
     url: "wss://rpc.hydradx.cloud",
     indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
-    squidUrl:
-      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
+    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",
   },
   {
     name: "Mainnet via Dwellir",
     url: "wss://hydradx-rpc.dwellir.com",
     indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
-    squidUrl:
-      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
-    env: "production",
-  },
-  {
-    name: "Mainnet via ZeePrime",
-    url: "wss://rpc-lb.data6.zp-labs.net:8443/hydradx/ws/?token=2ZGuGivPJJAxXiT1hR1Yg2MXGjMrhEBYFjgbdPi",
-    indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
-    squidUrl:
-      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
+    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",
   },
   {
@@ -125,7 +115,12 @@ export const useProviderData = (rpcUrl?: string) => {
         })
       }
 
-      return { api, assets: assets.assets, tradeRouter: assets.tradeRouter }
+      return {
+        api,
+        assets: assets.assets,
+        tradeRouter: assets.tradeRouter,
+        provider,
+      }
     },
     { staleTime: Infinity, refetchOnWindowFocus: true },
   )

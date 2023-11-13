@@ -18,15 +18,12 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { isNotNil, undefinedNoop } from "utils/helpers"
 import { ApiPromise } from "@polkadot/api"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
-import {
-  getVolumeAssetTotalValue,
-  useAllStableswapTrades,
-  useAllTradesSorted,
-} from "api/volume"
+import { useAllStableswapTrades } from "api/volume"
 import BN from "bignumber.js"
 import { useGetXYKPools, useShareTokens, useXYKConsts } from "api/xyk"
 import { useShareOfPools } from "api/pools"
 import { TShareToken } from "api/assetDetails"
+import { useVolumes } from "api/volume"
 
 export type TOmnipoolAsset = NonNullable<
   ReturnType<typeof useOmnipoolAndStablepool>["data"]
@@ -41,7 +38,7 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
   const { assets } = useRpcProvider()
   const { account } = useAccountStore()
 
-  const allTrades = useAllTradesSorted()
+  //const allTrades = useAllTradesSorted()
 
   const omnipoolAssets = useOmnipoolAssets()
   const assetsTradability = useAssetsTradability()
@@ -54,6 +51,7 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
     () => omnipoolAssets.data?.map((a) => a.id.toString()) ?? [],
     [omnipoolAssets.data],
   )
+  const volumes = useVolumes(assetsId)
 
   const omnipoolBalances = useTokensBalances(assetsId, OMNIPOOL_ACCOUNT_ADDRESS)
 
@@ -106,6 +104,7 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
     assetsTradability,
     ...stablepoolUserPositions,
     ...omnipoolBalances,
+    ...volumes,
   ]
 
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
@@ -210,17 +209,9 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
         const isOmnipoolNftPositions = !!omnipoolNftPositions.length
         const isMiningNftPositions = !!miningNftPositions.length
 
-        const trades = allTrades.data?.[assetId]
-        const volume = trades
-          ? getVolumeAssetTotalValue({
-              events: trades,
-              assetId: assetId,
-            })?.[assetId]
-          : BN_0
-
-        const volumeDisplay = volume
-          ? volume.multipliedBy(spotPrice ?? 1).shiftedBy(-meta.decimals)
-          : undefined
+        const volumeDisplay =
+          volumes.find((volume) => volume.data?.assetId === assetId)?.data
+            ?.volume ?? BN_0
 
         const tradability = {
           canBuy: !!tradabilityData?.canBuy,
@@ -239,9 +230,7 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
           miningNftPositions,
           isOmnipoolNftPositions,
           isMiningNftPositions,
-          trades,
           spotPrice,
-          volume,
           volumeDisplay,
           tradability,
           reserves,
@@ -271,7 +260,7 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
     stablepoolsBalances.data,
     stablepoolUserPositions,
     miningPositions,
-    allTrades.data,
+    volumes,
     stablepoolAddressById,
   ])?.filter((pool) =>
     withPositions
