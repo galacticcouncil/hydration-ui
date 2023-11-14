@@ -16,6 +16,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { useTokensBalances } from "api/balances"
 import { useAccountStore } from "state/store"
+import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
 
 const Tab = ({
   to,
@@ -57,7 +58,7 @@ const Tab = ({
           {isActive && (
             <div
               sx={{ height: 1, bg: "brightBlue300", width: "100%" }}
-              css={{ position: "relative", bottom: 0 }}
+              css={{ position: "relative", bottom: 1 }}
             />
           )}
         </>
@@ -131,4 +132,8 @@ const MyLiquidity = () => {
       />
     </>
   )
+}
+
+export const PoolNavigation = () => {
+  return <BackSubHeader label="Pool Detail" />
 }

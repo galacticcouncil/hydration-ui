@@ -16,6 +16,10 @@ import { XYKPool } from "sections/pools/pool/xyk/XYKPool"
 import { SearchFilter } from "sections/pools/filter/SearchFilter"
 import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
+import { PoolsTable } from "sections/pools/table/PoolsTable"
+import { useSearch } from "@tanstack/react-location"
+import { PoolTest } from "./Pool"
+import { PoolNew } from "sections/pools/poolNew/Pool"
 
 export const AllPools = () => {
   const { t } = useTranslation()
@@ -103,6 +107,11 @@ const AllPoolsData = () => {
   const { t } = useTranslation()
   const { search } = useSearchFilter()
   const omnipoolAndStablepool = useOmnipoolAndStablepool()
+  const { id } = useSearch<{
+    Search: {
+      id?: number
+    }
+  }>()
 
   const omnipoolTotal = useMemo(() => {
     if (omnipoolAndStablepool.data) {
@@ -139,6 +148,14 @@ const AllPoolsData = () => {
     search && omnipoolAndStablepool.data
       ? arraySearch(omnipoolAndStablepool.data, search, ["name", "symbol"])
       : omnipoolAndStablepool.data
+
+  if (id != null) {
+    const pool = omnipoolAndStablepool.data?.find(
+      (pool) => pool.id === id.toString(),
+    )
+
+    if (pool) return <PoolNew pool={pool} />
+  }
 
   return (
     <>
@@ -193,8 +210,11 @@ const AllPoolsData = () => {
             ? [...Array(3)].map((_, index) => (
                 <PoolSkeleton key={index} length={3} index={index} />
               ))
-            : filteredPools?.map((pool) => <Pool key={pool.id} pool={pool} />)}
+            : [].map((pool) => <Pool key={pool.id} pool={pool} />)}
         </div>
+        {omnipoolAndStablepool.data?.length && (
+          <PoolsTable data={omnipoolAndStablepool.data} />
+        )}
         {isXYKEnabled && <XYKPoolsSection />}
       </div>
     </>

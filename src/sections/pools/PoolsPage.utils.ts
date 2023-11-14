@@ -38,12 +38,8 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
   const { assets } = useRpcProvider()
   const { account } = useAccountStore()
 
-  //const allTrades = useAllTradesSorted()
-
   const omnipoolAssets = useOmnipoolAssets()
   const assetsTradability = useAssetsTradability()
-
-  const accountOmnipoolPositions = useAccountOmnipoolPositions()
 
   const miningPositions = useAccountMiningPositions()
 
@@ -99,7 +95,6 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
   const queries = [
     omnipoolAssets,
     spotPrices,
-    accountOmnipoolPositions,
     omnipoolPositions,
     assetsTradability,
     ...stablepoolUserPositions,
@@ -113,7 +108,6 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
     if (
       !omnipoolAssets.data ||
       !spotPrices.data ||
-      !accountOmnipoolPositions ||
       !omnipoolPositions.data ||
       !assetsTradability.data ||
       omnipoolBalances.some((q) => !q.data)
@@ -250,7 +244,6 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
   }, [
     omnipoolAssets.data,
     spotPrices.data,
-    accountOmnipoolPositions,
     omnipoolPositions.data,
     assetsTradability.data,
     omnipoolBalances,

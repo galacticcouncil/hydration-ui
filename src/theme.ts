@@ -186,7 +186,7 @@ const transitions = {
 } as const
 
 const borderRadius = {
-  stakingCard: 8,
+  medium: 8,
   default: 4,
 } as const
 

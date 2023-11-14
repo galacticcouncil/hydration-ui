@@ -7,11 +7,16 @@ import { Icon } from "components/Icon/Icon"
 import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
 
 type Props = {
+  positions: TOmnipoolAsset["omnipoolNftPositions"]
   pool: TOmnipoolAsset
   refetchPositions: () => void
 }
 
-export const LiquidityPositionWrapper = ({ pool, refetchPositions }: Props) => {
+export const LiquidityPositionWrapper = ({
+  pool,
+  positions,
+  refetchPositions,
+}: Props) => {
   const { t } = useTranslation()
 
   if (!pool.omnipoolNftPositions.length) return null
@@ -25,7 +30,7 @@ export const LiquidityPositionWrapper = ({ pool, refetchPositions }: Props) => {
         </Text>
       </div>
       <div sx={{ flex: "column", gap: 16 }}>
-        {pool.omnipoolNftPositions.map((position, i) => (
+        {positions.map((position, i) => (
           <LiquidityPosition
             key={`${i}-${position.assetId}`}
             position={position}

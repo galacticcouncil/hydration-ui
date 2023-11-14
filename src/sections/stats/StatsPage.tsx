@@ -27,10 +27,7 @@ export const StatsPage = () => {
       variant="stats"
       subHeader={
         isOmnipoolAssetPage ? (
-          <BackSubHeader
-            to={LINKS.stats}
-            label={t("stats.omnipool.navigation.back")}
-          />
+          <BackSubHeader label={t("stats.omnipool.navigation.back")} />
         ) : null
       }
       subHeaderStyle={{

@@ -13,14 +13,20 @@ const FarmAssetIcon = ({ assetId }: { assetId: u32 }) => {
   return <AssetLogo id={asset.id} />
 }
 
-export const GlobalFarmRowMulti = ({ farms }: { farms: Farm[] }) => {
+export const GlobalFarmRowMulti = ({
+  farms,
+  short,
+}: {
+  farms: Farm[]
+  short?: boolean
+}) => {
   const { t } = useTranslation()
   const farmAprs = useFarmAprs(farms)
 
   if (!farmAprs.data) return null
 
   return (
-    <div sx={{ flex: "row", justify: "space-between", gap: 4 }}>
+    <div sx={{ flex: "row", gap: 4, align: "center" }}>
       <div sx={{ flex: "row" }}>
         <MultipleIcons
           icons={farmAprs.data.map((farm) => ({
