@@ -9,10 +9,14 @@ import { ProviderStatus } from "sections/provider/ProviderStatus"
 import { SButton, SName } from "./ProviderSelectButton.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { theme } from "theme"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { isEvmAccount } from "utils/evm"
 
 export const ProviderSelectButton = () => {
   const [open, setOpen] = useState(false)
   const store = useProviderRpcUrlStore()
+
+  const { account } = useAccount()
 
   const { isLoaded } = useRpcProvider()
 
@@ -20,12 +24,14 @@ export const ProviderSelectButton = () => {
   const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
   const number = useBestNumber(!isLoaded)
 
+  const modalDisabled = isEvmAccount(account?.address)
+
   return (
     <>
       <SButton
         tabIndex={0}
-        onClick={() => setOpen(true)}
-        whileHover="animate"
+        onClick={modalDisabled ? undefined : () => setOpen(true)}
+        whileHover={modalDisabled ? "" : "animate"}
         css={{ zIndex: theme.zIndices.modal }}
       >
         <SName

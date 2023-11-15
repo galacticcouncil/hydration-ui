@@ -31,7 +31,8 @@ export class MetaMaskSigner {
       ...tx,
       maxPriorityFeePerGas: gasPrice,
       maxFeePerGas: gasPrice,
-      gasLimit: gas.mul(2),
+      // add 10%
+      gasLimit: gas.mul(11).div(10),
     })
   }
 }

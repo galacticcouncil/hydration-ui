@@ -34,6 +34,9 @@ export const WalletAssetsTableActions = (props: Props) => {
   const setFeeAsPayment = useSetAsFeePayment()
   const { account } = useAccount()
 
+  const couldBeSetAsPaymentFee =
+    props.couldBeSetAsPaymentFee && !isEvmAccount(account?.address)
+
   const couldWatchMetaMaskAsset =
     isMetaMaskInstalled &&
     isEvmAccount(account?.address) &&
@@ -45,7 +48,7 @@ export const WalletAssetsTableActions = (props: Props) => {
       icon: <ClaimIcon />,
       label: t("wallet.assets.table.actions.claim"),
     },*/
-    props.couldBeSetAsPaymentFee
+    couldBeSetAsPaymentFee
       ? {
           key: "setAsFeePayment",
           icon: <DollarIcon />,
