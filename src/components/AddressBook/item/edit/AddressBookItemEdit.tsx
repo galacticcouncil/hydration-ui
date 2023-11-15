@@ -1,18 +1,19 @@
 import IconEnter from "assets/icons/IconEnter.svg?react"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
-import { useAddressStore } from "components/AddressBook/AddressBook.utils"
+import {
+  Address,
+  useAddressStore,
+} from "components/AddressBook/AddressBook.utils"
 import { FormEvent, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { SButton, SContainer, SInput } from "./AddressBookItemEdit.styled"
 
-type Props = {
-  name: string
-  address: string
-  provider: string
+type Props = Address & {
   onEdit: () => void
 }
 
 export const AddressBookItemEdit = ({
+  id,
   name,
   address,
   provider,
@@ -27,7 +28,7 @@ export const AddressBookItemEdit = ({
 
     if (!input) return
 
-    edit({ name: input, address, provider })
+    edit({ id, name: input, address, provider })
     onEdit()
   }
 

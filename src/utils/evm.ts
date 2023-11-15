@@ -2,7 +2,7 @@ import { encodeAddress, decodeAddress } from "@polkadot/util-crypto"
 import { Buffer } from "buffer"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 
-export {
+import {
   isAddress as isEvmAddress,
   getAddress as getEvmAddress,
 } from "@ethersproject/address"
@@ -27,7 +27,7 @@ export class H160 {
   address: string
 
   constructor(address: string) {
-    this.address = address
+    this.address = safeConvertAddressH160(address) ?? ""
   }
 
   toAccount = () => {
@@ -43,10 +43,22 @@ export class H160 {
   static fromAccount = (address: string) => {
     const decodedBytes = decodeAddress(address)
     const addressBytes = decodedBytes.slice(H160.prefixBytes.length, -8)
-    return "0x" + Buffer.from(addressBytes).toString("hex")
+    return (
+      safeConvertAddressH160(Buffer.from(addressBytes).toString("hex")) ?? ""
+    )
   }
 }
 
 export function getEvmTxLink(txHash: string) {
   return `${import.meta.env.VITE_EVM_EXPLORER_URL}/tx/${txHash}`
 }
+
+export function safeConvertAddressH160(value: string): string | null {
+  try {
+    return getEvmAddress(value?.toLowerCase())
+  } catch {
+    return null
+  }
+}
+
+export { getEvmAddress, isEvmAddress }

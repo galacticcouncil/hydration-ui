@@ -23,7 +23,7 @@ import {
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
 import { HYDRA_ADDRESS_PREFIX, POLKADOT_APP_NAME } from "utils/api"
-import { H160, isEvmAddress } from "utils/evm"
+import { H160, safeConvertAddressH160 } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { FormValues } from "utils/helpers"
 
@@ -57,7 +57,7 @@ export const Web3ConnectExternalModal = ({
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (!externalWallet) return
 
-    const isEvm = isEvmAddress(values.address)
+    const isEvm = safeConvertAddressH160(values.address) !== null
     const address = isEvm
       ? new H160(values.address).toAccount()
       : values.address
@@ -94,9 +94,11 @@ export const Web3ConnectExternalModal = ({
     }
 
     externalWallet.setAddress(address)
+
+    const evmAddress = isEvm ? safeConvertAddressH160(values.address) : ""
     setAccount({
       address,
-      evmAddress: isEvm ? values.address : "",
+      evmAddress: evmAddress ?? "",
       name:
         delegates.length && isDelegate
           ? externalWallet.proxyAccountName
@@ -106,7 +108,7 @@ export const Web3ConnectExternalModal = ({
     })
     onSelect()
     navigate({
-      search: { account: isEvm ? values.address.slice(2) : address },
+      search: { account: evmAddress ? evmAddress.slice(2) : address },
       fromCurrent: true,
     })
 
@@ -132,7 +134,7 @@ export const Web3ConnectExternalModal = ({
           validate: {
             validAddress: (value) =>
               safeConvertAddressSS58(value, 0) !== null ||
-              isEvmAddress(value) ||
+              safeConvertAddressH160(value) !== null ||
               t("wallet.assets.transfer.error.validAddress"),
           },
         }}

@@ -5,6 +5,7 @@ import {
   useAccount,
   useWalletAccounts,
 } from "sections/web3-connect/Web3Connect.utils"
+import { shortenAccountAddress } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
@@ -18,7 +19,9 @@ export const useWalletAddresses = () => {
     if (!providerAddresses.data) return []
 
     let addresses: Address[] = providerAddresses.data.map((pa) => {
-      const name = pa.name ?? ""
+      const name = pa.evmAddress
+        ? shortenAccountAddress(pa.evmAddress)
+        : pa.name ?? ""
       const address = pa.address
       const provider = account?.provider ?? "external"
       return { name, address, provider }
@@ -45,12 +48,17 @@ export const useProviderAccounts = (
   )
 }
 
-type Address = { name: string; address: string; provider: string }
+export type Address = {
+  id?: string
+  name: string
+  address: string
+  provider: string
+}
 export type AddressStore = {
   addresses: Address[]
   add: (address: Address) => void
   edit: (address: Address) => void
-  remove: (address: string) => void
+  remove: (id: string) => void
 }
 
 export const useAddressStore = create<AddressStore>()(
@@ -67,21 +75,15 @@ export const useAddressStore = create<AddressStore>()(
         })),
 
       edit: (address) =>
-        set((state) => {
-          let found = state.addresses.find((a) => a.address === address.address)
-          if (!found) return state
-
-          found = { ...found, ...address }
-          const rest = state.addresses.filter(
-            (a) => a.address !== address.address,
-          )
-
-          return { addresses: [...rest, found] }
-        }),
-
-      remove: (address) =>
         set((state) => ({
-          addresses: state.addresses.filter((a) => a.address !== address),
+          addresses: state.addresses.map((a) =>
+            a.id === address.id ? { ...a, ...address } : a,
+          ),
+        })),
+
+      remove: (id) =>
+        set((state) => ({
+          addresses: state.addresses.filter((a) => a.id !== id),
         })),
     }),
     { name: "address-book" },

@@ -16,11 +16,9 @@ import {
 import { AddressBookItemEdit } from "./edit/AddressBookItemEdit"
 import { AddressBookItemRemove } from "./remove/AddressBookItemRemove"
 import { H160, isEvmAccount, isEvmAddress } from "utils/evm"
+import { Address } from "components/AddressBook/AddressBook.utils"
 
-type Props = {
-  address: string
-  name: string
-  provider: string
+type Props = Address & {
   onSelect: (address: string) => void
 }
 
@@ -29,6 +27,7 @@ export const AddressBookItem = ({
   name,
   provider,
   onSelect,
+  id,
 }: Props) => {
   const [editting, setEditting] = useState(false)
   const [removing, setRemoving] = useState(false)
@@ -45,6 +44,7 @@ export const AddressBookItem = ({
   if (editting)
     return (
       <AddressBookItemEdit
+        id={id}
         address={addressDisplay}
         name={name}
         provider={provider}
@@ -83,11 +83,8 @@ export const AddressBookItem = ({
           )}
         </SAddressContainer>
       </SItem>
-      {removing && (
-        <AddressBookItemRemove
-          address={addressDisplay}
-          onDone={() => setRemoving(false)}
-        />
+      {id && removing && (
+        <AddressBookItemRemove id={id} onDone={() => setRemoving(false)} />
       )}
     </>
   )
