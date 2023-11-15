@@ -197,8 +197,8 @@ export const useVolumes = (assetIds: string[]) => {
 
 const getVolumeDaily = async (assetId?: string) => {
   const res = await fetch(
-    `https://api.hydradx.io/hydradx-ui/v1/stats/current/volume/${
-      assetId ?? ""
+    `https://api.hydradx.io/hydradx-ui/v1/stats/volume${
+      assetId != null ? `/${assetId}` : ""
     }`,
   )
   const data: Promise<{ volume_usd: number }[]> = res.json()
