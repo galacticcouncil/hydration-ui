@@ -11,6 +11,18 @@ export const omit = <T, K extends keyof T>(keys: K[], obj: T): Omit<T, K> => {
   return result
 }
 
+type Pick<T, K extends keyof T> = {
+  [P in K]: T[P]
+}
+
+export const pick = <T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> => {
+  const result = {} as Pick<T, K>
+  keys.forEach((key) => {
+    result[key] = obj[key]
+  })
+  return result
+}
+
 export const groupBy = <T>(
   array: T[],
   groupByFn: (item: T) => string,

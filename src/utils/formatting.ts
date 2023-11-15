@@ -7,6 +7,7 @@ import { BN_10 } from "./constants"
 import { Maybe } from "utils/helpers"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { intervalToDuration, formatDuration } from "date-fns"
+import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 
 export const formatNum = (
   number?: number | string,
@@ -262,6 +263,19 @@ export const formatAssetValue = (value: string) => {
 }
 
 export const isHydraAddress = (address: string) => address[0] === "7"
+
+export const getAddressVariants = (address: string) => {
+  const isHydraVariant = isHydraAddress(address)
+  const hydraAddress = isHydraVariant
+    ? address
+    : encodeAddress(decodeAddress(address), HYDRA_ADDRESS_PREFIX)
+
+  const polkadotAddress = isHydraVariant
+    ? encodeAddress(decodeAddress(address))
+    : address
+
+  return { hydraAddress, polkadotAddress }
+}
 
 const formatDistanceLocale = {
   xSeconds: "{{count}}sec",

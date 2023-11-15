@@ -64,6 +64,7 @@ export const ReviewTransactionForm = (
 
   const signTx = useMutation(async () => {
     const address = props.isProxy ? account?.delegate : account?.address
+
     if (!address) throw new Error("Missing active account")
     if (!wallet) throw new Error("Missing wallet")
     if (!wallet.signer) throw new Error("Missing signer")
@@ -72,8 +73,6 @@ export const ReviewTransactionForm = (
       const tx = await wallet.signer.sendDispatch(props.tx.method.toHex())
       return props.onEvmSigned(tx)
     }
-
-    // @TODO handle proxy
 
     const signature = await props.tx.signAsync(address, {
       signer: wallet.signer,

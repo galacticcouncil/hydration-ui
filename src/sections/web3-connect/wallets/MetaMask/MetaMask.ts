@@ -1,23 +1,17 @@
 import { ExternalProvider, Web3Provider } from "@ethersproject/providers"
 import { MetaMaskSDK, SDKProvider } from "@metamask/sdk"
-import { Wallet, WalletAccount } from "@talismn/connect-wallets"
+import { SubscriptionFn, Wallet, WalletAccount } from "@talismn/connect-wallets"
 import MetaMaskLogo from "assets/icons/MetaMask.svg"
-import { H160 } from "utils/evm"
-import { isMetaMaskInstalled, requestNetworkSwitch } from "utils/metamask"
 import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
 import { noop } from "utils/helpers"
-
-type AccountSubscriptionFn = (
-  accounts: WalletAccount[] | undefined,
-  addresses: string[],
-) => void | Promise<void>
+import { isMetaMaskInstalled, requestNetworkSwitch } from "utils/metamask"
 
 type ChainSubscriptionFn = (payload: number | null) => void | Promise<void>
 
 const DOMAIN_URL = import.meta.env.VITE_DOMAIN_URL as string
 
 type MetamaskInit = {
-  onAccountsChanged?: AccountSubscriptionFn
+  onAccountsChanged?: SubscriptionFn
   onChainChanged?: ChainSubscriptionFn
 }
 
@@ -33,9 +27,7 @@ export class MetaMask implements Wallet {
   _extension: SDKProvider | undefined
   _signer: MetaMaskSigner | undefined
 
-  evmAddress?: string
-
-  onAccountsChanged: AccountSubscriptionFn | undefined
+  onAccountsChanged: SubscriptionFn | undefined
   onChainChanged: ChainSubscriptionFn | undefined
 
   constructor(
@@ -97,14 +89,18 @@ export class MetaMask implements Wallet {
 
       const provider = new Web3Provider(metamask as unknown as ExternalProvider)
 
-      this.evmAddress = address
       this._extension = metamask
       this._signer = address ? new MetaMaskSigner(address, provider) : undefined
 
-      if (this.onAccountsChanged)
+      if (this.onAccountsChanged) {
         await this.subscribeAccounts(this.onAccountsChanged)
+      }
       if (this.onChainChanged) await this.subscribeChain(this.onChainChanged)
     } catch (err: any) {
+      // don't treat pending requests as errors
+      if (err.code === -32002) {
+        return
+      }
       throw this.transformError(err as Error)
     }
   }
@@ -121,18 +117,14 @@ export class MetaMask implements Wallet {
       params: [],
     })
 
-    return (
-      (accounts || [])
-        // allow only one account - first in array is always active account
-        .slice(0, 1)
-        .filter((address): address is string => !!address)
-        .map(this.toWalletAccount)
-    )
+    return (accounts || [])
+      .filter((address): address is string => !!address)
+      .map(this.toWalletAccount)
   }
 
   toWalletAccount = (address: string): WalletAccount => {
     return {
-      address: new H160(address).toAccount(),
+      address,
       source: this.extensionName,
       name: this.title,
       wallet: this,
@@ -140,7 +132,7 @@ export class MetaMask implements Wallet {
     }
   }
 
-  subscribeAccounts = async (callback: AccountSubscriptionFn) => {
+  subscribeAccounts = async (callback: SubscriptionFn) => {
     if (!this._extension) {
       throw new Error(
         `The 'Wallet.enable(dappname)' function should be called first.`,
@@ -152,14 +144,11 @@ export class MetaMask implements Wallet {
         ? payload.map((item: string) => item)
         : []
 
-      const addressArr = addresses.slice(0, 1)
-      const accounts = addressArr.slice(0, 1).map(this.toWalletAccount)
+      const accounts = addresses.map(this.toWalletAccount)
+      callback(accounts)
 
-      const [address] = addressArr
-      this.evmAddress = address
-      this._signer?.setAddress(address)
-
-      callback(accounts, addressArr)
+      const mainAccount = accounts.slice(0, 1)[0]
+      this._signer?.setAddress(mainAccount?.address)
     })
   }
 
@@ -178,5 +167,7 @@ export class MetaMask implements Wallet {
 
   unsubscribe = () => {
     this._extension?.removeAllListeners()
+    this._extension = undefined
+    this._signer = undefined
   }
 }

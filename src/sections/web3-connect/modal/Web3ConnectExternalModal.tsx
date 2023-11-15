@@ -1,6 +1,6 @@
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { getWalletBySource } from "@talismn/connect-wallets"
 import { useNavigate } from "@tanstack/react-location"
+import { getDelegates } from "api/proxies"
 import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import { AddressInput } from "components/AddressInput/AddressInput"
 import { SErrorMessage } from "components/AssetInput/AssetInput.styled"
@@ -17,11 +17,11 @@ import {
 } from "sections/wallet/transfer/onchain/WalletTransferSectionOnchain.styled"
 import {
   WalletProviderType,
+  getWalletProviderByType,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
-import { PROXY_WALLET_PROVIDER } from "state/store"
 import { HYDRA_ADDRESS_PREFIX, POLKADOT_APP_NAME } from "utils/api"
 import { H160, isEvmAddress } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
@@ -38,8 +38,9 @@ export const Web3ConnectExternalModal = ({
 }: ExternalWalletConnectModalProps) => {
   const { api } = useRpcProvider()
   const { t } = useTranslation()
-  const { setAccount } = useWeb3ConnectStore()
   const navigate = useNavigate()
+
+  const { setAccount } = useWeb3ConnectStore()
 
   const form = useForm<{
     address: string
@@ -54,27 +55,30 @@ export const Web3ConnectExternalModal = ({
   const isDelegatesError = form.formState.errors.delegates
 
   const onSubmit = async (values: FormValues<typeof form>) => {
+    if (!externalWallet) return
+
     const isEvm = isEvmAddress(values.address)
     const address = isEvm
       ? new H160(values.address).toAccount()
       : values.address
 
-    const [delegates] = await api.query.proxy.proxies(address)
-    const delegateList = delegates?.map((delegate) => delegate)
+    const { isProxy, delegates } = await getDelegates(api, address)
+
     let isDelegate = false
 
-    if (!!delegateList.length) {
-      const proxyWallet = getWalletBySource(PROXY_WALLET_PROVIDER)
+    if (isProxy) {
+      const { wallet: proxyWallet } = getWalletProviderByType(
+        externalWallet.proxyWalletProvider,
+      )
 
       if (proxyWallet?.installed) {
         await proxyWallet?.enable(POLKADOT_APP_NAME)
-
         const accounts = await proxyWallet?.getAccounts()
 
         isDelegate = accounts?.some((account) =>
-          delegateList.find(
-            (delegateObj) =>
-              delegateObj.delegate.toString() ===
+          delegates.find(
+            (delegate) =>
+              delegate ===
               encodeAddress(
                 decodeAddress(account.address),
                 HYDRA_ADDRESS_PREFIX,
@@ -84,19 +88,19 @@ export const Web3ConnectExternalModal = ({
       }
     }
 
-    if (!!delegateList.length && !isDelegate && !isDelegatesError) {
+    if (isProxy && !isDelegate && !isDelegatesError) {
       form.setError("delegates", {})
       return
     }
 
-    externalWallet?.setAddress(address)
+    externalWallet.setAddress(address)
     setAccount({
       address,
       evmAddress: isEvm ? values.address : "",
       name:
-        delegateList.length && isDelegate
-          ? ExternalWallet.proxyAccountName
-          : ExternalWallet.accountName,
+        delegates.length && isDelegate
+          ? externalWallet.proxyAccountName
+          : externalWallet.accountName,
       provider: WalletProviderType.ExternalWallet,
       isExternalWalletConnected: true,
     })
@@ -106,7 +110,7 @@ export const Web3ConnectExternalModal = ({
       fromCurrent: true,
     })
 
-    if (!delegateList.length || (delegateList.length && isDelegatesError)) {
+    if (!delegates.length || (delegates.length && isDelegatesError)) {
       onClose()
     }
   }

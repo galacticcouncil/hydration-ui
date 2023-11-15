@@ -5,6 +5,7 @@ import { MetaMask } from "./MetaMask"
 import { NovaWallet } from "./NovaWallet"
 import { WalletConnect } from "./WalletConnect"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { H160, getEvmAddress, isEvmAddress } from "utils/evm"
 
 export enum WalletProviderType {
   MetaMask = "metamask",
@@ -33,18 +34,18 @@ const metaMask: Wallet = new MetaMask({
       state.disconnect()
     }
   },
-  onAccountsChanged(accounts, addresses) {
+  onAccountsChanged(accounts) {
     const state = useWeb3ConnectStore.getState()
     if (!accounts || accounts.length === 0) {
       state.disconnect()
     } else {
-      const [account] = accounts
-      const [evmAddress] = addresses
+      const [{ address, name }] = accounts
+      const isEvm = isEvmAddress(address)
       state.setAccount({
-        evmAddress,
-        address: account.address,
+        address: isEvm ? new H160(address).toAccount() : address,
+        evmAddress: isEvm ? getEvmAddress(address) : "",
         provider: WalletProviderType.MetaMask,
-        name: account.name ?? "",
+        name: name ?? "",
         isExternalWalletConnected: false,
       })
     }
@@ -72,4 +73,8 @@ function normalizeProviderType(wallet: Wallet): WalletProviderType {
   }
 
   return wallet.extensionName as WalletProviderType
+}
+
+export function getSupportedWallets() {
+  return SUPPORTED_WALLET_PROVIDERS
 }

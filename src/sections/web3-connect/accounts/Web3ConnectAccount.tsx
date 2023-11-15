@@ -1,36 +1,31 @@
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { useTokenBalance } from "api/balances"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
+import { useRpcProvider } from "providers/rpcProvider"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { HYDRA_ADDRESS_PREFIX } from "utils/api"
-import { useRpcProvider } from "providers/rpcProvider"
 import Skeleton from "react-loading-skeleton"
-import {
-  Account,
-  useWeb3ConnectStore,
-} from "sections/web3-connect/store/useWeb3ConnectStore"
-import { Web3ConnectAccountSelect } from "./Web3ConnectAccountSelect"
+import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { getAddressVariants } from "utils/formatting"
 import { SAccountItem } from "./Web3ConnectAccount.styled"
+import { Web3ConnectAccountSelect } from "./Web3ConnectAccountSelect"
 
 type Props = Account & {
   isProxy?: boolean
+  isActive?: boolean
+  onClick?: (account: Account) => void
 }
 
-export const Web3ConnectAccount: FC<Props> = ({ isProxy, ...account }) => {
+export const Web3ConnectAccount: FC<Props> = ({
+  isProxy = false,
+  isActive = false,
+  onClick,
+  ...account
+}) => {
   const { t } = useTranslation()
   const { address, name, provider } = account
-  const { account: currentAccount, setAccount, toggle } = useWeb3ConnectStore()
 
-  const isHydraAddress = address[0] === "7"
-  const hydraAddress = isHydraAddress
-    ? address
-    : encodeAddress(decodeAddress(address), HYDRA_ADDRESS_PREFIX)
-
-  const polkadotAddress = isHydraAddress
-    ? encodeAddress(decodeAddress(address))
-    : address
+  const { hydraAddress, polkadotAddress } = getAddressVariants(address)
 
   const {
     isLoaded,
@@ -39,16 +34,11 @@ export const Web3ConnectAccount: FC<Props> = ({ isProxy, ...account }) => {
 
   const { data } = useTokenBalance(native?.id, polkadotAddress)
 
-  const isActive = currentAccount?.address === address
-
   return (
     <SAccountItem
       isActive={isActive}
       isProxy={!!isProxy}
-      onClick={() => {
-        setAccount(account)
-        toggle()
-      }}
+      onClick={() => onClick?.(account)}
     >
       <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
         <Text font="ChakraPetchBold">{name}</Text>

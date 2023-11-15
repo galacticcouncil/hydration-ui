@@ -4,7 +4,7 @@ import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { Web3ConnectAccounts } from "sections/web3-connect/accounts/Web3ConnectAccounts"
+import { Web3ConnectAccountList } from "sections/web3-connect/accounts/Web3ConnectAccountList"
 import { Web3ConnectErrorModal } from "sections/web3-connect/modal/Web3ConnectErrorModal"
 import { Web3ConnectExternalModal } from "sections/web3-connect/modal/Web3ConnectExternalModal"
 import { Web3ConnectFooter } from "sections/web3-connect/modal/Web3ConnectFooter"
@@ -18,8 +18,8 @@ import {
 
 enum ModalPage {
   ProviderSelect,
-  AccountSelect,
   External,
+  AccountSelect,
   Error,
 }
 
@@ -92,15 +92,6 @@ export const Web3ConnectModal = () => {
             content: <Web3ConnectProviders />,
           },
           {
-            title: t("walletConnect.accountSelect.title"),
-            content:
-              activeProvider && isConnecting ? (
-                <Web3ConnectProviderPending provider={activeProvider} />
-              ) : (
-                <Web3ConnectAccounts accounts={accounts} />
-              ),
-          },
-          {
             title: t("walletConnect.provider.title"),
             content: (
               <Web3ConnectExternalModal
@@ -108,6 +99,15 @@ export const Web3ConnectModal = () => {
                 onSelect={() => paginateTo(ModalPage.AccountSelect)}
               />
             ),
+          },
+          {
+            title: t("walletConnect.accountSelect.title"),
+            content:
+              activeProvider && isConnecting ? (
+                <Web3ConnectProviderPending provider={activeProvider} />
+              ) : (
+                <Web3ConnectAccountList accounts={accounts} />
+              ),
           },
           {
             title: t("walletConnect.provider.title"),

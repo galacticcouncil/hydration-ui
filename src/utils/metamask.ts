@@ -5,7 +5,7 @@ import { NATIVE_EVM_ASSET_DECIMALS, NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
 
 const chainId = import.meta.env.VITE_EVM_CHAIN_ID as string
 const rpcUrl = import.meta.env.VITE_EVM_PROVIDER_URL as string
-const explorerUrl = import.meta.env.VITE_EVN_EXPLORER_URL as string
+const explorerUrl = import.meta.env.VITE_EVM_EXPLORER_URL as string
 
 export const isMetaMaskInstalled =
   !!window.ethereum && !!window.ethereum?.isMetaMask

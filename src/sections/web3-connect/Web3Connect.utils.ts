@@ -9,10 +9,8 @@ import {
 import { useShallow } from "hooks/useShallow"
 import { useEffect, useRef } from "react"
 import { usePrevious } from "react-use"
-import {
-  SUPPORTED_WALLET_PROVIDERS,
-  WalletProviderType,
-} from "sections/web3-connect/wallets"
+
+import { WalletConnect } from "sections/web3-connect/wallets/WalletConnect"
 import { POLKADOT_APP_NAME } from "utils/api"
 import { H160, getEvmAddress, isEvmAddress } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
@@ -22,10 +20,11 @@ import {
   WalletProviderStatus,
   useWeb3ConnectStore,
 } from "./store/useWeb3ConnectStore"
+import { WalletProviderType, getSupportedWallets } from "./wallets"
 import { ExternalWallet } from "./wallets/ExternalWallet"
 import { MetaMask } from "./wallets/MetaMask/MetaMask"
-export { WalletProviderType } from "./wallets"
 export type { WalletProvider } from "./wallets"
+export { WalletProviderType, getSupportedWallets }
 
 export const useWallet = () => {
   const providerType = useWeb3ConnectStore(
@@ -41,43 +40,31 @@ export const useAccount = () => {
 }
 
 export const useWalletAccounts = (
-  provider: WalletProviderType | null,
+  type: WalletProviderType | null,
   options?: QueryObserverOptions<WalletAccount[], unknown, Account[]>,
 ) => {
-  const { wallet } = getWalletProviderByType(provider)
-
-  const providerKey =
-    wallet instanceof MetaMask ? `${provider}-${wallet.evmAddress}` : provider
+  const { wallet } = getWalletProviderByType(type)
 
   return useQuery<WalletAccount[], unknown, Account[]>(
-    ["Web3Connect", ...QUERY_KEYS.providerAccounts(providerKey ?? "")],
+    ["Web3Connect", ...QUERY_KEYS.providerAccounts(getProviderQueryKey(type))],
     async () => {
       return (await wallet?.getAccounts()) ?? []
     },
     {
-      enabled: !!wallet,
+      enabled: !!wallet?.extension,
       select: (data) => {
         if (!data) return []
 
-        const acounts = data.map((account) => ({
-          address: account.address,
-          name: account.name ?? "",
-          provider: account.wallet?.extensionName as WalletProviderType,
-          isExternalWalletConnected: false,
-        }))
-
-        if (wallet instanceof MetaMask) {
-          // allow only one account for MetaMask
-          const [account] = acounts
-          return [
-            {
-              ...account,
-              evmAddress: wallet?.evmAddress ?? "",
-            },
-          ]
-        }
-
-        return acounts
+        return data.map(({ address, name, wallet }) => {
+          const isEvm = isEvmAddress(address)
+          return {
+            address: isEvm ? new H160(address).toAccount() : address,
+            evmAddress: isEvm ? getEvmAddress(address) : "",
+            name: name ?? "",
+            provider: wallet?.extensionName as WalletProviderType,
+            isExternalWalletConnected: wallet instanceof ExternalWallet,
+          }
+        })
       },
       ...options,
     },
@@ -86,7 +73,7 @@ export const useWalletAccounts = (
 
 export const useWeb3ConnectEagerEnable = () => {
   const navigate = useNavigate()
-  const { account } = useSearch<{
+  const search = useSearch<{
     Search: {
       account: string
     }
@@ -95,15 +82,17 @@ export const useWeb3ConnectEagerEnable = () => {
   const { wallet } = useWallet()
   const prevWallet = usePrevious(wallet)
 
-  const addressRef = useRef(account)
+  const externalAddressRef = useRef(search?.account)
 
   useEffect(() => {
-    setExternalWallet(addressRef.current)
-
     const state = useWeb3ConnectStore.getState()
-    const { status, provider, account } = state
+    const { status, provider, account: currentAccount } = state
 
-    if (status === "connected") {
+    if (externalAddressRef.current) {
+      return setExternalWallet(externalAddressRef.current)
+    }
+
+    if (status === "connected" && currentAccount) {
       eagerEnable()
     } else {
       // reset stuck pending requests
@@ -111,16 +100,31 @@ export const useWeb3ConnectEagerEnable = () => {
     }
 
     async function eagerEnable() {
-      // skip WalletConnect eager enable
-      if (provider === WalletProviderType.WalletConnect) return
-
       const { wallet } = getWalletProviderByType(provider)
+      const isEnabled = !!wallet?.extension
+
+      // skip if already enabled
+      if (isEnabled) return
+
+      // skip WalletConnect eager enable
+      if (wallet instanceof WalletConnect) return
+
+      // enable proxy wallet for delegate
+      if (wallet instanceof ExternalWallet && !!currentAccount?.delegate) {
+        await wallet.enableProxy(POLKADOT_APP_NAME)
+        return
+      }
+
       await wallet?.enable(POLKADOT_APP_NAME)
       const accounts = await wallet?.getAccounts()
 
-      const foundAccount = accounts?.find(
-        ({ address }) => address === account?.address,
-      )
+      const foundAccount = accounts?.find((account) => {
+        const address = isEvmAddress(account.address)
+          ? new H160(account.address).toAccount()
+          : account.address
+
+        return address === currentAccount?.address
+      })
 
       // disconnect on account mismatch
       if (!foundAccount) {
@@ -131,20 +135,26 @@ export const useWeb3ConnectEagerEnable = () => {
 
   useEffect(() => {
     const hasWalletDisconnected = !wallet && !!prevWallet
-    if (!hasWalletDisconnected) return
 
-    const metamask = prevWallet instanceof MetaMask ? prevWallet : null
-    const external = prevWallet instanceof ExternalWallet ? prevWallet : null
-
-    if (metamask) {
-      // unsub from metamask events
-      metamask.unsubscribe()
+    // look for disconnect to clean up
+    if (hasWalletDisconnected) {
+      cleanUp()
     }
 
-    if (external) {
-      // reset external wallet
-      external.setAddress(undefined)
-      navigate({ search: { account: undefined } })
+    function cleanUp() {
+      const metamask = prevWallet instanceof MetaMask ? prevWallet : null
+      const external = prevWallet instanceof ExternalWallet ? prevWallet : null
+
+      if (metamask) {
+        // unsub from metamask events on disconnect
+        metamask.unsubscribe()
+      }
+
+      if (external) {
+        // reset external wallet on disconnect
+        external.setAddress(undefined)
+        navigate({ search: { account: undefined } })
+      }
     }
   }, [navigate, prevWallet, wallet])
 }
@@ -155,8 +165,7 @@ export const useEnableWallet = (
 ) => {
   const { wallet } = getWalletProviderByType(provider)
   const { mutate: enable, ...mutation } = useMutation(
-    ["Web3Connect", ...QUERY_KEYS.walletEnable(provider)],
-    async () => wallet?.enable(POLKADOT_APP_NAME),
+    async () => await wallet?.enable(POLKADOT_APP_NAME),
     {
       retry: false,
       ...options,
@@ -169,28 +178,35 @@ export const useEnableWallet = (
   }
 }
 
-export function setExternalWallet(externalAddress: string = "") {
-  const isPolkadot = !!safeConvertAddressSS58(externalAddress, 0)
-  const isEvm = isEvmAddress(externalAddress ?? "")
-  const isValidAddress = externalAddress && (isPolkadot || isEvm)
-  if (isValidAddress) {
-    const { wallet } = getWalletProviderByType(
-      WalletProviderType.ExternalWallet,
-    )
+export function setExternalWallet(externalAddress = "") {
+  const state = useWeb3ConnectStore.getState()
 
+  const { wallet } = getWalletProviderByType(WalletProviderType.ExternalWallet)
+  const externalWallet = wallet instanceof ExternalWallet ? wallet : null
+
+  if (!externalWallet) return
+
+  // reuse same account from store if addresses match
+  if (state.account?.address === externalAddress) {
+    externalWallet.setAddress(externalAddress)
+    return
+  }
+
+  const isHydra = !!safeConvertAddressSS58(externalAddress, 0)
+  const isEvm = isEvmAddress(externalAddress ?? "")
+  const isValidAddress = externalAddress && (isHydra || isEvm)
+
+  if (isValidAddress) {
     const address = isEvm
       ? new H160(getEvmAddress(externalAddress)).toAccount()
       : externalAddress
 
-    if (wallet instanceof ExternalWallet) {
-      wallet?.setAddress(address)
-    }
-
+    externalWallet.setAddress(address)
     return useWeb3ConnectStore.setState({
       provider: WalletProviderType.ExternalWallet,
       status: WalletProviderStatus.Connected,
       account: {
-        name: ExternalWallet.accountName,
+        name: externalWallet.accountName,
         address: address ?? "",
         evmAddress: isEvm ? getEvmAddress(externalAddress) : "",
         provider: WalletProviderType.ExternalWallet,
@@ -203,13 +219,23 @@ export function setExternalWallet(externalAddress: string = "") {
 
 export function getWalletProviderByType(type: WalletProviderType | null) {
   return (
-    SUPPORTED_WALLET_PROVIDERS.find((provider) => provider.type === type) ?? {
+    getSupportedWallets().find((provider) => provider.type === type) ?? {
       wallet: null,
       type: null,
     }
   )
 }
 
-export function getSupportedWallets() {
-  return SUPPORTED_WALLET_PROVIDERS
+function getProviderQueryKey(type: WalletProviderType | null) {
+  const { wallet } = getWalletProviderByType(type)
+
+  if (wallet instanceof MetaMask) {
+    return [type, wallet.signer?.address].join("-")
+  }
+
+  if (wallet instanceof ExternalWallet) {
+    return [type, wallet.account?.address].join("-")
+  }
+
+  return type ?? ""
 }

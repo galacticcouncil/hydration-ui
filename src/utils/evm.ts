@@ -48,5 +48,5 @@ export class H160 {
 }
 
 export function getEvmTxLink(txHash: string) {
-  return `${import.meta.env.VITE_EVN_EXPLORER_URL}/tx/${txHash}`
+  return `${import.meta.env.VITE_EVM_EXPLORER_URL}/tx/${txHash}`
 }

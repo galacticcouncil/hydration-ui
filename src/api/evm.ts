@@ -16,11 +16,10 @@ const getNativeEvmTokenBalance = (provider: SDKProvider, address: string) => {
   }
 }
 
-export const useNativeEvmTokenBalance = () => {
+export const useNativeEvmTokenBalance = (address: string) => {
   const { wallet } = useWallet()
 
   const provider = wallet instanceof MetaMask ? wallet.extension : null
-  const address = wallet instanceof MetaMask ? wallet?.evmAddress : ""
 
   const enabled = !!(provider && address)
 

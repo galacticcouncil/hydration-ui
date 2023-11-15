@@ -29,7 +29,7 @@ export const Web3ConnectEvmAccount: FC<Props> = (account) => {
   const { t } = useTranslation()
   const { setAccount, toggle } = useWeb3ConnectStore()
 
-  const { data, isSuccess } = useNativeEvmTokenBalance()
+  const { data, isSuccess } = useNativeEvmTokenBalance(account.evmAddress ?? "")
 
   return (
     <>

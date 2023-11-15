@@ -15,7 +15,7 @@ export type Account = {
   address: string
   evmAddress?: string
   provider: WalletProviderType
-  isExternalWalletConnected: boolean
+  isExternalWalletConnected?: boolean
   delegate?: string
 }
 

@@ -1,5 +1,9 @@
 import { Wallet, WalletAccount } from "@talismn/connect-wallets"
 import ExternalWalletIcon from "assets/icons/ExternalWalletIcon.svg"
+import {
+  WalletProviderType,
+  getWalletProviderByType,
+} from "sections/web3-connect/Web3Connect.utils"
 
 /**
  * Mock Wallet for "View as Wallet" functionality
@@ -16,10 +20,12 @@ export class ExternalWallet implements Wallet {
   _extension: any
   _signer: any
 
-  accounts: WalletAccount[] = []
+  account: WalletAccount | undefined
 
-  static accountName = "External Account"
-  static proxyAccountName = "Proxy Account"
+  proxyWalletProvider = WalletProviderType.PolkadotJS
+
+  accountName = "External Account"
+  proxyAccountName = "Proxy Account"
 
   get extension() {
     return this._extension
@@ -38,25 +44,36 @@ export class ExternalWallet implements Wallet {
   }
 
   enable = async (dappName: string) => {
+    this._extension = {}
     return Promise.resolve(dappName)
   }
 
+  enableProxy = async (dappName: string) => {
+    const { wallet } = getWalletProviderByType(this.proxyWalletProvider)
+
+    if (wallet?.installed && !wallet?.extension) {
+      await wallet?.enable(dappName)
+      this._extension = wallet.extension
+      this._signer = wallet.signer
+    }
+  }
+
   setAddress = async (address?: string) => {
-    this.accounts = address
-      ? [
-          {
-            address,
-            source: this.extensionName,
-            name: ExternalWallet.accountName,
-            wallet: this,
-            signer: this.signer,
-          },
-        ]
-      : []
+    if (address) {
+      this.account = {
+        address,
+        source: this.extensionName,
+        name: this.accountName,
+        wallet: this,
+        signer: this.signer,
+      }
+    } else {
+      this.account = undefined
+    }
   }
 
   getAccounts = async (): Promise<WalletAccount[]> => {
-    return Promise.resolve(this.accounts)
+    return Promise.resolve(this.account ? [this.account] : [])
   }
 
   subscribeAccounts = async () => Promise.resolve()
