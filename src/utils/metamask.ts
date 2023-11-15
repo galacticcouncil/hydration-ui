@@ -2,6 +2,7 @@ import { SDKProvider } from "@metamask/sdk"
 import { Buffer } from "buffer"
 import { POLKADOT_APP_NAME } from "utils/api"
 import { NATIVE_EVM_ASSET_DECIMALS, NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
+import { noop } from "utils/helpers"
 
 const chainId = import.meta.env.VITE_EVM_CHAIN_ID as string
 const rpcUrl = import.meta.env.VITE_EVM_PROVIDER_URL as string
@@ -34,21 +35,28 @@ const EVM_CHAIN_PARAMS: AddEvmChainParams = {
   },
 }
 
-export async function requestNetworkSwitch(provider: SDKProvider) {
+export async function requestNetworkSwitch(
+  provider: SDKProvider,
+  onSwitch: () => unknown = noop,
+) {
   if (!provider) return
   try {
-    await provider.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: "0x" + Number(chainId).toString(16) }],
-    })
+    await provider
+      .request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: "0x" + Number(chainId).toString(16) }],
+      })
+      .then(onSwitch)
   } catch (error: any) {
     // missing or unsupported network error
     if (error?.code === 4902) {
       try {
-        await provider.request({
-          method: "wallet_addEthereumChain",
-          params: [EVM_CHAIN_PARAMS],
-        })
+        await provider
+          .request({
+            method: "wallet_addEthereumChain",
+            params: [EVM_CHAIN_PARAMS],
+          })
+          .then(onSwitch)
       } catch (err) {}
     }
   }

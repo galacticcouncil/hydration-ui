@@ -1,4 +1,5 @@
-import { useNativeEvmTokenBalance } from "api/evm"
+import { useTokenBalance } from "api/balances"
+import { useAccountCurrency } from "api/payments"
 import { Button } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
@@ -29,7 +30,9 @@ export const Web3ConnectEvmAccount: FC<Props> = (account) => {
   const { t } = useTranslation()
   const { setAccount, toggle } = useWeb3ConnectStore()
 
-  const { data, isSuccess } = useNativeEvmTokenBalance(account.evmAddress ?? "")
+  const { data: currencyId } = useAccountCurrency(account.address)
+
+  const { data, isSuccess } = useTokenBalance(currencyId, account.address)
 
   return (
     <>

@@ -23,17 +23,9 @@ export type WalletProvider = {
   wallet: Wallet
 }
 
-const EVM_CHAIN_ID = parseInt(import.meta.env.VITE_EVM_CHAIN_ID)
-
 const novaWallet: Wallet = new NovaWallet()
 
 const metaMask: Wallet = new MetaMask({
-  onChainChanged(chainId) {
-    if (chainId !== EVM_CHAIN_ID) {
-      const state = useWeb3ConnectStore.getState()
-      state.disconnect()
-    }
-  },
   onAccountsChanged(accounts) {
     const state = useWeb3ConnectStore.getState()
     if (!accounts || accounts.length === 0) {

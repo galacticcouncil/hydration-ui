@@ -1,14 +1,26 @@
-import { Web3Provider } from "@ethersproject/providers"
+import {
+  ExternalProvider,
+  JsonRpcSigner,
+  Web3Provider,
+} from "@ethersproject/providers"
+import { SDKProvider } from "@metamask/sdk"
+import { requestNetworkSwitch } from "utils/metamask"
 
 const DISPATCH_ADDRESS = "0x0000000000000000000000000000000000000401"
 
 export class MetaMaskSigner {
   address: string
-  provider: Web3Provider
+  provider: SDKProvider
+  signer: JsonRpcSigner
 
-  constructor(address: string, provider: Web3Provider) {
+  constructor(address: string, provider: SDKProvider) {
     this.address = address
     this.provider = provider
+    this.signer = this.getSigner(provider)
+  }
+
+  getSigner(provider: SDKProvider) {
+    return new Web3Provider(provider as unknown as ExternalProvider).getSigner()
   }
 
   setAddress(address: string) {
@@ -16,18 +28,22 @@ export class MetaMaskSigner {
   }
 
   sendDispatch = async (data: string) => {
-    const signer = this.provider.getSigner()
+    await requestNetworkSwitch(this.provider, () => {
+      // update signer after network switch
+      this.signer = this.getSigner(this.provider)
+    })
+
     const tx = {
       to: DISPATCH_ADDRESS,
       data,
       from: this.address,
     }
     const [gas, gasPrice] = await Promise.all([
-      this.provider.estimateGas(tx),
-      this.provider.getGasPrice(),
+      this.signer.provider.estimateGas(tx),
+      this.signer.provider.getGasPrice(),
     ])
 
-    return await signer.sendTransaction({
+    return await this.signer.sendTransaction({
       ...tx,
       maxPriorityFeePerGas: gasPrice,
       maxFeePerGas: gasPrice,

@@ -1,10 +1,9 @@
-import { ExternalProvider, Web3Provider } from "@ethersproject/providers"
 import { MetaMaskSDK, SDKProvider } from "@metamask/sdk"
 import { SubscriptionFn, Wallet, WalletAccount } from "@talismn/connect-wallets"
 import MetaMaskLogo from "assets/icons/MetaMask.svg"
 import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
 import { noop } from "utils/helpers"
-import { isMetaMaskInstalled, requestNetworkSwitch } from "utils/metamask"
+import { isMetaMaskInstalled } from "utils/metamask"
 
 type ChainSubscriptionFn = (payload: number | null) => void | Promise<void>
 
@@ -78,7 +77,6 @@ export class MetaMask implements Wallet {
 
       const metamask = MMSDK.getProvider()
 
-      await requestNetworkSwitch(metamask)
       const addresses = await metamask.request<string[]>({
         method: "eth_requestAccounts",
         params: [],
@@ -87,15 +85,11 @@ export class MetaMask implements Wallet {
       const address =
         Array.isArray(addresses) && addresses.length > 0 ? addresses[0] : ""
 
-      const provider = new Web3Provider(metamask as unknown as ExternalProvider)
-
       this._extension = metamask
-      this._signer = address ? new MetaMaskSigner(address, provider) : undefined
+      this._signer = address ? new MetaMaskSigner(address, metamask) : undefined
 
-      if (this.onAccountsChanged) {
-        await this.subscribeAccounts(this.onAccountsChanged)
-      }
-      if (this.onChainChanged) await this.subscribeChain(this.onChainChanged)
+      this.subscribeAccounts(this.onAccountsChanged)
+      this.subscribeChain(this.onChainChanged)
     } catch (err: any) {
       // don't treat pending requests as errors
       if (err.code === -32002) {
@@ -132,7 +126,7 @@ export class MetaMask implements Wallet {
     }
   }
 
-  subscribeAccounts = async (callback: SubscriptionFn) => {
+  subscribeAccounts = async (callback?: SubscriptionFn) => {
     if (!this._extension) {
       throw new Error(
         `The 'Wallet.enable(dappname)' function should be called first.`,
@@ -145,23 +139,23 @@ export class MetaMask implements Wallet {
         : []
 
       const accounts = addresses.map(this.toWalletAccount)
-      callback(accounts)
+      callback?.(accounts)
 
       const mainAccount = accounts.slice(0, 1)[0]
       this._signer?.setAddress(mainAccount?.address)
     })
   }
 
-  subscribeChain = async (callback: ChainSubscriptionFn) => {
+  subscribeChain = async (callback?: ChainSubscriptionFn) => {
     if (!this._extension) {
       throw new Error(
         `The 'Wallet.enable(dappname)' function should be called first.`,
       )
     }
 
-    this._extension.on("chainChanged", (payload) => {
+    this._extension.on("chainChanged", async (payload) => {
       const chainId = typeof payload === "string" ? parseInt(payload) : null
-      callback(chainId)
+      callback?.(chainId)
     })
   }
 
