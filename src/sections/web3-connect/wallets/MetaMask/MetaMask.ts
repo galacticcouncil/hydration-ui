@@ -2,6 +2,7 @@ import { MetaMaskSDK, SDKProvider } from "@metamask/sdk"
 import { SubscriptionFn, Wallet, WalletAccount } from "@talismn/connect-wallets"
 import MetaMaskLogo from "assets/icons/MetaMask.svg"
 import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
+import { shortenAccountAddress } from "utils/formatting"
 import { noop } from "utils/helpers"
 import { isMetaMaskInstalled } from "utils/metamask"
 
@@ -120,7 +121,7 @@ export class MetaMask implements Wallet {
     return {
       address,
       source: this.extensionName,
-      name: this.title,
+      name: shortenAccountAddress(address),
       wallet: this,
       signer: this.signer,
     }

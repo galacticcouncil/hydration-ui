@@ -5,7 +5,6 @@ import {
   useAccount,
   useWalletAccounts,
 } from "sections/web3-connect/Web3Connect.utils"
-import { shortenAccountAddress } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
@@ -19,9 +18,7 @@ export const useWalletAddresses = () => {
     if (!providerAddresses.data) return []
 
     let addresses: Address[] = providerAddresses.data.map((pa) => {
-      const name = pa.evmAddress
-        ? shortenAccountAddress(pa.evmAddress)
-        : pa.name ?? ""
+      const name = pa.name ?? ""
       const address = pa.address
       const provider = account?.provider ?? "external"
       return { name, address, provider }

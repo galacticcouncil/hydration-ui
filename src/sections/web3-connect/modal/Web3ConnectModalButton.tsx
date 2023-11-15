@@ -37,6 +37,8 @@ const Web3ConnectActiveButton: FC<{
   const shouldRenderSecondaryAvatar =
     !account.isExternalWalletConnected && !evmAddress
 
+  const shouldHideAddress = account.name === shortenedAddress?.toLowerCase()
+
   return (
     <SContainer className={className} onClick={onOpen}>
       <div sx={{ flex: "row", gap: 12, align: "center", justify: "center" }}>
@@ -44,9 +46,11 @@ const Web3ConnectActiveButton: FC<{
           <Text color="basic100" fs={14} lh={14} font="ChakraPetchBold">
             {account.name}
           </Text>
-          <Text color="basic300" fs={12} lh={12} fw={400}>
-            {shortenedAddress}
-          </Text>
+          {!shouldHideAddress && (
+            <Text color="basic300" fs={12} lh={12} fw={400}>
+              {shortenedAddress}
+            </Text>
+          )}
         </div>
         <div
           sx={{
