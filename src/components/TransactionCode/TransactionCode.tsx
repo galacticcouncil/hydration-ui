@@ -33,11 +33,8 @@ export const TransactionCode = (props: ReactJsonViewProps) => (
       fontFamily: "ChakraPetch",
       fontSize: "12px",
 
-      padding: "20px 30px",
+      padding: "20px 0px",
       position: "relative",
-      left: -30,
-      right: -30,
-      width: "calc(100% + 30px * 2)",
     }}
   />
 )

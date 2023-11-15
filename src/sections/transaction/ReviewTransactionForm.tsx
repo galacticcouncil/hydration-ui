@@ -198,6 +198,17 @@ export const ReviewTransactionForm = (
           </Text>
           <div sx={{ mt: 16 }}>
             {json && <TransactionCode name={json.method} src={json.args} />}
+            {wallet?.signer instanceof MetaMaskSigner && (
+              <div
+                sx={{ color: "basic300", fontSize: 14, p: 12, mt: 4 }}
+                css={{
+                  overflowWrap: "break-word",
+                  background: "rgba(0,0,0,0.15)",
+                }}
+              >
+                {props.tx.method.toHex()}
+              </div>
+            )}
           </div>
         </>
       }
