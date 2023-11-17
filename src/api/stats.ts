@@ -44,9 +44,9 @@ export const useStats = (
 
 const getStats = (timeframe?: StatsTimeframe, assetId?: string) => async () => {
   const res = await fetch(
-    `https://api.hydradx.io/hydradx-ui/v1/stats/volume/${assetId ?? ""}${
-      timeframe ? `?timeframe=${timeframe}` : ""
-    }`,
+    `https://api.hydradx.io/hydradx-ui/v1/stats/charts/volume${
+      assetId != null ? `/${assetId}` : ""
+    }${timeframe ? `?timeframe=${timeframe}` : ""}`,
   )
 
   const data: Promise<StatsData[]> = res.json()
@@ -56,7 +56,9 @@ const getStats = (timeframe?: StatsTimeframe, assetId?: string) => async () => {
 
 const getStatsTvl = (assetId?: string) => async () => {
   const res = await fetch(
-    `https://api.hydradx.io/hydradx-ui/v1/stats/tvl/${assetId ?? ""}`,
+    `https://api.hydradx.io/hydradx-ui/v1/stats/charts/tvl${
+      assetId != null ? `/${assetId}` : ""
+    }`,
   )
 
   const data: Promise<StatsData[]> = res.json()

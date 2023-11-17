@@ -56,12 +56,14 @@ export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
                 }))}
               />
               <div sx={{ flex: "row" }}>
-                {meta.name.split("/").map((asset, index) => (
-                  <Fragment key={`${asset}-${index}`}>
-                    {index ? <Text color="whiteish500">/</Text> : null}
-                    <Text color="white">{asset}</Text>
-                  </Fragment>
-                ))}
+                {(assets.isShareToken(meta) ? meta.symbol : meta.name)
+                  .split("/")
+                  .map((asset, index) => (
+                    <Fragment key={`${asset}-${index}`}>
+                      {index ? <Text color="whiteish500">/</Text> : null}
+                      <Text color="white">{asset}</Text>
+                    </Fragment>
+                  ))}
               </div>
             </div>
           ) : (
