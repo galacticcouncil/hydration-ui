@@ -12,15 +12,13 @@ import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 
 const withoutRefresh = true
-const VISIBLE_TRADE_NUMBER = 10
 
 export const useRecentTradesTableData = (assetId?: string) => {
   const { assets } = useRpcProvider()
   const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
   const apiIds = useApiIds()
-  const allTrades = useAllTrades()
+  const allTrades = useAllTrades(assetId ? Number(assetId) : undefined)
   const displayAsset = useDisplayAssetStore()
-
   const omnipoolAssetsIds = omnipoolAssets.data?.map((a) => a.id) ?? []
 
   const spotPrices = useSpotPrices(
@@ -42,103 +40,84 @@ export const useRecentTradesTableData = (assetId?: string) => {
     )
       return []
 
-    const trades = allTrades.data.events
-      .sort(
-        (a, b) =>
-          new Date(b.block.timestamp).getTime() -
-          new Date(a.block.timestamp).getTime(),
-      )
-      .slice(0) // copy an array to avoid the mutating
-      .reduce(
-        (memo, trade, i, arr) => {
-          const isSelectedAsset = assetId
-            ? assetId === trade.args.assetIn.toString() ||
-              assetId === trade.args.assetOut.toString()
-            : true
+    const trades = allTrades.data.events.reduce(
+      (memo, trade) => {
+        const isSelectedAsset = assetId
+          ? assetId === trade.args.assetIn.toString() ||
+            assetId === trade.args.assetOut.toString()
+          : true
 
-          if (memo.length === VISIBLE_TRADE_NUMBER) arr.splice(1) // break iteration
-          if (
-            isSelectedAsset &&
-            !memo.find((memoTrade) => memoTrade.id === trade.id) &&
-            memo.length < VISIBLE_TRADE_NUMBER
-          ) {
-            const isBuy = trade.name === "Omnipool.BuyExecuted"
+        if (
+          isSelectedAsset &&
+          !memo.find((memoTrade) => memoTrade.id === trade.id)
+        ) {
+          const isBuy = trade.name === "Omnipool.BuyExecuted"
 
-            const assetIn = trade.args.assetIn.toString()
-            const amountInRaw = new BN(trade.args.amountIn)
-            const assetOut = trade.args.assetOut.toString()
-            const amountOutRaw = new BN(trade.args.amountOut)
+          const assetIn = trade.args.assetIn.toString()
+          const amountInRaw = new BN(trade.args.amountIn)
+          const assetOut = trade.args.assetOut.toString()
+          const amountOutRaw = new BN(trade.args.amountOut)
 
-            const assetMetaIn = assets.getAsset(assetIn)
-            const assetMetaOut = assets.getAsset(assetOut)
+          const assetMetaIn = assets.getAsset(assetIn)
+          const assetMetaOut = assets.getAsset(assetOut)
 
-            const spotPriceIn = spotPrices.find(
-              (spotPrice) => spotPrice?.data?.tokenIn === assetIn,
-            )?.data
+          const spotPriceIn = spotPrices.find(
+            (spotPrice) => spotPrice?.data?.tokenIn === assetIn,
+          )?.data
 
-            const amountIn = getFloatingPointAmount(
-              amountInRaw,
-              assetMetaIn.decimals,
-            )
-            const amountOut = getFloatingPointAmount(
-              amountOutRaw,
-              assetMetaOut.decimals,
-            )
+          const amountIn = getFloatingPointAmount(
+            amountInRaw,
+            assetMetaIn.decimals,
+          )
+          const amountOut = getFloatingPointAmount(
+            amountOutRaw,
+            assetMetaOut.decimals,
+          )
 
-            const tradeValue = amountIn.multipliedBy(
-              spotPriceIn?.spotPrice ?? 1,
-            )
+          const tradeValue = amountIn.multipliedBy(spotPriceIn?.spotPrice ?? 1)
 
-            const account = isHydraAddress(trade.args.who)
-              ? trade.args.who
-              : encodeAddress(
-                  decodeAddress(trade.args.who),
-                  HYDRA_ADDRESS_PREFIX,
-                )
+          const account = isHydraAddress(trade.args.who)
+            ? trade.args.who
+            : encodeAddress(decodeAddress(trade.args.who), HYDRA_ADDRESS_PREFIX)
 
-            if (assetMetaIn && assetMetaOut)
-              memo.push({
-                id: trade.id,
-                isBuy,
-                isSell: !isBuy,
-                amountIn,
-                amountOut,
-                assetInSymbol: assetMetaIn.symbol,
-                assetOutSymbol: assetMetaOut?.symbol,
-                assetInId: assetMetaIn.id,
-                assetOutId: assetMetaOut.id,
-                tradeValue,
-                account,
-                date: new Date(trade.block.timestamp),
-              })
-          }
-          return memo
-        },
-        [] as Array<{
-          id: string
-          isBuy: boolean
-          isSell: boolean
-          amountIn: BN
-          amountOut: BN
-          tradeValue: BN
-          account: string
-          assetInSymbol: string
-          assetOutSymbol: string
-          date: Date
-          assetInId: string
-          assetOutId: string
-        }>,
-      )
+          if (assetMetaIn && assetMetaOut)
+            memo.push({
+              id: trade.id,
+              isBuy,
+              isSell: !isBuy,
+              amountIn,
+              amountOut,
+              assetInSymbol: assetMetaIn.symbol,
+              assetOutSymbol: assetMetaOut?.symbol,
+              assetInId: assetMetaIn.id,
+              assetOutId: assetMetaOut.id,
+              tradeValue,
+              account,
+              date: new Date(trade.block.timestamp),
+              extrinsicHash: trade.extrinsic?.hash,
+            })
+        }
+        return memo
+      },
+      [] as Array<{
+        id: string
+        isBuy: boolean
+        isSell: boolean
+        amountIn: BN
+        amountOut: BN
+        tradeValue: BN
+        account: string
+        assetInSymbol: string
+        assetOutSymbol: string
+        date: Date
+        assetInId: string
+        assetOutId: string
+        extrinsicHash: string
+      }>,
+    )
 
     return trades
-  }, [
-    allTrades.data,
-    omnipoolAssets.data,
-    apiIds.data,
-    spotPrices,
-    assetId,
-    assets,
-  ])
+  }, [allTrades, omnipoolAssets.data, apiIds.data, spotPrices, assetId, assets])
 
   return { data, isLoading: isInitialLoading }
 }

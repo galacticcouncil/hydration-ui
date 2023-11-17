@@ -36,7 +36,6 @@ export const useRecentTradesTableSkeleton = (enableAnimation = true) => {
               flex: "row",
               gap: 8,
               align: "center",
-              justify: "start",
             }}
           >
             {isDesktop ? (
@@ -81,7 +80,7 @@ export const useRecentTradesTableSkeleton = (enableAnimation = true) => {
         id: "account",
         header: t("stats.overview.table.trades.header.account"),
         cell: () => (
-          <div sx={{ flex: "row", justify: "center" }}>
+          <div sx={{ flex: "row" }}>
             <Skeleton
               width={72}
               height={26}
@@ -95,7 +94,7 @@ export const useRecentTradesTableSkeleton = (enableAnimation = true) => {
         header: t("stats.overview.table.trades.header.tradeValue"),
         cell: () =>
           isDesktop ? (
-            <div sx={{ flex: "row", justify: "center" }}>
+            <div sx={{ flex: "row" }}>
               <Skeleton
                 width={72}
                 height={26}
@@ -121,9 +120,7 @@ export const useRecentTradesTableSkeleton = (enableAnimation = true) => {
         id: "trade",
         cell: () => {
           return (
-            <div
-              sx={{ flex: "row", align: "center", gap: 6, justify: "center" }}
-            >
+            <div sx={{ flex: "row", align: "center", gap: 6 }}>
               <Skeleton
                 width={22}
                 height={22}

@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { Maybe } from "graphql/jsutils/Maybe"
 import { ChartType } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
+import { undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 export type StatsData = {
@@ -62,6 +63,33 @@ const getStatsTvl = (assetId?: string) => async () => {
   )
 
   const data: Promise<StatsData[]> = res.json()
+
+  return data
+}
+
+export const useTVLs = (assetIds: string[]) => {
+  return useQueries({
+    queries: assetIds.map((assetId) => ({
+      queryKey: QUERY_KEYS.tvl(assetId),
+      queryFn:
+        assetId != null
+          ? async () => {
+              const data = await getTVL(assetId)
+              return { tvl_usd: data?.[0].tvl_usd, assetId }
+            }
+          : undefinedNoop,
+      enabled: !!assetId,
+    })),
+  })
+}
+
+const getTVL = async (assetId?: string) => {
+  const res = await fetch(
+    `https://api.hydradx.io/hydradx-ui/v1/stats/tvl${
+      assetId != null ? `/${assetId}` : ""
+    }`,
+  )
+  const data: Promise<{ tvl_usd: number }[]> = res.json()
 
   return data
 }

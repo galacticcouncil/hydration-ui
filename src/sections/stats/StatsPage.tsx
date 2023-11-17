@@ -24,7 +24,6 @@ export const StatsPage = () => {
 
   return (
     <Page
-      variant="stats"
       subHeader={
         isOmnipoolAssetPage ? (
           <BackSubHeader

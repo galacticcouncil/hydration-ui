@@ -175,7 +175,7 @@ export const QUERY_KEYS = {
     periodsInFarm,
   ],
   minWithdrawalFee: ["minWithdrawalFee"],
-  allTrades: ["allTrades"],
+  allTrades: (assetId?: number) => ["allTrades", assetId],
   tradeVolume: (poolId: Maybe<string | u32>) => [
     "tradeVolume",
     poolId?.toString(),
@@ -348,4 +348,5 @@ export const QUERY_KEYS = {
     block,
   ],
   volumeDaily: (assetId?: string) => ["volumeDaily", assetId],
+  tvl: (assetId?: string) => ["tvl", assetId],
 } as const

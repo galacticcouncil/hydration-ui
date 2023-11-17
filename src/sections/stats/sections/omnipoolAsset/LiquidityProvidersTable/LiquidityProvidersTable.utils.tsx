@@ -60,7 +60,7 @@ export const useLiquidityProvidersTable = (data: any) => {
         header: t("position"),
         sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
         cell: ({ row }) => (
-          <div sx={{ flex: "row", justify: ["right", "center"] }}>
+          <div sx={{ flex: "row", justify: ["right", "left"] }}>
             <WalletAssetsHydraPositionsData
               assetId={row.original.assetId}
               value={row.original.value}
@@ -76,7 +76,7 @@ export const useLiquidityProvidersTable = (data: any) => {
         sortingFn: (a, b) =>
           a.original.valueDisplay.gt(b.original.valueDisplay) ? 1 : -1,
         cell: ({ row }) => (
-          <Text tAlign="center" color="white">
+          <Text color="white">
             <DisplayValue value={row.original.valueDisplay} isUSD />
           </Text>
         ),
@@ -87,7 +87,7 @@ export const useLiquidityProvidersTable = (data: any) => {
         sortingFn: (a, b) =>
           a.original.sharePercent.gt(b.original.sharePercent) ? 1 : -1,
         cell: ({ row }) => (
-          <Text tAlign="center" color="white">
+          <Text color="white">
             {t("value.percentage", {
               value: row.original.sharePercent,
             })}

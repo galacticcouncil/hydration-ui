@@ -1,4 +1,3 @@
-import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
@@ -23,23 +22,15 @@ export const SPage = styled.div`
   }
 `
 
-export const SGradientBg = styled.div<{ variant?: "stats" | "default" }>`
+export const SGradientBg = styled.div`
   position: absolute;
   top: 0;
   left: 0;
 
   width: 100%;
 
-  ${({ variant }) =>
-    variant === "stats"
-      ? css`
-          height: 1360px;
-          background: ${theme.gradients.backgroundStats};
-        `
-      : css`
-          height: 474px;
-          background: ${theme.gradients.background};
-        `}
+  height: 474px;
+  background: ${theme.gradients.background};
 `
 
 export const SPageContent = styled.main`
@@ -96,19 +87,6 @@ export const SPageInner = styled.div`
 
     display: block;
   }
-`
-
-export const SPageGrid = styled.div`
-  position: absolute;
-  inset: 0;
-
-  opacity: 0.03;
-  pointer-events: none;
-
-  background-size: 22px 22px;
-  background-image: linear-gradient(to right, white 1px, transparent 1px),
-    linear-gradient(to bottom, white 1px, transparent 1px);
-  mask-image: linear-gradient(180deg, #d9d9d9 0%, rgba(217, 217, 217, 0) 100%);
 `
 
 export const SSubHeader = styled.div`

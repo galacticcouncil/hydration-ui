@@ -26,10 +26,14 @@ export const RecentTradesTable = ({ data }: Props) => {
 
   const table = useRecentTradesTable(data)
 
+  const onRowSelect = (hash: string) => {
+    window.open(`https://hydradx.subscan.io/extrinsic/${hash}`, "_blank")
+  }
+
   return (
     <StatsTableContainer>
       <StatsTableTitle>
-        <Text fs={[16, 24]} lh={[24, 26]} color="white" font="ChakraPetchBold">
+        <Text fs={[15, 19]} lh={20} color="white" font="FontOver">
           {t("stats.overview.table.trades.header.title")}
         </Text>
       </StatsTableTitle>
@@ -71,7 +75,7 @@ export const RecentTradesTable = ({ data }: Props) => {
           ))}
         </TableHeaderContent>
         <TableBodyContent>
-          {table.getRowModel().rows.map((row, i) => (
+          {table.getRowModel().rows.map((row) => (
             <TableRowStats key={row.id} css={{ cursor: "pointer" }}>
               {row.getVisibleCells().map((cell) => (
                 <TableData
@@ -81,6 +85,7 @@ export const RecentTradesTable = ({ data }: Props) => {
                       paddingLeft: 0,
                     },
                   }}
+                  onClick={() => onRowSelect(row.original.extrinsicHash)}
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableData>

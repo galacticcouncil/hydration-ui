@@ -1,7 +1,9 @@
 import styled from "@emotion/styled"
 import { Button } from "components/Button/Button"
+import { theme } from "theme"
 
 export const SButton = styled(Button)`
-  padding: 12px 34px;
-  white-space: nowrap;
+  @media ${theme.viewport.gte.sm} {
+    min-width: 140px;
+  }
 `
