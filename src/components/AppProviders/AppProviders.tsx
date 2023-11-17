@@ -9,6 +9,7 @@ import { Transactions } from "sections/transaction/Transactions"
 import { theme } from "theme"
 
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
+  console.log("Preview App")
   return (
     <TooltipProvider>
       <RpcProvider>
