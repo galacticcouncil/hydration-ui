@@ -391,7 +391,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
         type="submit"
         disabled={!form.formState.isValid}
       >
-        {t("liquidity.add.modal.confirmButton")}
+        {t("confirm")}
       </Button>
     </form>
   )
