@@ -144,7 +144,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
     assets,
     identities,
   ])
-  console.log(data, "data")
+
   return { data, isLoading: isInitialLoading }
 }
 
