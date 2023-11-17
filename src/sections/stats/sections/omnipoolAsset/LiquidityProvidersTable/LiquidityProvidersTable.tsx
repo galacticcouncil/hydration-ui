@@ -16,9 +16,10 @@ import { useTranslation } from "react-i18next"
 import { useLiquidityProvidersTable } from "./LiquidityProvidersTable.utils"
 import { Icon } from "components/Icon/Icon"
 import TitleIcon from "assets/icons/StakingTableIcon.svg?react"
+import { TLiquidityProvidersTableData } from "./data/LiquidityProvidersTableData.utils"
 
 type Props = {
-  data: any
+  data: TLiquidityProvidersTableData
 }
 
 export const LiquidityProvidersTable = ({ data }: Props) => {

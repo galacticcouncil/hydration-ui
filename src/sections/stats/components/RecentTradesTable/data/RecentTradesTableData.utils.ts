@@ -10,6 +10,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { isHydraAddress } from "utils/formatting"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
+import { useAccountsIdentity } from "api/stats"
 
 const withoutRefresh = true
 
@@ -21,13 +22,22 @@ export const useRecentTradesTableData = (assetId?: string) => {
   const displayAsset = useDisplayAssetStore()
   const omnipoolAssetsIds = omnipoolAssets.data?.map((a) => a.id) ?? []
 
+  const address = allTrades.data?.events.map((event) => event.args.who) ?? []
+  const identities = useAccountsIdentity(address)
+
   const spotPrices = useSpotPrices(
     omnipoolAssetsIds,
     displayAsset.stableCoinId,
     withoutRefresh,
   )
 
-  const queries = [omnipoolAssets, apiIds, allTrades, ...spotPrices]
+  const queries = [
+    omnipoolAssets,
+    apiIds,
+    allTrades,
+    ...spotPrices,
+    ...identities,
+  ]
 
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
@@ -76,9 +86,15 @@ export const useRecentTradesTableData = (assetId?: string) => {
 
           const tradeValue = amountIn.multipliedBy(spotPriceIn?.spotPrice ?? 1)
 
-          const account = isHydraAddress(trade.args.who)
+          const hydraAddress = isHydraAddress(trade.args.who)
             ? trade.args.who
             : encodeAddress(decodeAddress(trade.args.who), HYDRA_ADDRESS_PREFIX)
+
+          const identity = identities
+            .find((identity) => identity.data?.address === trade.args.who)
+            ?.data?.identity?.info.display.asRaw.toUtf8()
+
+          const account = identity ?? hydraAddress
 
           if (assetMetaIn && assetMetaOut)
             memo.push({
@@ -95,6 +111,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
               account,
               date: new Date(trade.block.timestamp),
               extrinsicHash: trade.extrinsic?.hash,
+              isIdentity: !!identity,
             })
         }
         return memo
@@ -113,12 +130,21 @@ export const useRecentTradesTableData = (assetId?: string) => {
         assetInId: string
         assetOutId: string
         extrinsicHash: string
+        isIdentity: boolean
       }>,
     )
 
     return trades
-  }, [allTrades, omnipoolAssets.data, apiIds.data, spotPrices, assetId, assets])
-
+  }, [
+    allTrades.data,
+    omnipoolAssets.data,
+    apiIds.data,
+    spotPrices,
+    assetId,
+    assets,
+    identities,
+  ])
+  console.log(data, "data")
   return { data, isLoading: isInitialLoading }
 }
 
