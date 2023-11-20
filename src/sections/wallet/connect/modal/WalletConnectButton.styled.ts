@@ -3,9 +3,9 @@ import { Button } from "components/Button/Button"
 import { theme } from "theme"
 
 export const SContainer = styled.div`
-  padding: 9px 9px 8px 14px;
+  padding: 6px 6px 6px 10px;
 
-  background: rgba(${theme.rgbColors.darkBlue900}, 0.6);
+  background: rgba(${theme.rgbColors.black}, 0.2);
 
   cursor: pointer;
 
@@ -14,6 +14,8 @@ export const SContainer = styled.div`
   border-radius: 4px;
 
   transition: ${theme.transitions.slow};
+
+  outline: 1px solid transparent;
 
   :active,
   :hover {
@@ -34,10 +36,13 @@ export const SLoginButton = styled(Button)`
   text-align: center;
 
   text-transform: uppercase;
-  font-size: 16px;
-  line-height: 16px;
+  font-size: 14px;
+  line-height: 14px;
 
-  padding: 15px 23px;
+  padding: 12px 16px;
+  height: 40px;
+
+  white-space: nowrap;
 
   background: linear-gradient(
     360deg,
@@ -48,4 +53,16 @@ export const SLoginButton = styled(Button)`
   box-shadow: 0px 10px 40px rgba(255, 103, 164, 0.31);
 
   border: 1px solid ${theme.colors.pink700};
+`
+
+export const SAvatarCointainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
+export const SAvatarMask = styled.div`
+  display: flex;
+
+  mask: radial-gradient(106% 106% at 106% 50%, transparent 53%, black 53%);
 `

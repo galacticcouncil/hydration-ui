@@ -1,15 +1,15 @@
 import { Spinner } from "components/Spinner/Spinner.styled"
-import {
-  MaskContainer,
-  SActiveReferendumIcon,
-  SBellIcon,
-  SWrap,
-} from "./Bell.styled"
+import { SMaskContainer, SActiveReferendumIcon } from "./Bell.styled"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { useToast } from "state/toasts"
 import { useTranslation } from "react-i18next"
 import { useReferendums } from "api/democracy"
 import { motion } from "framer-motion"
+import {
+  SToolbarButton,
+  SToolbarIcon,
+} from "components/Layout/Header/toolbar/HeaderToolbar.styled"
+import BellIcon from "assets/icons/BellIcon.svg?react"
 
 export const Bell = () => {
   const { setSidebar, toasts } = useToast()
@@ -32,32 +32,32 @@ export const Bell = () => {
   `
 
   return (
-    <InfoTooltip text={tooltipText} type={isLoading ? "default" : "black"}>
-      <div
-        css={{ position: "relative" }}
-        sx={{ flex: "row", justify: "center", align: "center" }}
-      >
+    <InfoTooltip
+      text={tooltipText}
+      type={isLoading ? "default" : "black"}
+      asChild
+    >
+      <SToolbarButton onClick={() => setSidebar(true)}>
         {isLoading && (
           <Spinner width={40} height={40} css={{ position: "absolute" }} />
         )}
-        <SWrap onClick={() => setSidebar(true)}>
-          <MaskContainer cropped={hasReferendum}>
-            <motion.div
-              whileTap={{ rotate: 30 }}
-              transition={{
-                type: "spring",
-                mass: 1,
-                stiffness: 1067,
-                damping: 20,
-                duration: 0.3,
-              }}
-            >
-              <SBellIcon aria-label={t("toast.sidebar.title")} />
-            </motion.div>
-          </MaskContainer>
-          {hasReferendum && <SActiveReferendumIcon />}
-        </SWrap>
-      </div>
+        <SMaskContainer cropped={hasReferendum}>
+          <motion.div
+            sx={{ flex: "row", align: "center" }}
+            whileTap={{ rotate: 30 }}
+            transition={{
+              type: "spring",
+              mass: 1,
+              stiffness: 1067,
+              damping: 20,
+              duration: 0.3,
+            }}
+          >
+            <SToolbarIcon as={BellIcon} aria-label={t("toast.sidebar.title")} />
+          </motion.div>
+        </SMaskContainer>
+        {hasReferendum && <SActiveReferendumIcon />}
+      </SToolbarButton>
     </InfoTooltip>
   )
 }
