@@ -12,6 +12,8 @@ import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
 export const PoolDetails = ({ pool }: { pool: TOmnipoolAsset | TXYKPool }) => {
   const { t } = useTranslation()
@@ -20,10 +22,30 @@ export const PoolDetails = ({ pool }: { pool: TOmnipoolAsset | TXYKPool }) => {
 
   return (
     <div sx={{ flex: "column", gap: 20, p: 30 }}>
+      <GradientText
+        gradient="pinkLightBlue"
+        fs={19}
+        sx={{ width: "fit-content" }}
+      >
+        {t("liquidity.pool.details.title")}
+      </GradientText>
       <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
-        <GradientText gradient="pinkLightBlue" fs={19}>
-          {pool.symbol} pool details
-        </GradientText>
+        <div>
+          {typeof pool.iconIds === "string" ? (
+            <Icon
+              size={26}
+              icon={<AssetLogo id={pool.iconIds} />}
+              css={{ flex: "1 0 auto" }}
+            />
+          ) : (
+            <MultipleIcons
+              size={26}
+              icons={pool.iconIds.map((asset) => ({
+                icon: <AssetLogo id={asset} />,
+              }))}
+            />
+          )}
+        </div>
         <Button size="small">
           <div
             sx={{
@@ -50,7 +72,7 @@ export const PoolDetails = ({ pool }: { pool: TOmnipoolAsset | TXYKPool }) => {
         }}
       >
         <div sx={{ flex: "column", gap: 6 }}>
-          <Text color="basic400">Total Value Locked</Text>
+          <Text color="basic400">{t("tvl")}</Text>
           <Text color="white">
             <DisplayValue value={pool.totalDisplay} />
           </Text>
@@ -59,7 +81,7 @@ export const PoolDetails = ({ pool }: { pool: TOmnipoolAsset | TXYKPool }) => {
         <Separator orientation="vertical" color="white" opacity={0.06} />
 
         <div sx={{ flex: "column", gap: 6 }}>
-          <Text color="basic400">24 volume</Text>
+          <Text color="basic400">{t("24Volume")}</Text>
           <Text color="white">
             {t("value.usd", { amount: pool.volumeDisplay })}
           </Text>
@@ -76,7 +98,7 @@ export const PoolDetails = ({ pool }: { pool: TOmnipoolAsset | TXYKPool }) => {
           </div>
         ) : (
           <div sx={{ flex: "column", gap: 6 }}>
-            <Text color="basic400">Price</Text>
+            <Text color="basic400">{t("price")}</Text>
             <Text color="white">
               <DisplayValue value={pool.spotPrice} type="token" />
             </Text>
@@ -86,7 +108,7 @@ export const PoolDetails = ({ pool }: { pool: TOmnipoolAsset | TXYKPool }) => {
         <Separator orientation="vertical" color="white" opacity={0.06} />
 
         <div sx={{ flex: "column", gap: 6 }}>
-          <Text color="basic400">Pool Fee</Text>
+          <Text color="basic400">{t("liquidity.pool.details.fee")}</Text>
           <Text color="white">0.40%</Text>
         </div>
       </div>

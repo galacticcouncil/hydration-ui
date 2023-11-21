@@ -1,31 +1,26 @@
 import { flexRender } from "@tanstack/react-table"
 import { TableSortHeader } from "components/Table/Table"
 import {
-  StatsTableContainer,
   Table,
   TableBodyContent,
+  TableContainer,
   TableData,
   TableHeaderContent,
   TableRow,
 } from "components/Table/Table.styled"
-import { Text } from "components/Typography/Text/Text"
-import { useMedia } from "react-use"
-import { theme } from "theme"
-import { useTranslation } from "react-i18next"
 import { useOmnipoolPoolTable } from "./PoolsTable.utils"
-import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
+import { TPool } from "sections/pools/PoolsPage.utils"
 import { useNavigate } from "@tanstack/react-location"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
 import { useState } from "react"
+import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
 
-export const PoolsTable = ({ data }: { data: TOmnipoolAsset[] }) => {
-  const [addLiquidityPool, setAddLiquidityPool] = useState<
-    TOmnipoolAsset | undefined
-  >(undefined)
+export const PoolsTable = ({ data }: { data: TPool[] }) => {
+  const [addLiquidityPool, setAddLiquidityPool] = useState<TPool | undefined>(
+    undefined,
+  )
 
-  const { t } = useTranslation()
   const navigate = useNavigate()
-  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const onRowSelect = (id: string) =>
     navigate({
@@ -36,7 +31,7 @@ export const PoolsTable = ({ data }: { data: TOmnipoolAsset[] }) => {
 
   return (
     <>
-      <StatsTableContainer>
+      <TableContainer css={assetsTableStyles}>
         <Table>
           <TableHeaderContent>
             {table.getHeaderGroups().map((hg) => (
@@ -47,15 +42,6 @@ export const PoolsTable = ({ data }: { data: TOmnipoolAsset[] }) => {
                     canSort={header.column.getCanSort()}
                     sortDirection={header.column.getIsSorted()}
                     onSort={header.column.getToggleSortingHandler()}
-                    css={
-                      !isDesktop
-                        ? {
-                            "&:nth-last-of-type(2) > div": {
-                              justifyContent: "flex-end",
-                            },
-                          }
-                        : undefined
-                    }
                   >
                     {flexRender(
                       header.column.columnDef.header,
@@ -69,7 +55,8 @@ export const PoolsTable = ({ data }: { data: TOmnipoolAsset[] }) => {
           <TableBodyContent>
             {table.getRowModel().rows.map((row, i) => (
               <TableRow
-                onClick={() => onRowSelect(row.original.id)}
+                isOdd={!(i % 2)}
+                onClick={() => onRowSelect(row.original.assetId)}
                 key={row.id}
                 css={{ cursor: "pointer" }}
               >
@@ -89,7 +76,7 @@ export const PoolsTable = ({ data }: { data: TOmnipoolAsset[] }) => {
             ))}
           </TableBodyContent>
         </Table>
-      </StatsTableContainer>
+      </TableContainer>
       {addLiquidityPool && (
         <AddLiquidity
           isOpen

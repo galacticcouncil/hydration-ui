@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import {
   isXYKEnabled,
   useOmnipoolAndStablepool,
+  usePools,
   useXYKPools,
 } from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
@@ -107,6 +108,7 @@ const AllPoolsData = () => {
   const { t } = useTranslation()
   const { search } = useSearchFilter()
   const omnipoolAndStablepool = useOmnipoolAndStablepool()
+  const pools = usePools()
   const { id } = useSearch<{
     Search: {
       id?: number
@@ -206,15 +208,8 @@ const AllPoolsData = () => {
           <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
             {t("liquidity.section.omnipoolAndStablepool")}
           </Text>
-          {omnipoolAndStablepool.isLoading
-            ? [...Array(3)].map((_, index) => (
-                <PoolSkeleton key={index} length={3} index={index} />
-              ))
-            : [].map((pool) => <Pool key={pool.id} pool={pool} />)}
         </div>
-        {omnipoolAndStablepool.data?.length && (
-          <PoolsTable data={omnipoolAndStablepool.data} />
-        )}
+        {pools.data?.length && <PoolsTable data={pools.data} />}
         {isXYKEnabled && <XYKPoolsSection />}
       </div>
     </>

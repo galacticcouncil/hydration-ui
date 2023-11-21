@@ -535,3 +535,127 @@ export const useXYKPools = (withPositions?: boolean) => {
 
 export const isXYKPool = (pool: TOmnipoolAsset | TXYKPool): pool is TXYKPool =>
   (pool as TXYKPool).isXykPool
+
+export const usePools = () => {
+  const { assets } = useRpcProvider()
+
+  const omnipoolAssets = useOmnipoolAssets()
+  const stablepools = useStableswapPools()
+
+  const assetsTradability = useAssetsTradability()
+
+  const assetsId = useMemo(
+    () => omnipoolAssets.data?.map((a) => a.id.toString()) ?? [],
+    [omnipoolAssets.data],
+  )
+
+  const omnipoolBalances = useTokensBalances(assetsId, OMNIPOOL_ACCOUNT_ADDRESS)
+
+  const assetsByStablepool = [
+    ...new Set(
+      stablepools.data
+        ?.map((stablepool) =>
+          stablepool.data.assets.map((asset) => asset.toString()),
+        )
+        .flat(),
+    ),
+  ]
+
+  const spotPrices = useDisplayPrices([...assetsId, ...assetsByStablepool])
+
+  const queries = [
+    omnipoolAssets,
+    spotPrices,
+    assetsTradability,
+    ...omnipoolBalances,
+  ]
+
+  const isInitialLoading = queries.some((q) => q.isInitialLoading)
+
+  const data = useMemo(() => {
+    if (
+      !omnipoolAssets.data ||
+      !spotPrices.data ||
+      !assetsTradability.data ||
+      omnipoolBalances.some((q) => !q.data)
+    )
+      return undefined
+    const rows = assetsId.map((assetId) => {
+      const meta = assets.getAsset(assetId)
+
+      const omnipoplBalance = omnipoolBalances.find(
+        (b) => b.data?.assetId.toString() === assetId,
+      )?.data?.balance
+
+      const spotPrice = spotPrices.data?.find((sp) => sp?.tokenIn === assetId)
+        ?.spotPrice
+
+      const tvl = getFloatingPointAmount(omnipoplBalance ?? BN_0, meta.decimals)
+      const tvlDisplay = !spotPrice ? BN_NAN : tvl.times(spotPrice)
+
+      const tradabilityData = assetsTradability.data?.find(
+        (t) => t.id === assetId,
+      )
+
+      const tradability = {
+        canAddLiquidity: !!tradabilityData?.canAddLiquidity,
+        canRemoveLiquidity: !!tradabilityData?.canRemoveLiquidity,
+      }
+
+      return {
+        id: assetId,
+        assetId,
+        name: meta.name,
+        tvl,
+        tvlDisplay,
+        spotPrice,
+        canAddLiquidity: tradability.canAddLiquidity,
+        canRemoveLiquidity: tradability.canRemoveLiquidity,
+      }
+    })
+
+    return rows.sort((poolA, poolB) => {
+      if (poolA.assetId.toString() === NATIVE_ASSET_ID) {
+        return -1
+      }
+
+      if (poolB.assetId.toString() === NATIVE_ASSET_ID) {
+        return 1
+      }
+
+      return poolA.tvlDisplay.gt(poolB.tvlDisplay) ? -1 : 1
+    })
+  }, [
+    assets,
+    assetsId,
+    assetsTradability.data,
+    omnipoolAssets.data,
+    omnipoolBalances,
+    spotPrices.data,
+  ])
+
+  return { data, isLoading: isInitialLoading }
+}
+
+export type TPool = NonNullable<ReturnType<typeof usePools>["data"]>[number]
+
+export const usePoolDetails = (assetId: string) => {
+  //TODO: order it by assetID by select and memorize it
+  const miningPositions = useAccountMiningPositions()
+  const omnipoolPositions = useOmnipoolPositionsData()
+
+  const data = useMemo(() => {
+    const omnipoolNftPositions = omnipoolPositions.data.filter(
+      (position) => position.assetId === assetId,
+    )
+
+    const miningNftPositions = miningPositions
+      .filter(
+        (position) => position.data?.data.ammPoolId.toString() === assetId,
+      )
+      .map((position) => position.data)
+      .filter(isNotNil)
+  }, [assetId, miningPositions, omnipoolPositions.data])
+
+  return { data }
+}
