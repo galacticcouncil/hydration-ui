@@ -2,7 +2,6 @@ import { Modal } from "components/Modal/Modal"
 import { Stepper } from "components/Stepper/Stepper"
 import { ComponentProps, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { WalletUpgradeModal } from "sections/wallet/upgrade/WalletUpgradeModal"
 import { Transaction } from "state/store"
 import { useSendTx } from "./ReviewTransaction.utils"
 import { ReviewTransactionError } from "./ReviewTransactionError"
@@ -10,13 +9,11 @@ import { ReviewTransactionForm } from "./ReviewTransactionForm"
 import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionToast } from "./ReviewTransactionToast"
-import { useWalletConnect } from "components/OnboardProvider/OnboardProvider"
+import { WalletUpgradeModal } from "sections/web3-connect/upgrade/WalletUpgradeModal"
 
 export const ReviewTransaction = (props: Transaction) => {
   const { t } = useTranslation()
   const [minimizeModal, setMinimizeModal] = useState(false)
-
-  const { wallet } = useWalletConnect()
 
   const {
     sendTx,
@@ -92,7 +89,7 @@ export const ReviewTransaction = (props: Transaction) => {
         topContent={props.steps ? <Stepper steps={props.steps} /> : undefined}
         {...modalProps}
       >
-        {!wallet?.isConnected && <WalletUpgradeModal />}
+        <WalletUpgradeModal />
         {isLoading ? (
           <ReviewTransactionPending txState={txState} onClose={onClose} />
         ) : isSuccess ? (

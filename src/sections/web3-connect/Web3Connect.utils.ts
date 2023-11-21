@@ -217,7 +217,7 @@ export function setExternalWallet(externalAddress = "") {
   }
 }
 
-export function getWalletProviderByType(type: WalletProviderType | null) {
+export function getWalletProviderByType(type?: WalletProviderType | null) {
   return (
     getSupportedWallets().find((provider) => provider.type === type) ?? {
       wallet: null,
