@@ -117,7 +117,11 @@ export const useLiquidityProvidersTable = (
               target="blank"
               rel="noreferrer"
             >
-              <Icon size={12} sx={{ color: "iconGray" }} icon={<LinkIcon />} />
+              <Icon
+                size={12}
+                sx={{ color: "darkBlue300" }}
+                icon={<LinkIcon />}
+              />
             </a>
           </div>
         ),

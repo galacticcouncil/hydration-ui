@@ -94,7 +94,7 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
       id: "actions",
       cell: () => (
         <div>
-          <ButtonTransparent css={{ color: theme.colors.iconGray }}>
+          <ButtonTransparent sx={{ color: "darkBlue300" }}>
             <ChevronRightIcon />
           </ButtonTransparent>
         </div>
