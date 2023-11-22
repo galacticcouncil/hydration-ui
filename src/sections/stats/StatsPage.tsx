@@ -32,9 +32,6 @@ export const StatsPage = () => {
           />
         ) : null
       }
-      subHeaderStyle={{
-        borderBottom: "1px solid rgba(84, 99, 128, 0.35)",
-      }}
     >
       {!isOmnipoolAssetPage && (
         <>
