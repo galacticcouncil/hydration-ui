@@ -33,7 +33,7 @@
     "@galacticcouncil/math-stableswap": "0.2.1",
     "@galacticcouncil/math-xyk": "^0.2.0",
     "@galacticcouncil/sdk": "^1.0.0",
-    "@galacticcouncil/ui": "^1.3.4",
+    "@galacticcouncil/ui": "^1.3.7",
     "@galacticcouncil/xcm": "^0.0.3",
     "@lit-labs/react": "^1.1.0",
     "@moonbeam-network/xcm-sdk": "^1.4.9",
