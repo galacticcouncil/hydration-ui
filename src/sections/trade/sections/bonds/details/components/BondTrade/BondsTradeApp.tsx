@@ -9,7 +9,6 @@ import { useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
 import { useProviderRpcUrlStore } from "api/provider"
-import { PoolType } from "@galacticcouncil/sdk"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
@@ -38,6 +37,7 @@ type SearchGenerics = MakeGenerics<{
   Search: z.infer<typeof BondsAppSearch>
 }>
 
+const pools = import.meta.env.VITE_FF_POOLS
 const squidUrl = import.meta.env.VITE_SQUID_URL
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
@@ -116,7 +116,7 @@ export const BondsTrade = ({
         assetIn={search.success ? search.data.assetIn : undefined}
         assetOut={search.success ? search.data.assetOut : undefined}
         apiAddress={rpcUrl}
-        pools={[PoolType.Omni, PoolType.LBP].join(",")}
+        pools={pools}
         stableCoinAssetId={stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
