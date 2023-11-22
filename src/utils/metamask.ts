@@ -72,7 +72,7 @@ export async function watchAsset(
   assetId: number | string,
   params: WatchAssetParams,
 ) {
-  if (!isMetaMaskInstalled) return
+  if (typeof window.ethereum === "undefined") return
   const tokenAddress = Buffer.from(
     "0000000000000000000000000000000100000000",
     "hex",
@@ -82,16 +82,20 @@ export async function watchAsset(
 
   const address = "0x" + tokenAddress.toString("hex")
 
-  return await window.ethereum?.request({
-    method: "wallet_watchAsset",
-    params: {
-      type: "ERC20",
-      options: {
-        address,
-        ...params,
-      },
-    },
-  })
+  return await requestNetworkSwitch(
+    window.ethereum,
+    async () =>
+      await window.ethereum?.request({
+        method: "wallet_watchAsset",
+        params: {
+          type: "ERC20",
+          options: {
+            address,
+            ...params,
+          },
+        },
+      }),
+  )
 }
 
 function numToBuffer(num: number) {

@@ -23,6 +23,7 @@ import {
 import { WalletProviderType, getSupportedWallets } from "./wallets"
 import { ExternalWallet } from "./wallets/ExternalWallet"
 import { MetaMask } from "./wallets/MetaMask/MetaMask"
+import { requestNetworkSwitch } from "utils/metamask"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -165,7 +166,13 @@ export const useEnableWallet = (
 ) => {
   const { wallet } = getWalletProviderByType(provider)
   const { mutate: enable, ...mutation } = useMutation(
-    async () => await wallet?.enable(POLKADOT_APP_NAME),
+    async () => {
+      await wallet?.enable(POLKADOT_APP_NAME)
+
+      if (wallet instanceof MetaMask && wallet.extension) {
+        await requestNetworkSwitch(wallet.extension)
+      }
+    },
     {
       retry: false,
       ...options,
