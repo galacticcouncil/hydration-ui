@@ -25,12 +25,6 @@ export const TradePage = () => {
           <SubNavigation />
         ) : null
       }
-      subHeaderStyle={
-        !isBondPage && {
-          background: "rgba(9, 9, 9, 0.09)",
-          borderTop: "1px solid rgba(114, 131, 165, 0.6)",
-        }
-      }
     >
       <Outlet />
     </Page>

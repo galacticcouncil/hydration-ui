@@ -90,13 +90,32 @@ export const SPageInner = styled.div`
 `
 
 export const SSubHeader = styled.div`
-  border-bottom: solid 1px rgba(114, 131, 165, 0.6);
   width: 100vw;
 
   position: relative;
   z-index: 1;
 
   overflow-x: auto;
+
+  padding-bottom: 1px;
+
+  ::after {
+    content: "";
+
+    z-index: -1;
+    pointer-events: none;
+
+    position: absolute;
+    top: 0;
+    bottom: 1px;
+    left: 0;
+    right: 0;
+
+    background: rgba(9, 9, 9, 0.09);
+
+    border-bottom: solid 1px rgba(114, 131, 165, 0.6);
+    border-top: 1px solid rgba(114, 131, 165, 0.6);
+  }
 
   @media (${theme.viewport.gte.sm}) {
     margin: 0 -20px;
