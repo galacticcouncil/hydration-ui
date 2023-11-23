@@ -1,6 +1,9 @@
-import { useQuery } from "@tanstack/react-query"
+import { ApiPromise } from "@polkadot/api"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { Maybe } from "graphql/jsutils/Maybe"
+import { useRpcProvider } from "providers/rpcProvider"
 import { ChartType } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
+import { undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 export type StatsData = {
@@ -64,4 +67,59 @@ const getStatsTvl = (assetId?: string) => async () => {
   const data: Promise<StatsData[]> = res.json()
 
   return data
+}
+
+export const useTVLs = (assetIds: string[]) => {
+  return useQueries({
+    queries: assetIds.map((assetId) => ({
+      queryKey: QUERY_KEYS.tvl(assetId),
+      queryFn:
+        assetId != null
+          ? async () => {
+              const data = await getTVL(assetId)
+              return { tvl_usd: data?.[0].tvl_usd, assetId }
+            }
+          : undefinedNoop,
+      enabled: !!assetId,
+    })),
+  })
+}
+
+const getTVL = async (assetId?: string) => {
+  const res = await fetch(
+    `https://api.hydradx.io/hydradx-ui/v1/stats/tvl${
+      assetId != null ? `/${assetId}` : ""
+    }`,
+  )
+  const data: Promise<{ tvl_usd: number }[]> = res.json()
+
+  return data
+}
+
+export const useAccountsIdentity = (addresses: string[]) => {
+  const { api } = useRpcProvider()
+
+  return useQueries({
+    queries: addresses.map((address) => ({
+      queryKey: QUERY_KEYS.identity(address),
+      queryFn:
+        address != null ? getAccountIdentity(api, address) : undefinedNoop,
+      enabled: !!address,
+    })),
+  })
+}
+
+export const useAccountIdentity = (address: string) => {
+  const { api } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.identity(address),
+    getAccountIdentity(api, address),
+  )
+}
+
+const getAccountIdentity = (api: ApiPromise, address: string) => async () => {
+  const res = await api.query.identity.identityOf(address)
+
+  return { address, identity: res.isSome ? res.unwrapOr(null) : null }
 }

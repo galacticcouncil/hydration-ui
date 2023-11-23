@@ -38,8 +38,6 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
   const { assets } = useRpcProvider()
   const { account } = useAccountStore()
 
-  //const allTrades = useAllTradesSorted()
-
   const omnipoolAssets = useOmnipoolAssets()
   const assetsTradability = useAssetsTradability()
 
