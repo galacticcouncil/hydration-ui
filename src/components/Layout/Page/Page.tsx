@@ -5,7 +5,6 @@ import {
   SGradientBg,
   SPage,
   SPageContent,
-  SPageGrid,
   SPageInner,
   SSubHeader,
 } from "./Page.styled"
@@ -15,7 +14,6 @@ import { Interpolation, Theme } from "@emotion/react"
 import { Web3Connect } from "sections/web3-connect/Web3Connect"
 
 type Props = {
-  variant?: "stats" | "default"
   className?: string
   children: ReactNode
   subHeader?: ReactNode
@@ -23,7 +21,6 @@ type Props = {
 }
 
 export const Page = ({
-  variant = "default",
   className,
   children,
   subHeader,
@@ -43,8 +40,7 @@ export const Page = ({
     <>
       <SPage ref={ref}>
         <div css={{ position: "relative" }}>
-          <SGradientBg variant={variant} />
-          {variant === "stats" && <SPageGrid />}
+          <SGradientBg />
           <Header />
           <SPageContent>
             {subHeader && (

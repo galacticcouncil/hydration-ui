@@ -29,7 +29,7 @@ export const useLiquidityProvidersTableSkeleton = (enableAnimation = true) => {
         id: "account",
         header: t("account"),
         cell: () => (
-          <div sx={{ flex: "row", justify: "start" }}>
+          <div sx={{ flex: "row" }}>
             <Skeleton
               width={isDesktop ? 72 : 52}
               height={isDesktop ? 26 : 20}
@@ -42,7 +42,7 @@ export const useLiquidityProvidersTableSkeleton = (enableAnimation = true) => {
         id: "position",
         header: t("position"),
         cell: () => (
-          <div sx={{ flex: "row", justify: ["end", "center"] }}>
+          <div sx={{ flex: "row", justify: ["end", "start"] }}>
             <Skeleton
               width={isDesktop ? 72 : 52}
               height={isDesktop ? 26 : 20}
@@ -55,7 +55,7 @@ export const useLiquidityProvidersTableSkeleton = (enableAnimation = true) => {
         id: "tvl",
         header: t("totalValueLocked"),
         cell: () => (
-          <div sx={{ flex: "row", justify: "center" }}>
+          <div sx={{ flex: "row" }}>
             <Skeleton
               width={72}
               height={26}
@@ -68,7 +68,7 @@ export const useLiquidityProvidersTableSkeleton = (enableAnimation = true) => {
         id: "share",
         header: t("stats.omnipool.table.header.share"),
         cell: () => (
-          <div sx={{ flex: "row", justify: "center" }}>
+          <div sx={{ flex: "row" }}>
             <Skeleton
               width={72}
               height={26}
@@ -80,7 +80,7 @@ export const useLiquidityProvidersTableSkeleton = (enableAnimation = true) => {
       display({
         id: "actions",
         cell: () => (
-          <div sx={{ flex: "row", justify: "end" }}>
+          <div sx={{ flex: "row" }}>
             <Skeleton
               width={26}
               height={26}

@@ -24,6 +24,7 @@ type Props = {
   hideInactiveAssets?: boolean
   allAssets?: boolean
   withBonds?: boolean
+  withShareTokens?: boolean
 }
 
 type TBalance = ReturnType<typeof useAcountAssets>[number]["balance"]
@@ -36,6 +37,7 @@ export const AssetsModalContent = ({
   hideInactiveAssets,
   allAssets,
   withBonds,
+  withShareTokens,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -63,10 +65,16 @@ export const AssetsModalContent = ({
   }
 
   const tokens = allAssets
-    ? getAssetBalances([...assets.tokens, ...assets.stableswap])
+    ? getAssetBalances([
+        ...assets.tokens,
+        ...assets.stableswap,
+        ...(withShareTokens ? assets.shareTokens : []),
+      ])
     : accountAssets.filter(
         (accountAsset): accountAsset is { balance: TBalance; asset: TToken } =>
-          accountAsset.asset.isToken || accountAsset.asset.isStableSwap,
+          accountAsset.asset.isToken ||
+          accountAsset.asset.isStableSwap ||
+          (withShareTokens ? accountAsset.asset.isShareToken : false),
       )
 
   const bonds = allAssets
@@ -151,7 +159,7 @@ export const AssetsModalContent = ({
           ))}
         </>
       )}
-      {enabledBonds && withBonds && searchedBonds.length && (
+      {enabledBonds && withBonds && searchedBonds.length ? (
         <>
           <SAssetsModalHeader>
             <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
@@ -171,7 +179,7 @@ export const AssetsModalContent = ({
             />
           ))}
         </>
-      )}
+      ) : null}
       {!hideInactiveAssets && !!notAllowedTokens?.length && (
         <>
           <SAssetsModalHeader shadowed>

@@ -11,7 +11,6 @@ import { useStore } from "state/store"
 import { FormValues } from "utils/helpers"
 import { PoolAddLiquidityInformationCard } from "sections/pools/modals/AddLiquidity/AddLiquidityInfoCard"
 import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
-import { u32 } from "@polkadot/types-codec"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useDisplayPrice } from "utils/displayAsset"
 import { useTokenBalance } from "api/balances"
@@ -20,11 +19,11 @@ import { ISubmittableResult } from "@polkadot/types/types"
 import { TAsset } from "api/assetDetails"
 import { useRpcProvider } from "providers/rpcProvider"
 import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
-import { BalanceByAsset } from "sections/pools/PoolsPage.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
 
 type Props = {
-  poolId: u32
+  poolId: string
   fee: BigNumber
   asset: TAsset
   onSuccess: (result: ISubmittableResult) => void
@@ -33,7 +32,7 @@ type Props = {
   onAssetOpen: () => void
   onSubmitted: (shares?: string) => void
   reserves: { asset_id: number; amount: string }[]
-  balanceByAsset?: BalanceByAsset
+  balanceByAsset?: TOmnipoolAsset["stablepoolBalanceByAsset"]
 }
 
 export const AddStablepoolLiquidity = ({

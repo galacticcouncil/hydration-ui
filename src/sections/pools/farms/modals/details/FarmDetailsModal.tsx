@@ -1,18 +1,17 @@
-import { DepositNftType } from "api/deposits"
 import { Farm } from "api/farms"
 import { Text } from "components/Typography/Text/Text"
 import { useRef } from "react"
 import { useTranslation } from "react-i18next"
+import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { LoyaltyGraph } from "sections/pools/farms/components/loyaltyGraph/LoyaltyGraph"
 import { SLoyaltyRewardsContainer } from "./FarmDetailsModal.styled"
 import { FarmDetailsModalValues } from "./FarmDetailsModalValues"
-import { u32 } from "@polkadot/types-codec"
 
 type FarmDetailsModalProps = {
-  poolId: u32
+  poolId: string
   farm: Farm
-  depositNft: DepositNftType | undefined
+  depositNft: TMiningNftPosition | undefined
   currentBlock?: number
 }
 
@@ -26,7 +25,7 @@ export const FarmDetailsModal = ({
 
   const loyaltyCurve = farm.yieldFarm.loyaltyCurve.unwrapOr(null)
 
-  const enteredBlock = depositNft?.deposit.yieldFarmEntries
+  const enteredBlock = depositNft?.data.yieldFarmEntries
     .find(
       (entry) =>
         entry.yieldFarmId.eq(farm.yieldFarm.id) &&

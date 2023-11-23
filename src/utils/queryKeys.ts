@@ -27,10 +27,15 @@ export const QUERY_KEYS = {
     "omniPositionId",
     id?.toString(),
   ],
+  miningPosition: (id: string) => ["miningPosition", id],
   accountBalances: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "accountBalances",
     id?.toString(),
+  ],
+  accountOmnipoolPositions: (id: string | undefined) => [
+    "accountOmnipoolPositions",
+    id,
   ],
   accountsBalances: (ids: string[]) => [
     QUERY_KEY_PREFIX,
@@ -175,7 +180,9 @@ export const QUERY_KEYS = {
     periodsInFarm,
   ],
   minWithdrawalFee: ["minWithdrawalFee"],
-  allTrades: ["allTrades"],
+  allTrades: (assetId?: number) => ["allTrades", assetId],
+  allOmnipoolTrades: ["allOmnipoolTrades"],
+  allStableswapTrades: ["allStableswapTrades"],
   tradeVolume: (poolId: Maybe<string | u32>) => [
     "tradeVolume",
     poolId?.toString(),
@@ -347,10 +354,16 @@ export const QUERY_KEYS = {
     pool,
     block,
   ],
-  volumeDaily: (assetId?: string) => ["volumeDaily", assetId],
-  nativeEvmTokenBalance: (address?: string) => [
-    "nativeEvmTokenBalance",
+  xykPools: ["xylPools"], //TODO: refresh each block??
+  xykConsts: ["xykConsts"],
+  shareTokens: ["shareTokens"],
+  shareTokensByIds: (ids: string[]) => ["shareTokensByIds", ids],
+  totalXYKLiquidity: (address?: string) => [
+    QUERY_KEY_PREFIX,
+    "totalXYKLiquidity",
     address,
   ],
-  nativeEvmAssetId: ["nativeEvmAssetId"],
+  volumeDaily: (assetId?: string) => ["volumeDaily", assetId],
+  tvl: (assetId?: string) => ["tvl", assetId],
+  identity: (address: string) => ["identity", address],
 } as const

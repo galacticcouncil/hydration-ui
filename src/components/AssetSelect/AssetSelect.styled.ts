@@ -5,7 +5,6 @@ import { css } from "@emotion/react"
 
 export const SContainer = styled.label<{ error?: boolean; disabled?: boolean }>`
   padding: 12px 18px 20px 18px;
-  margin-top: 10px;
 
   transition: ${theme.transitions.default};
 

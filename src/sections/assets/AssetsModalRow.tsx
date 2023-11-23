@@ -12,6 +12,7 @@ import BN from "bignumber.js"
 import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
 import { useRpcProvider } from "providers/rpcProvider"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { useDisplayShareTokenPrice } from "utils/displayAsset"
 
 type AssetsModalRowProps = {
   asset: TAsset
@@ -29,16 +30,23 @@ export const AssetsModalRow = ({
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
 
-  const spotPrice = useDisplayPrice(spotPriceId)
+  const isShareToken = assets.isShareToken(asset)
+
+  const spotPriceAsset = useDisplayPrice(isShareToken ? undefined : spotPriceId)
+  const spotPriceShareToken = useDisplayShareTokenPrice(
+    isShareToken ? [spotPriceId] : [],
+  )
+  const spotPrice = isShareToken
+    ? spotPriceShareToken.data?.[0]
+    : spotPriceAsset.data
+
   const totalDisplay = !balance?.isZero()
-    ? balance
-        .multipliedBy(spotPrice.data?.spotPrice ?? 1)
-        .shiftedBy(-asset.decimals)
+    ? balance.multipliedBy(spotPrice?.spotPrice ?? 1).shiftedBy(-asset.decimals)
     : BN_0
 
   let iconIds: string | string[]
 
-  if (assets.isStableSwap(asset)) {
+  if (assets.isStableSwap(asset) || isShareToken) {
     iconIds = asset.assets
   } else if (assets.isBond(asset)) {
     iconIds = asset.assetId
@@ -46,7 +54,12 @@ export const AssetsModalRow = ({
     iconIds = asset.id
   }
 
-  if (!asset || spotPrice.isInitialLoading) return <AssetsModalRowSkeleton />
+  if (
+    !asset ||
+    spotPriceAsset.isInitialLoading ||
+    spotPriceShareToken.isInitialLoading
+  )
+    return <AssetsModalRowSkeleton />
 
   return (
     <SAssetRow onClick={() => onClick?.(asset)}>

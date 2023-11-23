@@ -2,7 +2,6 @@ import { SOmnipoolAssetContainer } from "./StatsOmnipoolAsset.styled"
 import { MakeGenerics, Navigate, useSearch } from "@tanstack/react-location"
 import { Text } from "components/Typography/Text/Text"
 import { Icon } from "components/Icon/Icon"
-import { useOmnipoolOverviewData } from "sections/stats/sections/overview/data/OmnipoolOverview.utils"
 import { useTranslation } from "react-i18next"
 import { AssetStats } from "./stats/AssetStats"
 import { LiquidityProvidersTableWrapper } from "./LiquidityProvidersTable/LiquidityProvidersTableWrapper"
@@ -20,6 +19,7 @@ import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useRpcProvider } from "providers/rpcProvider"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { LiquidityProvidersTableSkeleton } from "sections/stats/sections/omnipoolAsset/LiquidityProvidersTable/skeleton/LiquidityProvidersTableSkeleton"
+import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
 
 type SearchGenerics = MakeGenerics<{
   Search: { asset: number }
@@ -124,7 +124,7 @@ export const StatsOmnipoolAsset = () => {
 
 const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
   const { isLoaded } = useRpcProvider()
-  const overviewData = useOmnipoolOverviewData()
+  const overviewData = useOmnipoolAssetDetails()
 
   const omnipoolAsset = overviewData.data.find(
     (overview) => overview.id === assetId,

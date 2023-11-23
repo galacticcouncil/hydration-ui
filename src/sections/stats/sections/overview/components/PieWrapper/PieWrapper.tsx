@@ -6,13 +6,13 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useMemo, useState } from "react"
 import { SContainerVertical } from "sections/stats/StatsPage.styled"
-import { TOmnipoolOverviewData } from "sections/stats/sections/overview/data/OmnipoolOverview.utils"
 import { BN_0 } from "utils/constants"
 import { useTranslation } from "react-i18next"
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
+import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
 
 type PieWrapperProps = {
-  data: TOmnipoolOverviewData
+  data: TUseOmnipoolAssetDetailsData
   isLoading: boolean
 }
 

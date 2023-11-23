@@ -72,6 +72,7 @@ export const useStakeData = () => {
   const {
     assets: { native },
   } = useRpcProvider()
+
   const { account } = useAccount()
   const stake = useStake(account?.address)
   const circulatingSupply = useCirculatingSupply()
@@ -448,6 +449,7 @@ export const useClaimReward = () => {
   const bestNumber = useBestNumber()
   const stake = useStake(account?.address)
   const stakingConsts = useStakingConsts()
+
   const potAddress = getHydraAccountAddress(stakingConsts.data?.palletId)
   const potBalance = useTokenBalance(native.id, potAddress)
 

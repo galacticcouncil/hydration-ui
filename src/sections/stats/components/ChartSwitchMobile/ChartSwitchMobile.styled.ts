@@ -13,6 +13,7 @@ export const SSwitchButton = styled.button<{ active: boolean }>`
   justify-content: center;
 
   font-size: 12px;
+  font-weight: 600;
 
   border-radius: 4px;
 

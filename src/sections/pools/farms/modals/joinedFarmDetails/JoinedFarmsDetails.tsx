@@ -1,6 +1,5 @@
 import { u32 } from "@polkadot/types"
 import { useBestNumber } from "api/chain"
-import { DepositNftType } from "api/deposits"
 import { Farm, useFarms } from "api/farms"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
@@ -9,6 +8,7 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { ClaimRewardsCard } from "sections/pools/farms/components/claimableCard/ClaimRewardsCard"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
@@ -19,8 +19,8 @@ import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
-function isFarmJoined(depositNft: DepositNftType, farm: Farm) {
-  return depositNft.deposit.yieldFarmEntries.find(
+function isFarmJoined(depositNft: TMiningNftPosition, farm: Farm) {
+  return depositNft.data.yieldFarmEntries.find(
     (entry) =>
       entry.globalFarmId.eq(farm.globalFarm.id) &&
       entry.yieldFarmId.eq(farm.yieldFarm.id),
@@ -28,8 +28,8 @@ function isFarmJoined(depositNft: DepositNftType, farm: Farm) {
 }
 
 function JoinedFarmsDetailsRedeposit(props: {
-  poolId: u32
-  depositNft: DepositNftType
+  poolId: string
+  depositNft: TMiningNftPosition
   onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
   onTxClose: () => void
 }) {
@@ -50,7 +50,7 @@ function JoinedFarmsDetailsRedeposit(props: {
         t={t}
         i18nKey={`farms.modal.join.toast.${msType}`}
         tOptions={{
-          amount: props.depositNft.deposit.shares.toBigNumber(),
+          amount: props.depositNft.data.shares.toBigNumber(),
           fixedPointScale: meta.decimals,
         }}
       >
@@ -104,12 +104,12 @@ function JoinedFarmsDetailsRedeposit(props: {
 }
 
 function JoinedFarmsDetailsPositions(props: {
-  poolId: u32
-  depositNft: DepositNftType
+  poolId: string
+  depositNft: TMiningNftPosition
   onSelect: (value: {
     globalFarm: u32
     yieldFarm: u32
-    depositNft: DepositNftType
+    depositNft: TMiningNftPosition
   }) => void
   onTxClose: () => void
 }) {
@@ -129,7 +129,7 @@ function JoinedFarmsDetailsPositions(props: {
         t={t}
         i18nKey={`farms.modal.exit.toast.${msType}`}
         tOptions={{
-          amount: props.depositNft.deposit.shares.toBigNumber(),
+          amount: props.depositNft.data.shares.toBigNumber(),
           fixedPointScale: meta.decimals,
         }}
       >
@@ -192,15 +192,15 @@ function JoinedFarmsDetailsPositions(props: {
 export const JoinedFarmsDetails = (props: {
   isOpen: boolean
   onClose: () => void
-  poolId: u32
-  depositNft: DepositNftType
+  poolId: string
+  depositNft: TMiningNftPosition
 }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const [selectedFarmIds, setSelectedFarmIds] = useState<{
     globalFarm: u32
     yieldFarm: u32
-    depositNft?: DepositNftType
+    depositNft?: TMiningNftPosition
   } | null>(null)
 
   const bestNumber = useBestNumber()

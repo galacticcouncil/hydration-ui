@@ -8,7 +8,7 @@ import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPos
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { BN_0 } from "utils/constants"
-import { useHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
+import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useAssetsTableData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { SInfoIcon } from "sections/pools/pool/Pool.styled"
 import { NATIVE_ASSET_ID } from "utils/api"
@@ -47,7 +47,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
 const WalletAssetsHeaderBalance = ({ label }: { label: string }) => {
   const { t } = useTranslation()
   const assets = useAssetsTableData(false)
-  const lpPositions = useHydraPositionsData()
+  const lpPositions = useOmnipoolPositionsData()
   const farmsPositions = useAllUserDepositShare()
 
   const { warnings, setWarnings } = useWarningsStore()
@@ -156,7 +156,7 @@ const WalletAssetsHeaderBalance = ({ label }: { label: string }) => {
 
 const WalletAssetsHeaderOmnipool = ({ label }: { label: string }) => {
   const { t } = useTranslation()
-  const lpPositions = useHydraPositionsData()
+  const lpPositions = useOmnipoolPositionsData()
   const farmsPositions = useAllUserDepositShare()
 
   const farmsAmount = useMemo(() => {

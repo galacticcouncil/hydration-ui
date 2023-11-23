@@ -22,6 +22,11 @@ export type FormValues<T> = T extends UseFormReturn<infer Values>
   ? Values
   : never
 
+export type KeyOfType<T, V> = keyof {
+  [P in keyof T as T[P] extends V ? P : never]: P
+} &
+  keyof T
+
 export function isRecord<Key extends string, Value>(
   x: unknown,
 ): x is Record<Key, Value> {
@@ -173,3 +178,52 @@ export function useQueryReduce<Tuple extends readonly unknown[], Combined>(
 }
 
 export const isApiLoaded = (api: ApiPromise) => Object.keys(api).length
+
+function tokenize(str: string) {
+  return str.split(/[\s\-._]+/)
+}
+
+function normalize(str: string) {
+  if (typeof str === "string") {
+    return (
+      str
+        .toLowerCase()
+        .trim()
+        // remove diacritics
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+    )
+  }
+
+  return ""
+}
+
+/**
+ * Searches an array of objects for a given search string in specified keys.
+ */
+export function arraySearch<T extends Record<string, any>>(
+  array: Array<T>,
+  search = "",
+  keys?: Array<Extract<KeyOfType<T, string>, string>>,
+) {
+  return array.filter((item) => {
+    let found = false
+
+    // search only in keys with string values
+    const searchableKeys =
+      keys || Object.keys(item).filter((key) => typeof item[key] === "string")
+
+    searchableKeys.forEach((key) => {
+      const normalizedSearch = normalize(search)
+      const tokens = tokenize(normalizedSearch)
+      const values = tokenize(normalize(item[key].toString()))
+
+      values.forEach((value) => {
+        if (tokens.some((token) => value.includes(token))) {
+          found = true
+        }
+      })
+    })
+    return found
+  })
+}

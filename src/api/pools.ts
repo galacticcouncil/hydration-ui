@@ -1,29 +1,16 @@
-import { useQuery } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
-import { TradeRouter } from "@galacticcouncil/sdk"
 import { useMemo } from "react"
-import { u32 } from "@polkadot/types"
 import { useTotalIssuances } from "./totalIssuance"
 import { useTokensBalances } from "./balances"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useRpcProvider } from "providers/rpcProvider"
 
-export const usePools = () => {
-  const { tradeRouter } = useRpcProvider()
-  return useQuery(QUERY_KEYS.pools, getPools(tradeRouter))
-}
-
-export const getPools = (tradeRouter: TradeRouter) => async () =>
-  tradeRouter.getPools()
-
-export const useShareOfPools = (assets: (u32 | string)[]) => {
+export const useShareOfPools = (assets: string[]) => {
   const { account } = useAccount()
 
   const totalIssuances = useTotalIssuances(assets)
   const totalBalances = useTokensBalances(assets, account?.address)
 
   const queries = [...totalIssuances, ...totalBalances]
-  const isLoading = queries.some((query) => query.isLoading)
+  const isLoading = queries.some((query) => query.isInitialLoading)
 
   const data = useMemo(() => {
     if (!!totalIssuances.length && !!totalBalances.length) {
@@ -55,7 +42,8 @@ export const useShareOfPools = (assets: (u32 | string)[]) => {
 
         return {
           asset,
-          totalShare: calculateTotalShare(),
+          totalShare: totalIssuance?.data?.total,
+          myPoolShare: calculateTotalShare(),
           transferableShare: calculateTransferableShare(),
         }
       })
@@ -64,5 +52,5 @@ export const useShareOfPools = (assets: (u32 | string)[]) => {
     return null
   }, [assets, totalIssuances, totalBalances])
 
-  return { isLoading, data }
+  return { isLoading, isInitialLoading: isLoading, data }
 }

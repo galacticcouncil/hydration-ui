@@ -31,10 +31,13 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
           }}
         >
           {typeof row.original.iconIds === "string" ? (
-            <Icon size={30} icon={<AssetLogo id={row.original.iconIds} />} />
+            <Icon
+              size={[26, 30]}
+              icon={<AssetLogo id={row.original.iconIds} />}
+            />
           ) : (
             <MultipleIcons
-              size={30}
+              size={[26, 30]}
               icons={row.original.iconIds.map((id) => ({
                 icon: <AssetLogo id={id} />,
               }))}
@@ -60,7 +63,7 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
       header: t("stats.pol.table.assets.header.pol"),
       sortingFn: (a, b) => (a.original.pol.gt(b.original.pol) ? 1 : -1),
       cell: ({ row }) => (
-        <Text tAlign="center" color="white">
+        <Text color="white">
           <DisplayValue value={row.original.pol} isUSD />
         </Text>
       ),
@@ -68,10 +71,11 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
     accessor("volume", {
       id: "volume",
       header: t("stats.pol.table.assets.header.volume"),
-      sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
+      sortingFn: (a, b) =>
+        a.original.volumePol.gt(b.original.volumePol) ? 1 : -1,
       cell: ({ row }) => (
-        <Text tAlign="center" color="white">
-          <DisplayValue value={row.original.volume} isUSD />
+        <Text color="white">
+          <DisplayValue value={row.original.volumePol} isUSD />
         </Text>
       ),
     }),

@@ -5,10 +5,10 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { SButton } from "sections/pools/pool/positions/LiquidityPosition.styled"
 import { Icon } from "components/Icon/Icon"
 import MinusIcon from "assets/icons/MinusIcon.svg?react"
-import { Stablepool } from "sections/pools/PoolsPage.utils"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
 
 type Props = {
-  pool: Stablepool
+  pool: TOmnipoolAsset
   onSuccess: () => void
 }
 
