@@ -56,7 +56,7 @@ const Tab = ({
           {isActive && (
             <div
               sx={{ height: 1, bg: "brightBlue300", width: "100%" }}
-              css={{ position: "relative", bottom: 0 }}
+              css={{ position: "relative", bottom: 1 }}
             />
           )}
         </>
