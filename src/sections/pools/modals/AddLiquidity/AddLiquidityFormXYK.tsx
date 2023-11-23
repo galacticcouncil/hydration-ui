@@ -10,7 +10,7 @@ import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
 import { Separator } from "components/Separator/Separator"
 import { Button } from "components/Button/Button"
 import { getFixedPointAmount, getFloatingPointAmount } from "utils/balance"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useQueryClient } from "@tanstack/react-query"
@@ -22,6 +22,7 @@ import { useTokensBalances } from "api/balances"
 import IconWarning from "assets/icons/WarningIcon.svg?react"
 import * as xyk from "@galacticcouncil/math-xyk"
 import { useXYKConsts } from "api/xyk"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = {
   assetId: string
@@ -37,7 +38,7 @@ const opposite = (value: "assetA" | "assetB") =>
 export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
   const queryClient = useQueryClient()
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const xykConsts = useXYKConsts()
   const { t } = useTranslation()
 

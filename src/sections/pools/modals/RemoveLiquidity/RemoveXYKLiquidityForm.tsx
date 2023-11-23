@@ -4,7 +4,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0 } from "utils/constants"
 import { STradingPairContainer } from "./RemoveLiquidity.styled"
@@ -13,6 +13,7 @@ import { RemoveLiquidityInput } from "./components/RemoveLiquidityInput"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { useXYKTotalLiquidity } from "api/xyk"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type RemoveLiquidityProps = {
   onClose: () => void
@@ -30,7 +31,7 @@ export const RemoveXYKLiquidityForm = ({
 
   const { api, assets } = useRpcProvider()
   const { createTransaction } = useStore()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const [assetAMeta, assetBMeta] = assets.getAssets(pool.assets)
 
   const totalLiquidity = useXYKTotalLiquidity(pool.poolAddress)

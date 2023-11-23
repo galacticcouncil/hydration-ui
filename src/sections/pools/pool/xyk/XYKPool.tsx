@@ -5,17 +5,17 @@ import { theme } from "theme"
 import { AnimatePresence, motion } from "framer-motion"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useAccountStore } from "state/store"
 import { SContainer, SGridContainer } from "sections/pools/pool/Pool.styled"
 import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
 import { PoolValue } from "sections/pools/pool/details/PoolValue"
 import { PoolActions } from "sections/pools/pool/actions/PoolActions"
 import { XYKPosition } from "./position/XYKPosition"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = { pool: TXYKPool }
 
 export const XYKPool = ({ pool }: Props) => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const [isExpanded, setIsExpanded] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
