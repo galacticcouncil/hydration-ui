@@ -2,6 +2,6 @@ import styled from "@emotion/styled"
 
 export const SContainer = styled.div`
   display: flex;
-  gap: 10px;
+  gap: 8px;
   overflow: auto;
 `

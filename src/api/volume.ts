@@ -21,6 +21,9 @@ export type TradeType = {
   block: {
     timestamp: string
   }
+  extrinsic: {
+    hash: string
+  }
 }
 
 export const getTradeVolume =
@@ -66,41 +69,51 @@ export const getTradeVolume =
     }
   }
 
-export const getAllTrades = (indexerUrl: string) => async () => {
-  const after = addDays(new Date(), -1).toISOString()
+export const getAllTrades =
+  (indexerUrl: string, assetId?: number) => async () => {
+    const after = addDays(new Date(), -1).toISOString()
 
-  // This is being typed manually, as GraphQL schema does not
-  // describe the event arguments at all
-  return {
-    ...(await request<{
-      events: Array<TradeType>
-    }>(
-      indexerUrl,
-      gql`
-        query TradeVolume($after: DateTime!) {
-          events(
-            where: {
-              name_eq: "Omnipool.SellExecuted"
-              block: { timestamp_gte: $after }
-              OR: {
-                name_eq: "Omnipool.BuyExecuted"
+    // This is being typed manually, as GraphQL schema does not
+    // describe the event arguments at all
+    return {
+      ...(await request<{
+        events: Array<TradeType>
+      }>(
+        indexerUrl,
+        gql`
+          query TradeVolume($assetId: Int, $after: DateTime!) {
+            events(
+              where: {
+                name_in: ["Omnipool.SellExecuted", "Omnipool.BuyExecuted"]
+                args_jsonContains: { assetIn: $assetId }
+                phase_eq: "ApplyExtrinsic"
                 block: { timestamp_gte: $after }
+                OR: {
+                  name_in: ["Omnipool.SellExecuted", "Omnipool.BuyExecuted"]
+                  args_jsonContains: { assetOut: $assetId }
+                  phase_eq: "ApplyExtrinsic"
+                  block: { timestamp_gte: $after }
+                }
+              }
+              orderBy: [block_height_DESC]
+              limit: 10
+            ) {
+              id
+              name
+              args
+              block {
+                timestamp
+              }
+              extrinsic {
+                hash
               }
             }
-          ) {
-            id
-            name
-            args
-            block {
-              timestamp
-            }
           }
-        }
-      `,
-      { after },
-    )),
+        `,
+        { after, assetId },
+      )),
+    }
   }
-}
 
 export function useTradeVolumes(
   assetIds: Maybe<u32 | string>[],
@@ -129,7 +142,7 @@ export function useTradeVolumes(
   })
 }
 
-export function useAllTrades() {
+export function useAllTrades(assetId?: number) {
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
   const selectedProvider = PROVIDERS.find(
@@ -138,7 +151,10 @@ export function useAllTrades() {
 
   const indexerUrl =
     selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
-  return useQuery(QUERY_KEYS.allTrades, getAllTrades(indexerUrl))
+  return useQuery(
+    QUERY_KEYS.allTrades(assetId),
+    getAllTrades(indexerUrl, assetId),
+  )
 }
 
 export function getVolumeAssetTotalValue(
