@@ -42,6 +42,16 @@ export const useShareTokens = () => {
   return useQuery(QUERY_KEYS.shareTokens, getShareTokens(api))
 }
 
+export const useShareTokensByIds = (ids: string[]) => {
+  const { api } = useRpcProvider()
+
+  return useQuery(QUERY_KEYS.shareTokensByIds(ids), getShareTokens(api), {
+    select: (data) => {
+      return data.filter((shareToken) => ids.includes(shareToken.shareTokenId))
+    },
+  })
+}
+
 export const useXYKConsts = () => {
   const { api } = useRpcProvider()
 
@@ -49,14 +59,14 @@ export const useXYKConsts = () => {
 }
 
 const getXYKConsts = (api: ApiPromise) => async () => {
-  const [feeRaw, minPoolLiquidity] = await Promise.all([
+  const [feeRaw, minTradingLimit] = await Promise.all([
     api.consts.xyk.getExchangeFee,
-    api.consts.xyk.minPoolLiquidity,
+    api.consts.xyk.minTradingLimit,
   ])
   //@ts-ignore
   const fee = feeRaw?.map((el) => el.toString()) as string[]
 
-  return { fee: fee, minPoolLiquidity: minPoolLiquidity.toString() }
+  return { fee: fee, minPoolLiquidity: minTradingLimit.toString() }
 }
 
 export const useXYKTotalLiquidity = (address?: string) => {

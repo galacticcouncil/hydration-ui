@@ -356,6 +356,7 @@ export const QUERY_KEYS = {
   xykPools: ["xylPools"], //TODO: refresh each block??
   xykConsts: ["xykConsts"],
   shareTokens: ["shareTokens"],
+  shareTokensByIds: (ids: string[]) => ["shareTokensByIds", ids],
   totalXYKLiquidity: (address?: string) => [
     QUERY_KEY_PREFIX,
     "totalXYKLiquidity",

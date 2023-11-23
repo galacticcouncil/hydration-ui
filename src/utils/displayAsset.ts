@@ -7,6 +7,11 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { STABLECOIN_SYMBOL } from "./constants"
 import { QUERY_KEYS } from "./queryKeys"
+import { useAccountsBalances } from "api/accountBalances"
+import { useRpcProvider } from "providers/rpcProvider"
+import { useShareTokensByIds } from "api/xyk"
+import { isNotNil } from "./helpers"
+import { useShareOfPools } from "api/pools"
 
 type Props = { id: string; amount: BigNumber }
 
@@ -47,6 +52,90 @@ export const useDisplayPrice = (id: string | u32 | undefined) => {
 
     return spotPrice.data
   }, [displayAsset.isRealUSD, isLoading, spotPrice.data, usdPrice.data])
+
+  return { data, isLoading, isInitialLoading: isLoading }
+}
+
+//TODO: mb create a hook for a single share token
+export const useDisplayShareTokenPrice = (ids: string[]) => {
+  const { assets } = useRpcProvider()
+
+  const shareTokenIds = ids
+    .filter((id) => assets.isShareToken(assets.getAsset(id.toString())))
+    .map((shareTokenId) => shareTokenId.toString())
+
+  const pools = useShareTokensByIds(shareTokenIds)
+
+  const poolsAddress = useMemo(
+    () =>
+      new Map(pools.data?.map((pool) => [pool.shareTokenId, pool.poolAddress])),
+    [pools.data],
+  )
+
+  const poolBalances = useAccountsBalances(Array.from(poolsAddress.values()))
+  const totalIssuances = useShareOfPools(shareTokenIds)
+
+  const shareTokensTvl = useMemo(() => {
+    return shareTokenIds
+      .map((shareTokenId) => {
+        const poolAddress = poolsAddress.get(shareTokenId)
+        const poolBalance = poolBalances.data?.find(
+          (poolBalance) => poolBalance.accountId === poolAddress,
+        )
+
+        const assetA = poolBalance?.balances[0]
+
+        if (!assetA) return undefined
+
+        const assetABalance = assetA.data.free
+          .toBigNumber()
+          .shiftedBy(-assets.getAsset(assetA.id.toString()).decimals)
+
+        const tvl = assetABalance.multipliedBy(2)
+
+        return { spotPriceId: assetA.id.toString(), tvl, shareTokenId }
+      })
+      .filter(isNotNil)
+  }, [assets, poolBalances.data, poolsAddress, shareTokenIds])
+
+  const spotPrices = useDisplayPrices(
+    shareTokensTvl.map((shareTokenTvl) => shareTokenTvl.spotPriceId),
+  )
+
+  const queries = [totalIssuances, pools, poolBalances, spotPrices]
+  const isLoading = queries.some((q) => q.isInitialLoading)
+
+  const data = useMemo(() => {
+    return shareTokensTvl
+      .map((shareTokenTvl) => {
+        const spotPrice = spotPrices.data?.find(
+          (spotPrice) => spotPrice?.tokenIn === shareTokenTvl.spotPriceId,
+        )
+
+        const tvlDisplay = shareTokenTvl.tvl.multipliedBy(
+          spotPrice?.spotPrice ?? 1,
+        )
+
+        const totalIssuance = totalIssuances.data?.find(
+          (totalIssuance) => totalIssuance.asset === shareTokenTvl.shareTokenId,
+        )
+
+        const shareTokenMeta = assets.getAsset(shareTokenTvl.shareTokenId)
+
+        if (!totalIssuance?.totalShare || !spotPrice?.tokenOut) return undefined
+
+        const shareTokenDisplay = tvlDisplay.div(
+          totalIssuance.totalShare.shiftedBy(-shareTokenMeta.decimals),
+        )
+
+        return {
+          tokenIn: shareTokenTvl.shareTokenId,
+          tokenOut: spotPrice.tokenOut,
+          spotPrice: shareTokenDisplay,
+        }
+      })
+      .filter(isNotNil)
+  }, [assets, shareTokensTvl, spotPrices.data, totalIssuances.data])
 
   return { data, isLoading, isInitialLoading: isLoading }
 }
