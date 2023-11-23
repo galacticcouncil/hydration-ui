@@ -1,6 +1,6 @@
 import { Separator } from "components/Separator/Separator"
 import { Switch } from "components/Switch/Switch"
-import { Heading } from "components/Typography/Heading/Heading"
+import { PageHeading } from "components/Layout/PageHeading"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
@@ -122,12 +122,10 @@ export const PoolsHeader = ({
           flexWrap: "wrap",
           justify: "space-between",
           gap: 12,
-          mb: 43,
+          mb: 30,
         }}
       >
-        <Heading fs={20} lh={26} fw={500}>
-          {t("liquidity.header.title")}
-        </Heading>
+        <PageHeading>{t("liquidity.header.title")}</PageHeading>
         {!!account && (
           <Switch
             value={myPositions}

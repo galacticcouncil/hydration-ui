@@ -71,7 +71,7 @@ export const SPageContent = styled.main`
 `
 
 export const SPageInner = styled.div`
-  padding: 16px 12px;
+  padding: 20px 12px;
 
   display: flex;
   flex-direction: column;
@@ -80,7 +80,7 @@ export const SPageInner = styled.div`
   position: relative;
 
   @media ${theme.viewport.gte.sm} {
-    padding: 44px 20px;
+    padding: 40px 20px;
 
     max-width: var(--content-width);
     margin: 0 auto;
