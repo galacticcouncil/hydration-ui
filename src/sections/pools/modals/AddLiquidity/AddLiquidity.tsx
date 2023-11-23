@@ -1,4 +1,3 @@
-import { u32 } from "@polkadot/types"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
@@ -6,18 +5,26 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { AddLiquidityForm } from "./AddLiquidityForm"
+import {
+  TOmnipoolAsset,
+  TXYKPool,
+  isXYKPool,
+} from "sections/pools/PoolsPage.utils"
+
+import { AddLiquidityFormXYK } from "./AddLiquidityFormXYK"
 
 type Props = {
-  poolId: u32
+  pool: TOmnipoolAsset | TXYKPool
   isOpen: boolean
   onClose: () => void
-  onSuccess: () => void
 }
 
-export const AddLiquidity = ({ poolId, isOpen, onClose, onSuccess }: Props) => {
-  const [assetId, setAssetId] = useState<string>(poolId.toString())
+export const AddLiquidity = ({ pool, isOpen, onClose }: Props) => {
+  const [assetId, setAssetId] = useState<string>(pool.id)
   const { t } = useTranslation()
   const { page, direction, back, next } = useModalPagination()
+
+  const isXYK = isXYKPool(pool)
 
   return (
     <Modal open={isOpen} disableCloseOutside onClose={onClose}>
@@ -30,10 +37,16 @@ export const AddLiquidity = ({ poolId, isOpen, onClose, onSuccess }: Props) => {
         contents={[
           {
             title: t("liquidity.add.modal.title"),
-            content: (
+            content: isXYK ? (
+              <AddLiquidityFormXYK
+                pool={pool}
+                assetId={assetId}
+                onClose={onClose}
+                onAssetOpen={next}
+              />
+            ) : (
               <AddLiquidityForm
                 assetId={assetId}
-                onSuccess={onSuccess}
                 onClose={onClose}
                 onAssetOpen={next}
               />

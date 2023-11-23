@@ -1,18 +1,14 @@
 import { useQuery } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { u32 } from "@polkadot/types-codec"
 import { useRpcProvider } from "providers/rpcProvider"
-
-const isStablepoolsEnabled =
-  import.meta.env.VITE_FF_STABLEPOOLS_ENABLED === "true"
 
 export const useStableswapPools = () => {
   const { api } = useRpcProvider()
   return useQuery(QUERY_KEYS.stableswapPools, getStableswapPools(api))
 }
 
-export const useStableswapPool = (poolId: u32) => {
+export const useStableswapPool = (poolId: string) => {
   const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.stableswapPool(poolId),
@@ -20,23 +16,18 @@ export const useStableswapPool = (poolId: u32) => {
   )
 }
 
-export const getStableswapPools =
-  (api: ApiPromise) => async (): Promise<{ id: u32; data: any }[]> => {
-    if (!isStablepoolsEnabled) {
-      return []
-    }
+export const getStableswapPools = (api: ApiPromise) => async () => {
+  const res = await api.query.stableswap.pools.entries()
 
-    const res = await api.query.stableswap.pools.entries()
-
-    return res.map(([key, codec]) => {
-      const [id] = key.args
-      const data = codec.unwrap()
-      return { id, data }
-    })
-  }
+  return res.map(([key, codec]) => {
+    const id = key.args[0].toString()
+    const data = codec.unwrap()
+    return { id: id.toString(), data }
+  })
+}
 
 export const getStableswapPool =
-  (api: ApiPromise, poolId: u32) => async (): Promise<any> => {
+  (api: ApiPromise, poolId: string) => async (): Promise<any> => {
     const res = await api.query.stableswap.pools(poolId)
     return res.unwrap()
   }

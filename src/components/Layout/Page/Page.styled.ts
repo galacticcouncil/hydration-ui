@@ -91,11 +91,12 @@ export const SPageInner = styled.div`
 
 export const SSubHeader = styled.div`
   border-bottom: solid 1px rgba(114, 131, 165, 0.6);
-
   width: 100vw;
 
   position: relative;
   z-index: 1;
+
+  overflow-x: auto;
 
   @media (${theme.viewport.gte.sm}) {
     margin: 0 -20px;

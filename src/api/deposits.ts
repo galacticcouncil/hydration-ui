@@ -9,12 +9,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 
 const DEPOSIT_NFT_COLLECTION_ID = "2584"
 
-const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
-
-export type DepositNftType = Awaited<
-  ReturnType<ReturnType<typeof getDeposits>>
->[number]
-
 export const useAccountDepositIds = (
   accountId: Maybe<AccountId32 | string>,
 ) => {
@@ -42,9 +36,7 @@ const getAccountDepositIds =
 
 export const useAllDeposits = () => {
   const { api } = useRpcProvider()
-  return useQuery(QUERY_KEYS.allDeposits, getDeposits(api), {
-    enabled: enabledFarms,
-  })
+  return useQuery(QUERY_KEYS.allDeposits, getDeposits(api))
 }
 
 export const usePoolDeposits = (poolId?: u32 | string) => {
@@ -53,7 +45,7 @@ export const usePoolDeposits = (poolId?: u32 | string) => {
     enabled: !!poolId,
     select: (data) =>
       data.filter(
-        (item) => item.deposit.ammPoolId.toString() === poolId?.toString(),
+        (item) => item.data.ammPoolId.toString() === poolId?.toString(),
       ),
   })
 }
@@ -83,7 +75,7 @@ const getDeposits = (api: ApiPromise) => async () => {
   const res = await api.query.omnipoolWarehouseLM.deposit.entries()
   return res.map(([key, value]) => ({
     id: key.args[0],
-    deposit: value.unwrap(),
+    data: value.unwrap(),
   }))
 }
 
@@ -94,7 +86,7 @@ const getOmniPositionId =
     return { depositionId, value: res.value }
   }
 
-export const useAccountDeposits = (poolId?: u32) => {
+export const useAccountDeposits = (poolId?: u32 | string) => {
   const { account } = useAccountStore()
   const accountDepositIds = useAccountDepositIds(account?.address)
   const deposits = usePoolDeposits(poolId)

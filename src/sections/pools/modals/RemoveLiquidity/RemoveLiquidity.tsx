@@ -3,30 +3,31 @@ import { useTranslation } from "react-i18next"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { RemoveLiquidityForm } from "./RemoveLiquidityForm"
 import { RemoveLiquidityModal as RemoveStablepoolLiquidityModal } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityModal"
-import {
-  isStablepool,
-  OmnipoolPool,
-  Stablepool,
-} from "sections/pools/PoolsPage.utils"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
+import { TXYKPool } from "sections/pools/PoolsPage.utils"
+import { isXYKPool } from "sections/pools/PoolsPage.utils"
+import { RemoveXYKLiquidityForm } from "./RemoveXYKLiquidityForm"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
   onClose: () => void
-  position: HydraPositionsTableData
+  position?: HydraPositionsTableData
   onSuccess: () => void
-  pool: Stablepool | OmnipoolPool
+  pool: TOmnipoolAsset | TXYKPool
 }
 
 export const RemoveLiquidity = ({
   isOpen,
   onClose,
-  onSuccess,
   position,
   pool,
+  onSuccess,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
 
-  if (isStablepool(pool)) {
+  const isXyk = isXYKPool(pool)
+
+  if (!isXyk && pool.isStablepool) {
     return (
       <RemoveStablepoolLiquidityModal
         isOpen={isOpen}
@@ -45,11 +46,19 @@ export const RemoveLiquidity = ({
       title={t("liquidity.remove.modal.title")}
       onClose={onClose}
     >
-      <RemoveLiquidityForm
-        onClose={onClose}
-        position={position}
-        onSuccess={onSuccess}
-      />
+      {isXyk ? (
+        <RemoveXYKLiquidityForm
+          onClose={onClose}
+          onSuccess={onSuccess}
+          pool={pool}
+        />
+      ) : position ? (
+        <RemoveLiquidityForm
+          onClose={onClose}
+          position={position}
+          onSuccess={onSuccess}
+        />
+      ) : null}
     </Modal>
   )
 }

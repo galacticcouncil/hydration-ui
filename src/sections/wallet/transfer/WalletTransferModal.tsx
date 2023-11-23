@@ -94,6 +94,7 @@ export function WalletTransferModal(props: {
             content: (
               <AssetsModalContent
                 withBonds
+                withShareTokens
                 onSelect={(a) => {
                   setAsset(a.id)
                   openOnChain()

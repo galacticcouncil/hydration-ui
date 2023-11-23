@@ -1,7 +1,6 @@
 import { useApiIds } from "api/consts"
 import { useOmnipoolAssets } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
-import { useAllTrades } from "api/volume"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { getFloatingPointAmount } from "utils/balance"
@@ -11,6 +10,7 @@ import { isHydraAddress } from "utils/formatting"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { useAccountsIdentity } from "api/stats"
+import { useAllTrades } from "api/volume"
 
 const withoutRefresh = true
 
