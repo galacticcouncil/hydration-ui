@@ -1,4 +1,3 @@
-import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
@@ -23,23 +22,15 @@ export const SPage = styled.div`
   }
 `
 
-export const SGradientBg = styled.div<{ variant?: "stats" | "default" }>`
+export const SGradientBg = styled.div`
   position: absolute;
   top: 0;
   left: 0;
 
   width: 100%;
 
-  ${({ variant }) =>
-    variant === "stats"
-      ? css`
-          height: 1360px;
-          background: ${theme.gradients.backgroundStats};
-        `
-      : css`
-          height: 474px;
-          background: ${theme.gradients.background};
-        `}
+  height: 474px;
+  background: ${theme.gradients.background};
 `
 
 export const SPageContent = styled.main`
@@ -80,7 +71,7 @@ export const SPageContent = styled.main`
 `
 
 export const SPageInner = styled.div`
-  padding: 16px 12px;
+  padding: 20px 12px;
 
   display: flex;
   flex-direction: column;
@@ -89,7 +80,7 @@ export const SPageInner = styled.div`
   position: relative;
 
   @media ${theme.viewport.gte.sm} {
-    padding: 44px 20px;
+    padding: 40px 20px;
 
     max-width: var(--content-width);
     margin: 0 auto;
@@ -98,27 +89,33 @@ export const SPageInner = styled.div`
   }
 `
 
-export const SPageGrid = styled.div`
-  position: absolute;
-  inset: 0;
-
-  opacity: 0.03;
-  pointer-events: none;
-
-  background-size: 22px 22px;
-  background-image: linear-gradient(to right, white 1px, transparent 1px),
-    linear-gradient(to bottom, white 1px, transparent 1px);
-  mask-image: linear-gradient(180deg, #d9d9d9 0%, rgba(217, 217, 217, 0) 100%);
-`
-
 export const SSubHeader = styled.div`
-  border-bottom: solid 1px rgba(114, 131, 165, 0.6);
   width: 100vw;
 
   position: relative;
   z-index: 1;
 
   overflow-x: auto;
+
+  padding-bottom: 1px;
+
+  ::after {
+    content: "";
+
+    z-index: -1;
+    pointer-events: none;
+
+    position: absolute;
+    top: 0;
+    bottom: 1px;
+    left: 0;
+    right: 0;
+
+    background: rgba(9, 9, 9, 0.09);
+
+    border-bottom: solid 1px rgba(114, 131, 165, 0.6);
+    border-top: 1px solid rgba(114, 131, 165, 0.6);
+  }
 
   @media (${theme.viewport.gte.sm}) {
     margin: 0 -20px;

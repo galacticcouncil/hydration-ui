@@ -21,29 +21,8 @@ export const StatsTableContainer = styled.div`
   overflow: hidden;
   position: relative;
 
-  border-radius: ${theme.borderRadius.default}px;
-
-  :before {
-    content: "";
-    position: absolute;
-    inset: 0;
-
-    border-radius: ${theme.borderRadius.default}px;
-    padding: 1px; // a width of the border
-
-    background: linear-gradient(
-      180deg,
-      rgba(152, 176, 214, 0.27) 0%,
-      rgba(163, 177, 199, 0.15) 66.67%,
-      rgba(158, 167, 180, 0.2) 100%
-    );
-
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-  }
+  border-radius: ${theme.borderRadius.stakingCard}px;
+  border: 1px solid rgba(152, 176, 214, 0.27);
 `
 
 export const Table = styled.table`

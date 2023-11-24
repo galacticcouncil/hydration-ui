@@ -1,9 +1,9 @@
-import { Page } from "components/Layout/Page/Page"
-import { Navigation, PoolNavigation } from "./navigation/Navigation"
-import { Outlet, useSearch } from "@tanstack/react-location"
+import { Page } from "components/Layout/Page/Page";
+import { Navigation, PoolNavigation } from "./navigation/Navigation";
+import { Outlet, useSearch } from "@tanstack/react-location";
 
 export const PoolsPage = () => {
-  const { id } = useSearch()
+  const { id } = useSearch();
 
   return (
     <Page
@@ -15,5 +15,5 @@ export const PoolsPage = () => {
     >
       <Outlet />
     </Page>
-  )
-}
+  );
+};

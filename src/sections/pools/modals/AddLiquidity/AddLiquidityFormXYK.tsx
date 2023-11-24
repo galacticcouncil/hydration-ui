@@ -19,8 +19,9 @@ import { useSpotPrice } from "api/spotPrice"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { TokensConversion } from "./components/TokensConvertion/TokensConversion"
 import { useTokensBalances } from "api/balances"
-
+import IconWarning from "assets/icons/WarningIcon.svg?react"
 import * as xyk from "@galacticcouncil/math-xyk"
+import { useXYKConsts } from "api/xyk"
 
 type Props = {
   assetId: string
@@ -37,6 +38,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
   const queryClient = useQueryClient()
   const { assets } = useRpcProvider()
   const { account } = useAccountStore()
+  const xykConsts = useXYKConsts()
   const { t } = useTranslation()
 
   const [assetA, assetB] = assets.getAssets(pool.assets)
@@ -72,6 +74,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
     [formAssets.assetA.id, formAssets.assetB.id],
     account?.address,
   )
+  const lastUpdated = form.watch("lastUpdated")
 
   const reserves = useMemo(
     () => ({
@@ -87,6 +90,19 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
     () => ({ assetA: assetValueA, assetB: assetValueB }),
     [assetValueA, assetValueB],
   )
+
+  const minAddLiquidityValidation = useMemo(() => {
+    const { decimals } = formAssets[lastUpdated]
+
+    const mainAsset = new BigNumber(assetValues[lastUpdated])
+
+    const minAddLiqudityValue = BigNumber(
+      xykConsts.data?.minPoolLiquidity ?? 0,
+    ).shiftedBy(-decimals)
+    const isMinAddLiqudity = minAddLiqudityValue.gt(mainAsset)
+
+    return isMinAddLiqudity
+  }, [assetValues, formAssets, lastUpdated, xykConsts.data?.minPoolLiquidity])
 
   const calculatedShares = useMemo(() => {
     if (
@@ -112,15 +128,13 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
     pool.shareTokenIssuance?.myPoolShare &&
     calculatedShares &&
     calculatedShares
-      .div(pool.shareTokenIssuance.totalShare ?? 1)
+      .div(pool.shareTokenIssuance.totalShare?.plus(calculatedShares) ?? 1)
       .multipliedBy(100)
 
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
 
   const onSubmit = async () => {
-    const lastUpdated = form.watch("lastUpdated")
-
     const inputData = {
       assetA: {
         id: formAssets[lastUpdated].id,
@@ -372,9 +386,24 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
           })}
         />
 
-        <Text color="warningOrange200" fs={14} fw={400} sx={{ mt: 17, mb: 24 }}>
-          {t("liquidity.add.modal.warning")}
-        </Text>
+        {minAddLiquidityValidation && (
+          <div
+            sx={{
+              flex: "row",
+              align: "center",
+              gap: 8,
+              height: 50,
+              p: "12px 14px",
+              my: 8,
+            }}
+            css={{ borderRadius: 2, background: "rgba(245, 168, 85, 0.3)" }}
+          >
+            <IconWarning />
+            <Text color="white" fs={13} fw={400}>
+              {t("liquidity.xyk.addLiquidity.warning")}
+            </Text>
+          </div>
+        )}
         <PoolAddLiquidityInformationCard />
         <Spacer size={20} />
       </div>
@@ -389,7 +418,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
       <Button
         variant="primary"
         type="submit"
-        disabled={!form.formState.isValid}
+        disabled={!form.formState.isValid || minAddLiquidityValidation}
       >
         {t("confirm")}
       </Button>

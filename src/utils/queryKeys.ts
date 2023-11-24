@@ -180,6 +180,7 @@ export const QUERY_KEYS = {
     periodsInFarm,
   ],
   minWithdrawalFee: ["minWithdrawalFee"],
+  allTrades: (assetId?: number) => ["allTrades", assetId],
   allOmnipoolTrades: ["allOmnipoolTrades"],
   allStableswapTrades: ["allStableswapTrades"],
   tradeVolume: (poolId: Maybe<string | u32>) => [
@@ -356,10 +357,13 @@ export const QUERY_KEYS = {
   xykPools: ["xylPools"], //TODO: refresh each block??
   xykConsts: ["xykConsts"],
   shareTokens: ["shareTokens"],
+  shareTokensByIds: (ids: string[]) => ["shareTokensByIds", ids],
   totalXYKLiquidity: (address?: string) => [
     QUERY_KEY_PREFIX,
     "totalXYKLiquidity",
     address,
   ],
   volumeDaily: (assetId?: string) => ["volumeDaily", assetId],
+  tvl: (assetId?: string) => ["tvl", assetId],
+  identity: (address: string) => ["identity", address],
 } as const
