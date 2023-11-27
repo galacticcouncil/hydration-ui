@@ -17,14 +17,18 @@ export const getApiIds = (api: ApiPromise) => async () => {
   const apiIds = await Promise.all([
     api.consts.omnipool.hdxAssetId,
     api.consts.omnipool.hubAssetId,
-    api.consts.omnipool.stableCoinAssetId,
     api.consts.omnipool.nftCollectionId,
   ])
-  const [nativeId, hubId, stableCoinId, omnipoolCollectionId] = apiIds.map(
-    (c) => c.toString(),
+  const [nativeId, hubId, omnipoolCollectionId] = apiIds.map((c) =>
+    c.toString(),
   )
 
-  return { nativeId, hubId, stableCoinId, omnipoolCollectionId }
+  return {
+    nativeId,
+    hubId,
+    stableCoinId: import.meta.env.VITE_STABLECOIN_ASSET_ID.toString(),
+    omnipoolCollectionId,
+  }
 }
 
 export const useTVLCap = () => {
