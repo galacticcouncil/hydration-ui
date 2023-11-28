@@ -31,16 +31,6 @@ export const getApiIds = (api: ApiPromise) => async () => {
   }
 }
 
-export const useTVLCap = () => {
-  const { api } = useRpcProvider()
-
-  return useQuery(QUERY_KEYS.tvlCap, getTvlCap(api))
-}
-
-const getTvlCap = (api: ApiPromise) => async () => {
-  return await api.query.omnipool.tvlCap()
-}
-
 export const useMinWithdrawalFee = () => {
   const { api } = useRpcProvider()
 

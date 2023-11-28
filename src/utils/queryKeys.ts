@@ -303,7 +303,6 @@ export const QUERY_KEYS = {
     address,
   ],
   apiIds: ["apiIds"],
-  tvlCap: ["tvlCap"],
   externalWalletKey: (walletAddress: string) => [
     "externalWallet",
     walletAddress,
