@@ -187,6 +187,10 @@ export const QUERY_KEYS = {
     "tradeVolume",
     poolId?.toString(),
   ],
+  xykTradeVolume: (poolId: Maybe<string | u32>) => [
+    "xykTradeVolume",
+    poolId?.toString(),
+  ],
   tradeVolumeLive: (poolId: Maybe<string | u32>) => [
     QUERY_KEY_PREFIX,
     "tradeVolume",

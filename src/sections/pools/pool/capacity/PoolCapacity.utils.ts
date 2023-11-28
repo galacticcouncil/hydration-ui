@@ -11,14 +11,17 @@ import {
 } from "@galacticcouncil/math-omnipool"
 import { getFloatingPointAmount } from "utils/balance"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useDisplayAssetStore } from "utils/displayAsset"
 
 export const usePoolCapacity = (id: string) => {
   const { assets } = useRpcProvider()
+  const { stableCoinId } = useDisplayAssetStore()
+
   const apiIds = useApiIds()
   const tvlCap = useTVLCap()
   const omnipoolAssets = useOmnipoolAssets()
   const balances = useTokensBalances(
-    [apiIds.data?.hubId ?? "", apiIds?.data?.stableCoinId ?? "", id],
+    [apiIds.data?.hubId ?? "", stableCoinId ?? "", id],
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
   const meta = assets.getAsset(id.toString())
@@ -39,7 +42,7 @@ export const usePoolCapacity = (id: string) => {
       (a) => a.id.toString() === id.toString(),
     )
     const assetUsd = omnipoolAssets.data.find(
-      (a) => a.id.toString() === apiIds.data.stableCoinId.toString(),
+      (a) => a.id.toString() === stableCoinId,
     )
     const assetBalance = balances.find(
       (b) => b.data?.assetId.toString() === id.toString(),
@@ -48,7 +51,7 @@ export const usePoolCapacity = (id: string) => {
       (b) => b.data?.assetId.toString() === apiIds.data.hubId.toString(),
     )
     const usdBalance = balances.find(
-      (b) => b.data?.assetId.toString() === apiIds.data.stableCoinId.toString(),
+      (b) => b.data?.assetId.toString() === stableCoinId,
     )
     const symbol = meta.symbol
 
@@ -117,7 +120,16 @@ export const usePoolCapacity = (id: string) => {
     const filledPercent = filled.div(capacity).times(100)
 
     return { capacity, filled, filledPercent, symbol }
-  }, [apiIds.data, omnipoolAssets.data, balances, meta, id, tvlCap.data])
+  }, [
+    apiIds.data,
+    tvlCap.data,
+    omnipoolAssets.data,
+    balances,
+    meta.symbol,
+    meta.decimals,
+    id,
+    stableCoinId,
+  ])
 
   return { data, isLoading }
 }
