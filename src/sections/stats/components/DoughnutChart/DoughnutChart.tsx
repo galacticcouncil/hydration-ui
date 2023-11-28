@@ -71,7 +71,7 @@ export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
       diffAngle += endAngle
 
       return (
-        <Fragment key={slice.percentage}>
+        <Fragment key={slice.id}>
           <SClipPath
             rotate={startAngle}
             length={sliceLength - 1}
@@ -149,7 +149,7 @@ export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
                 symbol: "overview",
                 label: <Fragment />,
                 percentage: 0,
-                id: "",
+                id: "overview",
               },
               ...slices,
             ]}

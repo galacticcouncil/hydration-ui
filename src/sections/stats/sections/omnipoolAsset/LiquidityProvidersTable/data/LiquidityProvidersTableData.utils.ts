@@ -88,8 +88,9 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
         })
 
         return {
+          assetId: meta.id,
           symbol: meta.symbol,
-          account: unique?.data.owner.toString() ?? "",
+          account: (unique?.data.owner.toString() ?? "") as string,
           sharePercent: valueDisplay.div(omnipoolTvlPrice).times(100),
           lrna,
           value,
@@ -119,6 +120,7 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
           }
         },
         {
+          assetId: "",
           symbol: "",
           account: "",
           lrna: BN(0),
@@ -148,3 +150,7 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
 
   return { isLoading, data }
 }
+
+export type TLiquidityProvidersTableData = ReturnType<
+  typeof useLiquidityProvidersTableData
+>["data"]

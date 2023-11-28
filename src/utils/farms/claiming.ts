@@ -6,11 +6,12 @@ import { decodeAddress } from "@polkadot/util-crypto"
 import { useMutation } from "@tanstack/react-query"
 import { useAccountAssetBalances } from "api/accountBalances"
 import { useBestNumber } from "api/chain"
-import { DepositNftType, useUserDeposits } from "api/deposits"
+import { useUserDeposits } from "api/deposits"
 import { useFarms, useOraclePrices } from "api/farms"
 import { useOmnipoolAssets } from "api/omnipool"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
+import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { ToastMessage, useStore } from "state/store"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0 } from "utils/constants"
@@ -22,8 +23,8 @@ import { createMutableFarmEntries } from "./claiming/mutableFarms"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const useClaimableAmount = (
-  poolId?: u32,
-  depositNft?: DepositNftType,
+  poolId?: string,
+  depositNft?: TMiningNftPosition,
 ) => {
   const bestNumberQuery = useBestNumber()
 
@@ -34,8 +35,7 @@ export const useClaimableAmount = (
         ...allDeposits,
         data:
           allDeposits.data?.filter(
-            (deposit) =>
-              deposit.deposit.ammPoolId.toString() === poolId.toString(),
+            (deposit) => deposit.data.ammPoolId.toString() === poolId,
           ) ?? [],
       }
     : allDeposits
@@ -117,7 +117,7 @@ export const useClaimableAmount = (
 
     return deposits
       ?.map((record) =>
-        record.deposit.yieldFarmEntries.map((farmEntry) => {
+        record.data.yieldFarmEntries.map((farmEntry) => {
           const aprEntry = farms.data?.find(
             (i) =>
               i.globalFarm.id.eq(farmEntry.globalFarmId) &&
@@ -210,8 +210,8 @@ export const useClaimableAmount = (
 }
 
 export const useClaimAllMutation = (
-  poolId?: u32,
-  depositNft?: DepositNftType,
+  poolId?: string,
+  depositNft?: TMiningNftPosition,
   toast?: ToastMessage,
   onClose?: () => void,
   onBack?: () => void,
@@ -223,7 +223,7 @@ export const useClaimAllMutation = (
 
   const filteredDeposits = poolId
     ? allUserDeposits.data?.filter(
-        (deposit) => deposit.deposit.ammPoolId.toString() === poolId.toString(),
+        (deposit) => deposit.data.ammPoolId.toString() === poolId.toString(),
       ) ?? []
     : allUserDeposits.data
 
@@ -233,7 +233,7 @@ export const useClaimAllMutation = (
     const txs =
       deposits
         ?.map((deposit) =>
-          deposit.deposit.yieldFarmEntries.map((entry) =>
+          deposit.data.yieldFarmEntries.map((entry) =>
             api.tx.omnipoolLiquidityMining.claimRewards(
               deposit.id,
               entry.yieldFarmId,

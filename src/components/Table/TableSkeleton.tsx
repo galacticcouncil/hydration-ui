@@ -100,14 +100,13 @@ export const TableStatsSkeleton = ({
     <StatsTableContainer className={className}>
       {title && (
         <StatsTableTitle>
-          <Text
-            fs={[16, 24]}
-            lh={[24, 26]}
-            color="white"
-            font="ChakraPetchBold"
-          >
-            {title}
-          </Text>
+          {typeof title === "string" ? (
+            <Text fs={[15, 19]} lh={20} color="white" font="FontOver">
+              {title}
+            </Text>
+          ) : (
+            title
+          )}
         </StatsTableTitle>
       )}
       <div css={{ position: "relative" }}>

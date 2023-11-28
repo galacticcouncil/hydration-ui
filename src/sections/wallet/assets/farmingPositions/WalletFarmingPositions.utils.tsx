@@ -178,9 +178,9 @@ export const useFarmingPositionsData = () => {
     const rows: FarmingPositionsTableData[] = accountDeposits
       .map((deposit) => {
         const id = deposit.id.toString()
-        const assetId = deposit.deposit.ammPoolId.toString()
+        const assetId = deposit.data.ammPoolId.toString()
         const meta = assets.getAsset(assetId)
-        const latestEnteredAtBlock = deposit.deposit.yieldFarmEntries.reduce(
+        const latestEnteredAtBlock = deposit.data.yieldFarmEntries.reduce(
           (acc, curr) =>
             acc.lt(curr.enteredAt.toBigNumber())
               ? curr.enteredAt.toBigNumber()
@@ -195,7 +195,7 @@ export const useFarmingPositionsData = () => {
           bestNumber.data.relaychainBlockNumber.toBigNumber(),
         )
         const shares = getFloatingPointAmount(
-          deposit.deposit.shares.toBigNumber(),
+          deposit.data.shares.toBigNumber(),
           meta.decimals,
         )
         const position = accountDepositsShare.data[assetId]?.find(

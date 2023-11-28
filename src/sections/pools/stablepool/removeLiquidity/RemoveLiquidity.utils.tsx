@@ -4,7 +4,6 @@ import {
 } from "@galacticcouncil/math-stableswap"
 import { useBestNumber } from "api/chain"
 import { useStableswapPool } from "api/stableswap"
-import { u32 } from "@polkadot/types-codec"
 import { useTotalIssuance } from "api/totalIssuance"
 import { normalizeBigNumber } from "utils/balance"
 import { BN_0 } from "utils/constants"
@@ -12,7 +11,7 @@ import BigNumber from "bignumber.js"
 import { TAsset } from "api/assetDetails"
 
 type Args = {
-  poolId: u32
+  poolId: string
   shares: BigNumber
   asset?: TAsset
   fee: BigNumber

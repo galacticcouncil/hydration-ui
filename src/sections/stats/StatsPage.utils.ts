@@ -4,15 +4,16 @@ import { useApiIds } from "api/consts"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
 import { useUniques } from "api/uniques"
-import { getVolumeAssetTotalValue, useTradeVolumes } from "api/volume"
+import { useVolumes } from "api/volume"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { HYDRA_TREASURE_ACCOUNT, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
-import { BN_0, BN_10, BN_NAN } from "utils/constants"
+import { BN_0, BN_10, BN_NAN, BN_QUINTILL } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useTVLs } from "api/stats"
 
 const withoutRefresh = true
 
@@ -25,7 +26,8 @@ export const useOmnipoolAssetDetails = () => {
   const omnipoolAssetsIds =
     omnipoolAssets.data?.map((a) => a.id.toString()) ?? []
 
-  const volumes = useTradeVolumes(omnipoolAssetsIds, withoutRefresh)
+  const volumes = useVolumes(omnipoolAssetsIds)
+  const tvls = useTVLs(omnipoolAssetsIds)
 
   // get all NFTs on HYDRA_TREASURE_ACCOUNT to calculate POL
   const uniques = useUniques(
@@ -58,6 +60,7 @@ export const useOmnipoolAssetDetails = () => {
     uniques,
     ...spotPrices,
     ...volumes,
+    ...tvls,
     ...positions,
     ...omnipoolAssetBalances,
   ]
@@ -70,7 +73,8 @@ export const useOmnipoolAssetDetails = () => {
       spotPrices.some((q) => !q.data) ||
       omnipoolAssetBalances.some((q) => !q.data) ||
       positions.some((q) => !q.data) ||
-      volumes.some((q) => !q.data)
+      volumes.some((q) => !q.data) ||
+      tvls.some((q) => !q.data)
     )
       return []
 
@@ -140,6 +144,10 @@ export const useOmnipoolAssetDetails = () => {
         (b) => b.data?.assetId.toString() === omnipoolAssetId,
       )?.data
 
+      const omnipoolAssetCap = omnipoolAsset.data.cap
+        .toBigNumber()
+        .div(BN_QUINTILL)
+
       if (!meta || !spotPrice || !omnipoolAssetBalance) return null
 
       const free = getFloatingPointAmount(
@@ -154,20 +162,14 @@ export const useOmnipoolAssetDetails = () => {
 
       const pol = valueOfLiquidityPositions.plus(valueOfShares)
 
-      const tvl = getFloatingPointAmount(
-        omnipoolAssetBalance.balance,
-        meta.decimals,
-      ).times(spotPrice)
+      const tvl = BN(
+        tvls.find((tvl) => tvl.data?.assetId === omnipoolAssetId)?.data
+          ?.tvl_usd ?? 0,
+      )
 
-      // volume calculation
-      const volumeEvents = getVolumeAssetTotalValue(
-        volumes.find((v) => v.data?.assetId === omnipoolAssetId)?.data,
-      )?.[omnipoolAssetId]
-
-      const volume = getFloatingPointAmount(
-        volumeEvents ?? BN_0,
-        meta.decimals,
-      ).multipliedBy(spotPrice ?? 1)
+      const volume =
+        volumes.find((volume) => volume.data?.assetId === omnipoolAssetId)?.data
+          ?.volume ?? BN_0
 
       const iconIds = assets.isStableSwap(meta) ? meta.assets : meta.id
 
@@ -180,6 +182,8 @@ export const useOmnipoolAssetDetails = () => {
         fee: BN(0),
         pol,
         iconIds,
+        cap: omnipoolAssetCap,
+        volumePol: BN(0),
       }
     })
     return rows
@@ -190,6 +194,7 @@ export const useOmnipoolAssetDetails = () => {
     omnipoolAssets.data,
     positions,
     spotPrices,
+    tvls,
     volumes,
   ]).filter(isNotNil)
 

@@ -47,7 +47,7 @@ export const getOmnipoolAssets = (api: ApiPromise) => async () => {
 }
 
 export const useOmnipoolPositions = (
-  itemIds: Array<u128 | u32 | undefined>,
+  itemIds: Array<u128 | u32 | undefined | string>,
   noRefresh?: boolean,
 ) => {
   const { api } = useRpcProvider()

@@ -7,7 +7,7 @@ import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { normalizeId } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 
-export function usePoolDetailsTradeVolume(assetId: u32) {
+export function usePoolDetailsTradeVolume(assetId: u32 | string) {
   const { assets } = useRpcProvider()
   const volumes = useTradeVolumes([assetId])
 
@@ -42,7 +42,7 @@ export function usePoolDetailsTradeVolume(assetId: u32) {
   return { data, isLoading }
 }
 
-export function usePoolsDetailsTradeVolumes(assetIds: u32[]) {
+export function usePoolsDetailsTradeVolumes(assetIds: string[]) {
   const { assets } = useRpcProvider()
   const volumes = useTradeVolumes(assetIds)
   const spotPrices = useDisplayPrices(assetIds)

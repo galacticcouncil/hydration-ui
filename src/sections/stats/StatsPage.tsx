@@ -1,7 +1,7 @@
 import { Navigate, useMatchRoute } from "@tanstack/react-location"
 import { Page } from "components/Layout/Page/Page"
 import { Spacer } from "components/Spacer/Spacer"
-import { Heading } from "components/Typography/Heading/Heading"
+import { PageHeading } from "components/Layout/PageHeading"
 import { useTranslation } from "react-i18next"
 import { LINKS } from "utils/navigation"
 // TODO: Not ready. Requested in #861n9ffe4
@@ -24,7 +24,6 @@ export const StatsPage = () => {
 
   return (
     <Page
-      variant="stats"
       subHeader={
         isOmnipoolAssetPage ? (
           <BackSubHeader
@@ -33,16 +32,11 @@ export const StatsPage = () => {
           />
         ) : null
       }
-      subHeaderStyle={{
-        borderBottom: "1px solid rgba(84, 99, 128, 0.35)",
-      }}
     >
       {!isOmnipoolAssetPage && (
         <>
-          <Heading as="h1" fs={30} lh={30} fw={500}>
-            {t("stats.title")}
-          </Heading>
-          <Spacer size={42} />
+          <PageHeading>{t("stats.title")}</PageHeading>
+          <Spacer size={[20, 30]} />
           <StatsTabs />
           <Spacer size={30} />
         </>

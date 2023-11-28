@@ -1,11 +1,11 @@
 import { css } from "@emotion/react"
-import { DepositNftType } from "api/deposits"
 import { Button } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { Fragment, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { ToastMessage, useAccountStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
@@ -13,11 +13,10 @@ import { separateBalance } from "utils/balance"
 import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
 import { SContainer } from "./ClaimRewardsCard.styled"
 import { useRpcProvider } from "providers/rpcProvider"
-import { u32 } from "@polkadot/types-codec"
 
 export const ClaimRewardsCard = (props: {
-  poolId: u32
-  depositNft?: DepositNftType
+  poolId: string
+  depositNft?: TMiningNftPosition
   onTxClose?: () => void
 }) => {
   const { t } = useTranslation()

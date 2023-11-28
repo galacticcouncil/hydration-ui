@@ -30,6 +30,14 @@ export const PROVIDERS = [
       "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: ["rococo", "development"],
   },
+  {
+    name: "Testnet",
+    url: "wss://rpc.nice.hydration.cloud",
+    indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
+    env: ["development"],
+  },
   /*{
     name: "Testnet",
     url: "wss://mining-rpc.hydradx.io",
@@ -115,7 +123,12 @@ export const useProviderData = (rpcUrl?: string) => {
         })
       }
 
-      return { api, assets: assets.assets, tradeRouter: assets.tradeRouter }
+      return {
+        api,
+        assets: assets.assets,
+        tradeRouter: assets.tradeRouter,
+        provider,
+      }
     },
     { staleTime: Infinity, refetchOnWindowFocus: true },
   )

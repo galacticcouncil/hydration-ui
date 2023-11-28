@@ -21,8 +21,10 @@ export const useOmnipoolAssetsTable = (
   data: TUseOmnipoolAssetDetailsData,
   columns: OmnipoolAssetsTableColumn[],
 ) => {
+  const isTvlColumn = columns.some((column) => column.id === "tvl")
+
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "tvl", desc: true },
+    ...(isTvlColumn ? [{ id: "tvl", desc: true }] : []),
     { id: "pol", desc: true },
   ])
   const isDesktop = useMedia(theme.viewport.gte.sm)
