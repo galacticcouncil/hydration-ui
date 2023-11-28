@@ -23,7 +23,7 @@ export const AssetSelectButton = ({ onClick, assetId }: Props) => {
 
   let iconIds: string | string[]
 
-  if (assets.isStableSwap(asset)) {
+  if (assets.isStableSwap(asset) || assets.isShareToken(asset)) {
     iconIds = asset.assets
   } else if (assets.isBond(asset)) {
     iconIds = asset.assetId

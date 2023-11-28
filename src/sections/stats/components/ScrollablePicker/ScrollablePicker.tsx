@@ -56,7 +56,7 @@ export const ScrollablePicker = ({
 
           return (
             <SOption
-              key={el.symbol}
+              key={el.id || "rest"}
               isActive={isActive}
               onClick={(e) => {
                 e.currentTarget.scrollIntoView({

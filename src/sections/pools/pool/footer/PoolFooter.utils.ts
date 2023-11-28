@@ -9,7 +9,7 @@ import {
 import { useUniques } from "api/uniques"
 import BN from "bignumber.js"
 import { useMemo } from "react"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { useAccountStore } from "state/store"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
@@ -18,7 +18,7 @@ import { useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 
-export const useUsersTotalInPool = (pool: OmnipoolPool) => {
+export const useUsersTotalInPool = (pool: TOmnipoolAsset) => {
   const { account } = useAccountStore()
   const { assets } = useRpcProvider()
   const apiIds = useApiIds()
@@ -124,7 +124,7 @@ export const useUsersTotalInPool = (pool: OmnipoolPool) => {
   return { data, isLoading }
 }
 
-export const useFooterValues = (pool: OmnipoolPool) => {
+export const useFooterValues = (pool: TOmnipoolAsset) => {
   const locked = useUsersTotalInPool(pool)
   const allPoolDeposits = useAllUserDepositShare()
   const poolDeposit = allPoolDeposits.data?.[pool.id.toString()] ?? []

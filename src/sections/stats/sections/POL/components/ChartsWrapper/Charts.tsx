@@ -2,15 +2,18 @@ import { StatsTimeframe, useStats } from "api/stats"
 import { BarChart } from "components/Charts/BarChart/BarChart"
 import { AreaChart } from "components/Charts/AreaChart/AreaChart"
 import { ChartType } from "./ChartsWrapper"
+import BN from "bignumber.js"
 
 export const Charts = ({
   type,
   timeframe,
   assetId,
+  POLMultiplier,
 }: {
   type: ChartType
   timeframe: StatsTimeframe
   assetId?: string
+  POLMultiplier?: BN
 }) => {
   const stats = useStats({
     timeframe,
@@ -18,9 +21,18 @@ export const Charts = ({
     type: "volume",
   })
 
+  const multiplieriedVolumeData = POLMultiplier
+    ? stats.data?.map((statsValue) => ({
+        ...statsValue,
+        volume_usd: POLMultiplier.multipliedBy(
+          statsValue.volume_usd,
+        ).toNumber(),
+      }))
+    : stats.data
+
   return type === "volume" ? (
     <BarChart
-      data={stats.data}
+      data={multiplieriedVolumeData}
       loading={stats.isLoading}
       error={stats.isError}
       timeframe={timeframe}

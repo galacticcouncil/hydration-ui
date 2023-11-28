@@ -5,11 +5,10 @@ import { ReactElement } from "react"
 import { Icon } from "components/Icon/Icon"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useFarmApr, useFarms } from "api/farms"
-import { DepositNftType } from "api/deposits"
-import { u32 } from "@polkadot/types"
 import { PalletLiquidityMiningYieldFarmEntry } from "@polkadot/types/lookup"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { useRpcProvider } from "providers/rpcProvider"
+import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 
 type DepositedYieldFarmProps = {
   activeYieldFarm: NonNullable<ReturnType<typeof useFarms>["data"]>[0]
@@ -53,7 +52,7 @@ export const DepositedYieldFarm = ({
   )
 }
 
-type JoinedFarmsProps = { depositNft: DepositNftType; poolId: u32 }
+type JoinedFarmsProps = { depositNft: TMiningNftPosition; poolId: string }
 
 export const JoinedFarms = ({ depositNft, poolId }: JoinedFarmsProps) => {
   const { t } = useTranslation()
@@ -62,7 +61,7 @@ export const JoinedFarms = ({ depositNft, poolId }: JoinedFarmsProps) => {
 
   const activeYieldFarms =
     farms.data?.filter((i) =>
-      depositNft.deposit.yieldFarmEntries.some(
+      depositNft.data.yieldFarmEntries.some(
         (entry) =>
           entry.globalFarmId.eq(i.globalFarm.id) &&
           entry.yieldFarmId.eq(i.yieldFarm.id),
@@ -72,7 +71,7 @@ export const JoinedFarms = ({ depositNft, poolId }: JoinedFarmsProps) => {
   const joinedFarmComponents = activeYieldFarms.reduce(
     (acc, activeYieldFarm, i) => {
       const isLastElement = i + 1 === activeYieldFarms.length
-      const joinedYieldFarm = depositNft.deposit.yieldFarmEntries.find(
+      const joinedYieldFarm = depositNft.data.yieldFarmEntries.find(
         (nft) =>
           nft.yieldFarmId.toString() ===
           activeYieldFarm.yieldFarm.id.toString(),

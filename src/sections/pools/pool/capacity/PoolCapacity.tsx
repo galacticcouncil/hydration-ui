@@ -1,4 +1,3 @@
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
 import { SBar, SBarContainer, SContainer } from "./PoolCapacity.styled"
 import { usePoolCapacity } from "sections/pools/pool/capacity/PoolCapacity.utils"
 import { useMeasure } from "react-use"

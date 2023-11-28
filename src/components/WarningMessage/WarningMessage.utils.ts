@@ -17,7 +17,14 @@ export const useWarningsStore = create(
       warnings: {
         hdxLiquidity: {
           visible: undefined,
-          visibility: ["liquidity", "walletAssets", "walletVesting"],
+          visibility: [
+            "allPools",
+            "omnipool",
+            "myLiquidity",
+            "isolated",
+            "walletAssets",
+            "walletVesting",
+          ],
         },
       },
       setWarnings: (key, isOpen) =>

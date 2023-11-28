@@ -3,38 +3,35 @@ import { ChartSwitchMobile } from "sections/stats/components/ChartSwitchMobile/C
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useMemo, useState } from "react"
-import { BN_0 } from "utils/constants"
-import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 import { SContainerVertical } from "sections/stats/StatsPage.styled"
 import { PieTotalValue } from "sections/stats/sections/overview/components/PieTotalValue/PieTotalValue"
 import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
 import { PieChart } from "sections/stats/components/PieChart/PieChart"
 import { useTranslation } from "react-i18next"
 import { omit } from "utils/rx"
+import { ChartsWrapper } from "sections/stats/sections/POL/components/ChartsWrapper/ChartsWrapper"
+import BN from "bignumber.js"
 
 type PieWrapperProps = {
   data: TUseOmnipoolAssetDetailsData
+  POLMultiplier: BN
+  totalVolume: BN
+  totalPol: BN
   isLoading: boolean
 }
 
-export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
+export const PieWrapper = ({
+  data,
+  POLMultiplier,
+  totalPol,
+  totalVolume,
+  isLoading,
+}: PieWrapperProps) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const [activeSection, setActiveSection] = useState<"overview" | "chart">(
     "overview",
-  )
-
-  const { totalVolume, totalPol } = useMemo(
-    () =>
-      data.reduce(
-        (acc, omnipoolAsset) => ({
-          totalPol: acc.totalPol.plus(omnipoolAsset.pol),
-          totalVolume: acc.totalVolume.plus(omnipoolAsset.volume),
-        }),
-        { totalPol: BN_0, totalVolume: BN_0 },
-      ),
-    [data],
   )
 
   const pieChartData = useMemo(
@@ -59,7 +56,7 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
       >
         <PieTotalValue
           title={t("stats.pol.volume")}
-          data={totalVolume}
+          data={totalVolume.div(2).multipliedBy(POLMultiplier)}
           isLoading={isLoading}
         />
       </div>
@@ -95,7 +92,7 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
             pt: [40, 0],
           }}
         >
-          <ChartWrapper />
+          <ChartsWrapper POLMultiplier={POLMultiplier} />
         </div>
       )}
     </SContainerVertical>

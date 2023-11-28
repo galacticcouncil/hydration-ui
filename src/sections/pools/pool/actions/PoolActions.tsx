@@ -7,7 +7,11 @@ import { Icon } from "components/Icon/Icon"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
-import { OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import {
+  TOmnipoolAsset,
+  TXYKPool,
+  isXYKPool,
+} from "sections/pools/PoolsPage.utils"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
 import {
   SActionsContainer,
@@ -15,22 +19,23 @@ import {
 } from "sections/pools/pool/actions/PoolActions.styled"
 import { useAccountStore } from "state/store"
 import { theme } from "theme"
-import { LiquidityPositions } from "sections/pools/modals/LiquidityPositions/LiquidityPositions"
-import { usePoolPositions } from "sections/pools/pool/Pool.utils"
+import { PoolPositionsMobile } from "sections/pools/modals/PoolPositionsMobile/PoolPositionsMobile"
 import { useFarms } from "api/farms"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { Text } from "components/Typography/Text/Text"
-import { useAccountDeposits } from "api/deposits"
+import {
+  Page,
+  TransferModal,
+} from "sections/pools/stablepool/transfer/TransferModal"
 
 type PoolActionsProps = {
-  pool: OmnipoolPool
+  pool: TOmnipoolAsset | TXYKPool
   canExpand: boolean
   isExpanded: boolean
   onExpandClick: () => void
-  refetch: () => void
   className?: string
+  refetchPositions: () => void
 }
-const enabledFarms = import.meta.env.VITE_FF_FARMS_ENABLED === "true"
 
 export const PoolActions = ({
   pool,
@@ -38,17 +43,20 @@ export const PoolActions = ({
   canExpand,
   isExpanded,
   onExpandClick,
-  refetch,
+  refetchPositions,
 }: PoolActionsProps) => {
   const { t } = useTranslation()
   const [openAdd, setOpenAdd] = useState(false)
   const [openLiquidityPositions, setOpenLiquidityPositions] = useState(false)
-  const [openFarmDefails, setOpenFarmDefails] = useState(false)
+  const [openFarmDefails, setOpenFarmDetails] = useState(false)
+  const [transferOpen, setTransferOpen] = useState<Page>()
+
   const { account } = useAccountStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const positions = usePoolPositions(pool.id)
   const farms = useFarms([pool.id])
-  const accountDeposits = useAccountDeposits(enabledFarms ? pool.id : undefined)
+
+  const isXyk = isXYKPool(pool)
+  const isStablepool = isXyk ? false : pool.isStablepool
 
   const actionButtons = (
     <div sx={{ flexGrow: 1 }}>
@@ -59,9 +67,13 @@ export const PoolActions = ({
           disabled={
             !account ||
             account.isExternalWalletConnected ||
-            !pool.tradability.canAddLiquidity
+            !pool.tradability?.canAddLiquidity
           }
-          onClick={() => setOpenAdd(true)}
+          onClick={
+            isStablepool
+              ? () => setTransferOpen(Page.OPTIONS)
+              : () => setOpenAdd(true)
+          }
         >
           <div sx={{ flex: "row", align: "center", justify: "center" }}>
             <Icon icon={<PlusIcon />} sx={{ mr: 8, height: 16 }} />
@@ -72,10 +84,7 @@ export const PoolActions = ({
           <Button
             fullWidth
             size="small"
-            disabled={
-              !account ||
-              !(positions.data.length || accountDeposits.data?.length)
-            }
+            disabled={!account || !canExpand}
             onClick={() => {
               setOpenLiquidityPositions(true)
             }}
@@ -90,7 +99,7 @@ export const PoolActions = ({
           <Button
             fullWidth
             size="small"
-            onClick={() => setOpenFarmDefails(true)}
+            onClick={() => setOpenFarmDetails(true)}
           >
             <div sx={{ flex: "row", align: "center", justify: "center" }}>
               <Icon icon={<FarmDetailsIcon />} sx={{ mr: 8, height: 16 }} />
@@ -105,7 +114,7 @@ export const PoolActions = ({
         <div
           role="button"
           sx={{ flex: "row", align: "center", justify: "center", mt: 16 }}
-          onClick={() => setOpenFarmDefails(true)}
+          onClick={() => setOpenFarmDetails(true)}
         >
           <Text color="brightBlue300" fs={12} tTransform="uppercase">
             {t("liquidity.asset.actions.farmDetails", {
@@ -140,16 +149,15 @@ export const PoolActions = ({
         <AddLiquidity
           isOpen={openAdd}
           onClose={() => setOpenAdd(false)}
-          poolId={pool.id}
-          onSuccess={refetch}
+          pool={pool}
         />
       )}
       {openLiquidityPositions && !isDesktop && (
-        <LiquidityPositions
-          isOpen={openLiquidityPositions}
+        <PoolPositionsMobile
+          refetchPositions={refetchPositions}
+          isOpen
           onClose={() => setOpenLiquidityPositions(false)}
           pool={pool}
-          canRemoveLiquidity={pool.tradability.canRemoveLiquidity}
         />
       )}
       {openFarmDefails && farms.data && (
@@ -157,7 +165,16 @@ export const PoolActions = ({
           farms={farms.data}
           isOpen={openFarmDefails}
           poolId={pool.id}
-          onClose={() => setOpenFarmDefails(false)}
+          onClose={() => setOpenFarmDetails(false)}
+        />
+      )}
+      {transferOpen !== undefined && isStablepool && !isXyk && (
+        <TransferModal
+          pool={pool}
+          isOpen={true}
+          defaultPage={transferOpen}
+          onClose={() => setTransferOpen(undefined)}
+          refetchPositions={refetchPositions}
         />
       )}
     </>

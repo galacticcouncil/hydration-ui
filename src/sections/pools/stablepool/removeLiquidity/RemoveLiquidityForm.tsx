@@ -14,7 +14,6 @@ import {
 } from "utils/constants"
 import { theme } from "theme"
 import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
-import { u32 } from "@polkadot/types-codec"
 import { useStablepoolLiquidityOut } from "./RemoveLiquidity.utils"
 import { RemoveLiquidityReward } from "sections/pools/modals/RemoveLiquidity/components/RemoveLiquidityReward"
 import { STradingPairContainer } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.styled"
@@ -26,7 +25,7 @@ type RemoveLiquidityProps = {
   onClose: () => void
   position: {
     reserves: { asset_id: number; amount: string }[]
-    poolId: u32
+    poolId: string
     amount: BigNumber
     fee: BigNumber
   }

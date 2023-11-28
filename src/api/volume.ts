@@ -6,7 +6,8 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types-codec"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { PROVIDERS, useProviderRpcUrlStore } from "./provider"
+import { PROVIDERS, useIndexerUrl, useProviderRpcUrlStore } from "./provider"
+import { useCallback } from "react"
 
 export type TradeType = {
   name: "Omnipool.SellExecuted" | "Omnipool.BuyExecuted" | "OTC.Placed"
@@ -20,6 +21,9 @@ export type TradeType = {
   }
   block: {
     timestamp: string
+  }
+  extrinsic: {
+    hash: string
   }
 }
 
@@ -66,41 +70,51 @@ export const getTradeVolume =
     }
   }
 
-export const getAllTrades = (indexerUrl: string) => async () => {
-  const after = addDays(new Date(), -1).toISOString()
+export const getAllTrades =
+  (indexerUrl: string, assetId?: number) => async () => {
+    const after = addDays(new Date(), -1).toISOString()
 
-  // This is being typed manually, as GraphQL schema does not
-  // describe the event arguments at all
-  return {
-    ...(await request<{
-      events: Array<TradeType>
-    }>(
-      indexerUrl,
-      gql`
-        query TradeVolume($after: DateTime!) {
-          events(
-            where: {
-              name_eq: "Omnipool.SellExecuted"
-              block: { timestamp_gte: $after }
-              OR: {
-                name_eq: "Omnipool.BuyExecuted"
+    // This is being typed manually, as GraphQL schema does not
+    // describe the event arguments at all
+    return {
+      ...(await request<{
+        events: Array<TradeType>
+      }>(
+        indexerUrl,
+        gql`
+          query TradeVolume($assetId: Int, $after: DateTime!) {
+            events(
+              where: {
+                name_in: ["Omnipool.SellExecuted", "Omnipool.BuyExecuted"]
+                args_jsonContains: { assetIn: $assetId }
+                phase_eq: "ApplyExtrinsic"
                 block: { timestamp_gte: $after }
+                OR: {
+                  name_in: ["Omnipool.SellExecuted", "Omnipool.BuyExecuted"]
+                  args_jsonContains: { assetOut: $assetId }
+                  phase_eq: "ApplyExtrinsic"
+                  block: { timestamp_gte: $after }
+                }
+              }
+              orderBy: [block_height_DESC]
+              limit: 10
+            ) {
+              id
+              name
+              args
+              block {
+                timestamp
+              }
+              extrinsic {
+                hash
               }
             }
-          ) {
-            id
-            name
-            args
-            block {
-              timestamp
-            }
           }
-        }
-      `,
-      { after },
-    )),
+        `,
+        { after, assetId },
+      )),
+    }
   }
-}
 
 export function useTradeVolumes(
   assetIds: Maybe<u32 | string>[],
@@ -129,7 +143,7 @@ export function useTradeVolumes(
   })
 }
 
-export function useAllTrades() {
+export function useAllTrades(assetId?: number) {
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
   const selectedProvider = PROVIDERS.find(
@@ -138,7 +152,10 @@ export function useAllTrades() {
 
   const indexerUrl =
     selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
-  return useQuery(QUERY_KEYS.allTrades, getAllTrades(indexerUrl))
+  return useQuery(
+    QUERY_KEYS.allTrades(assetId),
+    getAllTrades(indexerUrl, assetId),
+  )
 }
 
 export function getVolumeAssetTotalValue(
@@ -170,4 +187,95 @@ export function getVolumeAssetTotalValue(
       return memo
     }, {}) ?? {}
   )
+}
+
+export const useVolume = (assetId?: string) => {
+  return useQuery(QUERY_KEYS.volumeDaily(assetId), async () => {
+    const data = await getVolumeDaily(assetId)
+    return { volume: BN(data[0].volume_usd), assetId }
+  })
+}
+
+export const useVolumes = (assetIds: string[]) => {
+  return useQueries({
+    queries: assetIds.map((assetId) => ({
+      queryKey: QUERY_KEYS.volumeDaily(assetId),
+      queryFn:
+        assetId != null
+          ? async () => {
+              const data = await getVolumeDaily(assetId)
+              return { volume: BN(data[0].volume_usd), assetId }
+            }
+          : undefinedNoop,
+      enabled: !!assetId,
+    })),
+  })
+}
+
+const getVolumeDaily = async (assetId?: string) => {
+  const res = await fetch(
+    `https://api.hydradx.io/hydradx-ui/v1/stats/volume${
+      assetId != null ? `/${assetId}` : ""
+    }`,
+  )
+  const data: Promise<{ volume_usd: number }[]> = res.json()
+
+  return data
+}
+
+export function useAllStableswapTrades() {
+  const indexerUrl = useIndexerUrl()
+
+  return useQuery(
+    QUERY_KEYS.allStableswapTrades,
+    getAllStableswapTrades(indexerUrl),
+    {
+      select: useCallback((data: { events: TradeType[] }) => {
+        return data.events.reduce<Record<string, TradeType[]>>((acc, event) => {
+          acc[event.args.assetIn]
+            ? acc[event.args.assetIn].push(event)
+            : (acc[event.args.assetIn] = [event])
+
+          return acc
+        }, {})
+      }, []),
+      refetchInterval: 60000,
+    },
+  )
+}
+
+export const getAllStableswapTrades = (indexerUrl: string) => async () => {
+  const after = addDays(new Date(), -1).toISOString()
+
+  // This is being typed manually, as GraphQL schema does not
+  // describe the event arguments at all
+  return {
+    ...(await request<{
+      events: Array<TradeType>
+    }>(
+      indexerUrl,
+      gql`
+        query TradeVolume($after: DateTime!) {
+          events(
+            where: {
+              name_eq: "Stableswap.SellExecuted"
+              block: { timestamp_gte: $after }
+              OR: {
+                name_eq: "Stableswap.BuyExecuted"
+                block: { timestamp_gte: $after }
+              }
+            }
+          ) {
+            id
+            name
+            args
+            block {
+              timestamp
+            }
+          }
+        }
+      `,
+      { after },
+    )),
+  }
 }

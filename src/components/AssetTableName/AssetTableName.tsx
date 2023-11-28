@@ -23,7 +23,10 @@ export const AssetTableName = ({
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(id)
 
-  const iconIds = assets.isStableSwap(asset) ? asset.assets : asset.id
+  const iconIds =
+    assets.isStableSwap(asset) || assets.isShareToken(asset)
+      ? asset.assets
+      : asset.id
 
   return (
     <div>

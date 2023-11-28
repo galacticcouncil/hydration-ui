@@ -1,26 +1,16 @@
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { StatsTimeframe } from "api/stats"
 import { Charts } from "./Charts"
-import {
-  SChartTab,
-  STimeframeContainer,
-  STimeframeEl,
-} from "sections/stats/components/ChartsWrapper/ChartsWrapper.styled"
 import { Spacer } from "components/Spacer/Spacer"
-import { useRpcProvider } from "providers/rpcProvider"
+import { Text } from "components/Typography/Text/Text"
+import BN from "bignumber.js"
 
 export type ChartType = "pol" | "volume"
 
-type Props = { assetId?: string }
+type Props = { assetId?: string; POLMultiplier: BN }
 
-export const ChartsWrapper = ({ assetId }: Props) => {
+export const ChartsWrapper = ({ assetId, POLMultiplier }: Props) => {
   const { t } = useTranslation()
-  const [chartType, setChartType] = useState<ChartType>("volume")
-  const [timeframe, setTimeframe] = useState<StatsTimeframe>(
-    StatsTimeframe.DAILY,
-  )
-  const { isLoaded } = useRpcProvider()
 
   return (
     <>
@@ -32,46 +22,17 @@ export const ChartsWrapper = ({ assetId }: Props) => {
         }}
       >
         <div sx={{ flex: "row", gap: [4, 12], justify: ["end", "start"] }}>
-          {/* TODO: Not ready. Requested in #861n9ffe4 */}
-          {/*<SChartTab*/}
-          {/*  disabled={!isApi || true}*/}
-          {/*  aria-label="total value locked"*/}
-          {/*  active={chartType === "pol"}*/}
-          {/*  onClick={() => setChartType("pol")}*/}
-          {/*>*/}
-          {/*  {t("stats.pol.chart.switcher.pol")}*/}
-          {/*</SChartTab>*/}
-          <SChartTab
-            disabled={!isLoaded}
-            aria-label="24h volume"
-            active={chartType === "volume"}
-            onClick={() => setChartType("volume")}
-          >
-            {t("stats.pol.chart.switcher.volume")}
-          </SChartTab>
+          <Text color="brightBlue300">{t("stats.chart.dailyVolume")}</Text>
         </div>
-        {chartType === "volume" ? (
-          <STimeframeContainer>
-            <STimeframeEl
-              disabled={!isLoaded}
-              active={timeframe === StatsTimeframe["DAILY"]}
-              onClick={() => setTimeframe(StatsTimeframe["DAILY"])}
-            >
-              {t("stats.chart.timeframe.month")}
-            </STimeframeEl>
-            <STimeframeEl
-              disabled={!isLoaded}
-              active={timeframe === StatsTimeframe["HOURLY"]}
-              onClick={() => setTimeframe(StatsTimeframe["HOURLY"])}
-            >
-              {t("stats.chart.timeframe.day")}
-            </STimeframeEl>
-          </STimeframeContainer>
-        ) : (
-          <Spacer size={22} />
-        )}
+
+        <Spacer size={22} />
       </div>
-      <Charts type={chartType} timeframe={timeframe} assetId={assetId} />
+      <Charts
+        type="volume"
+        timeframe={StatsTimeframe.HOURLY}
+        assetId={assetId}
+        POLMultiplier={POLMultiplier}
+      />
     </>
   )
 }

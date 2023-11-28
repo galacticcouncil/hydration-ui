@@ -4,32 +4,37 @@ import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import Skeleton from "react-loading-skeleton"
-import { useDisplayPrice } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
-import { u32 } from "@polkadot/types-codec"
 import { SBadge } from "./PoolDetails.styled"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Fragment } from "react"
+import {
+  TOmnipoolAsset,
+  TXYKPool,
+  isXYKPool,
+} from "sections/pools/PoolsPage.utils"
 
 type PoolDetailsProps = {
-  id: u32
+  pool: TOmnipoolAsset | TXYKPool
   className?: string
 }
 
-export const PoolDetails = ({ id, className }: PoolDetailsProps) => {
+export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
 
-  const rpc = useRpcProvider()
-  const meta = rpc.assets.getAsset(id.toString())
-  const spotPrice = useDisplayPrice(id)
+  const isXyk = isXYKPool(pool)
+
+  const meta = isXyk
+    ? assets.getAsset(pool.shareTokenMeta.id)
+    : assets.getAsset(pool.id)
 
   return (
     <div sx={{ flex: "column" }} className={className}>
       <div sx={{ flex: "row", justify: "space-between" }}>
         <div sx={{ flex: "column", gap: 10 }}>
           <div sx={{ flex: "row", gap: 8, align: "center" }}>
-            {rpc.assets.isStableSwap(meta) && (
+            {assets.isStableSwap(meta) && (
               <SBadge>
                 <Text fs={11} fw={700} color="basic900">
                   {t("liquidity.stablepool")}
@@ -37,13 +42,13 @@ export const PoolDetails = ({ id, className }: PoolDetailsProps) => {
               </SBadge>
             )}
             <Text fs={13} color="basic400">
-              {rpc.assets.isStableSwap(meta)
+              {assets.isStableSwap(meta)
                 ? t("liquidity.assets.title")
                 : t("liquidity.asset.title")}
             </Text>
           </div>
 
-          {rpc.assets.isStableSwap(meta) ? (
+          {assets.isStableSwap(meta) || assets.isShareToken(meta) ? (
             <div sx={{ flex: "column", gap: 5 }}>
               <MultipleIcons
                 icons={meta.assets.map((asset: string) => ({
@@ -51,17 +56,19 @@ export const PoolDetails = ({ id, className }: PoolDetailsProps) => {
                 }))}
               />
               <div sx={{ flex: "row" }}>
-                {meta.name.split("/").map((asset, index) => (
-                  <Fragment key={`${asset}-${index}`}>
-                    {index ? <Text color="whiteish500">/</Text> : null}
-                    <Text color="white">{asset}</Text>
-                  </Fragment>
-                ))}
+                {(assets.isShareToken(meta) ? meta.symbol : meta.name)
+                  .split("/")
+                  .map((asset, index) => (
+                    <Fragment key={`${asset}-${index}`}>
+                      {index ? <Text color="whiteish500">/</Text> : null}
+                      <Text color="white">{asset}</Text>
+                    </Fragment>
+                  ))}
               </div>
             </div>
           ) : (
             <div sx={{ flex: "row", align: "center", gap: 8, mb: 8 }}>
-              <Icon size={27} icon={<AssetLogo id={id.toString()} />} />
+              <Icon size={27} icon={<AssetLogo id={pool.id} />} />
               <div sx={{ flex: "column", gap: 2 }}>
                 <Text color="white" fs={16}>
                   {meta.symbol}
@@ -73,27 +80,72 @@ export const PoolDetails = ({ id, className }: PoolDetailsProps) => {
             </div>
           )}
         </div>
+        <Separator
+          sx={{ height: 40 }}
+          css={{ alignSelf: "center" }}
+          orientation="vertical"
+          color="white"
+          opacity={0.06}
+        />
         <div
           sx={{
             flex: "column",
             gap: 10,
-            align: ["end", "start"],
+            align: isXyk ? ["center"] : ["end", "start"],
             width: ["auto", 118],
           }}
         >
-          <Text fs={13} color="basic400">
-            {t("liquidity.asset.details.price")}
-          </Text>
-          {spotPrice.isLoading ? (
-            <Skeleton width={118} height={21} />
+          {isXYKPool(pool) ? (
+            <>
+              <Text fs={13} color="basic400">
+                {t("liquidity.asset.details.fee")}
+              </Text>
+              <Text lh={22} color="white" fs={18}>
+                {t("value.percentage", { value: pool.fee })}
+              </Text>
+            </>
           ) : (
-            <Text lh={22} color="white" fs={18}>
-              <DisplayValue value={spotPrice.data?.spotPrice} type="token" />
-            </Text>
+            <>
+              <Text fs={13} color="basic400">
+                {t("liquidity.asset.details.price")}
+              </Text>
+              <Text lh={22} color="white" fs={18}>
+                <DisplayValue value={pool.spotPrice} type="token" />
+              </Text>
+            </>
           )}
         </div>
+        {isXyk && (
+          <>
+            <Separator
+              sx={{ height: 40 }}
+              css={{ alignSelf: "center" }}
+              orientation="vertical"
+              color="white"
+              opacity={0.06}
+            />
+            <div
+              sx={{
+                flex: "column",
+                gap: 10,
+                align: ["end", "start"],
+                width: ["auto", 118],
+              }}
+            >
+              <Text fs={13} color="basic400">
+                {t("liquidity.asset.details.poolShare")}
+              </Text>
+              <Text lh={22} color="white" fs={18}>
+                {t("value.percentage", {
+                  value: pool.shareTokenIssuance?.myPoolShare,
+                  type: "token",
+                })}
+              </Text>
+            </div>
+          </>
+        )}
       </div>
-      <Separator sx={{ mt: [18, 20] }} />
+      <Separator sx={{ mt: [18, 20] }} color="white" opacity={0.06} />
     </div>
   )
 }
