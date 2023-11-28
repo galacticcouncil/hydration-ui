@@ -99,9 +99,6 @@ export const getXYKTradeVolume =
               block: {
                 timestamp: string
               }
-              extrinsic: {
-                hash: string
-              }
             }
           | {
               name: "XYK.BuyExecuted"
@@ -117,9 +114,6 @@ export const getXYKTradeVolume =
               }
               block: {
                 timestamp: string
-              }
-              extrinsic: {
-                hash: string
               }
             }
         >
