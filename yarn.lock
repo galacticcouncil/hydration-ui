@@ -3143,10 +3143,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^1.3.4":
-  version "1.3.4"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.3.4.tgz#51a704083ab3fcba1ac4781849fb6ed58a2350d0"
-  integrity sha512-oZLtukvOBeuPNN/twEpkT9lH/Sf0ashfbb9KeMO3ue851FWmTqbdlqKTm0onrbPGmKcQoqLSlIBx8JHDx6//XQ==
+"@galacticcouncil/ui@^1.3.7":
+  version "1.3.7"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.3.7.tgz#eb7339993b5092341d0e848819b40a4e8622d8a2"
+  integrity sha512-aYkOZSZKKKEEqmg1N8lj1hEOwdLX0IA+xJ2GZSYEHvVPdRO0ZGV/LUvm4b6CxAgQvpsaJpoYVUICEqugm7bMUw==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
@@ -3162,10 +3162,10 @@
     "@moonbeam-network/xcm-builder" "1.0.5"
     "@moonbeam-network/xcm-types" "1.0.1"
 
-"@galacticcouncil/xcm@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm/-/xcm-0.0.1.tgz#b73ceff520c58f6a4e36742b52648593338edb81"
-  integrity sha512-kFcpKqXhihgRDT1C98YlTTMTS82X69pQ2h1FVwHQwCLBZnzQgXaew4w01Nc9xfgtfoOfUUtQQ6ym4UMEtrhzqA==
+"@galacticcouncil/xcm@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm/-/xcm-0.0.5.tgz#cfda1684791968398e95f8ce9eb0f1ac3684e0f0"
+  integrity sha512-OqnFubbJsXs3AVoynz/cI71RywVRDNxJGQjeVqtj48s5VMmdYL+orN8ABIh0CiRU7nxseJOhHjCYVYbOTq9lWQ==
 
 "@graphql-typed-document-node/core@^3.1.1":
   version "3.2.0"
