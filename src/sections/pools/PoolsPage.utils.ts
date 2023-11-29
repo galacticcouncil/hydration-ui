@@ -24,6 +24,7 @@ import { useGetXYKPools, useShareTokens, useXYKConsts } from "api/xyk"
 import { useShareOfPools } from "api/pools"
 import { TShareToken } from "api/assetDetails"
 import { useVolumes } from "api/volume"
+import { useXYKPollTradeVolumes } from "./pool/details/PoolDetails.utils"
 
 export type TOmnipoolAsset = NonNullable<
   ReturnType<typeof useOmnipoolAndStablepool>["data"]
@@ -428,6 +429,7 @@ export const useXYKPools = (withPositions?: boolean) => {
   const totalIssuances = useShareOfPools(shareTokensId)
 
   const poolsAssets = pools.data?.map((pool) => pool.assets).flat() ?? []
+  const volumes = useXYKPollTradeVolumes(poolsAddress)
   const spotPrices = useDisplayPrices(poolsAssets)
 
   const shareTokensUserPositions = useTokensBalances(
@@ -501,6 +503,11 @@ export const useXYKPools = (withPositions?: boolean) => {
             userPosition.data?.assetId.toString() === shareTokenId,
         )?.data
 
+        const volumeDisplay =
+          volumes.data?.find(
+            (volume) => volume.poolAddress === pool.poolAddress,
+          )?.volume ?? BN_0
+
         return {
           poolAddress: pool.poolAddress,
           id: shareTokenMeta.id,
@@ -512,7 +519,7 @@ export const useXYKPools = (withPositions?: boolean) => {
           totalDisplay: totalLockedDisplay,
           fee,
           isXykPool: true,
-          volumeDisplay: BN_0,
+          volumeDisplay,
           tradability,
           poolBalance: [
             assetABalance?.data.free.toBigNumber(),
@@ -533,6 +540,7 @@ export const useXYKPools = (withPositions?: boolean) => {
     shareTokensUserPositions,
     spotPrices.data,
     totalIssuances.data,
+    volumes.data,
   ])?.filter((pool) => (withPositions ? pool.shareTokenUserPosition : true))
 
   return { data, isLoading: isInitialLoading }
