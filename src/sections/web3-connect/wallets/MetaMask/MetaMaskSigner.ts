@@ -1,26 +1,21 @@
-import {
-  ExternalProvider,
-  JsonRpcSigner,
-  Web3Provider,
-} from "@ethersproject/providers"
-import { SDKProvider } from "@metamask/sdk"
-import { requestNetworkSwitch } from "utils/metamask"
+import { JsonRpcSigner, Web3Provider } from "@ethersproject/providers"
+import { MetaMaskProvider, requestNetworkSwitch } from "utils/metamask"
 
 const DISPATCH_ADDRESS = "0x0000000000000000000000000000000000000401"
 
 export class MetaMaskSigner {
   address: string
-  provider: SDKProvider
+  provider: MetaMaskProvider
   signer: JsonRpcSigner
 
-  constructor(address: string, provider: SDKProvider) {
+  constructor(address: string, provider: MetaMaskProvider) {
     this.address = address
     this.provider = provider
     this.signer = this.getSigner(provider)
   }
 
-  getSigner(provider: SDKProvider) {
-    return new Web3Provider(provider as unknown as ExternalProvider).getSigner()
+  getSigner(provider: MetaMaskProvider) {
+    return new Web3Provider(provider).getSigner()
   }
 
   setAddress(address: string) {

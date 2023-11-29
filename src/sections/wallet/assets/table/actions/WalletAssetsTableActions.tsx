@@ -14,7 +14,7 @@ import { theme } from "theme"
 import { isNotNil } from "utils/helpers"
 import { useSetAsFeePayment } from "api/payments"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { isMetaMaskInstalled, watchAsset } from "utils/metamask"
+import { isMetaMask, watchAsset } from "utils/metamask"
 import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
 
 type Props = {
@@ -38,7 +38,7 @@ export const WalletAssetsTableActions = (props: Props) => {
     props.couldBeSetAsPaymentFee && !isEvmAccount(account?.address)
 
   const couldWatchMetaMaskAsset =
-    isMetaMaskInstalled &&
+    isMetaMask(window?.ethereum) &&
     isEvmAccount(account?.address) &&
     props.symbol !== NATIVE_EVM_ASSET_SYMBOL
 
@@ -145,7 +145,7 @@ export const WalletAssetsTableActions = (props: Props) => {
             }
 
             if (item === "watch") {
-              watchAsset(props.id, {
+              watchAsset(window?.ethereum, props.id, {
                 symbol: props.symbol,
                 decimals: props.decimals,
               })

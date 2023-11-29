@@ -12,19 +12,9 @@ import {
   useWeb3ConnectStore,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { NATIVE_EVM_ASSET_DECIMALS, NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
+import { requestAccounts } from "utils/metamask"
 
 type Props = Account
-
-const requestAccounts = async () => {
-  await window.ethereum?.request({
-    method: "wallet_requestPermissions",
-    params: [
-      {
-        eth_accounts: {},
-      },
-    ],
-  })
-}
 
 export const Web3ConnectEvmAccount: FC<Props> = (account) => {
   const { t } = useTranslation()
@@ -71,7 +61,11 @@ export const Web3ConnectEvmAccount: FC<Props> = (account) => {
           name=""
         />
         <div sx={{ flex: "row", gap: 12, mt: 12 }}>
-          <Button variant="outline" fullWidth onClick={() => requestAccounts()}>
+          <Button
+            variant="outline"
+            fullWidth
+            onClick={() => requestAccounts(window.ethereum)}
+          >
             {t("walletConnect.accountSelect.change")}
           </Button>
           <Button

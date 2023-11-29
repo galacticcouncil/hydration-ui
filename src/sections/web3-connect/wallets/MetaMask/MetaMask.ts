@@ -1,14 +1,11 @@
-import { MetaMaskSDK, SDKProvider } from "@metamask/sdk"
 import { SubscriptionFn, Wallet, WalletAccount } from "@talismn/connect-wallets"
 import MetaMaskLogo from "assets/icons/MetaMask.svg"
 import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
 import { shortenAccountAddress } from "utils/formatting"
 import { noop } from "utils/helpers"
-import { isMetaMaskInstalled } from "utils/metamask"
+import { MetaMaskProvider, isMetaMask } from "utils/metamask"
 
 type ChainSubscriptionFn = (payload: number | null) => void | Promise<void>
-
-const DOMAIN_URL = import.meta.env.VITE_DOMAIN_URL as string
 
 type MetamaskInit = {
   onAccountsChanged?: SubscriptionFn
@@ -24,7 +21,7 @@ export class MetaMask implements Wallet {
     alt: "MetaMask Logo",
   }
 
-  _extension: SDKProvider | undefined
+  _extension: Required<MetaMaskProvider> | undefined
   _signer: MetaMaskSigner | undefined
 
   onAccountsChanged: SubscriptionFn | undefined
@@ -49,7 +46,7 @@ export class MetaMask implements Wallet {
   }
 
   get installed() {
-    return isMetaMaskInstalled
+    return isMetaMask(window.ethereum)
   }
 
   get rawExtension() {
@@ -66,19 +63,11 @@ export class MetaMask implements Wallet {
     }
 
     try {
-      const MMSDK = new MetaMaskSDK({
-        extensionOnly: true,
-        dappMetadata: {
-          name: dappName,
-          url: DOMAIN_URL,
-        },
-      })
+      if (!isMetaMask(window.ethereum)) return
 
-      await MMSDK.init()
+      const metamask = window.ethereum
 
-      const metamask = MMSDK.getProvider()
-
-      const addresses = await metamask.request<string[]>({
+      const addresses = await metamask.request({
         method: "eth_requestAccounts",
         params: [],
       })
@@ -107,10 +96,10 @@ export class MetaMask implements Wallet {
       )
     }
 
-    const accounts = await this._extension.request<string[]>({
+    const accounts = (await this._extension.request({
       method: "eth_requestAccounts",
       params: [],
-    })
+    })) as string[]
 
     return (accounts || [])
       .filter((address): address is string => !!address)
