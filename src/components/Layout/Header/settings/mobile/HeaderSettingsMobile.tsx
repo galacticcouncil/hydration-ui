@@ -1,10 +1,10 @@
-import IconSettings from "assets/icons/IconSettings.svg?react"
+import SettingsIcon from "assets/icons/SettingsIcon.svg?react"
 import { IconButton } from "components/IconButton/IconButton"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { HeaderSettingsContents } from "components/Layout/Header/settings/HeaderSettings"
+import { SettingsContents } from "components/Layout/Header/toolbar/buttons/Settings"
 import { theme } from "theme"
 
 export const HeaderSettingsMobile = () => {
@@ -17,7 +17,7 @@ export const HeaderSettingsMobile = () => {
         <IconButton
           size={34}
           onClick={() => setOpen(true)}
-          icon={<IconSettings />}
+          icon={<SettingsIcon />}
           css={{
             border: "none",
             color: theme.colors.brightBlue100,
@@ -30,7 +30,7 @@ export const HeaderSettingsMobile = () => {
         </Text>
       </div>
       <Modal open={open}>
-        <HeaderSettingsContents onClose={() => setOpen(false)} />
+        <SettingsContents onClose={() => setOpen(false)} />
       </Modal>
     </>
   )

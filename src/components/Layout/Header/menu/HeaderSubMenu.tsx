@@ -72,7 +72,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
                   onClick={() => setOpen(false)}
                 >
                   <SSubMenuItem>
-                    <subItem.Icon sx={{ color: "brightBlue300" }} />
+                    <subItem.Icon sx={{ color: "brightBlue300", width: 24 }} />
                     <div>
                       <Text fs={15} lh={15}>
                         {t(`header.${key}.${subItem.key}.title`)}

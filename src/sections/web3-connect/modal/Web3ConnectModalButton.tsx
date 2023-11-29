@@ -13,7 +13,12 @@ import {
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
-import { SContainer, SLoginButton } from "./Web3ConnectModalButton.styled"
+import {
+  SAvatarCointainer,
+  SAvatarMask,
+  SContainer,
+  SLoginButton,
+} from "./Web3ConnectModalButton.styled"
 
 const Web3ConnectActiveButton: FC<{
   onOpen: () => void
@@ -41,13 +46,19 @@ const Web3ConnectActiveButton: FC<{
 
   return (
     <SContainer className={className} onClick={onOpen}>
-      <div sx={{ flex: "row", gap: 12, align: "center", justify: "center" }}>
+      <div sx={{ flex: "row", gap: 10, align: "center", justify: "center" }}>
         <div sx={{ flex: "column", gap: 4 }}>
-          <Text color="basic100" fs={14} lh={14} font="ChakraPetchBold">
+          <Text
+            color="basic100"
+            fs={13}
+            lh={13}
+            fw={600}
+            font="ChakraPetchBold"
+          >
             {account.name}
           </Text>
           {!shouldHideAddress && (
-            <Text color="basic300" fs={12} lh={12} fw={400}>
+            <Text color="basic300" fs={11} lh={11} fw={500}>
               {shortenedAddress}
             </Text>
           )}
@@ -60,29 +71,32 @@ const Web3ConnectActiveButton: FC<{
             gap: 4,
           }}
         >
-          <div>
+          <SAvatarCointainer>
             {shouldRenderSecondaryAvatar && (
-              <AccountAvatar
-                size={32}
-                theme="substrate"
-                address={hydraAddress}
+              <SAvatarMask
                 css={{
                   pointerEvents: "none",
                   marginRight: -8,
                 }}
-              />
+              >
+                <AccountAvatar
+                  size={22}
+                  theme="substrate"
+                  address={hydraAddress}
+                />
+              </SAvatarMask>
             )}
             <AccountAvatar
-              size={32}
-              theme={account.provider}
+              size={22}
+              theme={evmAddress ? "metamask" : account.provider}
               address={evmAddress || polkadotAddress}
               css={{
                 pointerEvents: "none",
                 borderRadius: "9999px",
               }}
             />
-          </div>
-          <ChevronDownSmall sx={{ color: "basic100" }} />
+          </SAvatarCointainer>
+          <ChevronDownSmall width={8} height={8} sx={{ color: "basic100" }} />
         </div>
       </div>
     </SContainer>

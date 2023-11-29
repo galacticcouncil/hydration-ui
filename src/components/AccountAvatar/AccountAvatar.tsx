@@ -5,7 +5,6 @@ import { safeConvertAddressSS58 } from "utils/formatting"
 import { JdenticonAvatar } from "./JdenticonAvatar"
 import { PolkadotAvatar } from "./PolkadotAvatar"
 import { MetaMaskAvatar } from "./MetaMaskAvatar"
-import { isEvmAddress } from "utils/evm"
 
 export function AccountAvatar(props: {
   address: string
@@ -14,7 +13,7 @@ export function AccountAvatar(props: {
   className?: string
   prefix?: number
 }) {
-  if (props.theme === "metamask" || isEvmAddress(props.address)) {
+  if (props.theme === "metamask") {
     return (
       <MetaMaskAvatar
         address={props.address}
