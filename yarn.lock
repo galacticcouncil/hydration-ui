@@ -3300,10 +3300,10 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm/-/xcm-0.0.5.tgz#cfda1684791968398e95f8ce9eb0f1ac3684e0f0"
-  integrity sha512-OqnFubbJsXs3AVoynz/cI71RywVRDNxJGQjeVqtj48s5VMmdYL+orN8ABIh0CiRU7nxseJOhHjCYVYbOTq9lWQ==
+"@galacticcouncil/xcm@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm/-/xcm-0.0.3.tgz#e997036f461b187547d1083a78b513fced43bc34"
+  integrity sha512-MUGjOAu8mJ83FSiKIkn97bbjqr1Hf/MVIiHyTp8eJCvi+JXk9L9IOUuQ7io2vDJKFZzdsf5/c09wzUJBeuHQ7g==
 
 "@graphql-typed-document-node/core@^3.1.1":
   version "3.2.0"

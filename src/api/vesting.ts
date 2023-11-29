@@ -87,26 +87,10 @@ const getNextClaimableDate = (
   blockNumber: BigNumber,
 ) => {
   const start = schedule.start.toBigNumber()
-  const period = schedule.period.toBigNumber() //blocks in a period
-  const periodNumber = blockNumber.minus(start).div(period) //167.3 => 0.3
-  const pediodNumberDiff = periodNumber.mod(1)
-
-  console.log(
-    pediodNumberDiff.toString(),
-    pediodNumberDiff.times(period).toString(),
-    "pediodNumberDiff",
-  )
-
+  const period = schedule.period.toBigNumber()
+  const periodNumber = blockNumber.minus(start).div(period)
   const nextClaimingBlock = new BigNumber(
-    Math.ceil(blockNumber.plus(pediodNumberDiff.times(period)).toNumber()),
-  )
-  console.log(
-    start.toString(),
-    blockNumber.toString(),
-    nextClaimingBlock.toString(),
-    periodNumber.times(period).toString(),
-    getExpectedBlockDate(blockNumber, nextClaimingBlock),
-    "next claimable block date",
+    Math.ceil(start.plus(periodNumber).times(period).toNumber()),
   )
   return getExpectedBlockDate(blockNumber, nextClaimingBlock)
 }
