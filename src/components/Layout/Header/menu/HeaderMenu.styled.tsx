@@ -12,9 +12,10 @@ export const SList = styled.nav`
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    margin-left: 30px;
 
-    height: 40px;
+    height: 34px;
+
+    gap: 12px;
 
     overflow: hidden;
   }
@@ -23,10 +24,11 @@ export const SItem = styled.span<{ isActive?: boolean }>`
   display: flex;
   align-items: center;
 
-  margin-right: 12px;
   padding: 8px 12px;
 
-  font-size: 15px;
+  height: 34px;
+
+  font-size: 14px;
   font-weight: 500;
   line-height: 18px;
 

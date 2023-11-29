@@ -10,6 +10,7 @@ type InfoTooltipProps = {
   children: ReactNode
   type?: "default" | "black"
   side?: Tooltip.TooltipContentProps["side"]
+  asChild?: boolean
 }
 
 export function InfoTooltip({
@@ -18,11 +19,14 @@ export function InfoTooltip({
   children,
   type = "default",
   side = "bottom",
+  asChild = false,
 }: InfoTooltipProps) {
   const [open, setOpen] = useState(false)
   const [content, setContent] = useState<ReactNode | null>(
     textOnClick != null ? text : null,
   )
+
+  const Trigger = asChild ? Tooltip.Trigger : STrigger
 
   return (
     <Tooltip.Root
@@ -34,7 +38,8 @@ export function InfoTooltip({
         textOnClick && !isOpen && setContent(text)
       }}
     >
-      <STrigger
+      <Trigger
+        asChild={asChild}
         onClick={(e) => {
           textOnClick && e.preventDefault()
           textOnClick && e.stopPropagation()
@@ -48,7 +53,7 @@ export function InfoTooltip({
         }}
       >
         {children}
-      </STrigger>
+      </Trigger>
       <Tooltip.Portal>
         <SContent
           type={type}

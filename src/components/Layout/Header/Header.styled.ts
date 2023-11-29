@@ -1,6 +1,6 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
-import Questionmark from "assets/icons/Questionmark.svg?react"
+import QuestionmarkIcon from "assets/icons/QuestionmarkIcon.svg?react"
 
 export const SHeader = styled.header`
   position: sticky;
@@ -10,21 +10,21 @@ export const SHeader = styled.header`
 
   width: 100%;
 
-  padding: 6px 12px;
-
   backdrop-filter: blur(16px);
   background: rgba(9, 9, 9, 0.11);
 
+  padding: 8px;
+
   @media ${theme.viewport.gte.sm} {
-    padding: 8px 40px 8px 40px;
+    padding: 12px 40px;
   }
 
-  @media ${theme.viewport.gte.md} {
-    padding: 8px 40px 8px 0;
+  @media ${theme.viewport.gte.lg} {
+    padding: 8px 40px;
   }
 `
 
-export const SQuestionmark = styled(Questionmark)`
+export const SQuestionmark = styled(QuestionmarkIcon)`
   color: ${theme.colors.brightBlue100};
 
   top: 8px;
