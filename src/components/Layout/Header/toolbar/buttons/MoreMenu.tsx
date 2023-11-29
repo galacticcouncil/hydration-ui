@@ -1,42 +1,39 @@
+import {
+  SToolbarButton,
+  SToolbarIcon,
+} from "components/Layout/Header/toolbar/HeaderToolbar.styled"
 import { Root } from "@radix-ui/react-dropdown-menu"
 import { useSearch } from "@tanstack/react-location"
-import MoreTabIcon from "assets/icons/MoreTabIcon.svg?react"
-import { Icon } from "components/Icon/Icon"
 import { HeaderDropdown } from "components/Layout/Header/HeaderDropdown/HeaderDropdown"
 import { HeaderDropdownItem } from "components/Layout/Header/HeaderDropdown/HeaderDropdownItem"
 import { HeaderDropdownItems } from "components/Layout/Header/HeaderDropdown/HeaderDropdownItems"
 import { ModalContents } from "components/Modal/contents/ModalContents"
-import React, { useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { MENU_ITEMS } from "utils/navigation"
-import { SButton, SContainer } from "./HeaderMenuTabletButton.styled"
+import { Trigger } from "@radix-ui/react-dropdown-menu"
+import MoreTabIcon from "assets/icons/MoreTabIcon.svg?react"
 
-export const HeaderMenuTabletButton = ({ items }: { items?: string[] }) => {
-  const { t } = useTranslation()
-
+export const MoreMenu = ({ items }: { items?: string[] }) => {
   const [open, setOpen] = useState(false)
 
   const onClose = () => setOpen(false)
 
   return (
-    <SContainer
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
+    <div onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <Root open={open} onOpenChange={setOpen}>
-        <SButton>
-          {t("header.menu")}
-          <Icon size={20} icon={<MoreTabIcon />} />
-        </SButton>
+        <SToolbarButton as={Trigger}>
+          <SToolbarIcon as={MoreTabIcon} />
+        </SToolbarButton>
         <HeaderDropdown open={open} sx={{ mt: -18, pt: 18 }}>
-          <HeaderMenuTabletContents items={items} onClose={onClose} />
+          <MoreMenuContents items={items} onClose={onClose} />
         </HeaderDropdown>
       </Root>
-    </SContainer>
+    </div>
   )
 }
 
-export const HeaderMenuTabletContents = ({
+export const MoreMenuContents = ({
   onClose,
   items = [],
 }: {

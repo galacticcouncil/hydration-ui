@@ -1,29 +1,7 @@
 import styled from "@emotion/styled"
-import { Trigger } from "@radix-ui/react-dropdown-menu"
 import { ButtonTransparent } from "components/Button/Button"
 import { motion } from "framer-motion"
 import { theme } from "theme"
-
-export const SButton = styled(Trigger)`
-  all: unset;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 9px;
-
-  background: rgba(${theme.rgbColors.alpha0}, 0.2);
-  color: ${theme.colors.white};
-  border-radius: 4px;
-
-  cursor: pointer;
-  transition: all 0.15s ease-in-out;
-
-  &:hover {
-    background: rgba(${theme.rgbColors.alpha0}, 0.4);
-  }
-`
 
 export const SHeader = styled.div`
   display: flex;
