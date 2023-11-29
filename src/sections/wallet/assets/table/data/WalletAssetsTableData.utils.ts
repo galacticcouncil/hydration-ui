@@ -135,8 +135,8 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
       )
 
       const tradability = {
-        canBuy: tradabilityData?.canBuy ?? true,
-        canSell: tradabilityData?.canSell ?? true,
+        canBuy: (inTradeRouter || tradabilityData?.canBuy) ?? true,
+        canSell: (inTradeRouter || tradabilityData?.canSell) ?? true,
         canAddLiquidity: !!tradabilityData?.canAddLiquidity,
         canRemoveLiquidity: !!tradabilityData?.canRemoveLiquidity,
         inTradeRouter,
