@@ -25,17 +25,17 @@ export const Navigation = () => {
       <SubNavigationTabLink
         to={LINKS.allPools}
         label={t("liquidity.navigation.allPools")}
-        icon={<AllPools />}
+        icon={<AllPools width={20} />}
       />
       <SubNavigationTabLink
         to={LINKS.omnipool}
         label={t("liquidity.navigation.omnipoolAndStablepool")}
-        icon={<OmniStablepools />}
+        icon={<OmniStablepools width={20} />}
       />
       <SubNavigationTabLink
         to={LINKS.isolated}
         label={t("liquidity.navigation.isolated")}
-        icon={<IsolatedPools />}
+        icon={<IsolatedPools width={20} />}
       />
     </SubNavigation>
   )
