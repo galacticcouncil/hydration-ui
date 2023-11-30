@@ -10,6 +10,7 @@ import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { SWalletHeader } from "./WalletHeader.styled"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { safeConvertAddressH160 } from "utils/evm"
 
 export const WalletHeader = () => {
   const { t } = useTranslation()
@@ -17,11 +18,15 @@ export const WalletHeader = () => {
   const { toggle: toggleWeb3Connect } = useWeb3ConnectStore()
   const [, copy] = useCopyToClipboard()
 
-  const addressDisplay = account?.evmAddress
-    ? account?.evmAddress
-    : account?.address
-    ? encodeAddress(decodeAddress(account.address), HYDRA_ADDRESS_PREFIX)
+  const hydraAddress = account?.address
+    ? encodeAddress(decodeAddress(account?.address), HYDRA_ADDRESS_PREFIX)
     : ""
+
+  const evmAddress = account?.evmAddress
+    ? safeConvertAddressH160(account?.evmAddress)
+    : ""
+
+  const addressDisplay = evmAddress || hydraAddress
 
   return (
     <>
