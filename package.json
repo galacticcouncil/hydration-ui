@@ -18,7 +18,10 @@
     "@polkadot/keyring": "^12.3.2",
     "@polkadot/util": "^12.3.2",
     "@polkadot/util-crypto": "^12.3.2",
-    "@polkadot/ui-shared": "^3.1.4"
+    "@polkadot/ui-shared": "^3.1.4",
+    "strip-ansi": "6.0.1",
+    "string-width": "4.2.2",
+    "wrap-ansi": "7.0.0"
   },
   "dependencies": {
     "@basilisk/jsx": "link:./src/jsx",
@@ -156,7 +159,6 @@
     "prettier": "^3.0.3",
     "prop-types": "^15.8.1",
     "storybook": "^7.1.1",
-    "strip-ansi": "6.0.1",
     "ts-node": "^10.9.1",
     "vite": "^4.4.6",
     "vite-plugin-svgr": "^4.0.0",
