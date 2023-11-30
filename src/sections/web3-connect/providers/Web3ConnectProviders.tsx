@@ -10,6 +10,7 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 
 const MOBILE_PROVIDERS: WalletProviderType[] = [
+  WalletProviderType.MetaMask,
   WalletProviderType.Talisman,
   WalletProviderType.SubwalletJS,
   WalletProviderType.Enkrypt,
