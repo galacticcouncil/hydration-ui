@@ -23,7 +23,10 @@ export const AssetTableName = ({
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(id)
 
-  const iconIds = assets.isStableSwap(asset) ? asset.assets : asset.id
+  const iconIds =
+    assets.isStableSwap(asset) || assets.isShareToken(asset)
+      ? asset.assets
+      : asset.id
 
   return (
     <div>
@@ -57,6 +60,7 @@ export const AssetTableName = ({
             fs={[large ? 13 : 12, 13]}
             lh={[large ? 17 : 14, 13]}
             fw={500}
+            sx={{ display: !large ? ["none", "block"] : undefined }}
             css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.61)` }}
           >
             {name}
@@ -69,7 +73,7 @@ export const AssetTableName = ({
           fw={700}
           sx={{
             mt: 4,
-            ml: large ? 50 : [32, 40],
+            ml: large ? 30 : [32, 40],
           }}
           color="brightBlue300"
           tTransform="uppercase"

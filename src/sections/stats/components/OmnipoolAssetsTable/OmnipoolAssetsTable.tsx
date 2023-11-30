@@ -33,7 +33,7 @@ export const OmnipoolAssetsTable = ({ data, columns, onRowSelect }: Props) => {
   return (
     <StatsTableContainer>
       <StatsTableTitle>
-        <Text fs={[16, 24]} lh={[24, 26]} color="white" font="ChakraPetchBold">
+        <Text fs={[15, 19]} lh={20} color="white" font="FontOver">
           {t("stats.overview.table.assets.header.title")}
         </Text>
       </StatsTableTitle>

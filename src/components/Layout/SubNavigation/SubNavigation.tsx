@@ -6,7 +6,7 @@ import { theme } from "theme"
 import {
   SBadge,
   STabContainer,
-  SubNavigationContainer,
+  SSubNavigationContainer,
 } from "./SubNavigation.styled"
 
 export const SubNavigationTabLink = ({
@@ -43,7 +43,7 @@ export const SubNavigationTabLink = ({
           {isActive && (
             <div
               sx={{ height: 1, bg: "brightBlue300", width: "100%" }}
-              css={{ position: "relative", bottom: 0 }}
+              css={{ position: "relative", bottom: 1 }}
             />
           )}
         </>
@@ -53,5 +53,5 @@ export const SubNavigationTabLink = ({
 }
 
 export const SubNavigation = ({ children }: { children: ReactNode }) => {
-  return <SubNavigationContainer>{children}</SubNavigationContainer>
+  return <SSubNavigationContainer>{children}</SSubNavigationContainer>
 }

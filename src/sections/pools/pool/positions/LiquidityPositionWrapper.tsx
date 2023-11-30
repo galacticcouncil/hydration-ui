@@ -2,27 +2,19 @@ import { Text } from "components/Typography/Text/Text"
 import { SPositions } from "sections/pools/pool/Pool.styled"
 import { useTranslation } from "react-i18next"
 import { LiquidityPosition } from "./LiquidityPosition"
-import { Positions } from "sections/pools/pool/Pool.utils"
 import ChartIcon from "assets/icons/ChartIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { Stablepool, OmnipoolPool } from "sections/pools/PoolsPage.utils"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
 
 type Props = {
-  positions: Positions
-  pool: Stablepool | OmnipoolPool
-  disableRemoveLiquidity: boolean
+  pool: TOmnipoolAsset
+  refetchPositions: () => void
 }
 
-export const LiquidityPositionWrapper = ({
-  positions,
-  pool,
-  disableRemoveLiquidity,
-}: Props) => {
+export const LiquidityPositionWrapper = ({ pool, refetchPositions }: Props) => {
   const { t } = useTranslation()
 
-  if (!positions.data.length) {
-    return null
-  }
+  if (!pool.omnipoolNftPositions.length) return null
 
   return (
     <SPositions>
@@ -33,14 +25,13 @@ export const LiquidityPositionWrapper = ({
         </Text>
       </div>
       <div sx={{ flex: "column", gap: 16 }}>
-        {positions.data.map((position, i) => (
+        {pool.omnipoolNftPositions.map((position, i) => (
           <LiquidityPosition
             key={`${i}-${position.assetId}`}
             position={position}
             index={i + 1}
-            onSuccess={positions.refetch}
+            onSuccess={refetchPositions}
             pool={pool}
-            disableRemoveLiquidity={disableRemoveLiquidity}
           />
         ))}
       </div>

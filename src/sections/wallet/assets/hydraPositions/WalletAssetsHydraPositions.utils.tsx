@@ -4,22 +4,36 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
+  VisibilityState,
 } from "@tanstack/react-table"
 import BN from "bignumber.js"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { WalletAssetsHydraPositionsDetails } from "./details/WalletAssetsHydraPositionsDetails"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
+import { ButtonTransparent } from "components/Button/Button"
+import { Icon } from "components/Icon/Icon"
 
 export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
   const { t } = useTranslation()
   const { accessor } = createColumnHelper<HydraPositionsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
 
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const columnVisibility: VisibilityState = {
+    symbol: true,
+    providedAmount: isDesktop,
+    valueDisplay: true,
+  }
+
   const columns = useMemo(
     () => [
       accessor("symbol", {
-        id: "name",
+        id: "symbol",
         header: t("wallet.assets.hydraPositions.header.name"),
         cell: ({ row }) => (
           <AssetTableName {...row.original} id={row.original.assetId} />
@@ -32,7 +46,6 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
         cell: ({ row }) => (
           <WalletAssetsHydraPositionsDetails
             assetId={row.original.assetId}
-            symbol={row.original.symbol}
             amount={row.original.providedAmountShifted}
             amountDisplay={row.original.providedAmountDisplay}
           />
@@ -48,24 +61,41 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
             ? 1
             : -1,
         cell: ({ row }) => (
-          <WalletAssetsHydraPositionsDetails
-            assetId={row.original.assetId}
-            symbol={row.original.symbol}
-            lrna={row.original.lrna}
-            amount={row.original.value}
-            amountDisplay={row.original.valueDisplay}
-          />
+          <div
+            sx={{
+              flex: "row",
+              gap: 1,
+              align: "center",
+              justify: ["end", "start"],
+              textAlign: "center",
+            }}
+          >
+            <WalletAssetsHydraPositionsDetails
+              assetId={row.original.assetId}
+              lrna={row.original.lrna}
+              amount={row.original.value}
+              amountDisplay={row.original.valueDisplay}
+            />
+            {!isDesktop && (
+              <ButtonTransparent>
+                <Icon
+                  sx={{ color: "darkBlue300" }}
+                  icon={<ChevronRightIcon />}
+                />
+              </ButtonTransparent>
+            )}
+          </div>
         ),
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [isDesktop],
   )
 
   return useReactTable({
     data,
     columns,
-    state: { sorting },
+    state: { sorting, columnVisibility },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),

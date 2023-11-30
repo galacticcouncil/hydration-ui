@@ -1,6 +1,5 @@
 import BuyIcon from "assets/icons/BuyIcon.svg?react"
 import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
-import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import MoreIcon from "assets/icons/MoreDotsIcon.svg?react"
 import SellIcon from "assets/icons/SellIcon.svg?react"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
@@ -59,11 +58,6 @@ export const WalletAssetsTableActions = (props: Props) => {
 
   return (
     <>
-      <div sx={{ display: ["block", "none"] }}>
-        <ButtonTransparent css={{ color: theme.colors.iconGray }}>
-          <ChevronRightIcon />
-        </ButtonTransparent>
-      </div>
       <div
         sx={{
           flex: "row",

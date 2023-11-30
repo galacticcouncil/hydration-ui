@@ -21,12 +21,14 @@ import { theme } from "theme"
 import { getFloatingPointAmount } from "utils/balance"
 import { getEnteredDate } from "utils/block"
 import { BN_0, BN_NAN } from "utils/constants"
-import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { useRpcProvider } from "providers/rpcProvider"
 import { arraySearch } from "utils/helpers"
+import { WalletAssetsHydraPositionsDetails } from "sections/wallet/assets/hydraPositions/details/WalletAssetsHydraPositionsDetails"
+import { ButtonTransparent } from "components/Button/Button"
+import { Icon } from "components/Icon/Icon"
+import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 
 export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
   const { t } = useTranslation()
@@ -44,7 +46,7 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
   const columns = useMemo(
     () => [
       accessor("symbol", {
-        id: "name",
+        id: "symbol",
         header: isDesktop
           ? t("wallet.assets.farmingPositions.header.name")
           : t("selectAssets.asset"),
@@ -66,8 +68,8 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
           </Text>
         ),
       }),
-      accessor("position.providedAmount", {
-        id: "initial",
+      accessor("shares", {
+        id: "shares",
         header: t("wallet.assets.farmingPositions.header.initial"),
         sortingFn: (a, b) => (a.original.shares.gt(b.original.shares) ? 1 : -1),
         cell: ({ row }) => (
@@ -93,36 +95,36 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
         ),
       }),
       accessor("position", {
-        id: "value",
+        id: "position",
         header: t("wallet.assets.farmingPositions.header.value"),
         sortingFn: (a, b) =>
           a.original.position.valueDisplay.gt(b.original.position.valueDisplay)
             ? 1
             : -1,
         cell: ({ row }) => (
-          <div sx={{ flex: "column", align: ["end", "start"], gap: 2 }}>
-            <div sx={{ flex: "row", gap: 4 }}>
-              <WalletAssetsHydraPositionsData
-                symbol={row.original.position.symbol}
-                value={row.original.position.value}
-                lrna={row.original.position.lrna}
-              />
-              <LrnaPositionTooltip
-                lrnaPosition={row.original.position.lrna}
-                tokenPosition={row.original.position.value}
-                assetId={row.original.assetId}
-              />
-            </div>
-            <DollarAssetValue
-              value={row.original.position.valueDisplay}
-              wrapper={(children) => (
-                <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
-                  {children}
-                </Text>
-              )}
-            >
-              <DisplayValue value={row.original.position.valueDisplay} />
-            </DollarAssetValue>
+          <div
+            sx={{
+              flex: "row",
+              gap: 1,
+              align: "center",
+              justify: ["end", "start"],
+              textAlign: "center",
+            }}
+          >
+            <WalletAssetsHydraPositionsDetails
+              assetId={row.original.assetId}
+              lrna={row.original.position.lrna}
+              amount={row.original.position.value}
+              amountDisplay={row.original.position.valueDisplay}
+            />
+            {!isDesktop && (
+              <ButtonTransparent>
+                <Icon
+                  sx={{ color: "darkBlue300" }}
+                  icon={<ChevronRightIcon />}
+                />
+              </ButtonTransparent>
+            )}
           </div>
         ),
       }),
@@ -181,9 +183,9 @@ export const useFarmingPositionsData = ({
     const rows: FarmingPositionsTableData[] = accountDeposits
       .map((deposit) => {
         const id = deposit.id.toString()
-        const assetId = deposit.deposit.ammPoolId.toString()
+        const assetId = deposit.data.ammPoolId.toString()
         const meta = assets.getAsset(assetId)
-        const latestEnteredAtBlock = deposit.deposit.yieldFarmEntries.reduce(
+        const latestEnteredAtBlock = deposit.data.yieldFarmEntries.reduce(
           (acc, curr) =>
             acc.lt(curr.enteredAt.toBigNumber())
               ? curr.enteredAt.toBigNumber()
@@ -198,7 +200,7 @@ export const useFarmingPositionsData = ({
           bestNumber.data.relaychainBlockNumber.toBigNumber(),
         )
         const shares = getFloatingPointAmount(
-          deposit.deposit.shares.toBigNumber(),
+          deposit.data.shares.toBigNumber(),
           meta.decimals,
         )
         const position = accountDepositsShare.data[assetId]?.find(

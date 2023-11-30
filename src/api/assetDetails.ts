@@ -86,8 +86,6 @@ export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
   return tokenBalances
 }
 
-type AssetType = "Token" | "Bond" | "StableSwap" | "PoolShare"
-
 const getTokenParachainId = (
   rawLocation: Option<HydradxRuntimeXcmAssetLocation>,
 ) => {
@@ -114,6 +112,7 @@ type TAssetCommon = {
   isToken: boolean
   isBond: boolean
   isStableSwap: boolean
+  isShareToken: boolean
   isNative: boolean
   symbol: string
   decimals: number
@@ -137,7 +136,12 @@ export type TStableSwap = TAssetCommon & {
   assets: string[]
 }
 
-export type TAsset = TToken | TBond | TStableSwap
+export type TShareToken = TAssetCommon & {
+  assetType: "ShareToken"
+  assets: string[]
+}
+
+export type TAsset = TToken | TBond | TStableSwap | TShareToken
 
 const fallbackAsset: TToken = {
   id: "",
@@ -150,20 +154,17 @@ const fallbackAsset: TToken = {
   isToken: false,
   isBond: false,
   isStableSwap: false,
+  isShareToken: false,
   isNative: false,
 }
 
 const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
-const isStablepoolsEnabled =
-  import.meta.env.VITE_FF_STABLEPOOLS_ENABLED === "true"
 
 export const getAssets = async (api: ApiPromise) => {
   const poolService = new PoolService(api)
-  const traderRoutes = [PoolType.Omni]
+  const traderRoutes = [PoolType.Omni, PoolType.Stable, PoolType.XYK]
 
   if (isBondsPageEnabled) traderRoutes.push(PoolType.LBP)
-
-  if (isStablepoolsEnabled) traderRoutes.push(PoolType.Stable)
 
   const tradeRouter = new TradeRouter(poolService, {
     includeOnly: traderRoutes,
@@ -175,33 +176,38 @@ export const getAssets = async (api: ApiPromise) => {
     rawAssetsMeta,
     rawAssetsLocations,
     rawTradeAssets,
+    hubAssetId,
   ] = await Promise.all([
     api.rpc.system.properties(),
     api.query.assetRegistry.assets.entries(),
     api.query.assetRegistry.assetMetadataMap.entries(),
     api.query.assetRegistry.assetLocations.entries(),
     tradeRouter.getAllAssets(),
+    api.consts.omnipool.hubAssetId,
   ])
 
   const tokens: TToken[] = []
   const bonds: TBond[] = []
   const stableswap: TStableSwap[] = []
+  const shareTokensRaw = []
 
   for (const [key, dataRaw] of rawAssetsData) {
     const data = dataRaw.unwrap()
     const id = key.args[0].toString()
 
-    const assetType = data.assetType.type as AssetType
+    const assetType = data.assetType.type
 
     const isToken = assetType === "Token"
     const isBond = assetType === "Bond"
     const isStableSwap = assetType === "StableSwap"
+    const isShareToken = assetType === "PoolShare"
 
     const assetCommon = {
       id,
       isToken,
       isBond,
       isStableSwap,
+      isShareToken,
       isNative: false,
       existentialDeposit: data.existentialDeposit.toBigNumber(),
       parachainId: undefined,
@@ -336,12 +342,43 @@ export const getAssets = async (api: ApiPromise) => {
         name,
       }
       stableswap.push(asset)
+    } else if (isShareToken) {
+      const [assetA, assetB] = data.assetType.asPoolShare
+
+      shareTokensRaw.push({
+        ...assetCommon,
+        assets: [assetA.toString(), assetB.toString()],
+      })
     }
   }
 
   const native = tokens.find((token) => token.id === NATIVE_ASSET_ID) as TToken
+  const hub = tokens.find(
+    (token) => token.id === hubAssetId.toString(),
+  ) as TToken
 
-  const all = [...tokens, ...bonds, ...stableswap]
+  const shareTokens = shareTokensRaw.map((shareToken): TShareToken => {
+    const [assetAId, assetBId] = shareToken.assets
+
+    const assetA = tokens.find((token) => token.id === assetAId) as TToken
+    const assetB = tokens.find((token) => token.id === assetBId) as TToken
+
+    const assetDecimal = Number(assetA.id) > Number(assetB.id) ? assetB : assetA
+
+    const decimals = assetDecimal.decimals
+    const symbol = `${assetA.symbol}/${assetB.symbol}`
+    const name = `${assetA.name.split(" (")[0]}/${assetB.name.split(" (")[0]}`
+
+    return {
+      ...shareToken,
+      decimals,
+      symbol,
+      name,
+      assetType: "ShareToken",
+    }
+  })
+
+  const all = [...tokens, ...bonds, ...stableswap, ...shareTokens]
 
   const allTokensObject = all.reduce<Record<string, TAsset>>(
     (acc, asset) => ({ ...acc, [asset.id]: asset }),
@@ -351,6 +388,10 @@ export const getAssets = async (api: ApiPromise) => {
     asset.isStableSwap
 
   const isBond = (asset: TAsset): asset is TBond => asset.isBond
+
+  const isShareToken = (asset: TAsset): asset is TShareToken =>
+    asset.isShareToken
+
   const getAsset = (id: string) => allTokensObject[id] ?? fallbackAsset
 
   const getBond = (id: string) => {
@@ -371,13 +412,16 @@ export const getAssets = async (api: ApiPromise) => {
       tokens,
       bonds,
       stableswap,
+      shareTokens,
       native,
+      hub,
       tradeAssets,
       getAsset,
       getBond,
       getAssets,
       isStableSwap,
       isBond,
+      isShareToken,
     },
     tradeRouter,
   }

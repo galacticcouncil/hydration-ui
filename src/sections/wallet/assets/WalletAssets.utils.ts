@@ -3,7 +3,7 @@ import BN from "bignumber.js"
 import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
 import { useEffect, useMemo } from "react"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
-import { useHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
+import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useAssetsTableData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { BN_0 } from "utils/constants"
@@ -43,7 +43,7 @@ export const useWalletAssetsFilters = () => {
 
 export const useWalletAssetsTotals = () => {
   const assets = useAssetsTableData({ isAllAssets: false })
-  const lpPositions = useHydraPositionsData()
+  const lpPositions = useOmnipoolPositionsData()
   const farmsPositions = useAllUserDepositShare()
 
   const { warnings, setWarnings } = useWarningsStore()

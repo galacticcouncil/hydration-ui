@@ -17,10 +17,24 @@ import { shortenAccountAddress } from "utils/formatting"
 import AccountIcon from "assets/icons/StakingAccountIcon.svg?react"
 import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
+import { TLiquidityProvidersTableData } from "./data/LiquidityProvidersTableData.utils"
+import { useAccountIdentity } from "api/stats"
 
-export const useLiquidityProvidersTable = (data: any) => {
+const AccountName = ({ address }: { address: string }) => {
+  const identity = useAccountIdentity(address)
+
+  if (identity.data?.identity)
+    return <>{identity.data.identity.info.display.asRaw.toUtf8()}</>
+
+  return <>{shortenAccountAddress(address)}</>
+}
+
+export const useLiquidityProvidersTable = (
+  data: TLiquidityProvidersTableData,
+) => {
   const { t } = useTranslation()
-  const { accessor, display } = createColumnHelper<any[number]>()
+  const { accessor, display } =
+    createColumnHelper<TLiquidityProvidersTableData[number]>()
   const [sorting, setSorting] = useState<SortingState>([])
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -50,19 +64,19 @@ export const useLiquidityProvidersTable = (data: any) => {
           >
             <Icon size={26} icon={<AccountIcon />} />
             <Text fs={[14]} color="basic300">
-              {shortenAccountAddress(row.original.account)}
+              <AccountName address={row.original.account} />
             </Text>
           </div>
         ),
       }),
-      accessor("position", {
+      accessor("value", {
         id: "position",
         header: t("position"),
         sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
         cell: ({ row }) => (
-          <div sx={{ flex: "row", justify: ["right", "center"] }}>
+          <div sx={{ flex: "row", justify: ["right", "left"] }}>
             <WalletAssetsHydraPositionsData
-              symbol={row.original.symbol}
+              assetId={row.original.assetId}
               value={row.original.value}
               lrna={row.original.lrna}
               fontSize={[13, 16]}
@@ -70,24 +84,24 @@ export const useLiquidityProvidersTable = (data: any) => {
           </div>
         ),
       }),
-      accessor("tvl", {
+      accessor("valueDisplay", {
         id: "tvl",
         header: t("totalValueLocked"),
         sortingFn: (a, b) =>
           a.original.valueDisplay.gt(b.original.valueDisplay) ? 1 : -1,
         cell: ({ row }) => (
-          <Text tAlign="center" color="white">
+          <Text color="white">
             <DisplayValue value={row.original.valueDisplay} isUSD />
           </Text>
         ),
       }),
-      accessor("share", {
+      accessor("sharePercent", {
         id: "share",
         header: t("stats.omnipool.table.header.share"),
         sortingFn: (a, b) =>
           a.original.sharePercent.gt(b.original.sharePercent) ? 1 : -1,
         cell: ({ row }) => (
-          <Text tAlign="center" color="white">
+          <Text color="white">
             {t("value.percentage", {
               value: row.original.sharePercent,
             })}
@@ -103,7 +117,11 @@ export const useLiquidityProvidersTable = (data: any) => {
               target="blank"
               rel="noreferrer"
             >
-              <Icon size={12} sx={{ color: "iconGray" }} icon={<LinkIcon />} />
+              <Icon
+                size={12}
+                sx={{ color: "darkBlue300" }}
+                icon={<LinkIcon />}
+              />
             </a>
           </div>
         ),

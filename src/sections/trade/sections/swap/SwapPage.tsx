@@ -37,7 +37,7 @@ type SearchGenerics = MakeGenerics<{
   Search: z.infer<typeof TradeAppSearch>
 }>
 
-const swapPools = import.meta.env.VITE_FF_SWAP_POOLS
+const pools = import.meta.env.VITE_FF_POOLS
 const isTwapEnabled = import.meta.env.VITE_FF_TWAP_ENABLED === "true"
 const indexerUrl = import.meta.env.VITE_INDEXER_URL
 const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
@@ -103,7 +103,7 @@ export function SwapPage() {
         assetIn={search.success ? search.data.assetIn : undefined}
         assetOut={search.success ? search.data.assetOut : undefined}
         apiAddress={rpcUrl}
-        pools={swapPools}
+        pools={pools}
         stableCoinAssetId={stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}

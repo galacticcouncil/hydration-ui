@@ -18,11 +18,12 @@ import {
 } from "@galacticcouncil/math-omnipool"
 import { useApiIds } from "api/consts"
 import { useHubAssetTradability, useOmnipoolAssets } from "api/omnipool"
-import { useDisplayPrices } from "utils/displayAsset"
 import { arraySearch, isNotNil } from "utils/helpers"
+import { useDisplayPrices, useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TToken } from "api/assetDetails"
 import { TStableSwap } from "api/assetDetails"
+import { TShareToken } from "api/assetDetails"
 
 export const useAssetsTableData = ({
   isAllAssets,
@@ -33,9 +34,27 @@ export const useAssetsTableData = ({
 } = {}) => {
   const { assets } = useRpcProvider()
   const myTableData = useAssetTable()
-  const spotPrices = useDisplayPrices(
-    myTableData.data?.acceptedTokens.map((t) => t.id) ?? [],
-  )
+  const { assetsId, shareTokensId } = myTableData.data?.acceptedTokens.reduce<{
+    assetsId: string[]
+    shareTokensId: string[]
+  }>(
+    (acc, token) => {
+      if (assets.getAsset(token.id).isShareToken) {
+        acc["shareTokensId"].push(token.id)
+      } else {
+        acc["assetsId"].push(token.id)
+      }
+      return acc
+    },
+    {
+      assetsId: [],
+      shareTokensId: [],
+    },
+  ) ?? { assetsId: [], shareTokensId: [] }
+
+  const spotPrices = useDisplayPrices(assetsId)
+
+  const shareTokenSpotPrices = useDisplayShareTokenPrice(shareTokensId)
 
   const data = useMemo(() => {
     if (!myTableData.data || !spotPrices.data) return []
@@ -51,16 +70,19 @@ export const useAssetsTableData = ({
       hubAssetTradability,
     } = myTableData.data
 
-    const allAssets = [...assets.tokens, ...assets.stableswap]
+    const allAssets = [
+      ...assets.tokens,
+      ...assets.stableswap,
+      ...assets.shareTokens,
+    ]
 
     const assetsBalances = getAssetsBalances(
       balances.balances,
-      spotPrices.data.filter(isNotNil),
+      [...spotPrices.data, ...shareTokenSpotPrices.data].filter(isNotNil),
       allAssets,
       tokenLocks,
       balances.native,
     )
-
     const assetsToShow = isAllAssets
       ? allAssets
       : allAssets.filter((asset) =>
@@ -119,8 +141,8 @@ export const useAssetsTableData = ({
       )
 
       const tradability = {
-        canBuy: !!tradabilityData?.canBuy,
-        canSell: !!tradabilityData?.canSell,
+        canBuy: (inTradeRouter || tradabilityData?.canBuy) ?? true,
+        canSell: (inTradeRouter || tradabilityData?.canSell) ?? true,
         canAddLiquidity: !!tradabilityData?.canAddLiquidity,
         canRemoveLiquidity: !!tradabilityData?.canRemoveLiquidity,
         inTradeRouter,
@@ -169,6 +191,8 @@ export const useAssetsTableData = ({
     spotPrices.data,
     assets.tokens,
     assets.stableswap,
+    assets.shareTokens,
+    shareTokenSpotPrices.data,
     isAllAssets,
   ])
 
@@ -180,7 +204,7 @@ export const getAssetsBalances = (
     ReturnType<ReturnType<typeof getAccountBalances>>
   >["balances"],
   spotPrices: SpotPrice[],
-  assetMetas: (TToken | TStableSwap)[],
+  assetMetas: (TToken | TStableSwap | TShareToken)[],
   locksQueries: Array<Awaited<ReturnType<ReturnType<typeof getTokenLock>>>>,
   nativeData: Awaited<
     ReturnType<ReturnType<typeof getAccountBalances>>

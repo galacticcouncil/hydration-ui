@@ -1,4 +1,3 @@
-import { u32 } from "@polkadot/types"
 import { useMutation } from "@tanstack/react-query"
 import { useFarms } from "api/farms"
 import { StepProps } from "components/Stepper/Stepper"
@@ -9,7 +8,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 export type FarmDepositMutationType = ReturnType<typeof useFarmDepositMutation>
 
 export const useFarmDepositMutation = (
-  poolId: u32,
+  poolId: string,
   positionId: string,
   toast: ToastMessage,
   onClose: () => void,

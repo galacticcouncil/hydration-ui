@@ -4,19 +4,18 @@ import {
 } from "@galacticcouncil/math-stableswap"
 import { useBestNumber } from "api/chain"
 import { useStableswapPool } from "api/stableswap"
-import { u32 } from "@polkadot/types-codec"
 import { useTotalIssuance } from "api/totalIssuance"
 import { normalizeBigNumber } from "utils/balance"
-import { BalanceByAsset } from "sections/pools/PoolsPage.utils"
 import { BN_0, BN_MILL, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import BigNumber from "bignumber.js"
+import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
 
 type Asset = { asset_id: number; amount: string }
 
 type Args = {
-  poolId: u32
+  poolId: string
   asset?: { id?: string; amount?: string; decimals?: number }
-  balanceByAsset?: BalanceByAsset
+  balanceByAsset?: TOmnipoolAsset["stablepoolBalanceByAsset"]
   reserves: { asset_id: number; amount: string }[]
 }
 

@@ -11,7 +11,12 @@ import { Account, useAccountStore } from "state/store"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
 
-import { SContainer, SLoginButton } from "./WalletConnectButton.styled"
+import {
+  SAvatarCointainer,
+  SAvatarMask,
+  SContainer,
+  SLoginButton,
+} from "./WalletConnectButton.styled"
 import { WalletConnectModal } from "./WalletConnectModal"
 
 const WalletActiveButton = (props: {
@@ -27,12 +32,18 @@ const WalletActiveButton = (props: {
 
   return (
     <SContainer className={props.className} onClick={props.onOpen}>
-      <div sx={{ flex: "row", gap: 12, align: "center", justify: "center" }}>
+      <div sx={{ flex: "row", gap: 10, align: "center", justify: "center" }}>
         <div sx={{ flex: "column", gap: 4 }}>
-          <Text color="basic100" fs={14} lh={14} font="ChakraPetchBold">
+          <Text
+            color="basic100"
+            fs={13}
+            lh={13}
+            fw={600}
+            font="ChakraPetchBold"
+          >
             {props.account.name}
           </Text>
-          <Text color="basic300" fs={12} lh={12} fw={400}>
+          <Text color="basic300" fs={11} lh={11} fw={500}>
             {shortenAccountAddress(
               safeConvertAddressSS58(
                 props.account.address.toString(),
@@ -49,20 +60,23 @@ const WalletActiveButton = (props: {
             gap: 4,
           }}
         >
-          <div>
+          <SAvatarCointainer>
             {!props.account.isExternalWalletConnected && (
-              <AccountAvatar
-                size={32}
-                theme="substrate"
-                address={hydraAddress}
+              <SAvatarMask
                 css={{
                   pointerEvents: "none",
                   marginRight: -8,
                 }}
-              />
+              >
+                <AccountAvatar
+                  size={22}
+                  theme="substrate"
+                  address={hydraAddress}
+                />
+              </SAvatarMask>
             )}
             <AccountAvatar
-              size={32}
+              size={22}
               theme={props.account.provider}
               address={polkadotAddress}
               css={{
@@ -70,8 +84,8 @@ const WalletActiveButton = (props: {
                 borderRadius: "9999px",
               }}
             />
-          </div>
-          <ChevronDownSmall sx={{ color: "basic100" }} />
+          </SAvatarCointainer>
+          <ChevronDownSmall width={8} height={8} sx={{ color: "basic100" }} />
         </div>
       </div>
     </SContainer>

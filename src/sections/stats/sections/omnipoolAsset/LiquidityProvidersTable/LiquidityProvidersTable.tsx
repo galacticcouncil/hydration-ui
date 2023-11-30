@@ -16,9 +16,10 @@ import { useTranslation } from "react-i18next"
 import { useLiquidityProvidersTable } from "./LiquidityProvidersTable.utils"
 import { Icon } from "components/Icon/Icon"
 import TitleIcon from "assets/icons/StakingTableIcon.svg?react"
+import { TLiquidityProvidersTableData } from "./data/LiquidityProvidersTableData.utils"
 
 type Props = {
-  data: any
+  data: TLiquidityProvidersTableData
 }
 
 export const LiquidityProvidersTable = ({ data }: Props) => {
@@ -34,14 +35,9 @@ export const LiquidityProvidersTable = ({ data }: Props) => {
   return (
     <StatsTableContainer>
       <StatsTableTitle>
-        <div sx={{ flex: "row", align: "center", gap: 12 }}>
+        <div sx={{ flex: "row", align: "end", gap: 12 }}>
           <Icon sx={{ color: "white" }} icon={<TitleIcon />} />
-          <Text
-            fs={[16, 24]}
-            lh={[24, 26]}
-            color="white"
-            font="ChakraPetchBold"
-          >
+          <Text fs={[14, 19]} lh={20} color="white" font="FontOver">
             {t("stats.omnipool.table.providers.title")}
           </Text>
         </div>

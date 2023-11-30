@@ -1,10 +1,10 @@
-import { DepositNftType } from "api/deposits"
 import { Button } from "components/Button/Button"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
+import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { theme } from "theme"
 import { useEnteredDate } from "utils/block"
@@ -24,11 +24,10 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { getFloatingPointAmount } from "utils/balance"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { useRpcProvider } from "providers/rpcProvider"
-import { u32 } from "@polkadot/types-codec"
 
 function FarmingPositionDetailsButton(props: {
-  poolId: u32
-  depositNft: DepositNftType
+  poolId: string
+  depositNft: TMiningNftPosition
 }) {
   const { t } = useTranslation()
   const [farmDetails, setFarmDetails] = useState(false)
@@ -57,8 +56,8 @@ export const FarmingPosition = ({
   depositNft,
 }: {
   index: number
-  poolId: u32
-  depositNft: DepositNftType
+  poolId: string
+  depositNft: TMiningNftPosition
 }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -83,7 +82,7 @@ export const FarmingPosition = ({
 
   // use latest entry date
   const enteredDate = useEnteredDate(
-    depositNft.deposit.yieldFarmEntries.reduce(
+    depositNft.data.yieldFarmEntries.reduce(
       (acc, curr) =>
         acc.lt(curr.enteredAt.toBigNumber())
           ? curr.enteredAt.toBigNumber()
@@ -167,7 +166,7 @@ export const FarmingPosition = ({
             {position.data && (
               <div>
                 <WalletAssetsHydraPositionsData
-                  symbol={position.data.symbol}
+                  assetId={position.data.assetId.toString()}
                   value={position.data.value}
                   lrna={position.data.lrna}
                 />

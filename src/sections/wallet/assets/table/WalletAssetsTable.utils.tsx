@@ -16,6 +16,9 @@ import { theme } from "theme"
 import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
 import { useNavigate } from "@tanstack/react-location"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
+import { ButtonTransparent } from "components/Button/Button"
+import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
+import { Icon } from "components/Icon/Icon"
 
 export const useAssetsTable = (
   data: AssetsTableData[],
@@ -31,7 +34,7 @@ export const useAssetsTable = (
     name: true,
     transferable: true,
     total: isDesktop,
-    actions: true,
+    actions: isDesktop,
   }
 
   const columns = useMemo(
@@ -52,10 +55,27 @@ export const useAssetsTable = (
             ? 1
             : -1,
         cell: ({ row }) => (
-          <WalletAssetsTableBalance
-            balance={row.original.transferable}
-            balanceDisplay={row.original.transferableDisplay}
-          />
+          <div
+            sx={{
+              flex: "row",
+              gap: 1,
+              align: "center",
+              justify: ["end", "start"],
+            }}
+          >
+            <WalletAssetsTableBalance
+              balance={row.original.transferable}
+              balanceDisplay={row.original.transferableDisplay}
+            />
+            {!isDesktop && (
+              <ButtonTransparent css={{ color: theme.colors.iconGray }}>
+                <Icon
+                  sx={{ color: "darkBlue300" }}
+                  icon={<ChevronRightIcon />}
+                />
+              </ButtonTransparent>
+            )}
+          </div>
         ),
       }),
       accessor("total", {

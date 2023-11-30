@@ -1,10 +1,10 @@
 import { useMutation } from "@tanstack/react-query"
-import { DepositNftType } from "api/deposits"
 import { ToastMessage, useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
+import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 
 export const useFarmExitAllMutation = (
-  depositNfts: DepositNftType[],
+  depositNfts: TMiningNftPosition[],
   toast: ToastMessage,
   onClose?: () => void,
 ) => {
@@ -15,7 +15,7 @@ export const useFarmExitAllMutation = (
     const txs =
       depositNfts
         ?.map((record) => {
-          return record.deposit.yieldFarmEntries.map((entry) => {
+          return record.data.yieldFarmEntries.map((entry) => {
             return api.tx.omnipoolLiquidityMining.withdrawShares(
               record.id,
               entry.yieldFarmId,

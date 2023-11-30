@@ -1,5 +1,4 @@
 import { u32 } from "@polkadot/types"
-import { DepositNftType } from "api/deposits"
 import { Farm } from "api/farms"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
@@ -9,6 +8,7 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { FarmDepositMutationType } from "utils/farms/deposit"
 import { FarmRedepositMutationType } from "utils/farms/redeposit"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
@@ -20,12 +20,12 @@ import { useRpcProvider } from "providers/rpcProvider"
 type JoinFarmModalProps = {
   isOpen: boolean
   onClose: () => void
-  poolId: u32
+  poolId: string
   shares?: BigNumber
   farms: Farm[]
   isRedeposit?: boolean
   mutation?: FarmDepositMutationType | FarmRedepositMutationType
-  depositNft?: DepositNftType
+  depositNft?: TMiningNftPosition
 }
 
 export const JoinFarmModal = ({

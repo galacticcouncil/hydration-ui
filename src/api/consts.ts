@@ -17,24 +17,18 @@ export const getApiIds = (api: ApiPromise) => async () => {
   const apiIds = await Promise.all([
     api.consts.omnipool.hdxAssetId,
     api.consts.omnipool.hubAssetId,
-    api.consts.omnipool.stableCoinAssetId,
     api.consts.omnipool.nftCollectionId,
   ])
-  const [nativeId, hubId, stableCoinId, omnipoolCollectionId] = apiIds.map(
-    (c) => c.toString(),
+
+  const [nativeId, hubId, omnipoolCollectionId] = apiIds.map((c) =>
+    c.toString(),
   )
 
-  return { nativeId, hubId, stableCoinId, omnipoolCollectionId }
-}
-
-export const useTVLCap = () => {
-  const { api } = useRpcProvider()
-
-  return useQuery(QUERY_KEYS.tvlCap, getTvlCap(api))
-}
-
-const getTvlCap = (api: ApiPromise) => async () => {
-  return api.consts.omnipool.tvlCap || (await api.query.omnipool.tvlCap())
+  return {
+    nativeId,
+    hubId,
+    omnipoolCollectionId,
+  }
 }
 
 export const useMinWithdrawalFee = () => {

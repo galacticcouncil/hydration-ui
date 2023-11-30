@@ -7,7 +7,7 @@ export const TableContainer = styled.div`
   overflow: hidden;
   position: relative;
 
-  margin: 0 -12px;
+  margin: 0 -13px;
 
   border-top: 1px solid rgba(152, 176, 214, 0.27);
 
@@ -48,31 +48,8 @@ export const StatsTableContainer = styled.div`
   overflow: hidden;
   position: relative;
 
-  border-radius: ${theme.borderRadius.default}px;
-
-  :before {
-    content: "";
-    position: absolute;
-    inset: 0;
-
-    border-radius: ${theme.borderRadius.default}px;
-    padding: 1px; // a width of the border
-
-    pointer-events: none;
-
-    background: linear-gradient(
-      180deg,
-      rgba(152, 176, 214, 0.27) 0%,
-      rgba(163, 177, 199, 0.15) 66.67%,
-      rgba(158, 167, 180, 0.2) 100%
-    );
-
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-  }
+  border-radius: ${theme.borderRadius.stakingCard}px;
+  border: 1px solid rgba(152, 176, 214, 0.27);
 `
 
 export const Table = styled.table`
@@ -197,21 +174,26 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
   }
 `
 
-export const TableData = styled.td<{ isExpanded?: boolean }>`
+export const TableData = styled.td<{
+  isExpanded?: boolean
+  isSkeleton?: boolean
+}>`
   padding: 16px;
-  padding-right: 0;
+  ${({ isSkeleton }) => !isSkeleton && "padding-right: 0px;"}
   text-align: start;
 
   ${({ isExpanded }) =>
     isExpanded && `background: rgba(${theme.rgbColors.white}, 0.06);`}
 
-  // shrink actions column
   &:last-of-type {
     width: 0;
-    padding-right: 10px;
   }
 
   @media ${theme.viewport.gte.sm} {
     padding: 24px 32px;
+
+    &:last-of-type {
+      padding-right: 10px;
+    }
   }
 `

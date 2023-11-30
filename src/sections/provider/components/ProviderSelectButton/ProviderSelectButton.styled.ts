@@ -7,6 +7,7 @@ export const SButton = styled(motion.div)`
   width: min-content;
 
   margin-left: auto;
+  margin-right: 12px;
   margin-bottom: 16px;
 
   display: flex;

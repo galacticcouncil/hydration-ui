@@ -27,20 +27,18 @@ import { BN_0 } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { useRpcProvider } from "providers/rpcProvider"
-import { u32 } from "@polkadot/types-codec"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { OmnipoolPool, Stablepool } from "sections/pools/PoolsPage.utils"
+import { TOmnipoolAsset, TXYKPool } from "sections/pools/PoolsPage.utils"
 
 type Props = {
   position: HydraPositionsTableData
-  onSuccess: () => void
   index: number
-  pool: Stablepool | OmnipoolPool
-  disableRemoveLiquidity: boolean
+  pool: TOmnipoolAsset
+  onSuccess: () => void
 }
 
 function LiquidityPositionJoinFarmButton(props: {
-  poolId: u32
+  poolId: string
   position: HydraPositionsTableData
   onSuccess: () => void
 }) {
@@ -103,12 +101,19 @@ function LiquidityPositionJoinFarmButton(props: {
   )
 }
 
-function LiquidityPositionRemoveLiquidity(props: {
-  pool: Stablepool | OmnipoolPool
-  position: HydraPositionsTableData
-  onSuccess: () => void
-  disableRemoveLiquidity: boolean
-}) {
+export function LiquidityPositionRemoveLiquidity(
+  props:
+    | {
+        pool: TOmnipoolAsset
+        position: HydraPositionsTableData
+        onSuccess: () => void
+      }
+    | {
+        pool: TXYKPool
+        position?: never
+        onSuccess: () => void
+      },
+) {
   const { t } = useTranslation()
   const { account } = useAccountStore()
   const [openRemove, setOpenRemove] = useState(false)
@@ -119,7 +124,8 @@ function LiquidityPositionRemoveLiquidity(props: {
         size="small"
         onClick={() => setOpenRemove(true)}
         disabled={
-          account?.isExternalWalletConnected || props.disableRemoveLiquidity
+          account?.isExternalWalletConnected ||
+          !props.pool.tradability.canRemoveLiquidity
         }
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
@@ -145,7 +151,6 @@ export const LiquidityPosition = ({
   index,
   onSuccess,
   pool,
-  disableRemoveLiquidity,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -220,7 +225,7 @@ export const LiquidityPosition = ({
             </div>
             <div sx={{ flex: "column", align: "start" }}>
               <WalletAssetsHydraPositionsData
-                symbol={position.symbol}
+                assetId={position.assetId}
                 value={position.value}
                 lrna={position.lrna}
               />
@@ -256,7 +261,6 @@ export const LiquidityPosition = ({
           position={position}
           onSuccess={onSuccess}
           pool={pool}
-          disableRemoveLiquidity={disableRemoveLiquidity}
         />
       </div>
     </SContainer>

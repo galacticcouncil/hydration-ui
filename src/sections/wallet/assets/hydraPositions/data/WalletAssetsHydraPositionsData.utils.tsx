@@ -1,42 +1,37 @@
 import { useTokensBalances } from "api/balances"
-import { useApiIds } from "api/consts"
 import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
-import { useUniques } from "api/uniques"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { useAccountStore } from "state/store"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { useDisplayPrices } from "utils/displayAsset"
 import { arraySearch, isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 import { calculatePositionLiquidity } from "utils/omnipool"
+import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
 
-export const useHydraPositionsData = ({ search }: { search?: string } = {}) => {
-  const { account } = useAccountStore()
+export const useOmnipoolPositionsData = ({
+  search,
+}: { search?: string } = {}) => {
   const { assets } = useRpcProvider()
-  const apiIds = useApiIds()
-  const uniques = useUniques(
-    account?.address ?? "",
-    apiIds.data?.omnipoolCollectionId ?? "",
-  )
+  const accountPositions = useAccountOmnipoolPositions()
   const positions = useOmnipoolPositions(
-    uniques.data?.map((u) => u.itemId) ?? [],
+    accountPositions.data?.omnipoolNfts.map((nft) => nft.instanceId) ?? [],
   )
+
+  const positionIds =
+    positions
+      .map((position) => position.data?.assetId.toString())
+      .filter(isNotNil) ?? []
 
   const omnipoolAssets = useOmnipoolAssets()
   const omnipoolBalances = useTokensBalances(
-    positions.map((p) => p.data?.assetId).filter(isNotNil) ?? [],
+    positionIds,
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
-  const spotPrices = useDisplayPrices([
-    apiIds.data?.hubId ?? "",
-    ...(positions?.map((p) => p.data?.assetId.toString() ?? "") ?? []),
-  ])
+  const spotPrices = useDisplayPrices([assets.hub.id, ...positionIds])
 
   const queries = [
-    apiIds,
-    uniques,
     omnipoolAssets,
     spotPrices,
     ...positions,
@@ -46,9 +41,7 @@ export const useHydraPositionsData = ({ search }: { search?: string } = {}) => {
 
   const data = useMemo(() => {
     if (
-      !uniques.data ||
       !omnipoolAssets.data ||
-      !apiIds.data ||
       !spotPrices.data ||
       positions.some((q) => !q.data) ||
       omnipoolBalances.some((q) => !q.data)
@@ -62,7 +55,7 @@ export const useHydraPositionsData = ({ search }: { search?: string } = {}) => {
 
         const assetId = position.assetId.toString()
         const meta = assets.getAsset(assetId)
-        const lrnaMeta = assets.getAsset(apiIds.data.hubId)
+        const lrnaMeta = assets.hub
         const omnipoolAsset = omnipoolAssets.data.find(
           (a) => a.id.toString() === assetId,
         )
@@ -74,7 +67,7 @@ export const useHydraPositionsData = ({ search }: { search?: string } = {}) => {
         const name = meta.name
 
         const lrnaSp = spotPrices.data?.find(
-          (sp) => sp?.tokenIn === apiIds.data.hubId,
+          (sp) => sp?.tokenIn === lrnaMeta.id,
         )
 
         const valueSp = spotPrices.data?.find((sp) => sp?.tokenIn === assetId)
@@ -105,9 +98,7 @@ export const useHydraPositionsData = ({ search }: { search?: string } = {}) => {
 
     return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
   }, [
-    uniques.data,
     omnipoolAssets.data,
-    apiIds.data,
     spotPrices.data,
     positions,
     omnipoolBalances,
@@ -118,6 +109,6 @@ export const useHydraPositionsData = ({ search }: { search?: string } = {}) => {
   return {
     data,
     isLoading,
-    refetch: uniques.refetch,
+    isInitialLoading: isLoading,
   }
 }

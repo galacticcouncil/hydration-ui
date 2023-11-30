@@ -1,17 +1,26 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SubNavigationContainer = styled.div`
+export const SSubNavigationContainer = styled.div`
   display: flex;
-  gap: 42px;
   justify-content: flex-start;
   align-items: center;
+  gap: 12px;
 
   height: 42px;
   max-width: var(--content-width);
 
-  padding: 0 20px;
+  padding: 0 8px;
   margin: 0 auto;
+
+  overflow-x: scroll;
+  overflow-y: hidden;
+
+  @media (${theme.viewport.gte.sm}) {
+    gap: 42px;
+
+    padding: 0 20px;
+  }
 `
 
 export const STabContainer = styled.div`
@@ -21,6 +30,8 @@ export const STabContainer = styled.div`
   justify: space-between;
 
   height: 100%;
+
+  white-space: nowrap;
 
   position: relative;
 `

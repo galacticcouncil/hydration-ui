@@ -63,7 +63,8 @@ export const BondCell = ({ bondId }: { bondId: string }) => {
     >
       <Icon
         icon={<AssetLogo id={bond.assetId} />}
-        size={[24, 30]}
+        size={[24, 27]}
+        sx={{ flexShrink: 0 }}
         css={{ width: "min-content" }}
       />
       <div sx={{ flex: "column" }}>
@@ -137,7 +138,12 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
               {t("value.token", { value: getValue() })}
             </Text>
             {!isDesktop && (
-              <Icon sx={{ color: "basic400" }} icon={<ChevronRightIcon />} />
+              <ButtonTransparent css={{ color: theme.colors.iconGray }}>
+                <Icon
+                  sx={{ color: "darkBlue300" }}
+                  icon={<ChevronRightIcon />}
+                />
+              </ButtonTransparent>
             )}
           </div>
         ),

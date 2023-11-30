@@ -1,4 +1,5 @@
 import {
+  VisibilityState,
   createColumnHelper,
   getCoreRowModel,
   useReactTable,
@@ -6,15 +7,25 @@ import {
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { useMemo } from "react"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export const useFarmingPositionsSkeleton = (enableAnimation = true) => {
   const { t } = useTranslation()
   const { display } = createColumnHelper()
 
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const columnVisibility: VisibilityState = {
+    symbol: true,
+    date: isDesktop,
+    shares: isDesktop,
+    position: true,
+  }
+
   const columns = useMemo(
     () => [
       display({
-        id: "name",
+        id: "symbol",
         header: t("wallet.assets.farmingPositions.header.name"),
         cell: () => (
           <div sx={{ flex: "row", gap: 8, height: [24, 32] }}>
@@ -41,14 +52,14 @@ export const useFarmingPositionsSkeleton = (enableAnimation = true) => {
         ),
       }),
       display({
-        id: "initial",
+        id: "shares",
         header: t("wallet.assets.farmingPositions.header.initial"),
         cell: () => (
           <Skeleton width={134} height={32} enableAnimation={enableAnimation} />
         ),
       }),
       display({
-        id: "value",
+        id: "position",
         header: t("wallet.assets.farmingPositions.header.value"),
         cell: () => (
           <Skeleton width={134} height={32} enableAnimation={enableAnimation} />
@@ -56,13 +67,14 @@ export const useFarmingPositionsSkeleton = (enableAnimation = true) => {
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [enableAnimation],
+    [enableAnimation, isDesktop],
   )
 
   return useReactTable({
     data: mockData,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    state: { columnVisibility },
   })
 }
 
