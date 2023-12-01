@@ -16,6 +16,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { useTokensBalances } from "api/balances"
 import { useAccountStore } from "state/store"
+import { isXYKEnabled } from "sections/pools/PoolsPage.utils"
 
 const Tab = ({
   to,
@@ -83,11 +84,13 @@ export const Navigation = () => {
         label={t("liquidity.navigation.omnipoolAndStablepool")}
         icon={<OmniStablepools />}
       />
-      <Tab
-        to={LINKS.isolated}
-        label={t("liquidity.navigation.isolated")}
-        icon={<IsolatedPools />}
-      />
+      {isXYKEnabled && (
+        <Tab
+          to={LINKS.isolated}
+          label={t("liquidity.navigation.isolated")}
+          icon={<IsolatedPools />}
+        />
+      )}
     </SNavigationContainer>
   )
 }
