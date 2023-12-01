@@ -5,12 +5,12 @@ export const SSubNavigationContainer = styled.div`
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
 
   height: 42px;
   max-width: var(--content-width);
 
-  padding: 0 8px;
+  padding: 0 12px;
   margin: 0 auto;
 
   overflow-x: scroll;
