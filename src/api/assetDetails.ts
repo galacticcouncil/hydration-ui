@@ -118,6 +118,7 @@ type TAssetCommon = {
   decimals: number
   name: string
   parachainId: string | undefined
+  iconId: string | string[]
 }
 
 export type TBond = TAssetCommon & {
@@ -156,6 +157,7 @@ const fallbackAsset: TToken = {
   isStableSwap: false,
   isShareToken: false,
   isNative: false,
+  iconId: "",
 }
 
 const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
@@ -222,6 +224,7 @@ export const getAssets = async (api: ApiPromise) => {
           decimals: system.tokenDecimals.unwrap()[0].toNumber(),
           isNative: true,
           assetType,
+          iconId: assetCommon.id,
         }
         tokens.push(asset)
       } else {
@@ -244,6 +247,7 @@ export const getAssets = async (api: ApiPromise) => {
             parachainId: location ? getTokenParachainId(location) : undefined,
             decimals: meta.decimals.toNumber(),
             symbol: meta.symbol.toUtf8(),
+            iconId: assetCommon.id,
           }
 
           tokens.push(asset)
@@ -302,6 +306,7 @@ export const getAssets = async (api: ApiPromise) => {
           symbol,
           maturity: maturity.toNumber(),
           isPast,
+          iconId: assetId.toString(),
         }
 
         bonds.push(asset)
@@ -311,12 +316,12 @@ export const getAssets = async (api: ApiPromise) => {
       const decimals = 18
 
       const detailsRaw = await api.query.stableswap.pools(id)
-      // @ts-ignore
+
       const details = detailsRaw.unwrap()
-      const assets = details.assets.map((asset: any) => asset.toString())
+      const assets = details.assets.map((asset) => asset.toString())
 
       const name = assets
-        .map((assetId: string) => {
+        .map((assetId) => {
           if (assetId === NATIVE_ASSET_ID) {
             return system.tokenSymbol.unwrap()[0].toString()
           }
@@ -333,6 +338,8 @@ export const getAssets = async (api: ApiPromise) => {
         })
         .join("/")
 
+      const iconId = assets.map((asset) => asset)
+
       const asset: TStableSwap = {
         ...assetCommon,
         assetType: "StableSwap",
@@ -340,6 +347,7 @@ export const getAssets = async (api: ApiPromise) => {
         decimals,
         assets,
         name,
+        iconId,
       }
       stableswap.push(asset)
     } else if (isShareToken) {
@@ -368,6 +376,7 @@ export const getAssets = async (api: ApiPromise) => {
     const decimals = assetDecimal.decimals
     const symbol = `${assetA.symbol}/${assetB.symbol}`
     const name = `${assetA.name.split(" (")[0]}/${assetB.name.split(" (")[0]}`
+    const iconId = [assetA.id, assetB.id]
 
     return {
       ...shareToken,
@@ -375,6 +384,7 @@ export const getAssets = async (api: ApiPromise) => {
       symbol,
       name,
       assetType: "ShareToken",
+      iconId,
     }
   })
 

@@ -10,14 +10,22 @@ import { useSearchFilter } from "./SearchFilter.utils"
 export const SearchFilter = () => {
   const { t } = useTranslation()
   const { setSearchParam } = useSearchFilter()
-  const { search } = useSearch<{
+  const { search = "" } = useSearch<{
     Search: {
       search?: string
     }
   }>()
-  const [searchVal, setSearchVal] = useState(search ?? "")
+  const [searchVal, setSearchVal] = useState(search)
 
-  useDebounce(() => setSearchParam(searchVal), 300, [searchVal])
+  useDebounce(
+    () => {
+      if (searchVal !== search) {
+        setSearchParam(searchVal)
+      }
+    },
+    300,
+    [searchVal],
+  )
 
   return (
     <div sx={{ flex: "column", gap: [16, 30], mb: [16, 20] }}>

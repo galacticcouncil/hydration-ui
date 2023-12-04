@@ -1,24 +1,89 @@
+import { useQueryClient } from "@tanstack/react-query"
+import { SSeparator } from "components/Separator/Separator.styled"
 import { Text } from "components/Typography/Text/Text"
-import { TOmnipoolAsset, TXYKPool } from "sections/pools/PoolsPage.utils"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { TPoolFullData, TXYKPool } from "sections/pools/PoolsPage.utils"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
+import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
-import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
+import { XYKPosition } from "sections/pools/pool/xyk/position/XYKPosition"
+import { StablepoolPosition } from "sections/pools/stablepool/positions/StablepoolPosition"
+import { useAccountStore } from "state/store"
+import { BN_0 } from "utils/constants"
+import { QUERY_KEYS } from "utils/queryKeys"
 
-export const MyPositions = ({ pool }: { pool: TOmnipoolAsset | TXYKPool }) => {
-  const positions = useOmnipoolPositionsData()
+export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
+  const { account } = useAccountStore()
+  const { t } = useTranslation()
+  const miningPositions = useAllUserDepositShare()
 
-  console.log(positions, "positions")
+  const queryClient = useQueryClient()
+
+  const totalOmnipool = useMemo(() => {
+    if (pool.omnipoolNftPositions) {
+      return pool.omnipoolNftPositions.reduce(
+        (acc, position) => acc.plus(position.valueDisplay),
+        BN_0,
+      )
+    }
+    return BN_0
+  }, [pool.omnipoolNftPositions])
+
+  const totalFarms = useMemo(() => {
+    if (!miningPositions.data[pool.id]) return BN_0
+    return miningPositions.data[pool.id].reduce((memo, share) => {
+      return memo.plus(share.valueDisplay)
+    }, BN_0)
+  }, [miningPositions.data, pool.id])
+
+  if (!pool.miningNftPositions.length && !pool.omnipoolNftPositions.length)
+    return null
+
+  const refetchPositions = () => {
+    queryClient.refetchQueries(
+      QUERY_KEYS.accountOmnipoolPositions(account?.address),
+    )
+  }
+
   return (
-    <div>
+    <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
       <Text fs={15} font="FontOver">
         Your positions
       </Text>
+
+      <div sx={{ flex: "row", gap: 104, py: 16 }}>
+        <div sx={{ flex: "column", gap: 6 }}>
+          <Text fs={12} color="basic400">
+            Locked in pool
+          </Text>
+          <Text color="white">{t("value.usd", { amount: totalOmnipool })}</Text>
+        </div>
+        <SSeparator color="white" opacity={0.06} orientation="vertical" />
+        <div sx={{ flex: "column", gap: 6 }}>
+          <Text fs={12} color="basic400">
+            Locked in farming
+          </Text>
+          <Text color="white">{t("value.usd", { amount: totalFarms })}</Text>
+        </div>
+      </div>
+
+      <SSeparator color="darkBlue401" />
+
+      {pool.isStablePool && (
+        <StablepoolPosition pool={pool} refetchPositions={refetchPositions} />
+      )}
+
       <LiquidityPositionWrapper
         pool={pool}
         positions={pool.omnipoolNftPositions}
-        refetchPositions={() => null}
+        refetchPositions={refetchPositions}
       />
-      <FarmingPositionWrapper pool={pool} />
+      <FarmingPositionWrapper pool={pool} positions={pool.miningNftPositions} />
     </div>
   )
+}
+
+export const MyXYKPositions = ({ pool }: { pool: TXYKPool }) => {
+  return <XYKPosition pool={pool} />
 }

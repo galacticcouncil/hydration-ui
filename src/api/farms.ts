@@ -302,6 +302,7 @@ function getFarmApr(
     loyaltyCurve,
     rewardCurrency,
     incentivizedAsset,
+    yieldFarmId: yieldFarm.id.toString(),
   }
 }
 

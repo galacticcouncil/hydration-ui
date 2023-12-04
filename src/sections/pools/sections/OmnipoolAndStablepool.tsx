@@ -1,22 +1,34 @@
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useOmnipoolAndStablepool } from "sections/pools/PoolsPage.utils"
+import { usePools } from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
-import { Pool } from "sections/pools/pool/Pool"
-import { PoolSkeleton } from "sections/pools/skeleton/PoolSkeleton"
 import { BN_0 } from "utils/constants"
 import { SearchFilter } from "sections/pools/filter/SearchFilter"
 import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
+import { PoolsTable } from "sections/pools/table/PoolsTable"
+import { StablePoolsTotal } from "sections/pools/header/StablePoolsTotal"
+import { VolumeTotal } from "sections/pools/header/VolumeTotal"
+import { useSearch } from "@tanstack/react-location"
+import { PoolWrapper } from "sections/pools/poolNew/Pool"
+import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
+import { PoolSkeleton } from "sections/pools/poolNew/PoolSkeleton"
 
 export const OmnipoolAndStablepool = () => {
   const { t } = useTranslation()
   const { isLoaded } = useRpcProvider()
+  const { id } = useSearch<{
+    Search: {
+      id?: number
+    }
+  }>()
 
   if (!isLoaded)
-    return (
+    return id != null ? (
+      <PoolSkeleton />
+    ) : (
       <>
         <HeaderValues
           values={[
@@ -35,11 +47,9 @@ export const OmnipoolAndStablepool = () => {
             },
           ]}
         />
-        <div sx={{ flex: "column", gap: 20 }}>
-          {[...Array(3)].map((_, index) => (
-            <PoolSkeleton key={index} length={3} index={index} />
-          ))}
-        </div>
+        <SearchFilter />
+
+        <PoolsTableSkeleton />
       </>
     )
 
@@ -49,43 +59,36 @@ export const OmnipoolAndStablepool = () => {
 const OmnipoolAndStablepoolData = () => {
   const { t } = useTranslation()
   const { search } = useSearchFilter()
-  const omnipoolAndStablepool = useOmnipoolAndStablepool()
+  const { id } = useSearch<{
+    Search: {
+      id?: number
+    }
+  }>()
+
+  const pools = usePools()
 
   const omnipoolTotal = useMemo(() => {
-    if (omnipoolAndStablepool.data) {
-      return omnipoolAndStablepool.data.reduce(
-        (acc, asset) => acc.plus(asset.totalDisplay),
-        BN_0,
-      )
+    if (pools.data) {
+      return pools.data.reduce((acc, asset) => acc.plus(asset.tvlDisplay), BN_0)
     }
 
     return BN_0
-  }, [omnipoolAndStablepool.data])
-
-  const stablepoolTotal = useMemo(() => {
-    if (omnipoolAndStablepool.data) {
-      return omnipoolAndStablepool.data.reduce(
-        (acc, asset) => acc.plus(asset.stablepoolTotal.value),
-        BN_0,
-      )
-    }
-
-    return BN_0
-  }, [omnipoolAndStablepool.data])
-
-  const omnipoolTradeTotal = useMemo(() => {
-    return (
-      omnipoolAndStablepool.data?.reduce(
-        (acc, item) => acc.plus(item.volumeDisplay ?? 0),
-        BN_0,
-      ) ?? BN_0
-    )
-  }, [omnipoolAndStablepool.data])
+  }, [pools.data])
 
   const filteredPools =
-    search && omnipoolAndStablepool.data
-      ? arraySearch(omnipoolAndStablepool.data, search, ["name", "symbol"])
-      : omnipoolAndStablepool.data
+    (search && pools.data
+      ? arraySearch(pools.data, search, ["name", "symbol"])
+      : pools.data) ?? []
+
+  if (id != null) {
+    const pool = pools.data?.find((pool) => pool.id === id.toString())
+
+    const isLoading = pools.isLoading
+
+    if (!pool && isLoading) return <PoolSkeleton />
+
+    if (pool) return <PoolWrapper pool={pool} />
+  }
 
   return (
     <>
@@ -95,40 +98,29 @@ const OmnipoolAndStablepoolData = () => {
             label: t("liquidity.header.omnipool"),
             content: (
               <HeaderTotalData
-                isLoading={omnipoolAndStablepool.isLoading}
+                isLoading={pools.isLoading}
                 value={omnipoolTotal}
               />
             ),
           },
           {
             label: t("liquidity.header.stablepool"),
-            content: (
-              <HeaderTotalData
-                isLoading={omnipoolAndStablepool.isLoading}
-                value={stablepoolTotal}
-              />
-            ),
+            content: <StablePoolsTotal />,
           },
           {
             withoutSeparator: true,
             label: t("liquidity.header.24hours"),
-            content: (
-              <HeaderTotalData
-                isLoading={omnipoolAndStablepool.isLoading}
-                value={omnipoolTradeTotal.div(2)}
-              />
-            ),
+            content: <VolumeTotal />,
           },
         ]}
       />
       <SearchFilter />
-      <div sx={{ flex: "column", gap: 20 }}>
-        {omnipoolAndStablepool.isLoading
-          ? [...Array(3)].map((_, index) => (
-              <PoolSkeleton key={index} length={3} index={index} />
-            ))
-          : filteredPools?.map((pool) => <Pool key={pool.id} pool={pool} />)}
-      </div>
+
+      {pools.isLoading ? (
+        <PoolsTableSkeleton />
+      ) : (
+        <PoolsTable data={filteredPools} />
+      )}
     </>
   )
 }

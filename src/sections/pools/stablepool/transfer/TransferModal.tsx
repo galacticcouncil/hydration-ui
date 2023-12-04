@@ -12,8 +12,12 @@ import { Spinner } from "components/Spinner/Spinner.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useModalPagination } from "components/Modal/Modal.utils"
-import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
+import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 import { BN_0 } from "utils/constants"
+import { TStableSwap } from "api/assetDetails"
+import { useQueryClient } from "@tanstack/react-query"
+import { useAccountStore } from "state/store"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 export enum Page {
   OPTIONS,
@@ -24,10 +28,12 @@ export enum Page {
 }
 
 type Props = {
-  pool: TOmnipoolAsset
+  pool: Omit<
+    TPoolFullData,
+    "volumeDisplay" | "omnipoolNftPositions" | "miningNftPositions"
+  >
   isOpen: boolean
   onClose: () => void
-  refetchPositions: () => void
   defaultPage?: Page
 }
 
@@ -35,30 +41,33 @@ export const TransferModal = ({
   pool,
   isOpen,
   onClose,
-  refetchPositions,
   defaultPage,
 }: Props) => {
-  const {
-    assets,
-    id: poolId,
-    stablepoolBalanceByAsset: balanceByAsset,
-    reserves,
-    stablepoolFee: fee,
-    tradability: { canAddLiquidity },
-  } = pool
+  const rpcProvider = useRpcProvider()
+  const { account } = useAccountStore()
+  const queryClient = useQueryClient()
+
+  const { id: poolId, reserves, stablepoolFee: fee, canAddLiquidity } = pool
+
+  const meta = rpcProvider.assets.getAsset(poolId) as TStableSwap
+
   const { t } = useTranslation()
-  const [assetId, setAssetId] = useState<string | undefined>(assets?.[0])
+  const [assetId, setAssetId] = useState<string | undefined>(meta.assets[0])
   const [sharesAmount, setSharesAmount] = useState<string>()
 
   const { page, direction, paginateTo } = useModalPagination(
     defaultPage ?? Page.OPTIONS,
   )
 
-  const rpcProvider = useRpcProvider()
-
   const [selectedOption, setSelectedOption] = useState<Option>(
     canAddLiquidity ? "OMNIPOOL" : "STABLEPOOL",
   )
+
+  const refetchPositions = () => {
+    queryClient.refetchQueries(
+      QUERY_KEYS.accountOmnipoolPositions(account?.address),
+    )
+  }
 
   const isStablepool = selectedOption === "STABLEPOOL"
 
@@ -147,7 +156,6 @@ export const TransferModal = ({
             content: (
               <AddStablepoolLiquidity
                 poolId={poolId}
-                balanceByAsset={balanceByAsset}
                 onCancel={onClose}
                 onClose={() => {
                   if (isStablepool) {
@@ -214,7 +222,7 @@ export const TransferModal = ({
               <AssetsModalContent
                 hideInactiveAssets={true}
                 allAssets={true}
-                allowedAssets={assets}
+                allowedAssets={meta.assets}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   paginateTo(Page.ADD_LIQUIDITY)

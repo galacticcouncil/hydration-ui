@@ -22,6 +22,7 @@ import { useTokensBalances } from "api/balances"
 import IconWarning from "assets/icons/WarningIcon.svg?react"
 import * as xyk from "@galacticcouncil/math-xyk"
 import { useXYKConsts } from "api/xyk"
+import { TShareToken } from "api/assetDetails"
 
 type Props = {
   assetId: string
@@ -41,7 +42,8 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
   const xykConsts = useXYKConsts()
   const { t } = useTranslation()
 
-  const [assetA, assetB] = assets.getAssets(pool.assets)
+  const shareTokenMeta = assets.getAsset(pool.id) as TShareToken
+  const [assetA, assetB] = assets.getAssets(shareTokenMeta.assets)
 
   const [formAssets] = useState({
     assetA,
@@ -180,7 +182,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
               i18nKey="liquidity.add.modal.xyk.toast.onLoading"
               tOptions={{
                 shares: calculatedShares,
-                fixedPointScale: pool.shareTokenMeta.decimals,
+                fixedPointScale: shareTokenMeta.decimals,
               }}
             >
               <span />
@@ -193,7 +195,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
               i18nKey="liquidity.add.modal.xyk.toast.onLoading"
               tOptions={{
                 shares: calculatedShares,
-                fixedPointScale: pool.shareTokenMeta.decimals,
+                fixedPointScale: shareTokenMeta.decimals,
               }}
             >
               <span />
@@ -206,7 +208,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
               i18nKey="liquidity.add.modal.xyk.toast.onLoading"
               tOptions={{
                 shares: calculatedShares,
-                fixedPointScale: pool.shareTokenMeta.decimals,
+                fixedPointScale: shareTokenMeta.decimals,
               }}
             >
               <span />
@@ -382,7 +384,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
           label="Received amount of Pool Shares:"
           content={t("value.token", {
             value: calculatedShares,
-            fixedPointScale: pool.shareTokenMeta.decimals,
+            fixedPointScale: shareTokenMeta.decimals,
           })}
         />
 

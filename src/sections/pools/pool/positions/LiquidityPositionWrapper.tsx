@@ -1,14 +1,13 @@
 import { Text } from "components/Typography/Text/Text"
-import { SPositions } from "sections/pools/pool/Pool.styled"
 import { useTranslation } from "react-i18next"
 import { LiquidityPosition } from "./LiquidityPosition"
 import ChartIcon from "assets/icons/ChartIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
+import { TPool, TPoolDetails } from "sections/pools/PoolsPage.utils"
 
 type Props = {
-  positions: TOmnipoolAsset["omnipoolNftPositions"]
-  pool: TOmnipoolAsset
+  positions: TPoolDetails["omnipoolNftPositions"]
+  pool: TPool
   refetchPositions: () => void
 }
 
@@ -19,10 +18,10 @@ export const LiquidityPositionWrapper = ({
 }: Props) => {
   const { t } = useTranslation()
 
-  if (!pool.omnipoolNftPositions.length) return null
+  if (!positions.length) return null
 
   return (
-    <SPositions>
+    <div>
       <div sx={{ flex: "row", align: "center", gap: 8, mb: 20 }}>
         <Icon size={13} sx={{ color: "pink600" }} icon={<ChartIcon />} />
         <Text fs={[16, 16]} color="pink600">
@@ -40,6 +39,6 @@ export const LiquidityPositionWrapper = ({
           />
         ))}
       </div>
-    </SPositions>
+    </div>
   )
 }

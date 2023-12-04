@@ -5,10 +5,10 @@ import { useAccountStore } from "state/store"
 import { SButton } from "sections/pools/pool/positions/LiquidityPosition.styled"
 import { Icon } from "components/Icon/Icon"
 import MinusIcon from "assets/icons/MinusIcon.svg?react"
-import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
+import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 
 type Props = {
-  pool: TOmnipoolAsset
+  pool: TPoolFullData
   onSuccess: () => void
 }
 
@@ -22,6 +22,7 @@ export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
       <SButton
         variant="secondary"
         size="small"
+        fullWidth
         onClick={() => setOpenRemove(true)}
         disabled={account?.isExternalWalletConnected}
       >

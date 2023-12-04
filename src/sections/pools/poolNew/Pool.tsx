@@ -1,27 +1,45 @@
 import { SPoolContainer } from "./Pool.styled"
-import { TOmnipoolAsset, TXYKPool } from "sections/pools/PoolsPage.utils"
-import { Separator } from "components/Separator/Separator"
-import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { isXYKPool } from "sections/pools/PoolsPage.utils"
+import {
+  TPool,
+  TXYKPool,
+  usePoolDetails,
+  useXYKPoolDetails,
+} from "sections/pools/PoolsPage.utils"
 import { PoolDetails } from "./components/PoolDetails"
 import { AvailableFarms } from "./components/AvailableFarms"
-import { MyPositions } from "./components/MyPositions"
+import { MyPositions, MyXYKPositions } from "./components/MyPositions"
+import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
+import { PoolSkeleton } from "./PoolSkeleton"
 
-export const PoolNew = ({ pool }: { pool: TOmnipoolAsset | TXYKPool }) => {
-  const { t } = useTranslation()
+export const PoolWrapper = ({ pool }: { pool: TPool | TXYKPool }) => {
+  const isXYK = isXYKPoolType(pool)
 
-  const isXYK = isXYKPool(pool)
+  return isXYK ? <XYKPool pool={pool} /> : <Pool pool={pool} />
+}
+
+const Pool = ({ pool }: { pool: TPool }) => {
+  const poolDetails = usePoolDetails(pool.id)
+
+  if (poolDetails.isInitialLoading) return <PoolSkeleton />
 
   return (
     <SPoolContainer>
-      <PoolDetails pool={pool} />
-      <div sx={{ p: 30, bg: "gray" }}>
-        <MyPositions pool={pool} />
-        {/*TODO: conditional from the overview page if there is farms, if so render that component */}
-        <AvailableFarms pool={pool} />
-      </div>
+      <PoolDetails pool={{ ...pool, ...poolDetails.data }} />
+      <MyPositions pool={{ ...pool, ...poolDetails.data }} />
+      <AvailableFarms pool={pool} />
+    </SPoolContainer>
+  )
+}
+
+const XYKPool = ({ pool }: { pool: TXYKPool }) => {
+  const poolDetails = useXYKPoolDetails(pool)
+
+  if (poolDetails.isInitialLoading) return <PoolSkeleton />
+
+  return (
+    <SPoolContainer>
+      <PoolDetails pool={{ ...pool, ...poolDetails.data }} />
+      <MyXYKPositions pool={{ ...pool }} />
     </SPoolContainer>
   )
 }

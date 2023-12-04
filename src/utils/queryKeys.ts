@@ -340,11 +340,7 @@ export const QUERY_KEYS = {
     positionId,
   ],
   stableswapPools: [QUERY_KEY_PREFIX, "stableswapPools"],
-  stableswapPool: (id: u32 | string) => [
-    QUERY_KEY_PREFIX,
-    "stableswapPool",
-    id?.toString(),
-  ],
+  stableswapPool: (id?: string) => [QUERY_KEY_PREFIX, "stableswapPool", id],
   lbpPool: ["lbpPool"],
   bondEvents: (id?: Maybe<string>, myEvents?: boolean) => [
     "bondEvents",

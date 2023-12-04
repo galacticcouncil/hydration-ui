@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { TOmnipoolAsset, TXYKPool } from "sections/pools/PoolsPage.utils"
+import { TPool } from "sections/pools/PoolsPage.utils"
 import { useFarms } from "api/farms"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { useState } from "react"
@@ -9,11 +9,7 @@ import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetail
 import { useBestNumber } from "api/chain"
 import { Text } from "components/Typography/Text/Text"
 
-export const AvailableFarms = ({
-  pool,
-}: {
-  pool: TOmnipoolAsset | TXYKPool
-}) => {
+export const AvailableFarms = ({ pool }: { pool: TPool }) => {
   const { t } = useTranslation()
   const [selectedFarmId, setSelectedFarmId] = useState<{
     yieldFarmId: u32
@@ -38,8 +34,10 @@ export const AvailableFarms = ({
 
   return (
     <>
-      <div sx={{ flex: "column", gap: 10 }}>
-        <Text fs={18}>Available farms</Text>
+      <div
+        sx={{ flex: "column", gap: 10, p: ["0px 12px 12px", 30], bg: "gray" }}
+      >
+        <Text fs={18}>{t("farms.modal.joinedFarms.available.label")}</Text>
         <div sx={{ flex: "column", gap: 20 }}>
           {farms.data.map((farm, i) => {
             return (
@@ -57,17 +55,6 @@ export const AvailableFarms = ({
             )
           })}
         </div>
-        {/**Add Join All farms button */}
-        {/*<Button
-          fullWidth
-          variant="primary"
-          onClick={() => mutation.mutate()}
-          isLoading={mutation.isLoading}
-        >
-          {t("farms.modal.join.button.label", {
-            count: farms.length,
-          })}
-        </Button>*/}
       </div>
       {selectedFarm && (
         <Modal

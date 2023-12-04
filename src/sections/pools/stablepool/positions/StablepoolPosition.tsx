@@ -7,40 +7,45 @@ import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
-import { SPositions } from "sections/pools/pool/Pool.styled"
 import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useRpcProvider } from "providers/rpcProvider"
-import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
+import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 import {
   Page,
   TransferModal,
 } from "sections/pools/stablepool/transfer/TransferModal"
 import { useState } from "react"
+import { TStableSwap } from "api/assetDetails"
+import { useTokenBalance } from "api/balances"
+import { useAccountStore } from "state/store"
 
 type Props = {
-  pool: TOmnipoolAsset
+  pool: TPoolFullData
   refetchPositions: () => void
 }
 
 export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
+  const { account } = useAccountStore()
 
   const [transferOpen, setTransferOpen] = useState<Page>()
 
-  const meta = assets.getAsset(pool.id.toString())
-  const amount = pool.stablepoolUserPosition ?? BN_0
+  const meta = assets.getAsset(pool.id) as TStableSwap
 
+  const shareTokensBalance = useTokenBalance(pool.id, account?.address)
+
+  const amount = shareTokensBalance.data?.freeBalance ?? BN_0
   const spotPrice = pool.spotPrice
   const providedAmountPrice = spotPrice
     ? amount.multipliedBy(spotPrice).shiftedBy(-meta.decimals)
     : BN_0
 
   return (
-    <SPositions>
+    <>
       <div sx={{ flex: "row", align: "center", gap: 8, mb: 20 }}>
         <Icon
           size={15}
@@ -55,42 +60,41 @@ export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
         <SContainer>
           <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
             <div sx={{ flex: "row", gap: 7, align: "center" }}>
-              {pool.assets && (
+              {meta.assets && (
                 <MultipleIcons
-                  size={15}
-                  icons={pool.assets.map((assetId) => ({
+                  size={26}
+                  icons={meta.assets.map((assetId) => ({
                     icon: <AssetLogo id={assetId} />,
                   }))}
                 />
               )}
-              <Text fs={18} color="white">
-                {t("liquidity.stablepool.position.title")}
-              </Text>
             </div>
-            <div css={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
+            <div sx={{ flex: "row", justify: "space-between" }}>
               <div sx={{ flex: "column", gap: 6 }}>
                 <Text fs={14} color="whiteish500">
                   {t("liquidity.stablepool.position.amount")}
                 </Text>
-                <Text>
-                  {t("value.token", {
-                    value: amount,
-                    fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
-                    numberSuffix: ` ${t(
-                      "liquidity.stablepool.position.token",
-                    )}`,
-                  })}
-                </Text>
-                <DollarAssetValue
-                  value={providedAmountPrice}
-                  wrapper={(children) => (
-                    <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
-                      {children}
-                    </Text>
-                  )}
-                >
-                  <DisplayValue value={providedAmountPrice} />
-                </DollarAssetValue>
+                <div>
+                  <Text>
+                    {t("value.token", {
+                      value: amount,
+                      fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
+                      numberSuffix: ` ${t(
+                        "liquidity.stablepool.position.token",
+                      )}`,
+                    })}
+                  </Text>
+                  <DollarAssetValue
+                    value={providedAmountPrice}
+                    wrapper={(children) => (
+                      <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                        {children}
+                      </Text>
+                    )}
+                  >
+                    <DisplayValue value={providedAmountPrice} />
+                  </DollarAssetValue>
+                </div>
               </div>
               <Separator orientation="vertical" />
               <div sx={{ flex: "column", gap: 6 }}>
@@ -99,38 +103,39 @@ export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
                     {t("liquidity.asset.positions.position.currentValue")}
                   </Text>
                 </div>
-                <Text>
-                  {t("value.token", {
-                    value: amount,
-                    fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
-                  })}
-                </Text>
-                <DollarAssetValue
-                  value={providedAmountPrice}
-                  wrapper={(children) => (
-                    <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
-                      {children}
-                    </Text>
-                  )}
-                >
-                  <DisplayValue value={providedAmountPrice} />
-                </DollarAssetValue>
+
+                <div>
+                  <Text>
+                    {t("value.token", {
+                      value: amount,
+                      fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
+                    })}
+                  </Text>
+                  <DollarAssetValue
+                    value={providedAmountPrice}
+                    wrapper={(children) => (
+                      <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                        {children}
+                      </Text>
+                    )}
+                  >
+                    <DisplayValue value={providedAmountPrice} />
+                  </DollarAssetValue>
+                </div>
               </div>
             </div>
           </div>
           <div
             sx={{
-              flex: "column",
-              align: "end",
-              height: "100%",
-              justify: "center",
-              gap: 8,
+              flex: "row",
+              gap: 12,
             }}
           >
             <SOmnipoolButton
               size="small"
+              fullWidth
               onClick={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
-              disabled={!pool.tradability.canAddLiquidity}
+              disabled={!pool.canAddLiquidity}
             >
               <div sx={{ flex: "row", align: "center", justify: "center" }}>
                 <Icon icon={<PlusIcon />} sx={{ mr: 8 }} />
@@ -141,15 +146,14 @@ export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
           </div>
         </SContainer>
       </div>
-      {transferOpen !== undefined && pool.isStablepool && (
+      {transferOpen !== undefined && (
         <TransferModal
           pool={pool}
-          isOpen={true}
+          isOpen
           defaultPage={transferOpen}
           onClose={() => setTransferOpen(undefined)}
-          refetchPositions={refetchPositions}
         />
       )}
-    </SPositions>
+    </>
   )
 }

@@ -3,9 +3,11 @@ import { useCallback } from "react"
 
 export const useSearchFilter = () => {
   const navigate = useNavigate()
+
   const { search } = useSearch<{
     Search: {
       search?: string
+      id?: number
     }
   }>()
 

@@ -8,18 +8,18 @@ import {
   TableHeaderContent,
   TableRow,
 } from "components/Table/Table.styled"
-import { useOmnipoolPoolTable } from "./PoolsTable.utils"
-import { TPool } from "sections/pools/PoolsPage.utils"
+import { usePoolTable } from "./PoolsTable.utils"
+import { TPool, TXYKPool } from "sections/pools/PoolsPage.utils"
 import { useNavigate } from "@tanstack/react-location"
-import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
-import { useState } from "react"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
 
-export const PoolsTable = ({ data }: { data: TPool[] }) => {
-  const [addLiquidityPool, setAddLiquidityPool] = useState<TPool | undefined>(
-    undefined,
-  )
-
+export const PoolsTable = ({
+  data,
+  isXyk = false,
+}: {
+  data: TPool[] | TXYKPool[]
+  isXyk?: boolean
+}) => {
   const navigate = useNavigate()
 
   const onRowSelect = (id: string) =>
@@ -27,7 +27,7 @@ export const PoolsTable = ({ data }: { data: TPool[] }) => {
       search: { id },
     })
 
-  const table = useOmnipoolPoolTable(data, setAddLiquidityPool)
+  const table = usePoolTable(data, isXyk)
 
   return (
     <>
@@ -42,6 +42,10 @@ export const PoolsTable = ({ data }: { data: TPool[] }) => {
                     canSort={header.column.getCanSort()}
                     sortDirection={header.column.getIsSorted()}
                     onSort={header.column.getToggleSortingHandler()}
+                    css={{
+                      width:
+                        header.getSize() !== 150 ? header.getSize() : "auto",
+                    }}
                   >
                     {flexRender(
                       header.column.columnDef.header,
@@ -56,7 +60,7 @@ export const PoolsTable = ({ data }: { data: TPool[] }) => {
             {table.getRowModel().rows.map((row, i) => (
               <TableRow
                 isOdd={!(i % 2)}
-                onClick={() => onRowSelect(row.original.assetId)}
+                onClick={() => onRowSelect(row.original.id)}
                 key={row.id}
                 css={{ cursor: "pointer" }}
               >
@@ -77,13 +81,6 @@ export const PoolsTable = ({ data }: { data: TPool[] }) => {
           </TableBodyContent>
         </Table>
       </TableContainer>
-      {addLiquidityPool && (
-        <AddLiquidity
-          isOpen
-          onClose={() => setAddLiquidityPool(undefined)}
-          pool={addLiquidityPool}
-        />
-      )}
     </>
   )
 }

@@ -7,7 +7,6 @@ import { u32 } from "@polkadot/types-codec"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { PROVIDERS, useIndexerUrl, useProviderRpcUrlStore } from "./provider"
-import { useCallback } from "react"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 
@@ -311,11 +310,18 @@ export function getXYKVolumeAssetTotalValue(
   )
 }
 
-export const useVolume = (assetId?: string) => {
-  return useQuery(QUERY_KEYS.volumeDaily(assetId), async () => {
-    const data = await getVolumeDaily(assetId)
-    return { volume: BN(data[0].volume_usd), assetId }
-  })
+export const useVolume = (assetId?: string | "all") => {
+  return useQuery(
+    QUERY_KEYS.volumeDaily(assetId),
+    assetId
+      ? async () => {
+          const id = assetId === "all" ? undefined : assetId
+          const data = await getVolumeDaily(id)
+          return { volume: BN(data[0].volume_usd), assetId }
+        }
+      : undefinedNoop,
+    { enabled: !!assetId },
+  )
 }
 
 export const useVolumes = (assetIds: string[]) => {
@@ -343,61 +349,4 @@ const getVolumeDaily = async (assetId?: string) => {
   const data: Promise<{ volume_usd: number }[]> = res.json()
 
   return data
-}
-
-export function useAllStableswapTrades() {
-  const indexerUrl = useIndexerUrl()
-
-  return useQuery(
-    QUERY_KEYS.allStableswapTrades,
-    getAllStableswapTrades(indexerUrl),
-    {
-      select: useCallback((data: { events: TradeType[] }) => {
-        return data.events.reduce<Record<string, TradeType[]>>((acc, event) => {
-          acc[event.args.assetIn]
-            ? acc[event.args.assetIn].push(event)
-            : (acc[event.args.assetIn] = [event])
-
-          return acc
-        }, {})
-      }, []),
-      refetchInterval: 60000,
-    },
-  )
-}
-
-export const getAllStableswapTrades = (indexerUrl: string) => async () => {
-  const after = addDays(new Date(), -1).toISOString()
-
-  // This is being typed manually, as GraphQL schema does not
-  // describe the event arguments at all
-  return {
-    ...(await request<{
-      events: Array<TradeType>
-    }>(
-      indexerUrl,
-      gql`
-        query TradeVolume($after: DateTime!) {
-          events(
-            where: {
-              name_eq: "Stableswap.SellExecuted"
-              block: { timestamp_gte: $after }
-              OR: {
-                name_eq: "Stableswap.BuyExecuted"
-                block: { timestamp_gte: $after }
-              }
-            }
-          ) {
-            id
-            name
-            args
-            block {
-              timestamp
-            }
-          }
-        }
-      `,
-      { after },
-    )),
-  }
 }

@@ -74,6 +74,8 @@ export const ClaimRewardsCard = (props: {
     () => {},
   )
 
+  if (!claimable.data?.displayValue) return null
+
   return (
     <SContainer>
       <div
@@ -117,7 +119,8 @@ export const ClaimRewardsCard = (props: {
       </div>
       <Button
         variant="primary"
-        sx={{ height: "fit-content", width: ["100%", 168] }}
+        size="small"
+        sx={{ height: "fit-content", width: ["100%", 275] }}
         disabled={
           account?.isExternalWalletConnected ||
           (claimable.data && claimable.data.displayValue.isZero())
