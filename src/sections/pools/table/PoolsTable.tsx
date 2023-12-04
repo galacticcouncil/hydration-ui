@@ -10,7 +10,7 @@ import {
 } from "components/Table/Table.styled"
 import { usePoolTable } from "./PoolsTable.utils"
 import { TPool, TXYKPool } from "sections/pools/PoolsPage.utils"
-import { useNavigate } from "@tanstack/react-location"
+import { useNavigate, useSearch } from "@tanstack/react-location"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
 
 export const PoolsTable = ({
@@ -21,10 +21,11 @@ export const PoolsTable = ({
   isXyk?: boolean
 }) => {
   const navigate = useNavigate()
+  const search = useSearch()
 
   const onRowSelect = (id: string) =>
     navigate({
-      search: { id },
+      search: { ...search, id },
     })
 
   const table = usePoolTable(data, isXyk)

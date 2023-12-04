@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query"
+import { useTokenBalance } from "api/balances"
 import { SSeparator } from "components/Separator/Separator.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
@@ -17,6 +18,11 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
   const { account } = useAccountStore()
   const { t } = useTranslation()
   const miningPositions = useAllUserDepositShare()
+
+  const stablepoolBalance = useTokenBalance(
+    pool.isStablePool ? pool.id : undefined,
+    account?.address,
+  )
 
   const queryClient = useQueryClient()
 
@@ -37,7 +43,11 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
     }, BN_0)
   }, [miningPositions.data, pool.id])
 
-  if (!pool.miningNftPositions.length && !pool.omnipoolNftPositions.length)
+  if (
+    !pool.miningNftPositions.length &&
+    !pool.omnipoolNftPositions.length &&
+    !stablepoolBalance.data?.freeBalance
+  )
     return null
 
   const refetchPositions = () => {

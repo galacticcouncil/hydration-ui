@@ -69,7 +69,7 @@ export const MENU_ITEMS = [
   },
   {
     key: "liquidity",
-    href: LINKS.liquidity,
+    href: LINKS.allPools,
     Icon: PoolsAndFarmsIcon,
     subItems: undefined,
     enabled: true,
@@ -80,7 +80,7 @@ export const MENU_ITEMS = [
   },
   {
     key: "wallet",
-    href: LINKS.wallet,
+    href: LINKS.walletAssets,
     Icon: WalletIcon,
     subItems: undefined,
     enabled: true,
@@ -102,7 +102,7 @@ export const MENU_ITEMS = [
   },
   {
     key: "stats",
-    href: LINKS.stats,
+    href: LINKS.statsOverview,
     Icon: StatsIcon,
     subItems: undefined,
     enabled: isStatsEnabled,
