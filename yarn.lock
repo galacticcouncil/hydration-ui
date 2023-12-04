@@ -3070,10 +3070,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@1.8.2":
-  version "1.8.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.8.2.tgz#c8de0d4d9dd22ad3fdfdd6bc8ab64af96e0ec1db"
-  integrity sha512-vkAFcvgB2rL3t1yBTNCtNaAxY9zrvDF5S3oZnokE5QIVAdRqmr8spLFHjV1jz3xW/o/GhyVam4jXghUzYf963g==
+"@galacticcouncil/apps@1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-1.8.3.tgz#41cba03b40d9628307466eb61a29852d3836b662"
+  integrity sha512-N9hqYVG0T1h6Ni3DnSqI75tBmGQjMLAQltUNvnG2Ao+h6xnPseHos/zIslZ5YnFvxbbleXdIWyBGClq81gsTqQ==
   dependencies:
     "@talismn/connect-wallets" "^1.2.1"
     "@tanstack/table-core" "^8.5.17"
