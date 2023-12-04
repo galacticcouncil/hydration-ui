@@ -21,7 +21,7 @@ export const StatsTableContainer = styled.div`
   overflow: hidden;
   position: relative;
 
-  border-radius: ${theme.borderRadius.stakingCard}px;
+  border-radius: ${theme.borderRadius.medium}px;
   border: 1px solid rgba(152, 176, 214, 0.27);
 `
 

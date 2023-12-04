@@ -3,11 +3,11 @@ import { useTranslation } from "react-i18next"
 import { LiquidityPosition } from "./LiquidityPosition"
 import ChartIcon from "assets/icons/ChartIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { TPool, TPoolDetails } from "sections/pools/PoolsPage.utils"
+import { TPoolDetails, TPoolFullData } from "sections/pools/PoolsPage.utils"
 
 type Props = {
   positions: TPoolDetails["omnipoolNftPositions"]
-  pool: TPool
+  pool: TPoolFullData
   refetchPositions: () => void
 }
 

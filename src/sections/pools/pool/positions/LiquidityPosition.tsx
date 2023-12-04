@@ -28,12 +28,12 @@ import Skeleton from "react-loading-skeleton"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { useRpcProvider } from "providers/rpcProvider"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { TPool, TXYKPool } from "sections/pools/PoolsPage.utils"
+import { TPoolFullData, TXYKPool } from "sections/pools/PoolsPage.utils"
 
 type Props = {
   position: HydraPositionsTableData
   index: number
-  pool: TPool
+  pool: TPoolFullData
   onSuccess: () => void
 }
 
@@ -104,7 +104,7 @@ function LiquidityPositionJoinFarmButton(props: {
 export function LiquidityPositionRemoveLiquidity(
   props:
     | {
-        pool: TPool
+        pool: TPoolFullData
         position: HydraPositionsTableData
         onSuccess: () => void
       }

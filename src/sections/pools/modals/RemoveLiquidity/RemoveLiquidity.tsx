@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { RemoveLiquidityForm } from "./RemoveLiquidityForm"
 import { RemoveLiquidityModal as RemoveStablepoolLiquidityModal } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityModal"
-import { TPool, isXYKPoolType } from "sections/pools/PoolsPage.utils"
+import { TPoolFullData, isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { RemoveXYKLiquidityForm } from "./RemoveXYKLiquidityForm"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -13,7 +13,7 @@ type RemoveLiquidityProps = {
   onClose: () => void
   position?: HydraPositionsTableData
   onSuccess: () => void
-  pool: TPool | TXYKPool
+  pool: TPoolFullData | TXYKPool
 }
 
 export const RemoveLiquidity = ({
