@@ -135,5 +135,5 @@ const MyLiquidity = () => {
 }
 
 export const PoolNavigation = () => {
-  return <BackSubHeader label="Pool Detail" />
+  return <BackSubHeader label="Back Pool Details" />
 }
