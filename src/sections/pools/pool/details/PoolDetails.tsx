@@ -23,6 +23,7 @@ import {
   SValue,
   SValuesContainer,
 } from "sections/pools/pool/details/PoolDetails.styled"
+import { useAccountStore } from "state/store"
 
 export const PoolDetails = ({
   pool,
@@ -30,6 +31,7 @@ export const PoolDetails = ({
   pool: TPoolFullData | TXYKPoolFullData
 }) => {
   const { t } = useTranslation()
+  const { account } = useAccountStore()
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(pool.id)
 
@@ -89,6 +91,9 @@ export const PoolDetails = ({
             size="small"
             variant="primary"
             sx={{ width: ["100%", "auto"] }}
+            disabled={
+              !pool.canAddLiquidity || account?.isExternalWalletConnected
+            }
             onClick={() => {
               !ixXYKPool && pool.isStablePool
                 ? setLiquidityStablepool(Page.OPTIONS)
