@@ -75,7 +75,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   return (
     <div sx={{ flex: "column", gap: 12, p: 30, bg: "gray" }}>
       <Text fs={15} font="FontOver">
-        Your positions
+        {t("liquidity.pool.positions.title")}
       </Text>
       <div sx={{ flex: "column", gap: 18 }}>
         <div sx={{ flex: "row", align: "center", gap: 8 }}>

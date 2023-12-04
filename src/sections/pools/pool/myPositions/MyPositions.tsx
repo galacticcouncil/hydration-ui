@@ -7,7 +7,7 @@ import { TPoolFullData, TXYKPool } from "sections/pools/PoolsPage.utils"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
-import { XYKPosition } from "sections/pools/pool/xyk/position/XYKPosition"
+import { XYKPosition } from "sections/pools/pool/xykPosition/XYKPosition"
 import { StablepoolPosition } from "sections/pools/stablepool/positions/StablepoolPosition"
 import { useAccountStore } from "state/store"
 import { BN_0 } from "utils/constants"
@@ -49,20 +49,20 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
   return (
     <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
       <Text fs={15} font="FontOver">
-        Your positions
+        {t("liquidity.pool.positions.title")}
       </Text>
 
       <div sx={{ flex: "row", gap: 104, py: 16 }}>
         <div sx={{ flex: "column", gap: 6 }}>
           <Text fs={12} color="basic400">
-            Locked in pool
+            {t("liquidity.pool.positions.omnipool")}
           </Text>
           <Text color="white">{t("value.usd", { amount: totalOmnipool })}</Text>
         </div>
         <SSeparator color="white" opacity={0.06} orientation="vertical" />
         <div sx={{ flex: "column", gap: 6 }}>
           <Text fs={12} color="basic400">
-            Locked in farming
+            {t("liquidity.pool.positions.farming")}
           </Text>
           <Text color="white">{t("value.usd", { amount: totalFarms })}</Text>
         </div>

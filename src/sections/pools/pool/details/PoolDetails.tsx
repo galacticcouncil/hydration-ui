@@ -19,7 +19,10 @@ import {
   Page,
   TransferModal,
 } from "sections/pools/stablepool/transfer/TransferModal"
-import { SValue, SValuesContainer } from "./PoolDetails.styled"
+import {
+  SValue,
+  SValuesContainer,
+} from "sections/pools/pool/details/PoolDetails.styled"
 
 export const PoolDetails = ({
   pool,

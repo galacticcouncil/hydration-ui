@@ -10,9 +10,9 @@ import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { BN_0 } from "utils/constants"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useAssetsTableData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
-import { SInfoIcon } from "sections/pools/pool/Pool.styled"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
 type Props = { disconnected?: boolean }
 
