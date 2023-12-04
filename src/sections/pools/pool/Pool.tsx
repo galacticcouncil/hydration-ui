@@ -1,15 +1,18 @@
-import { SPoolContainer } from "./Pool.styled"
+import { SPoolContainer } from "sections/pools/poolNew/Pool.styled"
 import {
   TPool,
   TXYKPool,
   usePoolDetails,
   useXYKPoolDetails,
 } from "sections/pools/PoolsPage.utils"
-import { PoolDetails } from "./components/PoolDetails"
-import { AvailableFarms } from "./components/AvailableFarms"
-import { MyPositions, MyXYKPositions } from "./components/MyPositions"
+import { PoolDetails } from "sections/pools/poolNew/components/PoolDetails"
+import { AvailableFarms } from "sections/pools/poolNew/components/AvailableFarms"
+import {
+  MyPositions,
+  MyXYKPositions,
+} from "sections/pools/poolNew/components/MyPositions"
 import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
-import { PoolSkeleton } from "./PoolSkeleton"
+import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 
 export const PoolWrapper = ({ pool }: { pool: TPool | TXYKPool }) => {
   const isXYK = isXYKPoolType(pool)

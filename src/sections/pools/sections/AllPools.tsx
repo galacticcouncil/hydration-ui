@@ -11,11 +11,11 @@ import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
 import { PoolsTable } from "sections/pools/table/PoolsTable"
 import { useSearch } from "@tanstack/react-location"
-import { PoolWrapper } from "sections/pools/poolNew/Pool"
+import { PoolWrapper } from "sections/pools/pool/Pool"
 import { StablePoolsTotal } from "sections/pools/header/StablePoolsTotal"
 import { AllPoolsVolumeTotal } from "sections/pools/header/VolumeTotal"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
-import { PoolSkeleton } from "sections/pools/poolNew/PoolSkeleton"
+import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 
 export const AllPools = () => {
   const { t } = useTranslation()

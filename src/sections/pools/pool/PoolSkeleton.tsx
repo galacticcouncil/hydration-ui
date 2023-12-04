@@ -1,5 +1,5 @@
 import { GradientText } from "components/Typography/GradientText/GradientText"
-import { SPoolContainer } from "./Pool.styled"
+import { SPoolContainer } from "sections/pools/poolNew/Pool.styled"
 import { useTranslation } from "react-i18next"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
@@ -7,7 +7,10 @@ import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import Skeleton from "react-loading-skeleton"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
-import { SValue, SValuesContainer } from "./components/PoolDetails.styled"
+import {
+  SValue,
+  SValuesContainer,
+} from "sections/pools/poolNew/components/PoolDetails.styled"
 
 export const PoolSkeleton = () => {
   const { t } = useTranslation()

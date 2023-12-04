@@ -53,7 +53,7 @@ export const AddLiquidityForm = ({
     return () => {
       cancel()
     }
-  }, [])
+  }, [cancel])
 
   const { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance } =
     useAddLiquidity(assetId, assetValue)
@@ -136,12 +136,6 @@ export const AddLiquidityForm = ({
       },
     )
   }
-
-  useEffect(() => {
-    return () => {
-      form.reset()
-    }
-  }, [])
 
   return (
     <form

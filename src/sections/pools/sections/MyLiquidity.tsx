@@ -11,13 +11,13 @@ import { SearchFilter } from "sections/pools/filter/SearchFilter"
 import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
 import { PoolsTable } from "sections/pools/table/PoolsTable"
-import { PoolWrapper } from "sections/pools/poolNew/Pool"
+import { PoolWrapper } from "sections/pools/pool/Pool"
 import { useSearch } from "@tanstack/react-location"
 import { MyOmnipoolTotal } from "sections/pools/header/MyOmnipoolTotal"
 import { MyFarmsTotal } from "sections/pools/header/MyFarmsTotal"
 import { MyStablePoolsTotal } from "sections/pools/header/StablePoolsTotal"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
-import { PoolSkeleton } from "sections/pools/poolNew/PoolSkeleton"
+import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 
 const poolsWithMyPositions = true
 

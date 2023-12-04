@@ -12,9 +12,9 @@ import { PoolsTable } from "sections/pools/table/PoolsTable"
 import { StablePoolsTotal } from "sections/pools/header/StablePoolsTotal"
 import { VolumeTotal } from "sections/pools/header/VolumeTotal"
 import { useSearch } from "@tanstack/react-location"
-import { PoolWrapper } from "sections/pools/poolNew/Pool"
+import { PoolWrapper } from "sections/pools/pool/Pool"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
-import { PoolSkeleton } from "sections/pools/poolNew/PoolSkeleton"
+import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 
 export const OmnipoolAndStablepool = () => {
   const { t } = useTranslation()
