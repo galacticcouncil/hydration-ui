@@ -196,30 +196,35 @@ function normalize(str: string) {
 
 /**
  * Searches an array of objects for a given search string in specified keys.
+ * Keys order is an important. Result will be ordered by keys order in the array.
  */
 export function arraySearch<T extends Record<string, any>>(
   array: Array<T>,
   search = "",
   keys?: Array<Extract<KeyOfType<T, string>, string>>,
 ) {
-  return array.filter((item) => {
-    let found = false
+  return array
+    .reduce<Array<Array<T>>>((memo, item) => {
+      const searchableKeys =
+        keys || Object.keys(item).filter((key) => typeof item[key] === "string")
 
-    // search only in keys with string values
-    const searchableKeys =
-      keys || Object.keys(item).filter((key) => typeof item[key] === "string")
+      searchableKeys.some((key, index) => {
+        const normalizedSearch = normalize(search)
+        const tokens = tokenize(normalizedSearch)
+        const values = tokenize(normalize(item[key].toString()))
 
-    searchableKeys.forEach((key) => {
-      const normalizedSearch = normalize(search)
-      const tokens = tokenize(normalizedSearch)
-      const values = tokenize(normalize(item[key].toString()))
+        return values.some((value) => {
+          if (tokens.some((token) => value.includes(token))) {
+            memo[index] ? memo[index].push(item) : (memo[index] = [item])
 
-      values.forEach((value) => {
-        if (tokens.some((token) => value.includes(token))) {
-          found = true
-        }
+            return true
+          }
+
+          return false
+        })
       })
-    })
-    return found
-  })
+
+      return memo
+    }, [])
+    .flat()
 }

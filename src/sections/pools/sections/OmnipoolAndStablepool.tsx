@@ -84,9 +84,9 @@ const OmnipoolAndStablepoolData = () => {
 
   const filteredPools =
     search && omnipoolAndStablepool.data
-      ? arraySearch(omnipoolAndStablepool.data, search, ["name", "symbol"])
+      ? arraySearch(omnipoolAndStablepool.data, search, ["symbol", "name"])
       : omnipoolAndStablepool.data
-
+  console.log(filteredPools, "filteredPools")
   return (
     <>
       <HeaderValues

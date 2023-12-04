@@ -184,7 +184,7 @@ export const useAssetsTableData = ({
         return a.symbol.localeCompare(b.symbol)
       })
 
-    return search ? arraySearch(rows, search, ["name", "symbol"]) : rows
+    return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
   }, [
     search,
     myTableData.data,

@@ -224,7 +224,7 @@ export const MyActiveBonds = ({
   }
 
   const filteredData = search
-    ? arraySearch(data, search, ["name", "symbol"])
+    ? arraySearch(data, search, ["symbol", "name"])
     : data
 
   return (
