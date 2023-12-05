@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-location"
 import { useSetAsFeePayment } from "api/payments"
 import BuyIcon from "assets/icons/BuyIcon.svg?react"
 import DollarIcon from "assets/icons/DollarIcon.svg?react"
-import SellIcon from "assets/icons/SellIcon.svg?react"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
+import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Button } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Modal } from "components/Modal/Modal"
@@ -36,7 +36,6 @@ export const WalletAssetsTableActionsMob = ({
   if (!row) return null
 
   const canBuy = row.tradability.inTradeRouter && row.tradability.canBuy
-  const canSell = row.tradability.inTradeRouter && row.tradability.canSell
 
   const isNativeAsset = row.id === NATIVE_ASSET_ID
 
@@ -143,30 +142,28 @@ export const WalletAssetsTableActionsMob = ({
             )}
           </div>
           <div sx={{ flex: "column", gap: 12 }}>
-            <div sx={{ flex: "row", gap: 12 }}>
-              <Link
-                to={LINKS.trade}
-                search={{ assetOut: row.id }}
-                disabled={!canBuy || account?.isExternalWalletConnected}
+            <Link
+              to={LINKS.trade}
+              search={canBuy ? { assetOut: row.id } : { assetIn: row.id }}
+              disabled={
+                !row.tradability.inTradeRouter ||
+                account?.isExternalWalletConnected
+              }
+              sx={{ width: "100%" }}
+            >
+              <Button
                 sx={{ width: "100%" }}
+                size="small"
+                disabled={
+                  !row.tradability.inTradeRouter ||
+                  account?.isExternalWalletConnected
+                }
               >
-                <Button sx={{ width: "100%" }} size="small" disabled={!canBuy}>
-                  <BuyIcon />
-                  {t("wallet.assets.table.actions.buy")}
-                </Button>
-              </Link>
-              <Link
-                to={LINKS.trade}
-                search={{ assetIn: row.id }}
-                disabled={!canSell || account?.isExternalWalletConnected}
-                sx={{ width: "100%" }}
-              >
-                <Button sx={{ width: "100%" }} size="small" disabled={!canSell}>
-                  <SellIcon />
-                  {t("wallet.assets.table.actions.sell")}
-                </Button>
-              </Link>
-            </div>
+                <BuyIcon />
+                {t("wallet.assets.table.actions.trade")}
+              </Button>
+            </Link>
+
             <Button
               sx={{ width: "100%" }}
               size="small"
@@ -176,6 +173,21 @@ export const WalletAssetsTableActionsMob = ({
               <TransferIcon />
               {t("wallet.assets.table.actions.transfer")}
             </Button>
+            <Link
+              to={LINKS.cross_chain}
+              disabled={account?.isExternalWalletConnected}
+              sx={{ width: "100%" }}
+            >
+              <Button
+                sx={{ width: "100%" }}
+                size="small"
+                disabled={account?.isExternalWalletConnected}
+              >
+                <PlusIcon />
+                {t("wallet.assets.table.actions.deposit")}
+              </Button>
+            </Link>
+
             <Button
               sx={{ width: "100%" }}
               size="small"

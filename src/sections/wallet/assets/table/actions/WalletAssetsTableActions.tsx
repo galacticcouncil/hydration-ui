@@ -1,8 +1,8 @@
 import BuyIcon from "assets/icons/BuyIcon.svg?react"
 import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
 import MoreIcon from "assets/icons/MoreDotsIcon.svg?react"
-import SellIcon from "assets/icons/SellIcon.svg?react"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
+import PlusIcon from "assets/icons/PlusIcon.svg?react"
 //import ClaimIcon from "assets/icons/ClaimIcon.svg?react"
 import DollarIcon from "assets/icons/DollarIcon.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
@@ -20,7 +20,7 @@ type Props = {
   symbol: string
   id: string
   onBuyClick: (() => void) | undefined
-  onSellClick: (() => void) | undefined
+  onDepositClick: (() => void) | undefined
   onTransferClick: () => void
   couldBeSetAsPaymentFee: boolean
   isExpanded: boolean
@@ -73,16 +73,7 @@ export const WalletAssetsTableActions = (props: Props) => {
             props.onBuyClick == null || account?.isExternalWalletConnected
           }
         >
-          {t("wallet.assets.table.actions.buy")}
-        </TableAction>
-        <TableAction
-          icon={<SellIcon />}
-          onClick={props.onSellClick}
-          disabled={
-            props.onSellClick == null || account?.isExternalWalletConnected
-          }
-        >
-          {t("wallet.assets.table.actions.sell")}
+          {t("wallet.assets.table.actions.trade")}
         </TableAction>
         {isLargeDesktop && (
           <TableAction
@@ -93,7 +84,13 @@ export const WalletAssetsTableActions = (props: Props) => {
             {t("wallet.assets.table.actions.transfer")}
           </TableAction>
         )}
-
+        <TableAction
+          icon={<PlusIcon />}
+          onClick={props.onDepositClick}
+          disabled={account?.isExternalWalletConnected}
+        >
+          {t("wallet.assets.table.actions.deposit")}
+        </TableAction>
         <Dropdown
           items={account?.isExternalWalletConnected ? [] : actionItems}
           onSelect={(item) => {
