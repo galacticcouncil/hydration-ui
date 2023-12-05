@@ -11,7 +11,7 @@ import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
 
 export const StatsOverview = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const omnipoolOverview = useOmnipoolAssetDetails()
+  const omnipoolOverview = useOmnipoolAssetDetails("tvl")
 
   return (
     <div sx={{ flex: "column", gap: [24, 50] }}>
