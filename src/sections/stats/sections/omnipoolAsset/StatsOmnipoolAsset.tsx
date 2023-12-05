@@ -153,6 +153,7 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
             cap: omnipoolAsset.cap.multipliedBy(100),
             pol: omnipoolAsset.pol,
             share: omnipoolAsset.tvl.div(omnipollTvl).multipliedBy(100),
+            assetId,
           }}
         />
         <SStatsCardContainer

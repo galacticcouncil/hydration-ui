@@ -96,6 +96,36 @@ const getTVL = async (assetId?: string) => {
   return data
 }
 
+export const useFee = (assetId?: string | "all") => {
+  return useQuery(
+    QUERY_KEYS.fee(assetId),
+    assetId
+      ? async () => {
+          const asset_id = assetId === "all" ? undefined : assetId
+          const data = await geFee(asset_id)
+          return data[0]
+        }
+      : undefinedNoop,
+    {
+      enabled: !!assetId,
+      refetchInterval: 60000,
+    },
+  )
+}
+
+const geFee = async (assetId?: string) => {
+  const res = await fetch(
+    `https://api.hydradx.io/hydradx-ui/v1/stats/fees/${
+      assetId != null ? `/${assetId}` : ""
+    }`,
+  )
+  const data: Promise<
+    { accrued_fees_usd: number; projected_apy_perc: number }[]
+  > = res.json()
+
+  return data
+}
+
 export const useAccountsIdentity = (addresses: string[]) => {
   const { api } = useRpcProvider()
 

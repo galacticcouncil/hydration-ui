@@ -83,7 +83,6 @@ export const QUERY_KEYS = {
     >,
   ) => [QUERY_KEY_PREFIX, "yieldFarms", ids],
   activeYieldFarms: (poolId: Maybe<u32 | string>) => [
-    QUERY_KEY_PREFIX,
     "activeYieldFarms",
     poolId?.toString(),
   ],
@@ -369,4 +368,5 @@ export const QUERY_KEYS = {
   volumeDaily: (assetId?: string) => ["volumeDaily", assetId],
   tvl: (assetId?: string) => ["tvl", assetId],
   identity: (address: string) => ["identity", address],
+  fee: (assetId?: string) => ["identity", assetId],
 } as const

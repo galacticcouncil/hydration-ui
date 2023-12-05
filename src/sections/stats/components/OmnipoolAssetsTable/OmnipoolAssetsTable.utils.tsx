@@ -34,6 +34,7 @@ export const useOmnipoolAssetsTable = (
     tvl: true,
     volume: isDesktop,
     fee: isDesktop,
+    apy: isDesktop,
     pol: isDesktop,
     actions: true,
   }
