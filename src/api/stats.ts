@@ -97,12 +97,18 @@ const getTVL = async (assetId?: string) => {
 }
 
 export const useFee = (assetId?: string | "all") => {
+  const { assets } = useRpcProvider()
+
   return useQuery(
     QUERY_KEYS.fee(assetId),
     assetId
       ? async () => {
           const asset_id = assetId === "all" ? undefined : assetId
           const data = await geFee(asset_id)
+
+          if (assets.native.id === asset_id)
+            return { ...data[0], projected_apy_perc: 0 }
+
           return data[0]
         }
       : undefinedNoop,
