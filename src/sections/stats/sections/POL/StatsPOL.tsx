@@ -8,7 +8,7 @@ import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
 import { SContainerVertical } from "sections/stats/StatsPage.styled"
 import { OmnipoolAssetsTableWrapperData } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
 import { useMemo } from "react"
-import { BN_0, BN_1 } from "utils/constants"
+import { BN_0 } from "utils/constants"
 
 export const StatsPOL = () => {
   const assetDetails = useOmnipoolAssetDetails()
@@ -27,7 +27,7 @@ export const StatsPOL = () => {
       { totalTvl: BN_0, totalPol: BN_0, totalVolume: BN_0 },
     )
 
-    const POLMultiplier = BN_1.minus(totalPol.div(totalTvl))
+    const POLMultiplier = totalPol.div(totalTvl)
 
     return {
       POLMultiplier,
