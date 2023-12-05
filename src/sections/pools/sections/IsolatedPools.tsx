@@ -89,7 +89,7 @@ const IsolatedPoolsData = () => {
             content: (
               <HeaderTotalData
                 isLoading={xylPools.isLoading}
-                value={totalVolume.div(2)}
+                value={totalVolume}
               />
             ),
           },

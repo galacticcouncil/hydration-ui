@@ -60,49 +60,11 @@ export const AllPools = () => {
   return <AllPoolsData />
 }
 
-const XYKPoolHeaderValue = () => {
-  const xylPools = useXYKPools()
-
-  const totalLocked = useMemo(() => {
-    if (xylPools.data) {
-      return xylPools.data.reduce((acc, xykPool) => {
-        return acc.plus(xykPool.totalDisplay ?? BN_0)
-      }, BN_0)
-    }
-    return BN_0
-  }, [xylPools.data])
-
-  return <HeaderTotalData isLoading={xylPools.isLoading} value={totalLocked} />
-}
-
-const XYKPoolsSection = () => {
-  const { t } = useTranslation()
-  const xylPools = useXYKPools()
-  const { search } = useSearchFilter()
-
-  if (!xylPools.data) return null
-
-  const filteredPools =
-    search && xylPools.data
-      ? arraySearch(xylPools.data, search, ["symbol", "name"])
-      : xylPools.data
-
-  return (
-    <div sx={{ flex: "column", gap: 20 }}>
-      <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
-        {t("liquidity.section.xyk")}
-      </Text>
-      {filteredPools.map((pool) => (
-        <XYKPool key={pool.id} pool={pool} />
-      ))}
-    </div>
-  )
-}
-
 const AllPoolsData = () => {
   const { t } = useTranslation()
   const { search } = useSearchFilter()
   const omnipoolAndStablepool = useOmnipoolAndStablepool()
+  const xylPools = useXYKPools()
 
   const omnipoolTotal = useMemo(() => {
     if (omnipoolAndStablepool.data) {
@@ -126,6 +88,15 @@ const AllPoolsData = () => {
     return BN_0
   }, [omnipoolAndStablepool.data])
 
+  const isolatedLocked = useMemo(() => {
+    if (xylPools.data) {
+      return xylPools.data.reduce((acc, xykPool) => {
+        return acc.plus(xykPool.totalDisplay ?? BN_0)
+      }, BN_0)
+    }
+    return BN_0
+  }, [xylPools.data])
+
   const omnipoolTradeTotal = useMemo(() => {
     return (
       omnipoolAndStablepool.data?.reduce(
@@ -135,10 +106,24 @@ const AllPoolsData = () => {
     )
   }, [omnipoolAndStablepool.data])
 
+  const totaXYKVolume = useMemo(() => {
+    if (xylPools.data) {
+      return xylPools.data.reduce((acc, xykPool) => {
+        return acc.plus(xykPool.volumeDisplay ?? BN_0)
+      }, BN_0)
+    }
+    return BN_0
+  }, [xylPools.data])
+
   const filteredPools =
     search && omnipoolAndStablepool.data
       ? arraySearch(omnipoolAndStablepool.data, search, ["symbol", "name"])
       : omnipoolAndStablepool.data
+
+  const filteredXYKPools =
+    search && xylPools.data
+      ? arraySearch(xylPools.data, search, ["symbol", "name"])
+      : xylPools.data
 
   return (
     <>
@@ -166,7 +151,12 @@ const AllPoolsData = () => {
             ? [
                 {
                   label: t("liquidity.header.isolated"),
-                  content: <XYKPoolHeaderValue />,
+                  content: (
+                    <HeaderTotalData
+                      isLoading={xylPools.isLoading}
+                      value={isolatedLocked}
+                    />
+                  ),
                 },
               ]
             : []),
@@ -177,7 +167,7 @@ const AllPoolsData = () => {
             content: (
               <HeaderTotalData
                 isLoading={omnipoolAndStablepool.isLoading}
-                value={omnipoolTradeTotal.div(2)}
+                value={omnipoolTradeTotal.div(2).plus(totaXYKVolume)}
               />
             ),
           },
@@ -195,7 +185,16 @@ const AllPoolsData = () => {
               ))
             : filteredPools?.map((pool) => <Pool key={pool.id} pool={pool} />)}
         </div>
-        {isXYKEnabled && <XYKPoolsSection />}
+        {filteredXYKPools?.length ? (
+          <div sx={{ flex: "column", gap: 20 }}>
+            <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
+              {t("liquidity.section.xyk")}
+            </Text>
+            {filteredXYKPools.map((pool) => (
+              <XYKPool key={pool.id} pool={pool} />
+            ))}
+          </div>
+        ) : null}
       </div>
     </>
   )

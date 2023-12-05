@@ -124,7 +124,7 @@ export const StatsOmnipoolAsset = () => {
 
 const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
   const { isLoaded } = useRpcProvider()
-  const overviewData = useOmnipoolAssetDetails()
+  const overviewData = useOmnipoolAssetDetails("tvl")
 
   const omnipoolAsset = overviewData.data.find(
     (overview) => overview.id === assetId,
@@ -153,6 +153,7 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
             cap: omnipoolAsset.cap.multipliedBy(100),
             pol: omnipoolAsset.pol,
             share: omnipoolAsset.tvl.div(omnipollTvl).multipliedBy(100),
+            assetId,
           }}
         />
         <SStatsCardContainer

@@ -26,6 +26,7 @@ export const AssetSelect = (props: {
 
   id: string
   balance: Maybe<BigNumber>
+  balanceMax?: BigNumber
   balanceLabel: string
   withoutMaxValue?: boolean
   withoutMaxBtn?: boolean
@@ -106,7 +107,7 @@ export const AssetSelect = (props: {
                     e.preventDefault()
                     if (props.balance != null) {
                       const value = getFloatingPointAmount(
-                        props.balance,
+                        props.balanceMax ?? props.balance,
                         decimals,
                       ).toString()
                       props.onChange(value)
