@@ -368,5 +368,5 @@ export const QUERY_KEYS = {
   volumeDaily: (assetId?: string) => ["volumeDaily", assetId],
   tvl: (assetId?: string) => ["tvl", assetId],
   identity: (address: string) => ["identity", address],
-  fee: (assetId?: string) => ["identity", assetId],
+  fee: (assetId?: string) => ["fee", assetId],
 } as const
