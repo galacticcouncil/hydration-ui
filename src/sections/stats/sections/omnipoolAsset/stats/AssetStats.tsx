@@ -36,7 +36,7 @@ const APYFarmStatsCard = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
     <AssetStatsCard
       title={t("stats.omnipool.stats.card.apy")}
       value={t("value.percentage.range", {
-        from: percentage.minApr.plus(apy),
+        from: percentage.minApr.lt(apy) ? percentage.minApr : BN(apy),
         to: percentage.maxApr.plus(apy),
       })}
       loading={farmAprs.isInitialLoading}

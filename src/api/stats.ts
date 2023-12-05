@@ -122,7 +122,7 @@ export const useFee = (assetId?: string | "all") => {
 const geFee = async (assetId?: string) => {
   const res = await fetch(
     `https://api.hydradx.io/hydradx-ui/v1/stats/fees/${
-      assetId != null ? `/${assetId}` : ""
+      assetId !== undefined ? `/${assetId}` : ""
     }`,
   )
   const data: Promise<

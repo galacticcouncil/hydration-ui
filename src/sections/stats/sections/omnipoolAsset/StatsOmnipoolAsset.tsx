@@ -124,7 +124,7 @@ export const StatsOmnipoolAsset = () => {
 
 const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
   const { isLoaded } = useRpcProvider()
-  const overviewData = useOmnipoolAssetDetails()
+  const overviewData = useOmnipoolAssetDetails("tvl")
 
   const omnipoolAsset = overviewData.data.find(
     (overview) => overview.id === assetId,

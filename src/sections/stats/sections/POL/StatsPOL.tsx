@@ -11,7 +11,7 @@ import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
 
 export const StatsPOL = () => {
-  const assetDetails = useOmnipoolAssetDetails()
+  const assetDetails = useOmnipoolAssetDetails("pol")
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const { POLMultiplier, totalVolume, totalPol } = useMemo(() => {

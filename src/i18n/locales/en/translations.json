@@ -110,7 +110,7 @@
   "value.usd": "{{ amount, bignumber(numberPrefix: '$'; type: 'dollar') }}",
   "value.displaySymbol": "{{ value, bignumber(type: 'dollar') }} {{ symbol }}",
   "value.percentage": "{{ value, bignumber(numberSuffix: '%'; type: 'percentage') }}",
-  "value.percentage.range": "{{ from, bignumber(type: 'percentage'; decimalPlaces: 0) }}-{{ to, bignumber(type: 'percentage'; decimalPlaces: 0) }}%",
+  "value.percentage.range": "{{ from, bignumber(type: 'percentage') }}-{{ to, bignumber(type: 'percentage') }}%",
   "value.APR": "{{ apr, bignumber(numberSuffix: '% APR'; type: 'percentage'; decimalPlaces: 0) }}",
   "value.APR.range": "{{ from, bignumber(type: 'percentage'; decimalPlaces: 0) }}-{{ to, bignumber(type: 'percentage'; decimalPlaces: 0) }}% APR",
   "value.multiAPR": "{{minApr, bignumber(type: 'percentage'; decimalPlaces: 0) }}-{{maxApr, bignumber(type: 'percentage'; decimalPlaces: 0) }}% APR",

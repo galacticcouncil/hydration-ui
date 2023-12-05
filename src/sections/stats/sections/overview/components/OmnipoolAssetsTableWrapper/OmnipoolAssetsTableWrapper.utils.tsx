@@ -52,7 +52,7 @@ const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   return (
     <Text color="white">
       {t("value.percentage.range", {
-        from: percentage.minApr.plus(apy),
+        from: percentage.minApr.lt(apy) ? percentage.minApr : BigNumber(apy),
         to: percentage.maxApr.plus(apy),
       })}
     </Text>
