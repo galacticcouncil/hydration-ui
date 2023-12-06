@@ -25,6 +25,13 @@ export const SContainer = styled(motion.div)<{
       );
       margin: 0 auto;
     `}
+
+  ${({ variant }) =>
+    variant === "gradient" &&
+    css`
+      width: 100%;
+    `}
+
   overflow: hidden;
   height: auto;
   min-height: var(--modal-header-height);
@@ -43,7 +50,7 @@ export const STitleGradient = styled(GradientText)`
     var(--modal-header-height) - var(--modal-header-padding-y) * 2 + 16px
   );
 
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 500;
   font-family: "FontOver", sans-serif;
 

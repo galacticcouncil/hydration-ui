@@ -11,9 +11,9 @@ export const TransactionCode = (props: ReactJsonViewProps) => (
     displayObjectSize={false}
     displayDataTypes={false}
     theme={{
-      base00: `rgba(${theme.rgbColors.black}, .15)`,
+      base00: `transparent`,
       base01: "#ddd",
-      base02: `rgba(${theme.rgbColors.black}, .15)`,
+      base02: `rgba(${theme.rgbColors.alpha0}, .06)`,
       base03: "white",
       base04: "purple",
       base05: "white",
@@ -32,12 +32,7 @@ export const TransactionCode = (props: ReactJsonViewProps) => (
     style={{
       fontFamily: "ChakraPetch",
       fontSize: "12px",
-
-      padding: "20px 30px",
       position: "relative",
-      left: -30,
-      right: -30,
-      width: "calc(100% + 30px * 2)",
     }}
   />
 )
