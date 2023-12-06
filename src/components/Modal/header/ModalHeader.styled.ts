@@ -46,14 +46,15 @@ export const SContainer = styled(motion.div)<{
   padding: var(--modal-header-padding-y) var(--modal-header-padding-x);
 
   > p {
-    text-align: ${({ centered }) => (centered ? "center" : "left")};
+    text-align: ${({ centered, variant }) =>
+      centered && variant !== "gradient" ? "center" : "left"};
     width: 100%;
   }
 `
 
 export const STitleGradient = styled(GradientText)`
   margin-top: calc(
-    var(--modal-header-height) - var(--modal-header-padding-y) * 2 + 4px
+    var(--modal-header-height) - var(--modal-header-padding-y) * 2 + 8px
   );
 
   font-size: 17px;

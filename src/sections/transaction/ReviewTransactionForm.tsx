@@ -271,7 +271,7 @@ export const ReviewTransactionForm = (
             </div>
             <div
               sx={{
-                mt: 24,
+                mt: ["auto", 24],
                 flex: "row",
                 justify: "space-between",
                 align: "start",
