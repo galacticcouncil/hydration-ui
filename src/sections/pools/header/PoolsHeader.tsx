@@ -11,7 +11,7 @@ export const HeaderSeparator = () => {
   return (
     <Separator
       sx={{
-        mb: [15, 0],
+        my: [16, 0],
         height: ["1px", "40px"],
       }}
       css={{ background: `rgba(${theme.rgbColors.white}, 0.12)` }}
@@ -56,11 +56,13 @@ export const HeaderValues = ({
         item.label ? (
           <div
             key={`${i}_content`}
-            sx={{ flex: ["row", "column"], justify: "space-between" }}
+            sx={{
+              flex: ["row", "column"],
+              align: ["center", "start"],
+              justify: "space-between",
+            }}
           >
-            <Text color="brightBlue300" sx={{ mb: 6 }}>
-              {item.label}
-            </Text>
+            <Text color="brightBlue300">{item.label}</Text>
             {content}
           </div>
         ) : (
@@ -79,9 +81,8 @@ export const HeaderValues = ({
     <div
       sx={{
         flex: ["column", "row"],
-        mb: 40,
+        mb: [24, 40],
         flexWrap: "wrap",
-        gap: [12, 0],
         align: ["normal", "center"],
         justify: "space-between",
       }}

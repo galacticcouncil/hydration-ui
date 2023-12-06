@@ -21,13 +21,16 @@ import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTabl
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { HydraPositionsDetailsMob } from "./details/HydraPositionsDetailsMob"
+import { TXYKPosition } from "./data/WalletAssetsHydraPositionsData.utils"
 
-type Props = { data: HydraPositionsTableData[] }
+type Props = { data: (HydraPositionsTableData | TXYKPosition)[] }
 
 export const WalletAssetsHydraPositions = ({ data }: Props) => {
   const { t } = useTranslation()
 
-  const [row, setRow] = useState<HydraPositionsTableData | undefined>(undefined)
+  const [row, setRow] = useState<
+    HydraPositionsTableData | TXYKPosition | undefined
+  >(undefined)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
