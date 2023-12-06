@@ -9,6 +9,11 @@ import { arraySearch, isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 import { calculatePositionLiquidity } from "utils/omnipool"
 import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
+import { useShareTokens } from "api/xyk"
+import { useAccountsBalances } from "api/accountBalances"
+import { useShareOfPools } from "api/pools"
+import { useDisplayShareTokenPrice } from "utils/displayAsset"
+import { BN_NAN } from "utils/constants"
 
 export const useOmnipoolPositionsData = ({
   search,
@@ -94,7 +99,6 @@ export const useOmnipoolPositionsData = ({
         return result
       })
       .filter((x): x is HydraPositionsTableData => x !== null)
-      .sort((a, b) => b.valueDisplay.minus(a.valueDisplay).toNumber())
 
     return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
   }, [
@@ -112,3 +116,116 @@ export const useOmnipoolPositionsData = ({
     isInitialLoading: isLoading,
   }
 }
+
+export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
+  const { assets } = useRpcProvider()
+  const shareTokens = useShareTokens()
+
+  const poolsAddress = shareTokens.data?.map((pool) => pool.poolAddress) ?? []
+  const shareTokensId =
+    shareTokens.data?.map((shareToken) => shareToken.shareTokenId) ?? []
+
+  const totalIssuances = useShareOfPools(shareTokensId)
+
+  const myShareTokens = useMemo(
+    () =>
+      totalIssuances.data?.filter(
+        (totalIssuance) => totalIssuance.myPoolShare?.gt(0),
+      ) ?? [],
+    [totalIssuances.data],
+  )
+
+  const myPools = useMemo(
+    () =>
+      shareTokens.data?.filter((pool) =>
+        myShareTokens.some(
+          (myShareToken) => myShareToken.asset === pool.shareTokenId,
+        ),
+      ) ?? [],
+    [myShareTokens, shareTokens.data],
+  )
+
+  const poolBalances = useAccountsBalances(poolsAddress)
+
+  const spotPrices = useDisplayShareTokenPrice(
+    myPools?.map((myPool) => myPool.shareTokenId) ?? [],
+  )
+
+  const isLoading =
+    shareTokens.isInitialLoading ||
+    totalIssuances.isInitialLoading ||
+    poolBalances.isInitialLoading ||
+    spotPrices.isInitialLoading
+
+  const data = useMemo(() => {
+    if (!myPools.length || !totalIssuances.data || !poolBalances.data) return []
+
+    const rows = myPools.map((myPool) => {
+      const meta = assets.getAsset(myPool.shareTokenId)
+
+      const totalIssuance = totalIssuances.data?.find(
+        (totalIssuance) => totalIssuance.asset === myPool.shareTokenId,
+      )
+
+      const poolBalance = poolBalances.data
+        ?.find(
+          (poolBalance) =>
+            poolBalance.accountId.toString() === myPool.poolAddress,
+        )
+        ?.balances.map((balance) => {
+          const balanceMeta = assets.getAsset(balance.id.toString())
+
+          const balanceHuman = balance.data.free
+            .toBigNumber()
+            .shiftedBy(-balanceMeta.decimals)
+            .multipliedBy(totalIssuance?.myPoolShare ?? 1)
+            .div(100)
+
+          return { balanceHuman, symbol: balanceMeta.symbol }
+        })
+
+      const spotPrice = spotPrices.data.find(
+        (spotPrice) => spotPrice.tokenIn === myPool.shareTokenId,
+      )
+
+      const amount =
+        totalIssuance?.totalShare
+          ?.multipliedBy(totalIssuance.myPoolShare ?? 1)
+          .div(100)
+          .shiftedBy(-meta.decimals) ?? BN_NAN
+
+      const valueDisplay = amount.multipliedBy(spotPrice?.spotPrice ?? 1)
+
+      return {
+        amount,
+        valueDisplay,
+        value: BN_NAN,
+        id: meta.id,
+        assetId: meta.id,
+        name: meta.name,
+        symbol: meta.symbol,
+        poolBalance,
+        isXykPosition: true,
+      }
+    })
+
+    return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
+  }, [
+    assets,
+    myPools,
+    poolBalances.data,
+    search,
+    spotPrices.data,
+    totalIssuances.data,
+  ])
+
+  return { data, isLoading }
+}
+
+export type TXYKPosition = NonNullable<
+  ReturnType<typeof useXykPositionsData>["data"]
+>[number]
+
+export const isXYKPosition = (
+  position: HydraPositionsTableData | TXYKPosition,
+): position is TXYKPosition => (position as TXYKPosition).isXykPosition
