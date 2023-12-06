@@ -1,4 +1,5 @@
 import styled from "@emotion/styled"
+import { theme } from "theme"
 import { ResponsiveValue, getResponsiveStyles } from "utils/responsive"
 
 export const IconsWrapper = styled.div<{
@@ -45,8 +46,10 @@ export const IconsWrapper = styled.div<{
     var(--logo-size) - var(--chain-size) / 2 + var(--chain-offset)
   );
 
-  mask: ${({ maskConfig }) => maskConfig.map(mapToMask).join(",")},
-    linear-gradient(black, black);
+  @media (${theme.viewport.gte.sm}) {
+    mask: ${({ maskConfig }) => maskConfig.map(mapToMask).join(",")},
+      linear-gradient(black, black);
+  }
 
   -webkit-mask-composite: destination-in;
   mask-composite: exclude;

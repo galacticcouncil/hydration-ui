@@ -17,7 +17,7 @@ export const StatsOverview = () => {
     <div sx={{ flex: "column", gap: [24, 50] }}>
       <div sx={{ flex: "row", gap: 20, height: ["auto", 690] }}>
         <PieWrapper
-          data={omnipoolOverview.data}
+          data={[...omnipoolOverview.data].reverse()}
           isLoading={omnipoolOverview.isLoading}
         />
         {isDesktop && (
