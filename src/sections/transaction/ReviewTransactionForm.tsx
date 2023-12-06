@@ -201,16 +201,11 @@ export const ReviewTransactionForm = (
 
   return (
     <>
-      <div sx={{ mb: 16 }}>
-        {props.title && (
-          <Text color="basic400" fw={400} sx={{ mt: 6 }}>
-            {props.title}
-          </Text>
-        )}
-        <Text fs={16} fw={400} color="basic400">
-          {t("liquidity.reviewTransaction.modal.desc")}
+      {props.title && (
+        <Text color="basic400" fw={400} sx={{ mb: 16 }}>
+          {props.title}
         </Text>
-      </div>
+      )}
       <ModalScrollableContent
         sx={{
           mx: "calc(-1 * var(--modal-content-padding))",

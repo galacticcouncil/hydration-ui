@@ -10,6 +10,7 @@ import { SContainer, SContent } from "./ModalContents.styled"
 
 export type ModalContentProps = {
   title?: string
+  description?: string
   headerVariant?: ModalHeaderVariant
   noPadding?: boolean
   hideBack?: boolean
@@ -45,6 +46,7 @@ export const ModalContents = ({
     !contents[page].hideBack && !!onBack && (forceBack || page > 0)
 
   const title = contents[page].title
+  const description = contents[page].description
   const headerVariant = contents[page].headerVariant || "gradient"
   const noPadding = contents[page].noPadding
 
@@ -62,6 +64,7 @@ export const ModalContents = ({
         <ModalHeaderTitle
           key={`title-${page}`}
           title={title}
+          description={description}
           variant={headerVariant}
           canBack={canBack}
           page={page}

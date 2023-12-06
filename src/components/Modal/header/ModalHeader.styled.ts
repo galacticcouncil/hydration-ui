@@ -58,7 +58,7 @@ export const STitleGradient = styled(GradientText)`
   background-clip: text;
 
   @media ${theme.viewport.gte.sm} {
-    font-size: 24px;
+    font-size: 19px;
   }
 `
 

@@ -11,6 +11,7 @@ import {
 
 type TitleProps = {
   title?: string
+  description?: string
   variant?: ModalHeaderVariant
   direction: number
   page: number
@@ -19,7 +20,10 @@ type TitleProps = {
 }
 
 export const ModalHeaderTitle = forwardRef<HTMLDivElement, TitleProps>(
-  ({ title, variant, direction, page, canBack, disableAnimation }, ref) => {
+  (
+    { title, description, variant, direction, page, canBack, disableAnimation },
+    ref,
+  ) => {
     const content = useMemo(() => {
       if (!title) return null
 
@@ -35,16 +39,32 @@ export const ModalHeaderTitle = forwardRef<HTMLDivElement, TitleProps>(
     }, [title, variant])
 
     return (
-      <SContainer
-        key={`title-${page}`}
-        ref={ref}
-        variant={variant}
-        centered={canBack}
-        custom={{ direction }}
-        {...(!disableAnimation ? motionProps : {})}
-      >
-        {content}
-      </SContainer>
+      <>
+        <SContainer
+          key={`title-${page}`}
+          ref={ref}
+          variant={variant}
+          centered={canBack}
+          custom={{ direction }}
+          {...(!disableAnimation ? motionProps : {})}
+        >
+          {content}
+        </SContainer>
+        {description && (
+          <Text
+            fs={16}
+            fw={400}
+            color="basic400"
+            sx={{
+              px: "var(--modal-header-padding-x)",
+              pb: "var(--modal-header-padding-y)",
+              mt: "calc(-1 * var(--modal-header-padding-y))",
+            }}
+          >
+            {description}
+          </Text>
+        )}
+      </>
     )
   },
 )
