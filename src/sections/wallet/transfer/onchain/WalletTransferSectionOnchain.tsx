@@ -62,9 +62,16 @@ export function WalletTransferSectionOnchain({
 
   const isTransferingPaymentAsset = accountCurrency.data === asset.toString()
 
+  const nativeFee = paymentInfoData?.partialFee.toBigNumber() ?? BN_0
+  const nativeDecimals = assets.native.decimals
+  const nativeDecimalsDiff =
+    nativeDecimals - (accountCurrencyMeta?.decimals ?? nativeDecimals)
+
+  const convertedFee = nativeFee.multipliedBy(spotPrice.data?.spotPrice ?? BN_1)
+
   const balance = tokenBalance.data?.balance
   const balanceMax = isTransferingPaymentAsset
-    ? balance?.minus(paymentInfoData?.partialFee.toBigNumber() ?? BN_0)
+    ? balance?.minus(convertedFee.div(BN_10.pow(nativeDecimalsDiff)))
     : balance
 
   const onSubmit = async (values: FormValues<typeof form>) => {
@@ -266,10 +273,8 @@ export function WalletTransferSectionOnchain({
           label={t("wallet.assets.transfer.transaction_cost")}
           content={
             paymentInfoData?.partialFee != null
-              ? t("liquidity.add.modal.row.transactionCostValue", {
-                  amount: new BigNumber(
-                    paymentInfoData.partialFee.toHex(),
-                  ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
+              ? t("value.tokenWithSymbol", {
+                  value: convertedFee,
                   symbol: accountCurrencyMeta?.symbol,
                   fixedPointScale: 12,
                 })
