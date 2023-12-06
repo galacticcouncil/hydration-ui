@@ -52,7 +52,7 @@ export const StatsPOL = () => {
     <div sx={{ flex: "column", gap: [24, 50] }}>
       <div sx={{ flex: "row", gap: 20 }}>
         <PieWrapper
-          data={assetDetails.data}
+          data={[...assetDetails.data].reverse()}
           isLoading={assetDetails.isLoading}
           POLMultiplier={POLMultiplier}
           totalVolume={totalVolume}
