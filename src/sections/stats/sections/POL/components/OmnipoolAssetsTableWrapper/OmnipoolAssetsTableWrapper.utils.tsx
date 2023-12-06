@@ -59,11 +59,11 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
       ),
     }),
     accessor("pol", {
-      id: "pol",
+      id: "treasury",
       header: t("stats.pol.table.assets.header.pol"),
       sortingFn: (a, b) => (a.original.pol.gt(b.original.pol) ? 1 : -1),
       cell: ({ row }) => (
-        <Text color="white">
+        <Text tAlign={["right", "left"]} color="white" fs={[13, 16]}>
           <DisplayValue value={row.original.pol} isUSD />
         </Text>
       ),
