@@ -1,4 +1,4 @@
-import BuyIcon from "assets/icons/BuyIcon.svg?react"
+import TradeIcon from "assets/icons/Fill.svg?react"
 import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
 import MoreIcon from "assets/icons/MoreDotsIcon.svg?react"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
@@ -67,7 +67,7 @@ export const WalletAssetsTableActions = (props: Props) => {
         }}
       >
         <TableAction
-          icon={<BuyIcon />}
+          icon={<TradeIcon />}
           onClick={props.onBuyClick}
           disabled={
             props.onBuyClick == null || account?.isExternalWalletConnected

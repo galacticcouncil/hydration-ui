@@ -87,7 +87,7 @@ export const useHydraPositionsTable = (
               <div sx={{ flex: "column", align: ["end", "start"] }}>
                 <div sx={{ flex: "row", gap: 4 }}>
                   <Text fs={16} lh={16} fw={500} color="white">
-                    {row.original.poolBalance
+                    {row.original.balances
                       ?.map((balance) =>
                         t("value.tokenWithSymbol", {
                           value: balance.balanceHuman,

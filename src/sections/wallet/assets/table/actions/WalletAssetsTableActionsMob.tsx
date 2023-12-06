@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-location"
 import { useSetAsFeePayment } from "api/payments"
-import BuyIcon from "assets/icons/BuyIcon.svg?react"
+import TradeIcon from "assets/icons/Fill.svg?react"
 import DollarIcon from "assets/icons/DollarIcon.svg?react"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
@@ -159,7 +159,7 @@ export const WalletAssetsTableActionsMob = ({
                   account?.isExternalWalletConnected
                 }
               >
-                <BuyIcon />
+                <TradeIcon />
                 {t("wallet.assets.table.actions.trade")}
               </Button>
             </Link>

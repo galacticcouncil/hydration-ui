@@ -14,6 +14,7 @@ import { useAccountsBalances } from "api/accountBalances"
 import { useShareOfPools } from "api/pools"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { BN_NAN } from "utils/constants"
+import { TShareToken } from "api/assetDetails"
 
 export const useOmnipoolPositionsData = ({
   search,
@@ -121,7 +122,6 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
   const { assets } = useRpcProvider()
   const shareTokens = useShareTokens()
 
-  const poolsAddress = shareTokens.data?.map((pool) => pool.poolAddress) ?? []
   const shareTokensId =
     shareTokens.data?.map((shareToken) => shareToken.shareTokenId) ?? []
 
@@ -145,7 +145,9 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
     [myShareTokens, shareTokens.data],
   )
 
-  const poolBalances = useAccountsBalances(poolsAddress)
+  const poolBalances = useAccountsBalances(
+    myPools?.map((myPool) => myPool.poolAddress) ?? [],
+  )
 
   const spotPrices = useDisplayShareTokenPrice(
     myPools?.map((myPool) => myPool.shareTokenId) ?? [],
@@ -161,18 +163,19 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
     if (!myPools.length || !totalIssuances.data || !poolBalances.data) return []
 
     const rows = myPools.map((myPool) => {
-      const meta = assets.getAsset(myPool.shareTokenId)
+      const meta = assets.getAsset(myPool.shareTokenId) as TShareToken
 
       const totalIssuance = totalIssuances.data?.find(
         (totalIssuance) => totalIssuance.asset === myPool.shareTokenId,
       )
 
-      const poolBalance = poolBalances.data
-        ?.find(
-          (poolBalance) =>
-            poolBalance.accountId.toString() === myPool.poolAddress,
-        )
-        ?.balances.map((balance) => {
+      const poolBalance = poolBalances.data?.find(
+        (poolBalance) =>
+          poolBalance.accountId.toString() === myPool.poolAddress,
+      )
+
+      const balances =
+        poolBalance?.balances.map((balance) => {
           const balanceMeta = assets.getAsset(balance.id.toString())
 
           const balanceHuman = balance.data.free
@@ -182,7 +185,23 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
             .div(100)
 
           return { balanceHuman, symbol: balanceMeta.symbol }
-        })
+        }) ?? []
+
+      if (meta.assets.includes(assets.native.id)) {
+        const balanceHuman =
+          poolBalance?.native.data.free
+            .toBigNumber()
+            .shiftedBy(-assets.native.decimals)
+            .multipliedBy(totalIssuance?.myPoolShare ?? 1)
+            .div(100) ?? BN_NAN
+
+        // order of the HDX in a share token pair
+        if (meta.assets[0] === assets.native.id) {
+          balances.unshift({ balanceHuman, symbol: assets.native.symbol })
+        } else {
+          balances.push({ balanceHuman, symbol: assets.native.symbol })
+        }
+      }
 
       const spotPrice = spotPrices.data.find(
         (spotPrice) => spotPrice.tokenIn === myPool.shareTokenId,
@@ -204,7 +223,7 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
         assetId: meta.id,
         name: meta.name,
         symbol: meta.symbol,
-        poolBalance,
+        balances,
         isXykPosition: true,
       }
     })
