@@ -49,21 +49,12 @@ export const ModalHeaderTitle = forwardRef<HTMLDivElement, TitleProps>(
           {...(!disableAnimation ? motionProps : {})}
         >
           {content}
+          {description && (
+            <Text fs={16} fw={400} color="basic400">
+              {description}
+            </Text>
+          )}
         </SContainer>
-        {description && (
-          <Text
-            fs={16}
-            fw={400}
-            color="basic400"
-            sx={{
-              px: "var(--modal-header-padding-x)",
-              pb: "var(--modal-header-padding-y)",
-              mt: "calc(-1 * var(--modal-header-padding-y))",
-            }}
-          >
-            {description}
-          </Text>
-        )}
       </>
     )
   },

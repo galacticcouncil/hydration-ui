@@ -38,16 +38,22 @@ export const SContainer = styled(motion.div)<{
   overflow: hidden;
 
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: ${({ centered, variant }) =>
     variant === "gradient" ? "flex-start" : centered ? "center" : "flex-start"};
 
   padding: var(--modal-header-padding-y) var(--modal-header-padding-x);
+
+  > p {
+    text-align: ${({ centered }) => (centered ? "center" : "left")};
+    width: 100%;
+  }
 `
 
 export const STitleGradient = styled(GradientText)`
   margin-top: calc(
-    var(--modal-header-height) - var(--modal-header-padding-y) * 2 + 16px
+    var(--modal-header-height) - var(--modal-header-padding-y) * 2 + 4px
   );
 
   font-size: 17px;
