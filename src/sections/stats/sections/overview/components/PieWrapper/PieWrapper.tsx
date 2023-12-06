@@ -10,6 +10,7 @@ import { BN_0 } from "utils/constants"
 import { useTranslation } from "react-i18next"
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
+import { Text } from "components/Typography/Text/Text"
 
 type PieWrapperProps = {
   data: TUseOmnipoolAssetDetailsData
@@ -36,7 +37,7 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
       { totalTvl: BN_0, totalPol: BN_0, totalVolume: BN_0 },
     )
   }, [data])
-
+  console.log(totalTvl.toString(), totalPol.toString(), totalVolume.toString())
   const pieChartValues = (
     <div sx={{ flex: "column", gap: 20 }}>
       <PieTotalValue
@@ -74,6 +75,10 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
         p: [20, 40],
       }}
     >
+      <Text>{t("value", { value: totalTvl })}</Text>
+      <Text>{t("value", { value: totalPol })}</Text>
+      <Text>{t("value", { value: totalVolume })}</Text>
+      <Text>{t("value", { value: data[1]?.pol })}</Text>
       {!isDesktop && (
         <ChartSwitchMobile onClick={setActiveSection} active={activeSection} />
       )}
