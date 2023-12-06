@@ -1,40 +1,7 @@
 const iconPaths = import.meta.glob("/src/assets/icons/*.svg")
 
-const BLACKLIST = [
-  "/src/assets/icons/ChartErrorIcon.svg",
-  "/src/assets/icons/ChartNoDataIcon.svg",
-  "/src/assets/icons/EmptyStateLPIcon.svg",
-  "/src/assets/icons/FullFailIcon.svg",
-  "/src/assets/icons/FullSuccessIcon.svg",
-  "/src/assets/icons/HydraLogoFull.svg",
-  "/src/assets/icons/IconAddressBook.svg",
-  "/src/assets/icons/HydraLogo.svg",
-  "/src/assets/icons/WalletConnect.svg",
-  "/src/assets/icons/NoActivities.svg",
-  "/src/assets/icons/PolkadotLogo.svg",
-  "/src/assets/icons/TablePlaceholderIcon.svg",
-  "/src/assets/icons/GuestIcon.svg",
-  "/src/assets/icons/FailIcon.svg",
-  "/src/assets/icons/ExternalWalletIcon.svg",
-  "/src/assets/icons/ErrorIcon.svg",
-  "/src/assets/icons/LPInfoIcon.svg",
-  "/src/assets/icons/TestnetIcon.svg",
-  "/src/assets/icons/TalismanLogo.svg",
-  "/src/assets/icons/UpdateMetadataIcon.svg",
-  "/src/assets/icons/StakingChart.svg",
-  "/src/assets/icons/StakingAccountIcon.svg",
-  "/src/assets/icons/TalismanLogo.svg",
-  "/src/assets/icons/WhyBonds.svg",
-  "/src/assets/icons/WhyBonds.svg",
-  "/src/assets/icons/WhyBonds.svg",
-  "/src/assets/icons/WhyBonds.svg",
-  "/src/assets/icons/PlaceholderIcon.svg",
-]
-
-const paths = Object.keys(iconPaths).filter((path) => !BLACKLIST.includes(path))
-
 const icons = await Promise.all(
-  paths.map(
+  Object.keys(iconPaths).map(
     async (path) =>
       await import(path + "?react").then((mod) => {
         return {
@@ -44,8 +11,6 @@ const icons = await Promise.all(
       }),
   ),
 )
-
-console.log({ icons })
 
 const Icons = () => {
   return (
