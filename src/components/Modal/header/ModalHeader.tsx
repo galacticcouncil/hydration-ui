@@ -39,23 +39,21 @@ export const ModalHeaderTitle = forwardRef<HTMLDivElement, TitleProps>(
     }, [title, variant])
 
     return (
-      <>
-        <SContainer
-          key={`title-${page}`}
-          ref={ref}
-          variant={variant}
-          centered={canBack}
-          custom={{ direction }}
-          {...(!disableAnimation ? motionProps : {})}
-        >
-          {content}
-          {description && (
-            <Text fs={16} fw={400} color="basic400">
-              {description}
-            </Text>
-          )}
-        </SContainer>
-      </>
+      <SContainer
+        key={`title-${page}`}
+        ref={ref}
+        variant={variant}
+        centered={canBack}
+        custom={{ direction }}
+        {...(!disableAnimation ? motionProps : {})}
+      >
+        {content}
+        {description && (
+          <Text fs={16} fw={400} color="basic400">
+            {description}
+          </Text>
+        )}
+      </SContainer>
     )
   },
 )
