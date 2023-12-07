@@ -2,7 +2,6 @@ import { Link, useSearch } from "@tanstack/react-location"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { ReactNode } from "react"
-import { theme } from "theme"
 import {
   SBadge,
   STabContainer,
@@ -23,18 +22,11 @@ export const SubNavigationTabLink = ({
   const search = useSearch()
 
   return (
-    <Link
-      to={to}
-      search={search}
-      css={{
-        "&:hover > div > p": { color: theme.colors.white },
-        height: "100%",
-      }}
-    >
+    <Link to={to} search={search} css={{ height: "100%" }}>
       {({ isActive }) => (
         <>
-          <STabContainer>
-            <Icon sx={{ color: "brightBlue300", mr: 5 }} icon={icon} />
+          <STabContainer active={isActive}>
+            <Icon icon={icon} />
             <Text fs={13} color={isActive ? "white" : "iconGray"}>
               {label}
             </Text>
