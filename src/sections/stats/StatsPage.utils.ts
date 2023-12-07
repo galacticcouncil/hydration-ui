@@ -157,12 +157,12 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
       const free = getFloatingPointAmount(
         omnipoolAssetBalance?.freeBalance ?? BN_0,
         meta.decimals,
-      ).times(spotPrice)
+      )
 
       const valueOfShares = protocolShares
         .div(shares)
         .multipliedBy(free)
-        .multipliedBy(spotPrice)
+        .times(spotPrice)
 
       const valueOfLiquidityPositions =
         treasurePositionsValue[omnipoolAssetId] ?? BN_0
