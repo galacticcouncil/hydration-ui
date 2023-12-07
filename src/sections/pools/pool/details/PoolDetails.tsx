@@ -23,7 +23,7 @@ import {
   SValue,
   SValuesContainer,
 } from "sections/pools/pool/details/PoolDetails.styled"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const PoolDetails = ({
   pool,
@@ -31,7 +31,7 @@ export const PoolDetails = ({
   pool: TPoolFullData | TXYKPoolFullData
 }) => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(pool.id)
 

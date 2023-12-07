@@ -15,11 +15,11 @@ import { useMemo } from "react"
 import { useTokenBalance, useTokensBalances } from "api/balances"
 import { useDisplayPrices } from "utils/displayAsset"
 import { LiquidityPositionRemoveLiquidity } from "sections/pools/pool/positions/LiquidityPosition"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { assets } = useRpcProvider()
   const shareTokenMeta = assets.getAsset(pool.id) as TShareToken
 

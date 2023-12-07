@@ -6,7 +6,7 @@ import { derivePoolAccount } from "sections/pools/PoolsPage.utils"
 import { BN_0, BN_1 } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { HeaderTotalData } from "./PoolsHeaderTotal"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useTokensBalances } from "api/balances"
 
 export const StablePoolsTotal = () => {
@@ -65,7 +65,7 @@ export const StablePoolsTotal = () => {
 }
 
 export const MyStablePoolsTotal = () => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { assets } = useRpcProvider()
   const stablepools = useStableswapPools()
 

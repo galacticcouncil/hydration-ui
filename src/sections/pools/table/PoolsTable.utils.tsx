@@ -39,7 +39,7 @@ import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
 import { useAccountBalances } from "api/accountBalances"
 import { useStableswapPool } from "api/stableswap"
 import { normalizeBigNumber } from "utils/balance"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 const AssetTableName = ({ id }: { id: string }) => {
   const { assets } = useRpcProvider()
@@ -121,7 +121,7 @@ const Volume = ({
 }
 
 const AddLiqduidityButton = ({ pool }: { pool: TPool | TXYKPool }) => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
 

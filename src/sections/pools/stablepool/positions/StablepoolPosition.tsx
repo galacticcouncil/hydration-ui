@@ -20,7 +20,7 @@ import {
 import { useState } from "react"
 import { TStableSwap } from "api/assetDetails"
 import { useTokenBalance } from "api/balances"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = {
   pool: TPoolFullData
@@ -30,7 +30,7 @@ type Props = {
 export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   const [transferOpen, setTransferOpen] = useState<Page>()
 

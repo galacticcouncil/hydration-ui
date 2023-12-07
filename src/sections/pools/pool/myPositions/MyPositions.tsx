@@ -10,12 +10,12 @@ import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPos
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
 import { XYKPosition } from "sections/pools/pool/xykPosition/XYKPosition"
 import { StablepoolPosition } from "sections/pools/stablepool/positions/StablepoolPosition"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_0 } from "utils/constants"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { t } = useTranslation()
   const miningPositions = useAllUserDepositShare()
 

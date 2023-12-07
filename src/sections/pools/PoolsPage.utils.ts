@@ -47,16 +47,12 @@ export const derivePoolAccount = (assetId: string) => {
 }
 
 export const useAccountOmnipoolPositions = () => {
-  const { account } = useAccountStore()
-  const { api } = useRpcProvider()
-
-export const useAccountOmnipoolPositions = () => {
   const { account } = useAccount()
   const { api } = useRpcProvider()
 
   return useQuery(
-    QUERY_KEYS.accountOmnipoolPositions(address),
-    address != null
+    QUERY_KEYS.accountOmnipoolPositions(account?.address),
+    account?.address != null
       ? async () => {
           const [omnipoolNftId, miningNftId] = await Promise.all([
             api.consts.omnipool.nftCollectionId,
@@ -64,8 +60,8 @@ export const useAccountOmnipoolPositions = () => {
           ])
 
           const [omnipoolNftsRaw, miningNftsRaw] = await Promise.all([
-            api.query.uniques.account.entries(address, omnipoolNftId),
-            api.query.uniques.account.entries(address, miningNftId),
+            api.query.uniques.account.entries(account?.address, omnipoolNftId),
+            api.query.uniques.account.entries(account?.address, miningNftId),
           ])
 
           const omnipoolNfts = omnipoolNftsRaw.map(([storageKey]) => {
@@ -89,7 +85,7 @@ export const useAccountOmnipoolPositions = () => {
           return { omnipoolNfts, miningNfts }
         }
       : undefinedNoop,
-    { enabled: !!address },
+    { enabled: !!account?.address },
   )
 }
 
@@ -316,7 +312,7 @@ export const usePoolDetails = (assetId: string) => {
 }
 
 export const useMyPools = () => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { assets } = useRpcProvider()
 
   const pools = usePools()

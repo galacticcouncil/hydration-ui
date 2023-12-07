@@ -16,7 +16,7 @@ import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 import { BN_0 } from "utils/constants"
 import { TStableSwap } from "api/assetDetails"
 import { useQueryClient } from "@tanstack/react-query"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 export enum Page {
@@ -44,7 +44,7 @@ export const TransferModal = ({
   defaultPage,
 }: Props) => {
   const rpcProvider = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const queryClient = useQueryClient()
 
   const { id: poolId, reserves, stablepoolFee: fee, canAddLiquidity } = pool
