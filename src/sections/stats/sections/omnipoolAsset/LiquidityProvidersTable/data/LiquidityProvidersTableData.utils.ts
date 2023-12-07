@@ -1,12 +1,13 @@
 import { useTokenBalance } from "api/balances"
 import { useApiIds } from "api/consts"
 import { useOmnipoolAsset, useOmnipoolPositionsMulti } from "api/omnipool"
+import { useTVLs } from "api/stats"
 import { useUniquesAssets } from "api/uniques"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { getFloatingPointAmount } from "utils/balance"
+import { BN_0 } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { calculatePositionLiquidity } from "utils/omnipool"
 import { groupBy } from "utils/rx"
@@ -32,7 +33,16 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
 
   const spotPrices = useDisplayPrices([apiIds.data?.hubId ?? "", assetId])
 
-  const queries = [uniques, positions, omnipoolAsset, spotPrices, assetBalance]
+  const tvl = useTVLs([assetId])
+
+  const queries = [
+    uniques,
+    positions,
+    omnipoolAsset,
+    spotPrices,
+    assetBalance,
+    ...tvl,
+  ]
 
   const isLoading = queries.some((q) => q.isLoading)
 
@@ -60,8 +70,7 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
 
     const balance = assetBalance?.data?.balance ?? BN(0)
 
-    const omnipoolTvl = getFloatingPointAmount(balance, meta.decimals)
-    const omnipoolTvlPrice = omnipoolTvl.multipliedBy(valueSpotPrice)
+    const omnipoolTvlPrice = BN(tvl?.[0].data?.tvl_usd ?? BN_0) ?? BN_0
 
     const data = positions.data
       // zip positions with uniques by index
@@ -145,6 +154,7 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
     omnipoolAsset.data,
     positions.data,
     spotPrices.data,
+    tvl,
     uniques.data,
   ])
 
