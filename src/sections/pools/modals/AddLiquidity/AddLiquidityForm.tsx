@@ -15,12 +15,13 @@ import { Button } from "components/Button/Button"
 import { FormValues } from "utils/helpers"
 import { getFixedPointAmount } from "utils/balance"
 import { useAddLiquidity, useVerifyLimits } from "./AddLiquidity.utils"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { useEffect, useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useDebounce } from "react-use"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = {
   assetId: string
@@ -36,7 +37,7 @@ export const AddLiquidityForm = ({
   initialAmount,
 }: Props) => {
   const queryClient = useQueryClient()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { t } = useTranslation()
   const [assetValue, setAssetValue] = useState("")
 

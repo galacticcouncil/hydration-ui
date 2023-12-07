@@ -5,7 +5,7 @@ import {
   StakingValues,
 } from "./Values/StakingValues"
 import { PieChart } from "sections/staking/sections/dashboard/components/PieChart/PieChart"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TStakingData } from "sections/staking/StakingPage.utils"
 import { Icon } from "components/Icon/Icon"
 import ProjectedRewardsIcon from "assets/icons/ProjectedRewardsIcon.svg?react"
@@ -21,7 +21,7 @@ export const Stats = ({
   loading?: boolean
   data?: TStakingData
 }) => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { t } = useTranslation()
 
   return (

@@ -2,6 +2,7 @@ import TradeIcon from "assets/icons/Fill.svg?react"
 import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
 import MoreIcon from "assets/icons/MoreDotsIcon.svg?react"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
+import MetamaskLogo from "assets/icons/MetaMask.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 //import ClaimIcon from "assets/icons/ClaimIcon.svg?react"
 import DollarIcon from "assets/icons/DollarIcon.svg?react"
@@ -12,12 +13,15 @@ import { Trans, useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { isNotNil } from "utils/helpers"
 import { useSetAsFeePayment } from "api/payments"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { isMetaMask, watchAsset } from "utils/metamask"
+import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
 import { useMedia } from "react-use"
 
 type Props = {
   toggleExpanded: () => void
   symbol: string
+  decimals: number
   id: string
   onBuyClick: (() => void) | undefined
   onDepositClick: (() => void) | undefined
@@ -29,7 +33,15 @@ type Props = {
 export const WalletAssetsTableActions = (props: Props) => {
   const { t } = useTranslation()
   const setFeeAsPayment = useSetAsFeePayment()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
+
+  const couldBeSetAsPaymentFee =
+    props.couldBeSetAsPaymentFee && !isEvmAccount(account?.address)
+
+  const couldWatchMetaMaskAsset =
+    isMetaMask(window?.ethereum) &&
+    isEvmAccount(account?.address) &&
+    props.symbol !== NATIVE_EVM_ASSET_SYMBOL
 
   const isLargeDesktop = useMedia("(min-width: 1100px)")
 
@@ -44,14 +56,20 @@ export const WalletAssetsTableActions = (props: Props) => {
           key: "transfer",
           icon: <TransferIcon />,
           label: t("wallet.assets.table.actions.transfer"),
-          disabled: true,
         }
       : null,
-    props.couldBeSetAsPaymentFee
+    couldBeSetAsPaymentFee
       ? {
           key: "setAsFeePayment",
           icon: <DollarIcon />,
           label: t("wallet.assets.table.actions.payment.asset"),
+        }
+      : null,
+    couldWatchMetaMaskAsset
+      ? {
+          key: "watch",
+          icon: <MetamaskLogo width={18} height={18} />,
+          label: t("wallet.assets.table.actions.watch"),
         }
       : null,
   ].filter(isNotNil)
@@ -135,6 +153,13 @@ export const WalletAssetsTableActions = (props: Props) => {
                     <span className="highlight" />
                   </Trans>
                 ),
+              })
+            }
+
+            if (item === "watch") {
+              watchAsset(window?.ethereum, props.id, {
+                symbol: props.symbol,
+                decimals: props.decimals,
               })
             }
           }}

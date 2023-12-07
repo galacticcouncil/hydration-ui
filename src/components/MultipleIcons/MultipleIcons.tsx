@@ -3,6 +3,7 @@ import { IconsWrapper } from "./MultipleIcons.styled"
 import { ResponsiveValue } from "utils/responsive"
 import { Icon, IconProps } from "components/Icon/Icon"
 import { useRpcProvider } from "providers/rpcProvider"
+import { chains } from "@galacticcouncil/xcm"
 
 type DualAssetIconsProps = {
   size?: ResponsiveValue<number>
@@ -22,7 +23,11 @@ export const MultipleIcons: FC<DualAssetIconsProps> = ({
     })
 
     const assetProps = assets.getAssets(iconIds)
-    return assetProps.map(({ parachainId }) => Boolean(parachainId))
+
+    return assetProps.map(
+      ({ parachainId }) =>
+        !!chains.find((chain) => chain.parachainId === Number(parachainId)),
+    )
   }, [assets, icons])
 
   return (

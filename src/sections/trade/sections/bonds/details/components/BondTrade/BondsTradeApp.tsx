@@ -5,11 +5,12 @@ import type { TxInfo } from "@galacticcouncil/apps"
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const BondsApp = createComponent({
   tagName: "gc-bonds-app",
@@ -48,7 +49,7 @@ export const BondsTrade = ({
   setBondId: (bondId: string) => void
 }) => {
   const { api, assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { createTransaction } = useStore()
 
   const preference = useProviderRpcUrlStore()

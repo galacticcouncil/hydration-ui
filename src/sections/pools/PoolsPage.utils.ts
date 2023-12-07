@@ -2,7 +2,7 @@ import { useTokensBalances } from "api/balances"
 import { useOmnipoolAssets } from "api/omnipool"
 import { useMemo } from "react"
 import { useAssetsTradability } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NATIVE_ASSET_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
 import { BN_0, BN_MILL, BN_NAN } from "utils/constants"
@@ -50,7 +50,9 @@ export const useAccountOmnipoolPositions = () => {
   const { account } = useAccountStore()
   const { api } = useRpcProvider()
 
-  const address = account?.address
+export const useAccountOmnipoolPositions = () => {
+  const { account } = useAccount()
+  const { api } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.accountOmnipoolPositions(address),

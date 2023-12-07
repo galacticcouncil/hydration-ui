@@ -9,7 +9,7 @@ import { useApiIds, useMaxAddLiquidityLimit } from "api/consts"
 import { useOmnipoolAsset, useOmnipoolFee } from "api/omnipool"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
 import { BN_10 } from "utils/constants"
@@ -26,7 +26,7 @@ export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
 
   const { data: omnipoolFee } = useOmnipoolFee()
 
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { data: assetBalance } = useTokenBalance(assetId, account?.address)
 
   const calculatedShares = useMemo(() => {

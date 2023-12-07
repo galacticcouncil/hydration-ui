@@ -7,7 +7,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { Maybe, undefinedNoop } from "utils/helpers"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_0 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 
@@ -113,7 +113,7 @@ export function useExistentialDeposit() {
 
 export const useTokensLocks = (ids: Maybe<u32 | string>[]) => {
   const { api } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   const normalizedIds = ids?.reduce<string[]>((memo, item) => {
     if (item != null) memo.push(item.toString())
@@ -134,7 +134,7 @@ export const useTokensLocks = (ids: Maybe<u32 | string>[]) => {
 
 export const useTokenLocks = (id: Maybe<u32 | string>) => {
   const { api } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   return useQuery(
     QUERY_KEYS.lock(account?.address, id),

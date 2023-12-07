@@ -1,10 +1,10 @@
 import { useMemo } from "react"
 import { useTotalIssuances } from "./totalIssuance"
 import { useTokensBalances } from "./balances"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const useShareOfPools = (assets: string[]) => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   const totalIssuances = useTotalIssuances(assets)
   const totalBalances = useTokensBalances(assets, account?.address)

@@ -1,5 +1,5 @@
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -14,7 +14,7 @@ const getPaymentInfo =
   }
 
 export function usePaymentInfo(tx: SubmittableExtrinsic) {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const finalAccount = account?.address
 
   return useQuery(

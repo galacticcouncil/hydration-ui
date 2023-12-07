@@ -1,15 +1,18 @@
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
-import { useAccountStore } from "state/store"
+import {
+  useAccount,
+  useWalletAccounts,
+} from "sections/web3-connect/Web3Connect.utils"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 export const useWalletAddresses = () => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const storageAddresses = useAddressStore()
-  const providerAddresses = useProviderAccounts(account?.provider)
+  const providerAddresses = useWalletAccounts(account?.provider ?? null)
 
   const data = useMemo(() => {
     if (!providerAddresses.data) return []
@@ -42,12 +45,17 @@ export const useProviderAccounts = (
   )
 }
 
-type Address = { name: string; address: string; provider: string }
+export type Address = {
+  id?: string
+  name: string
+  address: string
+  provider: string
+}
 export type AddressStore = {
   addresses: Address[]
   add: (address: Address) => void
   edit: (address: Address) => void
-  remove: (address: string) => void
+  remove: (id: string) => void
 }
 
 export const useAddressStore = create<AddressStore>()(
@@ -64,21 +72,15 @@ export const useAddressStore = create<AddressStore>()(
         })),
 
       edit: (address) =>
-        set((state) => {
-          let found = state.addresses.find((a) => a.address === address.address)
-          if (!found) return state
-
-          found = { ...found, ...address }
-          const rest = state.addresses.filter(
-            (a) => a.address !== address.address,
-          )
-
-          return { addresses: [...rest, found] }
-        }),
-
-      remove: (address) =>
         set((state) => ({
-          addresses: state.addresses.filter((a) => a.address !== address),
+          addresses: state.addresses.map((a) =>
+            a.id === address.id ? { ...a, ...address } : a,
+          ),
+        })),
+
+      remove: (id) =>
+        set((state) => ({
+          addresses: state.addresses.filter((a) => a.id !== id),
         })),
     }),
     { name: "address-book" },

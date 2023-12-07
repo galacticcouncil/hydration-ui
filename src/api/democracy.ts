@@ -1,14 +1,14 @@
 import { ApiPromise } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 
 const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
 
 export const useReferendums = (type?: "ongoing" | "finished") => {
   const { api, isLoaded } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   return useQuery(
     QUERY_KEYS.referendums(account?.address),

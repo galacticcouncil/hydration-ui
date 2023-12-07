@@ -12,7 +12,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { theme } from "theme"
 import { BN_0, BN_1, BN_10 } from "utils/constants"
 import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
@@ -23,6 +23,8 @@ import {
   PasteAddressIcon,
 } from "./WalletTransferSectionOnchain.styled"
 import { useTokenBalance } from "api/balances"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { H160, safeConvertAddressH160 } from "utils/evm"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -38,7 +40,7 @@ export function WalletTransferSectionOnchain({
   openAddressBook: () => void
 }) {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { api, assets } = useRpcProvider()
   const { createTransaction } = useStore()
 
@@ -81,13 +83,21 @@ export function WalletTransferSectionOnchain({
       BN_10.pow(assetMeta.decimals),
     )
 
+    const normalizedDest =
+      safeConvertAddressH160(values.dest) !== null
+        ? new H160(values.dest).toAccount()
+        : values.dest
+
     return await createTransaction(
       {
         tx:
           asset.toString() === assets.native.id
-            ? api.tx.balances.transferKeepAlive(values.dest, amount.toFixed())
+            ? api.tx.balances.transferKeepAlive(
+                normalizedDest,
+                amount.toFixed(),
+              )
             : api.tx.tokens.transferKeepAlive(
-                values.dest,
+                normalizedDest,
                 asset,
                 amount.toFixed(),
               ),
@@ -162,6 +172,7 @@ export function WalletTransferSectionOnchain({
             validate: {
               validAddress: (value) =>
                 safeConvertAddressSS58(value, 0) != null ||
+                safeConvertAddressH160(value) !== null ||
                 t("wallet.assets.transfer.error.validAddress"),
               notSame: (value) => {
                 if (!account?.address) return true
