@@ -3,7 +3,7 @@ import { Option } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import { useQuery } from "@tanstack/react-query"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { Maybe } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -20,7 +20,7 @@ import { BN_0 } from "utils/constants"
 
 export const useAssetTable = () => {
   const { api, assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   return useQuery(
     QUERY_KEYS.assetsTable(account?.address),

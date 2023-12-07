@@ -1,7 +1,7 @@
 import { useBestNumber } from "api/chain"
 import BN, { BigNumber } from "bignumber.js"
 import * as wasm from "@galacticcouncil/math-staking"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import {
   TAccumulatedRpsUpdated,
   TStakingPosition,
@@ -73,7 +73,7 @@ export const useStakeData = () => {
     assets: { native },
   } = useRpcProvider()
 
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const stake = useStake(account?.address)
   const circulatingSupply = useCirculatingSupply()
   const balance = useTokenBalance(native.id, account?.address)
@@ -251,7 +251,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
   const {
     assets: { native },
   } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const bestNumber = useBestNumber()
   const stake = useStake(account?.address)
   const stakingEvents = useStakingEvents()
@@ -445,7 +445,7 @@ export const useClaimReward = () => {
   const {
     assets: { native },
   } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const bestNumber = useBestNumber()
   const stake = useStake(account?.address)
   const stakingConsts = useStakingConsts()

@@ -14,7 +14,10 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { shortenAccountAddress } from "utils/formatting"
+import {
+  getChainSpecificAddress,
+  shortenAccountAddress,
+} from "utils/formatting"
 import { TRecentTradesTableData } from "./data/RecentTradesTableData.utils"
 import TradeIcon from "assets/icons/TradeTypeIcon.svg?react"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -53,7 +56,10 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
         <Text color="white">
           {row.original.isIdentity
             ? row.original.account
-            : shortenAccountAddress(row.original.account, 6)}
+            : shortenAccountAddress(
+                getChainSpecificAddress(row.original.account),
+                6,
+              )}
         </Text>
       ),
     }),

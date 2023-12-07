@@ -1,11 +1,11 @@
 import { FC } from "react"
 import { useMedia } from "react-use"
-import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { theme } from "theme"
 import { Bell } from "./buttons/Bell"
 import { Documentation } from "./buttons/Documentation"
 import { MoreMenu } from "./buttons/MoreMenu"
 import { Settings } from "./buttons/Settings"
+import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 
 const settingsEanbled = import.meta.env.VITE_FF_SETTINGS_ENABLED === "true"
 
@@ -23,7 +23,7 @@ export const HeaderToolbar: FC<Props> = ({ menuItems }) => {
         <Bell />
         {!isSmallMedia && settingsEanbled && <Settings />}
       </div>
-      <WalletConnectButton />
+      <Web3ConnectModalButton />
       {!isSmallMedia && menuItems.length > 0 && <MoreMenu items={menuItems} />}
     </div>
   )

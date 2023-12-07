@@ -5,9 +5,13 @@ import type { TxInfo } from "@galacticcouncil/apps"
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { isEvmAccount } from "utils/evm"
+import { NATIVE_ASSET_ID } from "utils/api"
+import { useAccountCurrency } from "api/payments"
 
 export const DcaApp = createComponent({
   tagName: "gc-dca-app",
@@ -26,9 +30,15 @@ const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export function DcaPage() {
-  const { api } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { api, isLoaded } = useRpcProvider()
+  const { account } = useAccount()
   const { createTransaction } = useStore()
+  const {
+    isSuccess,
+    isLoading,
+    data: accountCurrencyId,
+  } = useAccountCurrency(isLoaded ? account?.address : "")
+
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
@@ -68,14 +78,23 @@ export function DcaPage() {
     )
   }
 
+  const assetInDefault =
+    isEvmAccount(account?.address) && isSuccess ? accountCurrencyId : undefined
+
+  const assetOutDefault =
+    isEvmAccount(account?.address) && isSuccess ? NATIVE_ASSET_ID : undefined
+
   return (
     <SContainer>
       <DcaApp
+        key={!isLoading ? account?.provider : ""}
         ref={(r) => {
           r && r.setAttribute("chart", "")
         }}
         apiAddress={rpcUrl}
         pools={pools}
+        assetIn={!isLoading ? assetInDefault : ""}
+        assetOut={!isLoading ? assetOutDefault : ""}
         stableCoinAssetId={stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}

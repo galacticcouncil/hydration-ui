@@ -1,6 +1,5 @@
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import { InvalidateOnBlock } from "components/InvalidateOnBlock"
-import { OnboardProvider } from "components/OnboardProvider/OnboardProvider"
 import { ToastProvider } from "components/Toast/ToastProvider"
 import { RpcProvider } from "providers/rpcProvider"
 import { FC, PropsWithChildren } from "react"
@@ -12,20 +11,18 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   return (
     <TooltipProvider>
       <RpcProvider>
-        <OnboardProvider>
-          <InvalidateOnBlock>
-            <ToastProvider>
-              <SkeletonTheme
-                baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
-                highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
-                borderRadius={4}
-              >
-                {children}
-                <Transactions />
-              </SkeletonTheme>
-            </ToastProvider>
-          </InvalidateOnBlock>
-        </OnboardProvider>
+        <InvalidateOnBlock>
+          <ToastProvider>
+            <SkeletonTheme
+              baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
+              highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
+              borderRadius={4}
+            >
+              {children}
+              <Transactions />
+            </SkeletonTheme>
+          </ToastProvider>
+        </InvalidateOnBlock>
       </RpcProvider>
     </TooltipProvider>
   )

@@ -112,6 +112,7 @@ export const useAssetsTable = (
             isExpanded={row.getIsSelected()}
             onTransferClick={() => actions.onTransfer(row.original.id)}
             symbol={row.original.symbol}
+            decimals={row.original.decimals}
             id={row.original.id}
           />
         ),
@@ -135,6 +136,7 @@ export type AssetsTableData = {
   id: string
   symbol: string
   name: string
+  decimals: number
   transferable: BN
   transferableDisplay: BN
   total: BN

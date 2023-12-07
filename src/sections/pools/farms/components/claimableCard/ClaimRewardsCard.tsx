@@ -5,14 +5,15 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { Fragment, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { ToastMessage } from "state/store"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
-import { ToastMessage, useAccountStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
 import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
 import { SContainer } from "./ClaimRewardsCard.styled"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const ClaimRewardsCard = (props: {
   poolId: string
@@ -21,7 +22,7 @@ export const ClaimRewardsCard = (props: {
 }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   const claimable = useClaimableAmount(props.poolId, props.depositNft)
 

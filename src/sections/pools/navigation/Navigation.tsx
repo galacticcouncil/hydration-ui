@@ -9,7 +9,7 @@ import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { useTokensBalances } from "api/balances"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import {
   SubNavigation,
   SubNavigationTabLink,
@@ -43,7 +43,7 @@ export const Navigation = () => {
 
 const MyLiquidity = () => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { assets } = useRpcProvider()
   const accountPositions = useAccountOmnipoolPositions()
 

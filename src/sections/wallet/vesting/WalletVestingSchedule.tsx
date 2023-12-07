@@ -10,7 +10,7 @@ import { Heading } from "components/Typography/Heading/Heading"
 import { Text } from "components/Typography/Text/Text"
 import { useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { ToastMessage, useAccountStore, useStore } from "state/store"
+import { ToastMessage, useStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
@@ -18,6 +18,7 @@ import { BN_10 } from "utils/constants"
 import { useDisplayPrice } from "utils/displayAsset"
 import { SClaimButton, SInner, SSchedule } from "./WalletVestingSchedule.styled"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const WalletVestingSchedule = () => {
   const { t } = useTranslation()
@@ -26,7 +27,7 @@ export const WalletVestingSchedule = () => {
     assets: { native },
   } = useRpcProvider()
   const { createTransaction } = useStore()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { data: claimableBalance } = useVestingTotalClaimableBalance()
 
   const { data: nextClaimableDate } = useNextClaimableDate()
