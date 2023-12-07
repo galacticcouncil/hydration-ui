@@ -126,5 +126,5 @@ function getUserState(account?: Account, balance?: BN): UserState {
     return UserState.NOT_FUNDED
   }
 
-  throw UserState.UNKNOWN
+  return UserState.UNKNOWN
 }
