@@ -13,12 +13,12 @@ export const SButtonContainer = styled.div`
 
   overflow-x: auto;
 
+  ${theme.scrollbarHidden};
+
   @media ${theme.viewport.gte.sm} {
     margin-left: 0;
     margin-right: 0;
     padding: 0;
-
-    overflow-x: visible;
   }
 `
 
