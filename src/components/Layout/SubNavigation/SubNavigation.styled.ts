@@ -16,6 +16,8 @@ export const SSubNavigationContainer = styled.div`
   overflow-x: scroll;
   overflow-y: hidden;
 
+  ${theme.scrollbarHidden};
+
   @media (${theme.viewport.gte.sm}) {
     gap: 42px;
 
