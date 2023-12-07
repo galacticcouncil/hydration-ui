@@ -94,7 +94,11 @@ export const useProviderData = (rpcUrl?: string) => {
 
       const api = await ApiPromise.create({ provider, types })
 
-      const { id, isStableCoin, update } = displayAsset
+      const {
+        isStableCoin,
+        stableCoinId: chainStableCoinId,
+        update,
+      } = displayAsset
 
       const assets = await getAssets(api)
 
@@ -112,7 +116,7 @@ export const useProviderData = (rpcUrl?: string) => {
         )?.id
       }
 
-      if (stableCoinId && isStableCoin && id !== stableCoinId) {
+      if (stableCoinId && isStableCoin && chainStableCoinId !== stableCoinId) {
         // setting stable coin id from asset registry
         update({
           id: stableCoinId,

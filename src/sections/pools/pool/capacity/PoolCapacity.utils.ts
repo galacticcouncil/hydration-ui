@@ -23,7 +23,7 @@ export const usePoolCapacity = (id: string) => {
   const meta = assets.getAsset(id.toString())
 
   const queries = [apiIds, omnipoolAssets, ...balances]
-  const isLoading = queries.some((q) => q.isLoading)
+  const isLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
     if (!apiIds.data || !omnipoolAssets.data || balances.some((q) => !q.data))
