@@ -1,9 +1,9 @@
-import BuyIcon from "assets/icons/BuyIcon.svg?react"
+import TradeIcon from "assets/icons/Fill.svg?react"
 import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
 import MoreIcon from "assets/icons/MoreDotsIcon.svg?react"
-import SellIcon from "assets/icons/SellIcon.svg?react"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
 import MetamaskLogo from "assets/icons/MetaMask.svg?react"
+import PlusIcon from "assets/icons/PlusIcon.svg?react"
 //import ClaimIcon from "assets/icons/ClaimIcon.svg?react"
 import DollarIcon from "assets/icons/DollarIcon.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
@@ -16,6 +16,7 @@ import { useSetAsFeePayment } from "api/payments"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { isMetaMask, watchAsset } from "utils/metamask"
 import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
+import { useMedia } from "react-use"
 
 type Props = {
   toggleExpanded: () => void
@@ -23,7 +24,7 @@ type Props = {
   decimals: number
   id: string
   onBuyClick: (() => void) | undefined
-  onSellClick: (() => void) | undefined
+  onDepositClick: (() => void) | undefined
   onTransferClick: () => void
   couldBeSetAsPaymentFee: boolean
   isExpanded: boolean
@@ -42,12 +43,21 @@ export const WalletAssetsTableActions = (props: Props) => {
     isEvmAccount(account?.address) &&
     props.symbol !== NATIVE_EVM_ASSET_SYMBOL
 
+  const isLargeDesktop = useMedia("(min-width: 1100px)")
+
   const actionItems = [
     /*{
       key: "add",
       icon: <ClaimIcon />,
       label: t("wallet.assets.table.actions.claim"),
     },*/
+    !isLargeDesktop
+      ? {
+          key: "transfer",
+          icon: <TransferIcon />,
+          label: t("wallet.assets.table.actions.transfer"),
+        }
+      : null,
     couldBeSetAsPaymentFee
       ? {
           key: "setAsFeePayment",
@@ -75,34 +85,36 @@ export const WalletAssetsTableActions = (props: Props) => {
         }}
       >
         <TableAction
-          icon={<BuyIcon />}
+          icon={<TradeIcon />}
           onClick={props.onBuyClick}
           disabled={
             props.onBuyClick == null || account?.isExternalWalletConnected
           }
         >
-          {t("wallet.assets.table.actions.buy")}
+          {t("wallet.assets.table.actions.trade")}
         </TableAction>
+        {isLargeDesktop && (
+          <TableAction
+            icon={<TransferIcon />}
+            onClick={props.onTransferClick}
+            disabled={account?.isExternalWalletConnected}
+          >
+            {t("wallet.assets.table.actions.transfer")}
+          </TableAction>
+        )}
         <TableAction
-          icon={<SellIcon />}
-          onClick={props.onSellClick}
-          disabled={
-            props.onSellClick == null || account?.isExternalWalletConnected
-          }
-        >
-          {t("wallet.assets.table.actions.sell")}
-        </TableAction>
-        <TableAction
-          icon={<TransferIcon />}
-          onClick={props.onTransferClick}
+          icon={<PlusIcon />}
+          onClick={props.onDepositClick}
           disabled={account?.isExternalWalletConnected}
         >
-          {t("wallet.assets.table.actions.transfer")}
+          {t("wallet.assets.table.actions.deposit")}
         </TableAction>
-
         <Dropdown
           items={account?.isExternalWalletConnected ? [] : actionItems}
           onSelect={(item) => {
+            if (item === "transfer") {
+              props.onTransferClick()
+            }
             if (item === "setAsFeePayment") {
               setFeeAsPayment(props.id, {
                 onLoading: (

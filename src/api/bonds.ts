@@ -7,7 +7,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { isHydraAddress } from "utils/formatting"
 
 export type Bond = {
   assetId: string
@@ -72,13 +71,7 @@ export const useBondsEvents = (
   const indexerUrl = useIndexerUrl()
   const { account } = useAccount()
   const accountHash = account?.address
-    ? u8aToHex(
-        decodeAddress(
-          account.address,
-          false,
-          isHydraAddress(account.address) ? 63 : 42,
-        ),
-      )
+    ? u8aToHex(decodeAddress(account.address))
     : undefined
 
   return useQueries({

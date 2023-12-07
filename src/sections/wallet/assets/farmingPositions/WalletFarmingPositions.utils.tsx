@@ -24,6 +24,7 @@ import { BN_0, BN_NAN } from "utils/constants"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { useRpcProvider } from "providers/rpcProvider"
+import { arraySearch } from "utils/helpers"
 import { WalletAssetsHydraPositionsDetails } from "sections/wallet/assets/hydraPositions/details/WalletAssetsHydraPositionsDetails"
 import { ButtonTransparent } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
@@ -143,7 +144,11 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
   })
 }
 
-export const useFarmingPositionsData = () => {
+export const useFarmingPositionsData = ({
+  search,
+}: {
+  search?: string
+} = {}) => {
   const { assets } = useRpcProvider()
   const { account } = useAccount()
   const allDeposits = useAllDeposits()
@@ -224,8 +229,14 @@ export const useFarmingPositionsData = () => {
         b.position.valueDisplay.minus(a.position.valueDisplay).toNumber(),
       )
 
-    return rows
-  }, [accountDeposits, accountDepositsShare.data, assets, bestNumber.data])
+    return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
+  }, [
+    search,
+    accountDeposits,
+    accountDepositsShare.data,
+    assets,
+    bestNumber.data,
+  ])
 
   return { data, isLoading }
 }

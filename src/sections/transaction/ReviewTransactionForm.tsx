@@ -19,9 +19,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
 import { TransactionCode } from "components/TransactionCode/TransactionCode"
 import { Text } from "components/Typography/Text/Text"
-import { useRpcProvider } from "providers/rpcProvider"
 import { Trans, useTranslation } from "react-i18next"
-import Skeleton from "react-loading-skeleton"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
 import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
@@ -30,6 +28,9 @@ import { NATIVE_ASSET_ID } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_1 } from "utils/constants"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
+import Skeleton from "react-loading-skeleton"
+import { useRpcProvider } from "providers/rpcProvider"
+import { theme } from "theme"
 
 export const ReviewTransactionForm = (
   props: {
@@ -185,55 +186,43 @@ export const ReviewTransactionForm = (
   }
 
   return (
-    <ModalScrollableContent
-      content={
-        <>
-          {props.title && (
-            <Text color="basic400" fw={400} sx={{ mt: 6 }}>
-              {props.title}
-            </Text>
-          )}
-          <Text fs={16} fw={400} color="basic400">
-            {t("liquidity.reviewTransaction.modal.desc")}
-          </Text>
-          <div sx={{ mt: 16 }}>
-            {json && <TransactionCode name={json.method} src={json.args} />}
-            {wallet?.signer instanceof MetaMaskSigner && (
-              <div
-                sx={{ color: "basic300", fontSize: 14, p: 12, mt: 4 }}
-                css={{
-                  overflowWrap: "break-word",
-                  background: "rgba(0,0,0,0.15)",
-                }}
-              >
-                {props.tx.method.toHex()}
-              </div>
-            )}
-          </div>
-        </>
-      }
-      footer={
-        <>
-          <div>
-            <Spacer size={15} />
-            <Summary
-              rows={[
-                {
-                  label: t("liquidity.reviewTransaction.modal.detail.cost"),
-                  content: paymentInfoData ? (
-                    <div sx={{ flex: "row", gap: 6, align: "center" }}>
-                      <Text>
-                        {t("liquidity.add.modal.row.transactionCostValue", {
-                          amount: (
-                            props.overrides?.fee ??
-                            new BigNumber(paymentInfoData.partialFee.toHex())
-                          ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
-                          symbol: feeMeta?.symbol,
-                          fixedPointScale: 12,
-                          type: "token",
-                        })}
-                      </Text>
-                      {!account?.evmAddress && (
+    <>
+      {props.title && (
+        <Text color="basic400" fw={400} sx={{ mb: 16 }}>
+          {props.title}
+        </Text>
+      )}
+      <ModalScrollableContent
+        sx={{
+          mx: "calc(-1 * var(--modal-content-padding))",
+          p: "var(--modal-content-padding)",
+          maxHeight: 280,
+        }}
+        css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
+        content={
+          <>{json && <TransactionCode name={json.method} src={json.args} />}</>
+        }
+        footer={
+          <>
+            <div>
+              <Spacer size={15} />
+              <Summary
+                rows={[
+                  {
+                    label: t("liquidity.reviewTransaction.modal.detail.cost"),
+                    content: paymentInfoData ? (
+                      <div sx={{ flex: "row", gap: 6, align: "center" }}>
+                        <Text>
+                          {t("liquidity.add.modal.row.transactionCostValue", {
+                            amount: (
+                              props.overrides?.fee ??
+                              new BigNumber(paymentInfoData.partialFee.toHex())
+                            ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
+                            symbol: feeMeta?.symbol,
+                            fixedPointScale: 12,
+                            type: "token",
+                          })}
+                        </Text>
                         <div
                           tabIndex={0}
                           role="button"
@@ -244,66 +233,70 @@ export const ReviewTransactionForm = (
                             {t("liquidity.reviewTransaction.modal.edit")}
                           </Text>
                         </div>
-                      )}
-                    </div>
-                  ) : (
-                    <Skeleton width={100} height={16} />
-                  ),
-                },
-                {
-                  label: t("liquidity.reviewTransaction.modal.detail.lifetime"),
-                  content: props.tx.era.isMortalEra
-                    ? t("transaction.mortal.expire", {
-                        date: era?.deathDate,
-                      })
-                    : t("transaction.immortal.expire"),
-                },
-                {
-                  label: t("liquidity.reviewTransaction.modal.detail.nonce"),
-                  content: nonce.data?.toString(),
-                },
-              ]}
-            />
-          </div>
-          <div
-            sx={{
-              mt: 24,
-              flex: "row",
-              justify: "space-between",
-              align: "start",
-            }}
-          >
-            <Button
-              onClick={props.onCancel}
-              text={t("liquidity.reviewTransaction.modal.cancel")}
-              variant="secondary"
-            />
-            <div sx={{ flex: "column", justify: "center", gap: 4 }}>
-              <Button
-                text={btnText}
-                variant="primary"
-                isLoading={signTx.isLoading || isLoading}
-                disabled={account == null || isLoading || signTx.isLoading}
-                onClick={() =>
-                  hasFeePaymentBalance ? signTx.mutate() : openModal()
-                }
+                      </div>
+                    ) : (
+                      <Skeleton width={100} height={16} />
+                    ),
+                  },
+                  {
+                    label: t(
+                      "liquidity.reviewTransaction.modal.detail.lifetime",
+                    ),
+                    content: props.tx.era.isMortalEra
+                      ? t("transaction.mortal.expire", {
+                          date: era?.deathDate,
+                        })
+                      : t("transaction.immortal.expire"),
+                  },
+                  {
+                    label: t("liquidity.reviewTransaction.modal.detail.nonce"),
+                    content: nonce.data?.toString(),
+                  },
+                ]}
               />
-              {hasFeePaymentBalance === false && (
-                <Text fs={16} color="pink600">
-                  {t(
-                    "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance.msg",
-                  )}
-                </Text>
-              )}
-              {signTx.isLoading && (
-                <Text fs={12} lh={16} tAlign="center" color="warning300">
-                  {t("liquidity.reviewTransaction.modal.confirmButton.warning")}
-                </Text>
-              )}
             </div>
-          </div>
-        </>
-      }
-    />
+            <div
+              sx={{
+                mt: ["auto", 24],
+                flex: "row",
+                justify: "space-between",
+                align: "start",
+              }}
+            >
+              <Button
+                onClick={props.onCancel}
+                text={t("liquidity.reviewTransaction.modal.cancel")}
+                variant="secondary"
+              />
+              <div sx={{ flex: "column", justify: "center", gap: 4 }}>
+                <Button
+                  text={btnText}
+                  variant="primary"
+                  isLoading={signTx.isLoading || isLoading}
+                  disabled={account == null || isLoading || signTx.isLoading}
+                  onClick={() =>
+                    hasFeePaymentBalance ? signTx.mutate() : openModal()
+                  }
+                />
+                {hasFeePaymentBalance === false && (
+                  <Text fs={16} color="pink600">
+                    {t(
+                      "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance.msg",
+                    )}
+                  </Text>
+                )}
+                {signTx.isLoading && (
+                  <Text fs={12} lh={16} tAlign="center" color="warning300">
+                    {t(
+                      "liquidity.reviewTransaction.modal.confirmButton.warning",
+                    )}
+                  </Text>
+                )}
+              </div>
+            </div>
+          </>
+        }
+      />
+    </>
   )
 }

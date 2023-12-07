@@ -1,4 +1,4 @@
-import { SBox, SMobBackground } from "./WalletVestingBox.styled"
+import { SBox } from "./WalletVestingBox.styled"
 import { Heading } from "components/Typography/Heading/Heading"
 import { useTranslation } from "react-i18next"
 import { WalletVestingSchedule } from "./WalletVestingSchedule"
@@ -48,7 +48,6 @@ export const WalletVestingBox = () => {
         </Heading>
         {isApiLoaded(api) ? <VestingBoxContent /> : <WalletVestingEmpty />}
       </SBox>
-      <SMobBackground />
     </div>
   )
 }

@@ -25,25 +25,39 @@ export const SContainer = styled(motion.div)<{
       );
       margin: 0 auto;
     `}
+
+  ${({ variant }) =>
+    variant === "gradient" &&
+    css`
+      width: 100%;
+    `}
+
   overflow: hidden;
   height: auto;
   min-height: var(--modal-header-height);
   overflow: hidden;
 
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: ${({ centered, variant }) =>
     variant === "gradient" ? "flex-start" : centered ? "center" : "flex-start"};
 
   padding: var(--modal-header-padding-y) var(--modal-header-padding-x);
+
+  > p {
+    text-align: ${({ centered, variant }) =>
+      centered && variant !== "gradient" ? "center" : "left"};
+    width: 100%;
+  }
 `
 
 export const STitleGradient = styled(GradientText)`
   margin-top: calc(
-    var(--modal-header-height) - var(--modal-header-padding-y) * 2 + 16px
+    var(--modal-header-height) - var(--modal-header-padding-y) * 2 + 8px
   );
 
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 500;
   font-family: "FontOver", sans-serif;
 
@@ -51,7 +65,7 @@ export const STitleGradient = styled(GradientText)`
   background-clip: text;
 
   @media ${theme.viewport.gte.sm} {
-    font-size: 24px;
+    font-size: 19px;
   }
 `
 

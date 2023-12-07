@@ -78,6 +78,8 @@ export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
             color={slice.color}
             size={config.shadowSize}
             radial
+            onMouseMove={() => isDesktop && setActiveSlice(index)}
+            onMouseLeave={() => isDesktop && setActiveSlice(undefined)}
             clipPath={getCircleCoordinates(
               config.shadowInnerRadius,
               config.innerRadius,
@@ -117,15 +119,15 @@ export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
               config.pieSize,
               slice.percentage,
             )}
-            onMouseMove={() => setActiveSlice(index)}
-            onMouseLeave={() => setActiveSlice(undefined)}
+            onMouseMove={() => isDesktop && setActiveSlice(index)}
+            onMouseLeave={() => isDesktop && setActiveSlice(undefined)}
           />
         </Fragment>
       )
     })
 
     return <SSliceContainer size={config.pieSize}>{components}</SSliceContainer>
-  }, [config, slices, activeSlice])
+  }, [config, slices, activeSlice, isDesktop])
 
   return (
     <div sx={{ flex: "column", gap: 24 }}>

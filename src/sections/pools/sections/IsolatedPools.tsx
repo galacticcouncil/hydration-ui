@@ -67,7 +67,7 @@ const IsolatedPoolsData = () => {
 
   const filteredPools =
     search && xylPools.data
-      ? arraySearch(xylPools.data, search, ["name", "symbol"])
+      ? arraySearch(xylPools.data, search, ["symbol", "name"])
       : xylPools.data
 
   return (
@@ -89,7 +89,7 @@ const IsolatedPoolsData = () => {
             content: (
               <HeaderTotalData
                 isLoading={xylPools.isLoading}
-                value={totalVolume.div(2)}
+                value={totalVolume}
               />
             ),
           },

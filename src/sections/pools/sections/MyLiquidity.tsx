@@ -49,7 +49,7 @@ const XYKPoolsSection = () => {
 
   const filteredPools =
     search && xylPools.data
-      ? arraySearch(xylPools.data, search, ["name", "symbol"])
+      ? arraySearch(xylPools.data, search, ["symbol", "name"])
       : xylPools.data
 
   return (
@@ -161,7 +161,7 @@ const MyLiquidityData = () => {
 
   const filteredPools =
     search && omnipoolAndStablepool.data
-      ? arraySearch(omnipoolAndStablepool.data, search, ["name", "symbol"])
+      ? arraySearch(omnipoolAndStablepool.data, search, ["symbol", "name"])
       : omnipoolAndStablepool.data
 
   return (

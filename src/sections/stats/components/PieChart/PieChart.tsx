@@ -11,6 +11,7 @@ import { BN_0 } from "utils/constants"
 import { DoughnutChart } from "sections/stats/components/DoughnutChart/DoughnutChart"
 import { EmotionJSX } from "@emotion/react/types/jsx-namespace"
 import BN from "bignumber.js"
+import { KeyOfType } from "utils/types"
 
 type TSlice = {
   percentage: number
@@ -21,11 +22,6 @@ type TSlice = {
   assets?: TLabelRest[]
   id: string
 }
-
-type KeyOfType<T, V> = keyof {
-  [P in keyof T as T[P] extends V ? P : never]: P
-} &
-  keyof T
 
 type DataEntry = {
   id: string

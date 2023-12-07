@@ -1,4 +1,3 @@
-import { Spacer } from "components/Spacer/Spacer"
 import { WalletAssetsTablePlaceholder } from "sections/wallet/assets/table/placeholder/WalletAssetsTablePlaceholder"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { WalletFarmingPositionsWrapper } from "./farmingPositions/wrapper/WalletFarmingPositionsWrapper"
@@ -12,6 +11,8 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { MyActiveBonds } from "sections/trade/sections/bonds/MyActiveBonds"
 import { Skeleton as BondsTableSkeleton } from "sections/trade/sections/bonds/table/skeleton/Skeleton"
 import { useTranslation } from "react-i18next"
+import { WalletAssetsFilters } from "sections/wallet/assets/filter/WalletAssetsFilters"
+import { useWalletAssetsFilters } from "sections/wallet/assets/WalletAssets.utils"
 
 const enabledBonds = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
 
@@ -20,28 +21,34 @@ export const WalletAssets = () => {
   const { account } = useAccount()
   const { isLoaded } = useRpcProvider()
 
+  const { category, search } = useWalletAssetsFilters()
+
+  const isAllVisible = category === "all"
+  const isAssetsVisible = isAllVisible || category === "assets"
+  const isLiquidityVisible = isAllVisible || category === "liquidity"
+  const isFarmingVisible = isAllVisible || category === "farming"
+
   if (!isLoaded) {
     return (
-      <div sx={{ mt: [34, 56] }}>
+      <div>
         <WalletAssetsHeader />
-        <WalletAssetsTableSkeleton />
-        <Spacer axis="vertical" size={20} />
-        {enabledBonds && (
-          <>
-            <BondsTableSkeleton title={t("bonds.table.title")} />
-            <Spacer axis="vertical" size={20} />
-          </>
-        )}
+        <WalletAssetsFilters />
 
-        <WalletAssetsHydraPositionsSkeleton />
-        <Spacer axis="vertical" size={20} />
-        <WalletFarmingPositionsSkeleton />
+        <div sx={{ display: "grid", gap: [16, 30] }}>
+          <WalletAssetsTableSkeleton />
+          {enabledBonds && (
+            <BondsTableSkeleton title={t("bonds.table.title")} />
+          )}
+
+          <WalletAssetsHydraPositionsSkeleton />
+          <WalletFarmingPositionsSkeleton />
+        </div>
       </div>
     )
   }
 
   return (
-    <div sx={{ mt: [34, 56] }}>
+    <div>
       {!account ? (
         <>
           <WalletAssetsHeader disconnected />
@@ -50,24 +57,19 @@ export const WalletAssets = () => {
       ) : (
         <>
           <WalletAssetsHeader />
+          <WalletAssetsFilters />
 
-          <WalletAssetsTableWrapper />
+          <div sx={{ display: "grid", gap: [16, 30] }}>
+            {isAssetsVisible && (
+              <>
+                <WalletAssetsTableWrapper />
+                {enabledBonds && <MyActiveBonds showTransfer search={search} />}
+              </>
+            )}
 
-          <Spacer axis="vertical" size={20} />
-
-          {enabledBonds && (
-            <>
-              <MyActiveBonds showTransfer />
-
-              <Spacer axis="vertical" size={20} />
-            </>
-          )}
-
-          <WalletAssetsPositionsWrapper />
-
-          <Spacer axis="vertical" size={20} />
-
-          <WalletFarmingPositionsWrapper />
+            {isLiquidityVisible && <WalletAssetsPositionsWrapper />}
+            {isFarmingVisible && <WalletFarmingPositionsWrapper />}
+          </div>
         </>
       )}
     </div>

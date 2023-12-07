@@ -34,7 +34,10 @@ export const ReviewTransaction = (props: Transaction) => {
           backdrop: isError ? "error" : "default",
           disableClose: isLoading,
         }
-      : { title: t("liquidity.reviewTransaction.modal.title") }
+      : {
+          title: t("liquidity.reviewTransaction.modal.title"),
+          description: t("liquidity.reviewTransaction.modal.desc"),
+        }
 
   const handleTxOnClose = () => {
     if (isLoading) {
