@@ -1,6 +1,6 @@
 import { Portal, Root } from "@radix-ui/react-dialog"
 import { BackdropVariant } from "components/Backdrop/Backdrop"
-import { ReactNode, useMemo } from "react"
+import { ReactNode, useMemo, useState } from "react"
 import {
   SBottomContent,
   SContainer,
@@ -42,6 +42,9 @@ export const Modal = ({
   const hasContentProps = Object.values(contentProps).some(
     (val) => val !== undefined,
   )
+
+  const [isAnimating, setIsAnimating] = useState(true)
+
   const hasTopContent = topContent !== undefined
 
   const content = useMemo(() => {
@@ -63,7 +66,11 @@ export const Modal = ({
   return (
     <Root open={open}>
       <Portal>
-        <SOverlay variant={backdrop}>
+        <SOverlay
+          variant={backdrop}
+          onAnimationEnd={() => setIsAnimating(false)}
+          css={{ overflow: isAnimating ? "hidden" : undefined }}
+        >
           <SContainer
             onEscapeKeyDown={!disableClose ? onClose : undefined}
             onInteractOutside={
@@ -93,13 +100,16 @@ export const Modal = ({
 export const ModalScrollableContent = ({
   content,
   footer,
+  className,
 }: {
   content: ReactNode
   footer?: ReactNode
+  className?: string
 }) => {
   return (
     <>
       <div
+        className={className}
         css={{
           overflow: "overlay",
           maxHeight: "80%",

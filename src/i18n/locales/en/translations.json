@@ -248,7 +248,7 @@
   "liquidity.remove.modal.xyk.toast.onLoading": "<0>Withdrawing </0><1>{{value, bignumber(type: 'token')}}</1><0> Shares</0>...",
   "liquidity.remove.modal.xyk.toast.onSuccess": "<0>You withdrew </0><1>{{value, bignumber(type: 'token')}}</1><0> Shares</0",
   "liquidity.reviewTransaction.modal.title": "Review transaction details",
-  "liquidity.reviewTransaction.modal.desc": " Please review your transaction",
+  "liquidity.reviewTransaction.modal.desc": "Please review your transaction",
   "liquidity.reviewTransaction.modal.detail.cost": "Transaction cost:",
   "liquidity.reviewTransaction.modal.detail.lifetime": "Transaction lifetime:",
   "liquidity.reviewTransaction.modal.detail.nonce": "Nonce:",
