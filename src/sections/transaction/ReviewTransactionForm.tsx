@@ -17,7 +17,6 @@ import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
-import { TransactionCode } from "components/TransactionCode/TransactionCode"
 import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
@@ -27,11 +26,11 @@ import { Transaction } from "state/store"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_1 } from "utils/constants"
-import { getTransactionJSON } from "./ReviewTransaction.utils"
 import Skeleton from "react-loading-skeleton"
 import { useRpcProvider } from "providers/rpcProvider"
 import { theme } from "theme"
 import { isEvmAccount } from "utils/evm"
+import { ReviewTransactionData } from "./ReviewTransactionData"
 
 export const ReviewTransactionForm = (
   props: {
@@ -85,7 +84,6 @@ export const ReviewTransactionForm = (
     return props.onSigned(signature)
   })
 
-  const json = getTransactionJSON(props.tx)
   const { data: paymentInfoData, isLoading: isPaymentInfoLoading } =
     usePaymentInfo(props.tx)
   const era = useEra(
@@ -204,7 +202,7 @@ export const ReviewTransactionForm = (
         }}
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
         content={
-          <>{json && <TransactionCode name={json.method} src={json.args} />}</>
+          <ReviewTransactionData address={account?.address} tx={props.tx} />
         }
         footer={
           <>

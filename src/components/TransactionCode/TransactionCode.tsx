@@ -20,7 +20,7 @@ export const TransactionCode = (props: ReactJsonViewProps) => (
       base06: "white",
       base07: theme.colors.basic100,
       base08: "#444",
-      base09: theme.colors.brightBlue700,
+      base09: theme.colors.brightBlue200Alpha,
       base0A: "rgba(70, 70, 230, 0)",
       base0B: "rgba(70, 70, 230, 0)",
       base0C: "rgba(70, 70, 230, 0)",
