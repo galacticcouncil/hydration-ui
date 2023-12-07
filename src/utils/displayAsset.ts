@@ -191,7 +191,7 @@ export const useDisplayAssetStore = create<DisplayAssetStore>()(
       update: (value) =>
         set({ ...value, isDollar: value.isRealUSD || value.isStableCoin }),
     }),
-    { name: "hdx-display-asset" },
+    { name: "hdx-display-asset", version: 1 },
   ),
 )
 
