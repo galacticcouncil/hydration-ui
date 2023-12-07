@@ -96,6 +96,8 @@ export function SwapPage() {
     )
   }
 
+  const assetsReady = search.success && accountCurrency.isSuccess
+
   const assetInDefault =
     search.success && search.data.assetIn
       ? search.data.assetIn
@@ -113,15 +115,15 @@ export function SwapPage() {
   return (
     <SContainer>
       <SwapApp
-        key={account?.provider}
+        key={assetsReady ? account?.provider : ""}
         ref={(r) => {
           if (r) {
             r.setAttribute("chart", "")
             isTwapEnabled && r.setAttribute("twap", "")
           }
         }}
-        assetIn={assetInDefault}
-        assetOut={assetOutDefault}
+        assetIn={assetsReady ? assetInDefault : ""}
+        assetOut={assetsReady ? assetOutDefault : ""}
         apiAddress={rpcUrl}
         pools={pools}
         stableCoinAssetId={stableCoinAssetId}

@@ -31,6 +31,7 @@ import { getTransactionJSON } from "./ReviewTransaction.utils"
 import Skeleton from "react-loading-skeleton"
 import { useRpcProvider } from "providers/rpcProvider"
 import { theme } from "theme"
+import { isEvmAccount } from "utils/evm"
 
 export const ReviewTransactionForm = (
   props: {
@@ -93,9 +94,10 @@ export const ReviewTransactionForm = (
     !signTx.isLoading && props.tx.era.isMortalEra,
   )
 
-  const acceptedFeeAssets = useAcceptedCurrencies(
-    feeAssets.map((feeAsset) => feeAsset.asset.id) ?? [],
-  )
+  const feeAssetsIds = isEvmAccount(account?.address)
+    ? [accountCurrency.data]
+    : feeAssets.map((feeAsset) => feeAsset.asset.id) ?? []
+  const acceptedFeeAssets = useAcceptedCurrencies(feeAssetsIds)
   const isLoading = feeAssetBalance.isLoading || isPaymentInfoLoading
   const {
     openModal,
@@ -169,12 +171,14 @@ export const ReviewTransactionForm = (
   const hasFeePaymentBalance =
     paymentFee && feePaymentBalance.minus(paymentFee).gt(0)
 
+  const hasMultipleFeeAssets = acceptedFeeAssets.length > 1
+
   if (isOpenSelectAssetModal) return modal
 
   let btnText = t("liquidity.reviewTransaction.modal.confirmButton")
 
   if (!isLoading) {
-    if (hasFeePaymentBalance === false) {
+    if (!hasFeePaymentBalance && hasMultipleFeeAssets) {
       btnText = t(
         "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance",
       )
@@ -223,16 +227,18 @@ export const ReviewTransactionForm = (
                             type: "token",
                           })}
                         </Text>
-                        <div
-                          tabIndex={0}
-                          role="button"
-                          onClick={openModal}
-                          css={{ cursor: "pointer" }}
-                        >
-                          <Text color="brightBlue300">
-                            {t("liquidity.reviewTransaction.modal.edit")}
-                          </Text>
-                        </div>
+                        {hasMultipleFeeAssets && (
+                          <div
+                            tabIndex={0}
+                            role="button"
+                            onClick={openModal}
+                            css={{ cursor: "pointer" }}
+                          >
+                            <Text color="brightBlue300">
+                              {t("liquidity.reviewTransaction.modal.edit")}
+                            </Text>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <Skeleton width={100} height={16} />
@@ -273,12 +279,21 @@ export const ReviewTransactionForm = (
                   text={btnText}
                   variant="primary"
                   isLoading={signTx.isLoading || isLoading}
-                  disabled={account == null || isLoading || signTx.isLoading}
+                  disabled={
+                    account == null ||
+                    isLoading ||
+                    signTx.isLoading ||
+                    (!hasFeePaymentBalance && !hasMultipleFeeAssets)
+                  }
                   onClick={() =>
-                    hasFeePaymentBalance ? signTx.mutate() : openModal()
+                    hasFeePaymentBalance
+                      ? signTx.mutate()
+                      : hasMultipleFeeAssets
+                      ? openModal()
+                      : undefined
                   }
                 />
-                {hasFeePaymentBalance === false && (
+                {!hasFeePaymentBalance && (
                   <Text fs={16} color="pink600">
                     {t(
                       "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance.msg",

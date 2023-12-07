@@ -33,7 +33,11 @@ export function DcaPage() {
   const { api, isLoaded } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
-  const accountCurrency = useAccountCurrency(isLoaded ? account?.address : "")
+  const {
+    isSuccess,
+    isLoading,
+    data: accountCurrencyId,
+  } = useAccountCurrency(isLoaded ? account?.address : "")
 
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
@@ -75,26 +79,22 @@ export function DcaPage() {
   }
 
   const assetInDefault =
-    isEvmAccount(account?.address) && accountCurrency.isSuccess
-      ? accountCurrency.data
-      : undefined
+    isEvmAccount(account?.address) && isSuccess ? accountCurrencyId : undefined
 
   const assetOutDefault =
-    isEvmAccount(account?.address) && accountCurrency.isSuccess
-      ? NATIVE_ASSET_ID
-      : undefined
+    isEvmAccount(account?.address) && isSuccess ? NATIVE_ASSET_ID : undefined
 
   return (
     <SContainer>
       <DcaApp
-        key={account?.provider}
+        key={!isLoading ? account?.provider : ""}
         ref={(r) => {
           r && r.setAttribute("chart", "")
         }}
         apiAddress={rpcUrl}
         pools={pools}
-        assetIn={assetInDefault}
-        assetOut={assetOutDefault}
+        assetIn={!isLoading ? assetInDefault : ""}
+        assetOut={!isLoading ? assetOutDefault : ""}
         stableCoinAssetId={stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
