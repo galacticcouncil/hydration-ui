@@ -159,7 +159,10 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
         meta.decimals,
       ).times(spotPrice)
 
-      const valueOfShares = protocolShares.div(shares).multipliedBy(free)
+      const valueOfShares = protocolShares
+        .div(shares)
+        .multipliedBy(free)
+        .multipliedBy(spotPrice)
 
       const valueOfLiquidityPositions =
         treasurePositionsValue[omnipoolAssetId] ?? BN_0
