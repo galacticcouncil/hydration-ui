@@ -154,6 +154,7 @@ export const useAssetsTableData = ({
       .sort((a, b) => {
         // native asset first
         if (a.id === NATIVE_ASSET_ID) return -1
+        if (b.id === NATIVE_ASSET_ID) return 1
 
         if (!b.transferableDisplay.eq(a.transferableDisplay))
           return b.transferableDisplay.minus(a.transferableDisplay).toNumber()
