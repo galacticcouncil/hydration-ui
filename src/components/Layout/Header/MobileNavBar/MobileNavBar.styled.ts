@@ -6,7 +6,7 @@ export const SMobileNavBar = styled.div`
   position: fixed;
   left: 0;
   bottom: 0;
-  z-index: ${theme.zIndices.header};
+  z-index: ${theme.zIndices.modal};
 
   padding: 2px 0;
   padding-bottom: env(safe-area-inset-bottom);

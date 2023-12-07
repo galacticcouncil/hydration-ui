@@ -19,6 +19,7 @@ import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { Icon } from "components/Icon/Icon"
+import { LINKS } from "utils/navigation"
 
 export const useAssetsTable = (
   data: AssetsTableData[],
@@ -96,25 +97,17 @@ export const useAssetsTable = (
           <WalletAssetsTableActions
             couldBeSetAsPaymentFee={row.original.couldBeSetAsPaymentFee}
             onBuyClick={
-              row.original.tradability.inTradeRouter &&
-              row.original.tradability.canBuy
+              row.original.tradability.inTradeRouter
                 ? () =>
                     navigate({
                       to: "/trade/swap",
-                      search: { assetOut: row.original.id },
+                      search: row.original.tradability.canBuy
+                        ? { assetOut: row.original.id }
+                        : { assetIn: row.original.id },
                     })
                 : undefined
             }
-            onSellClick={
-              row.original.tradability.inTradeRouter &&
-              row.original.tradability.canSell
-                ? () =>
-                    navigate({
-                      to: "/trade/swap",
-                      search: { assetIn: row.original.id },
-                    })
-                : undefined
-            }
+            onDepositClick={() => navigate({ to: LINKS.cross_chain })}
             toggleExpanded={row.toggleSelected}
             isExpanded={row.getIsSelected()}
             onTransferClick={() => actions.onTransfer(row.original.id)}
@@ -152,6 +145,8 @@ export type AssetsTableData = {
   lockedVestingDisplay: BN
   lockedDemocracy: BN
   lockedDemocracyDisplay: BN
+  lockedStaking: BN
+  lockedStakingDisplay: BN
   reserved: BN
   reservedDisplay: BN
   assetType: PalletAssetRegistryAssetType["type"]

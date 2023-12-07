@@ -97,12 +97,12 @@ const AllPoolsData = () => {
 
   const filteredPools =
     (search && pools.data
-      ? arraySearch(pools.data, search, ["name", "symbol"])
+      ? arraySearch(pools.data, search, ["symbol", "name"])
       : pools.data) ?? []
 
   const filteredXYKPools =
     (search && xylPools.data
-      ? arraySearch(xylPools.data, search, ["name", "symbol"])
+      ? arraySearch(xylPools.data, search, ["symbol", "name"])
       : xylPools.data) ?? []
 
   if (id != null) {

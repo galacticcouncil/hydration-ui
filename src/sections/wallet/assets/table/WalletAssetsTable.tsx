@@ -88,7 +88,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
         </TableHeaderContent>
         <TableBodyContent>
           {table.getRowModel().rows.map((row, i) => (
-            <Fragment key={row.id}>
+            <Fragment key={row.original.id}>
               <TableRow
                 isOdd={!(i % 2)}
                 onClick={() => {

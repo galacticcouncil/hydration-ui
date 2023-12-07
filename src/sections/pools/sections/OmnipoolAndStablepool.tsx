@@ -77,7 +77,7 @@ const OmnipoolAndStablepoolData = () => {
 
   const filteredPools =
     (search && pools.data
-      ? arraySearch(pools.data, search, ["name", "symbol"])
+      ? arraySearch(pools.data, search, ["symbol", "name"])
       : pools.data) ?? []
 
   if (id != null) {

@@ -11,6 +11,69 @@ import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
 import { OmnipoolAssetsTableColumn } from "sections/stats/components/OmnipoolAssetsTable/OmnipoolAssetsTable.utils"
 import { useMedia } from "react-use"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { useFee } from "api/stats"
+import { CellSkeleton } from "components/Skeleton/CellSkeleton"
+import { Farm, useFarmAprs, useFarms } from "api/farms"
+import { useMemo } from "react"
+import { BN_0 } from "utils/constants"
+import BigNumber from "bignumber.js"
+
+const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
+  const { t } = useTranslation()
+
+  const farmAprs = useFarmAprs(farms)
+
+  const percentage = useMemo(() => {
+    if (farmAprs.data?.length) {
+      const aprs = farmAprs.data ? farmAprs.data.map(({ apr }) => apr) : [BN_0]
+      const minAprs = farmAprs.data
+        ? farmAprs.data.map(({ minApr, apr }) => (minApr ? minApr : apr))
+        : [BN_0]
+
+      const minApr = BigNumber.minimum(...minAprs)
+      const maxApr = BigNumber.maximum(...aprs)
+
+      return {
+        minApr,
+        maxApr,
+      }
+    }
+
+    return {
+      minApr: BN_0,
+      maxApr: BN_0,
+    }
+  }, [farmAprs.data])
+
+  const isLoading = farmAprs.isInitialLoading
+
+  if (isLoading) return <CellSkeleton />
+
+  return (
+    <Text color="white">
+      {t("value.percentage.range", {
+        from: percentage.minApr.lt(apy) ? percentage.minApr : BigNumber(apy),
+        to: percentage.maxApr.plus(apy),
+      })}
+    </Text>
+  )
+}
+
+const APY = ({ assetId }: { assetId: string }) => {
+  const { t } = useTranslation()
+  const fee = useFee(assetId)
+  const farms = useFarms([assetId])
+
+  const isLoading = fee.isInitialLoading || farms.isInitialLoading
+
+  if (isLoading) return <CellSkeleton />
+
+  const apy = fee.data?.projected_apy_perc ?? 0
+
+  if (farms.data?.length) return <APYFarming farms={farms.data} apy={apy} />
+
+  return <Text color="white">{t("value.percentage", { value: apy })}</Text>
+}
 
 export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
   const { accessor, display } =
@@ -79,6 +142,12 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
           <DisplayValue value={row.original.volume} isUSD />
         </Text>
       ),
+    }),
+    display({
+      id: "apy",
+      header: t("stats.overview.table.assets.header.apy"),
+      sortingFn: (a, b) => (a.original.pol.gt(b.original.pol) ? 1 : -1),
+      cell: ({ row }) => <APY assetId={row.original.id} />,
     }),
     accessor("pol", {
       id: "pol",

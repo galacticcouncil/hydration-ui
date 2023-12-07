@@ -1,12 +1,10 @@
 import {
-  SortingState,
   VisibilityState,
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
   ColumnDef,
 } from "@tanstack/react-table"
-import { useState } from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
@@ -21,12 +19,6 @@ export const useOmnipoolAssetsTable = (
   data: TUseOmnipoolAssetDetailsData,
   columns: OmnipoolAssetsTableColumn[],
 ) => {
-  const isTvlColumn = columns.some((column) => column.id === "tvl")
-
-  const [sorting, setSorting] = useState<SortingState>([
-    ...(isTvlColumn ? [{ id: "tvl", desc: true }] : []),
-    { id: "pol", desc: true },
-  ])
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const columnVisibility: VisibilityState = {
@@ -34,15 +26,16 @@ export const useOmnipoolAssetsTable = (
     tvl: true,
     volume: isDesktop,
     fee: isDesktop,
+    apy: isDesktop,
     pol: isDesktop,
+    treasury: true,
     actions: true,
   }
 
   return useReactTable({
     data,
     columns,
-    state: { sorting, columnVisibility },
-    onSortingChange: setSorting,
+    state: { columnVisibility },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })

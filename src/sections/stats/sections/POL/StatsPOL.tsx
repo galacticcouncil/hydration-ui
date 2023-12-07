@@ -8,10 +8,10 @@ import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
 import { SContainerVertical } from "sections/stats/StatsPage.styled"
 import { OmnipoolAssetsTableWrapperData } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
 import { useMemo } from "react"
-import { BN_0, BN_1 } from "utils/constants"
+import { BN_0 } from "utils/constants"
 
 export const StatsPOL = () => {
-  const assetDetails = useOmnipoolAssetDetails()
+  const assetDetails = useOmnipoolAssetDetails("pol")
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const { POLMultiplier, totalVolume, totalPol } = useMemo(() => {
@@ -27,7 +27,7 @@ export const StatsPOL = () => {
       { totalTvl: BN_0, totalPol: BN_0, totalVolume: BN_0 },
     )
 
-    const POLMultiplier = BN_1.minus(totalPol.div(totalTvl))
+    const POLMultiplier = totalPol.div(totalTvl)
 
     return {
       POLMultiplier,
@@ -52,7 +52,7 @@ export const StatsPOL = () => {
     <div sx={{ flex: "column", gap: [24, 50] }}>
       <div sx={{ flex: "row", gap: 20 }}>
         <PieWrapper
-          data={assetDetails.data}
+          data={[...assetDetails.data].reverse()}
           isLoading={assetDetails.isLoading}
           POLMultiplier={POLMultiplier}
           totalVolume={totalVolume}

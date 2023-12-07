@@ -9,9 +9,13 @@ import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/W
 import { useRpcProvider } from "providers/rpcProvider"
 import { useSpotPrice } from "api/spotPrice"
 import { BN_0, BN_1 } from "utils/constants"
+import {
+  TXYKPosition,
+  isXYKPosition,
+} from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 
 type Props = {
-  row?: HydraPositionsTableData
+  row?: HydraPositionsTableData | TXYKPosition
   onClose: () => void
 }
 
@@ -24,23 +28,105 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
 
   const lrnaSpotPrice = useSpotPrice(assets.getAsset("1").id, row?.assetId)
 
-  const lrnaPositionPrice =
-    row?.lrna?.multipliedBy(lrnaSpotPrice.data?.spotPrice ?? BN_1) ?? BN_0
-
   if (!row) return null
 
-  const {
-    symbol,
-    lrna,
-    providedAmountShifted: amount,
-    providedAmountDisplay,
-    value,
-    valueDisplay,
-  } = row
+  let firstRow
+  let secondRow
 
-  const tKey = lrna?.gt(0)
-    ? "wallet.assets.hydraPositions.data.valueLrna"
-    : "wallet.assets.hydraPositions.data.value"
+  if (isXYKPosition(row)) {
+    firstRow = (
+      <div sx={{ flex: "row", gap: 4 }}>
+        <Text fs={16} lh={16} fw={500} color="white">
+          {row.balances
+            ?.map((balance) =>
+              t("value.tokenWithSymbol", {
+                value: balance.balanceHuman,
+                symbol: balance.symbol,
+              }),
+            )
+            .join(" | ")}
+        </Text>
+      </div>
+    )
+
+    secondRow = (
+      <div sx={{ flex: "column", gap: 6 }}>
+        <Text fs={14} color="whiteish500">
+          {t("liquidity.xyk.asset.position.availableShares")}
+        </Text>
+        <div>
+          <Text>
+            {t("value.token", {
+              value: row.amount,
+            })}
+          </Text>
+        </div>
+      </div>
+    )
+  } else {
+    const lrnaPositionPrice =
+      row.lrna?.multipliedBy(lrnaSpotPrice.data?.spotPrice ?? BN_1) ?? BN_0
+
+    const {
+      symbol,
+      lrna,
+      providedAmountShifted: amount,
+      providedAmountDisplay,
+      value,
+    } = row
+
+    const tKey = lrna?.gt(0)
+      ? "wallet.assets.hydraPositions.data.valueLrna"
+      : "wallet.assets.hydraPositions.data.value"
+
+    firstRow = (
+      <>
+        <Text fs={14} lh={14} fw={500} color="white">
+          {t("value.tokenWithSymbol", {
+            value: lrnaPositionPrice.plus(value ?? BN_0),
+            symbol: meta?.symbol,
+          })}
+        </Text>
+
+        {lrnaPositionPrice.gt(0) && (
+          <Text
+            fs={14}
+            lh={14}
+            fw={500}
+            color="brightBlue300"
+            sx={{ flex: "row", align: "center", gap: 1 }}
+          >
+            <p sx={{ height: "min-content" }}>=</p>
+            <Trans
+              i18nKey={tKey}
+              tOptions={{
+                value,
+                symbol,
+                lrna,
+                type: "token",
+              }}
+            >
+              <br sx={{ display: ["none", "none"] }} />
+            </Trans>
+          </Text>
+        )}
+      </>
+    )
+
+    secondRow = (
+      <div sx={{ flex: "column", gap: 4 }}>
+        <Text fs={14} lh={16} color="whiteish500">
+          {t("wallet.assets.hydraPositions.header.providedAmount")}
+        </Text>
+        <Text fs={14} lh={14} color="white">
+          {t("value.tokenWithSymbol", { value: amount, symbol })}
+        </Text>
+        <Text fs={12} lh={17} color="whiteish500">
+          <DisplayValue value={providedAmountDisplay} />
+        </Text>
+      </div>
+    )
+  }
 
   return (
     <Modal open={!!row} isDrawer onClose={onClose} title="">
@@ -64,59 +150,20 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
             <Text fs={14} lh={16} color="whiteish500">
               {t("wallet.assets.hydraPositions.header.valueUSD")}
             </Text>
-            <Text fs={14} lh={14} fw={500} color="white">
-              {t("value.tokenWithSymbol", {
-                value: lrnaPositionPrice.plus(value ?? BN_0),
-                symbol: meta?.symbol,
-              })}
-            </Text>
-
-            {lrnaPositionPrice.gt(0) && (
-              <Text
-                fs={14}
-                lh={14}
-                fw={500}
-                color="brightBlue300"
-                sx={{ flex: "row", align: "center", gap: 1 }}
-              >
-                <p sx={{ height: "min-content" }}>=</p>
-                <Trans
-                  i18nKey={tKey}
-                  tOptions={{
-                    value,
-                    symbol,
-                    lrna,
-                    type: "token",
-                  }}
-                >
-                  <br sx={{ display: ["none", "none"] }} />
-                </Trans>
-              </Text>
-            )}
-
+            {firstRow}
             <Text
               fs={12}
               lh={14}
               fw={500}
               css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.6)` }}
             >
-              <DisplayValue value={valueDisplay} />
+              <DisplayValue value={row.valueDisplay} />
             </Text>
           </div>
 
           <Separator css={{ background: `rgba(158, 167, 186, 0.06)` }} />
 
-          <div sx={{ flex: "column", gap: 4 }}>
-            <Text fs={14} lh={16} color="whiteish500">
-              {t("wallet.assets.hydraPositions.header.providedAmount")}
-            </Text>
-            <Text fs={14} lh={14} color="white">
-              {t("value.tokenWithSymbol", { value: amount, symbol })}
-            </Text>
-            <Text fs={12} lh={17} color="whiteish500">
-              <DisplayValue value={providedAmountDisplay} />
-            </Text>
-          </div>
+          {secondRow}
         </div>
       </div>
     </Modal>

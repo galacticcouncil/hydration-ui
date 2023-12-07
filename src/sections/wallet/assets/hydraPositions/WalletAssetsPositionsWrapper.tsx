@@ -1,11 +1,23 @@
 import { WalletAssetsHydraPositions } from "./WalletAssetsHydraPositions"
-import { useOmnipoolPositionsData } from "./data/WalletAssetsHydraPositionsData.utils"
+import {
+  useOmnipoolPositionsData,
+  useXykPositionsData,
+} from "./data/WalletAssetsHydraPositionsData.utils"
 import { WalletAssetsHydraPositionsSkeleton } from "./skeleton/WalletAssetsHydraPositionsSkeleton"
+import { useWalletAssetsFilters } from "sections/wallet/assets/WalletAssets.utils"
 
 export const WalletAssetsPositionsWrapper = () => {
-  const positionsTable = useOmnipoolPositionsData()
+  const { search } = useWalletAssetsFilters()
 
-  if (positionsTable.isLoading) return <WalletAssetsHydraPositionsSkeleton />
+  const positionsTable = useOmnipoolPositionsData({ search })
+  const xykPositions = useXykPositionsData({ search })
 
-  return <WalletAssetsHydraPositions data={positionsTable.data} />
+  const allPositions = [...positionsTable.data, ...xykPositions.data].sort(
+    (a, b) => b.valueDisplay.minus(a.valueDisplay).toNumber(),
+  )
+
+  if (positionsTable.isLoading || xykPositions.isLoading)
+    return <WalletAssetsHydraPositionsSkeleton />
+
+  return <WalletAssetsHydraPositions data={allPositions} />
 }

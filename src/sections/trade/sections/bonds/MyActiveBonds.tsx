@@ -9,7 +9,7 @@ import { Placeholder } from "./table/placeholder/Placeholder"
 import { useBestNumber } from "api/chain"
 import { useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
-import { isNotNil } from "utils/helpers"
+import { arraySearch, isNotNil } from "utils/helpers"
 import { BN_0 } from "utils/constants"
 import BN from "bignumber.js"
 import { format } from "date-fns"
@@ -20,12 +20,14 @@ type Props = {
   showTransactions?: boolean
   showTransfer?: boolean
   id?: string
+  search?: string
 }
 
 export const MyActiveBonds = ({
   showTransactions,
   showTransfer,
   id,
+  search,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -170,6 +172,8 @@ export const MyActiveBonds = ({
         isSale,
         averagePrice,
         events,
+        name: assets.getBond(bond.id)?.name ?? "",
+        symbol: assets.getBond(bond.id)?.symbol ?? "",
       }
     })
     .filter(isNotNil)
@@ -208,6 +212,8 @@ export const MyActiveBonds = ({
           isSale,
           averagePrice: BN_0,
           events: [],
+          name: assets.getBond(bond.id)?.name ?? "",
+          symbol: assets.getBond(bond.id)?.symbol ?? "",
         })
       }
 
@@ -217,10 +223,14 @@ export const MyActiveBonds = ({
     data = [...bondsWithBalance, ...bondsWithoutBalance]
   }
 
+  const filteredData = search
+    ? arraySearch(data, search, ["symbol", "name"])
+    : data
+
   return (
     <BondsTable
       {...tableProps}
-      data={data}
+      data={filteredData}
       allAssets={allAssets}
       setAllAssets={setAllAssets}
     />

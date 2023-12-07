@@ -1,71 +1,23 @@
-import { LINKS } from "utils/navigation"
-import { useTranslation } from "react-i18next"
+import { useLbpPool } from "api/bonds"
+import { useBestNumber } from "api/chain"
+import IconBonds from "assets/icons/Bonds.svg?react"
 import IconDCA from "assets/icons/navigation/IconDCA.svg?react"
 import IconOTC from "assets/icons/navigation/IconOTC.svg?react"
 import IconSwap from "assets/icons/navigation/IconSwap.svg?react"
-import IconBonds from "assets/icons/Bonds.svg?react"
-import { Link, useSearch } from "@tanstack/react-location"
-import { ReactNode, useMemo } from "react"
-import { Text } from "components/Typography/Text/Text"
-import { Icon } from "components/Icon/Icon"
-import { theme } from "theme"
 import {
-  SBadge,
-  STabContainer,
-  SubNavigationContainer,
-} from "./sections/SubNavigation.styled"
+  SubNavigation,
+  SubNavigationTabLink,
+} from "components/Layout/SubNavigation/SubNavigation"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useLbpPool } from "api/bonds"
-import { useBestNumber } from "api/chain"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { LINKS } from "utils/navigation"
 
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
 const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
 
-const Tab = ({
-  to,
-  icon,
-  label,
-  withBadge,
-}: {
-  to: string
-  icon: ReactNode
-  label: string
-  withBadge?: boolean
-}) => {
-  const search = useSearch()
-
-  return (
-    <Link
-      to={to}
-      search={search}
-      css={{
-        "&:hover > div > p": { color: theme.colors.white },
-        height: "100%",
-      }}
-    >
-      {({ isActive }) => (
-        <>
-          <STabContainer>
-            <Icon sx={{ color: "brightBlue300" }} icon={icon} />
-            <Text fs={13} color={isActive ? "white" : "iconGray"}>
-              {label}
-            </Text>
-            {withBadge && <SBadge>Active</SBadge>}
-          </STabContainer>
-          {isActive && (
-            <div
-              sx={{ height: 1, bg: "brightBlue300", width: "100%" }}
-              css={{ position: "relative", bottom: 1 }}
-            />
-          )}
-        </>
-      )}
-    </Link>
-  )
-}
-
-const BondsTabLink = () => {
+export const BondsTabLink = () => {
   const { t } = useTranslation()
   const {
     assets: { bonds },
@@ -96,35 +48,34 @@ const BondsTabLink = () => {
   }, [bonds, currentBlockNumber, lbpPool.data])
 
   return (
-    <Tab
+    <SubNavigationTabLink
       to={LINKS.bonds}
       icon={<IconBonds />}
       label={t("header.trade.bonds.title")}
-      withBadge={isActive}
+      badge={isActive ? t("header.trade.active") : ""}
     />
   )
 }
 
-export const SubNavigation = () => {
+export const Navigation = () => {
   const { t } = useTranslation()
   const { isLoaded } = useRpcProvider()
-
   return (
-    <SubNavigationContainer>
-      <Tab
+    <SubNavigation>
+      <SubNavigationTabLink
         to={LINKS.swap}
         icon={<IconSwap />}
         label={t("header.trade.swap.title")}
       />
       {isOtcPageEnabled && (
-        <Tab
+        <SubNavigationTabLink
           to={LINKS.otc}
           icon={<IconOTC />}
           label={t("header.trade.otc.title")}
         />
       )}
       {isDcaPageEnabled && (
-        <Tab
+        <SubNavigationTabLink
           to={LINKS.dca}
           icon={<IconDCA />}
           label={t("header.trade.dca.title")}
@@ -134,13 +85,13 @@ export const SubNavigation = () => {
         isLoaded ? (
           <BondsTabLink />
         ) : (
-          <Tab
+          <SubNavigationTabLink
             to={LINKS.bonds}
             icon={<IconBonds />}
             label={t("header.trade.bonds.title")}
           />
         )
       ) : null}
-    </SubNavigationContainer>
+    </SubNavigation>
   )
 }

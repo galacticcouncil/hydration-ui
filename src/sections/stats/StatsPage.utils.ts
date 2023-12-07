@@ -7,7 +7,11 @@ import { useUniques } from "api/uniques"
 import { useVolumes } from "api/volume"
 import BN from "bignumber.js"
 import { useMemo } from "react"
-import { HYDRA_TREASURE_ACCOUNT, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
+import {
+  HYDRA_TREASURE_ACCOUNT,
+  NATIVE_ASSET_ID,
+  OMNIPOOL_ACCOUNT_ADDRESS,
+} from "utils/api"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_10, BN_NAN, BN_QUINTILL } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
@@ -17,7 +21,7 @@ import { useTVLs } from "api/stats"
 
 const withoutRefresh = true
 
-export const useOmnipoolAssetDetails = () => {
+export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
   const { assets } = useRpcProvider()
   const apiIds = useApiIds()
   const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
@@ -155,7 +159,10 @@ export const useOmnipoolAssetDetails = () => {
         meta.decimals,
       ).times(spotPrice)
 
-      const valueOfShares = protocolShares.div(shares).multipliedBy(free)
+      const valueOfShares = protocolShares
+        .div(shares)
+        .multipliedBy(free)
+        .multipliedBy(spotPrice)
 
       const valueOfLiquidityPositions =
         treasurePositionsValue[omnipoolAssetId] ?? BN_0
@@ -196,7 +203,19 @@ export const useOmnipoolAssetDetails = () => {
     spotPrices,
     tvls,
     volumes,
-  ]).filter(isNotNil)
+  ])
+    .filter(isNotNil)
+    .sort((assetA, assetB) => {
+      if (assetA.id === NATIVE_ASSET_ID) {
+        return -1
+      }
+
+      if (assetB.id === NATIVE_ASSET_ID) {
+        return 1
+      }
+
+      return assetA[sortBy].gt(assetB[sortBy]) ? -1 : 1
+    })
 
   return { data, isLoading }
 }

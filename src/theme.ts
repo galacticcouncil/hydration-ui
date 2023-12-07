@@ -218,6 +218,15 @@ export const gradientBorder = css`
   }
 `
 
+export const scrollbarHidden = css`
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  &::-webkit-scrollbar,
+  &::-webkit-scrollbar-thumb {
+    display: none;
+  }
+`
+
 export const theme = {
   colors,
   gradients,
@@ -228,4 +237,5 @@ export const theme = {
   shadows,
   borderRadius,
   gradientBorder,
+  scrollbarHidden,
 }

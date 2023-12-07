@@ -11,13 +11,13 @@ import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
 
 export const StatsOverview = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const omnipoolOverview = useOmnipoolAssetDetails()
+  const omnipoolOverview = useOmnipoolAssetDetails("tvl")
 
   return (
     <div sx={{ flex: "column", gap: [24, 50] }}>
       <div sx={{ flex: "row", gap: 20, height: ["auto", 690] }}>
         <PieWrapper
-          data={omnipoolOverview.data}
+          data={[...omnipoolOverview.data].reverse()}
           isLoading={omnipoolOverview.isLoading}
         />
         {isDesktop && (

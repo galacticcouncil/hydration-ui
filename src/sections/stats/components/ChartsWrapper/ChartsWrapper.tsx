@@ -18,7 +18,7 @@ export const ChartWrapper = ({ assetId }: Props) => {
   const { t } = useTranslation()
   const [chartType, setChartType] = useState<ChartType>("tvl")
   const [timeframe, setTimeframe] = useState<StatsTimeframe>(
-    StatsTimeframe.HOURLY,
+    StatsTimeframe.DAILY,
   )
   const { isLoaded } = useRpcProvider()
 

@@ -73,7 +73,7 @@ const IsolatedPoolsData = () => {
 
   const filteredPools =
     (search && xylPools.data
-      ? arraySearch(xylPools.data, search, ["name", "symbol"])
+      ? arraySearch(xylPools.data, search, ["symbol", "name"])
       : xylPools.data) ?? []
 
   if (id != null) {

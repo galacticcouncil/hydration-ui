@@ -216,7 +216,7 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
     background: rgba(${theme.rgbColors.white}, 0.03);
     color: ${theme.colors.white};
 
-    border: 1px solid rgba(${theme.rgbColors.white}, 0.1);
+    border: 1px solid rgba(${theme.rgbColors.white}, 0.03);
 
     :hover,
     :active {

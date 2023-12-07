@@ -14,7 +14,7 @@ import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTrans
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useAccountStore, useStore } from "state/store"
 import { theme } from "theme"
-import { BN_1, BN_10 } from "utils/constants"
+import { BN_0, BN_1, BN_10 } from "utils/constants"
 import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
 import { FormValues } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -44,7 +44,7 @@ export function WalletTransferSectionOnchain({
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const balance = useTokenBalance(asset, account?.address)
+  const tokenBalance = useTokenBalance(asset, account?.address)
   const assetMeta = assets.getAsset(asset.toString())
 
   const accountCurrency = useAccountCurrency(account?.address)
@@ -59,6 +59,20 @@ export function WalletTransferSectionOnchain({
       ? api.tx.balances.transferKeepAlive("", "0")
       : api.tx.tokens.transferKeepAlive("", asset, "0"),
   )
+
+  const isTransferingPaymentAsset = accountCurrency.data === asset.toString()
+
+  const nativeFee = paymentInfoData?.partialFee.toBigNumber() ?? BN_0
+  const nativeDecimals = assets.native.decimals
+  const nativeDecimalsDiff =
+    nativeDecimals - (accountCurrencyMeta?.decimals ?? nativeDecimals)
+
+  const convertedFee = nativeFee.multipliedBy(spotPrice.data?.spotPrice ?? BN_1)
+
+  const balance = tokenBalance.data?.balance
+  const balanceMax = isTransferingPaymentAsset
+    ? balance?.minus(convertedFee.div(BN_10.pow(nativeDecimalsDiff)))
+    : balance
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (assetMeta.decimals == null) throw new Error("Missing asset meta")
@@ -215,7 +229,7 @@ export function WalletTransferSectionOnchain({
                   if (assetMeta.decimals == null)
                     throw new Error("Missing asset meta")
                   if (
-                    balance.data?.balance.gte(
+                    balance?.gte(
                       BigNumber(value).multipliedBy(
                         BN_10.pow(assetMeta.decimals),
                       ),
@@ -240,6 +254,8 @@ export function WalletTransferSectionOnchain({
                   : t("wallet.assets.transfer.asset.label_mob")
               }
               name={name}
+              balance={balance}
+              balanceMax={balanceMax}
               value={value}
               onChange={onChange}
               asset={asset}
@@ -257,10 +273,8 @@ export function WalletTransferSectionOnchain({
           label={t("wallet.assets.transfer.transaction_cost")}
           content={
             paymentInfoData?.partialFee != null
-              ? t("liquidity.add.modal.row.transactionCostValue", {
-                  amount: new BigNumber(
-                    paymentInfoData.partialFee.toHex(),
-                  ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
+              ? t("value.tokenWithSymbol", {
+                  value: convertedFee,
                   symbol: accountCurrencyMeta?.symbol,
                   fixedPointScale: 12,
                 })
