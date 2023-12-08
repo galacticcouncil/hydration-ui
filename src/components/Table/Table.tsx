@@ -6,6 +6,7 @@ import { TableHeader } from "components/Table/Table.styled"
 import { ReactNode } from "react"
 
 export const TableAction = (props: {
+  "data-intersect"?: string
   icon?: ReactNode
   onClick?: () => void
   children: ReactNode
@@ -20,12 +21,15 @@ export const TableAction = (props: {
       size="small"
       variant={props.variant}
       sx={{ p: "9px 12px" }}
-      css={{ whiteSpace: "nowrap" }}
+      css={{
+        whiteSpace: "nowrap",
+      }}
       onClick={(e) => {
         e.stopPropagation()
         e.preventDefault()
         props.onClick?.()
       }}
+      data-intersect={props["data-intersect"]}
     >
       {props.icon && <Icon size={16} icon={props.icon} />}
       {props.children}

@@ -30,7 +30,13 @@ export const AssetTableName = ({
 
   return (
     <div>
-      <div sx={{ flex: "row", gap: 8, align: "center" }}>
+      <div
+        sx={{ flex: "row", gap: 8, align: "center", width: "fit-content" }}
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+        }}
+      >
         {typeof iconIds === "string" ? (
           <SIcon large={large}>
             <AssetLogo id={iconIds} />
