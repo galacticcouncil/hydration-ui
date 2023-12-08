@@ -1,10 +1,9 @@
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 import { InputHTMLAttributes, forwardRef } from "react"
-import { SInput, SInputWrapper } from "./CodeInput.styled"
+import { SErrorMessage, SInput, SInputWrapper } from "./CodeInput.styled"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
 import { randomAlphanumericString } from "utils/helpers"
-import { ErrorMessage } from "components/Label/Label.styled"
 import DiceIcon from "assets/icons/DiceIcon.svg?react"
 import { REFERRAL_CODE_MAX_LENGTH } from "sections/referrals/ReferralsPage.utils"
 
@@ -23,7 +22,7 @@ export const CodeInput = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           autoComplete="off"
           hasError={!!error}
-          sx={!props.disabled ? { pr: 180 } : {}}
+          sx={!props.disabled ? { pr: [40, 180] } : {}}
           {...props}
           onChange={(e) => onChange?.(e.target.value)}
         />
@@ -31,19 +30,18 @@ export const CodeInput = forwardRef<HTMLInputElement, InputProps>(
           <Button
             size="micro"
             type="button"
+            sx={{ px: [0, 6], py: [0, 2] }}
             onClick={() =>
               onChange?.(randomAlphanumericString(REFERRAL_CODE_MAX_LENGTH))
             }
           >
-            <DiceIcon width={10} height={10} sx={{ mx: -4 }} />
-            {t("referrals.button.randomCode")}
+            <DiceIcon sx={{ width: [24, 10], height: [24, 10], mr: [0, -4] }} />
+            <span sx={{ display: ["none", "inline"] }}>
+              {t("referrals.button.randomCode")}
+            </span>
           </Button>
         )}
-        {error && (
-          <ErrorMessage css={{ position: "absolute", top: "100%", left: 0 }}>
-            {error}
-          </ErrorMessage>
-        )}
+        {error && <SErrorMessage>{error}</SErrorMessage>}
       </SInputWrapper>
     )
   },

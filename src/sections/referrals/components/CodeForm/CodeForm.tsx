@@ -3,9 +3,7 @@ import { FormValues } from "utils/helpers"
 import { WavySeparator } from "components/WavySeparator/WavySeparator"
 import { CodeInput } from "sections/referrals/components/CodeInput/CodeInput"
 import { CodePreview } from "sections/referrals/components/CodePreview/CodePreview"
-import { Account, useAccountStore } from "state/store"
 import { Button } from "components/Button/Button"
-import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { useTranslation } from "react-i18next"
 import { BN_0, BN_100 } from "utils/constants"
 import BN from "bignumber.js"
@@ -13,6 +11,9 @@ import {
   REFERRAL_CODE_MAX_LENGTH,
   REFERRAL_CODE_REGEX,
 } from "sections/referrals/ReferralsPage.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
+import { useEffect } from "react"
 
 const IS_FUNDED = true
 
@@ -33,7 +34,7 @@ enum UserState {
 
 export const CodeForm = () => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   // @TODO: check actual user wallet balance
   const balance = IS_FUNDED ? BN_100 : BN_0
@@ -50,9 +51,17 @@ export const CodeForm = () => {
     console.log(values)
   }
 
-  const isDisabled = !account?.address || balance.isZero()
+  const state = getUserState(account?.address, balance)
+  const isDisabled = state !== UserState.FUNDED
 
-  const state = getUserState(account, balance)
+  useEffect(() => {
+    if (
+      form.getFieldState("referralCode").isDirty &&
+      state === UserState.DISCONECTED
+    ) {
+      form.reset()
+    }
+  }, [form, state])
 
   return (
     <>
@@ -99,12 +108,12 @@ export const CodeForm = () => {
           <Button variant="primary">{t("referrals.button.sign")}</Button>
         )}
         {state === UserState.NOT_FUNDED && (
-          <Button variant="primary">
+          <Button type="button" variant="primary">
             {t("referrals.button.depositFunds")}
           </Button>
         )}
         {state === UserState.DISCONECTED && (
-          <WalletConnectButton sx={{ height: "auto", px: 30 }} />
+          <Web3ConnectModalButton sx={{ height: "auto", px: 30 }} />
         )}
       </form>
       <WavySeparator sx={{ my: 20, opacity: 0.15 }} />
@@ -113,8 +122,8 @@ export const CodeForm = () => {
   )
 }
 
-function getUserState(account?: Account, balance?: BN): UserState {
-  if (!account?.address) {
+function getUserState(address?: string, balance?: BN): UserState {
+  if (!address) {
     return UserState.DISCONECTED
   }
 

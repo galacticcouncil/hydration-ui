@@ -1,5 +1,6 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
+import { ErrorMessage } from "components/Label/Label.styled"
 
 export const SInput = styled.input<{
   hasError?: boolean
@@ -36,7 +37,7 @@ export const SInputWrapper = styled.div`
 
   & > svg {
     position: absolute;
-    top: 50%;
+    top: 27px;
     left: 12px;
     transform: translateY(-50%);
     color: ${theme.colors.brightBlue300};
@@ -49,12 +50,19 @@ export const SInputWrapper = styled.div`
 
   & > button {
     position: absolute;
-    top: 50%;
+    top: 27px;
     right: 12px;
     transform: translateY(-50%);
     border: 0;
     :hover {
       border: 0;
     }
+  }
+`
+export const SErrorMessage = styled(ErrorMessage)`
+  @media ${theme.viewport.gte.sm} {
+    position: absolute;
+    top: 100%;
+    left: 0;
   }
 `

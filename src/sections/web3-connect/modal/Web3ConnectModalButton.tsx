@@ -116,6 +116,7 @@ export const Web3ConnectInactiveButton: FC<{
       onClick={props.onOpen}
       className={props.className}
       transform="none"
+      type="button"
     >
       <WalletIcon />
       {t("header.walletConnect.button")}
@@ -123,7 +124,10 @@ export const Web3ConnectInactiveButton: FC<{
   )
 }
 
-export const Web3ConnectModalButton: FC<{ className?: string }> = (props) => {
+export const Web3ConnectModalButton: FC<{
+  className?: string
+  size?: ButtonProps["size"]
+}> = (props) => {
   const { toggle } = useWeb3ConnectStore()
   const { account } = useAccount()
 
@@ -137,6 +141,7 @@ export const Web3ConnectModalButton: FC<{ className?: string }> = (props) => {
         />
       ) : (
         <Web3ConnectInactiveButton
+          size={props.size}
           className={props.className}
           onOpen={toggle}
         />

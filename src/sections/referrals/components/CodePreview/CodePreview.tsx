@@ -3,7 +3,13 @@ import { ButtonHTMLAttributes, FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useCopyToClipboard } from "react-use"
 import { LINKS } from "utils/navigation"
-import { SCopyButton, SPathButton, SPreviewBox } from "./CodePreview.styled"
+import {
+  SContainer,
+  SCopyButton,
+  SPathButton,
+  SPreviewBox,
+  SPreviewPathSelect,
+} from "./CodePreview.styled"
 
 const SELECTABLE_URL_PATHS = [
   {
@@ -51,59 +57,42 @@ export const CodePreview: React.FC<Props> = ({ code, disabled = false }) => {
   const fullUrl = `${urlDomain}${urlPath}${urlQuery}${codeDisplay}`
 
   return (
-    <div>
-      <div
-        sx={{ flex: ["column", "row"], gap: 16 }}
-        css={
-          disabled && {
-            opacity: 0.3,
-            pointerEvents: "none",
-            userSelect: "none",
-          }
-        }
-      >
-        <div>
-          <SPreviewBox>
-            <Text>{t("referrals.preview.link.title")}</Text>
-            <Text color="brightBlue300">
-              {urlDomain}
-              {urlPath}
-              {urlQuery}
-              <Text
-                as="span"
-                color={code ? "white" : "brightBlue300"}
-                sx={{ display: "inline" }}
-              >
-                {codeDisplay}
-              </Text>
-            </Text>
-            <CopyButton disabled={!hasCode} text={fullUrl} />
-          </SPreviewBox>
-          <div sx={{ flex: ["column", "row"], gap: 10, pl: 16, mt: 10 }}>
-            <Text>{t("referrals.preview.url.title")}</Text>
-            <div sx={{ flex: "row", flexWrap: "wrap", gap: 5 }}>
-              {SELECTABLE_URL_PATHS.map(({ path, tkey }) => (
-                <SPathButton
-                  key={path}
-                  active={urlPath === path}
-                  size="micro"
-                  onClick={() => setUrlPath(path)}
-                >
-                  {t(tkey)}
-                </SPathButton>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div>
-          <SPreviewBox>
-            <Text>{t("referrals.preview.code.title")}</Text>
-            <Text color="brightBlue300">{codeDisplay}</Text>
-            <CopyButton disabled={!hasCode} text={code} />
-          </SPreviewBox>
-        </div>
-      </div>
-    </div>
+    <SContainer disabled={disabled}>
+      <SPreviewBox>
+        <Text>{t("referrals.preview.link.title")}</Text>
+        <Text color="brightBlue300">
+          {urlDomain}
+          {urlPath}
+          {urlQuery}
+          <Text
+            as="span"
+            color={code ? "white" : "brightBlue300"}
+            sx={{ display: "inline" }}
+          >
+            {codeDisplay}
+          </Text>
+        </Text>
+        <CopyButton disabled={!hasCode} text={fullUrl} />
+      </SPreviewBox>
+      <SPreviewBox>
+        <Text>{t("referrals.preview.code.title")}</Text>
+        <Text color="brightBlue300">{codeDisplay}</Text>
+        <CopyButton disabled={!hasCode} text={code} />
+      </SPreviewBox>
+      <SPreviewPathSelect>
+        <Text sx={{ mr: 5 }}>{t("referrals.preview.url.title")}</Text>
+        {SELECTABLE_URL_PATHS.map(({ path, tkey }) => (
+          <SPathButton
+            key={path}
+            active={urlPath === path}
+            size="micro"
+            onClick={() => setUrlPath(path)}
+          >
+            {t(tkey)}
+          </SPathButton>
+        ))}
+      </SPreviewPathSelect>
+    </SContainer>
   )
 }
 
@@ -122,8 +111,11 @@ const CopyButton: FC<
       setCopied(false)
     }, 5000)
 
-    return () => clearTimeout(id)
-  }, [copied])
+    return () => {
+      clearTimeout(id)
+      setCopied(false)
+    }
+  }, [copied, text])
 
   function copy() {
     if (text) {
