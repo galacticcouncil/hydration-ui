@@ -17,6 +17,8 @@ import { Farm, useFarmAprs, useFarms } from "api/farms"
 import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "sections/pools/pool/Pool.styled"
 
 const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   const { t } = useTranslation()
@@ -145,8 +147,15 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
     }),
     display({
       id: "apy",
-      header: t("stats.overview.table.assets.header.apy"),
-      sortingFn: (a, b) => (a.original.pol.gt(b.original.pol) ? 1 : -1),
+      //@ts-ignore
+      header: (
+        <div sx={{ flex: "row", align: "center", gap: 4 }}>
+          {t("stats.overview.table.assets.header.apy")}
+          <InfoTooltip text={t("stats.overview.table.assets.header.apy.desc")}>
+            <SInfoIcon />
+          </InfoTooltip>
+        </div>
+      ),
       cell: ({ row }) => <APY assetId={row.original.id} />,
     }),
     accessor("pol", {
