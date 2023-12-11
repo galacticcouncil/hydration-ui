@@ -5,7 +5,6 @@ import { theme } from "theme"
 export const SContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
   align-items: start;
 
   > div {
@@ -27,6 +26,28 @@ export const SExpandButton = styled(ButtonTransparent)<{
     height: 12px;
 
     transform: ${({ expanded }) => `rotate(${expanded ? 0 : -90}deg)`};
+  }
+`
+
+export const SShowMoreButton = styled(ButtonTransparent)`
+  font-size: 12px;
+  text-align: center;
+  text-decoration: underline;
+
+  width: 100%;
+
+  padding: 6px 0 0;
+
+  color: ${theme.colors.brightBlue300};
+
+  background: linear-gradient(
+    to bottom,
+    rgba(24, 28, 41, 0),
+    rgba(24, 28, 41, 1)
+  );
+
+  :hover {
+    color: ${theme.colors.brightBlue200Alpha};
   }
 `
 
