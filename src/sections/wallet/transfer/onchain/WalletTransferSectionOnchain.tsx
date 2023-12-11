@@ -1,6 +1,5 @@
 import { useAccountCurrency } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
-import { usePaymentInfo } from "api/transaction"
 import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import BigNumber from "bignumber.js"
 import { Alert } from "components/Alert/Alert"
@@ -25,6 +24,11 @@ import {
 import { useTokenBalance } from "api/balances"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { H160, safeConvertAddressH160 } from "utils/evm"
+import { useDebouncedValue } from "hooks/useDebouncedValue"
+import {
+  TransferMethod,
+  usePaymentFees,
+} from "./WalletTransferSectionOnchain.utils"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -56,32 +60,53 @@ export function WalletTransferSectionOnchain({
 
   const spotPrice = useSpotPrice(assets.native.id, accountCurrencyMeta?.id)
 
-  const { data: paymentInfoData } = usePaymentInfo(
-    asset.toString() === assets.native.id
-      ? api.tx.balances.transferKeepAlive("", "0")
-      : api.tx.tokens.transferKeepAlive("", asset, "0"),
-  )
-
   const isTransferingPaymentAsset = accountCurrency.data === asset.toString()
 
-  const nativeFee = paymentInfoData?.partialFee.toBigNumber() ?? BN_0
+  const balance = tokenBalance.data?.balance ?? BN_0
+
+  const [debouncedAmount] = useDebouncedValue(form.watch("amount"), 500)
+
+  const amount = new BigNumber(debouncedAmount)
+    .multipliedBy(BN_10.pow(assetMeta.decimals))
+    .decimalPlaces(0)
+
+  const { currentFee, maxFee } = usePaymentFees({
+    asset,
+    currentAmount: amount,
+    maxAmount: balance,
+  })
+
   const nativeDecimals = assets.native.decimals
   const nativeDecimalsDiff =
     nativeDecimals - (accountCurrencyMeta?.decimals ?? nativeDecimals)
 
-  const convertedFee = nativeFee.multipliedBy(spotPrice.data?.spotPrice ?? BN_1)
+  const convertedFee = currentFee.multipliedBy(
+    spotPrice.data?.spotPrice ?? BN_1,
+  )
 
-  const balance = tokenBalance.data?.balance
+  const convertedMaxFee = maxFee.multipliedBy(spotPrice.data?.spotPrice ?? BN_1)
+
+  const balanceMaxAdjusted = balance
+    .minus(convertedMaxFee.div(BN_10.pow(nativeDecimalsDiff)))
+    .decimalPlaces(0)
+
   const balanceMax = isTransferingPaymentAsset
-    ? balance?.minus(convertedFee.div(BN_10.pow(nativeDecimalsDiff)))
+    ? BigNumber.max(BN_0, balanceMaxAdjusted)
     : balance
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (assetMeta.decimals == null) throw new Error("Missing asset meta")
 
-    const amount = new BigNumber(values.amount).multipliedBy(
-      BN_10.pow(assetMeta.decimals),
-    )
+    const amount = new BigNumber(values.amount)
+      .multipliedBy(BN_10.pow(assetMeta.decimals))
+      .decimalPlaces(0)
+
+    const isMaxPaymentAsset =
+      isTransferingPaymentAsset && amount.gte(balanceMax)
+
+    const method: TransferMethod = isMaxPaymentAsset
+      ? "transfer"
+      : "transferKeepAlive"
 
     const normalizedDest =
       safeConvertAddressH160(values.dest) !== null
@@ -92,15 +117,8 @@ export function WalletTransferSectionOnchain({
       {
         tx:
           asset.toString() === assets.native.id
-            ? api.tx.balances.transferKeepAlive(
-                normalizedDest,
-                amount.toFixed(),
-              )
-            : api.tx.tokens.transferKeepAlive(
-                normalizedDest,
-                asset,
-                amount.toFixed(),
-              ),
+            ? api.tx.balances[method](normalizedDest, amount.toFixed())
+            : api.tx.tokens[method](normalizedDest, asset, amount.toFixed()),
       },
       {
         onClose,
@@ -283,7 +301,7 @@ export function WalletTransferSectionOnchain({
         <SummaryRow
           label={t("wallet.assets.transfer.transaction_cost")}
           content={
-            paymentInfoData?.partialFee != null
+            convertedFee.gt(0)
               ? t("value.tokenWithSymbol", {
                   value: convertedFee,
                   symbol: accountCurrencyMeta?.symbol,
