@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 type VisibilityMap = Record<string, boolean>
 
@@ -44,8 +44,20 @@ export function useVisibleElements<T extends HTMLElement>() {
     }
   }, [ref])
 
+  const hiddenElementsKeys = useMemo(() => {
+    return Object.entries(visible).reduce<string[]>(
+      (memo, [item, isVisible]) => {
+        if (!isVisible) memo.push(item)
+
+        return memo
+      },
+      [],
+    )
+  }, [visible])
+
   return {
     visible,
+    hiddenElementsKeys,
     observe: ref,
   }
 }

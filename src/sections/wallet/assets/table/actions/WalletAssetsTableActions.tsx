@@ -19,7 +19,6 @@ import { useVisibleElements } from "hooks/useVisibleElements"
 import { LINKS } from "utils/navigation"
 import { useNavigate } from "@tanstack/react-location"
 import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
-import { useMemo } from "react"
 
 type Props = {
   toggleExpanded: () => void
@@ -35,7 +34,7 @@ export const WalletAssetsTableActions = (props: Props) => {
 
   const navigate = useNavigate()
 
-  const { visible, observe } = useVisibleElements<HTMLDivElement>()
+  const { hiddenElementsKeys, observe } = useVisibleElements<HTMLDivElement>()
 
   const {
     id,
@@ -124,17 +123,6 @@ export const WalletAssetsTableActions = (props: Props) => {
     },
   ]
 
-  const hiddenBtnKeys = useMemo(() => {
-    return Object.entries(visible).reduce<string[]>(
-      (memo, [item, isVisible]) => {
-        if (!isVisible) memo.push(item)
-
-        return memo
-      },
-      [],
-    )
-  }, [visible])
-
   const actionItems = [
     enablePaymentFee
       ? {
@@ -171,7 +159,7 @@ export const WalletAssetsTableActions = (props: Props) => {
           flex: "row",
           gap: 10,
           flexWrap: "wrap",
-          height: 36,
+          height: 38,
           justify: "end",
         }}
         css={{ overflow: "hidden" }}
@@ -195,7 +183,7 @@ export const WalletAssetsTableActions = (props: Props) => {
             ? []
             : [
                 ...buttons.filter((button) =>
-                  hiddenBtnKeys.includes(button.key),
+                  hiddenElementsKeys.includes(button.key),
                 ),
                 ...actionItems,
               ]

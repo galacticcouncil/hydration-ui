@@ -5,17 +5,17 @@ import { Icon } from "components/Icon/Icon"
 import { TableHeader } from "components/Table/Table.styled"
 import { ReactNode } from "react"
 
-export const TableAction = (props: {
-  "data-intersect"?: string
-  icon?: ReactNode
-  onClick?: () => void
-  children: ReactNode
-  disabled?: boolean
+type TableActionProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant
   isLoading?: boolean
-}) => {
+  icon?: ReactNode
+  onClick?: () => void
+}
+
+export const TableAction = (props: TableActionProps) => {
   return (
     <Button
+      {...props}
       isLoading={props.isLoading}
       disabled={props.disabled}
       size="small"
@@ -29,7 +29,6 @@ export const TableAction = (props: {
         e.preventDefault()
         props.onClick?.()
       }}
-      data-intersect={props["data-intersect"]}
     >
       {props.icon && <Icon size={16} icon={props.icon} />}
       {props.children}
