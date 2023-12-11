@@ -97,14 +97,13 @@ export const WalletAssetsTableActions = (props: Props) => {
       key: "trade",
       icon: <TradeIcon />,
       label: t("wallet.assets.table.actions.trade"),
-      onSelect: () =>
-        inTradeRouter
-          ? () =>
-              navigate({
-                to: "/trade/swap",
-                search: canBuy ? { assetOut: id } : { assetIn: id },
-              })
-          : undefined,
+      onSelect: inTradeRouter
+        ? () =>
+            navigate({
+              to: "/trade/swap",
+              search: canBuy ? { assetOut: id } : { assetIn: id },
+            })
+        : undefined,
       disabled: !inTradeRouter || account?.isExternalWalletConnected,
     },
     {
