@@ -293,10 +293,7 @@ export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
               align: "center",
               justify: ["end", "start"],
             }}
-            onClick={(e) => {
-              e.stopPropagation()
-              e.preventDefault()
-            }}
+            onClick={(e) => e.stopPropagation()}
           >
             <AddLiqduidityButton pool={row.original} />
             <ButtonTransparent>
