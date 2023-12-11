@@ -14,7 +14,11 @@ import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransf
 import { useStore } from "state/store"
 import { theme } from "theme"
 import { BN_0, BN_1, BN_10 } from "utils/constants"
-import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
+import {
+  getChainSpecificAddress,
+  safeConvertAddressSS58,
+  shortenAccountAddress,
+} from "utils/formatting"
 import { FormValues } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
@@ -131,7 +135,10 @@ export function WalletTransferSectionOnchain({
               tOptions={{
                 value: values.amount,
                 symbol: assetMeta.symbol,
-                address: shortenAccountAddress(values.dest, 12),
+                address: shortenAccountAddress(
+                  getChainSpecificAddress(normalizedDest),
+                  12,
+                ),
               }}
             >
               <span />
@@ -145,7 +152,10 @@ export function WalletTransferSectionOnchain({
               tOptions={{
                 value: values.amount,
                 symbol: assetMeta.symbol,
-                address: shortenAccountAddress(values.dest, 12),
+                address: shortenAccountAddress(
+                  getChainSpecificAddress(normalizedDest),
+                  12,
+                ),
               }}
             >
               <span />
@@ -159,7 +169,10 @@ export function WalletTransferSectionOnchain({
               tOptions={{
                 value: values.amount,
                 symbol: assetMeta.symbol,
-                address: shortenAccountAddress(values.dest, 12),
+                address: shortenAccountAddress(
+                  getChainSpecificAddress(normalizedDest),
+                  12,
+                ),
               }}
             >
               <span />

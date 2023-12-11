@@ -56,7 +56,11 @@ export const AddressBookItem = ({
     <>
       <SItem onClick={() => onSelect(addressDisplay)}>
         <SNameContainer>
-          <AccountAvatar address={addressDisplay} size={30} />
+          <AccountAvatar
+            theme={isEvmAddress(addressDisplay) ? "metamask" : undefined}
+            address={addressDisplay}
+            size={30}
+          />
           <SName>{name}</SName>
         </SNameContainer>
         <SAddressContainer>
