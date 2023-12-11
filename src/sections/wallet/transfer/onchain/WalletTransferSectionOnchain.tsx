@@ -101,12 +101,8 @@ export function WalletTransferSectionOnchain({
       .multipliedBy(BN_10.pow(assetMeta.decimals))
       .decimalPlaces(0)
 
-    const isMaxPaymentAsset =
-      isTransferingPaymentAsset && amount.gte(balanceMax)
-
-    const method: TransferMethod = isMaxPaymentAsset
-      ? "transfer"
-      : "transferKeepAlive"
+    const isMax = amount.gte(balanceMax)
+    const method: TransferMethod = isMax ? "transfer" : "transferKeepAlive"
 
     const normalizedDest =
       safeConvertAddressH160(values.dest) !== null
