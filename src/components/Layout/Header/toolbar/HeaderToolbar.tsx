@@ -6,7 +6,6 @@ import { Documentation } from "./buttons/Documentation"
 import { MoreMenu } from "./buttons/MoreMenu"
 import { Settings } from "./buttons/Settings"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
-import { FundWalletButton } from "components/FundWallet/FundWalletButton"
 
 const settingsEanbled = import.meta.env.VITE_FF_SETTINGS_ENABLED === "true"
 
@@ -24,9 +23,6 @@ export const HeaderToolbar: FC<Props> = ({ menuItems }) => {
         <Bell />
         {!isSmallMedia && settingsEanbled && <Settings />}
       </div>
-      {!isSmallMedia && (
-        <FundWalletButton variant="primary" size="medium" sx={{ py: 11 }} />
-      )}
       <Web3ConnectModalButton />
       {!isSmallMedia && menuItems.length > 0 && <MoreMenu items={menuItems} />}
     </div>
