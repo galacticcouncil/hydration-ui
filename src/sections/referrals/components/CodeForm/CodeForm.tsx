@@ -14,6 +14,7 @@ import {
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { useEffect } from "react"
+import { FundWalletButton } from "components/FundWallet/FundWalletButton"
 
 const IS_FUNDED = true
 
@@ -108,9 +109,9 @@ export const CodeForm = () => {
           <Button variant="primary">{t("referrals.button.sign")}</Button>
         )}
         {state === UserState.NOT_FUNDED && (
-          <Button type="button" variant="primary">
+          <FundWalletButton variant="primary">
             {t("referrals.button.depositFunds")}
-          </Button>
+          </FundWalletButton>
         )}
         {state === UserState.DISCONECTED && (
           <Web3ConnectModalButton sx={{ height: "auto", px: 30 }} />

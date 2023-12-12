@@ -8,8 +8,8 @@ export const FundWalletButton: FC<ButtonProps> = (props) => {
   const [isFundModalOpen, setIsFundModalOpen] = useState(false)
   return (
     <>
-      <Button {...props} onClick={() => setIsFundModalOpen(true)}>
-        {t("fund.button")}
+      <Button type="button" {...props} onClick={() => setIsFundModalOpen(true)}>
+        {props.children ?? t("fund.button")}
       </Button>
       {isFundModalOpen && (
         <FundWalletModal open onClose={() => setIsFundModalOpen(false)} />
