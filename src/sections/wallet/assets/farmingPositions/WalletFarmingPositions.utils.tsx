@@ -16,7 +16,7 @@ import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { getFloatingPointAmount } from "utils/balance"
 import { getEnteredDate } from "utils/block"
@@ -150,7 +150,7 @@ export const useFarmingPositionsData = ({
   search?: string
 } = {}) => {
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const allDeposits = useAllDeposits()
   const accountDepositIds = useAccountDepositIds(account?.address)
   const accountDepositsShare = useAllUserDepositShare()

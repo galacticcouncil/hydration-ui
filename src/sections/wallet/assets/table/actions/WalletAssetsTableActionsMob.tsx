@@ -10,7 +10,7 @@ import { Modal } from "components/Modal/Modal"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { LINKS } from "utils/navigation"
 import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
@@ -30,7 +30,7 @@ export const WalletAssetsTableActionsMob = ({
   onTransferClick,
 }: Props) => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const setFeeAsPayment = useSetAsFeePayment()
 
   if (!row) return null

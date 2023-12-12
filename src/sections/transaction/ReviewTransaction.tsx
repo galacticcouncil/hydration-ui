@@ -2,40 +2,51 @@ import { Modal } from "components/Modal/Modal"
 import { Stepper } from "components/Stepper/Stepper"
 import { ComponentProps, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { WalletUpgradeModal } from "sections/wallet/upgrade/WalletUpgradeModal"
 import { Transaction } from "state/store"
-import { useSendTransactionMutation } from "./ReviewTransaction.utils"
+import { useSendTx } from "./ReviewTransaction.utils"
 import { ReviewTransactionError } from "./ReviewTransactionError"
 import { ReviewTransactionForm } from "./ReviewTransactionForm"
 import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionToast } from "./ReviewTransactionToast"
-import { useWalletConnect } from "components/OnboardProvider/OnboardProvider"
+import { WalletUpgradeModal } from "sections/web3-connect/upgrade/WalletUpgradeModal"
 
 export const ReviewTransaction = (props: Transaction) => {
   const { t } = useTranslation()
   const [minimizeModal, setMinimizeModal] = useState(false)
 
-  const { wallet } = useWalletConnect()
-  const sendTx = useSendTransactionMutation()
+  const {
+    sendTx,
+    sendEvmTx,
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+    data,
+    txState,
+    reset,
+  } = useSendTx()
 
   const modalProps: Partial<ComponentProps<typeof Modal>> =
-    sendTx.isLoading || sendTx.isSuccess || sendTx.isError
+    isLoading || isSuccess || isError
       ? {
           title: undefined,
-          backdrop: sendTx.isError ? "error" : "default",
-          disableClose: sendTx.isLoading,
+          backdrop: isError ? "error" : "default",
+          disableClose: isLoading,
         }
-      : { title: t("liquidity.reviewTransaction.modal.title") }
+      : {
+          title: t("liquidity.reviewTransaction.modal.title"),
+          description: t("liquidity.reviewTransaction.modal.desc"),
+        }
 
   const handleTxOnClose = () => {
-    if (sendTx.isLoading) {
+    if (isLoading) {
       setMinimizeModal(true)
       return
     }
 
-    if (sendTx.isSuccess) {
-      props.onSuccess?.(sendTx.data)
+    if (isSuccess) {
+      props.onSuccess?.(data)
     } else {
       props.onError?.()
     }
@@ -54,7 +65,7 @@ export const ReviewTransaction = (props: Transaction) => {
     : undefined
 
   const onReview = () => {
-    sendTx.reset()
+    reset()
     setMinimizeModal(false)
   }
 
@@ -63,8 +74,11 @@ export const ReviewTransaction = (props: Transaction) => {
       {minimizeModal && (
         <ReviewTransactionToast
           id={props.id}
-          mutation={sendTx}
-          link={sendTx.data?.transactionLink}
+          isLoading={isLoading}
+          isSuccess={isSuccess}
+          isError={isError}
+          error={error}
+          link={data?.transactionLink}
           onReview={onReview}
           onClose={onClose}
           toastMessage={props.toastMessage}
@@ -78,15 +92,12 @@ export const ReviewTransaction = (props: Transaction) => {
         topContent={props.steps ? <Stepper steps={props.steps} /> : undefined}
         {...modalProps}
       >
-        {!wallet?.isConnected && <WalletUpgradeModal />}
-        {sendTx.isLoading ? (
-          <ReviewTransactionPending
-            txState={sendTx.txState}
-            onClose={onClose}
-          />
-        ) : sendTx.isSuccess ? (
+        <WalletUpgradeModal />
+        {isLoading ? (
+          <ReviewTransactionPending txState={txState} onClose={onClose} />
+        ) : isSuccess ? (
           <ReviewTransactionSuccess onClose={onClose} />
-        ) : sendTx.isError ? (
+        ) : isError ? (
           <ReviewTransactionError onClose={onClose} onReview={onReview} />
         ) : (
           <ReviewTransactionForm
@@ -95,9 +106,13 @@ export const ReviewTransaction = (props: Transaction) => {
             overrides={props.overrides}
             title={props.title}
             onCancel={onClose}
+            onEvmSigned={(tx) => {
+              props.onSubmitted?.()
+              sendEvmTx(tx)
+            }}
             onSigned={(signed) => {
               props.onSubmitted?.()
-              sendTx.mutateAsync(signed)
+              sendTx(signed)
             }}
           />
         )}

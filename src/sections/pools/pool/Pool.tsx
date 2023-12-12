@@ -17,12 +17,12 @@ import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils
 import { StablepoolPosition } from "sections/pools/stablepool/positions/StablepoolPosition"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = { pool: TOmnipoolAsset }
 
 export const Pool = ({ pool }: Props) => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const [isExpanded, setIsExpanded] = useState(false)
   const { warnings, setWarnings } = useWarningsStore()
   const isDesktop = useMedia(theme.viewport.gte.sm)

@@ -3,7 +3,7 @@ import TablePlaceholderIcon from "assets/icons/TablePlaceholderIcon.svg?react"
 import { TableSkeleton } from "components/Table/TableSkeleton"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
+import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { theme } from "theme"
 import { useBondsSkeleton } from "sections/trade/sections/bonds/table/skeleton/Skeleton.utils"
 
@@ -49,7 +49,7 @@ export const Placeholder = ({
           >
             {t("wallet.assets.table.placeholder")}
           </Text>
-          <WalletConnectButton
+          <Web3ConnectModalButton
             css={css`
               @media ${theme.viewport.lt.sm} {
                 padding: 12px 15px;

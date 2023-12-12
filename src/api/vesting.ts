@@ -6,7 +6,7 @@ import { ApiPromise } from "@polkadot/api"
 import { useBestNumber } from "./chain"
 import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BLOCK_TIME, BN_0, ORMLVEST } from "utils/constants"
 import { useMemo } from "react"
 import { getExpectedBlockDate } from "utils/block"
@@ -102,7 +102,7 @@ const getNextClaimableDate = (
  * Returns first claimable date of all vestings
  **/
 export const useNextClaimableDate = () => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { data: schedules } = useVestingSchedules(account?.address)
   const bestNumberQuery = useBestNumber()
 
@@ -134,7 +134,7 @@ export const useNextClaimableDate = () => {
  * Returns Bignumber of total claimable balance
  **/
 export const useVestingTotalClaimableBalance = () => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const vestingSchedulesQuery = useVestingSchedules(account?.address)
   const vestingLockBalanceQuery = useVestingLockBalance(account?.address)
   const bestNumberQuery = useBestNumber()
@@ -178,7 +178,7 @@ export const useVestingTotalClaimableBalance = () => {
  * Returns BigNumber of totalVestedAmount
  **/
 export const useVestingTotalVestedAmount = () => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { data, isLoading } = useVestingSchedules(account?.address)
 
   const totalVestedAmount = useMemo(() => {
@@ -203,7 +203,7 @@ export const useVestingTotalVestedAmount = () => {
  * Returns the most future vesting time ending in milliseconds
  **/
 export const useVestingScheduleEnd = () => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const schedulesQuery = useVestingSchedules(account?.address)
   const bestNumberQuery = useBestNumber()
 

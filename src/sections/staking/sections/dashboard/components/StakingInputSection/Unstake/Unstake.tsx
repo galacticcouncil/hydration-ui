@@ -1,10 +1,10 @@
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { ToastMessage, useAccountStore, useStore } from "state/store"
+import { ToastMessage, useStore } from "state/store"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
-import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
+import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { Text } from "components/Typography/Text/Text"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
 import { UnstakeAssetSelect } from "./UnstakeAssetSelect"
@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const Unstake = ({
   loading,
@@ -30,7 +31,7 @@ export const Unstake = ({
   const { api, assets } = useRpcProvider()
   const { createTransaction } = useStore()
 
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const form = useForm<{ amount: string }>({
     values: {
       amount: staked.toString(),
@@ -143,7 +144,7 @@ export const Unstake = ({
             {t("staking.dashboard.form.unstake.button")}
           </Button>
         ) : (
-          <WalletConnectButton />
+          <Web3ConnectModalButton />
         )}
 
         <Text color="brightBlue200Alpha" fs={14} sx={{ p: 10 }}>

@@ -1,5 +1,5 @@
 import { forwardRef } from "react"
-import { ToastMessage, useAccountStore } from "state/store"
+import { ToastMessage } from "state/store"
 import { Trans, useTranslation } from "react-i18next"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useClaimableAmount, useClaimAllMutation } from "utils/farms/claiming"
@@ -11,12 +11,13 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Separator } from "components/Separator/Separator"
 import { theme } from "theme"
 import Skeleton from "react-loading-skeleton"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = { onClose: () => void }
 
 export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
   ({ onClose }, ref) => {
-    const { account } = useAccountStore()
+    const { account } = useAccount()
     const { t } = useTranslation()
     const { assets } = useRpcProvider()
     const claimable = useClaimableAmount()

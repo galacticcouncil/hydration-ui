@@ -14,18 +14,15 @@ import { WalletAssetsTableActions } from "sections/wallet/assets/table/actions/W
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
-import { useNavigate } from "@tanstack/react-location"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { LINKS } from "utils/navigation"
 
 export const useAssetsTable = (
   data: AssetsTableData[],
   actions: { onTransfer: (assetId: string) => void },
 ) => {
-  const navigate = useNavigate()
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<AssetsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
@@ -42,6 +39,8 @@ export const useAssetsTable = (
     () => [
       accessor("symbol", {
         id: "name",
+        //width percentage of column
+        size: 30,
         header: isDesktop
           ? t("wallet.assets.table.header.name")
           : t("selectAssets.asset"),
@@ -93,26 +92,14 @@ export const useAssetsTable = (
       }),
       display({
         id: "actions",
+        //width percentage of column
+        size: 40,
         cell: ({ row }) => (
           <WalletAssetsTableActions
-            couldBeSetAsPaymentFee={row.original.couldBeSetAsPaymentFee}
-            onBuyClick={
-              row.original.tradability.inTradeRouter
-                ? () =>
-                    navigate({
-                      to: "/trade/swap",
-                      search: row.original.tradability.canBuy
-                        ? { assetOut: row.original.id }
-                        : { assetIn: row.original.id },
-                    })
-                : undefined
-            }
-            onDepositClick={() => navigate({ to: LINKS.cross_chain })}
             toggleExpanded={row.toggleSelected}
             isExpanded={row.getIsSelected()}
             onTransferClick={() => actions.onTransfer(row.original.id)}
-            symbol={row.original.symbol}
-            id={row.original.id}
+            asset={row.original}
           />
         ),
       }),
@@ -135,6 +122,7 @@ export type AssetsTableData = {
   id: string
   symbol: string
   name: string
+  decimals: number
   transferable: BN
   transferableDisplay: BN
   total: BN

@@ -16,6 +16,8 @@ export const SSubNavigationContainer = styled.div`
   overflow-x: scroll;
   overflow-y: hidden;
 
+  ${theme.scrollbarHidden};
+
   @media (${theme.viewport.gte.sm}) {
     gap: 42px;
 
@@ -23,7 +25,9 @@ export const SSubNavigationContainer = styled.div`
   }
 `
 
-export const STabContainer = styled.div`
+export const STabContainer = styled.div<{
+  active: boolean
+}>`
   display: flex;
   gap: 6px;
   align-items: center;
@@ -34,6 +38,22 @@ export const STabContainer = styled.div`
   white-space: nowrap;
 
   position: relative;
+
+  svg {
+    color: ${({ active }) =>
+      active ? theme.colors.brightBlue200 : theme.colors.iconGray};
+  }
+
+  :hover {
+    p {
+      color: ${theme.colors.white};
+    }
+
+    svg {
+      color: ${({ active }) =>
+        active ? theme.colors.brightBlue200 : theme.colors.white};
+    }
+  }
 `
 
 export const SBadge = styled.p`

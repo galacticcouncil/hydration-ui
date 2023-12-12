@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import { ChainMetadata } from "sections/wallet/upgrade/WalletUpgradeModal.utils"
+import { ChainMetadata } from "sections/web3-connect/upgrade/WalletUpgradeModal.utils"
 import { Hash } from "@polkadot/types/interfaces"
 
 export const useCacheApiMetadataStore = create(

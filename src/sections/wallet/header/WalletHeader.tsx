@@ -4,23 +4,29 @@ import { Button } from "components/Button/Button"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useCopyToClipboard } from "react-use"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
-import { useAccountStore } from "state/store"
-import { WalletConnectModal } from "sections/wallet/connect/modal/WalletConnectModal"
 import { SWalletHeader } from "./WalletHeader.styled"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { safeConvertAddressH160 } from "utils/evm"
 
 export const WalletHeader = () => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
+  const { toggle: toggleWeb3Connect } = useWeb3ConnectStore()
   const [, copy] = useCopyToClipboard()
-  const [open, setOpen] = useState(false)
 
-  const hydraAddress = account
+  const hydraAddress = account?.address
     ? encodeAddress(decodeAddress(account?.address), HYDRA_ADDRESS_PREFIX)
     : ""
+
+  const evmAddress = account?.evmAddress
+    ? safeConvertAddressH160(account?.evmAddress)
+    : ""
+
+  const addressDisplay = evmAddress || hydraAddress
 
   return (
     <>
@@ -28,7 +34,7 @@ export const WalletHeader = () => {
         <Text fs={20} fw={500} lh={20} font="FontOver">
           {account?.name ?? t("wallet.header.noAccountSelected")}
         </Text>
-        {account?.address && (
+        {addressDisplay && (
           <div sx={{ flex: "row", align: "center" }}>
             <div
               sx={{
@@ -45,7 +51,7 @@ export const WalletHeader = () => {
                 sx={{ maxWidth: ["calc(100vw - 60px)", "fit-content"] }}
                 css={{ wordWrap: "break-word" }}
               >
-                {hydraAddress}
+                {addressDisplay}
               </Text>
               <InfoTooltip
                 text={t("wallet.header.copyAddress.hover")}
@@ -54,7 +60,7 @@ export const WalletHeader = () => {
                 <CopyIcon
                   sx={{ color: "brightBlue300" }}
                   css={{ cursor: "pointer" }}
-                  onClick={() => copy(hydraAddress)}
+                  onClick={() => copy(addressDisplay)}
                 />
               </InfoTooltip>
             </div>
@@ -62,7 +68,7 @@ export const WalletHeader = () => {
               size="small"
               variant="primary"
               sx={{ display: ["none", "inherit"] }}
-              onClick={() => setOpen(true)}
+              onClick={toggleWeb3Connect}
             >
               {t("wallet.header.switchAccount")}
             </Button>
@@ -74,10 +80,6 @@ export const WalletHeader = () => {
         opacity={0.12}
         sx={{ display: ["none", "inherit"] }}
       />
-
-      {open && (
-        <WalletConnectModal isOpen={open} onClose={() => setOpen(false)} />
-      )}
     </>
   )
 }

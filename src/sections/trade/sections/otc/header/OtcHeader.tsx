@@ -1,7 +1,7 @@
 import { FC, useState } from "react"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
@@ -31,7 +31,7 @@ export const OtcHeader: FC<Props> = ({
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [openAdd, setOpenAdd] = useState(false)
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   const onOptionChange = (e: { target: { value: string } }) => {
     onShowPartialChange(e.target.value === "all" ? false : true)

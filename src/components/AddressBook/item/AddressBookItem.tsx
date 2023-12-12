@@ -15,11 +15,10 @@ import {
 } from "./AddressBookItem.styled"
 import { AddressBookItemEdit } from "./edit/AddressBookItemEdit"
 import { AddressBookItemRemove } from "./remove/AddressBookItemRemove"
+import { H160, isEvmAccount, isEvmAddress } from "utils/evm"
+import { Address } from "components/AddressBook/AddressBook.utils"
 
-type Props = {
-  address: string
-  name: string
-  provider: string
+type Props = Address & {
   onSelect: (address: string) => void
 }
 
@@ -28,18 +27,25 @@ export const AddressBookItem = ({
   name,
   provider,
   onSelect,
+  id,
 }: Props) => {
   const [editting, setEditting] = useState(false)
   const [removing, setRemoving] = useState(false)
 
-  const hydraAddress = isHydraAddress(address)
-    ? address
-    : encodeAddress(decodeAddress(address), HYDRA_ADDRESS_PREFIX)
+  const encodedAddress =
+    isEvmAddress(address) || isHydraAddress(address)
+      ? address
+      : encodeAddress(decodeAddress(address), HYDRA_ADDRESS_PREFIX)
+
+  const addressDisplay = isEvmAccount(encodedAddress)
+    ? H160.fromAccount(encodedAddress)
+    : encodedAddress
 
   if (editting)
     return (
       <AddressBookItemEdit
-        address={hydraAddress}
+        id={id}
+        address={addressDisplay}
         name={name}
         provider={provider}
         onEdit={() => setEditting(false)}
@@ -48,13 +54,17 @@ export const AddressBookItem = ({
 
   return (
     <>
-      <SItem onClick={() => onSelect(hydraAddress)}>
+      <SItem onClick={() => onSelect(addressDisplay)}>
         <SNameContainer>
-          <AccountAvatar address={hydraAddress} size={30} />
+          <AccountAvatar
+            theme={isEvmAddress(addressDisplay) ? "metamask" : undefined}
+            address={addressDisplay}
+            size={30}
+          />
           <SName>{name}</SName>
         </SNameContainer>
         <SAddressContainer>
-          <SAddress>{hydraAddress}</SAddress>
+          <SAddress>{addressDisplay}</SAddress>
           {provider === "external" && (
             <div sx={{ flex: "row" }}>
               <SButton
@@ -77,11 +87,8 @@ export const AddressBookItem = ({
           )}
         </SAddressContainer>
       </SItem>
-      {removing && (
-        <AddressBookItemRemove
-          address={hydraAddress}
-          onDone={() => setRemoving(false)}
-        />
+      {id && removing && (
+        <AddressBookItemRemove id={id} onDone={() => setRemoving(false)} />
       )}
     </>
   )

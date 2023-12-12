@@ -13,7 +13,10 @@ import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { shortenAccountAddress } from "utils/formatting"
+import {
+  getChainSpecificAddress,
+  shortenAccountAddress,
+} from "utils/formatting"
 import AccountIcon from "assets/icons/StakingAccountIcon.svg?react"
 import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
@@ -26,7 +29,7 @@ const AccountName = ({ address }: { address: string }) => {
   if (identity.data?.identity)
     return <>{identity.data.identity.info.display.asRaw.toUtf8()}</>
 
-  return <>{shortenAccountAddress(address)}</>
+  return <>{shortenAccountAddress(getChainSpecificAddress(address))}</>
 }
 
 export const useLiquidityProvidersTable = (

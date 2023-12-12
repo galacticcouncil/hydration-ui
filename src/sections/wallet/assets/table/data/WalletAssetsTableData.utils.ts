@@ -111,7 +111,7 @@ export const useAssetsTableData = ({
         (b) => b.id.toString() === assetValue.id.toString(),
       )
 
-      const { id, symbol, name } = assetValue
+      const { id, symbol, name, decimals } = assetValue
 
       const tradabilityData = assetsTradability.find(
         (t) => t.id === assetValue.id.toString(),
@@ -129,6 +129,7 @@ export const useAssetsTableData = ({
         id,
         symbol,
         name,
+        decimals,
         isPaymentFee,
         couldBeSetAsPaymentFee,
         transferable: balance?.transferable ?? BN_0,
@@ -154,6 +155,7 @@ export const useAssetsTableData = ({
       .sort((a, b) => {
         // native asset first
         if (a.id === NATIVE_ASSET_ID) return -1
+        if (b.id === NATIVE_ASSET_ID) return 1
 
         if (!b.transferableDisplay.eq(a.transferableDisplay))
           return b.transferableDisplay.minus(a.transferableDisplay).toNumber()

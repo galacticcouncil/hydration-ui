@@ -17,7 +17,7 @@ import {
   SActionsContainer,
   SButtonOpen,
 } from "sections/pools/pool/actions/PoolActions.styled"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { PoolPositionsMobile } from "sections/pools/modals/PoolPositionsMobile/PoolPositionsMobile"
 import { useFarms } from "api/farms"
@@ -51,7 +51,7 @@ export const PoolActions = ({
   const [openFarmDefails, setOpenFarmDetails] = useState(false)
   const [transferOpen, setTransferOpen] = useState<Page>()
 
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const farms = useFarms([pool.id])
 
