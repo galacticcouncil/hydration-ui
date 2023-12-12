@@ -274,6 +274,8 @@
   "liquidity.reviewTransaction.toast.success": "Transaction successful.",
   "liquidity.reviewTransaction.toast.error": "Transaction failed.",
   "liquidity.reviewTransaction.toast.unknown": "Transaction status unknown.",
+  "liquidity.reviewTransaction.calldata.encoded": "Raw calldata",
+  "liquidity.reviewTransaction.calldata.decoded": "Decoded",
   "otc.header.title": "Over-the-Counter Trading",
   "otc.header.titleAlt": "OTC Trading",
   "otc.header.switch": "Show my orders",
