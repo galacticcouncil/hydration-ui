@@ -1,5 +1,5 @@
 import {
-  useReferrer,
+  useReferralCode,
   useWeb3ConnectEagerEnable,
 } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectModal } from "./modal/Web3ConnectModal"
@@ -9,12 +9,13 @@ import { useShallow } from "hooks/useShallow"
 export const Web3Connect = () => {
   useWeb3ConnectEagerEnable()
 
-  const { referrer } = useReferrer()
+  const { referralCode } = useReferralCode()
   const open = useWeb3ConnectStore(useShallow((state) => state.open))
 
   return (
     <>
-      {import.meta.env.VITE_FF_REFERRALS_ENABLED === "true" && referrer && (
+      {/* debug */}
+      {import.meta.env.VITE_FF_REFERRALS_ENABLED === "true" && referralCode && (
         <div
           css={{
             position: "fixed",
@@ -25,7 +26,7 @@ export const Web3Connect = () => {
             color: "white",
           }}
         >
-          referrer: {referrer}
+          referralCode: {referralCode}
         </div>
       )}
       {open ? <Web3ConnectModal /> : null}

@@ -25,14 +25,14 @@ type WalletProviderState = {
   account: Account | null
   status: WalletProviderStatus
   error?: string
-  referrer?: string
+  referralCode?: string
 }
 
 type WalletProviderStore = WalletProviderState & {
   toggle: () => void
   setAccount: (account: Account | null) => void
   setProvider: (provider: WalletProviderType | null) => void
-  setReferrer: (referrer: string) => void
+  setReferralCode: (referralCode: string) => void
   setStatus: (
     provider: WalletProviderType | null,
     status: WalletProviderStatus,
@@ -47,7 +47,7 @@ const initialState: WalletProviderState = {
   account: null,
   status: WalletProviderStatus.Disconnected,
   error: "",
-  referrer: "",
+  referralCode: "",
 }
 
 export const useWeb3ConnectStore = create<WalletProviderStore>()(
@@ -57,7 +57,8 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
       toggle: () => set((state) => ({ ...state, open: !state.open })),
       setAccount: (account) => set((state) => ({ ...state, account })),
       setProvider: (provider) => set((state) => ({ ...state, provider })),
-      setReferrer: (referrer) => set((state) => ({ ...state, referrer })),
+      setReferralCode: (referralCode) =>
+        set((state) => ({ ...state, referralCode })),
       setStatus: (provider, status) => {
         const isConnected = status === WalletProviderStatus.Connected
         const isError = status === WalletProviderStatus.Error
@@ -75,7 +76,7 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
           ...state,
           ...initialState,
           open: state.open,
-          referrer: state.referrer,
+          referralCode: state.referralCode,
         }))
       },
     }),
