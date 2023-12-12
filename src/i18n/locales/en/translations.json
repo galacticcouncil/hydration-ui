@@ -541,6 +541,7 @@
   "stats.overview.table.assets.header.apy": "APY",
   "stats.overview.table.assets.header.apy.desc": "Estimated APY projection based on accrued fees in the past month and the current TVL that is not accounting for Impermanent Loss.",
   "stats.overview.table.assets.header.pol": "Treasury",
+  "stats.overview.table.assets.header.price": "Price",
   "stats.overview.table.trades.header.title": "Recent Trades",
   "stats.overview.table.trades.header.action": "Action",
   "stats.overview.table.trades.header.account": "Account",

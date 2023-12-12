@@ -158,13 +158,17 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
       ),
       cell: ({ row }) => <APY assetId={row.original.id} />,
     }),
-    accessor("pol", {
-      id: "pol",
-      header: t("stats.overview.table.assets.header.pol"),
-      sortingFn: (a, b) => (a.original.pol.gt(b.original.pol) ? 1 : -1),
+    accessor("price", {
+      id: "price",
+      header: t("stats.overview.table.assets.header.price"),
+      sortingFn: (a, b) => (a.original.price.gt(b.original.price) ? 1 : -1),
       cell: ({ row }) => (
         <Text color="white">
-          <DisplayValue value={row.original.pol} isUSD />
+          {t("value.token", {
+            value: row.original.price,
+            decimalPlaces: 4,
+            numberPrefix: "$",
+          })}
         </Text>
       ),
     }),

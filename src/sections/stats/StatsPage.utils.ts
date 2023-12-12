@@ -191,6 +191,7 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
         iconIds,
         cap: omnipoolAssetCap,
         volumePol: BN(0),
+        price: spotPrice,
       }
     })
     return rows
