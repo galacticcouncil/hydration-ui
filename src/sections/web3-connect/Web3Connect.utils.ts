@@ -95,7 +95,9 @@ export const useWeb3ConnectEagerEnable = () => {
 
   useEffect(() => {
     const state = useWeb3ConnectStore.getState()
-    if (search?.referral) {
+
+    const hasReferralCode = !!state.referralCode
+    if (!hasReferralCode && search?.referral) {
       state.setReferralCode(search.referral)
     }
   }, [search?.referral])
