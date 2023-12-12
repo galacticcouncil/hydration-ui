@@ -6,7 +6,6 @@ import { HeaderMenu } from "components/Layout/Header/menu/HeaderMenu"
 import { WarningMessage } from "components/WarningMessage/WarningMessage"
 import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
 import { useVisibleElements } from "hooks/useVisibleElements"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -19,13 +18,7 @@ export const Header = () => {
 
   const warnings = useWarningsStore()
 
-  const { visible, observe } = useVisibleElements()
-
-  const moreMenuItems = useMemo(() => {
-    return Object.entries(visible)
-      .filter(([, isVisible]) => !isVisible)
-      .map(([key]) => key)
-  }, [visible])
+  const { hiddenElementsKeys, observe } = useVisibleElements()
 
   return (
     <div css={{ position: "sticky", top: 0, zIndex: 5 }}>
@@ -44,7 +37,7 @@ export const Header = () => {
             />
             <HeaderMenu ref={observe} />
           </div>
-          <HeaderToolbar menuItems={moreMenuItems} />
+          <HeaderToolbar menuItems={hiddenElementsKeys} />
         </div>
       </SHeader>
     </div>

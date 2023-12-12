@@ -148,6 +148,7 @@ export type HydraPositionsTableData = {
   lrna: BN
   value: BN
   valueDisplay: BN
+  valueDisplayWithoutLrna: BN
   price: BN
   providedAmount: BN
   providedAmountDisplay: BN
