@@ -8,7 +8,7 @@ export const FundWalletMobileButton = (props: Props) => {
   const { t } = useTranslation()
 
   return (
-    <Button {...props} variant="primary" fullWidth={true}>
+    <Button {...props} variant="primary" fullWidth>
       <FundIcon />
       {t("fund.button")}
     </Button>
