@@ -40,6 +40,11 @@ export const useAccount = () => {
   return { account }
 }
 
+export const useReferrer = () => {
+  const referrer = useWeb3ConnectStore(useShallow((state) => state.referrer))
+  return { referrer }
+}
+
 export const useWalletAccounts = (
   type: WalletProviderType | null,
   options?: QueryObserverOptions<WalletAccount[], unknown, Account[]>,
@@ -77,6 +82,7 @@ export const useWeb3ConnectEagerEnable = () => {
   const search = useSearch<{
     Search: {
       account: string
+      referrer: string
     }
   }>()
 
@@ -84,6 +90,13 @@ export const useWeb3ConnectEagerEnable = () => {
   const prevWallet = usePrevious(wallet)
 
   const externalAddressRef = useRef(search?.account)
+
+  useEffect(() => {
+    const state = useWeb3ConnectStore.getState()
+    if (search?.referrer) {
+      state.setReferrer(search.referrer)
+    }
+  }, [search?.referrer])
 
   useEffect(() => {
     const state = useWeb3ConnectStore.getState()
