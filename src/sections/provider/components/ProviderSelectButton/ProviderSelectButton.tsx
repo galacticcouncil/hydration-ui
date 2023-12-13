@@ -32,7 +32,7 @@ export const ProviderSelectButton = () => {
         tabIndex={0}
         onClick={modalDisabled ? undefined : () => setOpen(true)}
         whileHover={modalDisabled ? "" : "animate"}
-        css={{ zIndex: theme.zIndices.modal }}
+        css={{ zIndex: theme.zIndices.tablePlaceholder }}
       >
         <SName
           variants={{
