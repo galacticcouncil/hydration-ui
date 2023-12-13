@@ -7,7 +7,6 @@ import { createComponent } from "@lit-labs/react"
 
 import { GcTransactionCenter } from "sections/xcm/TransactionCenter"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { isEvmAccount } from "utils/evm"
 
 export const XcmApp = createComponent({
   tagName: "gc-xcm-app",
@@ -26,15 +25,11 @@ export function XcmPage() {
           <XcmApp
             ref={ref}
             srcChain="polkadot"
-            dstChain="hydradx"
-            chains="polkadot,hydradx,acala,statemint,interlay,zeitgeist,astar,centrifuge,bifrost,subsocial"
+            srcEvmChain="moonbeam"
+            destChain="hydradx"
             accountName={account?.name}
             accountProvider={account?.provider}
-            accountAddress={
-              isEvmAccount(account?.address)
-                ? account?.evmAddress
-                : account?.address
-            }
+            accountAddress={account?.address}
           />
         </SContainer>
       </Page>
