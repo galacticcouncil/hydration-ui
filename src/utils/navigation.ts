@@ -8,6 +8,7 @@ import IconSwap from "assets/icons/navigation/IconSwap.svg?react"
 import StatsIcon from "assets/icons/ChartIcon.svg?react"
 import StakingIcon from "assets/icons/StakingIcon.svg?react"
 import IconBonds from "assets/icons/Bonds.svg?react"
+import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 
 export const LINKS = {
   home: "/",
@@ -36,6 +37,7 @@ export const LINKS = {
   staking: "/staking",
   stakingDashboard: "/staking/dashboard",
   stakingGovernance: "/staking/governance",
+  referrals: "/referrals",
 }
 
 const isXcmPageEnabled = import.meta.env.VITE_FF_XCM_ENABLED === "true"
@@ -44,6 +46,8 @@ const isStakingEnabled = import.meta.env.VITE_FF_STAKING_ENABLED === "true"
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
 const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
+const isReferralsPageEnabled =
+  import.meta.env.VITE_FF_REFERRALS_ENABLED === "true"
 
 export const MENU_ITEMS = [
   {
@@ -121,6 +125,17 @@ export const MENU_ITEMS = [
     mobVisible: false,
     tabVisible: true,
     mobOrder: 4,
+  },
+  {
+    key: "referrals",
+    href: LINKS.referrals,
+    Icon: ChainlinkIcon,
+    subItems: undefined,
+    enabled: isReferralsPageEnabled,
+    external: false,
+    mobVisible: false,
+    tabVisible: true,
+    mobOrder: 6,
   },
 ] as const
 

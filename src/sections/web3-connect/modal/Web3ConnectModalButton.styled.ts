@@ -44,9 +44,6 @@ export const SLoginButton = styled(Button)`
   font-size: 14px;
   line-height: 14px;
 
-  padding: 12px 16px;
-  height: 40px;
-
   white-space: nowrap;
 
   background: linear-gradient(

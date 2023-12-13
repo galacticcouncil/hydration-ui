@@ -85,22 +85,25 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
       // filter positions by assetId
       .filter(({ position }) => position.assetId.toString() === assetId)
       .map(({ position, unique }) => {
-        const { lrna, value, valueDisplay } = calculatePositionLiquidity({
-          position,
-          omnipoolBalance: balance,
-          omnipoolHubReserve: omnipoolAsset?.data?.hubReserve,
-          omnipoolShares: omnipoolAsset?.data?.shares,
-          lrnaSpotPrice,
-          valueSpotPrice,
-          lrnaDecimals: lrnaMeta.decimals,
-          assetDecimals: meta.decimals,
-        })
+        const { lrna, value, valueDisplay, valueDisplayWithoutLrna } =
+          calculatePositionLiquidity({
+            position,
+            omnipoolBalance: balance,
+            omnipoolHubReserve: omnipoolAsset?.data?.hubReserve,
+            omnipoolShares: omnipoolAsset?.data?.shares,
+            lrnaSpotPrice,
+            valueSpotPrice,
+            lrnaDecimals: lrnaMeta.decimals,
+            assetDecimals: meta.decimals,
+          })
 
         return {
           assetId: meta.id,
           symbol: meta.symbol,
           account: (unique?.data.owner.toString() ?? "") as string,
-          sharePercent: valueDisplay.div(omnipoolTvlPrice).times(100),
+          sharePercent: valueDisplayWithoutLrna
+            .div(omnipoolTvlPrice)
+            .times(100),
           lrna,
           value,
           valueDisplay,

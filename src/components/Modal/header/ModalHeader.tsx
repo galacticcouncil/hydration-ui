@@ -49,7 +49,7 @@ export const ModalHeaderTitle = forwardRef<HTMLDivElement, TitleProps>(
       >
         {content}
         {description && (
-          <Text fs={16} fw={400} color="basic400">
+          <Text fs={16} lh={22} fw={400} color="basic400">
             {description}
           </Text>
         )}

@@ -79,7 +79,6 @@ export async function watchAsset(
   assetId: number | string,
   params: WatchAssetParams,
 ) {
-  console.log({ provider })
   if (!isMetaMask(provider)) return
 
   const tokenAddress = Buffer.from(
