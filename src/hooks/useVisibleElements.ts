@@ -11,6 +11,10 @@ export function useVisibleElements<T extends HTMLElement>() {
   const [forceRender, setForceRender] = useState(false)
   const ref = useRef<T>(null)
 
+  const rerender = () => {
+    setForceRender((trigger) => !trigger)
+  }
+
   useEffect(() => {
     const rootElement = ref.current
     const observer = new IntersectionObserver(
@@ -60,6 +64,6 @@ export function useVisibleElements<T extends HTMLElement>() {
     visible,
     hiddenElementsKeys,
     observe: ref,
-    rerender: setForceRender,
+    rerender,
   }
 }
