@@ -34,12 +34,13 @@ const APYFarmStatsCard = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
 
   return (
     <AssetStatsCard
-      title={t("stats.omnipool.stats.card.apy")}
+      title={t("stats.omnipool.stats.card.apyWithFarm")}
       value={t("value.percentage.range", {
         from: percentage.minApr.lt(apy) ? percentage.minApr : BN(apy),
         to: percentage.maxApr.plus(apy),
       })}
       loading={farmAprs.isInitialLoading}
+      tooltip={t("stats.overview.table.assets.header.apy.desc")}
     />
   )
 }
@@ -66,6 +67,7 @@ const APYStatsCard = ({
       title={t("stats.omnipool.stats.card.apy")}
       value={t("value.percentage", { value: apy })}
       loading={loading || fee.isInitialLoading || farms.isInitialLoading}
+      tooltip={t("stats.overview.table.assets.header.apy.desc")}
     />
   )
 }
