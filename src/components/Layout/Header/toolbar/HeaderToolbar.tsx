@@ -23,7 +23,7 @@ export const HeaderToolbar: FC<Props> = ({ menuItems }) => {
         <Bell />
         {!isSmallMedia && settingsEanbled && <Settings />}
       </div>
-      <Web3ConnectModalButton />
+      <Web3ConnectModalButton size="small" css={{ maxHeight: 40 }} />
       {!isSmallMedia && menuItems.length > 0 && <MoreMenu items={menuItems} />}
     </div>
   )
