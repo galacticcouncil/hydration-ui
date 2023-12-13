@@ -28,7 +28,7 @@ export const FeatureBox: FC<FeatureBoxProps> = ({
     )}
     <div>{title}</div>
     {description && (
-      <Text color="darkBlue200" sx={{ mt: 6 }} css={{ lineHeight: "1.4" }}>
+      <Text color="darkBlue200" sx={{ mt: 6 }} lh={22}>
         {description}
       </Text>
     )}
