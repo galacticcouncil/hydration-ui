@@ -131,6 +131,7 @@ export const useProviderData = (rpcUrl?: string) => {
         api,
         assets: assets.assets,
         tradeRouter: assets.tradeRouter,
+        featureFlags: assets.featureFlags,
         provider,
       }
     },

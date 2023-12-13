@@ -177,6 +177,7 @@ export const getAssets = async (api: ApiPromise) => {
     rawAssetsLocations,
     rawTradeAssets,
     hubAssetId,
+    isReferralsEnabled,
   ] = await Promise.all([
     api.rpc.system.properties(),
     api.query.assetRegistry.assets.entries(),
@@ -184,6 +185,7 @@ export const getAssets = async (api: ApiPromise) => {
     api.query.assetRegistry.assetLocations.entries(),
     tradeRouter.getAllAssets(),
     api.consts.omnipool.hubAssetId,
+    api.query.referrals,
   ])
 
   const tokens: TToken[] = []
@@ -424,5 +426,8 @@ export const getAssets = async (api: ApiPromise) => {
       isShareToken,
     },
     tradeRouter,
+    featureFlags: {
+      referrals: !!isReferralsEnabled,
+    },
   }
 }

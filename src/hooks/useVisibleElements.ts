@@ -8,6 +8,7 @@ type VisibilityMap = Record<string, boolean>
  */
 export function useVisibleElements<T extends HTMLElement>() {
   const [visible, setVisible] = useState<VisibilityMap>({})
+  const [forceRender, setForceRender] = useState(false)
   const ref = useRef<T>(null)
 
   useEffect(() => {
@@ -42,7 +43,7 @@ export function useVisibleElements<T extends HTMLElement>() {
         observer.disconnect()
       }
     }
-  }, [ref])
+  }, [ref, forceRender])
 
   const hiddenElementsKeys = useMemo(() => {
     return Object.entries(visible).reduce<string[]>(
@@ -59,5 +60,6 @@ export function useVisibleElements<T extends HTMLElement>() {
     visible,
     hiddenElementsKeys,
     observe: ref,
+    rerender: setForceRender,
   }
 }

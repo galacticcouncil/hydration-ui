@@ -18,7 +18,7 @@ export const Header = () => {
 
   const warnings = useWarningsStore()
 
-  const { hiddenElementsKeys, observe } = useVisibleElements()
+  const { hiddenElementsKeys, observe, rerender } = useVisibleElements()
 
   return (
     <div css={{ position: "sticky", top: 0, zIndex: 5 }}>
@@ -35,7 +35,7 @@ export const Header = () => {
               sx={{ color: "white" }}
               icon={!isMediumMedia ? <HydraLogoFull /> : <HydraLogo />}
             />
-            <HeaderMenu ref={observe} />
+            <HeaderMenu ref={observe} rerender={rerender} />
           </div>
           <HeaderToolbar menuItems={hiddenElementsKeys} />
         </div>
