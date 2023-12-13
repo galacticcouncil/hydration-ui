@@ -11,7 +11,10 @@ import { TierStats } from "./components/TierStats/TierStats"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const ReferralsPage = () => {
-  const { featureFlags } = useRpcProvider()
+  const { isLoaded, featureFlags } = useRpcProvider()
+
+  if (!isLoaded) return null
+
   if (!featureFlags.referrals) return <Navigate to="/trade" />
 
   return (
