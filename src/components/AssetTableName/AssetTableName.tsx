@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next"
-import { SIcon } from "sections/wallet/assets/table/data/WalletAssetsTableData.styled"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { useRpcProvider } from "providers/rpcProvider"
+import { Icon } from "components/Icon/Icon"
 
 export const AssetTableName = ({
   large,
@@ -38,16 +38,18 @@ export const AssetTableName = ({
         }}
       >
         {typeof iconIds === "string" ? (
-          <SIcon large={large}>
-            <AssetLogo id={iconIds} />
-          </SIcon>
+          <Icon
+            size={[large ? 28 : 24, 27]}
+            icon={<AssetLogo id={iconIds} />}
+          />
         ) : (
           <MultipleIcons
             icons={iconIds.map((asset) => ({
               icon: (
-                <SIcon large={large}>
-                  <AssetLogo id={asset} />
-                </SIcon>
+                <Icon
+                  size={[large ? 28 : 24, 27]}
+                  icon={<AssetLogo id={asset} />}
+                />
               ),
             }))}
           />
