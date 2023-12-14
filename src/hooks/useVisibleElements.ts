@@ -11,10 +11,6 @@ export function useVisibleElements<T extends HTMLElement>() {
   const [forceRender, setForceRender] = useState(false)
   const ref = useRef<T>(null)
 
-  const rerender = () => {
-    setForceRender((trigger) => !trigger)
-  }
-
   useEffect(() => {
     const rootElement = ref.current
     const observer = new IntersectionObserver(
@@ -49,6 +45,26 @@ export function useVisibleElements<T extends HTMLElement>() {
     }
   }, [ref, forceRender])
 
+  useEffect(() => {
+    const mutations = new MutationObserver((mutations) => {
+      let shouldRerender = false
+      mutations.forEach((mutation) => {
+        if (mutation.type === "childList") {
+          shouldRerender = true
+        }
+      })
+      setForceRender(shouldRerender)
+    })
+    if (ref.current) {
+      mutations.observe(ref.current, {
+        childList: true,
+      })
+    }
+    return () => {
+      mutations.disconnect()
+    }
+  }, [])
+
   const hiddenElementsKeys = useMemo(() => {
     return Object.entries(visible).reduce<string[]>(
       (memo, [item, isVisible]) => {
@@ -64,6 +80,5 @@ export function useVisibleElements<T extends HTMLElement>() {
     visible,
     hiddenElementsKeys,
     observe: ref,
-    rerender,
   }
 }
