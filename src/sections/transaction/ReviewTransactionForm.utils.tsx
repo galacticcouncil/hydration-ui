@@ -97,7 +97,7 @@ export const useTransactionValues = ({
     return {
       isLoading,
       data: {
-        isEnoughtPaymentBalance: false,
+        isEnoughPaymentBalance: false,
         displayFeePaymentValue: BN_NAN,
         feePaymentMeta,
         acceptedFeePaymentAssets: [],
@@ -127,7 +127,7 @@ export const useTransactionValues = ({
       )
   }
 
-  const isEnoughtPaymentBalance = feeAssetBalance.data.balance
+  const isEnoughPaymentBalance = feeAssetBalance.data.balance
     .shiftedBy(-feePaymentMeta.decimals)
     .minus(paymentFeeHDX)
     .gt(0)
@@ -135,7 +135,7 @@ export const useTransactionValues = ({
   return {
     isLoading,
     data: {
-      isEnoughtPaymentBalance,
+      isEnoughPaymentBalance,
       displayFeePaymentValue,
       feePaymentMeta,
       acceptedFeePaymentAssets,

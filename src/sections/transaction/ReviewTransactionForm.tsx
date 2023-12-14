@@ -37,7 +37,7 @@ export const ReviewTransactionForm = (
 
   const {
     acceptedFeePaymentAssets,
-    isEnoughtPaymentBalance,
+    isEnoughPaymentBalance,
     displayFeePaymentValue,
     feePaymentMeta,
     era,
@@ -75,12 +75,12 @@ export const ReviewTransactionForm = (
 
   const isLoading = transactionValues.isLoading || signTx.isLoading
   const hasMultipleFeeAssets = acceptedFeePaymentAssets.length > 1
-  const isEditPaymentBalance = !isEnoughtPaymentBalance && hasMultipleFeeAssets
+  const isEditPaymentBalance = !isEnoughPaymentBalance && hasMultipleFeeAssets
 
   if (isOpenEditFeePaymentAssetModal) return editFeePaymentAssetModal
 
   const onConfirmClick = () =>
-    isEnoughtPaymentBalance
+    isEnoughPaymentBalance
       ? signTx.mutate()
       : hasMultipleFeeAssets
       ? openEditFeePaymentAssetModal()
@@ -184,11 +184,11 @@ export const ReviewTransactionForm = (
                   disabled={
                     !account ||
                     isLoading ||
-                    (!isEnoughtPaymentBalance && !hasMultipleFeeAssets)
+                    (!isEnoughPaymentBalance && !hasMultipleFeeAssets)
                   }
                   onClick={onConfirmClick}
                 />
-                {!isEnoughtPaymentBalance && !transactionValues.isLoading && (
+                {!isEnoughPaymentBalance && !transactionValues.isLoading && (
                   <Text fs={16} color="pink600">
                     {t(
                       "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance.msg",
