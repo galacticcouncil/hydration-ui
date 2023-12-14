@@ -10,12 +10,14 @@ type TProviderContext = {
   assets: Awaited<ReturnType<typeof getAssets>>["assets"]
   tradeRouter: TradeRouter
   isLoaded: boolean
+  featureFlags: Awaited<ReturnType<typeof getAssets>>["featureFlags"]
 }
 const ProviderContext = createContext<TProviderContext>({
   isLoaded: false,
   api: {} as TProviderContext["api"],
   assets: {} as TProviderContext["assets"],
   tradeRouter: {} as TradeRouter,
+  featureFlags: {} as TProviderContext["featureFlags"],
 })
 
 export const useRpcProvider = () => useContext(ProviderContext)
@@ -40,6 +42,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
           api: providerData.data.api,
           assets: providerData.data.assets,
           tradeRouter: providerData.data.tradeRouter,
+          featureFlags: providerData.data.featureFlags,
           isLoaded: true,
         }
       : {
@@ -47,6 +50,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
           api: {} as TProviderContext["api"],
           assets: {} as TProviderContext["assets"],
           tradeRouter: {} as TradeRouter,
+          featureFlags: {} as TProviderContext["featureFlags"],
         }
 
   return (

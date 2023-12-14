@@ -8,6 +8,7 @@ type VisibilityMap = Record<string, boolean>
  */
 export function useVisibleElements<T extends HTMLElement>() {
   const [visible, setVisible] = useState<VisibilityMap>({})
+  const [forceRender, setForceRender] = useState(false)
   const ref = useRef<T>(null)
 
   useEffect(() => {
@@ -42,7 +43,27 @@ export function useVisibleElements<T extends HTMLElement>() {
         observer.disconnect()
       }
     }
-  }, [ref])
+  }, [ref, forceRender])
+
+  useEffect(() => {
+    const mutations = new MutationObserver((mutations) => {
+      let shouldRerender = false
+      mutations.forEach((mutation) => {
+        if (mutation.type === "childList") {
+          shouldRerender = true
+        }
+      })
+      setForceRender(shouldRerender)
+    })
+    if (ref.current) {
+      mutations.observe(ref.current, {
+        childList: true,
+      })
+    }
+    return () => {
+      mutations.disconnect()
+    }
+  }, [])
 
   const hiddenElementsKeys = useMemo(() => {
     return Object.entries(visible).reduce<string[]>(

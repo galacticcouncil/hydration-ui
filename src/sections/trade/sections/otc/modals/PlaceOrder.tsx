@@ -324,6 +324,7 @@ export const PlaceOrder = ({
             content: (
               <AssetsModalContent
                 allAssets
+                withBonds
                 onSelect={(asset) => {
                   setAIn(asset.id)
                   paginateTo(0)
@@ -337,6 +338,7 @@ export const PlaceOrder = ({
             headerVariant: "FontOver",
             content: (
               <AssetsModalContent
+                withBonds
                 onSelect={(asset) => {
                   form.trigger()
                   setAOut(asset.id)

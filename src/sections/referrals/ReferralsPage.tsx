@@ -8,11 +8,14 @@ import { HeroBanner } from "./components/HeroBanner/HeroBanner"
 import { ReferrerCard } from "./components/ReferrerCard/ReferrerCard"
 import { RewardsCard } from "./components/RewardsCard/RewardsCard"
 import { TierStats } from "./components/TierStats/TierStats"
-
-const pageEnabled = import.meta.env.VITE_FF_REFERRALS_ENABLED === "true"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const ReferralsPage = () => {
-  if (!pageEnabled) return <Navigate to="/trade" />
+  const { isLoaded, featureFlags } = useRpcProvider()
+
+  if (!isLoaded) return null
+
+  if (!featureFlags.referrals) return <Navigate to="/trade" />
 
   return (
     <Page>

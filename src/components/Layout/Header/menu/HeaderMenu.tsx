@@ -4,15 +4,25 @@ import { useTranslation } from "react-i18next"
 import { MENU_ITEMS } from "utils/navigation"
 import { HeaderSubMenu } from "./HeaderSubMenu"
 import { forwardRef } from "react"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const HeaderMenu = forwardRef<HTMLElement>((_, ref) => {
   const { t } = useTranslation()
   const { account } = useSearch()
+  const { featureFlags } = useRpcProvider()
+
+  const filteredItems = MENU_ITEMS.filter(
+    (item) => item.enabled && !(item.asyncEnabled && !featureFlags[item.key]),
+  )
 
   return (
     <SList ref={ref}>
-      {MENU_ITEMS.map((item, i) => {
+      {filteredItems.map((item, i) => {
         if (!item.enabled) {
+          return null
+        }
+
+        if (item.asyncEnabled && !featureFlags[item.key]) {
           return null
         }
 
