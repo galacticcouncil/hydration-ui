@@ -46,8 +46,6 @@ const isStakingEnabled = import.meta.env.VITE_FF_STAKING_ENABLED === "true"
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
 const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
-const isReferralsPageEnabled =
-  import.meta.env.VITE_FF_REFERRALS_ENABLED === "true"
 
 export const MENU_ITEMS = [
   {
@@ -70,6 +68,7 @@ export const MENU_ITEMS = [
     mobVisible: true,
     tabVisible: true,
     mobOrder: 1,
+    asyncEnabled: false,
   },
   {
     key: "liquidity",
@@ -81,6 +80,7 @@ export const MENU_ITEMS = [
     mobVisible: true,
     tabVisible: true,
     mobOrder: 2,
+    asyncEnabled: false,
   },
   {
     key: "wallet",
@@ -92,6 +92,7 @@ export const MENU_ITEMS = [
     mobVisible: true,
     tabVisible: true,
     mobOrder: 0,
+    asyncEnabled: false,
   },
   {
     key: "xcm",
@@ -103,6 +104,7 @@ export const MENU_ITEMS = [
     mobVisible: false,
     tabVisible: false,
     mobOrder: 5,
+    asyncEnabled: false,
   },
   {
     key: "stats",
@@ -114,6 +116,7 @@ export const MENU_ITEMS = [
     mobVisible: false,
     tabVisible: true,
     mobOrder: 3,
+    asyncEnabled: false,
   },
   {
     key: "staking",
@@ -125,17 +128,19 @@ export const MENU_ITEMS = [
     mobVisible: false,
     tabVisible: true,
     mobOrder: 4,
+    asyncEnabled: false,
   },
   {
     key: "referrals",
     href: LINKS.referrals,
     Icon: ChainlinkIcon,
     subItems: undefined,
-    enabled: isReferralsPageEnabled,
+    enabled: true,
     external: false,
     mobVisible: false,
     tabVisible: true,
     mobOrder: 6,
+    asyncEnabled: true,
   },
 ] as const
 

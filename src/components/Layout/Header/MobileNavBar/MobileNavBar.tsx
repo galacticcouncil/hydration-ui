@@ -12,6 +12,7 @@ import { MoreButton } from "./MoreButton"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { HeaderSubMenu } from "components/Layout/Header/menu/HeaderSubMenu"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const MobileNavBarItem = ({
   item,
@@ -32,11 +33,12 @@ export const MobileNavBarItem = ({
 
 export const MobileNavBar = () => {
   const { t } = useTranslation()
+  const { featureFlags } = useRpcProvider()
   const { account } = useSearch()
   const isMediumMedia = useMedia(theme.viewport.gte.sm)
 
   const [visibleTabs, hiddenTabs] = MENU_ITEMS.filter(
-    (item) => item.enabled,
+    (item) => item.enabled && !(item.asyncEnabled && !featureFlags[item.key]),
   ).reduce(
     (result, value) => {
       const isVisible = isMediumMedia ? value.tabVisible : value.mobVisible
