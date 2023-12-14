@@ -10,6 +10,12 @@ export enum WalletProviderStatus {
   Error = "error",
 }
 
+export enum WalletMode {
+  Default = "default",
+  EVM = "evm",
+  Substrate = "substrate",
+}
+
 export type Account = {
   name: string
   address: string
@@ -24,12 +30,13 @@ type WalletProviderState = {
   provider: WalletProviderType | null
   account: Account | null
   status: WalletProviderStatus
+  mode: WalletMode
   error?: string
   referralCode?: string
 }
 
 type WalletProviderStore = WalletProviderState & {
-  toggle: () => void
+  toggle: (mode?: WalletMode) => void
   setAccount: (account: Account | null) => void
   setProvider: (provider: WalletProviderType | null) => void
   setReferralCode: (referralCode: string) => void
@@ -46,6 +53,7 @@ const initialState: WalletProviderState = {
   provider: null,
   account: null,
   status: WalletProviderStatus.Disconnected,
+  mode: WalletMode.Default,
   error: "",
   referralCode: "",
 }
@@ -54,7 +62,15 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
   persist(
     (set) => ({
       ...initialState,
-      toggle: () => set((state) => ({ ...state, open: !state.open })),
+      toggle: (mode) =>
+        set((state) => {
+          const isValidMode = mode && Object.values(WalletMode).includes(mode)
+          return {
+            ...state,
+            mode: isValidMode ? mode : WalletMode.Default,
+            open: !state.open,
+          }
+        }),
       setAccount: (account) => set((state) => ({ ...state, account })),
       setProvider: (provider) => set((state) => ({ ...state, provider })),
       setReferralCode: (referralCode) =>
