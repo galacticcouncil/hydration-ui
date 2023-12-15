@@ -129,7 +129,7 @@ export const useTransactionValues = ({
 
   const isEnoughPaymentBalance = feeAssetBalance.data.balance
     .shiftedBy(-feePaymentMeta.decimals)
-    .minus(paymentFeeHDX)
+    .minus(displayFeePaymentValue ?? 0)
     .gt(0)
 
   return {
