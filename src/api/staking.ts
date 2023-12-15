@@ -168,11 +168,11 @@ const getStakingConsts = (api: ApiPromise) => async () => {
 
   return {
     palletId: palletId.toHuman() as string,
-    periodLength: periodLength.toBigNumber() as BN,
-    unclaimablePeriods: unclaimablePeriods.toBigNumber() as BN,
-    timePointsPerPeriod: timePointsPerPeriod.toBigNumber() as BN,
-    timePointsWeight: timePointsWeight.toBigNumber().div(1000000000) as BN,
-    actionPointsWeight: actionPointsWeight.toBigNumber().div(1000000000) as BN,
+    periodLength: periodLength.toBigNumber(),
+    unclaimablePeriods: unclaimablePeriods.toBigNumber(),
+    timePointsPerPeriod: timePointsPerPeriod.toBigNumber(),
+    timePointsWeight: timePointsWeight.toBigNumber().div(1000000),
+    actionPointsWeight: actionPointsWeight.toBigNumber().div(1000000000),
   }
 }
 
