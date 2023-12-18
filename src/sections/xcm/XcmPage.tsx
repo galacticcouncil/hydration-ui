@@ -16,6 +16,9 @@ import {
   WalletMode,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { XCall } from "@galacticcouncil/xcm-sdk"
+import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
+import { isXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
 
 export const XcmApp = createComponent({
   tagName: "gc-xcm-app",
@@ -40,13 +43,24 @@ export function XcmPage() {
 
     const { srcChain } = meta ?? {}
     const chain = chainsMap.get(srcChain)
-    const api = chain ? await getPolkadotApi(chain.ws) : null
 
+    const api = chain ? await getPolkadotApi(chain.ws) : null
     if (!api) return
+
+    let tx: SubmittableExtrinsic | undefined
+
+    try {
+      tx = api.tx(transaction.hex)
+    } catch (error) {}
+
+    const xcall = transaction.get<XCall>()
+    const xcallValid = isXCall(xcall)
 
     await createTransaction(
       {
-        tx: api.tx(transaction.hex),
+        tx,
+        xcall: xcallValid ? xcall : undefined,
+        xcallMeta: xcallValid ? meta : undefined,
       },
       {
         onSuccess: () => {},

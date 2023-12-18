@@ -26,14 +26,15 @@ export const TransactionCode = forwardRef<HTMLDivElement, ReactJsonViewProps>(
           base09: theme.colors.brightBlue200Alpha,
           base0A: theme.colors.basic500,
           base0B: "rgba(70, 70, 230, 0)",
-          base0C: "rgba(70, 70, 230, 0)",
+          base0C: theme.colors.basic500,
           base0D: theme.colors.warning300,
           base0E: theme.colors.basic100,
-          base0F: "rgba(70, 70, 230, 1)",
+          base0F: theme.colors.brightBlue200Alpha,
         }}
         {...props}
         style={{
-          fontFamily: "ChakraPetch",
+          fontVariant: "tabular-nums",
+          fontFamily: "SatoshiVariable",
           fontSize: "12px",
           position: "relative",
         }}

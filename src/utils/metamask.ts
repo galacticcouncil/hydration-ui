@@ -1,13 +1,8 @@
 import { Buffer } from "buffer"
-import { POLKADOT_APP_NAME } from "utils/api"
-import { NATIVE_EVM_ASSET_DECIMALS, NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
-import { Maybe, noop } from "utils/helpers"
+import { Maybe } from "utils/helpers"
 import type { ExternalProvider } from "@ethersproject/providers"
 import type EventEmitter from "events"
-
-const chainId = import.meta.env.VITE_EVM_CHAIN_ID as string
-const rpcUrl = import.meta.env.VITE_EVM_PROVIDER_URL as string
-const explorerUrl = import.meta.env.VITE_EVM_EXPLORER_URL as string
+import { evmChains } from "@galacticcouncil/xcm-cfg"
 
 export interface MetaMaskProvider extends ExternalProvider, EventEmitter {}
 
@@ -17,22 +12,26 @@ export interface AddEvmChainParams {
   nativeCurrency: {
     name: string
     symbol: string
-    decimals: 18
+    decimals: number
   }
   rpcUrls: string[]
   blockExplorerUrls?: string[]
 }
 
-const EVM_CHAIN_PARAMS: AddEvmChainParams = {
-  chainId: "0x" + Number(chainId).toString(16),
-  chainName: POLKADOT_APP_NAME,
-  rpcUrls: [rpcUrl],
-  blockExplorerUrls: [explorerUrl],
-  nativeCurrency: {
-    decimals: NATIVE_EVM_ASSET_DECIMALS,
-    name: NATIVE_EVM_ASSET_SYMBOL,
-    symbol: NATIVE_EVM_ASSET_SYMBOL,
-  },
+const EXPLORER_URLS: Record<string, string[]> = {
+  hydradx: [import.meta.env.VITE_EVM_EXPLORER_URL as string],
+}
+
+const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
+  const chainProps = evmChains[chain]
+
+  return {
+    chainId: "0x" + Number(chainProps.id).toString(16),
+    chainName: chainProps.name,
+    rpcUrls: chainProps.rpcUrls.default.http as string[],
+    blockExplorerUrls: EXPLORER_URLS[chain] ?? [],
+    nativeCurrency: chainProps.nativeCurrency,
+  }
 }
 
 export function isMetaMask(
@@ -41,18 +40,25 @@ export function isMetaMask(
   return !!provider && !!provider?.isMetaMask
 }
 
+type RequestNetworkSwitchOptions = {
+  onSwitch?: () => void
+  chain?: keyof typeof evmChains
+}
 export async function requestNetworkSwitch(
   provider: Maybe<MetaMaskProvider>,
-  onSwitch: () => unknown = noop,
+  options: RequestNetworkSwitchOptions = {},
 ) {
   if (!isMetaMask(provider)) return
+
+  const params = getAddEvmChainParams(options.chain ?? "hydradx")
+
   try {
     await provider
       .request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: "0x" + Number(chainId).toString(16) }],
+        params: [{ chainId: params.chainId }],
       })
-      .then(onSwitch)
+      .then(options?.onSwitch)
   } catch (error: any) {
     // missing or unsupported network error
     if (error?.code === 4902) {
@@ -60,9 +66,9 @@ export async function requestNetworkSwitch(
         await provider
           .request({
             method: "wallet_addEthereumChain",
-            params: [EVM_CHAIN_PARAMS],
+            params: [params],
           })
-          .then(onSwitch)
+          .then(options?.onSwitch)
       } catch (err) {}
     }
   }
@@ -90,9 +96,8 @@ export async function watchAsset(
 
   const address = "0x" + tokenAddress.toString("hex")
 
-  return await requestNetworkSwitch(
-    provider,
-    async () =>
+  return await requestNetworkSwitch(provider, {
+    onSwitch: async () =>
       await provider?.request({
         method: "wallet_watchAsset",
         params: {
@@ -104,7 +109,7 @@ export async function watchAsset(
           },
         },
       }),
-  )
+  })
 }
 
 export const requestAccounts = async (provider: Maybe<MetaMaskProvider>) => {

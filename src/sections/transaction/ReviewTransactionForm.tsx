@@ -1,4 +1,5 @@
 import { TransactionResponse } from "@ethersproject/providers"
+import { FC } from "react"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { useMutation } from "@tanstack/react-query"
 import { Button } from "components/Button/Button"
@@ -18,14 +19,18 @@ import {
   useTransactionValues,
 } from "./ReviewTransactionForm.utils"
 
-export const ReviewTransactionForm = (
-  props: {
-    title?: string
-    onCancel: () => void
-    onEvmSigned: (tx: TransactionResponse) => void
-    onSigned: (signed: SubmittableExtrinsic<"promise">) => void
-  } & Omit<Transaction, "id">,
-) => {
+type TxProps = Omit<Transaction, "id" | "tx" | "xcall" | "xcallMeta"> & {
+  tx: SubmittableExtrinsic<"promise">
+}
+
+type Props = TxProps & {
+  title?: string
+  onCancel: () => void
+  onEvmSigned: (tx: TransactionResponse) => void
+  onSigned: (signed: SubmittableExtrinsic<"promise">) => void
+}
+
+export const ReviewTransactionForm: FC<Props> = (props) => {
   const { t } = useTranslation()
   const { account } = useAccount()
 
