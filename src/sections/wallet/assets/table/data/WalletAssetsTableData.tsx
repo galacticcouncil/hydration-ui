@@ -11,6 +11,8 @@ export const WalletAssetsTableBalance = (props: {
 }) => {
   const { t } = useTranslation()
 
+  const usdValue = props.balanceDisplay || "-"
+
   return (
     <div
       sx={{
@@ -29,7 +31,7 @@ export const WalletAssetsTableBalance = (props: {
       </Text>
 
       <DollarAssetValue
-        value={props.balanceDisplay}
+        value={usdValue}
         wrapper={(children) => (
           <Text
             fs={[11, 13]}
@@ -41,7 +43,7 @@ export const WalletAssetsTableBalance = (props: {
           </Text>
         )}
       >
-        <DisplayValue value={props.balanceDisplay} />
+        <DisplayValue value={usdValue} />
       </DollarAssetValue>
     </div>
   )

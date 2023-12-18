@@ -469,7 +469,7 @@ export const useXYKPools = (withPositions?: boolean) => {
         if (!shareTokenId) return undefined
 
         const shareTokenMeta = assets.getAsset(shareTokenId) as TShareToken
-        const assetAMeta = assets.getAsset(shareTokenMeta.assets[0])
+        const [assetAMeta, assetBMeta] = assets.getAssets(shareTokenMeta.assets)
 
         const shareTokenIssuance = totalIssuances.data?.find(
           (issuance) => issuance.asset === shareTokenId,
@@ -479,11 +479,21 @@ export const useXYKPools = (withPositions?: boolean) => {
           (poolBalance) => poolBalance.accountId === pool.poolAddress,
         )
 
-        const assetABalance = poolBalance?.balances[0]
-        const assetBBalance = poolBalance?.balances[1]
+        const assetABalance =
+          assetAMeta.id === assets.native.id
+            ? poolBalance?.native
+            : poolBalance?.balances.find(
+                (balance) => balance.id.toString() === assetAMeta.id,
+              )
+        const assetBBalance =
+          assetBMeta.id === assets.native.id
+            ? poolBalance?.native
+            : poolBalance?.balances.find(
+                (balance) => balance.id.toString() === assetBMeta.id,
+              )
 
         const assetASpotPrice = spotPrices.data?.find(
-          (spotPrice) => spotPrice?.tokenIn === assetABalance?.id.toString(),
+          (spotPrice) => spotPrice?.tokenIn === assetAMeta.id,
         )
 
         const totalLocked = assetABalance?.data.free.toBigNumber()

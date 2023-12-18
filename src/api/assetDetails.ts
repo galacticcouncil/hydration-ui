@@ -362,8 +362,12 @@ export const getAssets = async (api: ApiPromise) => {
   const shareTokens = shareTokensRaw.map((shareToken): TShareToken => {
     const [assetAId, assetBId] = shareToken.assets
 
-    const assetA = tokens.find((token) => token.id === assetAId) as TToken
-    const assetB = tokens.find((token) => token.id === assetBId) as TToken
+    const assetA = [...tokens, ...bonds].find(
+      (token) => token.id === assetAId,
+    ) as TToken
+    const assetB = [...tokens, ...bonds].find(
+      (token) => token.id === assetBId,
+    ) as TToken
 
     const assetDecimal = Number(assetA.id) > Number(assetB.id) ? assetB : assetA
 

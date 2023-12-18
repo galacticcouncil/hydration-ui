@@ -44,14 +44,18 @@ export const AssetTableName = ({
           />
         ) : (
           <MultipleIcons
-            icons={iconIds.map((asset) => ({
-              icon: (
-                <Icon
-                  size={[large ? 28 : 24, 27]}
-                  icon={<AssetLogo id={asset} />}
-                />
-              ),
-            }))}
+            icons={iconIds.map((asset) => {
+              const meta = assets.getAsset(asset)
+              const isBond = assets.isBond(meta)
+              return {
+                icon: (
+                  <Icon
+                    size={[large ? 28 : 24, 27]}
+                    icon={<AssetLogo id={isBond ? meta.assetId : asset} />}
+                  />
+                ),
+              }
+            })}
           />
         )}
 
