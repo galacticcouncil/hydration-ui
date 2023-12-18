@@ -8,6 +8,7 @@ import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
 
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useProviderRpcUrlStore } from "api/provider"
 import { useStore } from "state/store"
 import { isEvmAccount } from "utils/evm"
 import {
@@ -29,11 +30,15 @@ export const XcmApp = createComponent({
   },
 })
 
+const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
+
 export function XcmPage() {
   const { account } = useAccount()
   const { createTransaction } = useStore()
 
   const { toggle } = useWeb3ConnectStore()
+  const preference = useProviderRpcUrlStore()
+  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
   const ref = React.useRef<Apps.XcmApp>(null)
 
@@ -114,6 +119,8 @@ export function XcmPage() {
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}
+          apiAddress={rpcUrl}
+          stableCoinAssetId={stableCoinAssetId}
           onXcmNew={handleSubmit}
           onWalletChange={handleWalletChange}
         />

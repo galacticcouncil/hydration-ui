@@ -86,7 +86,6 @@ export function DcaPage() {
   return (
     <SContainer>
       <DcaApp
-        //key={!isLoading ? account?.provider : ""}
         ref={(r) => {
           r && r.setAttribute("chart", "")
         }}
