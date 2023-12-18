@@ -2990,10 +2990,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.0.1.tgz#160bb15006e943bc5fbd80ad624ccd97fc431fb2"
-  integrity sha512-AXIN2Kdh0YL+R/0FNUNUWFP5ArbnXZnqJ1FdTLELR6E2CtRcDR54Ji8YXqAY1Ei14AirGg22DWHqIE2RdnNL3w==
+"@galacticcouncil/apps@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.0.2.tgz#12a635229ec23d6efc584269e61f6f7e184d05fa"
+  integrity sha512-/eSgYjSccJNprXNeodWlPP/AAnKsXoRqggEw59nQZK/ZQOjHcYBrauzYi2D9k9ZOquzVuqiLni4WfR7lTWSBHw==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@talismn/connect-wallets" "^1.2.1"
@@ -3038,10 +3038,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.2.0.tgz#74feacdf94d4846f1a148835f25936b2ddc7bdfd"
   integrity sha512-mznedOeA8d9BQ8kUQ/4O/P6trqTC4FGwvTDGCHJ0O/bgA9iFb+suctbFtyFT3qfNnngR7FSF2Pls1O/SvtNn8g==
 
-"@galacticcouncil/sdk@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.0.0.tgz#7dd0a5a0af6aa0c3f48525b6523ab9892899a804"
-  integrity sha512-Ul/2+EhSZOlWPQmj8zvVaU5JfKWe8LFIHD7+mLw6YtLY/v5YFE+MN3SDdTLHFWb9i6f2U/4EaPAuXGz/0txLKQ==
+"@galacticcouncil/sdk@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.1.1.tgz#e5260b3f531a2c987bae20e0b8aa289fed110755"
+  integrity sha512-Wgt7wu00pefuzsTXHZslXNMLn4k0ZmPH8mQYn2+5VyDQyIJkz7Wv2bHdGdcn4x/sZWwESIE3R00s6EdS45KTPg==
   dependencies:
     "@galacticcouncil/math-lbp" "^0.2.1"
     "@galacticcouncil/math-omnipool" "^0.2.0"
@@ -3062,20 +3062,21 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.0.1.tgz#bfdeef21d12a01a5787a8e5cf1a4b0effd75a7c3"
-  integrity sha512-n+plOIFKyxxoz3ZCgAoIrinpC59ugczxrVvf5Mx3E6pN8M8GjvejDsx02m745wMQJyEvbIeSc13Wjy5z5RRImw==
+"@galacticcouncil/xcm-cfg@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.0.2.tgz#c67fa076ad6590928819648cca3057958322ce8b"
+  integrity sha512-87r6aF+6g7xFfVq8gthhFm6YQqQ99+ZkB4ttt9xvt6zc44lxIqPPz2amsNa84nwreejRb+xAB3Iye23pdfLfBQ==
 
-"@galacticcouncil/xcm-sdk@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-1.0.0.tgz#050760b01adf2847a5472e1d6999d493865011bf"
-  integrity sha512-42QHEwdfaxrmL7czP6USv3cnBvnskYFTq9m5hDUqRayDF9sMsirWaw/KIfOFVvsU06NFuZFQc+/pATZVa6z+Ng==
+"@galacticcouncil/xcm-sdk@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-1.0.2.tgz#c0d052959fb02f540b695fbecb123df0eeb0ed94"
+  integrity sha512-/EixJelEuFbXrmdzv6pafSl0dL9tCdg2Ju38fWBH8gx9ogw8FxIVBFNm0Ci4kFHvqRpsecqEkpwNR97FdoGGNQ==
   dependencies:
     "@moonbeam-network/xcm-builder" "1.0.9"
     "@moonbeam-network/xcm-config" "1.3.13"
     "@moonbeam-network/xcm-types" "1.0.1"
     "@moonbeam-network/xcm-utils" "1.0.3"
+    "@thi.ng/cache" "^2.1.35"
 
 "@graphql-typed-document-node/core@^3.1.1":
   version "3.2.0"

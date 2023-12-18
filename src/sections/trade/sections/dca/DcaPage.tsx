@@ -23,7 +23,6 @@ export const DcaApp = createComponent({
   },
 })
 
-const pools = import.meta.env.VITE_FF_POOLS
 const indexerUrl = import.meta.env.VITE_INDEXER_URL
 const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
 const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
@@ -87,12 +86,11 @@ export function DcaPage() {
   return (
     <SContainer>
       <DcaApp
-        key={!isLoading ? account?.provider : ""}
+        //key={!isLoading ? account?.provider : ""}
         ref={(r) => {
           r && r.setAttribute("chart", "")
         }}
         apiAddress={rpcUrl}
-        pools={pools}
         assetIn={!isLoading ? assetInDefault : ""}
         assetOut={!isLoading ? assetOutDefault : ""}
         stableCoinAssetId={stableCoinAssetId}

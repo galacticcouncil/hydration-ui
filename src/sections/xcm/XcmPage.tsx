@@ -5,7 +5,6 @@ import type { TxInfo } from "@galacticcouncil/apps"
 
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
-import { getPolkadotApi } from "@moonbeam-network/xcm-utils"
 import { createComponent, EventName } from "@lit-labs/react"
 
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -16,7 +15,7 @@ import {
   WalletMode,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { XCall } from "@galacticcouncil/xcm-sdk"
+import { XCall, SubstrateApis } from "@galacticcouncil/xcm-sdk"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { isXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
 
@@ -44,17 +43,20 @@ export function XcmPage() {
     const { srcChain } = meta ?? {}
     const chain = chainsMap.get(srcChain)
 
-    const api = chain ? await getPolkadotApi(chain.ws) : null
+    const apiPool = SubstrateApis.getInstance()
+    const api = chain ? await apiPool.api(chain.ws) : null
     if (!api) return
 
     let tx: SubmittableExtrinsic | undefined
 
-    try {
-      tx = api.tx(transaction.hex)
-    } catch (error) {}
-
     const xcall = transaction.get<XCall>()
     const xcallValid = isXCall(xcall)
+
+    try {
+      const extrinsicCall = api.createType("Call", xcall.data)
+      const hex = extrinsicCall.toHex()
+      tx = api.tx(hex)
+    } catch {}
 
     await createTransaction(
       {
@@ -108,7 +110,6 @@ export function XcmPage() {
         <XcmApp
           ref={ref}
           srcChain="polkadot"
-          srcEvmChain="moonbeam"
           destChain="hydradx"
           accountName={account?.name}
           accountProvider={account?.provider}
