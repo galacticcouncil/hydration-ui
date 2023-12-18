@@ -7,7 +7,6 @@ import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useRpcProvider } from "providers/rpcProvider"
-import { TAsset } from "api/assetDetails"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Separator } from "components/Separator/Separator"
@@ -91,9 +90,13 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
         <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
           <div sx={{ flex: "row", gap: 7, align: "center" }}>
             <MultipleIcons
-              icons={assetsMeta.map((asset: TAsset) => ({
-                icon: <AssetLogo id={asset.id} />,
-              }))}
+              icons={assetsMeta.map((asset) => {
+                const isBond = assets.isBond(asset)
+
+                return {
+                  icon: <AssetLogo id={isBond ? asset.assetId : asset.id} />,
+                }
+              })}
             />
 
             <Text fs={[14, 18]} color={["white", "basic100"]}>
