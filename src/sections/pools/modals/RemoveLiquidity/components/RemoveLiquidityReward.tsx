@@ -14,7 +14,7 @@ type Props = {
 export const RemoveLiquidityReward = ({ name, symbol, amount, id }: Props) => {
   const { assets } = useRpcProvider()
   const meta = assets.getAsset(id)
-
+  const isBond = assets.isBond(meta)
   return (
     <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
       <div sx={{ flex: "row", align: "center", gap: 8 }}>
@@ -25,7 +25,10 @@ export const RemoveLiquidityReward = ({ name, symbol, amount, id }: Props) => {
             }))}
           />
         ) : (
-          <Icon size={28} icon={<AssetLogo id={id} />} />
+          <Icon
+            size={28}
+            icon={<AssetLogo id={isBond ? meta.assetId : id} />}
+          />
         )}
         <div sx={{ flex: "column" }}>
           <Text fs={[14, 16]}>{symbol}</Text>

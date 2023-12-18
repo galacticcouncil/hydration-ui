@@ -5,6 +5,7 @@ import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { useRpcProvider } from "providers/rpcProvider"
+import { Icon } from "components/Icon/Icon"
 
 export const AssetTableName = ({
   large,
@@ -43,13 +44,18 @@ export const AssetTableName = ({
           </SIcon>
         ) : (
           <MultipleIcons
-            icons={iconIds.map((asset) => ({
-              icon: (
-                <SIcon large={large}>
-                  <AssetLogo id={asset} />
-                </SIcon>
-              ),
-            }))}
+            icons={iconIds.map((asset) => {
+              const meta = assets.getAsset(asset)
+              const isBond = assets.isBond(meta)
+              return {
+                icon: (
+                  <Icon
+                    size={[large ? 28 : 24, 27]}
+                    icon={<AssetLogo id={isBond ? meta.assetId : asset} />}
+                  />
+                ),
+              }
+            })}
           />
         )}
 
