@@ -51,9 +51,13 @@ export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
           {assets.isStableSwap(meta) || assets.isShareToken(meta) ? (
             <div sx={{ flex: "column", gap: 5 }}>
               <MultipleIcons
-                icons={meta.assets.map((asset: string) => ({
-                  icon: <AssetLogo id={asset} />,
-                }))}
+                icons={meta.assets.map((asset: string) => {
+                  const meta = assets.getAsset(asset)
+                  const isBond = assets.isBond(meta)
+                  return {
+                    icon: <AssetLogo id={isBond ? meta.assetId : asset} />,
+                  }
+                })}
               />
               <div sx={{ flex: "row" }}>
                 {(assets.isShareToken(meta) ? meta.symbol : meta.name)
