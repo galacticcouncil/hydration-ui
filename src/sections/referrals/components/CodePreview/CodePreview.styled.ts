@@ -8,8 +8,12 @@ export const SContainer = styled.div<{
 }>`
   display: flex;
   flex-direction: column;
-  flex-wrap: wrap;
   gap: 16px;
+
+  @media ${theme.viewport.gte.sm} {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
 
   ${({ disabled }) =>
     disabled &&
@@ -18,6 +22,14 @@ export const SContainer = styled.div<{
       pointer-events: none;
       user-select: none;
     `}
+`
+
+export const SPreviewContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
 
   @media ${theme.viewport.gte.sm} {
     display: grid;
@@ -26,7 +38,7 @@ export const SContainer = styled.div<{
   }
 
   @media ${theme.viewport.gte.md} {
-    max-width: 90%;
+    max-width: 75%;
   }
 `
 
@@ -47,6 +59,10 @@ export const SPreviewBox = styled.div`
   }
 `
 
+export const SShareBox = styled.div`
+  flex-grow: 1;
+`
+
 export const SCopyButton = styled(Button)`
   position: absolute;
 
@@ -56,6 +72,10 @@ export const SCopyButton = styled(Button)`
   top: 50%;
 
   transform: translateY(-50%) !important;
+
+  span {
+    gap: 4px;
+  }
 `
 
 export const SPathButton = styled(Button)`

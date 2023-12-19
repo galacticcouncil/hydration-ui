@@ -9,7 +9,7 @@ export const SContainer = styled.div`
 
   padding: 20px;
 
-  background-size: contain;
+  background-size: 100%;
   background-repeat: no-repeat;
   background-position: top left;
   background-image: url(${referralsHeaderImage});

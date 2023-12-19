@@ -185,7 +185,7 @@ export const getAssets = async (api: ApiPromise) => {
     api.query.assetRegistry.assetLocations.entries(),
     tradeRouter.getAllAssets(),
     api.consts.omnipool.hubAssetId,
-    api.query.referrals,
+    () => true,
   ])
 
   const tokens: TToken[] = []

@@ -8,8 +8,13 @@ import {
   SCopyButton,
   SPathButton,
   SPreviewBox,
+  SPreviewContainer,
   SPreviewPathSelect,
+  SShareBox,
 } from "./CodePreview.styled"
+import { Button, ButtonTransparent } from "components/Button/Button"
+import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
+import CopyIcon from "assets/icons/CopyIcon.svg?react"
 
 const SELECTABLE_URL_PATHS = [
   {
@@ -58,40 +63,58 @@ export const CodePreview: React.FC<Props> = ({ code, disabled = false }) => {
 
   return (
     <SContainer disabled={disabled}>
-      <SPreviewBox>
-        <Text>{t("referrals.preview.link.title")}</Text>
-        <Text color="brightBlue300">
-          {urlDomain}
-          {urlPath}
-          {urlQuery}
-          <Text
-            as="span"
-            color={code ? "white" : "brightBlue300"}
-            sx={{ display: "inline" }}
-          >
-            {codeDisplay}
+      <SPreviewContainer>
+        <SPreviewBox>
+          <Text>{t("referrals.preview.link.title")}</Text>
+          <Text color="brightBlue300">
+            {urlPath}
+            {urlQuery}
+            <Text
+              as="span"
+              color={code ? "white" : "brightBlue300"}
+              sx={{ display: "inline" }}
+            >
+              {codeDisplay}
+            </Text>
           </Text>
-        </Text>
-        <CopyButton disabled={!hasCode} text={fullUrl} />
-      </SPreviewBox>
-      <SPreviewBox>
-        <Text>{t("referrals.preview.code.title")}</Text>
-        <Text color="brightBlue300">{codeDisplay}</Text>
-        <CopyButton disabled={!hasCode} text={code} />
-      </SPreviewBox>
-      <SPreviewPathSelect>
-        <Text sx={{ mr: 5 }}>{t("referrals.preview.url.title")}</Text>
-        {SELECTABLE_URL_PATHS.map(({ path, tkey }) => (
-          <SPathButton
-            key={path}
-            active={urlPath === path}
-            size="micro"
-            onClick={() => setUrlPath(path)}
-          >
-            {t(tkey)}
-          </SPathButton>
-        ))}
-      </SPreviewPathSelect>
+          <CopyButton disabled={!hasCode} text={fullUrl} />
+        </SPreviewBox>
+        <SPreviewBox>
+          <Text>{t("referrals.preview.code.title")}</Text>
+          <Text color="brightBlue300">{codeDisplay}</Text>
+          <CopyButton disabled={!hasCode} text={code} />
+        </SPreviewBox>
+        <SPreviewPathSelect>
+          <Text sx={{ mr: 5 }}>{t("referrals.preview.url.title")}</Text>
+          {SELECTABLE_URL_PATHS.map(({ path, tkey }) => (
+            <SPathButton
+              key={path}
+              active={urlPath === path}
+              size="micro"
+              onClick={() => setUrlPath(path)}
+            >
+              {t(tkey)}
+            </SPathButton>
+          ))}
+        </SPreviewPathSelect>
+      </SPreviewContainer>
+      <SShareBox>
+        <Button fullWidth variant="primary">
+          {t("share")}
+        </Button>
+        <ButtonTransparent
+          sx={{
+            width: "100%",
+            py: 5,
+            color: "brightBlue300",
+            fontSize: 12,
+            gap: 2,
+          }}
+        >
+          <DownloadIcon width={16} height={16} />
+          Download promo image
+        </ButtonTransparent>
+      </SShareBox>
     </SContainer>
   )
 }
@@ -131,6 +154,7 @@ const CopyButton: FC<
       onClick={copy}
       {...props}
     >
+      <CopyIcon width={12} height={12} sx={{ ml: -4 }} />
       {copied ? t("copied") : t("copy")}
     </SCopyButton>
   )

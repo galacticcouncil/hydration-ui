@@ -5,6 +5,8 @@ export const SContainer = styled.div<{
   bordered: boolean
 }>`
   width: 100%;
+  flex: 1;
+
   color: ${theme.colors.white};
 
   padding: ${({ bordered }) => (bordered ? "25px 20px" : "0")};

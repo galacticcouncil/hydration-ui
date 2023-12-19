@@ -21,17 +21,21 @@ export const Card: FC<Props> = ({
 }) => {
   return (
     <SContainer variant={variant} className={className}>
-      <SHeader>
-        {icon && (
-          <Icon
-            sx={{ color: variant === "primary" ? "pink600" : "brightBlue300" }}
-            icon={icon}
-          />
-        )}
-        <Text fs={15} color="white" font="FontOver" tTransform="uppercase">
-          {title}
-        </Text>
-      </SHeader>
+      {title && (
+        <SHeader variant={variant}>
+          {icon && (
+            <Icon
+              sx={{
+                color: variant === "primary" ? "pink600" : "brightBlue300",
+              }}
+              icon={icon}
+            />
+          )}
+          <Text fs={15} color="white" font="FontOver" tTransform="uppercase">
+            {title}
+          </Text>
+        </SHeader>
+      )}
       <div sx={{ p: "28px 25px", color: "white" }}>{children}</div>
     </SContainer>
   )

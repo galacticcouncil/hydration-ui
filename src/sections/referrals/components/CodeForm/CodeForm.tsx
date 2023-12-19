@@ -66,57 +66,59 @@ export const CodeForm = () => {
 
   return (
     <>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        autoComplete="off"
-        sx={{ flex: ["column", "row"], gap: 12 }}
-      >
-        <Controller
-          name="referralCode"
-          control={form.control}
-          rules={{
-            required: t("referrals.input.error.required"),
-            validate: {
-              alphanumeric: (value) =>
-                REFERRAL_CODE_REGEX.test(value) ||
-                t("referrals.input.error.alphanumeric"),
-              maxLength: (value) =>
-                value.length <= REFERRAL_CODE_MAX_LENGTH ||
-                t("referrals.input.error.maxLength", {
-                  length: REFERRAL_CODE_MAX_LENGTH,
-                }),
-            },
-          }}
-          render={({ field, fieldState }) => (
-            <CodeInput
-              {...field}
-              disabled={isDisabled}
-              error={fieldState.error?.message}
-              sx={{ width: ["100%", "50%"] }}
-              placeholder={
-                state === UserState.FUNDED
-                  ? t("referrals.input.placeholder.referralCode")
-                  : state === UserState.NOT_FUNDED
-                  ? t("referrals.input.placeholder.deposit")
-                  : state === UserState.DISCONECTED
-                  ? t("referrals.input.placeholder.connect")
-                  : ""
-              }
-            />
+      {
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          autoComplete="off"
+          sx={{ flex: ["column", "row"], gap: 12 }}
+        >
+          <Controller
+            name="referralCode"
+            control={form.control}
+            rules={{
+              required: t("referrals.input.error.required"),
+              validate: {
+                alphanumeric: (value) =>
+                  REFERRAL_CODE_REGEX.test(value) ||
+                  t("referrals.input.error.alphanumeric"),
+                maxLength: (value) =>
+                  value.length <= REFERRAL_CODE_MAX_LENGTH ||
+                  t("referrals.input.error.maxLength", {
+                    length: REFERRAL_CODE_MAX_LENGTH,
+                  }),
+              },
+            }}
+            render={({ field, fieldState }) => (
+              <CodeInput
+                {...field}
+                disabled={isDisabled}
+                error={fieldState.error?.message}
+                sx={{ width: ["100%", "50%"] }}
+                placeholder={
+                  state === UserState.FUNDED
+                    ? t("referrals.input.placeholder.referralCode")
+                    : state === UserState.NOT_FUNDED
+                    ? t("referrals.input.placeholder.deposit")
+                    : state === UserState.DISCONECTED
+                    ? t("referrals.input.placeholder.connect")
+                    : ""
+                }
+              />
+            )}
+          />
+          {state === UserState.FUNDED && (
+            <Button variant="primary">{t("referrals.button.sign")}</Button>
           )}
-        />
-        {state === UserState.FUNDED && (
-          <Button variant="primary">{t("referrals.button.sign")}</Button>
-        )}
-        {state === UserState.NOT_FUNDED && (
-          <FundWalletButton variant="primary">
-            {t("referrals.button.depositFunds")}
-          </FundWalletButton>
-        )}
-        {state === UserState.DISCONECTED && (
-          <Web3ConnectModalButton sx={{ height: "auto", px: 30 }} />
-        )}
-      </form>
+          {state === UserState.NOT_FUNDED && (
+            <FundWalletButton variant="primary">
+              {t("referrals.button.depositFunds")}
+            </FundWalletButton>
+          )}
+          {state === UserState.DISCONECTED && (
+            <Web3ConnectModalButton sx={{ height: "auto", px: 30 }} />
+          )}
+        </form>
+      }
       <WavySeparator sx={{ my: 20, opacity: 0.15 }} />
       <CodePreview disabled={isDisabled} code={referralCode} />
     </>
