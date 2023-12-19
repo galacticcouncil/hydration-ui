@@ -69,36 +69,31 @@ const getStatsTvl = (assetId?: string) => async () => {
   return data
 }
 
-export const useTVLs = (assetIds: string[]) => {
-  return useQueries({
-    queries: assetIds.map((assetId) => ({
-      queryKey: QUERY_KEYS.tvl(assetId),
-      queryFn:
-        assetId != null
-          ? async () => {
-              const data = await getTVL(assetId)
-              return { tvl_usd: data?.[0].tvl_usd, assetId }
-            }
-          : undefinedNoop,
-      enabled: !!assetId,
-    })),
-  })
+export const useTVL = (assetId?: string) => {
+  return useQuery(
+    QUERY_KEYS.tvl(assetId),
+    assetId
+      ? async () => {
+          const data = await getTVL(assetId === "all" ? undefined : assetId)
+          return data
+        }
+      : undefinedNoop,
+    { enabled: !!assetId },
+  )
 }
 
 const getTVL = async (assetId?: string) => {
   const res = await fetch(
-    `https://api.hydradx.io/hydradx-ui/v1/stats/tvl${
+    `https://api.hydradx.io/hydradx-ui/v2/stats/tvl${
       assetId != null ? `/${assetId}` : ""
     }`,
   )
-  const data: Promise<{ tvl_usd: number }[]> = res.json()
+  const data: Promise<{ tvl_usd: number; asset_id: number }[]> = res.json()
 
   return data
 }
 
 export const useFee = (assetId?: string | "all") => {
-  const { assets } = useRpcProvider()
-
   return useQuery(
     QUERY_KEYS.fee(assetId),
     assetId
@@ -106,27 +101,28 @@ export const useFee = (assetId?: string | "all") => {
           const asset_id = assetId === "all" ? undefined : assetId
           const data = await geFee(asset_id)
 
-          if (assets.native.id === asset_id)
-            return { ...data[0], projected_apy_perc: 0 }
-
-          return data[0]
+          return data
         }
       : undefinedNoop,
     {
       enabled: !!assetId,
-      refetchInterval: 60000,
     },
   )
 }
 
 const geFee = async (assetId?: string) => {
   const res = await fetch(
-    `https://api.hydradx.io/hydradx-ui/v1/stats/fees/${
+    `https://api.hydradx.io/hydradx-ui/v2/stats/fees${
       assetId !== undefined ? `/${assetId}` : ""
     }`,
   )
   const data: Promise<
-    { accrued_fees_usd: number; projected_apy_perc: number }[]
+    {
+      asset_id: number
+      accrued_fees_usd: number
+      projected_apy_perc: number
+      projected_apr_perc: number
+    }[]
   > = res.json()
 
   return data

@@ -311,36 +311,28 @@ export function getXYKVolumeAssetTotalValue(
   )
 }
 
-export const useVolume = (assetId?: string) => {
-  return useQuery(QUERY_KEYS.volumeDaily(assetId), async () => {
-    const data = await getVolumeDaily(assetId)
-    return { volume: BN(data[0].volume_usd), assetId }
-  })
-}
-
-export const useVolumes = (assetIds: string[]) => {
-  return useQueries({
-    queries: assetIds.map((assetId) => ({
-      queryKey: QUERY_KEYS.volumeDaily(assetId),
-      queryFn:
-        assetId != null
-          ? async () => {
-              const data = await getVolumeDaily(assetId)
-              return { volume: BN(data[0].volume_usd), assetId }
-            }
-          : undefinedNoop,
-      enabled: !!assetId,
-    })),
-  })
+export const useVolume = (assetId?: string | "all") => {
+  return useQuery(
+    QUERY_KEYS.volumeDaily(assetId),
+    assetId
+      ? async () => {
+          const data = await getVolumeDaily(
+            assetId === "all" ? undefined : assetId,
+          )
+          return data
+        }
+      : undefinedNoop,
+    { enabled: !!assetId },
+  )
 }
 
 const getVolumeDaily = async (assetId?: string) => {
   const res = await fetch(
-    `https://api.hydradx.io/hydradx-ui/v1/stats/volume${
-      assetId != null ? `/${assetId}` : ""
+    `https://api.hydradx.io/hydradx-ui/v2/stats/volume${
+      assetId !== undefined ? `/${assetId}` : ""
     }`,
   )
-  const data: Promise<{ volume_usd: number }[]> = res.json()
+  const data: Promise<{ volume_usd: number; asset_id: number }[]> = res.json()
 
   return data
 }
