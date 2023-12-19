@@ -2990,10 +2990,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@2.0.2":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.0.2.tgz#12a635229ec23d6efc584269e61f6f7e184d05fa"
-  integrity sha512-/eSgYjSccJNprXNeodWlPP/AAnKsXoRqggEw59nQZK/ZQOjHcYBrauzYi2D9k9ZOquzVuqiLni4WfR7lTWSBHw==
+"@galacticcouncil/apps@2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.0.3.tgz#8ed9e7fb57d08094474dcfc35c6676aa3c3b7b0a"
+  integrity sha512-+pmlnsd+sXTs4lwdfPe5ed39XVK/mnmMJf0S1sB9Z6nLYKnUe2mqbX4MqIeVt9ItYYXxZdqJyOE1gK/MxTMaAA==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@talismn/connect-wallets" "^1.2.1"
@@ -3067,10 +3067,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.0.2.tgz#c67fa076ad6590928819648cca3057958322ce8b"
   integrity sha512-87r6aF+6g7xFfVq8gthhFm6YQqQ99+ZkB4ttt9xvt6zc44lxIqPPz2amsNa84nwreejRb+xAB3Iye23pdfLfBQ==
 
-"@galacticcouncil/xcm-sdk@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-1.0.2.tgz#c0d052959fb02f540b695fbecb123df0eeb0ed94"
-  integrity sha512-/EixJelEuFbXrmdzv6pafSl0dL9tCdg2Ju38fWBH8gx9ogw8FxIVBFNm0Ci4kFHvqRpsecqEkpwNR97FdoGGNQ==
+"@galacticcouncil/xcm-sdk@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-1.0.3.tgz#dd42957260da93e07b578b6095dbdabb21319043"
+  integrity sha512-AUK644ocHrYDDhO+xR5dKve02TKJmHd0oLd/jNjLF7KhmcjMWCOovqmXWXQpQG/ew1mXqWNsnsKFKIbGxdNqWA==
   dependencies:
     "@moonbeam-network/xcm-builder" "1.0.9"
     "@moonbeam-network/xcm-config" "1.3.13"

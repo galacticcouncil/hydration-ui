@@ -52,15 +52,12 @@ export function XcmPage() {
     const api = chain ? await apiPool.api(chain.ws) : null
     if (!api) return
 
-    let tx: SubmittableExtrinsic | undefined
-
     const xcall = transaction.get<XCall>()
     const xcallValid = isXCall(xcall)
 
+    let tx: SubmittableExtrinsic | undefined
     try {
-      const extrinsicCall = api.createType("Call", xcall.data)
-      const hex = extrinsicCall.toHex()
-      tx = api.tx(hex)
+      tx = api.tx(transaction.hex)
     } catch {}
 
     await createTransaction(
@@ -116,6 +113,8 @@ export function XcmPage() {
           ref={ref}
           srcChain="polkadot"
           destChain="hydradx"
+          defaultNative="polkadot"
+          defaultEvm="moonbeam"
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}
