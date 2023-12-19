@@ -9,9 +9,9 @@ import { FC, Fragment, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMeasure } from "react-use"
 import {
-  evmDataToJson,
   hexDataSlice,
   splitHexByZeroes,
+  decodedResultToJson,
 } from "sections/transaction/ReviewTransactionData.utils"
 import { isEvmAccount, isEvmAddress } from "utils/evm"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
@@ -142,10 +142,9 @@ const EvmXCallData: FC<
         const decoded = utils.defaultAbiCoder.decode(
           types,
           hexDataSlice(xcall.data, 10),
-          true,
-        ) as any[]
+        )
 
-        return evmDataToJson(decoded)
+        return decodedResultToJson(decoded)
       } catch (error) {}
     }
   }, [method, xcall])

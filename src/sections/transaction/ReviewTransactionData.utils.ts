@@ -1,3 +1,5 @@
+import { Result as AbiDecoderResult } from "ethers/lib/utils"
+
 /**
  * Splits a hex string by consecutive zeroes.
  */
@@ -10,13 +12,13 @@ export function splitHexByZeroes(hex: string) {
 /**
  * Converts decoded EVM data to JSON format.
  */
-export function evmDataToJson(decodedData: any[]) {
-  if (!Array.isArray(decodedData)) return {}
-  return Object.entries(decodedData).reduce((acc: any, [key, value]) => {
+export function decodedResultToJson(result: AbiDecoderResult) {
+  if (!Array.isArray(result)) return {}
+  return Object.entries(result).reduce((acc: any, [key, value]) => {
     if (isNaN(parseInt(key))) {
       acc[key] =
         Array.isArray(value) && value.every((v) => typeof v !== "string")
-          ? evmDataToJson(value)
+          ? decodedResultToJson(value)
           : value?._isBigNumber
           ? value.toString()
           : value
