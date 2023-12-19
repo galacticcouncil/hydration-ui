@@ -18,10 +18,6 @@ export interface AddEvmChainParams {
   blockExplorerUrls?: string[]
 }
 
-const EXPLORER_URLS: Record<string, string[]> = {
-  hydradx: [import.meta.env.VITE_EVM_EXPLORER_URL as string],
-}
-
 const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
   const chainProps = evmChains[chain]
 
@@ -29,8 +25,10 @@ const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
     chainId: "0x" + Number(chainProps.id).toString(16),
     chainName: chainProps.name,
     rpcUrls: chainProps.rpcUrls.default.http as string[],
-    blockExplorerUrls: EXPLORER_URLS[chain] ?? [],
     nativeCurrency: chainProps.nativeCurrency,
+    blockExplorerUrls: chainProps.blockExplorers?.default
+      ? [chainProps.blockExplorers.default.url]
+      : [],
   }
 }
 
