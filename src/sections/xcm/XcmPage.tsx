@@ -20,9 +20,9 @@ import {
   DEFAULT_EVM_CHAIN,
   DEFAULT_NATIVE_CHAIN,
   getDefaultSrcChain,
-  getEvmXcall,
   getNotificationToastTemplates,
   getSubmittableExtrinsic,
+  getXCall,
 } from "sections/xcm/XcmPage.utils"
 
 type WalletChangeDetail = {
@@ -62,7 +62,7 @@ export function XcmPage() {
     await createTransaction(
       {
         tx: await getSubmittableExtrinsic(e.detail),
-        ...getEvmXcall(e.detail),
+        ...getXCall(e.detail),
       },
       {
         onSuccess: () => {},

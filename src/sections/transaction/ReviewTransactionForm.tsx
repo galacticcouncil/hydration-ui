@@ -4,22 +4,20 @@ import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { useMutation } from "@tanstack/react-query"
 import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
-import { Spacer } from "components/Spacer/Spacer"
-import { Summary } from "components/Summary/Summary"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
 import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
 import { Transaction } from "state/store"
-import Skeleton from "react-loading-skeleton"
 import { theme } from "theme"
 import { ReviewTransactionData } from "./ReviewTransactionData"
 import {
   useEditFeePaymentAsset,
   useTransactionValues,
 } from "./ReviewTransactionForm.utils"
+import { ReviewTransactionSummary } from "sections/transaction/ReviewTransactionSummary"
 
-type TxProps = Omit<Transaction, "id" | "tx" | "xcall" | "xcallMeta"> & {
+type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
 }
 
@@ -40,14 +38,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     fee: props.overrides?.fee,
   })
 
-  const {
-    acceptedFeePaymentAssets,
-    isEnoughPaymentBalance,
-    displayFeePaymentValue,
-    feePaymentMeta,
-    era,
-    nonce,
-  } = transactionValues.data
+  const { acceptedFeePaymentAssets, isEnoughPaymentBalance, feePaymentMeta } =
+    transactionValues.data
 
   const {
     openEditFeePaymentAssetModal,
@@ -119,56 +111,14 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           <ReviewTransactionData address={account?.address} tx={props.tx} />
         }
         footer={
-          <>
-            <div>
-              <Spacer size={15} />
-              <Summary
-                rows={[
-                  {
-                    label: t("liquidity.reviewTransaction.modal.detail.cost"),
-                    content: !transactionValues.isLoading ? (
-                      <div sx={{ flex: "row", gap: 6, align: "center" }}>
-                        <Text>
-                          {t("liquidity.add.modal.row.transactionCostValue", {
-                            amount: displayFeePaymentValue,
-                            symbol: feePaymentMeta?.symbol,
-                            type: "token",
-                          })}
-                        </Text>
-                        {hasMultipleFeeAssets && (
-                          <div
-                            tabIndex={0}
-                            role="button"
-                            onClick={openEditFeePaymentAssetModal}
-                            css={{ cursor: "pointer" }}
-                          >
-                            <Text color="brightBlue300">
-                              {t("liquidity.reviewTransaction.modal.edit")}
-                            </Text>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <Skeleton width={100} height={16} />
-                    ),
-                  },
-                  {
-                    label: t(
-                      "liquidity.reviewTransaction.modal.detail.lifetime",
-                    ),
-                    content: props.tx.era.isMortalEra
-                      ? t("transaction.mortal.expire", {
-                          date: era?.deathDate,
-                        })
-                      : t("transaction.immortal.expire"),
-                  },
-                  {
-                    label: t("liquidity.reviewTransaction.modal.detail.nonce"),
-                    content: nonce?.toString(),
-                  },
-                ]}
-              />
-            </div>
+          <div sx={{ mt: 15 }}>
+            <ReviewTransactionSummary
+              tx={props.tx}
+              transactionValues={transactionValues}
+              hasMultipleFeeAssets={hasMultipleFeeAssets}
+              xcallMeta={props.xcallMeta}
+              openEditFeePaymentAssetModal={openEditFeePaymentAssetModal}
+            />
             <div
               sx={{
                 mt: ["auto", 24],
@@ -209,7 +159,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                 )}
               </div>
             </div>
-          </>
+          </div>
         }
       />
     </>

@@ -1,19 +1,13 @@
 import { TransactionResponse } from "@ethersproject/providers"
-import { evmChains } from "@galacticcouncil/xcm-cfg"
 import { useMutation } from "@tanstack/react-query"
 import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
-import { Spacer } from "components/Spacer/Spacer"
-import { Summary } from "components/Summary/Summary"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import Skeleton from "react-loading-skeleton"
 import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
-import {
-  isEvmXCall,
-  useTransactionCost,
-} from "sections/transaction/ReviewTransactionXCallForm.utils"
+import { ReviewTransactionXCallSummary } from "sections/transaction/ReviewTransactionSummary"
+import { isEvmXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
 import {
   useEvmAccount,
   useWallet,
@@ -30,51 +24,43 @@ type Props = TxProps & {
   onEvmSigned: (receipt: TransactionResponse) => void
 }
 
-export const ReviewTransactionXCallForm: FC<Props> = (props) => {
+export const ReviewTransactionXCallForm: FC<Props> = ({
+  title,
+  xcall,
+  xcallMeta,
+  onEvmSigned,
+  onCancel,
+}) => {
   const { t } = useTranslation()
   const { account } = useEvmAccount()
 
   const { wallet } = useWallet()
 
-  const tx = {
-    from: account?.address ?? "",
-    to: props.xcall.to,
-    data: props.xcall.data,
-  }
-
-  const transactionCost = useTransactionCost({
-    signer: wallet?.signer,
-    tx,
-  })
-
-  const chainProps = evmChains[props.xcallMeta?.srcChain] || {}
-  const nativeCurrency = chainProps?.nativeCurrency
-
   const { mutate: signTx, isLoading } = useMutation(async () => {
     if (!account?.address) throw new Error("Missing active account")
     if (!wallet) throw new Error("Missing wallet")
     if (!wallet.signer) throw new Error("Missing signer")
-    if (!isEvmXCall(props.xcall)) throw new Error("Missing xcall")
+    if (!isEvmXCall(xcall)) throw new Error("Missing xcall")
 
     if (wallet?.signer instanceof MetaMaskSigner) {
-      const { srcChain } = props.xcallMeta
+      const { srcChain } = xcallMeta
 
       const tx = await wallet.signer.sendTransaction({
         chain: srcChain,
         from: account.address,
-        to: props.xcall.to,
-        data: props.xcall.data,
+        to: xcall.to,
+        data: xcall.data,
       })
 
-      props.onEvmSigned(tx)
+      onEvmSigned(tx)
     }
   })
 
   return (
     <>
-      {props.title && (
+      {title && (
         <Text color="basic400" fw={400} sx={{ mb: 16 }}>
-          {props.title}
+          {title}
         </Text>
       )}
       <ModalScrollableContent
@@ -85,38 +71,11 @@ export const ReviewTransactionXCallForm: FC<Props> = (props) => {
         }}
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
         content={
-          <ReviewTransactionData
-            address={account?.address}
-            xcall={props.xcall}
-          />
+          <ReviewTransactionData address={account?.address} xcall={xcall} />
         }
         footer={
-          <>
-            <div>
-              <Spacer size={15} />
-              <Summary
-                rows={[
-                  {
-                    label: t("liquidity.reviewTransaction.modal.detail.cost"),
-                    content: !transactionCost.isLoading ? (
-                      <div sx={{ flex: "row", gap: 6, align: "center" }}>
-                        <Text>
-                          {account?.chainId === chainProps?.id
-                            ? t("value.tokenWithSymbol", {
-                                value: transactionCost.data,
-                                symbol: nativeCurrency?.symbol,
-                                fixedPointScale: nativeCurrency?.decimals,
-                              })
-                            : "-"}
-                        </Text>
-                      </div>
-                    ) : (
-                      <Skeleton width={100} height={16} />
-                    ),
-                  },
-                ]}
-              />
-            </div>
+          <div sx={{ mt: 15 }}>
+            <ReviewTransactionXCallSummary xcallMeta={xcallMeta} />
             <div
               sx={{
                 mt: ["auto", 24],
@@ -126,7 +85,7 @@ export const ReviewTransactionXCallForm: FC<Props> = (props) => {
               }}
             >
               <Button
-                onClick={props.onCancel}
+                onClick={onCancel}
                 text={t("liquidity.reviewTransaction.modal.cancel")}
               />
               <div sx={{ flex: "column", justify: "center", gap: 4 }}>
@@ -152,7 +111,7 @@ export const ReviewTransactionXCallForm: FC<Props> = (props) => {
                 )}
               </div>
             </div>
-          </>
+          </div>
         }
       />
     </>

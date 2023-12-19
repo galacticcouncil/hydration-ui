@@ -255,6 +255,8 @@
   "liquidity.reviewTransaction.modal.detail.cost": "Transaction cost:",
   "liquidity.reviewTransaction.modal.detail.lifetime": "Transaction lifetime:",
   "liquidity.reviewTransaction.modal.detail.nonce": "Nonce:",
+  "liquidity.reviewTransaction.modal.detail.srcChainFee":"Source chain fee",
+  "liquidity.reviewTransaction.modal.detail.dstChainFee":"Destination chain fee",
   "liquidity.reviewTransaction.modal.confirmButton": "Sign transaction",
   "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance": "Change fee payment asset",
   "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance.msg": "Not enough fee payment asset.",

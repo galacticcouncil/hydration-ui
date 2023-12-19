@@ -3,7 +3,6 @@ import { isEvmAccount } from "utils/evm"
 import { XCall, SubstrateApis } from "@galacticcouncil/xcm-sdk"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { TxInfo } from "@galacticcouncil/apps"
-import { isEvmXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
 
 export const DEFAULT_NATIVE_CHAIN = "polkadot"
 export const DEFAULT_EVM_CHAIN = "moonbeam"
@@ -30,15 +29,12 @@ export async function getSubmittableExtrinsic(txInfo: TxInfo) {
   return tx
 }
 
-export function getEvmXcall(txInfo: TxInfo) {
+export function getXCall(txInfo: TxInfo) {
   const { transaction, meta } = txInfo
 
-  const xcall = transaction.get<XCall>()
-  const isEvmXcallValid = isEvmXCall(xcall)
-
   return {
-    xcall: isEvmXcallValid ? xcall : undefined,
-    xcallMeta: isEvmXcallValid ? meta : undefined,
+    xcall: transaction.get<XCall>(),
+    xcallMeta: meta,
   }
 }
 

@@ -104,6 +104,7 @@ export const ReviewTransaction = (props: Transaction) => {
         ) : props.tx ? (
           <ReviewTransactionForm
             tx={props.tx}
+            xcallMeta={props.xcallMeta}
             isProxy={props.isProxy}
             overrides={props.overrides}
             title={props.title}
