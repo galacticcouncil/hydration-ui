@@ -61,7 +61,6 @@ export const SRawCallData = styled.div`
 
   overflow-wrap: break-word;
 
-  font-family: SatoshiVariable;
   font-variant: tabular-nums;
 
   & > span {

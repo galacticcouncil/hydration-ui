@@ -7,6 +7,7 @@ import { Web3ConnectExternalModal } from "sections/web3-connect/modal/Web3Connec
 import { Web3ConnectProviderPending } from "sections/web3-connect/providers/Web3ConnectProviderPending"
 import { Web3ConnectProviders } from "sections/web3-connect/providers/Web3ConnectProviders"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
 type Props = {
   page: number
@@ -29,10 +30,13 @@ export const Web3ConnectContent: React.FC<Props> = ({
     status,
     disconnect,
     error,
+    meta,
   } = useWeb3ConnectStore()
 
   const { data: accounts, isLoading } = useWalletAccounts(activeProvider)
   const isConnecting = isLoading || status === "pending"
+
+  const chain = meta?.chain ? chainsMap.get(meta?.chain) : null
 
   return (
     <ModalContents
@@ -41,7 +45,16 @@ export const Web3ConnectContent: React.FC<Props> = ({
         {
           title: t("walletConnect.provider.title"),
           content: <Web3ConnectProviders />,
-          description: t(`walletConnect.provider.description.${mode || "all"}`),
+          description:
+            chain && mode === "evm"
+              ? t(`walletConnect.provider.description.evmChain`, {
+                  chain: chain.name,
+                })
+              : chain && mode === "substrate"
+              ? t(`walletConnect.provider.description.substrateChain`, {
+                  chain: chain.name,
+                })
+              : t(`walletConnect.provider.description.${mode || "all"}`),
         },
         {
           title: t("walletConnect.provider.title"),

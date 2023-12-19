@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
 import {
-  isXCall,
+  isEvmXCall,
   useTransactionCost,
 } from "sections/transaction/ReviewTransactionXCallForm.utils"
 import {
@@ -54,7 +54,7 @@ export const ReviewTransactionXCallForm: FC<Props> = (props) => {
     if (!account?.address) throw new Error("Missing active account")
     if (!wallet) throw new Error("Missing wallet")
     if (!wallet.signer) throw new Error("Missing signer")
-    if (!isXCall(props.xcall)) throw new Error("Missing xcall")
+    if (!isEvmXCall(props.xcall)) throw new Error("Missing xcall")
 
     if (wallet?.signer instanceof MetaMaskSigner) {
       const { srcChain } = props.xcallMeta

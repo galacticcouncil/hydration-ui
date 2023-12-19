@@ -10,15 +10,24 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useStore } from "state/store"
-import { isEvmAccount } from "utils/evm"
 import {
   useWeb3ConnectStore,
   WalletMode,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { XCall, SubstrateApis } from "@galacticcouncil/xcm-sdk"
-import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
-import { isXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
+import {
+  DEFAULT_DEST_CHAIN,
+  DEFAULT_EVM_CHAIN,
+  DEFAULT_NATIVE_CHAIN,
+  getDefaultSrcChain,
+  getEvmXcall,
+  getNotificationToastTemplates,
+  getSubmittableExtrinsic,
+} from "sections/xcm/XcmPage.utils"
+
+type WalletChangeDetail = {
+  srcChain: string
+}
 
 export const XcmApp = createComponent({
   tagName: "gc-xcm-app",
@@ -26,7 +35,9 @@ export const XcmApp = createComponent({
   react: React,
   events: {
     onXcmNew: "gc:xcm:new" as EventName<CustomEvent<TxInfo>>,
-    onWalletChange: "gc:wallet:change" as EventName<CustomEvent<void>>,
+    onWalletChange: "gc:wallet:change" as EventName<
+      CustomEvent<WalletChangeDetail>
+    >,
   },
 })
 
@@ -36,85 +47,68 @@ export function XcmPage() {
   const { account } = useAccount()
   const { createTransaction } = useStore()
 
-  const { toggle } = useWeb3ConnectStore()
+  const [incomingSrcChain, setIncomingSrcChain] = React.useState("")
+  const [srcChain, setSrcChain] = React.useState(
+    getDefaultSrcChain(account?.address),
+  )
+
+  const { toggle: toggleWeb3Modal } = useWeb3ConnectStore()
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
   const ref = React.useRef<Apps.XcmApp>(null)
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
-    const { transaction, notification, meta } = e.detail
-
-    const { srcChain } = meta ?? {}
-    const chain = chainsMap.get(srcChain)
-
-    const apiPool = SubstrateApis.getInstance()
-    const api = chain ? await apiPool.api(chain.ws) : null
-    if (!api) return
-
-    const xcall = transaction.get<XCall>()
-    const xcallValid = isXCall(xcall)
-
-    let tx: SubmittableExtrinsic | undefined
-    try {
-      tx = api.tx(transaction.hex)
-    } catch {}
-
     await createTransaction(
       {
-        tx,
-        xcall: xcallValid ? xcall : undefined,
-        xcallMeta: xcallValid ? meta : undefined,
+        tx: await getSubmittableExtrinsic(e.detail),
+        ...getEvmXcall(e.detail),
       },
       {
         onSuccess: () => {},
         onSubmitted: () => {},
-        toast: {
-          onLoading: (
-            <span
-              dangerouslySetInnerHTML={{
-                __html: notification.processing.rawHtml,
-              }}
-            />
-          ),
-          onSuccess: (
-            <span
-              dangerouslySetInnerHTML={{
-                __html: notification.success.rawHtml,
-              }}
-            />
-          ),
-          onError: (
-            <span
-              dangerouslySetInnerHTML={{
-                __html: notification.failure.rawHtml,
-              }}
-            />
-          ),
-        },
+        toast: getNotificationToastTemplates(e.detail),
       },
     )
   }
 
-  const handleWalletChange = () => {
+  React.useEffect(() => {
+    return useWeb3ConnectStore.subscribe((state, prevState) => {
+      const hasAccountChanged =
+        state.account && state.account.address !== prevState.account?.address
+
+      if (hasAccountChanged) {
+        setSrcChain(
+          incomingSrcChain || getDefaultSrcChain(state.account?.address),
+        )
+      }
+    })
+  }, [incomingSrcChain])
+
+  const handleWalletChange = (e: CustomEvent<WalletChangeDetail>) => {
     if (!account) return
+    const { srcChain } = e.detail
 
-    const requiredWalletMode = isEvmAccount(account?.address)
-      ? WalletMode.Substrate
-      : WalletMode.EVM
+    const chain = chainsMap.get(srcChain)
+    const isEvm = chain?.isEvmParachain()
+    const walletMode = isEvm ? WalletMode.EVM : WalletMode.Substrate
 
-    toggle(requiredWalletMode)
+    setIncomingSrcChain(srcChain)
+    toggleWeb3Modal(walletMode, {
+      chain: srcChain,
+    })
   }
 
   return (
     <Page>
       <SContainer>
         <XcmApp
+          key={srcChain}
           ref={ref}
-          srcChain="polkadot"
-          destChain="hydradx"
-          defaultNative="polkadot"
-          defaultEvm="moonbeam"
+          srcChain={srcChain}
+          destChain={DEFAULT_DEST_CHAIN}
+          defaultNative={DEFAULT_NATIVE_CHAIN}
+          defaultEvm={DEFAULT_EVM_CHAIN}
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}

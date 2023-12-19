@@ -24,7 +24,9 @@ export type Account = {
   isExternalWalletConnected?: boolean
   delegate?: string
 }
-
+type WalletProviderMeta = {
+  chain: string
+}
 type WalletProviderState = {
   open: boolean
   provider: WalletProviderType | null
@@ -33,10 +35,11 @@ type WalletProviderState = {
   mode: WalletMode
   error?: string
   referralCode?: string
+  meta?: WalletProviderMeta | null
 }
 
 type WalletProviderStore = WalletProviderState & {
-  toggle: (mode?: WalletMode) => void
+  toggle: (mode?: WalletMode, meta?: WalletProviderMeta) => void
   setAccount: (account: Account | null) => void
   setProvider: (provider: WalletProviderType | null) => void
   setReferralCode: (referralCode: string) => void
@@ -56,19 +59,21 @@ const initialState: WalletProviderState = {
   mode: WalletMode.Default,
   error: "",
   referralCode: "",
+  meta: null,
 }
 
 export const useWeb3ConnectStore = create<WalletProviderStore>()(
   persist(
     (set) => ({
       ...initialState,
-      toggle: (mode) =>
+      toggle: (mode, meta) =>
         set((state) => {
           const isValidMode = mode && Object.values(WalletMode).includes(mode)
           return {
             ...state,
             mode: isValidMode ? mode : WalletMode.Default,
             open: !state.open,
+            meta: meta ?? null,
           }
         }),
       setAccount: (account) => set((state) => ({ ...state, account })),

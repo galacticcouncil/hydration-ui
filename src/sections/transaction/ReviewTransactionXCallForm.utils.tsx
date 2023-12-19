@@ -5,7 +5,7 @@ import BN from "bignumber.js"
 import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
 import { QUERY_KEYS } from "utils/queryKeys"
 
-export function isXCall(x: XCall | undefined): x is XCall {
+export function isEvmXCall(x: XCall | undefined): x is XCall {
   return typeof x === "object" && "abi" in x && "data" in x
 }
 
