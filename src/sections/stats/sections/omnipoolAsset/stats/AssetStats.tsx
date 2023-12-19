@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { AssetStatsCard } from "./AssetStatsCard"
 import BN from "bignumber.js"
-import { useFee } from "api/stats"
 import { Farm, useFarmAprs, useFarms } from "api/farms"
 import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
@@ -48,25 +47,23 @@ const APYFarmStatsCard = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
 const APYStatsCard = ({
   loading,
   assetId,
+  fee,
 }: {
   loading?: boolean
   assetId: string
+  fee: BN
 }) => {
   const { t } = useTranslation()
-
-  const fee = useFee(assetId)
   const farms = useFarms([assetId])
 
-  const apy = fee.data?.projected_apy_perc ?? 0
-
   if (farms.data?.length)
-    return <APYFarmStatsCard farms={farms.data} apy={apy} />
+    return <APYFarmStatsCard farms={farms.data} apy={fee.toNumber()} />
 
   return (
     <AssetStatsCard
       title={t("stats.omnipool.stats.card.apy")}
-      value={t("value.percentage", { value: apy })}
-      loading={loading || fee.isInitialLoading || farms.isInitialLoading}
+      value={t("value.percentage", { value: fee })}
+      loading={loading || farms.isInitialLoading}
       tooltip={t("stats.overview.table.assets.header.apy.desc")}
     />
   )
@@ -74,10 +71,12 @@ const APYStatsCard = ({
 
 export const AssetStats = ({
   loading,
+  isLoadingFee,
   data,
 }: {
   loading?: boolean
-  data?: { pol: BN; vlm: BN; cap: BN; share: BN; assetId: string }
+  isLoadingFee?: boolean
+  data?: { pol: BN; vlm: BN; cap: BN; share: BN; assetId: string; fee: BN }
 }) => {
   const { t } = useTranslation()
 
@@ -95,7 +94,11 @@ export const AssetStats = ({
           loading={loading}
         />
         {data?.assetId ? (
-          <APYStatsCard loading={loading} assetId={data.assetId} />
+          <APYStatsCard
+            loading={loading || isLoadingFee}
+            assetId={data.assetId}
+            fee={data.fee}
+          />
         ) : (
           <AssetStatsCard title={t("stats.omnipool.stats.card.apy")} loading />
         )}
