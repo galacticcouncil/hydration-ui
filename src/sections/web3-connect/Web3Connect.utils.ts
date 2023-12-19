@@ -224,7 +224,7 @@ export const useEnableWallet = (
     async () => {
       await wallet?.enable(POLKADOT_APP_NAME)
 
-      if (wallet instanceof MetaMask && wallet.extension) {
+      if (wallet instanceof MetaMask) {
         await requestNetworkSwitch(wallet.extension, {
           chain: meta?.chain,
         })
