@@ -103,7 +103,6 @@ export function XcmPage() {
     <Page>
       <SContainer>
         <XcmApp
-          key={srcChain}
           ref={ref}
           srcChain={srcChain}
           destChain={DEFAULT_DEST_CHAIN}
