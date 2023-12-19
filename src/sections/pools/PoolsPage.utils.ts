@@ -18,12 +18,11 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { isNotNil, undefinedNoop } from "utils/helpers"
 import { ApiPromise } from "@polkadot/api"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
-import { useAllStableswapTrades } from "api/volume"
+import { useAllStableswapTrades, useVolume } from "api/volume"
 import BN from "bignumber.js"
 import { useGetXYKPools, useShareTokens, useXYKConsts } from "api/xyk"
 import { useShareOfPools } from "api/pools"
 import { TShareToken } from "api/assetDetails"
-import { useVolumes } from "api/volume"
 import { useXYKPollTradeVolumes } from "./pool/details/PoolDetails.utils"
 
 export type TOmnipoolAsset = NonNullable<
@@ -50,7 +49,7 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
     () => omnipoolAssets.data?.map((a) => a.id.toString()) ?? [],
     [omnipoolAssets.data],
   )
-  const volumes = useVolumes(assetsId)
+  const volumes = useVolume("all")
 
   const omnipoolBalances = useTokensBalances(assetsId, OMNIPOOL_ACCOUNT_ADDRESS)
 
@@ -101,9 +100,9 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
     accountOmnipoolPositions,
     omnipoolPositions,
     assetsTradability,
+    volumes,
     ...stablepoolUserPositions,
     ...omnipoolBalances,
-    ...volumes,
   ]
 
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
@@ -208,9 +207,10 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
         const isOmnipoolNftPositions = !!omnipoolNftPositions.length
         const isMiningNftPositions = !!miningNftPositions.length
 
-        const volumeDisplay =
-          volumes.find((volume) => volume.data?.assetId === assetId)?.data
-            ?.volume ?? BN_0
+        const volumeDisplay = BN(
+          volumes.data?.find((volume) => volume.asset_id === Number(assetId))
+            ?.volume_usd ?? BN_NAN,
+        )
 
         const tradability = {
           canBuy: !!tradabilityData?.canBuy,

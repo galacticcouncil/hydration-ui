@@ -154,7 +154,9 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
             pol: omnipoolAsset.pol,
             share: omnipoolAsset.tvl.div(omnipollTvl).multipliedBy(100),
             assetId,
+            fee: omnipoolAsset.fee,
           }}
+          isLoadingFee={omnipoolAsset.isLoadingFee}
         />
         <SStatsCardContainer
           sx={{ width: "100%", height: [500, 570], pt: [60, 20] }}

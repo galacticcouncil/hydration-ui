@@ -27,7 +27,7 @@ type DataEntry = {
   id: string
   name: string
   symbol: string
-  [key: string]: BN | string | string[]
+  [key: string]: boolean | BN | string | string[]
 }
 
 type PieChartProps<T extends DataEntry> = {
