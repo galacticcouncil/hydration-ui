@@ -5,6 +5,7 @@ import React, { FC } from "react"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { useTransactionValues } from "./ReviewTransactionForm.utils"
+import BN from "bignumber.js"
 
 type ReviewTransactionSummaryProps = {
   tx: SubmittableExtrinsic<"promise">
@@ -93,29 +94,25 @@ export const ReviewTransactionXCallSummary: FC<
       rows={[
         {
           label: t("liquidity.reviewTransaction.modal.detail.srcChainFee"),
-          content: t("value.tokenWithSymbol", {
-            value:
-              parseFloat(xcallMeta?.srcChainFee) > 0
-                ? xcallMeta?.srcChainFee
-                : "-",
-            symbol:
-              parseFloat(xcallMeta?.srcChainFee) > 0
-                ? xcallMeta?.srcChainFeeSymbol
-                : "",
-          }),
+          content:
+            parseFloat(xcallMeta?.srcChainFee) > 0
+              ? t("liquidity.add.modal.row.transactionCostValue", {
+                  type: "token",
+                  amount: new BN(xcallMeta.srcChainFee),
+                  symbol: xcallMeta?.srcChainFeeSymbol,
+                })
+              : "-",
         },
         {
           label: t("liquidity.reviewTransaction.modal.detail.dstChainFee"),
-          content: t("value.tokenWithSymbol", {
-            value:
-              parseFloat(xcallMeta?.dstChainFee) > 0
-                ? xcallMeta?.dstChainFee
-                : "-",
-            symbol:
-              parseFloat(xcallMeta?.dstChainFee) > 0
-                ? xcallMeta?.dstChainFeeSymbol
-                : "",
-          }),
+          content:
+            parseFloat(xcallMeta?.dstChainFee) > 0
+              ? t("liquidity.add.modal.row.transactionCostValue", {
+                  type: "token",
+                  amount: new BN(xcallMeta.dstChainFee),
+                  symbol: xcallMeta?.dstChainFeeSymbol,
+                })
+              : "-",
         },
       ]}
     />
