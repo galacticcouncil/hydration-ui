@@ -17,8 +17,6 @@ import {
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import {
   DEFAULT_DEST_CHAIN,
-  DEFAULT_EVM_CHAIN,
-  DEFAULT_NATIVE_CHAIN,
   getDefaultSrcChain,
   getNotificationToastTemplates,
   getSubmittableExtrinsic,
@@ -106,8 +104,6 @@ export function XcmPage() {
           ref={ref}
           srcChain={srcChain}
           destChain={DEFAULT_DEST_CHAIN}
-          defaultNative={DEFAULT_NATIVE_CHAIN}
-          defaultEvm={DEFAULT_EVM_CHAIN}
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}
