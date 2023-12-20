@@ -17,6 +17,7 @@ import {
   useEditFeePaymentAsset,
   useTransactionValues,
 } from "./ReviewTransactionForm.utils"
+import { ReviewReferralCodeWrapper } from "sections/referrals/components/ReviewReferralCode/ReviewReferralCodeWrapper"
 
 export const ReviewTransactionForm = (
   props: {
@@ -42,7 +43,12 @@ export const ReviewTransactionForm = (
     feePaymentMeta,
     era,
     nonce,
+    isLinkedAccount,
+    storedReferralCode,
+    tx,
   } = transactionValues.data
+
+  const isLinking = !isLinkedAccount && storedReferralCode
 
   const {
     openEditFeePaymentAssetModal,
@@ -60,11 +66,11 @@ export const ReviewTransactionForm = (
     if (!wallet.signer) throw new Error("Missing signer")
 
     if (wallet?.signer instanceof MetaMaskSigner) {
-      const tx = await wallet.signer.sendDispatch(props.tx.method.toHex())
-      return props.onEvmSigned(tx)
+      const txSigner = await wallet.signer.sendDispatch(tx.method.toHex())
+      return props.onEvmSigned(txSigner)
     }
 
-    const signature = await props.tx.signAsync(address, {
+    const signature = await tx.signAsync(address, {
       signer: wallet.signer,
       // defer to polkadot/api to handle nonce w/ regard to mempool
       nonce: -1,
@@ -110,9 +116,7 @@ export const ReviewTransactionForm = (
           maxHeight: 280,
         }}
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
-        content={
-          <ReviewTransactionData address={account?.address} tx={props.tx} />
-        }
+        content={<ReviewTransactionData address={account?.address} tx={tx} />}
         footer={
           <>
             <div>
@@ -151,7 +155,7 @@ export const ReviewTransactionForm = (
                     label: t(
                       "liquidity.reviewTransaction.modal.detail.lifetime",
                     ),
-                    content: props.tx.era.isMortalEra
+                    content: tx.era.isMortalEra
                       ? t("transaction.mortal.expire", {
                           date: era?.deathDate,
                         })
@@ -163,6 +167,9 @@ export const ReviewTransactionForm = (
                   },
                 ]}
               />
+              {isLinking && (
+                <ReviewReferralCodeWrapper referralCode={storedReferralCode} />
+              )}
             </div>
             <div
               sx={{

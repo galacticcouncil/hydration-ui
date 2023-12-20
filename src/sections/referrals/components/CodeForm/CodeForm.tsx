@@ -5,8 +5,6 @@ import { CodeInput } from "sections/referrals/components/CodeInput/CodeInput"
 import { CodePreview } from "sections/referrals/components/CodePreview/CodePreview"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
-import { BN_0, BN_100 } from "utils/constants"
-import BN from "bignumber.js"
 import {
   REFERRAL_CODE_MAX_LENGTH,
   REFERRAL_CODE_REGEX,
@@ -15,44 +13,55 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { useEffect } from "react"
 import { FundWalletButton } from "components/FundWallet/FundWalletButton"
-
-const IS_FUNDED = true
-
-type CodeFormValues = {
-  referralCode: string
-}
-
-const defaultCodeFormValues: CodeFormValues = {
-  referralCode: "",
-}
-
-enum UserState {
-  FUNDED,
-  NOT_FUNDED,
-  DISCONECTED,
-  UNKNOWN,
-}
+import { useAccountBalances } from "api/accountBalances"
+import {
+  CodeFormValues,
+  UserState,
+  convertToHydraAddress,
+  defaultCodeFormValues,
+  getUserState,
+  useRegisterReferralCode,
+} from "./CodeForm.utils"
+import { useReferralCodeLength, useReferralCodes } from "api/referrals"
 
 export const CodeForm = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
+  const referralCodeLength = useReferralCodeLength()
 
-  // @TODO: check actual user wallet balance
-  const balance = IS_FUNDED ? BN_100 : BN_0
+  const registerReferralCode = useRegisterReferralCode()
+
+  const balances = useAccountBalances(account?.address)
+  const userReferralCode = useReferralCodes(
+    convertToHydraAddress(account?.address),
+  )
+  const referralCodes = useReferralCodes("all")
+
+  const existingReferralCode = userReferralCode.data?.[0]?.referralCode
 
   const form = useForm<CodeFormValues>({
-    mode: "onChange",
+    mode: "onSubmit",
     defaultValues: defaultCodeFormValues,
   })
 
   const referralCode = form.watch("referralCode")
 
   const onSubmit = async (values: FormValues<typeof form>) => {
-    // @TODO: handle submit
-    console.log(values)
+    account?.address &&
+      registerReferralCode.mutate({
+        referralCode: values.referralCode,
+        accountAddress: account.address,
+      })
   }
 
-  const state = getUserState(account?.address, balance)
+  const isBalance = balances.data
+    ? balances.data.balances.length > 0 ||
+      !balances.data.native.freeBalance.isZero()
+    : undefined
+
+  const isBalanceLoading = balances.isInitialLoading
+
+  const state = getUserState(account?.address, isBalance)
   const isDisabled = state !== UserState.FUNDED
 
   useEffect(() => {
@@ -64,77 +73,76 @@ export const CodeForm = () => {
     }
   }, [form, state])
 
+  const referralCodeMaxLength =
+    referralCodeLength.data?.toNumber() || REFERRAL_CODE_MAX_LENGTH
+
   return (
     <>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        autoComplete="off"
-        sx={{ flex: ["column", "row"], gap: 12 }}
-      >
-        <Controller
-          name="referralCode"
-          control={form.control}
-          rules={{
-            required: t("referrals.input.error.required"),
-            validate: {
-              alphanumeric: (value) =>
-                REFERRAL_CODE_REGEX.test(value) ||
-                t("referrals.input.error.alphanumeric"),
-              maxLength: (value) =>
-                value.length <= REFERRAL_CODE_MAX_LENGTH ||
-                t("referrals.input.error.maxLength", {
-                  length: REFERRAL_CODE_MAX_LENGTH,
-                }),
-            },
-          }}
-          render={({ field, fieldState }) => (
-            <CodeInput
-              {...field}
-              disabled={isDisabled}
-              error={fieldState.error?.message}
-              sx={{ width: ["100%", "50%"] }}
-              placeholder={
-                state === UserState.FUNDED
-                  ? t("referrals.input.placeholder.referralCode")
-                  : state === UserState.NOT_FUNDED
-                  ? t("referrals.input.placeholder.deposit")
-                  : state === UserState.DISCONECTED
-                  ? t("referrals.input.placeholder.connect")
-                  : ""
-              }
-            />
+      {!existingReferralCode && (
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          autoComplete="off"
+          sx={{ flex: ["column", "row"], gap: 12 }}
+        >
+          <Controller
+            name="referralCode"
+            control={form.control}
+            rules={{
+              required: t("referrals.input.error.required"),
+              validate: {
+                alphanumeric: (value) =>
+                  REFERRAL_CODE_REGEX.test(value) ||
+                  t("referrals.input.error.alphanumeric"),
+                length: (value) =>
+                  value.length === referralCodeMaxLength ||
+                  t("referrals.input.error.maxLength", {
+                    length: referralCodeMaxLength,
+                  }),
+                validCode: (value) =>
+                  !referralCodes.data?.some(
+                    (referralCode) => referralCode?.referralCode === value,
+                  ) || t("referrals.input.error.existingCode"),
+              },
+            }}
+            render={({ field, fieldState }) => (
+              <CodeInput
+                {...field}
+                value={field.value}
+                disabled={isDisabled}
+                error={fieldState.error?.message}
+                sx={{ width: ["100%", "50%"] }}
+                placeholder={
+                  state === UserState.FUNDED
+                    ? t("referrals.input.placeholder.referralCode")
+                    : state === UserState.NOT_FUNDED
+                    ? t("referrals.input.placeholder.deposit")
+                    : state === UserState.DISCONECTED
+                    ? t("referrals.input.placeholder.connect")
+                    : ""
+                }
+              />
+            )}
+          />
+          {(state === UserState.FUNDED || isBalanceLoading) && (
+            <Button isLoading={isBalanceLoading} variant="primary">
+              {t("referrals.button.sign")}
+            </Button>
           )}
-        />
-        {state === UserState.FUNDED && (
-          <Button variant="primary">{t("referrals.button.sign")}</Button>
-        )}
-        {state === UserState.NOT_FUNDED && (
-          <FundWalletButton variant="primary">
-            {t("referrals.button.depositFunds")}
-          </FundWalletButton>
-        )}
-        {state === UserState.DISCONECTED && (
-          <Web3ConnectModalButton sx={{ height: "auto", px: 30 }} />
-        )}
-      </form>
+          {state === UserState.NOT_FUNDED && (
+            <FundWalletButton variant="primary">
+              {t("referrals.button.depositFunds")}
+            </FundWalletButton>
+          )}
+          {state === UserState.DISCONECTED && (
+            <Web3ConnectModalButton sx={{ height: "auto", px: 30 }} />
+          )}
+        </form>
+      )}
       <WavySeparator sx={{ my: 20, opacity: 0.15 }} />
-      <CodePreview disabled={isDisabled} code={referralCode} />
+      <CodePreview
+        disabled={isDisabled}
+        code={existingReferralCode ?? referralCode}
+      />
     </>
   )
-}
-
-function getUserState(address?: string, balance?: BN): UserState {
-  if (!address) {
-    return UserState.DISCONECTED
-  }
-
-  if (balance?.gt(BN_0)) {
-    return UserState.FUNDED
-  }
-
-  if (balance?.lte(BN_0)) {
-    return UserState.NOT_FUNDED
-  }
-
-  return UserState.UNKNOWN
 }

@@ -24,6 +24,11 @@ import { WalletProviderType, getSupportedWallets } from "./wallets"
 import { ExternalWallet } from "./wallets/ExternalWallet"
 import { MetaMask } from "./wallets/MetaMask/MetaMask"
 import { requestNetworkSwitch } from "utils/metamask"
+import { useReferralCodes } from "api/referrals"
+import { useRpcProvider } from "providers/rpcProvider"
+import { useToast } from "state/toasts"
+import { convertToHydraAddress } from "sections/referrals/components/CodeForm/CodeForm.utils"
+import { useTranslation } from "react-i18next"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -81,6 +86,8 @@ export const useWalletAccounts = (
 
 export const useWeb3ConnectEagerEnable = () => {
   const navigate = useNavigate()
+  const { account } = useAccount()
+  const { t } = useTranslation()
   const search = useSearch<{
     Search: {
       account: string
@@ -88,19 +95,59 @@ export const useWeb3ConnectEagerEnable = () => {
     }
   }>()
 
+  const { featureFlags } = useRpcProvider()
   const { wallet } = useWallet()
   const prevWallet = usePrevious(wallet)
+
+  const { temporary } = useToast()
+
+  const codes = useReferralCodes(featureFlags.referrals ? "all" : undefined)
 
   const externalAddressRef = useRef(search?.account)
 
   useEffect(() => {
     const state = useWeb3ConnectStore.getState()
-
+    const isLoadedCodes = featureFlags.referrals
+      ? !codes.isInitialLoading
+      : false
     const hasReferralCode = !!state.referralCode
-    if (!hasReferralCode && search?.referral) {
-      state.setReferralCode(search.referral)
+
+    if (isLoadedCodes && !hasReferralCode && search?.referral) {
+      const isValidCode = codes.data?.find(
+        (code) => code?.referralCode === search.referral,
+      )
+
+      if (
+        isValidCode &&
+        isValidCode.accountAddress !== convertToHydraAddress(account?.address)
+      ) {
+        temporary({
+          title: (
+            <div>
+              <p className="referralTitle">
+                {t("referrals.toasts.storedCode.valid.title")}
+              </p>
+              <p className="referralDesc">
+                {t("referrals.toasts.storedCode.valid.desc")}
+              </p>
+            </div>
+          ),
+        })
+        state.setReferralCode(search.referral)
+      } else {
+        temporary({
+          title: <p>Referral code is Invalid{search.referral}</p>,
+        })
+      }
     }
-  }, [search?.referral])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    codes.data,
+    codes.isInitialLoading,
+    featureFlags.referrals,
+    search.referral,
+    account?.address,
+  ])
 
   useEffect(() => {
     const state = useWeb3ConnectStore.getState()

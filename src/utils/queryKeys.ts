@@ -361,6 +361,12 @@ export const QUERY_KEYS = {
   ],
   volumeDaily: (assetId?: string) => ["volumeDaily", assetId],
   tvl: (assetId?: string) => ["tvl", assetId],
-  identity: (address: string) => ["identity", address],
+  identity: (address?: string) => ["identity", address],
   fee: (assetId?: string) => ["fee", assetId],
+  referralCodes: (accountAddress?: string) => [
+    "referralsCodes",
+    accountAddress,
+  ],
+  referralCodeLength: ["referralCodeLength"],
+  userReferrer: (accountAddress?: string) => ["userReferrer", accountAddress],
 } as const
