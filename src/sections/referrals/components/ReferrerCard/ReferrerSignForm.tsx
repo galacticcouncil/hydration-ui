@@ -77,7 +77,7 @@ export const ReferrerSignForm = () => {
       <Text fs={14} color="brightBlue300">
         {t("referrals.signForm.desc")}
       </Text>
-      <div sx={{ flex: "row", gap: 8 }}>
+      <div sx={{ flex: "row", gap: 8, flexWrap: ["wrap", "nowrap"] }}>
         <Controller
           name="code"
           control={form.control}
@@ -112,7 +112,7 @@ export const ReferrerSignForm = () => {
             },
           }}
           render={({ field, fieldState: { error } }) => (
-            <div css={{ flex: 1 }}>
+            <div css={{ flex: 1, minWidth: 120, flexBasis: "60%" }}>
               <SInput
                 autoComplete="off"
                 disabled={
@@ -133,7 +133,7 @@ export const ReferrerSignForm = () => {
         />
         <Button
           variant="blue"
-          css={{ whiteSpace: "nowrap" }}
+          css={{ whiteSpace: "nowrap", flex: 1 }}
           size="small"
           disabled={!account?.address || account.isExternalWalletConnected}
         >

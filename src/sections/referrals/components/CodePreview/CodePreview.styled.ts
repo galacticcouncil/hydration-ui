@@ -8,8 +8,12 @@ export const SContainer = styled.div<{
 }>`
   display: flex;
   flex-direction: column;
-  flex-wrap: wrap;
   gap: 16px;
+
+  @media ${theme.viewport.gte.sm} {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
 
   ${({ disabled }) =>
     disabled &&
@@ -18,6 +22,14 @@ export const SContainer = styled.div<{
       pointer-events: none;
       user-select: none;
     `}
+`
+
+export const SPreviewContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
 
   @media ${theme.viewport.gte.sm} {
     display: grid;
@@ -26,11 +38,11 @@ export const SContainer = styled.div<{
   }
 
   @media ${theme.viewport.gte.md} {
-    max-width: 90%;
+    max-width: 75%;
   }
 `
 
-export const SPreviewBox = styled.div`
+export const SPreviewBox = styled.div<{ isActive?: boolean }>`
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -40,10 +52,36 @@ export const SPreviewBox = styled.div`
   padding: 14px 100px 14px 16px;
 
   border-radius: ${theme.borderRadius.default}px;
-  border: 1px dashed rgba(${theme.rgbColors.brightBlue100}, 0.35);
+  border: ${({ isActive }) =>
+    isActive
+      ? `1px dashed rgba(${theme.rgbColors.brightBlue500}, 1)`
+      : `1px dashed rgba(${theme.rgbColors.brightBlue100}, 0.35)`};
 
   @media ${theme.viewport.gte.sm} {
     min-width: 220px;
+  }
+`
+
+export const SShareBox = styled.div`
+  position: relative;
+  min-height: 50px;
+
+  width: 100%;
+
+  text-align: center;
+
+  & > button {
+    max-width: 200px;
+    margin-top: 20px;
+  }
+
+  @media ${theme.viewport.gte.md} {
+    flex-grow: 1;
+    width: auto;
+
+    & > button {
+      max-width: none;
+    }
   }
 `
 
@@ -56,6 +94,10 @@ export const SCopyButton = styled(Button)`
   top: 50%;
 
   transform: translateY(-50%) !important;
+
+  span {
+    gap: 4px;
+  }
 `
 
 export const SPathButton = styled(Button)`

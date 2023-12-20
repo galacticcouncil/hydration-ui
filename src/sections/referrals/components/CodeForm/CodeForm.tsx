@@ -82,7 +82,7 @@ export const CodeForm = () => {
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           autoComplete="off"
-          sx={{ flex: ["column", "row"], gap: 12 }}
+          sx={{ flex: ["column", "row"], gap: 12, mt: 40 }}
         >
           <Controller
             name="referralCode"
@@ -138,10 +138,11 @@ export const CodeForm = () => {
           )}
         </form>
       )}
-      <WavySeparator sx={{ my: 20, opacity: 0.15 }} />
+      <WavySeparator sx={{ my: 24, opacity: 0.15 }} />
       <CodePreview
         disabled={isDisabled}
         code={existingReferralCode ?? referralCode}
+        hasExistingCode={!!existingReferralCode}
       />
     </>
   )

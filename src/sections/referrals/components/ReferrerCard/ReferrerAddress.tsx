@@ -1,6 +1,9 @@
 import { useReferralCodes } from "api/referrals"
 import { convertToHydraAddress } from "sections/referrals/components/CodeForm/CodeForm.utils"
-import { shortenAccountAddress } from "utils/formatting"
+import {
+  getChainSpecificAddress,
+  shortenAccountAddress,
+} from "utils/formatting"
 import { useAccountIdentity } from "api/stats"
 import Skeleton from "react-loading-skeleton"
 import { Text } from "components/Typography/Text/Text"
@@ -26,7 +29,7 @@ export const ReferrerAddress = ({
         ) : identity.data?.identity ? (
           identity.data.identity
         ) : (
-          shortenAccountAddress(referrerAddress, 6)
+          shortenAccountAddress(getChainSpecificAddress(referrerAddress), 6)
         )}
       </Text>
       <div sx={{ flex: "row", gap: 4, align: "center" }}>

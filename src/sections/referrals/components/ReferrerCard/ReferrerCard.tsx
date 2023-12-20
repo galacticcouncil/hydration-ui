@@ -34,7 +34,7 @@ export const ReferrerCard = () => {
             title={<ReferrerAddress referrerAddress={referrer.data} />}
           />
           <FeatureBox
-            sx={{ width: "auto" }}
+            sx={{ width: "auto", flexGrow: 0 }}
             label={t("referrals.referrer.tier")}
             title={
               <Text font="FontOver" fs={19}>
@@ -44,7 +44,9 @@ export const ReferrerCard = () => {
           />
         </div>
       ) : (
-        <ReferrerSignForm />
+        <div sx={{ m: -8 }}>
+          <ReferrerSignForm />
+        </div>
       )}
     </Card>
   )

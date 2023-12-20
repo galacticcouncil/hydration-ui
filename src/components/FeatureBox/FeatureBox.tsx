@@ -19,12 +19,7 @@ export const FeatureBox: FC<FeatureBoxProps> = ({
 }) => (
   <SContainer bordered={bordered} className={className}>
     {label && typeof label === "string" ? (
-      <Text
-        fs={14}
-        color="basic300"
-        sx={{ mb: 6 }}
-        css={{ whiteSpace: "nowrap" }}
-      >
+      <Text fs={14} color="basic300" css={{ whiteSpace: "nowrap" }}>
         {label}
       </Text>
     ) : (

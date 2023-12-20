@@ -13,7 +13,13 @@ export const RewardsCard = () => {
       variant="primary"
       icon={<Treasury width={16} height={16} />}
     >
-      <div sx={{ flex: ["column", "row"], gap: [20, 10] }}>
+      <div
+        sx={{
+          flex: ["column", "row"],
+          flexWrap: ["wrap", "nowrap"],
+          gap: [20],
+        }}
+      >
         <FeatureBox
           label="Generated from referral links"
           title={
