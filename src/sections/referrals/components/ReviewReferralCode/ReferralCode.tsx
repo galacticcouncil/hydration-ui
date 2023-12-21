@@ -5,7 +5,11 @@ import { Text } from "components/Typography/Text/Text"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 
 export const ReferralCode = ({ code }: { code: string }) => {
-  const onCancel = () => useWeb3ConnectStore.getState().setReferralCode("")
+  const { account, setReferralCode } = useWeb3ConnectStore()
+
+  const onCancel = () => {
+    account && setReferralCode(undefined, account.address)
+  }
 
   return (
     <div sx={{ flex: "column", align: "end" }}>

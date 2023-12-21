@@ -24,11 +24,12 @@ import { WalletProviderType, getSupportedWallets } from "./wallets"
 import { ExternalWallet } from "./wallets/ExternalWallet"
 import { MetaMask } from "./wallets/MetaMask/MetaMask"
 import { requestNetworkSwitch } from "utils/metamask"
-import { useReferralCodes } from "api/referrals"
+import { useReferralCodes, useUserReferrer } from "api/referrals"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useToast } from "state/toasts"
 import { convertToHydraAddress } from "sections/referrals/components/CodeForm/CodeForm.utils"
 import { useTranslation } from "react-i18next"
+import { useReferralToastStore } from "sections/referrals/components/ReferralsStore.utils"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -98,55 +99,106 @@ export const useWeb3ConnectEagerEnable = () => {
   const { featureFlags } = useRpcProvider()
   const { wallet } = useWallet()
   const prevWallet = usePrevious(wallet)
-
+  const prevAccount = usePrevious(account)
   const { temporary } = useToast()
 
-  const codes = useReferralCodes(featureFlags.referrals ? "all" : undefined)
+  const referralStore = useReferralToastStore()
+  const storedReferralCodes = useReferralCode()
+
+  const referrer = useUserReferrer(
+    featureFlags.referrals ? account?.address : undefined,
+  )
+  const isNoReferrer = referrer.data === null
+
+  const codes = useReferralCodes(
+    featureFlags.referrals && isNoReferrer ? "all" : undefined,
+  )
+
+  const isLoadedCodes =
+    featureFlags.referrals && isNoReferrer ? !codes.isInitialLoading : false
 
   const externalAddressRef = useRef(search?.account)
+  const queryParamReferralCode = search?.referral?.toString()
 
   useEffect(() => {
-    const state = useWeb3ConnectStore.getState()
-    const isLoadedCodes = featureFlags.referrals
-      ? !codes.isInitialLoading
-      : false
-    const hasReferralCode = !!state.referralCode
+    // reset displaying referral toasts when switching accounts
+    if (
+      prevAccount?.address &&
+      prevAccount?.address !== account?.address &&
+      referralStore.displayed
+    ) {
+      referralStore.reset()
+    }
+  }, [prevAccount?.address, account?.address, referralStore])
 
-    if (isLoadedCodes && !hasReferralCode && search?.referral) {
-      const isValidCode = codes.data?.find(
-        (code) => code?.referralCode === search.referral,
-      )
+  useEffect(() => {
+    // I am connected, my code is loaded, all referrals coded are load
+    if (account && isLoadedCodes && !account.isExternalWalletConnected) {
+      // referral code stored in the local storage
+      const storedReferralCode =
+        storedReferralCodes.referralCode[account.address]
 
       if (
-        isValidCode &&
-        isValidCode.accountAddress !== convertToHydraAddress(account?.address)
+        (storedReferralCode || queryParamReferralCode) &&
+        !referralStore.displayed
       ) {
-        temporary({
-          title: (
-            <div>
-              <p className="referralTitle">
-                {t("referrals.toasts.storedCode.valid.title")}
-              </p>
-              <p className="referralDesc">
-                {t("referrals.toasts.storedCode.valid.desc")}
-              </p>
-            </div>
-          ),
-        })
-        state.setReferralCode(search.referral)
-      } else {
-        temporary({
-          title: <p>Referral code is Invalid{search.referral}</p>,
-        })
+        const state = useWeb3ConnectStore.getState()
+
+        const isValidCode = codes.data?.find(
+          (code) =>
+            code?.referralCode ===
+            (storedReferralCode || queryParamReferralCode),
+        )
+        referralStore.display()
+
+        if (isValidCode) {
+          if (
+            isValidCode.accountAddress !==
+            convertToHydraAddress(account?.address)
+          ) {
+            temporary({
+              title: (
+                <div>
+                  <p className="referralTitle">
+                    {t("referrals.toasts.storedCode.valid.title")}
+                  </p>
+                  <p className="referralDesc">
+                    {t("referrals.toasts.storedCode.valid.desc")}
+                  </p>
+                </div>
+              ),
+            })
+
+            if (queryParamReferralCode && !storedReferralCode) {
+              state.setReferralCode(queryParamReferralCode, account.address)
+            }
+          } else {
+            temporary({
+              title: <p>{t("referrals.toasts.storedCode.invalid.myCode")}</p>,
+            })
+          }
+        } else {
+          temporary({
+            title: <p>{t("referrals.toasts.storedCode.invalid.existence")}</p>,
+          })
+        }
+        if (queryParamReferralCode) {
+          navigate({
+            search: {
+              ...search,
+              referral: undefined,
+            },
+          })
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     codes.data,
-    codes.isInitialLoading,
-    featureFlags.referrals,
-    search.referral,
+    queryParamReferralCode,
     account?.address,
+    isLoadedCodes,
+    referralStore.displayed,
   ])
 
   useEffect(() => {

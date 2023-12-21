@@ -10,27 +10,38 @@ import {
 import { Trans, useTranslation } from "react-i18next"
 import { ErrorMessage } from "components/Label/Label.styled"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import {
+  useAccount,
+  useReferralCode,
+} from "sections/web3-connect/Web3Connect.utils"
 import { ToastMessage, useStore } from "state/store"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { convertToHydraAddress } from "sections/referrals/components/CodeForm/CodeForm.utils"
 import { Text } from "components/Typography/Text/Text"
 import { TOAST_MESSAGES } from "state/toasts"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 
 export const ReferrerSignForm = () => {
   const { api } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
+  const { setReferralCode } = useWeb3ConnectStore()
 
   const { t } = useTranslation()
   const referralCodes = useReferralCodes("all")
   const referralCodeLength = useReferralCodeLength()
 
+  const storedReferralCodes = useReferralCode()
+
+  const storedReferralCode = account?.address
+    ? storedReferralCodes.referralCode[account.address]
+    : undefined
+
   const form = useForm<{ code: string }>({
     mode: "onSubmit",
-    defaultValues: { code: "" },
+    values: { code: storedReferralCode ?? "" },
   })
 
   const onSubmit = async (values: FormValues<typeof form>) => {
@@ -51,18 +62,21 @@ export const ReferrerSignForm = () => {
       return memo
     }, {} as ToastMessage)
 
-    await createTransaction(
+    const transaction = await createTransaction(
       {
         tx: api.tx.referrals.linkCode(values.code),
       },
       { toast },
     )
 
-    await queryClient.refetchQueries({
-      queryKey: QUERY_KEYS.referralCodes(
-        convertToHydraAddress(account?.address),
-      ),
-    })
+    if (!transaction.isError) {
+      await queryClient.refetchQueries({
+        queryKey: QUERY_KEYS.referralCodes(
+          convertToHydraAddress(account?.address),
+        ),
+      })
+      account && setReferralCode(undefined, account.address)
+    }
   }
 
   const referralCodeMaxLength =

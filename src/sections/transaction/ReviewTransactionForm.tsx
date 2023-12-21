@@ -18,6 +18,7 @@ import {
   useTransactionValues,
 } from "./ReviewTransactionForm.utils"
 import { ReviewReferralCodeWrapper } from "sections/referrals/components/ReviewReferralCode/ReviewReferralCodeWrapper"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 
 export const ReviewTransactionForm = (
   props: {
@@ -29,6 +30,7 @@ export const ReviewTransactionForm = (
 ) => {
   const { t } = useTranslation()
   const { account } = useAccount()
+  const { setReferralCode } = useWeb3ConnectStore()
 
   const transactionValues = useTransactionValues({
     tx: props.tx,
@@ -58,26 +60,32 @@ export const ReviewTransactionForm = (
 
   const { wallet } = useWallet()
 
-  const signTx = useMutation(async () => {
-    const address = props.isProxy ? account?.delegate : account?.address
+  const signTx = useMutation(
+    async () => {
+      const address = props.isProxy ? account?.delegate : account?.address
 
-    if (!address) throw new Error("Missing active account")
-    if (!wallet) throw new Error("Missing wallet")
-    if (!wallet.signer) throw new Error("Missing signer")
+      if (!address) throw new Error("Missing active account")
+      if (!wallet) throw new Error("Missing wallet")
+      if (!wallet.signer) throw new Error("Missing signer")
 
-    if (wallet?.signer instanceof MetaMaskSigner) {
-      const txSigner = await wallet.signer.sendDispatch(tx.method.toHex())
-      return props.onEvmSigned(txSigner)
-    }
+      if (wallet?.signer instanceof MetaMaskSigner) {
+        const txSigner = await wallet.signer.sendDispatch(tx.method.toHex())
+        return props.onEvmSigned(txSigner)
+      }
 
-    const signature = await tx.signAsync(address, {
-      signer: wallet.signer,
-      // defer to polkadot/api to handle nonce w/ regard to mempool
-      nonce: -1,
-    })
+      const signature = await tx.signAsync(address, {
+        signer: wallet.signer,
+        // defer to polkadot/api to handle nonce w/ regard to mempool
+        nonce: -1,
+      })
 
-    return props.onSigned(signature)
-  })
+      return props.onSigned(signature)
+    },
+    {
+      onSuccess: () =>
+        isLinking && account && setReferralCode(undefined, account.address),
+    },
+  )
 
   const isLoading = transactionValues.isLoading || signTx.isLoading
   const hasMultipleFeeAssets = acceptedFeePaymentAssets.length > 1

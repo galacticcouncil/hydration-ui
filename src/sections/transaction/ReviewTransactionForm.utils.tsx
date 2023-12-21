@@ -43,16 +43,20 @@ export const useTransactionValues = ({
 
   /* REFERRALS */
 
-  const referral = useReferralCode()
-
   const userReferralCode = useReferralCodes(
     featureFlags.referrals
       ? convertToHydraAddress(account?.address)
       : undefined,
   )
 
-  const isLinkedAccount = !!userReferralCode.data?.[0]?.referralCode
-  const storedReferralCode = referral.referralCode
+  const isLinkedAccount = featureFlags.referrals
+    ? !!userReferralCode.data?.[0]?.referralCode
+    : true
+
+  const storedReferralCodes = useReferralCode()
+  const storedReferralCode = account?.address
+    ? storedReferralCodes.referralCode[account.address]
+    : undefined
 
   const boundedTx =
     featureFlags.referrals && !isLinkedAccount && storedReferralCode

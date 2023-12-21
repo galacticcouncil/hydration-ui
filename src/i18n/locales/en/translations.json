@@ -757,5 +757,7 @@
   "referrals.toasts.linkCode.onLoading": "Linking account to referrer {{code}}.",
   "referrals.toasts.linkCode.onSuccess": "Your account was linked to referrer {{code}}.",
   "referrals.toasts.storedCode.valid.title": "You got a fren discount!",
-  "referrals.toasts.storedCode.valid.desc": "You got invited through referral code to use Hydra! Make first transaction to get trading discount :)"
+  "referrals.toasts.storedCode.valid.desc": "You got invited through referral code to use Hydra! Make first transaction to get trading discount :)",
+  "referrals.toasts.storedCode.invalid.existence": "This referral code doesn’t exist.",
+  "referrals.toasts.storedCode.invalid.myCode": "Linking an account to own referral code is not allowed."
 }
