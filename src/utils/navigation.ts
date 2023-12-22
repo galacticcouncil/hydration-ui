@@ -33,7 +33,7 @@ export const LINKS = {
   statsOverview: "/stats/overview",
   statsPOL: "/stats/treasury",
   statsLRNA: "/stats/LRNA",
-  statsOmnipool: "/stats/overview/omnipool",
+  statsOmnipool: "/stats/asset",
   staking: "/staking",
   stakingDashboard: "/staking/dashboard",
   stakingGovernance: "/staking/governance",
@@ -108,7 +108,7 @@ export const MENU_ITEMS = [
   },
   {
     key: "stats",
-    href: LINKS.stats,
+    href: LINKS.statsOverview,
     Icon: StatsIcon,
     subItems: undefined,
     enabled: isStatsEnabled,
