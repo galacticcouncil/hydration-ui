@@ -68,7 +68,7 @@ export const useRegisterReferralCode = () => {
       }, {} as ToastMessage)
 
       return await createTransaction(
-        { tx: api.tx.referrals.registerCode(referralCode, accountAddress) },
+        { tx: api.tx.referrals.registerCode(referralCode) },
         { toast },
       )
     },
