@@ -31,7 +31,7 @@ export const LINKS = {
   bond: "/trade/bond",
   stats: "/stats",
   statsOverview: "/stats/overview",
-  statsPOL: "/stats/POL",
+  statsPOL: "/stats/treasury",
   statsLRNA: "/stats/LRNA",
   statsOmnipool: "/stats/overview/omnipool",
   staking: "/staking",

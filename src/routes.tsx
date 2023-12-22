@@ -131,7 +131,7 @@ export const routes = [
         element: <StatsPage />,
       },
       {
-        path: "POL",
+        path: "treasury",
         element: <StatsPage />,
       },
       // TODO: Not ready. Requested in #861n9ffe4
