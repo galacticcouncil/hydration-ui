@@ -1,6 +1,6 @@
 import { useReferralCodes } from "api/referrals"
-import { convertToHydraAddress } from "sections/referrals/components/CodeForm/CodeForm.utils"
 import {
+  getAddressVariants,
   getChainSpecificAddress,
   shortenAccountAddress,
 } from "utils/formatting"
@@ -16,8 +16,12 @@ export const ReferrerAddress = ({
 }) => {
   const { t } = useTranslation()
 
-  const referral = useReferralCodes(convertToHydraAddress(referrerAddress))
-  const identity = useAccountIdentity(convertToHydraAddress(referrerAddress))
+  const referral = useReferralCodes(
+    getAddressVariants(referrerAddress).hydraAddress,
+  )
+  const identity = useAccountIdentity(
+    getAddressVariants(referrerAddress).hydraAddress,
+  )
 
   const referralCode = referral.data?.[0]?.referralCode
 

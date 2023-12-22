@@ -40,7 +40,7 @@ export const ReviewReferralCodeWrapper = ({
     >
       <div sx={{ flex: "column", gap: 8 }}>
         <Text color="basic400" fs={14} tAlign="left">
-          {t("referrals.reviewTransaction.label")}
+          {t("referrals.referrer.code")}
         </Text>
         <Text color="brightBlue300" fs={12} tAlign="left" sx={{ width: 300 }}>
           {t("referrals.reviewTransaction.desc")}

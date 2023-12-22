@@ -17,10 +17,10 @@ import {
 import { ToastMessage, useStore } from "state/store"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { convertToHydraAddress } from "sections/referrals/components/CodeForm/CodeForm.utils"
 import { Text } from "components/Typography/Text/Text"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { getAddressVariants } from "utils/formatting"
 
 export const ReferrerSignForm = () => {
   const { api } = useRpcProvider()
@@ -72,7 +72,9 @@ export const ReferrerSignForm = () => {
     if (!transaction.isError) {
       await queryClient.refetchQueries({
         queryKey: QUERY_KEYS.referralCodes(
-          convertToHydraAddress(account?.address),
+          account?.address
+            ? getAddressVariants(account.address).hydraAddress
+            : undefined,
         ),
       })
       account && setReferralCode(undefined, account.address)
@@ -113,8 +115,9 @@ export const ReferrerSignForm = () => {
 
                 if (code) {
                   if (
+                    account?.address &&
                     code.accountAddress !==
-                    convertToHydraAddress(account?.address)
+                      getAddressVariants(account.address).hydraAddress
                   )
                     return true
 

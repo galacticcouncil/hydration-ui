@@ -742,7 +742,6 @@
   "referrals.referrer.fee": "Referrer fee",
   "referrals.referee.fee": "Referee fee",
   "referrals.referrer.code": "Referral code:",
-  "referrals.reviewTransaction.label": "Referral code:",
   "referrals.reviewTransaction.desc": "Enter referral code here to receive trading fees discount or trading volume rewards from your frens.",
   "referrals.table.header.title": "Your frens",
   "referrals.table.header.account": "Account",

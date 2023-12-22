@@ -13,7 +13,7 @@ import { usePrevious } from "react-use"
 import { WalletConnect } from "sections/web3-connect/wallets/WalletConnect"
 import { POLKADOT_APP_NAME } from "utils/api"
 import { H160, getEvmAddress, isEvmAddress } from "utils/evm"
-import { safeConvertAddressSS58 } from "utils/formatting"
+import { getAddressVariants, safeConvertAddressSS58 } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import {
   Account,
@@ -27,7 +27,6 @@ import { requestNetworkSwitch } from "utils/metamask"
 import { useReferralCodes, useUserReferrer } from "api/referrals"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useToast } from "state/toasts"
-import { convertToHydraAddress } from "sections/referrals/components/CodeForm/CodeForm.utils"
 import { useTranslation } from "react-i18next"
 import { useReferralToastStore } from "sections/referrals/components/ReferralsStore.utils"
 export type { WalletProvider } from "./wallets"
@@ -154,7 +153,7 @@ export const useWeb3ConnectEagerEnable = () => {
         if (isValidCode) {
           if (
             isValidCode.accountAddress !==
-            convertToHydraAddress(account?.address)
+            getAddressVariants(account.address).hydraAddress
           ) {
             temporary({
               title: (

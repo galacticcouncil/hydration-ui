@@ -22,7 +22,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { isEvmAccount } from "utils/evm"
 import { BN_NAN } from "utils/constants"
 import { useReferralCodes } from "api/referrals"
-import { convertToHydraAddress } from "sections/referrals/components/CodeForm/CodeForm.utils"
+import { getAddressVariants } from "utils/formatting"
 
 export const useTransactionValues = ({
   feePaymentId,
@@ -44,8 +44,8 @@ export const useTransactionValues = ({
   /* REFERRALS */
 
   const userReferralCode = useReferralCodes(
-    featureFlags.referrals
-      ? convertToHydraAddress(account?.address)
+    featureFlags.referrals && account?.address
+      ? getAddressVariants(account.address).hydraAddress
       : undefined,
   )
 

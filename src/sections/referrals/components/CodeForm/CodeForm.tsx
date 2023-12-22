@@ -17,12 +17,12 @@ import { useAccountBalances } from "api/accountBalances"
 import {
   CodeFormValues,
   UserState,
-  convertToHydraAddress,
   defaultCodeFormValues,
   getUserState,
   useRegisterReferralCode,
 } from "./CodeForm.utils"
 import { useReferralCodeLength, useReferralCodes } from "api/referrals"
+import { getAddressVariants } from "utils/formatting"
 
 export const CodeForm = () => {
   const { t } = useTranslation()
@@ -33,7 +33,9 @@ export const CodeForm = () => {
 
   const balances = useAccountBalances(account?.address)
   const userReferralCode = useReferralCodes(
-    convertToHydraAddress(account?.address),
+    account?.address
+      ? getAddressVariants(account.address).hydraAddress
+      : undefined,
   )
   const referralCodes = useReferralCodes("all")
 
