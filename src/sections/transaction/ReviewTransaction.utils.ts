@@ -221,12 +221,10 @@ export const useSendTx = () => {
   const [txType, setTxType] = useState<"default" | "evm" | null>(null)
   const sendTx = useSendTransactionMutation({
     onMutate: () => setTxType("default"),
-    onSettled: () => setTxType(null),
   })
 
   const sendEvmTx = useSendEvmTransactionMutation({
     onMutate: () => setTxType("evm"),
-    onSettled: () => setTxType(null),
   })
 
   const activeMutation = txType === "default" ? sendTx : sendEvmTx
