@@ -73,7 +73,7 @@ export const useWalletAccounts = (
             address: isEvm ? new H160(address).toAccount() : address,
             displayAddress: isEvm
               ? address
-              : safeConvertAddressSS58(address, chainInfo.prefix) ?? "",
+              : safeConvertAddressSS58(address, chainInfo.prefix) || address,
             ss58Prefix: chainInfo.prefix,
             name: name ?? "",
             provider: wallet?.extensionName as WalletProviderType,
