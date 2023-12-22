@@ -61,7 +61,7 @@ export const CodePreview: React.FC<Props> = ({
 
   const [urlPath, setUrlPath] = useState(SELECTABLE_URL_PATHS[0].path)
 
-  const urlDomain = import.meta.env.VITE_DOMAIN_URL
+  const urlDomain = window.location.origin
   const urlQuery = `?referral=`
   const fullUrl = `${urlDomain}${urlPath}${urlQuery}${codeDisplay}`
 
