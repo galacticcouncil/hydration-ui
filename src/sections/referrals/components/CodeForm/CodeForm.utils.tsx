@@ -3,7 +3,9 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { Trans } from "react-i18next"
 import { ToastMessage, useStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
+import { getAddressVariants } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { shortenAccountAddress } from "utils/formatting"
 
 export type CodeFormValues = {
   referralCode: string
@@ -56,7 +58,9 @@ export const useRegisterReferralCode = () => {
             <Trans
               i18nKey={`referrals.toasts.generateCode.${msType}`}
               tOptions={{
-                account: accountAddress,
+                account: shortenAccountAddress(
+                  getAddressVariants(accountAddress).hydraAddress,
+                ),
                 code: referralCode,
               }}
             >
