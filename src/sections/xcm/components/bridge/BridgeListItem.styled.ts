@@ -1,11 +1,13 @@
 import { theme } from "theme"
 import styled from "@emotion/styled"
 
-export const SContainer = styled.button`
+export const SContainer = styled.div`
   all: unset;
   display: flex;
   flex-direction: row;
   align-items: center;
+
+  position: relative;
 
   gap: 25px;
 
@@ -21,5 +23,13 @@ export const SContainer = styled.button`
 
   &:active {
     background: rgba(${theme.rgbColors.white}, 0.09);
+  }
+`
+
+export const SLink = styled.a`
+  ::after {
+    content: "";
+    position: absolute;
+    inset: 0;
   }
 `

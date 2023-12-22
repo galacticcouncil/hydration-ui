@@ -22,6 +22,7 @@ import {
   getSubmittableExtrinsic,
   getXCall,
 } from "sections/xcm/XcmPage.utils"
+import { PageSwitch } from "sections/xcm/components/PageSwitch"
 
 type WalletChangeDetail = {
   srcChain: string
@@ -99,6 +100,7 @@ export function XcmPage() {
 
   return (
     <Page>
+      <PageSwitch />
       <SContainer>
         <XcmApp
           ref={ref}
