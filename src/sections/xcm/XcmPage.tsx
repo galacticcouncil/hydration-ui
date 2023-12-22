@@ -8,6 +8,7 @@ import { createComponent } from "@lit-labs/react"
 import { GcTransactionCenter } from "sections/xcm/TransactionCenter"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmAccount } from "utils/evm"
+import { PageSwitch } from "sections/xcm/components/PageSwitch"
 
 export const XcmApp = createComponent({
   tagName: "gc-xcm-app",
@@ -22,6 +23,7 @@ export function XcmPage() {
   return (
     <GcTransactionCenter>
       <Page>
+        <PageSwitch />
         <SContainer>
           <XcmApp
             ref={ref}

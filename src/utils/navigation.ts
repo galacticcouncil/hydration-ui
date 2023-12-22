@@ -24,6 +24,7 @@ export const LINKS = {
   walletTransactions: "/wallet/transactions",
   walletVesting: "/wallet/vesting",
   cross_chain: "/cross-chain",
+  bridge: "/bridge",
   trade: "/trade",
   otc: "/trade/otc",
   dca: "/trade/dca",

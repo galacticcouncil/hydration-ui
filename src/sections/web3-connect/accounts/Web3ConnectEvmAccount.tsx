@@ -5,8 +5,8 @@ import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
+import { SAccountItem } from "sections/web3-connect/accounts/Web3ConnectAccount.styled"
 import { Web3ConnectAccountSelect } from "sections/web3-connect/accounts/Web3ConnectAccountSelect"
-import { SEvmAccountItem } from "sections/web3-connect/accounts/Web3ConnectEvmAccount.styled"
 import {
   Account,
   useWeb3ConnectStore,
@@ -14,19 +14,25 @@ import {
 import { NATIVE_EVM_ASSET_DECIMALS, NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
 import { requestAccounts } from "utils/metamask"
 
-type Props = Account
-
-export const Web3ConnectEvmAccount: FC<Props> = (account) => {
+export const Web3ConnectEvmAccount: FC<Account> = (account) => {
   const { t } = useTranslation()
-  const { setAccount, toggle } = useWeb3ConnectStore()
+  const { account: currentAccount, setAccount, toggle } = useWeb3ConnectStore()
 
   const { data: currencyId } = useAccountCurrency(account.address)
 
   const { data, isSuccess } = useTokenBalance(currencyId, account.address)
 
+  const isActive = currentAccount?.address === account.address
+
   return (
     <>
-      <SEvmAccountItem>
+      <SAccountItem
+        isActive={isActive}
+        onClick={() => {
+          setAccount(account)
+          toggle()
+        }}
+      >
         <div
           sx={{
             flex: "row",
@@ -60,26 +66,15 @@ export const Web3ConnectEvmAccount: FC<Props> = (account) => {
           theme={account.provider}
           name=""
         />
-        <div sx={{ flex: "row", gap: 12, mt: 12 }}>
-          <Button
-            variant="outline"
-            fullWidth
-            onClick={() => requestAccounts(window.ethereum)}
-          >
-            {t("walletConnect.accountSelect.change")}
-          </Button>
-          <Button
-            variant="primary"
-            fullWidth
-            onClick={() => {
-              setAccount(account)
-              toggle()
-            }}
-          >
-            {t("walletConnect.accountSelect.title")}
-          </Button>
-        </div>
-      </SEvmAccountItem>
+      </SAccountItem>
+      <Button
+        variant="outline"
+        fullWidth
+        size="small"
+        onClick={() => requestAccounts(window.ethereum)}
+      >
+        {t("walletConnect.accountSelect.change")}
+      </Button>
     </>
   )
 }
