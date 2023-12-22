@@ -12,7 +12,7 @@ export function BridgeList() {
     <SContainer>
       <div sx={{ flex: "column" }}>
         <div>
-          <STitle sx={{ my: 3 }}>{t("xcm.bridge.title")}</STitle>
+          <STitle sx={{ my: 5 }}>{t("xcm.switch.bridge")}</STitle>
           <Text fs={16} lh={24} color="basic400">
             {t("xcm.bridge.description")}
           </Text>
