@@ -19,7 +19,7 @@ export const useWalletAddresses = () => {
 
     let addresses: Address[] = providerAddresses.data.map((pa) => {
       const name = pa.name ?? ""
-      const address = pa.address
+      const address = pa?.displayAddress || pa.address
       const provider = account?.provider ?? "external"
       return { name, address, provider }
     })

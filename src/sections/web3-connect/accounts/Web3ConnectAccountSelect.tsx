@@ -35,18 +35,18 @@ export const Web3ConnectAccountSelect = ({
     >
       <div sx={{ flex: "row", align: "center" }}>
         <div
-          sx={{ p: 5, flex: "row", align: "center" }}
+          sx={{ flex: "row", align: "center", mr: 10 }}
           css={{ borderRadius: "9999px" }}
         >
           <AccountAvatar address={address} theme={theme} size={32} />
         </div>
 
-        <div sx={{ flex: "column", gap: 3 }} css={{ overflow: "hidden" }}>
-          <Text fw={600} fs={12}>
+        <div sx={{ flex: "column", gap: 2 }} css={{ overflow: "hidden" }}>
+          <Text fw={500} fs={12}>
             {name}
           </Text>
           <Text
-            fw={600}
+            fw={500}
             fs={14}
             color="basic300"
             css={css`

@@ -11,6 +11,7 @@ export const Web3ConnectSubstrateAccount: React.FC<Props> = ({
 }) => {
   const { account: currentAccount, setAccount, toggle } = useWeb3ConnectStore()
   const isActive = currentAccount?.address === account.address
+
   return (
     <Web3ConnectAccount
       {...account}

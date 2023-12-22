@@ -62,7 +62,7 @@ export const Web3ConnectEvmAccount: FC<Account> = (account) => {
           </div>
         </div>
         <Web3ConnectAccountSelect
-          address={account.evmAddress ?? ""}
+          address={account.displayAddress ?? ""}
           theme={account.provider}
           name=""
         />

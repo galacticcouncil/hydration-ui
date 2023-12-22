@@ -1,10 +1,8 @@
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import IconEdit from "assets/icons/IconEdit.svg?react"
 import IconRemove from "assets/icons/IconRemove.svg?react"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { useState } from "react"
-import { HYDRA_ADDRESS_PREFIX } from "utils/api"
-import { isHydraAddress } from "utils/formatting"
+
 import {
   SAddress,
   SAddressContainer,
@@ -15,7 +13,7 @@ import {
 } from "./AddressBookItem.styled"
 import { AddressBookItemEdit } from "./edit/AddressBookItemEdit"
 import { AddressBookItemRemove } from "./remove/AddressBookItemRemove"
-import { H160, isEvmAccount, isEvmAddress } from "utils/evm"
+import { isEvmAddress } from "utils/evm"
 import { Address } from "components/AddressBook/AddressBook.utils"
 
 type Props = Address & {
@@ -32,20 +30,11 @@ export const AddressBookItem = ({
   const [editting, setEditting] = useState(false)
   const [removing, setRemoving] = useState(false)
 
-  const encodedAddress =
-    isEvmAddress(address) || isHydraAddress(address)
-      ? address
-      : encodeAddress(decodeAddress(address), HYDRA_ADDRESS_PREFIX)
-
-  const addressDisplay = isEvmAccount(encodedAddress)
-    ? H160.fromAccount(encodedAddress)
-    : encodedAddress
-
   if (editting)
     return (
       <AddressBookItemEdit
         id={id}
-        address={addressDisplay}
+        address={address}
         name={name}
         provider={provider}
         onEdit={() => setEditting(false)}
@@ -54,17 +43,17 @@ export const AddressBookItem = ({
 
   return (
     <>
-      <SItem onClick={() => onSelect(addressDisplay)}>
+      <SItem onClick={() => onSelect(address)}>
         <SNameContainer>
           <AccountAvatar
-            theme={isEvmAddress(addressDisplay) ? "metamask" : undefined}
-            address={addressDisplay}
+            theme={isEvmAddress(address) ? "metamask" : undefined}
+            address={address}
             size={30}
           />
           <SName>{name}</SName>
         </SNameContainer>
         <SAddressContainer>
-          <SAddress>{addressDisplay}</SAddress>
+          <SAddress>{address}</SAddress>
           {provider === "external" && (
             <div sx={{ flex: "row" }}>
               <SButton

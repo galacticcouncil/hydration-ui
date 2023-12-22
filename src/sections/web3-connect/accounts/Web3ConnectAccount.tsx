@@ -9,6 +9,7 @@ import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { getAddressVariants } from "utils/formatting"
 import { SAccountItem } from "./Web3ConnectAccount.styled"
 import { Web3ConnectAccountSelect } from "./Web3ConnectAccountSelect"
+import { getChainByPrefix } from "utils/helpers"
 
 type Props = Account & {
   isProxy?: boolean
@@ -23,7 +24,7 @@ export const Web3ConnectAccount: FC<Props> = ({
   ...account
 }) => {
   const { t } = useTranslation()
-  const { address, name, provider } = account
+  const { address, name, provider, displayAddress, ss58Prefix } = account
 
   const { hydraAddress, polkadotAddress } = getAddressVariants(address)
 
@@ -78,24 +79,15 @@ export const Web3ConnectAccount: FC<Props> = ({
       )}
       <div sx={{ flex: "column", mt: 12, gap: 12 }}>
         <Web3ConnectAccountSelect
-          name={t("walletConnect.accountSelect.asset.network")}
-          address={hydraAddress}
-          theme="substrate"
+          name={
+            Number.isFinite(ss58Prefix)
+              ? getChainByPrefix(ss58Prefix)?.displayName ?? ""
+              : ""
+          }
+          address={displayAddress || hydraAddress}
+          theme={provider}
           isProxy={isProxy}
         />
-        {!isProxy && (
-          <>
-            <Separator
-              opacity={isActive ? 0.3 : 1}
-              css={{ background: "var(--secondary-color)" }}
-            />
-            <Web3ConnectAccountSelect
-              name={t("walletConnect.accountSelect.substrate.address")}
-              address={polkadotAddress}
-              theme={provider}
-            />
-          </>
-        )}
       </div>
     </SAccountItem>
   )

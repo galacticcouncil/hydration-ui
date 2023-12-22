@@ -1,4 +1,3 @@
-import { WalletAccount } from "@talismn/connect-wallets"
 import { useNavigate, useSearch } from "@tanstack/react-location"
 import {
   MutationObserverOptions,
@@ -24,6 +23,8 @@ import { WalletProviderType, getSupportedWallets } from "./wallets"
 import { ExternalWallet } from "./wallets/ExternalWallet"
 import { MetaMask } from "./wallets/MetaMask/MetaMask"
 import { requestNetworkSwitch } from "utils/metamask"
+import { genesisHashToChain } from "utils/helpers"
+import { WalletAccount } from "sections/web3-connect/types"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -63,11 +64,17 @@ export const useWalletAccounts = (
       select: (data) => {
         if (!data) return []
 
-        return data.map(({ address, name, wallet }) => {
+        return data.map(({ address, name, wallet, genesisHash }) => {
           const isEvm = isEvmAddress(address)
+
+          const chainInfo = genesisHashToChain(genesisHash)
+
           return {
             address: isEvm ? new H160(address).toAccount() : address,
-            evmAddress: isEvm ? getEvmAddress(address) : "",
+            displayAddress: isEvm
+              ? address
+              : safeConvertAddressSS58(address, chainInfo.prefix) ?? "",
+            ss58Prefix: chainInfo.prefix,
             name: name ?? "",
             provider: wallet?.extensionName as WalletProviderType,
             isExternalWalletConnected: wallet instanceof ExternalWallet,
@@ -232,7 +239,9 @@ export function setExternalWallet(externalAddress = "") {
       account: {
         name: externalWallet.accountName,
         address: address ?? "",
-        evmAddress: isEvm ? getEvmAddress(externalAddress) : "",
+        displayAddress: isEvm
+          ? getEvmAddress(externalAddress)
+          : externalAddress,
         provider: WalletProviderType.ExternalWallet,
         isExternalWalletConnected: true,
         delegate: "",
