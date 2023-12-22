@@ -139,6 +139,7 @@ export const ReferrerSignForm = () => {
                 sx={{ height: 38 }}
                 placeholder={t("referrals.signForm.placeholder")}
                 {...field}
+                onChange={(e) => field.onChange(e.target.value.toUpperCase())}
               />
               {error && (
                 <ErrorMessage css={{ position: "absolute" }}>
