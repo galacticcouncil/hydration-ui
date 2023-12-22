@@ -518,6 +518,7 @@
   "stats.chart.timeframe.day": "1d",
   "stats.chart.dailyVolume": "Daily volume",
   "stats.overview.pie.defaultLabel.composition": "Omnipool Composition",
+  "stats.overview.pie.defaultLabel.composition.tresuary": "Tresuary Composition",
   "stats.overview.pie.defaultLabel.assetAvailable": "{{amount}} Assets Available",
   "stats.overview.pie.defaultLabel.hover": "Hover for details",
   "stats.overview.pie.rest.header.assets": "Other Assets",
