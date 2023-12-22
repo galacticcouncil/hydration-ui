@@ -29,7 +29,7 @@ export type TSlice = {
 
 type DoughnutChartProps = {
   slices: TSlice[]
-  property: string
+  property?: string
   label?: ({ slices }: { slices: TSlice[] }) => ReactNode
 }
 

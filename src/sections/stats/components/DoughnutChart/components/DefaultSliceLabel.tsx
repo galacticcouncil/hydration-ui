@@ -13,7 +13,7 @@ export const DefaultSliceLabel = ({
   property,
 }: {
   slices: TSlice[]
-  property: string
+  property?: string
 }) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { t } = useTranslation()
