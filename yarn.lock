@@ -2990,10 +2990,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@2.0.7":
-  version "2.0.7"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.0.7.tgz#73a7d803c2e3df8556410b34cb9033e111948d4b"
-  integrity sha512-LuRvYD3/Z6vJbZFCmrWI5ZL3rKPFrvcwxpZJyeLNSGADXLE+0C6Zos1oOgCTVaJVJYRlyn1/Pw8C19JT21N5sw==
+"@galacticcouncil/apps@2.0.8":
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.0.8.tgz#d8e97bc964838cd2e2b16bd844340e82dc53dc8c"
+  integrity sha512-CufiibB59p0lACg381yssLPHf+MGEgzQH1dZ80Zlt14wnfpa2eWgi3y8hFzyTcA3GQ52XMUFeopTqYQ5+pBVQw==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@talismn/connect-wallets" "^1.2.1"
@@ -3062,15 +3062,15 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.0.2.tgz#c67fa076ad6590928819648cca3057958322ce8b"
-  integrity sha512-87r6aF+6g7xFfVq8gthhFm6YQqQ99+ZkB4ttt9xvt6zc44lxIqPPz2amsNa84nwreejRb+xAB3Iye23pdfLfBQ==
-
-"@galacticcouncil/xcm-sdk@^1.0.3":
+"@galacticcouncil/xcm-cfg@^1.0.3":
   version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-1.0.3.tgz#dd42957260da93e07b578b6095dbdabb21319043"
-  integrity sha512-AUK644ocHrYDDhO+xR5dKve02TKJmHd0oLd/jNjLF7KhmcjMWCOovqmXWXQpQG/ew1mXqWNsnsKFKIbGxdNqWA==
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.0.3.tgz#f1b035a69da48d1c4f17a66612ea6c77995e10a2"
+  integrity sha512-Ky/RCz567Z/VOeAByG8Q/1yX3LY6NZh9dbUpL/1JQmss60cDqgZ0q33Hz9A4GvYlxMcVl/A1qdhOK0RuIBm3Ew==
+
+"@galacticcouncil/xcm-sdk@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-1.0.6.tgz#5c793a82170f7945fb36f6f52fd9c66d6697f504"
+  integrity sha512-HCJXPLw8gYSY73OfH5ed6z6PTCquCaCpgF+90cn2Q66KcrsKGcWIOkrfcrtD0FwNGlbjSLoSfqFSOoXTr4I7Eg==
   dependencies:
     "@moonbeam-network/xcm-builder" "1.0.9"
     "@moonbeam-network/xcm-config" "1.3.13"
