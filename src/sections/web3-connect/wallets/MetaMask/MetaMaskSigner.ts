@@ -3,7 +3,7 @@ import {
   TransactionRequest,
   Web3Provider,
 } from "@ethersproject/providers"
-import { evmChains } from "@galacticcouncil/xcm-cfg"
+import { evmChains } from "@galacticcouncil/xcm-sdk"
 import { MetaMaskProvider, requestNetworkSwitch } from "utils/metamask"
 
 const DISPATCH_ADDRESS = "0x0000000000000000000000000000000000000401"

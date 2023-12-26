@@ -2,7 +2,7 @@ import { Buffer } from "buffer"
 import { Maybe } from "utils/helpers"
 import type { ExternalProvider } from "@ethersproject/providers"
 import type EventEmitter from "events"
-import { evmChains } from "@galacticcouncil/xcm-cfg"
+import { evmChains } from "@galacticcouncil/xcm-sdk"
 
 export interface MetaMaskProvider extends ExternalProvider, EventEmitter {}
 

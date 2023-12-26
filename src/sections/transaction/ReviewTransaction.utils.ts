@@ -2,7 +2,7 @@ import {
   TransactionReceipt,
   TransactionResponse,
 } from "@ethersproject/providers"
-import { evmChains } from "@galacticcouncil/xcm-cfg"
+import { evmChains } from "@galacticcouncil/xcm-sdk"
 import { Hash } from "@open-web3/orml-types/interfaces"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import type { AnyJson } from "@polkadot/types-codec/types"

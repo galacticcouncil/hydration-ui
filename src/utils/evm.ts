@@ -6,7 +6,7 @@ import {
   isAddress as isEvmAddress,
   getAddress as getEvmAddress,
 } from "@ethersproject/address"
-import { evmChains } from "@galacticcouncil/xcm-cfg"
+import { evmChains } from "@galacticcouncil/xcm-sdk"
 
 export const NATIVE_EVM_ASSET_SYMBOL = "WETH"
 export const NATIVE_EVM_ASSET_DECIMALS = 18
