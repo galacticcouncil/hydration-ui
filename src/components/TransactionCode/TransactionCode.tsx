@@ -6,8 +6,8 @@ export const TransactionCode = forwardRef<HTMLDivElement, ReactJsonViewProps>(
   (props, ref) => (
     <div ref={ref}>
       <ReactJson
-        indentWidth={5}
-        collapseStringsAfterLength={false}
+        indentWidth={4}
+        collapseStringsAfterLength={42}
         quotesOnKeys={false}
         shouldCollapse={false}
         enableClipboard={false}
@@ -24,15 +24,16 @@ export const TransactionCode = forwardRef<HTMLDivElement, ReactJsonViewProps>(
           base07: theme.colors.basic100,
           base08: "#444",
           base09: theme.colors.brightBlue200Alpha,
-          base0A: "rgba(70, 70, 230, 0)",
+          base0A: theme.colors.basic500,
           base0B: "rgba(70, 70, 230, 0)",
-          base0C: "rgba(70, 70, 230, 0)",
+          base0C: theme.colors.basic500,
           base0D: theme.colors.warning300,
           base0E: theme.colors.basic100,
-          base0F: "rgba(70, 70, 230, 1)",
+          base0F: theme.colors.brightBlue200Alpha,
         }}
         {...props}
         style={{
+          fontVariant: "tabular-nums",
           fontFamily: "ChakraPetch",
           fontSize: "12px",
           position: "relative",

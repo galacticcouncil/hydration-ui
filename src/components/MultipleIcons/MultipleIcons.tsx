@@ -3,7 +3,9 @@ import { IconsWrapper } from "./MultipleIcons.styled"
 import { ResponsiveValue } from "utils/responsive"
 import { Icon, IconProps } from "components/Icon/Icon"
 import { useRpcProvider } from "providers/rpcProvider"
-import { chains } from "@galacticcouncil/xcm"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+
+const chains = Array.from(chainsMap.values())
 
 type DualAssetIconsProps = {
   size?: ResponsiveValue<number>

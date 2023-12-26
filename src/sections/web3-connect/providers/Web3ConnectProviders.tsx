@@ -8,6 +8,11 @@ import { Web3ConnectProviderButton } from "sections/web3-connect/providers/Web3C
 import { useMemo } from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import {
+  WalletMode,
+  useWeb3ConnectStore,
+} from "sections/web3-connect/store/useWeb3ConnectStore"
+import { useShallow } from "hooks/useShallow"
 
 const MOBILE_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.MetaMask,
@@ -27,47 +32,65 @@ const DESKTOP_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.WalletConnect,
 ]
 
+const EVM_PROVIDERS: WalletProviderType[] = [WalletProviderType.MetaMask]
+
 const ALTERNATIVE_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.ExternalWallet,
 ]
 
-const useWalletProviders = () => {
+const useWalletProviders = (mode: WalletMode) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
+
   return useMemo(() => {
     const wallets = getSupportedWallets()
+
+    const isDefaultMode = mode === "default"
+    const isEvmMode = mode === "evm"
+    const isSubstrateMode = mode === "substrate"
+
     const defaultProviders = wallets.filter((provider) => {
-      return isDesktop
+      if (isEvmMode) return EVM_PROVIDERS.includes(provider.type)
+      const byScreen = isDesktop
         ? DESKTOP_PROVIDERS.includes(provider.type)
         : MOBILE_PROVIDERS.includes(provider.type)
+
+      const isEvmProvider = EVM_PROVIDERS.includes(provider.type)
+
+      const byMode =
+        isDefaultMode ||
+        (isEvmMode && isEvmProvider) ||
+        (isSubstrateMode && !isEvmProvider)
+
+      return byScreen && byMode
     })
 
-    const alternativeProviders = wallets.filter((provider) =>
-      ALTERNATIVE_PROVIDERS.includes(provider.type),
-    )
+    const alternativeProviders = wallets.filter((provider) => {
+      if (isEvmMode || isSubstrateMode) return false
+      return ALTERNATIVE_PROVIDERS.includes(provider.type)
+    })
 
     return {
       defaultProviders,
       alternativeProviders,
     }
-  }, [isDesktop])
+  }, [isDesktop, mode])
 }
 
-export const Web3ConnectProviders: React.FC = () => {
+export const Web3ConnectProviders = () => {
   const { t } = useTranslation()
 
-  const { defaultProviders, alternativeProviders } = useWalletProviders()
+  const mode = useWeb3ConnectStore(useShallow((state) => state.mode))
+
+  const { defaultProviders, alternativeProviders } = useWalletProviders(mode)
 
   return (
     <>
-      <Text fw={400} color="basic400" sx={{ mb: 20 }}>
-        {t("walletConnect.provider.description")}
-      </Text>
       <div sx={{ flex: "column", gap: 8 }}>
         {defaultProviders.map((provider) => (
           <Web3ConnectProviderButton {...provider} key={provider.type} />
         ))}
       </div>
-      {alternativeProviders && (
+      {alternativeProviders.length > 0 && (
         <>
           <Text sx={{ py: 8 }} fs={14} color="basic400" tAlign="center">
             {t("or")}
