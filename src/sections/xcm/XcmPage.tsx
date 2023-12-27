@@ -85,7 +85,6 @@ export function XcmPage() {
   }, [incomingSrcChain])
 
   const handleWalletChange = (e: CustomEvent<WalletChangeDetail>) => {
-    if (!account) return
     const { srcChain } = e.detail
 
     const chain = chainsMap.get(srcChain)
