@@ -46,22 +46,27 @@ export class MetaMaskSigner {
     transaction: TransactionRequest & { chain?: string },
   ) => {
     const { chain, ...tx } = transaction
+    const from = chain && evmChains[chain] ? chain : "hydradx"
     await requestNetworkSwitch(this.provider, {
-      chain: chain && evmChains[chain] ? chain : "hydradx",
+      chain: from,
       onSwitch: () => {
         // update signer after network switch
         this.signer = this.getSigner(this.provider)
       },
     })
 
-    const [gas, gasPrice] = await this.getGasValues(tx)
-
-    return await this.signer.sendTransaction({
-      maxPriorityFeePerGas: gasPrice,
-      maxFeePerGas: gasPrice,
-      // add 10%
-      gasLimit: gas.mul(11).div(10),
-      ...tx,
-    })
+    if (from === "hydradx") {
+      const [gas, gasPrice] = await this.getGasValues(tx)
+      return await this.signer.sendTransaction({
+        maxPriorityFeePerGas: gasPrice,
+        maxFeePerGas: gasPrice,
+        gasLimit: gas.mul(11).div(10), // add 10%
+        ...tx,
+      })
+    } else {
+      return await this.signer.sendTransaction({
+        ...tx,
+      })
+    }
   }
 }
