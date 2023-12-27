@@ -445,7 +445,7 @@
   "xcm.switch.crosschain": "Cross-Chain",
   "xcm.switch.bridge": "Ethereum Bridge",
   "xcm.bridge.description": "Select your bridge to move funds to or from Ethereum",
-  "xcm.bridge.carrier.description": "Transfers between HydraDX and Ethereum, Avalanche, Polygon, Solana & more",
+  "xcm.bridge.carrier.description": "Transfers assets between HydraDX and Ethereum using Moonbeam Routed Liquidity.",
   "xcm.bridge.wormhole.description": "Transfers between Acala and Ethereum mainnet",
   "xcm.bridge.guide.title": "How to transfer via {{ name }}",
   "xcm.bridge.guide.submit": "Go to {{ name }}",
