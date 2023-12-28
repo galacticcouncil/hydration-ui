@@ -363,6 +363,4 @@ export const QUERY_KEYS = {
   tvl: (assetId?: string) => ["tvl", assetId],
   identity: (address: string) => ["identity", address],
   fee: (assetId?: string) => ["fee", assetId],
-  evmTxCost: (data: string) => ["evmTxCost", data],
-  evmChainInfo: (address: string) => ["evmChainInfo", address],
 } as const

@@ -9,9 +9,7 @@ import { ReviewTransactionForm } from "./ReviewTransactionForm"
 import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionToast } from "./ReviewTransactionToast"
-import { ReviewTransactionXCallForm } from "./ReviewTransactionXCallForm"
 import { WalletUpgradeModal } from "sections/web3-connect/upgrade/WalletUpgradeModal"
-import { isEvmXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
 
 export const ReviewTransaction = (props: Transaction) => {
   const { t } = useTranslation()
@@ -101,10 +99,9 @@ export const ReviewTransaction = (props: Transaction) => {
           <ReviewTransactionSuccess onClose={onClose} />
         ) : isError ? (
           <ReviewTransactionError onClose={onClose} onReview={onReview} />
-        ) : props.tx ? (
+        ) : (
           <ReviewTransactionForm
             tx={props.tx}
-            xcallMeta={props.xcallMeta}
             isProxy={props.isProxy}
             overrides={props.overrides}
             title={props.title}
@@ -118,18 +115,7 @@ export const ReviewTransaction = (props: Transaction) => {
               sendTx(signed)
             }}
           />
-        ) : isEvmXCall(props.xcall) && props.xcallMeta ? (
-          <ReviewTransactionXCallForm
-            xcall={props.xcall}
-            xcallMeta={props.xcallMeta}
-            title={props.title}
-            onCancel={onClose}
-            onEvmSigned={(tx) => {
-              props.onSubmitted?.()
-              sendEvmTx(tx)
-            }}
-          />
-        ) : null}
+        )}
       </Modal>
     </>
   )

@@ -14,6 +14,8 @@ export const SAccountsContainer = styled.div`
   }
 
   @media ${theme.viewport.gte.sm} {
+    margin-right: -18px;
+
     ::-webkit-scrollbar {
       width: 6px;
     }

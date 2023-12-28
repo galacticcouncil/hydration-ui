@@ -4,7 +4,6 @@ import { useOmnipoolAssetsColumns } from "./OmnipoolAssetsTableWrapper.utils"
 import { useNavigate } from "@tanstack/react-location"
 import { useOmnipoolAssetsTableSkeleton } from "./OmnipoolAssetsTableSkeleton.utils"
 import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
-import { LINKS } from "utils/navigation"
 
 export const OmnipoolAssetsTableWrapperData = ({
   data,
@@ -22,8 +21,8 @@ export const OmnipoolAssetsTableWrapperData = ({
 
   const handleRowSelect = (assetId: string) => {
     navigate({
-      to: LINKS.statsOmnipool,
-      search: { id: assetId },
+      to: "omnipool",
+      search: { asset: assetId },
     })
   }
 

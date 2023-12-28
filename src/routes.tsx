@@ -15,10 +15,6 @@ import { MyLiquidity } from "sections/pools/sections/MyLiquidity"
 import { OmnipoolAndStablepool } from "sections/pools/sections/OmnipoolAndStablepool"
 import { IsolatedPools } from "sections/pools/sections/IsolatedPools"
 import { ReferralsPage } from "sections/referrals/ReferralsPage"
-import { StatsPOL } from "sections/stats/sections/POL/StatsPOL"
-import { StatsOverview } from "sections/stats/sections/overview/StatsOverview"
-import { StatsOmnipoolAsset } from "sections/stats/sections/omnipoolAsset/StatsOmnipoolAsset"
-import { BridgePage } from "sections/xcm/BridgePage"
 
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
@@ -124,12 +120,7 @@ export const routes = [
     element: <XcmPage />,
   },
   {
-    path: "bridge",
-    element: <BridgePage />,
-  },
-  {
     path: "stats",
-    element: <StatsPage />,
     children: [
       {
         path: "/",
@@ -137,17 +128,12 @@ export const routes = [
       },
       {
         path: "overview",
-        element: <StatsOverview />,
+        element: <StatsPage />,
       },
       {
-        path: "treasury",
-        element: <StatsPOL />,
+        path: "POL",
+        element: <StatsPage />,
       },
-      {
-        path: "asset",
-        element: <StatsOmnipoolAsset />,
-      },
-
       // TODO: Not ready. Requested in #861n9ffe4
       // {
       //   path: "LRNA",
