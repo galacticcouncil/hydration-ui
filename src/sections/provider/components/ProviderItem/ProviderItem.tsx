@@ -10,9 +10,9 @@ import { useBestNumber } from "api/chain"
 import { ProviderStatus } from "sections/provider/ProviderStatus"
 import { useEffect, useState } from "react"
 import { WsProvider } from "@polkadot/rpc-provider"
-import { ApiPromise } from "@polkadot/api"
 import { u32, u64 } from "@polkadot/types"
 import { ProviderItemEdit } from "sections/provider/components/ProviderItemEdit/ProviderItemEdit"
+import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
 
 type ProviderItemProps = {
   name: string
@@ -155,7 +155,8 @@ const ProviderSelectItemExternal = ({
     let cancel: () => void
 
     async function load() {
-      const api = await ApiPromise.create({ provider })
+      const apiPool = SubstrateApis.getInstance()
+      const api = await apiPool.api(provider.endpoint)
 
       async function onNewBlock() {
         const [parachain, timestamp] = await Promise.all([

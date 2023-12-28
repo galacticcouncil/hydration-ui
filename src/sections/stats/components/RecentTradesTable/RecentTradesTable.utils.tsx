@@ -111,12 +111,14 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
 
         return (
           <div sx={{ flex: "row", align: "center", gap: 6 }}>
-            <Text fs={[14, 16]}>
-              {t("value.tokenWithSymbol", {
-                value: isDesktop ? row.original.amountIn : undefined,
-                symbol: row.original.assetInSymbol,
-              })}
-            </Text>
+            {isDesktop && (
+              <Text fs={[14, 16]}>
+                {t("value.tokenWithSymbol", {
+                  value: row.original.amountIn,
+                  symbol: row.original.assetInSymbol,
+                })}
+              </Text>
+            )}
             {typeof iconInIds === "string" ? (
               <Icon size={18} icon={<AssetLogo id={iconInIds} />} />
             ) : (
@@ -130,12 +132,14 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
 
             <Icon sx={{ color: "brightBlue600" }} icon={<TradeIcon />} />
 
-            <Text fs={[14, 16]}>
-              {t("value.tokenWithSymbol", {
-                value: isDesktop ? row.original.amountOut : undefined,
-                symbol: row.original.assetOutSymbol,
-              })}
-            </Text>
+            {isDesktop && (
+              <Text fs={[14, 16]}>
+                {t("value.tokenWithSymbol", {
+                  value: row.original.amountOut,
+                  symbol: row.original.assetOutSymbol,
+                })}
+              </Text>
+            )}
 
             {typeof iconOutIds === "string" ? (
               <Icon size={18} icon={<AssetLogo id={iconOutIds} />} />
