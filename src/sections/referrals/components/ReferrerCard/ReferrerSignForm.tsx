@@ -21,6 +21,7 @@ import { Text } from "components/Typography/Text/Text"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { getAddressVariants } from "utils/formatting"
+import { ReferrerInfo } from "./ReferrerInfo"
 
 export const ReferrerSignForm = () => {
   const { api } = useRpcProvider()
@@ -40,9 +41,15 @@ export const ReferrerSignForm = () => {
     : undefined
 
   const form = useForm<{ code: string }>({
-    mode: "onSubmit",
+    mode: "onChange",
     values: { code: storedReferralCode ?? "" },
   })
+
+  const value = form.watch("code")
+
+  const referral = referralCodes.data?.find(
+    (referralCode) => referralCode?.referralCode === value,
+  )
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     const toast = TOAST_MESSAGES.reduce((memo, type) => {
@@ -158,6 +165,7 @@ export const ReferrerSignForm = () => {
           {t("referrals.signForm.btn")}
         </Button>
       </div>
+      {referral && <ReferrerInfo referrerAddress={referral.accountAddress} />}
     </form>
   )
 }

@@ -744,6 +744,7 @@
   "referrals.rewards.claim": "Claim all rewards",
   "referrals.referrer.account": "Account",
   "referrals.referrer.tier": "Referrer Tier",
+  "referrals.referrer.feeRewards": "Fee rewards",
   "referrals.referrer.discount": "Discount on trading fees",
   "referrals.referrer.fee": "Referrer fee",
   "referrals.referee.fee": "Referee fee",

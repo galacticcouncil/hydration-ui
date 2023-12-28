@@ -11,8 +11,10 @@ import { useTranslation } from "react-i18next"
 
 export const ReferrerAddress = ({
   referrerAddress,
+  showReferralCode,
 }: {
   referrerAddress: string
+  showReferralCode?: boolean
 }) => {
   const { t } = useTranslation()
 
@@ -36,18 +38,20 @@ export const ReferrerAddress = ({
           shortenAccountAddress(getChainSpecificAddress(referrerAddress), 6)
         )}
       </Text>
-      <div sx={{ flex: "row", gap: 4, align: "center" }}>
-        <Text fs={11} color="white" css={{ opacity: "0.7" }}>
-          {t("referrals.referrer.code")}
-        </Text>
-        {referral.isInitialLoading ? (
-          <Skeleton height={12} width={60} />
-        ) : (
-          <Text fs={12} color="brightBlue300">
-            {referralCode}
+      {showReferralCode && (
+        <div sx={{ flex: "row", gap: 4, align: "center" }}>
+          <Text fs={11} color="white" css={{ opacity: "0.7" }}>
+            {t("referrals.referrer.code")}
           </Text>
-        )}
-      </div>
+          {referral.isInitialLoading ? (
+            <Skeleton height={12} width={60} />
+          ) : (
+            <Text fs={12} color="brightBlue300">
+              {referralCode}
+            </Text>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -66,3 +66,26 @@ const getUserReferrer =
 
     return (data?.toString() as string) || null
   }
+
+export const useReferrerInfo = (referrerAddress?: string) => {
+  const { api } = useRpcProvider()
+  return useQuery(
+    QUERY_KEYS.referrerInfo(referrerAddress),
+    !!referrerAddress ? getReferrerInfo(api, referrerAddress) : undefinedNoop,
+    {
+      enabled: !!referrerAddress,
+    },
+  )
+}
+
+const getReferrerInfo =
+  (api: ApiPromise, referrerAddress: string) => async () => {
+    const rawData = await api.query.referrals.referrer(referrerAddress)
+    //@ts-ignore
+    const [tier, paidRewards] = rawData.unwrapOr(null) ?? []
+
+    return {
+      tier: Number(tier.type.slice(-1)),
+      paidRewards: paidRewards.toBigNumber(),
+    }
+  }

@@ -59,7 +59,10 @@ export const useTransactionValues = ({
     : undefined
 
   const boundedTx =
-    featureFlags.referrals && !isLinkedAccount && storedReferralCode
+    featureFlags.referrals &&
+    !isLinkedAccount &&
+    storedReferralCode &&
+    tx.method.method !== "linkCode"
       ? api.tx.utility.batchAll([
           api.tx.referrals.linkCode(storedReferralCode),
           tx,
