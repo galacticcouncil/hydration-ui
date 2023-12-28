@@ -38,7 +38,7 @@
     "@galacticcouncil/math-staking": "^0.2.0",
     "@galacticcouncil/math-xyk": "^0.2.0",
     "@galacticcouncil/sdk": "^1.1.1",
-    "@galacticcouncil/ui": "^1.3.8",
+    "@galacticcouncil/ui": "^1.3.9",
     "@galacticcouncil/xcm-cfg": "^1.0.8",
     "@galacticcouncil/xcm-sdk": "^1.0.9",
     "@lit-labs/react": "^1.1.0",
