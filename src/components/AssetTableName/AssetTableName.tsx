@@ -29,7 +29,7 @@ export const AssetTableName = ({
       : asset.id
 
   return (
-    <div>
+    <div sx={{ width: ["max-content", "inherit"] }}>
       <div
         sx={{ flex: "row", gap: 8, align: "center", width: "fit-content" }}
         onClick={(e) => {
@@ -39,7 +39,7 @@ export const AssetTableName = ({
       >
         {typeof iconIds === "string" ? (
           <Icon
-            size={[large ? 28 : 24, 27]}
+            size={[large ? 28 : 26, 27]}
             icon={<AssetLogo id={iconIds} />}
           />
         ) : (
@@ -50,7 +50,7 @@ export const AssetTableName = ({
               return {
                 icon: (
                   <Icon
-                    size={[large ? 28 : 24, 27]}
+                    size={[large ? 28 : 26, 27]}
                     icon={<AssetLogo id={isBond ? meta.assetId : asset} />}
                   />
                 ),
@@ -85,7 +85,7 @@ export const AssetTableName = ({
           fw={700}
           sx={{
             mt: 4,
-            ml: large ? 30 : [32, 40],
+            ml: large ? 30 : [32, 36],
           }}
           color="brightBlue300"
           tTransform="uppercase"
