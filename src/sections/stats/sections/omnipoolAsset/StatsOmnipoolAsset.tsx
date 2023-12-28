@@ -1,5 +1,10 @@
 import { SOmnipoolAssetContainer } from "./StatsOmnipoolAsset.styled"
-import { MakeGenerics, Navigate, useSearch } from "@tanstack/react-location"
+import {
+  MakeGenerics,
+  Navigate,
+  useLocation,
+  useSearch,
+} from "@tanstack/react-location"
 import { Text } from "components/Typography/Text/Text"
 import { Icon } from "components/Icon/Icon"
 import { useTranslation } from "react-i18next"
@@ -20,9 +25,10 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { LiquidityProvidersTableSkeleton } from "sections/stats/sections/omnipoolAsset/LiquidityProvidersTable/skeleton/LiquidityProvidersTableSkeleton"
 import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
+import { LINKS } from "utils/navigation"
 
 type SearchGenerics = MakeGenerics<{
-  Search: { asset: number }
+  Search: { id: number }
 }>
 
 const OmnipoolAssetHeader = ({
@@ -113,9 +119,10 @@ const OmnipoolAssetHeader = ({
 
 export const StatsOmnipoolAsset = () => {
   const search = useSearch<SearchGenerics>()
-  const assetId = search.asset?.toString()
+  const assetId = search.id?.toString() as string
+  const location = useLocation()
 
-  if (!assetId) {
+  if (!assetId && location.current.pathname === LINKS.statsOmnipool) {
     return <Navigate to="/stats" />
   }
 
