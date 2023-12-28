@@ -68,7 +68,7 @@ export const WalletHeader = () => {
               size="small"
               variant="primary"
               sx={{ display: ["none", "inherit"] }}
-              onClick={() => toggleWeb3Connect()}
+              onClick={toggleWeb3Connect}
             >
               {t("wallet.header.switchAccount")}
             </Button>

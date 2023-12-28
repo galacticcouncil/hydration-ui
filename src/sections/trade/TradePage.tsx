@@ -19,6 +19,7 @@ export const TradePage = () => {
         isBondPage ? (
           <BackSubHeader
             label={isDesktop ? t("bonds.details.navigation.label") : ""}
+            to={LINKS.bonds}
           />
         ) : isDesktop ? (
           <Navigation />

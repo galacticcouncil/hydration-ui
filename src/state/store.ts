@@ -6,7 +6,6 @@ import { v4 as uuid } from "uuid"
 import { ReactElement } from "react"
 import BigNumber from "bignumber.js"
 import { StepProps } from "components/Stepper/Stepper"
-import { XCall } from "@galacticcouncil/xcm-sdk"
 
 export interface ToastMessage {
   onLoading?: ReactElement
@@ -24,9 +23,7 @@ export interface Account {
 
 export interface TransactionInput {
   title?: string
-  tx?: SubmittableExtrinsic
-  xcall?: XCall
-  xcallMeta?: Record<string, string>
+  tx: SubmittableExtrinsic
   overrides?: {
     fee: BigNumber
     currencyId?: string

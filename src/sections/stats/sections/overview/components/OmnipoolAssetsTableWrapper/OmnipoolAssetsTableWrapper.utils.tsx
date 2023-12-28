@@ -117,15 +117,13 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
             <Text fs={[14, 16]} color="white">
               {row.original.symbol}
             </Text>
-            {isDesktop && (
-              <Text
-                fs={12}
-                css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
-                sx={{ display: ["inherit", "none"] }}
-              >
-                {row.original.name}
-              </Text>
-            )}
+            <Text
+              fs={12}
+              css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
+              sx={{ display: ["inherit", "none"] }}
+            >
+              {row.original.name}
+            </Text>
           </div>
         </div>
       ),

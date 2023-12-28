@@ -1,14 +1,20 @@
 import { css } from "@emotion/react"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
+import { ModalContents } from "components/Modal/contents/ModalContents"
 import { useEffect } from "react"
+import { useTranslation } from "react-i18next"
+import { Web3ConnectAccountList } from "sections/web3-connect/accounts/Web3ConnectAccountList"
+import { Web3ConnectErrorModal } from "sections/web3-connect/modal/Web3ConnectErrorModal"
+import { Web3ConnectExternalModal } from "sections/web3-connect/modal/Web3ConnectExternalModal"
 import { Web3ConnectFooter } from "sections/web3-connect/modal/Web3ConnectFooter"
-import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
-import { Web3ConnectContent } from "sections/web3-connect/modal/Web3ConnectContent"
+import { Web3ConnectProviderPending } from "sections/web3-connect/providers/Web3ConnectProviderPending"
+import { Web3ConnectProviders } from "sections/web3-connect/providers/Web3ConnectProviders"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import {
-  WalletMode,
-  useWeb3ConnectStore,
-} from "sections/web3-connect/store/useWeb3ConnectStore"
+  WalletProviderType,
+  useWalletAccounts,
+} from "sections/web3-connect/Web3Connect.utils"
 
 enum ModalPage {
   ProviderSelect,
@@ -18,20 +24,21 @@ enum ModalPage {
 }
 
 export const Web3ConnectModal = () => {
+  const { t } = useTranslation()
+
   const {
     provider: activeProvider,
+    status,
     disconnect,
     open,
     toggle,
-    mode,
+    error,
   } = useWeb3ConnectStore()
+  const { data: accounts, isLoading } = useWalletAccounts(activeProvider)
 
-  const shouldShowProviderSelect =
-    mode !== WalletMode.Default || !activeProvider
-
-  const initialPage = shouldShowProviderSelect
-    ? ModalPage.ProviderSelect
-    : ModalPage.AccountSelect
+  const initialPage = activeProvider
+    ? ModalPage.AccountSelect
+    : ModalPage.ProviderSelect
 
   const { page, direction, paginateTo } = useModalPagination(initialPage)
 
@@ -62,6 +69,7 @@ export const Web3ConnectModal = () => {
     })
   }, [paginateTo])
 
+  const isConnecting = isLoading || status === "pending"
   const showFooter = activeProvider && page === ModalPage.AccountSelect
 
   return (
@@ -73,17 +81,52 @@ export const Web3ConnectModal = () => {
         --wallet-footer-height: 96px;
       `}
     >
-      <Web3ConnectContent
+      <ModalContents
         page={page}
         direction={direction}
         onBack={() => paginateTo(0)}
         onClose={toggle}
-        onSelect={() => paginateTo(ModalPage.AccountSelect)}
-        onRetry={() => paginateTo(ModalPage.ProviderSelect)}
+        contents={[
+          {
+            title: t("walletConnect.provider.title"),
+            content: <Web3ConnectProviders />,
+          },
+          {
+            title: t("walletConnect.provider.title"),
+            content: (
+              <Web3ConnectExternalModal
+                onClose={toggle}
+                onSelect={() => paginateTo(ModalPage.AccountSelect)}
+              />
+            ),
+          },
+          {
+            title: t("walletConnect.accountSelect.title"),
+            content:
+              activeProvider && isConnecting ? (
+                <Web3ConnectProviderPending provider={activeProvider} />
+              ) : (
+                <Web3ConnectAccountList accounts={accounts} />
+              ),
+          },
+          {
+            title: t("walletConnect.provider.title"),
+            content: (
+              <Web3ConnectErrorModal
+                message={error}
+                onRetry={() => {
+                  disconnect()
+                  paginateTo(ModalPage.ProviderSelect)
+                }}
+              />
+            ),
+          },
+        ]}
       />
       {showFooter && (
         <Web3ConnectFooter
           onSwitch={() => {
+            disconnect()
             paginateTo(0)
           }}
           onLogout={() => {

@@ -22,8 +22,8 @@ export const SExpandButton = styled(ButtonTransparent)<{
   & > svg {
     margin-right: 4px;
 
-    width: 11px;
-    height: 11px;
+    width: 12px;
+    height: 12px;
 
     transform: ${({ expanded }) => `rotate(${expanded ? 0 : -90}deg)`};
   }
@@ -60,8 +60,6 @@ export const SRawCallData = styled.div`
   color: ${theme.colors.darkBlue300};
 
   overflow-wrap: break-word;
-
-  font-variant: tabular-nums;
 
   & > span {
     color: ${theme.colors.brightBlue300};

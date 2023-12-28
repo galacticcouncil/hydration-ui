@@ -142,11 +142,9 @@ export const SContent = styled.div<{
       : hasTopContent
       ? css`
           height: calc(100vh - var(--modal-top-content-height));
-          height: calc(100dvh - var(--modal-top-content-height));
         `
       : css`
           height: 100vh;
-          height: 100dvh;
         `}
 
   animation: 150ms cubic-bezier(0.16, 1, 0.3, 1)

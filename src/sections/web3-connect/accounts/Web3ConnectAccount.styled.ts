@@ -2,10 +2,7 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SAccountItem = styled.div<{
-  isActive: boolean
-  isProxy?: boolean
-}>`
+export const SAccountItem = styled.div<{ isActive: boolean; isProxy: boolean }>`
   --secondary-color: ${({ isActive }) =>
     isActive ? theme.colors.pink600 : theme.colors.brightBlue300};
 
@@ -17,6 +14,10 @@ export const SAccountItem = styled.div<{
   border-radius: 4px;
 
   transition: background ${theme.transitions.default};
+
+  @media ${theme.viewport.gte.sm} {
+    margin-right: 12px;
+  }
 
   position: relative;
 

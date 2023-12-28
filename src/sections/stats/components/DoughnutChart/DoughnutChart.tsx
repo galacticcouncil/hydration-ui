@@ -29,7 +29,6 @@ export type TSlice = {
 
 type DoughnutChartProps = {
   slices: TSlice[]
-  property?: string
   label?: ({ slices }: { slices: TSlice[] }) => ReactNode
 }
 
@@ -68,7 +67,7 @@ export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
     label = props.label ? (
       props.label({ slices })
     ) : (
-      <DefaultSliceLabel slices={slices} property={props.property} />
+      <DefaultSliceLabel slices={slices} />
     )
   }
 

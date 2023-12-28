@@ -145,5 +145,5 @@ export const PieChart = <T extends DataEntry>({
     }, [])
     .sort((a) => (a.symbol !== "rest" ? -1 : 0))
 
-  return <DoughnutChart slices={slices} label={label} property={property} />
+  return <DoughnutChart slices={slices} label={label} />
 }
