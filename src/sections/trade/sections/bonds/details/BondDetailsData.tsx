@@ -154,9 +154,9 @@ export const BondDetailsData = () => {
 
   const bond = bondId ? assets.getBond(bondId) : undefined
 
-  const isPast = !!bond?.isPast
-  const lbpPoolEvents = useLBPPoolEvents(isPast ? bond?.id : undefined)
   const lbpPool = useLbpPool({ id: bond?.id })
+  const isPast = lbpPool.isLoading ? undefined : !lbpPool.data?.[0]
+  const lbpPoolEvents = useLBPPoolEvents(isPast === true ? bond?.id : undefined)
 
   const lbpPoolData = useMemo(() => {
     if (lbpPool.data)
@@ -185,7 +185,7 @@ export const BondDetailsData = () => {
     return undefined
   }, [lbpPool.data, lbpPoolEvents.data?.events])
 
-  if (!bond) return <BondDetailsSkeleton />
+  if (!bond || lbpPool.isLoading) return <BondDetailsSkeleton />
 
   return (
     <div sx={{ flex: "column", gap: [20, 40] }}>
@@ -206,6 +206,7 @@ export const BondDetailsData = () => {
         lbpPool={lbpPoolData?.data}
         poolId={lbpPoolData?.poolId}
         removeBlock={lbpPoolData?.removeBlock}
+        isPast={isPast}
       />
 
       <MyActiveBonds id={bond.id} showTransactions />

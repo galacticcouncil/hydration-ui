@@ -43,7 +43,7 @@ export const AssetSelect = (props: {
   const isTablet = useMedia(theme.viewport.gte.sm)
 
   const spotPriceId =
-    assets.isBond(asset) && asset.isPast ? asset.assetId : asset.id
+    assets.isBond(asset) && !asset.isTradable ? asset.assetId : asset.id
   const isShareToken = asset.isShareToken
 
   const spotPriceAsset = useDisplayPrice(isShareToken ? undefined : spotPriceId)

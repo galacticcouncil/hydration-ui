@@ -344,7 +344,13 @@ export const QUERY_KEYS = {
     id,
     !!myEvents,
   ],
+  bondEventsSquid: (id?: Maybe<string>, myEvents?: boolean) => [
+    "bondEvents",
+    id,
+    !!myEvents,
+  ],
   lbpPoolTotal: (id?: Maybe<string>) => ["lbpPoolTotal", id],
+  lbpAveragePrice: (poolAddress?: string) => ["lbpAveragePrice", poolAddress],
   poolHistoricalBalance: (pool?: string, block?: number) => [
     "poolHistoricalBalance",
     pool,
