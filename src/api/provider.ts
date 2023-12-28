@@ -1,11 +1,11 @@
-import { ApiPromise, WsProvider } from "@polkadot/api"
+import { WsProvider } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
-import * as definitions from "interfaces/voting/definitions"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getAssets } from "./assetDetails"
+import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
 
 export const PROVIDERS = [
   {
@@ -87,12 +87,9 @@ export const useProviderData = (rpcUrl?: string) => {
     QUERY_KEYS.provider(rpcUrl ?? import.meta.env.VITE_PROVIDER_URL),
     async ({ queryKey: [_, url] }) => {
       const provider = new WsProvider(url)
-      const types = Object.values(definitions).reduce(
-        (res, { types }): object => ({ ...res, ...types }),
-        {},
-      )
 
-      const api = await ApiPromise.create({ provider, types })
+      const apiPool = SubstrateApis.getInstance()
+      const api = await apiPool.api(provider.endpoint)
 
       const {
         isStableCoin,
