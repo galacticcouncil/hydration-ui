@@ -3,23 +3,22 @@ import { useCallback } from "react"
 
 export const useSearchFilter = () => {
   const navigate = useNavigate()
-  const { search } = useSearch<{
+  const search = useSearch<{
     Search: {
       search?: string
     }
   }>()
 
   const setSearchParam = useCallback(
-    (search?: string) =>
+    (searchAsset: string) =>
       navigate({
-        search: search
-          ? {
-              search,
-            }
-          : undefined,
+        search: {
+          ...search,
+          search: searchAsset.length > 0 ? searchAsset : undefined,
+        },
       }),
-    [navigate],
+    [navigate, search],
   )
 
-  return { search, setSearchParam }
+  return { search: search.search, setSearchParam }
 }

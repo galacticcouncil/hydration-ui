@@ -9,6 +9,7 @@ import StatsIcon from "assets/icons/ChartIcon.svg?react"
 import StakingIcon from "assets/icons/StakingIcon.svg?react"
 import IconBonds from "assets/icons/Bonds.svg?react"
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
+import { Search } from "@tanstack/react-location"
 
 export const LINKS = {
   home: "/",
@@ -51,10 +52,10 @@ const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
 export const MENU_ITEMS = [
   {
     key: "trade",
-    href: LINKS.trade,
+    href: LINKS.swap,
     Icon: TradeIcon,
     subItems: [
-      { key: "swap", href: LINKS.trade, Icon: IconSwap, enabled: true },
+      { key: "swap", href: LINKS.swap, Icon: IconSwap, enabled: true },
       { key: "dca", href: LINKS.dca, Icon: IconDCA, enabled: isDcaPageEnabled },
       { key: "otc", href: LINKS.otc, Icon: IconOTC, enabled: isOtcPageEnabled },
       {
@@ -73,7 +74,7 @@ export const MENU_ITEMS = [
   },
   {
     key: "liquidity",
-    href: LINKS.liquidity,
+    href: LINKS.allPools,
     Icon: PoolsAndFarmsIcon,
     subItems: undefined,
     enabled: true,
@@ -85,7 +86,7 @@ export const MENU_ITEMS = [
   },
   {
     key: "wallet",
-    href: LINKS.wallet,
+    href: LINKS.walletAssets,
     Icon: WalletIcon,
     subItems: undefined,
     enabled: true,
@@ -150,4 +151,18 @@ export type TabItem = (typeof MENU_ITEMS)[number]
 export type TabSubItem = (typeof MENU_ITEMS)[number]["subItems"]
 export type TabItemWithSubItems = TabItem & {
   subItems: NonNullable<TabSubItem>
+}
+
+export const resetSearchParams = <T>(searhParams: Partial<Search<T>>) => {
+  const persistSearchParams = ["account", "referral"]
+
+  const result: Record<string, T | undefined> = {}
+
+  for (const key in searhParams) {
+    result[key] = persistSearchParams.includes(key)
+      ? searhParams[key]
+      : undefined
+  }
+
+  return result
 }
