@@ -9,9 +9,11 @@ import { ReferrerCard } from "./components/ReferrerCard/ReferrerCard"
 import { RewardsCard } from "./components/RewardsCard/RewardsCard"
 import { TierStats } from "./components/TierStats/TierStats"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const ReferralsPage = () => {
   const { isLoaded, featureFlags } = useRpcProvider()
+  const { account } = useAccount()
 
   if (!isLoaded) return null
 
@@ -23,15 +25,19 @@ export const ReferralsPage = () => {
         <CodeForm />
       </HeroBanner>
       <Spacer size={30} />
-      <div sx={{ flex: ["column", "row"], gap: 20, flexWrap: "wrap" }}>
-        <RewardsCard />
-        <ReferrerCard />
-      </div>
-      <Spacer size={30} />
-      <TierStats />
-      <Spacer size={30} />
-      <ReferralsTableTableWrapper />
-      <Spacer size={30} />
+      {account && (
+        <>
+          <div sx={{ flex: ["column", "row"], gap: 20, flexWrap: "wrap" }}>
+            <RewardsCard />
+            <ReferrerCard />
+          </div>
+          <Spacer size={30} />
+          <TierStats />
+          <Spacer size={30} />
+          <ReferralsTableTableWrapper />
+          <Spacer size={30} />
+        </>
+      )}
       <FaqAccordion />
     </Page>
   )
