@@ -17,7 +17,7 @@ import {
 } from "./ReviewTransactionForm.utils"
 import { ReviewTransactionSummary } from "sections/transaction/ReviewTransactionSummary"
 
-type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
+type TxProps = Omit<Transaction, "id" | "tx" | "xcall" | "xcallmeta"> & {
   tx: SubmittableExtrinsic<"promise">
 }
 
@@ -33,6 +33,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const { account } = useAccount()
 
   const transactionValues = useTransactionValues({
+    xcall: props.xcallMeta,
     tx: props.tx,
     feePaymentId: props.overrides?.currencyId,
     fee: props.overrides?.fee,
