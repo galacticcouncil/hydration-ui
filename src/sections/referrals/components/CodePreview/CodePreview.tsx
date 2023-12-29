@@ -69,28 +69,34 @@ export const CodePreview: React.FC<Props> = ({
     <SContainer disabled={disabled}>
       <SPreviewContainer>
         <SPreviewBox isActive={hasExistingCode}>
-          <Text>
-            {hasExistingCode
-              ? t("referrals.preview.link.existing.title")
-              : t("referrals.preview.link.title")}
-          </Text>
-          <Text color="brightBlue300">
-            {urlDomain}
-            {urlPath}
-            {urlQuery}
-            <Text
-              as="span"
-              color={code ? "white" : "brightBlue300"}
-              sx={{ display: "inline" }}
-            >
-              {codeDisplay}
+          <div sx={{ flex: "column", gap: 8 }}>
+            <Text>
+              {hasExistingCode
+                ? t("referrals.preview.link.existing.title")
+                : t("referrals.preview.link.title")}
             </Text>
-          </Text>
+            <Text color="brightBlue300">
+              {urlDomain}
+              {urlPath}
+              {urlQuery}
+              <Text
+                as="span"
+                color={code ? "white" : "brightBlue300"}
+                sx={{ display: "inline" }}
+              >
+                {codeDisplay}
+              </Text>
+            </Text>
+          </div>
+
           <CopyButton disabled={!hasCode} text={fullUrl} />
         </SPreviewBox>
         <SPreviewBox isActive={hasExistingCode}>
-          <Text>{t("referrals.preview.code.title")}</Text>
-          <Text color="brightBlue300">{codeDisplay}</Text>
+          <div sx={{ flex: "column", gap: 8 }}>
+            <Text>{t("referrals.preview.code.title")}</Text>
+            <Text color="brightBlue300">{codeDisplay}</Text>
+          </div>
+
           <CopyButton disabled={!hasCode} text={code} />
         </SPreviewBox>
         <SPreviewPathSelect>
@@ -107,7 +113,7 @@ export const CodePreview: React.FC<Props> = ({
           ))}
         </SPreviewPathSelect>
       </SPreviewContainer>
-      {hasExistingCode && (
+      {false && hasExistingCode && (
         <SShareBox>
           <Button fullWidth variant="primary">
             {t("share")}

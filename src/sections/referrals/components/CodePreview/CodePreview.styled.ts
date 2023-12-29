@@ -44,12 +44,12 @@ export const SPreviewContainer = styled.div`
 
 export const SPreviewBox = styled.div<{ isActive?: boolean }>`
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
+  justify-content: space-between;
   gap: 4px;
-  position: relative;
+  flex-wrap: wrap;
 
-  padding: 14px 100px 14px 16px;
+  padding: 14px;
 
   border-radius: ${theme.borderRadius.default}px;
   border: ${({ isActive }) =>
@@ -86,14 +86,9 @@ export const SShareBox = styled.div`
 `
 
 export const SCopyButton = styled(Button)`
-  position: absolute;
-
   border-color: transparent !important;
 
-  right: 16px;
-  top: 50%;
-
-  transform: translateY(-50%) !important;
+  align-self: center;
 
   span {
     gap: 4px;

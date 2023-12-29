@@ -12,6 +12,7 @@ export const RewardsCard = () => {
       title={t("referrals.rewards.title")}
       variant="primary"
       icon={<Treasury width={16} height={16} />}
+      css={{ flexGrow: 1 }}
     >
       <div
         sx={{

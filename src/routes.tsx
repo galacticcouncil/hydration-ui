@@ -14,7 +14,7 @@ import { AllPools } from "sections/pools/sections/AllPools"
 import { MyLiquidity } from "sections/pools/sections/MyLiquidity"
 import { OmnipoolAndStablepool } from "sections/pools/sections/OmnipoolAndStablepool"
 import { IsolatedPools } from "sections/pools/sections/IsolatedPools"
-import { ReferralsPage } from "sections/referrals/ReferralsPage"
+import { ReferralsWrapper } from "sections/referrals/ReferralsPage"
 import { StatsPOL } from "sections/stats/sections/POL/StatsPOL"
 import { StatsOverview } from "sections/stats/sections/overview/StatsOverview"
 import { StatsOmnipoolAsset } from "sections/stats/sections/omnipoolAsset/StatsOmnipoolAsset"
@@ -161,7 +161,7 @@ export const routes = [
   },
   {
     path: "referrals",
-    element: <ReferralsPage />,
+    element: <ReferralsWrapper />,
   },
   {
     path: "*",
