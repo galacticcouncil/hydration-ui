@@ -20,10 +20,12 @@ import { isEvmAccount } from "utils/evm"
 import { BN_NAN } from "utils/constants"
 
 export const useTransactionValues = ({
+  xcall,
   feePaymentId,
   fee,
   tx,
 }: {
+  xcall?: Record<string, string>
   feePaymentId?: string
   fee?: BigNumber
   tx: SubmittableExtrinsic<"promise">
@@ -127,10 +129,16 @@ export const useTransactionValues = ({
       )
   }
 
-  const isEnoughPaymentBalance = feeAssetBalance.data.balance
-    .shiftedBy(-feePaymentMeta.decimals)
-    .minus(displayFeePaymentValue ?? 0)
-    .gt(0)
+  let isEnoughPaymentBalance
+  if (xcall && xcall["sourceChain"] !== "hydradx") {
+    // TODO: Refactor and check fee balance based on metadata
+    isEnoughPaymentBalance = true
+  } else {
+    isEnoughPaymentBalance = feeAssetBalance.data.balance
+      .shiftedBy(-feePaymentMeta.decimals)
+      .minus(displayFeePaymentValue ?? 0)
+      .gt(0)
+  }
 
   return {
     isLoading,
