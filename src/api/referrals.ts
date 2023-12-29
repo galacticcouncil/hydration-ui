@@ -4,6 +4,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types"
 import { undefinedNoop } from "utils/helpers"
+import BN from "bignumber.js"
 
 export const useReferralCodes = (accountAddress?: string | "all") => {
   const { api } = useRpcProvider()
@@ -87,5 +88,33 @@ const getReferrerInfo =
     return {
       tier: Number(tier.type.slice(-1)),
       paidRewards: paidRewards.toBigNumber(),
+    }
+  }
+
+export const useAccountReferralShares = (accountAddress?: string) => {
+  const { api } = useRpcProvider()
+  return useQuery(
+    QUERY_KEYS.accountReferralShares(accountAddress),
+    !!accountAddress
+      ? getAccountReferralShares(api, accountAddress)
+      : undefinedNoop,
+    {
+      enabled: !!accountAddress,
+    },
+  )
+}
+
+const getAccountReferralShares =
+  (api: ApiPromise, accountAddress: string) => async () => {
+    const [totalSharesRaw, accountSharesRaw] = await Promise.all([
+      api.query.referrals.totalShares(),
+      api.query.referrals.shares(accountAddress),
+    ])
+
+    return {
+      //@ts-ignore
+      accountShares: accountSharesRaw.toBigNumber() as BN,
+      //@ts-ignore
+      totalShares: totalSharesRaw.toBigNumber() as BN,
     }
   }

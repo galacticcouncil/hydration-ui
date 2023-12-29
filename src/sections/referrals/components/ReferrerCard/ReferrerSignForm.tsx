@@ -95,7 +95,7 @@ export const ReferrerSignForm = () => {
     <form
       onSubmit={form.handleSubmit(onSubmit)}
       autoComplete="off"
-      sx={{ flex: "column", gap: 16 }}
+      sx={{ flex: "column", gap: 16, width: "100%" }}
     >
       <Text fs={14} color="brightBlue300">
         {t("referrals.signForm.desc")}

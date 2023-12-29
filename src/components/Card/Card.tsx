@@ -36,7 +36,17 @@ export const Card: FC<Props> = ({
           </Text>
         </SHeader>
       )}
-      <div sx={{ p: 24, color: "white" }}>{children}</div>
+      <div
+        sx={{
+          p: "16px 20px 20px",
+          color: "white",
+          flex: "row",
+          align: "center",
+        }}
+        css={{ flex: 1 }}
+      >
+        {children}
+      </div>
     </SContainer>
   )
 }

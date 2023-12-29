@@ -16,7 +16,7 @@ export const ReferrerCard = () => {
       title="Your referrer"
       variant="secondary"
       icon={<ChainlinkIcon />}
-      css={{ flexGrow: 2 }}
+      css={{ flexGrow: 3 }}
     >
       {referrer.isInitialLoading ? (
         <Skeleton css={{ width: "100%" }} height={38} />

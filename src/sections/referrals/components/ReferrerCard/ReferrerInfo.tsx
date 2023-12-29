@@ -27,7 +27,9 @@ export const ReferrerInfo = ({
       <FeatureBox
         sx={{ width: "auto", flexGrow: 2 }}
         label={t("referrals.referrer.account")}
-        title={<ReferrerAddress referrerAddress={referrerAddress} />}
+        title={
+          <ReferrerAddress referrerAddress={referrerAddress} showReferralCode />
+        }
       />
       <FeatureBox
         sx={{ width: "auto", flexGrow: 1 }}

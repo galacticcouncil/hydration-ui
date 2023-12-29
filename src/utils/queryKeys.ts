@@ -372,4 +372,8 @@ export const QUERY_KEYS = {
   referralCodeLength: ["referralCodeLength"],
   userReferrer: (accountAddress?: string) => ["userReferrer", accountAddress],
   referrerInfo: (referrerAddress?: string) => ["referrerInfo", referrerAddress],
+  accountReferralShares: (accountAddress?: string) => [
+    "accountReferralShares",
+    accountAddress,
+  ],
 } as const

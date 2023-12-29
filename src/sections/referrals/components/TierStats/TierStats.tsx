@@ -11,7 +11,7 @@ export const TierStats = () => {
         <div sx={{ flex: ["column", "row"], gap: [12, 40] }}>
           <FeatureBox
             label={
-              <Text css={{ whiteSpace: "nowrap" }} color="green500">
+              <Text css={{ whiteSpace: "nowrap" }} color="green500" fs={14}>
                 {t("referrals.tiers.title")}
               </Text>
             }
@@ -24,12 +24,12 @@ export const TierStats = () => {
           <FeatureBox
             sx={{ ml: "auto", flexGrow: "0" }}
             label={
-              <Text css={{ whiteSpace: "nowrap" }} color="basic400">
+              <Text css={{ whiteSpace: "nowrap" }} color="basic400" fs={14}>
                 {t("referrals.referrer.fee")}
               </Text>
             }
             title={
-              <Text font="FontOver" tAlign={["left", "right"]} fs={19}>
+              <Text font="FontOver" tAlign={["left", "right"]} fs={16}>
                 10%
               </Text>
             }
@@ -37,29 +37,29 @@ export const TierStats = () => {
           <FeatureBox
             sx={{ ml: "auto", flexGrow: "0" }}
             label={
-              <Text css={{ whiteSpace: "nowrap" }} color="basic400">
+              <Text css={{ whiteSpace: "nowrap" }} color="basic400" fs={14}>
                 {t("referrals.referee.fee")}
               </Text>
             }
             title={
-              <Text font="FontOver" tAlign={["left", "right"]} fs={19}>
+              <Text font="FontOver" tAlign={["left", "right"]} fs={16}>
                 5%
               </Text>
             }
           />
+          <FeatureBox
+            label={
+              <Text css={{ whiteSpace: "nowrap" }} color="basic400" fs={14}>
+                {t("referrals.referrer.progress")}
+              </Text>
+            }
+            title={
+              <Text font="FontOver" fs={16}>
+                {t("referrals.tiers.tier")} {t("referrals.tiers.tier1")}
+              </Text>
+            }
+          />
         </div>
-      </Card>
-      <Card>
-        <FeatureBox
-          label={
-            <Text color="vibrantBlue100">{t("referrals.frens.title")}</Text>
-          }
-          title={
-            <Text font="FontOver" fs={19}>
-              10
-            </Text>
-          }
-        />
       </Card>
     </div>
   )

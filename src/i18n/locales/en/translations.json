@@ -741,6 +741,7 @@
   "referrals.tiers.tier2": "II",
   "referrals.tiers.tier3": "III",
   "referrals.rewards.title": "Your rewards",
+  "referrals.rewards.desc": "Total rewards",
   "referrals.rewards.claim": "Claim all rewards",
   "referrals.referrer.account": "Account",
   "referrals.referrer.tier": "Referrer Tier",
@@ -749,6 +750,7 @@
   "referrals.referrer.fee": "Referrer fee",
   "referrals.referee.fee": "Referee fee",
   "referrals.referrer.code": "Referral code:",
+  "referrals.referrer.progress": "Progress to next tier",
   "referrals.reviewTransaction.desc": "Enter referral code here to receive trading fees discount or trading volume rewards from your frens.",
   "referrals.table.header.title": "Your frens",
   "referrals.table.header.account": "Account",
@@ -765,5 +767,7 @@
   "referrals.toasts.storedCode.valid.title": "You got a fren discount!",
   "referrals.toasts.storedCode.valid.desc": "You got invited through referral code to use Hydra! Make first transaction to get trading discount :)",
   "referrals.toasts.storedCode.invalid.existence": "This referral code doesn’t exist.",
-  "referrals.toasts.storedCode.invalid.myCode": "Linking an account to own referral code is not allowed."
+  "referrals.toasts.storedCode.invalid.myCode": "Linking an account to own referral code is not allowed.",
+  "referrals.toasts.claim.onLoading": "Claiming {{value, bignumber(type: token)}} HDX from referrals.",
+  "referrals.toasts.claim.onSuccess": "You claimed {{value, bignumber(type: token)}} HDX from referrals."
 }
