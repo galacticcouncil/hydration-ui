@@ -21,7 +21,7 @@ import { Text } from "components/Typography/Text/Text"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { getAddressVariants } from "utils/formatting"
-import { ReferrerInfo } from "./ReferrerInfo"
+import { PreviewReferrer } from "sections/referrals/components/PreviewReferrer/PreviewReferrer"
 
 export const ReferrerSignForm = () => {
   const { api } = useRpcProvider()
@@ -95,77 +95,80 @@ export const ReferrerSignForm = () => {
     <form
       onSubmit={form.handleSubmit(onSubmit)}
       autoComplete="off"
-      sx={{ flex: "column", gap: 16, width: "100%" }}
+      sx={{ width: "100%" }}
     >
-      <Text fs={14} color="brightBlue300">
-        {t("referrals.signForm.desc")}
-      </Text>
-      <div sx={{ flex: "row", gap: 8, flexWrap: ["wrap", "nowrap"] }}>
-        <Controller
-          name="code"
-          control={form.control}
-          rules={{
-            required: t("referrals.input.error.required"),
-            validate: {
-              alphanumeric: (value) =>
-                REFERRAL_CODE_REGEX.test(value) ||
-                t("referrals.input.error.alphanumeric"),
-              length: (value) =>
-                value.length === referralCodeMaxLength ||
-                t("referrals.input.error.maxLength", {
-                  length: referralCodeMaxLength,
-                }),
-              validCode: (value) => {
-                const code = referralCodes.data?.find(
-                  (referralCode) => referralCode?.referralCode === value,
-                )
-
-                if (code) {
-                  if (
-                    account?.address &&
-                    code.accountAddress !==
-                      getAddressVariants(account.address).hydraAddress
+      <div sx={{ flex: "column", gap: 16 }}>
+        <Text fs={14} color="brightBlue300">
+          {t("referrals.signForm.desc")}
+        </Text>
+        <div sx={{ flex: "row", gap: 8, flexWrap: ["wrap", "nowrap"] }}>
+          <Controller
+            name="code"
+            control={form.control}
+            rules={{
+              required: t("referrals.input.error.required"),
+              validate: {
+                alphanumeric: (value) =>
+                  REFERRAL_CODE_REGEX.test(value) ||
+                  t("referrals.input.error.alphanumeric"),
+                length: (value) =>
+                  value.length === referralCodeMaxLength ||
+                  t("referrals.input.error.maxLength", {
+                    length: referralCodeMaxLength,
+                  }),
+                validCode: (value) => {
+                  const code = referralCodes.data?.find(
+                    (referralCode) => referralCode?.referralCode === value,
                   )
-                    return true
 
-                  return t("referrals.input.error.myCode")
-                }
+                  if (code) {
+                    if (
+                      account?.address &&
+                      code.accountAddress !==
+                        getAddressVariants(account.address).hydraAddress
+                    )
+                      return true
 
-                return t("referrals.input.error.invalidCode")
+                    return t("referrals.input.error.myCode")
+                  }
+
+                  return t("referrals.input.error.invalidCode")
+                },
               },
-            },
-          }}
-          render={({ field, fieldState: { error } }) => (
-            <div css={{ flex: 1, minWidth: 120, flexBasis: "60%" }}>
-              <SInput
-                autoComplete="off"
-                disabled={
-                  !account?.address || account.isExternalWalletConnected
-                }
-                hasError={!!error}
-                sx={{ height: 38 }}
-                placeholder={t("referrals.signForm.placeholder")}
-                {...field}
-                onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-              />
-              {error && (
-                <ErrorMessage css={{ position: "absolute" }}>
-                  {error.message}
-                </ErrorMessage>
-              )}
-            </div>
-          )}
-        />
-        <Button
-          variant="blue"
-          css={{ whiteSpace: "nowrap", flex: 1 }}
-          size="small"
-          disabled={!account?.address || account.isExternalWalletConnected}
-        >
-          {t("referrals.signForm.btn")}
-        </Button>
+            }}
+            render={({ field, fieldState: { error } }) => (
+              <div css={{ flex: 1, minWidth: 120, flexBasis: "60%" }}>
+                <SInput
+                  autoComplete="off"
+                  disabled={
+                    !account?.address || account.isExternalWalletConnected
+                  }
+                  hasError={!!error}
+                  sx={{ height: 38 }}
+                  placeholder={t("referrals.signForm.placeholder")}
+                  {...field}
+                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                />
+                {error && (
+                  <ErrorMessage css={{ position: "absolute" }}>
+                    {error.message}
+                  </ErrorMessage>
+                )}
+              </div>
+            )}
+          />
+          <Button
+            variant="blue"
+            css={{ whiteSpace: "nowrap", flex: 1 }}
+            size="small"
+            disabled={!account?.address || account.isExternalWalletConnected}
+          >
+            {t("referrals.signForm.btn")}
+          </Button>
+        </div>
       </div>
-      {referral && <ReferrerInfo referrerAddress={referral.accountAddress} />}
+
+      <PreviewReferrer referrerAddress={referral?.accountAddress} isPopover />
     </form>
   )
 }

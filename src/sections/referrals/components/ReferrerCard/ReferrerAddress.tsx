@@ -8,13 +8,16 @@ import { useAccountIdentity } from "api/stats"
 import Skeleton from "react-loading-skeleton"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import { ResponsiveValue } from "utils/responsive"
 
 export const ReferrerAddress = ({
   referrerAddress,
   showReferralCode,
+  fs = 19,
 }: {
   referrerAddress: string
   showReferralCode?: boolean
+  fs?: ResponsiveValue<number>
 }) => {
   const { t } = useTranslation()
 
@@ -29,7 +32,7 @@ export const ReferrerAddress = ({
 
   return (
     <div sx={{ flex: "column", gap: 2 }}>
-      <Text font="FontOver" fs={19}>
+      <Text font="FontOver" fs={fs}>
         {identity.isInitialLoading ? (
           <Skeleton height={22} width={200} />
         ) : identity.data?.identity ? (

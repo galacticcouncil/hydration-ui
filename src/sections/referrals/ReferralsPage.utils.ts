@@ -8,8 +8,8 @@ export const referralRewards: Record<
   { referrer: BN; user: BN; threshold: BN }
 > = {
   0: { referrer: BN(5), user: BN(10), threshold: BN(0) },
-  1: { referrer: BN(10), user: BN(11), threshold: BN(22000) },
-  2: { referrer: BN(15), user: BN(12), threshold: BN(222000) },
-  3: { referrer: BN(20), user: BN(13), threshold: BN(22000000) },
-  4: { referrer: BN(25), user: BN(15), threshold: BN(222000000) },
+  1: { referrer: BN(10), user: BN(11), threshold: BN(305) },
+  2: { referrer: BN(15), user: BN(12), threshold: BN(4583) },
+  3: { referrer: BN(20), user: BN(13), threshold: BN(61111) },
+  4: { referrer: BN(25), user: BN(15), threshold: BN(763888) },
 }

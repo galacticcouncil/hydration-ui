@@ -87,7 +87,7 @@ const getReferrerInfo =
 
     return {
       tier: Number(tier.type.slice(-1)),
-      paidRewards: paidRewards.toBigNumber(),
+      paidRewards: paidRewards.toBigNumber() as BN,
     }
   }
 
