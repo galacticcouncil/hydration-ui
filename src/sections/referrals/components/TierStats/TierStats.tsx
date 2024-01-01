@@ -2,65 +2,101 @@ import { Card } from "components/Card/Card"
 import { FeatureBox } from "components/FeatureBox/FeatureBox"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import Skeleton from "react-loading-skeleton"
+import { useReferrerTierData } from "sections/referrals/ReferralsPage.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { getAddressVariants } from "utils/formatting"
+import {
+  SBar,
+  SBarContainer,
+} from "sections/referrals/components/PreviewReferrer/PreviewReferrer.styled"
 
 export const TierStats = () => {
   const { t } = useTranslation()
+  const { account } = useAccount()
+
+  const referrerAddress = account?.address
+    ? getAddressVariants(account.address).hydraAddress
+    : undefined
+
+  const { referrerInfo, currentTierData, tierProgress } =
+    useReferrerTierData(referrerAddress)
+
   return (
-    <div sx={{ flex: ["column", "row"], gap: [30, 20] }}>
-      <Card>
-        <div sx={{ flex: ["column", "row"], gap: [12, 40] }}>
-          <FeatureBox
-            label={
-              <Text css={{ whiteSpace: "nowrap" }} color="green500" fs={14}>
-                {t("referrals.tiers.title")}
+    <Card>
+      <div sx={{ flex: ["column", "row"], gap: [12, 40], width: "100%" }}>
+        <FeatureBox
+          css={{ width: "25%", flex: 0 }}
+          label={
+            <Text css={{ whiteSpace: "nowrap" }} color="green500" fs={14}>
+              {t("referrals.tiers.title")}
+            </Text>
+          }
+          title={
+            referrerInfo.isLoading ? (
+              <Skeleton height={19} width={50} />
+            ) : (
+              <Text font="FontOver" fs={19} css={{ whiteSpace: "nowrap" }}>
+                {t(
+                  `referrals.tiers.tier${
+                    referrerInfo.data?.tier.toString() as "0" | "1" | "2" | "3"
+                  }`,
+                )}
               </Text>
-            }
-            title={
-              <Text font="FontOver" fs={19}>
-                {t("referrals.tiers.tier")} {t("referrals.tiers.tier1")}
-              </Text>
-            }
-          />
-          <FeatureBox
-            sx={{ ml: "auto", flexGrow: "0" }}
-            label={
-              <Text css={{ whiteSpace: "nowrap" }} color="basic400" fs={14}>
-                {t("referrals.referrer.fee")}
-              </Text>
-            }
-            title={
-              <Text font="FontOver" tAlign={["left", "right"]} fs={16}>
-                10%
-              </Text>
-            }
-          />
-          <FeatureBox
-            sx={{ ml: "auto", flexGrow: "0" }}
-            label={
-              <Text css={{ whiteSpace: "nowrap" }} color="basic400" fs={14}>
-                {t("referrals.referee.fee")}
-              </Text>
-            }
-            title={
-              <Text font="FontOver" tAlign={["left", "right"]} fs={16}>
-                5%
-              </Text>
-            }
-          />
-          <FeatureBox
-            label={
-              <Text css={{ whiteSpace: "nowrap" }} color="basic400" fs={14}>
-                {t("referrals.referrer.progress")}
-              </Text>
-            }
-            title={
-              <Text font="FontOver" fs={16}>
-                {t("referrals.tiers.tier")} {t("referrals.tiers.tier1")}
-              </Text>
-            }
-          />
-        </div>
-      </Card>
-    </div>
+            )
+          }
+        />
+        <FeatureBox
+          sx={{ ml: "auto", flexGrow: "0" }}
+          label={
+            <Text css={{ whiteSpace: "nowrap" }} color="basic400" fs={14}>
+              {t("referrals.referrer.fee")}
+            </Text>
+          }
+          title={
+            <Text font="FontOver" tAlign={["left", "right"]} fs={16}>
+              {currentTierData
+                ? t("value.percentage", {
+                    value: currentTierData.referrer,
+                  })
+                : "-"}
+            </Text>
+          }
+        />
+        <FeatureBox
+          sx={{ ml: "auto", flexGrow: "0" }}
+          label={
+            <Text css={{ whiteSpace: "nowrap" }} color="basic400" fs={14}>
+              {t("referrals.referee.fee")}
+            </Text>
+          }
+          title={
+            <Text font="FontOver" tAlign={["left", "right"]} fs={16}>
+              {currentTierData
+                ? t("value.percentage", {
+                    value: currentTierData.user,
+                  })
+                : "-"}
+            </Text>
+          }
+        />
+        <FeatureBox
+          css={{ flex: 1 }}
+          label={
+            <Text css={{ whiteSpace: "nowrap" }} color="basic400" fs={14}>
+              {t("referrals.referrer.progress")}
+            </Text>
+          }
+          title={
+            <SBarContainer>
+              <SBar
+                percentage={tierProgress?.toNumber() ?? 0}
+                variant="green"
+              />
+            </SBarContainer>
+          }
+        />
+      </div>
+    </Card>
   )
 }

@@ -1,15 +1,11 @@
 import { Text } from "components/Typography/Text/Text"
 import { SBar, SBarContainer, SContainer } from "./PreviewReferrer.styled"
 import { SSeparator } from "components/Separator/Separator.styled"
-import { useReferrerInfo } from "api/referrals"
-import { ReactElement, useMemo } from "react"
+import { ReactElement } from "react"
 import { useTranslation } from "react-i18next"
 import { ReferrerAddress } from "sections/referrals/components/ReferrerCard/ReferrerAddress"
 import Skeleton from "react-loading-skeleton"
-import { referralRewards } from "sections/referrals/ReferralsPage.utils"
-import { useAccountRewards } from "sections/referrals/components/RewardsCard/Rewards.utils"
-import { useRpcProvider } from "providers/rpcProvider"
-import BN from "bignumber.js"
+import { useReferrerTierData } from "sections/referrals/ReferralsPage.utils"
 
 const Option = ({
   label,
@@ -53,34 +49,9 @@ export const PreviewReferrer = ({
   isPopover?: boolean
   className?: string
 }) => {
-  const {
-    assets: { native },
-  } = useRpcProvider()
   const { t } = useTranslation()
-  const referrerInfo = useReferrerInfo(referrerAddress)
-  const accountRewards = useAccountRewards(referrerAddress)
-
-  const tierData = referrerInfo.data
-    ? referralRewards[referrerInfo.data.tier]
-    : undefined
-
-  const percentage = useMemo(() => {
-    const totalRewards = referrerInfo.data?.paidRewards
-      .shiftedBy(-native.decimals)
-      .plus(accountRewards.data ?? 0)
-
-    const nextTierData = referrerInfo.data
-      ? referralRewards[referrerInfo.data.tier + 1]
-      : undefined
-
-    if (totalRewards && nextTierData) {
-      return totalRewards.gt(nextTierData.threshold)
-        ? BN(100)
-        : totalRewards.div(nextTierData.threshold).multipliedBy(100)
-    }
-
-    return undefined
-  }, [accountRewards.data, native.decimals, referrerInfo.data])
+  const { referrerInfo, currentTierData, tierProgress } =
+    useReferrerTierData(referrerAddress)
 
   return (
     <div css={{ position: "relative" }}>
@@ -118,9 +89,9 @@ export const PreviewReferrer = ({
                 />
               ) : (
                 <Text font="FontOver" fs={12}>
-                  {tierData
+                  {currentTierData
                     ? t("value.percentage", {
-                        value: tierData.user,
+                        value: currentTierData.user,
                       })
                     : "-"}
                 </Text>
@@ -157,7 +128,7 @@ export const PreviewReferrer = ({
               ) : (
                 <SBarContainer>
                   <SBar
-                    percentage={percentage?.toNumber() ?? 0}
+                    percentage={tierProgress?.toNumber() ?? 0}
                     variant="pink"
                   />
                 </SBarContainer>
