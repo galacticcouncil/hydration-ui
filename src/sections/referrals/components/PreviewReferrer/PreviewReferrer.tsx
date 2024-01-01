@@ -21,7 +21,15 @@ const Option = ({
   className?: string
 }) => {
   return (
-    <div sx={{ flex: "column", gap: 8 }} className={className}>
+    <div
+      sx={{
+        flex: "column",
+        gap: 8,
+        justify: "space-between",
+        width: ["100%", "inherit"],
+      }}
+      className={className}
+    >
       <Text
         color="white"
         fs={11}
@@ -39,9 +47,11 @@ const Option = ({
 export const PreviewReferrer = ({
   referrerAddress,
   isPopover,
+  className,
 }: {
   referrerAddress?: string
   isPopover?: boolean
+  className?: string
 }) => {
   const {
     assets: { native },
@@ -75,7 +85,7 @@ export const PreviewReferrer = ({
   return (
     <div css={{ position: "relative" }}>
       {referrerAddress && (
-        <SContainer isPopover={!!isPopover}>
+        <SContainer isPopover={!!isPopover} className={className}>
           <div sx={{ p: "10px 20px" }}>
             <Text color="brightBlue200" fs={11}>
               {t("referrals.referrer.preview.label")}
@@ -83,14 +93,29 @@ export const PreviewReferrer = ({
           </div>
 
           <SSeparator color="white" opacity={0.12} />
-          <div sx={{ p: 20, flex: "row", gap: 20 }}>
-            <Option label={t("referrals.referrer.account")}>
+          <div
+            sx={{
+              p: 20,
+              flex: "row",
+              gap: 20,
+              flexWrap: "wrap",
+              justify: "space-between",
+            }}
+          >
+            <Option label={t("referrals.referrer.account")} css={{ flex: 0 }}>
               <ReferrerAddress referrerAddress={referrerAddress} fs={12} />
             </Option>
 
-            <Option label={t("referrals.referrer.feeRewards")}>
+            <Option
+              label={t("referrals.referrer.feeRewards")}
+              css={{ flex: 0 }}
+            >
               {referrerInfo.isLoading ? (
-                <Skeleton width={140} height={40} />
+                <Skeleton
+                  width={60}
+                  height={12}
+                  css={{ verticalAlign: "middle" }}
+                />
               ) : (
                 <Text font="FontOver" fs={12}>
                   {tierData
@@ -102,9 +127,16 @@ export const PreviewReferrer = ({
               )}
             </Option>
 
-            <Option label={t("referrals.referrer.preview.tier")}>
+            <Option
+              label={t("referrals.referrer.preview.tier")}
+              css={{ flex: 0 }}
+            >
               {referrerInfo.isLoading ? (
-                <Skeleton width={140} height={40} />
+                <Skeleton
+                  width={50}
+                  height={12}
+                  css={{ verticalAlign: "middle" }}
+                />
               ) : (
                 <Text font="FontOver" fs={12}>
                   {referrerInfo.data?.tier ?? "-"}
@@ -114,10 +146,14 @@ export const PreviewReferrer = ({
 
             <Option
               label={t("referrals.referrer.preview.progress")}
-              css={{ width: "70%" }}
+              css={{ minWidth: "200px" }}
             >
               {referrerInfo.isLoading ? (
-                <Skeleton width={140} height={40} />
+                <Skeleton
+                  width={140}
+                  height={12}
+                  css={{ verticalAlign: "middle" }}
+                />
               ) : (
                 <SBarContainer>
                   <SBar

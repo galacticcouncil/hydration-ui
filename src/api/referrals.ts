@@ -118,3 +118,24 @@ const getAccountReferralShares =
       totalShares: totalSharesRaw.toBigNumber() as BN,
     }
   }
+
+export const useReferrerAddress = (referrerCode: string) => {
+  const { api } = useRpcProvider()
+  return useQuery(
+    QUERY_KEYS.referrerAddress(referrerCode),
+    !!referrerCode ? getReferrerAddress(api, referrerCode) : undefinedNoop,
+    {
+      enabled: !!referrerCode,
+    },
+  )
+}
+
+const getReferrerAddress =
+  (api: ApiPromise, referrerCode: string) => async () => {
+    const rawData = await api.query.referrals.referralCodes(referrerCode)
+    console.log(rawData, "rawData")
+    //@ts-ignore
+    const data = rawData.unwrapOr(null)
+
+    return (data?.toString() as string) || null
+  }
