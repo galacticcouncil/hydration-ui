@@ -13,7 +13,7 @@ export const HeroBanner: FC<Props> = ({ children }) => {
   const { t } = useTranslation()
   return (
     <SContainer>
-      <div sx={{ width: ["100%", "50%"], mb: 40 }}>
+      <div sx={{ width: ["100%", "50%"] }}>
         <Heading fs={[28, 44]} font="ChakraPetch" sx={{ mb: 20 }}>
           {t("referrals.title")}
         </Heading>

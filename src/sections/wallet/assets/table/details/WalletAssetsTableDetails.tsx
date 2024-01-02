@@ -1,4 +1,4 @@
-import { chains } from "@galacticcouncil/xcm"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { ChainLogo } from "components/AssetIcon/AssetIcon"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
@@ -9,6 +9,8 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { SContainer } from "./WalletAssetsTableDetails.styled"
 import { NATIVE_ASSET_ID } from "utils/api"
+
+const chains = Array.from(chainsMap.values())
 
 export const WalletAssetsTableDetails = ({
   lockedDemocracy,

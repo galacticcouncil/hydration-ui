@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 import { randomAlphanumericString } from "utils/helpers"
 import DiceIcon from "assets/icons/DiceIcon.svg?react"
 import { REFERRAL_CODE_MAX_LENGTH } from "sections/referrals/ReferralsPage.utils"
+import { useReferralCodeLength } from "api/referrals"
 
 type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange"> & {
   error?: string
@@ -15,6 +16,8 @@ type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange"> & {
 export const CodeInput = forwardRef<HTMLInputElement, InputProps>(
   ({ onChange, className, error, ...props }, ref) => {
     const { t } = useTranslation()
+    const referralCodeLength = useReferralCodeLength()
+
     return (
       <SInputWrapper className={className}>
         <ChainlinkIcon />
@@ -24,7 +27,7 @@ export const CodeInput = forwardRef<HTMLInputElement, InputProps>(
           hasError={!!error}
           sx={!props.disabled ? { pr: [40, 180] } : {}}
           {...props}
-          onChange={(e) => onChange?.(e.target.value)}
+          onChange={(e) => onChange?.(e.target.value.toUpperCase())}
         />
         {!props.disabled && (
           <Button
@@ -32,7 +35,12 @@ export const CodeInput = forwardRef<HTMLInputElement, InputProps>(
             type="button"
             sx={{ px: [0, 6], py: [0, 2] }}
             onClick={() =>
-              onChange?.(randomAlphanumericString(REFERRAL_CODE_MAX_LENGTH))
+              onChange?.(
+                randomAlphanumericString(
+                  referralCodeLength.data?.toNumber() ??
+                    REFERRAL_CODE_MAX_LENGTH,
+                ).toUpperCase(),
+              )
             }
           >
             <DiceIcon sx={{ width: [24, 10], height: [24, 10], mr: [0, -4] }} />

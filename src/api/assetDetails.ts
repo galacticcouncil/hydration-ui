@@ -124,7 +124,7 @@ export type TBond = TAssetCommon & {
   assetType: "Bond"
   assetId: string
   maturity: number
-  isPast: boolean
+  isTradable: boolean
 }
 
 export type TToken = TAssetCommon & {
@@ -290,7 +290,7 @@ export const getAssets = async (api: ApiPromise) => {
           (location) => location[0].args[0].toString() === assetId.toString(),
         )?.[1]
 
-        const isPast = !rawTradeAssets.some(
+        const isTradable = rawTradeAssets.some(
           (tradeAsset) => tradeAsset.id === id,
         )
 
@@ -303,7 +303,7 @@ export const getAssets = async (api: ApiPromise) => {
           decimals,
           symbol,
           maturity: maturity.toNumber(),
-          isPast,
+          isTradable,
         }
 
         bonds.push(asset)

@@ -174,7 +174,7 @@ export const AssetsModalContent = ({
               key={asset.id}
               asset={asset}
               balance={balance.balance}
-              spotPriceId={asset.isPast ? asset.assetId : asset.id}
+              spotPriceId={!asset.isTradable ? asset.assetId : asset.id}
               onClick={(assetData) => onSelect?.(assetData)}
             />
           ))}

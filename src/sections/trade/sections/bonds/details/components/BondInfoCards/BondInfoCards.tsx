@@ -8,18 +8,18 @@ import AccumulatedAsset from "assets/icons/AccumulatedAsset.svg?react"
 import AvgPrice from "assets/icons/PriceChart.svg?react"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useDisplayPrice } from "utils/displayAsset"
-import { BN_0, BN_1 } from "utils/constants"
+import { BN_1 } from "utils/constants"
 import { useTranslation } from "react-i18next"
 import { TBond } from "api/assetDetails"
 import { formatDate } from "utils/formatting"
 import {
   isPoolLiquidityEvent,
   useHistoricalPoolBalance,
+  useLBPAveragePrice,
   useLBPPoolEvents,
   useLbpPool,
 } from "api/bonds"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useBondEvents } from "api/bonds"
 import BN from "bignumber.js"
 import { useTokenBalance } from "api/balances"
 
@@ -28,11 +28,13 @@ export const BondInfoCards = ({
   poolId,
   lbpPool,
   removeBlock,
+  isPast,
 }: {
   bond: TBond
   poolId?: string
   removeBlock?: number
   lbpPool?: NonNullable<ReturnType<typeof useLbpPool>["data"]>[number]
+  isPast?: boolean
 }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -50,37 +52,19 @@ export const BondInfoCards = ({
     .filter(isPoolLiquidityEvent)
     .find((event) => event.name === "LBP.LiquidityAdded")?.args
 
+  const averagePriceData = useLBPAveragePrice(
+    poolId || initialAccumulatedAsset?.who,
+  )
+
   const accumulatedAssetId = initialAccumulatedAsset?.assetA
   const initialAccumulatedAssetValue = initialAccumulatedAsset?.amountA
-  const isPast = bond.isPast
 
-  const tokenBalance = useTokenBalance(lbpPool?.assets[0], lbpPool?.id)
-  const bondEvents = useBondEvents(isPast ? bond.id : undefined)
+  const tokenBalance = useTokenBalance(
+    lbpPool?.assets[0].toString(),
+    lbpPool?.id,
+  )
 
-  const priceTotal = bondEvents.data?.events.reduce((acc, event) => {
-    const assetInId = event.args.assetIn
-    const assetOutId = event.args.assetOut
-
-    const metaIn = assets.getAsset(assetInId.toString())
-    const metaOut = assets.getAsset(assetOutId.toString())
-
-    const isBuy = event.name === "LBP.BuyExecuted"
-
-    const amountIn = BN(event.args.amount).shiftedBy(-metaIn.decimals)
-
-    const amountOut = BN(
-      event.args[isBuy ? "buyPrice" : "salePrice"],
-    ).shiftedBy(-metaOut.decimals)
-
-    const price =
-      event.args.assetOut !== Number(bond.id)
-        ? amountOut.div(amountIn)
-        : amountIn.div(amountOut)
-
-    return acc.plus(price)
-  }, BN_0)
-
-  const averagePrice = priceTotal?.div(bondEvents.data?.events.length ?? 1)
+  const averagePrice = averagePriceData.data?.price
 
   const currentSpotPrice = spotPrice.data?.spotPrice ?? BN_1
   const currentBondPrice = spotPriceBond.data?.spotPrice ?? BN_1

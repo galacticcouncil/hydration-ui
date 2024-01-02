@@ -11,6 +11,7 @@ import { Maybe, useNow } from "utils/helpers"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { ToastVariant } from "state/toasts"
+import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 
 export function ToastContent(props: {
   variant: Maybe<ToastVariant>
@@ -36,6 +37,8 @@ export function ToastContent(props: {
           <Spinner width={28} height={28} />
         ) : props.variant === "unknown" ? (
           <UnknownIcon color={theme.colors.darkBlue200} />
+        ) : props.variant === "temporary" ? (
+          <ChainlinkIcon color={theme.colors.white} />
         ) : (
           <InfoIcon />
         )}

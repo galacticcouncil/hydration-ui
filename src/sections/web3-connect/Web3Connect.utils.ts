@@ -22,7 +22,7 @@ import {
 import { WalletProviderType, getSupportedWallets } from "./wallets"
 import { ExternalWallet } from "./wallets/ExternalWallet"
 import { MetaMask } from "./wallets/MetaMask/MetaMask"
-import { requestNetworkSwitch } from "utils/metamask"
+import { isMetaMask, requestNetworkSwitch } from "utils/metamask"
 import { genesisHashToChain } from "utils/helpers"
 import { WalletAccount } from "sections/web3-connect/types"
 export type { WalletProvider } from "./wallets"
@@ -39,6 +39,43 @@ export const useWallet = () => {
 export const useAccount = () => {
   const account = useWeb3ConnectStore(useShallow((state) => state.account))
   return { account }
+}
+
+export const useEvmAccount = () => {
+  const { account } = useAccount()
+  const { wallet } = useWallet()
+
+  const address = account?.displayAddress ?? ""
+
+  const evm = useQuery(
+    QUERY_KEYS.evmChainInfo(address),
+    async () => {
+      const chainId = isMetaMask(wallet?.extension)
+        ? await wallet?.extension?.request({ method: "eth_chainId" })
+        : null
+
+      return {
+        chainId: Number(chainId),
+      }
+    },
+    {
+      enabled: !!address,
+    },
+  )
+
+  if (!address) {
+    return {
+      account: null,
+    }
+  }
+
+  return {
+    account: {
+      ...evm.data,
+      name: account?.name ?? "",
+      address: account?.displayAddress,
+    },
+  }
 }
 
 export const useReferralCode = () => {
@@ -99,15 +136,6 @@ export const useWeb3ConnectEagerEnable = () => {
   const prevWallet = usePrevious(wallet)
 
   const externalAddressRef = useRef(search?.account)
-
-  useEffect(() => {
-    const state = useWeb3ConnectStore.getState()
-
-    const hasReferralCode = !!state.referralCode
-    if (!hasReferralCode && search?.referral) {
-      state.setReferralCode(search.referral)
-    }
-  }, [search?.referral])
 
   useEffect(() => {
     const state = useWeb3ConnectStore.getState()
@@ -189,12 +217,15 @@ export const useEnableWallet = (
   options?: MutationObserverOptions,
 ) => {
   const { wallet } = getWalletProviderByType(provider)
+  const meta = useWeb3ConnectStore(useShallow((state) => state.meta))
   const { mutate: enable, ...mutation } = useMutation(
     async () => {
       await wallet?.enable(POLKADOT_APP_NAME)
 
-      if (wallet instanceof MetaMask && wallet.extension) {
-        await requestNetworkSwitch(wallet.extension)
+      if (wallet instanceof MetaMask) {
+        await requestNetworkSwitch(wallet.extension, {
+          chain: meta?.chain,
+        })
       }
     },
     {

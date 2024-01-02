@@ -10,7 +10,7 @@ import { HeaderDropdownItems } from "components/Layout/Header/HeaderDropdown/Hea
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { MENU_ITEMS } from "utils/navigation"
+import { MENU_ITEMS, resetSearchParams } from "utils/navigation"
 import { Trigger } from "@radix-ui/react-dropdown-menu"
 import MoreTabIcon from "assets/icons/MoreTabIcon.svg?react"
 
@@ -42,7 +42,7 @@ export const MoreMenuContents = ({
 }) => {
   const { t } = useTranslation()
 
-  const { account } = useSearch()
+  const search = useSearch()
 
   const filteredMenuItems = useMemo(() => {
     if (!items.length) {
@@ -66,7 +66,7 @@ export const MoreMenuContents = ({
               {filteredMenuItems.map((item) => (
                 <HeaderDropdownItem
                   to={item.href}
-                  search={account ? { account } : undefined}
+                  search={resetSearchParams(search)}
                   key={item.key}
                   icon={<item.Icon />}
                   title={t(`header.${item.key}`)}

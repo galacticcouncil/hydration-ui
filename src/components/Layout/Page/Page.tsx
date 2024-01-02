@@ -12,6 +12,8 @@ import { ProviderSelectButton } from "sections/provider/components/ProviderSelec
 import { useLocation } from "react-use"
 import { Interpolation, Theme } from "@emotion/react"
 import { Web3Connect } from "sections/web3-connect/Web3Connect"
+import { ReferralsConnect } from "sections/referrals/ReferralsConnect"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   className?: string
@@ -26,6 +28,7 @@ export const Page = ({
   subHeader,
   subHeaderStyle,
 }: Props) => {
+  const { featureFlags } = useRpcProvider()
   const ref = useRef<HTMLDivElement>(null)
   const location = useLocation()
 
@@ -53,6 +56,7 @@ export const Page = ({
         </div>
       </SPage>
       <Web3Connect />
+      {featureFlags.referrals && <ReferralsConnect />}
     </>
   )
 }

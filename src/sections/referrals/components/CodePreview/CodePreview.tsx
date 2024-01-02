@@ -8,8 +8,12 @@ import {
   SCopyButton,
   SPathButton,
   SPreviewBox,
+  SPreviewContainer,
   SPreviewPathSelect,
+  SShareBox,
 } from "./CodePreview.styled"
+import { Button } from "components/Button/Button"
+import CopyIcon from "assets/icons/CopyIcon.svg?react"
 
 const SELECTABLE_URL_PATHS = [
   {
@@ -40,10 +44,15 @@ const SELECTABLE_URL_PATHS = [
 
 type Props = {
   code?: string
+  hasExistingCode?: boolean
   disabled?: boolean
 }
 
-export const CodePreview: React.FC<Props> = ({ code, disabled = false }) => {
+export const CodePreview: React.FC<Props> = ({
+  code,
+  disabled = false,
+  hasExistingCode = false,
+}) => {
   const { t } = useTranslation()
 
   const hasCode = !!code
@@ -52,46 +61,65 @@ export const CodePreview: React.FC<Props> = ({ code, disabled = false }) => {
 
   const [urlPath, setUrlPath] = useState(SELECTABLE_URL_PATHS[0].path)
 
-  const urlDomain = import.meta.env.VITE_DOMAIN_URL
+  const urlDomain = window.location.origin
   const urlQuery = `?referral=`
   const fullUrl = `${urlDomain}${urlPath}${urlQuery}${codeDisplay}`
 
   return (
     <SContainer disabled={disabled}>
-      <SPreviewBox>
-        <Text>{t("referrals.preview.link.title")}</Text>
-        <Text color="brightBlue300">
-          {urlDomain}
-          {urlPath}
-          {urlQuery}
-          <Text
-            as="span"
-            color={code ? "white" : "brightBlue300"}
-            sx={{ display: "inline" }}
-          >
-            {codeDisplay}
-          </Text>
-        </Text>
-        <CopyButton disabled={!hasCode} text={fullUrl} />
-      </SPreviewBox>
-      <SPreviewBox>
-        <Text>{t("referrals.preview.code.title")}</Text>
-        <Text color="brightBlue300">{codeDisplay}</Text>
-        <CopyButton disabled={!hasCode} text={code} />
-      </SPreviewBox>
-      <SPreviewPathSelect>
-        <Text sx={{ mr: 5 }}>{t("referrals.preview.url.title")}</Text>
-        {SELECTABLE_URL_PATHS.map(({ path, tkey }) => (
-          <SPathButton
-            key={path}
-            active={urlPath === path}
-            size="micro"
-            onClick={() => setUrlPath(path)}
-          >
-            {t(tkey)}
-          </SPathButton>
-        ))}
-      </SPreviewPathSelect>
+      <SPreviewContainer>
+        <SPreviewBox isActive={hasExistingCode}>
+          <div sx={{ flex: "column", gap: 8 }}>
+            <Text>
+              {hasExistingCode
+                ? t("referrals.preview.link.existing.title")
+                : t("referrals.preview.link.title")}
+            </Text>
+            <Text color="brightBlue300">
+              {urlDomain}
+              {urlPath}
+              {urlQuery}
+              <Text
+                as="span"
+                color={code ? "white" : "brightBlue300"}
+                sx={{ display: "inline" }}
+              >
+                {codeDisplay}
+              </Text>
+            </Text>
+          </div>
+
+          <CopyButton disabled={!hasCode} text={fullUrl} />
+        </SPreviewBox>
+        <SPreviewBox isActive={hasExistingCode}>
+          <div sx={{ flex: "column", gap: 8 }}>
+            <Text>{t("referrals.preview.code.title")}</Text>
+            <Text color="brightBlue300">{codeDisplay}</Text>
+          </div>
+
+          <CopyButton disabled={!hasCode} text={code} />
+        </SPreviewBox>
+        <SPreviewPathSelect>
+          <Text sx={{ mr: 5 }}>{t("referrals.preview.url.title")}</Text>
+          {SELECTABLE_URL_PATHS.map(({ path, tkey }) => (
+            <SPathButton
+              key={path}
+              active={urlPath === path}
+              size="micro"
+              onClick={() => setUrlPath(path)}
+            >
+              {t(tkey)}
+            </SPathButton>
+          ))}
+        </SPreviewPathSelect>
+      </SPreviewContainer>
+      {false && hasExistingCode && (
+        <SShareBox>
+          <Button fullWidth variant="primary">
+            {t("share")}
+          </Button>
+        </SShareBox>
+      )}
     </SContainer>
   )
 }
@@ -131,6 +159,7 @@ const CopyButton: FC<
       onClick={copy}
       {...props}
     >
+      <CopyIcon width={12} height={12} sx={{ ml: -4 }} />
       {copied ? t("copied") : t("copy")}
     </SCopyButton>
   )
