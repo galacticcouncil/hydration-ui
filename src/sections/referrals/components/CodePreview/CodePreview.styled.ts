@@ -36,10 +36,6 @@ export const SPreviewContainer = styled.div`
     gap: 12px 16px;
     grid-template-columns: 2fr 1fr;
   }
-
-  @media ${theme.viewport.gte.md} {
-    max-width: 75%;
-  }
 `
 
 export const SPreviewBox = styled.div<{ isActive?: boolean }>`

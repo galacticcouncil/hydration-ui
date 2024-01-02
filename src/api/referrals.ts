@@ -133,7 +133,6 @@ export const useReferrerAddress = (referrerCode: string) => {
 const getReferrerAddress =
   (api: ApiPromise, referrerCode: string) => async () => {
     const rawData = await api.query.referrals.referralCodes(referrerCode)
-    console.log(rawData, "rawData")
     //@ts-ignore
     const data = rawData.unwrapOr(null)
 
