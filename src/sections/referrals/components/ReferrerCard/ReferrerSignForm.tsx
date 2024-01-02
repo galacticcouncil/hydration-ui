@@ -101,6 +101,9 @@ export const ReferrerSignForm = () => {
         <Text fs={14} color="brightBlue300">
           {t("referrals.signForm.desc")}
         </Text>
+        <Text fs={14} color="brightBlue300">
+          {t("referrals.signForm.desc2")}
+        </Text>
         <div sx={{ flex: "row", gap: 8, flexWrap: ["wrap", "nowrap"] }}>
           <Controller
             name="code"
