@@ -10,6 +10,8 @@ import {
   SBar,
   SBarContainer,
 } from "sections/referrals/components/PreviewReferrer/PreviewReferrer.styled"
+import { Icon } from "components/Icon/Icon"
+import LevelUp from "assets/icons/LevelUp.svg?react"
 
 export const TierStats = () => {
   const { t } = useTranslation()
@@ -19,7 +21,7 @@ export const TierStats = () => {
     ? getAddressVariants(account.address).hydraAddress
     : undefined
 
-  const { referrerInfo, currentTierData, tierProgress } =
+  const { referrerInfo, currentTierData, tierProgress, isLevelUp } =
     useReferrerTierData(referrerAddress)
 
   return (
@@ -86,6 +88,16 @@ export const TierStats = () => {
             <Text css={{ whiteSpace: "nowrap" }} color="basic400" fs={14}>
               {t("referrals.referrer.progress")}
             </Text>
+          }
+          secondaryLabel={
+            isLevelUp && (
+              <div sx={{ flex: "row", gap: 10 }}>
+                <Text css={{ whiteSpace: "nowrap" }} color="green500" fs={14}>
+                  {t("referrals.referrer.levelup")}
+                </Text>
+                <Icon sx={{ color: "green500" }} icon={<LevelUp />} />
+              </div>
+            )
           }
           title={
             <SBarContainer>

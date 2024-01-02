@@ -8,19 +8,21 @@ import { useAccountRewards, useClaimsMutation } from "./Rewards.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import Skeleton from "react-loading-skeleton"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useReferrerTierData } from "sections/referrals/ReferralsPage.utils"
 
 export const RewardsCard = () => {
   const { assets } = useRpcProvider()
   const { t } = useTranslation()
   const { account } = useAccount()
   const rewards = useAccountRewards(account?.address)
+  const { isLevelUp } = useReferrerTierData(account?.address)
 
   const { mutate, isLoading } = useClaimsMutation()
 
   return (
     <Card
       title={t("referrals.rewards.title")}
-      variant="primary"
+      variant={isLevelUp ? "green" : "primary"}
       icon={<Treasury width={16} height={16} />}
       css={{ flexGrow: 2 }}
     >
@@ -53,7 +55,7 @@ export const RewardsCard = () => {
           css={{ whiteSpace: "nowrap", height: "min-content" }}
           sx={{ width: ["100%", "auto"] }}
           size="small"
-          variant="primary"
+          variant={isLevelUp ? "green" : "primary"}
           isLoading={isLoading}
           disabled={
             !rewards.data ||
@@ -62,7 +64,11 @@ export const RewardsCard = () => {
           }
           onClick={() => mutate({ value: rewards.data })}
         >
-          {t("referrals.rewards.claim")}
+          {t(
+            isLevelUp
+              ? "referrals.rewards.claim.levelup"
+              : "referrals.rewards.claim",
+          )}
         </Button>
       </div>
     </Card>

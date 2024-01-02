@@ -8,7 +8,7 @@ type Props = {
   title?: string
   icon?: ReactNode
   children: ReactNode
-  variant?: "flat" | "primary" | "secondary"
+  variant?: "flat" | "primary" | "secondary" | "green"
   className?: string
 }
 
@@ -26,7 +26,12 @@ export const Card: FC<Props> = ({
           {icon && (
             <Icon
               sx={{
-                color: variant === "primary" ? "pink600" : "brightBlue300",
+                color:
+                  variant === "primary"
+                    ? "pink600"
+                    : variant === "green"
+                    ? "white"
+                    : "brightBlue300",
               }}
               icon={icon}
             />

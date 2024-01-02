@@ -47,5 +47,7 @@ export const useReferrerTierData = (referrerAddress?: string) => {
     return undefined
   }, [accountRewards.data, native.decimals, referrerInfo.data])
 
-  return { referrerInfo, currentTierData, tierProgress }
+  const isLevelUp = tierProgress?.gte(100) && referrerInfo.data?.tier !== 4
+
+  return { referrerInfo, currentTierData, tierProgress, isLevelUp }
 }

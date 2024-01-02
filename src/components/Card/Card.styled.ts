@@ -44,6 +44,10 @@ export const SContainer = styled.div<{ variant: string }>`
     if (variant === "secondary") {
       return `background: linear-gradient(0deg, rgba(44, 150, 239, 0.20) -142.91%, rgba(73, 105, 132, 0.03) 117%)`
     }
+
+    if (variant === "green") {
+      return "background: linear-gradient(0deg, rgba(97, 255, 246, 0.22) -0.13%, rgba(73, 105, 132, 0.02) 101.13%, rgba(73, 128, 132, 0.02) 101.13%), rgba(22, 67, 53, 0.70)"
+    }
   }}
 `
 
@@ -54,7 +58,7 @@ export const SHeader = styled.div<{ variant: string }>`
   align-items: center;
   gap: 12px;
 
-  border-bottom: 1px solid #202135;
+  border-bottom: 1px solid rgba(${theme.rgbColors.white}, 0.12);
 
   ${({ variant }) =>
     `border-bottom: 1px solid ${variant === "primary" ? "#55394e" : "202135"};`}
