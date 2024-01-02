@@ -11,7 +11,7 @@ import { TierStats } from "./components/TierStats/TierStats"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useReferralCodes } from "api/referrals"
-import { getAddressVariants } from "utils/formatting"
+import { getChainSpecificAddress } from "utils/formatting"
 
 export const ReferralsWrapper = () => {
   const { isLoaded, featureFlags } = useRpcProvider()
@@ -27,9 +27,7 @@ export const ReferralsPage = () => {
   const { account } = useAccount()
 
   const userReferralCode = useReferralCodes(
-    account?.address
-      ? getAddressVariants(account.address).hydraAddress
-      : undefined,
+    account?.address ? getChainSpecificAddress(account.address) : undefined,
   )
 
   const myReferralCode = userReferralCode.data?.[0]?.referralCode

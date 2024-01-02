@@ -86,7 +86,7 @@ const getReferrerInfo =
     const [tier, paidRewards] = rawData.unwrapOr(null) ?? []
 
     return {
-      tier: Number(tier.type.slice(-1)),
+      tier: false ? Number(tier.type.slice(-1)) : 0,
       paidRewards: paidRewards.toBigNumber() as BN,
     }
   }
@@ -138,3 +138,31 @@ const getReferrerAddress =
 
     return (data?.toString() as string) || null
   }
+
+export const useAccountReferees = (referrerAddress?: string) => {
+  const { api } = useRpcProvider()
+  return useQuery(
+    QUERY_KEYS.accountReferees(referrerAddress),
+    !!referrerAddress ? getReferees(api) : undefinedNoop,
+    {
+      enabled: !!referrerAddress,
+      select: (data) =>
+        data?.filter(({ referrer }) => referrer === referrerAddress),
+    },
+  )
+}
+
+const getReferees = (api: ApiPromise) => async () => {
+  const rawData = await api.query.referrals.linkedAccounts.entries()
+
+  const data = rawData.map(([rawCode, address]) => {
+    const [referee] = rawCode.toHuman() as string[]
+
+    return {
+      referrer: address.toString(),
+      referee,
+    }
+  })
+
+  return data
+}

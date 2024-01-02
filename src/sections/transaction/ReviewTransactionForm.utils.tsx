@@ -22,7 +22,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { isEvmAccount } from "utils/evm"
 import { BN_NAN } from "utils/constants"
 import { useReferralCodes } from "api/referrals"
-import { getAddressVariants } from "utils/formatting"
+import { getChainSpecificAddress } from "utils/formatting"
 
 export const useTransactionValues = ({
   xcall,
@@ -47,7 +47,7 @@ export const useTransactionValues = ({
 
   const userReferralCode = useReferralCodes(
     featureFlags.referrals && account?.address
-      ? getAddressVariants(account.address).hydraAddress
+      ? getChainSpecificAddress(account.address)
       : undefined,
   )
 

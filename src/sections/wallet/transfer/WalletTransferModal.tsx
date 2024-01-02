@@ -20,12 +20,19 @@ export function WalletTransferModal(props: {
   open: boolean
   onClose: () => void
   initialAsset: string
+  initialRecipient?: string
 }) {
   const { t } = useTranslation()
 
   const [asset, setAsset] = useState(props.initialAsset)
 
-  const form = useForm<{ dest: string; amount: string }>({})
+  const form = useForm<{ dest: string; amount: string }>(
+    props.initialRecipient
+      ? {
+          values: { dest: props.initialRecipient, amount: "" },
+        }
+      : {},
+  )
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { page, direction, paginateTo } = useModalPagination()
