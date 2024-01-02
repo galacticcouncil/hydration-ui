@@ -106,8 +106,6 @@ export const SPathButton = styled(Button)`
 `
 
 export const SPreviewPathSelect = styled.div`
-  padding-left: 16px;
-
   grid-column: span 2;
 
   display: flex;

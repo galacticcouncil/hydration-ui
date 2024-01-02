@@ -16,6 +16,7 @@ import { useReferrerInfo } from "api/referrals"
 import { useAccountIdentity } from "api/stats"
 import Skeleton from "react-loading-skeleton"
 import { referralRewards } from "sections/referrals/ReferralsPage.utils"
+import { BN_NAN } from "utils/constants"
 
 const AccountTier = ({ address }: { address: string }) => {
   const referrerInfo = useReferrerInfo(address)
@@ -41,15 +42,16 @@ const Rewards = ({ address }: { address: string }) => {
   const { t } = useTranslation()
   const referrerInfo = useReferrerInfo(address)
 
-  const currentTierData = referrerInfo.data
-    ? referralRewards[referrerInfo.data.tier]
-    : undefined
+  const currentTierData =
+    referrerInfo.data && referrerInfo.data.tier !== undefined
+      ? referralRewards[referrerInfo.data.tier]
+      : undefined
 
   if (referrerInfo.isLoading) return <Skeleton height={16} width={60} />
 
   return (
     <Text color="white" css={{ whiteSpace: "nowrap" }}>
-      {t("value.percentage", { value: currentTierData?.referrer })}
+      {t("value.percentage", { value: currentTierData?.referrer ?? BN_NAN })}
     </Text>
   )
 }

@@ -5,6 +5,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types"
 import { undefinedNoop } from "utils/helpers"
 import BN from "bignumber.js"
+import { BN_NAN } from "utils/constants"
 
 export const useReferralCodes = (accountAddress?: string | "all") => {
   const { api } = useRpcProvider()
@@ -82,11 +83,19 @@ export const useReferrerInfo = (referrerAddress?: string) => {
 const getReferrerInfo =
   (api: ApiPromise, referrerAddress: string) => async () => {
     const rawData = await api.query.referrals.referrer(referrerAddress)
+
+    if (rawData.isEmpty) {
+      return {
+        tier: undefined,
+        paidRewards: BN_NAN,
+      }
+    }
+
     //@ts-ignore
     const [tier, paidRewards] = rawData.unwrapOr(null) ?? []
 
     return {
-      tier: false ? Number(tier.type.slice(-1)) : 0,
+      tier: Number(tier.type.slice(-1)),
       paidRewards: paidRewards.toBigNumber() as BN,
     }
   }

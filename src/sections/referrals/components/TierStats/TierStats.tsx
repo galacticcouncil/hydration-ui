@@ -25,7 +25,7 @@ export const TierStats = () => {
     useReferrerTierData(referrerAddress)
 
   return (
-    <Card>
+    <Card css={{ paddingTop: 14 }}>
       <div sx={{ flex: ["column", "row"], gap: [12, 40], width: "100%" }}>
         <FeatureBox
           css={{ width: "25%", flex: 0 }}
@@ -41,7 +41,7 @@ export const TierStats = () => {
               <Text font="FontOver" fs={19} css={{ whiteSpace: "nowrap" }}>
                 {t(
                   `referrals.tiers.tier${
-                    referrerInfo.data?.tier.toString() as "0" | "1" | "2" | "3"
+                    referrerInfo.data?.tier?.toString() as "0" | "1" | "2" | "3"
                   }`,
                 )}
               </Text>
