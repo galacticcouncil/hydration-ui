@@ -3,8 +3,15 @@ import { ReferrerAddress } from "./ReferrerAddress"
 import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
 import { useReferrerInfo } from "api/referrals"
-import { referralRewards } from "sections/referrals/ReferralsPage.utils"
+import {
+  referralRewards,
+  useReferrerTierData,
+} from "sections/referrals/ReferralsPage.utils"
 import Skeleton from "react-loading-skeleton"
+import {
+  SBar,
+  SBarContainer,
+} from "sections/referrals/components/PreviewReferrer/PreviewReferrer.styled"
 
 export const ReferrerInfo = ({
   referrerAddress,
@@ -14,6 +21,7 @@ export const ReferrerInfo = ({
   const { t } = useTranslation()
 
   const referrerInfo = useReferrerInfo(referrerAddress)
+  const { tierProgress } = useReferrerTierData(referrerAddress)
 
   return (
     <div
@@ -21,18 +29,22 @@ export const ReferrerInfo = ({
         flex: ["column", "row"],
         gap: [20, 10],
         justify: "space-between",
-        align: "center",
+        align: "start",
+        width: "100%",
+        flexWrap: "wrap",
       }}
     >
       <FeatureBox
-        sx={{ width: "auto", flexGrow: 2 }}
+        sx={{ width: "auto" }}
+        css={{ flex: "1 0 33%" }}
         label={t("referrals.referrer.account")}
         title={
           <ReferrerAddress referrerAddress={referrerAddress} showReferralCode />
         }
       />
       <FeatureBox
-        sx={{ width: "auto", flexGrow: 1 }}
+        sx={{ width: "min-content" }}
+        css={{ flex: "1 0 33%" }}
         label={t("referrals.referrer.tier")}
         title={
           referrerInfo.isLoading ? (
@@ -46,7 +58,6 @@ export const ReferrerInfo = ({
       />
       <FeatureBox
         sx={{ width: "min-content" }}
-        css={{ flex: "unset" }}
         label={t("referrals.referrer.feeRewards")}
         title={
           referrerInfo.isLoading ? (
@@ -59,6 +70,20 @@ export const ReferrerInfo = ({
                   })
                 : "-"}
             </Text>
+          )
+        }
+      />
+      <FeatureBox
+        sx={{ width: "100%" }}
+        css={{ flex: 1, flexBasis: "100%" }}
+        label={t("referrals.referrer.preview.progress")}
+        title={
+          referrerInfo.isLoading ? (
+            <Skeleton width={140} height={40} />
+          ) : (
+            <SBarContainer>
+              <SBar percentage={tierProgress?.toNumber() ?? 0} variant="pink" />
+            </SBarContainer>
           )
         }
       />

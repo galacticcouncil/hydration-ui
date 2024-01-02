@@ -31,7 +31,7 @@ export const ReferrerAddress = ({
   const referralCode = referral.data?.[0]?.referralCode
 
   return (
-    <div sx={{ flex: "column", gap: 2, align: "end" }}>
+    <div sx={{ flex: "column", gap: 2 }}>
       <Text font="FontOver" fs={fs}>
         {identity.isInitialLoading ? (
           <Skeleton sx={{ height: fs }} width={180} />
