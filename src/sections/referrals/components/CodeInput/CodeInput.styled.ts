@@ -29,6 +29,15 @@ export const SInput = styled.input<{
   ::placeholder {
     color: ${theme.colors.brightBlue300};
   }
+  &:disabled {
+    cursor: not-allowed;
+
+    opacity: 0.7;
+
+    border: 1px solid ${theme.colors.darkBlue300};
+
+    color: ${theme.colors.darkBlue300};
+  }
 `
 
 export const SInputWrapper = styled.div`

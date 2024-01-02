@@ -16,6 +16,7 @@ import {
   useTransactionValues,
 } from "./ReviewTransactionForm.utils"
 import { ReviewTransactionSummary } from "sections/transaction/ReviewTransactionSummary"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall" | "xcallmeta"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -31,6 +32,7 @@ type Props = TxProps & {
 export const ReviewTransactionForm: FC<Props> = (props) => {
   const { t } = useTranslation()
   const { account } = useAccount()
+  const { setReferralCode } = useWeb3ConnectStore()
 
   const transactionValues = useTransactionValues({
     xcall: props.xcallMeta,
@@ -39,8 +41,16 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     fee: props.overrides?.fee,
   })
 
-  const { acceptedFeePaymentAssets, isEnoughPaymentBalance, feePaymentMeta } =
-    transactionValues.data
+  const {
+    acceptedFeePaymentAssets,
+    isEnoughPaymentBalance,
+    feePaymentMeta,
+    isLinkedAccount,
+    storedReferralCode,
+    tx,
+  } = transactionValues.data
+
+  const isLinking = !isLinkedAccount && storedReferralCode
 
   const {
     openEditFeePaymentAssetModal,
@@ -50,26 +60,32 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   const { wallet } = useWallet()
 
-  const signTx = useMutation(async () => {
-    const address = props.isProxy ? account?.delegate : account?.address
+  const signTx = useMutation(
+    async () => {
+      const address = props.isProxy ? account?.delegate : account?.address
 
-    if (!address) throw new Error("Missing active account")
-    if (!wallet) throw new Error("Missing wallet")
-    if (!wallet.signer) throw new Error("Missing signer")
+      if (!address) throw new Error("Missing active account")
+      if (!wallet) throw new Error("Missing wallet")
+      if (!wallet.signer) throw new Error("Missing signer")
 
-    if (wallet?.signer instanceof MetaMaskSigner) {
-      const tx = await wallet.signer.sendDispatch(props.tx.method.toHex())
-      return props.onEvmSigned(tx)
-    }
+      if (wallet?.signer instanceof MetaMaskSigner) {
+        const txSigner = await wallet.signer.sendDispatch(tx.method.toHex())
+        return props.onEvmSigned(txSigner)
+      }
 
-    const signature = await props.tx.signAsync(address, {
-      signer: wallet.signer,
-      // defer to polkadot/api to handle nonce w/ regard to mempool
-      nonce: -1,
-    })
+      const signature = await tx.signAsync(address, {
+        signer: wallet.signer,
+        // defer to polkadot/api to handle nonce w/ regard to mempool
+        nonce: -1,
+      })
 
-    return props.onSigned(signature)
-  })
+      return props.onSigned(signature)
+    },
+    {
+      onSuccess: () =>
+        isLinking && account && setReferralCode(undefined, account.address),
+    },
+  )
 
   const isLoading = transactionValues.isLoading || signTx.isLoading
   const hasMultipleFeeAssets = acceptedFeePaymentAssets.length > 1
@@ -108,9 +124,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           maxHeight: 280,
         }}
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
-        content={
-          <ReviewTransactionData address={account?.address} tx={props.tx} />
-        }
+        content={<ReviewTransactionData address={account?.address} tx={tx} />}
         footer={
           <div sx={{ mt: 15 }}>
             <ReviewTransactionSummary
@@ -119,6 +133,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
               hasMultipleFeeAssets={hasMultipleFeeAssets}
               xcallMeta={props.xcallMeta}
               openEditFeePaymentAssetModal={openEditFeePaymentAssetModal}
+              referralCode={isLinking ? storedReferralCode : undefined}
             />
             <div
               sx={{

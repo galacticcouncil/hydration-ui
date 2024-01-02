@@ -17,7 +17,7 @@ type FilterValues = {
 
 export const useWalletAssetsFilters = () => {
   const navigate = useNavigate()
-  const { search, category } = useSearch<{
+  const search = useSearch<{
     Search: {
       category?: AssetCategory
       search?: string
@@ -27,16 +27,15 @@ export const useWalletAssetsFilters = () => {
   const setFilter = (filter: Partial<FilterValues>) => {
     navigate({
       search: {
-        search,
-        category,
+        ...search,
         ...filter,
       },
     })
   }
 
   return {
-    category: category ?? "all",
-    search: search ?? "",
+    category: search.category ?? "all",
+    search: search.search ?? "",
     setFilter,
   }
 }

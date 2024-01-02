@@ -1,14 +1,15 @@
 import { Link, useSearch } from "@tanstack/react-location"
 import { SItem, SList } from "components/Layout/Header/menu/HeaderMenu.styled"
 import { useTranslation } from "react-i18next"
-import { MENU_ITEMS } from "utils/navigation"
+import { MENU_ITEMS, resetSearchParams } from "utils/navigation"
 import { HeaderSubMenu } from "./HeaderSubMenu"
 import { forwardRef } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const HeaderMenu = forwardRef<HTMLElement>((_, ref) => {
   const { t } = useTranslation()
-  const { account } = useSearch()
+  const search = useSearch()
+
   const { featureFlags } = useRpcProvider()
 
   const filteredItems = MENU_ITEMS.filter(
@@ -41,7 +42,7 @@ export const HeaderMenu = forwardRef<HTMLElement>((_, ref) => {
         return (
           <Link
             to={item.href}
-            search={account ? { account } : undefined}
+            search={resetSearchParams(search)}
             key={i}
             data-intersect={item.key}
           >

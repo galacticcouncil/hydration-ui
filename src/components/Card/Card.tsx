@@ -8,7 +8,7 @@ type Props = {
   title?: string
   icon?: ReactNode
   children: ReactNode
-  variant?: "flat" | "primary" | "secondary"
+  variant?: "flat" | "primary" | "secondary" | "green"
   className?: string
 }
 
@@ -21,18 +21,37 @@ export const Card: FC<Props> = ({
 }) => {
   return (
     <SContainer variant={variant} className={className}>
-      <SHeader>
-        {icon && (
-          <Icon
-            sx={{ color: variant === "primary" ? "pink600" : "brightBlue300" }}
-            icon={icon}
-          />
-        )}
-        <Text fs={15} color="white" font="FontOver" tTransform="uppercase">
-          {title}
-        </Text>
-      </SHeader>
-      <div sx={{ p: "28px 25px", color: "white" }}>{children}</div>
+      {title && (
+        <SHeader variant={variant}>
+          {icon && (
+            <Icon
+              sx={{
+                color:
+                  variant === "primary"
+                    ? "pink600"
+                    : variant === "green"
+                    ? "white"
+                    : "brightBlue300",
+              }}
+              icon={icon}
+            />
+          )}
+          <Text fs={15} color="white" font="FontOver" tTransform="uppercase">
+            {title}
+          </Text>
+        </SHeader>
+      )}
+      <div
+        sx={{
+          p: "16px 20px 20px",
+          color: "white",
+          flex: "row",
+          align: "center",
+        }}
+        css={{ flex: 1 }}
+      >
+        {children}
+      </div>
     </SContainer>
   )
 }

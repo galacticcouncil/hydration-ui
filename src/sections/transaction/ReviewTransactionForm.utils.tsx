@@ -13,11 +13,16 @@ import { useNextNonce, usePaymentInfo } from "api/transaction"
 import BigNumber from "bignumber.js"
 import { Trans, useTranslation } from "react-i18next"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import {
+  useAccount,
+  useReferralCode,
+} from "sections/web3-connect/Web3Connect.utils"
 import { BN_1 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 import { isEvmAccount } from "utils/evm"
 import { BN_NAN } from "utils/constants"
+import { useReferralCodes } from "api/referrals"
+import { getAddressVariants } from "utils/formatting"
 
 export const useTransactionValues = ({
   xcall,
@@ -30,7 +35,7 @@ export const useTransactionValues = ({
   fee?: BigNumber
   tx: SubmittableExtrinsic<"promise">
 }) => {
-  const { assets } = useRpcProvider()
+  const { assets, api, featureFlags } = useRpcProvider()
   const { account } = useAccount()
   const bestNumber = useBestNumber()
 
@@ -38,8 +43,38 @@ export const useTransactionValues = ({
     feePaymentId ? undefined : account?.address,
   )
 
+  /* REFERRALS */
+
+  const userReferralCode = useReferralCodes(
+    featureFlags.referrals && account?.address
+      ? getAddressVariants(account.address).hydraAddress
+      : undefined,
+  )
+
+  const isLinkedAccount = featureFlags.referrals
+    ? !!userReferralCode.data?.[0]?.referralCode
+    : true
+
+  const storedReferralCodes = useReferralCode()
+  const storedReferralCode = account?.address
+    ? storedReferralCodes.referralCode[account.address]
+    : undefined
+
+  const boundedTx =
+    featureFlags.referrals &&
+    !isLinkedAccount &&
+    storedReferralCode &&
+    tx.method.method !== "linkCode"
+      ? api.tx.utility.batchAll([
+          api.tx.referrals.linkCode(storedReferralCode),
+          tx,
+        ])
+      : tx
+
+  /* */
+
   const { data: paymentInfo, isLoading: isPaymentInfoLoading } =
-    usePaymentInfo(tx)
+    usePaymentInfo(boundedTx)
 
   // fee payment asset which should be displayed on the screen
   const accountFeePaymentId = feePaymentId ?? accountFeePaymentAsset.data
@@ -56,9 +91,9 @@ export const useTransactionValues = ({
   const nonce = useNextNonce(account?.address)
 
   const era = useEra(
-    tx.era,
+    boundedTx.era,
     bestNumber.data?.parachainBlockNumber.toString(),
-    tx.era.isMortalEra,
+    boundedTx.era.isMortalEra,
   )
 
   // assets with positive balance on the wallet
@@ -88,7 +123,8 @@ export const useTransactionValues = ({
     nonce.isLoading ||
     acceptedFeePaymentAssets.some(
       (acceptedFeePaymentAsset) => acceptedFeePaymentAsset.isInitialLoading,
-    )
+    ) ||
+    userReferralCode.isInitialLoading
 
   if (
     !feePaymentMeta ||
@@ -105,6 +141,9 @@ export const useTransactionValues = ({
         acceptedFeePaymentAssets: [],
         era,
         nonce: nonce.data,
+        isLinkedAccount,
+        storedReferralCode,
+        tx: boundedTx,
       },
     }
 
@@ -149,6 +188,9 @@ export const useTransactionValues = ({
       acceptedFeePaymentAssets,
       era,
       nonce: nonce.data,
+      isLinkedAccount,
+      storedReferralCode,
+      tx: boundedTx,
     },
   }
 }
