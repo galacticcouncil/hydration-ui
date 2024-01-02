@@ -92,7 +92,12 @@ export const TierStats = () => {
           secondaryLabel={
             isLevelUp && (
               <div sx={{ flex: "row", gap: 10 }}>
-                <Text css={{ whiteSpace: "nowrap" }} color="green500" fs={14}>
+                <Text
+                  css={{ whiteSpace: "nowrap" }}
+                  color="green500"
+                  fs={14}
+                  font="FontOver"
+                >
                   {t("referrals.referrer.levelup")}
                 </Text>
                 <Icon sx={{ color: "green500" }} icon={<LevelUp />} />
