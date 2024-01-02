@@ -15,7 +15,7 @@ import { getAcceptedCurrency, getAccountCurrency } from "./payments"
 import BN from "bignumber.js"
 import { format } from "date-fns"
 import { useRpcProvider } from "providers/rpcProvider"
-import { PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
+import { Asset, PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { BN_0 } from "utils/constants"
 
 export const useAssetTable = () => {
@@ -170,12 +170,17 @@ export const getAssets = async (api: ApiPromise) => {
     includeOnly: traderRoutes,
   })
 
+  let rawTradeAssets: Asset[] = []
+
+  try {
+    rawTradeAssets = await tradeRouter.getAllAssets()
+  } catch (e) {}
+
   const [
     system,
     rawAssetsData,
     rawAssetsMeta,
     rawAssetsLocations,
-    rawTradeAssets,
     hubAssetId,
     isReferralsEnabled,
   ] = await Promise.all([
@@ -183,7 +188,6 @@ export const getAssets = async (api: ApiPromise) => {
     api.query.assetRegistry.assets.entries(),
     api.query.assetRegistry.assetMetadataMap.entries(),
     api.query.assetRegistry.assetLocations.entries(),
-    tradeRouter.getAllAssets(),
     api.consts.omnipool.hubAssetId,
     api.query.referrals,
   ])
