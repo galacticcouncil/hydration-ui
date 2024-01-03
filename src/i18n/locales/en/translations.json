@@ -343,6 +343,8 @@
   "walletConnect.accountSelect.description": "Which account would you like to use?",
   "walletConnect.accountSelect.asset.network": "HydraDX address",
   "walletConnect.accountSelect.substrate.address": "Substrate address",
+  "walletconnect.accountSelect.search.placeholder": "Search by name or paste address",
+  "walletconnect.accountSelect.search.noResults": "No accounts found",
   "walletConnect.pending.title": "Waiting for authorization",
   "walletConnect.pending.description": "Please authorize your {{name}} wallet extension to connect to HydraDX.",
   "walletConnect.logout": "Log out",

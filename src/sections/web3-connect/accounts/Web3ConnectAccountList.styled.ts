@@ -23,3 +23,27 @@ export const SAccountsContainer = styled.div`
     background: rgba(41, 41, 45, 0.5);
   }
 `
+
+export const SAccountsSearchContainer = styled.div`
+  position: relative;
+
+  & > svg {
+    position: absolute;
+
+    top: 50%;
+    left: 12px;
+
+    transform: translateY(-50%);
+
+    color: rgba(${theme.rgbColors.white}, 0.4);
+  }
+
+  input[type="text"] {
+    padding-left: 48px;
+    background: rgba(158, 167, 186, 0.06);
+
+    &::placeholder {
+      color: rgba(${theme.rgbColors.white}, 0.4);
+    }
+  }
+`

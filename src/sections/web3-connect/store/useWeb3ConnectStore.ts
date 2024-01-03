@@ -19,7 +19,7 @@ export enum WalletMode {
 export type Account = {
   name: string
   address: string
-  displayAddress?: string
+  displayAddress: string
   genesisHash?: `0x${string}`
   provider: WalletProviderType
   isExternalWalletConnected?: boolean

@@ -45,7 +45,11 @@ export const WalletTransferAccountInput = (props: Props) => {
         </Text>
         <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
           {validAddress ? (
-            <AccountAvatar address={validAddress} size={45} />
+            <AccountAvatar
+              address={validAddress}
+              size={45}
+              css={{ transform: "scale(0.85)", transformOrigin: "left" }}
+            />
           ) : (
             <SIconContainer>
               <GuestIcon width={35} height={35} />
