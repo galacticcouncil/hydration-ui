@@ -1,48 +1,20 @@
+import { useAccountReferees } from "api/referrals"
 import { useMemo } from "react"
-import { BN_10, BN_100 } from "utils/constants"
-
-const MOCK_DATA = [
-  {
-    isIdentity: false,
-    account: "7NPoMQbiA6trJKkjB35uk96MeJD4PGWkLQLH7k7hXEkZpiba",
-    volume: BN_100,
-    rewards: BN_10,
-    tier: 1,
-  },
-  {
-    isIdentity: false,
-    account: "7NPoMQbiA6trJKkjB35uk96MeJD4PGWkLQLH7k7hXEkZpiba",
-    volume: BN_100,
-    rewards: BN_100,
-    tier: 2,
-  },
-  {
-    isIdentity: false,
-    account: "7NPoMQbiA6trJKkjB35uk96MeJD4PGWkLQLH7k7hXEkZpiba",
-    volume: BN_100,
-    rewards: BN_100,
-    tier: 3,
-  },
-  {
-    isIdentity: false,
-    account: "7NPoMQbiA6trJKkjB35uk96MeJD4PGWkLQLH7k7hXEkZpiba",
-    volume: BN_100,
-    rewards: BN_10,
-    tier: 1,
-  },
-  {
-    isIdentity: false,
-    account: "7NPoMQbiA6trJKkjB35uk96MeJD4PGWkLQLH7k7hXEkZpiba",
-    volume: BN_100,
-    rewards: BN_10,
-    tier: 3,
-  },
-]
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { getChainSpecificAddress } from "utils/formatting"
 
 export const useReferralsTableData = () => {
+  const { account } = useAccount()
+  const referees = useAccountReferees(
+    account?.address ? getChainSpecificAddress(account.address) : undefined,
+  )
+
   const data = useMemo(() => {
-    return MOCK_DATA
-  }, [])
+    if (!referees.data) return []
+    return referees.data.map((referee) => ({
+      account: referee.referee,
+    }))
+  }, [referees.data])
 
   return { data, isLoading: false }
 }

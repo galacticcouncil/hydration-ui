@@ -5,6 +5,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types"
 import { undefinedNoop } from "utils/helpers"
 import BN from "bignumber.js"
+import { BN_NAN } from "utils/constants"
 
 export const useReferralCodes = (accountAddress?: string | "all") => {
   const { api } = useRpcProvider()
@@ -82,6 +83,14 @@ export const useReferrerInfo = (referrerAddress?: string) => {
 const getReferrerInfo =
   (api: ApiPromise, referrerAddress: string) => async () => {
     const rawData = await api.query.referrals.referrer(referrerAddress)
+
+    if (rawData.isEmpty) {
+      return {
+        tier: undefined,
+        paidRewards: BN_NAN,
+      }
+    }
+
     //@ts-ignore
     const [tier, paidRewards] = rawData.unwrapOr(null) ?? []
 
@@ -138,3 +147,31 @@ const getReferrerAddress =
 
     return (data?.toString() as string) || null
   }
+
+export const useAccountReferees = (referrerAddress?: string) => {
+  const { api } = useRpcProvider()
+  return useQuery(
+    QUERY_KEYS.accountReferees(referrerAddress),
+    !!referrerAddress ? getReferees(api) : undefinedNoop,
+    {
+      enabled: !!referrerAddress,
+      select: (data) =>
+        data?.filter(({ referrer }) => referrer === referrerAddress),
+    },
+  )
+}
+
+const getReferees = (api: ApiPromise) => async () => {
+  const rawData = await api.query.referrals.linkedAccounts.entries()
+
+  const data = rawData.map(([rawCode, address]) => {
+    const [referee] = rawCode.toHuman() as string[]
+
+    return {
+      referrer: address.toString(),
+      referee,
+    }
+  })
+
+  return data
+}

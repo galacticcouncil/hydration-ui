@@ -28,7 +28,7 @@ export const RewardsCard = () => {
     >
       <div
         sx={{
-          flex: ["column", "row"],
+          flex: ["column"],
           flexWrap: ["wrap", "nowrap"],
           gap: 20,
           justify: "space-between",
@@ -53,7 +53,7 @@ export const RewardsCard = () => {
         />
         <Button
           css={{ whiteSpace: "nowrap", height: "min-content" }}
-          sx={{ width: ["100%", "auto"] }}
+          fullWidth
           size="small"
           variant={isLevelUp ? "green" : "primary"}
           isLoading={isLoading}

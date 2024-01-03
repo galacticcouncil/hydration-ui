@@ -20,7 +20,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { Text } from "components/Typography/Text/Text"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { getAddressVariants } from "utils/formatting"
+import { getChainSpecificAddress } from "utils/formatting"
 import { PreviewReferrer } from "sections/referrals/components/PreviewReferrer/PreviewReferrer"
 
 export const ReferrerSignForm = () => {
@@ -80,7 +80,7 @@ export const ReferrerSignForm = () => {
       await queryClient.refetchQueries({
         queryKey: QUERY_KEYS.referralCodes(
           account?.address
-            ? getAddressVariants(account.address).hydraAddress
+            ? getChainSpecificAddress(account.address)
             : undefined,
         ),
       })
@@ -128,7 +128,7 @@ export const ReferrerSignForm = () => {
                     if (
                       account?.address &&
                       code.accountAddress !==
-                        getAddressVariants(account.address).hydraAddress
+                        getChainSpecificAddress(account.address)
                     )
                       return true
 

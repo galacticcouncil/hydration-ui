@@ -25,18 +25,20 @@ export const useReferrerTierData = (referrerAddress?: string) => {
   const referrerInfo = useReferrerInfo(referrerAddress)
   const accountRewards = useAccountRewards(referrerAddress)
 
-  const currentTierData = referrerInfo.data
-    ? referralRewards[referrerInfo.data.tier]
-    : undefined
+  const currentTierData =
+    referrerInfo.data && referrerInfo.data.tier !== undefined
+      ? referralRewards[referrerInfo.data.tier]
+      : undefined
 
   const tierProgress = useMemo(() => {
     const totalRewards = referrerInfo.data?.paidRewards
       .shiftedBy(-native.decimals)
       .plus(accountRewards.data ?? 0)
 
-    const nextTierData = referrerInfo.data
-      ? referralRewards[referrerInfo.data.tier + 1]
-      : undefined
+    const nextTierData =
+      referrerInfo.data && referrerInfo.data.tier !== undefined
+        ? referralRewards[referrerInfo.data.tier + 1]
+        : undefined
 
     if (totalRewards && nextTierData) {
       return totalRewards.gt(nextTierData.threshold)
