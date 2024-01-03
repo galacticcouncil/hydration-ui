@@ -9,17 +9,22 @@ import { SBondSteps, SWhyBonds } from "./WhyBonds.styled"
 import WhyBondsIcon from "assets/icons/WhyBonds.svg?react"
 import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
-import { useState } from "react"
+import { SetStateAction, Dispatch } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
-export const WhyBonds = () => {
+export const WhyBonds = ({
+  expended,
+  setExpended,
+}: {
+  expended: boolean
+  setExpended: Dispatch<SetStateAction<boolean>>
+}) => {
   const { t } = useTranslation()
-  const [expanded, setExpanded] = useState(false)
 
   return (
     <SWhyBonds
-      expanded={expanded}
-      onClick={() => setExpanded((state) => !state)}
+      expanded={expended}
+      onClick={() => setExpended((state) => !state)}
     >
       <div sx={{ flex: "row", justify: "space-between", height: 24 }}>
         <div sx={{ flex: "row", gap: 8, align: "center" }}>
@@ -37,12 +42,12 @@ export const WhyBonds = () => {
 
         <div sx={{ flex: "row", align: "center" }}>
           <Text fs={13} color="darkBlue300">
-            {t(expanded ? "hide" : "show")}
+            {t(expended ? "hide" : "show")}
           </Text>
           <ButtonTransparent
             css={{
               color: theme.colors.iconGray,
-              transform: expanded ? "rotate(180deg)" : undefined,
+              transform: expended ? "rotate(180deg)" : undefined,
               transition: theme.transitions.default,
             }}
           >
@@ -52,7 +57,7 @@ export const WhyBonds = () => {
       </div>
 
       <AnimatePresence>
-        {expanded && (
+        {expended && (
           <motion.div
             initial={{ height: 0 }}
             animate={{ height: "auto" }}

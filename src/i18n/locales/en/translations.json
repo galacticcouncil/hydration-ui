@@ -688,7 +688,7 @@
   "bonds.details.progressBar.label": "Bonds distributed / Total issued:",
   "bonds.details.progressBar.value": "<0>{{sold, bignumber(type: token)}}</0><1> / {{total, bignumber(type: token)}}</1>",
   "bonds.details.card.bondPrice": "Current bond price",
-  "bonds.details.card.spotPrice": "Current spot price",
+  "bonds.details.card.spotPrice": "Current spot price {{symbol}}",
   "bonds.details.card.maturity": "Maturity date",
   "fund.modal.title": "Fund your wallet",
   "fund.modal.description": "Purchase HDX through very convenient solutions allowing to buy it through FIAT or from your exchange account, Find currently available solutions below.",
