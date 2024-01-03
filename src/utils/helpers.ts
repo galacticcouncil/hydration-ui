@@ -7,8 +7,8 @@ import { U8aLike } from "@polkadot/util/types"
 import { ApiPromise } from "@polkadot/api"
 import { KeyOfType } from "utils/types"
 import { knownGenesis } from "@polkadot/networks/defaults/genesis"
-import registry, { RegistryEntry } from "@substrate/ss58-registry"
-import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
+import { availableNetworks } from "@polkadot/networks"
+import type { Network } from "@polkadot/networks/types"
 
 export const noop = () => {}
 export const undefinedNoop = () => undefined
@@ -243,36 +243,24 @@ export function randomAlphanumericString(length: number) {
   return result
 }
 
-type ExtendedRegistryEntry = RegistryEntry & {
-  icon?: string
-}
 export const genesisHashToChain = (genesisHash?: `0x${string}`) => {
-  let chainInfo: ExtendedRegistryEntry = {
-    prefix: 42,
-    network: "substrate",
-    displayName: "Substrate",
-    symbols: [],
-    decimals: [],
-    standardAccount: "*25519",
-    website: "https://substrate.io",
-    icon: undefined,
-  }
+  let chainInfo = availableNetworks.find(
+    (c) => c.network === "substrate",
+  ) as Network
 
   if (!genesisHash) return chainInfo
 
   for (let chain in knownGenesis) {
     if (knownGenesis[chain].includes(genesisHash)) {
-      const chainIndex = registry.findIndex((entry) => entry.network === chain)
+      const chainIndex = availableNetworks.findIndex(
+        (entry) => entry.network === chain,
+      )
       if (chainIndex >= 0) {
-        chainInfo = registry[chainIndex]
+        chainInfo = availableNetworks[chainIndex]
         break
       }
     }
   }
 
   return chainInfo
-}
-
-export const getChainByPrefix = (prefix: number = HYDRADX_SS58_PREFIX) => {
-  return registry.find((entry) => entry.prefix === prefix)
 }

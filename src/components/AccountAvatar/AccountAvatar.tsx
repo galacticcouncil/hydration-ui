@@ -9,8 +9,7 @@ import { MetaMaskAvatar } from "./MetaMaskAvatar"
 import { isEvmAccount, isEvmAddress } from "utils/evm"
 import { WalletProviderType } from "sections/web3-connect/wallets"
 import { genesisHashToChain } from "utils/helpers"
-
-export type AvatarTheme = "evm" | "polkadot" | "talisman"
+import type { Icon } from "@polkadot/networks/types"
 
 type Props = {
   address: string
@@ -22,7 +21,8 @@ type Props = {
 
 export const AccountAvatar: FC<Props> = (props) => {
   const chain = genesisHashToChain(props.genesisHash)
-  const chainIcon = (chain?.icon as AvatarTheme) || "polkadot"
+  const chainIcon: Icon =
+    props.genesisHash && chain?.icon ? chain.icon : "polkadot"
 
   const isEvm = isEvmAccount(props.address) || isEvmAddress(props.address)
   const theme =
