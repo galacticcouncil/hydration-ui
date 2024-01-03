@@ -1,10 +1,10 @@
 import { FC, useMemo, useState } from "react"
 import {
   WalletProviderType,
+  useAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { MetaMask } from "sections/web3-connect/wallets/MetaMask"
 import { SAccountsContainer } from "./Web3ConnectAccountList.styled"
 import { Web3ConnectEvmAccount } from "./Web3ConnectEvmAccount"
 import { Web3ConnectExternalAccount } from "./Web3ConnectExternalAccount"
@@ -27,11 +27,11 @@ const getAccountComponentByType = (type: WalletProviderType | null) => {
 
 const AccountComponent: FC<
   Account & {
-    type: WalletProviderType | null
     isReady: boolean
     setBalanceMap: React.Dispatch<React.SetStateAction<Record<string, BN>>>
   }
-> = ({ setBalanceMap, type, isReady, ...account }) => {
+> = ({ setBalanceMap, isReady, ...account }) => {
+  const { type } = useWallet()
   const Component = getAccountComponentByType(type)
 
   const { balanceTotal, isLoading } = useWalletAssetsTotals({
@@ -50,39 +50,36 @@ const AccountComponent: FC<
   return isReady ? (
     <Component {...account} balance={balanceTotal} />
   ) : (
-    <Web3ConnectAccountPlaceholder />
+    <Web3ConnectAccountPlaceholder {...account} />
   )
 }
 
 export const Web3ConnectAccountList: FC<{
   accounts?: Account[]
 }> = ({ accounts = [] }) => {
-  const { type, wallet } = useWallet()
-
-  // show only main account for metamask
-  const accountList =
-    wallet instanceof MetaMask ? accounts.slice(0, 1) : accounts
-
+  const { account } = useAccount()
   const [balanceMap, setBalanceMap] = useState<Record<string, BN>>({})
-  const isReady = Object.keys(balanceMap).length === accountList.length
+  const isReady = Object.keys(balanceMap).length === accounts.length
 
-  const sortedAccounts = useMemo(() => {
-    if (!isReady) return accountList
-    return accountList.sort((a, b) => {
+  const accountList = useMemo(() => {
+    if (!isReady) return accounts
+    return accounts.sort((a, b) => {
+      if (a.address === account?.address) return -1
+      if (b.address === account?.address) return 1
+
       const aBalance = balanceMap[a.address]
       const bBalance = balanceMap[b.address]
       if (!aBalance || !bBalance) return 0
       return bBalance.comparedTo(aBalance)
     })
-  }, [balanceMap, accountList, isReady])
+  }, [isReady, accounts, account?.address, balanceMap])
 
   return (
     <SAccountsContainer>
-      {sortedAccounts?.map((account) => (
+      {accountList?.map((account) => (
         <AccountComponent
           key={account.address}
           {...account}
-          type={type}
           isReady={isReady}
           setBalanceMap={setBalanceMap}
         />

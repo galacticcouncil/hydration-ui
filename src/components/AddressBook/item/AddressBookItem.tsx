@@ -13,7 +13,6 @@ import {
 } from "./AddressBookItem.styled"
 import { AddressBookItemEdit } from "./edit/AddressBookItemEdit"
 import { AddressBookItemRemove } from "./remove/AddressBookItemRemove"
-import { isEvmAddress } from "utils/evm"
 import { Address } from "components/AddressBook/AddressBook.utils"
 
 type Props = Address & {
@@ -45,11 +44,7 @@ export const AddressBookItem = ({
     <>
       <SItem onClick={() => onSelect(address)}>
         <SNameContainer>
-          <AccountAvatar
-            theme={isEvmAddress(address) ? "metamask" : undefined}
-            address={address}
-            size={30}
-          />
+          <AccountAvatar address={address} size={30} />
           <SName>{name}</SName>
         </SNameContainer>
         <SAddressContainer>

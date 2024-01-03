@@ -25,6 +25,7 @@ import { MetaMask } from "./wallets/MetaMask/MetaMask"
 import { isMetaMask, requestNetworkSwitch } from "utils/metamask"
 import { genesisHashToChain } from "utils/helpers"
 import { WalletAccount } from "sections/web3-connect/types"
+import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -111,7 +112,7 @@ export const useWalletAccounts = (
             displayAddress: isEvm
               ? address
               : safeConvertAddressSS58(address, chainInfo.prefix) || address,
-            ss58Prefix: chainInfo.prefix,
+            genesisHash,
             name: name ?? "",
             provider: wallet?.extensionName as WalletProviderType,
             isExternalWalletConnected: wallet instanceof ExternalWallet,
@@ -187,7 +188,7 @@ export const useWeb3ConnectEagerEnable = () => {
   }, [])
 
   useEffect(() => {
-    const hasWalletDisconnected = !wallet && !!prevWallet
+    const hasWalletDisconnected = prevWallet && prevWallet !== wallet
 
     // look for disconnect to clean up
     if (hasWalletDisconnected) {
@@ -279,6 +280,11 @@ export function setExternalWallet(externalAddress = "") {
       },
     })
   }
+}
+
+export function isEvmProvider(provider: WalletProviderType | null) {
+  if (!provider) return false
+  return EVM_PROVIDERS.includes(provider)
 }
 
 export function getWalletProviderByType(type?: WalletProviderType | null) {

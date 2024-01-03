@@ -1,6 +1,9 @@
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { useTranslation } from "react-i18next"
-import { useWalletAccounts } from "sections/web3-connect/Web3Connect.utils"
+import {
+  isEvmProvider,
+  useWalletAccounts,
+} from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectAccountList } from "sections/web3-connect/accounts/Web3ConnectAccountList"
 import { Web3ConnectErrorModal } from "sections/web3-connect/modal/Web3ConnectErrorModal"
 import { Web3ConnectExternalModal } from "sections/web3-connect/modal/Web3ConnectExternalModal"
@@ -33,7 +36,10 @@ export const Web3ConnectContent: React.FC<Props> = ({
     meta,
   } = useWeb3ConnectStore()
 
-  const { data: accounts, isLoading } = useWalletAccounts(activeProvider)
+  const { data, isLoading } = useWalletAccounts(activeProvider)
+  // Only show the first (active) account for EVM providers
+  const accounts = isEvmProvider(activeProvider) ? data?.slice(0, 1) : data
+
   const isConnecting = isLoading || status === "pending"
 
   const chain = meta?.chain ? chainsMap.get(meta?.chain) : null

@@ -6,7 +6,7 @@ import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { getAddressVariants } from "utils/formatting"
 import { SAccountItem } from "./Web3ConnectAccount.styled"
 import { Web3ConnectAccountSelect } from "./Web3ConnectAccountSelect"
-import { getChainByPrefix } from "utils/helpers"
+import { genesisHashToChain } from "utils/helpers"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import BN from "bignumber.js"
 
@@ -25,9 +25,11 @@ export const Web3ConnectAccount: FC<Props> = ({
   ...account
 }) => {
   const { t } = useTranslation()
-  const { address, name, provider, displayAddress, ss58Prefix } = account
+  const { address, name, displayAddress, provider, genesisHash } = account
 
   const { hydraAddress } = getAddressVariants(address)
+
+  const chain = genesisHashToChain(genesisHash)
 
   return (
     <SAccountItem
@@ -62,13 +64,10 @@ export const Web3ConnectAccount: FC<Props> = ({
       )}
       <div sx={{ flex: "column", mt: 12, gap: 12 }}>
         <Web3ConnectAccountSelect
-          name={
-            Number.isFinite(ss58Prefix)
-              ? getChainByPrefix(ss58Prefix)?.displayName ?? ""
-              : ""
-          }
+          name={chain?.displayName ?? ""}
           address={displayAddress || hydraAddress}
-          theme={provider}
+          genesisHash={genesisHash}
+          provider={provider}
           isProxy={isProxy}
         />
       </div>

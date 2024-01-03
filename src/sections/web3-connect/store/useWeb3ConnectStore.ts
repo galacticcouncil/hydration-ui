@@ -20,7 +20,7 @@ export type Account = {
   name: string
   address: string
   displayAddress?: string
-  ss58Prefix?: number
+  genesisHash?: `0x${string}`
   provider: WalletProviderType
   isExternalWalletConnected?: boolean
   delegate?: string
@@ -114,7 +114,7 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
     {
       name: "web3-connect",
       partialize: (state) => omit(["open"], state),
-      version: 3,
+      version: 4,
     },
   ),
 )

@@ -243,8 +243,11 @@ export function randomAlphanumericString(length: number) {
   return result
 }
 
+type ExtendedRegistryEntry = RegistryEntry & {
+  icon?: string
+}
 export const genesisHashToChain = (genesisHash?: `0x${string}`) => {
-  let chainInfo: RegistryEntry = {
+  let chainInfo: ExtendedRegistryEntry = {
     prefix: 42,
     network: "substrate",
     displayName: "Substrate",
@@ -252,6 +255,7 @@ export const genesisHashToChain = (genesisHash?: `0x${string}`) => {
     decimals: [],
     standardAccount: "*25519",
     website: "https://substrate.io",
+    icon: undefined,
   }
 
   if (!genesisHash) return chainInfo

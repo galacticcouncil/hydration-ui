@@ -1,3 +1,4 @@
+import { FC } from "react"
 import { isHex, isU8a, u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { TalismanAvatar } from "components/AccountAvatar/TalismanAvatar"
@@ -5,18 +6,42 @@ import { safeConvertAddressSS58 } from "utils/formatting"
 import { JdenticonAvatar } from "./JdenticonAvatar"
 import { PolkadotAvatar } from "./PolkadotAvatar"
 import { MetaMaskAvatar } from "./MetaMaskAvatar"
+import { isEvmAccount, isEvmAddress } from "utils/evm"
+import { WalletProviderType } from "sections/web3-connect/wallets"
+import { genesisHashToChain } from "utils/helpers"
 
-export function AccountAvatar(props: {
+export type AvatarTheme = "evm" | "polkadot" | "talisman"
+
+type Props = {
   address: string
   size: number
-  theme?: string
+  genesisHash?: `0x${string}`
   className?: string
-  prefix?: number
-}) {
-  if (props.theme === "metamask") {
+  provider?: WalletProviderType
+}
+
+export const AccountAvatar: FC<Props> = (props) => {
+  const chain = genesisHashToChain(props.genesisHash)
+  const chainIcon = (chain?.icon as AvatarTheme) || "polkadot"
+
+  const isEvm = isEvmAccount(props.address) || isEvmAddress(props.address)
+  const theme =
+    props.provider === "talisman" ? "talisman" : isEvm ? "evm" : chainIcon
+
+  if (theme === "evm") {
     return (
       <MetaMaskAvatar
         address={props.address}
+        size={props.size}
+        className={props.className}
+      />
+    )
+  }
+
+  if (theme === "talisman") {
+    return (
+      <TalismanAvatar
+        seed={props.address}
         size={props.size}
         className={props.className}
       />
@@ -27,22 +52,10 @@ export function AccountAvatar(props: {
 
   const address =
     isU8a(props.address) || isHex(props.address)
-      ? encodeAddress(props.address, props.prefix)
+      ? encodeAddress(props.address, chain.prefix)
       : props.address || ""
 
-  const publicKey = u8aToHex(decodeAddress(address, false, props.prefix))
-
-  if (props.theme === "talisman") {
-    return (
-      <TalismanAvatar
-        seed={address}
-        size={props.size}
-        className={props.className}
-      />
-    )
-  }
-
-  if (props.theme === "polkadot-js") {
+  if (theme === "polkadot") {
     return (
       <PolkadotAvatar
         address={address}
@@ -51,6 +64,8 @@ export function AccountAvatar(props: {
       />
     )
   }
+
+  const publicKey = u8aToHex(decodeAddress(address, false))
 
   return (
     <JdenticonAvatar

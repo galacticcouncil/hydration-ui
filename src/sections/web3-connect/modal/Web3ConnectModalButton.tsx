@@ -16,7 +16,6 @@ import {
   SContainer,
   SLoginButton,
 } from "./Web3ConnectModalButton.styled"
-import { isEvmAddress } from "utils/evm"
 
 const Web3ConnectActiveButton: FC<{
   onOpen: () => void
@@ -61,9 +60,8 @@ const Web3ConnectActiveButton: FC<{
           <SAvatarCointainer>
             <AccountAvatar
               size={22}
-              theme={
-                isEvmAddress(displayAddress) ? "metamask" : account.provider
-              }
+              genesisHash={account?.genesisHash}
+              provider={account?.provider}
               address={displayAddress}
               css={{
                 pointerEvents: "none",
