@@ -9,6 +9,10 @@ export const SContainer = styled.div`
     margin: 0 -20px;
 
     margin-bottom: -20px;
+
+    gc-bonds-app {
+      max-width: 100%;
+    }
   }
 
   @media ${theme.viewport.lt.xs} {
