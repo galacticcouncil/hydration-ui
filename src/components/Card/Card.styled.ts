@@ -52,7 +52,7 @@ export const SContainer = styled.div<{ variant: string }>`
 `
 
 export const SHeader = styled.div<{ variant: string }>`
-  padding: 20px 24px;
+  padding: 20px 30px;
 
   display: flex;
   align-items: center;

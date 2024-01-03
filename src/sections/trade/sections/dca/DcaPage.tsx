@@ -12,6 +12,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmAccount } from "utils/evm"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { useAccountCurrency } from "api/payments"
+import { useDisplayAssetStore } from "utils/displayAsset"
 
 export const DcaApp = createComponent({
   tagName: "gc-dca-app",
@@ -37,6 +38,7 @@ export function DcaPage() {
     isLoading,
     data: accountCurrencyId,
   } = useAccountCurrency(isLoaded ? account?.address : "")
+  const { stableCoinId } = useDisplayAssetStore()
 
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
@@ -92,7 +94,7 @@ export function DcaPage() {
         apiAddress={rpcUrl}
         assetIn={!isLoading ? assetInDefault : ""}
         assetOut={!isLoading ? assetOutDefault : ""}
-        stableCoinAssetId={stableCoinAssetId}
+        stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
         accountAddress={account?.address}

@@ -64,9 +64,9 @@ export const ReferrerInfo = ({
             <Skeleton width={140} height={40} />
           ) : (
             <Text font="FontOver" fs={19}>
-              {referrerInfo.data
+              {referrerInfo.data && referrerInfo.data.tier !== undefined
                 ? t("value.percentage", {
-                    value: referralRewards[referrerInfo.data.tier].user,
+                    value: referralRewards[referrerInfo.data.tier]?.user,
                   })
                 : "-"}
             </Text>

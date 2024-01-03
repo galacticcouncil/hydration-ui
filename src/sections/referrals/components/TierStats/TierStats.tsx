@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { useReferrerTierData } from "sections/referrals/ReferralsPage.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { getAddressVariants } from "utils/formatting"
+import { getChainSpecificAddress } from "utils/formatting"
 import {
   SBar,
   SBarContainer,
@@ -18,14 +18,14 @@ export const TierStats = () => {
   const { account } = useAccount()
 
   const referrerAddress = account?.address
-    ? getAddressVariants(account.address).hydraAddress
+    ? getChainSpecificAddress(account.address)
     : undefined
 
   const { referrerInfo, currentTierData, tierProgress, isLevelUp } =
     useReferrerTierData(referrerAddress)
 
   return (
-    <Card>
+    <Card css={{ paddingTop: 14 }}>
       <div sx={{ flex: ["column", "row"], gap: [12, 40], width: "100%" }}>
         <FeatureBox
           css={{ width: "25%", flex: 0 }}
@@ -41,7 +41,7 @@ export const TierStats = () => {
               <Text font="FontOver" fs={19} css={{ whiteSpace: "nowrap" }}>
                 {t(
                   `referrals.tiers.tier${
-                    referrerInfo.data?.tier.toString() as "0" | "1" | "2" | "3"
+                    referrerInfo.data?.tier?.toString() as "0" | "1" | "2" | "3"
                   }`,
                 )}
               </Text>

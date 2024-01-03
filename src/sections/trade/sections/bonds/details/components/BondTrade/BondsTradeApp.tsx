@@ -11,6 +11,7 @@ import { MakeGenerics, useSearch } from "@tanstack/react-location"
 import { useProviderRpcUrlStore, useSquidUrl } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useDisplayAssetStore } from "utils/displayAsset"
 
 export const BondsApp = createComponent({
   tagName: "gc-bonds-app",
@@ -49,6 +50,7 @@ export const BondsTrade = ({
   const { api, assets } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
+  const { stableCoinId } = useDisplayAssetStore()
 
   const preference = useProviderRpcUrlStore()
   const squidUrl = useSquidUrl()
@@ -116,7 +118,7 @@ export const BondsTrade = ({
         assetIn={search.success ? search.data.assetIn : undefined}
         assetOut={search.success ? search.data.assetOut : undefined}
         apiAddress={rpcUrl}
-        stableCoinAssetId={stableCoinAssetId}
+        stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
         accountAddress={account?.address}

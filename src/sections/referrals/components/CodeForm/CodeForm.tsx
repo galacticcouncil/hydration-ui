@@ -22,7 +22,7 @@ import {
   useRegisterReferralCode,
 } from "./CodeForm.utils"
 import { useReferralCodeLength, useReferralCodes } from "api/referrals"
-import { getAddressVariants } from "utils/formatting"
+import { getChainSpecificAddress } from "utils/formatting"
 
 export const CodeForm = () => {
   const { t } = useTranslation()
@@ -33,9 +33,7 @@ export const CodeForm = () => {
 
   const balances = useAccountBalances(account?.address)
   const userReferralCode = useReferralCodes(
-    account?.address
-      ? getAddressVariants(account.address).hydraAddress
-      : undefined,
+    account?.address ? getChainSpecificAddress(account.address) : undefined,
   )
   const referralCodes = useReferralCodes("all")
 

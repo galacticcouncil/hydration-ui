@@ -22,6 +22,9 @@ import {
 import { useRpcProvider } from "providers/rpcProvider"
 import BN from "bignumber.js"
 import { useTokenBalance } from "api/balances"
+import { useSpotPrice } from "api/spotPrice"
+import { Text } from "components/Typography/Text/Text"
+import Skeleton from "react-loading-skeleton"
 
 export const BondInfoCards = ({
   bond,
@@ -58,6 +61,9 @@ export const BondInfoCards = ({
 
   const accumulatedAssetId = initialAccumulatedAsset?.assetA
   const initialAccumulatedAssetValue = initialAccumulatedAsset?.amountA
+
+  const spotPriceAccumulated = useSpotPrice(bond.assetId, accumulatedAssetId)
+  const spotPriceBondAccumulated = useSpotPrice(bond.id, accumulatedAssetId)
 
   const tokenBalance = useTokenBalance(
     lbpPool?.assets[0].toString(),
@@ -108,7 +114,23 @@ export const BondInfoCards = ({
         }
       : {
           label: t("bonds.details.card.bondPrice"),
-          value: <DisplayValue value={currentBondPrice} type="token" />,
+          value: (
+            <div sx={{ flex: "column" }}>
+              {spotPriceBondAccumulated.isInitialLoading ? (
+                <Skeleton height={16} width={40} />
+              ) : (
+                <Text lh={16}>
+                  {t("value.tokenWithSymbol", {
+                    value: spotPriceBondAccumulated.data?.spotPrice,
+                    symbol: accumulatedAsset?.symbol,
+                  })}
+                </Text>
+              )}
+              <Text fs={12} color="basic400">
+                <DisplayValue value={currentBondPrice} type="token" />
+              </Text>
+            </div>
+          ),
           icon: (
             <Icon
               size={[16, 22]}
@@ -121,8 +143,26 @@ export const BondInfoCards = ({
     ...(!isPast
       ? [
           {
-            label: t("bonds.details.card.spotPrice"),
-            value: <DisplayValue value={currentSpotPrice} type="token" />,
+            label: t("bonds.details.card.spotPrice", {
+              symbol: assets.getAsset(bond.assetId).symbol,
+            }),
+            value: (
+              <div sx={{ flex: "column" }}>
+                {spotPriceAccumulated.isInitialLoading ? (
+                  <Skeleton height={16} width={40} />
+                ) : (
+                  <Text lh={16}>
+                    {t("value.tokenWithSymbol", {
+                      value: spotPriceAccumulated.data?.spotPrice,
+                      symbol: accumulatedAsset?.symbol,
+                    })}
+                  </Text>
+                )}
+                <Text fs={12} color="basic400">
+                  <DisplayValue value={currentSpotPrice} type="token" />
+                </Text>
+              </div>
+            ),
             icon: (
               <Icon
                 size={[16, 22]}

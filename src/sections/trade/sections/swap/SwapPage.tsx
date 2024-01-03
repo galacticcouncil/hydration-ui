@@ -14,6 +14,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAccountCurrency } from "api/payments"
 import { isEvmAccount } from "utils/evm"
 import { NATIVE_ASSET_ID } from "utils/api"
+import { useDisplayAssetStore } from "utils/displayAsset"
 
 export const SwapApp = createComponent({
   tagName: "gc-trade-app",
@@ -52,6 +53,7 @@ export function SwapPage() {
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const accountCurrency = useAccountCurrency(isLoaded ? account?.address : "")
+  const { stableCoinId } = useDisplayAssetStore()
 
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
@@ -123,7 +125,7 @@ export function SwapPage() {
         assetIn={assetsReady ? assetInDefault : ""}
         assetOut={assetsReady ? assetOutDefault : ""}
         apiAddress={rpcUrl}
-        stableCoinAssetId={stableCoinAssetId}
+        stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
         accountAddress={account?.address}

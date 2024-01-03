@@ -1,6 +1,5 @@
 import { useReferralCodes } from "api/referrals"
 import {
-  getAddressVariants,
   getChainSpecificAddress,
   shortenAccountAddress,
 } from "utils/formatting"
@@ -21,12 +20,8 @@ export const ReferrerAddress = ({
 }) => {
   const { t } = useTranslation()
 
-  const referral = useReferralCodes(
-    getAddressVariants(referrerAddress).hydraAddress,
-  )
-  const identity = useAccountIdentity(
-    getAddressVariants(referrerAddress).hydraAddress,
-  )
+  const referral = useReferralCodes(getChainSpecificAddress(referrerAddress))
+  const identity = useAccountIdentity(getChainSpecificAddress(referrerAddress))
 
   const referralCode = referral.data?.[0]?.referralCode
 

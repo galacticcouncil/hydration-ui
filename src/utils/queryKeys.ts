@@ -383,4 +383,8 @@ export const QUERY_KEYS = {
     accountAddress,
   ],
   referrerAddress: (referrerCode?: string) => ["referrerAddress", referrerCode],
+  accountReferees: (referrerAddress?: string) => [
+    "accountReferees",
+    referrerAddress,
+  ],
 } as const

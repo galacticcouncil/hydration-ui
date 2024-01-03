@@ -43,10 +43,10 @@ export const Card: FC<Props> = ({
       )}
       <div
         sx={{
-          p: "16px 20px 20px",
+          p: "20px 30px 30px",
           color: "white",
           flex: "row",
-          align: "center",
+          align: "end",
         }}
         css={{ flex: 1 }}
       >

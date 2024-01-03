@@ -7,7 +7,7 @@ import { pluck } from "utils/rx"
 import { useTranslation } from "react-i18next"
 import { Placeholder } from "./table/placeholder/Placeholder"
 import { useBestNumber } from "api/chain"
-import { useState } from "react"
+import { Dispatch, SetStateAction, useEffect, useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { arraySearch, isNotNil } from "utils/helpers"
 import { BN_0 } from "utils/constants"
@@ -21,6 +21,8 @@ type Props = {
   showTransfer?: boolean
   id?: string
   search?: string
+  expanded?: boolean
+  setExpanded?: Dispatch<SetStateAction<boolean>>
 }
 
 export const MyActiveBonds = ({
@@ -28,6 +30,8 @@ export const MyActiveBonds = ({
   showTransfer,
   id,
   search,
+  expanded,
+  setExpanded,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -60,6 +64,17 @@ export const MyActiveBonds = ({
     showTransactions,
     showTransfer,
   }
+
+  useEffect(() => {
+    if (expanded !== undefined && setExpanded && bondsBalances) {
+      if (!bondsBalances.length) {
+        setExpanded(true)
+      } else {
+        setExpanded(false)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account?.address, bondsBalances.length])
 
   if (!isLoading && !bondsBalances.length) return null
 

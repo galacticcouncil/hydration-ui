@@ -10,7 +10,7 @@ import { useReferralToastStore } from "./components/ReferralsStore.utils"
 import { useReferralCodes, useUserReferrer } from "api/referrals"
 import { useEffect } from "react"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { getAddressVariants } from "utils/formatting"
+import { getChainSpecificAddress } from "utils/formatting"
 
 export const ReferralsConnect = () => {
   const navigate = useNavigate()
@@ -70,7 +70,7 @@ export const ReferralsConnect = () => {
         if (isValidCode) {
           if (
             isValidCode.accountAddress !==
-            getAddressVariants(account.address).hydraAddress
+            getChainSpecificAddress(account.address)
           ) {
             temporary({
               title: (
