@@ -11,11 +11,12 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useReferralCodes } from "api/referrals"
 import { getChainSpecificAddress } from "utils/formatting"
+import { ReferralsSkeleton } from "./ReferralsSkeleton"
 
 export const ReferralsWrapper = () => {
   const { isLoaded, featureFlags } = useRpcProvider()
 
-  if (!isLoaded) return null
+  if (!isLoaded) return <ReferralsSkeleton />
 
   if (!featureFlags.referrals) return <Navigate to="/trade" />
 
@@ -32,7 +33,7 @@ export const ReferralsPage = () => {
   const myReferralCode = userReferralCode.data?.[0]?.referralCode
 
   return (
-    <Page css={{ display: "flex", flex: "column", gap: 30 }}>
+    <Page>
       <div sx={{ flex: "column", gap: 30 }}>
         <HeroBanner>
           <CodeForm />
