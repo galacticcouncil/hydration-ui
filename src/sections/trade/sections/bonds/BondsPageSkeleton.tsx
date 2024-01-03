@@ -13,7 +13,7 @@ export const BondsPageSkeleton = () => {
         {t("bonds")}
       </Heading>
       <Spacer size={40} />
-      <WhyBonds expended={true} setExpended={() => null} />
+      <WhyBonds expanded={true} setExpanded={() => null} />
       <div sx={{ mt: 40 }}>
         <BondTableSkeleton title={t("bonds.table.title")} />
       </div>
