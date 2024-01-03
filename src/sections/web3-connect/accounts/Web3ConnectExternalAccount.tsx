@@ -1,16 +1,13 @@
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { useExternalWalletDelegates } from "api/proxies"
 import { useShallow } from "hooks/useShallow"
-import { FC } from "react"
+import { ComponentPropsWithoutRef, FC } from "react"
 import {
   getWalletProviderByType,
   useWalletAccounts,
 } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectAccount } from "sections/web3-connect/accounts/Web3ConnectAccount"
-import {
-  Account,
-  useWeb3ConnectStore,
-} from "sections/web3-connect/store/useWeb3ConnectStore"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { WalletProviderType } from "sections/web3-connect/wallets"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
@@ -23,9 +20,9 @@ import {
   SLine,
 } from "./Web3ConnectExternalAccount.styled"
 
-type Props = Account
-
-export const Web3ConnectExternalAccount: FC<Props> = (account) => {
+export const Web3ConnectExternalAccount: FC<
+  ComponentPropsWithoutRef<typeof Web3ConnectAccount>
+> = ({ balance, ...account }) => {
   const {
     setAccount,
     toggle,
@@ -76,6 +73,7 @@ export const Web3ConnectExternalAccount: FC<Props> = (account) => {
         provider={WalletProviderType.ExternalWallet}
         name={externalWallet.accountName}
         address={hydraAddress}
+        balance={balance}
       />
     )
   }

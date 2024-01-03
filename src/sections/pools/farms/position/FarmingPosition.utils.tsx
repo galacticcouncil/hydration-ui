@@ -24,10 +24,14 @@ import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { normalizeBigNumber } from "utils/balance"
 import { useRpcProvider } from "providers/rpcProvider"
 
-export const useAllUserDepositShare = () => {
+export const useAllUserDepositShare = ({
+  address,
+}: {
+  address?: string
+} = {}) => {
   const { assets } = useRpcProvider()
   const { account } = useAccount()
-  const accountDepositIds = useAccountDepositIds(account?.address)
+  const accountDepositIds = useAccountDepositIds(address ?? account?.address)
   const deposits = useAllDeposits()
 
   const ids = new Set<string>(

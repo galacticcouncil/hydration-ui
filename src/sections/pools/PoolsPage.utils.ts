@@ -289,11 +289,11 @@ export const derivePoolAccount = (assetId: string) => {
   return encodeAddress(blake2AsHex(name), HYDRADX_SS58_PREFIX)
 }
 
-export const useAccountOmnipoolPositions = () => {
+export const useAccountOmnipoolPositions = (givenAddress?: string) => {
   const { account } = useAccount()
   const { api } = useRpcProvider()
 
-  const address = account?.address
+  const address = givenAddress ?? account?.address
 
   return useQuery(
     QUERY_KEYS.accountOmnipoolPositions(address),

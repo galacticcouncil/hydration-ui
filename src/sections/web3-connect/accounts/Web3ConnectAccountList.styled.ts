@@ -6,7 +6,6 @@ export const SAccountsContainer = styled.div`
   flex-direction: column;
   gap: 10px;
 
-  margin-top: 20px;
   padding-bottom: var(--wallet-footer-height);
 
   ::-webkit-scrollbar {

@@ -1,16 +1,18 @@
-import { Text } from "components/Typography/Text/Text"
-import { FC } from "react"
-import { useTranslation } from "react-i18next"
-import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { SAccountsContainer } from "./Web3ConnectAccountList.styled"
+import { FC, useMemo, useState } from "react"
 import {
   WalletProviderType,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
+import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { MetaMask } from "sections/web3-connect/wallets/MetaMask"
+import { SAccountsContainer } from "./Web3ConnectAccountList.styled"
 import { Web3ConnectEvmAccount } from "./Web3ConnectEvmAccount"
 import { Web3ConnectExternalAccount } from "./Web3ConnectExternalAccount"
 import { Web3ConnectSubstrateAccount } from "./Web3ConnectSubstrateAccount"
-import { MetaMask } from "sections/web3-connect/wallets/MetaMask"
+import { useShallowCompareEffect } from "react-use"
+import { useWalletAssetsTotals } from "sections/wallet/assets/WalletAssets.utils"
+import { Web3ConnectAccountPlaceholder } from "sections/web3-connect/accounts/Web3ConnectAccountPlaceholder"
+import BN from "bignumber.js"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
   switch (type) {
@@ -23,29 +25,68 @@ const getAccountComponentByType = (type: WalletProviderType | null) => {
   }
 }
 
+const AccountComponent: FC<
+  Account & {
+    type: WalletProviderType | null
+    isReady: boolean
+    setBalanceMap: React.Dispatch<React.SetStateAction<Record<string, BN>>>
+  }
+> = ({ setBalanceMap, type, isReady, ...account }) => {
+  const Component = getAccountComponentByType(type)
+
+  const { balanceTotal, isLoading } = useWalletAssetsTotals({
+    address: account.address,
+  })
+
+  useShallowCompareEffect(() => {
+    if (!isLoading) {
+      setBalanceMap((prev) => ({
+        ...prev,
+        [account.address]: balanceTotal,
+      }))
+    }
+  }, [{ isLoading }])
+
+  return isReady ? (
+    <Component {...account} balance={balanceTotal} />
+  ) : (
+    <Web3ConnectAccountPlaceholder />
+  )
+}
+
 export const Web3ConnectAccountList: FC<{
   accounts?: Account[]
 }> = ({ accounts = [] }) => {
-  const { t } = useTranslation()
-
   const { type, wallet } = useWallet()
 
-  const AccountComponent = getAccountComponentByType(type)
-
   // show only main account for metamask
-  const filteredAccounts =
+  const accountList =
     wallet instanceof MetaMask ? accounts.slice(0, 1) : accounts
 
+  const [balanceMap, setBalanceMap] = useState<Record<string, BN>>({})
+  const isReady = Object.keys(balanceMap).length === accountList.length
+
+  const sortedAccounts = useMemo(() => {
+    if (!isReady) return accountList
+    return accountList.sort((a, b) => {
+      const aBalance = balanceMap[a.address]
+      const bBalance = balanceMap[b.address]
+      if (!aBalance || !bBalance) return 0
+      return bBalance.comparedTo(aBalance)
+    })
+  }, [balanceMap, accountList, isReady])
+
   return (
-    <>
-      <Text fw={400} color="basic400">
-        {t("walletConnect.accountSelect.description")}
-      </Text>
-      <SAccountsContainer>
-        {filteredAccounts?.map((account) => (
-          <AccountComponent key={account.address} {...account} />
-        ))}
-      </SAccountsContainer>
-    </>
+    <SAccountsContainer>
+      {sortedAccounts?.map((account) => (
+        <AccountComponent
+          key={account.address}
+          {...account}
+          type={type}
+          isReady={isReady}
+          setBalanceMap={setBalanceMap}
+        />
+      ))}
+    </SAccountsContainer>
   )
 }

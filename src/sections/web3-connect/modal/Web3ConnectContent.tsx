@@ -67,6 +67,7 @@ export const Web3ConnectContent: React.FC<Props> = ({
         },
         {
           title: t("walletConnect.accountSelect.title"),
+          description: t("walletConnect.accountSelect.description"),
           content:
             activeProvider && isConnecting ? (
               <Web3ConnectProviderPending provider={activeProvider} />
