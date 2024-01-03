@@ -5,15 +5,17 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { ReferrerSignForm } from "./ReferrerSignForm"
 import Skeleton from "react-loading-skeleton"
 import { ReferrerInfo } from "./ReferrerInfo"
+import { useTranslation } from "react-i18next"
 
 export const ReferrerCard = () => {
   const { account } = useAccount()
 
   const referrer = useUserReferrer(account?.address)
+  const { t } = useTranslation()
 
   return (
     <Card
-      title="Your referrer"
+      title={t("referrals.referrer.yourReferrer")}
       variant="secondary"
       icon={<ChainlinkIcon />}
       css={{ flexGrow: 3 }}
