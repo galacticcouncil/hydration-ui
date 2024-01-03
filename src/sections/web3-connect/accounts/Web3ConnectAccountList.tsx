@@ -85,7 +85,11 @@ export const Web3ConnectAccountList: FC<{
   const accountList = useMemo(() => {
     if (!isReady) return accounts
     const filtered = filter
-      ? arraySearch(accounts, filter, ["name", "address", "displayAddress"])
+      ? arraySearch(accounts as Required<Account>[], filter, [
+          "name",
+          "address",
+          "displayAddress",
+        ])
       : accounts
 
     return filtered.sort((a, b) => {
