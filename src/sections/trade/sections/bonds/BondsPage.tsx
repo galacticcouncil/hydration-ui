@@ -12,7 +12,7 @@ export const BondsPage = () => {
   const {
     assets: { bonds },
   } = useRpcProvider()
-  const [expended, setExpended] = useState(false)
+  const [expanded, setExpanded] = useState(false)
 
   return (
     <>
@@ -20,12 +20,12 @@ export const BondsPage = () => {
       <Spacer axis="vertical" size={33} />
       <BondList bonds={bonds} />
       <Spacer axis="vertical" size={33} />
-      <WhyBonds expended={expended} setExpended={setExpended} />
+      <WhyBonds expanded={expanded} setExpanded={setExpanded} />
       <Spacer axis="vertical" size={40} />
       <MyActiveBonds
         showTransactions
-        expended={expended}
-        setExpended={setExpended}
+        expanded={expanded}
+        setExpanded={setExpanded}
       />
     </>
   )

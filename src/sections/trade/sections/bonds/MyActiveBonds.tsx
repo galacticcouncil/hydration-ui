@@ -21,8 +21,8 @@ type Props = {
   showTransfer?: boolean
   id?: string
   search?: string
-  expended?: boolean
-  setExpended?: Dispatch<SetStateAction<boolean>>
+  expanded?: boolean
+  setExpanded?: Dispatch<SetStateAction<boolean>>
 }
 
 export const MyActiveBonds = ({
@@ -30,8 +30,8 @@ export const MyActiveBonds = ({
   showTransfer,
   id,
   search,
-  expended,
-  setExpended,
+  expanded,
+  setExpanded,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -66,11 +66,11 @@ export const MyActiveBonds = ({
   }
 
   useEffect(() => {
-    if (expended !== undefined && setExpended && bondsBalances) {
+    if (expanded !== undefined && setExpanded && bondsBalances) {
       if (!bondsBalances.length) {
-        setExpended(true)
+        setExpanded(true)
       } else {
-        setExpended(false)
+        setExpanded(false)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

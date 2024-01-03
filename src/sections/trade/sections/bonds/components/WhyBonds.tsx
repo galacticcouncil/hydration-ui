@@ -13,18 +13,18 @@ import { SetStateAction, Dispatch } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
 export const WhyBonds = ({
-  expended,
-  setExpended,
+  expanded,
+  setExpanded,
 }: {
-  expended: boolean
-  setExpended: Dispatch<SetStateAction<boolean>>
+  expanded: boolean
+  setExpanded: Dispatch<SetStateAction<boolean>>
 }) => {
   const { t } = useTranslation()
 
   return (
     <SWhyBonds
-      expanded={expended}
-      onClick={() => setExpended((state) => !state)}
+      expanded={expanded}
+      onClick={() => setExpanded((state) => !state)}
     >
       <div sx={{ flex: "row", justify: "space-between", height: 24 }}>
         <div sx={{ flex: "row", gap: 8, align: "center" }}>
@@ -42,12 +42,12 @@ export const WhyBonds = ({
 
         <div sx={{ flex: "row", align: "center" }}>
           <Text fs={13} color="darkBlue300">
-            {t(expended ? "hide" : "show")}
+            {t(expanded ? "hide" : "show")}
           </Text>
           <ButtonTransparent
             css={{
               color: theme.colors.iconGray,
-              transform: expended ? "rotate(180deg)" : undefined,
+              transform: expanded ? "rotate(180deg)" : undefined,
               transition: theme.transitions.default,
             }}
           >
@@ -57,7 +57,7 @@ export const WhyBonds = ({
       </div>
 
       <AnimatePresence>
-        {expended && (
+        {expanded && (
           <motion.div
             initial={{ height: 0 }}
             animate={{ height: "auto" }}
