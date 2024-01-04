@@ -104,7 +104,7 @@
     "dev": "vite",
     "dev:rococo": "vite -m rococo",
     "dev:production": "vite -m production",
-    "build": "vite build && cp ./build/index.html ./build/404.html",
+    "build": "vite build && mv -f ./build/src/pages/* ./build/ && cp ./build/index.html ./build/404.html",
     "preview": "vite preview",
     "postinstall": "patch-package",
     "storybook": "storybook dev -p 6006 ./src",
