@@ -145,6 +145,25 @@ export const BondInfoCards = ({
           },
         ]
       : []),
+    ...(!isPast
+      ? [
+          {
+            label: isDiscount ? t("bonds.discount") : t("bonds.premium"),
+            value: (
+              <Text
+                fs={[13, 15]}
+                lh={[13, 15]}
+                color={isDiscount ? "white" : "red300"}
+                font="FontOver"
+                sx={{ mb: 6 }}
+              >
+                {t("value.percentage", { value: discount })}
+              </Text>
+            ),
+            tooltip: isDiscount ? undefined : t("bonds.premium.desc"),
+          },
+        ]
+      : []),
     {
       label: "Accumulated asset",
       value: t("value.tokenWithSymbol", {
@@ -153,14 +172,7 @@ export const BondInfoCards = ({
         fixedPointScale: accumulatedAsset?.decimals,
       }),
     },
-    ...(!isPast
-      ? [
-          {
-            label: isDiscount ? t("bonds.discount") : t("bonds.premium"),
-            value: t("value.percentage", { value: discount }),
-          },
-        ]
-      : []),
+
     {
       label: t("bonds.details.card.maturity"),
       value: formatDate(new Date(bond.maturity), "dd/MM/yyyy"),
@@ -170,7 +182,12 @@ export const BondInfoCards = ({
   return (
     <div sx={{ flex: ["column", "row"], gap: 14, flexWrap: "wrap" }}>
       {cards.map((card, i) => (
-        <DetailCard key={i} label={card.label} value={card.value} />
+        <DetailCard
+          key={i}
+          label={card.label}
+          value={card.value}
+          tooltip={card.tooltip}
+        />
       ))}
     </div>
   )
