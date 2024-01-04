@@ -7,14 +7,59 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { Button } from "components/Button/Button"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { shortenAccountAddress } from "utils/formatting"
 import { TReferralsTableData } from "./data/ReferralsTableData.utils"
+import { useReferrerInfo } from "api/referrals"
+import { useAccountIdentity } from "api/stats"
+import Skeleton from "react-loading-skeleton"
+import { referralRewards } from "sections/referrals/ReferralsPage.utils"
+import { BN_NAN } from "utils/constants"
 
-export const useReferralsTable = (data: TReferralsTableData) => {
+const AccountTier = ({ address }: { address: string }) => {
+  const referrerInfo = useReferrerInfo(address)
+
+  if (referrerInfo.isInitialLoading) return <Skeleton height={16} width={60} />
+
+  return (
+    <Text color="white" css={{ whiteSpace: "nowrap" }}>
+      {referrerInfo.data?.tier ?? "-"}
+    </Text>
+  )
+}
+
+const AccountName = ({ address }: { address: string }) => {
+  const identity = useAccountIdentity(address)
+
+  if (identity.data?.identity) return <>{identity.data.identity}</>
+
+  return <Text color="white">{shortenAccountAddress(address)}</Text>
+}
+
+const Rewards = ({ address }: { address: string }) => {
+  const { t } = useTranslation()
+  const referrerInfo = useReferrerInfo(address)
+
+  const currentTierData =
+    referrerInfo.data && referrerInfo.data.tier !== undefined
+      ? referralRewards[referrerInfo.data.tier]
+      : undefined
+
+  if (referrerInfo.isLoading) return <Skeleton height={16} width={60} />
+
+  return (
+    <Text color="white" css={{ whiteSpace: "nowrap" }}>
+      {t("value.percentage", { value: currentTierData?.referrer ?? BN_NAN })}
+    </Text>
+  )
+}
+
+export const useReferralsTable = (
+  data: TReferralsTableData,
+  { onTipUser }: { onTipUser: (address: string) => void },
+) => {
   const { t } = useTranslation()
 
   const { accessor, display } =
@@ -23,7 +68,6 @@ export const useReferralsTable = (data: TReferralsTableData) => {
 
   const columnVisibility: VisibilityState = {
     account: true,
-    volume: true,
     rewards: true,
     tier: true,
     actions: true,
@@ -34,56 +78,30 @@ export const useReferralsTable = (data: TReferralsTableData) => {
       id: "account",
       header: t("referrals.table.header.account"),
       sortingFn: (a, b) => a.original.account.localeCompare(b.original.account),
-      cell: ({ row }) => (
-        <Text color="white">
-          {row.original.isIdentity
-            ? row.original.account
-            : shortenAccountAddress(row.original.account, 6)}
-        </Text>
-      ),
+      cell: ({ row }) => <AccountName address={row.original.account} />,
     }),
-
-    accessor("volume", {
-      id: "volume",
-      header: t("referrals.table.header.volume"),
-      sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
-      cell: ({ getValue }) => {
-        return (
-          <Text color="white">
-            <DisplayValue value={getValue()} isUSD />
-          </Text>
-        )
-      },
-    }),
-    accessor("rewards", {
-      id: "rewards",
-      header: t("referrals.table.header.rewards"),
-      cell: ({ getValue }) => {
-        return (
-          <Text color="pink600">
-            {t("value.tokenWithSymbol", {
-              value: getValue(),
-              symbol: "HDX",
-              decimalPlaces: 2,
-            })}
-          </Text>
-        )
-      },
-    }),
-    accessor("tier", {
+    accessor("account", {
       id: "tier",
       header: t("referrals.table.header.tier"),
-      cell: ({ getValue }) => (
-        <Text color="white" css={{ whiteSpace: "nowrap" }}>
-          {getValue()}
-        </Text>
-      ),
+      cell: ({ row }) => <AccountTier address={row.original.account} />,
     }),
+    accessor("account", {
+      id: "rewards",
+      header: t("referrals.table.header.rewards"),
+      cell: ({ row }) => <Rewards address={row.original.account} />,
+    }),
+
     display({
       id: "actions",
-      cell: () => (
+      cell: ({ row }) => (
         <div css={{ whiteSpace: "nowrap" }} sx={{ pr: 20 }}>
-          <Button size="micro">Tip User</Button>
+          <Button
+            size="micro"
+            onClick={() => onTipUser(row.original.account)}
+            sx={{ width: ["auto", 146], height: 24 }}
+          >
+            {t("referrals.table.btn.tipUser")}
+          </Button>
         </div>
       ),
     }),

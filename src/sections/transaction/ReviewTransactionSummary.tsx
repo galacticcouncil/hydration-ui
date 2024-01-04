@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { useTransactionValues } from "./ReviewTransactionForm.utils"
 import BN from "bignumber.js"
+import { ReviewReferralCodeWrapper } from "sections/referrals/components/ReviewReferralCode/ReviewReferralCodeWrapper"
 
 type ReviewTransactionSummaryProps = {
   tx: SubmittableExtrinsic<"promise">
@@ -13,6 +14,7 @@ type ReviewTransactionSummaryProps = {
   hasMultipleFeeAssets: boolean
   xcallMeta?: Record<string, string>
   openEditFeePaymentAssetModal: () => void
+  referralCode?: string
 }
 
 export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
@@ -21,6 +23,7 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
   xcallMeta,
   hasMultipleFeeAssets,
   openEditFeePaymentAssetModal,
+  referralCode,
 }) => {
   const { t } = useTranslation()
   const { displayFeePaymentValue, feePaymentMeta, era, nonce } =
@@ -80,6 +83,9 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
           },
         ]}
       />
+      {referralCode && (
+        <ReviewReferralCodeWrapper referralCode={referralCode} />
+      )}
     </div>
   )
 }

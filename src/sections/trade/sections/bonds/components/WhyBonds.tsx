@@ -9,12 +9,17 @@ import { SBondSteps, SWhyBonds } from "./WhyBonds.styled"
 import WhyBondsIcon from "assets/icons/WhyBonds.svg?react"
 import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
-import { useState } from "react"
+import { SetStateAction, Dispatch } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
-export const WhyBonds = () => {
+export const WhyBonds = ({
+  expanded,
+  setExpanded,
+}: {
+  expanded: boolean
+  setExpanded: Dispatch<SetStateAction<boolean>>
+}) => {
   const { t } = useTranslation()
-  const [expanded, setExpanded] = useState(false)
 
   return (
     <SWhyBonds

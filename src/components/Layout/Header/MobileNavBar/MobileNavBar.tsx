@@ -2,7 +2,7 @@ import { Link, useSearch } from "@tanstack/react-location"
 import { Icon } from "components/Icon/Icon"
 import { useTranslation } from "react-i18next"
 
-import { MENU_ITEMS, TabItem } from "utils/navigation"
+import { MENU_ITEMS, TabItem, resetSearchParams } from "utils/navigation"
 import {
   SMobileNavBar,
   SNavBarItem,
@@ -34,7 +34,7 @@ export const MobileNavBarItem = ({
 export const MobileNavBar = () => {
   const { t } = useTranslation()
   const { featureFlags } = useRpcProvider()
-  const { account } = useSearch()
+  const search = useSearch()
   const isMediumMedia = useMedia(theme.viewport.gte.sm)
 
   const [visibleTabs, hiddenTabs] = MENU_ITEMS.filter(
@@ -51,7 +51,7 @@ export const MobileNavBar = () => {
   const hiddenTabItems = hiddenTabs.map((hiddenTab, index) => (
     <SNavBarItemHidden
       to={hiddenTab.href}
-      search={account ? { account } : undefined}
+      search={resetSearchParams(search)}
       key={index}
     >
       <Icon size={20} icon={<hiddenTab.Icon />} />
@@ -79,7 +79,7 @@ export const MobileNavBar = () => {
             <Link
               to={item.href}
               key={index}
-              search={account ? { account } : undefined}
+              search={resetSearchParams(search)}
               css={{ height: "100%" }}
             >
               {({ isActive }) => (

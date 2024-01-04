@@ -132,15 +132,6 @@ export const useWeb3ConnectEagerEnable = () => {
 
   useEffect(() => {
     const state = useWeb3ConnectStore.getState()
-
-    const hasReferralCode = !!state.referralCode
-    if (!hasReferralCode && search?.referral) {
-      state.setReferralCode(search.referral)
-    }
-  }, [search?.referral])
-
-  useEffect(() => {
-    const state = useWeb3ConnectStore.getState()
     const { status, provider, account: currentAccount } = state
 
     if (externalAddressRef.current) {

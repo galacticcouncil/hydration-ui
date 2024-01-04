@@ -34,8 +34,7 @@ export const PROVIDERS = [
     name: "Testnet",
     url: "wss://rpc.nice.hydration.cloud",
     indexerUrl: "https://archive.nice.hydration.cloud/graphql",
-    squidUrl:
-      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
+    squidUrl: "https://data-squid.nice.hydration.cloud/graphql",
     env: ["development"],
   },
   /*{

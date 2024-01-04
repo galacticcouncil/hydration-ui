@@ -12,10 +12,6 @@ export const SContainer = styled.div<{ variant: string }>`
 
   background-color: rgba(6, 9, 23, 0.4);
 
-  & > div:first-of-type {
-    border-bottom: 1px solid #202135;
-  }
-
   ${gradientBorder};
   border-radius: ${theme.borderRadius.stakingCard}px;
   :before {
@@ -25,9 +21,7 @@ export const SContainer = styled.div<{ variant: string }>`
   ${({ variant }) => {
     if (variant === "primary") {
       return `
-        & > div:first-of-type {
-          border-bottom: 1px solid #55394e;
-        }
+
         background: linear-gradient(
           0deg,
           rgba(255, 97, 144, 0.22) -0.13%,
@@ -50,13 +44,22 @@ export const SContainer = styled.div<{ variant: string }>`
     if (variant === "secondary") {
       return `background: linear-gradient(0deg, rgba(44, 150, 239, 0.20) -142.91%, rgba(73, 105, 132, 0.03) 117%)`
     }
+
+    if (variant === "green") {
+      return "background: linear-gradient(0deg, rgba(97, 255, 246, 0.22) -0.13%, rgba(73, 105, 132, 0.02) 101.13%, rgba(73, 128, 132, 0.02) 101.13%), rgba(22, 67, 53, 0.70)"
+    }
   }}
 `
 
-export const SHeader = styled.div`
-  padding: 20px 24px;
+export const SHeader = styled.div<{ variant: string }>`
+  padding: 20px 30px;
 
   display: flex;
   align-items: center;
   gap: 12px;
+
+  border-bottom: 1px solid rgba(${theme.rgbColors.white}, 0.12);
+
+  ${({ variant }) =>
+    `border-bottom: 1px solid ${variant === "primary" ? "#55394e" : "202135"};`}
 `

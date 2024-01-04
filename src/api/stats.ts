@@ -141,17 +141,23 @@ export const useAccountsIdentity = (addresses: string[]) => {
   })
 }
 
-export const useAccountIdentity = (address: string) => {
+export const useAccountIdentity = (address?: string) => {
   const { api } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.identity(address),
-    getAccountIdentity(api, address),
+    address ? getAccountIdentity(api, address) : undefinedNoop,
+    { enabled: !!address },
   )
 }
 
 const getAccountIdentity = (api: ApiPromise, address: string) => async () => {
   const res = await api.query.identity.identityOf(address)
 
-  return { address, identity: res.isSome ? res.unwrapOr(null) : null }
+  return {
+    address,
+    identity: res.isSome
+      ? res.unwrapOr(null)?.info.display.asRaw.toUtf8()
+      : null,
+  }
 }

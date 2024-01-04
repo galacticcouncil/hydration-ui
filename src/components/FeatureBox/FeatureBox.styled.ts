@@ -5,6 +5,12 @@ export const SContainer = styled.div<{
   bordered: boolean
 }>`
   width: 100%;
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
   color: ${theme.colors.white};
 
   padding: ${({ bordered }) => (bordered ? "25px 20px" : "0")};

@@ -28,7 +28,7 @@ const FAQ_STEPS = [
 export const FaqAccordion = () => {
   const { t } = useTranslation()
   return (
-    <Accordion open title="How referrals work?" columns={3}>
+    <Accordion open title={t(`referrals.faq.title`)} columns={3}>
       {FAQ_STEPS.map(({ id, icon }) => (
         <FeatureBox
           key={id}
