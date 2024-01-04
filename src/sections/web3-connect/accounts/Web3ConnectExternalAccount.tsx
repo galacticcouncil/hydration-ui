@@ -74,6 +74,7 @@ export const Web3ConnectExternalAccount: FC<
         name={externalWallet.accountName}
         address={hydraAddress}
         balance={balance}
+        onClick={() => toggle()}
       />
     )
   }

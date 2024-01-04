@@ -155,6 +155,17 @@ export const useWeb3ConnectEagerEnable = () => {
 
     async function eagerEnable() {
       const { wallet } = getWalletProviderByType(provider)
+
+      if (wallet instanceof ExternalWallet && currentAccount) {
+        // enable proxy wallet for delegate
+        if (currentAccount?.delegate) {
+          await wallet.enableProxy(POLKADOT_APP_NAME)
+        } else {
+          await wallet.setAddress(currentAccount.address)
+        }
+        return
+      }
+
       const isEnabled = !!wallet?.extension
 
       // skip if already enabled
@@ -162,12 +173,6 @@ export const useWeb3ConnectEagerEnable = () => {
 
       // skip WalletConnect eager enable
       if (wallet instanceof WalletConnect) return
-
-      // enable proxy wallet for delegate
-      if (wallet instanceof ExternalWallet && !!currentAccount?.delegate) {
-        await wallet.enableProxy(POLKADOT_APP_NAME)
-        return
-      }
 
       await wallet?.enable(POLKADOT_APP_NAME)
       const accounts = await wallet?.getAccounts()

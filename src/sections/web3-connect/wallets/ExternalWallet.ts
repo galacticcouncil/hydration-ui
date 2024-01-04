@@ -60,6 +60,7 @@ export class ExternalWallet implements Wallet {
 
   setAddress = async (address?: string) => {
     if (address) {
+      if (!this._extension) this._extension = {}
       this.account = {
         address,
         source: this.extensionName,
