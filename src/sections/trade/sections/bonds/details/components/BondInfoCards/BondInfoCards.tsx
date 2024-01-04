@@ -153,14 +153,14 @@ export const BondInfoCards = ({
               <Text
                 fs={[13, 15]}
                 lh={[13, 15]}
-                color={isDiscount ? "white" : "alarmRed400"}
+                color={isDiscount ? "white" : "red300"}
                 font="FontOver"
                 sx={{ mb: 6 }}
               >
                 {t("value.percentage", { value: discount })}
               </Text>
             ),
-            tooltip: t("bonds.premium.desc"),
+            tooltip: isDiscount ? undefined : t("bonds.premium.desc"),
           },
         ]
       : []),
