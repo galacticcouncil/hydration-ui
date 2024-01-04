@@ -21,6 +21,6 @@ export const DetailCardContainer = styled.div`
     align-items: start;
     min-height: 162px;
 
-    padding: 30px;
+    padding: 20px;
   }
 `
