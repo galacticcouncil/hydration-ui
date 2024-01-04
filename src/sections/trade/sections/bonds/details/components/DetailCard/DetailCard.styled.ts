@@ -19,7 +19,7 @@ export const DetailCardContainer = styled.div`
   @media (${theme.viewport.gte.sm}) {
     flex-direction: column;
     align-items: start;
-    min-height: 162px;
+    min-height: 120px;
 
     padding: 20px;
   }
