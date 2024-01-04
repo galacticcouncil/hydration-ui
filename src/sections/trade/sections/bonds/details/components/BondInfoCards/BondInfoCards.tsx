@@ -157,7 +157,7 @@ export const BondInfoCards = ({
       ? [
           {
             label: isDiscount ? t("bonds.discount") : t("bonds.premium"),
-            value: t("value.percentage", { value: discount.toString() }),
+            value: t("value.percentage", { value: discount }),
           },
         ]
       : []),
