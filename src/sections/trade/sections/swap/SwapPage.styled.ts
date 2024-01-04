@@ -2,11 +2,15 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SContainer = styled.div`
-  --scrollbar-url: url("images/Scrollbar.svg?react");
+  --scrollbar-url: url("images/Scrollbar.svg");
   margin: 0 -12px;
 
-  @media ${theme.viewport.gte.sm} {
-    margin: unset;
+  @media ${theme.viewport.gte.md} {
+    margin: 0 -20px;
+
+    gc-trade-app {
+      max-width: 100%;
+    }
   }
 
   @media ${theme.viewport.lt.xs} {
