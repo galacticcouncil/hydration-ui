@@ -651,6 +651,7 @@
   "bonds.maturity": "Maturity",
   "bonds.discount": "Discount",
   "bonds.premium": "Premium",
+  "bonds.premium.desc": "Premium % means that bonds are currently more expensive than buying on the spot market.",
   "bonds.endingIn": "Ending in:",
   "bonds.startingIn": "Starting in:",
   "bonds.ended": "Ended:",
