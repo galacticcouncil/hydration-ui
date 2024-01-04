@@ -71,10 +71,17 @@ const Discount = ({
         </>
       ) : (
         <>
-          <Text color="basic400" fs={14}>
-            {isDiscount ? t("bonds.discount") : t("bonds.premium")}
-          </Text>
-          <Text color="white">
+          <div sx={{ flex: "row", gap: 6 }}>
+            <Text color="basic400" fs={14}>
+              {isDiscount ? t("bonds.discount") : t("bonds.premium")}
+            </Text>
+            {!isDiscount && (
+              <InfoTooltip text={t("bonds.premium.desc")}>
+                <SInfoIcon />
+              </InfoTooltip>
+            )}
+          </div>
+          <Text color={isDiscount ? "white" : "red300"}>
             {t("value.percentage", { value: discount })}
           </Text>
         </>
