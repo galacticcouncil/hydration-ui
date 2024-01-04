@@ -4,15 +4,17 @@ import { Text } from "components/Typography/Text/Text"
 
 export const DetailCard = ({
   label,
-  icon,
   value,
 }: {
   label: string
-  icon: ReactNode
   value: string | ReactNode
 }) => {
   return (
-    <DetailCardContainer>
+    <DetailCardContainer
+      sx={{
+        p: ["14px 20px", typeof value === "string" ? "20px 20px 26px" : 20],
+      }}
+    >
       <Text fs={[12, 14]} color="brightBlue300">
         {label}
       </Text>
@@ -23,10 +25,13 @@ export const DetailCard = ({
           gap: 10,
         }}
       >
-        {icon}
-        <Text fs={[13, 19]} font="FontOver" color="white" lh={[13, 24]}>
-          {value}
-        </Text>
+        {typeof value === "string" ? (
+          <Text fs={[13, 15]} font="FontOver" color="white" lh={[13, 15]}>
+            {value}
+          </Text>
+        ) : (
+          value
+        )}
       </div>
     </DetailCardContainer>
   )
