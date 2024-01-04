@@ -46,10 +46,10 @@ function transformIndexHtml(options: {
   metadataFileName?: string
   templateFileName?: string
 }): Plugin {
-  const { basePath, metadataFileName, templateFileName } = Object.assign(
+  const { basePath, metadataFileName, templatePath } = Object.assign(
     {
       metadataFileName: "metadata.json",
-      templateFileName: "index.template.html",
+      templatePath: "./index.html",
     },
     options,
   )
@@ -79,7 +79,7 @@ function transformIndexHtml(options: {
     transformIndexHtml: {
       enforce: "pre",
       async transform() {
-        const template = await fs.readFile(resolve(__dirname, templateFileName))
+        const template = await fs.readFile(resolve(__dirname, templatePath))
         const defaults = await parseMetadata(`${basePath}/${metadataFileName}`)
 
         const pages = glob.sync(`${basePath}/**/${metadataFileName}`)
