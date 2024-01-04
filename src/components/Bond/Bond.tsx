@@ -56,15 +56,11 @@ const Discount = ({
 
   const isDiscount = currentSpotPrice.gt(currentBondPrice)
 
-  const discount = isDiscount
-    ? currentSpotPrice
-        .minus(currentBondPrice)
-        .div(currentSpotPrice)
-        .multipliedBy(100)
-    : currentBondPrice
-        .minus(currentSpotPrice)
-        .div(currentBondPrice)
-        .multipliedBy(100)
+  const discount = currentSpotPrice
+    .minus(currentBondPrice)
+    .div(currentSpotPrice)
+    .multipliedBy(100)
+    .absoluteValue()
 
   return (
     <SItem>
