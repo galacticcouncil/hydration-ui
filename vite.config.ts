@@ -46,23 +46,49 @@ function transformIndexHtml(options: {
   metadataFileName?: string
   templateFileName?: string
 }): Plugin {
-  const { basePath, metadataFileName, templatePath } = Object.assign(
-    {
-      metadataFileName: "metadata.json",
-      templatePath: "./index.html",
-    },
-    options,
-  )
+  const { basePath, metadataFileName, templatePath, indexFileName } =
+    Object.assign(
+      {
+        metadataFileName: "metadata.json",
+        indexFileName: "index.html",
+        templatePath: "./index.html",
+      },
+      options,
+    )
 
   return {
     name: "transform-index-html",
-    config: () => {
+    apply: "build",
+    config: async () => {
+      const template = await fs.readFile(resolve(__dirname, templatePath))
+      const defaults = await parseMetadata(`${basePath}/${metadataFileName}`)
+
+      const pages = glob.sync(`${basePath}/**/${metadataFileName}`)
+
+      const processFiles = pages.map(async (pathname) => {
+        const pageMeta = await parseMetadata(pathname)
+        const metadata = {
+          ...defaults,
+          ...pageMeta,
+        }
+
+        const pagePath = pathname.replace(metadataFileName, indexFileName)
+
+        return fs.writeFile(
+          resolve(__dirname, pagePath),
+          template
+            .toString()
+            .replace(/<%=\s*(\w+)\s*%>/gi, (_match, p1) => metadata[p1] || ""),
+        )
+      })
+
+      await Promise.all(processFiles)
       return {
         build: {
           rollupOptions: {
             input: Object.fromEntries([
-              ["index", resolve(__dirname, "index.html")],
-              ...glob.sync(`${basePath}/**/index.html`).map((file) => {
+              ["index", resolve(__dirname, indexFileName)],
+              ...glob.sync(`${basePath}/**/${indexFileName}`).map((file) => {
                 return [
                   relative(
                     basePath,
@@ -75,37 +101,6 @@ function transformIndexHtml(options: {
           },
         },
       }
-    },
-    transformIndexHtml: {
-      enforce: "pre",
-      async transform() {
-        const template = await fs.readFile(resolve(__dirname, templatePath))
-        const defaults = await parseMetadata(`${basePath}/${metadataFileName}`)
-
-        const pages = glob.sync(`${basePath}/**/${metadataFileName}`)
-
-        const processFiles = pages.map(async (pathname) => {
-          const pageMeta = await parseMetadata(pathname)
-          const metadata = {
-            ...defaults,
-            ...pageMeta,
-          }
-
-          const pagePath = pathname.replace(metadataFileName, "index.html")
-
-          return fs.writeFile(
-            resolve(__dirname, pagePath),
-            template
-              .toString()
-              .replace(
-                /<%=\s*(\w+)\s*%>/gi,
-                (_match, p1) => metadata[p1] || "",
-              ),
-          )
-        })
-
-        await Promise.all(processFiles)
-      },
     },
   }
 }
