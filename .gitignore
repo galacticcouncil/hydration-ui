@@ -26,5 +26,4 @@ yarn-error.log*
 .vscode
 
 # generated
-src/pages/**/index.html
-pages
+/pages
