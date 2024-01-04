@@ -44,7 +44,8 @@ export default defineConfig(({ mode }) => {
 function transformIndexHtml(options: {
   basePath: string
   metadataFileName?: string
-  templateFileName?: string
+  templatePath?: string
+  indexFileName?: string
 }): Plugin {
   const { basePath, metadataFileName, templatePath, indexFileName } =
     Object.assign(
