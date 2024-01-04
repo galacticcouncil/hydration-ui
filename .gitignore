@@ -27,3 +27,4 @@ yarn-error.log*
 
 # generated
 src/pages/**/index.html
+pages

@@ -4,9 +4,10 @@ import wasm from "vite-plugin-wasm"
 import svgr from "vite-plugin-svgr"
 import tsconfigPaths from "vite-tsconfig-paths"
 import fs from "fs/promises"
-import glob from "glob"
-import { resolve, relative, extname } from "node:path"
-import { fileURLToPath } from "node:url"
+import { resolve } from "node:path"
+import { exec } from "child_process"
+
+import { SEO_METADATA } from "./src/seo.ts"
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -34,49 +35,48 @@ export default defineConfig(({ mode }) => {
       }),
       wasm(),
       svgr(),
-      transformIndexHtml({
-        basePath: "src/pages",
-      }),
+      transformIndexHtml(),
     ],
   }
 })
 
-function transformIndexHtml(options: {
-  basePath: string
-  metadataFileName?: string
-  templatePath?: string
-  indexFileName?: string
-}): Plugin {
-  const { basePath, metadataFileName, templatePath, indexFileName } =
-    Object.assign(
-      {
-        metadataFileName: "metadata.json",
-        indexFileName: "index.html",
-        templatePath: "./index.html",
-      },
-      options,
-    )
+function transformIndexHtml(
+  options: {
+    templatePath?: string
+    indexFileName?: string
+  } = {},
+): Plugin {
+  const { templatePath, indexFileName } = Object.assign(
+    {
+      indexFileName: "index.html",
+      templatePath: "./index.html",
+    },
+    options,
+  )
 
   return {
     name: "transform-index-html",
     apply: "build",
     config: async () => {
       const template = await fs.readFile(resolve(__dirname, templatePath))
-      const defaults = await parseMetadata(`${basePath}/${metadataFileName}`)
+      const { index, ...rest } = SEO_METADATA
 
-      const pages = glob.sync(`${basePath}/**/${metadataFileName}`)
-
-      const processFiles = pages.map(async (pathname) => {
-        const pageMeta = await parseMetadata(pathname)
+      const processFiles = Object.keys(SEO_METADATA).map(async (path) => {
+        const pageMeta = rest[path]
         const metadata = {
-          ...defaults,
+          ...index,
           ...pageMeta,
         }
 
-        const pagePath = pathname.replace(metadataFileName, indexFileName)
+        const pagePath = resolve(
+          __dirname,
+          `pages/${path.replace("index", "")}`,
+        )
+        const filePath = `${pagePath}/${indexFileName}`
+        await fs.mkdir(pagePath, { recursive: true })
 
         return fs.writeFile(
-          resolve(__dirname, pagePath),
+          filePath,
           template
             .toString()
             .replace(/<%=\s*(\w+)\s*%>/gi, (_match, p1) => metadata[p1] || ""),
@@ -87,32 +87,26 @@ function transformIndexHtml(options: {
       return {
         build: {
           rollupOptions: {
-            input: Object.fromEntries([
-              ["index", resolve(__dirname, indexFileName)],
-              ...glob.sync(`${basePath}/**/${indexFileName}`).map((file) => {
-                return [
-                  relative(
-                    basePath,
-                    file.slice(0, file.length - extname(file).length),
+            input: Object.fromEntries(
+              Object.entries(SEO_METADATA).map(([path]) => {
+                const entries = [
+                  path,
+                  resolve(
+                    __dirname,
+                    path === "index"
+                      ? `pages/${indexFileName}`
+                      : `pages/${path}/${indexFileName}`,
                   ),
-                  fileURLToPath(new URL(file, import.meta.url)),
                 ]
+                return entries
               }),
-            ]),
+            ),
           },
         },
       }
     },
+    closeBundle: () => {
+      exec(`mv -f ./build/pages/* ./build && rm -rf ./pages`)
+    },
   }
-}
-
-async function parseMetadata(path: string) {
-  let metadata = {}
-  try {
-    const file = await fs.readFile(resolve(__dirname, path))
-
-    metadata = JSON.parse(file.toString())
-  } catch {}
-
-  return metadata
 }
