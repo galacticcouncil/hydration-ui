@@ -175,7 +175,7 @@ export const useTransactionValues = ({
       .minus(displayFeePaymentValue ?? 0)
       .gt(0)
   }
-  console.log(storedReferralCode, isLinkedAccount)
+
   return {
     isLoading,
     data: {
