@@ -171,51 +171,55 @@ export const useSendTransactionMutation = (
 
   const sendTx = useMutation(async (sign) => {
     return await new Promise(async (resolve, reject) => {
-      const unsubscribe = await sign.send(async (result) => {
-        if (!result || !result.status) return
+      try {
+        const unsubscribe = await sign.send(async (result) => {
+          if (!result || !result.status) return
 
-        const timeout = setTimeout(() => {
-          clearTimeout(timeout)
-          reject(new UnknownTransactionState())
-        }, 60000)
-
-        if (isMounted()) {
-          setTxState(result.status.type)
-        } else {
-          clearTimeout(timeout)
-        }
-
-        if (result.isCompleted) {
-          if (result.dispatchError) {
-            let errorMessage = result.dispatchError.toString()
-
-            if (result.dispatchError.isModule) {
-              const decoded = api.registry.findMetaError(
-                result.dispatchError.asModule,
-              )
-              errorMessage = `${decoded.section}.${
-                decoded.method
-              }: ${decoded.docs.join(" ")}`
-            }
-
+          const timeout = setTimeout(() => {
             clearTimeout(timeout)
-            reject(new Error(errorMessage))
+            reject(new UnknownTransactionState())
+          }, 60000)
+
+          if (isMounted()) {
+            setTxState(result.status.type)
           } else {
-            const transactionLink = await link.mutateAsync({
-              blockHash: result.status.asInBlock.toString(),
-              txIndex: result.txIndex?.toString(),
-            })
-
             clearTimeout(timeout)
-            resolve({
-              transactionLink,
-              ...result,
-            })
           }
 
-          unsubscribe()
-        }
-      })
+          if (result.isCompleted) {
+            if (result.dispatchError) {
+              let errorMessage = result.dispatchError.toString()
+
+              if (result.dispatchError.isModule) {
+                const decoded = api.registry.findMetaError(
+                  result.dispatchError.asModule,
+                )
+                errorMessage = `${decoded.section}.${
+                  decoded.method
+                }: ${decoded.docs.join(" ")}`
+              }
+
+              clearTimeout(timeout)
+              reject(new Error(errorMessage))
+            } else {
+              const transactionLink = await link.mutateAsync({
+                blockHash: result.status.asInBlock.toString(),
+                txIndex: result.txIndex?.toString(),
+              })
+
+              clearTimeout(timeout)
+              resolve({
+                transactionLink,
+                ...result,
+              })
+            }
+
+            unsubscribe()
+          }
+        })
+      } catch (err) {
+        reject(err?.toString() ?? "Unknown error")
+      }
     })
   }, options)
 
