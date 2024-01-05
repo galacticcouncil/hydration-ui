@@ -33,7 +33,7 @@ export const ReferralsPage = () => {
 
   return (
     <Page css={{ display: "flex", flex: "column", gap: 30 }}>
-      <div sx={{ flex: "column", gap: 30 }}>
+      <div sx={{ flex: "column", gap: [20, 30] }}>
         <HeroBanner>
           <CodeForm />
         </HeroBanner>
