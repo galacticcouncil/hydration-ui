@@ -5,10 +5,7 @@ import { CodeInput } from "sections/referrals/components/CodeInput/CodeInput"
 import { CodePreview } from "sections/referrals/components/CodePreview/CodePreview"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
-import {
-  REFERRAL_CODE_MAX_LENGTH,
-  REFERRAL_CODE_REGEX,
-} from "sections/referrals/ReferralsPage.utils"
+import { REFERRAL_CODE_REGEX } from "sections/referrals/ReferralsPage.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { useEffect } from "react"
@@ -27,7 +24,7 @@ import { getChainSpecificAddress } from "utils/formatting"
 export const CodeForm = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const referralCodeLength = useReferralCodeLength()
+  const referralLength = useReferralCodeLength()
 
   const registerReferralCode = useRegisterReferralCode()
 
@@ -73,8 +70,7 @@ export const CodeForm = () => {
     }
   }, [form, state])
 
-  const referralCodeMaxLength =
-    referralCodeLength.data?.toNumber() || REFERRAL_CODE_MAX_LENGTH
+  const { minLength, maxLength } = referralLength.data ?? {}
 
   return (
     <>
@@ -93,10 +89,15 @@ export const CodeForm = () => {
                 alphanumeric: (value) =>
                   REFERRAL_CODE_REGEX.test(value) ||
                   t("referrals.input.error.alphanumeric"),
-                length: (value) =>
-                  value.length === referralCodeMaxLength ||
+                minLength: (value) =>
+                  (minLength && value.length >= minLength.toNumber()) ||
+                  t("referrals.input.error.minLength", {
+                    length: minLength,
+                  }),
+                maxLength: (value) =>
+                  (maxLength && value.length <= maxLength.toNumber()) ||
                   t("referrals.input.error.maxLength", {
-                    length: referralCodeMaxLength,
+                    length: maxLength,
                   }),
                 validCode: (value) =>
                   !referralCodes.data?.some(

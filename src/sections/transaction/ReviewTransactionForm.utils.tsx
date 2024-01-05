@@ -21,8 +21,7 @@ import { BN_1 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 import { isEvmAccount } from "utils/evm"
 import { BN_NAN } from "utils/constants"
-import { useReferralCodes } from "api/referrals"
-import { getChainSpecificAddress } from "utils/formatting"
+import { useUserReferrer } from "api/referrals"
 
 export const useTransactionValues = ({
   xcall,
@@ -45,14 +44,12 @@ export const useTransactionValues = ({
 
   /* REFERRALS */
 
-  const userReferralCode = useReferralCodes(
-    featureFlags.referrals && account?.address
-      ? getChainSpecificAddress(account.address)
-      : undefined,
+  const referrer = useUserReferrer(
+    featureFlags.referrals ? account?.address : undefined,
   )
 
   const isLinkedAccount = featureFlags.referrals
-    ? !!userReferralCode.data?.[0]?.referralCode
+    ? !!referrer.data?.length
     : true
 
   const storedReferralCodes = useReferralCode()
@@ -124,7 +121,7 @@ export const useTransactionValues = ({
     acceptedFeePaymentAssets.some(
       (acceptedFeePaymentAsset) => acceptedFeePaymentAsset.isInitialLoading,
     ) ||
-    userReferralCode.isInitialLoading
+    referrer.isInitialLoading
 
   if (
     !feePaymentMeta ||

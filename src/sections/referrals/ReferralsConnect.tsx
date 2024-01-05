@@ -73,6 +73,7 @@ export const ReferralsConnect = () => {
             getChainSpecificAddress(account.address)
           ) {
             temporary({
+              hideTime: 6000,
               title: (
                 <div>
                   <p className="referralTitle">

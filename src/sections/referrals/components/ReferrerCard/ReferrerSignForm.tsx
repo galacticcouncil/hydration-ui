@@ -3,10 +3,7 @@ import { FormValues } from "utils/helpers"
 import { SInput } from "sections/referrals/components/CodeInput/CodeInput.styled"
 import { Button } from "components/Button/Button"
 import { useReferralCodeLength, useReferralCodes } from "api/referrals"
-import {
-  REFERRAL_CODE_MAX_LENGTH,
-  REFERRAL_CODE_REGEX,
-} from "sections/referrals/ReferralsPage.utils"
+import { REFERRAL_CODE_REGEX } from "sections/referrals/ReferralsPage.utils"
 import { Trans, useTranslation } from "react-i18next"
 import { ErrorMessage } from "components/Label/Label.styled"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -22,6 +19,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { getChainSpecificAddress } from "utils/formatting"
 import { PreviewReferrer } from "sections/referrals/components/PreviewReferrer/PreviewReferrer"
+import { useState } from "react"
 
 export const ReferrerSignForm = () => {
   const { api } = useRpcProvider()
@@ -30,9 +28,11 @@ export const ReferrerSignForm = () => {
   const queryClient = useQueryClient()
   const { setReferralCode } = useWeb3ConnectStore()
 
+  const [previewReferrer, setPreviewReferrer] = useState(false)
+
   const { t } = useTranslation()
   const referralCodes = useReferralCodes("all")
-  const referralCodeLength = useReferralCodeLength()
+  const referralLength = useReferralCodeLength()
 
   const storedReferralCodes = useReferralCode()
 
@@ -88,8 +88,7 @@ export const ReferrerSignForm = () => {
     }
   }
 
-  const referralCodeMaxLength =
-    referralCodeLength.data?.toNumber() || REFERRAL_CODE_MAX_LENGTH
+  const { minLength, maxLength } = referralLength.data ?? {}
 
   return (
     <form
@@ -114,10 +113,15 @@ export const ReferrerSignForm = () => {
                 alphanumeric: (value) =>
                   REFERRAL_CODE_REGEX.test(value) ||
                   t("referrals.input.error.alphanumeric"),
-                length: (value) =>
-                  value.length === referralCodeMaxLength ||
+                minLength: (value) =>
+                  (minLength && value.length >= minLength.toNumber()) ||
+                  t("referrals.input.error.minLength", {
+                    length: minLength,
+                  }),
+                maxLength: (value) =>
+                  (maxLength && value.length <= maxLength.toNumber()) ||
                   t("referrals.input.error.maxLength", {
-                    length: referralCodeMaxLength,
+                    length: maxLength,
                   }),
                 validCode: (value) => {
                   const code = referralCodes.data?.find(
@@ -151,6 +155,8 @@ export const ReferrerSignForm = () => {
                   placeholder={t("referrals.signForm.placeholder")}
                   {...field}
                   onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                  onBlur={() => setPreviewReferrer(false)}
+                  onFocus={() => setPreviewReferrer(true)}
                 />
                 {error && (
                   <ErrorMessage css={{ position: "absolute" }}>
@@ -171,7 +177,9 @@ export const ReferrerSignForm = () => {
         </div>
       </div>
 
-      <PreviewReferrer referrerAddress={referral?.accountAddress} isPopover />
+      {previewReferrer && (
+        <PreviewReferrer referrerAddress={referral?.accountAddress} isPopover />
+      )}
     </form>
   )
 }

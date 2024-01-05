@@ -44,7 +44,7 @@ export const RewardsCard = () => {
             ) : (
               <Text font="FontOver" fs={19}>
                 {t("value.tokenWithSymbol", {
-                  value: rewards.data,
+                  value: rewards.data?.totalRewards,
                   symbol: assets.native.symbol,
                 })}
               </Text>
@@ -59,10 +59,10 @@ export const RewardsCard = () => {
           isLoading={isLoading}
           disabled={
             !rewards.data ||
-            rewards.data.isZero() ||
+            rewards.data.totalRewards.isZero() ||
             account?.isExternalWalletConnected
           }
-          onClick={() => mutate({ value: rewards.data })}
+          onClick={() => mutate({ value: rewards.data?.totalRewards })}
         >
           {t(
             isLevelUp
