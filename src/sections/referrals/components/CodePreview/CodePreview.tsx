@@ -1,7 +1,7 @@
 import { Text } from "components/Typography/Text/Text"
 import { ButtonHTMLAttributes, FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useCopyToClipboard } from "react-use"
+import { useCopyToClipboard, useLocation } from "react-use"
 import {
   SContainer,
   SCopyButton,
@@ -13,6 +13,11 @@ import { Button } from "components/Button/Button"
 import CopyIcon from "assets/icons/CopyIcon.svg?react"
 import TwitterXIcon from "assets/icons/TwitterXIcon.svg?react"
 import { useTwitterShare } from "hooks/useTwitterShare"
+import {
+  REFERRAL_PARAM_NAME,
+  REFERRAL_PROD_HOST,
+  getShareUrl,
+} from "sections/referrals/ReferralsPage.utils"
 
 type Props = {
   code?: string
@@ -26,18 +31,17 @@ export const CodePreview: React.FC<Props> = ({
   hasExistingCode = false,
 }) => {
   const { t } = useTranslation()
+  const { origin } = useLocation()
 
   const hasCode = !!code
   const codePlaceholder = t("referrals.preview.code.placeholder")
   const codeDisplay = hasCode ? code : codePlaceholder
 
-  const urlDomain = "hydradx.io"
-  const shortUrl = `${urlDomain}/${codeDisplay}`
-  const fullUrl = `https://${urlDomain}/${codeDisplay}`
+  const shareUrl = getShareUrl(codeDisplay, origin)
 
   const shareOnTwitter = useTwitterShare({
     text: "You have been invited to HydraDX!",
-    url: shortUrl,
+    url: `${REFERRAL_PROD_HOST}/${codeDisplay}`,
   })
 
   return (
@@ -54,7 +58,9 @@ export const CodePreview: React.FC<Props> = ({
                 : t("referrals.preview.link.title")}
             </Text>
             <Text color="brightBlue300">
-              {urlDomain}/
+              {import.meta.env.VITE_ENV === "production"
+                ? `${shareUrl.host}/`
+                : `${shareUrl.host}${shareUrl.pathname}?${REFERRAL_PARAM_NAME}=`}
               <Text
                 as="span"
                 color={code ? "white" : "brightBlue300"}
@@ -64,7 +70,7 @@ export const CodePreview: React.FC<Props> = ({
               </Text>
             </Text>
           </div>
-          <CopyButton disabled={!hasCode} text={fullUrl} />
+          <CopyButton disabled={!hasCode} text={shareUrl.href} />
         </SPreviewBox>
         <SPreviewBox
           isActive={hasExistingCode}
