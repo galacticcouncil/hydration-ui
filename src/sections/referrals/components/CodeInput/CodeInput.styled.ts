@@ -29,6 +29,12 @@ export const SInput = styled.input<{
   ::placeholder {
     color: ${theme.colors.brightBlue300};
   }
+
+  &:focus {
+    border: 1px solid rgba(${theme.rgbColors.brightBlue300}, 0.6);
+    outline-color: ${theme.colors.brightBlue300};
+  }
+
   &:disabled {
     cursor: not-allowed;
 

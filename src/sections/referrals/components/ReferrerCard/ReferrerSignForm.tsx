@@ -19,6 +19,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { getChainSpecificAddress } from "utils/formatting"
 import { PreviewReferrer } from "sections/referrals/components/PreviewReferrer/PreviewReferrer"
+import { useState } from "react"
 
 export const ReferrerSignForm = () => {
   const { api } = useRpcProvider()
@@ -26,6 +27,8 @@ export const ReferrerSignForm = () => {
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
   const { setReferralCode } = useWeb3ConnectStore()
+
+  const [previewReferrer, setPreviewReferrer] = useState(false)
 
   const { t } = useTranslation()
   const referralCodes = useReferralCodes("all")
@@ -152,6 +155,8 @@ export const ReferrerSignForm = () => {
                   placeholder={t("referrals.signForm.placeholder")}
                   {...field}
                   onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                  onBlur={() => setPreviewReferrer(false)}
+                  onFocus={() => setPreviewReferrer(true)}
                 />
                 {error && (
                   <ErrorMessage css={{ position: "absolute" }}>
@@ -172,7 +177,9 @@ export const ReferrerSignForm = () => {
         </div>
       </div>
 
-      <PreviewReferrer referrerAddress={referral?.accountAddress} isPopover />
+      {previewReferrer && (
+        <PreviewReferrer referrerAddress={referral?.accountAddress} isPopover />
+      )}
     </form>
   )
 }
