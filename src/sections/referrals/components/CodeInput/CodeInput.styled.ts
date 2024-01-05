@@ -44,6 +44,9 @@ export const SInputWrapper = styled.div`
   position: relative;
   width: 100%;
 
+  display: flex;
+  flex-direction: column;
+
   & > svg {
     position: absolute;
     top: 27px;
@@ -58,13 +61,27 @@ export const SInputWrapper = styled.div`
   }
 
   & > button {
-    position: absolute;
-    top: 27px;
-    right: 12px;
-    transform: translateY(-50%);
     border: 0;
+    padding: 5px 10px;
+    margin-top: 5px;
+    margin-left: auto;
+
+    backdrop-filter: blur(6.5px);
+
     :hover {
       border: 0;
+    }
+  }
+
+  @media ${theme.viewport.gte.sm} {
+    & > button {
+      padding: 2px 4px;
+      margin-top: 0px;
+
+      position: absolute;
+      top: 27px;
+      right: 12px;
+      transform: translateY(-50%);
     }
   }
 `

@@ -13,11 +13,22 @@ export const HeroBanner: FC<Props> = ({ children }) => {
   const { t } = useTranslation()
   return (
     <SContainer>
-      <div sx={{ width: ["100%", "50%"] }}>
-        <Heading fs={[28, 40]} font="FontOver" sx={{ mb: 20 }}>
+      <div sx={{ maxWidth: [400, "50%"] }}>
+        <Heading
+          fs={[20, 40]}
+          font="FontOver"
+          sx={{ mb: 20 }}
+          fw={400}
+          css={{ textWrap: "balance" }}
+        >
           {t("referrals.title")}
         </Heading>
-        <Text fs={16} lh={24} color="brightBlue300" sx={{ pr: [0, 40] }}>
+        <Text
+          fs={[14, 16]}
+          lh={[20, 24]}
+          color="brightBlue300"
+          sx={{ pr: [0, 40] }}
+        >
           {t("referrals.description")}
         </Text>
       </div>

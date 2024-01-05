@@ -8,11 +8,11 @@ export const SContainer = styled.div<{
 }>`
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap;
   gap: 16px;
 
   @media ${theme.viewport.gte.sm} {
     flex-direction: row;
-    flex-wrap: wrap;
   }
 
   ${({ disabled }) =>
@@ -29,12 +29,13 @@ export const SPreviewContainer = styled.div`
   flex-direction: column;
   flex-wrap: wrap;
   gap: 16px;
-  width: 100%;
+
+  flex: 1;
 
   @media ${theme.viewport.gte.sm} {
-    display: grid;
     gap: 12px 16px;
-    grid-template-columns: 2fr 1fr;
+    flex-direction: row;
+    flex-wrap: nowrap;
   }
 `
 
@@ -43,7 +44,8 @@ export const SPreviewBox = styled.div<{ isActive?: boolean }>`
   flex-direction: row;
   justify-content: space-between;
   gap: 4px;
-  flex-wrap: wrap;
+
+  word-break: break-all;
 
   padding: 14px;
 
@@ -54,63 +56,28 @@ export const SPreviewBox = styled.div<{ isActive?: boolean }>`
       : `1px dashed rgba(${theme.rgbColors.brightBlue100}, 0.35)`};
 
   @media ${theme.viewport.gte.sm} {
-    min-width: 220px;
+    min-width: 240px;
   }
 `
 
 export const SShareBox = styled.div`
   position: relative;
-  min-height: 50px;
-
-  width: 100%;
-
+  white-space: nowrap;
   text-align: center;
 
-  & > button {
-    max-width: 200px;
-    margin-top: 20px;
-  }
+  min-width: 160px;
 
-  @media ${theme.viewport.gte.md} {
-    flex-grow: 1;
-    width: auto;
-
-    & > button {
-      max-width: none;
-    }
-  }
+  display: flex;
+  align-items: center;
 `
 
 export const SCopyButton = styled(Button)`
   border-color: transparent !important;
+  flex-shrink: 0;
 
   align-self: center;
 
   span {
     gap: 4px;
   }
-`
-
-export const SPathButton = styled(Button)`
-  color: ${({ active }) =>
-    active ? theme.colors.basic900 : theme.colors.white};
-
-  padding: 2px 6px;
-
-  background-color: ${({ active }) =>
-    active
-      ? theme.colors.brightBlue300
-      : `rgba(${theme.rgbColors.primaryA15}, 0.12)`};
-
-  border: 0 !important;
-`
-
-export const SPreviewPathSelect = styled.div`
-  grid-column: span 2;
-
-  display: flex;
-  gap: 5px;
-
-  flex-direction: row;
-  flex-wrap: wrap;
 `
