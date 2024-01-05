@@ -14,7 +14,6 @@ export const SEO_METADATA = {
     image: "https://app.hydradx.io/images/meta-image.jpg",
   },
   referrals: {
-    image:
-      "https://deploy-preview-889--testnet-hydra-app.netlify.app/images/meta-referrals-image.jpg",
+    image: "https://app.hydradx.io/images/meta-referrals-image.jpg",
   },
 } satisfies MetadataMap
