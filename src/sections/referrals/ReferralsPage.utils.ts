@@ -33,7 +33,7 @@ export const useReferrerTierData = (referrerAddress?: string) => {
   const tierProgress = useMemo(() => {
     const totalRewards = referrerInfo.data?.paidRewards
       .shiftedBy(-native.decimals)
-      .plus(accountRewards.data ?? 0)
+      .plus(accountRewards.data?.referrerRewards ?? 0)
 
     const nextTierData =
       referrerInfo.data && referrerInfo.data.tier !== undefined

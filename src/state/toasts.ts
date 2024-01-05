@@ -23,6 +23,7 @@ type ToastParams = {
   title: ReactElement
   actions?: ReactNode
   persist?: boolean
+  hideTime?: number
 }
 
 type ToastData = ToastParams & {
