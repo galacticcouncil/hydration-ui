@@ -45,7 +45,7 @@ export const SPreviewBox = styled.div<{ isActive?: boolean }>`
   justify-content: space-between;
   gap: 4px;
 
-  white-space: nowrap;
+  word-break: break-all;
 
   padding: 14px;
 
@@ -73,6 +73,7 @@ export const SShareBox = styled.div`
 
 export const SCopyButton = styled(Button)`
   border-color: transparent !important;
+  flex-shrink: 0;
 
   align-self: center;
 
