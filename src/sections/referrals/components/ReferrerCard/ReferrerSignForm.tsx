@@ -3,10 +3,7 @@ import { FormValues } from "utils/helpers"
 import { SInput } from "sections/referrals/components/CodeInput/CodeInput.styled"
 import { Button } from "components/Button/Button"
 import { useReferralCodeLength, useReferralCodes } from "api/referrals"
-import {
-  REFERRAL_CODE_MAX_LENGTH,
-  REFERRAL_CODE_REGEX,
-} from "sections/referrals/ReferralsPage.utils"
+import { REFERRAL_CODE_REGEX } from "sections/referrals/ReferralsPage.utils"
 import { Trans, useTranslation } from "react-i18next"
 import { ErrorMessage } from "components/Label/Label.styled"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -32,7 +29,7 @@ export const ReferrerSignForm = () => {
 
   const { t } = useTranslation()
   const referralCodes = useReferralCodes("all")
-  const referralCodeLength = useReferralCodeLength()
+  const referralLength = useReferralCodeLength()
 
   const storedReferralCodes = useReferralCode()
 
@@ -88,8 +85,7 @@ export const ReferrerSignForm = () => {
     }
   }
 
-  const referralCodeMaxLength =
-    referralCodeLength.data?.toNumber() || REFERRAL_CODE_MAX_LENGTH
+  const { minLength, maxLength } = referralLength.data ?? {}
 
   return (
     <form
@@ -114,10 +110,15 @@ export const ReferrerSignForm = () => {
                 alphanumeric: (value) =>
                   REFERRAL_CODE_REGEX.test(value) ||
                   t("referrals.input.error.alphanumeric"),
-                length: (value) =>
-                  value.length === referralCodeMaxLength ||
+                minLength: (value) =>
+                  (minLength && value.length >= minLength.toNumber()) ||
+                  t("referrals.input.error.minLength", {
+                    length: minLength,
+                  }),
+                maxLength: (value) =>
+                  (maxLength && value.length <= maxLength.toNumber()) ||
                   t("referrals.input.error.maxLength", {
-                    length: referralCodeMaxLength,
+                    length: maxLength,
                   }),
                 validCode: (value) => {
                   const code = referralCodes.data?.find(

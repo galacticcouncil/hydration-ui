@@ -43,9 +43,15 @@ const getReferralCodes = (api: ApiPromise) => async () => {
 export const useReferralCodeLength = () => {
   const { api } = useRpcProvider()
   return useQuery(QUERY_KEYS.referralCodeLength, async () => {
-    const rawDara = (await api.consts.referrals.codeLength) as u32
+    const [maxLength, minLength] = (await Promise.all([
+      api.consts.referrals.codeLength,
+      api.consts.referrals.minCodeLength,
+    ])) as [u32, u32]
 
-    return rawDara.toBigNumber()
+    return {
+      minLength: minLength.toBigNumber(),
+      maxLength: maxLength.toBigNumber(),
+    }
   })
 }
 
@@ -115,14 +121,18 @@ export const useAccountReferralShares = (accountAddress?: string) => {
 
 const getAccountReferralShares =
   (api: ApiPromise, accountAddress: string) => async () => {
-    const [totalSharesRaw, accountSharesRaw] = await Promise.all([
-      api.query.referrals.totalShares(),
-      api.query.referrals.shares(accountAddress),
-    ])
+    const [totalSharesRaw, referrerSharesRaw, traderSharesRaw] =
+      await Promise.all([
+        api.query.referrals.totalShares(),
+        api.query.referrals.referrerShares(accountAddress),
+        api.query.referrals.traderShares(accountAddress),
+      ])
 
     return {
       //@ts-ignore
-      accountShares: accountSharesRaw.toBigNumber() as BN,
+      referrerShares: referrerSharesRaw.toBigNumber() as BN,
+      //@ts-ignore
+      traderShares: traderSharesRaw.toBigNumber() as BN,
       //@ts-ignore
       totalShares: totalSharesRaw.toBigNumber() as BN,
     }
