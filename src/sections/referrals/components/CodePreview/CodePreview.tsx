@@ -20,7 +20,7 @@ type Props = {
   disabled?: boolean
 }
 
-const IS_PROD = import.meta.env.VITE_DOMAIN_URL === "https://app.hydradx.io"
+const IS_PROD = import.meta.env.VITE_ENV === "production"
 const PROD_HOST = "hydradx.io"
 const REF_PARAM_NAME = "referral"
 
