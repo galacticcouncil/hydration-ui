@@ -55,6 +55,7 @@
   "copy": "Copy",
   "copied": "Copied!",
   "share": "Share",
+  "shareOn": "Share on",
   "stepper.title": "Step {{current}} of {{total}}",
   "chart.state.noData.label": "Not enough data to display this chart.",
   "chart.state.error.label": "Error displaying the chart, try loading it again.",
