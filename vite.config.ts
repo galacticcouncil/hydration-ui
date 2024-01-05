@@ -49,7 +49,7 @@ function transformIndexHtml(
   const { templatePath, indexFileName } = Object.assign(
     {
       indexFileName: "index.html",
-      templatePath: "./index.html",
+      templatePath: "./index.template.html",
     },
     options,
   )

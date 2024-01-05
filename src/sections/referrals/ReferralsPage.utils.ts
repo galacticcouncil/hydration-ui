@@ -3,6 +3,7 @@ import BN from "bignumber.js"
 import { useAccountRewards } from "./components/RewardsCard/Rewards.utils"
 import { useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
+import { LINKS } from "utils/navigation"
 
 export const REFERRAL_PROD_HOST = "hydradx.io"
 export const REFERRAL_PARAM_NAME = "referral"
@@ -58,7 +59,7 @@ export const useReferrerTierData = (referrerAddress?: string) => {
 
 export function getShareUrl(code: string, origin?: string) {
   if (origin && import.meta.env.VITE_ENV !== "production") {
-    return new URL(`${origin}/referrals?${REFERRAL_PARAM_NAME}=${code}`)
+    return new URL(`${origin}${LINKS.swap}?${REFERRAL_PARAM_NAME}=${code}`)
   }
 
   return new URL(`https://${REFERRAL_PROD_HOST}/${code}`)
