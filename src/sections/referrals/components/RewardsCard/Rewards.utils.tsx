@@ -27,11 +27,17 @@ export const useAccountRewards = (accountAddress?: string) => {
     const { referrerShares, traderShares, totalShares } = referralShares.data
     const accountShares = referrerShares.plus(traderShares)
 
-    const data = accountShares
+    const totalRewards = accountShares
       .div(totalShares)
       .multipliedBy(potBalance.data?.freeBalance ?? 1)
       .shiftedBy(-native.decimals)
-    return { isLoading, data }
+
+    const referrerRewards = referrerShares
+      .div(totalShares)
+      .multipliedBy(potBalance.data?.freeBalance ?? 1)
+      .shiftedBy(-native.decimals)
+
+    return { isLoading, data: { totalRewards, referrerRewards } }
   }
 
   return { isLoading, data: undefined }
