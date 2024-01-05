@@ -14,6 +14,6 @@ export const SEO_METADATA = {
     image: "https://app.hydradx.io/images/meta-image.jpg",
   },
   referrals: {
-    image: "https://app.hydradx.io/images/meta-referrals-image.jpg",
+    image: "https://hydradx.io/assets/meta-referrals-image.jpg",
   },
 } satisfies MetadataMap
