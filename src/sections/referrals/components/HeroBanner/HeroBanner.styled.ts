@@ -9,6 +9,12 @@ export const SContainer = styled.div`
 
   padding: 20px;
 
+  min-height: 450px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
   background-size: 100%;
   background-repeat: no-repeat;
   background-position: top left;

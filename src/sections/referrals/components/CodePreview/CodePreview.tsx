@@ -84,6 +84,9 @@ export const CodePreview: React.FC<Props> = ({
             onClick={shareOnTwitter}
             fullWidth
             variant="secondary"
+            css={{
+              backdropFilter: "blur(6.5px)",
+            }}
             sx={{
               fontWeight: 600,
               fontSize: 16,
