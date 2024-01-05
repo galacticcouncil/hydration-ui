@@ -20,8 +20,8 @@ type Props = {
   disabled?: boolean
 }
 
-const IS_PROD = import.meta.env.PROD
-const PROD_DOMAIN = "hydradx.io"
+const IS_PROD = import.meta.env.VITE_DOMAIN_URL === "https://app.hydradx.io"
+const PROD_HOST = "hydradx.io"
 const REF_PARAM_NAME = "referral"
 
 function getShareUrl(code: string, origin?: string) {
@@ -29,7 +29,7 @@ function getShareUrl(code: string, origin?: string) {
     return new URL(`${origin}/referrals?${REF_PARAM_NAME}=${code}`)
   }
 
-  return new URL(`https://${PROD_DOMAIN}/${code}`)
+  return new URL(`https://${PROD_HOST}/${code}`)
 }
 
 export const CodePreview: React.FC<Props> = ({
@@ -48,7 +48,7 @@ export const CodePreview: React.FC<Props> = ({
 
   const shareOnTwitter = useTwitterShare({
     text: "You have been invited to HydraDX!",
-    url: `${PROD_DOMAIN}/${codeDisplay}`,
+    url: `${PROD_HOST}/${codeDisplay}`,
   })
 
   return (
