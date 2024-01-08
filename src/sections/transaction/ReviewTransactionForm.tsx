@@ -16,7 +16,7 @@ import {
   useTransactionValues,
 } from "./ReviewTransactionForm.utils"
 import { ReviewTransactionSummary } from "sections/transaction/ReviewTransactionSummary"
-import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall" | "xcallmeta"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -32,7 +32,7 @@ type Props = TxProps & {
 export const ReviewTransactionForm: FC<Props> = (props) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { setReferralCode } = useWeb3ConnectStore()
+  const { setReferralCode } = useReferralCodesStore()
 
   const transactionValues = useTransactionValues({
     xcall: props.xcallMeta,

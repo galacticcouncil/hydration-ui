@@ -2,10 +2,12 @@ import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import { SContainer } from "./ReferralCode.styled"
 import { IconButton } from "components/IconButton/IconButton"
 import { Text } from "components/Typography/Text/Text"
-import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const ReferralCode = ({ code }: { code: string }) => {
-  const { account, setReferralCode } = useWeb3ConnectStore()
+  const { account } = useAccount()
+  const { setReferralCode } = useReferralCodesStore()
 
   const onCancel = () => {
     account && setReferralCode(undefined, account.address)
