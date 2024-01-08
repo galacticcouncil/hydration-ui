@@ -252,9 +252,10 @@ export const genesisHashToChain = (genesisHash?: `0x${string}`) => {
 
   for (let chain in knownGenesis) {
     if (knownGenesis[chain].includes(genesisHash)) {
-      const chainIndex = availableNetworks.findIndex(
-        (entry) => entry.network === chain,
+      const chainIndex = availableNetworks.findIndex((entry) =>
+        chain.startsWith(entry.network),
       )
+
       if (chainIndex >= 0) {
         chainInfo = availableNetworks[chainIndex]
         break

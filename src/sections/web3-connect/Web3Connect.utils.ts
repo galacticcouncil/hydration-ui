@@ -93,7 +93,7 @@ export const useWalletAccounts = (
   const { wallet } = getWalletProviderByType(type)
 
   return useQuery<WalletAccount[], unknown, Account[]>(
-    ["Web3Connect", ...QUERY_KEYS.providerAccounts(getProviderQueryKey(type))],
+    QUERY_KEYS.providerAccounts(getProviderQueryKey(type)),
     async () => {
       return (await wallet?.getAccounts()) ?? []
     },
