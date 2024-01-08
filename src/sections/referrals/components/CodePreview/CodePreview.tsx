@@ -40,7 +40,7 @@ export const CodePreview: React.FC<Props> = ({
   const shareUrl = getShareUrl(codeDisplay, origin)
 
   const shareOnTwitter = useTwitterShare({
-    text: "You have been invited to HydraDX!",
+    text: t("referrals.share.tweetText"),
     url: `${REFERRAL_PROD_HOST}/${codeDisplay}`,
   })
 
