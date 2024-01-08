@@ -20,6 +20,7 @@ enum ModalPage {
 export const Web3ConnectModal = () => {
   const {
     provider: activeProvider,
+    account,
     disconnect,
     open,
     toggle,
@@ -27,7 +28,7 @@ export const Web3ConnectModal = () => {
   } = useWeb3ConnectStore()
 
   const shouldShowProviderSelect =
-    mode !== WalletMode.Default || !activeProvider
+    mode !== WalletMode.Default || !activeProvider || !account
 
   const initialPage = shouldShowProviderSelect
     ? ModalPage.ProviderSelect
