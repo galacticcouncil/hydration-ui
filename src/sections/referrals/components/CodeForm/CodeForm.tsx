@@ -173,17 +173,19 @@ export const CodeForm = () => {
           />
           <div sx={{ height: 54, flex: "row" }}>
             {(state === UserState.FUNDED || isBalanceLoading) && (
-              <Button isLoading={isBalanceLoading} variant="primary">
+              <Button isLoading={isBalanceLoading} variant="primary" fullWidth>
                 {t("referrals.button.sign")}
               </Button>
             )}
             {state === UserState.NOT_FUNDED && (
-              <FundWalletButton variant="primary" type="button">
+              <FundWalletButton fullWidth variant="primary" type="button">
                 {t("referrals.button.depositFunds")}
               </FundWalletButton>
             )}
             {state === UserState.DISCONECTED && (
-              <Web3ConnectModalButton sx={{ height: "auto", px: 30 }} />
+              <Web3ConnectModalButton
+                sx={{ width: "100%", height: "auto", px: 30 }}
+              />
             )}
           </div>
         </form>
