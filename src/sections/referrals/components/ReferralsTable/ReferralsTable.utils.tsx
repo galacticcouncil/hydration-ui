@@ -96,11 +96,7 @@ export const useReferralsTable = (
     }),
     accessor("account", {
       id: "rewards",
-      header: t(
-        isDesktop
-          ? "referrals.table.header.rewards"
-          : "referrals.table.header.rewards.mob",
-      ),
+      header: t("referrals.table.header.rewards"),
       cell: ({ row }) => <Rewards address={row.original.account} />,
     }),
 

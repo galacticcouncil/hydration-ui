@@ -47,7 +47,7 @@ export const ReferralsPage = () => {
             {myReferralCode && (
               <>
                 <TierStats />
-                <ReferralsTableTableWrapper />
+                {false && <ReferralsTableTableWrapper />}
               </>
             )}
           </>
