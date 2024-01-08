@@ -1,22 +1,22 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
-type ReferralCodeState = {
+type ReferralCodesState = {
   referralCodes: Record<string, string | undefined>
 }
 
-type ReferralCodeStore = ReferralCodeState & {
+type ReferralCodesStore = ReferralCodesState & {
   setReferralCode: (
     referralCode: string | undefined,
     accountAddress: string,
   ) => void
 }
 
-const initialState: ReferralCodeState = {
+const initialState: ReferralCodesState = {
   referralCodes: {},
 }
 
-export const useReferralCodesStore = create<ReferralCodeStore>()(
+export const useReferralCodesStore = create<ReferralCodesStore>()(
   persist(
     (set) => ({
       ...initialState,
