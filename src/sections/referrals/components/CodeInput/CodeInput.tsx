@@ -1,6 +1,6 @@
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 import { InputHTMLAttributes, forwardRef } from "react"
-import { SErrorMessage, SInput, SInputWrapper } from "./CodeInput.styled"
+import { SAlertMessage, SInput, SInputWrapper } from "./CodeInput.styled"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
 import { randomAlphanumericString } from "utils/helpers"
@@ -50,18 +50,14 @@ export const CodeInput = forwardRef<HTMLInputElement, InputProps>(
           </Button>
         )}
         <Spacer size={2} />
-        {error && <SErrorMessage>{error}</SErrorMessage>}
+        {error && <SAlertMessage variant="error">{error}</SAlertMessage>}
         {!error && registrationFee.data && (
-          <Text
-            fs={12}
-            color="brightBlue300"
-            css={{ position: "absolute", top: "100%" }}
-          >
+          <SAlertMessage variant="info">
             {t("referrals.button.linkFee", {
               amount: registrationFee.data?.amount,
               symbol: registrationFee.data.symbol,
             })}
-          </Text>
+          </SAlertMessage>
         )}
       </SInputWrapper>
     )

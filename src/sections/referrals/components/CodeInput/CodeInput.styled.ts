@@ -1,6 +1,5 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
-import { ErrorMessage } from "components/Label/Label.styled"
 
 export const SInput = styled.input<{
   hasError?: boolean
@@ -69,8 +68,11 @@ export const SInputWrapper = styled.div`
   & > button {
     border: 0;
     padding: 5px 10px;
-    margin-top: 5px;
-    margin-left: auto;
+
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    margin-bottom: 4px;
 
     backdrop-filter: blur(6.5px);
 
@@ -79,19 +81,27 @@ export const SInputWrapper = styled.div`
     }
   }
 
-  @media ${theme.viewport.gte.sm} {
+  @media ${theme.viewport.gte.xs} {
     & > button {
       padding: 2px 4px;
-      margin-top: 0px;
+      margin-bottom: 0;
 
-      position: absolute;
       top: 27px;
       right: 12px;
+      bottom: auto;
+
       transform: translateY(-50%);
     }
   }
 `
-export const SErrorMessage = styled(ErrorMessage)`
+export const SAlertMessage = styled.p<{ variant?: "error" | "info" }>`
+  font-size: 12px;
+  line-height: 16px;
+  margin-top: 2px;
+
+  color: ${({ variant }) =>
+    variant === "error" ? theme.colors.error : theme.colors.brightBlue300};
+
   @media ${theme.viewport.gte.sm} {
     position: absolute;
     top: 100%;
