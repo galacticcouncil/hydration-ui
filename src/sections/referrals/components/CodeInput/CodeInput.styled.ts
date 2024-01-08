@@ -39,7 +39,7 @@ export const SInput = styled.input<{
 
     opacity: 0.7;
 
-    border: 1px solid ${theme.colors.darkBlue300};
+    border: 1px solid ${theme.colors.darkBlue400};
 
     color: ${theme.colors.darkBlue300};
   }
