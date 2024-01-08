@@ -7,7 +7,6 @@ import { randomAlphanumericString } from "utils/helpers"
 import DiceIcon from "assets/icons/DiceIcon.svg?react"
 import { REFERRAL_CODE_MAX_LENGTH } from "sections/referrals/ReferralsPage.utils"
 import { useRegistrationLinkFee } from "api/referrals"
-import { Text } from "components/Typography/Text/Text"
 import { Spacer } from "components/Spacer/Spacer"
 
 type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange"> & {
