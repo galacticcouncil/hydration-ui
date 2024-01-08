@@ -1,13 +1,12 @@
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 import { InputHTMLAttributes, forwardRef } from "react"
-import { SErrorMessage, SInput, SInputWrapper } from "./CodeInput.styled"
+import { SAlertMessage, SInput, SInputWrapper } from "./CodeInput.styled"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
 import { randomAlphanumericString } from "utils/helpers"
 import DiceIcon from "assets/icons/DiceIcon.svg?react"
 import { REFERRAL_CODE_MAX_LENGTH } from "sections/referrals/ReferralsPage.utils"
 import { useRegistrationLinkFee } from "api/referrals"
-import { Text } from "components/Typography/Text/Text"
 import { Spacer } from "components/Spacer/Spacer"
 
 type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange"> & {
@@ -50,18 +49,14 @@ export const CodeInput = forwardRef<HTMLInputElement, InputProps>(
           </Button>
         )}
         <Spacer size={2} />
-        {error && <SErrorMessage>{error}</SErrorMessage>}
+        {error && <SAlertMessage variant="error">{error}</SAlertMessage>}
         {!error && registrationFee.data && (
-          <Text
-            fs={12}
-            color="brightBlue300"
-            css={{ position: "absolute", top: "100%" }}
-          >
+          <SAlertMessage variant="info">
             {t("referrals.button.linkFee", {
               amount: registrationFee.data?.amount,
               symbol: registrationFee.data.symbol,
             })}
-          </Text>
+          </SAlertMessage>
         )}
       </SInputWrapper>
     )
