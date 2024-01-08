@@ -39,7 +39,7 @@ export const CodeForm = () => {
   const registrationFee = useRegistrationLinkFee()
 
   const form = useForm<CodeFormValues>({
-    mode: "onSubmit",
+    mode: "onChange",
     defaultValues: defaultCodeFormValues,
   })
 
