@@ -60,9 +60,7 @@ export const CodeForm = () => {
   )
 
   const balances = useAccountBalances(account?.address)
-  console.log(
-    paymentInfo.data?.partialFee.toBigNumber().shiftedBy(-12).toString(),
-  )
+
   const isLinkFeeBalance =
     registrationFee.data && linkFeeBalance.data
       ? linkFeeBalance.data.freeBalance

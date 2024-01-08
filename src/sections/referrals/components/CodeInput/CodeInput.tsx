@@ -52,7 +52,11 @@ export const CodeInput = forwardRef<HTMLInputElement, InputProps>(
         <Spacer size={2} />
         {error && <SErrorMessage>{error}</SErrorMessage>}
         {!error && registrationFee.data && (
-          <Text fs={12} color="brightBlue300">
+          <Text
+            fs={12}
+            color="brightBlue300"
+            css={{ position: "absolute", top: "100%" }}
+          >
             {t("referrals.button.linkFee", {
               amount: registrationFee.data?.amount,
               symbol: registrationFee.data.symbol,
