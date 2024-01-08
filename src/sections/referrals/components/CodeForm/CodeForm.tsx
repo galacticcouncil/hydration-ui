@@ -116,7 +116,7 @@ export const CodeForm = () => {
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           autoComplete="off"
-          sx={{ flex: ["column", "row"], gap: 12, mt: 40 }}
+          sx={{ flex: ["column", "row"], gap: [18, 12], mt: 40 }}
         >
           <Controller
             name="referralCode"

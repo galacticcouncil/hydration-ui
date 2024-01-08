@@ -765,6 +765,7 @@
   "referrals.table.header.rewards": "Fee Rewards",
   "referrals.table.header.tier": "Tier",
   "referrals.table.btn.tipUser": "Tip User",
+  "referrals.table.btn.tipUser.mob": "Tip",
   "referrals.signForm.btn": "Add your referrer",
   "referrals.signForm.placeholder": "Enter the code of your referrer",
   "referrals.signForm.desc": "Nobody! Add a referrer and start accumulating rewards from your own trading fees.",
