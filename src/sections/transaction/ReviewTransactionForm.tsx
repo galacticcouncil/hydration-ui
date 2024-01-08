@@ -16,9 +16,10 @@ import {
   useTransactionValues,
 } from "./ReviewTransactionForm.utils"
 import { ReviewTransactionSummary } from "sections/transaction/ReviewTransactionSummary"
-import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
+import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 
-type TxProps = Omit<Transaction, "id" | "tx" | "xcall" | "xcallmeta"> & {
+type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
 }
 
@@ -32,10 +33,10 @@ type Props = TxProps & {
 export const ReviewTransactionForm: FC<Props> = (props) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { setReferralCode } = useWeb3ConnectStore()
+  const { setReferralCode } = useReferralCodesStore()
 
   const transactionValues = useTransactionValues({
-    xcall: props.xcallMeta,
+    xcallMeta: props.xcallMeta,
     tx: props.tx,
     feePaymentId: props.overrides?.currencyId,
     fee: props.overrides?.fee,
@@ -88,7 +89,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   )
 
   const isLoading = transactionValues.isLoading || signTx.isLoading
-  const hasMultipleFeeAssets = acceptedFeePaymentAssets.length > 1
+  const hasMultipleFeeAssets =
+    props.xcallMeta && props.xcallMeta?.srcChain !== HYDRADX_CHAIN_KEY
+      ? false
+      : acceptedFeePaymentAssets.length > 1
   const isEditPaymentBalance = !isEnoughPaymentBalance && hasMultipleFeeAssets
 
   if (isOpenEditFeePaymentAssetModal) return editFeePaymentAssetModal

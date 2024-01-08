@@ -49,7 +49,11 @@ export const FaqAccordion = () => {
             },
           }}
         >
-          <a href="/" target="_blank" rel="noreferrer">
+          <a
+            href="https://docs.hydradx.io/referrals"
+            target="_blank"
+            rel="noreferrer"
+          >
             {t("referrals.faq.docs.learnMore")}
             <LinkIcon height={10} sx={{ ml: 6 }} />
           </a>

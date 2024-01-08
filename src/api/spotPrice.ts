@@ -16,7 +16,7 @@ export const useSpotPrice = (
   const tokenOut = assetB?.toString() ?? ""
 
   return useQuery(
-    QUERY_KEYS.spotPrice(tokenIn, tokenOut),
+    QUERY_KEYS.spotPriceLive(tokenIn, tokenOut),
     getSpotPrice(tradeRouter, tokenIn, tokenOut),
     { enabled: !!tokenIn && !!tokenOut },
   )

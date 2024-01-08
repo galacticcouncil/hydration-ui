@@ -1,46 +1,23 @@
 import { Text } from "components/Typography/Text/Text"
 import { ButtonHTMLAttributes, FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useCopyToClipboard } from "react-use"
-import { LINKS } from "utils/navigation"
+import { useCopyToClipboard, useLocation } from "react-use"
 import {
   SContainer,
   SCopyButton,
-  SPathButton,
   SPreviewBox,
   SPreviewContainer,
-  SPreviewPathSelect,
   SShareBox,
 } from "./CodePreview.styled"
 import { Button } from "components/Button/Button"
 import CopyIcon from "assets/icons/CopyIcon.svg?react"
-
-const SELECTABLE_URL_PATHS = [
-  {
-    tkey: "referrals.preview.url.trade",
-    path: LINKS.swap,
-  },
-  {
-    tkey: "referrals.preview.url.dcda",
-    path: LINKS.dca,
-  },
-  {
-    tkey: "referrals.preview.url.liquidty",
-    path: LINKS.liquidity,
-  },
-  {
-    tkey: "referrals.preview.url.referrals",
-    path: LINKS.referrals,
-  },
-  {
-    tkey: "referrals.preview.url.otc",
-    path: LINKS.otc,
-  },
-  {
-    tkey: "referrals.preview.url.bonds",
-    path: LINKS.bonds,
-  },
-] as const
+import TwitterXIcon from "assets/icons/TwitterXIcon.svg?react"
+import { useTwitterShare } from "hooks/useTwitterShare"
+import {
+  REFERRAL_PARAM_NAME,
+  REFERRAL_PROD_HOST,
+  getShareUrl,
+} from "sections/referrals/ReferralsPage.utils"
 
 type Props = {
   code?: string
@@ -54,21 +31,26 @@ export const CodePreview: React.FC<Props> = ({
   hasExistingCode = false,
 }) => {
   const { t } = useTranslation()
+  const { origin } = useLocation()
 
   const hasCode = !!code
   const codePlaceholder = t("referrals.preview.code.placeholder")
   const codeDisplay = hasCode ? code : codePlaceholder
 
-  const [urlPath, setUrlPath] = useState(SELECTABLE_URL_PATHS[0].path)
+  const shareUrl = getShareUrl(codeDisplay, origin)
 
-  const urlDomain = window.location.origin
-  const urlQuery = `?referral=`
-  const fullUrl = `${urlDomain}${urlPath}${urlQuery}${codeDisplay}`
+  const shareOnTwitter = useTwitterShare({
+    text: t("referrals.share.tweetText"),
+    url: `${REFERRAL_PROD_HOST}/${codeDisplay}`,
+  })
 
   return (
     <SContainer disabled={disabled}>
       <SPreviewContainer>
-        <SPreviewBox isActive={hasExistingCode}>
+        <SPreviewBox
+          isActive={hasExistingCode}
+          sx={{ flexBasis: ["100%", "65%"] }}
+        >
           <div sx={{ flex: "column", gap: 8 }}>
             <Text>
               {hasExistingCode
@@ -76,9 +58,9 @@ export const CodePreview: React.FC<Props> = ({
                 : t("referrals.preview.link.title")}
             </Text>
             <Text color="brightBlue300">
-              {urlDomain}
-              {urlPath}
-              {urlQuery}
+              {import.meta.env.VITE_ENV === "production"
+                ? `${shareUrl.host}/`
+                : `${shareUrl.host}${shareUrl.pathname}?${REFERRAL_PARAM_NAME}=`}
               <Text
                 as="span"
                 color={code ? "white" : "brightBlue300"}
@@ -88,10 +70,12 @@ export const CodePreview: React.FC<Props> = ({
               </Text>
             </Text>
           </div>
-
-          <CopyButton disabled={!hasCode} text={fullUrl} />
+          <CopyButton disabled={!hasCode} text={shareUrl.href} />
         </SPreviewBox>
-        <SPreviewBox isActive={hasExistingCode}>
+        <SPreviewBox
+          isActive={hasExistingCode}
+          sx={{ flexBasis: ["100%", "35%"] }}
+        >
           <div sx={{ flex: "column", gap: 8 }}>
             <Text>{t("referrals.preview.code.title")}</Text>
             <Text color="brightBlue300">{codeDisplay}</Text>
@@ -99,27 +83,26 @@ export const CodePreview: React.FC<Props> = ({
 
           <CopyButton disabled={!hasCode} text={code} />
         </SPreviewBox>
-        <SPreviewPathSelect>
-          <Text sx={{ mr: 5 }}>{t("referrals.preview.url.title")}</Text>
-          {SELECTABLE_URL_PATHS.map(({ path, tkey }) => (
-            <SPathButton
-              key={path}
-              active={urlPath === path}
-              size="micro"
-              onClick={() => setUrlPath(path)}
-            >
-              {t(tkey)}
-            </SPathButton>
-          ))}
-        </SPreviewPathSelect>
       </SPreviewContainer>
-      {false && hasExistingCode && (
-        <SShareBox>
-          <Button fullWidth variant="primary">
-            {t("share")}
+      <SShareBox>
+        {hasExistingCode && (
+          <Button
+            onClick={shareOnTwitter}
+            fullWidth
+            variant="secondary"
+            css={{
+              backdropFilter: "blur(6.5px)",
+            }}
+            sx={{
+              fontWeight: 600,
+              fontSize: 16,
+              px: 35,
+            }}
+          >
+            {t("shareOn")} <TwitterXIcon sx={{ color: "white" }} />
           </Button>
-        </SShareBox>
-      )}
+        )}
+      </SShareBox>
     </SContainer>
   )
 }

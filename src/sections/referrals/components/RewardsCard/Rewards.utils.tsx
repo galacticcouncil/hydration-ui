@@ -24,12 +24,20 @@ export const useAccountRewards = (accountAddress?: string) => {
   const isLoading =
     referralShares.isInitialLoading || potBalance.isInitialLoading
   if (!isLoading && referralShares.data) {
-    const { accountShares, totalShares } = referralShares.data
-    const data = accountShares
+    const { referrerShares, traderShares, totalShares } = referralShares.data
+    const accountShares = referrerShares.plus(traderShares)
+
+    const totalRewards = accountShares
       .div(totalShares)
       .multipliedBy(potBalance.data?.freeBalance ?? 1)
       .shiftedBy(-native.decimals)
-    return { isLoading, data }
+
+    const referrerRewards = referrerShares
+      .div(totalShares)
+      .multipliedBy(potBalance.data?.freeBalance ?? 1)
+      .shiftedBy(-native.decimals)
+
+    return { isLoading, data: { totalRewards, referrerRewards } }
   }
 
   return { isLoading, data: undefined }

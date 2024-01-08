@@ -1,6 +1,5 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
-import { ErrorMessage } from "components/Label/Label.styled"
 
 export const SInput = styled.input<{
   hasError?: boolean
@@ -29,12 +28,18 @@ export const SInput = styled.input<{
   ::placeholder {
     color: ${theme.colors.brightBlue300};
   }
+
+  &:focus {
+    border: 1px solid rgba(${theme.rgbColors.brightBlue300}, 0.6);
+    outline-color: ${theme.colors.brightBlue300};
+  }
+
   &:disabled {
     cursor: not-allowed;
 
     opacity: 0.7;
 
-    border: 1px solid ${theme.colors.darkBlue300};
+    border: 1px solid ${theme.colors.darkBlue400};
 
     color: ${theme.colors.darkBlue300};
   }
@@ -43,6 +48,9 @@ export const SInput = styled.input<{
 export const SInputWrapper = styled.div`
   position: relative;
   width: 100%;
+
+  display: flex;
+  flex-direction: column;
 
   & > svg {
     position: absolute;
@@ -58,17 +66,42 @@ export const SInputWrapper = styled.div`
   }
 
   & > button {
-    position: absolute;
-    top: 27px;
-    right: 12px;
-    transform: translateY(-50%);
     border: 0;
+    padding: 5px 10px;
+
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    margin-bottom: 4px;
+
+    backdrop-filter: blur(6.5px);
+
     :hover {
       border: 0;
     }
   }
+
+  @media ${theme.viewport.gte.xs} {
+    & > button {
+      padding: 2px 4px;
+      margin-bottom: 0;
+
+      top: 27px;
+      right: 12px;
+      bottom: auto;
+
+      transform: translateY(-50%);
+    }
+  }
 `
-export const SErrorMessage = styled(ErrorMessage)`
+export const SAlertMessage = styled.p<{ variant?: "error" | "info" }>`
+  font-size: 12px;
+  line-height: 16px;
+  margin-top: 2px;
+
+  color: ${({ variant }) =>
+    variant === "error" ? theme.colors.error : theme.colors.brightBlue300};
+
   @media ${theme.viewport.gte.sm} {
     position: absolute;
     top: 100%;
