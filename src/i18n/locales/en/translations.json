@@ -703,6 +703,7 @@
   "fund.modal.crypto.buy": "Use cross-chain",
   "fund.button": "Fund wallet",
   "referrals.title": "Invite your degens to a pool party",
+  "referrals.share.tweetText": "Stay Hydrated.",
   "referrals.description": "Onboard users to HydraDX and earn rewards from their Omnipool trades",
   "referrals.input.placeholder.connect": "Connect your wallet to generate a referral link",
   "referrals.input.placeholder.deposit": "Your wallet is empty. Deposit funds before generating a referral code.",

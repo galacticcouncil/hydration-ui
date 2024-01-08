@@ -13,7 +13,7 @@ export const HeroBanner: FC<Props> = ({ children }) => {
   const { t } = useTranslation()
   return (
     <SContainer>
-      <div sx={{ maxWidth: [400, "55%"] }}>
+      <div sx={{ maxWidth: [400, 600] }}>
         <Heading
           fs={[20, 40]}
           font="FontOver"
