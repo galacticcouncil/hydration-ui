@@ -13,16 +13,14 @@ import { useNextNonce, usePaymentInfo } from "api/transaction"
 import BigNumber from "bignumber.js"
 import { Trans, useTranslation } from "react-i18next"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
-import {
-  useAccount,
-  useReferralCode,
-} from "sections/web3-connect/Web3Connect.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_1 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 import { isEvmAccount } from "utils/evm"
 import { BN_NAN } from "utils/constants"
 import { useUserReferrer } from "api/referrals"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
+import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 
 export const useTransactionValues = ({
   xcallMeta,
@@ -53,9 +51,9 @@ export const useTransactionValues = ({
     ? !!referrer.data?.length
     : true
 
-  const storedReferralCodes = useReferralCode()
+  const storedReferralCodes = useReferralCodesStore()
   const storedReferralCode = account?.address
-    ? storedReferralCodes.referralCode[account.address]
+    ? storedReferralCodes.referralCodes[account.address]
     : undefined
 
   const boundedTx =
