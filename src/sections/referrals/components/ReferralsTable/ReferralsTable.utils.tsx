@@ -34,14 +34,13 @@ const AccountTier = ({ address }: { address: string }) => {
 
 const AccountName = ({ address }: { address: string }) => {
   const identity = useAccountIdentity(address)
-
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   if (identity.data?.identity) return <>{identity.data.identity}</>
 
   return (
     <Text color="white">
-      {shortenAccountAddress(address, isDesktop ? 6 : 5)}
+      {shortenAccountAddress(address, isDesktop ? 6 : 4)}
     </Text>
   )
 }

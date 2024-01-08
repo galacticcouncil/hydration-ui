@@ -93,12 +93,14 @@ export const ReferrerSignForm = () => {
       sx={{ width: "100%" }}
     >
       <div sx={{ flex: "column", gap: 16 }}>
-        <Text fs={14} color="brightBlue300">
-          {t("referrals.signForm.desc")}
-        </Text>
-        <Text fs={14} color="brightBlue300">
-          {t("referrals.signForm.desc2")}
-        </Text>
+        <div sx={{ flex: "column", gap: 6 }}>
+          <Text fs={14} color="brightBlue300">
+            {t("referrals.signForm.desc")}
+          </Text>
+          <Text fs={14} color="brightBlue300">
+            {t("referrals.signForm.desc2")}
+          </Text>
+        </div>
         <div sx={{ flex: "row", gap: 8, flexWrap: ["wrap", "nowrap"] }}>
           <Controller
             name="code"
