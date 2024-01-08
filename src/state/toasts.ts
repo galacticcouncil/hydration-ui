@@ -5,6 +5,7 @@ import { renderToString } from "react-dom/server"
 import { createJSONStorage, persist } from "zustand/middleware"
 import { Maybe, safelyParse } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { differenceInSeconds } from "date-fns"
 
 export const TOAST_MESSAGES = ["onLoading", "onSuccess", "onError"] as const
 export type ToastVariant =
@@ -22,6 +23,7 @@ type ToastParams = {
   title: ReactElement
   actions?: ReactNode
   persist?: boolean
+  hideTime?: number
 }
 
 type ToastData = ToastParams & {
@@ -87,7 +89,7 @@ const useToastsStore = create<ToastStore>()(
       storage: createJSONStorage(() => ({
         async getItem(name: string) {
           const storeToasts = window.localStorage.getItem(name)
-          const storeAccount = window.localStorage.getItem("account")
+          const storeAccount = window.localStorage.getItem("web3-connect")
 
           if (storeAccount == null) return storeToasts
 
@@ -126,6 +128,37 @@ const useToastsStore = create<ToastStore>()(
                   allToasts[accountAddress] = []
                 }
               }
+
+              const allAccounts = Object.keys(allToasts)
+              if (allAccounts?.length) {
+                for (const account of allAccounts) {
+                  const accountToasts = allToasts[account]
+                  const loadingToastsIds = accountToasts
+                    .filter((toast) => toast.variant === "progress")
+                    .map((toast) => toast.id)
+
+                  allToasts[account] = accountToasts.map((toast) => {
+                    const secondsDiff = differenceInSeconds(
+                      new Date(),
+                      new Date(toast.dateCreated),
+                    )
+
+                    // Change toasts in loading state to unknown state if they are older than 60 seconds
+                    if (
+                      loadingToastsIds.includes(toast.id) &&
+                      secondsDiff > 60
+                    ) {
+                      return {
+                        ...toast,
+                        hidden: true,
+                        variant: "unknown",
+                      }
+                    }
+                    return toast
+                  })
+                }
+              }
+
               return JSON.stringify({
                 ...toastsState,
                 state: { toasts: allToasts },
@@ -153,6 +186,7 @@ const useToastsStore = create<ToastStore>()(
               }
             }
           }
+
           return storeToasts
         },
         setItem(name, value) {

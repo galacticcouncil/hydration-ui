@@ -13,24 +13,22 @@ import { useNextNonce, usePaymentInfo } from "api/transaction"
 import BigNumber from "bignumber.js"
 import { Trans, useTranslation } from "react-i18next"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
-import {
-  useAccount,
-  useReferralCode,
-} from "sections/web3-connect/Web3Connect.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_1 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 import { isEvmAccount } from "utils/evm"
 import { BN_NAN } from "utils/constants"
-import { useReferralCodes } from "api/referrals"
-import { getChainSpecificAddress } from "utils/formatting"
+import { useUserReferrer } from "api/referrals"
+import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
+import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 
 export const useTransactionValues = ({
-  xcall,
+  xcallMeta,
   feePaymentId,
   fee,
   tx,
 }: {
-  xcall?: Record<string, string>
+  xcallMeta?: Record<string, string>
   feePaymentId?: string
   fee?: BigNumber
   tx: SubmittableExtrinsic<"promise">
@@ -45,19 +43,17 @@ export const useTransactionValues = ({
 
   /* REFERRALS */
 
-  const userReferralCode = useReferralCodes(
-    featureFlags.referrals && account?.address
-      ? getChainSpecificAddress(account.address)
-      : undefined,
+  const referrer = useUserReferrer(
+    featureFlags.referrals ? account?.address : undefined,
   )
 
   const isLinkedAccount = featureFlags.referrals
-    ? !!userReferralCode.data?.[0]?.referralCode
+    ? !!referrer.data?.length
     : true
 
-  const storedReferralCodes = useReferralCode()
+  const storedReferralCodes = useReferralCodesStore()
   const storedReferralCode = account?.address
-    ? storedReferralCodes.referralCode[account.address]
+    ? storedReferralCodes.referralCodes[account.address]
     : undefined
 
   const boundedTx =
@@ -70,6 +66,8 @@ export const useTransactionValues = ({
           tx,
         ])
       : tx
+
+  const isNewReferralLink = tx.method.method === "registerCode"
 
   /* */
 
@@ -124,7 +122,7 @@ export const useTransactionValues = ({
     acceptedFeePaymentAssets.some(
       (acceptedFeePaymentAsset) => acceptedFeePaymentAsset.isInitialLoading,
     ) ||
-    userReferralCode.isInitialLoading
+    referrer.isInitialLoading
 
   if (
     !feePaymentMeta ||
@@ -144,6 +142,7 @@ export const useTransactionValues = ({
         isLinkedAccount,
         storedReferralCode,
         tx: boundedTx,
+        isNewReferralLink,
       },
     }
 
@@ -169,9 +168,11 @@ export const useTransactionValues = ({
   }
 
   let isEnoughPaymentBalance
-  if (xcall && xcall["sourceChain"] !== "hydradx") {
-    // TODO: Refactor and check fee balance based on metadata
-    isEnoughPaymentBalance = true
+  if (xcallMeta && xcallMeta?.srcChain !== HYDRADX_CHAIN_KEY) {
+    const feeBalanceDiff =
+      parseFloat(xcallMeta.srcChainFeeBalance) -
+      parseFloat(xcallMeta.srcChainFee)
+    isEnoughPaymentBalance = feeBalanceDiff > 0
   } else {
     isEnoughPaymentBalance = feeAssetBalance.data.balance
       .shiftedBy(-feePaymentMeta.decimals)
@@ -191,6 +192,7 @@ export const useTransactionValues = ({
       isLinkedAccount,
       storedReferralCode,
       tx: boundedTx,
+      isNewReferralLink,
     },
   }
 }

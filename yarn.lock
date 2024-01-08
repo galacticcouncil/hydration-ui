@@ -2990,10 +2990,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@2.0.28":
-  version "2.0.28"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.0.28.tgz#0618312ce7b3f83bfdf2b0dabc29f32b554174fa"
-  integrity sha512-EO6jQjYOEi+rWIKlRGq9epFM2dbM1j5wnR+LRIeMoxoCYtVBprK6S2K9s9WQYCWPI6Gcsj9G4dcaaXuRuF5D/A==
+"@galacticcouncil/apps@2.0.29":
+  version "2.0.29"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.0.29.tgz#66cf8bf9e50ecb2dc49218060cffd47901beaf98"
+  integrity sha512-SO1U6C/BYkbOMEnZL6RrTLT97X+ZAUC0117frff400lNFhv6EqDwbg98+QngmqpkBAPttMIIamElT1LD2KL5AQ==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@talismn/connect-wallets" "^1.2.1"
@@ -3038,10 +3038,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.2.0.tgz#74feacdf94d4846f1a148835f25936b2ddc7bdfd"
   integrity sha512-mznedOeA8d9BQ8kUQ/4O/P6trqTC4FGwvTDGCHJ0O/bgA9iFb+suctbFtyFT3qfNnngR7FSF2Pls1O/SvtNn8g==
 
-"@galacticcouncil/sdk@^1.1.3":
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.1.3.tgz#72a0b5e04319aadd1c68a6eae7cd8dfdbdb8ebc1"
-  integrity sha512-pEdpKY3bcC7OyF0B6+A0I1ikhSMtv3YfEy0OXz/5O2AO+aF9V3ZGKBECzRPZBAj+5wbjdWHRu1tfUaNoOx7yoQ==
+"@galacticcouncil/sdk@^1.1.4":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.1.4.tgz#44db22a0e684df2b562528bfa5624f619455b589"
+  integrity sha512-YdamFG+7qCyRgBwnQM/66C0aE2b0bKk17nYAlVU5wT0PrxSYkGMP661Hqkj6DJta8TfYtE1h2VQSUR0aGN+qKQ==
   dependencies:
     "@galacticcouncil/math-lbp" "^0.2.1"
     "@galacticcouncil/math-omnipool" "^0.2.0"

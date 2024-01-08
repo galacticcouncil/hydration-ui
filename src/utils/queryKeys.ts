@@ -387,4 +387,5 @@ export const QUERY_KEYS = {
     "accountReferees",
     referrerAddress,
   ],
+  referralLinkFee: ["referralLinkFee"],
 } as const
