@@ -17,6 +17,8 @@ import { useAccountIdentity } from "api/stats"
 import Skeleton from "react-loading-skeleton"
 import { referralRewards } from "sections/referrals/ReferralsPage.utils"
 import { BN_NAN } from "utils/constants"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 const AccountTier = ({ address }: { address: string }) => {
   const referrerInfo = useReferrerInfo(address)
@@ -33,9 +35,15 @@ const AccountTier = ({ address }: { address: string }) => {
 const AccountName = ({ address }: { address: string }) => {
   const identity = useAccountIdentity(address)
 
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
   if (identity.data?.identity) return <>{identity.data.identity}</>
 
-  return <Text color="white">{shortenAccountAddress(address)}</Text>
+  return (
+    <Text color="white">
+      {shortenAccountAddress(address, isDesktop ? 6 : 5)}
+    </Text>
+  )
 }
 
 const Rewards = ({ address }: { address: string }) => {
@@ -61,6 +69,8 @@ export const useReferralsTable = (
   { onTipUser }: { onTipUser: (address: string) => void },
 ) => {
   const { t } = useTranslation()
+
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const { accessor, display } =
     createColumnHelper<TReferralsTableData[number]>()
@@ -100,7 +110,9 @@ export const useReferralsTable = (
             onClick={() => onTipUser(row.original.account)}
             sx={{ width: ["auto", 146], height: 24 }}
           >
-            {t("referrals.table.btn.tipUser")}
+            {isDesktop
+              ? t("referrals.table.btn.tipUser")
+              : t("referrals.table.btn.tipUser.mob")}
           </Button>
         </div>
       ),

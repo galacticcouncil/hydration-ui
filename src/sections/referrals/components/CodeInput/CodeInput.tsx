@@ -6,6 +6,9 @@ import { useTranslation } from "react-i18next"
 import { randomAlphanumericString } from "utils/helpers"
 import DiceIcon from "assets/icons/DiceIcon.svg?react"
 import { REFERRAL_CODE_MAX_LENGTH } from "sections/referrals/ReferralsPage.utils"
+import { useRegistrationLinkFee } from "api/referrals"
+import { Text } from "components/Typography/Text/Text"
+import { Spacer } from "components/Spacer/Spacer"
 
 type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange"> & {
   error?: string
@@ -15,6 +18,8 @@ type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange"> & {
 export const CodeInput = forwardRef<HTMLInputElement, InputProps>(
   ({ onChange, className, error, ...props }, ref) => {
     const { t } = useTranslation()
+
+    const registrationFee = useRegistrationLinkFee()
 
     return (
       <SInputWrapper className={className}>
@@ -44,7 +49,20 @@ export const CodeInput = forwardRef<HTMLInputElement, InputProps>(
             {t("referrals.button.randomCode")}
           </Button>
         )}
+        <Spacer size={2} />
         {error && <SErrorMessage>{error}</SErrorMessage>}
+        {!error && registrationFee.data && (
+          <Text
+            fs={12}
+            color="brightBlue300"
+            css={{ position: "absolute", top: "100%" }}
+          >
+            {t("referrals.button.linkFee", {
+              amount: registrationFee.data?.amount,
+              symbol: registrationFee.data.symbol,
+            })}
+          </Text>
+        )}
       </SInputWrapper>
     )
   },

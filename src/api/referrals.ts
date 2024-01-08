@@ -185,3 +185,35 @@ const getReferees = (api: ApiPromise) => async () => {
 
   return data
 }
+
+export const useRegistrationLinkFee = (disabled?: boolean) => {
+  const { api, assets } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.referralLinkFee,
+    !disabled
+      ? async () => {
+          const rawData = await api.consts.referrals.registrationFee
+
+          //@ts-ignore
+          const [id, amount] = rawData ?? []
+
+          const feeAssetId = id?.toString()
+          const feeAmount = amount?.toBigNumber() as BN
+
+          if (feeAssetId && feeAmount) {
+            const meta = assets.getAsset(feeAssetId)
+            const amount = feeAmount.shiftedBy(-meta.decimals)
+
+            return {
+              id: feeAssetId,
+              amount,
+              decimals: meta.decimals,
+              symbol: meta.symbol,
+            }
+          }
+        }
+      : undefinedNoop,
+    { enabled: !disabled },
+  )
+}
