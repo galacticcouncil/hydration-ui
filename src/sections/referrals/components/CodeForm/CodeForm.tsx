@@ -18,23 +18,25 @@ import {
   getUserState,
   useRegisterReferralCode,
 } from "./CodeForm.utils"
-import { useReferralCodeLength, useReferralCodes } from "api/referrals"
+import {
+  useReferralCodeLength,
+  useReferralCodes,
+  useRegistrationLinkFee,
+} from "api/referrals"
 import { getChainSpecificAddress } from "utils/formatting"
+import { useTokenBalance } from "api/balances"
+import { useAccountCurrency } from "api/payments"
+import { usePaymentInfo } from "api/transaction"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const CodeForm = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
+  const { api, assets } = useRpcProvider()
   const referralLength = useReferralCodeLength()
 
   const registerReferralCode = useRegisterReferralCode()
-
-  const balances = useAccountBalances(account?.address)
-  const userReferralCode = useReferralCodes(
-    account?.address ? getChainSpecificAddress(account.address) : undefined,
-  )
-  const referralCodes = useReferralCodes("all")
-
-  const existingReferralCode = userReferralCode.data?.[0]?.referralCode
+  const registrationFee = useRegistrationLinkFee()
 
   const form = useForm<CodeFormValues>({
     mode: "onSubmit",
@@ -42,6 +44,44 @@ export const CodeForm = () => {
   })
 
   const referralCode = form.watch("referralCode")
+
+  const accountFeePaymentAsset = useAccountCurrency(account?.address)
+  const paymentInfo = usePaymentInfo(
+    api.tx.referrals.registerCode(referralCode),
+    !(
+      referralCode.length &&
+      accountFeePaymentAsset.data === registrationFee.data?.id
+    ),
+  )
+
+  const linkFeeBalance = useTokenBalance(
+    registrationFee.data?.id,
+    account?.address,
+  )
+
+  const balances = useAccountBalances(account?.address)
+  console.log(
+    paymentInfo.data?.partialFee.toBigNumber().shiftedBy(-12).toString(),
+  )
+  const isLinkFeeBalance =
+    registrationFee.data && linkFeeBalance.data
+      ? linkFeeBalance.data.freeBalance
+          .shiftedBy(-registrationFee.data.decimals)
+          .minus(registrationFee.data.amount)
+          .minus(
+            paymentInfo.data?.partialFee
+              .toBigNumber()
+              .shiftedBy(-assets.native.decimals) ?? 0,
+          )
+          .isPositive()
+      : false
+
+  const userReferralCode = useReferralCodes(
+    account?.address ? getChainSpecificAddress(account.address) : undefined,
+  )
+  const referralCodes = useReferralCodes("all")
+
+  const existingReferralCode = userReferralCode.data?.[0]?.referralCode
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     account?.address &&
@@ -103,11 +143,20 @@ export const CodeForm = () => {
                   !referralCodes.data?.some(
                     (referralCode) => referralCode?.referralCode === value,
                   ) || t("referrals.input.error.existingCode"),
+                isFeeBalance: () =>
+                  isLinkFeeBalance ||
+                  t("referrals.input.error.feeBalance", {
+                    amount: registrationFee.data?.amount,
+                    symbol: registrationFee.data?.symbol,
+                  }),
               },
             }}
             render={({ field, fieldState }) => (
               <CodeInput
                 {...field}
+                onBlur={(data) =>
+                  !data.target.value.length && form.clearErrors("referralCode")
+                }
                 value={field.value}
                 disabled={isDisabled}
                 error={fieldState.error?.message}
@@ -124,19 +173,21 @@ export const CodeForm = () => {
               />
             )}
           />
-          {(state === UserState.FUNDED || isBalanceLoading) && (
-            <Button isLoading={isBalanceLoading} variant="primary">
-              {t("referrals.button.sign")}
-            </Button>
-          )}
-          {state === UserState.NOT_FUNDED && (
-            <FundWalletButton variant="primary">
-              {t("referrals.button.depositFunds")}
-            </FundWalletButton>
-          )}
-          {state === UserState.DISCONECTED && (
-            <Web3ConnectModalButton sx={{ height: "auto", px: 30 }} />
-          )}
+          <div sx={{ height: 54, flex: "row" }}>
+            {(state === UserState.FUNDED || isBalanceLoading) && (
+              <Button isLoading={isBalanceLoading} variant="primary">
+                {t("referrals.button.sign")}
+              </Button>
+            )}
+            {state === UserState.NOT_FUNDED && (
+              <FundWalletButton variant="primary" type="button">
+                {t("referrals.button.depositFunds")}
+              </FundWalletButton>
+            )}
+            {state === UserState.DISCONECTED && (
+              <Web3ConnectModalButton sx={{ height: "auto", px: 30 }} />
+            )}
+          </div>
         </form>
       )}
       <WavySeparator sx={{ my: 24, opacity: 0.15 }} />

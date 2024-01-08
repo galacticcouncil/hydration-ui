@@ -41,7 +41,12 @@ export const TierStats = () => {
               <Text font="FontOver" fs={19} css={{ whiteSpace: "nowrap" }}>
                 {t(
                   `referrals.tiers.tier${
-                    referrerInfo.data?.tier?.toString() as "0" | "1" | "2" | "3"
+                    referrerInfo.data?.tier?.toString() as
+                      | "0"
+                      | "1"
+                      | "2"
+                      | "3"
+                      | "4"
                   }`,
                 )}
               </Text>
