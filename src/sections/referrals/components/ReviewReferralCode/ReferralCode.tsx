@@ -16,7 +16,7 @@ export const ReferralCode = ({ code }: { code: string }) => {
   return (
     <div sx={{ flex: "column", align: "end" }}>
       <SContainer>
-        <Text color="white" fs={13}>
+        <Text color="white" fs={13} lh={13}>
           {code}
         </Text>
         <IconButton
