@@ -19,15 +19,16 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { isEvmAccount } from "utils/evm"
 import { BN_NAN } from "utils/constants"
 import { useUserReferrer } from "api/referrals"
+import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 
 export const useTransactionValues = ({
-  xcall,
+  xcallMeta,
   feePaymentId,
   fee,
   tx,
 }: {
-  xcall?: Record<string, string>
+  xcallMeta?: Record<string, string>
   feePaymentId?: string
   fee?: BigNumber
   tx: SubmittableExtrinsic<"promise">
@@ -164,9 +165,11 @@ export const useTransactionValues = ({
   }
 
   let isEnoughPaymentBalance
-  if (xcall && xcall["sourceChain"] !== "hydradx") {
-    // TODO: Refactor and check fee balance based on metadata
-    isEnoughPaymentBalance = true
+  if (xcallMeta && xcallMeta?.srcChain !== HYDRADX_CHAIN_KEY) {
+    const feeBalanceDiff =
+      parseFloat(xcallMeta.srcChainFeeBalance) -
+      parseFloat(xcallMeta.srcChainFee)
+    isEnoughPaymentBalance = feeBalanceDiff > 0
   } else {
     isEnoughPaymentBalance = feeAssetBalance.data.balance
       .shiftedBy(-feePaymentMeta.decimals)
