@@ -67,6 +67,8 @@ export const useTransactionValues = ({
         ])
       : tx
 
+  const isNewReferralLink = tx.method.method === "registerCode"
+
   /* */
 
   const { data: paymentInfo, isLoading: isPaymentInfoLoading } =
@@ -140,6 +142,7 @@ export const useTransactionValues = ({
         isLinkedAccount,
         storedReferralCode,
         tx: boundedTx,
+        isNewReferralLink,
       },
     }
 
@@ -189,6 +192,7 @@ export const useTransactionValues = ({
       isLinkedAccount,
       storedReferralCode,
       tx: boundedTx,
+      isNewReferralLink,
     },
   }
 }

@@ -13,14 +13,14 @@ const getPaymentInfo =
     return paymentInfo
   }
 
-export function usePaymentInfo(tx: SubmittableExtrinsic) {
+export function usePaymentInfo(tx: SubmittableExtrinsic, disabled?: boolean) {
   const { account } = useAccount()
   const finalAccount = account?.address
 
   return useQuery(
     QUERY_KEYS.paymentInfo(tx.hash, finalAccount),
     finalAccount != null ? getPaymentInfo(tx, finalAccount) : undefinedNoop,
-    { enabled: !!finalAccount },
+    { enabled: !!finalAccount && !disabled },
   )
 }
 
