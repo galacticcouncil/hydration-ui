@@ -7,26 +7,24 @@ import { REFERRAL_CODE_REGEX } from "sections/referrals/ReferralsPage.utils"
 import { Trans, useTranslation } from "react-i18next"
 import { ErrorMessage } from "components/Label/Label.styled"
 import { useRpcProvider } from "providers/rpcProvider"
-import {
-  useAccount,
-  useReferralCode,
-} from "sections/web3-connect/Web3Connect.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { ToastMessage, useStore } from "state/store"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Text } from "components/Typography/Text/Text"
 import { TOAST_MESSAGES } from "state/toasts"
-import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { getChainSpecificAddress } from "utils/formatting"
 import { PreviewReferrer } from "sections/referrals/components/PreviewReferrer/PreviewReferrer"
 import { useState } from "react"
+import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 
 export const ReferrerSignForm = () => {
   const { api } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
-  const { setReferralCode } = useWeb3ConnectStore()
+  const { setReferralCode, referralCodes: storedReferralCodes } =
+    useReferralCodesStore()
 
   const [previewReferrer, setPreviewReferrer] = useState(false)
 
@@ -34,10 +32,8 @@ export const ReferrerSignForm = () => {
   const referralCodes = useReferralCodes("all")
   const referralLength = useReferralCodeLength()
 
-  const storedReferralCodes = useReferralCode()
-
   const storedReferralCode = account?.address
-    ? storedReferralCodes.referralCode[account.address]
+    ? storedReferralCodes[account.address]
     : undefined
 
   const form = useForm<{ code: string }>({
