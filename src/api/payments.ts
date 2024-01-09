@@ -21,6 +21,7 @@ export const getAcceptedCurrency =
     return {
       id: normalizedId,
       accepted: normalizedId === NATIVE_ASSET_ID || !result.isEmpty,
+      data: result.unwrapOr(null)?.toBigNumber(),
     }
   }
 

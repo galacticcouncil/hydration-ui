@@ -15,7 +15,7 @@ import { getAcceptedCurrency, getAccountCurrency } from "./payments"
 import BN from "bignumber.js"
 import { format } from "date-fns"
 import { useRpcProvider } from "providers/rpcProvider"
-import { PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
+import { Asset, PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { BN_0 } from "utils/constants"
 
 export const useAssetTable = () => {
@@ -125,7 +125,7 @@ export type TBond = TAssetCommon & {
   assetType: "Bond"
   assetId: string
   maturity: number
-  isPast: boolean
+  isTradable: boolean
 }
 
 export type TToken = TAssetCommon & {
@@ -172,20 +172,26 @@ export const getAssets = async (api: ApiPromise) => {
     includeOnly: traderRoutes,
   })
 
+  let rawTradeAssets: Asset[] = []
+
+  try {
+    rawTradeAssets = await tradeRouter.getAllAssets()
+  } catch (e) {}
+
   const [
     system,
     rawAssetsData,
     rawAssetsMeta,
     rawAssetsLocations,
-    rawTradeAssets,
     hubAssetId,
+    isReferralsEnabled,
   ] = await Promise.all([
     api.rpc.system.properties(),
     api.query.assetRegistry.assets.entries(),
     api.query.assetRegistry.assetMetadataMap.entries(),
     api.query.assetRegistry.assetLocations.entries(),
-    tradeRouter.getAllAssets(),
     api.consts.omnipool.hubAssetId,
+    api.query.referrals,
   ])
 
   const tokens: TToken[] = []
@@ -292,7 +298,7 @@ export const getAssets = async (api: ApiPromise) => {
           (location) => location[0].args[0].toString() === assetId.toString(),
         )?.[1]
 
-        const isPast = !rawTradeAssets.some(
+        const isTradable = rawTradeAssets.some(
           (tradeAsset) => tradeAsset.id === id,
         )
 
@@ -305,7 +311,7 @@ export const getAssets = async (api: ApiPromise) => {
           decimals,
           symbol,
           maturity: maturity.toNumber(),
-          isPast,
+          isTradable,
           iconId: assetId.toString(),
         }
 
@@ -368,8 +374,12 @@ export const getAssets = async (api: ApiPromise) => {
   const shareTokens = shareTokensRaw.map((shareToken): TShareToken => {
     const [assetAId, assetBId] = shareToken.assets
 
-    const assetA = tokens.find((token) => token.id === assetAId) as TToken
-    const assetB = tokens.find((token) => token.id === assetBId) as TToken
+    const assetA = [...tokens, ...bonds].find(
+      (token) => token.id === assetAId,
+    ) as TToken
+    const assetB = [...tokens, ...bonds].find(
+      (token) => token.id === assetBId,
+    ) as TToken
 
     const assetDecimal = Number(assetA.id) > Number(assetB.id) ? assetB : assetA
 
@@ -434,5 +444,8 @@ export const getAssets = async (api: ApiPromise) => {
       isShareToken,
     },
     tradeRouter,
+    featureFlags: {
+      referrals: !!isReferralsEnabled,
+    },
   }
 }

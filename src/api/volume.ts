@@ -315,9 +315,10 @@ export const useVolume = (assetId?: string | "all") => {
     QUERY_KEYS.volumeDaily(assetId),
     assetId
       ? async () => {
-          const id = assetId === "all" ? undefined : assetId
-          const data = await getVolumeDaily(id)
-          return { volume: BN(data[0].volume_usd), assetId }
+          const data = await getVolumeDaily(
+            assetId === "all" ? undefined : assetId,
+          )
+          return data
         }
       : undefinedNoop,
     { enabled: !!assetId },
@@ -342,11 +343,11 @@ export const useVolumes = (assetIds: string[]) => {
 
 const getVolumeDaily = async (assetId?: string) => {
   const res = await fetch(
-    `https://api.hydradx.io/hydradx-ui/v1/stats/volume${
-      assetId != null ? `/${assetId}` : ""
+    `https://api.hydradx.io/hydradx-ui/v2/stats/volume${
+      assetId !== undefined ? `/${assetId}` : ""
     }`,
   )
-  const data: Promise<{ volume_usd: number }[]> = res.json()
+  const data: Promise<{ volume_usd: number; asset_id: number }[]> = res.json()
 
   return data
 }

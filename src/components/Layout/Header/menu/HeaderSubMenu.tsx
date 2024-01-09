@@ -7,7 +7,7 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { TabItemWithSubItems } from "utils/navigation"
+import { TabItemWithSubItems, resetSearchParams } from "utils/navigation"
 import { MobileNavBarItem } from "components/Layout/Header/MobileNavBar/MobileNavBar"
 import {
   SArrow,
@@ -21,7 +21,7 @@ type Props = { item: TabItemWithSubItems }
 
 export const HeaderSubMenu = ({ item }: Props) => {
   const { t } = useTranslation()
-  const { account } = useSearch()
+  const search = useSearch()
   const [open, setOpen] = useState(false)
 
   const isTablet = useMedia(theme.viewport.gte.sm)
@@ -68,7 +68,7 @@ export const HeaderSubMenu = ({ item }: Props) => {
                 <Link
                   key={subItem.key}
                   to={subItem.href}
-                  search={account ? { account } : undefined}
+                  search={resetSearchParams(search)}
                   onClick={() => setOpen(false)}
                 >
                   <SSubMenuItem>

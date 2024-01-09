@@ -26,8 +26,7 @@ import { useAccountIdentity } from "api/stats"
 const AccountName = ({ address }: { address: string }) => {
   const identity = useAccountIdentity(address)
 
-  if (identity.data?.identity)
-    return <>{identity.data.identity.info.display.asRaw.toUtf8()}</>
+  if (identity.data?.identity) return <>{identity.data.identity}</>
 
   return <>{shortenAccountAddress(getChainSpecificAddress(address))}</>
 }

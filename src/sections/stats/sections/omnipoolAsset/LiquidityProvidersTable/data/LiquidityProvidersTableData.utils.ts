@@ -1,13 +1,13 @@
 import { useTokenBalance } from "api/balances"
 import { useApiIds } from "api/consts"
 import { useOmnipoolAsset, useOmnipoolPositionsMulti } from "api/omnipool"
-import { useTVLs } from "api/stats"
+import { useTVL } from "api/stats"
 import { useUniquesAssets } from "api/uniques"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { BN_0 } from "utils/constants"
+import { BN_NAN } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { calculatePositionLiquidity } from "utils/omnipool"
 import { groupBy } from "utils/rx"
@@ -33,7 +33,7 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
 
   const spotPrices = useDisplayPrices([apiIds.data?.hubId ?? "", assetId])
 
-  const tvl = useTVLs([assetId])
+  const tvl = useTVL(assetId)
 
   const queries = [
     uniques,
@@ -41,7 +41,7 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
     omnipoolAsset,
     spotPrices,
     assetBalance,
-    ...tvl,
+    tvl,
   ]
 
   const isLoading = queries.some((q) => q.isLoading)
@@ -70,7 +70,7 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
 
     const balance = assetBalance?.data?.balance ?? BN(0)
 
-    const omnipoolTvlPrice = BN(tvl?.[0].data?.tvl_usd ?? BN_0) ?? BN_0
+    const omnipoolTvlPrice = BN(tvl.data?.[0].tvl_usd ?? BN_NAN)
 
     const data = positions.data
       // zip positions with uniques by index
@@ -85,22 +85,25 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
       // filter positions by assetId
       .filter(({ position }) => position.assetId.toString() === assetId)
       .map(({ position, unique }) => {
-        const { lrna, value, valueDisplay } = calculatePositionLiquidity({
-          position,
-          omnipoolBalance: balance,
-          omnipoolHubReserve: omnipoolAsset?.data?.hubReserve,
-          omnipoolShares: omnipoolAsset?.data?.shares,
-          lrnaSpotPrice,
-          valueSpotPrice,
-          lrnaDecimals: lrnaMeta.decimals,
-          assetDecimals: meta.decimals,
-        })
+        const { lrna, value, valueDisplay, valueDisplayWithoutLrna } =
+          calculatePositionLiquidity({
+            position,
+            omnipoolBalance: balance,
+            omnipoolHubReserve: omnipoolAsset?.data?.hubReserve,
+            omnipoolShares: omnipoolAsset?.data?.shares,
+            lrnaSpotPrice,
+            valueSpotPrice,
+            lrnaDecimals: lrnaMeta.decimals,
+            assetDecimals: meta.decimals,
+          })
 
         return {
           assetId: meta.id,
           symbol: meta.symbol,
           account: (unique?.data.owner.toString() ?? "") as string,
-          sharePercent: valueDisplay.div(omnipoolTvlPrice).times(100),
+          sharePercent: valueDisplayWithoutLrna
+            .div(omnipoolTvlPrice)
+            .times(100),
           lrna,
           value,
           valueDisplay,

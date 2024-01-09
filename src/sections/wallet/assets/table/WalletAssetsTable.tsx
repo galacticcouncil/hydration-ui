@@ -42,7 +42,9 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
     [data, showAll],
   )
 
-  const table = useAssetsTable(filteredData, { onTransfer: setTransferAsset })
+  const table = useAssetsTable(filteredData, {
+    onTransfer: setTransferAsset,
+  })
 
   return (
     <TableContainer css={assetsTableStyles}>
@@ -66,7 +68,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
           label={t("wallet.assets.table.toggle")}
         />
       </TableTitle>
-      <Table>
+      <Table css={{ tableLayout: "fixed" }}>
         <TableHeaderContent>
           {table.getHeaderGroups().map((hg) => (
             <TableRow key={hg.id}>
@@ -76,6 +78,12 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
                   canSort={header.column.getCanSort()}
                   sortDirection={header.column.getIsSorted()}
                   onSort={header.column.getToggleSortingHandler()}
+                  css={{
+                    width:
+                      header.getSize() !== 150
+                        ? `${header.getSize()}%`
+                        : "auto",
+                  }}
                 >
                   {flexRender(
                     header.column.columnDef.header,

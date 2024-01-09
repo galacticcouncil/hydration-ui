@@ -11,12 +11,13 @@ import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
 import { OmnipoolAssetsTableColumn } from "sections/stats/components/OmnipoolAssetsTable/OmnipoolAssetsTable.utils"
 import { useMedia } from "react-use"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { useFee } from "api/stats"
 import { CellSkeleton } from "components/Skeleton/CellSkeleton"
 import { Farm, useFarmAprs, useFarms } from "api/farms"
 import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
 const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   const { t } = useTranslation()
@@ -59,20 +60,24 @@ const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   )
 }
 
-const APY = ({ assetId }: { assetId: string }) => {
+const APY = ({
+  assetId,
+  fee,
+  isLoading,
+}: {
+  assetId: string
+  fee: BigNumber
+  isLoading: boolean
+}) => {
   const { t } = useTranslation()
-  const fee = useFee(assetId)
   const farms = useFarms([assetId])
 
-  const isLoading = fee.isInitialLoading || farms.isInitialLoading
+  if (isLoading || farms.isInitialLoading) return <CellSkeleton />
 
-  if (isLoading) return <CellSkeleton />
+  if (farms.data?.length)
+    return <APYFarming farms={farms.data} apy={fee.toNumber()} />
 
-  const apy = fee.data?.projected_apy_perc ?? 0
-
-  if (farms.data?.length) return <APYFarming farms={farms.data} apy={apy} />
-
-  return <Text color="white">{t("value.percentage", { value: apy })}</Text>
+  return <Text color="white">{t("value.percentage", { value: fee })}</Text>
 }
 
 export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
@@ -112,13 +117,15 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
             <Text fs={[14, 16]} color="white">
               {row.original.symbol}
             </Text>
-            <Text
-              fs={12}
-              css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
-              sx={{ display: ["inherit", "none"] }}
-            >
-              {row.original.name}
-            </Text>
+            {isDesktop && (
+              <Text
+                fs={12}
+                css={{ color: `rgba(${theme.rgbColors.whiteish500}, 0.61)` }}
+                sx={{ display: ["inherit", "none"] }}
+              >
+                {row.original.name}
+              </Text>
+            )}
           </div>
         </div>
       ),
@@ -145,17 +152,34 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
     }),
     display({
       id: "apy",
-      header: t("stats.overview.table.assets.header.apy"),
-      sortingFn: (a, b) => (a.original.pol.gt(b.original.pol) ? 1 : -1),
-      cell: ({ row }) => <APY assetId={row.original.id} />,
+      //@ts-ignore
+      header: (
+        <div sx={{ flex: "row", align: "center", gap: 4 }}>
+          {t("stats.overview.table.assets.header.apy")}
+          <InfoTooltip text={t("stats.overview.table.assets.header.apy.desc")}>
+            <SInfoIcon />
+          </InfoTooltip>
+        </div>
+      ),
+      cell: ({ row }) => (
+        <APY
+          assetId={row.original.id}
+          fee={row.original.fee}
+          isLoading={row.original.isLoadingFee}
+        />
+      ),
     }),
-    accessor("pol", {
-      id: "pol",
-      header: t("stats.overview.table.assets.header.pol"),
-      sortingFn: (a, b) => (a.original.pol.gt(b.original.pol) ? 1 : -1),
+    accessor("price", {
+      id: "price",
+      header: t("stats.overview.table.assets.header.price"),
+      sortingFn: (a, b) => (a.original.price.gt(b.original.price) ? 1 : -1),
       cell: ({ row }) => (
         <Text color="white">
-          <DisplayValue value={row.original.pol} isUSD />
+          {t("value.token", {
+            value: row.original.price,
+            decimalPlaces: 4,
+            numberPrefix: "$",
+          })}
         </Text>
       ),
     }),

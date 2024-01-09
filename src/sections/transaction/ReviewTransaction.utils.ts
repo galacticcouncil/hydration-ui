@@ -2,6 +2,7 @@ import {
   TransactionReceipt,
   TransactionResponse,
 } from "@ethersproject/providers"
+import { evmChains } from "@galacticcouncil/xcm-sdk"
 import { Hash } from "@open-web3/orml-types/interfaces"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import type { AnyJson } from "@polkadot/types-codec/types"
@@ -13,6 +14,7 @@ import { decodeError } from "ethers-decode-error"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useState } from "react"
 import { useMountedState } from "react-use"
+import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { H160, getEvmTxLink, isEvmAccount } from "utils/evm"
 
 type TxMethod = AnyJson & {
@@ -107,20 +109,30 @@ export const useSendEvmTransactionMutation = (
   > = {},
 ) => {
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
+  const { account } = useEvmAccount()
 
   const sendTx = useMutation(async (tx) => {
     return await new Promise(async (resolve, reject) => {
-      const timeout = setTimeout(() => {
-        clearTimeout(timeout)
-        reject(new UnknownTransactionState())
-      }, 60000)
+      const timeout = setTimeout(
+        () => {
+          clearTimeout(timeout)
+          reject(new UnknownTransactionState())
+        },
+        5 * 60 * 1000,
+      )
 
       try {
         setTxState("Broadcast")
         const receipt = await tx.wait()
         setTxState("InBlock")
 
-        const transactionLink = getEvmTxLink(receipt.transactionHash)
+        const chainEntries = Object.entries(evmChains).find(
+          ([_, chain]) => chain.id === account?.chainId,
+        )
+
+        const chain = chainEntries?.[0]
+
+        const transactionLink = getEvmTxLink(receipt.transactionHash, chain)
 
         return resolve({
           transactionLink,
@@ -137,7 +149,7 @@ export const useSendEvmTransactionMutation = (
 
   return {
     ...sendTx,
-    txState: txState,
+    txState,
     reset: () => {
       setTxState(null)
       sendTx.reset()
@@ -159,57 +171,61 @@ export const useSendTransactionMutation = (
 
   const sendTx = useMutation(async (sign) => {
     return await new Promise(async (resolve, reject) => {
-      const unsubscribe = await sign.send(async (result) => {
-        if (!result || !result.status) return
+      try {
+        const unsubscribe = await sign.send(async (result) => {
+          if (!result || !result.status) return
 
-        const timeout = setTimeout(() => {
-          clearTimeout(timeout)
-          reject(new UnknownTransactionState())
-        }, 60000)
-
-        if (isMounted()) {
-          setTxState(result.status.type)
-        } else {
-          clearTimeout(timeout)
-        }
-
-        if (result.isCompleted) {
-          if (result.dispatchError) {
-            let errorMessage = result.dispatchError.toString()
-
-            if (result.dispatchError.isModule) {
-              const decoded = api.registry.findMetaError(
-                result.dispatchError.asModule,
-              )
-              errorMessage = `${decoded.section}.${
-                decoded.method
-              }: ${decoded.docs.join(" ")}`
-            }
-
+          const timeout = setTimeout(() => {
             clearTimeout(timeout)
-            reject(new Error(errorMessage))
+            reject(new UnknownTransactionState())
+          }, 60000)
+
+          if (isMounted()) {
+            setTxState(result.status.type)
           } else {
-            const transactionLink = await link.mutateAsync({
-              blockHash: result.status.asInBlock.toString(),
-              txIndex: result.txIndex?.toString(),
-            })
-
             clearTimeout(timeout)
-            resolve({
-              transactionLink,
-              ...result,
-            })
           }
 
-          unsubscribe()
-        }
-      })
+          if (result.isCompleted) {
+            if (result.dispatchError) {
+              let errorMessage = result.dispatchError.toString()
+
+              if (result.dispatchError.isModule) {
+                const decoded = api.registry.findMetaError(
+                  result.dispatchError.asModule,
+                )
+                errorMessage = `${decoded.section}.${
+                  decoded.method
+                }: ${decoded.docs.join(" ")}`
+              }
+
+              clearTimeout(timeout)
+              reject(new Error(errorMessage))
+            } else {
+              const transactionLink = await link.mutateAsync({
+                blockHash: result.status.asInBlock.toString(),
+                txIndex: result.txIndex?.toString(),
+              })
+
+              clearTimeout(timeout)
+              resolve({
+                transactionLink,
+                ...result,
+              })
+            }
+
+            unsubscribe()
+          }
+        })
+      } catch (err) {
+        reject(err?.toString() ?? "Unknown error")
+      }
     })
   }, options)
 
   return {
     ...sendTx,
-    txState: txState,
+    txState,
     reset: () => {
       setTxState(null)
       sendTx.reset()
@@ -221,12 +237,10 @@ export const useSendTx = () => {
   const [txType, setTxType] = useState<"default" | "evm" | null>(null)
   const sendTx = useSendTransactionMutation({
     onMutate: () => setTxType("default"),
-    onSettled: () => setTxType(null),
   })
 
   const sendEvmTx = useSendEvmTransactionMutation({
     onMutate: () => setTxType("evm"),
-    onSettled: () => setTxType(null),
   })
 
   const activeMutation = txType === "default" ? sendTx : sendEvmTx

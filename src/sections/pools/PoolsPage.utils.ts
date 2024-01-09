@@ -179,6 +179,7 @@ export const usePools = () => {
 
       const spotPrice = spotPrices.data?.find((sp) => sp?.tokenIn === assetId)
         ?.spotPrice
+      const decimals = normalizeBigNumber(assets.getAsset(id).decimals)
 
       const tvl = getFloatingPointAmount(omnipoplBalance ?? BN_0, meta.decimals)
       const tvlDisplay = !spotPrice ? BN_NAN : tvl.times(spotPrice)

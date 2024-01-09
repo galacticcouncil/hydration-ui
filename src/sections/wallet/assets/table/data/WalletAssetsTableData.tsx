@@ -11,14 +11,27 @@ export const WalletAssetsTableBalance = (props: {
 }) => {
   const { t } = useTranslation()
 
+  const usdValue = props.balanceDisplay || "-"
+
   return (
-    <div sx={{ flex: "column", align: ["end", "start"], gap: 2 }}>
+    <div
+      sx={{
+        flex: "column",
+        align: ["end", "start"],
+        gap: 2,
+        width: "fit-content",
+      }}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+    >
       <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
         {t("value.token", { value: props.balance })}
       </Text>
 
       <DollarAssetValue
-        value={props.balanceDisplay}
+        value={usdValue}
         wrapper={(children) => (
           <Text
             fs={[11, 13]}
@@ -30,7 +43,7 @@ export const WalletAssetsTableBalance = (props: {
           </Text>
         )}
       >
-        <DisplayValue value={props.balanceDisplay} />
+        <DisplayValue value={usdValue} />
       </DollarAssetValue>
     </div>
   )

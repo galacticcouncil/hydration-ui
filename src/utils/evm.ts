@@ -6,6 +6,7 @@ import {
   isAddress as isEvmAddress,
   getAddress as getEvmAddress,
 } from "@ethersproject/address"
+import { evmChains } from "@galacticcouncil/xcm-sdk"
 
 export const NATIVE_EVM_ASSET_SYMBOL = "WETH"
 export const NATIVE_EVM_ASSET_DECIMALS = 18
@@ -49,8 +50,12 @@ export class H160 {
   }
 }
 
-export function getEvmTxLink(txHash: string) {
-  return `${import.meta.env.VITE_EVM_EXPLORER_URL}/tx/${txHash}`
+export function getEvmTxLink(txHash: string, chain = "hydradx") {
+  const explorerUrl = evmChains[chain]?.blockExplorers?.default?.url
+
+  if (!explorerUrl) return ""
+
+  return `${explorerUrl}/tx/${txHash}`
 }
 
 export function safeConvertAddressH160(value: string): string | null {

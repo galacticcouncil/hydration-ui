@@ -17,8 +17,6 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { BN_0, BN_100, BN_BILL, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
 import { useReferendums } from "api/democracy"
-//import { usePaymentInfo } from "api/transaction"
-//import { useAccountCurrency } from "api/payments"
 import { useRpcProvider } from "providers/rpcProvider"
 
 const CONVICTIONS: { [key: string]: number } = {
@@ -84,8 +82,6 @@ export const useStakeData = () => {
   )
   const referendas = useReferendums("finished")
 
-  //const accountCurrency = useAccountCurrency(account?.address)
-
   const vestLocks = locks.data?.reduce(
     (acc, lock) => (lock.type === "ormlvest" ? acc.plus(lock.amount) : acc),
     BN_0,
@@ -102,22 +98,6 @@ export const useStakeData = () => {
     .minus(accumulatedLockedRewards)
 
   const availableBalance = BigNumber.max(0, rawAvailableBalance ?? BN_0)
-
-  /*const { data: paymentInfoData } = usePaymentInfo(
-    api.tx.staking.increaseStake("0", availableBalance?.toString()),
-  )
-
-  console.log(
-    paymentInfoData?.partialFee.toString(),
-    accountCurrency,
-    "paymentInfoData",
-  )*/
-
-  //const transactionCost =
-
-  //const tx = api.tx.staking.increaseStake(positionId, amount)
-
-  //const paymentInfo = await tx.paymentInfo(account)
 
   const queries = [
     stake,
@@ -537,7 +517,7 @@ export const useClaimReward = () => {
       wasm.calculate_percentage_amount(maxRewards, payablePercentage),
     )
 
-    rewards.plus(
+    rewards = rewards.plus(
       wasm.calculate_percentage_amount(
         stakePosition.accumulatedUnpaidRewards.toString(),
         payablePercentage,

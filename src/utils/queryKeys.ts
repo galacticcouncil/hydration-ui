@@ -287,14 +287,8 @@ export const QUERY_KEYS = {
   existentialDeposit: [QUERY_KEY_PREFIX, "existentialDeposit"],
   metadataVersion: ["metadataVersion"],
   acceptedCurrencies: (address: Maybe<u32 | string>) => [
-    QUERY_KEY_PREFIX,
     "acceptedCurrencies",
     address,
-  ],
-  acceptedCurrency: (id: Maybe<u32 | string>) => [
-    QUERY_KEY_PREFIX,
-    "acceptedCurrency",
-    id,
   ],
   accountCurrency: (address: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
@@ -346,7 +340,13 @@ export const QUERY_KEYS = {
     id,
     !!myEvents,
   ],
+  bondEventsSquid: (id?: Maybe<string>, myEvents?: boolean) => [
+    "bondEvents",
+    id,
+    !!myEvents,
+  ],
   lbpPoolTotal: (id?: Maybe<string>) => ["lbpPoolTotal", id],
+  lbpAveragePrice: (poolAddress?: string) => ["lbpAveragePrice", poolAddress],
   poolHistoricalBalance: (pool?: string, block?: number) => [
     "poolHistoricalBalance",
     pool,
@@ -363,6 +363,25 @@ export const QUERY_KEYS = {
   ],
   volumeDaily: (assetId?: string) => ["volumeDaily", assetId],
   tvl: (assetId?: string) => ["tvl", assetId],
-  identity: (address: string) => ["identity", address],
+  identity: (address?: string) => ["identity", address],
   fee: (assetId?: string) => ["fee", assetId],
+  evmTxCost: (data: string) => ["evmTxCost", data],
+  evmChainInfo: (address: string) => ["evmChainInfo", address],
+  referralCodes: (accountAddress?: string) => [
+    "referralsCodes",
+    accountAddress,
+  ],
+  referralCodeLength: ["referralCodeLength"],
+  userReferrer: (accountAddress?: string) => ["userReferrer", accountAddress],
+  referrerInfo: (referrerAddress?: string) => ["referrerInfo", referrerAddress],
+  accountReferralShares: (accountAddress?: string) => [
+    "accountReferralShares",
+    accountAddress,
+  ],
+  referrerAddress: (referrerCode?: string) => ["referrerAddress", referrerCode],
+  accountReferees: (referrerAddress?: string) => [
+    "accountReferees",
+    referrerAddress,
+  ],
+  referralLinkFee: ["referralLinkFee"],
 } as const

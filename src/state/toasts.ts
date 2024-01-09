@@ -5,9 +5,16 @@ import { renderToString } from "react-dom/server"
 import { createJSONStorage, persist } from "zustand/middleware"
 import { Maybe, safelyParse } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { differenceInSeconds } from "date-fns"
 
 export const TOAST_MESSAGES = ["onLoading", "onSuccess", "onError"] as const
-export type ToastVariant = "info" | "success" | "error" | "progress" | "unknown"
+export type ToastVariant =
+  | "info"
+  | "success"
+  | "error"
+  | "progress"
+  | "unknown"
+  | "temporary"
 export type ToastMessageType = (typeof TOAST_MESSAGES)[number]
 
 type ToastParams = {
@@ -16,6 +23,7 @@ type ToastParams = {
   title: ReactElement
   actions?: ReactNode
   persist?: boolean
+  hideTime?: number
 }
 
 type ToastData = ToastParams & {
@@ -35,6 +43,7 @@ type PersistState<T> = {
 
 interface ToastStore {
   toasts: Record<string, Array<ToastData>>
+  toastsTemp: Array<ToastData>
   update: (
     accoutAddress: Maybe<string>,
     callback: (toasts: Array<ToastData>) => Array<ToastData>,
@@ -42,12 +51,16 @@ interface ToastStore {
 
   sidebar: boolean
   setSidebar: (value: boolean) => void
+  updateToastsTemp: (
+    callback: (toasts: Array<ToastData>) => Array<ToastData>,
+  ) => void
 }
 
 const useToastsStore = create<ToastStore>()(
   persist(
     (set) => ({
       toasts: {},
+      toastsTemp: [],
       sidebar: false,
       update(accoutAddress, callback) {
         set((state) => {
@@ -64,6 +77,8 @@ const useToastsStore = create<ToastStore>()(
           }
         })
       },
+      updateToastsTemp: (callback) =>
+        set((state) => ({ toastsTemp: callback(state.toastsTemp) })),
       setSidebar: (sidebar) =>
         set({
           sidebar,
@@ -74,7 +89,7 @@ const useToastsStore = create<ToastStore>()(
       storage: createJSONStorage(() => ({
         async getItem(name: string) {
           const storeToasts = window.localStorage.getItem(name)
-          const storeAccount = window.localStorage.getItem("account")
+          const storeAccount = window.localStorage.getItem("web3-connect")
 
           if (storeAccount == null) return storeToasts
 
@@ -113,6 +128,37 @@ const useToastsStore = create<ToastStore>()(
                   allToasts[accountAddress] = []
                 }
               }
+
+              const allAccounts = Object.keys(allToasts)
+              if (allAccounts?.length) {
+                for (const account of allAccounts) {
+                  const accountToasts = allToasts[account]
+                  const loadingToastsIds = accountToasts
+                    .filter((toast) => toast.variant === "progress")
+                    .map((toast) => toast.id)
+
+                  allToasts[account] = accountToasts.map((toast) => {
+                    const secondsDiff = differenceInSeconds(
+                      new Date(),
+                      new Date(toast.dateCreated),
+                    )
+
+                    // Change toasts in loading state to unknown state if they are older than 60 seconds
+                    if (
+                      loadingToastsIds.includes(toast.id) &&
+                      secondsDiff > 60
+                    ) {
+                      return {
+                        ...toast,
+                        hidden: true,
+                        variant: "unknown",
+                      }
+                    }
+                    return toast
+                  })
+                }
+              }
+
               return JSON.stringify({
                 ...toastsState,
                 state: { toasts: allToasts },
@@ -140,6 +186,7 @@ const useToastsStore = create<ToastStore>()(
               }
             }
           }
+
           return storeToasts
         },
         setItem(name, value) {
@@ -200,31 +247,47 @@ export const useToast = () => {
     const dateCreated = new Date().toISOString()
     const title = renderToString(toast.title)
 
-    store.update(account?.address, (toasts) => {
-      // set max 10 toasts
-      const prevToasts =
-        toasts.length > 9
-          ? toasts
-              .sort(
-                (a, b) =>
-                  new Date(b.dateCreated).getTime() -
-                  new Date(a.dateCreated).getTime(),
-              )
-              .slice(0, 9)
-          : [...toasts]
+    if (variant !== "temporary") {
+      store.update(account?.address, (toasts) => {
+        // set max 10 toasts
+        const prevToasts =
+          toasts.length > 9
+            ? toasts
+                .sort(
+                  (a, b) =>
+                    new Date(b.dateCreated).getTime() -
+                    new Date(a.dateCreated).getTime(),
+                )
+                .slice(0, 9)
+            : [...toasts]
 
-      return [
-        {
-          ...toast,
-          variant,
-          title,
-          dateCreated,
-          id,
-          hidden: store.sidebar,
-        } as ToastData,
-        ...prevToasts,
-      ]
-    })
+        return [
+          {
+            ...toast,
+            variant,
+            title,
+            dateCreated,
+            id,
+            hidden: store.sidebar,
+          } as ToastData,
+          ...prevToasts,
+        ]
+      })
+    } else {
+      store.updateToastsTemp((toasts) => {
+        return [
+          ...toasts,
+          {
+            ...toast,
+            variant,
+            title,
+            dateCreated,
+            id,
+            hidden: store.sidebar,
+          } as ToastData,
+        ]
+      })
+    }
 
     return id
   }
@@ -234,13 +297,18 @@ export const useToast = () => {
   const error = (toast: ToastParams) => add("error", toast)
   const loading = (toast: ToastParams) => add("progress", toast)
   const unknown = (toast: ToastParams) => add("unknown", toast)
+  const temporary = (toast: ToastParams) => add("temporary", toast)
 
-  const hide = (id: string) =>
+  const hide = (id: string) => {
     store.update(account?.address, (toasts) =>
       toasts.map((toast) =>
         toast.id === id ? { ...toast, hidden: true } : toast,
       ),
     )
+    store.updateToastsTemp((toasts) =>
+      toasts.filter((toast) => toast.id !== id),
+    )
+  }
 
   const remove = (id: string) => {
     store.update(account?.address, (toasts) =>
@@ -260,6 +328,7 @@ export const useToast = () => {
   return {
     sidebar: store.sidebar,
     toasts,
+    toastsTemp: store.toastsTemp,
     setSidebar,
     add,
     hide,
@@ -269,5 +338,6 @@ export const useToast = () => {
     error,
     loading,
     unknown,
+    temporary,
   }
 }

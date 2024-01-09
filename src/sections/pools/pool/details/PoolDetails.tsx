@@ -73,9 +73,13 @@ export const PoolDetails = ({
             ) : (
               <MultipleIcons
                 size={26}
-                icons={asset.iconId.map((asset) => ({
-                  icon: <AssetLogo id={asset} />,
-                }))}
+                icons={asset.iconId.map((asset) => {
+                  const meta = assets.getAsset(asset)
+                  const isBond = assets.isBond(meta)
+                  return {
+                    icon: <AssetLogo id={isBond ? meta.assetId : asset} />,
+                  }
+                })}
               />
             )}
             <div sx={{ flex: "column", gap: 0 }}>

@@ -14,6 +14,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAccountCurrency } from "api/payments"
 import { isEvmAccount } from "utils/evm"
 import { NATIVE_ASSET_ID } from "utils/api"
+import { useDisplayAssetStore } from "utils/displayAsset"
 
 export const SwapApp = createComponent({
   tagName: "gc-trade-app",
@@ -41,7 +42,6 @@ type SearchGenerics = MakeGenerics<{
   Search: z.infer<typeof TradeAppSearch>
 }>
 
-const pools = import.meta.env.VITE_FF_POOLS
 const isTwapEnabled = import.meta.env.VITE_FF_TWAP_ENABLED === "true"
 const indexerUrl = import.meta.env.VITE_INDEXER_URL
 const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
@@ -53,6 +53,7 @@ export function SwapPage() {
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const accountCurrency = useAccountCurrency(isLoaded ? account?.address : "")
+  const { stableCoinId } = useDisplayAssetStore()
 
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
@@ -115,7 +116,6 @@ export function SwapPage() {
   return (
     <SContainer>
       <SwapApp
-        key={assetsReady ? account?.provider : ""}
         ref={(r) => {
           if (r) {
             r.setAttribute("chart", "")
@@ -125,8 +125,7 @@ export function SwapPage() {
         assetIn={assetsReady ? assetInDefault : ""}
         assetOut={assetsReady ? assetOutDefault : ""}
         apiAddress={rpcUrl}
-        pools={pools}
-        stableCoinAssetId={stableCoinAssetId}
+        stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
         accountAddress={account?.address}

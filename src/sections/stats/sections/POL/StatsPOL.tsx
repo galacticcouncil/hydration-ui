@@ -9,8 +9,13 @@ import { SContainerVertical } from "sections/stats/StatsPage.styled"
 import { OmnipoolAssetsTableWrapperData } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
 import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
+import { PageHeading } from "components/Layout/PageHeading"
+import { Spacer } from "components/Spacer/Spacer"
+import { StatsTabs } from "sections/stats/components/tabs/StatsTabs"
+import { useTranslation } from "react-i18next"
 
 export const StatsPOL = () => {
+  const { t } = useTranslation()
   const assetDetails = useOmnipoolAssetDetails("pol")
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -49,34 +54,41 @@ export const StatsPOL = () => {
   )
 
   return (
-    <div sx={{ flex: "column", gap: [24, 50] }}>
-      <div sx={{ flex: "row", gap: 20 }}>
-        <PieWrapper
-          data={[...assetDetails.data].reverse()}
+    <>
+      <PageHeading>{t("stats.title")}</PageHeading>
+      <Spacer size={[20, 30]} />
+      <StatsTabs />
+      <Spacer size={30} />
+
+      <div sx={{ flex: "column", gap: [24, 50] }}>
+        <div sx={{ flex: "row", gap: 20 }}>
+          <PieWrapper
+            data={[...assetDetails.data].reverse()}
+            isLoading={assetDetails.isLoading}
+            POLMultiplier={POLMultiplier}
+            totalVolume={totalVolume}
+            totalPol={totalPol}
+          />
+          {isDesktop && (
+            <SContainerVertical
+              sx={{
+                p: 24,
+                justify: "space-between",
+                flexGrow: 3,
+                gap: 20,
+              }}
+            >
+              <ChartsWrapper POLMultiplier={POLMultiplier} />
+            </SContainerVertical>
+          )}
+        </div>
+        {/*TODO: Not ready. Requested in #861n9ffe4*/}
+        {/*<StatsTiles />*/}
+        <OmnipoolAssetsTableWrapperData
+          data={polAssetsDetails}
           isLoading={assetDetails.isLoading}
-          POLMultiplier={POLMultiplier}
-          totalVolume={totalVolume}
-          totalPol={totalPol}
         />
-        {isDesktop && (
-          <SContainerVertical
-            sx={{
-              p: 24,
-              justify: "space-between",
-              flexGrow: 3,
-              gap: 20,
-            }}
-          >
-            <ChartsWrapper POLMultiplier={POLMultiplier} />
-          </SContainerVertical>
-        )}
       </div>
-      {/*TODO: Not ready. Requested in #861n9ffe4*/}
-      {/*<StatsTiles />*/}
-      <OmnipoolAssetsTableWrapperData
-        data={polAssetsDetails}
-        isLoading={assetDetails.isLoading}
-      />
-    </div>
+    </>
   )
 }

@@ -8,7 +8,13 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useRpcProvider } from "providers/rpcProvider"
 
-export const DefaultSliceLabel = ({ slices }: { slices: TSlice[] }) => {
+export const DefaultSliceLabel = ({
+  slices,
+  property,
+}: {
+  slices: TSlice[]
+  property?: string
+}) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -34,7 +40,9 @@ export const DefaultSliceLabel = ({ slices }: { slices: TSlice[] }) => {
           }))}
         />
         <Text color="basic100" fs={[12, 18]}>
-          {t("stats.overview.pie.defaultLabel.composition")}
+          {property === "pol"
+            ? t("stats.overview.pie.defaultLabel.composition.treasury")
+            : t("stats.overview.pie.defaultLabel.composition")}
         </Text>
         <Text color="basic100" fs={[10, 12]}>
           {t("stats.overview.pie.defaultLabel.assetAvailable", {

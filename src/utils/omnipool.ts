@@ -59,6 +59,7 @@ export const calculatePositionLiquidity = ({
       ? new BN(liquidityOutResult).div(valueDp)
       : BN_NAN
   let valueDisplay = BN_NAN
+  let valueDisplayWithoutLrna = BN_NAN
 
   const providedAmount = position.amount.toBigNumber().div(valueDp)
   let providedAmountDisplay = providedAmount.times(valueSpotPrice)
@@ -67,6 +68,8 @@ export const calculatePositionLiquidity = ({
 
   if (liquidityOutResult !== "-1" && valueSpotPrice) {
     valueDisplay = value.times(valueSpotPrice)
+
+    valueDisplayWithoutLrna = valueDisplay
 
     if (lrna.gt(0)) {
       valueDisplay = !lrnaSpotPrice
@@ -79,6 +82,7 @@ export const calculatePositionLiquidity = ({
     lrna,
     value,
     valueDisplay,
+    valueDisplayWithoutLrna,
     price,
     providedAmountShifted: providedAmount,
     providedAmount: position.amount.toBigNumber(),

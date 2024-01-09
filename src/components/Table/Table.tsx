@@ -5,22 +5,25 @@ import { Icon } from "components/Icon/Icon"
 import { TableHeader } from "components/Table/Table.styled"
 import { ReactNode } from "react"
 
-export const TableAction = (props: {
-  icon?: ReactNode
-  onClick?: () => void
-  children: ReactNode
-  disabled?: boolean
+type TableActionProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant
   isLoading?: boolean
-}) => {
+  icon?: ReactNode
+  onClick?: () => void
+}
+
+export const TableAction = (props: TableActionProps) => {
   return (
     <Button
+      {...props}
       isLoading={props.isLoading}
       disabled={props.disabled}
       size="small"
       variant={props.variant}
       sx={{ p: "9px 12px" }}
-      css={{ whiteSpace: "nowrap" }}
+      css={{
+        whiteSpace: "nowrap",
+      }}
       onClick={(e) => {
         e.stopPropagation()
         e.preventDefault()
