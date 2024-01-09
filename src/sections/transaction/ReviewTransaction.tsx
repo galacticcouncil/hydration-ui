@@ -109,9 +109,9 @@ export const ReviewTransaction = (props: Transaction) => {
             overrides={props.overrides}
             title={props.title}
             onCancel={onClose}
-            onEvmSigned={(evmTx, tx) => {
+            onEvmSigned={(data) => {
               props.onSubmitted?.()
-              sendEvmTx({ evmTx, tx })
+              sendEvmTx(data)
             }}
             onSigned={(signed) => {
               props.onSubmitted?.()
@@ -124,9 +124,9 @@ export const ReviewTransaction = (props: Transaction) => {
             xcallMeta={props.xcallMeta}
             title={props.title}
             onCancel={onClose}
-            onEvmSigned={(evmTx) => {
+            onEvmSigned={(data) => {
               props.onSubmitted?.()
-              sendEvmTx({ evmTx })
+              sendEvmTx(data)
             }}
           />
         ) : null}
