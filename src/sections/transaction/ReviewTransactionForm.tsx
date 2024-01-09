@@ -6,7 +6,11 @@ import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
+import {
+  PROXY_WALLET_PROVIDER,
+  useAccount,
+  useWallet,
+} from "sections/web3-connect/Web3Connect.utils"
 import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
 import { Transaction } from "state/store"
 import { theme } from "theme"
@@ -18,6 +22,8 @@ import {
 import { ReviewTransactionSummary } from "sections/transaction/ReviewTransactionSummary"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
+import { getWalletBySource } from "@talismn/connect-wallets"
+import { POLKADOT_APP_NAME } from "utils/api"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -68,20 +74,36 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
       console.log(wallet?.signer)
       if (!address) throw new Error("Missing active account")
       if (!wallet) throw new Error("Missing wallet")
-      if (!wallet.signer) throw new Error("Missing signer")
 
-      if (wallet?.signer instanceof MetaMaskSigner) {
-        const txSigner = await wallet.signer.sendDispatch(tx.method.toHex())
-        return props.onEvmSigned(txSigner)
+      if (props.isProxy) {
+        const wallet = getWalletBySource(PROXY_WALLET_PROVIDER)
+        if (wallet == null) throw new Error("Missing wallet")
+
+        await wallet.enable(POLKADOT_APP_NAME)
+        console.log(wallet)
+        console.log(wallet?.signer)
+        const signature = await props.tx.signAsync(address, {
+          signer: wallet.signer,
+          // defer to polkadot/api to handle nonce w/ regard to mempool
+          nonce: -1,
+        })
+        return props.onSigned(signature)
+      } else {
+        if (!wallet.signer) throw new Error("Missing signer")
+
+        if (wallet.signer instanceof MetaMaskSigner) {
+          const txSigner = await wallet.signer.sendDispatch(tx.method.toHex())
+          return props.onEvmSigned(txSigner)
+        }
+
+        const signature = await tx.signAsync(address, {
+          signer: wallet.signer,
+          // defer to polkadot/api to handle nonce w/ regard to mempool
+          nonce: -1,
+        })
+
+        return props.onSigned(signature)
       }
-
-      const signature = await tx.signAsync(address, {
-        signer: wallet.signer,
-        // defer to polkadot/api to handle nonce w/ regard to mempool
-        nonce: -1,
-      })
-
-      return props.onSigned(signature)
     },
     {
       onSuccess: () =>

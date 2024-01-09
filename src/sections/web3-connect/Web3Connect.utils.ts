@@ -287,3 +287,5 @@ function getProviderQueryKey(type: WalletProviderType | null) {
 
   return type ?? ""
 }
+
+export const PROXY_WALLET_PROVIDER = WalletProviderType.PolkadotJS

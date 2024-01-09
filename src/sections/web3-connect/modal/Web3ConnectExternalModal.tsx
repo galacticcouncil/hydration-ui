@@ -105,7 +105,7 @@ export const Web3ConnectExternalModal = ({
           : externalWallet.accountName,
       provider: WalletProviderType.ExternalWallet,
       isExternalWalletConnected: true,
-      // delegate: "5CfuooAmnoBqNAg4KFLyAgJFQ3cTaQbkFyH7pVCeu785y98C",
+      //delegate: "5CfuooAmnoBqNAg4KFLyAgJFQ3cTaQbkFyH7pVCeu785y98C",
     })
 
     onSelect()
