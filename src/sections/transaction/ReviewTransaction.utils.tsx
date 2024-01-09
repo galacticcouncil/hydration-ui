@@ -9,18 +9,13 @@ import type { AnyJson } from "@polkadot/types-codec/types"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { MutationObserverOptions, useMutation } from "@tanstack/react-query"
-import { useUserReferrer } from "api/referrals"
 import { useTransactionLink } from "api/transaction"
 import { decodeError } from "ethers-decode-error"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMountedState } from "react-use"
-import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
-import {
-  useAccount,
-  useEvmAccount,
-} from "sections/web3-connect/Web3Connect.utils"
+import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useToast } from "state/toasts"
 import { H160, getEvmTxLink, isEvmAccount } from "utils/evm"
 
@@ -112,13 +107,16 @@ export const useSendEvmTransactionMutation = (
       transactionLink?: string
     },
     unknown,
-    TransactionResponse
+    {
+      evmTx: TransactionResponse
+      tx?: SubmittableExtrinsic<"promise">
+    }
   > = {},
 ) => {
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const { account } = useEvmAccount()
 
-  const sendTx = useMutation(async (tx) => {
+  const sendTx = useMutation(async ({ evmTx }) => {
     return await new Promise(async (resolve, reject) => {
       const timeout = setTimeout(
         () => {
@@ -130,7 +128,7 @@ export const useSendEvmTransactionMutation = (
 
       try {
         setTxState("Broadcast")
-        const receipt = await tx.wait()
+        const receipt = await evmTx.wait()
         setTxState("InBlock")
 
         const chainEntries = Object.entries(evmChains).find(
@@ -240,53 +238,53 @@ export const useSendTransactionMutation = (
   }
 }
 
+function getReferralCodeFromTx(tx: SubmittableExtrinsic<"promise">) {
+  if (!tx) return null
+
+  let code = null
+  try {
+    const json: any = tx.method.toHuman()
+    const calls: any[] = Array.isArray(json?.args?.calls) ? json.args.calls : []
+    const referralCall = calls.find(
+      ({ method, section, args }) =>
+        method === "linkCode" && section === "referrals" && !!args.code,
+    )
+    code = referralCall?.args?.code ?? null
+  } catch {
+    return null
+  }
+
+  return code
+}
+
 const useBoundReferralToast = () => {
   const { t } = useTranslation()
-  const { account } = useAccount()
   const { loading, success, remove } = useToast()
-  const { featureFlags } = useRpcProvider()
 
-  const referrer = useUserReferrer(
-    featureFlags.referrals ? account?.address : undefined,
-  )
-
-  const { referralCodes } = useReferralCodesStore()
-  const storedReferralCode = account?.address
-    ? referralCodes[account.address]
-    : undefined
-
-  const isLinkedAccount = featureFlags.referrals
-    ? !!referrer.data?.length
-    : true
-
-  const pendingReferralCode = useRef(storedReferralCode)
   const pendingToastId = useRef<string>()
+  const pendingReferralCode = useRef<string>()
 
-  const isLinking = !isLinkedAccount && !!pendingReferralCode.current
+  const onLoading = (tx: SubmittableExtrinsic<"promise">) => {
+    const code = getReferralCodeFromTx(tx)
 
-  const onLoading = () => {
-    if (isLinking && account) {
-      // snapshot last known referral code
-      // since its already deleted from the store after tx is signed
-      pendingReferralCode.current = storedReferralCode
-      const id = loading({
+    if (code) {
+      pendingReferralCode.current = code
+      pendingToastId.current = loading({
         hideTime: 3000,
         title: (
           <span>
             {t("referrals.toasts.linkCode.onLoading", {
-              code: pendingReferralCode.current,
+              code,
             })}
           </span>
         ),
       })
-
-      pendingToastId.current = id
     }
   }
 
   const onSuccess = () => {
-    if (isLinking && account) {
-      if (pendingToastId.current) remove(pendingToastId.current)
+    if (pendingToastId.current) {
+      remove(pendingToastId.current)
       success({
         title: (
           <span>
@@ -311,16 +309,16 @@ export const useSendTx = () => {
   const boundReferralToast = useBoundReferralToast()
 
   const sendTx = useSendTransactionMutation({
-    onMutate: () => {
-      boundReferralToast.onLoading()
+    onMutate: (tx) => {
+      boundReferralToast.onLoading(tx)
       setTxType("default")
     },
     onSuccess: boundReferralToast.onSuccess,
   })
 
   const sendEvmTx = useSendEvmTransactionMutation({
-    onMutate: () => {
-      boundReferralToast.onLoading()
+    onMutate: ({ tx }) => {
+      if (tx) boundReferralToast.onLoading(tx)
       setTxType("evm")
     },
     onSuccess: boundReferralToast.onSuccess,
