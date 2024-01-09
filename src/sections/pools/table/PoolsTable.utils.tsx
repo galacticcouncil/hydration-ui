@@ -94,7 +94,7 @@ const Volume = ({
   const xykVolume = useXYKPoolTradeVolumes(poolAddress ? [poolAddress] : [])
 
   const volume =
-    volumeOmnipool.data?.volume ?? xykVolume.data?.[0]?.volume ?? BN_0
+    volumeOmnipool.data?.[0]?.volume_usd ?? xykVolume.data?.[0]?.volume ?? BN_0
 
   if (volumeOmnipool.isInitialLoading || xykVolume.isLoading)
     return <Skeleton width={60} height={18} />

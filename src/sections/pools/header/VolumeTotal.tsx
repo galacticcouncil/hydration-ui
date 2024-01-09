@@ -1,7 +1,6 @@
 import { useOmnipoolAssets } from "api/omnipool"
-import { useVolumes } from "api/volume"
+import { useVolume } from "api/volume"
 import { useGetXYKPools } from "api/xyk"
-import { useMemo } from "react"
 import { useXYKPoolTradeVolumes } from "sections/pools/pool/details/PoolDetails.utils"
 import { BN_0 } from "utils/constants"
 import { HeaderTotalData } from "./PoolsHeaderTotal"
@@ -13,21 +12,16 @@ export const AllPoolsVolumeTotal = () => {
 
   const omnipoolAssets = useOmnipoolAssets()
 
-  const assetsId = useMemo(
-    () => omnipoolAssets.data?.map((a) => a.id.toString()) ?? [],
-    [omnipoolAssets.data],
-  )
-
-  const volumes = useVolumes(assetsId)
+  const volumes = useVolume("all")
 
   const isLoading =
     pools.isInitialLoading ||
     xykVolumes.isLoading ||
     omnipoolAssets.isInitialLoading ||
-    volumes.some((volume) => volume.isInitialLoading)
+    volumes.isLoading
 
-  const totalVolumes = volumes.reduce(
-    (memo, volume) => memo.plus(volume.data?.volume ?? BN_0),
+  const totalVolumes = volumes.data?.reduce(
+    (memo, volume) => memo.plus(volume.volume_usd ?? BN_0),
     BN_0,
   )
 
@@ -37,7 +31,7 @@ export const AllPoolsVolumeTotal = () => {
       BN_0,
     ) ?? BN_0
 
-  const volumeTotal = totalVolumes.div(2).plus(totalXYKVolume)
+  const volumeTotal = totalVolumes?.div(2).plus(totalXYKVolume)
 
   return <HeaderTotalData isLoading={isLoading} value={volumeTotal} />
 }
@@ -61,21 +55,14 @@ export const XYKVolumeTotal = () => {
 export const VolumeTotal = () => {
   const omnipoolAssets = useOmnipoolAssets()
 
-  const assetsId = useMemo(
-    () => omnipoolAssets.data?.map((a) => a.id.toString()) ?? [],
-    [omnipoolAssets.data],
-  )
+  const volumes = useVolume("all")
 
-  const volumes = useVolumes(assetsId)
+  const isLoading = omnipoolAssets.isInitialLoading || volumes.isLoading
 
-  const isLoading =
-    omnipoolAssets.isInitialLoading ||
-    volumes.some((volume) => volume.isInitialLoading)
-
-  const totalVolumes = volumes.reduce(
-    (memo, volume) => memo.plus(volume.data?.volume ?? BN_0),
+  const totalVolumes = volumes.data?.reduce(
+    (memo, volume) => memo.plus(volume.volume_usd ?? BN_0),
     BN_0,
   )
 
-  return <HeaderTotalData isLoading={isLoading} value={totalVolumes.div(2)} />
+  return <HeaderTotalData isLoading={isLoading} value={totalVolumes?.div(2)} />
 }

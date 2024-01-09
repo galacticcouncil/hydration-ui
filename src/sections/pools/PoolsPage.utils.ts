@@ -179,7 +179,6 @@ export const usePools = () => {
 
       const spotPrice = spotPrices.data?.find((sp) => sp?.tokenIn === assetId)
         ?.spotPrice
-      const decimals = normalizeBigNumber(assets.getAsset(id).decimals)
 
       const tvl = getFloatingPointAmount(omnipoplBalance ?? BN_0, meta.decimals)
       const tvlDisplay = !spotPrice ? BN_NAN : tvl.times(spotPrice)
@@ -257,7 +256,7 @@ export const usePoolDetails = (assetId: string) => {
   const stablepool = useStableswapPool(isStablePool ? assetId : undefined)
 
   const volume = useVolume(assetId)
-
+  console.log(volume, "volume")
   const isInitialLoading =
     omnipoolPositions.isInitialLoading ||
     volume.isInitialLoading ||
@@ -289,7 +288,7 @@ export const usePoolDetails = (assetId: string) => {
       : []
 
     return {
-      volumeDisplay: volume.data?.volume,
+      volumeDisplay: volume.data?.[0].volume_usd,
       omnipoolNftPositions,
       miningNftPositions,
       reserves,
@@ -306,7 +305,7 @@ export const usePoolDetails = (assetId: string) => {
     omnipoolPositions.data,
     stablePoolBalance.data?.balances,
     stablepool.data?.fee,
-    volume.data?.volume,
+    volume.data,
   ])
 
   return { data, isInitialLoading }
