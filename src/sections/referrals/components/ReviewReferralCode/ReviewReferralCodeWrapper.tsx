@@ -22,6 +22,7 @@ export const ReviewReferralCodeWrapper = ({
 
   useEffect(() => {
     temporary({
+      hideTime: 6000,
       title: (
         <div>
           <p className="referralTitle">

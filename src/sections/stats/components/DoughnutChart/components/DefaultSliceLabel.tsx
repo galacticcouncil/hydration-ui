@@ -41,7 +41,7 @@ export const DefaultSliceLabel = ({
         />
         <Text color="basic100" fs={[12, 18]}>
           {property === "pol"
-            ? t("stats.overview.pie.defaultLabel.composition.tresuary")
+            ? t("stats.overview.pie.defaultLabel.composition.treasury")
             : t("stats.overview.pie.defaultLabel.composition")}
         </Text>
         <Text color="basic100" fs={[10, 12]}>

@@ -1,11 +1,4 @@
-import { Icon } from "components/Icon/Icon"
 import { DetailCard } from "sections/trade/sections/bonds/details/components/DetailCard/DetailCard"
-import ClockIcon from "assets/icons/ClockIcon.svg?react"
-import DollarIcon from "assets/icons/Dollar2Icon.svg?react"
-import PercentageIcon from "assets/icons/Percentage.svg?react"
-import GraphIcon from "assets/icons/Graph.svg?react"
-import AccumulatedAsset from "assets/icons/AccumulatedAsset.svg?react"
-import AvgPrice from "assets/icons/PriceChart.svg?react"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useDisplayPrice } from "utils/displayAsset"
 import { BN_1 } from "utils/constants"
@@ -104,39 +97,25 @@ export const BondInfoCards = ({
             value: averagePrice,
             symbol: accumulatedAsset?.symbol,
           }),
-          icon: (
-            <Icon
-              size={[16, 22]}
-              sx={{ color: "basic600" }}
-              icon={<AvgPrice />}
-            />
-          ),
         }
       : {
           label: t("bonds.details.card.bondPrice"),
           value: (
-            <div sx={{ flex: "column" }}>
+            <div sx={{ flex: "column", gap: 4 }}>
+              <Text fs={[13, 15]} lh={[13, 15]} color="white" font="FontOver">
+                <DisplayValue value={currentBondPrice} type="token" />
+              </Text>
               {spotPriceBondAccumulated.isInitialLoading ? (
                 <Skeleton height={16} width={40} />
               ) : (
-                <Text lh={16}>
+                <Text fs={12} lh={12} color="basic400">
                   {t("value.tokenWithSymbol", {
                     value: spotPriceBondAccumulated.data?.spotPrice,
                     symbol: accumulatedAsset?.symbol,
                   })}
                 </Text>
               )}
-              <Text fs={12} color="basic400">
-                <DisplayValue value={currentBondPrice} type="token" />
-              </Text>
             </div>
-          ),
-          icon: (
-            <Icon
-              size={[16, 22]}
-              sx={{ color: "basic600" }}
-              icon={<GraphIcon />}
-            />
           ),
         },
 
@@ -147,29 +126,41 @@ export const BondInfoCards = ({
               symbol: assets.getAsset(bond.assetId).symbol,
             }),
             value: (
-              <div sx={{ flex: "column" }}>
+              <div sx={{ flex: "column", gap: 4 }}>
+                <Text fs={[13, 15]} lh={[13, 15]} color="white" font="FontOver">
+                  <DisplayValue value={currentSpotPrice} type="token" />
+                </Text>
                 {spotPriceAccumulated.isInitialLoading ? (
                   <Skeleton height={16} width={40} />
                 ) : (
-                  <Text lh={16}>
+                  <Text fs={12} lh={12} color="basic400">
                     {t("value.tokenWithSymbol", {
                       value: spotPriceAccumulated.data?.spotPrice,
                       symbol: accumulatedAsset?.symbol,
                     })}
                   </Text>
                 )}
-                <Text fs={12} color="basic400">
-                  <DisplayValue value={currentSpotPrice} type="token" />
-                </Text>
               </div>
             ),
-            icon: (
-              <Icon
-                size={[16, 22]}
-                sx={{ color: "basic600" }}
-                icon={<DollarIcon />}
-              />
+          },
+        ]
+      : []),
+    ...(!isPast
+      ? [
+          {
+            label: isDiscount ? t("bonds.discount") : t("bonds.premium"),
+            value: (
+              <Text
+                fs={[13, 15]}
+                lh={[13, 15]}
+                color={isDiscount ? "white" : "red300"}
+                font="FontOver"
+                sx={{ mb: 6 }}
+              >
+                {t("value.percentage", { value: discount })}
+              </Text>
             ),
+            tooltip: isDiscount ? undefined : t("bonds.premium.desc"),
           },
         ]
       : []),
@@ -180,35 +171,11 @@ export const BondInfoCards = ({
         symbol: accumulatedAsset?.symbol,
         fixedPointScale: accumulatedAsset?.decimals,
       }),
-      icon: (
-        <Icon
-          size={[16, 22]}
-          sx={{ color: "basic600" }}
-          icon={<AccumulatedAsset />}
-        />
-      ),
     },
-    ...(!isPast
-      ? [
-          {
-            label: isDiscount ? t("bonds.discount") : t("bonds.premium"),
-            value: t("value.percentage", { value: discount.toString() }),
-            icon: (
-              <Icon
-                size={[16, 22]}
-                sx={{ color: "basic600" }}
-                icon={<PercentageIcon />}
-              />
-            ),
-          },
-        ]
-      : []),
+
     {
       label: t("bonds.details.card.maturity"),
       value: formatDate(new Date(bond.maturity), "dd/MM/yyyy"),
-      icon: (
-        <Icon size={[16, 22]} sx={{ color: "basic600" }} icon={<ClockIcon />} />
-      ),
     },
   ]
 
@@ -219,7 +186,7 @@ export const BondInfoCards = ({
           key={i}
           label={card.label}
           value={card.value}
-          icon={card.icon}
+          tooltip={card.tooltip}
         />
       ))}
     </div>

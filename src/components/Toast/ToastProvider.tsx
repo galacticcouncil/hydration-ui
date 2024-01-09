@@ -53,6 +53,7 @@ export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
               onClose={() => hide(toast.id)}
               persist={toast.persist}
               dateCreated={new Date(toast.dateCreated)}
+              hideTime={toast.hideTime}
             />
           )}
         </AnimatePresence>

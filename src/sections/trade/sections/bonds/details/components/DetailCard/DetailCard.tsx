@@ -1,21 +1,35 @@
 import { ReactNode } from "react"
 import { DetailCardContainer } from "./DetailCard.styled"
 import { Text } from "components/Typography/Text/Text"
+import { SInfoIcon } from "sections/pools/pool/Pool.styled"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 
 export const DetailCard = ({
   label,
-  icon,
   value,
+  tooltip,
 }: {
   label: string
-  icon: ReactNode
   value: string | ReactNode
+  tooltip?: string
 }) => {
   return (
-    <DetailCardContainer>
-      <Text fs={[12, 14]} color="brightBlue300">
-        {label}
-      </Text>
+    <DetailCardContainer
+      sx={{
+        p: ["14px 20px", typeof value === "string" ? "20px 20px 26px" : 20],
+      }}
+    >
+      <div sx={{ flex: "row", gap: 4 }}>
+        <Text fs={[12, 14]} color="brightBlue300">
+          {label}
+        </Text>
+        {tooltip && (
+          <InfoTooltip text={tooltip}>
+            <SInfoIcon />
+          </InfoTooltip>
+        )}
+      </div>
+
       <div
         sx={{
           flex: ["row-reverse", "column"],
@@ -23,10 +37,13 @@ export const DetailCard = ({
           gap: 10,
         }}
       >
-        {icon}
-        <Text fs={[13, 19]} font="FontOver" color="white" lh={[13, 24]}>
-          {value}
-        </Text>
+        {typeof value === "string" ? (
+          <Text fs={[13, 15]} font="FontOver" color="white" lh={[13, 15]}>
+            {value}
+          </Text>
+        ) : (
+          value
+        )}
       </div>
     </DetailCardContainer>
   )

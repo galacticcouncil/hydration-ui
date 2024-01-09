@@ -317,3 +317,37 @@ export const customFormatDuration = ({
     isPositive,
   }
 }
+
+export const qs = (
+  query: Record<string, any>,
+  { preppendPrefix = true, prefix = "?" } = {},
+): string => {
+  if (!query) {
+    return ""
+  }
+  const keys = Object.keys(query)
+
+  if (!keys.length) {
+    return ""
+  }
+
+  const params = new URLSearchParams()
+
+  keys.forEach((key) => {
+    const value = query[key]
+
+    if (typeof value === "undefined") {
+      return
+    }
+
+    if (Array.isArray(value)) {
+      value.map((item) => params.append(key, item))
+    } else {
+      params.append(key, value)
+    }
+  })
+
+  const querystring = params.toString()
+
+  return preppendPrefix ? `${prefix}${querystring}` : querystring
+}

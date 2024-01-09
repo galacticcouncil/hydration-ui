@@ -10,6 +10,8 @@ import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { HeaderToolbar } from "./toolbar/HeaderToolbar"
+import { Link, useSearch } from "@tanstack/react-location"
+import { LINKS, resetSearchParams } from "utils/navigation"
 
 export const Header = () => {
   const { t } = useTranslation()
@@ -17,6 +19,7 @@ export const Header = () => {
   const isMediumMedia = useMedia(theme.viewport.lt.md)
 
   const warnings = useWarningsStore()
+  const search = useSearch()
 
   const { hiddenElementsKeys, observe } = useVisibleElements()
 
@@ -31,10 +34,12 @@ export const Header = () => {
       <SHeader>
         <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
           <div sx={{ flex: "row", align: "center", gap: 40 }}>
-            <Icon
-              sx={{ color: "white" }}
-              icon={!isMediumMedia ? <HydraLogoFull /> : <HydraLogo />}
-            />
+            <Link to={LINKS.swap} search={resetSearchParams(search)}>
+              <Icon
+                sx={{ color: "white" }}
+                icon={!isMediumMedia ? <HydraLogoFull /> : <HydraLogo />}
+              />
+            </Link>
             <HeaderMenu ref={observe} />
           </div>
           <HeaderToolbar menuItems={hiddenElementsKeys} />

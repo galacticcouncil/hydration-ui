@@ -79,13 +79,6 @@ export const useEvmAccount = () => {
   }
 }
 
-export const useReferralCode = () => {
-  const referralCode = useWeb3ConnectStore(
-    useShallow((state) => state.referralCode),
-  )
-  return { referralCode }
-}
-
 export const useWalletAccounts = (
   type: WalletProviderType | null,
   options?: QueryObserverOptions<WalletAccount[], unknown, Account[]>,

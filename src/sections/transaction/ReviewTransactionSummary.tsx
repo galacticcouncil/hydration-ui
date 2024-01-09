@@ -7,6 +7,8 @@ import Skeleton from "react-loading-skeleton"
 import { useTransactionValues } from "./ReviewTransactionForm.utils"
 import BN from "bignumber.js"
 import { ReviewReferralCodeWrapper } from "sections/referrals/components/ReviewReferralCode/ReviewReferralCodeWrapper"
+import { useRegistrationLinkFee } from "api/referrals"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type ReviewTransactionSummaryProps = {
   tx: SubmittableExtrinsic<"promise">
@@ -26,8 +28,13 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
   referralCode,
 }) => {
   const { t } = useTranslation()
-  const { displayFeePaymentValue, feePaymentMeta, era, nonce } =
-    transactionValues.data || {}
+  const {
+    displayFeePaymentValue,
+    feePaymentMeta,
+    era,
+    nonce,
+    isNewReferralLink,
+  } = transactionValues.data || {}
 
   return (
     <div>
@@ -36,11 +43,19 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
       ) : (
         <Summary
           rows={[
+            ...(isNewReferralLink
+              ? [
+                  {
+                    label: "Link creation fee:",
+                    content: <ReferralsLinkFee />,
+                  },
+                ]
+              : []),
             {
               label: t("liquidity.reviewTransaction.modal.detail.cost"),
               content: !transactionValues.isLoading ? (
                 <div sx={{ flex: "row", gap: 6, align: "center" }}>
-                  <Text>
+                  <Text fs={14}>
                     {t("liquidity.add.modal.row.transactionCostValue", {
                       amount: displayFeePaymentValue,
                       symbol: feePaymentMeta?.symbol,
@@ -122,5 +137,26 @@ export const ReviewTransactionXCallSummary: FC<
         },
       ]}
     />
+  )
+}
+
+const ReferralsLinkFee = () => {
+  const { t } = useTranslation()
+  const { assets } = useRpcProvider()
+  const registrationFee = useRegistrationLinkFee()
+
+  return !registrationFee.isLoading ? (
+    <div sx={{ flex: "row", gap: 6, align: "center" }}>
+      <Text fs={14} color="brightBlue300">
+        {t("value.tokenWithSymbol", {
+          value: registrationFee.data?.amount,
+          symbol: registrationFee.data
+            ? assets.getAsset(registrationFee.data.id).symbol
+            : "",
+        })}
+      </Text>
+    </div>
+  ) : (
+    <Skeleton width={100} height={16} />
   )
 }

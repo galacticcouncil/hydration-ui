@@ -1,16 +1,13 @@
 import { useNavigate, useSearch } from "@tanstack/react-location"
 import { useTranslation } from "react-i18next"
 import { usePrevious } from "react-use"
-import {
-  useAccount,
-  useReferralCode,
-} from "sections/web3-connect/Web3Connect.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useToast } from "state/toasts"
 import { useReferralToastStore } from "./components/ReferralsStore.utils"
 import { useReferralCodes, useUserReferrer } from "api/referrals"
 import { useEffect } from "react"
-import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { getChainSpecificAddress } from "utils/formatting"
+import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 
 export const ReferralsConnect = () => {
   const navigate = useNavigate()
@@ -25,7 +22,7 @@ export const ReferralsConnect = () => {
   const { temporary } = useToast()
 
   const referralStore = useReferralToastStore()
-  const storedReferralCodes = useReferralCode()
+  const storedReferralCodes = useReferralCodesStore()
 
   const referrer = useUserReferrer(account?.address)
   const isNoReferrer = referrer.data === null
@@ -52,13 +49,13 @@ export const ReferralsConnect = () => {
     if (account && isLoadedCodes && !account.isExternalWalletConnected) {
       // referral code stored in the local storage
       const storedReferralCode =
-        storedReferralCodes.referralCode[account.address]
+        storedReferralCodes.referralCodes[account.address]
 
       if (
         (storedReferralCode || queryParamReferralCode) &&
         !referralStore.displayed
       ) {
-        const state = useWeb3ConnectStore.getState()
+        const state = useReferralCodesStore.getState()
 
         const isValidCode = codes.data?.find(
           (code) =>
@@ -73,6 +70,7 @@ export const ReferralsConnect = () => {
             getChainSpecificAddress(account.address)
           ) {
             temporary({
+              hideTime: 6000,
               title: (
                 <div>
                   <p className="referralTitle">
