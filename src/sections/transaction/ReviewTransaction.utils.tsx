@@ -9,12 +9,19 @@ import type { AnyJson } from "@polkadot/types-codec/types"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { MutationObserverOptions, useMutation } from "@tanstack/react-query"
+import { useUserReferrer } from "api/referrals"
 import { useTransactionLink } from "api/transaction"
 import { decodeError } from "ethers-decode-error"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useState } from "react"
+import { useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useMountedState } from "react-use"
-import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
+import {
+  useAccount,
+  useEvmAccount,
+} from "sections/web3-connect/Web3Connect.utils"
+import { useToast } from "state/toasts"
 import { H160, getEvmTxLink, isEvmAccount } from "utils/evm"
 
 type TxMethod = AnyJson & {
@@ -233,14 +240,90 @@ export const useSendTransactionMutation = (
   }
 }
 
+const useBoundReferralToast = () => {
+  const { t } = useTranslation()
+  const { account } = useAccount()
+  const { loading, success, remove } = useToast()
+  const { featureFlags } = useRpcProvider()
+
+  const referrer = useUserReferrer(
+    featureFlags.referrals ? account?.address : undefined,
+  )
+
+  const { referralCodes } = useReferralCodesStore()
+  const storedReferralCode = account?.address
+    ? referralCodes[account.address]
+    : undefined
+
+  const isLinkedAccount = featureFlags.referrals
+    ? !!referrer.data?.length
+    : true
+
+  const pendingReferralCode = useRef(storedReferralCode)
+  const pendingToastId = useRef<string>()
+
+  const isLinking = !isLinkedAccount && !!pendingReferralCode.current
+
+  const onLoading = () => {
+    if (isLinking && account) {
+      // snapshot last known referral code
+      // since its already deleted from the store after tx is signed
+      pendingReferralCode.current = storedReferralCode
+      const id = loading({
+        hideTime: 3000,
+        title: (
+          <span>
+            {t("referrals.toasts.linkCode.onLoading", {
+              code: pendingReferralCode.current,
+            })}
+          </span>
+        ),
+      })
+
+      pendingToastId.current = id
+    }
+  }
+
+  const onSuccess = () => {
+    if (isLinking && account) {
+      if (pendingToastId.current) remove(pendingToastId.current)
+      success({
+        title: (
+          <span>
+            {t("referrals.toasts.linkCode.onSuccess", {
+              code: pendingReferralCode.current,
+            })}
+          </span>
+        ),
+      })
+    }
+  }
+
+  return {
+    onLoading,
+    onSuccess,
+  }
+}
+
 export const useSendTx = () => {
   const [txType, setTxType] = useState<"default" | "evm" | null>(null)
+
+  const boundReferralToast = useBoundReferralToast()
+
   const sendTx = useSendTransactionMutation({
-    onMutate: () => setTxType("default"),
+    onMutate: () => {
+      boundReferralToast.onLoading()
+      setTxType("default")
+    },
+    onSuccess: boundReferralToast.onSuccess,
   })
 
   const sendEvmTx = useSendEvmTransactionMutation({
-    onMutate: () => setTxType("evm"),
+    onMutate: () => {
+      boundReferralToast.onLoading()
+      setTxType("evm")
+    },
+    onSuccess: boundReferralToast.onSuccess,
   })
 
   const activeMutation = txType === "default" ? sendTx : sendEvmTx
