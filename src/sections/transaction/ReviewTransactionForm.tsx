@@ -64,7 +64,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const signTx = useMutation(
     async () => {
       const address = props.isProxy ? account?.delegate : account?.address
-
+      console.log(wallet)
+      console.log(wallet?.signer)
       if (!address) throw new Error("Missing active account")
       if (!wallet) throw new Error("Missing wallet")
       if (!wallet.signer) throw new Error("Missing signer")

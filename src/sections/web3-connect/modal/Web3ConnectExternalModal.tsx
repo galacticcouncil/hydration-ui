@@ -63,7 +63,7 @@ export const Web3ConnectExternalModal = ({
       : values.address
 
     const { isProxy, delegates } = await getDelegates(api, address)
-
+    console.log(isProxy, "isProxy")
     let isDelegate = false
 
     if (isProxy) {
@@ -92,7 +92,7 @@ export const Web3ConnectExternalModal = ({
       form.setError("delegates", {})
       return
     }
-
+    console.log(address, "address")
     externalWallet.setAddress(address)
 
     const evmAddress = isEvm ? safeConvertAddressH160(values.address) : ""
@@ -105,7 +105,9 @@ export const Web3ConnectExternalModal = ({
           : externalWallet.accountName,
       provider: WalletProviderType.ExternalWallet,
       isExternalWalletConnected: true,
+      // delegate: "5CfuooAmnoBqNAg4KFLyAgJFQ3cTaQbkFyH7pVCeu785y98C",
     })
+
     onSelect()
     navigate({
       search: { account: evmAddress ? evmAddress.slice(2) : address },
