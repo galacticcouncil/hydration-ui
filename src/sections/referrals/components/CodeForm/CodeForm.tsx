@@ -63,7 +63,7 @@ export const CodeForm = () => {
 
   const isLinkFeeBalance =
     registrationFee.data && linkFeeBalance.data
-      ? linkFeeBalance.data.freeBalance
+      ? linkFeeBalance.data.balance
           .shiftedBy(-registrationFee.data.decimals)
           .minus(registrationFee.data.amount)
           .minus(
