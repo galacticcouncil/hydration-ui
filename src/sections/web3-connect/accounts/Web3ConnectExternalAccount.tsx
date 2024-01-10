@@ -61,7 +61,7 @@ export const Web3ConnectExternalAccount: FC<Props> = (account) => {
     }
   }, [externalWallet, isProxy])
 
-  const { data: accounts, isLoading } = useWalletAccounts(
+  const { data: accounts } = useWalletAccounts(
     externalWallet?.proxyWalletProvider ?? null,
     {
       enabled: isProxy,
@@ -81,7 +81,7 @@ export const Web3ConnectExternalAccount: FC<Props> = (account) => {
   if (!account) return null
   if (!externalWallet) return null
 
-  if (!isProxy) {
+  if (!isProxy || (isProxy && !filteredAccounts.length)) {
     return (
       <Web3ConnectAccount
         isActive
