@@ -7,7 +7,7 @@ export const UigcToggleButtonGroup = createComponent({
   elementClass: UI.ToggleButtonGroup,
   react: React,
   events: {
-    onToggleButtonClicked: "toggle-button-clicked" as EventName<CustomEvent>,
+    onToggleButtonClick: "toggle-button-click" as EventName<CustomEvent>,
   },
 })
 
@@ -34,7 +34,7 @@ export function PartialOrderToggle(props: {
   return (
     <UigcToggleButtonGroup
       value={props.partial ? "yes" : "no"}
-      onToggleButtonClicked={(e) => {
+      onToggleButtonClick={(e) => {
         props.onChange(e.detail.value === "yes" ? true : false)
       }}
       {...{ variant: "dense" }}
