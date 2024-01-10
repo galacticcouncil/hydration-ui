@@ -76,7 +76,13 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
           </Text>
         </div>
         <div sx={{ flex: "row", align: "center", gap: 12 }}>
-          <Text fs={14} lh={20} fw={400} css={{ color: "inherit" }}>
+          <Text
+            fs={14}
+            lh={20}
+            fw={400}
+            tAlign="right"
+            css={{ color: "inherit" }}
+          >
             USD
           </Text>
           <SCircle isActive={displayAsset.isStableCoin} />
@@ -99,7 +105,13 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
             </Text>
           </div>
           <div sx={{ flex: "row", align: "center", gap: 12 }}>
-            <Text fs={14} lh={20} fw={400} css={{ color: "inherit" }}>
+            <Text
+              fs={14}
+              lh={20}
+              fw={400}
+              tAlign="right"
+              css={{ color: "inherit" }}
+            >
               {fiat.id.toUpperCase()}
             </Text>
             <SCircle
@@ -127,7 +139,13 @@ export const HeaderSettingsDisplayAsset = ({ onSelect }: Props) => {
               </Text>
             </div>
             <div sx={{ flex: "row", align: "center", gap: 12 }}>
-              <Text fs={14} lh={20} fw={400} css={{ color: "inherit" }}>
+              <Text
+                fs={14}
+                lh={20}
+                fw={400}
+                tAlign="right"
+                css={{ color: "inherit" }}
+              >
                 {asset.name}
               </Text>
               <SCircle isActive={isActive} />

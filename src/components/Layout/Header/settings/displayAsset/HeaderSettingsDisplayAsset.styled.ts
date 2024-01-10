@@ -3,8 +3,11 @@ import { ButtonTransparent } from "components/Button/Button"
 import { theme } from "theme"
 
 export const SItems = styled.div`
-  max-height: 360px;
   overflow: auto;
+
+  @media ${theme.viewport.gte.sm} {
+    max-height: 360px;
+  }
 `
 
 export const SItem = styled(ButtonTransparent)<{ isActive?: boolean }>`

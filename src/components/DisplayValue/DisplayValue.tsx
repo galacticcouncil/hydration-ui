@@ -25,7 +25,9 @@ export const DisplayValue = ({
   return (
     <>
       {isFiat && (
-        <span sx={{ mr: withGap ? [2, 4] : undefined }}>{store.symbol}</span>
+        <span sx={{ mr: withGap ? [2, 4] : undefined }}>
+          {isUSD ? "$" : store.symbol}
+        </span>
       )}
       {isNumber ? t("value", { value, type }) : value}
       {!isFiat && <>&nbsp;{store.symbol}</>}
