@@ -1,7 +1,7 @@
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { useExternalWalletDelegates } from "api/proxies"
 import { useShallow } from "hooks/useShallow"
-import { FC } from "react"
+import { FC, useEffect } from "react"
 import {
   getWalletProviderByType,
   useWalletAccounts,
@@ -13,7 +13,7 @@ import {
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { WalletProviderType } from "sections/web3-connect/wallets"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
-import { HYDRA_ADDRESS_PREFIX } from "utils/api"
+import { HYDRA_ADDRESS_PREFIX, POLKADOT_APP_NAME } from "utils/api"
 import { getAddressVariants } from "utils/formatting"
 import { pick } from "utils/rx"
 import {
@@ -49,7 +49,19 @@ export const Web3ConnectExternalAccount: FC<Props> = (account) => {
   const isProxy = externalWalletData?.isProxy ?? false
   const delegates = externalWalletData?.delegates ?? []
 
-  const { data: accounts } = useWalletAccounts(
+  useEffect(() => {
+    if (isProxy && externalWallet) {
+      const { wallet: proxyWallet } = getWalletProviderByType(
+        externalWallet.proxyWalletProvider,
+      )
+
+      if (proxyWallet?.installed && !proxyWallet?.extension) {
+        proxyWallet?.enable(POLKADOT_APP_NAME)
+      }
+    }
+  }, [externalWallet, isProxy])
+
+  const { data: accounts, isLoading } = useWalletAccounts(
     externalWallet?.proxyWalletProvider ?? null,
     {
       enabled: isProxy,
@@ -76,6 +88,7 @@ export const Web3ConnectExternalAccount: FC<Props> = (account) => {
         provider={WalletProviderType.ExternalWallet}
         name={externalWallet.accountName}
         address={hydraAddress}
+        onClick={() => toggle()}
       />
     )
   }
@@ -102,12 +115,13 @@ export const Web3ConnectExternalAccount: FC<Props> = (account) => {
                 provider={externalWallet?.proxyWalletProvider}
                 name={name ?? "N/A"}
                 address={address}
-                onClick={() => {
+                onClick={async () => {
                   setAccount({
                     ...account,
                     name: externalWallet.proxyAccountName,
                     delegate: address,
                   })
+                  await externalWallet?.enableProxy(POLKADOT_APP_NAME)
                   toggle()
                 }}
               />
