@@ -17,7 +17,10 @@ type Props = { id: string; amount: BigNumber }
 
 export const useDisplayValue = (props: Props) => {
   const displayAsset = useDisplayAssetStore()
-  const spotPrice = useSpotPrice(props.id, displayAsset.id)
+  const spotPrice = useSpotPrice(
+    props.id,
+    displayAsset.isFiat ? displayAsset.stableCoinId : displayAsset.id,
+  )
 
   const isLoading = spotPrice.isInitialLoading
 
@@ -34,15 +37,20 @@ export const useDisplayValue = (props: Props) => {
 
 export const useDisplayPrice = (id: string | u32 | undefined) => {
   const displayAsset = useDisplayAssetStore()
-  const spotPrice = useSpotPrice(id, displayAsset.id)
-  const usdPrice = useCoingeckoUsdPrice()
+  const spotPrice = useSpotPrice(
+    id,
+    displayAsset.isFiat ? displayAsset.stableCoinId : displayAsset.id,
+  )
+  const usdPrice = useCoingeckoPrice(
+    displayAsset.isFiat && displayAsset.id ? displayAsset.id : "",
+  )
 
   const isLoading = spotPrice.isInitialLoading || usdPrice.isInitialLoading
 
   const data = useMemo(() => {
     if (isLoading) return undefined
 
-    if (displayAsset.isRealUSD && usdPrice.data)
+    if (displayAsset.isFiat && usdPrice.data)
       return spotPrice.data
         ? {
             ...spotPrice.data,
@@ -51,7 +59,7 @@ export const useDisplayPrice = (id: string | u32 | undefined) => {
         : undefined
 
     return spotPrice.data
-  }, [displayAsset.isRealUSD, isLoading, spotPrice.data, usdPrice.data])
+  }, [displayAsset.isFiat, isLoading, spotPrice.data, usdPrice.data])
 
   return { data, isLoading, isInitialLoading: isLoading }
 }
@@ -145,8 +153,15 @@ export const useDisplayPrices = (
   noRefresh?: boolean,
 ) => {
   const displayAsset = useDisplayAssetStore()
-  const spotPrices = useSpotPrices(ids, displayAsset.id, noRefresh)
-  const usdPrice = useCoingeckoUsdPrice()
+  const spotPrices = useSpotPrices(
+    ids,
+    displayAsset.isFiat ? displayAsset.stableCoinId : displayAsset.id,
+    noRefresh,
+  )
+
+  const usdPrice = useCoingeckoPrice(
+    displayAsset.isFiat && displayAsset.id ? displayAsset.id : "",
+  )
 
   const isLoading =
     spotPrices.some((q) => q.isInitialLoading) || usdPrice.isInitialLoading
@@ -154,7 +169,7 @@ export const useDisplayPrices = (
   const data = useMemo(() => {
     if (isLoading) return undefined
 
-    if (displayAsset.isRealUSD && usdPrice.data)
+    if (displayAsset.isFiat && usdPrice.data)
       return spotPrices.map((sp) =>
         sp.data
           ? { ...sp.data, spotPrice: sp.data.spotPrice.times(usdPrice.data) }
@@ -162,17 +177,37 @@ export const useDisplayPrices = (
       )
 
     return spotPrices.map((sp) => sp.data)
-  }, [displayAsset.isRealUSD, isLoading, spotPrices, usdPrice.data])
+  }, [displayAsset.isFiat, isLoading, spotPrices, usdPrice.data])
 
   return { data, isLoading, isInitialLoading: isLoading }
 }
 
+export type FiatCurrency = {
+  id: string
+  name: string
+  symbol: string
+}
+
+export const FIAT_CURRENCIES = [
+  {
+    id: "czk",
+    name: "CZECH Koruna",
+    symbol: "CZK ",
+  },
+  {
+    id: "eur",
+    name: "EURO",
+    symbol: "€",
+  },
+] satisfies FiatCurrency[]
+
+const currencyIds = FIAT_CURRENCIES.map((currency) => currency.id)
+
 type Asset = {
   id: string | undefined
   symbol: string
-  isRealUSD: boolean
+  isFiat: boolean
   isStableCoin: boolean
-  isDollar?: boolean
   stableCoinId: string | undefined
 }
 export type DisplayAssetStore = Asset & {
@@ -185,33 +220,38 @@ export const useDisplayAssetStore = create<DisplayAssetStore>()(
       id: undefined,
       stableCoinId: undefined,
       symbol: "$",
-      isDollar: true,
-      isRealUSD: false,
+      isFiat: false,
       isStableCoin: true,
       update: (value) =>
-        set({ ...value, isDollar: value.isRealUSD || value.isStableCoin }),
+        set({
+          ...value,
+          isFiat: value.isStableCoin || value.isFiat,
+        }),
     }),
-    { name: "hdx-display-asset", version: 1 },
+    { name: "hdx-display-asset", version: 2 },
   ),
 )
 
-export const useCoingeckoUsdPrice = () => {
+export const useCoingeckoPrice = (currency: string) => {
   const displayAsset = useDisplayAssetStore()
 
-  return useQuery(QUERY_KEYS.coingeckoUsd, getCoingeckoSpotPrice, {
-    enabled: displayAsset.isRealUSD,
+  return useQuery(QUERY_KEYS.coingeckoUsd, getCoingeckoPrice, {
+    enabled: !!currency && displayAsset.isFiat,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
     retry: false,
     staleTime: 1000 * 60 * 60 * 24, // 24h
+    select: (data) => {
+      return data[STABLECOIN_SYMBOL.toLowerCase()][currency]
+    },
   })
 }
 
-export const getCoingeckoSpotPrice = async () => {
+export const getCoingeckoPrice = async () => {
+  const vsCurrenciesParam = ["usd", ...currencyIds].join(",")
   const res = await fetch(
-    `https://api.coingecko.com/api/v3/simple/price?ids=${STABLECOIN_SYMBOL.toLowerCase()}&vs_currencies=usd`,
+    `https://api.coingecko.com/api/v3/simple/price?ids=${STABLECOIN_SYMBOL.toLowerCase()}&vs_currencies=${vsCurrenciesParam}`,
   )
-  const json = await res.json()
-  return json[STABLECOIN_SYMBOL.toLowerCase()].usd
+  return await res.json()
 }

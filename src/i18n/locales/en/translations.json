@@ -109,6 +109,7 @@
   "header.settings.items.displayAsset.subtitle": "Select base currency",
   "header.settings.displayAsset.title": "Select display asset",
   "header.settings.displayAsset.usd": "USD asset with coingecko dollar price.",
+  "header.settings.displayAsset.fiat": "USD asset with coingecko {{symbol}} price.",
   "header.settings.displayAsset.stableCoin": "USD asset.",
   "value": "{{ value, bignumber }}",
   "value.compact": "{{ value, compact }}",

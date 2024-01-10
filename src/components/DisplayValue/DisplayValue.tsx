@@ -19,14 +19,16 @@ export const DisplayValue = ({
   const { t } = useTranslation()
   const store = useDisplayAssetStore()
 
-  const isDollar = isUSD || store.isRealUSD || store.isStableCoin
+  const isFiat = isUSD || store.isStableCoin || store.isFiat
   const isNumber = BigNumber.isBigNumber(value) || typeof value === "number"
 
   return (
     <>
-      {isDollar && <span sx={{ mr: withGap ? [2, 4] : undefined }}>$</span>}
+      {isFiat && (
+        <span sx={{ mr: withGap ? [2, 4] : undefined }}>{store.symbol}</span>
+      )}
       {isNumber ? t("value", { value, type }) : value}
-      {!isDollar && <>&nbsp;{store.symbol}</>}
+      {!isFiat && <>&nbsp;{store.symbol}</>}
     </>
   )
 }
