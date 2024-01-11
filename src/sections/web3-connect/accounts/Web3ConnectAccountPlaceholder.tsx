@@ -8,11 +8,11 @@ import { ComponentPropsWithoutRef, FC } from "react"
 import { isEvmProvider } from "sections/web3-connect/Web3Connect.utils"
 
 export const Web3ConnectAccountPlaceholder: FC<
-  ComponentPropsWithoutRef<typeof Web3ConnectAccount>
+  Partial<ComponentPropsWithoutRef<typeof Web3ConnectAccount>>
 > = (props) => {
   const { t } = useTranslation()
 
-  const isEvm = isEvmProvider(props.provider)
+  const isEvm = !!props?.provider && isEvmProvider(props.provider)
   return (
     <>
       <SAccountItem css={{ pointerEvents: "none", padding: "14px 18px" }}>

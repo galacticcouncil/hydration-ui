@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next"
 import { arraySearch } from "utils/helpers"
 import NoActivities from "assets/icons/NoActivities.svg?react"
 import { Text } from "components/Typography/Text/Text"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
   switch (type) {
@@ -68,6 +69,7 @@ export const Web3ConnectAccountList: FC<{
 }> = ({ accounts = [] }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
+  const { isLoaded } = useRpcProvider()
 
   const [balanceMap, setBalanceMap] = useState<Record<string, BN>>({})
   const isReady = Object.keys(balanceMap).length === accounts.length
@@ -134,14 +136,18 @@ export const Web3ConnectAccountList: FC<{
           </Text>
         </div>
       )}
-      {accountList?.map((account) => (
-        <AccountComponent
-          key={account.address}
-          {...account}
-          isReady={isReady}
-          setBalanceMap={setBalanceMap}
-        />
-      ))}
+      {accountList?.map((account) =>
+        isLoaded ? (
+          <AccountComponent
+            key={account.address}
+            {...account}
+            isReady={isReady}
+            setBalanceMap={setBalanceMap}
+          />
+        ) : (
+          <Web3ConnectAccountPlaceholder />
+        ),
+      )}
     </SAccountsContainer>
   )
 }
