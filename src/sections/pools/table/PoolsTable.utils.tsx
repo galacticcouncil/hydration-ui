@@ -46,11 +46,7 @@ const AssetTableName = ({ id }: { id: string }) => {
   const asset = assets.getAsset(id)
 
   const farms = useFarms([id])
-
-  const iconIds =
-    assets.isStableSwap(asset) || assets.isShareToken(asset)
-      ? asset.assets
-      : asset.id
+  const iconIds = asset.iconId
 
   return (
     <div>
