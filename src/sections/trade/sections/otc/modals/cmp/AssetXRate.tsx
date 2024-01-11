@@ -10,7 +10,7 @@ export const UigcAssetXRate = createComponent({
   elementClass: UI.AssetXRate,
   react: React,
   events: {
-    onAssetInputChanged: "asset-input-changed" as EventName<CustomEvent>,
+    onAssetInputChange: "asset-input-change" as EventName<CustomEvent>,
   },
 })
 
@@ -41,7 +41,7 @@ export function OrderAssetRate(props: {
 
   return (
     <UigcAssetXRate
-      onAssetInputChanged={(e) => props.onChange(e.detail.value)}
+      onAssetInputChange={(e) => props.onChange(e.detail.value)}
       title={t("otc.order.place.price", { symbol: inputMeta?.symbol })}
       asset={outputMeta?.symbol}
       amount={props.price}
