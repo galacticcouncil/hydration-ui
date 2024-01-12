@@ -214,8 +214,9 @@ export const AddLiquidityForm = ({
         />
         <SummaryRow
           label={t("liquidity.add.modal.lpFee")}
-          content={t("value.percentage", {
-            value: omnipoolFee?.fee.multipliedBy(100),
+          content={t("value.percentage.range", {
+            from: omnipoolFee?.minFee.multipliedBy(100),
+            to: omnipoolFee?.maxFee.multipliedBy(100),
           })}
         />
         <Spacer size={24} />

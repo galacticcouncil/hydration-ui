@@ -22,15 +22,13 @@ import {
   derivePoolAccount,
   isXYKPoolType,
 } from "sections/pools/PoolsPage.utils"
-import { useFarms } from "api/farms"
+import { Farm, useFarmAprs, useFarms } from "api/farms"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { BN_0, BN_1, BN_MILL } from "utils/constants"
-import { useVolume } from "api/volume"
 import Skeleton from "react-loading-skeleton"
-import { useXYKPoolTradeVolumes } from "sections/pools/pool/details/PoolDetails.utils"
 import {
   Page,
   TransferModal,
@@ -40,6 +38,10 @@ import { useAccountBalances } from "api/accountBalances"
 import { useStableswapPool } from "api/stableswap"
 import { normalizeBigNumber } from "utils/balance"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import BN from "bignumber.js"
+import { CellSkeleton } from "components/Skeleton/CellSkeleton"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
 const AssetTableName = ({ id }: { id: string }) => {
   const { assets } = useRpcProvider()
@@ -60,9 +62,13 @@ const AssetTableName = ({ id }: { id: string }) => {
         ) : (
           <MultipleIcons
             size={26}
-            icons={iconIds.map((asset) => ({
-              icon: <AssetLogo id={asset} />,
-            }))}
+            icons={iconIds.map((asset) => {
+              const meta = assets.getAsset(asset)
+              const isBond = assets.isBond(meta)
+              return {
+                icon: <AssetLogo id={isBond ? meta.assetId : asset} />,
+              }
+            })}
           />
         )}
 
@@ -75,43 +81,6 @@ const AssetTableName = ({ id }: { id: string }) => {
           ) : null}
         </div>
       </div>
-    </div>
-  )
-}
-
-const Volume = ({
-  assetId,
-  poolAddress,
-}: {
-  assetId: string
-  poolAddress?: string
-}) => {
-  const volumeOmnipool = useVolume(poolAddress ? undefined : assetId)
-  const xykVolume = useXYKPoolTradeVolumes(poolAddress ? [poolAddress] : [])
-
-  const volume =
-    volumeOmnipool.data?.[0]?.volume_usd ?? xykVolume.data?.[0]?.volume ?? BN_0
-
-  if (volumeOmnipool.isInitialLoading || xykVolume.isLoading)
-    return <Skeleton width={60} height={18} />
-
-  return (
-    <div
-      sx={{
-        flex: "row",
-        gap: 4,
-        align: "center",
-        justify: ["end", "start"],
-        minWidth: [110, "auto"],
-      }}
-    >
-      <Text color="white" fs={14}>
-        <DisplayValue value={volume} />
-      </Text>
-
-      <ButtonTransparent sx={{ display: ["inherit", "none"] }}>
-        <Icon sx={{ color: "darkBlue300" }} icon={<ChevronRightIcon />} />
-      </ButtonTransparent>
     </div>
   )
 }
@@ -202,6 +171,67 @@ const AddLiqduidityButton = ({ pool }: { pool: TPool | TXYKPool }) => {
   )
 }
 
+const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
+  const { t } = useTranslation()
+
+  const farmAprs = useFarmAprs(farms)
+
+  const percentage = useMemo(() => {
+    if (farmAprs.data?.length) {
+      const aprs = farmAprs.data ? farmAprs.data.map(({ apr }) => apr) : [BN_0]
+      const minAprs = farmAprs.data
+        ? farmAprs.data.map(({ minApr, apr }) => (minApr ? minApr : apr))
+        : [BN_0]
+
+      const minApr = BN.minimum(...minAprs)
+      const maxApr = BN.maximum(...aprs)
+
+      return {
+        minApr,
+        maxApr,
+      }
+    }
+
+    return {
+      minApr: BN_0,
+      maxApr: BN_0,
+    }
+  }, [farmAprs.data])
+
+  const isLoading = farmAprs.isInitialLoading
+
+  if (isLoading) return <CellSkeleton />
+
+  return (
+    <Text color="white">
+      {t("value.percentage.range", {
+        from: percentage.minApr.lt(apy) ? percentage.minApr : BN(apy),
+        to: percentage.maxApr.plus(apy),
+      })}
+    </Text>
+  )
+}
+
+const APY = ({
+  assetId,
+  fee,
+  isLoading,
+}: {
+  assetId: string
+  fee: BN
+  isLoading: boolean
+}) => {
+  const { t } = useTranslation()
+  const farms = useFarms([assetId])
+
+  if (isLoading || farms.isInitialLoading) return <CellSkeleton />
+
+  if (farms.data?.length)
+    return <APYFarming farms={farms.data} apy={fee.toNumber()} />
+
+  return <Text color="white">{t("value.percentage", { value: fee })}</Text>
+}
+
 export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
   const { t } = useTranslation()
 
@@ -227,6 +257,44 @@ export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
         sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
         cell: ({ row }) => <AssetTableName id={row.original.id} />,
       }),
+      accessor("tvlDisplay", {
+        id: "tvlDisplay",
+        header: t("liquidity.table.header.tvl"),
+        size: 250,
+        sortingFn: (a, b) =>
+          a.original.tvlDisplay.gt(b.original.tvlDisplay) ? 1 : -1,
+        cell: ({ row }) => (
+          <Text color="white" fs={14}>
+            <DisplayValue value={row.original.tvlDisplay} />
+          </Text>
+        ),
+      }),
+      ...(!isXyk
+        ? [
+            display({
+              id: "apy",
+              //@ts-ignore
+              header: (
+                <div sx={{ flex: "row", align: "center", gap: 4 }}>
+                  {t("stats.overview.table.assets.header.apy")}
+                  <InfoTooltip
+                    text={t("stats.overview.table.assets.header.apy.desc")}
+                  >
+                    <SInfoIcon />
+                  </InfoTooltip>
+                </div>
+              ),
+              cell: ({ row }) =>
+                !isXYKPoolType(row.original) ? (
+                  <APY
+                    assetId={row.original.id}
+                    fee={row.original.fee}
+                    isLoading={row.original.isFeeLoading}
+                  />
+                ) : null,
+            }),
+          ]
+        : []),
       isXyk
         ? accessor("fee", {
             id: "fee",
@@ -252,30 +320,34 @@ export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
             ),
           }),
 
-      accessor("tvlDisplay", {
-        id: "tvlDisplay",
-        header: t("liquidity.table.header.tvl"),
-        size: 250,
-        sortingFn: (a, b) =>
-          a.original.tvlDisplay.gt(b.original.tvlDisplay) ? 1 : -1,
-        cell: ({ row }) => (
-          <Text color="white" fs={14}>
-            <DisplayValue value={row.original.tvlDisplay} />
-          </Text>
-        ),
-      }),
       accessor("id", {
         id: "volumeDisplay",
         header: t("liquidity.table.header.volume"),
         cell: ({ row }) => {
           const pool = row.original
-          const isXyk = isXYKPoolType(pool)
 
+          if (pool.isVolumeLoading) return <Skeleton width={60} height={18} />
           return (
-            <Volume
-              assetId={pool.id}
-              poolAddress={isXyk ? pool.poolAddress : undefined}
-            />
+            <div
+              sx={{
+                flex: "row",
+                gap: 4,
+                align: "center",
+                justify: ["end", "start"],
+                minWidth: [110, "auto"],
+              }}
+            >
+              <Text color="white" fs={14}>
+                <DisplayValue value={pool.volume} />
+              </Text>
+
+              <ButtonTransparent sx={{ display: ["inherit", "none"] }}>
+                <Icon
+                  sx={{ color: "darkBlue300" }}
+                  icon={<ChevronRightIcon />}
+                />
+              </ButtonTransparent>
+            </div>
           )
         },
       }),

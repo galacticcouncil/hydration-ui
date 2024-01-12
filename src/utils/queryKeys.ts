@@ -250,7 +250,7 @@ export const QUERY_KEYS = {
   omnipoolAssetsLive: [QUERY_KEY_PREFIX, "omnipoolAssets"],
   hubAssetTradability: [QUERY_KEY_PREFIX, "hubAssetTradability"],
   hubAssetImbalance: () => ["hubAssetImbalance"],
-  omnipoolFee: [QUERY_KEY_PREFIX, "omnipoolFee"],
+  omnipoolFee: ["omnipoolFee"],
   omnipoolAsset: (id: u32 | string) => [
     QUERY_KEY_PREFIX,
     "omnipoolAsset",

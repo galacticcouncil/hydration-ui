@@ -24,6 +24,8 @@ import {
   SValuesContainer,
 } from "sections/pools/pool/details/PoolDetails.styled"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useOmnipoolFee } from "api/omnipool"
+import Skeleton from "react-loading-skeleton"
 
 export const PoolDetails = ({
   pool,
@@ -40,6 +42,8 @@ export const PoolDetails = ({
   >(undefined)
 
   const [addLiquidityStablepool, setLiquidityStablepool] = useState<Page>()
+
+  const omnipoolFee = useOmnipoolFee()
 
   const ixXYKPool = isXYKPoolType(pool)
 
@@ -176,7 +180,14 @@ export const PoolDetails = ({
               <SValue>
                 <Text color="basic400">{t("liquidity.pool.details.fee")}</Text>
                 <Text color="white">
-                  {t("value.percentage", { value: pool.fee })}
+                  {omnipoolFee.isLoading ? (
+                    <Skeleton height={16} width={50} />
+                  ) : (
+                    t("value.percentage.range", {
+                      from: omnipoolFee.data?.minFee.multipliedBy(100),
+                      to: omnipoolFee.data?.maxFee.multipliedBy(100),
+                    })
+                  )}
                 </Text>
               </SValue>
             </SValuesContainer>
