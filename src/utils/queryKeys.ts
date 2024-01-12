@@ -388,4 +388,13 @@ export const QUERY_KEYS = {
     referrerAddress,
   ],
   referralLinkFee: ["referralLinkFee"],
+  accountTransfers: (address: Maybe<AccountId32 | string>) => [
+    "accountTransfers",
+    address?.toString(),
+  ],
+  accountTransfersLive: (address: Maybe<AccountId32 | string>) => [
+    QUERY_KEY_PREFIX,
+    "accountTransfers",
+    address?.toString(),
+  ],
 } as const
