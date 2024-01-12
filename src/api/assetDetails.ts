@@ -178,6 +178,11 @@ export const getAssets = async (api: ApiPromise) => {
     rawTradeAssets = await tradeRouter.getAllAssets()
   } catch (e) {}
 
+  //TODO: remove after migrating to new asset registry
+  const rawAssetsMeta = api.query.assetRegistry.assetMetadataMap
+    ? await api.query.assetRegistry.assetMetadataMap.entries()
+    : undefined
+
   const [
     system,
     rawAssetsData,
@@ -205,11 +210,29 @@ export const getAssets = async (api: ApiPromise) => {
       const assetType = data.assetType.type
 
       const isToken = assetType === "Token"
+      const isBond = assetType === "Bond"
+      const isStableSwap = assetType === "StableSwap"
       //@ts-ignore
-      const isBond = assetType === "External"
-      const isStableSwap = assetType === "Bond"
-      //@ts-ignore
-      const isShareToken = assetType === "XYK"
+      const isShareToken = assetType === (!!rawAssetsMeta ? "PoolShare" : "XYK")
+
+      let meta
+      if (rawAssetsMeta) {
+        const assetsMeta = rawAssetsMeta
+          .find((meta) => meta[0].args[0].toString() === id)?.[1]
+          .unwrap()
+
+        meta = {
+          decimals: assetsMeta?.decimals.toNumber() ?? 12,
+          symbol: assetsMeta?.symbol.toUtf8() ?? "N/a",
+        }
+      } else {
+        meta = {
+          //@ts-ignore
+          decimals: Number(data.decimals.toString()) as number,
+          //@ts-ignore
+          symbol: data.symbol.toHuman() as string,
+        }
+      }
 
       const assetCommon = {
         id,
@@ -220,12 +243,8 @@ export const getAssets = async (api: ApiPromise) => {
         isNative: false,
         existentialDeposit: data.existentialDeposit.toBigNumber(),
         parachainId: undefined,
-        //@ts-ignore
-        decimals: Number(data.decimals.toString()) as number,
-        //@ts-ignore
-        symbol: data.symbol.toHuman() as string,
         name: data.name.toHuman() as string,
-        assetType,
+        ...meta,
       }
 
       if (isToken) {
@@ -269,7 +288,7 @@ export const getAssets = async (api: ApiPromise) => {
               decimals: system.tokenDecimals.unwrap()[0].toNumber(),
             }
           } else {
-            const meta = rawAssetsData.find(
+            const meta = (rawAssetsMeta ?? rawAssetsData).find(
               (meta) => meta[0].args[0].toString() === assetId.toString(),
             )
             if (meta) {
@@ -335,7 +354,7 @@ export const getAssets = async (api: ApiPromise) => {
                 return system.tokenSymbol.unwrap()[0].toString()
               }
 
-              const meta = rawAssetsData
+              const meta = (rawAssetsMeta ?? rawAssetsData)
                 .find((meta) => meta[0].args[0].toString() === assetId)?.[1]
                 .unwrap()
 
@@ -358,8 +377,6 @@ export const getAssets = async (api: ApiPromise) => {
           stableswap.push(asset)
         }
       } else if (isShareToken) {
-        let assets: string[] = []
-
         const poolAddresses = await api.query.xyk.shareToken.entries()
         const poolAddress = poolAddresses
           .find(
@@ -369,14 +386,16 @@ export const getAssets = async (api: ApiPromise) => {
 
         if (poolAddress) {
           const poolAssets = await api.query.xyk.poolAssets(poolAddress)
-          assets = poolAssets.unwrap().map((poolAsset) => poolAsset.toString())
-        }
+          const assets = poolAssets
+            .unwrap()
+            .map((poolAsset) => poolAsset.toString())
 
-        shareTokensRaw.push({
-          ...assetCommon,
-          assets,
-          poolAddress,
-        })
+          shareTokensRaw.push({
+            ...assetCommon,
+            assets,
+            poolAddress,
+          })
+        }
       }
     }
   }
