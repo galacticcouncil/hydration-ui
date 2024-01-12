@@ -1,4 +1,3 @@
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import ChevronDownSmall from "assets/icons/ChevronDownSmall.svg?react"
 import WalletIcon from "assets/icons/Wallet.svg?react"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
@@ -11,11 +10,9 @@ import {
   Account,
   useWeb3ConnectStore,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { HYDRA_ADDRESS_PREFIX } from "utils/api"
-import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
+import { shortenAccountAddress } from "utils/formatting"
 import {
   SAvatarCointainer,
-  SAvatarMask,
   SContainer,
   SLoginButton,
 } from "./Web3ConnectModalButton.styled"
@@ -25,22 +22,11 @@ const Web3ConnectActiveButton: FC<{
   account: Account
   className?: string
 }> = ({ account, onOpen, className }) => {
-  const hydraAddress = encodeAddress(
-    decodeAddress(account.address),
-    HYDRA_ADDRESS_PREFIX,
-  )
+  const displayAddress = account?.displayAddress ?? account?.address ?? ""
 
-  const evmAddress = account.evmAddress
-  const polkadotAddress = account.address
-
-  const shortenedAddress = !!evmAddress
-    ? shortenAccountAddress(evmAddress)
-    : shortenAccountAddress(
-        safeConvertAddressSS58(polkadotAddress, HYDRA_ADDRESS_PREFIX) ?? "",
-      )
-
-  const shouldRenderSecondaryAvatar =
-    !account.isExternalWalletConnected && !evmAddress
+  const shortenedAddress = displayAddress
+    ? shortenAccountAddress(displayAddress)
+    : ""
 
   const shouldHideAddress = account.name === shortenedAddress?.toLowerCase()
 
@@ -72,24 +58,11 @@ const Web3ConnectActiveButton: FC<{
           }}
         >
           <SAvatarCointainer>
-            {shouldRenderSecondaryAvatar && (
-              <SAvatarMask
-                css={{
-                  pointerEvents: "none",
-                  marginRight: -8,
-                }}
-              >
-                <AccountAvatar
-                  size={22}
-                  theme="substrate"
-                  address={hydraAddress}
-                />
-              </SAvatarMask>
-            )}
             <AccountAvatar
               size={22}
-              theme={evmAddress ? "metamask" : account.provider}
-              address={evmAddress || polkadotAddress}
+              genesisHash={account?.genesisHash}
+              provider={account?.provider}
+              address={displayAddress}
               css={{
                 pointerEvents: "none",
                 borderRadius: "9999px",

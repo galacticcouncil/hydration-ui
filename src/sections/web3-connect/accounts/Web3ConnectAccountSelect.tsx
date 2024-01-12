@@ -7,21 +7,24 @@ import { useTranslation } from "react-i18next"
 import { useCopyToClipboard, useMedia } from "react-use"
 import { shortenAccountAddress } from "utils/formatting"
 import { theme as themeParams } from "theme"
+import { WalletProviderType } from "sections/web3-connect/wallets"
 
 type Props = {
   name: string
-  theme: string
+  genesisHash?: `0x${string}`
   address: string
   onClick?: () => void
+  provider?: WalletProviderType
   isProxy?: boolean
 }
 
 export const Web3ConnectAccountSelect = ({
   name,
-  theme,
+  genesisHash,
   address,
   onClick,
   isProxy,
+  provider,
 }: Props) => {
   const { t } = useTranslation()
   const [, copy] = useCopyToClipboard()
@@ -33,20 +36,20 @@ export const Web3ConnectAccountSelect = ({
       sx={{ flex: "row", align: "center", gap: 10, justify: "space-between" }}
       css={{ position: "relative" }}
     >
-      <div sx={{ flex: "row", align: "center" }}>
-        <div
-          sx={{ p: 5, flex: "row", align: "center" }}
-          css={{ borderRadius: "9999px" }}
-        >
-          <AccountAvatar address={address} theme={theme} size={32} />
-        </div>
+      <div sx={{ flex: "row", align: "center", gap: 10 }}>
+        <AccountAvatar
+          address={address}
+          genesisHash={genesisHash}
+          provider={provider}
+          size={32}
+        />
 
-        <div sx={{ flex: "column", gap: 3 }} css={{ overflow: "hidden" }}>
-          <Text fw={600} fs={12}>
+        <div sx={{ flex: "column", gap: 2 }} css={{ overflow: "hidden" }}>
+          <Text fw={500} fs={12}>
             {name}
           </Text>
           <Text
-            fw={600}
+            fw={500}
             fs={14}
             color="basic300"
             css={css`

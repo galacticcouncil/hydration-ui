@@ -16,7 +16,7 @@ export const JdenticonAvatar = memo(
         css={{
           display: "inline-block",
           lineHeight: 0,
-          background: theme.colors.darkBlue400,
+          background: theme.colors.white,
           borderRadius: "9999px",
         }}
         className={props.className}

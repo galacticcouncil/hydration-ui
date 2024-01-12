@@ -5,7 +5,7 @@ import { MetaMask } from "./MetaMask"
 import { NovaWallet } from "./NovaWallet"
 import { WalletConnect } from "./WalletConnect"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { H160, getEvmAddress, isEvmAddress } from "utils/evm"
+import { H160, isEvmAddress } from "utils/evm"
 
 const EVM_ENABLED = Boolean(
   import.meta.env.VITE_EVM_CHAIN_ID && import.meta.env.VITE_EVM_PROVIDER_URL,
@@ -39,7 +39,7 @@ const metaMask: Wallet = new MetaMask({
       const isEvm = isEvmAddress(address)
       state.setAccount({
         address: isEvm ? new H160(address).toAccount() : address,
-        evmAddress: isEvm ? getEvmAddress(address) : "",
+        displayAddress: address,
         provider: WalletProviderType.MetaMask,
         name: name ?? "",
         isExternalWalletConnected: false,

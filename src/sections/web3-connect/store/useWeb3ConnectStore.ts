@@ -19,7 +19,8 @@ export enum WalletMode {
 export type Account = {
   name: string
   address: string
-  evmAddress?: string
+  displayAddress?: string
+  genesisHash?: `0x${string}`
   provider: WalletProviderType
   isExternalWalletConnected?: boolean
   delegate?: string
@@ -98,7 +99,7 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
     {
       name: "web3-connect",
       partialize: (state) => omit(["open"], state),
-      version: 1,
+      version: 4,
     },
   ),
 )
