@@ -39,11 +39,13 @@ export const Web3ConnectAccount: FC<Props> = ({
     >
       <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
         <Text font="ChakraPetchBold">{name}</Text>
-        <div sx={{ flex: "row", align: "end", gap: 2 }}>
-          <Text color="basic200" fw={400}>
-            <DisplayValue value={balance} />
-          </Text>
-        </div>
+        {balance?.gt(0) && (
+          <div sx={{ flex: "row", align: "end", gap: 2 }}>
+            <Text color="basic200" fw={400}>
+              <DisplayValue value={balance} />
+            </Text>
+          </div>
+        )}
       </div>
 
       {isProxy && (

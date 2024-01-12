@@ -122,7 +122,6 @@ export const useWeb3ConnectEagerEnable = () => {
   const search = useSearch<{
     Search: {
       account: string
-      referral: string
     }
   }>()
 
@@ -135,7 +134,11 @@ export const useWeb3ConnectEagerEnable = () => {
     const state = useWeb3ConnectStore.getState()
     const { status, provider, account: currentAccount } = state
 
-    if (externalAddressRef.current) {
+    if (
+      externalAddressRef.current &&
+      externalAddressRef.current !== currentAccount?.address
+    ) {
+      // override wallet from search param
       return setExternalWallet(externalAddressRef.current)
     }
 
@@ -150,11 +153,10 @@ export const useWeb3ConnectEagerEnable = () => {
       const { wallet } = getWalletProviderByType(provider)
 
       if (wallet instanceof ExternalWallet && currentAccount) {
-        // enable proxy wallet for delegate
+        await wallet.setAddress(currentAccount.address)
         if (currentAccount?.delegate) {
+          // enable proxy wallet for delegate
           await wallet.enableProxy(POLKADOT_APP_NAME)
-        } else {
-          await wallet.setAddress(currentAccount.address)
         }
         return
       }
