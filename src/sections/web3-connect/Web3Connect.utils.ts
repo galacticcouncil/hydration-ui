@@ -84,7 +84,7 @@ export const useWalletAccounts = (
   const { wallet } = getWalletProviderByType(type)
 
   return useQuery<WalletAccount[], unknown, Account[]>(
-    ["Web3Connect", ...QUERY_KEYS.providerAccounts(getProviderQueryKey(type))],
+    QUERY_KEYS.providerAccounts(getProviderQueryKey(type)),
     async () => {
       return (await wallet?.getAccounts()) ?? []
     },
@@ -114,7 +114,6 @@ export const useWeb3ConnectEagerEnable = () => {
   const search = useSearch<{
     Search: {
       account: string
-      referral: string
     }
   }>()
 
@@ -127,7 +126,11 @@ export const useWeb3ConnectEagerEnable = () => {
     const state = useWeb3ConnectStore.getState()
     const { status, provider, account: currentAccount } = state
 
-    if (externalAddressRef.current) {
+    if (
+      externalAddressRef.current &&
+      externalAddressRef.current !== currentAccount?.address
+    ) {
+      // override wallet from search param
       return setExternalWallet(externalAddressRef.current)
     }
 
@@ -140,6 +143,16 @@ export const useWeb3ConnectEagerEnable = () => {
 
     async function eagerEnable() {
       const { wallet } = getWalletProviderByType(provider)
+
+      if (wallet instanceof ExternalWallet && currentAccount) {
+        await wallet.setAddress(currentAccount.address)
+        if (currentAccount?.delegate) {
+          // enable proxy wallet for delegate
+          await wallet.enableProxy(POLKADOT_APP_NAME)
+        }
+        return
+      }
+
       const isEnabled = !!wallet?.extension
 
       // skip if already enabled
@@ -147,12 +160,6 @@ export const useWeb3ConnectEagerEnable = () => {
 
       // skip WalletConnect eager enable
       if (wallet instanceof WalletConnect) return
-
-      // enable proxy wallet for delegate
-      if (wallet instanceof ExternalWallet && !!currentAccount?.delegate) {
-        await wallet.enableProxy(POLKADOT_APP_NAME)
-        return
-      }
 
       await wallet?.enable(POLKADOT_APP_NAME)
       const accounts = await wallet?.getAccounts()

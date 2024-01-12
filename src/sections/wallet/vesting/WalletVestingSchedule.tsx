@@ -79,11 +79,7 @@ export const WalletVestingSchedule = () => {
     return !!account?.delegate
       ? await createTransaction(
           {
-            tx: api.tx.proxy.proxy(
-              account?.address,
-              null,
-              api.tx.vesting.claimFor(account?.address),
-            ),
+            tx: api.tx.vesting.claimFor(account?.address),
           },
           { isProxy: true, toast },
         )
