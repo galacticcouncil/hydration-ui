@@ -91,7 +91,7 @@ export const WalletAssetsTableActionsMob = ({
                   {t("value", { value: row.lockedStaking })}
                 </Text>
                 <Text fs={12} lh={17} color="whiteish500">
-                  <DisplayValue value={row.lockedStaking} />
+                  <DisplayValue value={row.lockedStakingDisplay} />
                 </Text>
               </div>
             )}
