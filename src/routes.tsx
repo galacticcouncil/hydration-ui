@@ -19,6 +19,7 @@ import { StatsPOL } from "sections/stats/sections/POL/StatsPOL"
 import { StatsOverview } from "sections/stats/sections/overview/StatsOverview"
 import { StatsOmnipoolAsset } from "sections/stats/sections/omnipoolAsset/StatsOmnipoolAsset"
 import { BridgePage } from "sections/xcm/BridgePage"
+import { YieldDcaPage } from "sections/trade/sections/yieldDca/YieldDcaPage"
 
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
@@ -47,6 +48,10 @@ export const routes = [
           path: "otc",
           element: <OtcPageWrapper />,
         }),
+      },
+      {
+        path: "yield_dca",
+        element: <YieldDcaPage />,
       },
       {
         ...(isDcaPageEnabled && {

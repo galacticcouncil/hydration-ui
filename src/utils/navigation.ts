@@ -9,6 +9,7 @@ import StatsIcon from "assets/icons/ChartIcon.svg?react"
 import StakingIcon from "assets/icons/StakingIcon.svg?react"
 import IconBonds from "assets/icons/Bonds.svg?react"
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
+import IconYieldDCA from "assets/icons/YieldDcaIcon.svg?react"
 import { Search } from "@tanstack/react-location"
 
 export const LINKS = {
@@ -29,6 +30,7 @@ export const LINKS = {
   trade: "/trade",
   otc: "/trade/otc",
   dca: "/trade/dca",
+  yieldDca: "/trade/yield_dca",
   bonds: "/trade/bonds",
   bond: "/trade/bond",
   stats: "/stats",
@@ -57,6 +59,12 @@ export const MENU_ITEMS = [
     subItems: [
       { key: "swap", href: LINKS.swap, Icon: IconSwap, enabled: true },
       { key: "dca", href: LINKS.dca, Icon: IconDCA, enabled: isDcaPageEnabled },
+      {
+        key: "yieldDca",
+        href: LINKS.yieldDca,
+        Icon: IconYieldDCA,
+        enabled: isDcaPageEnabled,
+      },
       { key: "otc", href: LINKS.otc, Icon: IconOTC, enabled: isOtcPageEnabled },
       {
         key: "bonds",
