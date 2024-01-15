@@ -1,9 +1,6 @@
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import {
-  WalletProviderType,
-  getSupportedWallets,
-} from "sections/web3-connect/Web3Connect.utils"
+import { getSupportedWallets } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectProviderButton } from "sections/web3-connect/providers/Web3ConnectProviderButton"
 import { useMemo } from "react"
 import { useMedia } from "react-use"
@@ -13,30 +10,12 @@ import {
   useWeb3ConnectStore,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { useShallow } from "hooks/useShallow"
-
-const MOBILE_PROVIDERS: WalletProviderType[] = [
-  WalletProviderType.MetaMask,
-  WalletProviderType.Talisman,
-  WalletProviderType.SubwalletJS,
-  WalletProviderType.Enkrypt,
-  WalletProviderType.NovaWallet,
-  WalletProviderType.WalletConnect,
-]
-
-const DESKTOP_PROVIDERS: WalletProviderType[] = [
-  WalletProviderType.MetaMask,
-  WalletProviderType.Talisman,
-  WalletProviderType.SubwalletJS,
-  WalletProviderType.Enkrypt,
-  WalletProviderType.PolkadotJS,
-  WalletProviderType.WalletConnect,
-]
-
-const EVM_PROVIDERS: WalletProviderType[] = [WalletProviderType.MetaMask]
-
-const ALTERNATIVE_PROVIDERS: WalletProviderType[] = [
-  WalletProviderType.ExternalWallet,
-]
+import {
+  ALTERNATIVE_PROVIDERS,
+  DESKTOP_PROVIDERS,
+  EVM_PROVIDERS,
+  MOBILE_PROVIDERS,
+} from "sections/web3-connect/constants/providers"
 
 const useWalletProviders = (mode: WalletMode) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)

@@ -1,4 +1,3 @@
-import { WalletAccount } from "@talismn/connect-wallets"
 import { useNavigate, useSearch } from "@tanstack/react-location"
 import {
   MutationObserverOptions,
@@ -24,6 +23,9 @@ import { WalletProviderType, getSupportedWallets } from "./wallets"
 import { ExternalWallet } from "./wallets/ExternalWallet"
 import { MetaMask } from "./wallets/MetaMask/MetaMask"
 import { isMetaMask, requestNetworkSwitch } from "utils/metamask"
+import { genesisHashToChain } from "utils/helpers"
+import { WalletAccount } from "sections/web3-connect/types"
+import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -44,7 +46,7 @@ export const useEvmAccount = () => {
   const { account } = useAccount()
   const { wallet } = useWallet()
 
-  const address = account?.evmAddress ?? ""
+  const address = account?.displayAddress ?? ""
 
   const evm = useQuery(
     QUERY_KEYS.evmChainInfo(address),
@@ -72,7 +74,7 @@ export const useEvmAccount = () => {
     account: {
       ...evm.data,
       name: account?.name ?? "",
-      address: account?.evmAddress,
+      address: account?.displayAddress,
     },
   }
 }
@@ -84,7 +86,7 @@ export const useWalletAccounts = (
   const { wallet } = getWalletProviderByType(type)
 
   return useQuery<WalletAccount[], unknown, Account[]>(
-    ["Web3Connect", ...QUERY_KEYS.providerAccounts(getProviderQueryKey(type))],
+    QUERY_KEYS.providerAccounts(getProviderQueryKey(type)),
     async () => {
       return (await wallet?.getAccounts()) ?? []
     },
@@ -93,11 +95,17 @@ export const useWalletAccounts = (
       select: (data) => {
         if (!data) return []
 
-        return data.map(({ address, name, wallet }) => {
+        return data.map(({ address, name, wallet, genesisHash }) => {
           const isEvm = isEvmAddress(address)
+
+          const chainInfo = genesisHashToChain(genesisHash)
+
           return {
             address: isEvm ? new H160(address).toAccount() : address,
-            evmAddress: isEvm ? getEvmAddress(address) : "",
+            displayAddress: isEvm
+              ? address
+              : safeConvertAddressSS58(address, chainInfo.prefix) || address,
+            genesisHash,
             name: name ?? "",
             provider: wallet?.extensionName as WalletProviderType,
             isExternalWalletConnected: wallet instanceof ExternalWallet,
@@ -114,7 +122,6 @@ export const useWeb3ConnectEagerEnable = () => {
   const search = useSearch<{
     Search: {
       account: string
-      referral: string
     }
   }>()
 
@@ -127,7 +134,11 @@ export const useWeb3ConnectEagerEnable = () => {
     const state = useWeb3ConnectStore.getState()
     const { status, provider, account: currentAccount } = state
 
-    if (externalAddressRef.current) {
+    if (
+      externalAddressRef.current &&
+      externalAddressRef.current !== currentAccount?.address
+    ) {
+      // override wallet from search param
       return setExternalWallet(externalAddressRef.current)
     }
 
@@ -140,6 +151,16 @@ export const useWeb3ConnectEagerEnable = () => {
 
     async function eagerEnable() {
       const { wallet } = getWalletProviderByType(provider)
+
+      if (wallet instanceof ExternalWallet && currentAccount) {
+        await wallet.setAddress(currentAccount.address)
+        if (currentAccount?.delegate) {
+          // enable proxy wallet for delegate
+          await wallet.enableProxy(POLKADOT_APP_NAME)
+        }
+        return
+      }
+
       const isEnabled = !!wallet?.extension
 
       // skip if already enabled
@@ -147,12 +168,6 @@ export const useWeb3ConnectEagerEnable = () => {
 
       // skip WalletConnect eager enable
       if (wallet instanceof WalletConnect) return
-
-      // enable proxy wallet for delegate
-      if (wallet instanceof ExternalWallet && !!currentAccount?.delegate) {
-        await wallet.enableProxy(POLKADOT_APP_NAME)
-        return
-      }
 
       await wallet?.enable(POLKADOT_APP_NAME)
       const accounts = await wallet?.getAccounts()
@@ -173,7 +188,7 @@ export const useWeb3ConnectEagerEnable = () => {
   }, [])
 
   useEffect(() => {
-    const hasWalletDisconnected = !wallet && !!prevWallet
+    const hasWalletDisconnected = prevWallet && prevWallet !== wallet
 
     // look for disconnect to clean up
     if (hasWalletDisconnected) {
@@ -256,13 +271,20 @@ export function setExternalWallet(externalAddress = "") {
       account: {
         name: externalWallet.accountName,
         address: address ?? "",
-        evmAddress: isEvm ? getEvmAddress(externalAddress) : "",
+        displayAddress: isEvm
+          ? getEvmAddress(externalAddress)
+          : externalAddress,
         provider: WalletProviderType.ExternalWallet,
         isExternalWalletConnected: true,
         delegate: "",
       },
     })
   }
+}
+
+export function isEvmProvider(provider: WalletProviderType | null) {
+  if (!provider) return false
+  return EVM_PROVIDERS.includes(provider)
 }
 
 export function getWalletProviderByType(type?: WalletProviderType | null) {

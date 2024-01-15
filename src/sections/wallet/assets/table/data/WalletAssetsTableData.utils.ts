@@ -27,15 +27,19 @@ import { TStableSwap } from "api/assetDetails"
 export const useAssetsTableData = ({
   isAllAssets,
   search,
+  address,
 }: {
   isAllAssets?: boolean
   search?: string
+  address?: string
 } = {}) => {
   const { assets } = useRpcProvider()
-  const myTableData = useAssetTable()
+  const myTableData = useAssetTable(address)
   const spotPrices = useDisplayPrices(
     myTableData.data?.acceptedTokens.map((t) => t.id) ?? [],
   )
+
+  const isLoading = myTableData.isLoading || spotPrices.isLoading
 
   const data = useMemo(() => {
     if (!myTableData.data || !spotPrices.data) return []
@@ -173,7 +177,7 @@ export const useAssetsTableData = ({
     isAllAssets,
   ])
 
-  return { data, isLoading: myTableData.isLoading }
+  return { data, isLoading }
 }
 
 export const getAssetsBalances = (

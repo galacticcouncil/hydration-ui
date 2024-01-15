@@ -1,19 +1,16 @@
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { useExternalWalletDelegates } from "api/proxies"
 import { useShallow } from "hooks/useShallow"
-import { FC } from "react"
+import { ComponentPropsWithoutRef, FC, useEffect } from "react"
 import {
   getWalletProviderByType,
   useWalletAccounts,
 } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectAccount } from "sections/web3-connect/accounts/Web3ConnectAccount"
-import {
-  Account,
-  useWeb3ConnectStore,
-} from "sections/web3-connect/store/useWeb3ConnectStore"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { WalletProviderType } from "sections/web3-connect/wallets"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
-import { HYDRA_ADDRESS_PREFIX } from "utils/api"
+import { HYDRA_ADDRESS_PREFIX, POLKADOT_APP_NAME } from "utils/api"
 import { getAddressVariants } from "utils/formatting"
 import { pick } from "utils/rx"
 import {
@@ -23,9 +20,9 @@ import {
   SLine,
 } from "./Web3ConnectExternalAccount.styled"
 
-type Props = Account
-
-export const Web3ConnectExternalAccount: FC<Props> = (account) => {
+export const Web3ConnectExternalAccount: FC<
+  ComponentPropsWithoutRef<typeof Web3ConnectAccount>
+> = ({ balance, ...account }) => {
   const {
     setAccount,
     toggle,
@@ -49,6 +46,18 @@ export const Web3ConnectExternalAccount: FC<Props> = (account) => {
   const isProxy = externalWalletData?.isProxy ?? false
   const delegates = externalWalletData?.delegates ?? []
 
+  useEffect(() => {
+    if (isProxy && externalWallet) {
+      const { wallet: proxyWallet } = getWalletProviderByType(
+        externalWallet.proxyWalletProvider,
+      )
+
+      if (proxyWallet?.installed && !proxyWallet?.extension) {
+        proxyWallet?.enable(POLKADOT_APP_NAME)
+      }
+    }
+  }, [externalWallet, isProxy])
+
   const { data: accounts } = useWalletAccounts(
     externalWallet?.proxyWalletProvider ?? null,
     {
@@ -69,13 +78,15 @@ export const Web3ConnectExternalAccount: FC<Props> = (account) => {
   if (!account) return null
   if (!externalWallet) return null
 
-  if (!isProxy) {
+  if (!isProxy || (isProxy && !filteredAccounts.length)) {
     return (
       <Web3ConnectAccount
         isActive
         provider={WalletProviderType.ExternalWallet}
         name={externalWallet.accountName}
         address={hydraAddress}
+        balance={balance}
+        onClick={() => toggle()}
       />
     )
   }
@@ -89,6 +100,7 @@ export const Web3ConnectExternalAccount: FC<Props> = (account) => {
           provider={WalletProviderType.ExternalWallet}
           name={externalWallet.proxyAccountName}
           address={hydraAddress}
+          balance={balance}
           isProxy
         />
       </SContainer>
@@ -102,12 +114,13 @@ export const Web3ConnectExternalAccount: FC<Props> = (account) => {
                 provider={externalWallet?.proxyWalletProvider}
                 name={name ?? "N/A"}
                 address={address}
-                onClick={() => {
+                onClick={async () => {
                   setAccount({
                     ...account,
                     name: externalWallet.proxyAccountName,
                     delegate: address,
                   })
+                  await externalWallet?.enableProxy(POLKADOT_APP_NAME)
                   toggle()
                 }}
               />
