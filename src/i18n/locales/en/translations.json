@@ -92,6 +92,8 @@
   "header.trade.otc.subtitle": "Trade directly with other users",
   "header.trade.dca.title": "Trade DCA",
   "header.trade.dca.subtitle": "Spread your Omnipool trades over time",
+  "header.trade.yieldDca.title": "Yield DCA",
+  "header.trade.yieldDca.subtitle": "Diversify your yield from staked DOT",
   "header.liquidity": "Liquidity",
   "header.wallet": "Wallet",
   "header.more": "More",
