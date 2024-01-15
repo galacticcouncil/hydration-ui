@@ -93,7 +93,7 @@ export const AssetStats = ({
           value={t("value.usd", { amount: data?.pol })}
           loading={loading}
         />
-        {data?.assetId ? (
+        {/* {data?.assetId ? (
           <APYStatsCard
             loading={loading || isLoadingFee}
             assetId={data.assetId}
@@ -101,7 +101,7 @@ export const AssetStats = ({
           />
         ) : (
           <AssetStatsCard title={t("stats.omnipool.stats.card.apy")} loading />
-        )}
+        )} */}
         <AssetStatsCard
           title={t("stats.omnipool.stats.card.percentage")}
           value={t("value.percentage", { value: data?.share })}

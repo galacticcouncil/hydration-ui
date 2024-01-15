@@ -3,7 +3,7 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SAccountItem = styled.div<{
-  isActive: boolean
+  isActive?: boolean
   isProxy?: boolean
 }>`
   --secondary-color: ${({ isActive }) =>
@@ -15,6 +15,8 @@ export const SAccountItem = styled.div<{
 
   padding: 16px;
   border-radius: 4px;
+
+  min-height: 100px;
 
   transition: background ${theme.transitions.default};
 

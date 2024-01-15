@@ -10,10 +10,12 @@ export const MetaMaskAvatar = memo(
     className?: string
   }) => {
     return (
-      <Jazzicon
-        diameter={props.size}
-        seed={jsNumberForAddress(props.address)}
-      />
+      <span className={props.className} sx={{ flex: "column" }}>
+        <Jazzicon
+          diameter={props.size}
+          seed={jsNumberForAddress(props.address)}
+        />
+      </span>
     )
   },
 )

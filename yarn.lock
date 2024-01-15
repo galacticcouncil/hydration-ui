@@ -2990,10 +2990,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@2.0.29":
-  version "2.0.29"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.0.29.tgz#66cf8bf9e50ecb2dc49218060cffd47901beaf98"
-  integrity sha512-SO1U6C/BYkbOMEnZL6RrTLT97X+ZAUC0117frff400lNFhv6EqDwbg98+QngmqpkBAPttMIIamElT1LD2KL5AQ==
+"@galacticcouncil/apps@2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.1.0.tgz#6ecb49aa137a261a8694ca15dd4266afea8b46ba"
+  integrity sha512-zBn3qFa6EIZwpvQsYC8RfslB1kBoFnHrWsOFDnyCmHq0RuS/43q4EYm3Cy5kLKHT5mALytGa8GH0BGVhoBMO6g==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@talismn/connect-wallets" "^1.2.1"
@@ -3006,6 +3006,7 @@
     i18next "^22.4.8"
     lightweight-charts "^4.0.1"
     short-uuid "^4.2.0"
+    ts-debounce "^4.0.0"
     viem "^1.19.1"
 
 "@galacticcouncil/math-lbp@^0.2.1":
@@ -3051,10 +3052,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^1.3.11":
-  version "1.3.11"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-1.3.11.tgz#33283d906d4b1cd253128812aefead37cc1e6b69"
-  integrity sha512-hvv5dRHwvQbbrAhe3W1c9jePwDKBO1f3q5hhvLieTSoCweQO9hWpLz2kyMUqY2GF/U7uFz+PtMLJSilGIf/AwQ==
+"@galacticcouncil/ui@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-2.0.0.tgz#c14d6dd70a06205bb74bb9b3ffe40877909a1bfe"
+  integrity sha512-/eNg9BmVBJU6e4zrdLXeFR8kxSdZWTY6jr0VKcotm85i0rt/muBR7FfoxNNd1znI2PKUitjOazHUL1jDLKNgRw==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
@@ -3062,15 +3063,15 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.1.0.tgz#d65973e011fff6e58b4b84599484f86bdf27eadf"
-  integrity sha512-OYQ8U1R+x7tX2vY5SfD5wHdlFhdS2qohG5nXle/I+F0S3dqw0JgOPNhxOTDmtD47nXpXkmfogelH+VcNULRO+w==
+"@galacticcouncil/xcm-cfg@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.2.0.tgz#6971b1a83cc1e7313cfe0843345b3d25cf82b4f7"
+  integrity sha512-iLlk3v5uXso7bWmBgjgKdXfBSOzXbE2NG2sVVURXSp0OR4QHnHRCi9tPv48tmbCN63lkDQUxl9NiX4I5sDizzg==
 
-"@galacticcouncil/xcm-sdk@^1.0.9":
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-1.0.9.tgz#1c61d67e55c9ef2074a14478c45b27e6f588dde5"
-  integrity sha512-k5ZEqtSDIwxdF0vhijTyysZjofOxv3UYptQOdTK6pxlr901XRyfA78fcO3+RyffdK+SR9Z7aZY9DPyzew8mc1A==
+"@galacticcouncil/xcm-sdk@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-2.0.0.tgz#6e0d929402a95223ba6751239305b5864fc29602"
+  integrity sha512-I6b4DQARW4WiLPdAkCA7HWVb7LVO4LBiNu9mxKyhrJBIKUzKjzeVEOSOW4UmXrGHVhwaAapr+uF+wgIGp7oz6Q==
   dependencies:
     "@moonbeam-network/xcm-builder" "1.0.9"
     "@moonbeam-network/xcm-config" "1.3.13"
@@ -3743,6 +3744,15 @@
     "@substrate/ss58-registry" "^1.44.0"
     tslib "^2.6.2"
 
+"@polkadot/networks@^12.6.2":
+  version "12.6.2"
+  resolved "https://registry.yarnpkg.com/@polkadot/networks/-/networks-12.6.2.tgz#791779fee1d86cc5b6cd371858eea9b7c3f8720d"
+  integrity sha512-1oWtZm1IvPWqvMrldVH6NI2gBoCndl5GEwx7lAuQWGr7eNL+6Bdc5K3Z9T0MzFvDGoi2/CBqjX9dRKo39pDC/w==
+  dependencies:
+    "@polkadot/util" "12.6.2"
+    "@substrate/ss58-registry" "^1.44.0"
+    tslib "^2.6.2"
+
 "@polkadot/react-identicon@^3.5.1":
   version "3.6.4"
   resolved "https://registry.yarnpkg.com/@polkadot/react-identicon/-/react-identicon-3.6.4.tgz#1fd5915e63ceb21a6c6a07cd3bd0a2032213486e"
@@ -3899,7 +3909,7 @@
     "@scure/base" "1.1.1"
     tslib "^2.5.3"
 
-"@polkadot/util@12.3.2", "@polkadot/util@12.6.1", "@polkadot/util@^10.4.2", "@polkadot/util@^12.0.1", "@polkadot/util@^12.3.1", "@polkadot/util@^12.3.2", "@polkadot/util@^12.6.1":
+"@polkadot/util@12.3.2", "@polkadot/util@12.6.1", "@polkadot/util@12.6.2", "@polkadot/util@^10.4.2", "@polkadot/util@^12.0.1", "@polkadot/util@^12.3.1", "@polkadot/util@^12.3.2", "@polkadot/util@^12.6.1":
   version "12.3.2"
   resolved "https://registry.yarnpkg.com/@polkadot/util/-/util-12.3.2.tgz#f46e147b0e6a426da5ba59df4ce65de1a3effe4a"
   integrity sha512-y/JShcGyOamCUiSIg++XZuLHt1ktSKBaSH2K5Nw5NXlgP0+7am+GZzqPB8fQ4qhYLruEOv+YRiz0GC1Zr9S+wg==

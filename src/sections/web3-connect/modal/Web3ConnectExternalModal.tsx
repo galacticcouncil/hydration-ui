@@ -95,10 +95,10 @@ export const Web3ConnectExternalModal = ({
 
     externalWallet.setAddress(address)
 
-    const evmAddress = isEvm ? safeConvertAddressH160(values.address) : ""
+    const evmAddress = isEvm ? safeConvertAddressH160(values.address) ?? "" : ""
     setAccount({
       address,
-      evmAddress: evmAddress ?? "",
+      displayAddress: isEvm ? evmAddress : address,
       name:
         delegates.length && isDelegate
           ? externalWallet.proxyAccountName

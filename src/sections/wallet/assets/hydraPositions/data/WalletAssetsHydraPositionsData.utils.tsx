@@ -18,9 +18,10 @@ import { TShareToken } from "api/assetDetails"
 
 export const useOmnipoolPositionsData = ({
   search,
-}: { search?: string } = {}) => {
+  address,
+}: { search?: string; address?: string } = {}) => {
   const { assets } = useRpcProvider()
-  const accountPositions = useAccountOmnipoolPositions()
+  const accountPositions = useAccountOmnipoolPositions(address)
   const positions = useOmnipoolPositions(
     accountPositions.data?.omnipoolNfts.map((nft) => nft.instanceId) ?? [],
   )
