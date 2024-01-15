@@ -114,7 +114,7 @@ export const PoolDetails = ({ pool, className }: PoolDetailsProps) => {
                 {t("liquidity.asset.details.price")}
               </Text>
               <Text lh={22} color="white" fs={18}>
-                <DisplayValue value={pool.spotPrice} type="token" />
+                <DisplayValue value={pool.spotPrice} />
               </Text>
             </>
           )}

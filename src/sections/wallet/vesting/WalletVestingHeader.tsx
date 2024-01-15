@@ -9,7 +9,7 @@ import { Trans, useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
-import { useDisplayPrice } from "utils/displayAsset"
+import { useDisplayAssetStore, useDisplayPrice } from "utils/displayAsset"
 import { isApiLoaded } from "utils/helpers"
 import { BN_0, BN_10, DAY_IN_MILLISECONDS } from "utils/constants"
 import { SSeparator, STable } from "./WalletVestingHeader.styled"
@@ -52,6 +52,9 @@ const WalletVestingHeaderContent = () => {
   } = useRpcProvider()
   const { t } = useTranslation()
 
+  const displayAsset = useDisplayAssetStore()
+  const isFiat = displayAsset.isStableCoin || displayAsset.isFiat
+
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
   const { data: vestingScheduleEnd } = useVestingScheduleEnd()
 
@@ -86,7 +89,7 @@ const WalletVestingHeaderContent = () => {
               tOptions={{
                 ...separateBalance(totalVestedValue, {
                   fixedPointScale: native.decimals,
-                  type: "token",
+                  type: isFiat ? "dollar" : "token",
                 }),
                 symbol: native.symbol,
               }}

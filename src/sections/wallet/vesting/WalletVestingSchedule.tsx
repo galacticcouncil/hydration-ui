@@ -15,7 +15,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
 import { BN_10 } from "utils/constants"
-import { useDisplayPrice } from "utils/displayAsset"
+import { useDisplayAssetStore, useDisplayPrice } from "utils/displayAsset"
 import { SClaimButton, SInner, SSchedule } from "./WalletVestingSchedule.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -34,6 +34,8 @@ export const WalletVestingSchedule = () => {
   const { data: paymentInfoData } = usePaymentInfo(api.tx.vesting.claim())
   const { data: existentialDeposit } = useExistentialDeposit()
 
+  const displayAsset = useDisplayAssetStore()
+  const isFiat = displayAsset.isStableCoin || displayAsset.isFiat
   const spotPrice = useDisplayPrice(native.id)
   const balance = useTokenBalance(native.id, account?.address)
 
@@ -110,7 +112,7 @@ export const WalletVestingSchedule = () => {
               tOptions={{
                 ...separateBalance(claimableBalance, {
                   fixedPointScale: native.decimals,
-                  type: "token",
+                  type: isFiat ? "dollar" : "token",
                 }),
                 symbol: native.symbol,
               }}

@@ -103,7 +103,7 @@ export const BondInfoCards = ({
           value: (
             <div sx={{ flex: "column", gap: 4 }}>
               <Text fs={[13, 15]} lh={[13, 15]} color="white" font="FontOver">
-                <DisplayValue value={currentBondPrice} type="token" />
+                <DisplayValue value={currentBondPrice} />
               </Text>
               {spotPriceBondAccumulated.isInitialLoading ? (
                 <Skeleton height={16} width={40} />
@@ -128,7 +128,7 @@ export const BondInfoCards = ({
             value: (
               <div sx={{ flex: "column", gap: 4 }}>
                 <Text fs={[13, 15]} lh={[13, 15]} color="white" font="FontOver">
-                  <DisplayValue value={currentSpotPrice} type="token" />
+                  <DisplayValue value={currentSpotPrice} />
                 </Text>
                 {spotPriceAccumulated.isInitialLoading ? (
                   <Skeleton height={16} width={40} />

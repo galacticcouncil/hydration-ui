@@ -28,7 +28,7 @@ export const PoolFooter = ({ pool }: Props) => {
         <Trans i18nKey={`farms.claimCard.toast.${msType}`}>
           <span />
         </Trans>
-        <DisplayValue value={claimable.data?.displayValue} type="token" />
+        <DisplayValue value={claimable.data?.displayValue} />
       </>
     )
     return memo
