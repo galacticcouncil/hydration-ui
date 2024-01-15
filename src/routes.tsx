@@ -50,7 +50,7 @@ export const routes = [
         }),
       },
       {
-        path: "yield_dca",
+        path: "yield-dca",
         element: <YieldDcaPage />,
       },
       {

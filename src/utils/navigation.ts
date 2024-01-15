@@ -30,7 +30,7 @@ export const LINKS = {
   trade: "/trade",
   otc: "/trade/otc",
   dca: "/trade/dca",
-  yieldDca: "/trade/yield_dca",
+  yieldDca: "/trade/yield-dca",
   bonds: "/trade/bonds",
   bond: "/trade/bond",
   stats: "/stats",
