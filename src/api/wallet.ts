@@ -8,90 +8,176 @@ import { getAddressVariants } from "utils/formatting"
 import { NATIVE_ASSET_ID } from "utils/api"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { H160, isEvmAddress } from "utils/evm"
+
+type InteriorParachainValueParachain = {
+  value: number
+  __kind: "Parachain"
+}
+
+type TAccountId32 = {
+  id: string
+  __kind: "AccountId32"
+}
+
+type TAccountKey20 = {
+  key: string
+  __kind: "AccountKey20"
+}
+
+type InteriorParachainValue = [
+  InteriorParachainValueParachain,
+  TAccountId32 | TAccountKey20,
+]
+
+type TransferParachainDest = {
+  value: {
+    parents: number
+    interior: {
+      value: InteriorParachainValue
+    }
+  }
+}
+
+type TransferPolkadotDest = {
+  value: {
+    parents: number
+    interior: {
+      value: TAccountId32
+    }
+  }
+}
 
 type TransferType = {
+  args: {
+    dest: string | TransferParachainDest
+    amount?: string
+    value?: string
+    currencyId?: number
+  }
+  origin: {
+    value: {
+      value: string
+    }
+  }
   block: {
     timestamp: string
   }
   extrinsic: {
     hash: string
-    call: {
-      args: {
-        dest: string
-        amount?: string
-        value?: string
-        currencyId?: number
-      }
-      origin: {
-        value: {
-          value: string
-        }
-      }
+  }
+}
+
+const chains = Array.from(chainsMap.values())
+
+const getChainById = (id: number | string) =>
+  chains.find((chain) => chain.parachainId === Number(id))
+
+const isParachainTransfer = (
+  dest: string | TransferParachainDest | TransferPolkadotDest,
+): dest is TransferParachainDest => {
+  return typeof dest !== "string" && Array.isArray(dest.value.interior.value)
+}
+
+const isPolkadotTransfer = (
+  dest: string | TransferParachainDest | TransferPolkadotDest,
+): dest is TransferPolkadotDest => {
+  return typeof dest !== "string" && !Array.isArray(dest.value.interior.value)
+}
+
+const isAccountId32 = (
+  value: TAccountId32 | TAccountKey20,
+): value is TAccountId32 => {
+  return value.__kind === "AccountId32"
+}
+
+const isAccountKey20 = (
+  value: TAccountId32 | TAccountKey20,
+): value is TAccountKey20 => {
+  return value.__kind === "AccountKey20" && isEvmAddress(value.key)
+}
+
+const getAddressFromDest = (dest: string | TransferParachainDest) => {
+  if (typeof dest === "string") {
+    return getAddressVariants(dest).hydraAddress
+  }
+
+  if (isPolkadotTransfer(dest)) {
+    return getAddressVariants(dest.value.interior.value.id).hydraAddress
+  }
+
+  if (isParachainTransfer(dest)) {
+    const [, value] = dest.value.interior.value
+    if (isAccountId32(value)) {
+      return getAddressVariants(value.id).hydraAddress
     }
+
+    if (isAccountKey20(value)) {
+      return new H160(value.key).toAccount()
+    }
+  }
+
+  return ""
+}
+
+const getChainFromDest = (
+  dest: string | TransferParachainDest | TransferPolkadotDest,
+) => {
+  if (!dest || typeof dest === "string") {
+    return chainsMap.get("hydradx")
+  }
+
+  if (isPolkadotTransfer(dest)) {
+    return chainsMap.get("polkadot")
+  }
+
+  if (isParachainTransfer(dest)) {
+    const [{ value }] = dest.value.interior.value
+    return getChainById(value)
   }
 }
 
 export const getAccountTransfers =
   (indexerUrl: string, accountHash: string) => async () => {
-    // This is being typed manually, as GraphQL schema does not
-    // describe the event arguments at all
     return {
       ...(await request<{
-        events: Array<TransferType>
         calls: Array<TransferType>
       }>(
         indexerUrl,
         gql`
           query AccountTransfers($accountHash: String!) {
-            events(
-              orderBy: block_height_DESC
-              where: {
-                name_in: ["Balances.Withdraw"]
-                extrinsic: {
-                  call: {
-                    name_in: [
-                      "Tokens.transfer_keep_alive"
-                      "Tokens.transfer"
-                      "Balances.transfer_keep_alive"
-                      "Balances.transfer"
-                    ]
-                  }
-                }
-                args_jsonContains: { who: $accountHash }
-              }
-            ) {
-              block {
-                timestamp
-              }
-              extrinsic {
-                hash
-                call {
-                  args
-                  origin
-                }
-              }
-            }
             calls(
-              orderBy: block_height_DESC
               where: {
+                origin_jsonContains: { value: { value: $accountHash } }
                 name_in: [
                   "Tokens.transfer_keep_alive"
                   "Tokens.transfer"
                   "Balances.transfer_keep_alive"
                   "Balances.transfer"
+                  "XTokens.transfer"
                 ]
-                args_jsonContains: { dest: $accountHash }
+                OR: {
+                  name_in: [
+                    "Tokens.transfer_keep_alive"
+                    "Tokens.transfer"
+                    "Balances.transfer_keep_alive"
+                    "Balances.transfer"
+                    "XTokens.transfer"
+                  ]
+                  args_jsonContains: { dest: $accountHash }
+                }
               }
+              orderBy: block_height_DESC
             ) {
+              args
+              name
+              origin
               block {
                 timestamp
               }
               extrinsic {
                 hash
-                call {
-                  args
-                  origin
-                }
               }
             }
           }
@@ -119,47 +205,44 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
       select: (data) => {
         if (!data) return []
 
-        const { events, calls } = data
-        const sorted = [...events, ...calls].sort(
-          (a, b) =>
-            new Date(b.block.timestamp).getTime() -
-            new Date(a.block.timestamp).getTime(),
-        )
-
-        return sorted.map((transfer) => {
-          const origin = getAddressVariants(
-            transfer.extrinsic.call.origin.value.value,
+        return data.calls.map((transfer, index) => {
+          const sourceHydraAddress = getAddressVariants(
+            transfer.origin.value.value,
           ).hydraAddress
 
-          const dest = getAddressVariants(
-            transfer.extrinsic.call.args.dest,
-          ).hydraAddress
+          const dest = transfer.args.dest
+
+          const destHydraAddress = getAddressFromDest(dest)
 
           const type =
-            hydraAddress.toLowerCase() === dest.toLowerCase() ? "IN" : "OUT"
+            hydraAddress.toLowerCase() === sourceHydraAddress.toLowerCase()
+              ? "OUT"
+              : "IN"
 
           const assetId =
-            transfer.extrinsic.call.args?.currencyId?.toString() ||
-            NATIVE_ASSET_ID
+            transfer.args?.currencyId?.toString() || NATIVE_ASSET_ID
 
-          const amount =
-            transfer.extrinsic.call.args?.amount ??
-            transfer.extrinsic.call.args?.value
+          const amount = transfer.args?.amount ?? transfer.args?.value
 
           const asset = assets.getAsset(assetId)
 
           const iconIds =
-            asset && assets.isStableSwap(asset) ? asset.assets : asset?.id || []
+            asset && assets.isStableSwap(asset)
+              ? asset.assets
+              : [asset?.id].filter(Boolean)
 
           return {
-            from: type === "OUT" ? hydraAddress : origin,
-            to: type === "IN" ? hydraAddress : dest,
             type,
+            source: type === "OUT" ? hydraAddress : sourceHydraAddress,
+            dest: type === "IN" ? hydraAddress : destHydraAddress,
+            sourceChain: chainsMap.get("hydradx"),
+            destChain: getChainFromDest(dest),
             amount: BN(amount ?? 0),
             date: new Date(transfer.block.timestamp),
             extrinsicHash: transfer.extrinsic.hash,
             asset,
             iconIds,
+            call: data.calls[index],
           }
         })
       },

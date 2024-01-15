@@ -18,19 +18,38 @@ import { TTransactionsTableData } from "./data/TransactionsTableData.utils"
 import {
   getChainSpecificAddress,
   getSubscanLinkByType,
+  safeConvertAddressSS58,
   shortenAccountAddress,
 } from "utils/formatting"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { AssetLogo, ChainLogo } from "components/AssetIcon/AssetIcon"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { useAccountIdentity } from "api/stats"
+import { H160, isEvmAccount } from "utils/evm"
+import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 
-const AccountName = ({ address }: { address: string }) => {
+const AccountName = ({
+  address,
+  ss58Prefix,
+}: {
+  address: string
+  ss58Prefix?: number
+}) => {
   const identity = useAccountIdentity(address)
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
+  const strLen = isDesktop ? 6 : 4
+
   if (identity.data?.identity) return <>{identity.data.identity}</>
 
-  return <>{shortenAccountAddress(address, isDesktop ? 6 : 4)}</>
+  if (isEvmAccount(address))
+    return <>{shortenAccountAddress(H160.fromAccount(address), strLen)}</>
+
+  const convertedAddress = safeConvertAddressSS58(
+    address,
+    ss58Prefix ?? HYDRADX_SS58_PREFIX,
+  )
+
+  return <>{shortenAccountAddress(convertedAddress ?? address, strLen)}</>
 }
 
 export const useTransactionsTable = (data: TTransactionsTableData) => {
@@ -72,45 +91,56 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
       cell: ({ row }) => {
         return (
           <div sx={{ color: "white", flex: "row", gap: 8, align: "center" }}>
-            {typeof row.original.iconIds === "string" ? (
-              <Icon size={24} icon={<AssetLogo id={row.original.iconIds} />} />
-            ) : (
-              <MultipleIcons
-                size={24}
-                icons={row.original.iconIds.map((id) => ({
-                  icon: <AssetLogo id={id} />,
-                }))}
-              />
-            )}
+            <MultipleIcons
+              size={24}
+              icons={row.original.iconIds.map((id) => ({
+                icon: <AssetLogo id={id} />,
+              }))}
+            />
             <Text css={{ whiteSpace: "nowrap" }}>
               {t("value.tokenWithSymbol", {
                 value: row.original.amount,
                 symbol: row.original.asset.symbol,
                 fixedPointScale: row.original.asset.decimals,
-                type: "token",
               })}
             </Text>
           </div>
         )
       },
     }),
-    accessor("from", {
-      id: "from",
+    accessor("source", {
+      id: "source",
       header: t("wallet.transactions.table.header.source"),
-      cell: ({ getValue }) => (
+      cell: ({ row }) => (
         <Text color="white">
-          <AccountName address={getChainSpecificAddress(getValue())} />
+          {row.original.source && (
+            <AccountName
+              address={getChainSpecificAddress(row.original.source)}
+            />
+          )}
         </Text>
       ),
     }),
-    accessor("to", {
-      id: "to",
+    accessor("dest", {
+      id: "dest",
       header: t("wallet.transactions.table.header.destination"),
-      cell: ({ getValue }) => (
-        <Text color="white">
-          <AccountName address={getChainSpecificAddress(getValue())} />
-        </Text>
-      ),
+      cell: ({ row }) => {
+        return (
+          <Text color="white" sx={{ flex: "row", gap: 8, align: "center" }}>
+            {row.original.destChain && (
+              <span sx={{ display: "block", width: 24, height: 24 }}>
+                <ChainLogo symbol={row.original.destChain.key} />
+              </span>
+            )}
+            {row.original.dest && (
+              <AccountName
+                address={row.original.dest}
+                ss58Prefix={row.original.destChain?.ss58Format}
+              />
+            )}
+          </Text>
+        )
+      },
     }),
     accessor("date", {
       id: "date",
