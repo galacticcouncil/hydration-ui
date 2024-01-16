@@ -19,7 +19,7 @@ import {
   SLeaf,
   SLine,
 } from "./Web3ConnectExternalAccount.styled"
-import { H160, isEvmAccount, safeConvertAddressH160 } from "utils/evm"
+import { H160, isEvmAccount } from "utils/evm"
 import { Web3ConnectEvmAccount } from "sections/web3-connect/accounts/Web3ConnectEvmAccount"
 
 export const Web3ConnectExternalAccount: FC<
@@ -33,7 +33,7 @@ export const Web3ConnectExternalAccount: FC<
     useShallow((s) => pick(s, ["setAccount", "toggle", "account"])),
   )
 
-  const { address, displayAddress, provider } = account
+  const { address, provider } = account
   const { wallet } = getWalletProviderByType(provider)
 
   const externalWallet = wallet instanceof ExternalWallet ? wallet : null
@@ -115,6 +115,7 @@ export const Web3ConnectExternalAccount: FC<
           provider={WalletProviderType.ExternalWallet}
           name={externalWallet.proxyAccountName}
           address={hydraAddress}
+          displayAddress={safeConvertAddressSS58(address, 42) ?? address}
           balance={balance}
           isProxy
         />
@@ -129,6 +130,7 @@ export const Web3ConnectExternalAccount: FC<
                 provider={externalWallet?.proxyWalletProvider}
                 name={name ?? "N/A"}
                 address={address}
+                displayAddress={safeConvertAddressSS58(address, 42) ?? address}
                 onClick={async () => {
                   setAccount({
                     ...account,
