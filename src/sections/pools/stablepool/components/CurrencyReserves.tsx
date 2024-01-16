@@ -64,7 +64,7 @@ export const CurrencyReserves = ({ reserves }: Props) => {
           </div>
           <div sx={{ flex: "row", align: "center", gap: 8 }}>
             <Text color="white" fs={14}>
-              {t("value", { value: balance.dp(0) })}
+              {t("value.token", { value: balance })}
             </Text>
             <Text color="basic500" fs={14}>
               (
