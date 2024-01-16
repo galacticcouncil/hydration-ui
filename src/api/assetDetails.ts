@@ -18,16 +18,18 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { Asset, PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { BN_0 } from "utils/constants"
 
-export const useAssetTable = () => {
+export const useAssetTable = (givenAddress?: string) => {
   const { api, assets } = useRpcProvider()
   const { account } = useAccount()
 
-  return useQuery(
-    QUERY_KEYS.assetsTable(account?.address),
-    async () => {
-      if (!account?.address) return undefined
+  const address = givenAddress ?? account?.address
 
-      const balances = await getAccountBalances(api, account.address)()
+  return useQuery(
+    QUERY_KEYS.assetsTable(address),
+    async () => {
+      if (!address) return undefined
+
+      const balances = await getAccountBalances(api, address)()
 
       const allAcceptedTokens = [
         NATIVE_ASSET_ID,
@@ -36,14 +38,14 @@ export const useAssetTable = () => {
 
       const acceptedTokens = await Promise.all(allAcceptedTokens)
 
-      const accountTokenId = await getAccountCurrency(api, account.address)()
+      const accountTokenId = await getAccountCurrency(api, address)()
 
       const apiIds = await getApiIds(api)()
 
       const tradeAssets = assets.tradeAssets
 
       const tokenLockPromises = acceptedTokens.map((token) =>
-        getTokenLock(api, account.address, token.id)(),
+        getTokenLock(api, address, token.id)(),
       )
       const tokenLocks = await Promise.all(tokenLockPromises)
 
@@ -62,7 +64,7 @@ export const useAssetTable = () => {
         hubAssetTradability,
       }
     },
-    { enabled: !!account?.address },
+    { enabled: !!address },
   )
 }
 

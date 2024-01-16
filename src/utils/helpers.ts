@@ -6,6 +6,9 @@ import { u8aConcat } from "@polkadot/util"
 import { U8aLike } from "@polkadot/util/types"
 import { ApiPromise } from "@polkadot/api"
 import { KeyOfType } from "utils/types"
+import { knownGenesis } from "@polkadot/networks/defaults/genesis"
+import { availableNetworks } from "@polkadot/networks"
+import type { Network } from "@polkadot/networks/types"
 
 export const noop = () => {}
 export const undefinedNoop = () => undefined
@@ -238,4 +241,27 @@ export function randomAlphanumericString(length: number) {
     result += characters.charAt(randomIndex)
   }
   return result
+}
+
+export const genesisHashToChain = (genesisHash?: `0x${string}`) => {
+  let chainInfo = availableNetworks.find(
+    (c) => c.network === "substrate",
+  ) as Network
+
+  if (!genesisHash) return chainInfo
+
+  for (let chain in knownGenesis) {
+    if (knownGenesis[chain].includes(genesisHash)) {
+      const chainIndex = availableNetworks.findIndex((entry) =>
+        chain.startsWith(entry.network),
+      )
+
+      if (chainIndex >= 0) {
+        chainInfo = availableNetworks[chainIndex]
+        break
+      }
+    }
+  }
+
+  return chainInfo
 }

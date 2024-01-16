@@ -40,10 +40,14 @@ export const useWalletAssetsFilters = () => {
   }
 }
 
-export const useWalletAssetsTotals = () => {
-  const assets = useAssetsTableData({ isAllAssets: false })
-  const lpPositions = useOmnipoolPositionsData()
-  const farmsPositions = useAllUserDepositShare()
+export const useWalletAssetsTotals = ({
+  address,
+}: {
+  address?: string
+} = {}) => {
+  const assets = useAssetsTableData({ isAllAssets: false, address })
+  const lpPositions = useOmnipoolPositionsData({ address })
+  const farmsPositions = useAllUserDepositShare({ address })
 
   const { warnings, setWarnings } = useWarningsStore()
 
