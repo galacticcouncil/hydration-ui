@@ -11,7 +11,7 @@ import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectS
 import { WalletProviderType } from "sections/web3-connect/wallets"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
 import { HYDRA_ADDRESS_PREFIX, POLKADOT_APP_NAME } from "utils/api"
-import { getAddressVariants } from "utils/formatting"
+import { getAddressVariants, safeConvertAddressSS58 } from "utils/formatting"
 import { pick } from "utils/rx"
 import {
   SContainer,
@@ -19,6 +19,8 @@ import {
   SLeaf,
   SLine,
 } from "./Web3ConnectExternalAccount.styled"
+import { H160, isEvmAccount, safeConvertAddressH160 } from "utils/evm"
+import { Web3ConnectEvmAccount } from "sections/web3-connect/accounts/Web3ConnectEvmAccount"
 
 export const Web3ConnectExternalAccount: FC<
   ComponentPropsWithoutRef<typeof Web3ConnectAccount>
@@ -31,7 +33,7 @@ export const Web3ConnectExternalAccount: FC<
     useShallow((s) => pick(s, ["setAccount", "toggle", "account"])),
   )
 
-  const { address, provider } = account
+  const { address, displayAddress, provider } = account
   const { wallet } = getWalletProviderByType(provider)
 
   const externalWallet = wallet instanceof ExternalWallet ? wallet : null
@@ -79,12 +81,25 @@ export const Web3ConnectExternalAccount: FC<
   if (!externalWallet) return null
 
   if (!isProxy || (isProxy && !filteredAccounts.length)) {
+    if (isEvmAccount(address)) {
+      return (
+        <Web3ConnectEvmAccount
+          provider={WalletProviderType.ExternalWallet}
+          name={externalWallet.accountName}
+          address={address}
+          displayAddress={H160.fromAccount(address)}
+          balance={balance}
+          onClick={() => toggle()}
+        />
+      )
+    }
     return (
       <Web3ConnectAccount
         isActive
         provider={WalletProviderType.ExternalWallet}
         name={externalWallet.accountName}
-        address={hydraAddress}
+        address={address}
+        displayAddress={safeConvertAddressSS58(address, 42) ?? address}
         balance={balance}
         onClick={() => toggle()}
       />

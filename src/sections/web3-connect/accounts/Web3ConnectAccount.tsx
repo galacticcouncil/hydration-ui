@@ -9,6 +9,7 @@ import { Web3ConnectAccountSelect } from "./Web3ConnectAccountSelect"
 import { genesisHashToChain } from "utils/helpers"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import BN from "bignumber.js"
+import { isEvmAccount } from "utils/evm"
 
 type Props = Account & {
   isProxy?: boolean
@@ -30,6 +31,9 @@ export const Web3ConnectAccount: FC<Props> = ({
   const { hydraAddress } = getAddressVariants(address)
 
   const chain = genesisHashToChain(genesisHash)
+
+  const showHydraAddress =
+    isActive && !isEvmAccount(address) && displayAddress !== hydraAddress
 
   return (
     <SAccountItem
@@ -68,6 +72,7 @@ export const Web3ConnectAccount: FC<Props> = ({
         <Web3ConnectAccountSelect
           name={chain?.displayName ?? ""}
           address={displayAddress || hydraAddress}
+          hydraAddress={showHydraAddress ? hydraAddress : ""}
           genesisHash={genesisHash}
           provider={provider}
           isProxy={isProxy}

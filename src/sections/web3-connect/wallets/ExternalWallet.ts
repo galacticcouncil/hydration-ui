@@ -4,6 +4,7 @@ import {
   WalletProviderType,
   getWalletProviderByType,
 } from "sections/web3-connect/Web3Connect.utils"
+import { safeConvertAddressSS58 } from "utils/formatting"
 
 /**
  * Mock Wallet for "View as Wallet" functionality

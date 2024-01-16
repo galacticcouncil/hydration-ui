@@ -8,6 +8,9 @@ import { useCopyToClipboard, useMedia } from "react-use"
 import { shortenAccountAddress } from "utils/formatting"
 import { theme as themeParams } from "theme"
 import { WalletProviderType } from "sections/web3-connect/wallets"
+import { availableNetworks } from "@polkadot/networks"
+
+const hydradxInfo = availableNetworks.find((c) => c.network === "hydradx")
 
 type Props = {
   name: string
@@ -16,15 +19,15 @@ type Props = {
   onClick?: () => void
   provider?: WalletProviderType
   isProxy?: boolean
+  hydraAddress?: string
 }
 
-export const Web3ConnectAccountSelect = ({
-  name,
-  genesisHash,
+const AccountInner = ({
   address,
-  onClick,
-  isProxy,
+  genesisHash,
   provider,
+  name,
+  isProxy,
 }: Props) => {
   const { t } = useTranslation()
   const [, copy] = useCopyToClipboard()
@@ -32,9 +35,7 @@ export const Web3ConnectAccountSelect = ({
 
   return (
     <div
-      onClick={onClick}
       sx={{ flex: "row", align: "center", gap: 10, justify: "space-between" }}
-      css={{ position: "relative" }}
     >
       <div sx={{ flex: "row", align: "center", gap: 10 }}>
         <AccountAvatar
@@ -76,6 +77,40 @@ export const Web3ConnectAccountSelect = ({
           onClick={() => copy(address.toString())}
         />
       </InfoTooltip>
+    </div>
+  )
+}
+
+export const Web3ConnectAccountSelect = ({
+  name,
+  genesisHash,
+  address,
+  onClick,
+  isProxy,
+  provider,
+  hydraAddress,
+}: Props) => {
+  return (
+    <div
+      onClick={onClick}
+      sx={{ flex: "column", gap: 10 }}
+      css={{ position: "relative" }}
+    >
+      <AccountInner
+        name={name}
+        genesisHash={genesisHash}
+        address={address}
+        isProxy={isProxy}
+        provider={provider}
+      />
+      {hydraAddress && !!hydradxInfo && (
+        <AccountInner
+          name={hydradxInfo.displayName}
+          genesisHash={hydradxInfo.genesisHash?.[0]}
+          address={hydraAddress}
+          provider={provider}
+        />
+      )}
     </div>
   )
 }
