@@ -47,13 +47,15 @@ export const derivePoolAccount = (assetId: string) => {
   return encodeAddress(blake2AsHex(name), HYDRADX_SS58_PREFIX)
 }
 
-export const useAccountOmnipoolPositions = () => {
+export const useAccountOmnipoolPositions = (givenAddress?: string) => {
   const { account } = useAccount()
   const { api } = useRpcProvider()
 
+  const address = givenAddress ?? account?.address
+
   return useQuery(
-    QUERY_KEYS.accountOmnipoolPositions(account?.address),
-    account?.address != null
+    QUERY_KEYS.accountOmnipoolPositions(address),
+    address != null
       ? async () => {
           const [omnipoolNftId, miningNftId] = await Promise.all([
             api.consts.omnipool.nftCollectionId,
@@ -61,8 +63,8 @@ export const useAccountOmnipoolPositions = () => {
           ])
 
           const [omnipoolNftsRaw, miningNftsRaw] = await Promise.all([
-            api.query.uniques.account.entries(account?.address, omnipoolNftId),
-            api.query.uniques.account.entries(account?.address, miningNftId),
+            api.query.uniques.account.entries(address, omnipoolNftId),
+            api.query.uniques.account.entries(address, miningNftId),
           ])
 
           const omnipoolNfts = omnipoolNftsRaw.map(([storageKey]) => {
@@ -86,7 +88,7 @@ export const useAccountOmnipoolPositions = () => {
           return { omnipoolNfts, miningNfts }
         }
       : undefinedNoop,
-    { enabled: !!account?.address },
+    { enabled: !!address },
   )
 }
 
