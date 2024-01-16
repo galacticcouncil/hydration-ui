@@ -244,6 +244,7 @@ export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
     name: true,
     spotPrice: isDesktop,
     tvlDisplay: isDesktop,
+    apy: isDesktop,
     fee: isDesktop,
     volumeDisplay: true,
     actions: isDesktop,

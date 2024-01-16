@@ -31,6 +31,8 @@ const usePoolsTableSkeleton = (isXYKPool: boolean, enableAnimation = true) => {
     name: true,
     spotPrice: isDesktop,
     tvlDisplay: isDesktop,
+    apy: isDesktop,
+    fee: isDesktop,
     volumeDisplay: true,
     actions: isDesktop,
   }
@@ -42,22 +44,54 @@ const usePoolsTableSkeleton = (isXYKPool: boolean, enableAnimation = true) => {
         header: t("liquidity.table.header.poolAsset"),
         size: 300,
         cell: () => (
-          <div sx={{ flex: "row", gap: 8, height: [24, 32] }}>
-            <div sx={{ width: [24, 32] }}>
+          <div sx={{ flex: "row", gap: 8, height: [24, 26] }}>
+            <div sx={{ width: [24, 26] }}>
               <Skeleton
                 width="100%"
                 height="100%"
                 enableAnimation={enableAnimation}
+                circle
               />
             </div>
             <Skeleton
               width={100}
+              height={26}
+              enableAnimation={enableAnimation}
+            />
+          </div>
+        ),
+      }),
+      display({
+        id: "tvlDisplay",
+        header: t("liquidity.table.header.tvl"),
+        size: 250,
+        cell: () => (
+          <div
+            sx={{ width: [90, 100], height: [24, 26], ml: ["auto", "initial"] }}
+          >
+            <Skeleton
+              width="100%"
               height="100%"
               enableAnimation={enableAnimation}
             />
           </div>
         ),
       }),
+      ...(!isXYKPool
+        ? [
+            display({
+              id: "apy",
+              header: t("stats.overview.table.assets.header.apy"),
+              cell: () => (
+                <Skeleton
+                  width={100}
+                  height={26}
+                  enableAnimation={enableAnimation}
+                />
+              ),
+            }),
+          ]
+        : []),
       isXYKPool
         ? display({
             id: "fee",
@@ -65,7 +99,7 @@ const usePoolsTableSkeleton = (isXYKPool: boolean, enableAnimation = true) => {
             cell: () => (
               <Skeleton
                 width={100}
-                height={32}
+                height={26}
                 enableAnimation={enableAnimation}
               />
             ),
@@ -76,32 +110,16 @@ const usePoolsTableSkeleton = (isXYKPool: boolean, enableAnimation = true) => {
             cell: () => (
               <Skeleton
                 width={100}
-                height={32}
+                height={26}
                 enableAnimation={enableAnimation}
               />
             ),
           }),
       display({
-        id: "tvlDisplay",
-        header: t("liquidity.table.header.tvl"),
-        size: 250,
-        cell: () => (
-          <div
-            sx={{ width: [90, 100], height: [24, 32], ml: ["auto", "initial"] }}
-          >
-            <Skeleton
-              width="100%"
-              height="100%"
-              enableAnimation={enableAnimation}
-            />
-          </div>
-        ),
-      }),
-      display({
         id: "volumeDisplay",
         header: t("liquidity.table.header.volume"),
         cell: () => (
-          <Skeleton width={100} height={32} enableAnimation={enableAnimation} />
+          <Skeleton width={100} height={26} enableAnimation={enableAnimation} />
         ),
       }),
       display({

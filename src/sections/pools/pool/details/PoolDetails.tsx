@@ -157,7 +157,7 @@ export const PoolDetails = ({
               <SValue>
                 <Text color="basic400">{t("24Volume")}</Text>
                 <Text color="white">
-                  {t("value.usd", { amount: pool.volumeDisplay })}
+                  <DisplayValue value={pool.volume} type="token" />
                 </Text>
               </SValue>
 

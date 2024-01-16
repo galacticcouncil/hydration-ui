@@ -6,7 +6,11 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NATIVE_ASSET_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
 import { BN_0, BN_MILL, BN_NAN } from "utils/constants"
-import { useDisplayPrices, useDisplayShareTokenPrice } from "utils/displayAsset"
+import {
+  useDisplayAssetStore,
+  useDisplayPrices,
+  useDisplayShareTokenPrice,
+} from "utils/displayAsset"
 import { useStableswapPool, useStableswapPools } from "api/stableswap"
 import { pool_account_name } from "@galacticcouncil/math-stableswap"
 import { encodeAddress, blake2AsHex } from "@polkadot/util-crypto"
@@ -18,7 +22,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { isNotNil, undefinedNoop } from "utils/helpers"
 import { ApiPromise } from "@polkadot/api"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
-import { useVolume } from "api/volume"
+import { envStableCoinId, useVolume } from "api/volume"
 import BN from "bignumber.js"
 import { useGetXYKPools, useShareTokens, useXYKConsts } from "api/xyk"
 import { useShareOfPools } from "api/pools"
@@ -130,6 +134,7 @@ export type TXYKPool = NonNullable<
 
 export const usePools = () => {
   const { assets } = useRpcProvider()
+  const { stableCoinId = envStableCoinId } = useDisplayAssetStore()
 
   const omnipoolAssets = useOmnipoolAssets()
   const stablepools = useStableswapPools()
@@ -153,7 +158,11 @@ export const usePools = () => {
     ),
   ]
 
-  const spotPrices = useDisplayPrices([...assetsId, ...assetsByStablepool])
+  const spotPrices = useDisplayPrices([
+    ...assetsId,
+    ...assetsByStablepool,
+    stableCoinId,
+  ])
 
   const volumes = useVolume("all")
   const fees = useFee("all")
@@ -198,9 +207,14 @@ export const usePools = () => {
         canRemoveLiquidity: !!tradabilityData?.canRemoveLiquidity,
       }
 
-      const volume =
+      const apiSpotPrice = spotPrices.data?.find(
+        (sp) => sp?.tokenIn === stableCoinId,
+      )?.spotPrice
+
+      const volume = BN(
         volumes.data?.find((volume) => volume.asset_id.toString() === assetId)
-          ?.volume_usd ?? BN_NAN
+          ?.volume_usd ?? BN_NAN,
+      ).multipliedBy(apiSpotPrice ?? 1)
 
       const fee =
         assets.native.id === assetId
@@ -246,6 +260,7 @@ export const usePools = () => {
     spotPrices.data,
     volumes,
     fees,
+    stableCoinId,
   ])
 
   return { data, isLoading: isInitialLoading }
@@ -266,11 +281,8 @@ export const usePoolDetails = (assetId: string) => {
   )
   const stablepool = useStableswapPool(isStablePool ? assetId : undefined)
 
-  const volume = useVolume(assetId)
   const isInitialLoading =
-    omnipoolPositions.isInitialLoading ||
-    volume.isInitialLoading ||
-    stablePoolBalance.isInitialLoading
+    omnipoolPositions.isInitialLoading || stablePoolBalance.isInitialLoading
 
   const data = useMemo(() => {
     const omnipoolNftPositions = omnipoolPositions.data.filter(
@@ -298,7 +310,6 @@ export const usePoolDetails = (assetId: string) => {
       : []
 
     return {
-      volumeDisplay: volume.data?.[0].volume_usd,
       omnipoolNftPositions,
       miningNftPositions,
       reserves,
@@ -315,7 +326,6 @@ export const usePoolDetails = (assetId: string) => {
     omnipoolPositions.data,
     stablePoolBalance.data?.balances,
     stablepool.data?.fee,
-    volume.data,
   ])
 
   return { data, isInitialLoading }
