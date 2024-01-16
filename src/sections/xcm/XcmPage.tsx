@@ -3,6 +3,8 @@ import { SContainer } from "./XcmPage.styled"
 
 import type { TxInfo } from "@galacticcouncil/apps"
 
+import { z } from "zod"
+import { MakeGenerics, useSearch } from "@tanstack/react-location"
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
@@ -42,6 +44,16 @@ export const XcmApp = createComponent({
 
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
+const XcmAppSearch = z.object({
+  srcChain: z.string().optional(),
+  destChain: z.string().optional(),
+  asset: z.string().optional(),
+})
+
+type SearchGenerics = MakeGenerics<{
+  Search: z.infer<typeof XcmAppSearch>
+}>
+
 export function XcmPage() {
   const { account } = useAccount()
   const { createTransaction } = useStore()
@@ -50,6 +62,9 @@ export function XcmPage() {
   const [srcChain, setSrcChain] = React.useState(
     getDefaultSrcChain(account?.address),
   )
+
+  const rawSearch = useSearch<SearchGenerics>()
+  const search = XcmAppSearch.safeParse(rawSearch)
 
   const { toggle: toggleWeb3Modal } = useWeb3ConnectStore()
   const preference = useProviderRpcUrlStore()
@@ -97,14 +112,26 @@ export function XcmPage() {
     })
   }
 
+  const srcChainDefault =
+    search.success && search.data.srcChain ? search.data.srcChain : srcChain
+
+  const destChainDefault =
+    search.success && search.data.destChain
+      ? search.data.destChain
+      : DEFAULT_DEST_CHAIN
+
+  const assetDefault =
+    search.success && search.data.asset ? search.data.asset : undefined
+
   return (
     <Page>
       <PageSwitch />
       <SContainer>
         <XcmApp
           ref={ref}
-          srcChain={srcChain}
-          destChain={DEFAULT_DEST_CHAIN}
+          srcChain={srcChainDefault}
+          destChain={destChainDefault}
+          asset={assetDefault}
           accountName={account?.name}
           accountProvider={account?.provider}
           accountAddress={account?.address}
