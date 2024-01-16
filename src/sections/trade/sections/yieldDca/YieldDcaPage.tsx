@@ -39,7 +39,7 @@ export function YieldDcaPage() {
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
     const { transaction, meta } = e.detail
-    const { amountInYield, assetIn } = meta ?? {}
+    const { amountInFrom, assetIn } = meta ?? {}
     await createTransaction(
       {
         tx: api.tx(transaction.hex),
@@ -53,7 +53,7 @@ export function YieldDcaPage() {
               t={t}
               i18nKey="yield.toast.onLoading"
               tOptions={{
-                amount: amountInYield,
+                amount: amountInFrom,
                 symbol: assetIn,
               }}
             >
@@ -66,7 +66,7 @@ export function YieldDcaPage() {
               t={t}
               i18nKey="yield.toast.onSuccess"
               tOptions={{
-                amount: amountInYield,
+                amount: amountInFrom,
                 symbol: assetIn,
               }}
             >
