@@ -51,7 +51,7 @@ export class ExternalWallet implements Wallet {
   enableProxy = async (dappName: string) => {
     const { wallet } = getWalletProviderByType(this.proxyWalletProvider)
 
-    if (wallet?.installed && !wallet?.extension) {
+    if (wallet?.installed) {
       await wallet?.enable(dappName)
       this._extension = wallet.extension
       this._signer = wallet.signer
@@ -60,6 +60,8 @@ export class ExternalWallet implements Wallet {
 
   setAddress = async (address?: string) => {
     if (address) {
+      // dummy extension
+      if (!this._extension) this._extension = {}
       this.account = {
         address,
         source: this.extensionName,

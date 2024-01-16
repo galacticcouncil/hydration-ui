@@ -21,7 +21,7 @@ type TxProps = Required<Pick<Transaction, "xcallMeta" | "xcall">>
 type Props = TxProps & {
   title?: string
   onCancel: () => void
-  onEvmSigned: (receipt: TransactionResponse) => void
+  onEvmSigned: (data: { evmTx: TransactionResponse }) => void
 }
 
 export const ReviewTransactionXCallForm: FC<Props> = ({
@@ -45,14 +45,14 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
     if (wallet?.signer instanceof MetaMaskSigner) {
       const { srcChain } = xcallMeta
 
-      const tx = await wallet.signer.sendTransaction({
+      const evmTx = await wallet.signer.sendTransaction({
         chain: srcChain,
         from: account.address,
         to: xcall.to,
         data: xcall.data,
       })
 
-      onEvmSigned(tx)
+      onEvmSigned({ evmTx })
     }
   })
 

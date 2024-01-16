@@ -173,7 +173,12 @@ export const CodeForm = () => {
           />
           <div sx={{ height: 54, flex: "row" }}>
             {(state === UserState.FUNDED || isBalanceLoading) && (
-              <Button isLoading={isBalanceLoading} variant="primary" fullWidth>
+              <Button
+                isLoading={isBalanceLoading}
+                disabled={account?.isExternalWalletConnected}
+                variant="primary"
+                fullWidth
+              >
                 {t("referrals.button.sign")}
               </Button>
             )}

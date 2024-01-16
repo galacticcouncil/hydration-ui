@@ -12,9 +12,11 @@ import { MutationObserverOptions, useMutation } from "@tanstack/react-query"
 import { useTransactionLink } from "api/transaction"
 import { decodeError } from "ethers-decode-error"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useState } from "react"
+import { useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useMountedState } from "react-use"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useToast } from "state/toasts"
 import { H160, getEvmTxLink, isEvmAccount } from "utils/evm"
 
 type TxMethod = AnyJson & {
@@ -105,13 +107,16 @@ export const useSendEvmTransactionMutation = (
       transactionLink?: string
     },
     unknown,
-    TransactionResponse
+    {
+      evmTx: TransactionResponse
+      tx?: SubmittableExtrinsic<"promise">
+    }
   > = {},
 ) => {
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const { account } = useEvmAccount()
 
-  const sendTx = useMutation(async (tx) => {
+  const sendTx = useMutation(async ({ evmTx }) => {
     return await new Promise(async (resolve, reject) => {
       const timeout = setTimeout(
         () => {
@@ -123,7 +128,7 @@ export const useSendEvmTransactionMutation = (
 
       try {
         setTxState("Broadcast")
-        const receipt = await tx.wait()
+        const receipt = await evmTx.wait()
         setTxState("InBlock")
 
         const chainEntries = Object.entries(evmChains).find(
@@ -233,14 +238,90 @@ export const useSendTransactionMutation = (
   }
 }
 
+function getReferralCodeFromTx(tx: SubmittableExtrinsic<"promise">) {
+  if (!tx) return null
+
+  let code = null
+  try {
+    const json: any = tx.method.toHuman()
+    const calls: any[] = Array.isArray(json?.args?.calls) ? json.args.calls : []
+    const referralCall = calls.find(
+      ({ method, section, args }) =>
+        method === "linkCode" && section === "referrals" && !!args.code,
+    )
+    code = referralCall?.args?.code ?? null
+  } catch {
+    return null
+  }
+
+  return code
+}
+
+const useBoundReferralToast = () => {
+  const { t } = useTranslation()
+  const { loading, success, remove } = useToast()
+
+  const pendingToastId = useRef<string>()
+  const pendingReferralCode = useRef<string>()
+
+  const onLoading = (tx: SubmittableExtrinsic<"promise">) => {
+    const code = getReferralCodeFromTx(tx)
+
+    if (code) {
+      pendingReferralCode.current = code
+      pendingToastId.current = loading({
+        hideTime: 3000,
+        title: (
+          <span>
+            {t("referrals.toasts.linkCode.onLoading", {
+              code,
+            })}
+          </span>
+        ),
+      })
+    }
+  }
+
+  const onSuccess = () => {
+    if (pendingToastId.current) {
+      remove(pendingToastId.current)
+      success({
+        title: (
+          <span>
+            {t("referrals.toasts.linkCode.onSuccess", {
+              code: pendingReferralCode.current,
+            })}
+          </span>
+        ),
+      })
+    }
+  }
+
+  return {
+    onLoading,
+    onSuccess,
+  }
+}
+
 export const useSendTx = () => {
   const [txType, setTxType] = useState<"default" | "evm" | null>(null)
+
+  const boundReferralToast = useBoundReferralToast()
+
   const sendTx = useSendTransactionMutation({
-    onMutate: () => setTxType("default"),
+    onMutate: (tx) => {
+      boundReferralToast.onLoading(tx)
+      setTxType("default")
+    },
+    onSuccess: boundReferralToast.onSuccess,
   })
 
   const sendEvmTx = useSendEvmTransactionMutation({
-    onMutate: () => setTxType("evm"),
+    onMutate: ({ tx }) => {
+      if (tx) boundReferralToast.onLoading(tx)
+      setTxType("evm")
+    },
+    onSuccess: boundReferralToast.onSuccess,
   })
 
   const activeMutation = txType === "default" ? sendTx : sendEvmTx
