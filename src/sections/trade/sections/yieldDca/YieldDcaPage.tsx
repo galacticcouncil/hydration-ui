@@ -3,6 +3,7 @@ import { SContainer } from "./YieldDcaPage.styled"
 import type { TxInfo } from "@galacticcouncil/apps"
 
 import * as React from "react"
+import { Trans, useTranslation } from "react-i18next"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
 import { useStore } from "state/store"
@@ -30,13 +31,15 @@ export function YieldDcaPage() {
   const { api } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
+  const { t } = useTranslation()
   const { stableCoinId } = useDisplayAssetStore()
 
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
-    const { transaction, notification } = e.detail
+    const { transaction, meta } = e.detail
+    const { amountInYield, assetIn } = meta ?? {}
     await createTransaction(
       {
         tx: api.tx(transaction.hex),
@@ -46,25 +49,30 @@ export function YieldDcaPage() {
         onSubmitted: () => {},
         toast: {
           onLoading: (
-            <span
-              dangerouslySetInnerHTML={{
-                __html: notification.processing.rawHtml,
+            <Trans
+              t={t}
+              i18nKey="yield.toast.onLoading"
+              tOptions={{
+                amount: amountInYield,
+                symbol: assetIn,
               }}
-            />
+            >
+              <span />
+              <span className="highlight" />
+            </Trans>
           ),
           onSuccess: (
-            <span
-              dangerouslySetInnerHTML={{
-                __html: notification.success.rawHtml,
+            <Trans
+              t={t}
+              i18nKey="yield.toast.onSuccess"
+              tOptions={{
+                amount: amountInYield,
+                symbol: assetIn,
               }}
-            />
-          ),
-          onError: (
-            <span
-              dangerouslySetInnerHTML={{
-                __html: notification.failure.rawHtml,
-              }}
-            />
+            >
+              <span />
+              <span className="highlight" />
+            </Trans>
           ),
         },
       },
