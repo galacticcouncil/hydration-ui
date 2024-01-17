@@ -8,11 +8,7 @@ import { GradientText } from "components/Typography/GradientText/GradientText"
 import { addSeconds } from "date-fns"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import { Icon } from "components/Icon/Icon"
-import {
-  PalletLiquidityMiningGlobalFarmData,
-  PalletLiquidityMiningYieldFarmData,
-} from "@polkadot/types/lookup"
-import { useFarmApr } from "api/farms"
+import { Farm, useFarmApr } from "api/farms"
 import { useBestNumber } from "api/chain"
 import { BLOCK_TIME, BN_0, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
@@ -25,10 +21,7 @@ import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 type FarmDetailsCardProps = {
   poolId: string
   depositNft?: TMiningNftPosition
-  farm: {
-    globalFarm: PalletLiquidityMiningGlobalFarmData
-    yieldFarm: PalletLiquidityMiningYieldFarmData
-  }
+  farm: Farm
   onSelect?: () => void
 }
 
