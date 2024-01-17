@@ -397,4 +397,5 @@ export const QUERY_KEYS = {
     "accountTransfers",
     address?.toString(),
   ],
+  yieldFarmCreated: ["yieldFarmCreated"],
 } as const

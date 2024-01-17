@@ -1,4 +1,3 @@
-import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
 import { useTokensBalances } from "api/balances"
 import { useApiIds } from "api/consts"
 import {
@@ -13,10 +12,11 @@ import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { BN_0, BN_10, BN_NAN } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
+import { calculatePositionLiquidity } from "utils/omnipool"
 
 export const useUsersTotalInPool = (pool: TOmnipoolAsset) => {
   const { account } = useAccount()
@@ -32,9 +32,11 @@ export const useUsersTotalInPool = (pool: TOmnipoolAsset) => {
   const assetIds =
     positions.map((p) => p.data?.assetId.toString()).filter(isNotNil) ?? []
 
+  const lrnaId = apiIds?.data?.hubId ?? ""
+
   const omnipoolAssets = useOmnipoolAssets()
   const omnipoolBalances = useTokensBalances(assetIds, OMNIPOOL_ACCOUNT_ADDRESS)
-  const spotPrices = useDisplayPrices(assetIds)
+  const spotPrices = useDisplayPrices([lrnaId, ...assetIds])
 
   const queries = [
     apiIds,
@@ -80,31 +82,25 @@ export const useUsersTotalInPool = (pool: TOmnipoolAsset) => {
 
         const id = position.assetId.toString()
 
-        const [nom, denom] = position.price.map((n) => new BN(n.toString()))
-        const price = nom.div(denom)
-        const positionPrice = price.times(BN_10.pow(18))
+        const lrnaSp =
+          spotPrices?.data?.find((sp) => sp?.tokenIn === lrnaId)?.spotPrice ??
+          BN(0)
 
-        const params: Parameters<typeof calculate_liquidity_out> = [
-          omnipoolBalance.data.balance.toString(),
-          omnipoolAsset.data.hubReserve.toString(),
-          omnipoolAsset.data.shares.toString(),
-          position.amount.toString(),
-          position.shares.toString(),
-          positionPrice.toFixed(0),
-          position.shares.toString(),
-          "0", // fee zero
-        ]
-
-        const liquidityOutResult = calculate_liquidity_out.apply(this, params)
-        if (liquidityOutResult === "-1") return BN_NAN
+        const lrnaMeta = assets.getAsset(lrnaId)
 
         const valueSp = spotPrices.data?.find((sp) => sp?.tokenIn === id)
-        const valueDp = BN_10.pow(meta.decimals)
-        const value = new BN(liquidityOutResult).div(valueDp)
-
         if (!valueSp?.spotPrice) return BN_NAN
 
-        const valueDisplay = value.times(valueSp.spotPrice)
+        const { valueDisplay } = calculatePositionLiquidity({
+          position,
+          omnipoolBalance: omnipoolBalance?.data?.balance ?? BN(0),
+          omnipoolHubReserve: omnipoolAsset?.data?.hubReserve,
+          omnipoolShares: omnipoolAsset?.data?.shares,
+          lrnaSpotPrice: lrnaSp,
+          valueSpotPrice: valueSp?.spotPrice ?? BN(0),
+          lrnaDecimals: lrnaMeta.decimals,
+          assetDecimals: meta.decimals,
+        })
 
         return valueDisplay
       })
@@ -112,13 +108,14 @@ export const useUsersTotalInPool = (pool: TOmnipoolAsset) => {
     return totals.reduce((acc, total) => acc.plus(total), BN_0)
   }, [
     apiIds.data,
-    uniques.data,
+    assets,
+    lrnaId,
     omnipoolAssets.data,
-    spotPrices.data,
-    positions,
     omnipoolBalances,
     pool.id,
-    assets,
+    positions,
+    spotPrices.data,
+    uniques.data,
   ])
 
   return { data, isLoading }

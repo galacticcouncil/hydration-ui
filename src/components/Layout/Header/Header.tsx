@@ -12,9 +12,12 @@ import { theme } from "theme"
 import { HeaderToolbar } from "./toolbar/HeaderToolbar"
 import { Link, useSearch } from "@tanstack/react-location"
 import { LINKS, resetSearchParams } from "utils/navigation"
+import { NewFarmsBanner } from "sections/pools/components/NewFarmsBanner"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const Header = () => {
   const { t } = useTranslation()
+  const { isLoaded } = useRpcProvider()
 
   const isMediumMedia = useMedia(theme.viewport.lt.md)
 
@@ -31,6 +34,7 @@ export const Header = () => {
           type="hdxLiquidity"
         />
       )}
+      {isLoaded && <NewFarmsBanner />}
       <SHeader>
         <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
           <div sx={{ flex: "row", align: "center", gap: 40 }}>

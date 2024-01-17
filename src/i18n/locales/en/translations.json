@@ -92,6 +92,8 @@
   "header.trade.otc.subtitle": "Trade directly with other users",
   "header.trade.dca.title": "Trade DCA",
   "header.trade.dca.subtitle": "Spread your Omnipool trades over time",
+  "header.trade.yieldDca.title": "Yield DCA",
+  "header.trade.yieldDca.subtitle": "Diversify your yield from staked DOT",
   "header.liquidity": "Liquidity",
   "header.wallet": "Wallet",
   "header.more": "More",
@@ -788,5 +790,9 @@
   "referrals.toasts.storedCode.invalid.existence": "The referral code does not exist.",
   "referrals.toasts.storedCode.invalid.myCode": "Linking an account to own referral code is not allowed.",
   "referrals.toasts.claim.onLoading": "Claiming referral rewards ({{value, bignumber(type: token)}} HDX)...",
-  "referrals.toasts.claim.onSuccess": "Claimed referral rewards ({{value, bignumber(type: token)}} HDX)."
+  "referrals.toasts.claim.onSuccess": "Claimed referral rewards ({{value, bignumber(type: token)}} HDX).",
+  "yield.toast.onLoading": "<0>Placing a Yield DCA order on </0><1>{{ amount }} {{ symbol }}</1>.",
+  "yield.toast.onSuccess": "<0>Placed a Yield DCA order on </0><1>{{ amount }} {{ symbol }}</1>.",
+  "banner.newFarms.label": "New Farms for {{symbols}}",
+  "banner.newFarms.link": "Go to Liquidity \u2192"
 }
