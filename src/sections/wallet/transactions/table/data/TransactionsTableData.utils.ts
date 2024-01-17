@@ -33,7 +33,8 @@ export const useTransactionsTableData = (address: string) => {
   const hasNextPage = filteredData.length >= PER_PAGE * (page + 1)
 
   return {
-    data: filteredData,
+    data: data ?? [],
+    filteredData,
     isLoading: isInitialLoading,
     setNextPage,
     hasNextPage,

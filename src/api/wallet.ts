@@ -4,7 +4,11 @@ import { useQuery } from "@tanstack/react-query"
 import { gql, request } from "graphql-request"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useIndexerUrl } from "./provider"
-import { getAddressVariants, safeConvertAddressSS58 } from "utils/formatting"
+import {
+  formatDate,
+  getAddressVariants,
+  safeConvertAddressSS58,
+} from "utils/formatting"
 import { HYDRA_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -416,6 +420,8 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
 
             const asset = assets.getAsset(currencyId)
 
+            const amountDisplay = amount.shiftedBy(-asset.decimals)
+
             const assetIconIds =
               asset && assets.isStableSwap(asset)
                 ? asset.assets
@@ -445,6 +451,9 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
               destChain?.key,
             )
 
+            const date = new Date(block.timestamp)
+            const dateDisplay = formatDate(date, "yyyy-MM-dd HH:mm:ss")
+
             return {
               type: type,
               source: sourceAddr,
@@ -454,7 +463,9 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
               sourceChain,
               destChain,
               amount,
-              date: new Date(block.timestamp),
+              amountDisplay,
+              date,
+              dateDisplay,
               extrinsicHash: extrinsic.hash,
               asset,
               assetName: asset.name,
@@ -482,9 +493,9 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
           const assetId =
             transfer.args?.currencyId?.toString() || NATIVE_ASSET_ID
 
-          const amount = transfer.args?.amount ?? transfer.args?.value
-
           const asset = assets.getAsset(assetId)
+          const amount = BN(transfer.args?.amount ?? transfer.args?.value ?? 0)
+          const amountDisplay = amount.shiftedBy(-asset.decimals)
 
           const assetIconIds =
             asset && assets.isStableSwap(asset)
@@ -505,6 +516,9 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
 
           const destDisplay = addressToDisplayAddress(destAddr, destChain?.key)
 
+          const date = new Date(transfer.block.timestamp)
+          const dateDisplay = formatDate(date, "yyyy-MM-dd HH:mm:ss")
+
           return {
             type,
             source: sourceAddr,
@@ -513,8 +527,10 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
             destChain,
             sourceDisplay,
             destDisplay,
-            amount: BN(amount ?? 0),
-            date: new Date(transfer.block.timestamp),
+            amount,
+            amountDisplay,
+            date,
+            dateDisplay,
             extrinsicHash: transfer.extrinsic.hash,
             assetName: asset.name,
             assetSymbol: asset.symbol,

@@ -111,9 +111,8 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
             />
             <Text fs={13} css={{ whiteSpace: "nowrap" }}>
               {t("value.tokenWithSymbol", {
-                value: row.original.amount,
+                value: row.original.amountDisplay,
                 symbol: row.original.assetSymbol,
-                fixedPointScale: row.original.assetDecimals,
               })}
             </Text>
           </div>

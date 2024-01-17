@@ -17,17 +17,19 @@ import { getSubscanLinkByType } from "utils/formatting"
 import { Fragment, useRef } from "react"
 import { isSameDay, startOfDay } from "date-fns"
 import { TransactionsTypeFilter } from "sections/wallet/transactions/filter/TransactionsTypeFilter"
+import { TransactionsDownload } from "sections/wallet/transactions/download/TransactionsDownload"
 
 type Props = {
   data: TTransactionsTableData
+  filteredData: TTransactionsTableData
 }
 
-export const TransactionsTable = ({ data }: Props) => {
+export const TransactionsTable = ({ data, filteredData }: Props) => {
   const { t } = useTranslation()
 
   const lastDateRef = useRef<Date | null>(null)
 
-  const table = useTransactionsTable(data)
+  const table = useTransactionsTable(filteredData)
 
   const onRowSelect = (hash: string) => {
     window.open(`${getSubscanLinkByType("extrinsic")}/${hash}`, "_blank")
@@ -45,6 +47,7 @@ export const TransactionsTable = ({ data }: Props) => {
         >
           {t("wallet.transactions.table.header.title")}
         </Text>
+        <TransactionsDownload data={data} />
       </TableTitle>
       <TransactionsTypeFilter />
       <Table>

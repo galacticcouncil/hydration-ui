@@ -17,14 +17,14 @@ export const TransactionsTableWrapperData = ({
 }: {
   address: string
 }) => {
-  const { isLoading, data, setNextPage, hasNextPage } =
+  const { isLoading, data, filteredData, setNextPage, hasNextPage } =
     useTransactionsTableData(address)
 
   if (isLoading && !data.length) return <TransactionsTableSkeleton />
 
   return (
     <>
-      <TransactionsTable data={data} />{" "}
+      <TransactionsTable data={data} filteredData={filteredData} />
       {hasNextPage && (
         <div sx={{ textAlign: "center", mt: 24 }}>
           <Button onClick={setNextPage}>More Transactions</Button>

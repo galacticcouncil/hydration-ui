@@ -449,6 +449,7 @@
   "wallet.assets.farmingPositions.header.value": "Current value",
   "wallet.assets.farmingPositions.data.date": "{{ date, dd/MM/yyyy }}",
   "wallet.transactions.table.header.title": "Transaction History",
+  "wallet.transactions.table.header.download": "Download CSV",
   "wallet.transactions.table.header.type": "Type",
   "wallet.transactions.table.header.asset": "Asset",
   "wallet.transactions.table.header.amount": "Amount",
