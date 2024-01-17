@@ -476,7 +476,7 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
           },
         )
 
-        const calls = data.calls.map((transfer, index) => {
+        const calls = data.calls.map((transfer) => {
           const sourceHydraAddress = getAddressVariants(
             transfer.origin.value.value,
           ).hydraAddress

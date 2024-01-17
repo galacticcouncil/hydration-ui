@@ -11,13 +11,16 @@ function downloadBlob(content: string, filename: string, contentType: string) {
   pom.click()
 }
 
-type UparseConfigExtended = Omit<UnparseConfig, "columns"> & {
-  columns?: { key: string; header?: string }[]
+type UparseConfigExtended<T extends object> = Omit<UnparseConfig, "columns"> & {
+  columns?: { key: keyof T; header?: string }[]
   filename?: string
   filenameDatetime?: boolean
 }
 
-export function useCsvDownload(data: any[], config: UparseConfigExtended = {}) {
+export function useCsvDownload<T extends object>(
+  data: T[],
+  config: UparseConfigExtended<T> = {},
+) {
   const { mutate: download } = useMutation(
     async () => {
       const Papa = await import("papaparse")
@@ -26,7 +29,8 @@ export function useCsvDownload(data: any[], config: UparseConfigExtended = {}) {
         config?.columns?.map((column) => column.header ?? "").filter(Boolean) ??
         []
 
-      const columns = config?.columns?.map((column) => column.key) ?? []
+      const columns =
+        config?.columns?.map((column) => column.key as string) ?? []
 
       const header = Papa.unparse(
         { fields: headers, data: [] },
