@@ -47,9 +47,8 @@ export const useTransactionValues = ({
     featureFlags.referrals ? account?.address : undefined,
   )
 
-  const isLinkedAccount = featureFlags.referrals
-    ? !!referrer.data?.length
-    : true
+  const isLinkedAccount =
+    featureFlags.referrals && !xcallMeta ? !!referrer.data?.length : true
 
   const storedReferralCodes = useReferralCodesStore()
   const storedReferralCode = account?.address
@@ -60,7 +59,8 @@ export const useTransactionValues = ({
     featureFlags.referrals &&
     !isLinkedAccount &&
     storedReferralCode &&
-    tx.method.method !== "linkCode"
+    tx.method.method !== "linkCode" &&
+    !xcallMeta
       ? api.tx.utility.batchAll([
           api.tx.referrals.linkCode(storedReferralCode),
           tx,
