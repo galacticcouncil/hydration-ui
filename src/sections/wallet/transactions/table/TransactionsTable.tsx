@@ -1,21 +1,22 @@
 import { flexRender } from "@tanstack/react-table"
 import { TableSortHeader } from "components/Table/Table"
 import {
-  StatsTableContainer,
-  StatsTableTitle,
+  TableContainer,
   Table,
   TableBodyContent,
   TableData,
   TableHeaderContent,
-  TableRowStats,
+  TableRow,
+  TableTitle,
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
-import { useMedia } from "react-use"
-import { theme } from "theme"
 import { useTransactionsTable } from "./TransactionsTable.utils"
 import { TTransactionsTableData } from "./data/TransactionsTableData.utils"
 import { useTranslation } from "react-i18next"
 import { getSubscanLinkByType } from "utils/formatting"
+import { Fragment, useRef } from "react"
+import { isSameDay, startOfDay } from "date-fns"
+import { TransactionsTypeFilter } from "sections/wallet/transactions/filter/TransactionsTypeFilter"
 
 type Props = {
   data: TTransactionsTableData
@@ -23,7 +24,8 @@ type Props = {
 
 export const TransactionsTable = ({ data }: Props) => {
   const { t } = useTranslation()
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const lastDateRef = useRef<Date | null>(null)
 
   const table = useTransactionsTable(data)
 
@@ -32,43 +34,37 @@ export const TransactionsTable = ({ data }: Props) => {
   }
 
   return (
-    <StatsTableContainer
-      css={{
-        backgroundColor: "rgba(6, 9, 23, 0.4);",
-      }}
-    >
-      <StatsTableTitle>
-        <Text fs={[15, 19]} lh={20} color="white" font="FontOver">
+    <TableContainer sx={{ bg: "darkBlue700" }}>
+      <TableTitle css={{ border: 0 }}>
+        <Text
+          fs={14}
+          lh={20}
+          css={{ fontFamily: "FontOver" }}
+          fw={500}
+          color="white"
+        >
           {t("wallet.transactions.table.header.title")}
         </Text>
-      </StatsTableTitle>
+      </TableTitle>
+      <TransactionsTypeFilter />
       <Table>
         <TableHeaderContent>
           {table.getHeaderGroups().map((hg) => (
-            <TableRowStats key={hg.id} header>
+            <TableRow key={hg.id} header>
               {hg.headers.map((header) => (
                 <TableSortHeader
                   key={header.id}
                   canSort={header.column.getCanSort()}
                   sortDirection={header.column.getIsSorted()}
                   onSort={header.column.getToggleSortingHandler()}
-                  css={
-                    !isDesktop
-                      ? [
-                          {
-                            "&:first-of-type > div": {
-                              justifyContent: "flex-start",
-                            },
-                          },
-                          {
-                            "&:nth-of-type(2) > div": {
-                              justifyContent: "flex-end",
-                              whiteSpace: "nowrap",
-                            },
-                          },
-                        ]
-                      : undefined
-                  }
+                  css={{
+                    "&": {
+                      fontSize: 11,
+                      fontWeight: 500,
+                      paddingTop: 14,
+                      paddingBottom: 14,
+                    },
+                  }}
                 >
                   {flexRender(
                     header.column.columnDef.header,
@@ -76,29 +72,69 @@ export const TransactionsTable = ({ data }: Props) => {
                   )}
                 </TableSortHeader>
               ))}
-            </TableRowStats>
+            </TableRow>
           ))}
         </TableHeaderContent>
         <TableBodyContent>
-          {table.getRowModel().rows.map((row) => (
-            <TableRowStats key={row.id} css={{ cursor: "pointer" }}>
-              {row.getVisibleCells().map((cell) => (
-                <TableData
-                  key={cell.id}
-                  css={{
-                    "&:last-of-type": {
-                      paddingLeft: 0,
-                    },
-                  }}
-                  onClick={() => onRowSelect(row.original.extrinsicHash)}
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableData>
-              ))}
-            </TableRowStats>
-          ))}
+          {table.getRowModel().rows.map((row, index) => {
+            const date = startOfDay(new Date(row.original.date))
+
+            const isFirst = index === 0
+            const isRepeatDay = isSameDay(lastDateRef.current ?? 0, date)
+            if (!isRepeatDay) {
+              lastDateRef.current = date
+            }
+
+            const shouldRenderDateRow = isFirst || !isRepeatDay
+
+            return (
+              <Fragment key={row.id}>
+                {shouldRenderDateRow && (
+                  <TableRow>
+                    <TableData
+                      css={{
+                        "&": {
+                          paddingTop: 16,
+                          paddingBottom: 8,
+                        },
+                      }}
+                      colSpan={table.getAllColumns().length}
+                    >
+                      <Text fs={12} color="darkBlue200">
+                        {t("stats.overview.chart.tvl.label.date", {
+                          date,
+                        })}
+                      </Text>
+                    </TableData>
+                  </TableRow>
+                )}
+                <TableRow css={{ cursor: "pointer" }}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableData
+                      key={cell.id}
+                      css={{
+                        "&": {
+                          paddingTop: 14,
+                          paddingBottom: 14,
+                        },
+                        "&:last-of-type": {
+                          paddingLeft: 0,
+                        },
+                      }}
+                      onClick={() => onRowSelect(row.original.extrinsicHash)}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableData>
+                  ))}
+                </TableRow>
+              </Fragment>
+            )
+          })}
         </TableBodyContent>
       </Table>
-    </StatsTableContainer>
+    </TableContainer>
   )
 }

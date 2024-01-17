@@ -30,7 +30,7 @@ export const useTransactionsTableSkeleton = (enableAnimation = true) => {
         id: "type",
         header: t("wallet.transactions.table.header.type"),
         cell: () => (
-          <Skeleton width={35} height={26} enableAnimation={enableAnimation} />
+          <Skeleton width={35} height={20} enableAnimation={enableAnimation} />
         ),
       }),
       display({
@@ -40,7 +40,7 @@ export const useTransactionsTableSkeleton = (enableAnimation = true) => {
           <div sx={{ flex: "row" }}>
             <Skeleton
               width={72}
-              height={26}
+              height={20}
               enableAnimation={enableAnimation}
             />
           </div>
@@ -53,7 +53,7 @@ export const useTransactionsTableSkeleton = (enableAnimation = true) => {
           <div sx={{ flex: "row" }}>
             <Skeleton
               width={72}
-              height={26}
+              height={20}
               enableAnimation={enableAnimation}
             />
           </div>
@@ -66,17 +66,10 @@ export const useTransactionsTableSkeleton = (enableAnimation = true) => {
           <div sx={{ flex: "row" }}>
             <Skeleton
               width={72}
-              height={26}
+              height={20}
               enableAnimation={enableAnimation}
             />
           </div>
-        ),
-      }),
-      display({
-        id: "date",
-        header: t("wallet.transactions.table.header.date"),
-        cell: () => (
-          <Skeleton width={72} height={26} enableAnimation={enableAnimation} />
         ),
       }),
       display({
@@ -96,4 +89,4 @@ export const useTransactionsTableSkeleton = (enableAnimation = true) => {
   })
 }
 
-const mockData = [1, 2, 3, 4, 5]
+const mockData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]

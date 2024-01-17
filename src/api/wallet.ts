@@ -9,14 +9,17 @@ import { HYDRA_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { H160, isEvmAddress } from "utils/evm"
+import { H160, isEvmAccount, isEvmAddress } from "utils/evm"
 import { EIP1559Transaction } from "@polkadot/types/interfaces/eth"
 import { Maybe } from "utils/helpers"
 import { ApiPromise } from "@polkadot/api"
 import { BN_NAN } from "utils/constants"
 import { uniqBy } from "utils/rx"
+import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 
-type InteriorParachainValueParachain = {
+export type TransactionType = "deposit" | "withdraw"
+
+type TParachain = {
   value: number
   __kind: "Parachain"
 }
@@ -31,10 +34,7 @@ type TAccountKey20 = {
   __kind: "AccountKey20"
 }
 
-type InteriorParachainValue = [
-  InteriorParachainValueParachain,
-  TAccountId32 | TAccountKey20,
-]
+type InteriorParachainValue = [TParachain, TAccountId32 | TAccountKey20]
 
 type TransferParachainDest = {
   value: {
@@ -169,7 +169,54 @@ const getAddressFromDest = (dest: string | TransferParachainDest) => {
   return ""
 }
 
-const getDataFromEvmTx = (api: ApiPromise, tx: EIP1559Transaction) => {
+const addressToDisplayAddress = (address: string, chainKey = "hydradx") => {
+  const chain = chainKey ? chainsMap.get(chainKey) : null
+
+  const isEvmChain = chain?.isEvmParachain() || chainKey === "hydradx"
+
+  if (isEvmAccount(address) && isEvmChain) {
+    return H160.fromAccount(address)
+  }
+
+  const convertedAddress = safeConvertAddressSS58(
+    address,
+    chain?.ss58Format ?? HYDRADX_SS58_PREFIX,
+  )
+
+  return convertedAddress ?? address
+}
+
+const getDataFromXcmParachainTx = (args: XcmParachainArgs) => {
+  let parachainId = null
+  let address = ""
+
+  try {
+    const messages = args?.data?.horizontalMessages ?? []
+
+    for (const message of messages) {
+      const [parachain, payload] = message
+      if (payload?.length) {
+        parachainId = parachain
+        for (const value of payload) {
+          const extractedAddress = safeConvertAddressSS58(
+            `0x${value.data.slice(-64)}`,
+            HYDRA_ADDRESS_PREFIX,
+          )
+
+          address = extractedAddress ?? ""
+        }
+        break
+      }
+    }
+  } catch {}
+
+  return {
+    parachainId,
+    address,
+  }
+}
+
+const getDataFromXcmEvmTx = (api: ApiPromise, tx: EIP1559Transaction) => {
   let currencyId = null
   let parachainId = null
   let dest = ""
@@ -336,25 +383,16 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
         const events = data.events.map(
           ({ name, call, args, block, extrinsic }) => {
             let parachainId = null
-            let sourceHydraAddress = null
-            let destHydraAddress = null
+            let sourceHydraAddress = ""
+            let destHydraAddress = ""
             let currencyId = NATIVE_ASSET_ID
             let amount = BN_NAN
 
             if (isXcmParachainTransfer(call?.args)) {
-              const msg = call.args?.data?.horizontalMessages.find(
-                ([, data]) => {
-                  return !!data?.length
-                },
-              )
+              const xcmData = getDataFromXcmParachainTx(call.args)
 
-              parachainId = msg?.[0]
-              sourceHydraAddress = msg
-                ? safeConvertAddressSS58(
-                    `0x${msg?.[1]?.[0]?.data?.slice(-64)}`,
-                    HYDRA_ADDRESS_PREFIX,
-                  )
-                : ""
+              parachainId = xcmData.parachainId
+              sourceHydraAddress = xcmData.address
 
               destHydraAddress = getAddressVariants(args.who).hydraAddress
               currencyId = args.currencyId?.toString() || NATIVE_ASSET_ID
@@ -362,7 +400,7 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
             }
 
             if (isXcmEvmTransfer(call?.args)) {
-              const evm = getDataFromEvmTx(api, call.args.transaction.value)
+              const evm = getDataFromXcmEvmTx(api, call.args.transaction.value)
               parachainId = evm?.parachainId
               sourceHydraAddress = getAddressVariants(args.who).hydraAddress
               destHydraAddress = evm.dest
@@ -370,32 +408,59 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
               amount = evm.amount
             }
 
-            const type = name.toLowerCase().includes("deposited") ? "IN" : "OUT"
+            const type: TransactionType = name
+              .toLowerCase()
+              .includes("deposited")
+              ? "deposit"
+              : "withdraw"
 
             const asset = assets.getAsset(currencyId)
 
-            const iconIds =
+            const assetIconIds =
               asset && assets.isStableSwap(asset)
                 ? asset.assets
                 : [asset?.id].filter(Boolean)
 
+            const sourceChain =
+              type === "withdraw"
+                ? chainsMap.get("hydradx")
+                : getChainById(parachainId)
+            const destChain =
+              type === "deposit"
+                ? chainsMap.get("hydradx")
+                : getChainById(parachainId)
+
+            const sourceAddr =
+              type === "withdraw" ? hydraAddress : sourceHydraAddress
+            const destAddr =
+              type === "deposit" ? hydraAddress : destHydraAddress
+
+            const sourceDisplay = addressToDisplayAddress(
+              sourceAddr,
+              sourceChain?.key,
+            )
+
+            const destDisplay = addressToDisplayAddress(
+              destAddr,
+              destChain?.key,
+            )
+
             return {
               type: type,
-              source: type === "OUT" ? hydraAddress : sourceHydraAddress,
-              dest: type === "IN" ? hydraAddress : destHydraAddress,
-              sourceChain:
-                type === "OUT"
-                  ? chainsMap.get("hydradx")
-                  : getChainById(parachainId),
-              destChain:
-                type === "IN"
-                  ? chainsMap.get("hydradx")
-                  : getChainById(parachainId),
+              source: sourceAddr,
+              dest: destAddr,
+              sourceDisplay,
+              destDisplay,
+              sourceChain,
+              destChain,
               amount,
               date: new Date(block.timestamp),
               extrinsicHash: extrinsic.hash,
               asset,
-              iconIds,
+              assetName: asset.name,
+              assetSymbol: asset.symbol,
+              assetDecimals: asset.decimals,
+              assetIconIds,
             }
           },
         )
@@ -409,10 +474,10 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
 
           const destHydraAddress = getAddressFromDest(dest)
 
-          const type =
+          const type: TransactionType =
             hydraAddress.toLowerCase() === sourceHydraAddress.toLowerCase()
-              ? "OUT"
-              : "IN"
+              ? "withdraw"
+              : "deposit"
 
           const assetId =
             transfer.args?.currencyId?.toString() || NATIVE_ASSET_ID
@@ -421,22 +486,40 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
 
           const asset = assets.getAsset(assetId)
 
-          const iconIds =
+          const assetIconIds =
             asset && assets.isStableSwap(asset)
               ? asset.assets
               : [asset?.id].filter(Boolean)
 
+          const sourceChain = chainsMap.get("hydradx")
+          const destChain = getChainFromDest(dest)
+
+          const sourceAddr =
+            type === "withdraw" ? hydraAddress : sourceHydraAddress
+          const destAddr = type === "deposit" ? hydraAddress : destHydraAddress
+
+          const sourceDisplay = addressToDisplayAddress(
+            sourceAddr,
+            sourceChain?.key,
+          )
+
+          const destDisplay = addressToDisplayAddress(destAddr, destChain?.key)
+
           return {
             type,
-            source: type === "OUT" ? hydraAddress : sourceHydraAddress,
-            dest: type === "IN" ? hydraAddress : destHydraAddress,
-            sourceChain: chainsMap.get("hydradx"),
-            destChain: getChainFromDest(dest),
+            source: sourceAddr,
+            dest: destAddr,
+            sourceChain,
+            destChain,
+            sourceDisplay,
+            destDisplay,
             amount: BN(amount ?? 0),
             date: new Date(transfer.block.timestamp),
             extrinsicHash: transfer.extrinsic.hash,
-            asset,
-            iconIds,
+            assetName: asset.name,
+            assetSymbol: asset.symbol,
+            assetDecimals: asset.decimals,
+            assetIconIds,
           }
         })
 

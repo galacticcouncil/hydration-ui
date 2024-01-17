@@ -1,12 +1,18 @@
-import { WalletTransactionsPlaceholder } from "sections/wallet/transactions/placeholder/WalletTransactionsPlaceholder"
-import { TransactionsTableWrapper } from "sections/wallet/transactions/table/TransactionsTableWrapper"
+import { Spacer } from "components/Spacer/Spacer"
+import { TransactionsSearchFilter } from "./filter/TransactionsSearchFilter"
+import { WalletTransactionsPlaceholder } from "./placeholder/WalletTransactionsPlaceholder"
+import { TransactionsTableWrapper } from "./table/TransactionsTableWrapper"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const WalletTransactions = () => {
   const { account } = useAccount()
 
   return account?.address ? (
-    <TransactionsTableWrapper address={account.address} />
+    <>
+      <TransactionsSearchFilter />
+      <Spacer size={20} />
+      <TransactionsTableWrapper address={account.address} />
+    </>
   ) : (
     <WalletTransactionsPlaceholder />
   )
