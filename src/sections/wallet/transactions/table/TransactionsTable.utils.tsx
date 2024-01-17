@@ -26,27 +26,33 @@ import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { useAccountIdentity } from "api/stats"
 import { H160, isEvmAccount } from "utils/evm"
 import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
 const AccountName = ({
   address,
-  ss58Prefix,
+  chainKey,
 }: {
   address: string
-  ss58Prefix?: number
+  chainKey?: string
 }) => {
   const identity = useAccountIdentity(address)
   const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const chain = chainKey ? chainsMap.get(chainKey) : null
 
   const strLen = isDesktop ? 6 : 4
 
   if (identity.data?.identity) return <>{identity.data.identity}</>
 
-  if (isEvmAccount(address))
+  const isEvmChain = chain?.isEvmParachain() || chainKey === "hydradx"
+
+  if (isEvmAccount(address) && isEvmChain) {
     return <>{shortenAccountAddress(H160.fromAccount(address), strLen)}</>
+  }
 
   const convertedAddress = safeConvertAddressSS58(
     address,
-    ss58Prefix ?? HYDRADX_SS58_PREFIX,
+    chain?.ss58Format ?? HYDRADX_SS58_PREFIX,
   )
 
   return <>{shortenAccountAddress(convertedAddress ?? address, strLen)}</>
@@ -112,10 +118,16 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
       id: "source",
       header: t("wallet.transactions.table.header.source"),
       cell: ({ row }) => (
-        <Text color="white">
+        <Text color="white" sx={{ flex: "row", gap: 8, align: "center" }}>
+          {row.original.sourceChain && (
+            <span sx={{ display: "block", width: 24, height: 24 }}>
+              <ChainLogo symbol={row.original.sourceChain.key} />
+            </span>
+          )}
           {row.original.source && (
             <AccountName
               address={getChainSpecificAddress(row.original.source)}
+              chainKey={row.original.sourceChain?.key}
             />
           )}
         </Text>
@@ -135,7 +147,7 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
             {row.original.dest && (
               <AccountName
                 address={row.original.dest}
-                ss58Prefix={row.original.destChain?.ss58Format}
+                chainKey={row.original.destChain?.key}
               />
             )}
           </Text>

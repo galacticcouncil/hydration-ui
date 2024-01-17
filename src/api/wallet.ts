@@ -1,15 +1,20 @@
-import { u8aToHex } from "@polkadot/util"
+import { u8aToHex, hexToU8a } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 import { useQuery } from "@tanstack/react-query"
 import { gql, request } from "graphql-request"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useIndexerUrl } from "./provider"
-import { getAddressVariants } from "utils/formatting"
-import { NATIVE_ASSET_ID } from "utils/api"
+import { getAddressVariants, safeConvertAddressSS58 } from "utils/formatting"
+import { HYDRA_ADDRESS_PREFIX, NATIVE_ASSET_ID } from "utils/api"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { H160, isEvmAddress } from "utils/evm"
+import { EIP1559Transaction } from "@polkadot/types/interfaces/eth"
+import { Maybe } from "utils/helpers"
+import { ApiPromise } from "@polkadot/api"
+import { BN_NAN } from "utils/constants"
+import { uniqBy } from "utils/rx"
 
 type InteriorParachainValueParachain = {
   value: number
@@ -69,10 +74,41 @@ type TransferType = {
   }
 }
 
+type XcmParachainArgs = {
+  data: {
+    horizontalMessages: Array<[number, { data: string; sentAt: number }[]]>
+  }
+}
+
+type XcmEvmArgs = {
+  transaction: {
+    value: EIP1559Transaction
+    __kind: "EIP1559"
+  }
+}
+
+type XcmTransferType = {
+  name: string
+  args: {
+    who: string
+    amount: string
+    currencyId: number
+  }
+  call: {
+    args: XcmParachainArgs | XcmEvmArgs
+  }
+  block: {
+    timestamp: string
+  }
+  extrinsic: {
+    hash: string
+  }
+}
+
 const chains = Array.from(chainsMap.values())
 
-const getChainById = (id: number | string) =>
-  chains.find((chain) => chain.parachainId === Number(id))
+const getChainById = (id: Maybe<number | string>) =>
+  id ? chains.find((chain) => chain.parachainId === Number(id)) : null
 
 const isParachainTransfer = (
   dest: string | TransferParachainDest | TransferPolkadotDest,
@@ -86,7 +122,7 @@ const isPolkadotTransfer = (
   return typeof dest !== "string" && !Array.isArray(dest.value.interior.value)
 }
 
-const isAccountId32 = (
+const isAccountId32K = (
   value: TAccountId32 | TAccountKey20,
 ): value is TAccountId32 => {
   return value.__kind === "AccountId32"
@@ -96,6 +132,18 @@ const isAccountKey20 = (
   value: TAccountId32 | TAccountKey20,
 ): value is TAccountKey20 => {
   return value.__kind === "AccountKey20" && isEvmAddress(value.key)
+}
+
+const isXcmParachainTransfer = (
+  args: XcmParachainArgs | XcmEvmArgs,
+): args is XcmParachainArgs => {
+  return !!(args as XcmParachainArgs)?.data?.horizontalMessages?.length
+}
+
+const isXcmEvmTransfer = (
+  args: XcmParachainArgs | XcmEvmArgs,
+): args is XcmEvmArgs => {
+  return (args as XcmEvmArgs)?.transaction?.__kind === "EIP1559"
 }
 
 const getAddressFromDest = (dest: string | TransferParachainDest) => {
@@ -109,7 +157,7 @@ const getAddressFromDest = (dest: string | TransferParachainDest) => {
 
   if (isParachainTransfer(dest)) {
     const [, value] = dest.value.interior.value
-    if (isAccountId32(value)) {
+    if (isAccountId32K(value)) {
       return getAddressVariants(value.id).hydraAddress
     }
 
@@ -119,6 +167,57 @@ const getAddressFromDest = (dest: string | TransferParachainDest) => {
   }
 
   return ""
+}
+
+const getDataFromEvmTx = (api: ApiPromise, tx: EIP1559Transaction) => {
+  let currencyId = null
+  let parachainId = null
+  let dest = ""
+  let amount = BN_NAN
+  try {
+    const data = api
+      .createType("ExtrinsicV4", hexToU8a(tx.input.toString()))
+      .toJSON() as {
+      method: {
+        args: {
+          currency_id: number
+          amount: string
+          dest: {
+            v2: {
+              interior: {
+                x2: {
+                  parachain: number
+                  accountKey20?: { key: string }
+                  accountId32?: { id: string }
+                }[]
+              }
+            }
+          }
+        }
+      }
+    }
+    currencyId = data.method.args.currency_id
+    parachainId = data.method.args.dest.v2.interior.x2[0].parachain
+
+    const destInterior = data.method.args.dest.v2.interior.x2[1]
+
+    const accountId32 = destInterior?.accountId32?.id
+    const accountKey20 = destInterior?.accountKey20?.key
+
+    dest = accountId32
+      ? getAddressVariants(accountId32).hydraAddress
+      : accountKey20 && isEvmAddress(accountKey20)
+      ? new H160(accountKey20).toAccount()
+      : ""
+    amount = BN(data.method.args.amount)
+  } catch {}
+
+  return {
+    currencyId,
+    parachainId,
+    dest,
+    amount,
+  }
 }
 
 const getChainFromDest = (
@@ -142,7 +241,10 @@ export const getAccountTransfers =
   (indexerUrl: string, accountHash: string) => async () => {
     return {
       ...(await request<{
+        // covers internal deposit/withdrawal transfers and XCM deposit transfers
         calls: Array<TransferType>
+        // covers  XCM deposits and EVM XCM withdrawal transfers
+        events: XcmTransferType[]
       }>(
         indexerUrl,
         gql`
@@ -180,6 +282,32 @@ export const getAccountTransfers =
                 hash
               }
             }
+            events(
+              where: {
+                name_in: ["Currencies.Deposited"]
+                args_jsonContains: { who: $accountHash }
+                call: { name_in: ["ParachainSystem.set_validation_data"] }
+                OR: {
+                  name_in: ["Tokens.Withdrawn"]
+                  args_jsonContains: { who: $accountHash }
+                  call: { name_in: ["Ethereum.transact"] }
+                }
+              }
+              orderBy: block_height_DESC
+            ) {
+              name
+              args
+              call {
+                args
+                name
+              }
+              block {
+                timestamp
+              }
+              extrinsic {
+                hash
+              }
+            }
           }
         `,
         { accountHash },
@@ -190,7 +318,7 @@ export const getAccountTransfers =
 export function useAccountTransfers(address: string, noRefresh?: boolean) {
   const indexerUrl = useIndexerUrl()
 
-  const { assets, isLoaded } = useRpcProvider()
+  const { assets, isLoaded, api } = useRpcProvider()
 
   const hydraAddress = address ? getAddressVariants(address).hydraAddress : ""
   const accountHash = address ? u8aToHex(decodeAddress(address)) : ""
@@ -205,7 +333,74 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
       select: (data) => {
         if (!data) return []
 
-        return data.calls.map((transfer, index) => {
+        const events = data.events.map(
+          ({ name, call, args, block, extrinsic }) => {
+            let parachainId = null
+            let sourceHydraAddress = null
+            let destHydraAddress = null
+            let currencyId = NATIVE_ASSET_ID
+            let amount = BN_NAN
+
+            if (isXcmParachainTransfer(call?.args)) {
+              const msg = call.args?.data?.horizontalMessages.find(
+                ([, data]) => {
+                  return !!data?.length
+                },
+              )
+
+              parachainId = msg?.[0]
+              sourceHydraAddress = msg
+                ? safeConvertAddressSS58(
+                    `0x${msg?.[1]?.[0]?.data?.slice(-64)}`,
+                    HYDRA_ADDRESS_PREFIX,
+                  )
+                : ""
+
+              destHydraAddress = getAddressVariants(args.who).hydraAddress
+              currencyId = args.currencyId?.toString() || NATIVE_ASSET_ID
+              amount = BN(args.amount ?? 0)
+            }
+
+            if (isXcmEvmTransfer(call?.args)) {
+              const evm = getDataFromEvmTx(api, call.args.transaction.value)
+              parachainId = evm?.parachainId
+              sourceHydraAddress = getAddressVariants(args.who).hydraAddress
+              destHydraAddress = evm.dest
+              currencyId = evm?.currencyId?.toString() ?? NATIVE_ASSET_ID
+              amount = evm.amount
+            }
+
+            const type = name.toLowerCase().includes("deposited") ? "IN" : "OUT"
+
+            const asset = assets.getAsset(currencyId)
+
+            const iconIds =
+              asset && assets.isStableSwap(asset)
+                ? asset.assets
+                : [asset?.id].filter(Boolean)
+
+            return {
+              type: type,
+              source: type === "OUT" ? hydraAddress : sourceHydraAddress,
+              dest: type === "IN" ? hydraAddress : destHydraAddress,
+              sourceChain:
+                type === "OUT"
+                  ? chainsMap.get("hydradx")
+                  : getChainById(parachainId),
+              destChain:
+                type === "IN"
+                  ? chainsMap.get("hydradx")
+                  : getChainById(parachainId),
+              amount,
+              date: new Date(block.timestamp),
+              extrinsicHash: extrinsic.hash,
+              asset,
+              iconIds,
+            }
+          },
+        )
+
+        const calls = data.calls.map((transfer, index) => {
           const sourceHydraAddress = getAddressVariants(
             transfer.origin.value.value,
           ).hydraAddress
@@ -242,9 +437,17 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
             extrinsicHash: transfer.extrinsic.hash,
             asset,
             iconIds,
-            call: data.calls[index],
           }
         })
+
+        const uniq = uniqBy(
+          ({ extrinsicHash }) => extrinsicHash,
+          [...events, ...calls],
+        )
+          .filter(({ amount }) => amount?.gte(0))
+          .sort((a, b) => (a.date.getTime() > b.date.getTime() ? -1 : 1))
+
+        return uniq
       },
     },
   )
