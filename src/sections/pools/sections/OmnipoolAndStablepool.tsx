@@ -15,6 +15,7 @@ import { useSearch } from "@tanstack/react-location"
 import { PoolWrapper } from "sections/pools/pool/Pool"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
+import { EmptySearchState } from "sections/pools/components/EmptySearchState"
 
 export const OmnipoolAndStablepool = () => {
   const { t } = useTranslation()
@@ -118,8 +119,10 @@ const OmnipoolAndStablepoolData = () => {
 
       {pools.isLoading ? (
         <PoolsTableSkeleton />
-      ) : (
+      ) : filteredPools.length ? (
         <PoolsTable data={filteredPools} />
+      ) : (
+        <EmptySearchState />
       )}
     </>
   )

@@ -792,5 +792,8 @@
   "yield.toast.onLoading": "<0>Placing a Yield DCA order on </0><1>{{ amount }} {{ symbol }}</1>.",
   "yield.toast.onSuccess": "<0>Placed a Yield DCA order on </0><1>{{ amount }} {{ symbol }}</1>.",
   "banner.newFarms.label": "New Farms for {{symbols}}",
-  "banner.newFarms.link": "Go to Liquidity \u2192"
+  "banner.newFarms.link": "Go to Liquidity \u2192",
+  "searchFilter.empty.title": "No results found",
+  "searchFilter.empty.desc": "Didn't find what you're looking for?",
+  "searchFilter.empty.link": "Join the Telegram"
 }

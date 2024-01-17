@@ -14,6 +14,7 @@ import { PoolWrapper } from "sections/pools/pool/Pool"
 import { useSearch } from "@tanstack/react-location"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
+import { EmptySearchState } from "sections/pools/components/EmptySearchState"
 
 export const IsolatedPools = () => {
   const { t } = useTranslation()
@@ -110,8 +111,10 @@ const IsolatedPoolsData = () => {
 
       {xylPools.isInitialLoading ? (
         <PoolsTableSkeleton isXyk />
-      ) : (
+      ) : filteredPools.length ? (
         <PoolsTable data={filteredPools} isXyk />
+      ) : (
+        <EmptySearchState />
       )}
     </>
   )

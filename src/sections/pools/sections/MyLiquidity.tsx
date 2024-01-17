@@ -18,6 +18,7 @@ import { MyFarmsTotal } from "sections/pools/header/MyFarmsTotal"
 import { MyStablePoolsTotal } from "sections/pools/header/StablePoolsTotal"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
+import { EmptySearchState } from "sections/pools/components/EmptySearchState"
 
 const poolsWithMyPositions = true
 
@@ -60,7 +61,20 @@ export const MyLiquidity = () => {
         />
         <SearchFilter />
 
-        <PoolsTableSkeleton />
+        <div sx={{ flex: "column", gap: 20 }}>
+          <div sx={{ flex: "column", gap: 20 }}>
+            <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
+              {t("liquidity.section.omnipoolAndStablepool")}
+            </Text>
+            <PoolsTableSkeleton />
+          </div>
+          <div sx={{ flex: "column", gap: 20 }}>
+            <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
+              {t("liquidity.section.xyk")}
+            </Text>
+            <PoolsTableSkeleton isXyk />
+          </div>
+        </div>
       </>
     )
 
@@ -147,30 +161,40 @@ const MyLiquidityData = () => {
         ]}
       />
       <SearchFilter />
+
+      {!pools.isLoading &&
+        !xylPools.isInitialLoading &&
+        !filteredPools.length &&
+        !filteredXYKPools.length && <EmptySearchState />}
+
       <div sx={{ flex: "column", gap: 20 }}>
-        <div sx={{ flex: "column", gap: 20 }}>
-          <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
-            {t("liquidity.section.omnipoolAndStablepool")}
-          </Text>
+        {pools.isLoading && !!filteredPools.length ? (
+          <div sx={{ flex: "column", gap: 20 }}>
+            <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
+              {t("liquidity.section.omnipoolAndStablepool")}
+            </Text>
 
-          {pools.isLoading ? (
-            <PoolsTableSkeleton />
-          ) : (
-            <PoolsTable data={filteredPools} />
-          )}
-        </div>
+            {pools.isLoading ? (
+              <PoolsTableSkeleton />
+            ) : (
+              <PoolsTable data={filteredPools} />
+            )}
+          </div>
+        ) : null}
 
-        <div sx={{ flex: "column", gap: 20 }}>
-          <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
-            {t("liquidity.section.xyk")}
-          </Text>
+        {xylPools.isInitialLoading || !!filteredXYKPools.length ? (
+          <div sx={{ flex: "column", gap: 20 }}>
+            <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
+              {t("liquidity.section.xyk")}
+            </Text>
 
-          {xylPools.isInitialLoading ? (
-            <PoolsTableSkeleton isXyk />
-          ) : (
-            <PoolsTable data={filteredXYKPools} isXyk />
-          )}
-        </div>
+            {xylPools.isInitialLoading ? (
+              <PoolsTableSkeleton isXyk />
+            ) : (
+              <PoolsTable data={filteredXYKPools} isXyk />
+            )}
+          </div>
+        ) : null}
       </div>
     </>
   )
