@@ -96,6 +96,7 @@ export const TransactionsTable = ({ data }: Props) => {
                         "&": {
                           paddingTop: 16,
                           paddingBottom: 8,
+                          pointerEvents: "none",
                         },
                       }}
                       colSpan={table.getAllColumns().length}

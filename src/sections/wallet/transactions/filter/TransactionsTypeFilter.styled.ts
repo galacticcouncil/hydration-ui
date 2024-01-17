@@ -7,6 +7,7 @@ export const SFilterButton = styled(ButtonTransparent)<{ active?: boolean }>`
   font-weight: 500;
   color: white;
 
+  padding: 0 8px;
   padding-bottom: 20px;
 
   color: ${({ active }) =>

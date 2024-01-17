@@ -18,7 +18,7 @@ export const TransactionsTypeFilter = () => {
   const { t } = useTranslation()
   const { type: activeType, setFilter } = useWalletTransactionsFilters()
   return (
-    <div sx={{ flex: "row", gap: 32, px: 32 }}>
+    <div sx={{ flex: "row", gap: 16, px: 32 }}>
       {FILTER_BUTTONS.map(({ type }) => (
         <SFilterButton
           key={type}
