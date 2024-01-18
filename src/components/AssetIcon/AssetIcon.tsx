@@ -54,7 +54,7 @@ export function getAssetName(symbol: string | null | undefined) {
   return "N/A"
 }
 
-export const AssetLogo = ({ id }: { id?: string }) => {
+export const AssetLogo = ({ id }: { id?: string}) => {
   const { assets } = useRpcProvider()
 
   const asset = useMemo(() => {

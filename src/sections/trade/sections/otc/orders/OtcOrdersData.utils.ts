@@ -31,7 +31,7 @@ export const useOrdersTableData = () => {
       return {
         id: order.id,
         owner: order.owner,
-        offering: {
+        offer: {
           initial:
             amountOutInitial &&
             new BN(amountOutInitial).shiftedBy(-1 * amountOutDp),
@@ -48,6 +48,7 @@ export const useOrdersTableData = () => {
           symbol: order.assetIn?.symbol,
         },
         price: amountIn.div(amountOut),
+        marketPrice: amountIn.div(amountOut),
         partiallyFillable: order.partiallyFillable,
         pol: order.owner === treasuryAddr,
       } as OrderTableData
@@ -64,9 +65,10 @@ export const useOrdersTableData = () => {
 export type OrderTableData = {
   id: string
   owner: string
-  offering: OfferingPair
+  offer: OfferingPair
   accepting: OfferingPair
   price: BN
+  marketPrice: BN //TODO: Proper output type
   filled: string
   partiallyFillable: boolean
   pol: boolean

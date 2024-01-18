@@ -4,54 +4,68 @@ import {
   getSortedRowModel,
   useReactTable,
   VisibilityState,
-} from "@tanstack/react-table"
-import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
-import { useMedia } from "react-use"
-import { theme } from "theme"
-import { OrderCapacity } from "sections/trade/sections/otc/capacity/OrderCapacity"
-import { OtcOrderActions } from "./actions/OtcOrderActions"
+} from "@tanstack/react-table";
+import { Text } from "components/Typography/Text/Text";
+import { useTranslation } from "react-i18next";
+import { useMedia } from "react-use";
+import { theme } from "theme";
+import { OrderCapacity } from "sections/trade/sections/otc/capacity/OrderCapacity";
+import { OtcOrderActions } from "./actions/OtcOrderActions";
 import {
   OrderAssetColumn,
   OrderPairColumn,
   OrderPriceColumn,
-} from "./OtcOrdersData"
-import { OrderTableData } from "./OtcOrdersData.utils"
-import Skeleton from "react-loading-skeleton"
-import { useMemo } from "react"
+} from "./OtcOrdersData";
+import { OrderTableData } from "./OtcOrdersData.utils";
+import Skeleton from "react-loading-skeleton";
+import { useMemo } from "react";
 
 export const useOrdersTable = (
   data: OrderTableData[],
   actions: {
-    onFill: (data: OrderTableData) => void
-    onClose: (data: OrderTableData) => void
+    onFill: (data: OrderTableData) => void;
+    onClose: (data: OrderTableData) => void;
   },
 ) => {
-  const { t } = useTranslation()
-  const { accessor, display } = createColumnHelper<OrderTableData>()
+  const { t } = useTranslation();
+  const { accessor, display } = createColumnHelper<OrderTableData>();
 
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isDesktop = useMedia(theme.viewport.gte.sm);
   const columnVisibility: VisibilityState = {
     pair: true,
-    price: true,
-    offering: isDesktop,
+    offer: isDesktop,
     accepting: isDesktop,
+    price: true,
+    marketPrice: isDesktop,
     filled: isDesktop,
     actions: true,
-  }
+  };
 
   const columns = useMemo(
     () => [
-      accessor("id", {
-        id: "pair",
-        header: t("otc.offers.table.header.assets"),
-        cell: ({ row }) => (
-          <OrderPairColumn
-            offering={row.original.offering}
-            accepting={row.original.accepting}
-            pol={row.original.pol}
-          />
-        ),
+      // TODO: Delete
+      // accessor("id", {
+      //   id: "pair",
+      //   header: t("otc.offers.table.header.assets"),
+      //   cell: ({ row }) => (
+      //     <OrderPairColumn
+      //       offering={row.original.offer}
+      //       accepting={row.original.accepting}
+      //       pol={row.original.pol}
+      //     />
+      //   ),
+      // }),
+      accessor("offer", {
+        id: "offer",
+        header: isDesktop
+          ? t("otc.offers.table.header.offer")
+          : t("selectAssets.asset"),
+        cell: ({ row }) => <OrderAssetColumn pair={row.original.offer} />,
+      }),
+      accessor("accepting", {
+        id: "accepting",
+        header: t("otc.offers.table.header.accepting"),
+        cell: ({ row }) => <OrderAssetColumn pair={row.original.accepting} />,
       }),
       accessor("price", {
         id: "price",
@@ -63,17 +77,15 @@ export const useOrdersTable = (
           />
         ),
       }),
-      accessor("offering", {
-        id: "offering",
-        header: isDesktop
-          ? t("otc.offers.table.header.offering")
-          : t("selectAssets.asset"),
-        cell: ({ row }) => <OrderAssetColumn pair={row.original.offering} />,
-      }),
-      accessor("accepting", {
-        id: "accepting",
-        header: t("otc.offers.table.header.accepting"),
-        cell: ({ row }) => <OrderAssetColumn pair={row.original.accepting} />,
+      accessor("marketPrice", {
+        id: "marketPrice",
+        header: t("otc.offers.table.header.marketPrice"),
+        cell: ({ row }) => (
+          <OrderPriceColumn
+            symbol={row.original.accepting.symbol}
+            price={row.original.price}
+          />
+        ),
       }),
       accessor("filled", {
         id: "filled",
@@ -120,7 +132,7 @@ export const useOrdersTable = (
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [actions, isDesktop],
-  )
+  );
 
   return useReactTable({
     data,
@@ -128,14 +140,14 @@ export const useOrdersTable = (
     state: { columnVisibility },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-  })
-}
+  });
+};
 
 export const useOrdersTableSkeleton = () => {
-  const { t } = useTranslation()
-  const { display } = createColumnHelper()
+  const { t } = useTranslation();
+  const { display } = createColumnHelper();
 
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isDesktop = useMedia(theme.viewport.gte.sm);
   const columnVisibility: VisibilityState = {
     pair: true,
     price: true,
@@ -143,24 +155,14 @@ export const useOrdersTableSkeleton = () => {
     accepting: isDesktop,
     filled: isDesktop,
     actions: true,
-  }
+  };
 
   const columns = useMemo(
     () => [
       display({
-        id: "pair",
-        header: "Assets",
-        cell: () => <Skeleton width="100%" height="100%" />,
-      }),
-      display({
-        id: "price",
-        header: t("otc.offers.table.header.price"),
-        cell: () => <Skeleton width="100%" height="100%" />,
-      }),
-      display({
-        id: "offering",
+        id: "offer",
         header: isDesktop
-          ? t("otc.offers.table.header.offering")
+          ? t("otc.offers.table.header.offer")
           : t("selectAssets.asset"),
         cell: () => <Skeleton width="100%" height="100%" />,
       }),
@@ -170,23 +172,28 @@ export const useOrdersTableSkeleton = () => {
         cell: () => <Skeleton width="100%" height="100%" />,
       }),
       display({
-        id: "filled",
-        header: () => (
-          <div
-            style={{
-              textAlign: "center",
-              width: "100%",
-            }}
-          >
-            {t("otc.offers.table.header.status")}
-          </div>
-        ),
+        id: "price",
+        header: t("otc.offers.table.header.price"),
         cell: () => <Skeleton width="100%" height="100%" />,
+      }),
+      display({
+        id: "marketPrice",
+        header: t("otc.offers.table.header.marketPrice"),
+        cell: () => <Skeleton width="100%" height="100%" />,
+      }),
+      display({
+        id: "filled",
+        header: t("otc.offers.table.header.status"),
+        cell: () => <Skeleton width="100%" height="100%" />,
+      }),
+      display({
+        id: "actions",
+        cell: ''
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [isDesktop],
-  )
+  );
 
   return useReactTable({
     data: mockData,
@@ -194,7 +201,7 @@ export const useOrdersTableSkeleton = () => {
     state: { columnVisibility },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-  })
-}
+  });
+};
 
-const mockData = [1, 2, 3, 4]
+const mockData = [1, 2, 3, 4];

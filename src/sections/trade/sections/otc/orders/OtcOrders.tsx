@@ -1,10 +1,13 @@
 import { flexRender } from "@tanstack/react-table"
 import { TableSortHeader } from "components/Table/Table"
 import {
+  StatsTableContainer,
+  StatsTableTitle,
   Table,
   TableBodyContent,
   TableContainer,
   TableData,
+  TableHeader,
   TableHeaderContent,
   TableRow,
 } from "components/Table/Table.styled"
@@ -103,7 +106,7 @@ export const OtcOrderTable = ({ data, showMyOrders, showPartial }: Props) => {
         <PartialFillOrder
           orderId={fillOrder.id}
           accepting={fillOrder.accepting}
-          offering={fillOrder.offering}
+          offering={fillOrder.offer}
           onClose={() => setFillOrder(undefined)}
           onSuccess={() => {}}
         />
@@ -112,7 +115,7 @@ export const OtcOrderTable = ({ data, showMyOrders, showPartial }: Props) => {
         <FillOrder
           orderId={fillOrder.id}
           accepting={fillOrder.accepting}
-          offering={fillOrder.offering}
+          offering={fillOrder.offer}
           onClose={() => setFillOrder(undefined)}
           onSuccess={() => {}}
         />
@@ -120,7 +123,7 @@ export const OtcOrderTable = ({ data, showMyOrders, showPartial }: Props) => {
       {closeOrder && (
         <CancelOrder
           orderId={closeOrder.id}
-          offering={closeOrder.offering}
+          offering={closeOrder.offer}
           onClose={() => setCloseOrder(undefined)}
           onSuccess={() => {}}
         />
