@@ -73,6 +73,7 @@ export const PoolsTable = ({
                         paddingLeft: 0,
                       },
                     }}
+                    sx={{ px: [10, 26] }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableData>

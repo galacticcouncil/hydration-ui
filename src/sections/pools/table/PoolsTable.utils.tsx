@@ -43,6 +43,25 @@ import { CellSkeleton } from "components/Skeleton/CellSkeleton"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
+const NonClickableContainer = ({
+  children,
+  ...rest
+}: React.HTMLAttributes<HTMLDivElement>) => {
+  return (
+    <div
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+      sx={{ width: "fit-content", px: 8 }}
+      css={{ cursor: "text" }}
+      {...rest}
+    >
+      {children}
+    </div>
+  )
+}
+
 const AssetTableName = ({ id }: { id: string }) => {
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(id)
@@ -51,37 +70,33 @@ const AssetTableName = ({ id }: { id: string }) => {
   const iconIds = asset.iconId
 
   return (
-    <div>
-      <div sx={{ flex: "row", gap: 8, align: "center" }}>
-        {typeof iconIds === "string" ? (
-          <Icon
-            size={26}
-            icon={<AssetLogo id={iconIds} />}
-            css={{ flex: "1 0 auto" }}
-          />
-        ) : (
-          <MultipleIcons
-            size={26}
-            icons={iconIds.map((asset) => {
-              const meta = assets.getAsset(asset)
-              const isBond = assets.isBond(meta)
-              return {
-                icon: <AssetLogo id={isBond ? meta.assetId : asset} />,
-              }
-            })}
-          />
-        )}
+    <NonClickableContainer sx={{ flex: "row", gap: 8, align: "center" }}>
+      {typeof iconIds === "string" ? (
+        <Icon
+          size={26}
+          icon={<AssetLogo id={iconIds} />}
+          css={{ flex: "1 0 auto" }}
+        />
+      ) : (
+        <MultipleIcons
+          size={26}
+          icons={iconIds.map((asset) => {
+            const meta = assets.getAsset(asset)
+            const isBond = assets.isBond(meta)
+            return {
+              icon: <AssetLogo id={isBond ? meta.assetId : asset} />,
+            }
+          })}
+        />
+      )}
 
-        <div sx={{ flex: "column", width: "100%", gap: [0, 4] }}>
-          <Text fs={14} lh={16} fw={700} color="white">
-            {asset.symbol}
-          </Text>
-          {farms.data?.length ? (
-            <GlobalFarmRowMulti farms={farms.data} />
-          ) : null}
-        </div>
+      <div sx={{ flex: "column", width: "100%", gap: [0, 4] }}>
+        <Text fs={14} lh={16} fw={700} color="white">
+          {asset.symbol}
+        </Text>
+        {farms.data?.length ? <GlobalFarmRowMulti farms={farms.data} /> : null}
       </div>
-    </div>
+    </NonClickableContainer>
   )
 }
 
@@ -229,7 +244,13 @@ const APY = ({
   if (farms.data?.length)
     return <APYFarming farms={farms.data} apy={fee.toNumber()} />
 
-  return <Text color="white">{t("value.percentage", { value: fee })}</Text>
+  return (
+    <NonClickableContainer>
+      <Text color="white" fs={14}>
+        {t("value.percentage", { value: fee })}
+      </Text>
+    </NonClickableContainer>
+  )
 }
 
 export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
@@ -265,9 +286,11 @@ export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
         sortingFn: (a, b) =>
           a.original.tvlDisplay.gt(b.original.tvlDisplay) ? 1 : -1,
         cell: ({ row }) => (
-          <Text color="white" fs={14}>
-            <DisplayValue value={row.original.tvlDisplay} />
-          </Text>
+          <NonClickableContainer>
+            <Text color="white" fs={14}>
+              <DisplayValue value={row.original.tvlDisplay} />
+            </Text>
+          </NonClickableContainer>
         ),
       }),
       ...(!isXyk
@@ -276,7 +299,13 @@ export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
               id: "apy",
               //@ts-ignore
               header: (
-                <div sx={{ flex: "row", align: "center", gap: 4 }}>
+                <div
+                  sx={{
+                    flex: "row",
+                    align: "center",
+                    gap: 4,
+                  }}
+                >
                   {t("stats.overview.table.assets.header.apy")}
                   <InfoTooltip
                     text={t("stats.overview.table.assets.header.apy.desc")}
@@ -302,9 +331,11 @@ export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
             header: t("fee"),
             sortingFn: (a, b) => (a.original.fee.gt(b.original.fee) ? 1 : -1),
             cell: ({ row }) => (
-              <Text color="white" fs={14}>
-                {t("value.percentage", { value: row.original.fee })}
-              </Text>
+              <NonClickableContainer>
+                <Text color="white" fs={14}>
+                  {t("value.percentage", { value: row.original.fee })}
+                </Text>
+              </NonClickableContainer>
             ),
           })
         : accessor("spotPrice", {
@@ -315,9 +346,11 @@ export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
                 ? 1
                 : -1,
             cell: ({ row }) => (
-              <Text color="white" fs={14}>
-                <DisplayValue value={row.original.spotPrice} type="token" />
-              </Text>
+              <NonClickableContainer>
+                <Text color="white" fs={14}>
+                  <DisplayValue value={row.original.spotPrice} type="token" />
+                </Text>
+              </NonClickableContainer>
             ),
           }),
 
@@ -329,7 +362,7 @@ export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
 
           if (pool.isVolumeLoading) return <Skeleton width={60} height={18} />
           return (
-            <div
+            <NonClickableContainer
               sx={{
                 flex: "row",
                 gap: 4,
@@ -348,7 +381,7 @@ export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
                   icon={<ChevronRightIcon />}
                 />
               </ButtonTransparent>
-            </div>
+            </NonClickableContainer>
           )
         },
       }),
