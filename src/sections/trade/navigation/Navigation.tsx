@@ -15,8 +15,6 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { LINKS } from "utils/navigation"
 
-const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
-
 export const BondsTabLink = () => {
   const { t } = useTranslation()
   const {
@@ -67,13 +65,11 @@ export const Navigation = () => {
         icon={<IconSwap />}
         label={t("header.trade.swap.title")}
       />
-      {isOtcPageEnabled && (
-        <SubNavigationTabLink
-          to={LINKS.otc}
-          icon={<IconOTC />}
-          label={t("header.trade.otc.title")}
-        />
-      )}
+      <SubNavigationTabLink
+        to={LINKS.otc}
+        icon={<IconOTC />}
+        label={t("header.trade.otc.title")}
+      />
       <SubNavigationTabLink
         to={LINKS.yieldDca}
         icon={<Icon size={24} icon={<IconYieldDCA />} />}

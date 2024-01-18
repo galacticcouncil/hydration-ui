@@ -21,8 +21,6 @@ import { StatsOmnipoolAsset } from "sections/stats/sections/omnipoolAsset/StatsO
 import { BridgePage } from "sections/xcm/BridgePage"
 import { YieldDcaPage } from "sections/trade/sections/yieldDca/YieldDcaPage"
 
-const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
-
 export const routes = [
   {
     path: "/",
@@ -41,10 +39,8 @@ export const routes = [
         element: <SwapPage />,
       },
       {
-        ...(isOtcPageEnabled && {
-          path: "otc",
-          element: <OtcPageWrapper />,
-        }),
+        path: "otc",
+        element: <OtcPageWrapper />,
       },
       {
         path: "yield-dca",
