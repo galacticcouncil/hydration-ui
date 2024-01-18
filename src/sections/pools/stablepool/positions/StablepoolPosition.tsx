@@ -34,6 +34,8 @@ export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
   const meta = assets.getAsset(pool.id.toString())
   const amount = pool.stablepoolUserPosition ?? BN_0
 
+  if (amount.isZero()) return null
+
   const spotPrice = pool.spotPrice
   const providedAmountPrice = spotPrice
     ? amount.multipliedBy(spotPrice).shiftedBy(-meta.decimals)
