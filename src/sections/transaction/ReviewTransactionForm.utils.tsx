@@ -168,7 +168,10 @@ export const useTransactionValues = ({
   }
 
   let isEnoughPaymentBalance
-  if (xcallMeta && xcallMeta?.srcChain !== HYDRADX_CHAIN_KEY) {
+  if (xcallMeta && xcallMeta?.srcChain === "bifrost") {
+    // @TODO remove when fixed in xcm app
+    isEnoughPaymentBalance = true
+  } else if (xcallMeta && xcallMeta?.srcChain !== HYDRADX_CHAIN_KEY) {
     const feeBalanceDiff =
       parseFloat(xcallMeta.srcChainFeeBalance) -
       parseFloat(xcallMeta.srcChainFee)
