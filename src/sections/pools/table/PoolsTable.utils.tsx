@@ -138,7 +138,12 @@ const AddLiqduidityButton = ({ pool }: { pool: TPool | TXYKPool }) => {
     : []
 
   return (
-    <>
+    <div
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+    >
       <Button
         size="small"
         disabled={!pool.canAddLiquidity || account?.isExternalWalletConnected}
@@ -182,7 +187,7 @@ const AddLiqduidityButton = ({ pool }: { pool: TPool | TXYKPool }) => {
           onClose={() => setLiquidityStablepool(undefined)}
         />
       )}
-    </>
+    </div>
   )
 }
 
@@ -395,7 +400,6 @@ export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
               align: "center",
               justify: ["end", "start"],
             }}
-            onClick={(e) => e.stopPropagation()}
           >
             <AddLiqduidityButton pool={row.original} />
             <ButtonTransparent>
