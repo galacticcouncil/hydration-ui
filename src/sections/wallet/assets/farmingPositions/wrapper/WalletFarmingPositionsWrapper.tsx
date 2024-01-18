@@ -1,3 +1,4 @@
+import { EmptySearchState } from "sections/pools/components/EmptySearchState"
 import { WalletFarmingPositionsSkeleton } from "sections/wallet/assets/farmingPositions/skeleton/WalletFarmingPositionsSkeleton"
 import { WalletFarmingPositions } from "sections/wallet/assets/farmingPositions/WalletFarmingPositions"
 import { useFarmingPositionsData } from "sections/wallet/assets/farmingPositions/WalletFarmingPositions.utils"
@@ -10,5 +11,9 @@ export const WalletFarmingPositionsWrapper = () => {
 
   if (isLoading) return <WalletFarmingPositionsSkeleton />
 
-  return <WalletFarmingPositions data={data} />
+  return data.length ? (
+    <WalletFarmingPositions data={data} />
+  ) : (
+    <EmptySearchState />
+  )
 }
