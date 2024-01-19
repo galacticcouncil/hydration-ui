@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { useAssetsTradability } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NATIVE_ASSET_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
+import { normalizeBigNumber } from "utils/balance"
 import { BN_0, BN_MILL, BN_NAN } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { useStableswapPools } from "api/stableswap"
@@ -24,6 +24,7 @@ import { useGetXYKPools, useShareTokens, useXYKConsts } from "api/xyk"
 import { useShareOfPools } from "api/pools"
 import { TShareToken } from "api/assetDetails"
 import { useXYKPollTradeVolumes } from "./pool/details/PoolDetails.utils"
+import { useTVL } from "api/stats"
 
 export type TOmnipoolAsset = NonNullable<
   ReturnType<typeof useOmnipoolAndStablepool>["data"]
@@ -50,6 +51,7 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
     [omnipoolAssets.data],
   )
   const volumes = useVolume("all")
+  const tvls = useTVL("all")
 
   const omnipoolBalances = useTokensBalances(assetsId, OMNIPOOL_ACCOUNT_ADDRESS)
 
@@ -130,10 +132,6 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
         const spotPrice = spotPrices.data?.find((sp) => sp?.tokenIn === assetId)
           ?.spotPrice
 
-        const omnipoplBalance = omnipoolBalances.find(
-          (b) => b.data?.assetId.toString() === assetId,
-        )?.data?.balance
-
         const stablepoolBalance = isStablepool
           ? stablepoolsBalances.data?.find(
               (stablepoolBalance) =>
@@ -187,11 +185,12 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
           (t) => t.id === assetId,
         )
 
-        const total = getFloatingPointAmount(
-          omnipoplBalance ?? BN_0,
-          meta.decimals,
+        const total = BN(
+          tvls.data?.find((tvl) => tvl.asset_id === Number(assetId))?.tvl_usd ??
+            BN_NAN,
         )
-        const totalDisplay = !spotPrice ? BN_NAN : total.times(spotPrice)
+
+        const totalDisplay = total
 
         const omnipoolNftPositions = omnipoolPositions.data.filter(
           (position) => position.assetId === assetId,
@@ -261,6 +260,7 @@ export const useOmnipoolAndStablepool = (withPositions?: boolean) => {
     miningPositions,
     volumes,
     stablepoolAddressById,
+    tvls,
   ])?.filter((pool) =>
     withPositions
       ? pool.isMiningNftPositions ||
