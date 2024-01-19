@@ -69,7 +69,8 @@ const AllPoolsData = () => {
   const omnipoolTotal = useMemo(() => {
     if (omnipoolAndStablepool.data) {
       return omnipoolAndStablepool.data.reduce(
-        (acc, asset) => acc.plus(asset.totalDisplay),
+        (acc, asset) =>
+          acc.plus(asset.totalDisplay.isNaN() ? 0 : asset.totalDisplay),
         BN_0,
       )
     }
