@@ -76,7 +76,8 @@ const OmnipoolAndStablepoolData = () => {
   const omnipoolTradeTotal = useMemo(() => {
     return (
       omnipoolAndStablepool.data?.reduce(
-        (acc, item) => acc.plus(item.volumeDisplay ?? 0),
+        (acc, item) =>
+          acc.plus(!item.volumeDisplay.isNaN() ? item.volumeDisplay : 0),
         BN_0,
       ) ?? BN_0
     )
