@@ -229,6 +229,9 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
         return 1
       }
 
+      if (assetA[sortBy].isNaN()) return 1
+      if (assetB[sortBy].isNaN()) return -1
+
       return assetA[sortBy].gt(assetB[sortBy]) ? -1 : 1
     })
 

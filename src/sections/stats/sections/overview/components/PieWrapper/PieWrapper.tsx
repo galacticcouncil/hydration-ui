@@ -27,9 +27,13 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
     return data.reduce(
       (acc, omnipoolAsset) => {
         acc = {
-          totalTvl: acc.totalTvl.plus(omnipoolAsset.tvl),
+          totalTvl: acc.totalTvl.plus(
+            omnipoolAsset.tvl.isNaN() ? 0 : omnipoolAsset.tvl,
+          ),
           totalPol: acc.totalPol.plus(omnipoolAsset.pol),
-          totalVolume: acc.totalVolume.plus(omnipoolAsset.volume),
+          totalVolume: acc.totalVolume.plus(
+            omnipoolAsset.volume.isNaN() ? 0 : omnipoolAsset.volume,
+          ),
         }
         return acc
       },
