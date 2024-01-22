@@ -23,6 +23,10 @@ import {
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 import { theme } from "theme"
 import { WalletAssetsTableActionsMob } from "./actions/WalletAssetsTableActionsMob"
+import { Button } from "components/Button/Button"
+import PlusIcon from "assets/icons/PlusIcon.svg?react"
+import { Icon } from "components/Icon/Icon"
+import { AddTokenModal } from "sections/wallet/addToken/AddTokenModal"
 
 type Props = {
   data: AssetsTableData[]
@@ -33,6 +37,7 @@ type Props = {
 export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
   const { t } = useTranslation()
   const [row, setRow] = useState<AssetsTableData | undefined>(undefined)
+  const [addToken, setAddToken] = useState(false)
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -47,95 +52,113 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
   })
 
   return (
-    <TableContainer css={assetsTableStyles}>
-      <TableTitle>
-        <Text
-          fs={[16, 20]}
-          lh={[20, 26]}
-          css={{ fontFamily: "FontOver" }}
-          fw={500}
-          color="white"
-        >
-          {isDesktop
-            ? t("wallet.assets.table.title")
-            : t("wallet.header.assets")}
-        </Text>
-        <Switch
-          value={showAll}
-          onCheckedChange={(value) => setShowAll(value)}
-          size="small"
-          name="showAll"
-          label={t("wallet.assets.table.toggle")}
-        />
-      </TableTitle>
-      <Table css={{ tableLayout: "fixed" }}>
-        <TableHeaderContent>
-          {table.getHeaderGroups().map((hg) => (
-            <TableRow key={hg.id}>
-              {hg.headers.map((header) => (
-                <TableSortHeader
-                  key={header.id}
-                  canSort={header.column.getCanSort()}
-                  sortDirection={header.column.getIsSorted()}
-                  onSort={header.column.getToggleSortingHandler()}
-                  css={{
-                    width:
-                      header.getSize() !== 150
-                        ? `${header.getSize()}%`
-                        : "auto",
-                  }}
-                >
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext(),
-                  )}
-                </TableSortHeader>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeaderContent>
-        <TableBodyContent>
-          {table.getRowModel().rows.map((row, i) => (
-            <Fragment key={row.original.id}>
-              <TableRow
-                isOdd={!(i % 2)}
-                onClick={() => {
-                  isDesktop && row.toggleSelected()
-                  !isDesktop && setRow(row.original)
-                }}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableData key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableData>
+    <>
+      <TableContainer css={assetsTableStyles}>
+        <TableTitle>
+          <Text
+            fs={[16, 20]}
+            lh={[20, 26]}
+            css={{ fontFamily: "FontOver" }}
+            fw={500}
+            color="white"
+          >
+            {isDesktop
+              ? t("wallet.assets.table.title")
+              : t("wallet.header.assets")}
+          </Text>
+          <div sx={{ flex: "row", gap: 32 }}>
+            <Button
+              type="button"
+              size="micro"
+              sx={{ gap: 4 }}
+              onClick={() => setAddToken(true)}
+            >
+              <div sx={{ flex: "row", align: "center", gap: 4 }}>
+                <Icon icon={<PlusIcon />} /> Add token
+              </div>
+            </Button>
+            <Switch
+              value={showAll}
+              onCheckedChange={(value) => setShowAll(value)}
+              size="small"
+              name="showAll"
+              label={t("wallet.assets.table.toggle")}
+            />
+          </div>
+        </TableTitle>
+        <Table css={{ tableLayout: "fixed" }}>
+          <TableHeaderContent>
+            {table.getHeaderGroups().map((hg) => (
+              <TableRow key={hg.id}>
+                {hg.headers.map((header) => (
+                  <TableSortHeader
+                    key={header.id}
+                    canSort={header.column.getCanSort()}
+                    sortDirection={header.column.getIsSorted()}
+                    onSort={header.column.getToggleSortingHandler()}
+                    css={{
+                      width:
+                        header.getSize() !== 150
+                          ? `${header.getSize()}%`
+                          : "auto",
+                    }}
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+                  </TableSortHeader>
                 ))}
               </TableRow>
-              {row.getIsSelected() && (
-                <TableRow isSub>
-                  <TableData colSpan={table.getAllColumns().length}>
-                    <WalletAssetsTableDetails {...row.original} />
-                  </TableData>
+            ))}
+          </TableHeaderContent>
+          <TableBodyContent>
+            {table.getRowModel().rows.map((row, i) => (
+              <Fragment key={row.original.id}>
+                <TableRow
+                  isOdd={!(i % 2)}
+                  onClick={() => {
+                    isDesktop && row.toggleSelected()
+                    !isDesktop && setRow(row.original)
+                  }}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableData key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableData>
+                  ))}
                 </TableRow>
-              )}
-            </Fragment>
-          ))}
-        </TableBodyContent>
-      </Table>
+                {row.getIsSelected() && (
+                  <TableRow isSub>
+                    <TableData colSpan={table.getAllColumns().length}>
+                      <WalletAssetsTableDetails {...row.original} />
+                    </TableData>
+                  </TableRow>
+                )}
+              </Fragment>
+            ))}
+          </TableBodyContent>
+        </Table>
 
-      {transferAsset && (
-        <WalletTransferModal
-          open
-          initialAsset={transferAsset}
-          onClose={() => setTransferAsset(null)}
-        />
-      )}
-      {!isDesktop && (
-        <WalletAssetsTableActionsMob
-          row={row}
-          onClose={() => setRow(undefined)}
-          onTransferClick={setTransferAsset}
-        />
-      )}
-    </TableContainer>
+        {transferAsset && (
+          <WalletTransferModal
+            open
+            initialAsset={transferAsset}
+            onClose={() => setTransferAsset(null)}
+          />
+        )}
+        {!isDesktop && (
+          <WalletAssetsTableActionsMob
+            row={row}
+            onClose={() => setRow(undefined)}
+            onTransferClick={setTransferAsset}
+          />
+        )}
+      </TableContainer>
+      {addToken && <AddTokenModal onClose={() => setAddToken(false)} />}
+    </>
   )
 }

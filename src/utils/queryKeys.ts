@@ -389,4 +389,5 @@ export const QUERY_KEYS = {
   ],
   referralLinkFee: ["referralLinkFee"],
   yieldFarmCreated: ["yieldFarmCreated"],
+  externalAssetRegistry: ["externalAssetRegistry"],
 } as const
