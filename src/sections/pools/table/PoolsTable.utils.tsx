@@ -140,7 +140,6 @@ const AddLiqduidityButton = ({ pool }: { pool: TPool | TXYKPool }) => {
   return (
     <div
       onClick={(e) => {
-        e.preventDefault()
         e.stopPropagation()
       }}
     >
