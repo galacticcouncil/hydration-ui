@@ -46,7 +46,7 @@ export const TransactionsTable = ({
 
   const table = useTransactionsTable(filteredData)
 
-  const onRowSelect = (hash: string) => {
+  const openSubscanLink = (hash: string) => {
     window.open(`${getSubscanLinkByType("extrinsic")}/${hash}`, "_blank")
   }
 
@@ -155,7 +155,7 @@ export const TransactionsTable = ({
                       }}
                       onClick={() =>
                         isDesktop
-                          ? onRowSelect(row.original.extrinsicHash)
+                          ? openSubscanLink(row.original.extrinsicHash)
                           : setRow(row.original)
                       }
                     >
@@ -175,6 +175,7 @@ export const TransactionsTable = ({
         <TransactionsTableActionsMob
           row={row}
           onClose={() => setRow(undefined)}
+          onSubscanClick={openSubscanLink}
         />
       )}
       {hasNextPage && (
@@ -186,12 +187,10 @@ export const TransactionsTable = ({
             variant="outline"
             size="micro"
             onClick={setNextPage}
+            transform="none"
             sx={{
               py: [10, 6],
               width: ["90%", "auto"],
-            }}
-            css={{
-              textTransform: "none",
             }}
           >
             {t("wallet.transactions.table.more")}

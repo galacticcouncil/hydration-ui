@@ -13,9 +13,14 @@ import { TTransactionRow } from "sections/wallet/transactions/table/data/Transac
 type Props = {
   row?: TTransactionRow
   onClose: () => void
+  onSubscanClick?: (hash: string) => void
 }
 
-export const TransactionsTableActionsMob = ({ row, onClose }: Props) => {
+export const TransactionsTableActionsMob = ({
+  row,
+  onClose,
+  onSubscanClick,
+}: Props) => {
   const { t } = useTranslation()
 
   if (!row) return null
@@ -88,9 +93,13 @@ export const TransactionsTableActionsMob = ({ row, onClose }: Props) => {
             color="white"
           />
         </SActionRow>
-        <div sx={{ pt: 40, pb: 20 }}>
-          <Button fullWidth>{t("wallet.transactions.table.subscan")}</Button>
-        </div>
+        {onSubscanClick && (
+          <div sx={{ pt: 40, pb: 20 }}>
+            <Button onClick={() => onSubscanClick(row.extrinsicHash)} fullWidth>
+              {t("wallet.transactions.table.subscan")}
+            </Button>
+          </div>
+        )}
       </div>
     </Modal>
   )

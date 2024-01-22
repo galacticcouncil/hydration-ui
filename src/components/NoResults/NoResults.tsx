@@ -24,7 +24,7 @@ export const NoResults: FC<HTMLAttributes<HTMLDivElement>> = (props) => {
                 target="_blank"
                 rel="noreferrer"
               >
-                Telegram
+                &nbsp;
               </a>
             ),
           }}
