@@ -223,12 +223,14 @@ const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   if (isLoading) return <CellSkeleton />
 
   return (
-    <Text color="white">
-      {t("value.percentage.range", {
-        from: percentage.minApr.lt(apy) ? percentage.minApr : BN(apy),
-        to: percentage.maxApr.plus(apy),
-      })}
-    </Text>
+    <NonClickableContainer>
+      <Text color="white" fs={14}>
+        {t("value.percentage.range", {
+          from: percentage.minApr.lt(apy) ? percentage.minApr : BN(apy),
+          to: percentage.maxApr.plus(apy),
+        })}
+      </Text>
+    </NonClickableContainer>
   )
 }
 

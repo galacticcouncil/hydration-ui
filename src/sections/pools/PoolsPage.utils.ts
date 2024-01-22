@@ -167,6 +167,7 @@ export const usePools = () => {
 
   const volumes = useVolume("all")
   const fees = useFee("all")
+  const tvls = useTVL("all")
 
   const queries = [
     omnipoolAssets,
@@ -189,15 +190,8 @@ export const usePools = () => {
     const rows = assetsId.map((assetId) => {
       const meta = assets.getAsset(assetId)
 
-      const omnipoplBalance = omnipoolBalances.find(
-        (b) => b.data?.assetId.toString() === assetId,
-      )?.data?.balance
-
       const spotPrice = spotPrices.data?.find((sp) => sp?.tokenIn === assetId)
         ?.spotPrice
-
-      const tvl = getFloatingPointAmount(omnipoplBalance ?? BN_0, meta.decimals)
-      const tvlDisplay = !spotPrice ? BN_NAN : tvl.times(spotPrice)
 
       const tradabilityData = assetsTradability.data?.find(
         (t) => t.id === assetId,
@@ -211,6 +205,11 @@ export const usePools = () => {
       const apiSpotPrice = spotPrices.data?.find(
         (sp) => sp?.tokenIn === stableCoinId,
       )?.spotPrice
+
+      const tvlDisplay = BN(
+        tvls.data?.find((tvl) => tvl.asset_id === Number(assetId))?.tvl_usd ??
+          BN_NAN,
+      ).multipliedBy(apiSpotPrice ?? 1)
 
       const volume = BN(
         volumes.data?.find((volume) => volume.asset_id.toString() === assetId)
@@ -229,7 +228,6 @@ export const usePools = () => {
         id: assetId,
         name: meta.name,
         symbol: meta.symbol,
-        tvl,
         tvlDisplay,
         spotPrice,
         canAddLiquidity: tradability.canAddLiquidity,
@@ -261,6 +259,7 @@ export const usePools = () => {
     spotPrices.data,
     volumes,
     fees,
+    tvls,
     stableCoinId,
   ])
 
