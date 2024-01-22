@@ -20,6 +20,7 @@ import { ApiPromise } from "@polkadot/api"
 import { BN_NAN } from "utils/constants"
 import { uniqBy } from "utils/rx"
 import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
+import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 
 export type TransactionType = "deposit" | "withdraw"
 
@@ -58,7 +59,7 @@ type TransferPolkadotDest = {
   }
 }
 
-type TransferType = {
+type TransferCall = {
   args: {
     dest: string | TransferParachainDest
     amount?: string
@@ -91,7 +92,7 @@ type XcmEvmArgs = {
   }
 }
 
-type XcmTransferType = {
+type TransferEvent = {
   name: string
   args: {
     who: string
@@ -173,10 +174,13 @@ const getAddressFromDest = (dest: string | TransferParachainDest) => {
   return ""
 }
 
-const addressToDisplayAddress = (address: string, chainKey = "hydradx") => {
+const addressToDisplayAddress = (
+  address: string,
+  chainKey = HYDRADX_CHAIN_KEY,
+) => {
   const chain = chainKey ? chainsMap.get(chainKey) : null
 
-  const isEvmChain = chain?.isEvmParachain() || chainKey === "hydradx"
+  const isEvmChain = chain?.isEvmParachain() || chainKey === HYDRADX_CHAIN_KEY
 
   if (isEvmAccount(address) && isEvmChain) {
     return H160.fromAccount(address)
@@ -275,7 +279,7 @@ const getChainFromDest = (
   dest: string | TransferParachainDest | TransferPolkadotDest,
 ) => {
   if (!dest || typeof dest === "string") {
-    return chainsMap.get("hydradx")
+    return chainsMap.get(HYDRADX_CHAIN_KEY)
   }
 
   if (isPolkadotTransfer(dest)) {
@@ -293,9 +297,9 @@ export const getAccountTransfers =
     return {
       ...(await request<{
         // covers internal deposit/withdrawal transfers and XCM deposit transfers
-        calls: Array<TransferType>
+        calls: TransferCall[]
         // covers  XCM deposits and EVM XCM withdrawal transfers
-        events: XcmTransferType[]
+        events: TransferEvent[]
       }>(
         indexerUrl,
         gql`
@@ -366,6 +370,58 @@ export const getAccountTransfers =
     }
   }
 
+function getTransferDisplayProps({
+  amount,
+  decimals,
+  source,
+  sourceChainKey,
+  dest,
+  destChainKey,
+  date,
+}: {
+  amount: BN
+  decimals: number
+  source: string
+  sourceChainKey: string
+  dest: string
+  destChainKey: string
+  date: Date
+}) {
+  const amountDisplay = amount.shiftedBy(-decimals)
+
+  const sourceDisplay = addressToDisplayAddress(source, sourceChainKey)
+  const destDisplay = addressToDisplayAddress(dest, destChainKey)
+
+  const dateDisplay = formatDate(date, "yyyy-MM-dd HH:mm:ss")
+
+  const isCrossChain = sourceChainKey !== destChainKey
+  return {
+    amountDisplay,
+    sourceDisplay,
+    destDisplay,
+    dateDisplay,
+    isCrossChain,
+  }
+}
+
+function getTransferAssetProps(
+  assets: ReturnType<typeof useRpcProvider>["assets"],
+  assetId: string,
+) {
+  const asset = assets.getAsset(assetId)
+  const assetIconIds =
+    asset && assets.isStableSwap(asset)
+      ? asset.assets
+      : [asset?.id].filter(Boolean)
+
+  return {
+    assetName: asset.name,
+    assetSymbol: asset.symbol,
+    assetDecimals: asset.decimals,
+    assetIconIds,
+  }
+}
+
 export function useAccountTransfers(address: string, noRefresh?: boolean) {
   const indexerUrl = useIndexerUrl()
 
@@ -396,19 +452,24 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
               const xcmData = getDataFromXcmParachainTx(call.args)
 
               parachainId = xcmData.parachainId
-              sourceHydraAddress = xcmData.address
 
+              sourceHydraAddress = xcmData.address
               destHydraAddress = getAddressVariants(args.who).hydraAddress
+
               currencyId = args.currencyId?.toString() || NATIVE_ASSET_ID
+
               amount = BN(args.amount ?? 0)
             }
 
             if (isXcmEvmTransfer(call?.args)) {
               const evm = getDataFromXcmEvmTx(api, call.args.transaction.value)
               parachainId = evm?.parachainId
+
               sourceHydraAddress = getAddressVariants(args.who).hydraAddress
               destHydraAddress = evm.dest
+
               currencyId = evm?.currencyId?.toString() ?? NATIVE_ASSET_ID
+
               amount = evm.amount
             }
 
@@ -418,22 +479,13 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
               ? "deposit"
               : "withdraw"
 
-            const asset = assets.getAsset(currencyId)
-
-            const amountDisplay = amount.shiftedBy(-asset.decimals)
-
-            const assetIconIds =
-              asset && assets.isStableSwap(asset)
-                ? asset.assets
-                : [asset?.id].filter(Boolean)
-
             const sourceChain =
               type === "withdraw"
-                ? chainsMap.get("hydradx")
+                ? chainsMap.get(HYDRADX_CHAIN_KEY)
                 : getChainById(parachainId)
             const destChain =
               type === "deposit"
-                ? chainsMap.get("hydradx")
+                ? chainsMap.get(HYDRADX_CHAIN_KEY)
                 : getChainById(parachainId)
 
             const sourceAddr =
@@ -441,47 +493,40 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
             const destAddr =
               type === "deposit" ? hydraAddress : destHydraAddress
 
-            const sourceDisplay = addressToDisplayAddress(
-              sourceAddr,
-              sourceChain?.key,
-            )
-
-            const destDisplay = addressToDisplayAddress(
-              destAddr,
-              destChain?.key,
-            )
-
             const date = new Date(block.timestamp)
-            const dateDisplay = formatDate(date, "yyyy-MM-dd HH:mm:ss")
+
+            const assetProps = getTransferAssetProps(assets, currencyId)
+            const displayProps = getTransferDisplayProps({
+              amount,
+              decimals: assetProps.assetDecimals,
+              source: sourceAddr,
+              sourceChainKey: sourceChain?.key ?? "",
+              dest: destAddr,
+              destChainKey: destChain?.key ?? "",
+              date,
+            })
 
             return {
               type: type,
               source: sourceAddr,
               dest: destAddr,
-              sourceDisplay,
-              destDisplay,
               sourceChain,
               destChain,
               amount,
-              amountDisplay,
               date,
-              dateDisplay,
               extrinsicHash: extrinsic.hash,
-              asset,
-              assetName: asset.name,
-              assetSymbol: asset.symbol,
-              assetDecimals: asset.decimals,
-              assetIconIds,
+              ...assetProps,
+              ...displayProps,
             }
           },
         )
 
-        const calls = data.calls.map((transfer) => {
+        const calls = data.calls.map(({ origin, args, block, extrinsic }) => {
           const sourceHydraAddress = getAddressVariants(
-            transfer.origin.value.value,
+            origin.value.value,
           ).hydraAddress
 
-          const dest = transfer.args.dest
+          const dest = args.dest
 
           const destHydraAddress = getAddressFromDest(dest)
 
@@ -490,34 +535,28 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
               ? "withdraw"
               : "deposit"
 
-          const assetId =
-            transfer.args?.currencyId?.toString() || NATIVE_ASSET_ID
+          const amount = BN(args?.amount ?? args?.value ?? 0)
 
-          const asset = assets.getAsset(assetId)
-          const amount = BN(transfer.args?.amount ?? transfer.args?.value ?? 0)
-          const amountDisplay = amount.shiftedBy(-asset.decimals)
-
-          const assetIconIds =
-            asset && assets.isStableSwap(asset)
-              ? asset.assets
-              : [asset?.id].filter(Boolean)
-
-          const sourceChain = chainsMap.get("hydradx")
+          const sourceChain = chainsMap.get(HYDRADX_CHAIN_KEY)
           const destChain = getChainFromDest(dest)
 
           const sourceAddr =
             type === "withdraw" ? hydraAddress : sourceHydraAddress
           const destAddr = type === "deposit" ? hydraAddress : destHydraAddress
 
-          const sourceDisplay = addressToDisplayAddress(
-            sourceAddr,
-            sourceChain?.key,
-          )
+          const date = new Date(block.timestamp)
 
-          const destDisplay = addressToDisplayAddress(destAddr, destChain?.key)
-
-          const date = new Date(transfer.block.timestamp)
-          const dateDisplay = formatDate(date, "yyyy-MM-dd HH:mm:ss")
+          const assetId = args?.currencyId?.toString() || NATIVE_ASSET_ID
+          const assetProps = getTransferAssetProps(assets, assetId)
+          const displayProps = getTransferDisplayProps({
+            amount,
+            decimals: assetProps.assetDecimals,
+            source: sourceAddr,
+            sourceChainKey: sourceChain?.key ?? "",
+            dest: destAddr,
+            destChainKey: destChain?.key ?? "",
+            date,
+          })
 
           return {
             type,
@@ -525,28 +564,20 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
             dest: destAddr,
             sourceChain,
             destChain,
-            sourceDisplay,
-            destDisplay,
             amount,
-            amountDisplay,
             date,
-            dateDisplay,
-            extrinsicHash: transfer.extrinsic.hash,
-            assetName: asset.name,
-            assetSymbol: asset.symbol,
-            assetDecimals: asset.decimals,
-            assetIconIds,
+            extrinsicHash: extrinsic.hash,
+            ...assetProps,
+            ...displayProps,
           }
         })
 
-        const uniq = uniqBy(
+        return uniqBy(
           ({ extrinsicHash }) => extrinsicHash,
           [...events, ...calls],
         )
           .filter(({ amount }) => amount?.gte(0))
           .sort((a, b) => (a.date.getTime() > b.date.getTime() ? -1 : 1))
-
-        return uniq
       },
     },
   )

@@ -18,9 +18,10 @@ export const useTransactionsTableSkeleton = (enableAnimation = true) => {
   const columnVisibility: VisibilityState = {
     type: true,
     amount: true,
-    from: isDesktop,
-    to: isDesktop,
-    date: isDesktop,
+    badge: true,
+    source: isDesktop,
+    arrow: isDesktop,
+    dest: isDesktop,
     actions: isDesktop,
   }
 
@@ -30,7 +31,7 @@ export const useTransactionsTableSkeleton = (enableAnimation = true) => {
         id: "type",
         header: t("wallet.transactions.table.header.type"),
         cell: () => (
-          <Skeleton width={35} height={20} enableAnimation={enableAnimation} />
+          <Skeleton width={50} height={20} enableAnimation={enableAnimation} />
         ),
       }),
       display({
@@ -47,7 +48,19 @@ export const useTransactionsTableSkeleton = (enableAnimation = true) => {
         ),
       }),
       display({
-        id: "from",
+        id: "badge",
+        cell: () => (
+          <div sx={{ flex: "row" }}>
+            <Skeleton
+              width={100}
+              height={20}
+              enableAnimation={enableAnimation}
+            />
+          </div>
+        ),
+      }),
+      display({
+        id: "source",
         header: t("wallet.transactions.table.header.source"),
         cell: () => (
           <div sx={{ flex: "row" }}>
@@ -60,7 +73,11 @@ export const useTransactionsTableSkeleton = (enableAnimation = true) => {
         ),
       }),
       display({
-        id: "to",
+        id: "arrow",
+        cell: () => <></>,
+      }),
+      display({
+        id: "dest",
         header: t("wallet.transactions.table.header.destination"),
         cell: () => (
           <div sx={{ flex: "row" }}>
@@ -72,6 +89,7 @@ export const useTransactionsTableSkeleton = (enableAnimation = true) => {
           </div>
         ),
       }),
+
       display({
         id: "actions",
         cell: () => <></>,

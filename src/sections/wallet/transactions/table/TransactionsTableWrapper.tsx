@@ -1,8 +1,8 @@
+import { useRpcProvider } from "providers/rpcProvider"
 import { TransactionsTable } from "./TransactionsTable"
 import { useTransactionsTableData } from "./data/TransactionsTableData.utils"
 import { TransactionsTableSkeleton } from "./skeleton/TransactionsTableSkeleton"
-import { useRpcProvider } from "providers/rpcProvider"
-import { Button } from "components/Button/Button"
+import { NoResults } from "components/NoResults/NoResults"
 
 export const TransactionsTableWrapper = ({ address }: { address: string }) => {
   const { isLoaded } = useRpcProvider()
@@ -20,16 +20,15 @@ export const TransactionsTableWrapperData = ({
   const { isLoading, data, filteredData, setNextPage, hasNextPage } =
     useTransactionsTableData(address)
 
-  if (isLoading && !data.length) return <TransactionsTableSkeleton />
+  if (isLoading) return <TransactionsTableSkeleton />
+  if (!filteredData.length) return <NoResults sx={{ py: [50, 70] }} />
 
   return (
-    <>
-      <TransactionsTable data={data} filteredData={filteredData} />
-      {hasNextPage && (
-        <div sx={{ textAlign: "center", mt: 24 }}>
-          <Button onClick={setNextPage}>More Transactions</Button>
-        </div>
-      )}
-    </>
+    <TransactionsTable
+      data={data}
+      filteredData={filteredData}
+      setNextPage={setNextPage}
+      hasNextPage={hasNextPage}
+    />
   )
 }

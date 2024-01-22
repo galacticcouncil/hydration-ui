@@ -45,7 +45,12 @@ export const TransactionsDownload: React.FC<Props> = ({ data }) => {
   return (
     <Button onClick={() => download()} size="micro">
       <DocumentIcon width={18} height={18} sx={{ ml: -6, mr: -8 }} />
-      {t("wallet.transactions.table.header.download")}
+      <span sx={{ display: ["none", "inline"] }}>
+        {t("wallet.transactions.table.header.download")}
+      </span>
+      <span sx={{ display: ["inline", "none"] }}>
+        {t("wallet.transactions.table.header.csv")}
+      </span>
     </Button>
   )
 }

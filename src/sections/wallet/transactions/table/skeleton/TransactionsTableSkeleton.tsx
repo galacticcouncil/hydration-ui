@@ -12,6 +12,7 @@ import {
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useTransactionsTableSkeleton } from "./TransactionsTableSkeleton.utils"
+import Skeleton from "react-loading-skeleton"
 
 export const TransactionsTableSkeleton = () => {
   const { t } = useTranslation()
@@ -30,6 +31,11 @@ export const TransactionsTableSkeleton = () => {
           {t("wallet.transactions.table.header.title")}
         </Text>
       </TableTitle>
+      <div sx={{ flex: "row", gap: [20, 40], px: [15, 30], pb: 20 }}>
+        <Skeleton width={50} height={20} />
+        <Skeleton width={50} height={20} />
+        <Skeleton width={50} height={20} />
+      </div>
       <Table>
         <TableHeaderContent>
           {table.getHeaderGroups().map((hg) => (

@@ -43,3 +43,4 @@ export const useTransactionsTableData = (address: string) => {
 
 export type TTransactionsTable = typeof useTransactionsTableData
 export type TTransactionsTableData = ReturnType<TTransactionsTable>["data"]
+export type TTransactionRow = TTransactionsTableData[number]

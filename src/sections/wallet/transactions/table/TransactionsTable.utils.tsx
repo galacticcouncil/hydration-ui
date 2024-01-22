@@ -6,32 +6,23 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
+import BuyIcon from "assets/icons/BuyIcon.svg?react"
+import ChevronRight from "assets/icons/ChevronRight.svg?react"
 import LinkIcon from "assets/icons/LinkIcon.svg?react"
+import SellIcon from "assets/icons/SellIcon.svg?react"
+import TradeIcon from "assets/icons/TradeTypeIcon.svg?react"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { Badge } from "components/Badge/Badge"
 import { Icon } from "components/Icon/Icon"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
+import { AccountColumn } from "sections/wallet/transactions/table/columns/AccountColumn"
 import { theme } from "theme"
+import { getSubscanLinkByType } from "utils/formatting"
 import { TTransactionsTableData } from "./data/TransactionsTableData.utils"
-import { getSubscanLinkByType, shortenAccountAddress } from "utils/formatting"
-import { AssetLogo, ChainLogo } from "components/AssetIcon/AssetIcon"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { useAccountIdentity } from "api/stats"
-
-import BuyIcon from "assets/icons/BuyIcon.svg?react"
-import SellIcon from "assets/icons/SellIcon.svg?react"
-
-const AccountName = ({ address }: { address: string }) => {
-  const identity = useAccountIdentity(address)
-  const isDesktop = useMedia(theme.viewport.gte.sm)
-
-  const strLen = isDesktop ? 6 : 4
-
-  if (identity.data?.identity) return <>{identity.data.identity}</>
-
-  return <>{shortenAccountAddress(address, strLen)}</>
-}
 
 export const useTransactionsTable = (data: TTransactionsTableData) => {
   const { t } = useTranslation()
@@ -44,11 +35,16 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
   const columnVisibility: VisibilityState = {
     type: true,
     amount: true,
-    from: isDesktop,
-    to: isDesktop,
-    date: isDesktop,
-    actions: isDesktop,
+    badge: true,
+    source: isDesktop,
+    arrow: isDesktop,
+    dest: isDesktop,
+    actions: true,
   }
+
+  const columnOrder = isDesktop
+    ? ["type", "amount", "badge", "source", "arrow", "dest", "actions"]
+    : ["type", "badge", "amount", "actions"]
 
   const columns = [
     accessor("type", {
@@ -68,7 +64,7 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
               />
             )}
             <div>
-              <Text color="basic300" fs={13}>
+              <Text color="basic200" fs={13}>
                 {isDeposit
                   ? t("wallet.transactions.table.type.deposit")
                   : t("wallet.transactions.table.type.withdraw")}
@@ -119,45 +115,55 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
         )
       },
     }),
+    display({
+      id: "badge",
+      cell: ({ row }) => {
+        return (
+          row.original.isCrossChain && (
+            <Badge variant="secondary" size="medium">
+              {isDesktop
+                ? t("wallet.transactions.table.crosschain")
+                : t("wallet.transactions.table.xcm")}
+            </Badge>
+          )
+        )
+      },
+    }),
     accessor("source", {
       id: "source",
       header: t("wallet.transactions.table.header.source"),
       cell: ({ row }) => (
-        <Text
-          color="basic400"
-          fs={13}
-          sx={{ flex: "row", gap: 8, align: "center" }}
-        >
-          {row.original.sourceChain && (
-            <span sx={{ display: "block", width: 16, height: 16 }}>
-              <ChainLogo symbol={row.original.sourceChain.key} />
-            </span>
-          )}
-          {row.original.sourceDisplay && (
-            <AccountName address={row.original.sourceDisplay} />
-          )}
-        </Text>
+        <AccountColumn
+          address={row.original.sourceDisplay}
+          chain={row.original.sourceChain}
+          isCrossChain={row.original.isCrossChain}
+        />
       ),
+    }),
+    display({
+      id: "arrow",
+      cell: () => {
+        return (
+          <div sx={{ flex: "row", justify: "center" }}>
+            <Icon
+              size={14}
+              sx={{ color: "darkBlue300" }}
+              icon={<TradeIcon />}
+            />
+          </div>
+        )
+      },
     }),
     accessor("dest", {
       id: "dest",
       header: t("wallet.transactions.table.header.destination"),
       cell: ({ row }) => {
         return (
-          <Text
-            color="white"
-            fs={13}
-            sx={{ flex: "row", gap: 8, align: "center" }}
-          >
-            {row.original.destChain && (
-              <span sx={{ display: "block", width: 16, height: 16 }}>
-                <ChainLogo symbol={row.original.destChain.key} />
-              </span>
-            )}
-            {row.original.destDisplay && (
-              <AccountName address={row.original.destDisplay} />
-            )}
-          </Text>
+          <AccountColumn
+            address={row.original.destDisplay}
+            chain={row.original.destChain}
+            isCrossChain={row.original.isCrossChain}
+          />
         )
       },
     }),
@@ -172,11 +178,19 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
               target="blank"
               rel="noreferrer"
             >
-              <Icon
-                size={12}
-                sx={{ color: "darkBlue300" }}
-                icon={<LinkIcon />}
-              />
+              {isDesktop ? (
+                <LinkIcon
+                  width={12}
+                  height={12}
+                  sx={{ color: "darkBlue300" }}
+                />
+              ) : (
+                <ChevronRight
+                  width={20}
+                  height={20}
+                  sx={{ color: "darkBlue300" }}
+                />
+              )}
             </a>
           </div>
         )
@@ -187,7 +201,7 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
   return useReactTable({
     data,
     columns,
-    state: { sorting, columnVisibility },
+    state: { sorting, columnVisibility, columnOrder },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
