@@ -1,6 +1,7 @@
 import BuyIcon from "assets/icons/BuyIcon.svg?react"
 import SellIcon from "assets/icons/SellIcon.svg?react"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { Badge } from "components/Badge/Badge"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
@@ -36,20 +37,27 @@ export const TransactionsTableActionsMob = ({
           ) : (
             <SellIcon sx={{ color: "brightBlue300" }} width={20} height={20} />
           )}
-          <div>
+          <div sx={{ width: "100%" }}>
             <Text color="white" fs={16}>
               {isDeposit
                 ? t("wallet.transactions.table.type.deposit")
                 : t("wallet.transactions.table.type.withdraw")}
             </Text>
-            <Text color="whiteish500" fs={13} lh={16}>
-              {t("stats.overview.chart.tvl.label.date", {
-                date: row.date,
-              })}{" "}
-              {t("stats.overview.chart.tvl.label.time", {
-                date: row.date,
-              })}
-            </Text>
+            <div sx={{ flex: "row", justify: "space-between" }}>
+              <Text color="whiteish500" fs={13} lh={16}>
+                {t("stats.overview.chart.tvl.label.date", {
+                  date: row.date,
+                })}{" "}
+                {t("stats.overview.chart.tvl.label.time", {
+                  date: row.date,
+                })}
+              </Text>
+              {row.isCrossChain && (
+                <Badge variant="secondary" size="small">
+                  {t("wallet.transactions.table.crosschain")}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
         <SActionRow>
