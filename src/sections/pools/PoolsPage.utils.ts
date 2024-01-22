@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { useAssetsTradability } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NATIVE_ASSET_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
+import { normalizeBigNumber } from "utils/balance"
 import { BN_0, BN_MILL, BN_NAN } from "utils/constants"
 import {
   useDisplayAssetStore,
@@ -30,6 +30,7 @@ import { TShareToken } from "api/assetDetails"
 import { useXYKPoolTradeVolumes } from "./pool/details/PoolDetails.utils"
 import { useAllUserDepositShare } from "./farms/position/FarmingPosition.utils"
 import { useFee } from "api/stats"
+import { useTVL } from "api/stats"
 
 export type TMiningNftPosition = ReturnType<
   typeof usePoolDetails

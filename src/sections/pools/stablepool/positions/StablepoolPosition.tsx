@@ -39,6 +39,9 @@ export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
   const shareTokensBalance = useTokenBalance(pool.id, account?.address)
 
   const amount = shareTokensBalance.data?.freeBalance ?? BN_0
+
+  if (amount.isZero()) return null
+
   const spotPrice = pool.spotPrice
   const providedAmountPrice = spotPrice
     ? amount.multipliedBy(spotPrice).shiftedBy(-meta.decimals)

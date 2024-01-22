@@ -89,7 +89,11 @@ const AllPoolsData = () => {
   const omnipoolTotal = useMemo(
     () =>
       pools.data
-        ? pools.data.reduce((acc, asset) => acc.plus(asset.tvlDisplay), BN_0)
+        ? pools.data.reduce(
+            (acc, asset) =>
+              acc.plus(asset.tvlDisplay.isNaN() ? 0 : asset.tvlDisplay),
+            BN_0,
+          )
         : BN_0,
 
     [pools.data],

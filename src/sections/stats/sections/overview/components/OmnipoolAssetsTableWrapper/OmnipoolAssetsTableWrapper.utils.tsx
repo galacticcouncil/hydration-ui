@@ -150,25 +150,25 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
         </Text>
       ),
     }),
-    // display({
-    //   id: "apy",
-    //   //@ts-ignore
-    //   header: (
-    //     <div sx={{ flex: "row", align: "center", gap: 4 }}>
-    //       {t("stats.overview.table.assets.header.apy")}
-    //       <InfoTooltip text={t("stats.overview.table.assets.header.apy.desc")}>
-    //         <SInfoIcon />
-    //       </InfoTooltip>
-    //     </div>
-    //   ),
-    //   cell: ({ row }) => (
-    //     <APY
-    //       assetId={row.original.id}
-    //       fee={row.original.fee}
-    //       isLoading={row.original.isLoadingFee}
-    //     />
-    //   ),
-    // }),
+    display({
+      id: "apy",
+      //@ts-ignore
+      header: (
+        <div sx={{ flex: "row", align: "center", gap: 4 }}>
+          {t("stats.overview.table.assets.header.apy")}
+          <InfoTooltip text={t("stats.overview.table.assets.header.apy.desc")}>
+            <SInfoIcon />
+          </InfoTooltip>
+        </div>
+      ),
+      cell: ({ row }) => (
+        <APY
+          assetId={row.original.id}
+          fee={row.original.fee}
+          isLoading={row.original.isLoadingFee}
+        />
+      ),
+    }),
     accessor("price", {
       id: "price",
       header: t("stats.overview.table.assets.header.price"),
