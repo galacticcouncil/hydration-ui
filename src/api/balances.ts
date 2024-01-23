@@ -8,16 +8,10 @@ import { u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { BN_0 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 
-export function calculateFreeBalance(
-  free: BigNumber,
-  miscFrozen: BigNumber,
-  feeFrozen: BigNumber,
-) {
-  const maxFrozenBalance = miscFrozen.gt(feeFrozen) ? miscFrozen : feeFrozen
-  return free.minus(maxFrozenBalance)
+export function calculateFreeBalance(free: BigNumber, frozen: BigNumber) {
+  return free.minus(frozen)
 }
 
 export const getTokenBalance =
@@ -26,15 +20,17 @@ export const getTokenBalance =
     if (id.toString() === NATIVE_ASSET_ID) {
       const res = await api.query.system.account(account)
       const freeBalance = new BigNumber(res.data.free.toHex())
-      const miscFrozenBalance = new BigNumber(res.data.miscFrozen.toHex())
-      const feeFrozenBalance = new BigNumber(res.data.feeFrozen.toHex())
+      const feeFrozenBalance = new BigNumber(
+        //@ts-ignore
+        res.data.feeFrozen?.toHex() ?? res.data.frozen.toHex(),
+      )
+      const miscFrozenBalance = new BigNumber(res.data.miscFrozen?.toHex() ?? 0)
       const reservedBalance = new BigNumber(res.data.reserved.toHex())
 
       const balance = new BigNumber(
         calculateFreeBalance(
           freeBalance,
-          miscFrozenBalance,
-          feeFrozenBalance,
+          BigNumber.max(feeFrozenBalance, miscFrozenBalance),
         ) ?? NaN,
       )
 
@@ -53,7 +49,7 @@ export const getTokenBalance =
     const reservedBalance = new BigNumber(res.reserved.toHex())
     const frozenBalance = new BigNumber(res.frozen.toHex())
     const balance = new BigNumber(
-      calculateFreeBalance(freeBalance, BN_0, frozenBalance) ?? NaN,
+      calculateFreeBalance(freeBalance, frozenBalance) ?? NaN,
     )
 
     return {
