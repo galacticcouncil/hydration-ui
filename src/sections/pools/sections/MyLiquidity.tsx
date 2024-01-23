@@ -168,7 +168,7 @@ const MyLiquidityData = () => {
         !filteredXYKPools.length && <EmptySearchState />}
 
       <div sx={{ flex: "column", gap: 20 }}>
-        {pools.isLoading && !!filteredPools.length ? (
+        {pools.isLoading || !!filteredPools.length ? (
           <div sx={{ flex: "column", gap: 20 }}>
             <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
               {t("liquidity.section.omnipoolAndStablepool")}
