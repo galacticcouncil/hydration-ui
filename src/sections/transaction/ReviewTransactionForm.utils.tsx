@@ -188,6 +188,7 @@ export const useTransactionValues = ({
     data: {
       isEnoughPaymentBalance,
       displayFeePaymentValue,
+      feePaymentValue: paymentInfo?.partialFee.toBigNumber() ?? BN_NAN,
       feePaymentMeta,
       acceptedFeePaymentAssets,
       era,
