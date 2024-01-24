@@ -69,7 +69,7 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
                   ? t("wallet.transactions.table.type.deposit")
                   : t("wallet.transactions.table.type.withdraw")}
               </Text>
-              <Text color="darkBlue300" fs={12} lh={14}>
+              <Text color="darkBlue200" fs={12} lh={14}>
                 <span
                   title={t("stats.overview.table.trades.value.totalValueTime", {
                     date: row.original.date,
