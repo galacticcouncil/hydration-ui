@@ -86,7 +86,7 @@ export const useHydraPositionsTable = (
             {isXYKPosition(row.original) ? (
               <div sx={{ flex: "column", align: ["end", "start"] }}>
                 <div sx={{ flex: "row", gap: 4 }}>
-                  <Text fs={16} lh={16} fw={500} color="white">
+                  <Text fs={14} lh={14} fw={500} color="white">
                     {row.original.balances
                       ?.map((balance) =>
                         t("value.tokenWithSymbol", {

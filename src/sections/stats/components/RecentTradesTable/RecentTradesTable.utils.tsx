@@ -73,7 +73,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
         a.original.tradeValue.gt(b.original.tradeValue) ? 1 : -1,
       cell: ({ row, getValue }) => {
         return isDesktop ? (
-          <Text color="white">
+          <Text color="white" fs={14}>
             <DisplayValue value={getValue()} isUSD />
           </Text>
         ) : (
@@ -112,7 +112,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
         return (
           <div sx={{ flex: "row", align: "center", gap: 6 }}>
             {isDesktop && (
-              <Text fs={[14, 16]}>
+              <Text fs={14}>
                 {t("value.tokenWithSymbol", {
                   value: row.original.amountIn,
                   symbol: row.original.assetInSymbol,
@@ -133,7 +133,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
             <Icon sx={{ color: "brightBlue600" }} icon={<TradeIcon />} />
 
             {isDesktop && (
-              <Text fs={[14, 16]}>
+              <Text fs={14}>
                 {t("value.tokenWithSymbol", {
                   value: row.original.amountOut,
                   symbol: row.original.assetOutSymbol,
@@ -160,7 +160,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
       header: t("stats.overview.table.trades.header.timeStamp"),
       sortingFn: (a, b) => (isAfter(a.original.date, b.original.date) ? 1 : -1),
       cell: ({ row }) => (
-        <Text color="white" css={{ whiteSpace: "nowrap" }}>
+        <Text fs={14} color="white" css={{ whiteSpace: "nowrap" }}>
           {t("stats.overview.table.trades.value.totalValueTime", {
             date: new Date(row.original.date),
           })}
