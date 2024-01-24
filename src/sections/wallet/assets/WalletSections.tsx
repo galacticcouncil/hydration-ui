@@ -25,7 +25,12 @@ export const AllAssets = () => {
   const { search } = useWalletAssetsFilters()
   const assetsTable = useAssetsTableData({ isAllAssets: showAll, search })
 
-  const { data, isLoading, isAllAssets, setAllAssets } = useBondsTableData({
+  const {
+    data: bonds,
+    isLoading: isLoadingBonds,
+    isAllAssets,
+    setAllAssets,
+  } = useBondsTableData({
     search,
   })
 
@@ -39,47 +44,58 @@ export const AllAssets = () => {
   const { data: dataFarms, isLoading: isLoadingFarms } =
     useFarmingPositionsData({ search })
 
-  const isAssets = !assetsTable.isLoading && assetsTable.data.length
-  const isBonds = !isLoading && data.length
-  const isLiqPositions =
-    !positionsTable.isInitialLoading &&
-    !xykPositions.isLoading &&
-    allPositions.length
-  const isFarmingPositions = !isLoadingFarms && dataFarms.length
+  const isLoading =
+    assetsTable.isLoading ||
+    isLoadingBonds ||
+    positionsTable.isInitialLoading ||
+    xykPositions.isLoading ||
+    isLoadingFarms
 
-  if (!isAssets && !isBonds && !isLiqPositions && !isFarmingPositions)
+  const isAssets = !!assetsTable.data.length
+  const isBonds = !!bonds.length
+  const isLiqPositions = !!allPositions.length
+  const isFarmingPositions = !!dataFarms.length
+
+  if (
+    search.length &&
+    !isLoading &&
+    !isAssets &&
+    !isBonds &&
+    !isLiqPositions &&
+    !isFarmingPositions
+  )
     return <EmptySearchState />
 
   return (
     <div sx={{ flex: "column", gap: [16, 30] }}>
       {assetsTable.isLoading ? (
         <WalletAssetsTableSkeleton />
-      ) : assetsTable.data.length ? (
+      ) : (
         <WalletAssetsTable
           data={assetsTable.data}
           showAll={showAll}
           setShowAll={setShowAll}
         />
-      ) : null}
-      {isLoading ? (
+      )}
+      {isLoadingBonds ? (
         <Skeleton title={t("bonds.table.title")} />
-      ) : data.length ? (
+      ) : isBonds ? (
         <BondsTable
           title={t("bonds.table.title")}
-          data={data}
+          data={bonds}
           allAssets={isAllAssets}
           setAllAssets={setAllAssets}
         />
       ) : null}
       {positionsTable.isInitialLoading || xykPositions.isLoading ? (
         <WalletAssetsHydraPositionsSkeleton />
-      ) : allPositions.length ? (
+      ) : isLiqPositions ? (
         <WalletAssetsHydraPositions data={allPositions} />
       ) : null}
 
       {isLoadingFarms ? (
         <WalletFarmingPositionsSkeleton />
-      ) : dataFarms.length ? (
+      ) : isFarmingPositions ? (
         <WalletFarmingPositions data={dataFarms} />
       ) : null}
     </div>
@@ -93,32 +109,39 @@ export const Assets = () => {
   const { search } = useWalletAssetsFilters()
   const assetsTable = useAssetsTableData({ isAllAssets: showAll, search })
 
-  const { data, isLoading, isAllAssets, setAllAssets } = useBondsTableData({
+  const {
+    data: bonds,
+    isLoading: isLoadingBonds,
+    isAllAssets,
+    setAllAssets,
+  } = useBondsTableData({
     search,
   })
 
-  const isAssets = !assetsTable.isLoading && assetsTable.data.length
-  const isBonds = !isLoading && data.length
+  const isLoading = assetsTable.isLoading || isLoadingBonds
+  const isAssets = !!assetsTable.data.length
+  const isBonds = !!bonds.length
 
-  if (!isAssets && !isBonds) return <EmptySearchState />
+  if (!isLoading && search.length && !isAssets && !isBonds)
+    return <EmptySearchState />
 
   return (
     <div sx={{ flex: "column", gap: [16, 30] }}>
       {assetsTable.isLoading ? (
         <WalletAssetsTableSkeleton />
-      ) : assetsTable.data.length ? (
+      ) : (
         <WalletAssetsTable
           data={assetsTable.data}
           showAll={showAll}
           setShowAll={setShowAll}
         />
-      ) : null}
+      )}
       {isLoading ? (
         <Skeleton title={t("bonds.table.title")} />
-      ) : data.length ? (
+      ) : isBonds ? (
         <BondsTable
           title={t("bonds.table.title")}
-          data={data}
+          data={bonds}
           allAssets={isAllAssets}
           setAllAssets={setAllAssets}
         />

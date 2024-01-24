@@ -1,6 +1,6 @@
 import styled from "@emotion/styled"
 import { useNavigate } from "@tanstack/react-location"
-import EmptyStateIcon from "assets/icons/EmptyStateLPIcon.svg?react"
+import EmptyStateIcon from "assets/icons/FarmsEmpty.svg?react"
 import { Button } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
@@ -31,7 +31,7 @@ export const EmptyState = () => {
             tAlign="center"
             sx={{ width: 290, mb: 10 }}
           >
-            {t("wallet.assets.hydraPositions.empty.desc")}
+            {t("wallet.assets.farmingPositions.empty.desc")}
           </Text>
           <Button
             onClick={() =>
@@ -40,7 +40,7 @@ export const EmptyState = () => {
               })
             }
           >
-            {t("wallet.assets.hydraPositions.empty.btn")}
+            {t("wallet.assets.farmingPositions.empty.btn")}
           </Button>
         </SEmptyState>
       </td>

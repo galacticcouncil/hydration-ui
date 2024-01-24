@@ -20,7 +20,7 @@ export const WalletAssetsPositionsWrapper = () => {
   if (positionsTable.isLoading || xykPositions.isLoading)
     return <WalletAssetsHydraPositionsSkeleton />
 
-  return allPositions.length ? (
+  return allPositions.length || search.length === 0 ? (
     <WalletAssetsHydraPositions data={allPositions} />
   ) : (
     <EmptySearchState />

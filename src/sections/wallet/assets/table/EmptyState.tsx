@@ -1,9 +1,11 @@
 import styled from "@emotion/styled"
 import { useNavigate } from "@tanstack/react-location"
-import EmptyStateIcon from "assets/icons/EmptyStateLPIcon.svg?react"
+import EmptyStateIcon from "assets/icons/NoActivities.svg?react"
 import { Button } from "components/Button/Button"
+import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import PlusIcon from "assets/icons/PlusIcon.svg?react"
 
 const SEmptyState = styled.div`
   display: flex;
@@ -24,23 +26,24 @@ export const EmptyState = () => {
     <tr sx={{ height: 250 }}>
       <td colSpan={4}>
         <SEmptyState>
-          <EmptyStateIcon />
+          <Icon sx={{ color: "basic600" }} icon={<EmptyStateIcon />} />
           <Text
             fs={14}
             color="basic700"
             tAlign="center"
-            sx={{ width: 290, mb: 10 }}
+            sx={{ width: 355, mb: 10 }}
           >
-            {t("wallet.assets.hydraPositions.empty.desc")}
+            {t("wallet.assets.table.empty.desc")}
           </Text>
           <Button
             onClick={() =>
               navigate({
-                to: "/liquidity",
+                to: "/cross-chain",
               })
             }
           >
-            {t("wallet.assets.hydraPositions.empty.btn")}
+            <Icon icon={<PlusIcon />} />
+            {t("wallet.assets.table.empty.btn")}
           </Button>
         </SEmptyState>
       </td>

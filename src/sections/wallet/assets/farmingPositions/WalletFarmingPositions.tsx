@@ -20,6 +20,7 @@ import { STableData } from "sections/wallet/assets/hydraPositions/WalletHydraPos
 import { FarmingPositionsDetailsMob } from "./details/FarmingPositionsDetailsMob"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { EmptyState } from "./EmptyState"
 
 type Props = { data: FarmingPositionsTableData[] }
 
@@ -68,25 +69,29 @@ export const WalletFarmingPositions = ({ data }: Props) => {
             ))}
           </TableHeaderContent>
           <TableBodyContent>
-            {table.getRowModel().rows.map((row, i) => (
-              <Fragment key={row.id}>
-                <TableRow
-                  isOdd={!(i % 2)}
-                  onClick={() => {
-                    !isDesktop && setRow(row.original)
-                  }}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <STableData key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </STableData>
-                  ))}
-                </TableRow>
-              </Fragment>
-            ))}
+            {table.options.data.length ? (
+              table.getRowModel().rows.map((row, i) => (
+                <Fragment key={row.id}>
+                  <TableRow
+                    isOdd={!(i % 2)}
+                    onClick={() => {
+                      !isDesktop && setRow(row.original)
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <STableData key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </STableData>
+                    ))}
+                  </TableRow>
+                </Fragment>
+              ))
+            ) : (
+              <EmptyState />
+            )}
           </TableBodyContent>
         </Table>
       </TableContainer>

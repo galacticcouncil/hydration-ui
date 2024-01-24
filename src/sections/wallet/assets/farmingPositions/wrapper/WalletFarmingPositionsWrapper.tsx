@@ -11,7 +11,7 @@ export const WalletFarmingPositionsWrapper = () => {
 
   if (isLoading) return <WalletFarmingPositionsSkeleton />
 
-  return data.length ? (
+  return data.length || search.length === 0 ? (
     <WalletFarmingPositions data={data} />
   ) : (
     <EmptySearchState />
