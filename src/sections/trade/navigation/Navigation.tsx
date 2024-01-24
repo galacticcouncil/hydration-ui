@@ -4,6 +4,8 @@ import IconBonds from "assets/icons/Bonds.svg?react"
 import IconDCA from "assets/icons/navigation/IconDCA.svg?react"
 import IconOTC from "assets/icons/navigation/IconOTC.svg?react"
 import IconSwap from "assets/icons/navigation/IconSwap.svg?react"
+import IconYieldDCA from "assets/icons/YieldDcaIcon.svg?react"
+import { Icon } from "components/Icon/Icon"
 import {
   SubNavigation,
   SubNavigationTabLink,
@@ -74,6 +76,11 @@ export const Navigation = () => {
           label={t("header.trade.otc.title")}
         />
       )}
+      <SubNavigationTabLink
+        to={LINKS.yieldDca}
+        icon={<Icon size={24} icon={<IconYieldDCA />} />}
+        label={t("header.trade.yieldDca.title")}
+      />
       {isDcaPageEnabled && (
         <SubNavigationTabLink
           to={LINKS.dca}

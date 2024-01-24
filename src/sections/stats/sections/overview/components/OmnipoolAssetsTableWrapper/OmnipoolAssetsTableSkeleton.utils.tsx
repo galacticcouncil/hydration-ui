@@ -44,11 +44,11 @@ export const useOmnipoolAssetsTableSkeleton = (enableAnimation = true) => {
         header: t("stats.overview.table.assets.header.volume"),
         cell: () => <CellSkeleton enableAnimation={enableAnimation} />,
       }),
-      // display({
-      //   id: "apy",
-      //   header: t("stats.overview.table.assets.header.apy"),
-      //   cell: () => <CellSkeleton enableAnimation={enableAnimation} />,
-      // }),
+      display({
+        id: "apy",
+        header: t("stats.overview.table.assets.header.apy"),
+        cell: () => <CellSkeleton enableAnimation={enableAnimation} />,
+      }),
       display({
         id: "price",
         header: t("stats.overview.table.assets.header.price"),

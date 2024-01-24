@@ -26,7 +26,10 @@ type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
 type Props = TxProps & {
   title?: string
   onCancel: () => void
-  onEvmSigned: (tx: TransactionResponse) => void
+  onEvmSigned: (data: {
+    evmTx: TransactionResponse
+    tx: SubmittableExtrinsic<"promise">
+  }) => void
   onSigned: (signed: SubmittableExtrinsic<"promise">) => void
 }
 
@@ -70,8 +73,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
       if (!wallet.signer) throw new Error("Missing signer")
 
       if (wallet?.signer instanceof MetaMaskSigner) {
-        const txSigner = await wallet.signer.sendDispatch(tx.method.toHex())
-        return props.onEvmSigned(txSigner)
+        const evmTx = await wallet.signer.sendDispatch(tx.method.toHex())
+        return props.onEvmSigned({ evmTx, tx })
       }
 
       const signature = await tx.signAsync(address, {

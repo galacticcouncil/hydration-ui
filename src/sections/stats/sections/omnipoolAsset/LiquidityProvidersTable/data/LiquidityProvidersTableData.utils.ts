@@ -70,7 +70,7 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
 
     const balance = assetBalance?.data?.balance ?? BN(0)
 
-    const omnipoolTvlPrice = BN(tvl.data?.[0].tvl_usd ?? BN_NAN)
+    const omnipoolTvlPrice = BN(tvl.data?.[0]?.tvl_usd ?? BN_NAN)
 
     const data = positions.data
       // zip positions with uniques by index
@@ -101,9 +101,9 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
           assetId: meta.id,
           symbol: meta.symbol,
           account: (unique?.data.owner.toString() ?? "") as string,
-          sharePercent: valueDisplayWithoutLrna
-            .div(omnipoolTvlPrice)
-            .times(100),
+          sharePercent: omnipoolTvlPrice.isNaN()
+            ? BN_NAN
+            : valueDisplayWithoutLrna.div(omnipoolTvlPrice).times(100),
           lrna,
           value,
           valueDisplay,
