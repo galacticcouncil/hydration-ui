@@ -22,14 +22,15 @@ export const TransactionsTableSkeleton = () => {
     <TableContainer sx={{ bg: "darkBlue700" }}>
       <TableTitle css={{ border: 0 }}>
         <Text
-          fs={14}
-          lh={20}
+          fs={[16, 20]}
+          lh={[20, 26]}
           css={{ fontFamily: "FontOver" }}
           fw={500}
           color="white"
         >
           {t("wallet.transactions.table.header.title")}
         </Text>
+        <Skeleton sx={{ width: [40, 100] }} height={23} />
       </TableTitle>
       <div sx={{ flex: "row", gap: [20, 40], px: [15, 30], pb: 20 }}>
         <Skeleton width={50} height={20} />
@@ -48,7 +49,6 @@ export const TransactionsTableSkeleton = () => {
                   onSort={header.column.getToggleSortingHandler()}
                   css={{
                     "&": {
-                      fontSize: 11,
                       fontWeight: 500,
                       paddingTop: 14,
                       paddingBottom: 14,

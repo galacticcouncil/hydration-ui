@@ -64,12 +64,12 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
               />
             )}
             <div>
-              <Text color="basic200" fs={13}>
+              <Text color="basic200" fs={14}>
                 {isDeposit
                   ? t("wallet.transactions.table.type.deposit")
                   : t("wallet.transactions.table.type.withdraw")}
               </Text>
-              <Text color="darkBlue300" fs={11} lh={14}>
+              <Text color="darkBlue300" fs={12} lh={14}>
                 <span
                   title={t("stats.overview.table.trades.value.totalValueTime", {
                     date: row.original.date,
@@ -105,7 +105,7 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
                 icon: <AssetLogo id={id} />,
               }))}
             />
-            <Text fs={13} css={{ whiteSpace: "nowrap" }}>
+            <Text fs={14} css={{ whiteSpace: "nowrap" }}>
               {t("value.tokenWithSymbol", {
                 value: row.original.amountDisplay,
                 symbol: row.original.assetSymbol,

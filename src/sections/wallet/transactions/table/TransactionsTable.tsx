@@ -56,8 +56,8 @@ export const TransactionsTable = ({
     <TableContainer sx={{ bg: "darkBlue700" }}>
       <TableTitle css={{ border: 0 }}>
         <Text
-          fs={14}
-          lh={20}
+          fs={[16, 20]}
+          lh={[20, 26]}
           css={{ fontFamily: "FontOver" }}
           fw={500}
           color="white"
@@ -79,7 +79,6 @@ export const TransactionsTable = ({
                   onSort={header.column.getToggleSortingHandler()}
                   css={{
                     "&": {
-                      fontSize: 11,
                       fontWeight: 500,
                       paddingTop: 14,
                       paddingBottom: 14,

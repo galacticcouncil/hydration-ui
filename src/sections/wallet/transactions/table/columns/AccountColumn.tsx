@@ -35,7 +35,7 @@ export const AccountColumn: FC<Props> = ({
   return (
     <Text
       color={color}
-      fs={13}
+      fs={14}
       sx={{ flex: "row", gap: 8, align: "center", justify: "center" }}
     >
       {chain && isCrossChain && (
