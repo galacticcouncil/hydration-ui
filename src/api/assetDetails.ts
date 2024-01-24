@@ -142,6 +142,7 @@ export type TStableSwap = TAssetCommon & {
 export type TShareToken = TAssetCommon & {
   assetType: "ShareToken"
   assets: string[]
+  poolAddress: string | undefined
 }
 
 export type TAsset = TToken | TBond | TStableSwap | TShareToken
@@ -181,17 +182,20 @@ export const getAssets = async (api: ApiPromise) => {
     rawTradeAssets = await tradeRouter.getAllAssets()
   } catch (e) {}
 
+  //TODO: remove after migrating to new asset registry
+  const rawAssetsMeta = api.query.assetRegistry.assetMetadataMap
+    ? await api.query.assetRegistry.assetMetadataMap.entries()
+    : undefined
+
   const [
     system,
     rawAssetsData,
-    rawAssetsMeta,
     rawAssetsLocations,
     hubAssetId,
     isReferralsEnabled,
   ] = await Promise.all([
     api.rpc.system.properties(),
     api.query.assetRegistry.assets.entries(),
-    api.query.assetRegistry.assetMetadataMap.entries(),
     api.query.assetRegistry.assetLocations.entries(),
     api.consts.omnipool.hubAssetId,
     api.query.referrals,
@@ -203,169 +207,205 @@ export const getAssets = async (api: ApiPromise) => {
   const shareTokensRaw = []
 
   for (const [key, dataRaw] of rawAssetsData) {
-    const data = dataRaw.unwrap()
-    const id = key.args[0].toString()
+    if (!dataRaw.isNone) {
+      const data = dataRaw.unwrap()
+      const id = key.args[0].toString()
 
-    const assetType = data.assetType.type
+      const assetType = data.assetType.type
 
-    const isToken = assetType === "Token"
-    const isBond = assetType === "Bond"
-    const isStableSwap = assetType === "StableSwap"
-    const isShareToken = assetType === "PoolShare"
+      const isToken = assetType === "Token"
+      const isBond = assetType === "Bond"
+      const isStableSwap = assetType === "StableSwap"
+      //@ts-ignore
+      const isShareToken = assetType === (!!rawAssetsMeta ? "PoolShare" : "XYK")
 
-    const assetCommon = {
-      id,
-      isToken,
-      isBond,
-      isStableSwap,
-      isShareToken,
-      isNative: false,
-      existentialDeposit: data.existentialDeposit.toBigNumber(),
-      parachainId: undefined,
-    }
-
-    if (isToken) {
-      if (id === NATIVE_ASSET_ID) {
-        const asset: TToken = {
-          ...assetCommon,
-          name: "HydraDX",
-          symbol: system.tokenSymbol.unwrap()[0].toString(),
-          decimals: system.tokenDecimals.unwrap()[0].toNumber(),
-          isNative: true,
-          assetType,
-          iconId: assetCommon.id,
-        }
-        tokens.push(asset)
-      } else {
-        const name = data.name.toUtf8()
-
-        const location = rawAssetsLocations.find(
-          (location) => location[0].args[0].toString() === id,
-        )?.[1]
-
-        const meta = rawAssetsMeta
+      let meta
+      if (rawAssetsMeta) {
+        const assetsMeta = rawAssetsMeta
           .find((meta) => meta[0].args[0].toString() === id)?.[1]
           .unwrap()
 
-        /* meta data should exist for each Token asset */
-        if (meta) {
+        meta = {
+          decimals: assetsMeta?.decimals.toNumber() ?? 12,
+          symbol: assetsMeta?.symbol.toUtf8() ?? "N/a",
+        }
+      } else {
+        meta = {
+          //@ts-ignore
+          decimals: Number(data.decimals.toString()) as number,
+          //@ts-ignore
+          symbol: data.symbol.toHuman() as string,
+        }
+      }
+
+      const assetCommon = {
+        id,
+        isToken,
+        isBond,
+        isStableSwap,
+        isShareToken,
+        isNative: false,
+        existentialDeposit: data.existentialDeposit.toBigNumber(),
+        parachainId: undefined,
+        name: data.name.toHuman() as string,
+        ...meta,
+      }
+
+      if (isToken) {
+        if (id === NATIVE_ASSET_ID) {
           const asset: TToken = {
             ...assetCommon,
-            name,
+            name: "HydraDX",
+            symbol: system.tokenSymbol.unwrap()[0].toString(),
+            decimals: system.tokenDecimals.unwrap()[0].toNumber(),
+            isNative: true,
             assetType,
-            parachainId: location ? getTokenParachainId(location) : undefined,
-            decimals: meta.decimals.toNumber(),
-            symbol: meta.symbol.toUtf8(),
             iconId: assetCommon.id,
+          }
+          tokens.push(asset)
+        } else {
+          const location = rawAssetsLocations.find(
+            (location) => location[0].args[0].toString() === id,
+          )?.[1]
+          //@ts-ignore
+          const asset: TToken = {
+            ...assetCommon,
+            parachainId:
+              location && !location.isNone
+                ? getTokenParachainId(location)
+                : undefined,
           }
 
           tokens.push(asset)
         }
-      }
-    } else if (isBond) {
-      const detailsRaw = await api.query.bonds.bonds(id)
-      // @ts-ignore
-      const details = detailsRaw.unwrap()
+      } else if (isBond) {
+        const detailsRaw = await api.query.bonds.bonds(id)
 
-      const [assetId, maturity] = details ?? []
+        if (!detailsRaw.isNone) {
+          const details = detailsRaw.unwrap()
+          const [assetIdRaw, maturity] = details ?? []
+          const assetId = assetIdRaw.toString()
 
-      let underlyingAsset: { symbol: string; decimals: number } | undefined
+          let underlyingAsset: { symbol: string; decimals: number } | undefined
 
-      if (assetId.toString() === NATIVE_ASSET_ID) {
-        underlyingAsset = {
-          symbol: system.tokenSymbol.unwrap()[0].toString(),
-          decimals: system.tokenDecimals.unwrap()[0].toNumber(),
-        }
-      } else {
-        const meta = rawAssetsMeta.find(
-          (meta) => meta[0].args[0].toString() === assetId.toString(),
-        )
-        if (meta) {
-          const underlyingAssetMeta = meta[1].unwrap()
-          underlyingAsset = {
-            symbol: underlyingAssetMeta.symbol.toUtf8(),
-            decimals: underlyingAssetMeta.decimals.toNumber(),
-          }
-        }
-      }
-
-      if (underlyingAsset) {
-        const symbol = `${underlyingAsset.symbol}b`
-        const name = `${underlyingAsset.symbol} Bond ${format(
-          new Date(maturity.toNumber()),
-          "dd/MM/yyyy",
-        )}`
-        const decimals = underlyingAsset.decimals
-
-        const location = rawAssetsLocations.find(
-          (location) => location[0].args[0].toString() === assetId.toString(),
-        )?.[1]
-
-        const isTradable = rawTradeAssets.some(
-          (tradeAsset) => tradeAsset.id === id,
-        )
-
-        const asset: TBond = {
-          ...assetCommon,
-          assetId: assetId.toString(),
-          name,
-          assetType: "Bond",
-          parachainId: location ? getTokenParachainId(location) : undefined,
-          decimals,
-          symbol,
-          maturity: maturity.toNumber(),
-          isTradable,
-          iconId: assetId.toString(),
-        }
-
-        bonds.push(asset)
-      }
-    } else if (isStableSwap) {
-      const symbol = data.name.toUtf8()
-      const decimals = 18
-
-      const detailsRaw = await api.query.stableswap.pools(id)
-
-      const details = detailsRaw.unwrap()
-      const assets = details.assets.map((asset) => asset.toString())
-
-      const name = assets
-        .map((assetId) => {
           if (assetId === NATIVE_ASSET_ID) {
-            return system.tokenSymbol.unwrap()[0].toString()
+            underlyingAsset = {
+              symbol: system.tokenSymbol.unwrap()[0].toString(),
+              decimals: system.tokenDecimals.unwrap()[0].toNumber(),
+            }
+          } else {
+            const meta = (rawAssetsMeta ?? rawAssetsData).find(
+              (meta) => meta[0].args[0].toString() === assetId,
+            )
+            if (meta) {
+              const underlyingAssetMeta = meta[1].unwrap()
+              underlyingAsset = {
+                decimals: Number(
+                  //@ts-ignore
+                  underlyingAssetMeta.decimals.toString(),
+                ) as number,
+                //@ts-ignore
+                symbol: underlyingAssetMeta.symbol.toHuman() as string,
+              }
+            }
           }
 
-          const meta = rawAssetsMeta
-            .find((meta) => meta[0].args[0].toString() === assetId)?.[1]
+          if (underlyingAsset) {
+            const symbol = `${underlyingAsset.symbol}b`
+            const name = `${underlyingAsset.symbol} Bond ${format(
+              new Date(maturity.toNumber()),
+              "dd/MM/yyyy",
+            )}`
+            const decimals = underlyingAsset.decimals
+
+            const location = rawAssetsLocations.find(
+              (location) => location[0].args[0].toString() === assetId,
+            )?.[1]
+
+            const isTradable = rawTradeAssets.some(
+              (tradeAsset) => tradeAsset.id === id,
+            )
+
+            const asset: TBond = {
+              ...assetCommon,
+              assetId: assetId,
+              name,
+              assetType: "Bond",
+              parachainId:
+                location && !location.isNone
+                  ? getTokenParachainId(location)
+                  : undefined,
+              decimals,
+              symbol,
+              maturity: maturity.toNumber(),
+              isTradable,
+              iconId: assetId,
+            }
+
+            bonds.push(asset)
+          }
+        }
+      } else if (isStableSwap) {
+        const decimals = 18
+
+        const detailsRaw = await api.query.stableswap.pools(id)
+
+        if (detailsRaw && !detailsRaw.isNone) {
+          const details = detailsRaw.unwrap()
+          const assets = details.assets.map((asset: any) => asset.toString())
+
+          const name = assets
+            .map((assetId) => {
+              if (assetId === NATIVE_ASSET_ID) {
+                return system.tokenSymbol.unwrap()[0].toString()
+              }
+
+              const meta = (rawAssetsMeta ?? rawAssetsData)
+                .find((meta) => meta[0].args[0].toString() === assetId)?.[1]
+                .unwrap()
+
+              if (meta) {
+                // @ts-ignore
+                return meta.symbol.toHuman() as string
+              }
+
+              return "N/A"
+            })
+            .join("/")
+
+          const iconId = assets.map((asset) => asset)
+
+          const asset: TStableSwap = {
+            ...assetCommon,
+            assetType: "StableSwap",
+            decimals,
+            assets,
+            name,
+            iconId,
+          }
+          stableswap.push(asset)
+        }
+      } else if (isShareToken) {
+        const poolAddresses = await api.query.xyk.shareToken.entries()
+        const poolAddress = poolAddresses
+          .find(
+            (poolAddress) => poolAddress[1].toString() === assetCommon.id,
+          )?.[0]
+          .args[0].toString()
+
+        if (poolAddress) {
+          const poolAssets = await api.query.xyk.poolAssets(poolAddress)
+          const assets = poolAssets
             .unwrap()
+            .map((poolAsset) => poolAsset.toString())
 
-          if (meta) {
-            return meta.symbol.toUtf8()
-          }
-
-          return "N/A"
-        })
-        .join("/")
-
-      const iconId = assets.map((asset) => asset)
-
-      const asset: TStableSwap = {
-        ...assetCommon,
-        assetType: "StableSwap",
-        symbol,
-        decimals,
-        assets,
-        name,
-        iconId,
+          shareTokensRaw.push({
+            ...assetCommon,
+            assets,
+            poolAddress,
+          })
+        }
       }
-      stableswap.push(asset)
-    } else if (isShareToken) {
-      const [assetA, assetB] = data.assetType.asPoolShare
-
-      shareTokensRaw.push({
-        ...assetCommon,
-        assets: [assetA.toString(), assetB.toString()],
-      })
     }
   }
 
