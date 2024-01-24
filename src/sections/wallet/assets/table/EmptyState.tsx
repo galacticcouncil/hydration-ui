@@ -31,7 +31,7 @@ export const EmptyState = () => {
             fs={14}
             color="basic700"
             tAlign="center"
-            sx={{ width: 355, mb: 10 }}
+            sx={{ maxWidth: 355, mb: 10 }}
           >
             {t("wallet.assets.table.empty.desc")}
           </Text>

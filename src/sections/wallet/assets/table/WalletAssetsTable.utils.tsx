@@ -93,7 +93,7 @@ export const useAssetsTable = (
       display({
         id: "actions",
         //width percentage of column
-        size: 40,
+        size: 37,
         cell: ({ row }) => (
           <WalletAssetsTableActions
             toggleExpanded={row.toggleSelected}

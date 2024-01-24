@@ -64,7 +64,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
           label={t("wallet.assets.table.toggle")}
         />
       </TableTitle>
-      <Table css={{ tableLayout: "fixed" }}>
+      <Table>
         <TableHeaderContent>
           {table.getHeaderGroups().map((hg) => (
             <TableRow key={hg.id}>

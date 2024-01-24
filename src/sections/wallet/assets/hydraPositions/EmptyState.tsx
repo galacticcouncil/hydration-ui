@@ -29,7 +29,7 @@ export const EmptyState = () => {
             fs={14}
             color="basic700"
             tAlign="center"
-            sx={{ width: 290, mb: 10 }}
+            sx={{ maxWidth: 290, mb: 10 }}
           >
             {t("wallet.assets.hydraPositions.empty.desc")}
           </Text>
