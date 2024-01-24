@@ -26,7 +26,7 @@ import { WalletAssetsTableActionsMob } from "./actions/WalletAssetsTableActionsM
 import { Button } from "components/Button/Button"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { AddTokenModal } from "sections/wallet/addToken/AddTokenModal"
+import { AddTokenModal } from "sections/wallet/addToken/modal/AddTokenModal"
 
 type Props = {
   data: AssetsTableData[]
