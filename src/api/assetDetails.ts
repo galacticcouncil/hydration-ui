@@ -274,6 +274,7 @@ export const getAssets = async (api: ApiPromise) => {
               location && !location.isNone
                 ? getTokenParachainId(location)
                 : undefined,
+            iconId: assetCommon.id,
           }
 
           tokens.push(asset)
