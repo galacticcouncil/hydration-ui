@@ -21,6 +21,10 @@ const formControlStyles = css`
     outline: none;
     border-color: ${theme.colors.brightBlue300};
   }
+
+  &:disabled {
+    pointer-events: none;
+  }
 `
 
 export const SInput = styled.input`

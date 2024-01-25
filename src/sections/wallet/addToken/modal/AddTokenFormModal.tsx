@@ -72,6 +72,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset }) => {
               autoComplete="off"
               placeholder={t("wallet.addToken.form.name.placeholder")}
               {...field}
+              disabled={hasAsset}
             />
           )}
         />
@@ -83,6 +84,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset }) => {
               autoComplete="off"
               placeholder={t("wallet.addToken.form.symbol.placeholder")}
               {...field}
+              disabled={hasAsset}
             />
           )}
         />
@@ -94,6 +96,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset }) => {
               autoComplete="off"
               placeholder={t("wallet.addToken.form.decimals.placeholder")}
               {...field}
+              disabled={hasAsset}
             />
           )}
         />

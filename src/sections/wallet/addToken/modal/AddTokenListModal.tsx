@@ -54,7 +54,7 @@ export const AddTokenListModal: React.FC<Props> = ({
           isLoading ? (
             <AddTokenListSkeleton />
           ) : (
-            <div>
+            <>
               {assets?.map((asset) => (
                 <AssetRow key={asset.id} onClick={() => onAssetSelect?.(asset)}>
                   <Text fs={14} sx={{ flex: "row", align: "center", gap: 10 }}>
@@ -63,7 +63,7 @@ export const AddTokenListModal: React.FC<Props> = ({
                   </Text>
                 </AssetRow>
               ))}
-            </div>
+            </>
           )
         }
         footer={
