@@ -42,9 +42,9 @@ export const AddTokenFormModal: FC<Props> = ({ asset }) => {
     <form
       onSubmit={form.handleSubmit(onSubmit)}
       autoComplete="off"
-      sx={{ width: "100%" }}
+      sx={{ height: "100%" }}
     >
-      <div sx={{ flex: "column", gap: 8 }}>
+      <div sx={{ flex: "column", gap: 8, height: "100%" }}>
         <Controller
           name="multilocation"
           control={form.control}
@@ -102,10 +102,10 @@ export const AddTokenFormModal: FC<Props> = ({ asset }) => {
         />
         <div
           sx={{
-            flex: "row",
+            flex: ["column", "row"],
             justify: hasAsset ? "space-between" : "center",
-            mt: 30,
-            gap: 16,
+            mt: ["auto", 30],
+            gap: 8,
           }}
         >
           <Button variant="secondary">
