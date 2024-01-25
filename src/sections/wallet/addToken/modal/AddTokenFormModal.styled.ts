@@ -29,6 +29,7 @@ export const SInput = styled.input`
 
 export const STextarea = styled.textarea`
   resize: none;
+  field-sizing: content;
   ${formControlStyles}
 `
 

@@ -41,7 +41,7 @@ export const AddTokenListModal: React.FC<Props> = ({
       <Spacer size={12} />
       <SAssetsModalHeader>
         <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-          {t("wallet.addToken.table.header.availableAssets")}
+          {t("wallet.addToken.header.availableAssets")}
         </Text>
       </SAssetsModalHeader>
       <ModalScrollableContent
@@ -58,8 +58,8 @@ export const AddTokenListModal: React.FC<Props> = ({
               {assets?.map((asset) => (
                 <AssetRow key={asset.id} onClick={() => onAssetSelect?.(asset)}>
                   <Text fs={14} sx={{ flex: "row", align: "center", gap: 10 }}>
-                    <Icon icon={<AssetLogo />} size={20} />
-                    {asset.symbol} {asset.name}
+                    <Icon icon={<AssetLogo />} size={24} />
+                    {asset.name}
                   </Text>
                 </AssetRow>
               ))}
