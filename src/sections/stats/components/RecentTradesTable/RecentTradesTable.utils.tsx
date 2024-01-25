@@ -53,7 +53,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
       header: t("stats.overview.table.trades.header.account"),
       sortingFn: (a, b) => a.original.account.localeCompare(b.original.account),
       cell: ({ row }) => (
-        <Text color="white">
+        <Text fs={14} color="white">
           {row.original.isIdentity
             ? row.original.account
             : shortenAccountAddress(
