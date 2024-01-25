@@ -2990,10 +2990,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.3.0.tgz#4489dff440ea1bc1432ac50c7cd41c05e26ea593"
-  integrity sha512-ii7zmAsRdGr2sj6VuMTJSpCCnt+op/zj8zS5bfUbSl/TnAOdQvf4NaQBOjoDevpjTKYjxRip9Cr5hKh6X4BiAA==
+"@galacticcouncil/apps@2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.4.0.tgz#9cf3b59fb76a746c70df3e2690d5268ba1f945be"
+  integrity sha512-kdjd0ADzWBaZriso9BSSyS+NXLDCJlFOrdPuM5GuBVw9siJeC7LnkH1XB1zMOps1WizQeRcz7aZnt4kmf48Z4A==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@talismn/connect-wallets" "^1.2.1"
@@ -3063,20 +3063,20 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.2.2.tgz#b2403c0447a4866d61e0403d5577ecfa63115d75"
-  integrity sha512-FcLEVBO7Gf8P95DxQKZMYruHepP3T+xgk9EK4vPgrA+0nlMxg5TWvROwZuvA04dBYHHmM2azz+k//eyCC3mXRQ==
+"@galacticcouncil/xcm-cfg@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.3.0.tgz#bb68b5100c5fe90fe52be1a2fdf5f18f8078536d"
+  integrity sha512-uqY5wTew4sk2MBXcH/U3XLCcj+YAxeAaE1wYKpkiTLIO0Em4+j7vtN/QiYrUbwcO+smqL7B/MIFl6aRA8Ht6xw==
 
-"@galacticcouncil/xcm-sdk@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-2.0.0.tgz#6e0d929402a95223ba6751239305b5864fc29602"
-  integrity sha512-I6b4DQARW4WiLPdAkCA7HWVb7LVO4LBiNu9mxKyhrJBIKUzKjzeVEOSOW4UmXrGHVhwaAapr+uF+wgIGp7oz6Q==
+"@galacticcouncil/xcm-sdk@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-2.1.0.tgz#dd70d9182069e6ea4570ac1f80e2949ef80e4d30"
+  integrity sha512-+4z38IV62KbT8NTbS3f2tjZLox6mdEz5/E1GI1z0zIFiKykYNF8SUcDXA7rUpSsTyd96vrXSgGaZpRxqgkqxZA==
   dependencies:
-    "@moonbeam-network/xcm-builder" "1.0.9"
-    "@moonbeam-network/xcm-config" "1.3.13"
-    "@moonbeam-network/xcm-types" "1.0.1"
-    "@moonbeam-network/xcm-utils" "1.0.3"
+    "@moonbeam-network/xcm-builder" "1.0.12"
+    "@moonbeam-network/xcm-config" "1.3.24"
+    "@moonbeam-network/xcm-types" "1.0.3"
+    "@moonbeam-network/xcm-utils" "1.0.4"
     "@thi.ng/cache" "^2.1.35"
     buffer "^6.0.3"
 
@@ -3349,37 +3349,37 @@
   dependencies:
     lodash.merge "^4.6.2"
 
-"@moonbeam-network/xcm-builder@1.0.9":
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/@moonbeam-network/xcm-builder/-/xcm-builder-1.0.9.tgz#e1772f2750804722d0477c02bb4db90a4aaa71fe"
-  integrity sha512-HX0ExrKClz0ecF5pkyBEP0KUmXz/RxngblnK3ddz9prIciiNNC8gggj1hu3lUaMu0BQf9s9XyAQMPyaLkAijcw==
+"@moonbeam-network/xcm-builder@1.0.12":
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/@moonbeam-network/xcm-builder/-/xcm-builder-1.0.12.tgz#66b200f939206920cb0c45b829fd8721ab5ea290"
+  integrity sha512-WJPjhxq4P9WOK6LLUX+GNis5JZDRSRhWcG+x3/TeXxM6AwPGA0rhjXyKNFJf6qrWOkcm++Kfb7+koJYqP1DutA==
   dependencies:
-    "@moonbeam-network/xcm-types" "1.0.1"
-    "@moonbeam-network/xcm-utils" "1.0.3"
+    "@moonbeam-network/xcm-types" "1.0.3"
+    "@moonbeam-network/xcm-utils" "1.0.4"
     big.js "^6.2.1"
     type-fest "^3.8.0"
 
-"@moonbeam-network/xcm-config@1.3.13":
-  version "1.3.13"
-  resolved "https://registry.yarnpkg.com/@moonbeam-network/xcm-config/-/xcm-config-1.3.13.tgz#3abd704eb7de14adb21110a69c6a45b670d18263"
-  integrity sha512-0ZG4WajAHEoB9M68EUgWIJpT8BHBc1AFcOA4M3iKXS4lE1D2JMB95S2GFT68rHLopPH5oYSXJ0FO0mOpUoFC2Q==
+"@moonbeam-network/xcm-config@1.3.24":
+  version "1.3.24"
+  resolved "https://registry.yarnpkg.com/@moonbeam-network/xcm-config/-/xcm-config-1.3.24.tgz#56bb9aaf9b6f7c2848466f7281a4916a20349523"
+  integrity sha512-5sXAM3a9dr3SQhdu0bWY+5y51COH5gPWtAyz0Wc+RR5/5sA+byP6goV7Q1lnnWYVEVAI/02I+OaLiUiHbSyLcA==
   dependencies:
-    "@moonbeam-network/xcm-builder" "1.0.9"
-    "@moonbeam-network/xcm-types" "1.0.1"
+    "@moonbeam-network/xcm-builder" "1.0.12"
+    "@moonbeam-network/xcm-types" "1.0.3"
 
-"@moonbeam-network/xcm-types@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@moonbeam-network/xcm-types/-/xcm-types-1.0.1.tgz#88db3e69270b41277042d6f9b106f530da74ad7f"
-  integrity sha512-BKR+qsIyiVcvSQDDVB3VEp5vkglet/LnczdXTTSddLw9UXYmB+VvNs/UUqkOW2O9t1DDz1Ucj/gO6g7tU3+yjw==
-  dependencies:
-    "@moonbeam-network/xcm-utils" "1.x"
-    big.js "^6.2.1"
-    type-fest "^3.8.0"
-
-"@moonbeam-network/xcm-utils@1.0.3", "@moonbeam-network/xcm-utils@1.x":
+"@moonbeam-network/xcm-types@1.0.3":
   version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@moonbeam-network/xcm-utils/-/xcm-utils-1.0.3.tgz#02e60850ec84b0879c4553b89eaf584932fa2996"
-  integrity sha512-rxqPvm1SPSCfuaItWN+/OLPtYU7yJScQ1qdJVD1GrrbhwITr8wjU2HKF4KZbaPLo5L/E3BbcapVY4fh9QLY41w==
+  resolved "https://registry.yarnpkg.com/@moonbeam-network/xcm-types/-/xcm-types-1.0.3.tgz#b3e693c4f7990804ce5ab894ac570b419713eae0"
+  integrity sha512-w5A1f2AVaF77RpcriOYP2XsaTEWRuWvlVuPIHHLJC/aQpwzumBKGZflv5mw2e/powRce6y+mZJbluK8uyG7m9Q==
+  dependencies:
+    "@moonbeam-network/xcm-utils" "1.0.4"
+    big.js "^6.2.1"
+    type-fest "^3.8.0"
+
+"@moonbeam-network/xcm-utils@1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@moonbeam-network/xcm-utils/-/xcm-utils-1.0.4.tgz#d701f08acb27b2e6b09ab87631d6c08659568864"
+  integrity sha512-+8gvwoto0EfJQqORgpwhSsSuqL7Q3hRfGz3lXmv8jepw2UgtADTsnUdjppOgkOwSBq4XrUZ5gU+cwmH+i61uIg==
   dependencies:
     big.js "^6.2.1"
     lru-cache "^7.17.0"
