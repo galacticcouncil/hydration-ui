@@ -1,5 +1,5 @@
 import { WalletPage } from "./sections/wallet/WalletPage"
-import { Navigate } from "@tanstack/react-location"
+import { Navigate, Route } from "@tanstack/react-location"
 import { XcmPage } from "sections/xcm/XcmPage"
 import { PoolsPage } from "sections/pools/PoolsPage"
 import { StatsPage } from "sections/stats/StatsPage"
@@ -26,7 +26,7 @@ const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
 const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
 const isXYKPageEnabled = import.meta.env.VITE_FF_XYK_ENABLED === "true"
 
-export const routes = [
+export const routes: Route[] = [
   {
     path: "/",
     element: <Navigate to="/trade/swap" />,
@@ -167,6 +167,13 @@ export const routes = [
   {
     path: "referrals",
     element: <ReferralsWrapper />,
+  },
+  {
+    path: "lending",
+    element: () =>
+      import("./sections/lending/LendingPage").then((mod) => (
+        <mod.LendingPage />
+      )),
   },
   {
     path: "*",

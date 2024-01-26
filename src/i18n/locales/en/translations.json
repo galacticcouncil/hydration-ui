@@ -101,6 +101,7 @@
   "header.stats": "Stats",
   "header.staking": "Staking",
   "header.referrals": "Referrals",
+  "header.lending": "Lending",
   "header.documentation.tooltip": "Documentation",
   "header.notification.pending.tooltip": "{{number}} Pending Transactions",
   "header.notification.tooltip": "Notifications",

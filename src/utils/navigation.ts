@@ -42,11 +42,13 @@ export const LINKS = {
   stakingDashboard: "/staking/dashboard",
   stakingGovernance: "/staking/governance",
   referrals: "/referrals",
+  lending: "/lending",
 }
 
 const isXcmPageEnabled = import.meta.env.VITE_FF_XCM_ENABLED === "true"
 const isStatsEnabled = import.meta.env.VITE_FF_STATS_ENABLED === "true"
 const isStakingEnabled = import.meta.env.VITE_FF_STAKING_ENABLED === "true"
+const isLendingEnabled = import.meta.env.VITE_FF_LENDING_ENABLED === "true"
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
 const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
@@ -134,6 +136,18 @@ export const MENU_ITEMS = [
     Icon: StakingIcon,
     subItems: undefined,
     enabled: isStakingEnabled,
+    external: false,
+    mobVisible: false,
+    tabVisible: true,
+    mobOrder: 4,
+    asyncEnabled: false,
+  },
+  {
+    key: "lending",
+    href: LINKS.lending,
+    Icon: StakingIcon,
+    subItems: undefined,
+    enabled: isLendingEnabled,
     external: false,
     mobVisible: false,
     tabVisible: true,
