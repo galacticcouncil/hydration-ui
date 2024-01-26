@@ -5,7 +5,7 @@ export const AddTokenListSkeleton = () => {
   return (
     <>
       {Array.from({ length: 10 }).map((_, i) => (
-        <AssetRow>
+        <AssetRow key={i}>
           <div sx={{ flex: "row", gap: 10 }}>
             <Skeleton width={20} height={20} />
             <Skeleton width={120} height={20} />

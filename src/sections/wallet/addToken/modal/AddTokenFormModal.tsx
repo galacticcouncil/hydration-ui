@@ -2,8 +2,11 @@ import { Button } from "components/Button/Button"
 import { FC } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
-import { SInput, SLabel, STextarea } from "./AddTokenFormModal.styled"
+import {
+  PARACHAIN_CONFIG,
+  TExternalAsset,
+} from "sections/wallet/addToken/AddToken.utils"
+import { SInput } from "./AddTokenFormModal.styled"
 import { FormValues } from "utils/helpers"
 
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
@@ -14,7 +17,7 @@ type Props = {
 }
 
 type FormFields = {
-  multilocation: string
+  multilocation: object
   name: string
   decimals: string
   symbol: string
@@ -29,9 +32,12 @@ export const AddTokenFormModal: FC<Props> = ({ asset }) => {
       name: asset?.name ?? "",
       symbol: asset?.symbol ?? "",
       decimals: asset?.decimals?.toString() ?? "",
+      multilocation: asset?.parachainId
+        ? PARACHAIN_CONFIG[asset.parachainId.toString()]
+        : {},
     },
   })
-
+  console.log(form.getValues("multilocation"))
   const onSubmit = async (values: FormValues<typeof form>) => {
     console.log(values)
   }
@@ -45,7 +51,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset }) => {
       sx={{ height: "100%" }}
     >
       <div sx={{ flex: "column", gap: 8, height: "100%" }}>
-        <Controller
+        {/* <Controller
           name="multilocation"
           control={form.control}
           render={({ field }) => (
@@ -63,7 +69,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset }) => {
               </SLabel>
             </>
           )}
-        />
+        /> */}
         <Controller
           name="name"
           control={form.control}
