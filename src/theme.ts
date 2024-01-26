@@ -219,7 +219,7 @@ export const gradientBorder = css`
 `
 
 export const scrollbarHidden = css`
-  scrollbar-width: thin;
+  scrollbar-width: none;
   scrollbar-color: transparent transparent;
   &::-webkit-scrollbar,
   &::-webkit-scrollbar-thumb {
