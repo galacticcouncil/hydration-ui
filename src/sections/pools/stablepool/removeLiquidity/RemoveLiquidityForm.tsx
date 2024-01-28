@@ -34,7 +34,7 @@ type RemoveLiquidityProps = {
   defaultValue?: number
 }
 
-export const RemoveLiquidityForm = ({
+export const RemoveStablepoolLiquidityForm = ({
   assetId,
   onClose,
   onSuccess,

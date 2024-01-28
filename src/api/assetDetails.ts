@@ -353,6 +353,7 @@ export const getAssets = async (api: ApiPromise) => {
 
         if (detailsRaw && !detailsRaw.isNone) {
           const details = detailsRaw.unwrap()
+          const symbol = data.name.toUtf8()
           const assets = details.assets.map((asset: any) => asset.toString())
 
           const name = assets
@@ -382,6 +383,7 @@ export const getAssets = async (api: ApiPromise) => {
             decimals,
             assets,
             name,
+            symbol,
             iconId,
           }
           stableswap.push(asset)

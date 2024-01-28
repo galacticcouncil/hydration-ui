@@ -6,12 +6,12 @@ import { Modal } from "components/Modal/Modal"
 import { Stepper } from "components/Stepper/Stepper"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { RemoveLiquidityForm } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidityForm"
-import { RemoveLiquidityForm as RemoveStablepoolLiquidityForm } from "./RemoveLiquidityForm"
+import { RemoveStablepoolLiquidityForm } from "./RemoveLiquidityForm"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { RemoveOption, RemoveOptions } from "./RemoveOptions"
 import { Button } from "components/Button/Button"
-import { BN_0, BN_25 } from "utils/constants"
+import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { Text } from "components/Typography/Text/Text"
@@ -78,11 +78,6 @@ export const RemoveLiquidityModal = ({
     paginateTo(page - 1)
   }
 
-  const sharesAmountPercent =
-    sharesAmount && isRemovingOmnipoolPosition
-      ? new BigNumber(sharesAmount).div(position.providedAmount).times(100)
-      : BN_25
-
   const steps = [
     t("liquidity.stablepool.remove.options"),
     t("liquidity.stablepool.remove.omnipool"),
@@ -122,7 +117,10 @@ export const RemoveLiquidityModal = ({
     >
       <ModalContents
         direction={direction}
-        onClose={onClose}
+        onClose={() => {
+          onClose()
+          onSuccess()
+        }}
         page={page}
         onBack={canGoBack ? handleBack : undefined}
         contents={[
@@ -158,7 +156,7 @@ export const RemoveLiquidityModal = ({
                   if (selectedOption === "STABLE") {
                     return
                   }
-
+                  onSuccess()
                   onClose()
                 }}
                 position={position}
@@ -205,14 +203,16 @@ export const RemoveLiquidityModal = ({
             headerVariant: "gradient",
             content: (
               <RemoveStablepoolLiquidityForm
-                defaultValue={sharesAmountPercent.toNumber()}
+                defaultValue={isRemovingOmnipoolPosition ? 100 : 25}
                 assetId={assetId}
                 onClose={onClose}
                 position={{
                   reserves: pool.reserves,
                   fee: pool.stablepoolFee,
                   poolId: pool.id,
-                  amount: stablepoolPositionAmount,
+                  amount: isRemovingOmnipoolPosition
+                    ? BigNumber(sharesAmount ?? 0)
+                    : stablepoolPositionAmount,
                 }}
                 onSuccess={onSuccess}
                 onAssetOpen={() =>

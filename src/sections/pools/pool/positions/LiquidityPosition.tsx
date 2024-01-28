@@ -72,6 +72,7 @@ function LiquidityPositionJoinFarmButton(props: {
     props.position.id,
     toast,
     () => setJoinFarm(false),
+    props.onSuccess,
   )
 
   return (
