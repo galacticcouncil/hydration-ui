@@ -52,26 +52,78 @@ export const OrderAssetColumn = (props: {
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
-      <div style={{width: '22px'}}>
+      <div style={{ width: "22px" }}>
         <AssetLogo id={props.pair.asset} />
       </div>
       <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
         {t("value.token", { value: props.pair.amount })}
       </Text>
-      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
+      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
         {props.pair.symbol}
       </Text>
     </div>
   );
 };
 
-export const OrderPriceColumn = (props: { symbol: string; price: BN }) => {
+export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
   const { t } = useTranslation();
+
+  const formatPrice = (price: BN) => {
+    if (price) {
+      const decimalPlaces = price.decimalPlaces();
+      if (decimalPlaces) {
+        if (decimalPlaces <= 2 || price.gt(10)) {
+          return '$' + price.toFixed(2);
+        } else {
+          return '$' + price.toFixed(Math.min(4, decimalPlaces));
+        }
+      } else {
+        return "N/A";
+      }
+    }
+  };
 
   return (
     <div sx={{ flex: "row", gap: 8, align: ["end", "start"] }}>
       <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
-        {t("value.token", { value: props.price })} {props.symbol}
+        {t("value.token", { value: 1 })} {props.pair.symbol}
+      </Text>
+      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
+        ({formatPrice(props.price)})
+      </Text>
+    </div>
+  );
+};
+
+//TODO: Maybe delete this as its duplicated above for now
+export const OrderMarketPriceColumn = (props: {
+  pair: OfferingPair;
+  price: BN;
+}) => {
+  const { t } = useTranslation();
+
+  const formatPrice = (price: BN) => {
+    if (price) {
+      const decimalPlaces = price.decimalPlaces();
+      if (decimalPlaces) {
+        if (decimalPlaces <= 2 || price.gt(10)) {
+          return '$' + price.toFixed(2);
+        } else {
+          return '$' + price.toFixed(Math.min(4, decimalPlaces));
+        }
+      } else {
+        return "N/A";
+      }
+    }
+  };
+
+  return (
+    <div sx={{ flex: "row", gap: 8, align: ["end", "start"] }}>
+      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
+        {t("value.token", { value: 1 })} {props.pair.symbol}
+      </Text>
+      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
+        ({formatPrice(props.price)})
       </Text>
     </div>
   );

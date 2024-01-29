@@ -1,51 +1,72 @@
-import { SBar, SBarContainer, SContainer } from "./OrderCapacity.styled"
-import { useTranslation } from "react-i18next"
-import { Text } from "components/Typography/Text/Text"
-import BigNumber from "bignumber.js"
+import { SBar, SBarContainer, SContainer } from "./OrderCapacity.styled";
+import { useTranslation } from "react-i18next";
+import { Text } from "components/Typography/Text/Text";
+import BigNumber from "bignumber.js";
+import { motion } from "framer-motion";
+import { useState } from "react";
 
 export const OrderCapacity = (props: {
-  total: BigNumber
-  free: BigNumber
-  symbol?: string
-  modal?: boolean
-  roundingMode?: BigNumber.RoundingMode
+  total: BigNumber;
+  free: BigNumber;
+  symbol?: string;
+  modal?: boolean;
+  roundingMode?: BigNumber.RoundingMode;
 }) => {
-  const { t } = useTranslation()
-  const { modal = false, roundingMode = 1 } = props
+  const { t } = useTranslation();
+  const { modal = false, roundingMode = 1 } = props;
+  const [orderHovered, setOrderHovered] = useState(false);
 
-  const filled = props.total.minus(props.free)
+  const filled = props.total.minus(props.free);
   const filledPct = filled
     .div(props.total)
     .multipliedBy(100)
-    .decimalPlaces(0, roundingMode)
+    .decimalPlaces(0, roundingMode);
 
   return (
-    <SContainer modal={modal}>
+    <SContainer
+      style={{ padding: '38px 10px'}}
+      modal={modal}
+      onMouseEnter={() => setOrderHovered(true)}
+      onMouseLeave={() => setOrderHovered(false)}
+    >
       <div sx={{ flex: "row-reverse", align: "center" }}>
         <Text
           fs={modal ? 13 : 11}
           fw={500}
-          sx={{ ml: 5, width: 25 }}
           color="brightBlue100"
           as="span"
-        >
-          {t("otc.order.capacity", { filled: filledPct })}
-        </Text>
+        ></Text>
         <SBarContainer modal={modal}>
           <SBar filled={filledPct.toFixed()} />
         </SBarContainer>
       </div>
       {!modal && (
-        <div>
-          <Text fs={12} fw={500} color="basic400" as="span">
-            {t("otc.order.remaining", {
-              filled: props.total.minus(props.free),
-              initial: props.total,
-              symbol: props.symbol,
-            })}
-          </Text>
-        </div>
+        <motion.div
+          initial={{ position: "relative", opacity: 0, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.2 }}
+          animate={orderHovered ? { opacity: 1, y: 6 } : { opacity: 0, y: 0 }}
+        >
+          <div style={{ position: "absolute", width: "100%" }}>
+            <Text
+              fs={12}
+              fw={500}
+              color="basic400"
+              as="span"
+              sx={{ textAlign: "center" }}
+            >
+              {t("otc.order.remaining", {
+                filled: props.total.minus(props.free),
+                initial: props.total,
+                symbol: props.symbol,
+              })}
+              &nbsp;
+              <Text fs={12} fw={500} color="brightBlue100" as="span">
+                {t("otc.order.capacity", { filled: filledPct })}
+              </Text>
+            </Text>
+          </div>
+        </motion.div>
       )}
     </SContainer>
-  )
-}
+  );
+};

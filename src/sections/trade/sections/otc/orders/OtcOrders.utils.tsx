@@ -13,12 +13,12 @@ import { OrderCapacity } from "sections/trade/sections/otc/capacity/OrderCapacit
 import { OtcOrderActions } from "./actions/OtcOrderActions";
 import {
   OrderAssetColumn,
-  OrderPairColumn,
+  OrderMarketPriceColumn,
   OrderPriceColumn,
 } from "./OtcOrdersData";
 import { OrderTableData } from "./OtcOrdersData.utils";
 import Skeleton from "react-loading-skeleton";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 export const useOrdersTable = (
   data: OrderTableData[],
@@ -35,7 +35,7 @@ export const useOrdersTable = (
     pair: true,
     offer: isDesktop,
     accepting: isDesktop,
-    price: true,
+    orderPrice: true,
     marketPrice: isDesktop,
     filled: isDesktop,
     actions: true,
@@ -43,18 +43,6 @@ export const useOrdersTable = (
 
   const columns = useMemo(
     () => [
-      // TODO: Delete
-      // accessor("id", {
-      //   id: "pair",
-      //   header: t("otc.offers.table.header.assets"),
-      //   cell: ({ row }) => (
-      //     <OrderPairColumn
-      //       offering={row.original.offer}
-      //       accepting={row.original.accepting}
-      //       pol={row.original.pol}
-      //     />
-      //   ),
-      // }),
       accessor("offer", {
         id: "offer",
         header: isDesktop
@@ -67,13 +55,13 @@ export const useOrdersTable = (
         header: t("otc.offers.table.header.accepting"),
         cell: ({ row }) => <OrderAssetColumn pair={row.original.accepting} />,
       }),
-      accessor("price", {
-        id: "price",
-        header: t("otc.offers.table.header.price"),
+      accessor("orderPrice", {
+        id: "orderPrice",
+        header: t("otc.offers.table.header.orderPrice"),
         cell: ({ row }) => (
           <OrderPriceColumn
-            symbol={row.original.accepting.symbol}
-            price={row.original.price}
+            pair={row.original.offer}
+            price={row.original.orderPrice} //TODO: Implement proper asset price
           />
         ),
       }),
@@ -81,9 +69,9 @@ export const useOrdersTable = (
         id: "marketPrice",
         header: t("otc.offers.table.header.marketPrice"),
         cell: ({ row }) => (
-          <OrderPriceColumn
-            symbol={row.original.accepting.symbol}
-            price={row.original.price}
+          <OrderMarketPriceColumn
+            pair={row.original.offer}
+            price={row.original.marketPrice} //TODO: Implement actual market price % here
           />
         ),
       }),
@@ -99,20 +87,14 @@ export const useOrdersTable = (
             {t("otc.offers.table.header.status")}
           </div>
         ),
+
         cell: ({ row }) =>
           row.original.accepting.initial && row.original.partiallyFillable ? (
-            <div
-              style={{
-                textAlign: "center",
-                margin: "0 -20px",
-              }}
-            >
-              <OrderCapacity
-                total={row.original.accepting.initial}
-                free={row.original.accepting.amount}
-                symbol={row.original.accepting.symbol}
-              />
-            </div>
+            <OrderCapacity
+              total={row.original.accepting.initial}
+              free={row.original.accepting.amount}
+              symbol={row.original.accepting.symbol}
+            />
           ) : (
             <Text fs={12} fw={400} color="basic400" tAlign={"center"} as="div">
               N / A
@@ -172,8 +154,8 @@ export const useOrdersTableSkeleton = () => {
         cell: () => <Skeleton width="100%" height="100%" />,
       }),
       display({
-        id: "price",
-        header: t("otc.offers.table.header.price"),
+        id: "orderPrice",
+        header: t("otc.offers.table.header.orderPrice"),
         cell: () => <Skeleton width="100%" height="100%" />,
       }),
       display({
@@ -188,7 +170,7 @@ export const useOrdersTableSkeleton = () => {
       }),
       display({
         id: "actions",
-        cell: ''
+        cell: "",
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps

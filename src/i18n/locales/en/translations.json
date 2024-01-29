@@ -323,7 +323,7 @@
   "otc.offers.table.header.offer": "Offer",
   "otc.offers.table.header.accepting": "Accepting",
   "otc.offers.table.header.assets": "Assets",
-  "otc.offers.table.header.price": "Price",
+  "otc.offers.table.header.orderPrice": "Order Price",
   "otc.offers.table.header.marketPrice": "Market Price",
   "otc.offers.table.header.status": "Order status",
   "otc.offers.table.actions.fill": "Fill order",

@@ -19,13 +19,13 @@ export const SBarContainer = styled.div<{ modal: boolean }>`
   position: relative;
   width: 100%;
   height: ${(p) => (p.modal ? "11px" : "7px")};
-  border-radius: 2px;
+  border-radius: 5px;
   background-color: rgba(84, 99, 128, 0.35);
 `
 
 export const SBar = styled.div<{ filled: string }>`
   height: 100%;
-  border-radius: 2px;
+  border-radius: 5px;
   width: ${(p) => p.filled}%;
   -webkit-mask: linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0);
