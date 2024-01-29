@@ -20,6 +20,9 @@ import { StatsOverview } from "sections/stats/sections/overview/StatsOverview"
 import { StatsOmnipoolAsset } from "sections/stats/sections/omnipoolAsset/StatsOmnipoolAsset"
 import { BridgePage } from "sections/xcm/BridgePage"
 import { YieldDcaPage } from "sections/trade/sections/yieldDca/YieldDcaPage"
+import { LendingMarketsPage } from "sections/lending/LendingMarketsPage"
+import { LendingPage } from "sections/lending/LendingPage"
+import { LendingDashboardPage } from "sections/lending/LendingDashboardPage"
 
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
@@ -170,10 +173,17 @@ export const routes: Route[] = [
   },
   {
     path: "lending",
-    element: () =>
-      import("./sections/lending/LendingPage").then((mod) => (
-        <mod.LendingPage />
-      )),
+    element: <LendingPage />,
+    children: [
+      {
+        path: "/",
+        element: <LendingDashboardPage />,
+      },
+      {
+        path: "markets",
+        element: <LendingMarketsPage />,
+      },
+    ],
   },
   {
     path: "*",

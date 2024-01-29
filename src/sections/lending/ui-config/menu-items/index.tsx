@@ -23,14 +23,14 @@ export const navigation: Navigation[] = [
     title: `Markets`,
     dataCy: "menuMarkets",
   },
-  {
+  /* {
     link: ROUTES.staking,
     title: `Stake`,
     dataCy: "menuStake",
     isVisible: () =>
       import.meta.env.VITE_ENV === "production" && !ENABLE_TESTNET,
-  },
-  {
+  }, */
+  /*  {
     link: ROUTES.governance,
     title: `Governance`,
     dataCy: "menuGovernance",
@@ -38,7 +38,7 @@ export const navigation: Navigation[] = [
     //   process.env.NEXT_PUBLIC_ENABLE_GOVERNANCE === 'true' &&
     //   process.env.NEXT_PUBLIC_ENV === 'prod' &&
     //   !ENABLE_TESTNET,
-  },
+  }, */
   {
     link: ROUTES.faucet,
     title: `Fauce`,

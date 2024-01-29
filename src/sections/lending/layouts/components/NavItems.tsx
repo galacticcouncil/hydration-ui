@@ -91,12 +91,12 @@ export const NavItems = ({ setOpen }: NavItemsProps) => {
           </ListItem>
         ))}
 
-      <ListItem
+      {/* <ListItem
         sx={{ display: { xs: "none", md: "flex" }, width: "unset" }}
         disablePadding
       >
         <MoreMenu />
-      </ListItem>
+      </ListItem> */}
     </List>
   )
 }

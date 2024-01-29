@@ -1,19 +1,30 @@
 import { Link as MuiLink, LinkProps as MuiLinkProps } from "@mui/material"
+import { Link as RouterLink } from "@tanstack/react-location"
+import { SxProps as MuiSxProps } from "@mui/system"
 import * as React from "react"
 import { CustomMarket } from "sections/lending/ui-config/marketsConfig"
 
-// Add support for the sx prop for consistency with the other branches.
+const RouterLinkComposed = (props: MuiLinkProps) => (
+  <RouterLink to={props.href} title={props.title} className={props.className}>
+    {props.children}
+  </RouterLink>
+)
 
 export type LinkProps = MuiLinkProps
 
-// A styled version of the Next.js Link component:
-// https://nextjs.org/docs/#with-link
 export const Link = React.forwardRef<HTMLAnchorElement, MuiLinkProps>(
   function Link(props, ref) {
-    const { className, children, ...other } = props
+    const { className, children, sx, ...other } = props
 
     return (
-      <MuiLink className={className} underline="none" {...other} ref={ref}>
+      <MuiLink
+        className={className}
+        component={RouterLinkComposed}
+        underline="none"
+        {...other}
+        sx={sx as MuiSxProps}
+        ref={ref}
+      >
         {children}
       </MuiLink>
     )
@@ -21,15 +32,15 @@ export const Link = React.forwardRef<HTMLAnchorElement, MuiLinkProps>(
 )
 
 export const ROUTES = {
-  dashboard: "/",
-  markets: "/markets",
-  staking: "/staking",
-  governance: "/governance",
-  faucet: "/faucet",
-  migrationTool: "/v3-migration",
+  dashboard: "/lending",
+  markets: "/lending/markets",
+  staking: "/lending/staking",
+  governance: "/lending/governance",
+  faucet: "/lending/faucet",
+  migrationTool: "/lending/v3-migration",
   dynamicRenderedProposal: (proposalId: number) =>
-    `/governance/v3/proposal?proposalId=${proposalId}`,
+    `/lending/governance/v3/proposal?proposalId=${proposalId}`,
   reserveOverview: (underlyingAsset: string, marketName: CustomMarket) =>
-    `/reserve-overview/?underlyingAsset=${underlyingAsset}&marketName=${marketName}`,
-  history: "/history",
+    `/lending/reserve-overview/?underlyingAsset=${underlyingAsset}&marketName=${marketName}`,
+  history: "/lending/history",
 }

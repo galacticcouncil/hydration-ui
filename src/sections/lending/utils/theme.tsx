@@ -6,10 +6,6 @@ import {
   InformationCircleIcon,
 } from "@heroicons/react/outline"
 import { SvgIcon, Theme, ThemeOptions } from "@mui/material"
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { ColorPartial } from "@mui/material/styles/createPalette"
-import React from "react"
 
 const FONT = "ChakraPetch"
 const FONT_HEADING = "ChakraPetchBold"
