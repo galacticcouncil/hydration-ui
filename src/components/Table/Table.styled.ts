@@ -7,7 +7,7 @@ export const TableContainer = styled.div`
   overflow: hidden;
   position: relative;
 
-  margin: unset;
+  margin: 0 -15px;
 
   border-top: 1px solid rgba(152, 176, 214, 0.27);
 
