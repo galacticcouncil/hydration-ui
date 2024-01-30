@@ -295,6 +295,25 @@ export const usePoolDetails = (assetId: string) => {
       )
       .map((position) => position.data)
       .filter(isNotNil)
+      .sort((a, b) => {
+        const firstFarmLastBlock = a.data.yieldFarmEntries.reduce(
+          (acc, curr) =>
+            acc.lt(curr.enteredAt.toBigNumber())
+              ? curr.enteredAt.toBigNumber()
+              : acc,
+          BN_0,
+        )
+
+        const secondFarmLastBlock = b.data.yieldFarmEntries.reduce(
+          (acc, curr) =>
+            acc.lt(curr.enteredAt.toBigNumber())
+              ? curr.enteredAt.toBigNumber()
+              : acc,
+          BN_0,
+        )
+
+        return secondFarmLastBlock.minus(firstFarmLastBlock).toNumber()
+      })
 
     const reserves = isStablePool
       ? (stablePoolBalance.data?.balances ?? []).map((balance) => {
