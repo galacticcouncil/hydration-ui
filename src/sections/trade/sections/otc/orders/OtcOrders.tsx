@@ -54,6 +54,8 @@ export const OtcOrderTable = ({
   const filteredData = useMemo(() => {
     let res: OrderTableData[] = data;
 
+    console.log(res);
+
     if (showPartial) {
       res = res.filter((o) => o.partiallyFillable);
     }
@@ -65,9 +67,9 @@ export const OtcOrderTable = ({
       const lowercasedSearchVal = searchVal.toLowerCase();
       res = res.filter(
         (o) =>
-          o.accepting.asset.toLowerCase().includes(lowercasedSearchVal) ||
+          o.accepting.name.toLowerCase().includes(lowercasedSearchVal) ||
           o.accepting.symbol.toLowerCase().includes(lowercasedSearchVal) ||
-          o.offer.asset.toLowerCase().includes(lowercasedSearchVal) ||
+          o.offer.name.toLowerCase().includes(lowercasedSearchVal) ||
           o.offer.symbol.toLowerCase().includes(lowercasedSearchVal),
       );
     }

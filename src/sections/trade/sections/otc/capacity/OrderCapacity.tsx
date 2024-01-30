@@ -24,21 +24,24 @@ export const OrderCapacity = (props: {
 
   return (
     <SContainer
-      style={{ padding: '38px 10px'}}
       modal={modal}
       onMouseEnter={() => setOrderHovered(true)}
       onMouseLeave={() => setOrderHovered(false)}
     >
-      <div sx={{ flex: "row-reverse", align: "center" }}>
-        <Text
-          fs={modal ? 13 : 11}
-          fw={500}
-          color="brightBlue100"
-          as="span"
-        ></Text>
+      <div sx={{ flex: "row", align: "center" }}>
         <SBarContainer modal={modal}>
           <SBar filled={filledPct.toFixed()} />
         </SBarContainer>
+
+        {modal && (
+          <Text
+            fs={modal ? 13 : 11}
+            fw={500}
+            color="brightBlue100"
+            as="span"
+            sx={{ml:10}}
+          >{filledPct.toFixed(0)}%</Text>
+        )}
       </div>
       {!modal && (
         <motion.div

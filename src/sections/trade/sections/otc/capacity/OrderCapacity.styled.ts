@@ -4,14 +4,14 @@ import { theme } from "theme"
 export const SContainer = styled.div<{ modal: boolean }>`
   font-family: "ChakraPetch";
   background: rgba(10, 12, 22, 0.69);
-
   position: relative;
   text-align: center;
-  margin: ${(p) => (p.modal ? "0 0 20px" : "0")};
   width: 100%;
+  padding: 38px 10px;
 
   @media ${theme.viewport.gte.sm} {
     background: inherit;
+    padding: 20px 0 20px;
   }
 `
 

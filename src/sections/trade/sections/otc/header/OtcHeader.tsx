@@ -54,7 +54,9 @@ export const OtcHeader: FC<Props> = ({
 
   useDebounce(
     () => {
-      onSearchChange(inputValue);
+      if (typeof onSearchChange === 'function') {
+        onSearchChange(inputValue);
+      }
     },
     300,
     [inputValue],

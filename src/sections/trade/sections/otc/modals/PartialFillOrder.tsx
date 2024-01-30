@@ -148,7 +148,7 @@ export const PartialFillOrder = ({
     <Modal
       open
       disableCloseOutside
-      title={t("otc.order.fill.title")}
+      title={t("otc.order.partialFill.title")}
       onClose={() => {
         onClose()
         form.reset()
@@ -278,7 +278,7 @@ export const PartialFillOrder = ({
           variant="primary"
           disabled={!form.formState.isValid}
         >
-          {t("otc.order.fill.confirm")}
+          {t("otc.order.partialFill.confirm")}
         </Button>
       </form>
     </Modal>

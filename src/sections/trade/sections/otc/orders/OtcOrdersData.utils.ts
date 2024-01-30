@@ -51,6 +51,7 @@ export const useOrdersTableData = () => {
             new BN(amountOutInitial).shiftedBy(-1 * amountOutDp),
           amount: amountOut,
           asset: order.assetOut?.id,
+          name: order.assetOut?.name,
           symbol: order.assetOut?.symbol,
         },
         accepting: {
@@ -59,6 +60,7 @@ export const useOrdersTableData = () => {
             new BN(amountInInitial).shiftedBy(-1 * amountInDp),
           amount: amountIn,
           asset: order.assetIn?.id,
+          name: order.assetIn?.name,
           symbol: order.assetIn?.symbol,
         },
         price: amountIn.div(amountOut),
@@ -94,5 +96,6 @@ export type OfferingPair = {
   initial: BN | undefined;
   amount: BN;
   asset: string;
+  name: string;
   symbol: string;
 };
