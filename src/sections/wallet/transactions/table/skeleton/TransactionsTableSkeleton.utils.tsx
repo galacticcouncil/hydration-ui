@@ -18,7 +18,7 @@ export const useTransactionsTableSkeleton = (enableAnimation = true) => {
   const columnVisibility: VisibilityState = {
     type: true,
     amount: true,
-    badge: true,
+    badge: isDesktop,
     source: isDesktop,
     arrow: isDesktop,
     dest: isDesktop,
@@ -38,7 +38,7 @@ export const useTransactionsTableSkeleton = (enableAnimation = true) => {
         id: "amount",
         header: t("wallet.transactions.table.header.amount"),
         cell: () => (
-          <div sx={{ flex: "row" }}>
+          <div sx={{ flex: "row", pr: 12 }}>
             <Skeleton
               width={72}
               height={20}

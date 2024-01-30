@@ -20,9 +20,9 @@ export const TransactionsTableSkeleton = () => {
 
   return (
     <TableContainer sx={{ bg: "darkBlue700" }}>
-      <TableTitle css={{ border: 0 }}>
+      <TableTitle css={{ border: 0 }} sx={{ px: 16, py: 26 }}>
         <Text
-          fs={[16, 20]}
+          fs={[15, 20]}
           lh={[20, 26]}
           css={{ fontFamily: "FontOver" }}
           fw={500}

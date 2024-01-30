@@ -39,12 +39,12 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
     source: isDesktop,
     arrow: isDesktop,
     dest: isDesktop,
-    actions: true,
+    actions: isDesktop,
   }
 
   const columnOrder = isDesktop
     ? ["type", "amount", "badge", "source", "arrow", "dest", "actions"]
-    : ["type", "badge", "amount", "actions"]
+    : ["type", "badge", "amount"]
 
   const columns = [
     accessor("type", {
@@ -97,6 +97,7 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
               flex: "row",
               gap: 8,
               align: "center",
+              justify: ["end", "start"],
             }}
           >
             <MultipleIcons
@@ -111,6 +112,16 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
                 symbol: row.original.assetSymbol,
               })}
             </Text>
+            <ChevronRight
+              width={20}
+              height={20}
+              sx={{
+                color: "darkBlue300",
+                display: ["block", "none"],
+                ml: -4,
+                mr: 4,
+              }}
+            />
           </div>
         )
       },
@@ -172,27 +183,13 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
       cell: ({ row }) => {
         const hash = row.original.extrinsicHash
         return (
-          <div>
-            <a
-              href={`${getSubscanLinkByType("extrinsic")}/${hash}`}
-              target="blank"
-              rel="noreferrer"
-            >
-              {isDesktop ? (
-                <LinkIcon
-                  width={12}
-                  height={12}
-                  sx={{ color: "darkBlue300" }}
-                />
-              ) : (
-                <ChevronRight
-                  width={20}
-                  height={20}
-                  sx={{ color: "darkBlue300" }}
-                />
-              )}
-            </a>
-          </div>
+          <a
+            href={`${getSubscanLinkByType("extrinsic")}/${hash}`}
+            target="blank"
+            rel="noreferrer"
+          >
+            <LinkIcon width={12} height={12} sx={{ color: "darkBlue300" }} />
+          </a>
         )
       },
     }),
