@@ -16,11 +16,15 @@ import { useTokenBalance, useTokensBalances } from "api/balances"
 import { useDisplayPrices } from "utils/displayAsset"
 import { LiquidityPositionRemoveLiquidity } from "sections/pools/pool/positions/LiquidityPosition"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { assets } = useRpcProvider()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
   const shareTokenMeta = assets.getAsset(pool.id) as TShareToken
 
   const shareTokensBalance = useTokenBalance(pool.id, account?.address)
@@ -73,7 +77,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   if (!myBalance?.totalDisplay.gt(0)) return null
 
   return (
-    <div sx={{ flex: "column", gap: 12, p: 30, bg: "gray" }}>
+    <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
       <Text fs={15} font="FontOver">
         {t("liquidity.pool.positions.title")}
       </Text>
@@ -101,13 +105,25 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
                 })}
               </Text>
             </div>
-            <div sx={{ flex: "row", justify: "space-between" }}>
-              <div sx={{ flex: "column", gap: 6 }}>
-                <Text fs={14} color="whiteish500">
+            <div
+              sx={{
+                flex: ["column", "row"],
+                justify: "space-between",
+                gap: [10, 0],
+              }}
+            >
+              <div
+                sx={{
+                  flex: ["row", "column"],
+                  gap: 6,
+                  justify: ["space-between", "initial"],
+                }}
+              >
+                <Text fs={[13, 14]} color="whiteish500">
                   {t("liquidity.xyk.asset.position.availableShares")}
                 </Text>
                 <div>
-                  <Text>
+                  <Text fs={[13, 16]}>
                     {t("value.token", {
                       value: shareTokensBalance.data?.balance,
                       fixedPointScale: shareTokenMeta.decimals,
@@ -115,19 +131,26 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
                   </Text>
                 </div>
               </div>
-              <Separator orientation="vertical" />
+
+              <Separator orientation={isDesktop ? "vertical" : "horizontal"} />
 
               {myBalance && (
-                <div sx={{ flex: "column", gap: 6 }}>
-                  <div sx={{ display: "flex", gap: 6 }}>
-                    <Text fs={14} color="whiteish500">
+                <div
+                  sx={{
+                    flex: ["row", "column"],
+                    gap: 6,
+                    justify: "space-between",
+                  }}
+                >
+                  <div sx={{ flex: ["row", "column"], gap: 6 }}>
+                    <Text fs={[13, 14]} color="whiteish500">
                       {t("liquidity.asset.positions.position.currentValue")}
                     </Text>
                   </div>
-                  <div sx={{ flex: "column", align: "start" }}>
+                  <div sx={{ flex: "column", align: ["end", "start"] }}>
                     <Text
-                      fs={[14, 16]}
-                      lh={[16, 18]}
+                      fs={[13, 16]}
+                      lh={[13, 18]}
                       fw={500}
                       color="white"
                       tAlign="left"

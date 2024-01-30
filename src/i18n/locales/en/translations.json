@@ -145,7 +145,7 @@
   "liquidity.table.header.poolAsset": "Pool asset",
   "liquidity.table.header.price": "Price",
   "liquidity.table.header.tvl": "Total value locked",
-  "liquidity.table.header.volume": "24 volume",
+  "liquidity.table.header.volume": "24H volume",
   "liquidity.pool.details.title": "Pool details",
   "liquidity.pool.xyk.details.title": "Isolated pool details",
   "liquidity.pool.details.fee": "Pool Fee",

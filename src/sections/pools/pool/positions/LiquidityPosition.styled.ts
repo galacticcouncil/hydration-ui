@@ -12,7 +12,11 @@ export const SContainer = styled.div`
   border: 1px solid rgba(114, 131, 165, 0.6);
 
   border-radius: 4px;
-  padding: 20px;
+  padding: 16px;
+
+  @media (${theme.viewport.gte.sm}) {
+    padding: 20px;
+  }
 `
 
 export const SButton = styled(Button)`

@@ -29,6 +29,8 @@ import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionToolt
 import { useRpcProvider } from "providers/rpcProvider"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { TPoolFullData, TXYKPool } from "sections/pools/PoolsPage.utils"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 type Props = {
   position: HydraPositionsTableData
@@ -157,6 +159,7 @@ export const LiquidityPosition = ({
   const { assets } = useRpcProvider()
   const meta = assets.getAsset(position.assetId)
   const price = useDisplayPrice(meta.id)
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const shiftBy = meta.decimals
   const spotPrice = price.data?.spotPrice
@@ -183,13 +186,21 @@ export const LiquidityPosition = ({
             {t("liquidity.asset.positions.position.title", { index })}
           </Text>
         </div>
-        <div sx={{ flex: "row", justify: "space-between" }}>
-          <div sx={{ flex: "column", gap: 6 }}>
-            <Text fs={14} color="whiteish500">
+        <div
+          sx={{
+            flex: ["column", "row"],
+            justify: "space-between",
+            gap: [10, 0],
+          }}
+        >
+          <div
+            sx={{ flex: ["row", "column"], gap: 6, justify: "space-between" }}
+          >
+            <Text fs={[13, 14]} color="whiteish500">
               {t("liquidity.asset.positions.position.initialValue")}
             </Text>
-            <div>
-              <Text>
+            <div sx={{ flex: "column", align: ["end", "start"] }}>
+              <Text fs={[13, 16]}>
                 {t("value.token", {
                   value: position.providedAmount,
                   fixedPointScale: meta.decimals,
@@ -212,10 +223,16 @@ export const LiquidityPosition = ({
               )}
             </div>
           </div>
-          <Separator orientation="vertical" />
-          <div sx={{ flex: "column", gap: 6 }}>
+          <Separator orientation={isDesktop ? "vertical" : "horizontal"} />
+          <div
+            sx={{
+              flex: ["row", "column"],
+              gap: 6,
+              justify: "space-between",
+            }}
+          >
             <div sx={{ display: "flex", gap: 6 }}>
-              <Text fs={14} color="whiteish500">
+              <Text fs={[13, 14]} color="whiteish500">
                 {t("liquidity.asset.positions.position.currentValue")}
               </Text>
               <LrnaPositionTooltip
@@ -224,11 +241,12 @@ export const LiquidityPosition = ({
                 lrnaPosition={position.lrna}
               />
             </div>
-            <div sx={{ flex: "column", align: "start" }}>
+            <div sx={{ flex: "column", align: ["end", "start"] }}>
               <WalletAssetsHydraPositionsData
                 assetId={position.assetId}
                 value={position.value}
                 lrna={position.lrna}
+                fontSize={[13, 16]}
               />
               <DollarAssetValue
                 value={position.valueDisplay}

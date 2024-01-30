@@ -21,6 +21,8 @@ import { useState } from "react"
 import { TStableSwap } from "api/assetDetails"
 import { useTokenBalance } from "api/balances"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 type Props = {
   pool: TPoolFullData
@@ -31,6 +33,7 @@ export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const { account } = useAccount()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const [transferOpen, setTransferOpen] = useState<Page>()
 
@@ -49,7 +52,9 @@ export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
 
   return (
     <>
-      <div sx={{ flex: "row", align: "center", gap: 8, mb: 20 }}>
+      <div
+        sx={{ flex: "row", align: "center", gap: 8, mb: [5, 20], mt: [5, 0] }}
+      >
         <Icon
           size={15}
           sx={{ color: "vibrantBlue200" }}
@@ -72,13 +77,25 @@ export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
                 />
               )}
             </div>
-            <div sx={{ flex: "row", justify: "space-between" }}>
-              <div sx={{ flex: "column", gap: 6 }}>
-                <Text fs={14} color="whiteish500">
+            <div
+              sx={{
+                flex: ["column", "row"],
+                justify: "space-between",
+                gap: [10, 0],
+              }}
+            >
+              <div
+                sx={{
+                  flex: ["row", "column"],
+                  gap: 6,
+                  justify: "space-between",
+                }}
+              >
+                <Text fs={[13, 14]} color="whiteish500">
                   {t("liquidity.stablepool.position.amount")}
                 </Text>
-                <div>
-                  <Text>
+                <div sx={{ flex: "column", align: ["end", "start"] }}>
+                  <Text fs={[13, 16]}>
                     {t("value.token", {
                       value: amount,
                       fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
@@ -99,16 +116,22 @@ export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
                   </DollarAssetValue>
                 </div>
               </div>
-              <Separator orientation="vertical" />
-              <div sx={{ flex: "column", gap: 6 }}>
-                <div sx={{ display: "flex", gap: 6 }}>
-                  <Text fs={14} color="whiteish500">
-                    {t("liquidity.asset.positions.position.currentValue")}
-                  </Text>
-                </div>
 
-                <div>
-                  <Text>
+              <Separator orientation={isDesktop ? "vertical" : "horizontal"} />
+
+              <div
+                sx={{
+                  flex: ["row", "column"],
+                  gap: 6,
+                  justify: "space-between",
+                }}
+              >
+                <Text fs={[13, 14]} color="whiteish500">
+                  {t("liquidity.asset.positions.position.currentValue")}
+                </Text>
+
+                <div sx={{ flex: "column", align: ["end", "start"] }}>
+                  <Text fs={[13, 16]}>
                     {t("value.token", {
                       value: amount,
                       fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
@@ -130,7 +153,7 @@ export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
           </div>
           <div
             sx={{
-              flex: "row",
+              flex: ["column", "row"],
               gap: 12,
             }}
           >

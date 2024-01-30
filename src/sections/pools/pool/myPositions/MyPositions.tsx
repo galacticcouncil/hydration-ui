@@ -62,7 +62,14 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
         {t("liquidity.pool.positions.title")}
       </Text>
 
-      <div sx={{ flex: "row", gap: 104, py: 16 }}>
+      <div
+        sx={{
+          flex: "row",
+          gap: [24, 104],
+          py: 16,
+          justify: ["space-between", "initial"],
+        }}
+      >
         <div sx={{ flex: "column", gap: 6 }}>
           <Text fs={12} color="basic400">
             {t("liquidity.pool.positions.omnipool")}
