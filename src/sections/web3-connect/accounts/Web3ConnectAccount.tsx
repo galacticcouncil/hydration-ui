@@ -3,12 +3,13 @@ import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { getAddressVariants } from "utils/formatting"
+import { getAddressVariants, isHydraAddress } from "utils/formatting"
 import { SAccountItem } from "./Web3ConnectAccount.styled"
 import { Web3ConnectAccountSelect } from "./Web3ConnectAccountSelect"
 import { genesisHashToChain } from "utils/helpers"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import BN from "bignumber.js"
+import { availableNetworks } from "@polkadot/networks"
 
 type Props = Account & {
   isProxy?: boolean
@@ -16,6 +17,8 @@ type Props = Account & {
   balance?: BN
   onClick?: (account: Account) => void
 }
+
+const hydradxInfo = availableNetworks.find((c) => c.network === "hydradx")
 
 export const Web3ConnectAccount: FC<Props> = ({
   isProxy = false,
@@ -31,6 +34,9 @@ export const Web3ConnectAccount: FC<Props> = ({
 
   const chain = genesisHashToChain(genesisHash)
 
+  const addr = displayAddress || hydraAddress
+  const isHydraAddr = addr && isHydraAddress(addr)
+
   return (
     <SAccountItem
       isActive={isActive}
@@ -39,7 +45,7 @@ export const Web3ConnectAccount: FC<Props> = ({
     >
       <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
         <Text font="ChakraPetchBold">{name}</Text>
-        {balance?.gt(0) && (
+        {balance?.isFinite() && (
           <div sx={{ flex: "row", align: "end", gap: 2 }}>
             <Text color="basic200" fw={400}>
               <DisplayValue value={balance} />
@@ -66,8 +72,12 @@ export const Web3ConnectAccount: FC<Props> = ({
       )}
       <div sx={{ flex: "column", mt: 12, gap: 12 }}>
         <Web3ConnectAccountSelect
-          name={chain?.displayName ?? ""}
-          address={displayAddress || hydraAddress}
+          name={
+            isHydraAddr && hydradxInfo
+              ? hydradxInfo?.displayName
+              : chain?.displayName ?? ""
+          }
+          address={addr}
           genesisHash={genesisHash}
           provider={provider}
           isProxy={isProxy}

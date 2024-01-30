@@ -24,7 +24,7 @@ import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectS
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
 import { HYDRA_ADDRESS_PREFIX, POLKADOT_APP_NAME } from "utils/api"
 import { H160, safeConvertAddressH160 } from "utils/evm"
-import { safeConvertAddressSS58 } from "utils/formatting"
+import { getAddressVariants, safeConvertAddressSS58 } from "utils/formatting"
 import { FormValues } from "utils/helpers"
 
 type ExternalWalletConnectModalProps = {
@@ -96,9 +96,12 @@ export const Web3ConnectExternalModal = ({
     externalWallet.setAddress(address)
 
     const evmAddress = isEvm ? safeConvertAddressH160(values.address) ?? "" : ""
+    const hydraAddress = !isEvm
+      ? getAddressVariants(values.address)?.hydraAddress ?? ""
+      : ""
     setAccount({
       address,
-      displayAddress: isEvm ? evmAddress : address,
+      displayAddress: isEvm ? evmAddress : hydraAddress,
       name:
         delegates.length && isDelegate
           ? externalWallet.proxyAccountName

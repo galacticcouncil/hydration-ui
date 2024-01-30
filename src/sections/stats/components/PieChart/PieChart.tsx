@@ -43,7 +43,7 @@ export const PieChart = <T extends DataEntry>({
 }: PieChartProps<T>) => {
   const getValue = (dataEntry: T): BN => {
     const propValue = dataEntry[property]
-    return BN.isBigNumber(propValue) ? propValue : BN_0
+    return BN.isBigNumber(propValue) && !propValue.isNaN() ? propValue : BN_0
   }
 
   const total = data?.reduce(

@@ -9,7 +9,6 @@ import BigNumber from "bignumber.js"
 import BN from "bn.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { calculateFreeBalance } from "./balances"
-import { BN_0 } from "utils/constants"
 
 export const useAccountBalances = (id: Maybe<AccountId32 | string>) => {
   const { api } = useRpcProvider()
@@ -55,7 +54,7 @@ export const getAccountBalancesNew =
       const reservedBalance = new BigNumber(data.reserved.toHex())
       const frozenBalance = new BigNumber(data.frozen.toHex())
       const balance = new BigNumber(
-        calculateFreeBalance(freeBalance, BN_0, frozenBalance) ?? NaN,
+        calculateFreeBalance(freeBalance, frozenBalance) ?? NaN,
       )
 
       return {
@@ -68,12 +67,20 @@ export const getAccountBalancesNew =
     })
 
     const freeBalance = new BigNumber(nativeData.data.free.toHex())
-    const miscFrozenBalance = new BigNumber(nativeData.data.miscFrozen.toHex())
-    const feeFrozenBalance = new BigNumber(nativeData.data.feeFrozen.toHex())
+    const miscFrozenBalance = new BigNumber(
+      nativeData.data.miscFrozen?.toHex() ?? 0,
+    )
+    const feeFrozenBalance = new BigNumber(
+      //@ts-ignore
+      nativeData.data.feeFrozen?.toHex() ?? nativeData.data.frozen.toHex(),
+    )
     const reservedBalance = new BigNumber(nativeData.data.reserved.toHex())
 
     const balance = new BigNumber(
-      calculateFreeBalance(freeBalance, miscFrozenBalance, feeFrozenBalance),
+      calculateFreeBalance(
+        freeBalance,
+        BigNumber.max(feeFrozenBalance, miscFrozenBalance),
+      ),
     )
 
     const native = {
@@ -134,9 +141,12 @@ const getAccountAssetBalances =
           assetId: assetId.toString(),
           free: natives[nativeIdx].data.free,
           reserved: natives[nativeIdx].data.reserved,
-          frozen: natives[nativeIdx].data.feeFrozen.add(
-            natives[nativeIdx].data.miscFrozen,
-          ),
+          frozen: natives[nativeIdx].data.feeFrozen
+            ? natives[nativeIdx].data.feeFrozen.add(
+                natives[nativeIdx].data.miscFrozen,
+              )
+            : //@ts-ignore
+              natives[nativeIdx].data.frozen,
         })
 
         nativeIdx += 1
