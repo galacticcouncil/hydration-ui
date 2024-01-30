@@ -47,8 +47,8 @@ export const VotersListContainer = ({
 
   if (false)
     return (
-      <Box sx={{ mt: 8, mb: 12 }}>
-        <Row sx={{ mb: 3 }}>
+      <Box sx={{ mt: 8, mb: 162 }}>
+        <Row sx={{ mb: 12 }}>
           <Typography
             sx={{ ml: "auto" }}
             variant="subheader2"
@@ -64,15 +64,15 @@ export const VotersListContainer = ({
             alignItems: "center",
           }}
         >
-          <CircularProgress size={24} sx={{ my: 4 }} />
+          <CircularProgress size={24} sx={{ my: 16 }} />
         </Box>
       </Box>
     )
 
   if (false)
     return (
-      <Box sx={{ mt: 8, mb: 12 }}>
-        <Row sx={{ mb: 3 }}>
+      <Box sx={{ mt: 8, mb: 162 }}>
+        <Row sx={{ mb: 12 }}>
           <Typography
             sx={{ ml: "auto" }}
             variant="subheader2"
@@ -103,7 +103,7 @@ export const VotersListContainer = ({
 
   return (
     <Box sx={{ my: 8 }}>
-      <Row sx={{ mb: 3 }}>
+      <Row sx={{ mb: 12 }}>
         <Typography variant="subheader2" color="text.secondary">
           {proposalVotes.combinedVotes.length > 10 ? (
             <span>Top 10 addresses</span>

@@ -116,7 +116,7 @@ export const TxActionsWrapper = ({
         content: (
           <>
             <span>Approve Confirmed</span>
-            <SvgIcon sx={{ fontSize: 20, ml: 2 }}>
+            <SvgIcon sx={{ fontSize: 20, ml: 8 }}>
               <CheckIcon />
             </SvgIcon>
           </>
@@ -141,7 +141,7 @@ export const TxActionsWrapper = ({
   const approvalParams = getApprovalParams()
   return (
     <Box
-      sx={{ display: "flex", flexDirection: "column", mt: 12, ...sx }}
+      sx={{ display: "flex", flexDirection: "column", mt: 162, ...sx }}
       {...rest}
     >
       {approvalParams && !readOnlyModeAddress && (
@@ -167,7 +167,7 @@ export const TxActionsWrapper = ({
           data-cy="approvalButton"
         >
           {approvalParams.loading && (
-            <CircularProgress color="inherit" size="16px" sx={{ mr: 2 }} />
+            <CircularProgress color="inherit" size="16px" sx={{ mr: 8 }} />
           )}
           {approvalParams.content}
         </Button>
@@ -182,7 +182,7 @@ export const TxActionsWrapper = ({
         data-cy="actionButton"
       >
         {loading && (
-          <CircularProgress color="inherit" size="16px" sx={{ mr: 2 }} />
+          <CircularProgress color="inherit" size="16px" sx={{ mr: 8 }} />
         )}
         {content}
       </Button>
@@ -190,7 +190,7 @@ export const TxActionsWrapper = ({
         <Typography
           variant="helperText"
           color="warning.main"
-          sx={{ textAlign: "center", mt: 2 }}
+          sx={{ textAlign: "center", mt: 8 }}
         >
           <span>
             Read-only mode. Connect to a wallet to perform transactions.

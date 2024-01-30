@@ -38,7 +38,7 @@ export const SwitchRates = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        mt: 6,
+        mt: 24,
       }}
     >
       <FormattedNumber

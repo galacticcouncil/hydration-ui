@@ -460,9 +460,9 @@ const SwitchTargetSelectOption = ({ asset }: { asset: SwitchTargetAsset }) => {
       <TokenIcon
         aToken={asset.aToken}
         symbol={asset.iconSymbol || asset.symbol}
-        sx={{ fontSize: "22px", mr: 1 }}
+        sx={{ fontSize: "22px", mr: 16 }}
       />
-      <ListItemText sx={{ mr: 6 }}>{asset.symbol}</ListItemText>
+      <ListItemText sx={{ mr: 24 }}>{asset.symbol}</ListItemText>
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "end" }}>
         <FormattedNumber
           value={asset.variableApy}
@@ -500,9 +500,9 @@ const GhoSwitchTargetSelectOption = ({
       <TokenIcon
         aToken={asset.aToken}
         symbol={asset.iconSymbol || asset.symbol}
-        sx={{ fontSize: "22px", mr: 1 }}
+        sx={{ fontSize: "22px", mr: 16 }}
       />
-      <ListItemText sx={{ mr: 6 }}>{asset.symbol}</ListItemText>
+      <ListItemText sx={{ mr: 24 }}>{asset.symbol}</ListItemText>
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "end" }}>
         <GhoIncentivesCard
           useApyRange={qualifiesForDiscount}

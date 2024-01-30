@@ -130,7 +130,7 @@ export function AppHeader() {
   const disableTestnet = () => {
     localStorage.setItem("testnetsEnabled", "false")
     // Set window.location to trigger a page reload when navigating to the the dashboard
-    window.location.href = "/"
+    window.location.href = "/lending"
   }
 
   const disableFork = () => {
@@ -140,7 +140,7 @@ export function AppHeader() {
     localStorage.removeItem("forkNetworkId")
     localStorage.removeItem("forkRPCUrl")
     // Set window.location to trigger a page reload when navigating to the the dashboard
-    window.location.href = "/"
+    window.location.href = "/lending"
   }
 
   const handleSwitchClick = () => {
@@ -229,7 +229,7 @@ export function AppHeader() {
       >
         <Box
           component={Link}
-          href="/"
+          href="/lending"
           aria-label="Go to homepage"
           sx={{
             lineHeight: 0,
@@ -310,7 +310,7 @@ export function AppHeader() {
             variant="dot"
             badgeContent=""
             color="secondary"
-            sx={{ mr: 2 }}
+            sx={{ mr: 8 }}
           >
             <Button
               onClick={handleSwitchClick}

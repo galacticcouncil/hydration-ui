@@ -237,7 +237,7 @@ export const MarketSwitcher = () => {
         <Typography
           variant="subheader2"
           color="text.secondary"
-          sx={{ px: 4, pt: 2 }}
+          sx={{ px: 12, pt: 8 }}
         >
           <span>
             {ENABLE_TESTNET || STAGING_ENV
@@ -283,6 +283,7 @@ export const MarketSwitcher = () => {
                     theme.palette.mode === "dark" ? "#292E41" : "#FFFFFF",
                   boxShadow: "0px 1px 0px rgba(0, 0, 0, 0.05)",
                 },
+                color: theme.palette.mode === "dark" ? "#383D51" : "#EAEBEF",
                 borderRadius: "4px",
               }}
             >
@@ -316,6 +317,7 @@ export const MarketSwitcher = () => {
                     theme.palette.mode === "dark" ? "#292E41" : "#FFFFFF",
                   boxShadow: "0px 1px 0px rgba(0, 0, 0, 0.05)",
                 },
+                color: theme.palette.mode === "dark" ? "#383D51" : "#EAEBEF",
                 borderRadius: "4px",
               }}
             >

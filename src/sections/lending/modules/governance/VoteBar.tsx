@@ -49,7 +49,7 @@ export function VoteBar({
   return (
     <Box {...rest}>
       <Box sx={{ display: "flex" }}>
-        <Typography variant="description" sx={{ mr: 2 }}>
+        <Typography variant="description" sx={{ mr: 8 }}>
           {yae ? <span>YAE</span> : <span>NAY</span>}
         </Typography>
         {loading ? (

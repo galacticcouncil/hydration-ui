@@ -126,7 +126,7 @@ export const ReserveTopDetailsWrapper = ({
               onClick={() => {
                 navigate({ to: ROUTES.markets })
               }}
-              sx={{ mr: 3, mb: downToSM ? "24px" : "0" }}
+              sx={{ mr: 12, mb: downToSM ? "24px" : "0" }}
             >
               <span>Go Back</span>
             </Button>
@@ -153,7 +153,7 @@ export const ReserveTopDetailsWrapper = ({
           </Box>
 
           {downToSM && (
-            <Box sx={{ display: "flex", alignItems: "center", mb: 6 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 24 }}>
               <ReserveIcon />
               <Box>
                 {!loading && (
@@ -167,7 +167,7 @@ export const ReserveTopDetailsWrapper = ({
                     <Skeleton
                       width={160}
                       height={16}
-                      sx={{ ml: 1, background: "red" }}
+                      sx={{ ml: 4, background: "red" }}
                     />
                   ) : (
                     <Box sx={{ display: "flex" }}>

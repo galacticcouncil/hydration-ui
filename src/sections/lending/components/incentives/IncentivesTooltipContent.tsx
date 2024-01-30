@@ -33,14 +33,14 @@ export const IncentivesTooltipContent = ({
               percent
               variant={typographyVariant}
             />
-            <Typography variant={typographyVariant} sx={{ ml: 1 }}>
+            <Typography variant={typographyVariant} sx={{ ml: 4 }}>
               <span>APR</span>
             </Typography>
           </>
         ) : (
           <>
             <Typography variant={typographyVariant}>∞ %</Typography>
-            <Typography variant={typographyVariant} sx={{ ml: 1 }}>
+            <Typography variant={typographyVariant} sx={{ ml: 4 }}>
               <span>APR</span>
             </Typography>
           </>
@@ -78,7 +78,7 @@ export const IncentivesTooltipContent = ({
               >
                 <TokenIcon
                   symbol={incentive.rewardTokenSymbol}
-                  sx={{ fontSize: "20px", mr: 1 }}
+                  sx={{ fontSize: "20px", mr: 16 }}
                 />
                 <Typography variant={typographyVariant}>
                   {incentive.rewardTokenSymbol}

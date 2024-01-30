@@ -46,7 +46,7 @@ export const VotersListModal = ({
           py: 2,
         }}
       />
-      <Box sx={{ ...borderBaseStyle, mt: 3 }}>
+      <Box sx={{ ...borderBaseStyle, mt: 12 }}>
         <Row
           sx={{
             px: 4,
@@ -85,7 +85,7 @@ export const VotersListModal = ({
           py: 2,
         }}
       />
-      <Box sx={{ ...borderBaseStyle, mt: 3 }}>
+      <Box sx={{ ...borderBaseStyle, mt: 12 }}>
         <Row
           sx={{
             px: 4,
@@ -134,7 +134,7 @@ export const VotersListModal = ({
             value={voteView}
             exclusive
             onChange={(_, value) => setVoteView(value)}
-            sx={{ width: "100%", height: "44px", mt: 8, mb: 6 }}
+            sx={{ width: "100%", height: "44px", mt: 8, mb: 24 }}
           >
             <StyledToggleButton value="yaes" disabled={voteView === "yaes"}>
               <Typography variant="subheader1">

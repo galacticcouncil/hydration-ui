@@ -36,7 +36,7 @@ export const Row = ({
           component="div"
           variant={captionVariant}
           color={captionColor}
-          sx={{ mr: 2 }}
+          sx={{ mr: 8 }}
         >
           {caption}
         </Typography>

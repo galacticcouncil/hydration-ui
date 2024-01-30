@@ -25,7 +25,7 @@ export const VotingResults = ({
     ? getProposalVoteInfo(proposal?.proposal)
     : undefined
   return (
-    <Paper sx={{ px: 6, py: 4, mb: 2.5 }}>
+    <Paper sx={{ px: 6, py: 4, mb: 8.5 }}>
       <Typography variant="h3">
         <span>Voting results</span>
       </Typography>
@@ -41,7 +41,7 @@ export const VotingResults = ({
           <VoteBar
             percent={voteInfo.againstPercent}
             votes={voteInfo.againstVotes}
-            sx={{ mt: 3 }}
+            sx={{ mt: 12 }}
             loading={loading}
           />
           {proposalVotes && (

@@ -1,4 +1,3 @@
-
 import { Box, Button, Link, Typography } from "@mui/material"
 import { useModalContext } from "sections/lending/hooks/useModal"
 
@@ -28,7 +27,7 @@ export const PermissionView = () => {
           </span>
         </Typography>
       </Box>
-      <Box sx={{ display: "flex", flexDirection: "column", mt: 12 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", mt: 162 }}>
         <Button
           onClick={close}
           variant="contained"

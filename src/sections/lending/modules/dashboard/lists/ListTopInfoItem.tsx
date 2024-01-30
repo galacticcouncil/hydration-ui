@@ -28,7 +28,7 @@ export const ListTopInfoItem = ({
         bgcolor: "transparent",
       }}
     >
-      <Typography color="text.secondary" sx={{ mr: 1 }} noWrap>
+      <Typography color="text.secondary" sx={{ mr: 16 }} noWrap>
         {title}
       </Typography>
       <FormattedNumber

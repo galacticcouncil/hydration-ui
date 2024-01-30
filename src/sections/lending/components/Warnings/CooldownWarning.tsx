@@ -5,7 +5,7 @@ import { Warning } from "sections/lending/components/primitives/Warning"
 
 export const CooldownWarning = () => {
   return (
-    <Warning severity="warning" sx={{ ".MuiAlert-message": { p: 0 }, mb: 6 }}>
+    <Warning severity="warning" sx={{ ".MuiAlert-message": { p: 0 }, mb: 24 }}>
       <Typography variant="subheader1">
         <span>Cooldown period warning</span>
       </Typography>

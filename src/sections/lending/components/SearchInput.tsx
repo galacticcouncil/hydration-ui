@@ -51,7 +51,7 @@ export const SearchInput = ({
         ...wrapperSx,
       })}
     >
-      <Box sx={{ ml: 2, mt: 1 }}>
+      <Box sx={{ ml: 8, mt: 16 }}>
         <SearchIcon height={16} />
       </Box>
       <InputBase
@@ -66,7 +66,7 @@ export const SearchInput = ({
         }}
       />
       <IconButton
-        sx={{ p: 0, mr: 2, visibility: searchTerm ? "visible" : "hidden" }}
+        sx={{ p: 0, mr: 8, visibility: searchTerm ? "visible" : "hidden" }}
         onClick={() => handleClear()}
       >
         <XCircleIcon height={16} />

@@ -48,7 +48,7 @@ export const ListHeaderTitle = ({
       {children}
 
       {!!sortKey && (
-        <Box sx={{ display: "inline-flex", flexDirection: "column", ml: 1 }}>
+        <Box sx={{ display: "inline-flex", flexDirection: "column", ml: 16 }}>
           <Box
             component="span"
             sx={(theme) => ({

@@ -35,7 +35,7 @@ window.global ||= window
 export const STAGING_ENV = import.meta.env.VITE_ENV === "rococo"
 export const PROD_ENV = import.meta.env.VITE_ENV === "production"
 export const ENABLE_TESTNET =
-  PROD_ENV && global?.window?.localStorage.getItem("testnetsEnabled") === "true"
+  global?.window?.localStorage.getItem("testnetsEnabled") === "true"
 
 // determines if forks should be shown
 export const FORK_ENABLED =

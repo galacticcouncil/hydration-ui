@@ -456,9 +456,9 @@ export const InterestRateModelGraph = withTooltip<AreaProps, TooltipData>(
               }
             >
               <Box
-                sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
+                sx={{ display: "flex", justifyContent: "space-between", mb: 8 }}
               >
-                <Typography variant="main12" color="primary" sx={{ mr: 2 }}>
+                <Typography variant="main12" color="primary" sx={{ mr: 8 }}>
                   <span>Utilization Rate</span>
                 </Typography>
                 <Typography variant="main12" color="primary">
@@ -482,7 +482,7 @@ export const InterestRateModelGraph = withTooltip<AreaProps, TooltipData>(
                     <Typography
                       variant="caption"
                       color="text.secondary"
-                      sx={{ mr: 2 }}
+                      sx={{ mr: 8 }}
                     >
                       <span>
                         Borrow amount to reach {tooltipData.utilization}%
@@ -506,7 +506,7 @@ export const InterestRateModelGraph = withTooltip<AreaProps, TooltipData>(
                     <Typography
                       variant="caption"
                       color="text.secondary"
-                      sx={{ mr: 2 }}
+                      sx={{ mr: 8 }}
                     >
                       <span>
                         Repayment amount to reach {tooltipData.utilization}%
@@ -538,7 +538,7 @@ export const InterestRateModelGraph = withTooltip<AreaProps, TooltipData>(
                   <Typography
                     variant="caption"
                     color="text.secondary"
-                    sx={{ mr: 2 }}
+                    sx={{ mr: 8 }}
                   >
                     {field.text}
                   </Typography>

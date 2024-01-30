@@ -187,12 +187,12 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
         marketTitle={market.marketTitle}
       />
       {reserve.isFrozen || reserve.isPaused ? (
-        <Box sx={{ mt: 3 }}>
+        <Box sx={{ mt: 12 }}>
           {reserve.isPaused ? <PauseWarning /> : <FrozenWarning />}
         </Box>
       ) : (
         <>
-          <Divider sx={{ my: 6 }} />
+          <Divider sx={{ my: 24 }} />
           <Stack gap={3}>
             {!isGho && (
               <SupplyAction
@@ -264,7 +264,7 @@ const ActionsSkeleton = () => {
         alignItems="center"
       >
         <Box>
-          <Skeleton width={100} height={14} sx={{ mt: 1, mb: 2 }} />
+          <Skeleton width={100} height={14} sx={{ mt: 4, mb: 8 }} />
           <Skeleton width={75} height={12} />
         </Box>
         <Skeleton height={36} width={96} />
@@ -277,11 +277,11 @@ const ActionsSkeleton = () => {
       <Stack direction="row" gap={3}>
         <Skeleton width={42} height={42} sx={{ borderRadius: "12px" }} />
         <Box>
-          <Skeleton width={100} height={12} sx={{ mt: 1, mb: 2 }} />
+          <Skeleton width={100} height={12} sx={{ mt: 4, mb: 8 }} />
           <Skeleton width={100} height={14} />
         </Box>
       </Stack>
-      <Divider sx={{ my: 6 }} />
+      <Divider sx={{ my: 24 }} />
       <Box>
         <Stack gap={3}>
           {RowSkeleton}
@@ -295,7 +295,7 @@ const ActionsSkeleton = () => {
 const PaperWrapper = ({ children }: { children: ReactNode }) => {
   return (
     <Paper sx={{ pt: 4, pb: { xs: 4, xsm: 6 }, px: { xs: 4, xsm: 6 } }}>
-      <Typography variant="h3" sx={{ mb: 6 }}>
+      <Typography variant="h3" sx={{ mb: 24 }}>
         <span>Your info</span>
       </Typography>
 
@@ -314,7 +314,7 @@ const ConnectWallet = ({ loading }: { loading: boolean }) => {
           <Typography variant="h3" sx={{ mb: { xs: 6, xsm: 10 } }}>
             <span>Your info</span>
           </Typography>
-          <Typography sx={{ mb: 6 }} color="text.secondary">
+          <Typography sx={{ mb: 24 }} color="text.secondary">
             <span>
               Please connect a wallet to view your personal information here.
             </span>
@@ -503,19 +503,19 @@ const WalletBalance = ({
       >
         <WalletIcon sx={{ stroke: `${theme.palette.text.secondary}` }} />
       </Box>
-      {/* <Box>
+      <Box>
         <Typography variant="description" color="text.secondary">
           Wallet balance
         </Typography>
         <ValueWithSymbol value={balance} symbol={symbol}>
-          <Box sx={{ ml: 2 }}>
+          {/* <Box sx={{ ml: 8 }}>
             <BuyWithFiat
               cryptoSymbol={symbol}
               networkMarketName={marketTitle}
             />
-          </Box>
+          </Box> */}
         </ValueWithSymbol>
-      </Box> */}
+      </Box>
     </Stack>
   )
 }

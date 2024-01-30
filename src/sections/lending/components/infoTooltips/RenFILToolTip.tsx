@@ -29,7 +29,7 @@ export const RenFILToolTip = () => {
         </Box>
       }
     >
-      <SvgIcon sx={{ fontSize: "20px", color: "error.main", ml: 2 }}>
+      <SvgIcon sx={{ fontSize: "20px", color: "error.main", ml: 8 }}>
         <ExclamationIcon />
       </SvgIcon>
     </ContentWithTooltip>

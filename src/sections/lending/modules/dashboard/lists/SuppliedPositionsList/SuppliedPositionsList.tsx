@@ -7,22 +7,21 @@ import { ListHeaderWrapper } from "sections/lending/components/lists/ListHeaderW
 import { AssetCapsProvider } from "sections/lending/hooks/useAssetCaps"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
-import { GENERAL } from "sections/lending/utils/mixPanelEvents"
 
 import { CollateralSwitchTooltip } from "sections/lending/components/infoTooltips/CollateralSwitchTooltip"
 import { CollateralTooltip } from "sections/lending/components/infoTooltips/CollateralTooltip"
 import { TotalSupplyAPYTooltip } from "sections/lending/components/infoTooltips/TotalSupplyAPYTooltip"
 import { ListWrapper } from "sections/lending/components/lists/ListWrapper"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { DashboardContentNoData } from "sections/lending/modules/dashboard/DashboardContentNoData"
+import { ListButtonsColumn } from "sections/lending/modules/dashboard/lists/ListButtonsColumn"
+import { ListLoader } from "sections/lending/modules/dashboard/lists/ListLoader"
+import { ListTopInfoItem } from "sections/lending/modules/dashboard/lists/ListTopInfoItem"
 import {
   DASHBOARD_LIST_COLUMN_WIDTHS,
   DashboardReserve,
   handleSortDashboardReserves,
 } from "sections/lending/utils/dashboardSortUtils"
-import { ListTopInfoItem } from "sections/lending/modules/dashboard/lists/ListTopInfoItem"
-import { DashboardContentNoData } from "sections/lending/modules/dashboard/DashboardContentNoData"
-import { ListButtonsColumn } from "sections/lending/modules/dashboard/lists/ListButtonsColumn"
-import { ListLoader } from "sections/lending/modules/dashboard/lists/ListLoader"
 import { SuppliedPositionsListItem } from "./SuppliedPositionsListItem"
 import { SuppliedPositionsListMobileItem } from "./SuppliedPositionsListMobileItem"
 
@@ -129,7 +128,7 @@ export const SuppliedPositionsList = () => {
     <ListWrapper
       tooltipOpen={tooltipOpen}
       titleComponent={
-        <Typography component="div" variant="h3" sx={{ mr: 4 }}>
+        <Typography component="div" variant="h3" sx={{ mr: 16 }}>
           <span>Your supplies</span>
         </Typography>
       }

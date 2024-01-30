@@ -150,7 +150,7 @@ const GhoBorrowAssetsListItemDesktop = ({
           <Tooltip title={`${name} (${symbol})`} arrow placement="top">
             <Typography
               variant="subheader1"
-              sx={{ ml: 3 }}
+              sx={{ ml: 12 }}
               noWrap
               data-cy={`assetName`}
             >

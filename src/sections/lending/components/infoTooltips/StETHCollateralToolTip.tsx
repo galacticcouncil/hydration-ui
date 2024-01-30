@@ -6,7 +6,7 @@ import { StETHCollateralWarning } from "sections/lending/components/Warnings/StE
 export const StETHCollateralToolTip = () => {
   return (
     <TextWithTooltip
-      wrapperProps={{ ml: 2 }}
+      wrapperProps={{ ml: 8 }}
       color="warning.main"
       iconSize={20}
       icon={<ExclamationIcon />}

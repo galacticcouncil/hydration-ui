@@ -201,7 +201,7 @@ export const BorrowAssetsList = () => {
   return (
     <ListWrapper
       titleComponent={
-        <Typography component="div" variant="h3" sx={{ mr: 4 }}>
+        <Typography component="div" variant="h3" sx={{ mr: 16 }}>
           <span>Assets to borrow</span>
         </Typography>
       }
@@ -210,7 +210,7 @@ export const BorrowAssetsList = () => {
       noData={borrowDisabled}
       subChildrenComponent={
         <>
-          <Box sx={{ px: 6, mb: 4 }}>
+          <Box sx={{ px: 6, mb: 16 }}>
             {borrowDisabled && currentNetworkConfig.name === "Harmony" && (
               <MarketWarning marketName="Harmony" />
             )}

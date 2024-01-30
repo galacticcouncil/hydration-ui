@@ -43,7 +43,7 @@ const DelegatedPower: React.FC<DelegatedPowerProps> = ({
     return null
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", mt: 6, mb: 2 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", mt: 24, mb: 8 }}>
       <Typography typography="caption" sx={{ mb: 5 }} color="text.secondary">
         <span>{title}</span>
       </Typography>
@@ -181,7 +181,7 @@ export const DelegatedInfoPanel = () => {
         </Typography>
         <Typography
           typography="description"
-          sx={{ mt: 1 }}
+          sx={{ mt: 4 }}
           color="text.secondary"
         >
           <span>
@@ -195,7 +195,7 @@ export const DelegatedInfoPanel = () => {
             target="_blank"
             variant="description"
             color="text.secondary"
-            sx={{ textDecoration: "underline", ml: 1 }}
+            sx={{ textDecoration: "underline", ml: 16 }}
           >
             <span>Learn more.</span>
           </Link>

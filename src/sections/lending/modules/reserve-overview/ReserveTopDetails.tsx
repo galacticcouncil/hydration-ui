@@ -101,7 +101,7 @@ export const ReserveTopDetails = ({
             <Skeleton
               width={16}
               height={16}
-              sx={{ ml: 1, background: "#383D51" }}
+              sx={{ ml: 4, background: "#383D51" }}
             />
           ) : (
             <CircleIcon tooltipText="View oracle contract" downToSM={downToSM}>

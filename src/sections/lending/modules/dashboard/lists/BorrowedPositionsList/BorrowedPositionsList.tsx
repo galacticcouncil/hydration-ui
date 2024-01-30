@@ -174,7 +174,7 @@ export const BorrowedPositionsList = () => {
     <ListWrapper
       tooltipOpen={tooltipOpen}
       titleComponent={
-        <Typography component="div" variant="h3" sx={{ mr: 4 }}>
+        <Typography component="div" variant="h3" sx={{ mr: 16 }}>
           <span>Your borrows</span>
         </Typography>
       }

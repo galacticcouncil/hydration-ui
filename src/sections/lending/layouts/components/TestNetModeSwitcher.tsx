@@ -27,7 +27,7 @@ export const TestNetModeSwitcher = ({
     setTestnetsMode(!testnetsEnabled)
     localStorage.setItem(testnetsEnabledId, newState ? "true" : "false")
     // Set window.location to trigger a page reload when navigating to the the dashboard
-    window.location.href = "/"
+    window.location.href = "/lending"
   }
 
   return (

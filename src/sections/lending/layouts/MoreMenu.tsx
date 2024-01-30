@@ -42,7 +42,7 @@ export function MoreMenu() {
         }}
       >
         <span>More</span>
-        <SvgIcon color="inherit" sx={{ ml: 1 }}>
+        <SvgIcon color="inherit" sx={{ ml: 4 }}>
           <DotsHorizontalIcon />
         </SvgIcon>
       </Button>

@@ -212,7 +212,7 @@ export const SupplyInfo = ({
             <Typography variant="subheader1" color="text.main">
               <span>Collateral usage</span>
             </Typography>
-            <CheckRoundedIcon fontSize="small" color="success" sx={{ ml: 2 }} />
+            <CheckRoundedIcon fontSize="small" color="success" sx={{ ml: 8 }} />
             <Typography variant="subheader1" sx={{ color: "#46BC4B" }}>
               <span>Can be collateral</span>
             </Typography>

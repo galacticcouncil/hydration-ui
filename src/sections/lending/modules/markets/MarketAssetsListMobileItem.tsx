@@ -65,7 +65,7 @@ export const MarketAssetsListMobileItem = ({
         />
       </Row>
 
-      <Divider sx={{ mb: 3 }} />
+      <Divider sx={{ mb: 12 }} />
 
       <Row
         caption={<span>Total borrowed</span>}

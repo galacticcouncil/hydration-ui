@@ -16,7 +16,7 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
   const dotPosition = +healthFactor > 10 ? 100 : +healthFactor * 10
 
   return (
-    <Box sx={{ position: "relative", mt: "33px", mb: 4 }}>
+    <Box sx={{ position: "relative", mt: "33px", mb: 16 }}>
       <Box
         sx={{
           height: "4px",

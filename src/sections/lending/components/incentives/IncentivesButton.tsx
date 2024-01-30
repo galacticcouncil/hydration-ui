@@ -137,7 +137,7 @@ export const IncentivesButton = ({
           setOpen(!open)
         }}
       >
-        <Box sx={{ mr: 2 }}>{incentivesButtonValue()}</Box>
+        <Box sx={{ mr: 8 }}>{incentivesButtonValue()}</Box>
 
         <Box sx={{ display: "inline-flex" }}>
           <>

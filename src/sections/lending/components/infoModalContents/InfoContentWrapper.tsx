@@ -20,7 +20,7 @@ export const InfoContentWrapper = ({
         alignItems: "center",
       }}
     >
-      <Typography variant="h2" sx={{ mb: 2 }}>
+      <Typography variant="h2" sx={{ mb: 8 }}>
         {caption}
       </Typography>
       {children}

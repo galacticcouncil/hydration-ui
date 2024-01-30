@@ -316,7 +316,7 @@ export const SwapModalContent = ({
       )}
 
       {swapTarget.reserve.symbol === "stETH" && (
-        <Warning severity="warning" sx={{ mt: 2, mb: 0 }}>
+        <Warning severity="warning" sx={{ mt: 8, mb: 0 }}>
           <StETHCollateralWarning />
         </Warning>
       )}

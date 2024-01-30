@@ -41,7 +41,7 @@ export const ApprovalMethodToggleButton = ({
         <Typography variant="subheader2" color="info.main">
           <span>{currentMethod}</span>
         </Typography>
-        <SvgIcon sx={{ fontSize: 16, ml: 1, color: "info.main" }}>
+        <SvgIcon sx={{ fontSize: 16, ml: 16, color: "info.main" }}>
           <CogIcon />
         </SvgIcon>
       </Box>

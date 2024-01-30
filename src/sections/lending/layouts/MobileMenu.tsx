@@ -37,7 +37,7 @@ const MenuItemsWrapper = ({
 }) => (
   <Box
     sx={{
-      mb: 6,
+      mb: 24,
       "&:last-of-type": { mb: 0, ".MuiDivider-root": { display: "none" } },
     }}
   >
@@ -49,7 +49,7 @@ const MenuItemsWrapper = ({
       {children}
     </Box>
 
-    <Divider sx={{ borderColor: "#F2F3F729", mt: 6 }} />
+    <Divider sx={{ borderColor: "#F2F3F729", mt: 24 }} />
   </Box>
 )
 
@@ -66,7 +66,7 @@ export const MobileMenu = ({
         <Button
           id="settings-button-mobile"
           variant="surface"
-          sx={{ p: "7px 8px", minWidth: "unset", ml: 2 }}
+          sx={{ p: "7px 8px", minWidth: "unset", ml: 8 }}
           onClick={() => setOpen(true)}
         >
           <SvgIcon sx={{ color: "#F1F1F3" }} fontSize="small">
@@ -95,7 +95,7 @@ export const MobileMenu = ({
                   sx={{ color: "#F1F1F3" }}
                   key={index}
                 >
-                  <ListItemIcon sx={{ minWidth: "unset", mr: 3 }}>
+                  <ListItemIcon sx={{ minWidth: "unset", mr: 12 }}>
                     <SvgIcon sx={{ fontSize: "20px", color: "#F1F1F3" }}>
                       {item.icon}
                     </SvgIcon>

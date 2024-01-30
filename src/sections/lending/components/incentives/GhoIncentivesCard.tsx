@@ -114,7 +114,7 @@ export const GhoIncentivesCard = ({
             {withTokenIcon && (
               <TokenIcon
                 symbol="stkAAVE"
-                sx={{ height: 14, width: 14, mr: 1 }}
+                sx={{ height: 14, width: 14, mr: 16 }}
               />
             )}
             {useApyRange ? (

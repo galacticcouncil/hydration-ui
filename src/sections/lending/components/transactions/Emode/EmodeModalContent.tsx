@@ -120,7 +120,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
     switch (blockingError) {
       case ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING:
         return (
-          <Warning severity="info" sx={{ mt: 6, alignItems: "center" }}>
+          <Warning severity="info" sx={{ mt: 24, alignItems: "center" }}>
             <Typography variant="caption">
               <span>
                 To enable E-mode for the{" "}
@@ -133,7 +133,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
         )
       case ErrorType.EMODE_DISABLED_LIQUIDATION:
         return (
-          <Warning severity="error" sx={{ mt: 6, alignItems: "center" }}>
+          <Warning severity="error" sx={{ mt: 24, alignItems: "center" }}>
             <Typography variant="subheader1" color="#4F1919">
               <span>Cannot disable E-Mode</span>
             </Typography>
@@ -224,7 +224,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
 
       {blockingError === ErrorType.EMODE_DISABLED_LIQUIDATION && <Blocked />}
       {showLiquidationRiskWarning && (
-        <Warning severity="error" sx={{ mt: 6, alignItems: "center" }}>
+        <Warning severity="error" sx={{ mt: 24, alignItems: "center" }}>
           <Typography variant="subheader1" color="#4F1919">
             <span>Liquidation risk</span>
           </Typography>

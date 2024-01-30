@@ -52,7 +52,7 @@ export const TxModalDetails: React.FC<TxModalDetailsProps> = ({
 }) => {
   return (
     <Box sx={{ pt: 5 }}>
-      <Typography sx={{ mb: 1 }} color="text.secondary">
+      <Typography sx={{ mb: 4 }} color="text.secondary">
         <span>Transaction overview</span>
       </Typography>
 
@@ -112,7 +112,7 @@ export const DetailsNumberLine = ({
         ) : (
           <>
             {iconSymbol && (
-              <TokenIcon symbol={iconSymbol} sx={{ mr: 1, fontSize: "16px" }} />
+              <TokenIcon symbol={iconSymbol} sx={{ mr: 4, fontSize: "16px" }} />
             )}
             {numberPrefix && (
               <Typography sx={{ mr: 1 }}>{numberPrefix}</Typography>
@@ -210,7 +210,7 @@ export const DetailsNumberLineWithSub = ({
               {tokenIcon && (
                 <TokenIcon
                   symbol={tokenIcon}
-                  sx={{ mr: 1, fontSize: "14px" }}
+                  sx={{ mr: 4, fontSize: "14px" }}
                 />
               )}
               <FormattedNumber

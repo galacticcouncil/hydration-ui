@@ -51,7 +51,7 @@ export function VoteInfo({ proposal }: VoteInfoProps) {
     Number(powerAtProposalStart) !== 0
 
   return (
-    <Paper sx={{ px: 6, py: 4, mb: 2.5 }}>
+    <Paper sx={{ px: 6, py: 4, mb: 8.5 }}>
       <Row
         sx={{ mb: 8 }}
         caption={
@@ -123,7 +123,7 @@ export function VoteInfo({ proposal }: VoteInfoProps) {
           {showAlreadyVotedMsg && (
             <Warning
               severity={voteOnProposal.support ? "success" : "error"}
-              sx={{ my: 2 }}
+              sx={{ my: 8 }}
             >
               <Typography variant="subheader1">
                 <span>You voted {voteOnProposal.support ? "YAE" : "NAY"}</span>
@@ -146,7 +146,7 @@ export function VoteInfo({ proposal }: VoteInfoProps) {
             </Warning>
           )}
           {showCannotVoteMsg && (
-            <Warning severity="warning" sx={{ my: 2 }}>
+            <Warning severity="warning" sx={{ my: 8 }}>
               <span>
                 Not enough voting power to participate in this proposal
               </span>

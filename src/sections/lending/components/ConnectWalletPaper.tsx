@@ -36,10 +36,10 @@ export const ConnectWalletPaper = ({
           <CircularProgress />
         ) : (
           <>
-            <Typography variant="h2" sx={{ mb: 2 }}>
+            <Typography variant="h2" sx={{ mb: 8 }}>
               <span>Please, connect your wallet</span>
             </Typography>
-            <Typography sx={{ mb: 6 }} color="text.secondary">
+            <Typography sx={{ mb: 24 }} color="text.secondary">
               {description || (
                 <span>
                   Please connect your wallet to see your supplies, borrowings,

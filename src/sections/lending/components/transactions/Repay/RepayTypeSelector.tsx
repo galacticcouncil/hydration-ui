@@ -17,7 +17,7 @@ export function RepayTypeSelector({
   const { currentMarketData } = useProtocolDataContext()
   if (!currentMarketData.enabledFeatures?.collateralRepay) return null
   return (
-    <Box sx={{ mb: 6 }}>
+    <Box sx={{ mb: 24 }}>
       <Typography mb={1} color="text.secondary">
         <span>Repay with</span>
       </Typography>

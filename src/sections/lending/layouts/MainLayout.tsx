@@ -1,7 +1,6 @@
 import { Box } from "@mui/material"
 import { ReactNode } from "react"
 
-import { AppFooter } from "./AppFooter"
 import { AppHeader } from "./AppHeader"
 
 import { LendingPageProviders } from "sections/lending/providers/LandingPageProviders"
@@ -16,8 +15,6 @@ export function MainLayout({ children }: { children: ReactNode }) {
       >
         {children}
       </Box>
-
-      <AppFooter />
     </LendingPageProviders>
   )
 }

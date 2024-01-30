@@ -48,9 +48,9 @@ export const GhoReserveConfiguration: React.FC<
               variant="outlined"
               size="small"
               href="https://github.com/aave/gho/blob/main/techpaper/GHO_Technical_Paper.pdf"
-              sx={{ p: "2px 4px", mt: 2, mr: 2, minWidth: 0 }}
+              sx={{ p: "2px 4px", mt: 8, mr: 8, minWidth: 0 }}
             >
-              <Typography sx={{ mr: 1, fontSize: "10px" }}>
+              <Typography sx={{ mr: 4, fontSize: "10px" }}>
                 <span>Techpaper</span>
               </Typography>
               <SvgIcon sx={{ fontSize: 14 }}>
@@ -62,9 +62,9 @@ export const GhoReserveConfiguration: React.FC<
               variant="outlined"
               size="small"
               href="https://gho.xyz"
-              sx={{ p: "2px 4px", mt: 2, mr: 2, minWidth: 0 }}
+              sx={{ p: "2px 4px", mt: 8, mr: 8, minWidth: 0 }}
             >
-              <Typography sx={{ mr: 1, fontSize: "10px" }}>
+              <Typography sx={{ mr: 4, fontSize: "10px" }}>
                 <span>Website</span>
               </Typography>
               <SvgIcon sx={{ fontSize: 14 }}>
@@ -76,9 +76,9 @@ export const GhoReserveConfiguration: React.FC<
               variant="outlined"
               size="small"
               href="https://docs.gho.xyz/concepts/faq"
-              sx={{ p: "2px 4px", mt: 2, mr: 2, minWidth: 0 }}
+              sx={{ p: "2px 4px", mt: 8, mr: 8, minWidth: 0 }}
             >
-              <Typography sx={{ mr: 1, fontSize: "10px" }}>
+              <Typography sx={{ mr: 4, fontSize: "10px" }}>
                 <span>FAQ</span>
               </Typography>
               <SvgIcon sx={{ fontSize: 14 }}>

@@ -152,7 +152,7 @@ export const SwapModalDetails = ({
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   <TokenIcon
                     symbol={swapSource.reserve.iconSymbol}
-                    sx={{ mr: 2, ml: 4, fontSize: "16px" }}
+                    sx={{ mr: 2, ml: 16, fontSize: "16px" }}
                   />
                   <FormattedNumber
                     value={sourceAmountAfterSwap.toString()}
@@ -192,7 +192,7 @@ export const SwapModalDetails = ({
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   <TokenIcon
                     symbol={swapTarget.reserve.iconSymbol}
-                    sx={{ mr: 2, ml: 4, fontSize: "16px" }}
+                    sx={{ mr: 2, ml: 16, fontSize: "16px" }}
                   />
                   <FormattedNumber
                     value={targetAmountAfterSwap.toString()}

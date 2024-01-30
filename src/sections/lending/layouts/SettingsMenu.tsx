@@ -2,7 +2,6 @@ import { CogIcon } from "@heroicons/react/solid"
 
 import { Button, Menu, MenuItem, SvgIcon, Typography } from "@mui/material"
 import React, { useState } from "react"
-import { PROD_ENV } from "sections/lending/utils/marketsAndNetworksConfig"
 
 import { DarkModeSwitcher } from "./components/DarkModeSwitcher"
 import { TestNetModeSwitcher } from "./components/TestNetModeSwitcher"
@@ -32,7 +31,7 @@ export function SettingsMenu() {
         aria-expanded={settingsOpen ? "true" : undefined}
         aria-haspopup="true"
         onClick={handleSettingsClick}
-        sx={{ p: "7px 8px", minWidth: "unset", ml: 2 }}
+        sx={{ p: "7px 8px", minWidth: "unset", ml: 8 }}
       >
         <SvgIcon sx={{ color: "#F1F1F3" }} fontSize="small">
           <CogIcon />
@@ -57,7 +56,7 @@ export function SettingsMenu() {
         </MenuItem>
 
         <DarkModeSwitcher component={MenuItem} />
-        {PROD_ENV && <TestNetModeSwitcher />}
+        <TestNetModeSwitcher />
       </Menu>
     </>
   )

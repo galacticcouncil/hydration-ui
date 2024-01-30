@@ -91,7 +91,7 @@ export const ApyGraphContainer = ({
         justifyContent: "center",
       }}
     >
-      <CircularProgress size={20} sx={{ mb: 2, opacity: 0.5 }} />
+      <CircularProgress size={20} sx={{ mb: 8, opacity: 0.5 }} />
       <Typography variant="subheader1" color="text.muted">
         <span>Loading data...</span>
       </Typography>
@@ -112,7 +112,7 @@ export const ApyGraphContainer = ({
       <Typography variant="subheader1">
         <span>Something went wrong</span>
       </Typography>
-      <Typography variant="caption" sx={{ mb: 3 }}>
+      <Typography variant="caption" sx={{ mb: 12 }}>
         <span>Data couldn&apos;t be fetched, please reload graph.</span>
       </Typography>
       <Button variant="outlined" color="primary" onClick={refetch}>
@@ -122,7 +122,7 @@ export const ApyGraphContainer = ({
   )
 
   return (
-    <Box sx={{ mt: 10, mb: 4 }}>
+    <Box sx={{ mt: 10, mb: 16 }}>
       <Box
         sx={{
           display: "flex",

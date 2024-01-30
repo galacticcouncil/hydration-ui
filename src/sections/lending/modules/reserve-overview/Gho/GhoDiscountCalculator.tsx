@@ -270,7 +270,7 @@ export const GhoDiscountCalculator = () => {
         gap={2}
         sx={{ flexBasis: "50%" }}
       >
-        <Box sx={{ width: "100%", mt: 4 }}>
+        <Box sx={{ width: "100%", mt: 16 }}>
           <CalculatorInput
             title="Borrow amount"
             value={ghoBorrow}
@@ -389,7 +389,7 @@ const GhoDiscountParametersComponent: React.FC<{
           loading={loading}
         >
           <Typography variant="secondary14" display="flex" alignItems="center">
-            <TokenIcon symbol="GHO" sx={{ fontSize: "14px", mr: 1 }} />
+            <TokenIcon symbol="GHO" sx={{ fontSize: "14px", mr: 16 }} />
             {ghoReserveData.ghoDiscountedPerToken}
             <Typography
               component="span"
@@ -399,7 +399,7 @@ const GhoDiscountParametersComponent: React.FC<{
             >
               <span>to</span>
             </Typography>{" "}
-            <TokenIcon symbol="stkAAVE" sx={{ fontSize: "14px", mr: 1 }} />1
+            <TokenIcon symbol="stkAAVE" sx={{ fontSize: "14px", mr: 16 }} />1
           </Typography>
         </DiscountModelParameter>
         <DiscountModelParameter
@@ -434,7 +434,7 @@ const GhoDiscountParametersComponent: React.FC<{
           loading={loading}
         >
           <Stack direction="row" alignItems="center">
-            <TokenIcon symbol="stkAAVE" sx={{ fontSize: "14px", mr: 1 }} />
+            <TokenIcon symbol="stkAAVE" sx={{ fontSize: "14px", mr: 16 }} />
             <FormattedNumber
               value={ghoReserveData.ghoMinDiscountTokenBalanceForDiscount}
               visibleDecimals={3}
@@ -449,7 +449,7 @@ const GhoDiscountParametersComponent: React.FC<{
           loading={loading}
         >
           <Stack direction="row" alignItems="center">
-            <TokenIcon symbol="GHO" sx={{ fontSize: "14px", mr: 1 }} />
+            <TokenIcon symbol="GHO" sx={{ fontSize: "14px", mr: 16 }} />
             <FormattedNumber
               value={ghoReserveData.ghoMinDebtTokenBalanceForDiscount}
               visibleDecimals={2}

@@ -45,7 +45,7 @@ export const ListMobileItem = ({
           {loading ? (
             <Box sx={{ display: "inline-flex", alignItems: "center" }}>
               <Skeleton variant="circular" width={40} height={40} />
-              <Box sx={{ ml: 2 }}>
+              <Box sx={{ ml: 8 }}>
                 <Skeleton width={100} height={24} />
               </Box>
             </Box>
@@ -60,7 +60,7 @@ export const ListMobileItem = ({
                 sx={{ display: "inline-flex", alignItems: "center" }}
               >
                 <TokenIcon symbol={iconSymbol} sx={{ fontSize: "40px" }} />
-                <Box sx={{ ml: 2 }}>
+                <Box sx={{ ml: 8 }}>
                   <Typography variant="h4">{name}</Typography>
                   <Box display="flex" alignItems="center">
                     <Typography variant="subheader2" color="text.muted">

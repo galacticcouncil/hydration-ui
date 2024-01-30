@@ -68,7 +68,7 @@ export const ProposalOverview = ({
         <Box sx={{ px: { md: 18 }, pt: 8, wordBreak: "break-word" }}>
           {proposal ? (
             <>
-              <Typography variant="h2" sx={{ mb: 6 }}>
+              <Typography variant="h2" sx={{ mb: 24 }}>
                 {proposal.proposal.proposalMetadata.title || <Skeleton />}
               </Typography>
               <Box
@@ -207,7 +207,7 @@ export const ProposalOverview = ({
                   return (
                     <Typography
                       variant="subheader1"
-                      sx={{ mt: 6 }}
+                      sx={{ mt: 24 }}
                       gutterBottom
                       {...rest}
                     />
@@ -222,10 +222,10 @@ export const ProposalOverview = ({
             </ReactMarkdown>
           ) : (
             <>
-              <Skeleton variant="text" sx={{ my: 4 }} />
-              <Skeleton variant="rectangular" height={200} sx={{ my: 4 }} />
-              <Skeleton variant="text" sx={{ my: 4 }} />
-              <Skeleton variant="rectangular" height={400} sx={{ my: 4 }} />
+              <Skeleton variant="text" sx={{ my: 16 }} />
+              <Skeleton variant="rectangular" height={200} sx={{ my: 16 }} />
+              <Skeleton variant="text" sx={{ my: 16 }} />
+              <Skeleton variant="rectangular" height={400} sx={{ my: 16 }} />
             </>
           )}
         </Box>

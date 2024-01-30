@@ -50,7 +50,7 @@ export const TitleWithSearchBar = <T extends React.ElementType>({
       }}
     >
       {showMarketTitle && (
-        <Typography component="div" variant="h2" sx={{ mr: 4 }} {...titleProps}>
+        <Typography component="div" variant="h2" sx={{ mr: 16 }} {...titleProps}>
           {title}
         </Typography>
       )}
@@ -90,7 +90,7 @@ export const TitleWithSearchBar = <T extends React.ElementType>({
               onSearchTermChange={onSearchTermChange}
             />
             {sm && (
-              <Button sx={{ ml: 2 }} onClick={() => handleCancelClick()}>
+              <Button sx={{ ml: 8 }} onClick={() => handleCancelClick()}>
                 <Typography variant="buttonM">
                   <span>Cancel</span>
                 </Typography>

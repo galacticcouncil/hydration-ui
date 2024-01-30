@@ -93,7 +93,7 @@ export const TokenLinkDropdown = ({
           />
           <Typography
             variant="subheader1"
-            sx={{ ml: 3 }}
+            sx={{ ml: 12 }}
             noWrap
             data-cy={`assetName`}
           >
@@ -124,7 +124,7 @@ export const TokenLinkDropdown = ({
               />
               <Typography
                 variant="subheader1"
-                sx={{ ml: 3 }}
+                sx={{ ml: 12 }}
                 noWrap
                 data-cy={`assetName`}
               >
@@ -152,7 +152,7 @@ export const TokenLinkDropdown = ({
             <TokenIcon symbol="default" sx={{ fontSize: "20px" }} />
             <Typography
               variant="subheader1"
-              sx={{ ml: 3 }}
+              sx={{ ml: 12 }}
               noWrap
               data-cy={`assetName`}
             >
@@ -171,7 +171,7 @@ export const TokenLinkDropdown = ({
             <TokenIcon symbol="default" sx={{ fontSize: "20px" }} />
             <Typography
               variant="subheader1"
-              sx={{ ml: 3 }}
+              sx={{ ml: 12 }}
               noWrap
               data-cy={`assetName`}
             >

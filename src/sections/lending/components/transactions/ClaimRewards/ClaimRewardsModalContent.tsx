@@ -207,7 +207,7 @@ export const ClaimRewardsModalContent = () => {
                       <Box sx={{ display: "flex", alignItems: "center" }}>
                         <TokenIcon
                           symbol={reward.symbol}
-                          sx={{ mr: 1, fontSize: "16px" }}
+                          sx={{ mr: 4, fontSize: "16px" }}
                         />
                         <FormattedNumber
                           value={Number(reward.balance)}

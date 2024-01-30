@@ -240,7 +240,12 @@ export const WalletSelector = () => {
       />
       {/* <WalletRow key="frame_wallet" walletName="Frame" walletType={WalletType.FRAME} /> */}
       <Box
-        sx={{ display: "flex", alignItems: "center", mb: 1, padding: "10px 0" }}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          mb: 16,
+          padding: "10px 0",
+        }}
       >
         <Typography variant="subheader1" color="text.secondary">
           <span>Track wallet balance in read-only mode</span>

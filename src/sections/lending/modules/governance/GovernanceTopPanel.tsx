@@ -32,7 +32,7 @@ function ExternalLink({ text, href }: ExternalLinkProps) {
     >
       <Box sx={{ display: "flex", alignItems: "center" }}>
         {text}
-        <SvgIcon sx={{ ml: 1, fontSize: 14 }}>
+        <SvgIcon sx={{ ml: 4, fontSize: 14 }}>
           <ExternalLinkIcon />
         </SvgIcon>
       </Box>
@@ -53,11 +53,11 @@ export const GovernanceTopPanel = () => {
             wrapperSx={{ mb: 4 }}
             chainId={ChainId.mainnet}
           />
-          <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 16 }}>
             <img src={`/aave.svg`} width="32px" height="32px" alt="" />
             <Typography
               variant={downToXSM ? "h2" : upToLG ? "display1" : "h1"}
-              sx={{ ml: 2, mr: 3 }}
+              sx={{ ml: 8, mr: 12 }}
             >
               <span>Aave Governance</span>
             </Typography>

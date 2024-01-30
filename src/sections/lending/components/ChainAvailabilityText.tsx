@@ -46,7 +46,7 @@ export const ChainAvailabilityText: React.FC<ChainAvailabilityTextProps> = ({
           alt="Ethereum Mainnet"
         />
       </Box>
-      <Typography variant="subheader2" sx={{ ml: 1, color: "#C0CBF6" }}>
+      <Typography variant="subheader2" sx={{ ml: 4, color: "#C0CBF6" }}>
         {networkToTextMapper(chainId, network)}
       </Typography>
     </Box>

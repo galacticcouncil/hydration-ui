@@ -187,7 +187,7 @@ export const GovDelegationModalContent: React.FC<
           <Typography
             variant="description"
             color="text.secondary"
-            sx={{ mb: 1 }}
+            sx={{ mb: 4 }}
           >
             <span>
               {isRevokeModal ? "Power to revoke" : "Power to delegate"}
@@ -204,7 +204,7 @@ export const GovDelegationModalContent: React.FC<
         <Typography
           variant="description"
           color="text.secondary"
-          sx={{ mt: 6, mb: 2 }}
+          sx={{ mt: 24, mb: 8 }}
         >
           <span>Balance to revoke</span>
         </Typography>
@@ -213,7 +213,7 @@ export const GovDelegationModalContent: React.FC<
           text="Balance to delegate"
           variant="description"
           textColor="text.secondary"
-          wrapperProps={{ mt: 6, mb: 2 }}
+          wrapperProps={{ mt: 24, mb: 8 }}
         >
           <span>
             Choose how much voting/proposition power to give to someone else by

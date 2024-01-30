@@ -90,15 +90,15 @@ export const GasStation: React.FC<GasStationProps> = ({
 
   return (
     <Stack gap={6} sx={{ width: "100%" }}>
-      <Box sx={{ display: "flex", mt: 6, justifyContent: "space-between" }}>
+      <Box sx={{ display: "flex", mt: 24, justifyContent: "space-between" }}>
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <LocalGasStationIcon
             color="primary"
-            sx={{ fontSize: "16px", mr: 1.5 }}
+            sx={{ fontSize: "16px", mr: 16.5 }}
           />
 
           {loadingTxns && !skipLoad ? (
-            <CircularProgress color="inherit" size="16px" sx={{ mr: 2 }} />
+            <CircularProgress color="inherit" size="16px" sx={{ mr: 8 }} />
           ) : totalGasCostsUsd && !disabled ? (
             <>
               <FormattedNumber

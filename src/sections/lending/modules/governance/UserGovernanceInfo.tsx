@@ -20,7 +20,7 @@ export const UserGovernanceInfo = () => {
       <Typography variant="h3" sx={{ mb: { xs: 6, xsm: 10 } }}>
         <span>Your info</span>
       </Typography>
-      <Typography sx={{ mb: 6 }} color="text.secondary">
+      <Typography sx={{ mb: 24 }} color="text.secondary">
         <span>
           Please connect a wallet to view your personal information here.
         </span>

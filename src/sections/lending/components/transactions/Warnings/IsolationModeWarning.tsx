@@ -13,7 +13,7 @@ export const IsolationModeWarning = ({
   severity,
 }: IsolationModeWarningProps) => {
   return (
-    <Warning severity={severity || "info"} sx={{ mb: 3 }}>
+    <Warning severity={severity || "info"} sx={{ mb: 12 }}>
       <Typography variant="subheader1" mb={0.5}>
         <span>You are entering Isolation mode</span>
       </Typography>

@@ -61,7 +61,7 @@ export const ProposalLifecycle = ({
     proposal.proposal.proposalMetadata.discussions.match(urlRegex)
 
   return (
-    <Paper sx={{ px: 6, py: 4, mb: 2.5 }}>
+    <Paper sx={{ px: 6, py: 4, mb: 8.5 }}>
       <Typography variant="h3">
         <span>Proposal details</span>
       </Typography>

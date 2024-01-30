@@ -22,7 +22,7 @@ export const MarketAssetsListMobileItemLoader = () => {
         <Skeleton width={45} height={20} />
       </Row>
 
-      <Divider sx={{ mb: 3 }} />
+      <Divider sx={{ mb: 12 }} />
 
       <Row
         caption={<Skeleton width={100} height={20} />}

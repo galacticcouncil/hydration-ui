@@ -23,7 +23,7 @@ export const PanelTitle: React.FC<TypographyProps> = (props) => (
   <Typography
     {...props}
     variant="subheader1"
-    sx={{ minWidth: { xs: "170px" }, mr: 4, mb: { xs: 6, md: 0 }, ...props.sx }}
+    sx={{ minWidth: { xs: "170px" }, mr: 16, mb: { xs: 6, md: 0 }, ...props.sx }}
   />
 )
 

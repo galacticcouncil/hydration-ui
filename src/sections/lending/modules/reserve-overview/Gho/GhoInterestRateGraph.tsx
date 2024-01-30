@@ -314,7 +314,7 @@ export const GhoInterestRateGraph = withTooltip<AreaProps, TooltipData>(
               <Typography
                 variant="secondary12"
                 color="text.secondary"
-                sx={{ mb: 2, mr: 2, fontWeight: 400 }}
+                sx={{ mb: 8, mr: 8, fontWeight: 400 }}
               >
                 {formatDate(getDate(tooltipData), selectedTimeRange)}
               </Typography>

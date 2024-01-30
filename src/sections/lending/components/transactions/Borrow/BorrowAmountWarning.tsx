@@ -12,7 +12,7 @@ export const BorrowAmountWarning = ({
 }: BorrowAmountWarningProps) => {
   return (
     <>
-      <Warning severity="error" sx={{ my: 6 }}>
+      <Warning severity="error" sx={{ my: 24 }}>
         <span>
           Borrowing this amount will reduce your health factor and increase risk
           of liquidation.

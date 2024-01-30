@@ -1,7 +1,7 @@
 import { BookOpenIcon, QuestionMarkCircleIcon } from "@heroicons/react/outline"
 import { ReactNode } from "react"
 import { ROUTES } from "sections/lending/components/primitives/Link"
-import { ENABLE_TESTNET } from "sections/lending/utils/marketsAndNetworksConfig"
+//import { ENABLE_TESTNET } from "sections/lending/utils/marketsAndNetworksConfig"
 
 import { MarketDataType } from "sections/lending/ui-config/marketsConfig"
 
@@ -39,11 +39,11 @@ export const navigation: Navigation[] = [
     //   process.env.NEXT_PUBLIC_ENV === 'prod' &&
     //   !ENABLE_TESTNET,
   }, */
-  {
+  /* {
     link: ROUTES.faucet,
-    title: `Fauce`,
+    title: `Faucet`,
     isVisible: () => import.meta.env.VITE_ENV === "rococo" || ENABLE_TESTNET,
-  },
+  }, */
 ]
 
 interface MoreMenuItem extends Navigation {

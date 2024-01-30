@@ -260,7 +260,7 @@ export const SupplyAssetsList = () => {
   return (
     <ListWrapper
       titleComponent={
-        <Typography component="div" variant="h3" sx={{ mr: 4 }}>
+        <Typography component="div" variant="h3" sx={{ mr: 16 }}>
           <span>Assets to supply</span>
         </Typography>
       }

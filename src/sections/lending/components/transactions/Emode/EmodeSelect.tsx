@@ -23,8 +23,8 @@ export const EmodeSelect = ({
   userEmode,
 }: EmodeSelectProps) => {
   return (
-    <FormControl sx={{ mb: 1, width: "100%" }}>
-      <FormLabel sx={{ mb: 1, color: "text.secondary" }}>
+    <FormControl sx={{ mb: 4, width: "100%" }}>
+      <FormLabel sx={{ mb: 4, color: "text.secondary" }}>
         <span>Asset category</span>
       </FormLabel>
 

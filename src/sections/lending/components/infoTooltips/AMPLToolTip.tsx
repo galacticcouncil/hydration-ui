@@ -13,7 +13,7 @@ export const AMPLToolTip = () => {
         </Box>
       }
     >
-      <SvgIcon sx={{ fontSize: "20px", color: "warning.main", ml: 2 }}>
+      <SvgIcon sx={{ fontSize: "20px", color: "warning.main", ml: 8 }}>
         <ExclamationIcon />
       </SvgIcon>
     </ContentWithTooltip>

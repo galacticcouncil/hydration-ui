@@ -20,7 +20,7 @@ export const DebtCeilingMaxedTooltip = ({
   if (!debtCeiling || !debtCeiling.isMaxed) return null
 
   return (
-    <Box sx={{ ml: 2 }}>
+    <Box sx={{ ml: 8 }}>
       <TextWithTooltip
         {...rest}
         icon={<ExclamationIcon />}

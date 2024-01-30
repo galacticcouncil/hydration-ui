@@ -147,7 +147,7 @@ export const StakeCooldownModalContent = ({
           chainId={stakingChain}
         />
       )}
-      <Typography variant="description" sx={{ mb: 6 }}>
+      <Typography variant="description" sx={{ mb: 24 }}>
         <span>
           The cooldown period is {timeMessage(stakeCooldownSeconds)}. After{" "}
           {timeMessage(stakeCooldownSeconds)} of cooldown, you will enter
@@ -180,7 +180,7 @@ export const StakeCooldownModalContent = ({
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <TokenIcon
             symbol={stakeAssetName}
-            sx={{ mr: 1, width: 14, height: 14 }}
+            sx={{ mr: 4, width: 14, height: 14 }}
           />
           <FormattedNumber
             value={amountToCooldown}

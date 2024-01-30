@@ -53,7 +53,7 @@ export const TxErrorView = ({ txError }: { txError: TxErrorType }) => {
             navigator.clipboard.writeText(txError.rawError.message.toString())
           }
           size="small"
-          sx={{ mt: 6 }}
+          sx={{ mt: 24 }}
         >
           <span>Copy error text</span>
 
@@ -62,7 +62,7 @@ export const TxErrorView = ({ txError }: { txError: TxErrorType }) => {
           </SvgIcon>
         </Button>
       </Box>
-      <Box sx={{ display: "flex", flexDirection: "column", mt: 12 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", mt: 162 }}>
         <Button
           onClick={close}
           variant="contained"

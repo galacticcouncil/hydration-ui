@@ -26,7 +26,7 @@ export const MigrateV3ModalAssetsList = ({
       caption={caption}
       captionVariant="description"
       align="flex-start"
-      sx={{ mb: 6, "&:last-of-type": { mb: 0 } }}
+      sx={{ mb: 24, "&:last-of-type": { mb: 0 } }}
     >
       {!!assets.length ? (
         <Box
@@ -50,7 +50,7 @@ export const MigrateV3ModalAssetsList = ({
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   <TokenIcon
                     symbol={asset.iconSymbol}
-                    sx={{ mr: 1, fontSize: "16px" }}
+                    sx={{ mr: 4, fontSize: "16px" }}
                   />
                   <FormattedNumber
                     value={asset.amount}

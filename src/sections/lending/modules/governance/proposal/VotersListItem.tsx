@@ -81,7 +81,7 @@ export const VotersListItem = ({
             alignItems: "center",
           }}
         >
-          <Avatar src={blockieAvatar} sx={{ width: 24, height: 24, mr: 2 }} />
+          <Avatar src={blockieAvatar} sx={{ width: 24, height: 24, mr: 8 }} />
           <Link href={`https://etherscan.io/address/${address}`}>
             <Typography
               variant="subheader1"

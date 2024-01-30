@@ -226,7 +226,7 @@ export const GhoBorrowSuccessView = ({
             <span>Review tx details</span>
           </Typography>
         </Button>
-        <Typography sx={{ mt: 6, mb: 4 }} variant="h2">
+        <Typography sx={{ mt: 24, mb: 16 }} variant="h2">
           <span>Save and share</span>
         </Typography>
         <canvas
@@ -309,7 +309,7 @@ export const GhoBorrowSuccessView = ({
               <IconButtonCustom
                 target="_blank"
                 href={`https://twitter.com/intent/tweet?text=I Just minted ${finalNumber} GHO`}
-                sx={{ ml: 2 }}
+                sx={{ ml: 8 }}
               >
                 <Twitter fontSize="small" sx={{ fill: "#33CEFF" }} />
               </IconButtonCustom>

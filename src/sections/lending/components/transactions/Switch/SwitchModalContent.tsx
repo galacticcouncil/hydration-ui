@@ -295,7 +295,7 @@ export const SwitchModalContent = ({
                 />
               </Row>
               <Row
-                sx={{ mt: 1 }}
+                sx={{ mt: 4 }}
                 caption={<span>Minimum USD value received</span>}
                 captionVariant="caption"
               >
@@ -344,7 +344,7 @@ export const SwitchModalContent = ({
               }}
             >
               <Typography
-                sx={{ mb: 6, textAlign: "center" }}
+                sx={{ mb: 24, textAlign: "center" }}
                 color="text.secondary"
               >
                 <span>

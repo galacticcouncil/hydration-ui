@@ -8,7 +8,8 @@ import {
 import { SvgIcon, Theme, ThemeOptions } from "@mui/material"
 
 const FONT = "ChakraPetch"
-const FONT_HEADING = "ChakraPetchBold"
+const FONT_SEMIBOLD = "ChakraPetchSemiBold"
+const FONT_BOLD = "ChakraPetchBold"
 
 declare module "@mui/material/styles/createPalette" {
   interface PaletteColor extends ColorPartial {}
@@ -217,50 +218,50 @@ export const getDesignTokens = (mode: "light" | "dark") => {
       button: undefined,
       overline: undefined,
       display1: {
-        fontFamily: FONT_HEADING,
+        fontFamily: FONT_BOLD,
         fontWeight: 700,
         letterSpacing: "0.25px",
         lineHeight: "123.5%",
         fontSize: "32px",
       },
       h1: {
-        fontFamily: FONT_HEADING,
+        fontFamily: FONT_BOLD,
         fontWeight: 700,
         letterSpacing: "0.25px",
         lineHeight: "123.5%",
         fontSize: "28px",
       },
       h2: {
-        fontFamily: FONT_HEADING,
+        fontFamily: FONT_SEMIBOLD,
         fontWeight: 600,
         letterSpacing: "unset",
         lineHeight: "133.4%",
         fontSize: "21px",
       },
       h3: {
-        fontFamily: FONT_HEADING,
+        fontFamily: FONT_SEMIBOLD,
         fontWeight: 600,
         letterSpacing: "0.15px",
         lineHeight: "160%",
         fontSize: "18px",
       },
       h4: {
-        fontFamily: FONT_HEADING,
+        fontFamily: FONT_SEMIBOLD,
         fontWeight: 600,
         letterSpacing: "0.15px",
         lineHeight: "24px",
         fontSize: "16px",
       },
       subheader1: {
-        fontFamily: FONT_HEADING,
+        fontFamily: FONT_SEMIBOLD,
         fontWeight: 600,
         letterSpacing: "0.15px",
         lineHeight: "20px",
         fontSize: "14px",
       },
       subheader2: {
-        fontFamily: FONT_HEADING,
-        fontWeight: 500,
+        fontFamily: FONT_SEMIBOLD,
+        fontWeight: 600,
         letterSpacing: "0.1px",
         lineHeight: "16px",
         fontSize: "12px",
@@ -281,19 +282,19 @@ export const getDesignTokens = (mode: "light" | "dark") => {
       },
       buttonL: {
         fontFamily: FONT,
-        fontWeight: 500,
+        fontWeight: 400,
         letterSpacing: "0.46px",
         lineHeight: "24px",
         fontSize: "16px",
       },
       buttonM: {
         fontFamily: FONT,
-        fontWeight: 500,
+        fontWeight: 400,
         lineHeight: "24px",
         fontSize: "14px",
       },
       buttonS: {
-        fontFamily: FONT,
+        fontFamily: FONT_SEMIBOLD,
         fontWeight: 600,
         letterSpacing: "0.46px",
         lineHeight: "20px",
@@ -315,7 +316,7 @@ export const getDesignTokens = (mode: "light" | "dark") => {
         fontSize: "12px",
       },
       main21: {
-        fontFamily: FONT,
+        fontFamily: FONT_BOLD,
         fontWeight: 800,
         lineHeight: "133.4%",
         fontSize: "21px",
@@ -327,7 +328,7 @@ export const getDesignTokens = (mode: "light" | "dark") => {
         fontSize: "21px",
       },
       main16: {
-        fontFamily: FONT,
+        fontFamily: FONT_SEMIBOLD,
         fontWeight: 600,
         letterSpacing: "0.15px",
         lineHeight: "24px",
@@ -341,7 +342,7 @@ export const getDesignTokens = (mode: "light" | "dark") => {
         fontSize: "16px",
       },
       main14: {
-        fontFamily: FONT,
+        fontFamily: FONT_SEMIBOLD,
         fontWeight: 600,
         letterSpacing: "0.15px",
         lineHeight: "20px",
@@ -355,7 +356,7 @@ export const getDesignTokens = (mode: "light" | "dark") => {
         fontSize: "14px",
       },
       main12: {
-        fontFamily: FONT,
+        fontFamily: FONT_SEMIBOLD,
         fontWeight: 600,
         letterSpacing: "0.1px",
         lineHeight: "16px",
@@ -814,6 +815,10 @@ export function getThemedComponents(theme: Theme) {
       },
       MuiSvgIcon: {
         styleOverrides: {
+          root: {
+            width: "20px",
+            height: "20px",
+          },
           colorPrimary: {
             color: theme.palette.primary.light,
           },
@@ -822,7 +827,7 @@ export function getThemedComponents(theme: Theme) {
       MuiSelect: {
         defaultProps: {
           IconComponent: (props) => (
-            <SvgIcon sx={{ fontSize: "16px" }} {...props}>
+            <SvgIcon sx={{ fontSize: "24px" }} {...props}>
               <ChevronDownIcon />
             </SvgIcon>
           ),

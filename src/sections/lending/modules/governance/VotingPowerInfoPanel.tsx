@@ -14,7 +14,7 @@ export function VotingPowerInfoPanel() {
     <Paper sx={{ px: 6, pb: 6, pt: 4 }}>
       <Typography
         variant="h3"
-        sx={{ height: "36px", display: "flex", alignItems: "center", mb: 4 }}
+        sx={{ height: "36px", display: "flex", alignItems: "center", mb: 16 }}
       >
         <span>Your info</span>
       </Typography>
@@ -30,7 +30,7 @@ export function VotingPowerInfoPanel() {
         funnel={"Your info: Governance"}
       />
       {powers ? (
-        <Box sx={{ display: "flex", mt: 6 }}>
+        <Box sx={{ display: "flex", mt: 24 }}>
           <Box sx={{ display: "flex", flexDirection: "column", mr: "25%" }}>
             <TextWithTooltip
               text="Voting power"
@@ -78,7 +78,7 @@ export function VotingPowerInfoPanel() {
                       href="https://docs.aave.com/developers/v/2.0/protocol-governance/governance"
                       target="_blank"
                       variant="description"
-                      sx={{ textDecoration: "underline", ml: 1 }}
+                      sx={{ textDecoration: "underline", ml: 16 }}
                     >
                       <span>Learn more.</span>
                     </Link>

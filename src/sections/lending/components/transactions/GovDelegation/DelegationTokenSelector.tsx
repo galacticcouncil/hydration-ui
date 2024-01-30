@@ -131,7 +131,7 @@ export const DelegationTokenSelector = ({
   }
 
   return (
-    <FormControl variant="standard" fullWidth sx={{ mb: 6 }}>
+    <FormControl variant="standard" fullWidth sx={{ mb: 24 }}>
       <RadioGroup
         value={delegationTokenType}
         onChange={(e) =>

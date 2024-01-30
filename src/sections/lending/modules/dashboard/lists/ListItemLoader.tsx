@@ -10,7 +10,7 @@ export const ListItemLoader = () => {
       <ListColumn maxWidth={160} isRow>
         <Box sx={{ display: "inline-flex", alignItems: "center" }}>
           <Skeleton variant="circular" width={32} height={32} />
-          <Skeleton sx={{ ml: 3 }} width={39} height={20} />
+          <Skeleton sx={{ ml: 12 }} width={39} height={20} />
         </Box>
       </ListColumn>
 

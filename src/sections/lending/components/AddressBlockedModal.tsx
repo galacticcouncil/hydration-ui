@@ -26,16 +26,16 @@ export const AddressBlockedModal = ({
           alignItems: "center",
         }}
       >
-        <SvgIcon sx={{ fontSize: "24px", color: "warning.main", mb: 2 }}>
+        <SvgIcon sx={{ fontSize: "24px", color: "warning.main", mb: 8 }}>
           <ExclamationCircleIcon />
         </SvgIcon>
         <Typography variant="h2">
           <span>Blocked Address</span>
         </Typography>
-        <Typography variant="helperText" sx={{ my: 4 }}>
+        <Typography variant="helperText" sx={{ my: 16 }}>
           {address}
         </Typography>
-        <Typography variant="description" sx={{ textAlign: "center", mb: 4 }}>
+        <Typography variant="description" sx={{ textAlign: "center", mb: 16 }}>
           <span>
             This address is blocked on app.aave.com because it is associated
             with one or more

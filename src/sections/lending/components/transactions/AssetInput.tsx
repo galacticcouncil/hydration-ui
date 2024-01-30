@@ -120,7 +120,7 @@ export const AssetInput = <T extends Asset = Asset>({
 
   return (
     <Box {...sx}>
-      <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", mb: 16 }}>
         <Typography color="text.secondary">
           {inputTitle ? inputTitle : <span>Amount</span>}
         </Typography>
@@ -196,7 +196,7 @@ export const AssetInput = <T extends Asset = Asset>({
               <TokenIcon
                 aToken={asset.aToken}
                 symbol={asset.iconSymbol || asset.symbol}
-                sx={{ mr: 2, ml: 4 }}
+                sx={{ mr: 2, ml: 16 }}
               />
               <Typography
                 variant="h3"
@@ -256,7 +256,7 @@ export const AssetInput = <T extends Asset = Asset>({
                       <TokenIcon
                         symbol={asset.iconSymbol || asset.symbol}
                         aToken={asset.aToken}
-                        sx={{ mr: 2, ml: 4 }}
+                        sx={{ mr: 2, ml: 16 }}
                       />
                       <Typography variant="main16" color="text.primary">
                         {symbol}
@@ -279,9 +279,9 @@ export const AssetInput = <T extends Asset = Asset>({
                         <TokenIcon
                           aToken={asset.aToken}
                           symbol={asset.iconSymbol || asset.symbol}
-                          sx={{ fontSize: "22px", mr: 1 }}
+                          sx={{ fontSize: "22px", mr: 16 }}
                         />
-                        <ListItemText sx={{ mr: 6 }}>
+                        <ListItemText sx={{ mr: 24 }}>
                           {asset.symbol}
                         </ListItemText>
                         {asset.balance && (

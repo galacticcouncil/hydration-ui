@@ -69,7 +69,7 @@ export const BaseSuccessView = ({
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "right",
-            mt: 6,
+            mt: 24,
             mb: 3,
           }}
           underline="hover"

@@ -1,4 +1,3 @@
-
 import { Box, Divider, FormLabel, Typography } from "@mui/material"
 import FormControl from "@mui/material/FormControl"
 import MenuItem from "@mui/material/MenuItem"
@@ -21,8 +20,8 @@ export const RewardsSelect = ({
   setSelectedReward,
 }: RewardsSelectProps) => {
   return (
-    <FormControl sx={{ mb: 1, width: "100%" }}>
-      <FormLabel sx={{ mb: 1, color: "text.secondary" }}>
+    <FormControl sx={{ mb: 4, width: "100%" }}>
+      <FormLabel sx={{ mb: 4, color: "text.secondary" }}>
         <span>Reward(s) to claim</span>
       </FormLabel>
 
@@ -83,7 +82,7 @@ export const RewardsSelect = ({
             <Box sx={{ display: "flex", alignItems: "center" }}>
               <TokenIcon
                 symbol={reward.symbol}
-                sx={{ fontSize: "24px", mr: 3 }}
+                sx={{ fontSize: "24px", mr: 12 }}
               />
               <Typography variant="subheader1" sx={{ mr: 1 }}>
                 {reward.symbol}

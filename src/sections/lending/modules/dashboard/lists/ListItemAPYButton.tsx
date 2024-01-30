@@ -138,7 +138,7 @@ export const ListItemAPYButton = ({
 
         <Box sx={{ display: "flex", flexDirection: "row" }}>
           <Button
-            sx={{ my: 2, ml: 4 }}
+            sx={{ my: 2, ml: 16 }}
             size="small"
             component={Link}
             target="_blank"

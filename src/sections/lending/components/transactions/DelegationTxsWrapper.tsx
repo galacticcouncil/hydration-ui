@@ -100,7 +100,7 @@ export const DelegationTxsWrapper = ({
         content: (
           <>
             <span>Signatures ready</span>
-            <SvgIcon sx={{ fontSize: 20, ml: 2 }}>
+            <SvgIcon sx={{ fontSize: 20, ml: 8 }}>
               <CheckIcon />
             </SvgIcon>
           </>
@@ -116,7 +116,7 @@ export const DelegationTxsWrapper = ({
   const { content, disabled, loading, handleClick } = getMainParams()
   const approvalParams = getSignatureParams()
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", mt: 12, ...sx }}>
+    <Box sx={{ display: "flex", flexDirection: "column", mt: 162, ...sx }}>
       {approvalParams && !readOnlyModeAddress && (
         <Button
           variant="contained"
@@ -129,7 +129,7 @@ export const DelegationTxsWrapper = ({
           data-cy="approvalButton"
         >
           {approvalParams.loading && (
-            <CircularProgress color="inherit" size="16px" sx={{ mr: 2 }} />
+            <CircularProgress color="inherit" size="16px" sx={{ mr: 8 }} />
           )}
           {approvalParams.content}
         </Button>
@@ -144,7 +144,7 @@ export const DelegationTxsWrapper = ({
         data-cy="actionButton"
       >
         {loading && (
-          <CircularProgress color="inherit" size="16px" sx={{ mr: 2 }} />
+          <CircularProgress color="inherit" size="16px" sx={{ mr: 8 }} />
         )}
         {content}
       </Button>
@@ -152,7 +152,7 @@ export const DelegationTxsWrapper = ({
         <Typography
           variant="helperText"
           color="warning.main"
-          sx={{ textAlign: "center", mt: 2 }}
+          sx={{ textAlign: "center", mt: 8 }}
         >
           <span>
             Read-only mode. Connect to a wallet to perform transactions.

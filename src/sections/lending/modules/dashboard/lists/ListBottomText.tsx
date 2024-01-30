@@ -9,7 +9,7 @@ export const ListBottomText = () => {
         Since this is a test network, you can get any of the assets if you have
         ETH on your wallet
       </span>
-      <Link href="/faucet" variant="main14" sx={{ ml: 1 }}>
+      <Link href="/faucet" variant="main14" sx={{ ml: 4 }}>
         <span>Faucet</span>
       </Link>
       .

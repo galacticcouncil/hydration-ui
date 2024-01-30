@@ -17,7 +17,7 @@ export function WithdrawTypeSelector({
   const { currentMarketData } = useProtocolDataContext()
   if (!currentMarketData.enabledFeatures?.collateralRepay) return null
   return (
-    <Box sx={{ mb: 6 }}>
+    <Box sx={{ mb: 24 }}>
       <StyledTxModalToggleGroup
         color="primary"
         value={withdrawType}

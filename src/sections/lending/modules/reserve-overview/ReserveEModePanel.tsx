@@ -27,7 +27,7 @@ export const ReserveEModePanel: React.FC<ReserverEModePanelProps> = ({
           <Typography variant="secondary14" color="text.secondary">
             <span>E-Mode Category</span>
           </Typography>
-          <SvgIcon sx={{ fontSize: "14px", mr: 0.5, ml: 2 }}>
+          <SvgIcon sx={{ fontSize: "14px", mr: 0.5, ml: 8 }}>
             <LightningBoltGradient />
           </SvgIcon>
           <Typography variant="subheader1">
