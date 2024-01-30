@@ -26,13 +26,15 @@ const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
 
   const percentage = useMemo(() => {
     if (farmAprs.data?.length) {
-      const aprs = farmAprs.data ? farmAprs.data.map(({ apr }) => apr) : [BN_0]
+      const aprs = farmAprs.data
+        ? farmAprs.data.reduce((memo, { apr }) => memo.plus(apr), BN_0)
+        : BN_0
       const minAprs = farmAprs.data
         ? farmAprs.data.map(({ minApr, apr }) => (minApr ? minApr : apr))
         : [BN_0]
 
       const minApr = BigNumber.minimum(...minAprs)
-      const maxApr = BigNumber.maximum(...aprs)
+      const maxApr = aprs
 
       return {
         minApr,
