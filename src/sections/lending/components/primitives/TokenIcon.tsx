@@ -84,7 +84,7 @@ export function Base64Token({
         style={{ opacity: 1 }}
         ref={ref}
         id="svg"
-        data={`/icons/tokens/${symbol.toLowerCase()}.svg`}
+        data={`https://app.aave.com/icons/tokens/${symbol.toLowerCase()}.svg`}
         onLoad={() => setLoading(false)}
       />
       {aToken && <ATokenIcon ref={aRef} />}
@@ -139,7 +139,7 @@ export const ATokenIcon = forwardRef<SVGSVGElement, ATokenIconProps>(
             <image
               x="25"
               y="25"
-              href={`/icons/tokens/${symbol.toLowerCase()}.svg`}
+              href={`https://app.aave.com/icons/tokens/${symbol.toLowerCase()}.svg`}
               width="206"
               height="206"
             />

@@ -7,7 +7,6 @@ import { SignatureLike } from "@ethersproject/bytes"
 
 import { BoxProps } from "@mui/material"
 import { parseUnits } from "ethers/lib/utils"
-import { queryClient } from "pages/_app.page"
 import { useCallback, useEffect, useState } from "react"
 import { MOCK_SIGNED_HASH } from "sections/lending/helpers/useTransactionHandler"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
@@ -31,6 +30,7 @@ import {
   APPROVE_DELEGATION_GAS_LIMIT,
   checkRequiresApproval,
 } from "sections/lending/components/transactions/utils"
+import { useQueryClient } from "@tanstack/react-query"
 
 interface DebtSwitchBaseProps extends BoxProps {
   amountToSwap: string
@@ -73,6 +73,7 @@ export const DebtSwitchActions = ({
 }: DebtSwitchBaseProps & {
   buildTxFn: () => Promise<SwapTransactionParams>
 }) => {
+  const queryClient = useQueryClient()
   const [
     getCreditDelegationApprovedAmount,
     currentMarketData,
@@ -181,7 +182,7 @@ export const DebtSwitchActions = ({
       }
     } catch (error) {
       const parsedError = getErrorTextFromError(
-        error,
+        error as Error,
         TxAction.GAS_ESTIMATION,
         false,
       )
@@ -241,7 +242,7 @@ export const DebtSwitchActions = ({
       refetchIncentiveData && refetchIncentiveData()
     } catch (error) {
       const parsedError = getErrorTextFromError(
-        error,
+        error as Error,
         TxAction.GAS_ESTIMATION,
         false,
       )

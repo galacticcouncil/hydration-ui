@@ -1,5 +1,5 @@
 import { Button } from "@mui/material"
-import React, { lazy } from "react"
+import React, { lazy, Suspense } from "react"
 import { useWalletModalContext } from "sections/lending/hooks/useWalletModal"
 
 const WalletModal = lazy(async () => ({
@@ -25,7 +25,9 @@ export const ConnectWalletButton: React.FC<ConnectWalletProps> = ({
       >
         <span>Connect wallet</span>
       </Button>
-      <WalletModal />
+      <Suspense>
+        <WalletModal />
+      </Suspense>
     </>
   )
 }

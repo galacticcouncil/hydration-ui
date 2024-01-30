@@ -222,7 +222,8 @@ const isSxProp = (prop: string): prop is PropName =>
   sxPropNames.includes(prop as PropName)
 
 const isMuiSxPropValue = (value: any) =>
-  typeof value === "object" && !Array.isArray(value)
+  typeof value === "function" ||
+  (typeof value === "object" && !Array.isArray(value))
 
 const isSxPropsValid = (sx: SxProps) =>
   typeof sx === "object" &&

@@ -3,7 +3,6 @@ import { TransactionResponse } from "@ethersproject/providers"
 
 import { BoxProps } from "@mui/material"
 import { parseUnits } from "ethers/lib/utils"
-import { queryClient } from "pages/_app.page"
 import React, { useEffect, useState } from "react"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
 import {
@@ -21,6 +20,7 @@ import {
 } from "sections/lending/ui-config/errorMapping"
 import { queryKeysFactory } from "sections/lending/ui-config/queries"
 
+import { useQueryClient } from "@tanstack/react-query"
 import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
 import {
   APPROVAL_GAS_LIMIT,
@@ -50,6 +50,7 @@ export const SupplyActions = React.memo(
     isWrappedBaseAsset,
     ...props
   }: SupplyActionProps) => {
+    const queryClient = useQueryClient()
     const [
       tryPermit,
       supply,
@@ -208,7 +209,7 @@ export const SupplyActions = React.memo(
         refetchGhoData && refetchGhoData()
       } catch (error) {
         const parsedError = getErrorTextFromError(
-          error,
+          error as Error,
           TxAction.GAS_ESTIMATION,
           false,
         )

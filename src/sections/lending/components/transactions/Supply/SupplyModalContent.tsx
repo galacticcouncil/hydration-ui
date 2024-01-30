@@ -16,10 +16,8 @@ import { ERC20TokenType } from "sections/lending/libs/web3-data-provider/Web3Pro
 import { useRootStore } from "sections/lending/store/root"
 import { getMaxAmountAvailableToSupply } from "sections/lending/utils/getMaxAmountAvailableToSupply"
 import { isFeatureEnabled } from "sections/lending/utils/marketsAndNetworksConfig"
-import { GENERAL } from "sections/lending/utils/mixPanelEvents"
 import { roundToTokenDecimals } from "sections/lending/utils/utils"
 
-import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { CapType } from "sections/lending/components/caps/helper"
 import { AssetInput } from "sections/lending/components/transactions/AssetInput"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
@@ -36,7 +34,9 @@ import { getAssetCollateralType } from "sections/lending/components/transactions
 import { AAVEWarning } from "sections/lending/components/transactions/Warnings/AAVEWarning"
 import { IsolationModeWarning } from "sections/lending/components/transactions/Warnings/IsolationModeWarning"
 import { SNXWarning } from "sections/lending/components/transactions/Warnings/SNXWarning"
+import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { SupplyActions } from "./SupplyActions"
+import { PROCESS_MOCK } from "sections/lending/utils/marketsAndNetworksConfig"
 
 export enum ErrorType {
   CAP_REACHED,
@@ -239,7 +239,7 @@ export const SupplyModalContent = React.memo(
             <AMPLWarning />
           </Warning>
         )}
-        {process.env.NEXT_PUBLIC_ENABLE_STAKING === "true" &&
+        {PROCESS_MOCK.env.NEXT_PUBLIC_ENABLE_STAKING === "true" &&
           poolReserve.symbol === "AAVE" &&
           isFeatureEnabled.staking(currentMarketData) && <AAVEWarning />}
         {poolReserve.symbol === "SNX" && maxAmountToSupply !== "0" && (

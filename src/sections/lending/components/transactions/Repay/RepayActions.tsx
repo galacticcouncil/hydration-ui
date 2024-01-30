@@ -7,7 +7,6 @@ import { TransactionResponse } from "@ethersproject/providers"
 
 import { BoxProps } from "@mui/material"
 import { parseUnits } from "ethers/lib/utils"
-import { queryClient } from "pages/_app.page"
 import { useEffect, useState } from "react"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
@@ -31,6 +30,7 @@ import {
   APPROVAL_GAS_LIMIT,
   checkRequiresApproval,
 } from "sections/lending/components/transactions/utils"
+import { useQueryClient } from "@tanstack/react-query"
 
 export interface RepayActionProps extends BoxProps {
   amountToRepay: string
@@ -58,6 +58,7 @@ export const RepayActions = ({
   maxApproveNeeded,
   ...props
 }: RepayActionProps) => {
+  const queryClient = useQueryClient()
   const [
     repay,
     repayWithPermit,
@@ -226,7 +227,7 @@ export const RepayActions = ({
       refetchGhoData && refetchGhoData()
     } catch (error) {
       const parsedError = getErrorTextFromError(
-        error,
+        error as Error,
         TxAction.GAS_ESTIMATION,
         false,
       )

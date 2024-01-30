@@ -6,7 +6,6 @@ import {
 
 import { OptimalRate } from "@paraswap/sdk"
 import { defaultAbiCoder, formatUnits, splitSignature } from "ethers/lib/utils"
-import { queryClient } from "pages/_app.page"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { MOCK_SIGNED_HASH } from "sections/lending/helpers/useTransactionHandler"
 import { calculateSignedAmount } from "sections/lending/hooks/paraswap/common"
@@ -28,6 +27,7 @@ import {
 
 import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
 import { APPROVAL_GAS_LIMIT } from "sections/lending/components/transactions/utils"
+import { useQueryClient } from "@tanstack/react-query"
 
 interface SwithProps {
   inputAmount: string
@@ -63,6 +63,7 @@ export const SwitchActions = ({
   chainId,
   route,
 }: SwithProps) => {
+  const queryClient = useQueryClient()
   const [
     user,
     generateApproval,
@@ -172,7 +173,7 @@ export const SwitchActions = ({
           })
         } catch (error) {
           const parsedError = getErrorTextFromError(
-            error,
+            error as Error,
             TxAction.MAIN_ACTION,
             false,
           )
@@ -194,7 +195,7 @@ export const SwitchActions = ({
         }
       } catch (error) {
         const parsedError = getErrorTextFromError(
-          error,
+          error as Error,
           TxAction.GAS_ESTIMATION,
           false,
         )
@@ -280,7 +281,7 @@ export const SwitchActions = ({
         }
       } catch (error) {
         const parsedError = getErrorTextFromError(
-          error,
+          error as Error,
           TxAction.GAS_ESTIMATION,
           false,
         )

@@ -20,12 +20,13 @@ export type Pool = {
   address: string
 }
 
-const process = {
+export const PROCESS_MOCK = {
   env: {
     NEXT_PUBLIC_FORK_URL_RPC: "",
     NEXT_PUBLIC_FORK_BASE_CHAIN_ID: "",
     NEXT_PUBLIC_FORK_CHAIN_ID: "",
     NEXT_PUBLIC_FORK_URL_WS_RPC: "",
+    NEXT_PUBLIC_ENABLE_STAKING: "false",
   },
 }
 
@@ -38,22 +39,22 @@ export const ENABLE_TESTNET =
 
 // determines if forks should be shown
 export const FORK_ENABLED =
-  !!process.env.NEXT_PUBLIC_FORK_URL_RPC ||
+  !!PROCESS_MOCK.env.NEXT_PUBLIC_FORK_URL_RPC ||
   global?.window?.localStorage.getItem("forkEnabled") === "true"
 // specifies which network was forked
 const FORK_BASE_CHAIN_ID =
-  Number(process.env.NEXT_PUBLIC_FORK_BASE_CHAIN_ID) ||
+  Number(PROCESS_MOCK.env.NEXT_PUBLIC_FORK_BASE_CHAIN_ID) ||
   Number(global?.window?.localStorage.getItem("forkBaseChainId") || 1)
 // specifies on which chainId the fork is running
 const FORK_CHAIN_ID =
-  Number(process.env.NEXT_PUBLIC_FORK_CHAIN_ID) ||
+  Number(PROCESS_MOCK.env.NEXT_PUBLIC_FORK_CHAIN_ID) ||
   Number(global?.window?.localStorage.getItem("forkNetworkId") || 3030)
 const FORK_RPC_URL =
-  process.env.NEXT_PUBLIC_FORK_URL_RPC ||
+  PROCESS_MOCK.env.NEXT_PUBLIC_FORK_URL_RPC ||
   global?.window?.localStorage.getItem("forkRPCUrl") ||
   "http://127.0.0.1:8545"
 const FORK_WS_RPC_URL =
-  process.env.NEXT_PUBLIC_FORK_URL_WS_RPC ||
+  PROCESS_MOCK.env.NEXT_PUBLIC_FORK_URL_WS_RPC ||
   global?.window?.localStorage.getItem("forkWsRPCUrl") ||
   "ws://127.0.0.1:8545"
 

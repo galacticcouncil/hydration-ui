@@ -32,7 +32,7 @@ const WalletRow = ({ walletName, walletType }: WalletRowProps) => {
       case WalletType.INJECTED:
         return (
           <img
-            src={`/icons/wallets/browserWallet.svg`}
+            src={`https://app.aave.com/icons/wallets/browserWallet.svg`}
             width="24px"
             height="24px"
             alt={`browser wallet icon`}
@@ -41,7 +41,7 @@ const WalletRow = ({ walletName, walletType }: WalletRowProps) => {
       case WalletType.WALLET_CONNECT:
         return (
           <img
-            src={`/icons/wallets/walletConnect.svg`}
+            src={`https://app.aave.com/icons/wallets/walletConnect.svg`}
             width="24px"
             height="24px"
             alt={`browser wallet icon`}
@@ -50,7 +50,7 @@ const WalletRow = ({ walletName, walletType }: WalletRowProps) => {
       case WalletType.WALLET_LINK:
         return (
           <img
-            src={`/icons/wallets/coinbase.svg`}
+            src={`https://app.aave.com/icons/wallets/coinbase.svg`}
             width="24px"
             height="24px"
             alt={`browser wallet icon`}
@@ -59,7 +59,7 @@ const WalletRow = ({ walletName, walletType }: WalletRowProps) => {
       case WalletType.TORUS:
         return (
           <img
-            src={`/icons/wallets/torus.svg`}
+            src={`https://app.aave.com/icons/wallets/torus.svg`}
             width="24px"
             height="24px"
             alt={`browser wallet icon`}
@@ -68,7 +68,7 @@ const WalletRow = ({ walletName, walletType }: WalletRowProps) => {
       // case WalletType.FRAME:
       //   return (
       //     <img
-      //       src={`/icons/wallets/frame.svg`}
+      //       src={`https://app.aave.com/icons/wallets/frame.svg`}
       //       width="24px"
       //       height="24px"
       //       alt={`browser wallet icon`}
