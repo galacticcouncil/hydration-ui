@@ -10,7 +10,7 @@ import {
 import { Link } from "sections/lending/components/primitives/Link"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { navigation } from "sections/lending/ui-config/menu-items"
-import { MoreMenu } from "sections/lending/layouts/MoreMenu"
+// import { MoreMenu } from "sections/lending/layouts/MoreMenu"
 
 interface NavItemsProps {
   setOpen?: (value: boolean) => void

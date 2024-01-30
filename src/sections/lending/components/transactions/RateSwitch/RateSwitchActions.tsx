@@ -1,5 +1,5 @@
 import { InterestRate, ProtocolAction } from "@aave/contract-helpers"
-import { Trans } from "@lingui/macro"
+
 import { useTransactionHandler } from "sections/lending/helpers/useTransactionHandler"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useRootStore } from "sections/lending/store/root"

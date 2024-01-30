@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/macro"
+
 
 import { Link } from "sections/lending/components/primitives/Link"
 

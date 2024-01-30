@@ -1,6 +1,6 @@
 import { mintAmountsPerToken, valueToWei } from "@aave/contract-helpers"
 import { normalize } from "@aave/math-utils"
-import { Trans } from "@lingui/macro"
+
 import { useModalContext } from "sections/lending/hooks/useModal"
 
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"

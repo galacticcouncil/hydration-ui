@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => {
       esbuildOptions: {
         target: "esnext",
       },
+      include: ["react"],
     },
     esbuild: {
       logOverride: { "this-is-undefined-in-esm": "silent" },

@@ -9,7 +9,7 @@ import {
   USD_DECIMALS,
   valueToBigNumber,
 } from "@aave/math-utils"
-import { Trans } from "@lingui/macro"
+
 import Typography from "@mui/material/Typography"
 import BigNumber from "bignumber.js"
 import React, { useEffect, useRef, useState } from "react"

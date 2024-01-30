@@ -3,11 +3,19 @@ import { Link as RouterLink } from "@tanstack/react-location"
 import { SxProps as MuiSxProps } from "@mui/system"
 import * as React from "react"
 import { CustomMarket } from "sections/lending/ui-config/marketsConfig"
+import { withoutHexPrefix } from "sections/lending/utils/utils"
 
-const RouterLinkComposed = (props: MuiLinkProps) => (
-  <RouterLink to={props.href} title={props.title} className={props.className}>
-    {props.children}
-  </RouterLink>
+const RouterLinkComposed = React.forwardRef<HTMLAnchorElement, MuiLinkProps>(
+  (props, ref) => (
+    <RouterLink
+      _ref={ref}
+      to={props.href}
+      title={props.title}
+      className={props.className}
+    >
+      {props.children}
+    </RouterLink>
+  ),
 )
 
 export type LinkProps = MuiLinkProps
@@ -41,6 +49,8 @@ export const ROUTES = {
   dynamicRenderedProposal: (proposalId: number) =>
     `/lending/governance/v3/proposal?proposalId=${proposalId}`,
   reserveOverview: (underlyingAsset: string, marketName: CustomMarket) =>
-    `/lending/reserve-overview/?underlyingAsset=${underlyingAsset}&marketName=${marketName}`,
+    `/lending/reserve-overview/?underlyingAsset=${withoutHexPrefix(
+      underlyingAsset,
+    )}&marketName=${marketName}`,
   history: "/lending/history",
 }

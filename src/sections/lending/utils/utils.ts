@@ -81,3 +81,11 @@ export const roundToTokenDecimals = (
   // Combine the whole and adjusted decimal parts
   return whole + "." + adjustedDecimals
 }
+
+export const withoutHexPrefix = (value: string) => {
+  return value.startsWith("0x") ? value.slice(2) : value
+}
+
+export const withHexPrefix = (value: string) => {
+  return value.startsWith("0x") ? value : "0x" + value
+}

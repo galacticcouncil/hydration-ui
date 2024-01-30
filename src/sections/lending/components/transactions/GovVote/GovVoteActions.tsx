@@ -1,6 +1,6 @@
 import { ChainId } from "@aave/contract-helpers"
 import { GelatoRelay } from "@gelatonetwork/relay-sdk"
-import { Trans } from "@lingui/macro"
+
 import { AbiCoder, keccak256, RLP } from "ethers/lib/utils"
 import { useState } from "react"
 import { MOCK_SIGNED_HASH } from "sections/lending/helpers/useTransactionHandler"

@@ -4,7 +4,7 @@ import {
   USD_DECIMALS,
   valueToBigNumber,
 } from "@aave/math-utils"
-import { Trans } from "@lingui/macro"
+
 import BigNumber from "bignumber.js"
 import React, { useMemo, useState } from "react"
 import { Warning } from "sections/lending/components/primitives/Warning"

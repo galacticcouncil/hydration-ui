@@ -1,6 +1,6 @@
 import { normalize, normalizeBN } from "@aave/math-utils"
 import { SwitchVerticalIcon } from "@heroicons/react/outline"
-import { Trans } from "@lingui/macro"
+
 import {
   Box,
   CircularProgress,

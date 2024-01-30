@@ -4,7 +4,7 @@ import {
   ProtocolAction,
 } from "@aave/contract-helpers"
 import { TransactionResponse } from "@ethersproject/providers"
-import { Trans } from "@lingui/macro"
+
 import { BoxProps } from "@mui/material"
 import { parseUnits } from "ethers/lib/utils"
 import { queryClient } from "pages/_app.page"

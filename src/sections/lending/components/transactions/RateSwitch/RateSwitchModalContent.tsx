@@ -1,6 +1,6 @@
 import { InterestRate } from "@aave/contract-helpers"
 import { valueToBigNumber } from "@aave/math-utils"
-import { Trans } from "@lingui/macro"
+
 import { Warning } from "sections/lending/components/primitives/Warning"
 import { useModalContext } from "sections/lending/hooks/useModal"
 

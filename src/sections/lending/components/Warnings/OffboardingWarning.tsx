@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/macro"
+
 import { CustomMarket } from "sections/lending/ui-config/marketsConfig"
 
 import { Link } from "sections/lending/components/primitives/Link"

@@ -1,5 +1,5 @@
 import { DuplicateIcon, XIcon } from "@heroicons/react/outline"
-import { Trans } from "@lingui/macro"
+
 import { Box, Button, Link, SvgIcon, Typography } from "@mui/material"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { TxErrorType } from "sections/lending/ui-config/errorMapping"

@@ -1,5 +1,5 @@
 import { InterestRate } from "@aave/contract-helpers"
-import { Trans } from "@lingui/macro"
+
 import { Box, Button, Typography, useTheme } from "@mui/material"
 import { ReactNode, useState } from "react"
 import { WalletIcon } from "sections/lending/components/icons/WalletIcon"

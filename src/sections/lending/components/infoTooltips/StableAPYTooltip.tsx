@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/macro"
+
 
 import {
   TextWithTooltip,

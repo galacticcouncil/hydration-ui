@@ -1,6 +1,6 @@
 import { ExternalLinkIcon } from "@heroicons/react/outline"
 import { CheckIcon } from "@heroicons/react/solid"
-import { Trans } from "@lingui/macro"
+
 import { Box, Button, Link, SvgIcon, Typography } from "@mui/material"
 import { ReactNode } from "react"
 import { useModalContext } from "sections/lending/hooks/useModal"

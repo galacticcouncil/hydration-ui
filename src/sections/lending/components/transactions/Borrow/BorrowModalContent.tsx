@@ -4,7 +4,7 @@ import {
   USD_DECIMALS,
   valueToBigNumber,
 } from "@aave/math-utils"
-import { Trans } from "@lingui/macro"
+
 import { Typography } from "@mui/material"
 import { useState } from "react"
 import { APYTypeTooltip } from "sections/lending/components/infoTooltips/APYTypeTooltip"

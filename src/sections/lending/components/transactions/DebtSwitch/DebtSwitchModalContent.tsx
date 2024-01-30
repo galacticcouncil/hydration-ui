@@ -3,7 +3,7 @@ import { valueToBigNumber } from "@aave/math-utils"
 import { MaxUint256 } from "@ethersproject/constants"
 import { ArrowDownIcon } from "@heroicons/react/outline"
 import { ArrowNarrowRightIcon } from "@heroicons/react/solid"
-import { Trans } from "@lingui/macro"
+
 import {
   Box,
   ListItemText,

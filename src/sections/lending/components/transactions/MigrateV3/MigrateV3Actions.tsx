@@ -1,5 +1,5 @@
 import { ProtocolAction } from "@aave/contract-helpers"
-import { Trans } from "@lingui/macro"
+
 import { useTransactionHandler } from "sections/lending/helpers/useTransactionHandler"
 import { useRootStore } from "sections/lending/store/root"
 

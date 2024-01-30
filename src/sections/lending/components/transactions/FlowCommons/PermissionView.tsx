@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/macro"
+
 import { Box, Button, Link, Typography } from "@mui/material"
 import { useModalContext } from "sections/lending/hooks/useModal"
 

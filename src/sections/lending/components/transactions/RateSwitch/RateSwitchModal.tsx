@@ -1,5 +1,5 @@
 import { InterestRate } from "@aave/contract-helpers"
-import { Trans } from "@lingui/macro"
+
 import React from "react"
 import {
   ModalContextType,

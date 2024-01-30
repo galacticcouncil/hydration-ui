@@ -1,5 +1,5 @@
 import { ProtocolAction } from "@aave/contract-helpers"
-import { Trans } from "@lingui/macro"
+
 import { BoxProps } from "@mui/material"
 import { useRootStore } from "sections/lending/store/root"
 

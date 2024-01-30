@@ -1,4 +1,3 @@
-import { Trans } from "@lingui/macro"
 import { AlertProps } from "@mui/material"
 import { AssetCapData } from "sections/lending/hooks/useAssetCaps"
 

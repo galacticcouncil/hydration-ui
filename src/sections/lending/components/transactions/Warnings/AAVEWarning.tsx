@@ -1,4 +1,3 @@
-import { Trans } from "@lingui/macro"
 import { Link, Typography } from "@mui/material"
 
 import { ROUTES } from "sections/lending/components/primitives/Link"

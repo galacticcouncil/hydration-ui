@@ -3,7 +3,7 @@ import {
   gasLimitRecommendations,
   ProtocolAction,
 } from "@aave/contract-helpers"
-import { Trans } from "@lingui/macro"
+
 import { OptimalRate } from "@paraswap/sdk"
 import { defaultAbiCoder, formatUnits, splitSignature } from "ethers/lib/utils"
 import { queryClient } from "pages/_app.page"

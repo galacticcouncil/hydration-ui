@@ -1,5 +1,5 @@
 import { SwitchVerticalIcon } from "@heroicons/react/outline"
-import { Trans } from "@lingui/macro"
+
 import { Box, SvgIcon, Typography } from "@mui/material"
 import BigNumber from "bignumber.js"
 import React, { useRef, useState } from "react"

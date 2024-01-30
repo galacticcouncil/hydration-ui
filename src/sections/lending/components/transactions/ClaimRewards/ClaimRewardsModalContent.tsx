@@ -1,6 +1,6 @@
 import { ChainId } from "@aave/contract-helpers"
 import { normalize, UserIncentiveData } from "@aave/math-utils"
-import { Trans } from "@lingui/macro"
+
 import { Box, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"

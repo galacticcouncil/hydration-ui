@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/macro"
+
 import { Box, Divider, FormLabel, Typography } from "@mui/material"
 import FormControl from "@mui/material/FormControl"
 import MenuItem from "@mui/material/MenuItem"

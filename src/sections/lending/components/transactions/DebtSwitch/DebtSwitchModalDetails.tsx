@@ -1,6 +1,6 @@
 import { valueToBigNumber } from "@aave/math-utils"
 import { ArrowNarrowRightIcon } from "@heroicons/react/solid"
-import { Trans } from "@lingui/macro"
+
 import { Box, Skeleton, Stack, SvgIcon, Typography } from "@mui/material"
 import React from "react"
 import { GhoIncentivesCard } from "sections/lending/components/incentives/GhoIncentivesCard"

@@ -1,4 +1,3 @@
-import { Trans } from "@lingui/macro"
 import { Box, Typography } from "@mui/material"
 import { Warning } from "sections/lending/components/primitives/Warning"
 import { TxErrorType } from "sections/lending/ui-config/errorMapping"

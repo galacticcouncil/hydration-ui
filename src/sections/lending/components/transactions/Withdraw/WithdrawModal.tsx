@@ -1,5 +1,5 @@
 import { PERMISSION } from "@aave/contract-helpers"
-import { Trans } from "@lingui/macro"
+
 import React, { useState } from "react"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import {

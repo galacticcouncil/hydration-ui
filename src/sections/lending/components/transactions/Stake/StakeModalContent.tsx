@@ -1,6 +1,6 @@
 import { Stake } from "@aave/contract-helpers"
 import { normalize, valueToBigNumber } from "@aave/math-utils"
-import { Trans } from "@lingui/macro"
+
 import { Typography } from "@mui/material"
 import React, { useRef, useState } from "react"
 import { useGeneralStakeUiData } from "sections/lending/hooks/stake/useGeneralStakeUiData"

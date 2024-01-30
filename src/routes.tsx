@@ -20,9 +20,6 @@ import { StatsOverview } from "sections/stats/sections/overview/StatsOverview"
 import { StatsOmnipoolAsset } from "sections/stats/sections/omnipoolAsset/StatsOmnipoolAsset"
 import { BridgePage } from "sections/xcm/BridgePage"
 import { YieldDcaPage } from "sections/trade/sections/yieldDca/YieldDcaPage"
-import { LendingMarketsPage } from "sections/lending/LendingMarketsPage"
-import { LendingPage } from "sections/lending/LendingPage"
-import { LendingDashboardPage } from "sections/lending/LendingDashboardPage"
 
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
@@ -173,15 +170,31 @@ export const routes: Route[] = [
   },
   {
     path: "lending",
-    element: <LendingPage />,
+    element: () =>
+      import("./sections/lending/LendingPage").then((mod) => (
+        <mod.LendingPage />
+      )),
     children: [
       {
         path: "/",
-        element: <LendingDashboardPage />,
+        element: () =>
+          import("./sections/lending/LendingDashboardPage").then((mod) => (
+            <mod.LendingDashboardPage />
+          )),
       },
       {
         path: "markets",
-        element: <LendingMarketsPage />,
+        element: () =>
+          import("./sections/lending/LendingMarketsPage").then((mod) => (
+            <mod.LendingMarketsPage />
+          )),
+      },
+      {
+        path: "reserve-overview",
+        element: () =>
+          import("./sections/lending/LendingReserveOverviewPage").then(
+            (mod) => <mod.LendingReserveOverviewPage />,
+          ),
       },
     ],
   },

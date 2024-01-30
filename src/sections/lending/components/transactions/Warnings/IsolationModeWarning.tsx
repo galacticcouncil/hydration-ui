@@ -1,4 +1,3 @@
-import { Trans } from "@lingui/macro"
 import { AlertColor, Typography } from "@mui/material"
 
 import { Link } from "sections/lending/components/primitives/Link"

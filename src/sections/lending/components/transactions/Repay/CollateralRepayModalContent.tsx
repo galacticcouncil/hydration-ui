@@ -1,7 +1,7 @@
 import { InterestRate } from "@aave/contract-helpers"
 import { valueToBigNumber } from "@aave/math-utils"
 import { ArrowDownIcon } from "@heroicons/react/outline"
-import { Trans } from "@lingui/macro"
+
 import { Box, SvgIcon, Typography } from "@mui/material"
 import BigNumber from "bignumber.js"
 import { useRef, useState } from "react"

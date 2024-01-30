@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/macro"
+
 import type { Theme } from "@mui/material"
 import { Box, Typography } from "@mui/material"
 import LinearProgress, {

@@ -1,5 +1,5 @@
 import { ExclamationIcon } from "@heroicons/react/outline"
-import { Trans } from "@lingui/macro"
+
 import { Box, SvgIcon } from "@mui/material"
 
 import { frozenProposalMap } from "sections/lending/utils/marketsAndNetworksConfig"

@@ -172,8 +172,9 @@ export const ProposalOverview = ({
                 tr({ node, ...props }) {
                   return (
                     <TableRow
-                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                      {...props}
+                      css={{
+                        "&:last-child td, &:last-child th": { border: 0 },
+                      }}
                     />
                   )
                 },

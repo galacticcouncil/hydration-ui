@@ -1,5 +1,5 @@
 import { ExclamationIcon } from "@heroicons/react/outline"
-import { Trans } from "@lingui/macro"
+
 import { SvgIcon } from "@mui/material"
 
 import { ContentWithTooltip } from "sections/lending/components/ContentWithTooltip"

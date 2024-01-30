@@ -1,5 +1,5 @@
 import { InterestRate } from "@aave/contract-helpers"
-import { Trans } from "@lingui/macro"
+
 import { Box, Button } from "@mui/material"
 import { useCallback } from "react"
 import { useCurrentTimestamp } from "sections/lending/hooks/useCurrentTimestamp"

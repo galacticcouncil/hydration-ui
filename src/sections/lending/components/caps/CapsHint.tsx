@@ -1,5 +1,5 @@
 import { valueToBigNumber } from "@aave/math-utils"
-import { Trans } from "@lingui/macro"
+
 import { Box, Typography } from "@mui/material"
 
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"

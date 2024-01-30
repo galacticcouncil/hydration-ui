@@ -225,13 +225,12 @@ const isMuiSxPropValue = (value: any) =>
   typeof value === "object" && !Array.isArray(value)
 
 const isSxPropsValid = (sx: SxProps) =>
+  typeof sx === "object" &&
   Object.entries(sx).every(([prop, value]) => {
     return isSxProp(prop) && !isMuiSxPropValue(value)
   })
 
 export function parseSxProps(props: any) {
-  if (props?.sx == null) return props
-
   if (!isSxPropsValid(props.sx)) {
     return props
   }
