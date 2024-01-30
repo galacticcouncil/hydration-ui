@@ -1,5 +1,6 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
+import { Button } from "components/Button/Button"
 import { theme } from "theme"
 
 export const SHeader = styled.div`
@@ -20,6 +21,12 @@ export const SHeader = styled.div`
     padding-bottom: 0 0 16px 0;
 
     background: transparent;
+  }
+`
+
+export const SButton = styled(Button)`
+  @media ${theme.viewport.gte.sm} {
+    min-width: 140px;
   }
 `
 

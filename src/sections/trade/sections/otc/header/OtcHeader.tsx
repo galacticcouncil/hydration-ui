@@ -1,24 +1,29 @@
-import { FC, useState } from "react"
-import { theme } from "theme"
-import { useTranslation } from "react-i18next"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import PlusIcon from "assets/icons/PlusIcon.svg?react"
-import { Button } from "components/Button/Button"
-import { Icon } from "components/Icon/Icon"
-import { Switch } from "components/Switch/Switch"
-import { Heading } from "components/Typography/Heading/Heading"
-import { PlaceOrder } from "sections/trade/sections/otc/modals/PlaceOrder"
-import { Separator } from "components/Separator/Separator"
-import { SHeader, STabs } from "./OtcHeader.styled"
-import { Tab } from "./OtcHeaderTab"
-import { useMedia } from "react-use"
+import { FC, useState } from "react";
+import { theme } from "theme";
+import { useTranslation } from "react-i18next";
+import { useAccount } from "sections/web3-connect/Web3Connect.utils";
+import PlusIcon from "assets/icons/PlusIcon.svg?react";
+import WalletIcon from "assets/icons/WalletIcon.svg?react";
+import { Icon } from "components/Icon/Icon";
+import { Switch } from "components/Switch/Switch";
+import { Heading } from "components/Typography/Heading/Heading";
+import { PlaceOrder } from "sections/trade/sections/otc/modals/PlaceOrder";
+import { Separator } from "components/Separator/Separator";
+import { SButton, SHeader, STabs } from "./OtcHeader.styled";
+import { Tab } from "./OtcHeaderTab";
+import { useMedia } from "react-use";
 
 type Props = {
-  showMyOrders: boolean
-  showPartial: boolean
-  onShowMyOrdersChange: (value: boolean) => void
-  onShowPartialChange: (value: boolean) => void
-  skeleton?: boolean
+  showMyOrders: boolean;
+  showPartial: boolean;
+  onShowMyOrdersChange: (value: boolean) => void;
+  onShowPartialChange: (value: boolean) => void;
+  skeleton?: boolean;
+};
+
+enum OrderType {
+  All = "all",
+  Partial = "partial"
 }
 
 export const OtcHeader: FC<Props> = ({
@@ -28,47 +33,75 @@ export const OtcHeader: FC<Props> = ({
   onShowPartialChange,
   skeleton,
 }) => {
-  const { t } = useTranslation()
-  const isDesktop = useMedia(theme.viewport.gte.sm)
-  const [openAdd, setOpenAdd] = useState(false)
-  const { account } = useAccount()
+  const { t } = useTranslation();
+  const isDesktop = useMedia(theme.viewport.gte.sm);
+  const [openAdd, setOpenAdd] = useState(false);
+  const { account } = useAccount();
 
-  const onOptionChange = (e: { target: { value: string } }) => {
-    onShowPartialChange(e.target.value === "all" ? false : true)
-  }
+  const onOptionChange = (value: OrderType) => {
+    onShowPartialChange(value === OrderType.All ? false : true);
+  };
 
   return (
     <>
-      <SHeader sx={{ flex: "row", justify: "space-between" }}>
-        <Heading fs={20} lh={26} fw={500}>
-          {isDesktop ? t("otc.header.title") : t("otc.header.titleAlt")}
-        </Heading>
-        {!!account && (
-          <Switch
-            value={showMyOrders}
-            onCheckedChange={onShowMyOrdersChange}
-            size="small"
-            name="my-offers"
-            label={t("otc.header.switch")}
-            disabled={!!skeleton}
-          />
-        )}
-      </SHeader>
-      <Separator
-        color="white"
-        opacity={0.12}
-        sx={{ display: ["none", "inherit"] }}
-      />
+      {!isDesktop && (
+        <SHeader>
+          <Heading fs={20} lh={26} fw={500}>
+            {t("otc.header.titleAlt")}
+          </Heading>
+        </SHeader>
+      )}
       <div
         sx={{
           flex: ["row-reverse", "row"],
-          align: "baseline",
-          justify: "space-between",
-          mt: [20, 32],
+          align: "center",
+          mt: [20, 0],
           mb: 20,
+          gap: 8,
         }}
       >
-        <STabs disabled={!!skeleton}>
+        {!!account && (
+          <>
+            <SButton
+              size="small"
+              variant="outline"
+              disabled={!!skeleton}
+              active={showMyOrders}
+              onClick={() => onShowMyOrdersChange(!showMyOrders)}
+            >
+              <Icon icon={<WalletIcon />} size={14} />
+              {t("otc.header.myOrders")}
+            </SButton>
+
+            <Separator
+              orientation="vertical"
+              color="white"
+              opacity={0.12}
+              sx={{ display: ["none", "inherit"], height: 24, mx: 8 }}
+            />
+          </>
+        )}
+
+        <SButton
+          size="small"
+          variant="outline"
+          disabled={!!skeleton}
+          active={!showPartial}
+          onClick={() => onOptionChange(OrderType.All)}
+        >
+          {t("otc.header.all")}
+        </SButton>
+        <SButton
+          size="small"
+          variant="outline"
+          disabled={!!skeleton}
+          active={showPartial}
+          onClick={() => onOptionChange(OrderType.Partial)}
+        >
+          {t("otc.header.partiallyFillable")}
+        </SButton>
+
+        {/* <STabs disabled={!!skeleton}>
           <Tab
             value={"all"}
             active={!showPartial}
@@ -83,18 +116,18 @@ export const OtcHeader: FC<Props> = ({
             onChange={onOptionChange}
             disabled={!!skeleton}
           />
-        </STabs>
-        <Button
-          size="medium"
+        </STabs> */}
+
+        <SButton
+          size="small"
           variant="primary"
           onClick={() => setOpenAdd(true)}
           disabled={!account || skeleton}
+          css={isDesktop ? { marginLeft: "auto" } : { marginRight: "auto" }}
         >
-          <div sx={{ flex: "row", align: "center" }}>
-            <Icon icon={<PlusIcon />} sx={{ mr: 8, height: 16 }} />
-            {t("otc.header.placeOrder")}
-          </div>
-        </Button>
+          <Icon icon={<PlusIcon />} size={14} />
+          {t("otc.header.placeOrder")}
+        </SButton>
       </div>
 
       {openAdd && (
@@ -105,5 +138,5 @@ export const OtcHeader: FC<Props> = ({
         />
       )}
     </>
-  )
-}
+  );
+};
