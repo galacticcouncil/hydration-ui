@@ -30,62 +30,32 @@ export const SButton = styled(Button)`
   }
 `
 
-export const STabs = styled.div<{ disabled: boolean }>`
-  font-family: "ChakraPetch";
-  font-style: normal;
-  font-weight: 500;
-  font-size: 18px;
-  line-height: 130%;
-  color: #cccdd3;
-  display: none;
 
-  input[type="radio"] {
+export const SSearchContainer = styled.div`
+  position: relative;
+
+  & > svg {
     position: absolute;
-    left: -200vw;
+
+    top: 50%;
+    left: 12px;
+
+    transform: translateY(-50%);
+
+    color: rgba(${theme.rgbColors.white}, 0.4);
   }
 
-  label {
-    position: relative;
-    display: inline-block;
-    padding: 15px 15px 15px;
-    border-bottom: 0;
-    cursor: pointer;
-    font-weight: 600;
-    opacity: 0.6;
-  }
+  input[type="text"] {
+    background: rgba(158, 167, 186, 0.06);
 
-  ${({ disabled }) =>
-    !disabled &&
-    css`
-      label:hover,
-      input:focus + label {
-        color: #fff;
-        opacity: 1;
-      }
+    &:not(:hover):not(:focus) {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
 
-      label:hover::after {
-        background: #fff;
-        opacity: 1;
-      }
-    `}
+    padding-left: 48px;
 
-  input:checked + label {
-    opacity: 1;
-    color: #fff;
-  }
-
-  input:checked + label::after {
-    content: "";
-    position: absolute;
-    left: 15px;
-    bottom: 10px;
-    width: 22px;
-    height: 4px;
-    background: #85d1ff;
-  }
-
-  @media ${theme.viewport.gte.sm} {
-    display: flex;
-    margin-left: -13px;
+    &::placeholder {
+      color: rgba(${theme.rgbColors.white}, 0.4);
+    }
   }
 `

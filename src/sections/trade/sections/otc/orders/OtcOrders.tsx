@@ -1,13 +1,10 @@
 import { flexRender } from "@tanstack/react-table";
 import { TableSortHeader } from "components/Table/Table";
 import {
-  StatsTableContainer,
-  StatsTableTitle,
   Table,
   TableBodyContent,
   TableContainer,
   TableData,
-  TableHeader,
   TableHeaderContent,
   TableRow,
 } from "components/Table/Table.styled";
@@ -30,9 +27,15 @@ type Props = {
   data: OrderTableData[];
   showMyOrders: boolean;
   showPartial: boolean;
+  searchVal: string;
 };
 
-export const OtcOrderTable = ({ data, showMyOrders, showPartial }: Props) => {
+export const OtcOrderTable = ({
+  data,
+  showMyOrders,
+  showPartial,
+  searchVal,
+}: Props) => {
   const [row, setRow] = useState<OrderTableData | undefined>(undefined);
   const isDesktop = useMedia(theme.viewport.gte.sm);
   const [fillOrder, setFillOrder] = useState<OrderTableData | undefined>(
@@ -57,8 +60,20 @@ export const OtcOrderTable = ({ data, showMyOrders, showPartial }: Props) => {
     if (showMyOrders) {
       res = res.filter((o) => o.owner === userAddress);
     }
+
+    if (searchVal) {
+      const lowercasedSearchVal = searchVal.toLowerCase();
+      res = res.filter(
+        (o) =>
+          o.accepting.asset.toLowerCase().includes(lowercasedSearchVal) ||
+          o.accepting.symbol.toLowerCase().includes(lowercasedSearchVal) ||
+          o.offer.asset.toLowerCase().includes(lowercasedSearchVal) ||
+          o.offer.symbol.toLowerCase().includes(lowercasedSearchVal),
+      );
+    }
+
     return res.sort((a, b) => Number(b.pol) - Number(a.pol));
-  }, [data, userAddress, showMyOrders, showPartial]);
+  }, [data, userAddress, showMyOrders, showPartial, searchVal]);
 
   const table = useOrdersTable(filteredData, {
     onFill: setFillOrder,
@@ -72,7 +87,12 @@ export const OtcOrderTable = ({ data, showMyOrders, showPartial }: Props) => {
           {table.getHeaderGroups().map((hg) => (
             <TableRow key={hg.id}>
               {hg.headers.map((header) => (
-                <TableSortHeader key={header.id} canSort={false}>
+                <TableSortHeader
+                  key={header.id}
+                  canSort={header.column.getCanSort()}
+                  sortDirection={header.column.getIsSorted()}
+                  onSort={header.column.getToggleSortingHandler()}
+                >
                   {flexRender(
                     header.column.columnDef.header,
                     header.getContext(),

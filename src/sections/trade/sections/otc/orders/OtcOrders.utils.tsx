@@ -14,6 +14,7 @@ import { OtcOrderActions } from "./actions/OtcOrderActions";
 import {
   OrderAssetColumn,
   OrderMarketPriceColumn,
+  OrderPairColumn,
   OrderPriceColumn,
 } from "./OtcOrdersData";
 import { OrderTableData } from "./OtcOrdersData.utils";
@@ -32,32 +33,45 @@ export const useOrdersTable = (
 
   const isDesktop = useMedia(theme.viewport.gte.sm);
   const columnVisibility: VisibilityState = {
-    pair: true,
+    pair: !isDesktop,
     offer: isDesktop,
     accepting: isDesktop,
-    orderPrice: true,
-    marketPrice: isDesktop,
+    orderPrice: isDesktop,
+    marketPrice: true,
     filled: isDesktop,
     actions: true,
   };
 
   const columns = useMemo(
     () => [
+      accessor("id", {
+        id: "pair",
+        header: t("otc.offers.table.header.assets"),
+        enableSorting: false,
+        cell: ({ row }) => (
+          <OrderPairColumn
+            offering={row.original.offer}
+            accepting={row.original.accepting}
+            pol={row.original.pol}
+          />
+        ),
+      }),
       accessor("offer", {
         id: "offer",
-        header: isDesktop
-          ? t("otc.offers.table.header.offer")
-          : t("selectAssets.asset"),
+        header: t("otc.offers.table.header.offer"),
+        enableSorting: false,
         cell: ({ row }) => <OrderAssetColumn pair={row.original.offer} />,
       }),
       accessor("accepting", {
         id: "accepting",
         header: t("otc.offers.table.header.accepting"),
+        enableSorting: false,
         cell: ({ row }) => <OrderAssetColumn pair={row.original.accepting} />,
       }),
       accessor("orderPrice", {
         id: "orderPrice",
         header: t("otc.offers.table.header.orderPrice"),
+        enableSorting: false,
         cell: ({ row }) => (
           <OrderPriceColumn
             pair={row.original.offer}
@@ -68,6 +82,7 @@ export const useOrdersTable = (
       accessor("marketPrice", {
         id: "marketPrice",
         header: t("otc.offers.table.header.marketPrice"),
+        enableSorting: true,
         cell: ({ row }) => (
           <OrderMarketPriceColumn
             pair={row.original.offer}
@@ -77,6 +92,7 @@ export const useOrdersTable = (
       }),
       accessor("filled", {
         id: "filled",
+        enableSorting: false,
         header: () => (
           <div
             style={{
@@ -122,6 +138,14 @@ export const useOrdersTable = (
     state: { columnVisibility },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    initialState: {
+      sorting: [
+        {
+          id: 'marketPrice',
+          desc: true,
+        },
+      ],
+    },
   });
 };
 
@@ -143,6 +167,7 @@ export const useOrdersTableSkeleton = () => {
     () => [
       display({
         id: "offer",
+        enableSorting: false,
         header: isDesktop
           ? t("otc.offers.table.header.offer")
           : t("selectAssets.asset"),
@@ -150,21 +175,25 @@ export const useOrdersTableSkeleton = () => {
       }),
       display({
         id: "accepting",
+        enableSorting: false,
         header: t("otc.offers.table.header.accepting"),
         cell: () => <Skeleton width="100%" height="100%" />,
       }),
       display({
         id: "orderPrice",
+        enableSorting: false,
         header: t("otc.offers.table.header.orderPrice"),
         cell: () => <Skeleton width="100%" height="100%" />,
       }),
       display({
         id: "marketPrice",
+        enableSorting: true,
         header: t("otc.offers.table.header.marketPrice"),
         cell: () => <Skeleton width="100%" height="100%" />,
       }),
       display({
         id: "filled",
+        enableSorting: false,
         header: t("otc.offers.table.header.status"),
         cell: () => <Skeleton width="100%" height="100%" />,
       }),

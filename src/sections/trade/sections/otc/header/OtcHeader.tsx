@@ -1,45 +1,67 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { theme } from "theme";
 import { useTranslation } from "react-i18next";
 import { useAccount } from "sections/web3-connect/Web3Connect.utils";
 import PlusIcon from "assets/icons/PlusIcon.svg?react";
 import WalletIcon from "assets/icons/WalletIcon.svg?react";
 import { Icon } from "components/Icon/Icon";
-import { Switch } from "components/Switch/Switch";
 import { Heading } from "components/Typography/Heading/Heading";
 import { PlaceOrder } from "sections/trade/sections/otc/modals/PlaceOrder";
 import { Separator } from "components/Separator/Separator";
-import { SButton, SHeader, STabs } from "./OtcHeader.styled";
-import { Tab } from "./OtcHeaderTab";
+import { SButton, SHeader, SSearchContainer } from "./OtcHeader.styled";
 import { useMedia } from "react-use";
+import { Input } from "components/Input/Input";
+import IconSearch from "assets/icons/IconSearch.svg?react";
+import { useDebounce } from "react-use";
 
 type Props = {
   showMyOrders: boolean;
   showPartial: boolean;
+  searchVal: string;
   onShowMyOrdersChange: (value: boolean) => void;
   onShowPartialChange: (value: boolean) => void;
+  onSearchChange: (value: string) => void;
   skeleton?: boolean;
 };
 
 enum OrderType {
   All = "all",
-  Partial = "partial"
+  Partial = "partial",
 }
 
 export const OtcHeader: FC<Props> = ({
   showMyOrders,
   showPartial,
+  searchVal,
   onShowMyOrdersChange,
   onShowPartialChange,
+  onSearchChange,
   skeleton,
 }) => {
   const { t } = useTranslation();
   const isDesktop = useMedia(theme.viewport.gte.sm);
   const [openAdd, setOpenAdd] = useState(false);
   const { account } = useAccount();
+  const [inputValue, setInputValue] = useState(searchVal);
 
   const onOptionChange = (value: OrderType) => {
     onShowPartialChange(value === OrderType.All ? false : true);
+  };
+
+  useEffect(() => {
+    setInputValue(searchVal);
+  }, [searchVal]);
+
+  useDebounce(
+    () => {
+      onSearchChange(inputValue);
+    },
+    300,
+    [inputValue],
+  );
+
+  const handleSearchChange = (value: string) => {
+    setInputValue(value);
   };
 
   return (
@@ -51,9 +73,19 @@ export const OtcHeader: FC<Props> = ({
           </Heading>
         </SHeader>
       )}
+      <SSearchContainer sx={{ mb: [0, 30], mt: [16, 0] }}>
+        <IconSearch />
+        <Input
+          value={inputValue}
+          onChange={handleSearchChange}
+          name="search"
+          label="Input"
+          placeholder={t("otc.header.search")}
+        />
+      </SSearchContainer>
       <div
         sx={{
-          flex: ["row-reverse", "row"],
+          flex: "row",
           align: "center",
           mt: [20, 0],
           mb: 20,
@@ -82,48 +114,35 @@ export const OtcHeader: FC<Props> = ({
           </>
         )}
 
-        <SButton
-          size="small"
-          variant="outline"
-          disabled={!!skeleton}
-          active={!showPartial}
-          onClick={() => onOptionChange(OrderType.All)}
-        >
-          {t("otc.header.all")}
-        </SButton>
-        <SButton
-          size="small"
-          variant="outline"
-          disabled={!!skeleton}
-          active={showPartial}
-          onClick={() => onOptionChange(OrderType.Partial)}
-        >
-          {t("otc.header.partiallyFillable")}
-        </SButton>
-
-        {/* <STabs disabled={!!skeleton}>
-          <Tab
-            value={"all"}
-            active={!showPartial}
-            label={"All"}
-            onChange={onOptionChange}
-            disabled={!!skeleton}
-          />
-          <Tab
-            value={"partial"}
-            active={showPartial}
-            label={"Partially fillable"}
-            onChange={onOptionChange}
-            disabled={!!skeleton}
-          />
-        </STabs> */}
+        {isDesktop && (
+          <>
+            <SButton
+              size="small"
+              variant="outline"
+              disabled={!!skeleton}
+              active={!showPartial}
+              onClick={() => onOptionChange(OrderType.All)}
+            >
+              {t("otc.header.all")}
+            </SButton>
+            <SButton
+              size="small"
+              variant="outline"
+              disabled={!!skeleton}
+              active={showPartial}
+              onClick={() => onOptionChange(OrderType.Partial)}
+            >
+              {t("otc.header.partiallyFillable")}
+            </SButton>
+          </>
+        )}
 
         <SButton
           size="small"
           variant="primary"
           onClick={() => setOpenAdd(true)}
           disabled={!account || skeleton}
-          css={isDesktop ? { marginLeft: "auto" } : { marginRight: "auto" }}
+          css={{ marginLeft: "auto" }}
         >
           <Icon icon={<PlusIcon />} size={14} />
           {t("otc.header.placeOrder")}
