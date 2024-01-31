@@ -4,7 +4,7 @@ import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils
 import { useEffect, useMemo } from "react"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
-import { useAssetsTableData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
+import { useAssetsData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { BN_0 } from "utils/constants"
 
@@ -45,7 +45,7 @@ export const useWalletAssetsTotals = ({
 }: {
   address?: string
 } = {}) => {
-  const assets = useAssetsTableData({ isAllAssets: false, address })
+  const assets = useAssetsData({ isAllAssets: false, address })
   const lpPositions = useOmnipoolPositionsData({ address })
   const farmsPositions = useAllUserDepositShare({ address })
 

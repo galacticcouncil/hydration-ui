@@ -13,10 +13,14 @@ import { useTranslation } from "react-i18next"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { LINKS } from "utils/navigation"
-import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { SActionButtonsContainer } from "./WalletAssetsTable.styled"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { NATIVE_ASSET_ID } from "utils/api"
+import {
+  AssetsTableData,
+  useLockedValues,
+} from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
+import Skeleton from "react-loading-skeleton"
 
 type Props = {
   row?: AssetsTableData
@@ -32,6 +36,8 @@ export const WalletAssetsTableActionsMob = ({
   const { t } = useTranslation()
   const { account } = useAccount()
   const setFeeAsPayment = useSetAsFeePayment()
+
+  const lockedValues = useLockedValues(row?.id ?? "")
 
   if (!row) return null
 
@@ -87,12 +93,22 @@ export const WalletAssetsTableActionsMob = ({
                 <Text fs={14} lh={16} color="whiteish500">
                   {t("wallet.assets.table.details.lockedStaking")}
                 </Text>
-                <Text fs={14} lh={14} color="white">
-                  {t("value", { value: row.lockedStaking })}
-                </Text>
-                <Text fs={12} lh={17} color="whiteish500">
-                  <DisplayValue value={row.lockedStakingDisplay} />
-                </Text>
+                {lockedValues.isLoading ? (
+                  <Skeleton height={14} width={40} />
+                ) : (
+                  <Text fs={14} lh={14} color="white">
+                    {t("value", { value: lockedValues.data?.lockedStaking })}
+                  </Text>
+                )}
+                {lockedValues.isLoading ? (
+                  <Skeleton height={12} width={30} />
+                ) : (
+                  <Text fs={12} lh={17} color="whiteish500">
+                    <DisplayValue
+                      value={lockedValues.data?.lockedStakingDisplay}
+                    />
+                  </Text>
+                )}
               </div>
             )}
             {isNativeAsset && (
@@ -108,12 +124,22 @@ export const WalletAssetsTableActionsMob = ({
                 <Text fs={14} lh={16} color="whiteish500">
                   {t("wallet.assets.table.details.lockedDemocracy")}
                 </Text>
-                <Text fs={14} lh={14} color="white">
-                  {t("value", { value: row.lockedDemocracy })}
-                </Text>
-                <Text fs={12} lh={17} color="whiteish500">
-                  <DisplayValue value={row.lockedDemocracyDisplay} />
-                </Text>
+                {lockedValues.isLoading ? (
+                  <Skeleton height={14} width={40} />
+                ) : (
+                  <Text fs={14} lh={14} color="white">
+                    {t("value", { value: lockedValues.data?.lockedDemocracy })}
+                  </Text>
+                )}
+                {lockedValues.isLoading ? (
+                  <Skeleton height={12} width={30} />
+                ) : (
+                  <Text fs={12} lh={17} color="whiteish500">
+                    <DisplayValue
+                      value={lockedValues.data?.lockedDemocracyDisplay}
+                    />
+                  </Text>
+                )}
               </div>
             )}
             <div sx={{ flex: "column", gap: 4, pr: 10, flexBasis: "50%" }}>
@@ -132,12 +158,22 @@ export const WalletAssetsTableActionsMob = ({
                 <Text fs={14} lh={16} color="whiteish500">
                   {t("wallet.assets.table.details.lockedVesting")}
                 </Text>
-                <Text fs={14} lh={14} color="white">
-                  {t("value", { value: row.lockedVesting })}
-                </Text>
-                <Text fs={12} lh={17} color="whiteish500">
-                  <DisplayValue value={row.lockedVestingDisplay} />
-                </Text>
+                {lockedValues.isLoading ? (
+                  <Skeleton height={14} width={40} />
+                ) : (
+                  <Text fs={14} lh={14} color="white">
+                    {t("value", { value: lockedValues.data?.lockedVesting })}
+                  </Text>
+                )}
+                {lockedValues.isLoading ? (
+                  <Skeleton height={12} width={30} />
+                ) : (
+                  <Text fs={12} lh={17} color="whiteish500">
+                    <DisplayValue
+                      value={lockedValues.data?.lockedVestingDisplay}
+                    />
+                  </Text>
+                )}
               </div>
             )}
           </div>

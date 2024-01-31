@@ -79,11 +79,11 @@ export const useProviderRpcUrlStore = create(
   ),
 )
 
-export const useProviderData = (rpcUrl?: string) => {
+export const useProviderData = (rpcUrl: string) => {
   const displayAsset = useDisplayAssetStore()
 
   return useQuery(
-    QUERY_KEYS.provider(rpcUrl ?? import.meta.env.VITE_PROVIDER_URL),
+    QUERY_KEYS.provider(rpcUrl),
     async ({ queryKey: [_, url] }) => {
       const provider = new WsProvider(url)
 

@@ -3,6 +3,7 @@ import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const getAssetHubAssets = async () => {
   const parachain = chainsMap.get("assethub")
@@ -20,9 +21,9 @@ export const getAssetHubAssets = async () => {
 
         return {
           id,
-          decimals: data.decimals.toNumber(),
-          symbol: data.symbol.toHuman(),
-          name: data.name.toHuman(),
+          decimals: data.decimals.toNumber() as number,
+          symbol: data.symbol.toHuman() as string,
+          name: data.name.toHuman() as string,
         }
       })
       return { data, id: parachain.parachainId.toString() }
@@ -31,6 +32,10 @@ export const getAssetHubAssets = async () => {
 }
 
 export const useExternalAssetRegistry = () => {
+  const {
+    assets: { getAsset },
+  } = useRpcProvider()
+
   return useQuery(
     QUERY_KEYS.externalAssetRegistry,
     async () => {

@@ -1,39 +1,49 @@
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
-import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { Maybe, undefinedNoop, normalizeId } from "utils/helpers"
+import { Maybe, undefinedNoop } from "utils/helpers"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { ToastMessage, useStore } from "state/store"
-import { u32 } from "@polkadot/types-codec"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { usePaymentInfo } from "./transaction"
 import { useRpcProvider } from "providers/rpcProvider"
 import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
-export const getAcceptedCurrency =
-  (api: ApiPromise, id: u32 | string) => async () => {
-    const normalizedId = normalizeId(id)
-    const result =
-      await api.query.multiTransactionPayment.acceptedCurrencies(normalizedId)
+export const getAcceptedCurrency = (api: ApiPromise) => async () => {
+  const dataRaw =
+    await api.query.multiTransactionPayment.acceptedCurrencies.entries()
 
+  const data = dataRaw.map(([key, data]) => {
     return {
-      id: normalizedId,
-      accepted: normalizedId === NATIVE_ASSET_ID || !result.isEmpty,
-      data: result.unwrapOr(null)?.toBigNumber(),
+      id: key.args[0].toString(),
+      accepted: !data.isEmpty,
+      data: data.unwrapOr(null)?.toBigNumber(),
     }
-  }
+  })
 
-export const useAcceptedCurrencies = (ids: Maybe<string | u32>[]) => {
-  const { api } = useRpcProvider()
+  return data
+}
 
-  return useQueries({
-    queries: ids.map((id) => ({
-      queryKey: QUERY_KEYS.acceptedCurrencies(id),
-      queryFn: !!id ? getAcceptedCurrency(api, id) : undefinedNoop,
-      enabled: !!id,
-    })),
+export const useAcceptedCurrencies = (ids: string[]) => {
+  const {
+    api,
+    assets: { native },
+  } = useRpcProvider()
+
+  return useQuery(QUERY_KEYS.acceptedCurrencies, getAcceptedCurrency(api), {
+    select: (assets) => {
+      return ids.map((id) => {
+        const response = assets.find((asset) => asset.id === id)
+
+        return response
+          ? response
+          : id === native.id
+          ? { id, accepted: true, data: undefined }
+          : { id, accepted: false, data: undefined }
+      })
+    },
   })
 }
 

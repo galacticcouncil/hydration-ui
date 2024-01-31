@@ -459,7 +459,7 @@
   "wallet.addToken.form.multilocation.placeholder": "Paste multillocation here",
   "wallet.addToken.form.multilocation.label": "Multilocation",
   "wallet.addToken.form.button.register.hydra": "Register on Hydra",
-  "wallet.addToken.form.button.register.forMe": "Register for me",
+  "wallet.addToken.form.button.register.forMe": "Add to my UI",
   "xcm.switch.crosschain": "Cross-Chain",
   "xcm.switch.bridge": "Ethereum Bridge",
   "xcm.bridge.description": "Select your bridge to move funds to or from Ethereum",

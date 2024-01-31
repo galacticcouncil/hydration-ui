@@ -5,24 +5,20 @@ import {
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
-import {
-  SAccountsContainer,
-  SAccountsSearchContainer,
-} from "./Web3ConnectAccountList.styled"
+import { SAccountsContainer } from "./Web3ConnectAccountList.styled"
 import { Web3ConnectEvmAccount } from "./Web3ConnectEvmAccount"
 import { Web3ConnectExternalAccount } from "./Web3ConnectExternalAccount"
 import { Web3ConnectSubstrateAccount } from "./Web3ConnectSubstrateAccount"
 import { useDebounce, useShallowCompareEffect } from "react-use"
 import { useWalletAssetsTotals } from "sections/wallet/assets/WalletAssets.utils"
 import { Web3ConnectAccountPlaceholder } from "sections/web3-connect/accounts/Web3ConnectAccountPlaceholder"
-import IconSearch from "assets/icons/IconSearch.svg?react"
-import { Input } from "components/Input/Input"
 import BN from "bignumber.js"
 import { useTranslation } from "react-i18next"
 import { arraySearch } from "utils/helpers"
 import NoActivities from "assets/icons/NoActivities.svg?react"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
+import { Search } from "components/Search/Search"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
   switch (type) {
@@ -108,16 +104,12 @@ export const Web3ConnectAccountList: FC<{
   return (
     <SAccountsContainer>
       {accounts.length > 1 && (
-        <SAccountsSearchContainer sx={{ mb: 16 }}>
-          <IconSearch />
-          <Input
-            value={searchVal}
-            onChange={setSearchVal}
-            name="search"
-            label="Input"
-            placeholder={t("walletconnect.accountSelect.search.placeholder")}
-          />
-        </SAccountsSearchContainer>
+        <Search
+          value={searchVal}
+          setValue={setSearchVal}
+          placeholder={t("walletconnect.accountSelect.search.placeholder")}
+          css={{ marginBottom: 16 }}
+        />
       )}
       {filter && !accountList.length && (
         <div

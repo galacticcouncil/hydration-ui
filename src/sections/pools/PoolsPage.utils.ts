@@ -1,7 +1,6 @@
 import { useTokensBalances } from "api/balances"
-import { useOmnipoolAssets } from "api/omnipool"
+import { useHubAssetTradability, useOmnipoolAssets } from "api/omnipool"
 import { useMemo } from "react"
-import { useAssetsTradability } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NATIVE_ASSET_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { normalizeBigNumber } from "utils/balance"
@@ -25,6 +24,56 @@ import { useShareOfPools } from "api/pools"
 import { TShareToken } from "api/assetDetails"
 import { useXYKPollTradeVolumes } from "./pool/details/PoolDetails.utils"
 import { useTVL } from "api/stats"
+import {
+  is_add_liquidity_allowed,
+  is_buy_allowed,
+  is_remove_liquidity_allowed,
+  is_sell_allowed,
+} from "@galacticcouncil/math-omnipool"
+
+export const useAssetsTradability = () => {
+  const {
+    assets: { hub },
+  } = useRpcProvider()
+  const assets = useOmnipoolAssets()
+  const hubTradability = useHubAssetTradability()
+
+  const queries = [assets, hubTradability]
+  const isLoading = queries.some((q) => q.isLoading)
+  const isInitialLoading = queries.some((q) => q.isInitialLoading)
+
+  const data = useMemo(() => {
+    if (!assets.data || !hubTradability.data) return undefined
+
+    const results = assets.data.map((asset) => {
+      const id = asset.id.toString()
+      const bits = asset.data.tradable.bits.toNumber()
+      const canBuy = is_buy_allowed(bits)
+      const canSell = is_sell_allowed(bits)
+      const canAddLiquidity = is_add_liquidity_allowed(bits)
+      const canRemoveLiquidity = is_remove_liquidity_allowed(bits)
+
+      return { id, canBuy, canSell, canAddLiquidity, canRemoveLiquidity }
+    })
+
+    const hubBits = hubTradability.data.bits.toNumber()
+    const canBuyHub = is_buy_allowed(hubBits)
+    const canSellHub = is_sell_allowed(hubBits)
+    const canAddLiquidityHub = is_add_liquidity_allowed(hubBits)
+    const canRemoveLiquidityHub = is_remove_liquidity_allowed(hubBits)
+    const hubResult = {
+      id: hub.id,
+      canBuy: canBuyHub,
+      canSell: canSellHub,
+      canAddLiquidity: canAddLiquidityHub,
+      canRemoveLiquidity: canRemoveLiquidityHub,
+    }
+
+    return [...results, hubResult]
+  }, [assets, hubTradability, hub])
+
+  return { data, isLoading, isInitialLoading }
+}
 
 export type TOmnipoolAsset = NonNullable<
   ReturnType<typeof useOmnipoolAndStablepool>["data"]

@@ -8,13 +8,13 @@ import { SContainer, SFilterButton } from "./SourceFilter.styled"
 import { SELECTABLE_PARACHAINS_IDS } from "sections/wallet/addToken/AddToken.utils"
 
 const chains = Array.from(chainsMap.values()).filter(({ parachainId }) =>
-  SELECTABLE_PARACHAINS_IDS.includes(parachainId),
+  SELECTABLE_PARACHAINS_IDS.includes(parachainId.toString()),
 )
 
 type Props = {
   className?: string
-  value?: number
-  onChange?: (parachainId: number) => void
+  value?: string
+  onChange?: (parachainId: string) => void
 }
 
 export const SourceFilter: FC<Props> = ({ className, value, onChange }) => {
@@ -26,9 +26,9 @@ export const SourceFilter: FC<Props> = ({ className, value, onChange }) => {
       </Text>
       {chains.map(({ key, name, parachainId }) => (
         <SFilterButton
-          active={parachainId === value}
+          active={parachainId.toString() === value}
           key={key}
-          onClick={() => onChange?.(parachainId)}
+          onClick={() => onChange?.(parachainId.toString())}
         >
           <Icon sx={{ ml: -4 }} icon={<ChainLogo symbol={key} />} size={20} />
           {name}

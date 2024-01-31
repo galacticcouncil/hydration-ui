@@ -17,8 +17,12 @@ export const AddTokenModal = ({ onClose }: { onClose: () => void }) => {
   const [selectedAsset, selectedAssetSet] = useState<
     TExternalAsset | undefined
   >()
+  const [search, setSearch] = useState("")
 
   const { page, direction, paginateTo } = useModalPagination(ModalPage.List)
+
+  if (selectedAsset && page !== 1) paginateTo(ModalPage.Form)
+  if (!selectedAsset && page !== 0) paginateTo(ModalPage.List)
 
   return (
     <Modal open disableCloseOutside onClose={onClose}>
@@ -26,27 +30,25 @@ export const AddTokenModal = ({ onClose }: { onClose: () => void }) => {
         onClose={onClose}
         page={page}
         direction={direction}
-        onBack={() => {
-          selectedAssetSet(undefined)
-          paginateTo(ModalPage.List)
-        }}
+        onBack={() => selectedAssetSet(undefined)}
         contents={[
           {
             noPadding: true,
             content: (
               <AddTokenListModal
                 onCustomAssetClick={() => paginateTo(ModalPage.Form)}
-                onAssetSelect={(asset) => {
-                  selectedAssetSet(asset)
-                  paginateTo(ModalPage.Form)
-                }}
+                onAssetSelect={(asset) => selectedAssetSet(asset)}
+                search={search}
+                setSearch={setSearch}
               />
             ),
           },
           {
             title: t("wallet.addToken.header.addCustom"),
             headerVariant: "FontOver",
-            content: <AddTokenFormModal asset={selectedAsset} />,
+            content: (
+              <AddTokenFormModal asset={selectedAsset} onClose={onClose} />
+            ),
           },
         ]}
       />

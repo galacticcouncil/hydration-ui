@@ -97,16 +97,18 @@ export const useTransactionValues = ({
   // assets with positive balance on the wallet
   const accountAssets = useAcountAssets(account?.address)
 
-  const alllowedFeePaymentAssetsIds = isEvmAccount(account?.address)
-    ? [accountFeePaymentId]
-    : [
-        ...(accountAssets.map((accountAsset) => accountAsset.asset.id) ?? []),
-        accountFeePaymentId,
-      ]
+  const alllowedFeePaymentAssetsIds = accountFeePaymentId
+    ? isEvmAccount(account?.address)
+      ? [accountFeePaymentId]
+      : [
+          ...(accountAssets.map((accountAsset) => accountAsset.asset.id) ?? []),
+          accountFeePaymentId,
+        ]
+    : []
 
-  const acceptedFeePaymentAssets = useAcceptedCurrencies([
-    ...alllowedFeePaymentAssetsIds,
-  ])
+  const acceptedFeePaymentAssets = useAcceptedCurrencies(
+    alllowedFeePaymentAssetsIds,
+  )
 
   const paymentFeeHDX = paymentInfo
     ? BigNumber(fee ?? paymentInfo.partialFee.toHex()).shiftedBy(
@@ -119,9 +121,7 @@ export const useTransactionValues = ({
     isPaymentInfoLoading ||
     spotPrice.isInitialLoading ||
     nonce.isLoading ||
-    acceptedFeePaymentAssets.some(
-      (acceptedFeePaymentAsset) => acceptedFeePaymentAsset.isInitialLoading,
-    ) ||
+    acceptedFeePaymentAssets.isInitialLoading ||
     referrer.isInitialLoading
 
   if (
@@ -153,13 +153,14 @@ export const useTransactionValues = ({
       spotPrice.data?.spotPrice ?? 1,
     )
   } else {
-    const accountFeePaymentCurrency = acceptedFeePaymentAssets.find(
+    const accountFeePaymentCurrency = acceptedFeePaymentAssets.data?.find(
       (acceptedFeePaymentAsset) =>
-        acceptedFeePaymentAsset.data?.id === accountFeePaymentId,
+        acceptedFeePaymentAsset.id === accountFeePaymentId,
     )
 
-    const transactionPaymentValue =
-      accountFeePaymentCurrency?.data?.data?.shiftedBy(-feePaymentMeta.decimals)
+    const transactionPaymentValue = accountFeePaymentCurrency?.data?.shiftedBy(
+      -feePaymentMeta.decimals,
+    )
 
     if (transactionPaymentValue)
       displayFeePaymentValue = BN_1.div(transactionPaymentValue).multipliedBy(
@@ -189,7 +190,7 @@ export const useTransactionValues = ({
       isEnoughPaymentBalance,
       displayFeePaymentValue,
       feePaymentMeta,
-      acceptedFeePaymentAssets,
+      acceptedFeePaymentAssets: acceptedFeePaymentAssets.data ?? [],
       era,
       nonce: nonce.data,
       isLinkedAccount,
@@ -213,10 +214,10 @@ export const useEditFeePaymentAsset = (
     acceptedFeePaymentAssets
       .filter(
         (acceptedFeeAsset) =>
-          acceptedFeeAsset.data?.accepted &&
-          acceptedFeeAsset.data?.id !== feePaymentAssetId,
+          acceptedFeeAsset.accepted &&
+          acceptedFeeAsset.id !== feePaymentAssetId,
       )
-      .map((acceptedFeeAsset) => acceptedFeeAsset.data?.id) ?? []
+      .map((acceptedFeeAsset) => acceptedFeeAsset.id) ?? []
 
   const {
     openModal: openEditFeePaymentAssetModal,

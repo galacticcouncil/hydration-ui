@@ -10,7 +10,7 @@ export const SContainer = styled.div`
   padding: 0 12px;
 
   @media ${theme.viewport.gte.sm} {
-    padding: 0 20px;
+    margin: 12px 20px;
   }
 `
 

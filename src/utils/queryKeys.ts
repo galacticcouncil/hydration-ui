@@ -286,10 +286,7 @@ export const QUERY_KEYS = {
   math: ["@galacticcouncil/math"],
   existentialDeposit: [QUERY_KEY_PREFIX, "existentialDeposit"],
   metadataVersion: ["metadataVersion"],
-  acceptedCurrencies: (address: Maybe<u32 | string>) => [
-    "acceptedCurrencies",
-    address,
-  ],
+  acceptedCurrencies: ["acceptedCurrencies"],
   accountCurrency: (address: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "accountCurrency",

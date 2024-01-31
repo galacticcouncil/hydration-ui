@@ -19,6 +19,7 @@ export const useAccountBalances = (id: Maybe<AccountId32 | string>) => {
   )
 }
 
+//TODO: remove this after merging liquidity refactoring
 export const useAccountsBalances = (ids: string[]) => {
   const { api } = useRpcProvider()
 
@@ -27,6 +28,7 @@ export const useAccountsBalances = (ids: string[]) => {
   )
 }
 
+//TODO: the same
 export const getAccountBalances =
   (api: ApiPromise, accountId: AccountId32 | string) => async () => {
     const [tokens, native] = await Promise.all([
@@ -62,6 +64,7 @@ export const getAccountBalancesNew =
         id: id.toString(),
         balance,
         total: freeBalance.plus(reservedBalance),
+        reservedBalance,
         freeBalance,
       }
     })
@@ -88,6 +91,7 @@ export const getAccountBalancesNew =
       id: NATIVE_ASSET_ID,
       balance,
       total: freeBalance.plus(reservedBalance),
+      reservedBalance,
       freeBalance,
     }
 

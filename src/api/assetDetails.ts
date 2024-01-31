@@ -2,71 +2,14 @@ import { ApiPromise } from "@polkadot/api"
 import { Option } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
-import { useQuery } from "@tanstack/react-query"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { Maybe } from "utils/helpers"
-import { QUERY_KEYS } from "utils/queryKeys"
-import { getAccountBalances, useAccountBalances } from "./accountBalances"
-import { getTokenLock } from "./balances"
-import { getApiIds } from "./consts"
-import { getHubAssetTradability, getOmnipoolAssets } from "./omnipool"
-import { getAcceptedCurrency, getAccountCurrency } from "./payments"
+import { useAccountBalances } from "./accountBalances"
 import BN from "bignumber.js"
 import { format } from "date-fns"
 import { useRpcProvider } from "providers/rpcProvider"
 import { Asset, PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { BN_0 } from "utils/constants"
-
-export const useAssetTable = (givenAddress?: string) => {
-  const { api, assets } = useRpcProvider()
-  const { account } = useAccount()
-
-  const address = givenAddress ?? account?.address
-
-  return useQuery(
-    QUERY_KEYS.assetsTable(address),
-    async () => {
-      if (!address) return undefined
-
-      const balances = await getAccountBalances(api, address)()
-
-      const allAcceptedTokens = [
-        NATIVE_ASSET_ID,
-        ...(balances.balances ?? []).map((balance) => balance.id),
-      ].map((id) => getAcceptedCurrency(api, id)())
-
-      const acceptedTokens = await Promise.all(allAcceptedTokens)
-
-      const accountTokenId = await getAccountCurrency(api, address)()
-
-      const apiIds = await getApiIds(api)()
-
-      const tradeAssets = assets.tradeAssets
-
-      const tokenLockPromises = acceptedTokens.map((token) =>
-        getTokenLock(api, address, token.id)(),
-      )
-      const tokenLocks = await Promise.all(tokenLockPromises)
-
-      const omnipoolAssets = await getOmnipoolAssets(api)()
-
-      const hubAssetTradability = await getHubAssetTradability(api)()
-
-      return {
-        balances,
-        accountTokenId,
-        tradeAssets,
-        acceptedTokens,
-        tokenLocks,
-        apiIds,
-        omnipoolAssets,
-        hubAssetTradability,
-      }
-    },
-    { enabled: !!address },
-  )
-}
 
 export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
   const { assets } = useRpcProvider()
@@ -108,6 +51,28 @@ const getTokenParachainId = (
   }
 }
 
+const getGeneralIndex = (
+  rawLocation: Option<HydradxRuntimeXcmAssetLocation>,
+) => {
+  const location = rawLocation.unwrap()
+
+  const type = location.interior.type
+  if (location.interior && type !== "Here") {
+    const xcm = location.interior[`as${type}`]
+
+    const generalIndex = !Array.isArray(xcm)
+      ? xcm.isGeneralIndex
+        ? xcm.asGeneralIndex.unwrap().toString()
+        : undefined
+      : xcm
+          .find((el) => el.isGeneralIndex)
+          ?.asGeneralIndex.unwrap()
+          .toString()
+
+    return generalIndex
+  }
+}
+
 type TAssetCommon = {
   id: string
   existentialDeposit: BN
@@ -131,6 +96,7 @@ export type TBond = TAssetCommon & {
 
 export type TToken = TAssetCommon & {
   assetType: "Token"
+  generalIndex?: string
 }
 
 export type TStableSwap = TAssetCommon & {
@@ -203,6 +169,7 @@ export const getAssets = async (api: ApiPromise) => {
   const bonds: TBond[] = []
   const stableswap: TStableSwap[] = []
   const shareTokensRaw = []
+  const external = []
 
   for (const [key, dataRaw] of rawAssetsData) {
     if (!dataRaw.isNone) {
@@ -216,6 +183,8 @@ export const getAssets = async (api: ApiPromise) => {
       const isStableSwap = assetType === "StableSwap"
       //@ts-ignore
       const isShareToken = assetType === (!!rawAssetsMeta ? "PoolShare" : "XYK")
+      //@ts-ignore
+      const isExternal = assetType === "External"
 
       let meta
       if (rawAssetsMeta) {
@@ -242,6 +211,7 @@ export const getAssets = async (api: ApiPromise) => {
         isBond,
         isStableSwap,
         isShareToken,
+        isExternal,
         isNative: false,
         existentialDeposit: data.existentialDeposit.toBigNumber(),
         parachainId: undefined,
@@ -270,6 +240,10 @@ export const getAssets = async (api: ApiPromise) => {
             parachainId:
               location && !location.isNone
                 ? getTokenParachainId(location)
+                : undefined,
+            generalIndex:
+              location && !location.isNone
+                ? getGeneralIndex(location)
                 : undefined,
           }
 
@@ -398,6 +372,23 @@ export const getAssets = async (api: ApiPromise) => {
             poolAddress,
           })
         }
+      } else if (isExternal) {
+        const location = rawAssetsLocations.find(
+          (location) => location[0].args[0].toString() === id,
+        )?.[1]
+        const asset: TToken = {
+          ...assetCommon,
+          assetType,
+          parachainId:
+            location && !location.isNone
+              ? getTokenParachainId(location)
+              : undefined,
+          generalIndex:
+            location && !location.isNone
+              ? getGeneralIndex(location)
+              : undefined,
+        }
+        external.push(asset)
       }
     }
   }
@@ -432,7 +423,7 @@ export const getAssets = async (api: ApiPromise) => {
     }
   })
 
-  const all = [...tokens, ...bonds, ...stableswap, ...shareTokens]
+  const all = [...tokens, ...bonds, ...stableswap, ...shareTokens, ...external]
 
   const allTokensObject = all.reduce<Record<string, TAsset>>(
     (acc, asset) => ({ ...acc, [asset.id]: asset }),
@@ -467,6 +458,7 @@ export const getAssets = async (api: ApiPromise) => {
       bonds,
       stableswap,
       shareTokens,
+      external,
       native,
       hub,
       tradeAssets,

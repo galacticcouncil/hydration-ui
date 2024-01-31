@@ -16,10 +16,7 @@ import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { WalletAssetsTableDetails } from "sections/wallet/assets/table/details/WalletAssetsTableDetails"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
-import {
-  AssetsTableData,
-  useAssetsTable,
-} from "sections/wallet/assets/table/WalletAssetsTable.utils"
+import { useAssetsTable } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 import { theme } from "theme"
 import { WalletAssetsTableActionsMob } from "./actions/WalletAssetsTableActionsMob"
@@ -27,6 +24,7 @@ import { Button } from "components/Button/Button"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { AddTokenModal } from "sections/wallet/addToken/modal/AddTokenModal"
+import { AssetsTableData } from "./data/WalletAssetsTableData.utils"
 
 type Props = {
   data: AssetsTableData[]
