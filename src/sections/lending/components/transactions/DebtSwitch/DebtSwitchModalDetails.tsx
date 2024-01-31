@@ -31,7 +31,7 @@ export type DebtSwitchModalDetailsProps = {
   currentMarket: CustomMarket
 }
 const ArrowRightIcon = (
-  <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 1 }}>
+  <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 4 }}>
     <ArrowNarrowRightIcon />
   </SvgIcon>
 )
@@ -217,7 +217,7 @@ export const DebtSwitchModalDetails = ({
                     <span>Stable</span>
                   </Typography>
                 )}
-                <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 1 }}>
+                <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 4 }}>
                   <ArrowNarrowRightIcon />
                 </SvgIcon>
                 {switchTarget.reserve.symbol === "GHO" ? (
@@ -265,7 +265,7 @@ export const DebtSwitchModalDetails = ({
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   <TokenIcon
                     symbol={switchSource.reserve.iconSymbol}
-                    sx={{ mr: 2, ml: 16, fontSize: "16px" }}
+                    sx={{ mr: 8, ml: 16, fontSize: "16px" }}
                   />
                   <FormattedNumber
                     value={sourceAmountAfterSwap.toString()}
@@ -305,7 +305,7 @@ export const DebtSwitchModalDetails = ({
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   <TokenIcon
                     symbol={switchTarget.reserve.iconSymbol}
-                    sx={{ mr: 2, ml: 16, fontSize: "16px" }}
+                    sx={{ mr: 8, ml: 16, fontSize: "16px" }}
                   />
                   <FormattedNumber
                     value={targetAmountAfterSwap.toString()}

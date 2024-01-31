@@ -88,7 +88,7 @@ const BorrowModeSwitch = ({
           value={InterestRate.Variable}
           disabled={interestRateMode === InterestRate.Variable}
         >
-          <Typography variant="buttonM" sx={{ mr: 1 }}>
+          <Typography variant="buttonM" sx={{ mr: 4 }}>
             <span>Variable</span>
           </Typography>
           <FormattedNumber value={variableRate} percent variant="secondary14" />
@@ -97,7 +97,7 @@ const BorrowModeSwitch = ({
           value={InterestRate.Stable}
           disabled={interestRateMode === InterestRate.Stable}
         >
-          <Typography variant="buttonM" sx={{ mr: 1 }}>
+          <Typography variant="buttonM" sx={{ mr: 4 }}>
             <span>Stable</span>
           </Typography>
           <FormattedNumber value={stableRate} percent variant="secondary14" />
@@ -478,7 +478,7 @@ const BorrowAPY = ({
         {!!borrowAmount && (
           <>
             {hasGhoBorrowPositions && (
-              <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 1 }}>
+              <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 4 }}>
                 <ArrowNarrowRightIcon />
               </SvgIcon>
             )}

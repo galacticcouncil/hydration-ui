@@ -48,7 +48,8 @@ export const HealthFactorNumber = ({
       ) : (
         <FormattedNumber
           value={formattedHealthFactor}
-          sx={{ color: healthFactorColor, ...rest.sx }}
+          sx={rest.sx}
+          css={{ color: healthFactorColor }}
           visibleDecimals={2}
           compact
           {...rest}

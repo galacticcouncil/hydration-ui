@@ -1,4 +1,3 @@
-
 import type { Theme } from "@mui/material"
 import { Box, Typography } from "@mui/material"
 import LinearProgress, {
@@ -81,7 +80,7 @@ export const DebtCeilingStatus = ({
             component="span"
             color="text.secondary"
             variant="secondary14"
-            sx={{ display: "inline-block", mx: 1 }}
+            sx={{ display: "inline-block", mx: 4 }}
           >
             <span>of</span>
           </Typography>

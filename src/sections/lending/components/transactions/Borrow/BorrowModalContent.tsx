@@ -18,7 +18,6 @@ import { useModalContext } from "sections/lending/hooks/useModal"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { ERC20TokenType } from "sections/lending/libs/web3-data-provider/Web3Provider"
 import { getMaxAmountAvailableToBorrow } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
-import { GENERAL } from "sections/lending/utils/mixPanelEvents"
 import { roundToTokenDecimals } from "sections/lending/utils/utils"
 
 import { CapType } from "sections/lending/components/caps/helper"
@@ -82,7 +81,7 @@ const BorrowModeSwitch = ({
           value={InterestRate.Variable}
           disabled={interestRateMode === InterestRate.Variable}
         >
-          <Typography variant="buttonM" sx={{ mr: 1 }}>
+          <Typography variant="buttonM" sx={{ mr: 4 }}>
             <span>Variable</span>
           </Typography>
           <FormattedNumber value={variableRate} percent variant="secondary14" />
@@ -91,7 +90,7 @@ const BorrowModeSwitch = ({
           value={InterestRate.Stable}
           disabled={interestRateMode === InterestRate.Stable}
         >
-          <Typography variant="buttonM" sx={{ mr: 1 }}>
+          <Typography variant="buttonM" sx={{ mr: 4 }}>
             <span>Stable</span>
           </Typography>
           <FormattedNumber value={stableRate} percent variant="secondary14" />

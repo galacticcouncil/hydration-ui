@@ -160,7 +160,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
   const isWrongNetwork: boolean = currentChainId !== connectedChainId
 
   const ArrowRight: React.FC = () => (
-    <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 1 }}>
+    <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 4 }}>
       <ArrowNarrowRightIcon />
     </SvgIcon>
   )
@@ -251,7 +251,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
                 alignItems: "center",
               }}
             >
-              <Box sx={{ display: "inline-flex", alignItems: "center", mx: 1 }}>
+              <Box sx={{ display: "inline-flex", alignItems: "center", mx: 4 }}>
                 {user.userEmodeCategoryId !== 0 ? (
                   <>
                     <SvgIcon sx={{ fontSize: "12px" }}>

@@ -104,7 +104,7 @@ export const SwapModalDetails = ({
               <CollateralState collateralType={swapSource.collateralType} />
 
               <Box sx={{ display: "flex", alignItems: "center" }}>
-                <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 1 }}>
+                <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 4 }}>
                   <ArrowNarrowRightIcon />
                 </SvgIcon>
 
@@ -152,7 +152,7 @@ export const SwapModalDetails = ({
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   <TokenIcon
                     symbol={swapSource.reserve.iconSymbol}
-                    sx={{ mr: 2, ml: 16, fontSize: "16px" }}
+                    sx={{ mr: 8, ml: 16, fontSize: "16px" }}
                   />
                   <FormattedNumber
                     value={sourceAmountAfterSwap.toString()}
@@ -192,7 +192,7 @@ export const SwapModalDetails = ({
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   <TokenIcon
                     symbol={swapTarget.reserve.iconSymbol}
-                    sx={{ mr: 2, ml: 16, fontSize: "16px" }}
+                    sx={{ mr: 8, ml: 16, fontSize: "16px" }}
                   />
                   <FormattedNumber
                     value={targetAmountAfterSwap.toString()}

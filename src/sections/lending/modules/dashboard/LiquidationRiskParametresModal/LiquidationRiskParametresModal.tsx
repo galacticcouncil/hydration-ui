@@ -79,7 +79,7 @@ export const LiquidationRiskParametresInfoModal = ({
           <HealthFactorNumber
             value={healthFactor}
             variant="main12"
-            sx={{ color: "common.white" }}
+            css={{ color: "white" }}
           />
         }
         bottomText={

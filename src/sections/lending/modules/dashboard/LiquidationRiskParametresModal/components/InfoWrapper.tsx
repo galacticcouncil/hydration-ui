@@ -22,7 +22,7 @@ export const InfoWrapper = ({
     <Box
       sx={(theme) => ({
         border: `1px solid ${theme.palette.divider}`,
-        mb: 24,
+        mb: 6,
         borderRadius: "6px",
         px: 4,
         pt: 4,

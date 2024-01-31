@@ -120,7 +120,7 @@ const GhoBorrowInfoDesktop = ({
             component="span"
             color="text.primary"
             variant="secondary16"
-            sx={{ display: "inline-block", mx: 1 }}
+            sx={{ display: "inline-block", mx: 4 }}
           >
             <span>of</span>
           </Typography>
@@ -132,7 +132,7 @@ const GhoBorrowInfoDesktop = ({
             component="span"
             color="text.secondary"
             variant="secondary12"
-            sx={{ display: "inline-block", mx: 1 }}
+            sx={{ display: "inline-block", mx: 4 }}
           >
             <span>of</span>
           </Typography>
@@ -179,7 +179,7 @@ const GhoBorrowInfoMobile = ({
               component="span"
               color="text.primary"
               variant="secondary16"
-              sx={{ display: "inline-block", mx: 1 }}
+              sx={{ display: "inline-block", mx: 4 }}
             >
               <span>of</span>
             </Typography>
@@ -191,7 +191,7 @@ const GhoBorrowInfoMobile = ({
               component="span"
               color="text.secondary"
               variant="secondary12"
-              sx={{ display: "inline-block", mx: 1 }}
+              sx={{ display: "inline-block", mx: 4 }}
             >
               <span>of</span>
             </Typography>

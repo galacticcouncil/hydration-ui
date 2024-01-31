@@ -33,7 +33,7 @@ export function SettingsMenu() {
         onClick={handleSettingsClick}
         sx={{ p: "7px 8px", minWidth: "unset", ml: 8 }}
       >
-        <SvgIcon sx={{ color: "#F1F1F3" }} fontSize="small">
+        <SvgIcon sx={{ color: "#F1F1F3" }} fontSize="large">
           <CogIcon />
         </SvgIcon>
       </Button>

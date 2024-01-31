@@ -127,7 +127,7 @@ export const SupplyAssetsListItem = ({
           id="supply-extra-button"
           sx={{
             minWidth: 0,
-            px: 4,
+            px: 16,
           }}
           variant="outlined"
           onClick={handleClick}

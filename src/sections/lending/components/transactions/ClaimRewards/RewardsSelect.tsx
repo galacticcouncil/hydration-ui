@@ -64,7 +64,7 @@ export const RewardsSelect = ({
             <Box sx={{ display: "flex", alignItems: "center" }}>
               <TokenIcon
                 symbol={selected.symbol}
-                sx={{ mr: 2, fontSize: "16px" }}
+                sx={{ mr: 8, fontSize: "16px" }}
               />
               <Typography color="text.primary">{selected.symbol}</Typography>
             </Box>

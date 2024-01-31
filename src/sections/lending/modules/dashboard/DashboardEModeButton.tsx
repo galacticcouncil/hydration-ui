@@ -140,7 +140,7 @@ export const DashboardEModeButton = ({
         onClose={handleClose}
         keepMounted={true}
       >
-        <Box sx={{ px: 4, pt: 2, pb: 3 }}>
+        <Box sx={{ px: 16, pt: 8, pb: 12 }}>
           <Typography variant="subheader1" mb={isEModeDisabled ? 1 : 3}>
             <span>Efficiency mode (E-Mode)</span>
           </Typography>

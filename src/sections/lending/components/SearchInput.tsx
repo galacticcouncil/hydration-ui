@@ -51,7 +51,7 @@ export const SearchInput = ({
         ...wrapperSx,
       })}
     >
-      <Box sx={{ ml: 8, mt: 16 }}>
+      <Box sx={{ ml: 8, mt: 4 }}>
         <SearchIcon height={16} />
       </Box>
       <InputBase

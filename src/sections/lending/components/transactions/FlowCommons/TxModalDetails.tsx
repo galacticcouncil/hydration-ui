@@ -37,7 +37,7 @@ export interface TxModalDetailsProps {
 }
 
 const ArrowRightIcon = (
-  <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 1 }}>
+  <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 4 }}>
     <ArrowNarrowRightIcon />
   </SvgIcon>
 )
@@ -250,13 +250,13 @@ export const DetailsNumberLineWithSub = ({
   )
 }
 
-export interface DetailsCollateralLine {
+export interface DetailsCollateralLineProps {
   collateralType: CollateralType
 }
 
 export const DetailsCollateralLine = ({
   collateralType,
-}: DetailsCollateralLine) => {
+}: DetailsCollateralLineProps) => {
   return (
     <Row
       caption={<span>Collateralization</span>}

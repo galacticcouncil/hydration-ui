@@ -62,7 +62,7 @@ export const TxErrorView = ({ txError }: { txError: TxErrorType }) => {
           </SvgIcon>
         </Button>
       </Box>
-      <Box sx={{ display: "flex", flexDirection: "column", mt: 162 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", mt: 16 }}>
         <Button
           onClick={close}
           variant="contained"

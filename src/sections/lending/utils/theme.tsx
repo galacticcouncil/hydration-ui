@@ -816,8 +816,8 @@ export function getThemedComponents(theme: Theme) {
       MuiSvgIcon: {
         styleOverrides: {
           root: {
-            width: "20px",
-            height: "20px",
+            width: "0.9375em",
+            height: "0.9375em",
           },
           colorPrimary: {
             color: theme.palette.primary.light,

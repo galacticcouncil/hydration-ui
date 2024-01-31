@@ -78,7 +78,7 @@ export const MarketLogo = ({
   sx,
 }: MarketLogoProps) => {
   return (
-    <Box sx={{ mr: 2, width: size, height: size, position: "relative", ...sx }}>
+    <Box sx={{ mr: 4, width: size, height: size, position: "relative", ...sx }}>
       <img src={logo} alt="" width="100%" height="100%" />
 
       {testChainName && (
@@ -141,7 +141,7 @@ export const MarketSwitcher = () => {
       value={currentMarket}
       onChange={handleMarketSelect}
       sx={{
-        mr: 2,
+        mr: 8,
         "& .MuiOutlinedInput-notchedOutline": {
           border: "none",
         },

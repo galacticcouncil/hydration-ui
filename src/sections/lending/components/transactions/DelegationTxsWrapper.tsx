@@ -116,7 +116,7 @@ export const DelegationTxsWrapper = ({
   const { content, disabled, loading, handleClick } = getMainParams()
   const approvalParams = getSignatureParams()
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", mt: 162, ...sx }}>
+    <Box sx={{ display: "flex", flexDirection: "column", mt: 16, ...sx }}>
       {approvalParams && !readOnlyModeAddress && (
         <Button
           variant="contained"

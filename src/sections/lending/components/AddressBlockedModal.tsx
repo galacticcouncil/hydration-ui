@@ -49,7 +49,7 @@ export const AddressBlockedModal = ({
           {"."}
         </Typography>
         <Button variant="contained" onClick={onDisconnectWallet}>
-          <SvgIcon fontSize="small" sx={{ mx: 1 }}>
+          <SvgIcon fontSize="small" sx={{ mx: 4 }}>
             <LogoutIcon />
           </SvgIcon>
           <span>Disconnect Wallet</span>

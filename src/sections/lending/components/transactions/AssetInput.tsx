@@ -120,7 +120,13 @@ export const AssetInput = <T extends Asset = Asset>({
 
   return (
     <Box {...sx}>
-      <Box sx={{ display: "flex", alignItems: "center", mb: 16 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          mb: 4,
+        }}
+      >
         <Typography color="text.secondary">
           {inputTitle ? inputTitle : <span>Amount</span>}
         </Typography>
@@ -135,7 +141,14 @@ export const AssetInput = <T extends Asset = Asset>({
           mb: 1,
         })}
       >
-        <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 0.5,
+          }}
+        >
           {loading ? (
             <Box sx={{ flex: 1 }}>
               <CircularProgress color="inherit" size="16px" />
@@ -192,11 +205,16 @@ export const AssetInput = <T extends Asset = Asset>({
             </IconButton>
           )}
           {!onSelect || assets.length === 1 ? (
-            <Box sx={{ display: "inline-flex", alignItems: "center" }}>
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+              }}
+            >
               <TokenIcon
                 aToken={asset.aToken}
                 symbol={asset.iconSymbol || asset.symbol}
-                sx={{ mr: 2, ml: 16 }}
+                sx={{ mr: 8, ml: 16, width: 24, height: 24 }}
               />
               <Typography
                 variant="h3"
@@ -256,7 +274,7 @@ export const AssetInput = <T extends Asset = Asset>({
                       <TokenIcon
                         symbol={asset.iconSymbol || asset.symbol}
                         aToken={asset.aToken}
-                        sx={{ mr: 2, ml: 16 }}
+                        sx={{ mr: 8, ml: 16 }}
                       />
                       <Typography variant="main16" color="text.primary">
                         {symbol}
@@ -296,7 +314,13 @@ export const AssetInput = <T extends Asset = Asset>({
           )}
         </Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", height: "16px" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            height: "16px",
+          }}
+        >
           {loading ? (
             <Box sx={{ flex: 1 }} />
           ) : (

@@ -221,19 +221,19 @@ export const DebtSwitchModalContent = ({
               justifyContent="center"
               gap={1}
             >
-              <TokenIcon symbol={poolReserve.iconSymbol} sx={{ mx: 1 }} />
+              <TokenIcon symbol={poolReserve.iconSymbol} sx={{ mx: 4 }} />
               <FormattedNumber
                 value={amountRef.current}
                 compact
                 variant="subheader1"
               />
               {poolReserve.symbol}
-              <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 1 }}>
+              <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 4 }}>
                 <ArrowNarrowRightIcon />
               </SvgIcon>
               <TokenIcon
                 symbol={switchTarget.reserve.iconSymbol}
-                sx={{ mx: 1 }}
+                sx={{ mx: 4 }}
               />
               <FormattedNumber
                 value={inputAmount}

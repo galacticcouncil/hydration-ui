@@ -47,7 +47,7 @@ export const VotersListContainer = ({
 
   if (false)
     return (
-      <Box sx={{ mt: 8, mb: 162 }}>
+      <Box sx={{ mt: 8, mb: 16 }}>
         <Row sx={{ mb: 12 }}>
           <Typography
             sx={{ ml: "auto" }}
@@ -71,7 +71,7 @@ export const VotersListContainer = ({
 
   if (false)
     return (
-      <Box sx={{ mt: 8, mb: 162 }}>
+      <Box sx={{ mt: 8, mb: 16 }}>
         <Row sx={{ mb: 12 }}>
           <Typography
             sx={{ ml: "auto" }}

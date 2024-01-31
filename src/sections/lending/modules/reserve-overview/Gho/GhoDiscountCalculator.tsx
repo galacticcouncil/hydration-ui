@@ -395,7 +395,7 @@ const GhoDiscountParametersComponent: React.FC<{
               component="span"
               variant="secondary14"
               color="text.primary"
-              sx={{ mx: 1 }}
+              sx={{ mx: 4 }}
             >
               <span>to</span>
             </Typography>{" "}

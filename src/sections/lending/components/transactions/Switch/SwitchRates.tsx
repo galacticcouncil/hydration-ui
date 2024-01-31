@@ -52,7 +52,7 @@ export const SwitchRates = ({
       <ButtonBase
         onClick={() => setIsSwitched((isSwitched) => !isSwitched)}
         disableTouchRipple
-        sx={{ mx: 1 }}
+        sx={{ mx: 4 }}
       >
         <SvgIcon sx={{ fontSize: "12px" }}>
           <SwitchHorizontalIcon />

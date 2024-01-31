@@ -141,7 +141,7 @@ export const TxActionsWrapper = ({
   const approvalParams = getApprovalParams()
   return (
     <Box
-      sx={{ display: "flex", flexDirection: "column", mt: 162, ...sx }}
+      sx={{ display: "flex", flexDirection: "column", mt: 16, ...sx }}
       {...rest}
     >
       {approvalParams && !readOnlyModeAddress && (

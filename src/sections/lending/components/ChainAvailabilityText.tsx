@@ -30,7 +30,7 @@ export const ChainAvailabilityText: React.FC<ChainAvailabilityTextProps> = ({
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", ...wrapperSx }}>
-      <Typography variant="subheader2" sx={{ mr: 2, color: "#C0CBF6" }}>
+      <Typography variant="subheader2" sx={{ mr: 8, color: "#C0CBF6" }}>
         <span>Available on</span>
       </Typography>
       <Box
