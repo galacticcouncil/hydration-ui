@@ -7,11 +7,10 @@ export const SContainer = styled.div<{ modal: boolean }>`
   position: relative;
   text-align: center;
   width: 100%;
-  padding: 38px 10px;
+  padding: ${(p) => (p.modal ? "20px 0" : "38px 10px")};
 
   @media ${theme.viewport.gte.sm} {
     background: inherit;
-    padding: 20px 0 20px;
   }
 `
 

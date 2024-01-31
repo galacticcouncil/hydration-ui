@@ -54,8 +54,6 @@ export const OtcOrderTable = ({
   const filteredData = useMemo(() => {
     let res: OrderTableData[] = data;
 
-    console.log(res);
-
     if (showPartial) {
       res = res.filter((o) => o.partiallyFillable);
     }

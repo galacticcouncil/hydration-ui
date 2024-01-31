@@ -48,7 +48,6 @@ export function OrderAssetSelect(props: {
   onChange: (value: string) => void
   onOpen: () => void
   error?: string
-  omitAsset?: string
 }) {
   const { assets } = useRpcProvider()
   const asset = props.asset

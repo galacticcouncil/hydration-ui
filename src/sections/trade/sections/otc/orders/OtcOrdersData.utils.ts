@@ -11,8 +11,8 @@ import {
 import { getSpotPrice, useSpotPrice, useSpotPrices } from "api/spotPrice";
 import { BN_10 } from "utils/constants";
 import { u32 } from "@polkadot/types";
+import { c } from "vitest/dist/reporters-5f784f42";
 
-const withoutRefresh = true;
 
 export const useOrdersTableData = () => {
   const treasuryAddr = import.meta.env.VITE_TRSRY_ADDR;
@@ -22,10 +22,6 @@ export const useOrdersTableData = () => {
   const queries = [orders, ...ordersState];
   const isLoading = queries.some((q) => q.isLoading);
   const isInitialLoading = queries.some((q) => q.isInitialLoading);
-  const displayAsset = useDisplayAssetStore();
-  const { tradeRouter } = useRpcProvider();
-  const [spotPrices, setSpotPrices] = useState<number[] | null>(null);
-
 
   const data = useMemo(() => {
     if (!orders.data) return [];

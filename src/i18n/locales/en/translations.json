@@ -304,6 +304,7 @@
   "otc.order.place.feeValue": "≈ {{ amount, bignumber }} {{ symbol }}",
   "otc.order.place.confirm": "Create New Order",
   "otc.order.place.validation.notEnoughBalance": "Insufficient balance.",
+  "otc.order.place.validation.sameAssets": "Cannot place order for the same asset.",
   "otc.order.place.toast.onLoading": "<0>Placing an OTC order for </0><1>{{ amount, bignumber }} {{ symbol }}</1>.",
   "otc.order.place.toast.onSuccess": "<0>OTC order placed for </0><1>{{ amount, bignumber }} {{ symbol }}</1>.",
   "otc.order.fill.title": "Fill order",
