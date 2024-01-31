@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material"
 import { debounce } from "lodash"
-import React, { useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { Row } from "sections/lending/components/primitives/Row"
 import { ConnectWalletButton } from "sections/lending/components/WalletConnection/ConnectWalletButton"
@@ -22,7 +22,6 @@ import {
   getNetworkConfig,
   NetworkConfig,
 } from "sections/lending/utils/marketsAndNetworksConfig"
-import { GENERAL } from "sections/lending/utils/mixPanelEvents"
 
 import { AssetInput } from "sections/lending/components/transactions/AssetInput"
 import { TxModalDetails } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"

@@ -221,7 +221,7 @@ export default function WalletWidget({
                 bgcolor: networkColor,
                 width: 6,
                 height: 6,
-                mr: 2,
+                mr: 8,
                 boxShadow:
                   "0px 2px 1px rgba(0, 0, 0, 0.05), 0px 0px 1px rgba(0, 0, 0, 0.25)",
                 borderRadius: "50%",

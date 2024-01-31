@@ -3,7 +3,7 @@ import { ReactNode } from "react"
 
 import { AppHeader } from "./AppHeader"
 
-import { LendingPageProviders } from "sections/lending/providers/LandingPageProviders"
+import { LendingPageProviders } from "sections/lending/providers/LendingPageProviders"
 
 export function MainLayout({ children }: { children: ReactNode }) {
   return (

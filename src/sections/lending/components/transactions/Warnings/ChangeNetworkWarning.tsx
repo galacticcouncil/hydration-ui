@@ -1,8 +1,6 @@
 import { ChainId } from "@aave/contract-helpers"
 import { Button, Typography } from "@mui/material"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
-import { useRootStore } from "sections/lending/store/root"
-import { GENERAL } from "sections/lending/utils/mixPanelEvents"
 
 import { Warning } from "sections/lending/components/primitives/Warning"
 
