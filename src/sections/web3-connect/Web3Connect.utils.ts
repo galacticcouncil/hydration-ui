@@ -1,4 +1,6 @@
 import { useNavigate, useSearch } from "@tanstack/react-location"
+import { decodeAddress } from "@polkadot/util-crypto"
+import { u8aToHex } from "@polkadot/util"
 import {
   MutationObserverOptions,
   QueryObserverOptions,
@@ -6,12 +8,12 @@ import {
   useQuery,
 } from "@tanstack/react-query"
 import { useShallow } from "hooks/useShallow"
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { usePrevious } from "react-use"
 
 import { WalletConnect } from "sections/web3-connect/wallets/WalletConnect"
 import { POLKADOT_APP_NAME } from "utils/api"
-import { H160, getEvmAddress, isEvmAddress } from "utils/evm"
+import { H160, getEvmAddress, isEvmAccount, isEvmAddress } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import {
@@ -46,21 +48,27 @@ export const useEvmAccount = () => {
   const { account } = useAccount()
   const { wallet } = useWallet()
 
-  const address = account?.displayAddress ?? ""
+  const address = account?.address ?? ""
+
+  const evmAddress = useMemo(() => {
+    if (!address) return ""
+    if (isEvmAccount(address)) return H160.fromAccount(address)
+    return H160.fromSS58(address)
+  }, [address])
 
   const evm = useQuery(
     QUERY_KEYS.evmChainInfo(address),
     async () => {
       const chainId = isMetaMask(wallet?.extension)
         ? await wallet?.extension?.request({ method: "eth_chainId" })
-        : null
+        : import.meta.env.VITE_EVM_CHAIN_ID
 
       return {
         chainId: Number(chainId),
       }
     },
     {
-      enabled: !!address,
+      enabled: !!address && !!wallet?.extension,
     },
   )
 
@@ -74,7 +82,7 @@ export const useEvmAccount = () => {
     account: {
       ...evm.data,
       name: account?.name ?? "",
-      address: account?.displayAddress,
+      address: evmAddress,
     },
   }
 }
@@ -218,6 +226,10 @@ export const useEnableWallet = (
   options?: MutationObserverOptions,
 ) => {
   const { wallet } = getWalletProviderByType(provider)
+  const disconnect = useWeb3ConnectStore(
+    useShallow((state) => state.disconnect),
+  )
+
   const meta = useWeb3ConnectStore(useShallow((state) => state.meta))
   const { mutate: enable, ...mutation } = useMutation(
     async () => {
@@ -237,6 +249,7 @@ export const useEnableWallet = (
 
   return {
     enable,
+    disconnect,
     ...mutation,
   }
 }

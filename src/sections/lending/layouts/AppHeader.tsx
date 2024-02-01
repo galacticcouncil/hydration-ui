@@ -212,7 +212,6 @@ export function AppHeader() {
           position: "sticky",
           top: 0,
           transition: theme.transitions.create("top"),
-          zIndex: theme.zIndex.appBar,
           bgcolor: theme.palette.background.header,
           padding: {
             xs:

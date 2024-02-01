@@ -9,6 +9,7 @@ import shallow from "zustand/shallow"
 import { Avatar, AvatarProps } from "./Avatar"
 import { BadgeSize, ExclamationBadge } from "./badges/ExclamationBadge"
 import { UserNameText, UserNameTextProps } from "./UserNameText"
+import { MetaMaskAvatar } from "components/AccountAvatar/MetaMaskAvatar"
 
 type UserDisplayProps = {
   oneLiner?: boolean
@@ -21,7 +22,6 @@ type UserDisplayProps = {
 
 export const UserDisplay: React.FC<UserDisplayProps> = ({
   oneLiner = false,
-  avatarProps,
   titleProps,
   subtitleProps,
   withLink,
@@ -38,21 +38,27 @@ export const UserDisplay: React.FC<UserDisplayProps> = ({
       shallow,
     )
   const { readOnlyMode } = useWeb3Context()
-  const fallbackImage = useMemo(
-    () => (account ? blo(account as `0x${string}`) : undefined),
-    [account],
-  )
+
   const loading = domainsLoading || accountLoading
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-      <Avatar
-        fallbackImage={fallbackImage}
-        loading={loading}
-        badge={<ExclamationBadge size={BadgeSize.SM} />}
-        invisibleBadge={!readOnlyMode}
-        {...avatarProps}
-      />
+      <Box sx={{ position: "relative" }}>
+        <MetaMaskAvatar address={account} size={20} />
+        {readOnlyMode && (
+          <Box
+            sx={{
+              display: "flex",
+              position: "absolute",
+              bottom: -6,
+              right: -6,
+            }}
+          >
+            <ExclamationBadge size={BadgeSize.SM} />
+          </Box>
+        )}
+      </Box>
+
       <Box sx={{ display: "flex", flexDirection: "column" }}>
         {!oneLiner && defaultDomain?.name ? (
           <>
