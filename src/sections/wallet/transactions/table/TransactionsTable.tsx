@@ -25,6 +25,7 @@ import { Button } from "components/Button/Button"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { TransactionsTableActionsMob } from "sections/wallet/transactions/table/actions/TransactionsTableActionsMob"
+import { NoResults } from "components/NoResults/NoResults"
 
 type Props = {
   data: TTransactionsTableData
@@ -67,112 +68,120 @@ export const TransactionsTable = ({
         <TransactionsDownload data={data} />
       </TableTitle>
       <TransactionsTypeFilter />
-      <Table>
-        <TableHeaderContent>
-          {table.getHeaderGroups().map((hg) => (
-            <TableRow key={hg.id} header>
-              {hg.headers.map((header) => (
-                <TableSortHeader
-                  key={header.id}
-                  canSort={header.column.getCanSort()}
-                  sortDirection={header.column.getIsSorted()}
-                  onSort={header.column.getToggleSortingHandler()}
-                  css={{
-                    "&": {
-                      fontWeight: 500,
-                      paddingTop: 14,
-                      paddingBottom: 14,
-                    },
-                    "&:nth-of-type(3) > div": {
-                      justifyContent: "end",
-                    },
-                    "&:nth-of-type(4) > div": {
-                      justifyContent: "center",
-                    },
-                    "&:nth-of-type(6) > div": {
-                      justifyContent: "center",
-                    },
-                  }}
-                >
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext(),
+      {filteredData.length ? (
+        <Table>
+          <TableHeaderContent>
+            {table.getHeaderGroups().map((hg) => (
+              <TableRow key={hg.id} header>
+                {hg.headers.map((header) => (
+                  <TableSortHeader
+                    key={header.id}
+                    canSort={header.column.getCanSort()}
+                    sortDirection={header.column.getIsSorted()}
+                    onSort={header.column.getToggleSortingHandler()}
+                    css={{
+                      "&": {
+                        fontWeight: 500,
+                        paddingTop: 14,
+                        paddingBottom: 14,
+                      },
+                      "&:nth-of-type(3) > div": {
+                        justifyContent: "end",
+                      },
+                      "&:nth-of-type(4) > div": {
+                        justifyContent: "center",
+                      },
+                      "&:nth-of-type(6) > div": {
+                        justifyContent: "center",
+                      },
+                    }}
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+                  </TableSortHeader>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeaderContent>
+          <TableBodyContent>
+            {table.getRowModel().rows.map((row, index) => {
+              const date = startOfDay(new Date(row.original.date))
+
+              const isFirst = index === 0
+              const isRepeatDay = isSameDay(lastDateRef.current ?? 0, date)
+              if (!isRepeatDay) {
+                lastDateRef.current = date
+              }
+
+              const shouldRenderDateRow = isFirst || !isRepeatDay
+
+              return (
+                <Fragment key={row.id}>
+                  {shouldRenderDateRow && (
+                    <TableRow>
+                      <TableData
+                        css={{
+                          "&": {
+                            paddingTop: 16,
+                            paddingBottom: 8,
+                            pointerEvents: "none",
+                          },
+                        }}
+                        colSpan={table.getAllColumns().length}
+                      >
+                        <Text fs={12} color="darkBlue200">
+                          {t("stats.overview.chart.tvl.label.date", {
+                            date,
+                          })}
+                        </Text>
+                      </TableData>
+                    </TableRow>
                   )}
-                </TableSortHeader>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeaderContent>
-        <TableBodyContent>
-          {table.getRowModel().rows.map((row, index) => {
-            const date = startOfDay(new Date(row.original.date))
-
-            const isFirst = index === 0
-            const isRepeatDay = isSameDay(lastDateRef.current ?? 0, date)
-            if (!isRepeatDay) {
-              lastDateRef.current = date
-            }
-
-            const shouldRenderDateRow = isFirst || !isRepeatDay
-
-            return (
-              <Fragment key={row.id}>
-                {shouldRenderDateRow && (
-                  <TableRow>
-                    <TableData
-                      css={{
-                        "&": {
-                          paddingTop: 16,
-                          paddingBottom: 8,
-                          pointerEvents: "none",
-                        },
-                      }}
-                      colSpan={table.getAllColumns().length}
-                    >
-                      <Text fs={12} color="darkBlue200">
-                        {t("stats.overview.chart.tvl.label.date", {
-                          date,
-                        })}
-                      </Text>
-                    </TableData>
+                  <TableRow css={{ cursor: "pointer" }}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableData
+                        key={cell.id}
+                        css={{
+                          "&": {
+                            paddingTop: 14,
+                            paddingBottom: 14,
+                          },
+                          "&:last-of-type": {
+                            paddingLeft: 0,
+                          },
+                          "&:nth-of-type(5)": {
+                            width: 20,
+                            paddingLeft: 0,
+                            paddingRight: 0,
+                          },
+                        }}
+                        onClick={() =>
+                          isDesktop
+                            ? openSubscanLink(row.original.extrinsicHash)
+                            : setRow(row.original)
+                        }
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableData>
+                    ))}
                   </TableRow>
-                )}
-                <TableRow css={{ cursor: "pointer" }}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableData
-                      key={cell.id}
-                      css={{
-                        "&": {
-                          paddingTop: 14,
-                          paddingBottom: 14,
-                        },
-                        "&:last-of-type": {
-                          paddingLeft: 0,
-                        },
-                        "&:nth-of-type(5)": {
-                          width: 20,
-                          paddingLeft: 0,
-                          paddingRight: 0,
-                        },
-                      }}
-                      onClick={() =>
-                        isDesktop
-                          ? openSubscanLink(row.original.extrinsicHash)
-                          : setRow(row.original)
-                      }
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableData>
-                  ))}
-                </TableRow>
-              </Fragment>
-            )
-          })}
-        </TableBodyContent>
-      </Table>
+                </Fragment>
+              )
+            })}
+          </TableBodyContent>
+        </Table>
+      ) : (
+        <NoResults
+          css={{ borderTop: "1px solid rgba(32, 33, 53, 1)" }}
+          sx={{ py: [50, 70] }}
+        />
+      )}
+
       {!isDesktop && !!row && (
         <TransactionsTableActionsMob
           row={row}

@@ -2,7 +2,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { TransactionsTable } from "./TransactionsTable"
 import { useTransactionsTableData } from "./data/TransactionsTableData.utils"
 import { TransactionsTableSkeleton } from "./skeleton/TransactionsTableSkeleton"
-import { NoResults } from "components/NoResults/NoResults"
 
 export const TransactionsTableWrapper = ({ address }: { address: string }) => {
   const { isLoaded } = useRpcProvider()
@@ -21,7 +20,6 @@ export const TransactionsTableWrapperData = ({
     useTransactionsTableData(address)
 
   if (isLoading) return <TransactionsTableSkeleton />
-  if (!filteredData.length) return <NoResults sx={{ py: [50, 70] }} />
 
   return (
     <TransactionsTable
