@@ -1,25 +1,4 @@
-import { WalletPage } from "./sections/wallet/WalletPage"
 import { Navigate } from "@tanstack/react-location"
-import { XcmPage } from "sections/xcm/XcmPage"
-import { PoolsPage } from "sections/pools/PoolsPage"
-import { StatsPage } from "sections/stats/StatsPage"
-import { StakingPage } from "./sections/staking/StakingPage"
-import { TradePage } from "sections/trade/TradePage"
-import { SwapPage } from "sections/trade/sections/swap/SwapPage"
-import { OtcPageWrapper } from "sections/trade/sections/otc/OtcPageWrappet"
-import { DcaPage } from "sections/trade/sections/dca/DcaPage"
-import { BondsPageWrapper } from "sections/trade/sections/bonds/BondsPageWrapper"
-import { BondDetailsPage } from "sections/trade/sections/bonds/details/BondDetailsPage"
-import { AllPools } from "sections/pools/sections/AllPools"
-import { MyLiquidity } from "sections/pools/sections/MyLiquidity"
-import { OmnipoolAndStablepool } from "sections/pools/sections/OmnipoolAndStablepool"
-import { IsolatedPools } from "sections/pools/sections/IsolatedPools"
-import { ReferralsWrapper } from "sections/referrals/ReferralsPage"
-import { StatsPOL } from "sections/stats/sections/POL/StatsPOL"
-import { StatsOverview } from "sections/stats/sections/overview/StatsOverview"
-import { StatsOmnipoolAsset } from "sections/stats/sections/omnipoolAsset/StatsOmnipoolAsset"
-import { BridgePage } from "sections/xcm/BridgePage"
-import { YieldDcaPage } from "sections/trade/sections/yieldDca/YieldDcaPage"
 
 const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
 const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
@@ -33,7 +12,8 @@ export const routes = [
   },
   {
     path: "trade",
-    element: <TradePage />,
+    element: () =>
+      import("sections/trade/TradePage").then((mod) => <mod.TradePage />),
     children: [
       {
         path: "/",
@@ -41,29 +21,44 @@ export const routes = [
       },
       {
         path: "swap",
-        element: <SwapPage />,
+        element: () =>
+          import("sections/trade/sections/swap/SwapPage").then((mod) => (
+            <mod.SwapPage />
+          )),
       },
       {
         ...(isOtcPageEnabled && {
           path: "otc",
-          element: <OtcPageWrapper />,
+          element: () =>
+            import("sections/trade/sections/otc/OtcPageWrappet").then((mod) => (
+              <mod.OtcPageWrapper />
+            )),
         }),
       },
       {
         path: "yield-dca",
-        element: <YieldDcaPage />,
+        element: () =>
+          import("sections/trade/sections/yieldDca/YieldDcaPage").then(
+            (mod) => <mod.YieldDcaPage />,
+          ),
       },
       {
         ...(isDcaPageEnabled && {
           path: "dca",
-          element: <DcaPage />,
+          element: () =>
+            import("sections/trade/sections/dca/DcaPage").then((mod) => (
+              <mod.DcaPage />
+            )),
         }),
       },
       ...(isBondsPageEnabled
         ? [
             {
               path: "bond",
-              element: <BondDetailsPage />,
+              element: () =>
+                import(
+                  "sections/trade/sections/bonds/details/BondDetailsPage"
+                ).then((mod) => <mod.BondDetailsPage />),
             },
           ]
         : []),
@@ -71,7 +66,10 @@ export const routes = [
         ? [
             {
               path: "bonds",
-              element: <BondsPageWrapper />,
+              element: () =>
+                import("sections/trade/sections/bonds/BondsPageWrapper").then(
+                  (mod) => <mod.BondsPageWrapper />,
+                ),
             },
           ]
         : []),
@@ -86,17 +84,24 @@ export const routes = [
       },
       {
         path: "assets",
-        element: <WalletPage />,
+        element: () =>
+          import("sections/wallet/WalletPage").then((mod) => (
+            <mod.WalletPage />
+          )),
       },
       {
         path: "vesting",
-        element: <WalletPage />,
+        element: () =>
+          import("sections/wallet/WalletPage").then((mod) => (
+            <mod.WalletPage />
+          )),
       },
     ],
   },
   {
     path: "liquidity",
-    element: <PoolsPage />,
+    element: () =>
+      import("sections/pools/PoolsPage").then((mod) => <mod.PoolsPage />),
     children: [
       {
         path: "/",
@@ -104,21 +109,33 @@ export const routes = [
       },
       {
         path: "my-liquidity",
-        element: <MyLiquidity />,
+        element: () =>
+          import("sections/pools/sections/MyLiquidity").then((mod) => (
+            <mod.MyLiquidity />
+          )),
       },
       {
         path: "all-pools",
-        element: <AllPools />,
+        element: () =>
+          import("sections/pools/sections/AllPools").then((mod) => (
+            <mod.AllPools />
+          )),
       },
       {
         path: "omnipool-stablepools",
-        element: <OmnipoolAndStablepool />,
+        element: () =>
+          import("sections/pools/sections/OmnipoolAndStablepool").then(
+            (mod) => <mod.OmnipoolAndStablepool />,
+          ),
       },
       ...(isXYKPageEnabled
         ? [
             {
               path: "isolated",
-              element: <IsolatedPools />,
+              element: () =>
+                import("sections/pools/sections/IsolatedPools").then((mod) => (
+                  <mod.IsolatedPools />
+                )),
             },
           ]
         : []),
@@ -126,15 +143,18 @@ export const routes = [
   },
   {
     path: "cross-chain",
-    element: <XcmPage />,
+    element: () =>
+      import("sections/xcm/XcmPage").then((mod) => <mod.XcmPage />),
   },
   {
     path: "bridge",
-    element: <BridgePage />,
+    element: () =>
+      import("sections/xcm/BridgePage").then((mod) => <mod.BridgePage />),
   },
   {
     path: "stats",
-    element: <StatsPage />,
+    element: () =>
+      import("sections/stats/StatsPage").then((mod) => <mod.StatsPage />),
     children: [
       {
         path: "/",
@@ -142,15 +162,24 @@ export const routes = [
       },
       {
         path: "overview",
-        element: <StatsOverview />,
+        element: () =>
+          import("sections/stats/sections/overview/StatsOverview").then(
+            (mod) => <mod.StatsOverview />,
+          ),
       },
       {
         path: "treasury",
-        element: <StatsPOL />,
+        element: () =>
+          import("sections/stats/sections/POL/StatsPOL").then((mod) => (
+            <mod.StatsPOL />
+          )),
       },
       {
         path: "asset",
-        element: <StatsOmnipoolAsset />,
+        element: () =>
+          import(
+            "sections/stats/sections/omnipoolAsset/StatsOmnipoolAsset"
+          ).then((mod) => <mod.StatsOmnipoolAsset />),
       },
 
       // TODO: Not ready. Requested in #861n9ffe4
@@ -162,11 +191,15 @@ export const routes = [
   },
   {
     path: "staking",
-    element: <StakingPage />,
+    element: () =>
+      import("sections/staking/StakingPage").then((mod) => <mod.StakingPage />),
   },
   {
     path: "referrals",
-    element: <ReferralsWrapper />,
+    element: () =>
+      import("sections/referrals/ReferralsPage").then((mod) => (
+        <mod.ReferralsWrapper />
+      )),
   },
   {
     path: "*",
