@@ -145,9 +145,11 @@ export const PoolDetails = ({
             />
 
             <SValuesContainer>
-              <SValue>
-                <Text color="basic400">{t("tvl")}</Text>
-                <Text color="white">
+              <SValue sx={{ align: "start" }}>
+                <Text color="basic400" fs={[12, 16]}>
+                  {t("tvl")}
+                </Text>
+                <Text color="white" fs={[14, 16]}>
                   <DisplayValue value={pool.tvlDisplay} />
                 </Text>
               </SValue>
@@ -155,8 +157,10 @@ export const PoolDetails = ({
               <Separator orientation="vertical" color="white" opacity={0.06} />
 
               <SValue>
-                <Text color="basic400">{t("24Volume")}</Text>
-                <Text color="white">
+                <Text color="basic400" fs={[12, 16]}>
+                  {t("24Volume")}
+                </Text>
+                <Text color="white" fs={[14, 16]}>
                   <DisplayValue value={pool.volume} type="token" />
                 </Text>
               </SValue>
@@ -168,9 +172,11 @@ export const PoolDetails = ({
                 sx={{ display: ["none", "inherit"] }}
               />
 
-              <SValue>
-                <Text color="basic400">{t("price")}</Text>
-                <Text color="white">
+              <SValue sx={{ align: "start" }}>
+                <Text color="basic400" fs={[12, 16]}>
+                  {t("price")}
+                </Text>
+                <Text color="white" fs={[14, 16]}>
                   <DisplayValue value={pool.spotPrice} type="token" />
                 </Text>
               </SValue>
@@ -178,8 +184,10 @@ export const PoolDetails = ({
               <Separator orientation="vertical" color="white" opacity={0.06} />
 
               <SValue>
-                <Text color="basic400">{t("liquidity.pool.details.fee")}</Text>
-                <Text color="white">
+                <Text color="basic400" fs={[12, 16]}>
+                  {t("liquidity.pool.details.fee")}
+                </Text>
+                <Text color="white" fs={[14, 16]}>
                   {omnipoolFee.isLoading ? (
                     <Skeleton height={16} width={50} />
                   ) : (

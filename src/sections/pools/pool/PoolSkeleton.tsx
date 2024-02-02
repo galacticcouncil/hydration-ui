@@ -65,7 +65,7 @@ export const PoolSkeleton = () => {
           sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
         />
         <SValuesContainer>
-          <SValue>
+          <SValue sx={{ align: "start" }}>
             <Text color="basic400">{t("tvl")}</Text>
             <Skeleton height={16} width={50} />
           </SValue>
@@ -84,7 +84,7 @@ export const PoolSkeleton = () => {
             sx={{ display: ["none", "inherit"] }}
           />
 
-          <SValue>
+          <SValue sx={{ align: "start" }}>
             <Text color="basic400">{t("price")}</Text>
             <Skeleton height={16} width={50} />
           </SValue>
