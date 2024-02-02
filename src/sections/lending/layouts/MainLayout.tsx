@@ -1,5 +1,7 @@
 import { Box } from "@mui/material"
 import { ReactNode } from "react"
+import { decodeAddress } from "@polkadot/util-crypto"
+import { u8aToHex } from "@polkadot/util"
 
 import { AppHeader } from "./AppHeader"
 
@@ -22,9 +24,17 @@ export function MainLayout({ children }: { children: ReactNode }) {
           color: "white",
           padding: 10,
           fontSize: 14,
+          fontFamily: "monospace",
         }}
       >
-        {account?.name}: {account?.displayAddress} {"->"} {evmAccount?.address}
+        Name: {account?.name ?? ""}
+        <br />
+        Address: {account?.displayAddress ?? ""}
+        <br />
+        Pubkey:{" "}
+        {account?.address ? u8aToHex(decodeAddress(account?.address)) : ""}
+        <br />
+        EVM: {evmAccount?.address ?? ""}
       </Box>
       <Box
         component="main"
