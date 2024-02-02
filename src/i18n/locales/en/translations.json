@@ -254,6 +254,7 @@
   "liquidity.remove.modal.toast.onSuccess": "<0>Withdrawn </0><1>{{amount, bignumber(type: 'token')}} {{symbol}}{{ withLrna }}</1><0> from </0><1>Omnipool</1>.",
   "liquidity.remove.modal.xyk.toast.onLoading": "<0>Withdrawing </0><1>{{value, bignumber(type: 'token')}}</1><0> Shares</0>...",
   "liquidity.remove.modal.xyk.toast.onSuccess": "<0>You withdrew </0><1>{{value, bignumber(type: 'token')}}</1><0> Shares</0",
+  "liquidity.reviewTransaction.modal.amount": "Amount",
   "liquidity.reviewTransaction.modal.title": "Review transaction details",
   "liquidity.reviewTransaction.modal.desc": "Please review your transaction",
   "liquidity.reviewTransaction.modal.detail.cost": "Transaction cost:",

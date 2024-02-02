@@ -70,7 +70,7 @@ export const ReviewTransactionAuthorTip: FC<Props> = ({
     <SContainer>
       <SInputContainer>
         <SInput
-          placeholder="Amount"
+          placeholder={t("liquidity.reviewTransaction.modal.amount")}
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
         />
