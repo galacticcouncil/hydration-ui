@@ -108,6 +108,7 @@ export const useTransactionValues = ({
     ...alllowedFeePaymentAssetsIds,
   ])
 
+  const feePaymentValue = paymentInfo?.partialFee.toBigNumber() ?? BN_NAN
   const paymentFeeHDX = paymentInfo
     ? BigNumber(fee ?? paymentInfo.partialFee.toHex()).shiftedBy(
         -assets.native.decimals,
@@ -188,7 +189,7 @@ export const useTransactionValues = ({
     data: {
       isEnoughPaymentBalance,
       displayFeePaymentValue,
-      feePaymentValue: paymentInfo?.partialFee.toBigNumber() ?? BN_NAN,
+      feePaymentValue,
       feePaymentMeta,
       acceptedFeePaymentAssets,
       era,

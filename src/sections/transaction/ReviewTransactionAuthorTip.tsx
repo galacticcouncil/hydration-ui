@@ -57,7 +57,6 @@ export const ReviewTransactionAuthorTip: FC<Props> = ({
       if (amountBN.gt(amountMax)) {
         setError(t("liquidity.reviewTransaction.modal.error.tip"))
         onChange?.(BN_NAN)
-        return
       } else {
         setError("")
         onChange?.(amountBN)
