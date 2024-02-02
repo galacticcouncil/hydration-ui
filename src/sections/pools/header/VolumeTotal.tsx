@@ -1,30 +1,26 @@
-import { useOmnipoolAssets } from "api/omnipool"
-import { useVolume } from "api/volume"
 import { useGetXYKPools } from "api/xyk"
 import { useXYKPoolTradeVolumes } from "sections/pools/pool/details/PoolDetails.utils"
 import { BN_0 } from "utils/constants"
 import { HeaderTotalData } from "./PoolsHeaderTotal"
-import { useDisplayAssetStore, useDisplayPrice } from "utils/displayAsset"
+import { usePools } from "sections/pools/PoolsPage.utils"
 
 export const AllPoolsVolumeTotal = () => {
-  const displayAsset = useDisplayAssetStore()
-  const pools = useGetXYKPools()
-  const poolsAddress = pools.data?.map((pool) => pool.poolAddress) ?? []
+  const xykPools = useGetXYKPools()
+  const poolsAddress = xykPools.data?.map((pool) => pool.poolAddress) ?? []
   const xykVolumes = useXYKPoolTradeVolumes(poolsAddress)
 
-  const volumes = useVolume("all")
-
-  const spotPrice = useDisplayPrice(displayAsset.stableCoinId)
+  const pools = usePools()
 
   const isLoading =
-    pools.isInitialLoading ||
+    xykPools.isInitialLoading ||
     xykVolumes.isLoading ||
-    volumes.isLoading ||
-    spotPrice.isInitialLoading
+    pools.isLoading ||
+    !!pools.data?.some((pool) => pool.isVolumeLoading)
 
-  const totalVolumes = volumes.data
-    ?.reduce((memo, volume) => memo.plus(volume.volume_usd ?? BN_0), BN_0)
-    .multipliedBy(spotPrice.data?.spotPrice ?? 1)
+  const totalVolumes = pools.data?.reduce(
+    (memo, pool) => memo.plus(pool.volume ?? BN_0),
+    BN_0,
+  )
 
   const totalXYKVolume =
     xykVolumes.data?.reduce(
@@ -54,21 +50,15 @@ export const XYKVolumeTotal = () => {
 }
 
 export const VolumeTotal = () => {
-  const omnipoolAssets = useOmnipoolAssets()
-  const displayAsset = useDisplayAssetStore()
-
-  const volumes = useVolume("all")
-
-  const spotPrice = useDisplayPrice(displayAsset.stableCoinId)
+  const pools = usePools()
 
   const isLoading =
-    omnipoolAssets.isInitialLoading ||
-    volumes.isLoading ||
-    spotPrice.isInitialLoading
+    pools.isLoading || !!pools.data?.some((pool) => pool.isVolumeLoading)
 
-  const totalVolumes = volumes.data
-    ?.reduce((memo, volume) => memo.plus(volume.volume_usd ?? BN_0), BN_0)
-    .multipliedBy(spotPrice.data?.spotPrice ?? 1)
+  const totalVolumes = pools.data?.reduce(
+    (memo, pool) => memo.plus(pool.volume ?? BN_0),
+    BN_0,
+  )
 
   return <HeaderTotalData isLoading={isLoading} value={totalVolumes?.div(2)} />
 }
