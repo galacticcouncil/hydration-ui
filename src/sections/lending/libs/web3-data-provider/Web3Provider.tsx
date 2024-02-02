@@ -26,6 +26,7 @@ import {
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { isMetaMask } from "utils/metamask"
+import { useStore } from "state/store"
 
 export type ERC20TokenType = {
   address: string
@@ -44,9 +45,7 @@ export type Web3Data = {
   chainId: number
   switchNetwork: (chainId: number) => Promise<void>
   getTxError: (txHash: string) => Promise<string>
-  sendTx: (
-    txData: transactionType | PopulatedTransaction,
-  ) => Promise<TransactionResponse>
+  sendTx: (txData: PopulatedTransaction) => Promise<TransactionResponse>
   addERC20Token: (args: ERC20TokenType) => Promise<boolean>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signTxData: (unsignedData: string) => Promise<SignatureLike>
@@ -60,6 +59,7 @@ export type Web3Data = {
 export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   children,
 }) => {
+  const { createTransaction } = useStore()
   const evmAccount = useEvmAccount()
   const { wallet, type } = useWallet()
   const { disconnect: deactivate } = useEnableWallet(type)
@@ -105,35 +105,28 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   }, [deactivate, setWalletType])
 
   const sendTx = useCallback(
-    async (
-      txData: transactionType | PopulatedTransaction,
-    ): Promise<TransactionResponse> => {
+    async (txData: PopulatedTransaction) => {
       if (provider) {
-        const { from, ...data } = txData
+        console.log("SEND")
+        createTransaction({
+          evmTx: txData,
+        })
 
-        /* createTransaction({
-          xcall: {
-            data: txData as `0x${string}`,
-            abi: "[]",
-          },
-          xcallMeta: {},
-        }) */
-
-        const signer = provider.getSigner(from)
+        /* const signer = provider.getSigner(from)
         const txResponse: TransactionResponse = await signer.sendTransaction({
           ...data,
           value: data.value ? BigNumber.from(data.value) : undefined,
         })
-        return txResponse
+        return txResponse */
       }
-      throw new Error("Error sending transaction. Provider not found")
     },
-    [provider],
+    [createTransaction, provider],
   )
 
   // TODO: recheck that it works on all wallets
   const signTxData = async (unsignedData: string): Promise<SignatureLike> => {
-    if (provider && account) {
+    alert("[signTxData]")
+    /* if (provider && account) {
       console.log("SIGNING")
       const signature: SignatureLike = await provider.send(
         "eth_signTypedData_v4",
@@ -141,7 +134,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
       )
 
       return signature
-    }
+    } */
   }
 
   const switchNetwork = async (newChainId: number) => {

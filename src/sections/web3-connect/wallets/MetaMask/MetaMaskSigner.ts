@@ -43,9 +43,10 @@ export class MetaMaskSigner {
   }
 
   sendTransaction = async (
-    transaction: TransactionRequest & { chain?: string },
+    tx: TransactionRequest,
+    options: { chain?: string } = {},
   ) => {
-    const { chain, ...tx } = transaction
+    const { chain } = options
     const from = chain && evmChains[chain] ? chain : "hydradx"
     await requestNetworkSwitch(this.provider, {
       chain: from,
@@ -64,9 +65,7 @@ export class MetaMaskSigner {
         ...tx,
       })
     } else {
-      return await this.signer.sendTransaction({
-        ...tx,
-      })
+      return await this.signer.sendTransaction(tx)
     }
   }
 }

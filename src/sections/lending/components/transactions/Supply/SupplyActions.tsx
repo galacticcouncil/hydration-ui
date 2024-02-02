@@ -77,6 +77,7 @@ export const SupplyActions = React.memo(
       setMainTxState,
       setGasLimit,
       setTxError,
+      close,
     } = useModalContext()
     const { refetchPoolData, refetchIncentiveData, refetchGhoData } =
       useBackgroundDataProvider()
@@ -97,7 +98,9 @@ export const SupplyActions = React.memo(
       isFetchedAfterMount,
     } = usePoolApprovedAmount(currentMarketData, poolAddress)
 
-    setLoadingTxns(fetchingApprovedAmount)
+    useEffect(() => {
+      setLoadingTxns(fetchingApprovedAmount)
+    }, [fetchingApprovedAmount, setLoadingTxns])
 
     const requiresApproval =
       Number(amountToSupply) !== 0 &&
@@ -218,6 +221,8 @@ export const SupplyActions = React.memo(
           txHash: undefined,
           loading: false,
         })
+      } finally {
+        close()
       }
     }
 

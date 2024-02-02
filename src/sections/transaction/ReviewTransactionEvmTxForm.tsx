@@ -1,4 +1,7 @@
-import { TransactionResponse } from "@ethersproject/providers"
+import {
+  TransactionRequest,
+  TransactionResponse,
+} from "@ethersproject/providers"
 import { useMutation } from "@tanstack/react-query"
 import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
@@ -6,28 +9,23 @@ import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
-import { ReviewTransactionXCallSummary } from "sections/transaction/ReviewTransactionSummary"
-import { isEvmXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
 import {
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
-import { Transaction } from "state/store"
 import { theme } from "theme"
 
-type TxProps = Required<Pick<Transaction, "xcallMeta" | "xcall">>
-
-type Props = TxProps & {
+type Props = {
   title?: string
   onCancel: () => void
+  tx: TransactionRequest
   onEvmSigned: (data: { evmTx: TransactionResponse }) => void
 }
 
-export const ReviewTransactionXCallForm: FC<Props> = ({
+export const ReviewTransactionEvmTxForm: FC<Props> = ({
   title,
-  xcall,
-  xcallMeta,
+  tx,
   onEvmSigned,
   onCancel,
 }) => {
@@ -40,22 +38,9 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
     if (!account?.address) throw new Error("Missing active account")
     if (!wallet) throw new Error("Missing wallet")
     if (!wallet.signer) throw new Error("Missing signer")
-    if (!isEvmXCall(xcall)) throw new Error("Missing xcall")
 
     if (wallet?.signer instanceof MetaMaskSigner) {
-      const { srcChain } = xcallMeta
-
-      const evmTx = await wallet.signer.sendTransaction(
-        {
-          from: account.address,
-          to: xcall.to,
-          data: xcall.data,
-        },
-        {
-          chain: srcChain,
-        },
-      )
-
+      const evmTx = await wallet.signer.sendTransaction(tx)
       onEvmSigned({ evmTx })
     }
   })
@@ -75,11 +60,10 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
         }}
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
         content={
-          <ReviewTransactionData address={account?.address} xcall={xcall} />
+          <ReviewTransactionData address={account?.address} evmTx={tx} />
         }
         footer={
           <div sx={{ mt: 15 }}>
-            <ReviewTransactionXCallSummary xcallMeta={xcallMeta} />
             <div
               sx={{
                 mt: ["auto", 24],

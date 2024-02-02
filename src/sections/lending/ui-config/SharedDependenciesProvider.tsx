@@ -17,7 +17,7 @@ import invariant from "tiny-invariant"
 import { governanceV3Config } from "./governanceConfig"
 import { stakeConfig } from "./stakeConfig"
 
-interface SharedDependenciesContext {
+interface SharedDependenciesContextProps {
   governanceService: GovernanceService
   governanceV3Service: GovernanceV3Service
   votingMachineSerivce: VotingMachineService
@@ -31,7 +31,7 @@ interface SharedDependenciesContext {
 }
 
 const SharedDependenciesContext =
-  createContext<SharedDependenciesContext | null>(null)
+  createContext<SharedDependenciesContextProps | null>(null)
 
 export const SharedDependenciesProvider: React.FC<{
   children?: React.ReactNode

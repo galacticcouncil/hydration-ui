@@ -17,7 +17,6 @@ import {
   getNetworkConfig,
   isFeatureEnabled,
 } from "sections/lending/utils/marketsAndNetworksConfig"
-import { GENERAL } from "sections/lending/utils/mixPanelEvents"
 
 import { TxModalTitle } from "sections/lending/components/transactions/FlowCommons/TxModalTitle"
 import { ChangeNetworkWarning } from "sections/lending/components/transactions/Warnings/ChangeNetworkWarning"

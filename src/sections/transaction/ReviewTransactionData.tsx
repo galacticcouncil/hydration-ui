@@ -21,12 +21,14 @@ import {
   SRawCallData,
   SShowMoreButton,
 } from "./ReviewTransactionData.styled"
+import { TransactionRequest } from "@ethersproject/providers"
 
 const MAX_DECODED_HEIGHT = 130
 
 type Props = {
   address?: string
   tx?: SubmittableExtrinsic
+  evmTx?: TransactionRequest
   xcall?: XCall
 }
 
@@ -117,11 +119,11 @@ const EvmExtrinsicData: FC<Pick<Props, "tx">> = ({ tx }) => {
   )
 }
 
-const EvmXCallData: FC<
-  Pick<Props, "xcall"> & {
-    method: string
-  }
-> = ({ xcall, method }) => {
+const EvmTxData: FC<{ method?: string; abi?: string; data?: string }> = ({
+  data,
+  method,
+  abi,
+}) => {
   const { t } = useTranslation()
 
   const [ref, { height }] = useMeasure<HTMLDivElement>()
@@ -135,22 +137,22 @@ const EvmXCallData: FC<
     !decodedFullyExpanded && height > MAX_DECODED_HEIGHT
 
   const decodedData = useMemo(() => {
-    if (xcall?.abi) {
+    if (abi && data) {
       try {
-        const parsedAbi = JSON.parse(xcall.abi) as any[]
+        const parsedAbi = JSON.parse(abi) as any[]
         const types = parsedAbi.find((f) => f.name === method)?.inputs ?? []
         const decoded = utils.defaultAbiCoder.decode(
           types,
-          hexDataSlice(xcall.data, 10),
+          hexDataSlice(data, 10),
         )
 
         return decodedResultToJson(decoded)
       } catch (error) {}
     }
-  }, [method, xcall])
+  }, [abi, data, method])
 
   if (!decodedData) return null
-  if (!xcall?.data) return null
+  if (!data) return null
 
   return (
     <SContainer>
@@ -201,7 +203,7 @@ const EvmXCallData: FC<
         {encodedExpanded && (
           <SRawCallData>
             <span>0x</span>
-            {splitHexByZeroes(xcall.data).map((str, index) => (
+            {splitHexByZeroes(data).map((str, index) => (
               <Fragment key={index}>
                 {str.startsWith("00") ? <>{str}</> : <span>{str}</span>}
               </Fragment>
@@ -215,13 +217,17 @@ const EvmXCallData: FC<
 
 export const ReviewTransactionData: FC<Props> = ({
   tx,
+  evmTx,
   xcall,
   address = "",
 }) => {
   const isEVM = isEvmAccount(address) || isEvmAddress(address)
 
-  if (!isEVM) return <ExtrinsicData tx={tx} />
+  if (!isEVM && tx) return <ExtrinsicData tx={tx} />
   if (isEVM && tx) return <EvmExtrinsicData tx={tx} />
-  if (isEVM && xcall) return <EvmXCallData method="transfer" xcall={xcall} />
+  if (isEVM && xcall)
+    return <EvmTxData method="transfer" data={xcall?.data} abi={xcall?.abi} />
+  if (evmTx)
+    return <EvmTxData method="?" data={evmTx?.data?.toString()} abi="[]" />
   return null
 }
