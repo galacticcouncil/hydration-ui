@@ -353,8 +353,8 @@ export const getAssets = async (api: ApiPromise) => {
 
         if (detailsRaw && !detailsRaw.isNone) {
           const details = detailsRaw.unwrap()
-          const symbol = data.name.toUtf8()
           const assets = details.assets.map((asset: any) => asset.toString())
+          const symbol = `${assets.length}-Pool`
 
           const name = assets
             .map((assetId) => {

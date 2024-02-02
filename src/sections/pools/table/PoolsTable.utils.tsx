@@ -290,7 +290,7 @@ export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
       accessor("tvlDisplay", {
         id: "tvlDisplay",
         header: t("liquidity.table.header.tvl"),
-        size: 250,
+        size: 200,
         sortingFn: (a, b) =>
           a.original.tvlDisplay.gt(b.original.tvlDisplay) ? 1 : -1,
         cell: ({ row }) => (
