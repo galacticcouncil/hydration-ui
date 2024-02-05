@@ -1,5 +1,6 @@
 import AssetsIcon from "assets/icons/AssetsIcon.svg?react"
 import PositionsIcon from "assets/icons/PositionsIcon.svg?react"
+import TransferIcon from "assets/icons/TransferIcon.svg?react"
 import {
   SubNavigation,
   SubNavigationTabLink,
@@ -15,6 +16,11 @@ export const Navigation = () => {
         to={LINKS.walletAssets}
         icon={<AssetsIcon width={15} height={15} />}
         label={t("wallet.header.yourAssets")}
+      />
+      <SubNavigationTabLink
+        to={LINKS.walletTransactions}
+        icon={<TransferIcon width={18} height={18} />}
+        label={t("wallet.header.transactions")}
       />
       <SubNavigationTabLink
         to={LINKS.walletVesting}

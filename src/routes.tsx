@@ -92,6 +92,10 @@ export const routes = [
         path: "vesting",
         element: <WalletPage />,
       },
+      {
+        path: "transactions",
+        element: <WalletPage />,
+      },
     ],
   },
   {
