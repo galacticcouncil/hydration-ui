@@ -39,8 +39,10 @@ export const OrderCapacity = (props: {
             fw={500}
             color="brightBlue100"
             as="span"
-            sx={{ml:10}}
-          >{filledPct.toFixed(0)}%</Text>
+            sx={{ ml: 10 }}
+          >
+            {filledPct.toFixed(0)}%
+          </Text>
         )}
       </div>
       {!modal && (

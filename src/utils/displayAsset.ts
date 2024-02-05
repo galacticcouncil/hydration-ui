@@ -12,7 +12,6 @@ import { useRpcProvider } from "providers/rpcProvider";
 import { useShareTokensByIds } from "api/xyk";
 import { isNotNil } from "./helpers";
 import { useShareOfPools } from "api/pools";
-import axios from "axios";
 
 type Props = { id: string; amount: BigNumber };
 
@@ -210,7 +209,6 @@ export const useCoingeckoUsdPrice = () => {
   });
 };
 
-//TODO: Get coingecko over the edge
 export const getCoingeckoSpotPrice = async () => {
   const res = await fetch(
     `https://api.coingecko.com/api/v3/simple/price?ids=${STABLECOIN_SYMBOL.toLowerCase()}&vs_currencies=usd`,
@@ -219,24 +217,103 @@ export const getCoingeckoSpotPrice = async () => {
   return json[STABLECOIN_SYMBOL.toLowerCase()].usd;
 };
 
-export const getCoinGeckoPairSpotPrice = async (
-  assetName1: string,
-  assetName2: string,
+type simplifiedAsset = {
+  id: string | u32;
+  name: string;
+  symbol: string;
+};
+
+export const useAssetPrices = (
+  assets: simplifiedAsset[],
+  noRefresh?: boolean,
 ) => {
-  try {
-    const response = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${assetName1.toLowerCase()},${assetName2.toLowerCase()}&vs_currencies=usd`);
-    const priceData = response.data;
+  const displayAsset = useDisplayAssetStore();
+  const ids = assets.map((asset) => asset.id);
+  const spotPrices = useSpotPrices(ids, displayAsset.id, noRefresh);
 
-    const priceAsset1 = priceData[assetName1]?.usd;
-    const priceAsset2 = priceData[assetName2]?.usd;
-    if (priceAsset1 && priceAsset2) {
-      return priceAsset1 / priceAsset2;
-    } else {
+  const coingeckoAssetNames = spotPrices
+    .filter((asset) => asset?.data?.spotPrice.isNaN())
+    .map((asset) => {
+      const matchingAsset = assets.find((a) => a.id === asset?.data?.tokenIn);
+      return { id: matchingAsset?.id, name: matchingAsset?.name };
+    })
+    .filter((asset): asset is simplifiedAsset => asset !== undefined);
 
-      return 0; // Handle the case where price data is not available
-    }
-  } catch (error) {
-    console.error("Error fetching estimated price from CoinGecko API:", error);
-    return 0; // Handle the error case
+  const coingeckoPrices = useCoingeckoPrice(coingeckoAssetNames);
+
+  const updatedSpotPrices = useMemo(() => {
+    return spotPrices.map((spotPrices, index) => {
+      if (spotPrices.data && spotPrices.data.spotPrice.isNaN()) {
+        const coingeckoPrice = coingeckoPrices.data?.[spotPrices.data.tokenIn];
+
+        if (coingeckoPrice) {
+          return {
+            ...spotPrices,
+            data: {
+              ...spotPrices.data,
+              // @ts-ignore
+              spotPrice: new BigNumber(coingeckoPrice),
+            },
+          };
+        }
+      }
+      return spotPrices;
+    });
+  }, [spotPrices, coingeckoPrices.data]);
+
+  return updatedSpotPrices;
+};
+
+export const useCoingeckoPrice = (assets: simplifiedAsset[]) => {
+  return useQuery(
+    [QUERY_KEYS.coingeckoUsd, assets],
+    async () => {
+      const prices = await Promise.all(
+        assets.map(async (asset) => {
+          try {
+            const price = await getCoingeckoAssetPrice(asset.name);
+            return { id: asset.id, symbol: asset.symbol, price };
+          } catch (error) {
+            console.error(
+              `Failed to fetch price for asset ${asset.name}`,
+              error,
+            );
+            return { id: asset.id, symbol: asset.symbol, price: undefined }; // Return undefined for failed fetches
+          }
+        }),
+      );
+      const pricesMap = prices.reduce<{
+        [key: string]: { price: number | undefined };
+      }>((acc, { id, price }) => {
+        acc[id.toString()] = price;
+        return acc;
+      }, {});
+      return pricesMap;
+    },
+    {
+      enabled: assets.length > 0,
+      refetchOnWindowFocus: false,
+      refetchOnMount: true,
+      refetchOnReconnect: false,
+      retry: false,
+      staleTime: 1000 * 60 * 60, // 1h
+    },
+  );
+};
+
+//TODO: This unique asset editting is not scalable, we should have a better way to handle this.
+export const getCoingeckoAssetPrice = async (assetName: string) => {
+  let formattedAssetName = assetName;
+  if (assetName.includes(" ")) {
+    formattedAssetName = assetName.replace(/\s+/g, "-");
+  } else if (assetName === "Phala") {
+    formattedAssetName = "pha";
   }
+
+  const res = await fetch(
+    `https://api.coingecko.com/api/v3/simple/price?ids=${formattedAssetName.toLowerCase()}&vs_currencies=usd`,
+  );
+  const json = await res.json();
+
+  return json[formattedAssetName.toLowerCase()].usd;
 };

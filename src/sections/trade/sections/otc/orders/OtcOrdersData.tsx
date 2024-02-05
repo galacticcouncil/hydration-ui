@@ -4,6 +4,7 @@ import { MultipleIcons } from "components/MultipleIcons/MultipleIcons";
 import { Text } from "components/Typography/Text/Text";
 import { useTranslation } from "react-i18next";
 import { OfferingPair } from "./OtcOrdersData.utils";
+import { motion } from "framer-motion";
 
 export const OrderPairColumn = (props: {
   offering: OfferingPair;
@@ -73,18 +74,27 @@ export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
       const decimalPlaces = price.decimalPlaces();
       if (decimalPlaces) {
         if (decimalPlaces <= 2 || price.gt(10)) {
-          return '$' + price.toFixed(2);
+          return "$" + price.toFixed(2);
         } else {
-          return '$' + price.toFixed(Math.min(4, decimalPlaces));
+          return "$" + price.toFixed(Math.min(4, decimalPlaces));
         }
       } else {
-        return "N/A";
+        return "$" + price.toFixed(2);
       }
     }
   };
 
   return (
-    <div sx={{ flex: "row", gap: 8, align: ["end", "start"] }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100%",
+        width: "100%",
+        gap: 8,
+      }}
+    >
       <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
         {t("value.token", { value: 1 })} {props.pair.symbol}
       </Text>
@@ -95,36 +105,86 @@ export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
   );
 };
 
-//TODO: Maybe delete this as its duplicated above for now
 export const OrderMarketPriceColumn = (props: {
   pair: OfferingPair;
   price: BN;
+  percentage: number;
 }) => {
   const { t } = useTranslation();
+  const color =
+    props.percentage > 0
+      ? "green600"
+      : props.percentage < 0
+      ? "red400"
+      : "warningYellow400";
 
   const formatPrice = (price: BN) => {
     if (price) {
       const decimalPlaces = price.decimalPlaces();
       if (decimalPlaces) {
         if (decimalPlaces <= 2 || price.gt(10)) {
-          return '$' + price.toFixed(2);
+          return "$" + price.toFixed(2);
         } else {
-          return '$' + price.toFixed(Math.min(4, decimalPlaces));
+          return "$" + price.toFixed(Math.min(4, decimalPlaces));
         }
       } else {
-        return "N/A";
+        return "$" + price.toFixed(2);
       }
     }
   };
 
+  const parentVariants = {
+    initial: {},
+    hover: {},
+  };
+
+  const childVariants = {
+    initial: { opacity: 0, y: 0 },
+    hover: { opacity: 1, y: 6 },
+  };
+
   return (
-    <div sx={{ flex: "row", gap: 8, align: ["end", "start"] }}>
-      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
-        {t("value.token", { value: 1 })} {props.pair.symbol}
+    <motion.div
+      variants={parentVariants}
+      initial="initial"
+      whileHover="hover"
+      sx={{ flex: "column", justify: "center", align: "center", width: "100%" }}
+      style={{ position: "relative" }}
+    >
+      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color={color as any}>
+        {props?.percentage?.toFixed(2)}%
       </Text>
-      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
-        ({formatPrice(props.price)})
-      </Text>
-    </div>
+      <motion.div
+        variants={childVariants}
+        transition={{ delay: 0.4, duration: 0.2 }}
+      >
+        <div
+          sx={{
+            flex: "row",
+            flexDirection: "row",
+            align: "center",
+            justify: "center",
+            gap: 8,
+          }}
+          style={{
+            position: "absolute",
+            width: "100%",
+            whiteSpace: "nowrap",
+          }}
+        >
+          <Text fs={12} fw={500} color="white" sx={{ textAlign: "center" }}>
+            {t("value.token", { value: 1 })} {props.pair.symbol}
+          </Text>
+          <Text
+            fs={12}
+            fw={500}
+            color="whiteish500"
+            sx={{ textAlign: "center" }}
+          >
+            ({formatPrice(props.price)})
+          </Text>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };

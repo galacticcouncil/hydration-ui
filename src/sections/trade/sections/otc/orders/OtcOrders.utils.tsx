@@ -19,7 +19,7 @@ import {
 } from "./OtcOrdersData";
 import { OrderTableData } from "./OtcOrdersData.utils";
 import Skeleton from "react-loading-skeleton";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 export const useOrdersTable = (
   data: OrderTableData[],
@@ -70,25 +70,50 @@ export const useOrdersTable = (
       }),
       accessor("orderPrice", {
         id: "orderPrice",
-        header: t("otc.offers.table.header.orderPrice"),
+        header: () => (
+          <div
+            style={{
+              textAlign: "center",
+              width: "100%",
+            }}
+          >
+            {t("otc.offers.table.header.orderPrice")}
+          </div>
+        ),
         enableSorting: false,
         cell: ({ row }) => (
           <OrderPriceColumn
             pair={row.original.offer}
-            price={row.original.orderPrice} //TODO: Implement proper asset price
+            price={row.original.orderPrice}
           />
         ),
       }),
       accessor("marketPrice", {
         id: "marketPrice",
-        header: t("otc.offers.table.header.marketPrice"),
+        header: () => (
+          <div
+            style={{
+              textAlign: "center",
+              width: "100%",
+            }}
+          >
+            {t("otc.offers.table.header.marketPrice")}
+          </div>
+        ),
         enableSorting: true,
         cell: ({ row }) => (
           <OrderMarketPriceColumn
             pair={row.original.offer}
-            price={row.original.marketPrice} //TODO: Implement actual market price % here
+            price={row.original.marketPrice}
+            percentage={row.original.marketPricePercentage}
           />
         ),
+        sortingFn: (rowA: { original: OrderTableData }, rowB: { original: OrderTableData }) => {
+          // Access the marketPricePercentage property from marketPrice object
+          const valA = rowA.original.marketPricePercentage;
+          const valB = rowB.original.marketPricePercentage;
+          return valA > valB ? 1 : -1; // Ascending sort
+        },
       }),
       accessor("filled", {
         id: "filled",
@@ -141,7 +166,7 @@ export const useOrdersTable = (
     initialState: {
       sorting: [
         {
-          id: 'marketPrice',
+          id: "marketPrice",
           desc: true,
         },
       ],
