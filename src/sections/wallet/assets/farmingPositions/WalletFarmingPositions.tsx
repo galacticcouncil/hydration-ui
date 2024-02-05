@@ -20,7 +20,9 @@ import { STableData } from "sections/wallet/assets/hydraPositions/WalletHydraPos
 import { FarmingPositionsDetailsMob } from "./details/FarmingPositionsDetailsMob"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { EmptyState } from "./EmptyState"
+import { EmptyState } from "components/Table/EmptyState"
+import EmptyStateIcon from "assets/icons/FarmsEmpty.svg?react"
+import { LINKS } from "utils/navigation"
 
 type Props = { data: FarmingPositionsTableData[] }
 
@@ -90,7 +92,23 @@ export const WalletFarmingPositions = ({ data }: Props) => {
                 </Fragment>
               ))
             ) : (
-              <EmptyState />
+              <EmptyState
+                desc={
+                  <>
+                    <EmptyStateIcon />
+                    <Text
+                      fs={14}
+                      color="basic700"
+                      tAlign="center"
+                      sx={{ maxWidth: 290, mb: 10 }}
+                    >
+                      {t("wallet.assets.farmingPositions.empty.desc")}
+                    </Text>
+                  </>
+                }
+                btnText={t("wallet.assets.farmingPositions.empty.btn")}
+                navigateTo={LINKS.liquidity}
+              />
             )}
           </TableBodyContent>
         </Table>

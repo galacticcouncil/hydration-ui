@@ -6,7 +6,7 @@
   "price": "Price",
   "tvl": "Total value locked",
   "fee": "Fee",
-  "24Volume": "24 volume",
+  "24Volume": "24h volume",
   "duration.left": "{{duration}} left",
   "duration.ago": "{{duration}} ago",
   "toast.close": "Close",

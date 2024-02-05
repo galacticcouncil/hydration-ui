@@ -73,7 +73,7 @@ export const PoolSkeleton = () => {
           <Separator orientation="vertical" color="white" opacity={0.06} />
 
           <SValue>
-            <Text color="basic400">{t("24Volume")}</Text>
+            <Text color="basic400">{t("liquidity.table.header.volume")}</Text>
             <Skeleton height={16} width={50} />
           </SValue>
 

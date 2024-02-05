@@ -23,7 +23,10 @@ import {
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 import { theme } from "theme"
 import { WalletAssetsTableActionsMob } from "./actions/WalletAssetsTableActionsMob"
-import { EmptyState } from "./EmptyState"
+import { EmptyState } from "components/Table/EmptyState"
+import { Icon } from "components/Icon/Icon"
+import EmptyStateIcon from "assets/icons/NoActivities.svg?react"
+import { LINKS } from "utils/navigation"
 
 type Props = {
   data: AssetsTableData[]
@@ -120,7 +123,23 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
               </Fragment>
             ))
           ) : (
-            <EmptyState />
+            <EmptyState
+              desc={
+                <>
+                  <Icon sx={{ color: "basic600" }} icon={<EmptyStateIcon />} />
+                  <Text
+                    fs={14}
+                    color="basic700"
+                    tAlign="center"
+                    sx={{ maxWidth: 355, mb: 10 }}
+                  >
+                    {t("wallet.assets.table.empty.desc")}
+                  </Text>
+                </>
+              }
+              navigateTo={LINKS.cross_chain}
+              btnText={t("wallet.assets.table.empty.btn")}
+            />
           )}
         </TableBodyContent>
       </Table>
