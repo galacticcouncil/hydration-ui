@@ -59,8 +59,6 @@
   "copied": "Copied!",
   "share": "Share",
   "shareOn": "Share on",
-  "results.notfound.title": "No results found",
-  "results.notfound.description": "Didn't find what you're looking for? <telegram>Join the Telegram</telegram>",
   "stepper.title": "Step {{current}} of {{total}}",
   "chart.state.noData.label": "Not enough data to display this chart.",
   "chart.state.error.label": "Error displaying the chart, try loading it again.",
