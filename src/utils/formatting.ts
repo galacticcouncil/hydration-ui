@@ -341,3 +341,18 @@ export const qs = (
 
   return preppendPrefix ? `${prefix}${querystring}` : querystring
 }
+
+export const getSubscanLinkByType = (
+  type: "account" | "extrinsic",
+  params: {
+    blockNumber?: string
+    txIndex?: string | number
+  } = {},
+) => {
+  const extrinsicPath =
+    type === "extrinsic" && params?.blockNumber && params?.txIndex
+      ? `/${[params?.blockNumber, params?.txIndex].join("-")}`
+      : ""
+
+  return `https://hydradx.subscan.io/${type}${extrinsicPath}`
+}

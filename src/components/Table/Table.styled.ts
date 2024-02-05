@@ -152,7 +152,7 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
 
   font-size: 11px;
   line-height: 14px;
-  font-weight: 500;
+  font-family: "ChakraPetchSemiBold";
 
   text-transform: uppercase;
   text-align: start;

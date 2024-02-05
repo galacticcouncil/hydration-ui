@@ -1,7 +1,7 @@
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { Summary } from "components/Summary/Summary"
 import { Text } from "components/Typography/Text/Text"
-import React, { FC } from "react"
+import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { useTransactionValues } from "./ReviewTransactionForm.utils"
@@ -9,6 +9,7 @@ import BN from "bignumber.js"
 import { ReviewReferralCodeWrapper } from "sections/referrals/components/ReviewReferralCode/ReviewReferralCodeWrapper"
 import { useRegistrationLinkFee } from "api/referrals"
 import { useRpcProvider } from "providers/rpcProvider"
+import { ReviewTransactionAuthorTip } from "sections/transaction/ReviewTransactionAuthorTip"
 
 type ReviewTransactionSummaryProps = {
   tx: SubmittableExtrinsic<"promise">
@@ -16,6 +17,7 @@ type ReviewTransactionSummaryProps = {
   hasMultipleFeeAssets: boolean
   xcallMeta?: Record<string, string>
   openEditFeePaymentAssetModal: () => void
+  onTipChange?: (amount: BN) => void
   referralCode?: string
 }
 
@@ -25,11 +27,13 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
   xcallMeta,
   hasMultipleFeeAssets,
   openEditFeePaymentAssetModal,
+  onTipChange,
   referralCode,
 }) => {
   const { t } = useTranslation()
   const {
     displayFeePaymentValue,
+    feePaymentValue,
     feePaymentMeta,
     era,
     nonce,
@@ -69,7 +73,7 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
                       onClick={openEditFeePaymentAssetModal}
                       css={{ cursor: "pointer" }}
                     >
-                      <Text color="brightBlue300">
+                      <Text lh={14} color="brightBlue300">
                         {t("liquidity.reviewTransaction.modal.edit")}
                       </Text>
                     </div>
@@ -96,6 +100,20 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
             label: t("liquidity.reviewTransaction.modal.detail.nonce"),
             content: nonce?.toString(),
           },
+          ...(!!onTipChange
+            ? [
+                {
+                  label: t("liquidity.reviewTransaction.modal.detail.tip"),
+                  content: (
+                    <ReviewTransactionAuthorTip
+                      onChange={onTipChange}
+                      feePaymentValue={feePaymentValue}
+                      feePaymentAssetId={feePaymentMeta?.id}
+                    />
+                  ),
+                },
+              ]
+            : []),
         ]}
       />
       {referralCode && (

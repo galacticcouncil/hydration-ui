@@ -40,7 +40,7 @@ export const useAssetsTable = (
       accessor("symbol", {
         id: "name",
         //width percentage of column
-        size: 30,
+        size: 26,
         header: isDesktop
           ? t("wallet.assets.table.header.name")
           : t("selectAssets.asset"),
@@ -93,7 +93,7 @@ export const useAssetsTable = (
       display({
         id: "actions",
         //width percentage of column
-        size: 37,
+        size: 38,
         cell: ({ row }) => (
           <WalletAssetsTableActions
             toggleExpanded={row.toggleSelected}
