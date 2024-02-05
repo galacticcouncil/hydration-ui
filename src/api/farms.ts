@@ -312,6 +312,7 @@ function getFarmApr(
     loyaltyCurve,
     rewardCurrency,
     incentivizedAsset,
+    yieldFarmId: yieldFarm.id.toString(),
   }
 }
 
@@ -411,7 +412,7 @@ export const getMinAndMaxAPR = (farms: FarmAprs) => {
     : [BN_0]
 
   const minApr = BigNumber.minimum(...minAprs)
-  const maxApr = BigNumber.maximum(...aprs)
+  const maxApr = aprs.reduce((acc, apr) => acc.plus(apr), BN_0)
 
   return {
     minApr,

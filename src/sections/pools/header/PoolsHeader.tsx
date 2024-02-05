@@ -46,7 +46,7 @@ export const HeaderValues = ({
         item.content
       ) : (
         <Skeleton
-          sx={{ height: skeletonHeight ?? [19, 28], width: [180, 200] }}
+          sx={{ height: skeletonHeight ?? [19, 28], width: [100, 200] }}
           enableAnimation={!item.disconnected}
         />
       )
@@ -60,6 +60,7 @@ export const HeaderValues = ({
               flex: ["row", "column"],
               align: ["center", "start"],
               justify: "space-between",
+              flexWrap: "wrap",
             }}
           >
             <Text color="brightBlue300">{item.label}</Text>

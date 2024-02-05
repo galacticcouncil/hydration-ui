@@ -25,7 +25,7 @@ import { Button } from "components/Button/Button"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { TransactionsTableActionsMob } from "sections/wallet/transactions/table/actions/TransactionsTableActionsMob"
-import { NoResults } from "components/NoResults/NoResults"
+import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 
 type Props = {
   data: TTransactionsTableData
@@ -176,10 +176,7 @@ export const TransactionsTable = ({
           </TableBodyContent>
         </Table>
       ) : (
-        <NoResults
-          css={{ borderTop: "1px solid rgba(32, 33, 53, 1)" }}
-          sx={{ py: [50, 70] }}
-        />
+        <EmptySearchState />
       )}
 
       {!isDesktop && !!row && (

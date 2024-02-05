@@ -7,12 +7,12 @@ export const TableContainer = styled.div`
   overflow: hidden;
   position: relative;
 
-  margin: 0 -13px;
+  margin: 0 -15px;
 
   border-top: 1px solid rgba(152, 176, 214, 0.27);
 
   @media ${theme.viewport.gte.sm} {
-    border-radius: 8px;
+    border-radius: ${theme.borderRadius.medium}px;
 
     margin: unset;
 
@@ -48,7 +48,7 @@ export const StatsTableContainer = styled.div`
   overflow: hidden;
   position: relative;
 
-  border-radius: ${theme.borderRadius.stakingCard}px;
+  border-radius: ${theme.borderRadius.medium}px;
   border: 1px solid rgba(152, 176, 214, 0.27);
 `
 

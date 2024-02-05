@@ -15,8 +15,8 @@ import { TStakingData, useStakeARP } from "sections/staking/StakingPage.utils"
 import BN from "bignumber.js"
 import { isApiLoaded } from "utils/helpers"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { SInfoIcon } from "sections/pools/pool/Pool.styled"
 import { useRpcProvider } from "providers/rpcProvider"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
 export const StakingValue = ({
   logo,

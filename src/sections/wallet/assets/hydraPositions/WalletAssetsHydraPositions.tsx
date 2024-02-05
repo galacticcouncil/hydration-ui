@@ -15,13 +15,15 @@ import {
   HydraPositionsTableData,
   useHydraPositionsTable,
 } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { EmptyState } from "./EmptyState"
 import { STableData } from "./WalletHydraPositions.styled"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { HydraPositionsDetailsMob } from "./details/HydraPositionsDetailsMob"
 import { TXYKPosition } from "./data/WalletAssetsHydraPositionsData.utils"
+import { EmptyState } from "components/Table/EmptyState"
+import EmptyStateIcon from "assets/icons/EmptyStateLPIcon.svg?react"
+import { LINKS } from "utils/navigation"
 
 type Props = { data: (HydraPositionsTableData | TXYKPosition)[] }
 
@@ -92,7 +94,23 @@ export const WalletAssetsHydraPositions = ({ data }: Props) => {
                 </Fragment>
               ))
             ) : (
-              <EmptyState />
+              <EmptyState
+                desc={
+                  <>
+                    <EmptyStateIcon />
+                    <Text
+                      fs={14}
+                      color="basic700"
+                      tAlign="center"
+                      sx={{ maxWidth: 290, mb: 10 }}
+                    >
+                      {t("wallet.assets.hydraPositions.empty.desc")}
+                    </Text>
+                  </>
+                }
+                navigateTo={LINKS.liquidity}
+                btnText={t("wallet.assets.hydraPositions.empty.btn")}
+              />
             )}
           </TableBodyContent>
         </Table>
