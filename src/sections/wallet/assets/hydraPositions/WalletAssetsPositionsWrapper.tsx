@@ -1,4 +1,4 @@
-import { EmptySearchState } from "sections/pools/components/EmptySearchState"
+import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { WalletAssetsHydraPositions } from "./WalletAssetsHydraPositions"
 import {
   useOmnipoolPositionsData,

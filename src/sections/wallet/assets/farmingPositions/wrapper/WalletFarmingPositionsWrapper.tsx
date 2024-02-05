@@ -1,4 +1,4 @@
-import { EmptySearchState } from "sections/pools/components/EmptySearchState"
+import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { WalletFarmingPositionsSkeleton } from "sections/wallet/assets/farmingPositions/skeleton/WalletFarmingPositionsSkeleton"
 import { WalletFarmingPositions } from "sections/wallet/assets/farmingPositions/WalletFarmingPositions"
 import { useFarmingPositionsData } from "sections/wallet/assets/farmingPositions/WalletFarmingPositions.utils"

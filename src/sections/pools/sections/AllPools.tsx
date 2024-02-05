@@ -16,7 +16,7 @@ import { StablePoolsTotal } from "sections/pools/header/StablePoolsTotal"
 import { AllPoolsVolumeTotal } from "sections/pools/header/VolumeTotal"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
-import { EmptySearchState } from "sections/pools/components/EmptySearchState"
+import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 
 export const AllPools = () => {
   const { t } = useTranslation()

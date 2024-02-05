@@ -18,7 +18,7 @@ import { MyFarmsTotal } from "sections/pools/header/MyFarmsTotal"
 import { MyStablePoolsTotal } from "sections/pools/header/StablePoolsTotal"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
-import { EmptySearchState } from "sections/pools/components/EmptySearchState"
+import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 
 const poolsWithMyPositions = true
 

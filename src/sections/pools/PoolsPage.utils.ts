@@ -22,7 +22,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { isNotNil, undefinedNoop } from "utils/helpers"
 import { ApiPromise } from "@polkadot/api"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
-import { envStableCoinId, useVolume } from "api/volume"
+import { useVolume } from "api/volume"
 import BN from "bignumber.js"
 import { useGetXYKPools, useShareTokens, useXYKConsts } from "api/xyk"
 import { useShareOfPools } from "api/pools"
@@ -135,7 +135,7 @@ export type TXYKPool = NonNullable<
 
 export const usePools = () => {
   const { assets } = useRpcProvider()
-  const { stableCoinId = envStableCoinId } = useDisplayAssetStore()
+  const { stableCoinId } = useDisplayAssetStore()
 
   const omnipoolAssets = useOmnipoolAssets()
   const stablepools = useStableswapPools()
@@ -162,7 +162,7 @@ export const usePools = () => {
   const spotPrices = useDisplayPrices([
     ...assetsId,
     ...assetsByStablepool,
-    stableCoinId,
+    stableCoinId ?? "",
   ])
 
   const volumes = useVolume("all")

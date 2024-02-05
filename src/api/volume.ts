@@ -335,5 +335,3 @@ const getVolumeDaily = async (assetId?: string) => {
 
   return data
 }
-
-export const envStableCoinId = import.meta.env.VITE_STABLECOIN_ASSET_ID

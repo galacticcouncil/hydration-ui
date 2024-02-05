@@ -16,7 +16,7 @@ import {
 import { WalletAssetsHydraPositions } from "./hydraPositions/WalletAssetsHydraPositions"
 import { useFarmingPositionsData } from "./farmingPositions/WalletFarmingPositions.utils"
 import { WalletFarmingPositions } from "./farmingPositions/WalletFarmingPositions"
-import { EmptySearchState } from "sections/pools/components/EmptySearchState"
+import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 
 export const AllAssets = () => {
   const { t } = useTranslation()
