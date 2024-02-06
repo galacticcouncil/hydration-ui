@@ -297,7 +297,7 @@
   "liquidity.reviewTransaction.calldata.encoded": "Raw calldata",
   "liquidity.reviewTransaction.calldata.decoded": "Decoded",
   "liquidity.pool.positions.title": "Your positions",
-  "liquidity.pool.positions.omnipool": "Locked in pool",
+  "liquidity.pool.positions.omnipool": "Locked in liquidity positions",
   "liquidity.pool.positions.farming": "Locked in farms",
   "otc.header.title": "Over-the-Counter Trading",
   "otc.header.titleAlt": "OTC Trading",
