@@ -28,7 +28,10 @@ const MAX_DECODED_HEIGHT = 130
 type Props = {
   address?: string
   tx?: SubmittableExtrinsic
-  evmTx?: TransactionRequest
+  evmTx?: {
+    data: TransactionRequest
+    abi?: string
+  }
   xcall?: XCall
 }
 
@@ -146,6 +149,8 @@ const EvmTxData: FC<{ method?: string; abi?: string; data?: string }> = ({
           hexDataSlice(data, 10),
         )
 
+        console.log({ parsedAbi, types, decoded })
+
         return decodedResultToJson(decoded)
       } catch (error) {}
     }
@@ -228,6 +233,12 @@ export const ReviewTransactionData: FC<Props> = ({
   if (isEVM && xcall)
     return <EvmTxData method="transfer" data={xcall?.data} abi={xcall?.abi} />
   if (evmTx)
-    return <EvmTxData method="?" data={evmTx?.data?.toString()} abi="[]" />
+    return (
+      <EvmTxData
+        method="borrow"
+        data={evmTx?.data?.data?.toString()}
+        abi={evmTx?.abi}
+      />
+    )
   return null
 }

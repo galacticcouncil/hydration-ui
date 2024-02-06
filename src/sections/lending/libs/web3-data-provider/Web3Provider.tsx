@@ -28,6 +28,8 @@ import {
 import { isMetaMask } from "utils/metamask"
 import { useStore } from "state/store"
 
+import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
+
 export type ERC20TokenType = {
   address: string
   symbol: string
@@ -107,9 +109,11 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const sendTx = useCallback(
     async (txData: PopulatedTransaction) => {
       if (provider) {
-        console.log("SEND")
         createTransaction({
-          evmTx: txData,
+          evmTx: {
+            data: txData,
+            abi: JSON.stringify(IPool__factory.abi),
+          },
         })
 
         /* const signer = provider.getSigner(from)

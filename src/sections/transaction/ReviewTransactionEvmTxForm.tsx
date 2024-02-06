@@ -19,7 +19,10 @@ import { theme } from "theme"
 type Props = {
   title?: string
   onCancel: () => void
-  tx: TransactionRequest
+  tx: {
+    data: TransactionRequest
+    abi?: string
+  }
   onEvmSigned: (data: { evmTx: TransactionResponse }) => void
 }
 
@@ -40,7 +43,7 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
     if (!wallet.signer) throw new Error("Missing signer")
 
     if (wallet?.signer instanceof MetaMaskSigner) {
-      const evmTx = await wallet.signer.sendTransaction(tx)
+      const evmTx = await wallet.signer.sendTransaction(tx.data)
       onEvmSigned({ evmTx })
     }
   })

@@ -73,6 +73,7 @@ export const BorrowActions = React.memo(
       setGasLimit,
       setLoadingTxns,
       setApprovalTxState,
+      close,
     } = useModalContext()
     const { refetchPoolData, refetchIncentiveData, refetchGhoData } =
       useBackgroundDataProvider()
@@ -164,6 +165,8 @@ export const BorrowActions = React.memo(
           txHash: undefined,
           loading: false,
         })
+      } finally {
+        close()
       }
     }
 

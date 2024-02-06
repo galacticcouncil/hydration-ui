@@ -26,7 +26,10 @@ export interface Account {
 export interface TransactionInput {
   title?: string
   tx?: SubmittableExtrinsic
-  evmTx?: TransactionRequest
+  evmTx?: {
+    data: TransactionRequest
+    abi?: string
+  }
   xcall?: XCall
   xcallMeta?: Record<string, string>
   overrides?: {

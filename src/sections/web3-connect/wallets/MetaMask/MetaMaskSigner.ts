@@ -48,13 +48,16 @@ export class MetaMaskSigner {
   ) => {
     const { chain } = options
     const from = chain && evmChains[chain] ? chain : "hydradx"
-    await requestNetworkSwitch(this.provider, {
-      chain: from,
-      onSwitch: () => {
-        // update signer after network switch
-        this.signer = this.getSigner(this.provider)
-      },
-    })
+
+    if (chain) {
+      await requestNetworkSwitch(this.provider, {
+        chain: from,
+        onSwitch: () => {
+          // update signer after network switch
+          this.signer = this.getSigner(this.provider)
+        },
+      })
+    }
 
     if (from === "hydradx") {
       const [gas, gasPrice] = await this.getGasValues(tx)
