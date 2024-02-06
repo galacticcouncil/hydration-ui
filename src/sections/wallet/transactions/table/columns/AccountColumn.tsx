@@ -8,7 +8,13 @@ import { theme } from "theme"
 import { shortenAccountAddress } from "utils/formatting"
 import { Maybe } from "utils/helpers"
 
-const AccountName = ({ address }: { address: string }) => {
+const AccountName = ({
+  address,
+  addressDisplay,
+}: {
+  address: string
+  addressDisplay: string
+}) => {
   const identity = useAccountIdentity(address)
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -16,13 +22,14 @@ const AccountName = ({ address }: { address: string }) => {
 
   if (identity.data?.identity) return <>{identity.data.identity}</>
 
-  return <>{shortenAccountAddress(address, strLen)}</>
+  return <>{shortenAccountAddress(addressDisplay ?? address, strLen)}</>
 }
 
 type Props = {
   isCrossChain: boolean
   chain: Maybe<ReturnType<typeof chainsMap.get>>
   address: string
+  addressDisplay: string
   color?: keyof typeof theme.colors
 }
 
@@ -30,6 +37,7 @@ export const AccountColumn: FC<Props> = ({
   isCrossChain,
   chain,
   address,
+  addressDisplay,
   color = "basic200",
 }) => {
   return (
@@ -49,7 +57,9 @@ export const AccountColumn: FC<Props> = ({
           <ChainLogo symbol={chain.key} />
         </span>
       )}
-      {address && <AccountName address={address} />}
+      {address && (
+        <AccountName address={address} addressDisplay={addressDisplay} />
+      )}
     </Text>
   )
 }
