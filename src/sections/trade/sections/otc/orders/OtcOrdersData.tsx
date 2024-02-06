@@ -1,15 +1,15 @@
-import BN from "bignumber.js";
-import { AssetLogo } from "components/AssetIcon/AssetIcon";
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons";
-import { Text } from "components/Typography/Text/Text";
-import { useTranslation } from "react-i18next";
-import { OfferingPair } from "./OtcOrdersData.utils";
-import { motion } from "framer-motion";
+import BN from "bignumber.js"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
+import { OfferingPair } from "./OtcOrdersData.utils"
+import { motion } from "framer-motion"
 
 export const OrderPairColumn = (props: {
-  offering: OfferingPair;
-  accepting: OfferingPair;
-  pol: boolean;
+  offering: OfferingPair
+  accepting: OfferingPair
+  pol: boolean
 }) => {
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
@@ -42,14 +42,14 @@ export const OrderPairColumn = (props: {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
 export const OrderAssetColumn = (props: {
-  pair: OfferingPair;
-  large?: boolean;
+  pair: OfferingPair
+  large?: boolean
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
@@ -63,26 +63,26 @@ export const OrderAssetColumn = (props: {
         {props.pair.symbol}
       </Text>
     </div>
-  );
-};
+  )
+}
 
 export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   const formatPrice = (price: BN) => {
     if (price) {
-      const decimalPlaces = price.decimalPlaces();
+      const decimalPlaces = price.decimalPlaces()
       if (decimalPlaces) {
         if (decimalPlaces <= 2 || price.gt(10)) {
-          return "$" + price.toFixed(2);
+          return "$" + price.toFixed(2)
         } else {
-          return "$" + price.toFixed(Math.min(4, decimalPlaces));
+          return "$" + price.toFixed(Math.min(4, decimalPlaces))
         }
       } else {
-        return "$" + price.toFixed(2);
+        return "$" + price.toFixed(2)
       }
     }
-  };
+  }
 
   return (
     <div
@@ -102,46 +102,46 @@ export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
         ({formatPrice(props.price)})
       </Text>
     </div>
-  );
-};
+  )
+}
 
 export const OrderMarketPriceColumn = (props: {
-  pair: OfferingPair;
-  price: BN;
-  percentage: number;
+  pair: OfferingPair
+  price: BN
+  percentage: number
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   const color =
     props.percentage > 0
       ? "green600"
       : props.percentage < 0
       ? "red400"
-      : "warningYellow400";
+      : "warningYellow400"
 
   const formatPrice = (price: BN) => {
     if (price) {
-      const decimalPlaces = price.decimalPlaces();
+      const decimalPlaces = price.decimalPlaces()
       if (decimalPlaces) {
         if (decimalPlaces <= 2 || price.gt(10)) {
-          return "$" + price.toFixed(2);
+          return "$" + price.toFixed(2)
         } else {
-          return "$" + price.toFixed(Math.min(4, decimalPlaces));
+          return "$" + price.toFixed(Math.min(4, decimalPlaces))
         }
       } else {
-        return "$" + price.toFixed(2);
+        return "$" + price.toFixed(2)
       }
     }
-  };
+  }
 
   const parentVariants = {
     initial: {},
     hover: {},
-  };
+  }
 
   const childVariants = {
     initial: { opacity: 0, y: 0 },
     hover: { opacity: 1, y: 6 },
-  };
+  }
 
   return (
     <motion.div
@@ -186,5 +186,5 @@ export const OrderMarketPriceColumn = (props: {
         </div>
       </motion.div>
     </motion.div>
-  );
-};
+  )
+}

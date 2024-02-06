@@ -4,34 +4,34 @@ import {
   getSortedRowModel,
   useReactTable,
   VisibilityState,
-} from "@tanstack/react-table";
-import { Text } from "components/Typography/Text/Text";
-import { useTranslation } from "react-i18next";
-import { useMedia } from "react-use";
-import { theme } from "theme";
-import { OrderCapacity } from "sections/trade/sections/otc/capacity/OrderCapacity";
-import { OtcOrderActions } from "./actions/OtcOrderActions";
+} from "@tanstack/react-table"
+import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import { OrderCapacity } from "sections/trade/sections/otc/capacity/OrderCapacity"
+import { OtcOrderActions } from "./actions/OtcOrderActions"
 import {
   OrderAssetColumn,
   OrderMarketPriceColumn,
   OrderPairColumn,
   OrderPriceColumn,
-} from "./OtcOrdersData";
-import { OrderTableData } from "./OtcOrdersData.utils";
-import Skeleton from "react-loading-skeleton";
-import { useMemo } from "react";
+} from "./OtcOrdersData"
+import { OrderTableData } from "./OtcOrdersData.utils"
+import Skeleton from "react-loading-skeleton"
+import { useMemo } from "react"
 
 export const useOrdersTable = (
   data: OrderTableData[],
   actions: {
-    onFill: (data: OrderTableData) => void;
-    onClose: (data: OrderTableData) => void;
+    onFill: (data: OrderTableData) => void
+    onClose: (data: OrderTableData) => void
   },
 ) => {
-  const { t } = useTranslation();
-  const { accessor, display } = createColumnHelper<OrderTableData>();
+  const { t } = useTranslation()
+  const { accessor, display } = createColumnHelper<OrderTableData>()
 
-  const isDesktop = useMedia(theme.viewport.gte.sm);
+  const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
     pair: !isDesktop,
     offer: isDesktop,
@@ -40,7 +40,7 @@ export const useOrdersTable = (
     marketPrice: true,
     filled: isDesktop,
     actions: true,
-  };
+  }
 
   const columns = useMemo(
     () => [
@@ -108,11 +108,14 @@ export const useOrdersTable = (
             percentage={row.original.marketPricePercentage}
           />
         ),
-        sortingFn: (rowA: { original: OrderTableData }, rowB: { original: OrderTableData }) => {
+        sortingFn: (
+          rowA: { original: OrderTableData },
+          rowB: { original: OrderTableData },
+        ) => {
           // Access the marketPricePercentage property from marketPrice object
-          const valA = rowA.original.marketPricePercentage;
-          const valB = rowB.original.marketPricePercentage;
-          return valA > valB ? 1 : -1; // Ascending sort
+          const valA = rowA.original.marketPricePercentage
+          const valB = rowB.original.marketPricePercentage
+          return valA > valB ? 1 : -1 // Ascending sort
         },
       }),
       accessor("filled", {
@@ -155,7 +158,7 @@ export const useOrdersTable = (
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [actions, isDesktop],
-  );
+  )
 
   return useReactTable({
     data,
@@ -171,14 +174,14 @@ export const useOrdersTable = (
         },
       ],
     },
-  });
-};
+  })
+}
 
 export const useOrdersTableSkeleton = () => {
-  const { t } = useTranslation();
-  const { display } = createColumnHelper();
+  const { t } = useTranslation()
+  const { display } = createColumnHelper()
 
-  const isDesktop = useMedia(theme.viewport.gte.sm);
+  const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
     pair: true,
     price: true,
@@ -186,7 +189,7 @@ export const useOrdersTableSkeleton = () => {
     accepting: isDesktop,
     filled: isDesktop,
     actions: true,
-  };
+  }
 
   const columns = useMemo(
     () => [
@@ -229,7 +232,7 @@ export const useOrdersTableSkeleton = () => {
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [isDesktop],
-  );
+  )
 
   return useReactTable({
     data: mockData,
@@ -237,7 +240,7 @@ export const useOrdersTableSkeleton = () => {
     state: { columnVisibility },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-  });
-};
+  })
+}
 
-const mockData = [1, 2, 3, 4];
+const mockData = [1, 2, 3, 4]

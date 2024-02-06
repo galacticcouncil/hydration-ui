@@ -1,28 +1,28 @@
-import { FC, useEffect, useState } from "react";
-import { theme } from "theme";
-import { useTranslation } from "react-i18next";
-import { useAccount } from "sections/web3-connect/Web3Connect.utils";
-import PlusIcon from "assets/icons/PlusIcon.svg?react";
-import WalletIcon from "assets/icons/WalletIcon.svg?react";
-import { Icon } from "components/Icon/Icon";
-import { Heading } from "components/Typography/Heading/Heading";
-import { PlaceOrder } from "sections/trade/sections/otc/modals/PlaceOrder";
-import { Separator } from "components/Separator/Separator";
-import { SButton, SHeader, SSearchContainer } from "./OtcHeader.styled";
-import { useMedia } from "react-use";
-import { Input } from "components/Input/Input";
-import IconSearch from "assets/icons/IconSearch.svg?react";
-import { useDebounce } from "react-use";
+import { FC, useEffect, useState } from "react"
+import { theme } from "theme"
+import { useTranslation } from "react-i18next"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import PlusIcon from "assets/icons/PlusIcon.svg?react"
+import WalletIcon from "assets/icons/WalletIcon.svg?react"
+import { Icon } from "components/Icon/Icon"
+import { Heading } from "components/Typography/Heading/Heading"
+import { PlaceOrder } from "sections/trade/sections/otc/modals/PlaceOrder"
+import { Separator } from "components/Separator/Separator"
+import { SButton, SHeader, SSearchContainer } from "./OtcHeader.styled"
+import { useMedia } from "react-use"
+import { Input } from "components/Input/Input"
+import IconSearch from "assets/icons/IconSearch.svg?react"
+import { useDebounce } from "react-use"
 
 type Props = {
-  showMyOrders: boolean;
-  showPartial: boolean;
-  searchVal: string;
-  onShowMyOrdersChange: (value: boolean) => void;
-  onShowPartialChange: (value: boolean) => void;
-  onSearchChange: (value: string) => void;
-  skeleton?: boolean;
-};
+  showMyOrders: boolean
+  showPartial: boolean
+  searchVal: string
+  onShowMyOrdersChange: (value: boolean) => void
+  onShowPartialChange: (value: boolean) => void
+  onSearchChange: (value: string) => void
+  skeleton?: boolean
+}
 
 enum OrderType {
   All = "all",
@@ -38,33 +38,33 @@ export const OtcHeader: FC<Props> = ({
   onSearchChange,
   skeleton,
 }) => {
-  const { t } = useTranslation();
-  const isDesktop = useMedia(theme.viewport.gte.sm);
-  const [openAdd, setOpenAdd] = useState(false);
-  const { account } = useAccount();
-  const [inputValue, setInputValue] = useState(searchVal);
+  const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const [openAdd, setOpenAdd] = useState(false)
+  const { account } = useAccount()
+  const [inputValue, setInputValue] = useState(searchVal)
 
   const onOptionChange = (value: OrderType) => {
-    onShowPartialChange(value === OrderType.All ? false : true);
-  };
+    onShowPartialChange(value === OrderType.All ? false : true)
+  }
 
   useEffect(() => {
-    setInputValue(searchVal);
-  }, [searchVal]);
+    setInputValue(searchVal)
+  }, [searchVal])
 
   useDebounce(
     () => {
-      if (typeof onSearchChange === 'function') {
-        onSearchChange(inputValue);
+      if (typeof onSearchChange === "function") {
+        onSearchChange(inputValue)
       }
     },
     300,
     [inputValue],
-  );
+  )
 
   const handleSearchChange = (value: string) => {
-    setInputValue(value);
-  };
+    setInputValue(value)
+  }
 
   return (
     <>
@@ -159,5 +159,5 @@ export const OtcHeader: FC<Props> = ({
         />
       )}
     </>
-  );
-};
+  )
+}

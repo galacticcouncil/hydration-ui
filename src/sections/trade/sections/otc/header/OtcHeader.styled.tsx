@@ -30,7 +30,6 @@ export const SButton = styled(Button)`
   }
 `
 
-
 export const SSearchContainer = styled.div`
   position: relative;
 

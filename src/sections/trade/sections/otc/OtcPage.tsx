@@ -7,7 +7,7 @@ export const OtcPage = () => {
   const [filter, setFilter] = useState({
     showMyOrders: false,
     showPartial: false,
-    searchVal: ""
+    searchVal: "",
   })
   const order = useOrdersTableData()
 

@@ -1,5 +1,5 @@
-import { theme } from "theme";
-import { css } from "@emotion/react";
+import { theme } from "theme"
+import { css } from "@emotion/react"
 
 //TODO: Check if this way of applying bg color is good enough for them
 export const ordersTableStyles = css`
@@ -24,4 +24,4 @@ export const ordersTableStyles = css`
       }
     }
   }
-`;
+`

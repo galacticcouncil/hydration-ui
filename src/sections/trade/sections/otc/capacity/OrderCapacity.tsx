@@ -1,26 +1,26 @@
-import { SBar, SBarContainer, SContainer } from "./OrderCapacity.styled";
-import { useTranslation } from "react-i18next";
-import { Text } from "components/Typography/Text/Text";
-import BigNumber from "bignumber.js";
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { SBar, SBarContainer, SContainer } from "./OrderCapacity.styled"
+import { useTranslation } from "react-i18next"
+import { Text } from "components/Typography/Text/Text"
+import BigNumber from "bignumber.js"
+import { motion } from "framer-motion"
+import { useState } from "react"
 
 export const OrderCapacity = (props: {
-  total: BigNumber;
-  free: BigNumber;
-  symbol?: string;
-  modal?: boolean;
-  roundingMode?: BigNumber.RoundingMode;
+  total: BigNumber
+  free: BigNumber
+  symbol?: string
+  modal?: boolean
+  roundingMode?: BigNumber.RoundingMode
 }) => {
-  const { t } = useTranslation();
-  const { modal = false, roundingMode = 1 } = props;
-  const [orderHovered, setOrderHovered] = useState(false);
+  const { t } = useTranslation()
+  const { modal = false, roundingMode = 1 } = props
+  const [orderHovered, setOrderHovered] = useState(false)
 
-  const filled = props.total.minus(props.free);
+  const filled = props.total.minus(props.free)
   const filledPct = filled
     .div(props.total)
     .multipliedBy(100)
-    .decimalPlaces(0, roundingMode);
+    .decimalPlaces(0, roundingMode)
 
   return (
     <SContainer
@@ -73,5 +73,5 @@ export const OrderCapacity = (props: {
         </motion.div>
       )}
     </SContainer>
-  );
-};
+  )
+}

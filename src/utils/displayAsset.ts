@@ -308,12 +308,16 @@ export const getCoingeckoAssetPrice = async (assetName: string) => {
     formattedAssetName = assetName.replace(/\s+/g, "-");
   } else if (assetName === "Phala") {
     formattedAssetName = "pha";
+  } else if (assetName === "Glimmer") {
+    formattedAssetName = "moonbeam";
   }
 
   const res = await fetch(
     `https://api.coingecko.com/api/v3/simple/price?ids=${formattedAssetName.toLowerCase()}&vs_currencies=usd`,
   );
   const json = await res.json();
+
+  console.log(json);
 
   return json[formattedAssetName.toLowerCase()].usd;
 };
