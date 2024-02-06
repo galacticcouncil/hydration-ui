@@ -1,11 +1,9 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useStore } from "state/store"
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import { useProviderRpcUrlStore } from "api/provider"
-import { TokensConversion } from "sections/pools/modals/AddLiquidity/components/TokensConvertion/TokensConversion"
 
 export const SELECTABLE_PARACHAINS_IDS = ["1000"]
 
@@ -48,13 +46,9 @@ export type TExternalAssetInput = {
   }
 }
 
-export const useRegisterToken = () => {
+export const useRegisterToken = ({ onSuccess }: { onSuccess: () => void }) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
-  const queryClient = useQueryClient()
-
-  const preference = useProviderRpcUrlStore()
-  //QUERY_KEYS.provider(preference.rpcUrl)
 
   return useMutation(
     async (assetInput: TExternalAssetInput) => {
@@ -62,12 +56,9 @@ export const useRegisterToken = () => {
         tx: api.tx.assetRegistry.registerExternal(assetInput),
       })
     },
-    // {
-    //   onSuccess: (_, variables) =>
-    //     queryClient.invalidateQueries(
-    //       QUERY_KEYS.referralCodes(variables.accountAddress),
-    //     ),
-    // },
+    {
+      onSuccess,
+    },
   )
 }
 

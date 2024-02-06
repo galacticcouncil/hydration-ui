@@ -8,7 +8,6 @@ import {
   useRegisterToken,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
-import { SInput } from "./AddTokenFormModal.styled"
 import { FormValues } from "utils/helpers"
 
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
@@ -17,6 +16,8 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { Spacer } from "components/Spacer/Spacer"
 import { useToast } from "state/toasts"
 import { Text } from "components/Typography/Text/Text"
+import { useRefetchProviderData } from "api/provider"
+import { InputBox } from "components/Input/InputBox"
 
 type Props = {
   asset: TExternalAsset
@@ -33,9 +34,17 @@ type FormFields = {
 export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const mutation = useRegisterToken()
   const { addToken } = useUserExternalTokenStore()
+  const refetchProvider = useRefetchProviderData()
   const { add } = useToast()
+
+  const mutation = useRegisterToken({
+    onSuccess: () => {
+      addToken(asset)
+      refetchProvider()
+      onClose()
+    },
+  })
 
   const isChainStored = assets.external.some(
     (chainAsset) => chainAsset.generalIndex === asset.id,
@@ -58,7 +67,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
 
     const { parents, palletInstance } = values.multilocation
 
-    const response = await mutation.mutate({
+    await mutation.mutate({
       parents,
       interior: {
         X3: [
@@ -74,13 +83,13 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
         ],
       },
     })
-    console.log(response)
   }
 
   const hasAsset = !!asset
 
-  const onAddTokenToUser = (asset: TExternalAsset) => {
+  const onAddTokenToUser = async (asset: TExternalAsset) => {
     addToken(asset)
+    refetchProvider()
     add("success", { title: <Text>You added a token</Text> })
     onClose()
   }
@@ -92,34 +101,16 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
       sx={{ height: "100%" }}
     >
       <div sx={{ flex: "column", gap: 8, height: "100%" }}>
-        {/* <Controller
-          name="multilocation"
-          control={form.control}
-          render={({ field }) => (
-            <>
-              <SLabel>
-                <span>{t("wallet.addToken.form.multilocation.label")}</span>
-                <STextarea
-                  autoComplete="off"
-                  rows={5}
-                  placeholder={t(
-                    "wallet.addToken.form.multilocation.placeholder",
-                  )}
-                  {...field}
-                />
-              </SLabel>
-            </>
-          )}
-        /> */}
         <Controller
           name="name"
           control={form.control}
           render={({ field }) => (
-            <SInput
-              autoComplete="off"
-              placeholder={t("wallet.addToken.form.name.placeholder")}
+            <InputBox
+              placeholder={t("wallet.addToken.form.name")}
               {...field}
               disabled={hasAsset}
+              label={t("wallet.addToken.form.name")}
+              withLabel
             />
           )}
         />
@@ -127,11 +118,12 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
           name="symbol"
           control={form.control}
           render={({ field }) => (
-            <SInput
-              autoComplete="off"
-              placeholder={t("wallet.addToken.form.symbol.placeholder")}
+            <InputBox
+              placeholder={t("wallet.addToken.form.symbol")}
               {...field}
               disabled={hasAsset}
+              label={t("wallet.addToken.form.symbol")}
+              withLabel
             />
           )}
         />
@@ -139,11 +131,12 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
           name="decimals"
           control={form.control}
           render={({ field }) => (
-            <SInput
-              autoComplete="off"
-              placeholder={t("wallet.addToken.form.decimals.placeholder")}
+            <InputBox
+              placeholder={t("wallet.addToken.form.decimals")}
               {...field}
               disabled={hasAsset}
+              label={t("wallet.addToken.form.decimals")}
+              withLabel
             />
           )}
         />

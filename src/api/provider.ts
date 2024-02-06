@@ -1,5 +1,5 @@
 import { WsProvider } from "@polkadot/api"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
@@ -131,8 +131,19 @@ export const useProviderData = (rpcUrl: string) => {
         provider,
       }
     },
-    { staleTime: Infinity, refetchOnWindowFocus: true },
+    { refetchOnWindowFocus: true },
   )
+}
+
+export const useRefetchProviderData = () => {
+  const queryClient = useQueryClient()
+
+  const preference = useProviderRpcUrlStore()
+
+  return () => {
+    preference.rpcUrl &&
+      queryClient.invalidateQueries(QUERY_KEYS.provider(preference.rpcUrl))
+  }
 }
 
 export const useIndexerUrl = () => {

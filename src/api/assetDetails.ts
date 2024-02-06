@@ -10,6 +10,8 @@ import { format } from "date-fns"
 import { useRpcProvider } from "providers/rpcProvider"
 import { Asset, PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { BN_0 } from "utils/constants"
+import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
+import { omit } from "utils/rx"
 
 export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
   const { assets } = useRpcProvider()
@@ -81,11 +83,13 @@ type TAssetCommon = {
   isStableSwap: boolean
   isShareToken: boolean
   isNative: boolean
+  isExternal: boolean
   symbol: string
   decimals: number
   name: string
   parachainId: string | undefined
   iconId: string | string[]
+  generalIndex?: string
 }
 
 export type TBond = TAssetCommon & {
@@ -125,6 +129,7 @@ const fallbackAsset: TToken = {
   isBond: false,
   isStableSwap: false,
   isShareToken: false,
+  isExternal: false,
   isNative: false,
   iconId: "",
 }
@@ -166,6 +171,8 @@ export const getAssets = async (api: ApiPromise) => {
     api.consts.omnipool.hubAssetId,
     api.query.referrals,
   ])
+
+  const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
 
   const tokens: TToken[] = []
   const bonds: TBond[] = []
@@ -386,6 +393,18 @@ export const getAssets = async (api: ApiPromise) => {
         const location = rawAssetsLocations.find(
           (location) => location[0].args[0].toString() === id,
         )?.[1]
+        const parachainId =
+          location && !location.isNone
+            ? getTokenParachainId(location)
+            : undefined
+        const generalIndex =
+          location && !location.isNone ? getGeneralIndex(location) : undefined
+
+        const externalTokenStored = externalTokensStored.find(
+          (token) =>
+            token.parachainId === parachainId && token.id === generalIndex,
+        )
+        console.log(externalTokensStored, externalTokenStored)
         const asset: TToken = {
           ...assetCommon,
           assetType,
@@ -398,7 +417,9 @@ export const getAssets = async (api: ApiPromise) => {
               ? getGeneralIndex(location)
               : undefined,
           iconId: "",
+          ...(externalTokenStored ? omit(["id"], externalTokenStored) : {}),
         }
+
         external.push(asset)
       }
     }

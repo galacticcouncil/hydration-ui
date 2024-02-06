@@ -16,6 +16,7 @@ export type InputProps = {
   withLabel?: boolean
   className?: string
   tooltip?: string
+  disabled?: boolean
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(

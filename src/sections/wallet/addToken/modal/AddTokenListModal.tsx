@@ -1,5 +1,6 @@
 import { useExternalAssetRegistry } from "api/externalAssetRegistry"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { Icon } from "components/Icon/Icon"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { Search } from "components/Search/Search"
@@ -63,8 +64,7 @@ export const AddTokenListModal: React.FC<Props> = ({
 
     return isSearched
   })
-  console.log(filteredExternalAssets, assets.external)
-  //TODO: Add empty state for searching
+
   return (
     <>
       <Search
@@ -75,45 +75,46 @@ export const AddTokenListModal: React.FC<Props> = ({
         autoFocus
       />
       <SourceFilter value={parachainId} onChange={setParachainId} />
-      <SAssetsModalHeader>
-        <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-          {t("wallet.addToken.header.availableAssets")}
-        </Text>
-      </SAssetsModalHeader>
-      <ModalScrollableContent
-        sx={{
-          maxHeight: ["100%", 480],
-          pr: 0,
-          width: "100%",
-        }}
-        content={
-          isLoading ? (
-            <AddTokenListSkeleton />
-          ) : (
-            <>
-              {filteredExternalAssets.map((asset) => (
-                <AssetRow
-                  key={asset.id}
-                  onClick={() => onAssetSelect?.({ ...asset, parachainId })}
-                >
-                  <Text fs={14} sx={{ flex: "row", align: "center", gap: 10 }}>
-                    <Icon icon={<AssetLogo />} size={24} />
-                    {asset.name}
-                  </Text>
-                </AssetRow>
-              ))}
-            </>
-          )
-        }
-        // footer={
-        //   <div sx={{ textAlign: "center", py: 20 }}>
-        //     <Button size="micro" sx={{ py: 5 }} onClick={onCustomAssetClick}>
-        //       <PlusIcon width={14} height={14} />
-        //       {t("wallet.addToken.button.customAsset")}
-        //     </Button>
-        //   </div>
-        // }
-      />
+      {search.length && !filteredExternalAssets.length ? (
+        <EmptySearchState css={{ margin: "24px 0" }} />
+      ) : (
+        <>
+          <SAssetsModalHeader>
+            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+              {t("wallet.addToken.header.availableAssets")}
+            </Text>
+          </SAssetsModalHeader>
+          <ModalScrollableContent
+            sx={{
+              maxHeight: ["100%", 480],
+              pr: 0,
+              width: "100%",
+            }}
+            content={
+              isLoading ? (
+                <AddTokenListSkeleton />
+              ) : (
+                <>
+                  {filteredExternalAssets.map((asset) => (
+                    <AssetRow
+                      key={asset.id}
+                      onClick={() => onAssetSelect?.({ ...asset, parachainId })}
+                    >
+                      <Text
+                        fs={14}
+                        sx={{ flex: "row", align: "center", gap: 10 }}
+                      >
+                        <Icon icon={<AssetLogo />} size={24} />
+                        {asset.name}
+                      </Text>
+                    </AssetRow>
+                  ))}
+                </>
+              )
+            }
+          />
+        </>
+      )}
     </>
   )
 }

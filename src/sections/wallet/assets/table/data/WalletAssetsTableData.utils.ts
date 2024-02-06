@@ -8,6 +8,7 @@ import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAcceptedCurrencies, useAccountCurrency } from "api/payments"
+import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -22,21 +23,31 @@ export const useAssetsData = ({
   const { account } = useAccount()
   const address = givenAddress ?? account?.address
 
+  const { tokens, isAdded } = useUserExternalTokenStore()
+
   const balances = useAccountBalances(address)
   const nativeTokenWithBalance = balances.data?.native
-  const tokensWithBalance = useMemo(
-    () =>
-      nativeTokenWithBalance && balances.data
-        ? [...balances.data.balances, nativeTokenWithBalance].filter(
-            (balance) => {
-              const meta = assets.getAsset(balance.id)
+  const tokensWithBalance = useMemo(() => {
+    if (nativeTokenWithBalance && balances.data) {
+      const filteredTokens = balances.data.balances.filter((balance) => {
+        const meta = assets.getAsset(balance.id)
 
-              return meta.isToken || meta.isStableSwap
-            },
+        if (meta.isExternal) {
+          const storedToken = tokens.find(
+            (token) => token.id === meta.generalIndex,
           )
-        : [],
-    [assets, balances.data, nativeTokenWithBalance],
-  )
+
+          return !!storedToken
+        }
+
+        return (meta.isToken || meta.isStableSwap) && !meta.isNative
+      })
+
+      return [...filteredTokens, nativeTokenWithBalance]
+    }
+
+    return []
+  }, [assets, balances.data, nativeTokenWithBalance, tokens])
 
   const tokensWithBalanceIds = tokensWithBalance.map(
     (tokenWithBalance) => tokenWithBalance.id,
@@ -54,7 +65,20 @@ export const useAssetsData = ({
 
   const data = useMemo(() => {
     const rowsWithBalance = tokensWithBalance.map((balance) => {
-      const { decimals, id, name, symbol } = assets.getAsset(balance.id)
+      let { decimals, id, name, symbol, isExternal, generalIndex } =
+        assets.getAsset(balance.id)
+
+      //TBD: what I have balance but didn't add an external asset
+      if (isExternal && isAdded(generalIndex)) {
+        const storedToken = tokens.find((token) => token.id === generalIndex)
+
+        if (storedToken) {
+          symbol = storedToken?.symbol
+          name = storedToken?.name
+          decimals = storedToken?.decimals
+        }
+      }
+
       const inTradeRouter = assets.tradeAssets.some(
         (tradeAsset) => tradeAsset.id === id,
       )
@@ -105,37 +129,47 @@ export const useAssetsData = ({
     })
 
     const result = isAllAssets
-      ? allAssets.map(({ id, symbol, name, decimals }) => {
-          const tokenWithBalance = rowsWithBalance.find((row) => row.id === id)
+      ? allAssets.reduce<typeof rowsWithBalance>(
+          (acc, { id, symbol, name, decimals, isExternal }) => {
+            const tokenWithBalance = rowsWithBalance.find(
+              (row) => row.id === id,
+            )
 
-          if (tokenWithBalance) return tokenWithBalance
+            if (tokenWithBalance) {
+              acc.push(tokenWithBalance)
+            } else {
+              const inTradeRouter = assets.tradeAssets.some(
+                (tradeAsset) => tradeAsset.id === id,
+              )
 
-          const inTradeRouter = assets.tradeAssets.some(
-            (tradeAsset) => tradeAsset.id === id,
-          )
+              const tradability = {
+                canBuy: inTradeRouter,
+                canSell: inTradeRouter,
+                inTradeRouter,
+              }
 
-          const tradability = {
-            canBuy: inTradeRouter,
-            canSell: inTradeRouter,
-            inTradeRouter,
-          }
-
-          return {
-            id,
-            symbol,
-            name,
-            decimals,
-            isPaymentFee: false,
-            couldBeSetAsPaymentFee: false,
-            reserved: BN_0,
-            reservedDisplay: BN_0,
-            total: BN_0,
-            totalDisplay: BN_0,
-            transferable: BN_0,
-            transferableDisplay: BN_0,
-            tradability,
-          }
-        })
+              if (symbol) {
+                acc.push({
+                  id,
+                  symbol,
+                  name,
+                  decimals,
+                  isPaymentFee: false,
+                  couldBeSetAsPaymentFee: false,
+                  reserved: BN_0,
+                  reservedDisplay: BN_0,
+                  total: BN_0,
+                  totalDisplay: BN_0,
+                  transferable: BN_0,
+                  transferableDisplay: BN_0,
+                  tradability,
+                })
+              }
+            }
+            return acc
+          },
+          [],
+        )
       : rowsWithBalance
 
     result.sort((a, b) => {
@@ -162,6 +196,8 @@ export const useAssetsData = ({
     search,
     isAllAssets,
     allAssets,
+    isAdded,
+    tokens,
   ])
 
   return { data, isLoading: balances.isLoading }

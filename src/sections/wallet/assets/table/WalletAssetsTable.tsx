@@ -70,7 +70,8 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
               onClick={() => setAddToken(true)}
             >
               <div sx={{ flex: "row", align: "center", gap: 4 }}>
-                <Icon icon={<PlusIcon />} /> Add token
+                <Icon icon={<PlusIcon />} />
+                {t("wallet.assets.table.addToken")}
               </div>
             </Button>
             <Switch
