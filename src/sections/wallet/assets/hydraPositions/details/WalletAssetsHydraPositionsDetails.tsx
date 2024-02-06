@@ -13,7 +13,7 @@ type Props = {
   assetId: string
   amount: BN
   lrna?: BN
-  amountDisplay: BN
+  amountDisplay?: BN
 }
 
 export const WalletAssetsHydraPositionsDetails = ({
@@ -52,14 +52,16 @@ export const WalletAssetsHydraPositionsDetails = ({
           />
         )}
       </div>
-      <Text
-        fs={13}
-        lh={20}
-        fw={500}
-        css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.6)` }}
-      >
-        <DisplayValue value={amountDisplay} />
-      </Text>
+      {amountDisplay && (
+        <Text
+          fs={13}
+          lh={20}
+          fw={500}
+          css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.6)` }}
+        >
+          <DisplayValue value={amountDisplay} />
+        </Text>
+      )}
     </div>
   )
 }
