@@ -51,14 +51,7 @@ export const BondsTable = ({
 
   return (
     <>
-      <TableContainer
-        sx={showTransfer ? undefined : { m: 0 }}
-        css={
-          showTransfer
-            ? undefined
-            : { backgroundColor: `rgba(${theme.rgbColors.bg}, 0.4)` }
-        }
-      >
+      <TableContainer>
         <TableTitle>
           <Text
             fs={[16, 20]}

@@ -65,7 +65,7 @@ export const useLiquidityProvidersTable = (
             }}
           >
             <Icon size={26} icon={<AccountIcon />} />
-            <Text fs={[14]} color="basic300">
+            <Text fs={14} color="basic300">
               <AccountName address={row.original.account} />
             </Text>
           </div>
@@ -81,7 +81,7 @@ export const useLiquidityProvidersTable = (
               assetId={row.original.assetId}
               value={row.original.value}
               lrna={row.original.lrna}
-              fontSize={[13, 16]}
+              fontSize={14}
             />
           </div>
         ),
@@ -92,7 +92,7 @@ export const useLiquidityProvidersTable = (
         sortingFn: (a, b) =>
           a.original.valueDisplay.gt(b.original.valueDisplay) ? 1 : -1,
         cell: ({ row }) => (
-          <Text color="white">
+          <Text fs={14} color="white">
             <DisplayValue value={row.original.valueDisplay} isUSD />
           </Text>
         ),
@@ -103,7 +103,7 @@ export const useLiquidityProvidersTable = (
         sortingFn: (a, b) =>
           a.original.sharePercent.gt(b.original.sharePercent) ? 1 : -1,
         cell: ({ row }) => (
-          <Text color="white">
+          <Text fs={14} color="white">
             {t("value.percentage", {
               value: row.original.sharePercent,
             })}

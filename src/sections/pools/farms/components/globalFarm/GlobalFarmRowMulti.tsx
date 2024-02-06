@@ -13,31 +13,40 @@ const FarmAssetIcon = ({ assetId }: { assetId: u32 }) => {
   return <AssetLogo id={asset.id} />
 }
 
-export const GlobalFarmRowMulti = ({ farms }: { farms: Farm[] }) => {
+export const GlobalFarmRowMulti = ({
+  farms,
+  fontSize = 12,
+  iconSize = 12,
+  className,
+}: {
+  farms: Farm[]
+  fontSize?: number
+  iconSize?: number
+  className?: string
+}) => {
   const { t } = useTranslation()
   const farmAprs = useFarmAprs(farms)
 
   if (!farmAprs.data) return null
 
   return (
-    <div sx={{ flex: "row", justify: "space-between", gap: 4 }}>
-      <div sx={{ flex: "row" }}>
-        <MultipleIcons
-          icons={farmAprs.data.map((farm) => ({
-            icon: (
-              <FarmAssetIcon
-                key={farm.assetId.toString()}
-                assetId={farm.assetId}
-              />
-            ),
-          }))}
-        />
-      </div>
+    <div sx={{ flex: "row", gap: 4, align: "center" }} className={className}>
       {!!farmAprs.data && (
-        <Text color="brightBlue200">
+        <Text fs={fontSize} color="brightBlue200">
           {t(`value.multiAPR`, getMinAndMaxAPR(farmAprs))}
         </Text>
       )}
+      <MultipleIcons
+        size={iconSize}
+        icons={farmAprs.data.map((farm) => ({
+          icon: (
+            <FarmAssetIcon
+              key={farm.assetId.toString()}
+              assetId={farm.assetId}
+            />
+          ),
+        }))}
+      />
     </div>
   )
 }

@@ -3,10 +3,8 @@ import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useMedia } from "react-use"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
-import { theme } from "theme"
 import { useEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
 import { JoinedFarmsDetails } from "sections/pools/farms/modals/joinedFarmDetails/JoinedFarmsDetails"
@@ -61,7 +59,6 @@ export const FarmingPosition = ({
 }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const isDesktop = useMedia(theme.viewport.gte.sm)
   const position = useDepositShare(poolId, depositNft.id.toString())
 
   const lpPosition = useOmnipoolPosition(position.data?.id)
@@ -93,6 +90,9 @@ export const FarmingPosition = ({
 
   return (
     <SContainer>
+      <Text fw={[500, 400]}>
+        {t("farms.positions.position.title", { index })}
+      </Text>
       <div
         sx={{
           flex: "row",
@@ -100,98 +100,84 @@ export const FarmingPosition = ({
           align: "center",
           py: [0, 10],
         }}
-      >
-        <Text fw={[500, 400]}>
-          {t("farms.positions.position.title", { index })}
-        </Text>
-        <FarmingPositionDetailsButton poolId={poolId} depositNft={depositNft} />
-      </div>
-      <SSeparator />
-      <div
-        sx={{
-          flex: "row",
-          justify: "space-between",
-          align: "center",
-          gap: 40,
-          py: [0, 10],
-        }}
-      >
-        <div
-          sx={{
-            flex: ["column", "row"],
-            justify: "space-between",
-            flexGrow: 1,
-          }}
-        >
-          <SValueContainer sx={{ pt: 0 }}>
-            <Text color="basic500" fs={14} lh={16} fw={400}>
-              {t("farms.positions.labels.enterDate")}
-            </Text>
-            <Text>
-              {t("farms.positions.labels.enterDate.value", {
-                date: enteredDate.data,
-              })}
-            </Text>
-          </SValueContainer>
-          <SSeparator orientation={isDesktop ? "vertical" : "horizontal"} />
-          <SValueContainer>
-            <Text color="basic500" fs={14} lh={16} fw={400}>
-              {t("farms.positions.labels.initialValue")}
-            </Text>
-            <div>
-              <Text>
-                {t("value.tokenWithSymbol", {
-                  value: initialPosValue,
-                  symbol: meta?.symbol,
-                })}
-              </Text>
-              <Text fs={11} css={{ color: "rgba(221, 229, 255, 0.61)" }}>
-                <DisplayValue value={initialPosPrice} />
-              </Text>
-            </div>
-          </SValueContainer>
-          <SSeparator orientation={isDesktop ? "vertical" : "horizontal"} />
-          <SValueContainer sx={{ width: ["100%", 250] }}>
-            <div sx={{ flex: "row", gap: 6, align: "center" }}>
-              <Text color="basic500" fs={14} lh={16} fw={400}>
-                {t("farms.positions.labels.currentValue")}
-              </Text>
-              <LrnaPositionTooltip
-                assetId={position.data?.assetId}
-                tokenPosition={position.data?.value}
-                lrnaPosition={position.data?.lrna}
-              />
-            </div>
-
-            {position.data && (
-              <div>
-                <WalletAssetsHydraPositionsData
-                  assetId={position.data.assetId.toString()}
-                  value={position.data.value}
-                  lrna={position.data.lrna}
-                />
-                <DollarAssetValue
-                  value={position.data.valueDisplay}
-                  wrapper={(children) => (
-                    <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
-                      {children}
-                    </Text>
-                  )}
-                >
-                  <DisplayValue value={position.data.valueDisplay} />
-                </DollarAssetValue>
-              </div>
-            )}
-          </SValueContainer>
-        </div>
-      </div>
-      <SSeparator sx={{ display: ["none", "inherit"] }} />
-      <div
-        sx={{ flex: ["column", "row"], justify: "space-between", pt: [0, 10] }}
       >
         <JoinedFarms poolId={poolId} depositNft={depositNft} />
-        <RedepositFarms poolId={poolId} depositNft={depositNft} />
+
+        <FarmingPositionDetailsButton poolId={poolId} depositNft={depositNft} />
       </div>
+      <SSeparator sx={{ width: "70%", mx: "auto" }} />
+
+      <div
+        sx={{
+          flex: "column",
+          gap: 10,
+          py: 10,
+        }}
+      >
+        <SValueContainer>
+          <Text color="basic500" fs={14} lh={16}>
+            {t("farms.positions.labels.enterDate")}
+          </Text>
+          <Text fs={14}>
+            {t("farms.positions.labels.enterDate.value", {
+              date: enteredDate.data,
+            })}
+          </Text>
+        </SValueContainer>
+        <SSeparator />
+        <SValueContainer>
+          <Text color="basic500" fs={14} lh={16}>
+            {t("farms.positions.labels.initialValue")}
+          </Text>
+          <div sx={{ flex: "column", align: "flex-end" }}>
+            <Text fs={14}>
+              {t("value.tokenWithSymbol", {
+                value: initialPosValue,
+                symbol: meta?.symbol,
+              })}
+            </Text>
+            <Text fs={11} css={{ color: "rgba(221, 229, 255, 0.61)" }}>
+              <DisplayValue value={initialPosPrice} />
+            </Text>
+          </div>
+        </SValueContainer>
+        <SSeparator />
+        <SValueContainer>
+          <div sx={{ flex: "row" }}>
+            <Text color="basic500" fs={14} lh={16}>
+              {t("farms.positions.labels.currentValue")}
+            </Text>
+            <LrnaPositionTooltip
+              assetId={position.data?.assetId}
+              tokenPosition={position.data?.value}
+              lrnaPosition={position.data?.lrna}
+            />
+          </div>
+
+          {position.data && (
+            <div sx={{ flex: "column", align: "flex-end" }}>
+              <WalletAssetsHydraPositionsData
+                assetId={position.data.assetId.toString()}
+                value={position.data.value}
+                lrna={position.data.lrna}
+                fontSize={14}
+              />
+              <DollarAssetValue
+                value={position.data.valueDisplay}
+                wrapper={(children) => (
+                  <Text fs={11} lh={12} color="whiteish500">
+                    {children}
+                  </Text>
+                )}
+              >
+                <DisplayValue value={position.data.valueDisplay} />
+              </DollarAssetValue>
+            </div>
+          )}
+        </SValueContainer>
+      </div>
+
+      <RedepositFarms poolId={poolId} depositNft={depositNft} />
     </SContainer>
   )
 }

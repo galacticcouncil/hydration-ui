@@ -7,7 +7,7 @@ export const SContainer = styled.div`
   gap: 30px;
 
   background-color: rgba(6, 9, 23, 0.4);
-  border-radius: ${theme.borderRadius.stakingCard}px;
+  border-radius: ${theme.borderRadius.medium}px;
 
   position: relative;
 
@@ -16,7 +16,7 @@ export const SContainer = styled.div`
     position: absolute;
     inset: 0;
 
-    border-radius: ${theme.borderRadius.stakingCard}px;
+    border-radius: ${theme.borderRadius.medium}px;
     padding: 1px; // a width of the border
 
     background: linear-gradient(
