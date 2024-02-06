@@ -22,9 +22,6 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useDisplayPrice } from "utils/displayAsset"
-import { BN_0 } from "utils/constants"
-import Skeleton from "react-loading-skeleton"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { useRpcProvider } from "providers/rpcProvider"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
@@ -158,16 +155,7 @@ export const LiquidityPosition = ({
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const meta = assets.getAsset(position.assetId)
-  const price = useDisplayPrice(meta.id)
   const isDesktop = useMedia(theme.viewport.gte.sm)
-
-  const shiftBy = meta.decimals
-  const spotPrice = price.data?.spotPrice
-  const providedAmountPrice = spotPrice
-    ? position.providedAmount.multipliedBy(spotPrice).shiftedBy(-shiftBy)
-    : BN_0
-
-  const providedAmountPriceLoading = price.isLoading
 
   return (
     <SContainer>
@@ -194,7 +182,11 @@ export const LiquidityPosition = ({
           }}
         >
           <div
-            sx={{ flex: ["row", "column"], gap: 6, justify: "space-between" }}
+            sx={{
+              flex: ["row", "column"],
+              gap: 6,
+              justify: ["space-between", "start"],
+            }}
           >
             <Text fs={[13, 14]} color="whiteish500">
               {t("liquidity.asset.positions.position.initialValue")}
@@ -207,20 +199,6 @@ export const LiquidityPosition = ({
                   numberSuffix: ` ${meta.symbol}`,
                 })}
               </Text>
-              {providedAmountPriceLoading ? (
-                <Skeleton width={50} height={7} />
-              ) : (
-                <DollarAssetValue
-                  value={providedAmountPrice}
-                  wrapper={(children) => (
-                    <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
-                      {children}
-                    </Text>
-                  )}
-                >
-                  <DisplayValue value={providedAmountPrice} />
-                </DollarAssetValue>
-              )}
             </div>
           </div>
           <Separator orientation={isDesktop ? "vertical" : "horizontal"} />
