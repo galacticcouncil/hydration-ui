@@ -145,7 +145,8 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
       header: t("wallet.transactions.table.header.source"),
       cell: ({ row }) => (
         <AccountColumn
-          address={row.original.sourceDisplay}
+          address={row.original.source}
+          addressDisplay={row.original.sourceDisplay}
           chain={row.original.sourceChain}
           isCrossChain={row.original.isCrossChain}
         />
@@ -171,7 +172,8 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
       cell: ({ row }) => {
         return (
           <AccountColumn
-            address={row.original.destDisplay}
+            address={row.original.dest}
+            addressDisplay={row.original.destDisplay}
             chain={row.original.destChain}
             isCrossChain={row.original.isCrossChain}
           />
