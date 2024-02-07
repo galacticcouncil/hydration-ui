@@ -95,12 +95,20 @@ export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
         gap: 8,
       }}
     >
-      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
-        {t("value.token", { value: 1 })} {props.pair.symbol}
-      </Text>
-      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
-        ({formatPrice(props.price)})
-      </Text>
+      {props?.price?.isNaN() ? (
+        <Text fs={12} fw={400} color="basic400" tAlign={"center"} as="div">
+          N / A
+        </Text>
+      ) : (
+        <>
+          <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
+            {t("value.token", { value: 1 })} {props.pair.symbol}
+          </Text>
+          <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
+            ({formatPrice(props.price)})
+          </Text>
+        </>
+      )}
     </div>
   )
 }
@@ -116,7 +124,7 @@ export const OrderMarketPriceColumn = (props: {
       ? "green600"
       : props.percentage < 0
       ? "red400"
-      : "warningYellow400"
+      : "whiteish500"
 
   const formatPrice = (price: BN) => {
     if (price) {
@@ -151,9 +159,16 @@ export const OrderMarketPriceColumn = (props: {
       sx={{ flex: "column", justify: "center", align: "center", width: "100%" }}
       style={{ position: "relative" }}
     >
-      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color={color as any}>
-        {props?.percentage?.toFixed(2)}%
-      </Text>
+      {props.percentage ? (
+        <Text fs={[14, 16]} lh={[16, 16]} fw={500} color={color as any}>
+          {props.percentage.toFixed(2)}%
+        </Text>
+      ) : (
+        <Text fs={12} fw={400} color="basic400" tAlign={"center"} as="div">
+          N / A
+        </Text>
+      )}
+
       <motion.div
         variants={childVariants}
         transition={{ delay: 0.4, duration: 0.2 }}

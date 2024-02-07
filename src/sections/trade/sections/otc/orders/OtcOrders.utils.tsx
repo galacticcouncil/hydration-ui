@@ -112,10 +112,17 @@ export const useOrdersTable = (
           rowA: { original: OrderTableData },
           rowB: { original: OrderTableData },
         ) => {
-          // Access the marketPricePercentage property from marketPrice object
           const valA = rowA.original.marketPricePercentage
           const valB = rowB.original.marketPricePercentage
-          return valA > valB ? 1 : -1 // Ascending sort
+
+          const numA =
+            valA === undefined || isNaN(valA) ? Number.NEGATIVE_INFINITY : valA
+          const numB =
+            valB === undefined || isNaN(valB) ? Number.NEGATIVE_INFINITY : valB
+
+          if (numA < numB) return -1
+          if (numA > numB) return 1
+          return 0
         },
       }),
       accessor("filled", {
