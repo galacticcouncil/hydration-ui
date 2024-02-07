@@ -1,5 +1,3 @@
-import { GENERAL } from "sections/lending/utils/mixPanelEvents"
-
 import { Link } from "sections/lending/components/primitives/Link"
 import {
   TextWithTooltip,

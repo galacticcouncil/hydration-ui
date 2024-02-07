@@ -12,7 +12,6 @@ import {
 } from "@mui/material"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
-import { DASHBOARD } from "sections/lending/utils/mixPanelEvents"
 
 import Hal from "sections/lending/assets/icons/healthFactor/HAL.svg?react"
 import HalHover from "sections/lending/assets/icons/healthFactor/HALHover.svg?react"

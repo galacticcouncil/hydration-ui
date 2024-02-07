@@ -6,7 +6,6 @@ import { Link } from "sections/lending/components/primitives/Link"
 import { TextWithTooltip } from "sections/lending/components/TextWithTooltip"
 import { UserDisplay } from "sections/lending/components/UserDisplay"
 import { usePowers } from "sections/lending/hooks/governance/usePowers"
-import { GENERAL } from "sections/lending/utils/mixPanelEvents"
 
 export function VotingPowerInfoPanel() {
   const { data: powers } = usePowers()

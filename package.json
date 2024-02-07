@@ -113,7 +113,6 @@
     "immer": "^9.0.15",
     "jdenticon": "^3.2.0",
     "md5": "^2.3.0",
-    "mixpanel-browser": "2.45.0",
     "papaparse": "^5.4.1",
     "patch-package": "^6.5.0",
     "postinstall-postinstall": "^2.1.0",

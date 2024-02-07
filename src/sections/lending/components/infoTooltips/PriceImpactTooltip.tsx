@@ -1,6 +1,5 @@
 import { Box, Skeleton } from "@mui/material"
 import BigNumber from "bignumber.js"
-import { GENERAL } from "sections/lending/utils/mixPanelEvents"
 
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import {

@@ -1,5 +1,3 @@
-import { GENERAL } from "sections/lending/utils/mixPanelEvents"
-
 import {
   TextWithTooltip,
   TextWithTooltipProps,
