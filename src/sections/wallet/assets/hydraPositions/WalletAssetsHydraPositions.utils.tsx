@@ -60,7 +60,6 @@ export const useHydraPositionsTable = (
             <WalletAssetsHydraPositionsDetails
               assetId={row.original.assetId}
               amount={row.original.providedAmountShifted}
-              amountDisplay={row.original.providedAmountDisplay}
             />
           ),
       }),
