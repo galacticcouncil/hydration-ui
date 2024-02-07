@@ -90,16 +90,7 @@ export const useOrdersTable = (
       }),
       accessor("marketPrice", {
         id: "marketPrice",
-        header: () => (
-          <div
-            style={{
-              textAlign: "center",
-              width: "100%",
-            }}
-          >
-            {t("otc.offers.table.header.marketPrice")}
-          </div>
-        ),
+        header: t("otc.offers.table.header.marketPrice"),
         enableSorting: true,
         cell: ({ row }) => (
           <OrderMarketPriceColumn

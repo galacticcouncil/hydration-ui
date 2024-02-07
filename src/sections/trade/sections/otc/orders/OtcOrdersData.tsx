@@ -156,7 +156,12 @@ export const OrderMarketPriceColumn = (props: {
       variants={parentVariants}
       initial="initial"
       whileHover="hover"
-      sx={{ flex: "column", justify: "center", align: "center", width: "100%" }}
+      sx={{
+        flex: "column",
+        justify: "center",
+        align: ["flex-end", "center"],
+        width: "100%",
+      }}
       style={{ position: "relative" }}
     >
       {props.percentage ? (
