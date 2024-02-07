@@ -141,6 +141,11 @@ export const OrderMarketPriceColumn = (props: {
     }
   }
 
+  const formattedPercentage =
+    props.percentage > 0
+      ? `+${props.percentage?.toFixed(2)}%`
+      : `${props.percentage?.toFixed(2)}%`
+
   const parentVariants = {
     initial: {},
     hover: {},
@@ -166,7 +171,7 @@ export const OrderMarketPriceColumn = (props: {
     >
       {props.percentage ? (
         <Text fs={[14, 16]} lh={[16, 16]} fw={500} color={color as any}>
-          {props.percentage.toFixed(2)}%
+          {formattedPercentage}
         </Text>
       ) : (
         <Text fs={12} fw={400} color="basic400" tAlign={"center"} as="div">
