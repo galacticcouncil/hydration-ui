@@ -10,14 +10,14 @@ export const ordersTableStyles = css`
       }
     }
 
-    &:nth-of-type(4) {
-      display: flex;
-      justify-content: center;
-    }
-
     &:nth-of-type(5) {
       padding: 0;
-      min-width: 150px;
+      min-width: 100px;
+    }
+
+    &:nth-of-type(6) {
+      padding-right: 32px;
+      padding-left: 64px;
     }
 
     @media ${theme.viewport.gte.sm} {
@@ -26,6 +26,12 @@ export const ordersTableStyles = css`
           justify-content: flex-start;
         }
       }
+    }
+  }
+  th {
+    &:nth-of-type(4) {
+      display: flex;
+      justify-content: center;
     }
   }
 `

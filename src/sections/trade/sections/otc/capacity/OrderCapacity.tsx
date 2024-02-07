@@ -47,11 +47,17 @@ export const OrderCapacity = (props: {
       </div>
       {!modal && (
         <motion.div
-          initial={{ position: "relative", opacity: 0, y: 0 }}
+          initial={{ opacity: 0, y: 0 }}
           transition={{ delay: 0.4, duration: 0.2 }}
           animate={orderHovered ? { opacity: 1, y: 6 } : { opacity: 0, y: 0 }}
         >
-          <div style={{ position: "absolute", width: "100%" }}>
+          <div
+            style={{
+              position: "absolute",
+              width: "100%",
+              whiteSpace: "nowrap",
+            }}
+          >
             <Text
               fs={12}
               fw={500}

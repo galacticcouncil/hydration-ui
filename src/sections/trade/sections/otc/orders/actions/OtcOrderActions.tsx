@@ -31,10 +31,10 @@ export const OtcOrderActions = (props: Props) => {
       <div
         sx={{
           flex: "row",
-          gap: 10,
           display: ["none", "flex"],
           align: "center",
-          mr: 24,
+          justify: "flex-end",
+          width: "100%",
         }}
       >
         {orderOwner === userAddress && (
@@ -42,12 +42,8 @@ export const OtcOrderActions = (props: Props) => {
             icon={<PauseIcon />}
             onClick={() => props.onClose(props.data)}
             disabled={!account}
-            variant={"error"}
-            children={
-              <span sx={{ width: "90px", textAlign: "center" }}>
-                {t("otc.offers.table.actions.cancel")}
-              </span>
-            }
+            variant={"mutedError"}
+            children={<span>{t("otc.offers.table.actions.cancel")}</span>}
           />
         )}
         {orderOwner !== userAddress && (
@@ -55,11 +51,8 @@ export const OtcOrderActions = (props: Props) => {
             icon={<FillIcon sx={{ mr: 4 }} />}
             onClick={() => props.onFill(props.data)}
             disabled={!account}
-            children={
-              <span sx={{ width: "90px" }}>
-                {t("otc.offers.table.actions.fill")}
-              </span>
-            }
+            variant={"mutedSecondary"}
+            children={<span>{t("otc.offers.table.actions.fill")}</span>}
           />
         )}
       </div>
