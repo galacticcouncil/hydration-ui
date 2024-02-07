@@ -83,7 +83,7 @@ export function usePoolsDetailsTradeVolumes(assetIds: string[]) {
   return { isLoading, data }
 }
 
-export const useXYKPollTradeVolumes = (poolsAddress: string[]) => {
+export const useXYKPoolTradeVolumes = (poolsAddress: string[]) => {
   const { assets } = useRpcProvider()
   const volumes = useXYKTradeVolumes(poolsAddress)
 
@@ -112,7 +112,9 @@ export const useXYKPollTradeVolumes = (poolsAddress: string[]) => {
   ]
 
   const spotPrices = useDisplayPrices(allAssetsInPools)
-
+  const isLoading =
+    volumes.some((volume) => volume.isInitialLoading) ||
+    spotPrices.isInitialLoading
   const data = useMemo(() => {
     if (!volumes || !values || !spotPrices.data) return
 
@@ -140,5 +142,5 @@ export const useXYKPollTradeVolumes = (poolsAddress: string[]) => {
     return data
   }, [assets, spotPrices, values, volumes])
 
-  return { data }
+  return { data, isLoading }
 }

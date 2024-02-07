@@ -67,13 +67,7 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
     const lrnaPositionPrice =
       row.lrna?.multipliedBy(lrnaSpotPrice.data?.spotPrice ?? BN_1) ?? BN_0
 
-    const {
-      symbol,
-      lrna,
-      providedAmountShifted: amount,
-      providedAmountDisplay,
-      value,
-    } = row
+    const { symbol, lrna, providedAmountShifted: amount, value } = row
 
     const tKey = lrna?.gt(0)
       ? "wallet.assets.hydraPositions.data.valueLrna"
@@ -120,9 +114,6 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
         </Text>
         <Text fs={14} lh={14} color="white">
           {t("value.tokenWithSymbol", { value: amount, symbol })}
-        </Text>
-        <Text fs={12} lh={17} color="whiteish500">
-          <DisplayValue value={providedAmountDisplay} />
         </Text>
       </div>
     )

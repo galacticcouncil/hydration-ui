@@ -13,7 +13,7 @@ type Props = {
   assetId: string
   amount: BN
   lrna?: BN
-  amountDisplay: BN
+  amountDisplay?: BN
 }
 
 export const WalletAssetsHydraPositionsDetails = ({
@@ -37,7 +37,7 @@ export const WalletAssetsHydraPositionsDetails = ({
   return (
     <div sx={{ flex: "column", align: ["end", "start"] }}>
       <div sx={{ flex: "row", gap: 4 }}>
-        <Text fs={16} lh={16} fw={500} color="white">
+        <Text fs={14} lh={14} fw={500} color="white">
           {t("value.tokenWithSymbol", {
             value: lrnaPositionPrice.plus(amount ?? BN_0),
             symbol: meta?.symbol,
@@ -52,14 +52,16 @@ export const WalletAssetsHydraPositionsDetails = ({
           />
         )}
       </div>
-      <Text
-        fs={13}
-        lh={20}
-        fw={500}
-        css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.6)` }}
-      >
-        <DisplayValue value={amountDisplay} />
-      </Text>
+      {amountDisplay && (
+        <Text
+          fs={13}
+          lh={20}
+          fw={500}
+          css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.6)` }}
+        >
+          <DisplayValue value={amountDisplay} />
+        </Text>
+      )}
     </div>
   )
 }

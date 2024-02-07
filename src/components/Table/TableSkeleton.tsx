@@ -56,7 +56,14 @@ export const TableSkeleton = ({
               {table.getHeaderGroups().map((hg) => (
                 <TableRow key={hg.id}>
                   {hg.headers.map((header) => (
-                    <TableSortHeader key={header.id} canSort={false}>
+                    <TableSortHeader
+                      key={header.id}
+                      canSort={false}
+                      css={{
+                        width:
+                          header.getSize() !== 150 ? header.getSize() : "auto",
+                      }}
+                    >
                       {flexRender(
                         header.column.columnDef.header,
                         header.getContext(),

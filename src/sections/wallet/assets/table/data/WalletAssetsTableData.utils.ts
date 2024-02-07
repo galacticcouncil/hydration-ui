@@ -155,7 +155,10 @@ export const useAssetsTableData = ({
     })
 
     const rows = assetsTableData
-      .filter((x): x is AssetsTableData => x !== null)
+      .filter(
+        (x): x is AssetsTableData =>
+          x !== null && x.total.gt(isAllAssets ? -1 : 0),
+      )
       .sort((a, b) => {
         // native asset first
         if (a.id === NATIVE_ASSET_ID) return -1

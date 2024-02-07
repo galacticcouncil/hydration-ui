@@ -11,7 +11,7 @@ import {
   TableTitle,
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
-import { Fragment, useMemo, useState } from "react"
+import { Fragment, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { WalletAssetsTableDetails } from "sections/wallet/assets/table/details/WalletAssetsTableDetails"
@@ -23,6 +23,10 @@ import {
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 import { theme } from "theme"
 import { WalletAssetsTableActionsMob } from "./actions/WalletAssetsTableActionsMob"
+import { EmptyState } from "components/Table/EmptyState"
+import { Icon } from "components/Icon/Icon"
+import EmptyStateIcon from "assets/icons/NoActivities.svg?react"
+import { LINKS } from "utils/navigation"
 
 type Props = {
   data: AssetsTableData[]
@@ -37,12 +41,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const filteredData = useMemo(
-    () => (showAll ? data : data.filter((row) => row.total.gt(0))),
-    [data, showAll],
-  )
-
-  const table = useAssetsTable(filteredData, {
+  const table = useAssetsTable(data, {
     onTransfer: setTransferAsset,
   })
 
@@ -68,7 +67,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
           label={t("wallet.assets.table.toggle")}
         />
       </TableTitle>
-      <Table css={{ tableLayout: "fixed" }}>
+      <Table>
         <TableHeaderContent>
           {table.getHeaderGroups().map((hg) => (
             <TableRow key={hg.id}>
@@ -95,30 +94,53 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
           ))}
         </TableHeaderContent>
         <TableBodyContent>
-          {table.getRowModel().rows.map((row, i) => (
-            <Fragment key={row.original.id}>
-              <TableRow
-                isOdd={!(i % 2)}
-                onClick={() => {
-                  isDesktop && row.toggleSelected()
-                  !isDesktop && setRow(row.original)
-                }}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableData key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableData>
-                ))}
-              </TableRow>
-              {row.getIsSelected() && (
-                <TableRow isSub>
-                  <TableData colSpan={table.getAllColumns().length}>
-                    <WalletAssetsTableDetails {...row.original} />
-                  </TableData>
+          {table.options.data.length ? (
+            table.getRowModel().rows.map((row, i) => (
+              <Fragment key={row.original.id}>
+                <TableRow
+                  isOdd={!(i % 2)}
+                  onClick={() => {
+                    isDesktop && row.toggleSelected()
+                    !isDesktop && setRow(row.original)
+                  }}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableData key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableData>
+                  ))}
                 </TableRow>
-              )}
-            </Fragment>
-          ))}
+                {row.getIsSelected() && (
+                  <TableRow isSub>
+                    <TableData colSpan={table.getAllColumns().length}>
+                      <WalletAssetsTableDetails {...row.original} />
+                    </TableData>
+                  </TableRow>
+                )}
+              </Fragment>
+            ))
+          ) : (
+            <EmptyState
+              desc={
+                <>
+                  <Icon sx={{ color: "basic600" }} icon={<EmptyStateIcon />} />
+                  <Text
+                    fs={14}
+                    color="basic700"
+                    tAlign="center"
+                    sx={{ maxWidth: 355, mb: 10 }}
+                  >
+                    {t("wallet.assets.table.empty.desc")}
+                  </Text>
+                </>
+              }
+              navigateTo={LINKS.cross_chain}
+              btnText={t("wallet.assets.table.empty.btn")}
+            />
+          )}
         </TableBodyContent>
       </Table>
 

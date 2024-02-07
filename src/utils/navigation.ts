@@ -45,13 +45,7 @@ export const LINKS = {
   lending: "/lending",
 }
 
-const isXcmPageEnabled = import.meta.env.VITE_FF_XCM_ENABLED === "true"
-const isStatsEnabled = import.meta.env.VITE_FF_STATS_ENABLED === "true"
-const isStakingEnabled = import.meta.env.VITE_FF_STAKING_ENABLED === "true"
 const isLendingEnabled = import.meta.env.VITE_FF_LENDING_ENABLED === "true"
-const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
-const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
-const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
 
 export const MENU_ITEMS = [
   {
@@ -60,19 +54,19 @@ export const MENU_ITEMS = [
     Icon: TradeIcon,
     subItems: [
       { key: "swap", href: LINKS.swap, Icon: IconSwap, enabled: true },
-      { key: "dca", href: LINKS.dca, Icon: IconDCA, enabled: isDcaPageEnabled },
+      { key: "dca", href: LINKS.dca, Icon: IconDCA, enabled: true },
       {
         key: "yieldDca",
         href: LINKS.yieldDca,
         Icon: IconYieldDCA,
-        enabled: isDcaPageEnabled,
+        enabled: true,
       },
-      { key: "otc", href: LINKS.otc, Icon: IconOTC, enabled: isOtcPageEnabled },
+      { key: "otc", href: LINKS.otc, Icon: IconOTC, enabled: true },
       {
         key: "bonds",
         href: LINKS.bonds,
         Icon: IconBonds,
-        enabled: isBondsPageEnabled,
+        enabled: true,
       },
     ],
     enabled: true,
@@ -111,7 +105,7 @@ export const MENU_ITEMS = [
     href: LINKS.cross_chain,
     Icon: TransferIcon,
     subItems: undefined,
-    enabled: isXcmPageEnabled,
+    enabled: true,
     external: false,
     mobVisible: false,
     tabVisible: false,
@@ -123,7 +117,7 @@ export const MENU_ITEMS = [
     href: LINKS.statsOverview,
     Icon: StatsIcon,
     subItems: undefined,
-    enabled: isStatsEnabled,
+    enabled: true,
     external: false,
     mobVisible: false,
     tabVisible: true,
@@ -135,7 +129,7 @@ export const MENU_ITEMS = [
     href: LINKS.staking,
     Icon: StakingIcon,
     subItems: undefined,
-    enabled: isStakingEnabled,
+    enabled: true,
     external: false,
     mobVisible: false,
     tabVisible: true,

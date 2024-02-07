@@ -25,7 +25,6 @@ export const SummaryRow = ({
           sx={{
             flex: "row",
             justify: "space-between",
-            align: "center",
           }}
         >
           <Text color="basic400" fs={14} tAlign="left">

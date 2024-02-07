@@ -3140,10 +3140,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@2.4.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.4.0.tgz#9cf3b59fb76a746c70df3e2690d5268ba1f945be"
-  integrity sha512-kdjd0ADzWBaZriso9BSSyS+NXLDCJlFOrdPuM5GuBVw9siJeC7LnkH1XB1zMOps1WizQeRcz7aZnt4kmf48Z4A==
+"@galacticcouncil/apps@2.4.4":
+  version "2.4.4"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.4.4.tgz#cece2c40cebd1906cd21df20ca9f5cb2ed294383"
+  integrity sha512-a4FcOdu66f7MtWKBTCtaEfwrPp3Iio9rCqnvRrkUA796DYsVAu3RBPnLzU1IHZxqqr8omKn6HaizQ23ZKJpaww==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@talismn/connect-wallets" "^1.2.1"
@@ -3189,10 +3189,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.2.0.tgz#74feacdf94d4846f1a148835f25936b2ddc7bdfd"
   integrity sha512-mznedOeA8d9BQ8kUQ/4O/P6trqTC4FGwvTDGCHJ0O/bgA9iFb+suctbFtyFT3qfNnngR7FSF2Pls1O/SvtNn8g==
 
-"@galacticcouncil/sdk@^1.1.4":
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.1.4.tgz#44db22a0e684df2b562528bfa5624f619455b589"
-  integrity sha512-YdamFG+7qCyRgBwnQM/66C0aE2b0bKk17nYAlVU5wT0PrxSYkGMP661Hqkj6DJta8TfYtE1h2VQSUR0aGN+qKQ==
+"@galacticcouncil/sdk@^1.1.7":
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.1.7.tgz#c4211b543d18d6cc06f8000ef6112d808be46dde"
+  integrity sha512-Zq4+c9ZjPvJ0y3XEoRJGHLyCp1whQuE9W8tHRcC75nYlYxikhan4dk5pofljs3ovlxtDZSAe+774l0HKXbrZUg==
   dependencies:
     "@galacticcouncil/math-lbp" "^0.2.1"
     "@galacticcouncil/math-omnipool" "^0.2.0"
@@ -3213,10 +3213,10 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.3.0.tgz#bb68b5100c5fe90fe52be1a2fdf5f18f8078536d"
-  integrity sha512-uqY5wTew4sk2MBXcH/U3XLCcj+YAxeAaE1wYKpkiTLIO0Em4+j7vtN/QiYrUbwcO+smqL7B/MIFl6aRA8Ht6xw==
+"@galacticcouncil/xcm-cfg@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.4.0.tgz#0d7add6b211ea47cd77dadc642beea9491600d89"
+  integrity sha512-R0t1POm7GD3XvB6XxUgdwXKbyzQnetCv0lBDwhNtb7X57Si1uMkKZ/eX635YTN1hopahI6EJXYt1YG/mnDVRtA==
 
 "@galacticcouncil/xcm-sdk@^2.1.0":
   version "2.1.0"
@@ -7160,6 +7160,13 @@
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.1.tgz#d3357479a0fdfdd5907fe67e17e0a85c906e1301"
   integrity sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==
+
+"@types/papaparse@^5.3.14":
+  version "5.3.14"
+  resolved "https://registry.yarnpkg.com/@types/papaparse/-/papaparse-5.3.14.tgz#345cc2a675a90106ff1dc33b95500dfb30748031"
+  integrity sha512-LxJ4iEFcpqc6METwp9f6BV6VVc43m6MfH0VqFosHvrUgfXiFe6ww7R3itkOQ+TCK6Y+Iv/+RnnvtRZnkc5Kc9g==
+  dependencies:
+    "@types/node" "*"
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -14096,6 +14103,11 @@ pako@~0.2.0:
   version "0.2.9"
   resolved "https://registry.yarnpkg.com/pako/-/pako-0.2.9.tgz#f3f7522f4ef782348da8161bad9ecfd51bf83a75"
   integrity sha512-NUcwaKxUxWrZLpDG+z/xZaCgQITkA/Dv4V/T6bw7VON6l1Xz/VnrBqrYjZQ12TamKHzITTfOEIYUj48y2KXImA==
+
+papaparse@^5.4.1:
+  version "5.4.1"
+  resolved "https://registry.yarnpkg.com/papaparse/-/papaparse-5.4.1.tgz#f45c0f871853578bd3a30f92d96fdcfb6ebea127"
+  integrity sha512-HipMsgJkZu8br23pW15uvo6sib6wne/4woLZPlFf3rpDyMe9ywEXUsuD7+6K9PRkJlVT51j/sCOYDKGGS3ZJrw==
 
 parent-module@^1.0.0:
   version "1.0.1"

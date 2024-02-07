@@ -11,7 +11,15 @@ export const SearchFilter = () => {
   const { search, setSearchParam } = useSearchFilter()
   const [searchVal, setSearchVal] = useState(search ?? "")
 
-  useDebounce(() => setSearchParam(searchVal), 300, [searchVal])
+  useDebounce(
+    () => {
+      if (searchVal !== search) {
+        setSearchParam(searchVal)
+      }
+    },
+    300,
+    [searchVal],
+  )
 
   return (
     <div sx={{ flex: "column", gap: [16, 30], mb: [16, 20] }}>

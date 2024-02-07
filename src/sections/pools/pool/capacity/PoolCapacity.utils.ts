@@ -32,9 +32,7 @@ export const usePoolCapacity = (id: string) => {
     const asset = omnipoolAssets.data.find(
       (a) => a.id.toString() === id.toString(),
     )
-    const assetUsd = omnipoolAssets.data.find(
-      (a) => a.id.toString() === stableCoinId,
-    )
+
     const assetBalance = balances.find(
       (b) => b.data?.assetId.toString() === id.toString(),
     )
@@ -50,8 +48,7 @@ export const usePoolCapacity = (id: string) => {
       !asset?.data ||
       !assetBalance?.data ||
       !hubBalance?.data ||
-      !usdBalance?.data ||
-      !assetUsd?.data
+      !usdBalance?.data
     )
       return {
         capacity: BN_NAN,

@@ -7,7 +7,6 @@ import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.u
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { Summary } from "components/Summary/Summary"
 import { useRpcProvider } from "providers/rpcProvider"
-import { u32 } from "@polkadot/types-codec"
 
 type FarmDetailsModalValuesProps = {
   poolId: string

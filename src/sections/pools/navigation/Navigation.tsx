@@ -14,6 +14,16 @@ import {
   SubNavigation,
   SubNavigationTabLink,
 } from "components/Layout/SubNavigation/SubNavigation"
+import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
+import { useLocation } from "@tanstack/react-location"
+import { t } from "i18next"
+
+const routeMap = new Map([
+  [LINKS.allPools, t("liquidity.navigation.allPools")],
+  [LINKS.myLiquidity, t("liquidity.navigation.myLiquidity")],
+  [LINKS.omnipool, t("liquidity.navigation.omnipoolAndStablepool")],
+  [LINKS.isolated, t("liquidity.navigation.isolated")],
+])
 
 export const Navigation = () => {
   const { t } = useTranslation()
@@ -80,4 +90,11 @@ const MyLiquidity = () => {
       />
     </>
   )
+}
+
+export const PoolNavigation = () => {
+  const location = useLocation()
+  const { pathname } = location.history.location
+
+  return <BackSubHeader label={`Back to ${routeMap.get(pathname)}`} />
 }

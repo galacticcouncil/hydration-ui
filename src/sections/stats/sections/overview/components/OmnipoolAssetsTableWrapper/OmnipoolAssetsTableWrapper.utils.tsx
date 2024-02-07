@@ -17,7 +17,7 @@ import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { SInfoIcon } from "sections/pools/pool/Pool.styled"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
 const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   const { t } = useTranslation()
@@ -26,13 +26,15 @@ const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
 
   const percentage = useMemo(() => {
     if (farmAprs.data?.length) {
-      const aprs = farmAprs.data ? farmAprs.data.map(({ apr }) => apr) : [BN_0]
+      const aprs = farmAprs.data
+        ? farmAprs.data.reduce((memo, { apr }) => memo.plus(apr), BN_0)
+        : BN_0
       const minAprs = farmAprs.data
         ? farmAprs.data.map(({ minApr, apr }) => (minApr ? minApr : apr))
         : [BN_0]
 
       const minApr = BigNumber.minimum(...minAprs)
-      const maxApr = BigNumber.maximum(...aprs)
+      const maxApr = aprs
 
       return {
         minApr,
@@ -114,7 +116,7 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
             />
           )}
           <div sx={{ flex: "column" }}>
-            <Text fs={[14, 16]} color="white">
+            <Text fs={14} color="white" font="ChakraPetchSemiBold">
               {row.original.symbol}
             </Text>
             {isDesktop && (
@@ -135,7 +137,7 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
       header: t("stats.overview.table.assets.header.tvl"),
       sortingFn: (a, b) => (a.original.tvl.gt(b.original.tvl) ? 1 : -1),
       cell: ({ row }) => (
-        <Text tAlign={isDesktop ? "left" : "right"} color="white" fs={[13, 16]}>
+        <Text tAlign={isDesktop ? "left" : "right"} color="white" fs={14}>
           <DisplayValue value={row.original.tvl} isUSD />
         </Text>
       ),
@@ -145,7 +147,7 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
       header: t("stats.overview.table.assets.header.volume"),
       sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
       cell: ({ row }) => (
-        <Text color="white">
+        <Text color="white" fs={14}>
           <DisplayValue value={row.original.volume} isUSD />
         </Text>
       ),
@@ -174,7 +176,7 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
       header: t("stats.overview.table.assets.header.price"),
       sortingFn: (a, b) => (a.original.price.gt(b.original.price) ? 1 : -1),
       cell: ({ row }) => (
-        <Text color="white">
+        <Text color="white" fs={14}>
           {t("value.token", {
             value: row.original.price,
             decimalPlaces: 4,
