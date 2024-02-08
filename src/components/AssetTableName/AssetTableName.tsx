@@ -38,7 +38,7 @@ export const AssetTableName = ({
       >
         {typeof iconIds === "string" ? (
           <Icon
-            size={[large ? 28 : 26, 27]}
+            size={[large ? 28 : 26, 26]}
             icon={<AssetLogo id={iconIds} />}
           />
         ) : (
@@ -49,7 +49,7 @@ export const AssetTableName = ({
               return {
                 icon: (
                   <Icon
-                    size={[large ? 28 : 26, 27]}
+                    size={[large ? 28 : 26, 26]}
                     icon={<AssetLogo id={isBond ? meta.assetId : asset} />}
                   />
                 ),

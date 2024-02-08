@@ -27,6 +27,7 @@ import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/G
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
+import ManageIcon from "assets/icons/IconEdit.svg?react"
 import { BN_0, BN_1, BN_MILL } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import {
@@ -42,6 +43,8 @@ import BN from "bignumber.js"
 import { CellSkeleton } from "components/Skeleton/CellSkeleton"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { useTokenBalance } from "api/balances"
+import { SStablepoolBadge } from "sections/pools/pool/Pool.styled"
 
 const NonClickableContainer = ({
   children,
@@ -91,16 +94,43 @@ const AssetTableName = ({ id }: { id: string }) => {
       )}
 
       <div sx={{ flex: "column", width: "100%", gap: [0, 4] }}>
-        <Text fs={14} lh={16} fw={700} color="white">
-          {asset.symbol}
-        </Text>
+        <div sx={{ flex: "row", gap: 4 }}>
+          <Text fs={14} lh={16} fw={700} color="white">
+            {asset.symbol}
+          </Text>
+          {asset.isStableSwap && (
+            <SStablepoolBadge
+              whileHover={{ width: "unset" }}
+              css={{ width: 14, overflow: "hidden" }}
+              transition={{
+                type: "spring",
+                mass: 1,
+                stiffness: 300,
+                damping: 20,
+                duration: 0.2,
+              }}
+            />
+          )}
+        </div>
+
+        {asset.isStableSwap && (
+          <Text fs={11} color="white" css={{ opacity: 0.61 }}>
+            {asset.name}
+          </Text>
+        )}
         {farms.data?.length ? <GlobalFarmRowMulti farms={farms.data} /> : null}
       </div>
     </NonClickableContainer>
   )
 }
 
-const AddLiqduidityButton = ({ pool }: { pool: TPool | TXYKPool }) => {
+const AddLiqduidityButton = ({
+  pool,
+  onRowSelect,
+}: {
+  pool: TPool | TXYKPool
+  onRowSelect: (id: string) => void
+}) => {
   const { account } = useAccount()
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -122,6 +152,14 @@ const AddLiqduidityButton = ({ pool }: { pool: TPool | TXYKPool }) => {
     isStablePool ? poolAccountAddress : undefined,
   )
 
+  const userStablePoolBalance = useTokenBalance(
+    isStablePool ? pool.id : undefined,
+    account?.address,
+  )
+
+  const isPosition =
+    userStablePoolBalance.data?.freeBalance.gte(0) ||
+    (isXykPool ? pool.shareTokenIssuance?.myPoolShare?.gt(0) : pool.isPositions)
   const stablepool = useStableswapPool(isStablePool ? assetMeta.id : undefined)
 
   const reserves = isStablePool
@@ -137,6 +175,16 @@ const AddLiqduidityButton = ({ pool }: { pool: TPool | TXYKPool }) => {
       })
     : []
 
+  const onClick = () => {
+    if (isPosition) {
+      onRowSelect(pool.id)
+    } else {
+      isStablePool
+        ? setLiquidityStablepool(Page.OPTIONS)
+        : setAddLiquidityPool(pool)
+    }
+  }
+
   return (
     <div
       onClick={(e) => {
@@ -147,22 +195,20 @@ const AddLiqduidityButton = ({ pool }: { pool: TPool | TXYKPool }) => {
         size="small"
         disabled={!pool.canAddLiquidity || account?.isExternalWalletConnected}
         css={{
+          borderColor: `rgba(${theme.rgbColors.brightBlue300}, 0.4)`,
           height: 26,
           padding: "6px 8px",
+          width: 88,
           "& > span": {
             fontSize: 12,
-            gap: 2,
+            gap: 4,
             alignItems: "center",
           },
         }}
-        onClick={() =>
-          isStablePool
-            ? setLiquidityStablepool(Page.OPTIONS)
-            : setAddLiquidityPool(pool)
-        }
+        onClick={onClick}
       >
-        <Icon icon={<PlusIcon />} size={12} />
-        {t("add")}
+        <Icon icon={isPosition ? <ManageIcon /> : <PlusIcon />} size={12} />
+        {isPosition ? "Manage" : t("add")}
       </Button>
       {addLiquidityPool && (
         <AddLiquidity
@@ -261,7 +307,11 @@ const APY = ({
   )
 }
 
-export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
+export const usePoolTable = (
+  data: TPool[] | TXYKPool[],
+  isXyk: boolean,
+  onRowSelect: (id: string) => void,
+) => {
   const { t } = useTranslation()
 
   const { accessor, display } = createColumnHelper<TPool | TXYKPool>()
@@ -404,7 +454,10 @@ export const usePoolTable = (data: TPool[] | TXYKPool[], isXyk: boolean) => {
               justify: ["end", "start"],
             }}
           >
-            <AddLiqduidityButton pool={row.original} />
+            <AddLiqduidityButton
+              pool={row.original}
+              onRowSelect={onRowSelect}
+            />
             <ButtonTransparent>
               <Icon sx={{ color: "darkBlue300" }} icon={<ChevronRightIcon />} />
             </ButtonTransparent>
