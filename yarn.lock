@@ -3039,10 +3039,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.2.0.tgz#74feacdf94d4846f1a148835f25936b2ddc7bdfd"
   integrity sha512-mznedOeA8d9BQ8kUQ/4O/P6trqTC4FGwvTDGCHJ0O/bgA9iFb+suctbFtyFT3qfNnngR7FSF2Pls1O/SvtNn8g==
 
-"@galacticcouncil/sdk@^1.1.4":
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.1.4.tgz#44db22a0e684df2b562528bfa5624f619455b589"
-  integrity sha512-YdamFG+7qCyRgBwnQM/66C0aE2b0bKk17nYAlVU5wT0PrxSYkGMP661Hqkj6DJta8TfYtE1h2VQSUR0aGN+qKQ==
+"@galacticcouncil/sdk@^1.1.7":
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.1.7.tgz#c4211b543d18d6cc06f8000ef6112d808be46dde"
+  integrity sha512-Zq4+c9ZjPvJ0y3XEoRJGHLyCp1whQuE9W8tHRcC75nYlYxikhan4dk5pofljs3ovlxtDZSAe+774l0HKXbrZUg==
   dependencies:
     "@galacticcouncil/math-lbp" "^0.2.1"
     "@galacticcouncil/math-omnipool" "^0.2.0"
@@ -3063,10 +3063,10 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.3.0.tgz#bb68b5100c5fe90fe52be1a2fdf5f18f8078536d"
-  integrity sha512-uqY5wTew4sk2MBXcH/U3XLCcj+YAxeAaE1wYKpkiTLIO0Em4+j7vtN/QiYrUbwcO+smqL7B/MIFl6aRA8Ht6xw==
+"@galacticcouncil/xcm-cfg@^1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.4.1.tgz#6e4d1e5b64f7b479532cd6e9263cc90aaa5ca7d8"
+  integrity sha512-qANYbguoFpaFr2BubDkyNUjv1UN3Ox8+kGezvO+78TkAx+naCWQYyp510OJhUa31AiTi1kMmOWHYQgqthakgjA==
 
 "@galacticcouncil/xcm-sdk@^2.1.0":
   version "2.1.0"
