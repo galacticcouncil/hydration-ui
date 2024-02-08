@@ -30,7 +30,7 @@ import { findAndFilterGhoReserve } from "sections/lending/utils/ghoUtilities"
 
 export type TBorrowAssetsTable = typeof useBorrowAssetsTableData
 export type TBorrowAssetsTableData = ReturnType<TBorrowAssetsTable>
-export type TBorrowAssetsRow = TBorrowAssetsTableData[number]
+export type TBorrowAssetsRow = TBorrowAssetsTableData["data"][number]
 
 const { accessor, display } = createColumnHelper<TBorrowAssetsRow>()
 
@@ -130,12 +130,13 @@ export const useBorrowAssetsTableColumns = () => {
 
 export const useBorrowAssetsTableData = () => {
   const { currentNetworkConfig, currentMarket } = useProtocolDataContext()
-  const { user, reserves, marketReferencePriceInUsd } = useAppDataContext()
+  const { user, reserves, marketReferencePriceInUsd, loading } =
+    useAppDataContext()
   const [displayGho] = useRootStore((store) => [store.displayGho])
 
   const { baseAssetSymbol } = currentNetworkConfig
 
-  return useMemo(() => {
+  const sortedReserves = useMemo(() => {
     const tokensToBorrow = reserves
       .filter((reserve) => assetCanBeBorrowedByUser(reserve, user))
       .map((reserve: ComputedReserveData) => {
@@ -221,4 +222,9 @@ export const useBorrowAssetsTableData = () => {
     reserves,
     user,
   ])
+
+  return {
+    data: sortedReserves,
+    isLoading: loading,
+  }
 }

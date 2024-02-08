@@ -3,18 +3,28 @@ import { theme } from "theme"
 
 const SPACING = {
   small: `
-    padding: 12px 16px;
+    height: 40px;
+    padding: 0 16px;
   `,
   medium: `
-    padding: 16px;
+    height: 58px;
+    padding: 0 16px;
+
     @media ${theme.viewport.gte.sm} {
-      padding: 16px 20px;
+      padding: 0 20px;
     }
   `,
   large: `
-    padding: 16px;
+    height: 58px;
+    padding: 0 16px;
+
     @media ${theme.viewport.gte.sm} {
-      padding: 24px 32px;
+      height: 68px;
+      padding: 0 32px;
+    }
+
+    @container ${theme.viewport.lt.sm} {
+      padding: 0 20px;
     }
   `,
 }
@@ -25,14 +35,20 @@ const TITLE_SPACING = {
   `,
   medium: `
     padding: 18px;
+
     @media ${theme.viewport.gte.sm} {
       padding: 20px 20px;
     }
   `,
   large: `
     padding: 18px;
+
     @media ${theme.viewport.gte.sm} {
       padding: 24px 32px;
+    }
+
+    @container ${theme.viewport.lt.sm} {
+      padding: 24px 20px;
     }
   `,
 }
@@ -61,6 +77,8 @@ export type TableProps = {
 }
 
 export const TableContainer = styled.div<Pick<TableProps, "background">>`
+  container-type: inline-size;
+
   overflow: hidden;
   position: relative;
 
@@ -98,7 +116,7 @@ export const TableAddons = styled.div<{
 }>`
   color: ${theme.colors.white};
 
-  ${({ spacing = "medium" }) => SPACING[spacing]}
+  ${({ spacing = "medium" }) => TITLE_SPACING[spacing]}
 
   &:not(:first-child) {
     padding-top: 0;
@@ -181,6 +199,10 @@ function getColumnStyles(spacing: TableColumnSpacing, size: TableSize) {
     thead th {
       ${SPACING[spacing]}
       ${SIZE[size]}
+    }
+
+    thead th {
+      height: 40px;
     }
   `
 }

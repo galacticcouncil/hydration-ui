@@ -8,22 +8,26 @@ import {
 import { Alert } from "components/Alert/Alert"
 
 export const BorrowAssetsTable = () => {
-  const data = useBorrowAssetsTableData()
+  const { data, isLoading } = useBorrowAssetsTableData()
   const columns = useBorrowAssetsTableColumns()
 
   const table = useReactTable({
     data,
     columns,
+    isLoading,
+    skeletonRowCount: 6,
   })
 
   const { user } = useAppDataContext()
+
   return (
     <>
       <DataTable
         table={table}
+        spacing="large"
         title="Assets to borrow"
         addons={
-          user?.totalCollateralMarketReferenceCurrency && (
+          user?.totalCollateralMarketReferenceCurrency === "0" && (
             <Alert variant="info" size="small">
               To borrow you need to supply any asset to be used as collateral.
             </Alert>

@@ -47,7 +47,9 @@ export const useReactTable = <TData extends RowData>({
       isLoading
         ? options.columns.map((column) => ({
             ...column,
-            cell: () => <Skeleton height="1em" />,
+            cell: () => (
+              <Skeleton sx={{ width: "min(80px, 100%)" }} height="1em" />
+            ),
           }))
         : options.columns,
     [isLoading, options.columns],
