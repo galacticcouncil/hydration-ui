@@ -407,30 +407,39 @@ export const getAssets = async (api: ApiPromise) => {
     (token) => token.id === hubAssetId.toString(),
   ) as TToken
 
-  const shareTokens = shareTokensRaw.map((shareToken): TShareToken => {
-    const [assetAId, assetBId] = shareToken.assets
+  const shareTokens = shareTokensRaw.reduce<Array<TShareToken>>(
+    (acc, shareToken) => {
+      const [assetAId, assetBId] = shareToken.assets
 
-    const assetA = [...tokens, ...bonds].find(
-      (token) => token.id === assetAId,
-    ) as TToken
-    const assetB = [...tokens, ...bonds].find(
-      (token) => token.id === assetBId,
-    ) as TToken
+      const assetA = [...tokens, ...bonds].find(
+        (token) => token.id === assetAId,
+      ) as TToken
+      const assetB = [...tokens, ...bonds].find(
+        (token) => token.id === assetBId,
+      ) as TToken
 
-    const assetDecimal = Number(assetA.id) > Number(assetB.id) ? assetB : assetA
+      if (assetA && assetB) {
+        const assetDecimal =
+          Number(assetA.id) > Number(assetB.id) ? assetB : assetA
 
-    const decimals = assetDecimal.decimals
-    const symbol = `${assetA.symbol}/${assetB.symbol}`
-    const name = `${assetA.name.split(" (")[0]}/${assetB.name.split(" (")[0]}`
+        const decimals = assetDecimal.decimals
+        const symbol = `${assetA.symbol}/${assetB.symbol}`
+        const name = `${assetA.name.split(" (")[0]}/${
+          assetB.name.split(" (")[0]
+        }`
 
-    return {
-      ...shareToken,
-      decimals,
-      symbol,
-      name,
-      assetType: "ShareToken",
-    }
-  })
+        acc.push({
+          ...shareToken,
+          decimals,
+          symbol,
+          name,
+          assetType: "ShareToken",
+        })
+      }
+      return acc
+    },
+    [],
+  )
 
   const all = [...tokens, ...bonds, ...stableswap, ...shareTokens]
 
