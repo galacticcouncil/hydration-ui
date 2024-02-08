@@ -68,7 +68,7 @@ export const BorrowAssetsListItem = ({
           disabled={disableBorrow}
           variant="contained"
           onClick={() => {
-            openBorrow(underlyingAsset, currentMarket, name, "dashboard")
+            openBorrow(underlyingAsset)
           }}
         >
           <span>Borrow</span>

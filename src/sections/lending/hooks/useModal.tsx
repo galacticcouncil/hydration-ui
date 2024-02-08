@@ -64,13 +64,7 @@ export interface ModalContextType<T extends ModalArgsType> {
     name: string,
     funnel: string,
   ) => void
-  openBorrow: (
-    underlyingAsset: string,
-    currentMarket: string,
-    name: string,
-    funnel: string,
-    isReserve?: boolean,
-  ) => void
+  openBorrow: (underlyingAsset: string) => void
   openRepay: (
     underlyingAsset: string,
     currentRateMode: InterestRate,
@@ -165,13 +159,7 @@ export const ModalContextProvider: React.FC<{ children?: React.ReactNode }> = ({
           setType(ModalType.Withdraw)
           setArgs({ underlyingAsset })
         },
-        openBorrow: (
-          underlyingAsset,
-          currentMarket,
-          name,
-          funnel,
-          isReserve,
-        ) => {
+        openBorrow: (underlyingAsset) => {
           setType(ModalType.Borrow)
           setArgs({ underlyingAsset })
         },

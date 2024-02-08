@@ -212,13 +212,7 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
                 symbol={selectedAsset}
                 disable={disableBorrowButton}
                 onActionClicked={() => {
-                  openBorrow(
-                    reserve.underlyingAsset,
-                    currentMarket,
-                    reserve.name,
-                    "reserve",
-                    true,
-                  )
+                  openBorrow(reserve.underlyingAsset)
                 }}
               />
             )}
