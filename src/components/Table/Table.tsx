@@ -10,6 +10,7 @@ type TableActionProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   isLoading?: boolean
   icon?: ReactNode
   onClick?: () => void
+  className?: string
 }
 
 export const TableAction = (props: TableActionProps) => {
@@ -24,6 +25,7 @@ export const TableAction = (props: TableActionProps) => {
       css={{
         whiteSpace: "nowrap",
       }}
+      className={props.className}
       onClick={(e) => {
         e.stopPropagation()
         e.preventDefault()

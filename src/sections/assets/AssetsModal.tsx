@@ -54,6 +54,7 @@ export const AssetsModalContent = ({
         balance: BN(0),
         total: BN(0),
         freeBalance: BN(0),
+        reservedBalance: BN(0),
       }
 
       acc.push({ asset, balance })
@@ -72,6 +73,7 @@ export const AssetsModalContent = ({
         (accountAsset): accountAsset is { balance: TBalance; asset: TToken } =>
           accountAsset.asset.isToken ||
           accountAsset.asset.isStableSwap ||
+          accountAsset.asset.isExternal ||
           (withShareTokens ? accountAsset.asset.isShareToken : false),
       )
 

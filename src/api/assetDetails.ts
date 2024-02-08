@@ -404,7 +404,7 @@ export const getAssets = async (api: ApiPromise) => {
           (token) =>
             token.parachainId === parachainId && token.id === generalIndex,
         )
-        console.log(externalTokensStored, externalTokenStored)
+
         const asset: TToken = {
           ...assetCommon,
           assetType,

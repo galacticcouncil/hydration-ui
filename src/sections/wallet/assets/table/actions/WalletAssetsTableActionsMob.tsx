@@ -21,6 +21,7 @@ import {
   useLockedValues,
 } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import Skeleton from "react-loading-skeleton"
+import { AddTokenAction } from "./WalletAssetsTableActions"
 
 type Props = {
   row?: AssetsTableData
@@ -54,7 +55,14 @@ export const WalletAssetsTableActionsMob = ({
         <Separator
           css={{ background: `rgba(${theme.rgbColors.alpha0}, 0.06)` }}
         />
-        <div sx={{ flex: "row", justify: "space-between", py: 30 }}>
+        <div
+          sx={{
+            flex: "row",
+            justify: "space-between",
+            py: 30,
+            flexWrap: "wrap",
+          }}
+        >
           <div sx={{ flex: "column", gap: 4 }}>
             <Text fs={14} lh={16} color="whiteish500">
               {t("wallet.assets.table.header.total")}
@@ -177,66 +185,70 @@ export const WalletAssetsTableActionsMob = ({
               </div>
             )}
           </div>
-          <div sx={{ flex: "column", gap: 12 }}>
-            <Link
-              to={LINKS.trade}
-              search={canBuy ? { assetOut: row.id } : { assetIn: row.id }}
-              disabled={
-                !row.tradability.inTradeRouter ||
-                account?.isExternalWalletConnected
-              }
-              sx={{ width: "100%" }}
-            >
-              <Button
-                sx={{ width: "100%" }}
-                size="small"
+          {row.isExternal && !row.name ? (
+            <AddTokenAction id={row.id} css={{ width: "100%" }} />
+          ) : (
+            <div sx={{ flex: "column", gap: 12 }}>
+              <Link
+                to={LINKS.trade}
+                search={canBuy ? { assetOut: row.id } : { assetIn: row.id }}
                 disabled={
                   !row.tradability.inTradeRouter ||
                   account?.isExternalWalletConnected
                 }
+                sx={{ width: "100%" }}
               >
-                <TradeIcon />
-                {t("wallet.assets.table.actions.trade")}
-              </Button>
-            </Link>
+                <Button
+                  sx={{ width: "100%" }}
+                  size="small"
+                  disabled={
+                    !row.tradability.inTradeRouter ||
+                    account?.isExternalWalletConnected
+                  }
+                >
+                  <TradeIcon />
+                  {t("wallet.assets.table.actions.trade")}
+                </Button>
+              </Link>
 
-            <Button
-              sx={{ width: "100%" }}
-              size="small"
-              disabled={account?.isExternalWalletConnected}
-              onClick={() => onTransferClick(row.id)}
-            >
-              <TransferIcon />
-              {t("wallet.assets.table.actions.transfer")}
-            </Button>
-            <Link
-              to={LINKS.cross_chain}
-              disabled={account?.isExternalWalletConnected}
-              sx={{ width: "100%" }}
-            >
               <Button
                 sx={{ width: "100%" }}
                 size="small"
                 disabled={account?.isExternalWalletConnected}
+                onClick={() => onTransferClick(row.id)}
               >
-                <PlusIcon />
-                {t("wallet.assets.table.actions.deposit")}
+                <TransferIcon />
+                {t("wallet.assets.table.actions.transfer")}
               </Button>
-            </Link>
+              <Link
+                to={LINKS.cross_chain}
+                disabled={account?.isExternalWalletConnected}
+                sx={{ width: "100%" }}
+              >
+                <Button
+                  sx={{ width: "100%" }}
+                  size="small"
+                  disabled={account?.isExternalWalletConnected}
+                >
+                  <PlusIcon />
+                  {t("wallet.assets.table.actions.deposit")}
+                </Button>
+              </Link>
 
-            <Button
-              sx={{ width: "100%" }}
-              size="small"
-              onClick={() => setFeeAsPayment(row.id)}
-              disabled={
-                !row.couldBeSetAsPaymentFee ||
-                account?.isExternalWalletConnected
-              }
-            >
-              <DollarIcon />
-              {t("wallet.assets.table.actions.payment.asset")}
-            </Button>
-          </div>
+              <Button
+                sx={{ width: "100%" }}
+                size="small"
+                onClick={() => setFeeAsPayment(row.id)}
+                disabled={
+                  !row.couldBeSetAsPaymentFee ||
+                  account?.isExternalWalletConnected
+                }
+              >
+                <DollarIcon />
+                {t("wallet.assets.table.actions.payment.asset")}
+              </Button>
+            </div>
+          )}
         </SActionButtonsContainer>
       </div>
     </Modal>

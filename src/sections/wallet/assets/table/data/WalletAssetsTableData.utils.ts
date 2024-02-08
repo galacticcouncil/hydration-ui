@@ -8,7 +8,6 @@ import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAcceptedCurrencies, useAccountCurrency } from "api/payments"
-import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -23,8 +22,6 @@ export const useAssetsData = ({
   const { account } = useAccount()
   const address = givenAddress ?? account?.address
 
-  const { tokens, isAdded } = useUserExternalTokenStore()
-
   const balances = useAccountBalances(address)
   const nativeTokenWithBalance = balances.data?.native
   const tokensWithBalance = useMemo(() => {
@@ -32,22 +29,17 @@ export const useAssetsData = ({
       const filteredTokens = balances.data.balances.filter((balance) => {
         const meta = assets.getAsset(balance.id)
 
-        if (meta.isExternal) {
-          const storedToken = tokens.find(
-            (token) => token.id === meta.generalIndex,
-          )
-
-          return !!storedToken
-        }
-
-        return (meta.isToken || meta.isStableSwap) && !meta.isNative
+        return (
+          (meta.isToken || meta.isStableSwap || meta.isExternal) &&
+          !meta.isNative
+        )
       })
 
       return [...filteredTokens, nativeTokenWithBalance]
     }
 
     return []
-  }, [assets, balances.data, nativeTokenWithBalance, tokens])
+  }, [assets, balances.data, nativeTokenWithBalance])
 
   const tokensWithBalanceIds = tokensWithBalance.map(
     (tokenWithBalance) => tokenWithBalance.id,
@@ -65,19 +57,9 @@ export const useAssetsData = ({
 
   const data = useMemo(() => {
     const rowsWithBalance = tokensWithBalance.map((balance) => {
-      let { decimals, id, name, symbol, isExternal, generalIndex } =
-        assets.getAsset(balance.id)
-
-      //TBD: what I have balance but didn't add an external asset
-      if (isExternal && isAdded(generalIndex)) {
-        const storedToken = tokens.find((token) => token.id === generalIndex)
-
-        if (storedToken) {
-          symbol = storedToken?.symbol
-          name = storedToken?.name
-          decimals = storedToken?.decimals
-        }
-      }
+      let { decimals, id, name, symbol, isExternal } = assets.getAsset(
+        balance.id,
+      )
 
       const inTradeRouter = assets.tradeAssets.some(
         (tradeAsset) => tradeAsset.id === id,
@@ -125,6 +107,7 @@ export const useAssetsData = ({
         transferable,
         transferableDisplay,
         tradability,
+        isExternal,
       }
     })
 
@@ -163,6 +146,7 @@ export const useAssetsData = ({
                   transferable: BN_0,
                   transferableDisplay: BN_0,
                   tradability,
+                  isExternal,
                 })
               }
             }
@@ -196,8 +180,6 @@ export const useAssetsData = ({
     search,
     isAllAssets,
     allAssets,
-    isAdded,
-    tokens,
   ])
 
   return { data, isLoading: balances.isLoading }
