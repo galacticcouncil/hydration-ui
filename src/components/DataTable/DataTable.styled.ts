@@ -73,22 +73,35 @@ export type TableProps = {
   borderless?: boolean
   spacing?: TableColumnSpacing
   size?: TableSize
+  fixedLayout?: boolean
   background?: keyof typeof theme.colors | "transparent"
 }
 
 export const TableContainer = styled.div<Pick<TableProps, "background">>`
+  --border-color: rgba(152, 176, 214, 0.27);
   container-type: inline-size;
 
-  overflow: hidden;
+  overflow-x: auto;
   position: relative;
 
-  border-radius: ${theme.borderRadius.medium}px;
-  border: 1px solid rgba(152, 176, 214, 0.27);
+  margin: 0 -15px;
+
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
 
   background: ${({ background }) =>
     background && background !== "transparent"
       ? theme.colors[background]
       : "transparent"};
+
+  @media ${theme.viewport.gte.sm} {
+    overflow-x: unset;
+
+    border: 1px solid var(--border-color);
+    border-radius: ${theme.borderRadius.medium}px;
+
+    margin: unset;
+  }
 `
 
 export const TableTitleContainer = styled.div<{
@@ -134,6 +147,7 @@ export const Table = styled.table<TableProps>`
     border-top: 1px solid rgba(${theme.rgbColors.white}, 0.06);
   }
 
+  ${({ fixedLayout }) => fixedLayout && "table-layout: fixed;"}
   ${({ spacing = "medium", size = "medium" }) => getColumnStyles(spacing, size)}
   ${({ borderless }) => !borderless && getBorderStyles()}
   ${({ striped }) => striped && getStripedStyles()}
@@ -199,6 +213,7 @@ function getColumnStyles(spacing: TableColumnSpacing, size: TableSize) {
   return `
     tbody td,
     thead th {
+      white-space: nowrap;
       ${SPACING[spacing]}
       ${SIZE[size]}
     }

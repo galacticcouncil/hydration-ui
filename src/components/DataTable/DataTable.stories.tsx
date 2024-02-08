@@ -15,9 +15,9 @@ export default {
 type TMockData = {
   id: string
   token: string
-  price: number | string
-  marketCap: number | string
-  changeIn24h: number | string
+  price: string
+  marketCap: string
+  changeIn24h: string
 }
 
 const _mockTableData_: TMockData[] = [
@@ -89,6 +89,33 @@ const _mockColumns_: ColumnDef<TMockData>[] = [
         textAlign: "right",
       },
     },
+    cell: ({ row }) => {
+      const value = row.original.changeIn24h
+      return (
+        <span sx={{ color: value.includes("-") ? "red400" : "green400" }}>
+          {value}
+        </span>
+      )
+    },
+  },
+  {
+    id: "actions",
+    header: "",
+    meta: {
+      sx: {
+        textAlign: "end",
+      },
+    },
+    cell: () => (
+      <div sx={{ flex: "row", gap: 10 }}>
+        <Button onClick={() => alert("SWAP")} size="micro">
+          SWAP
+        </Button>
+        <Button onClick={() => alert("TRANSFER")} size="micro">
+          TRANSFER
+        </Button>
+      </div>
+    ),
   },
 ]
 
@@ -105,7 +132,11 @@ const MockTable = ({
     skeletonRowCount: _mockTableData_.length,
   })
 
-  return <DataTable {...props} table={table} />
+  return (
+    <div sx={{ p: 15, bg: "bg" }}>
+      <DataTable {...props} table={table} />
+    </div>
+  )
 }
 
 export const Default: Story = {

@@ -33,6 +33,7 @@ export function DataTable<T extends Record<string, any>>({
   action,
   addons,
   className,
+  fixedLayout = false,
   spacing = "medium",
   size = "medium",
   background = "darkBlue700",
@@ -47,6 +48,7 @@ export function DataTable<T extends Record<string, any>>({
     borderless,
     striped,
     hoverable,
+    fixedLayout,
   }
 
   return (
@@ -114,7 +116,7 @@ export function DataTable<T extends Record<string, any>>({
                   >
                     {onRowClick ? (
                       <div
-                        css={{ display: "inline" }}
+                        css={{ display: "inline-block", width: "fit-content" }}
                         onClick={(e) => e.stopPropagation()}
                       >
                         {flexRender(
