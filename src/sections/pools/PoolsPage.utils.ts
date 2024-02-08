@@ -469,6 +469,9 @@ export const useXYKPools = (withPositions?: boolean) => {
         if (!shareTokenId) return undefined
 
         const shareTokenMeta = assets.getAsset(shareTokenId) as TShareToken
+
+        if (!shareTokenMeta.isShareToken) return undefined
+
         const [assetAMeta, assetBMeta] = assets.getAssets(shareTokenMeta.assets)
 
         const shareTokenIssuance = totalIssuances.data?.find(
