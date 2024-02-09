@@ -83,7 +83,6 @@ export const OtcOrderTable = ({ data, showMyOrders, showPartial }: Props) => {
           {table.getRowModel().rows.map((row, i) => (
             <Fragment key={row.id}>
               <TableRow
-                isOdd={!(i % 2)}
                 onClick={() => {
                   isDesktop && row.toggleSelected()
                   !isDesktop && setRow(row.original)

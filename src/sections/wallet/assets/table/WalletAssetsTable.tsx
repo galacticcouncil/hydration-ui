@@ -114,7 +114,6 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
               table.getRowModel().rows.map((row, i) => (
                 <Fragment key={row.original.id}>
                   <TableRow
-                    isOdd={!(i % 2)}
                     onClick={() => {
                       isDesktop && row.toggleSelected()
                       !isDesktop && setRow(row.original)
@@ -130,7 +129,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
                     ))}
                   </TableRow>
                   {row.getIsSelected() && (
-                    <TableRow isSub>
+                    <TableRow>
                       <TableData colSpan={table.getAllColumns().length}>
                         <WalletAssetsTableDetails {...row.original} />
                       </TableData>

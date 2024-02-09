@@ -60,7 +60,7 @@ export const AvailableFarms = ({ pool }: { pool: TPool }) => {
         <Modal
           open={true}
           onClose={() => setSelectedFarmId(null)}
-          title={t("rpc.change.modal.title")}
+          title={t("farms.modal.details.title")}
         >
           <FarmDetailsModal
             poolId={pool.id}
