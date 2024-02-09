@@ -6,7 +6,7 @@ import { useToast } from "state/toasts"
 import { PreviewReferrer } from "sections/referrals/components/PreviewReferrer/PreviewReferrer"
 import { useReferrerAddress } from "api/referrals"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { SInfoIcon } from "sections/pools/pool/Pool.styled"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { theme } from "theme"
 
 export const ReviewReferralCodeWrapper = ({

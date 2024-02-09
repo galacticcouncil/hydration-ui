@@ -21,11 +21,6 @@ import { StatsOmnipoolAsset } from "sections/stats/sections/omnipoolAsset/StatsO
 import { BridgePage } from "sections/xcm/BridgePage"
 import { YieldDcaPage } from "sections/trade/sections/yieldDca/YieldDcaPage"
 
-const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
-const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
-const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
-const isXYKPageEnabled = import.meta.env.VITE_FF_XYK_ENABLED === "true"
-
 export const routes = [
   {
     path: "/",
@@ -44,37 +39,25 @@ export const routes = [
         element: <SwapPage />,
       },
       {
-        ...(isOtcPageEnabled && {
-          path: "otc",
-          element: <OtcPageWrapper />,
-        }),
+        path: "otc",
+        element: <OtcPageWrapper />,
       },
       {
         path: "yield-dca",
         element: <YieldDcaPage />,
       },
       {
-        ...(isDcaPageEnabled && {
-          path: "dca",
-          element: <DcaPage />,
-        }),
+        path: "dca",
+        element: <DcaPage />,
       },
-      ...(isBondsPageEnabled
-        ? [
-            {
-              path: "bond",
-              element: <BondDetailsPage />,
-            },
-          ]
-        : []),
-      ...(isBondsPageEnabled
-        ? [
-            {
-              path: "bonds",
-              element: <BondsPageWrapper />,
-            },
-          ]
-        : []),
+      {
+        path: "bond",
+        element: <BondDetailsPage />,
+      },
+      {
+        path: "bonds",
+        element: <BondsPageWrapper />,
+      },
     ],
   },
   {
@@ -82,7 +65,7 @@ export const routes = [
     children: [
       {
         path: "/",
-        element: <Navigate to="assets" />,
+        element: <Navigate to="assets" fromCurrent />,
       },
       {
         path: "assets",
@@ -90,6 +73,10 @@ export const routes = [
       },
       {
         path: "vesting",
+        element: <WalletPage />,
+      },
+      {
+        path: "transactions",
         element: <WalletPage />,
       },
     ],
@@ -114,14 +101,10 @@ export const routes = [
         path: "omnipool-stablepools",
         element: <OmnipoolAndStablepool />,
       },
-      ...(isXYKPageEnabled
-        ? [
-            {
-              path: "isolated",
-              element: <IsolatedPools />,
-            },
-          ]
-        : []),
+      {
+        path: "isolated",
+        element: <IsolatedPools />,
+      },
     ],
   },
   {

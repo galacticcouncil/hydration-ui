@@ -29,8 +29,6 @@ type Props = {
 
 type TBalance = ReturnType<typeof useAcountAssets>[number]["balance"]
 
-const enabledBonds = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
-
 export const AssetsModalContent = ({
   allowedAssets,
   onSelect,
@@ -159,7 +157,7 @@ export const AssetsModalContent = ({
           ))}
         </>
       )}
-      {enabledBonds && withBonds && searchedBonds.length ? (
+      {withBonds && searchedBonds.length ? (
         <>
           <SAssetsModalHeader>
             <Text color="basic700" fw={500} fs={12} tTransform="uppercase">

@@ -6,6 +6,7 @@ export const useSearchFilter = () => {
   const search = useSearch<{
     Search: {
       search?: string
+      id?: number
     }
   }>()
 

@@ -26,7 +26,7 @@ export const WalletAssetsTableBalance = (props: {
         e.stopPropagation()
       }}
     >
-      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
+      <Text fs={14} lh={16} fw={500} color="white">
         {t("value.token", { value: props.balance })}
       </Text>
 
@@ -34,8 +34,8 @@ export const WalletAssetsTableBalance = (props: {
         value={usdValue}
         wrapper={(children) => (
           <Text
-            fs={[11, 13]}
-            lh={[14, 16]}
+            fs={13}
+            lh={13}
             fw={500}
             css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.61)` }}
           >

@@ -12,76 +12,82 @@ export const useFarmDepositMutation = (
   positionId: string,
   toast: ToastMessage,
   onClose: () => void,
+  onSuccess: () => void,
 ) => {
   const { createTransaction } = useStore()
   const { api } = useRpcProvider()
   const farms = useFarms([poolId])
   const { t } = useTranslation()
 
-  return useMutation(async () => {
-    const [firstFarm, ...restFarm] = farms.data ?? []
-    if (firstFarm == null) throw new Error("Missing farm")
+  return useMutation(
+    async () => {
+      const [firstFarm, ...restFarm] = farms.data ?? []
+      if (firstFarm == null) throw new Error("Missing farm")
 
-    const firstStep: StepProps[] = [
-      {
-        label: t("farms.modal.join.step", { number: 1 }),
-        state: "active",
-      },
-      {
-        label: t("farms.modal.join.step", { number: 2 }),
-        state: "todo",
-      },
-    ]
+      const firstStep: StepProps[] = [
+        {
+          label: t("farms.modal.join.step", { number: 1 }),
+          state: "active",
+        },
+        {
+          label: t("farms.modal.join.step", { number: 2 }),
+          state: "todo",
+        },
+      ]
 
-    const firstDeposit = await createTransaction(
-      {
-        tx: api.tx.omnipoolLiquidityMining.depositShares(
-          firstFarm.globalFarm.id,
-          firstFarm.yieldFarm.id,
-          positionId,
-        ),
-      },
-      {
-        toast,
-        steps: restFarm.length ? firstStep : undefined,
-        onSubmitted: onClose,
-        onClose,
-        onBack: () => {},
-      },
-    )
-
-    for (const record of firstDeposit.events) {
-      if (api.events.omnipoolLiquidityMining.SharesDeposited.is(record.event)) {
-        const depositId = record.event.data.depositId
-
-        const secondStep: StepProps[] = [
-          {
-            label: t("farms.modal.join.step", { number: 1 }),
-            state: "done",
-          },
-          {
-            label: t("farms.modal.join.step", { number: 2 }),
-            state: "active",
-          },
-        ]
-
-        const txs = restFarm.map((farm) =>
-          api.tx.omnipoolLiquidityMining.redepositShares(
-            farm.globalFarm.id,
-            farm.yieldFarm.id,
-            depositId,
+      const firstDeposit = await createTransaction(
+        {
+          tx: api.tx.omnipoolLiquidityMining.depositShares(
+            firstFarm.globalFarm.id,
+            firstFarm.yieldFarm.id,
+            positionId,
           ),
-        )
+        },
+        {
+          toast,
+          steps: restFarm.length ? firstStep : undefined,
+          onSubmitted: onClose,
+          onClose,
+          onBack: () => {},
+        },
+      )
 
-        if (txs.length > 0) {
-          await createTransaction(
+      for (const record of firstDeposit.events) {
+        if (
+          api.events.omnipoolLiquidityMining.SharesDeposited.is(record.event)
+        ) {
+          const depositId = record.event.data.depositId
+
+          const secondStep: StepProps[] = [
             {
-              tx: txs.length > 1 ? api.tx.utility.batch(txs) : txs[0],
+              label: t("farms.modal.join.step", { number: 1 }),
+              state: "done",
             },
-            { toast, steps: secondStep },
+            {
+              label: t("farms.modal.join.step", { number: 2 }),
+              state: "active",
+            },
+          ]
+
+          const txs = restFarm.map((farm) =>
+            api.tx.omnipoolLiquidityMining.redepositShares(
+              farm.globalFarm.id,
+              farm.yieldFarm.id,
+              depositId,
+            ),
           )
+
+          if (txs.length > 0) {
+            await createTransaction(
+              {
+                tx: txs.length > 1 ? api.tx.utility.batch(txs) : txs[0],
+              },
+              { toast, steps: secondStep },
+            )
+          }
         }
       }
-    }
-  })
+    },
+    { onSuccess },
+  )
 }

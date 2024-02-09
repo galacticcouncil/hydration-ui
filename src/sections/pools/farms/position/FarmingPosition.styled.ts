@@ -9,16 +9,14 @@ export const SContainer = styled.div`
 
   width: 100%;
 
-  padding: 20px;
+  padding: 20px 16px;
 
   background-color: rgba(${theme.rgbColors.alpha0}, 0.06);
 
   border-radius: 4px;
 
-  @media ${theme.viewport.gte.sm} {
-    padding: 15px 30px;
-
-    gap: 4px;
+  @media (${theme.viewport.gte.sm}) {
+    padding: 20px 30px;
   }
 `
 
@@ -33,15 +31,5 @@ export const SValueContainer = styled.div`
   align-self: center;
   justify-content: space-between;
 
-  padding: 8px 0;
-
   width: 100%;
-
-  @media ${theme.viewport.gte.sm} {
-    flex-direction: column;
-
-    width: auto;
-
-    padding: 0;
-  }
 `

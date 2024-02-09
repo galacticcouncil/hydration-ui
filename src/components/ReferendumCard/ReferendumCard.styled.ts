@@ -10,7 +10,7 @@ export const SContainer = styled.a<{ type: "staking" | "toast" }>`
           border-radius: ${theme.borderRadius.default}px;
         `
       : css`
-          border-radius: ${theme.borderRadius.stakingCard}px;
+          border-radius: ${theme.borderRadius.medium}px;
 
           position: relative;
 
@@ -19,7 +19,7 @@ export const SContainer = styled.a<{ type: "staking" | "toast" }>`
             position: absolute;
             inset: 0;
 
-            border-radius: ${theme.borderRadius.stakingCard}px;
+            border-radius: ${theme.borderRadius.medium}px;
             padding: 1px; // a width of the border
 
             background: linear-gradient(

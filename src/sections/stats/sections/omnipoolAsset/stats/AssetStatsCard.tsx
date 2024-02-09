@@ -4,7 +4,7 @@ import Skeleton from "react-loading-skeleton"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { SInfoIcon } from "sections/pools/pool/Pool.styled"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
 export const AssetStatsCard = ({
   title,
@@ -22,7 +22,7 @@ export const AssetStatsCard = ({
   return (
     <SCardContainer>
       <div sx={{ flex: "row", gap: 4, align: "center" }}>
-        <Text color="brightBlue300">{title}</Text>{" "}
+        <Text color="brightBlue300">{title}</Text>
         {tooltip && (
           <InfoTooltip text={tooltip}>
             <SInfoIcon />
