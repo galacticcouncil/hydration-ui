@@ -292,7 +292,7 @@ export const useCoingeckoPrice = (assets: simplifiedAsset[]) => {
     {
       enabled: assets.length > 0,
       refetchOnWindowFocus: false,
-      refetchOnMount: true,
+      refetchOnMount: false,
       refetchOnReconnect: false,
       retry: false,
       staleTime: 1000 * 60 * 60, // 1h
@@ -316,5 +316,5 @@ export const getCoingeckoAssetPrice = async (assetName: string) => {
   )
   const json = await res.json()
 
-  return json[formattedAssetName.toLowerCase()].usd
+  return json[formattedAssetName.toLowerCase()]?.usd
 }

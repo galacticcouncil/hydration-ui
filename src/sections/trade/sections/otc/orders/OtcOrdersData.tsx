@@ -1,24 +1,92 @@
 import BN from "bignumber.js"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { OfferingPair } from "./OtcOrdersData.utils"
 import { motion } from "framer-motion"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const OrderPairColumn = (props: {
   offering: OfferingPair
   accepting: OfferingPair
   pol: boolean
 }) => {
+  const { assets } = useRpcProvider()
+  const offerAssetDetails = assets.getAsset(props.offering.asset)
+  const acceptAssetDetails = assets.getAsset(props.accepting.asset)
+  const offerIsBond = assets.isBond(offerAssetDetails)
+  const acceptIsBond = assets.isBond(acceptAssetDetails)
+
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
-      <MultipleIcons
+      {assets.isStableSwap(offerAssetDetails) ||
+      assets.isShareToken(offerAssetDetails) ? (
+        <MultipleIcons
+          size={22}
+          icons={offerAssetDetails.assets.map((assetId: string) => {
+            const meta = assets.getAsset(assetId)
+            const isBond = assets.isBond(meta)
+            return {
+              icon: (
+                <Icon
+                  size={22}
+                  icon={<AssetLogo id={isBond ? meta.assetId : assetId} />}
+                />
+              ),
+            }
+          })}
+        />
+      ) : (
+        <Icon
+          size={22}
+          icon={
+            <AssetLogo
+              id={
+                offerIsBond ? offerAssetDetails.assetId : offerAssetDetails.id
+              }
+            />
+          }
+        />
+      )}
+      {assets.isStableSwap(acceptAssetDetails) ||
+      assets.isShareToken(acceptAssetDetails) ? (
+        <MultipleIcons
+          size={22}
+          icons={acceptAssetDetails.assets.map((assetId: string) => {
+            const meta = assets.getAsset(assetId)
+            const isBond = assets.isBond(meta)
+            return {
+              icon: (
+                <Icon
+                  size={22}
+                  icon={<AssetLogo id={isBond ? meta.assetId : assetId} />}
+                />
+              ),
+            }
+          })}
+        />
+      ) : (
+        <Icon
+          size={22}
+          icon={
+            <AssetLogo
+              id={
+                acceptIsBond
+                  ? acceptAssetDetails.assetId
+                  : acceptAssetDetails.id
+              }
+            />
+          }
+        />
+      )}
+      {/* <MultipleIcons
         icons={[
           { icon: <AssetLogo id={props.offering.asset} /> },
           { icon: <AssetLogo id={props.accepting.asset} /> },
         ]}
-      />
+      /> */}
       <div sx={{ display: "box", ml: 8 }}>
         <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="basic400">
           {props.offering.symbol} / {props.accepting.symbol}
@@ -50,20 +118,81 @@ export const OrderAssetColumn = (props: {
   large?: boolean
 }) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
+
+  const assetDetails = assets.getAsset(props.pair.asset)
+  const isBond = assets.isBond(assetDetails)
 
   return (
-    <div sx={{ flex: "row", gap: 4, align: "center" }}>
-      <div style={{ width: "22px" }}>
-        <AssetLogo id={props.pair.asset} />
+    <div sx={{ flex: "row", align: "center", gap: 4 }}>
+      {assets.isStableSwap(assetDetails) ||
+      assets.isShareToken(assetDetails) ? (
+        <MultipleIcons
+          size={22}
+          icons={assetDetails.assets.map((assetId: string) => {
+            const meta = assets.getAsset(assetId)
+            const isBond = assets.isBond(meta)
+            return {
+              icon: (
+                <Icon
+                  size={22}
+                  icon={<AssetLogo id={isBond ? meta.assetId : assetId} />}
+                />
+              ),
+            }
+          })}
+        />
+      ) : (
+        <Icon
+          size={22}
+          icon={
+            <AssetLogo id={isBond ? assetDetails.assetId : assetDetails.id} />
+          }
+        />
+      )}
+      <div
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        <div
+          sx={{
+            display: "flex",
+            gap: 2,
+          }}
+        >
+          <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
+            {t("value.token", { value: props.pair.amount })}
+          </Text>
+          <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
+            {props.pair.symbol}
+          </Text>
+        </div>
+
+        {isBond && (
+          <Text fs={11} lh={[16, 16]} fw={500} color="whiteish500">
+            {assetDetails.name.replace("HDX Bond ", "")}
+          </Text>
+        )}
       </div>
-      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
-        {t("value.token", { value: props.pair.amount })}
-      </Text>
-      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
-        {props.pair.symbol}
-      </Text>
     </div>
   )
+
+  // return (
+  //   <div sx={{ flex: "row", gap: 4, align: "center" }}>
+  //     <div style={{ width: "22px" }}>
+  //       <AssetLogo id={props.pair.asset} />
+  //     </div>
+  //     <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
+  //       {t("value.token", { value: props.pair.amount })}
+  //     </Text>
+  //     <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
+  //       {props.pair.symbol}
+  //     </Text>
+  //   </div>
+  // )
 }
 
 export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
@@ -141,10 +270,11 @@ export const OrderMarketPriceColumn = (props: {
     }
   }
 
-  const formattedPercentage =
-    props.percentage > 0
-      ? `+${props.percentage?.toFixed(2)}%`
-      : `${props.percentage?.toFixed(2)}%`
+  const formatPercentage = (percent: number) => {
+    if (percent) {
+      return percent > 0 ? `+${percent.toFixed(2)}%` : `${percent.toFixed(2)}%`
+    }
+  }
 
   const parentVariants = {
     initial: {},
@@ -171,7 +301,7 @@ export const OrderMarketPriceColumn = (props: {
     >
       {props.percentage ? (
         <Text fs={[14, 16]} lh={[16, 16]} fw={500} color={color as any}>
-          {formattedPercentage}
+          {formatPercentage(props.percentage)}
         </Text>
       ) : (
         <Text fs={12} fw={400} color="basic400" tAlign={"center"} as="div">
