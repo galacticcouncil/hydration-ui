@@ -51,13 +51,7 @@ export type TxStateType = {
 }
 
 export interface ModalContextType<T extends ModalArgsType> {
-  openSupply: (
-    underlyingAsset: string,
-    currentMarket: string,
-    name: string,
-    funnel: string,
-    isReserve?: boolean,
-  ) => void
+  openSupply: (underlyingAsset: string) => void
   openWithdraw: (
     underlyingAsset: string,
     currentMarket: string,
@@ -145,13 +139,7 @@ export const ModalContextProvider: React.FC<{ children?: React.ReactNode }> = ({
   return (
     <ModalContext.Provider
       value={{
-        openSupply: (
-          underlyingAsset,
-          currentMarket,
-          name,
-          funnel,
-          isReserve,
-        ) => {
+        openSupply: (underlyingAsset) => {
           setType(ModalType.Supply)
           setArgs({ underlyingAsset })
         },

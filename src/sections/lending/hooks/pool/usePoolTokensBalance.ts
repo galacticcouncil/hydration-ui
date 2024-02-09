@@ -16,7 +16,8 @@ export const usePoolsTokensBalance = <T = UserPoolTokensBalances[]>(
   opts?: HookOpts<UserPoolTokensBalances[], T>,
 ) => {
   const { poolTokensBalanceService } = useSharedDependencies()
-  return useQueries({
+
+  const results = useQueries({
     queries: marketsData.map((marketData) => ({
       queryKey: queryKeysFactory.poolTokens(user, marketData),
       queryFn: () =>
@@ -26,6 +27,8 @@ export const usePoolsTokensBalance = <T = UserPoolTokensBalances[]>(
       ...opts,
     })),
   })
+
+  return results
 }
 
 export const usePoolTokensBalance = (marketData: MarketDataType) => {

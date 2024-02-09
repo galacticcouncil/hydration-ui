@@ -1,6 +1,6 @@
 import { valueToBigNumber } from "@aave/math-utils"
 import { SxProps, Theme } from "@mui/system"
-import { createContext, ReactNode, useContext } from "react"
+import { createContext, ReactNode, useContext, useMemo } from "react"
 import { BorrowCapMaxedTooltip } from "sections/lending/components/infoTooltips/BorrowCapMaxedTooltip"
 import { DebtCeilingMaxedTooltip } from "sections/lending/components/infoTooltips/DebtCeilingMaxedTooltip"
 import { SupplyCapMaxedTooltip } from "sections/lending/components/infoTooltips/SupplyCapMaxedTooltip"
@@ -35,7 +35,9 @@ export type AssetCapUsageData = {
   debtCeiling: AssetCapHookData
 }
 
-const getAssetCapData = (asset: ComputedReserveData): AssetCapUsageData => {
+export const getAssetCapData = (
+  asset: ComputedReserveData,
+): AssetCapUsageData => {
   const { supplyCapUsage, supplyCapReached } = getSupplyCapData(asset)
   const { borrowCapUsage, borrowCapReached } = getBorrowCapData(asset)
   const { debtCeilingUsage, debtCeilingReached } = getDebtCeilingData(asset)
@@ -85,6 +87,10 @@ const getAssetCapData = (asset: ComputedReserveData): AssetCapUsageData => {
   }
 
   return assetCapUsageData
+}
+
+export const useAssetCap = (asset: ComputedReserveData): AssetCapUsageData => {
+  return useMemo(() => getAssetCapData(asset), [asset])
 }
 
 /*

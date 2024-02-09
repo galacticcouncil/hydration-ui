@@ -21,19 +21,17 @@ export const BorrowAssetsTable = () => {
   const { user } = useAppDataContext()
 
   return (
-    <>
-      <DataTable
-        table={table}
-        spacing="large"
-        title="Assets to borrow"
-        addons={
-          user?.totalCollateralMarketReferenceCurrency === "0" && (
-            <Alert variant="info" size="small">
-              To borrow you need to supply any asset to be used as collateral.
-            </Alert>
-          )
-        }
-      />
-    </>
+    <DataTable
+      table={table}
+      spacing="large"
+      title="Assets to borrow"
+      addons={
+        user?.totalCollateralMarketReferenceCurrency === "0" && (
+          <Alert variant="info" size="small">
+            To borrow you need to supply any asset to be used as collateral.
+          </Alert>
+        )
+      }
+    />
   )
 }

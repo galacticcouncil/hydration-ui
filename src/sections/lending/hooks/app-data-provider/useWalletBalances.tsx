@@ -13,6 +13,7 @@ import {
 
 import { usePoolsReservesHumanized } from "sections/lending/hooks/pool/usePoolReserves"
 import { usePoolsTokensBalance } from "sections/lending/hooks/pool/usePoolTokensBalance"
+import { useEffect, useMemo } from "react"
 
 export interface WalletBalance {
   address: string
@@ -82,31 +83,47 @@ const formatAggregatedBalance = ({
   }
 }
 
-export const usePoolsWalletBalances = (marketDatas: MarketDataType[]) => {
+export const usePoolsWalletBalances = (marketData: MarketDataType) => {
+  const marketDatas = useMemo(() => [marketData], [marketData])
+
   const user = useRootStore((store) => store.account)
   const tokensBalanceQueries = usePoolsTokensBalance(marketDatas, user)
   const poolsBalancesQueries = usePoolsReservesHumanized(marketDatas)
-  const isLoading =
-    tokensBalanceQueries.find((elem) => elem.isLoading) ||
-    poolsBalancesQueries.find((elem) => elem.isLoading)
-  const walletBalances = poolsBalancesQueries.map((query, index) =>
-    formatAggregatedBalance({
-      reservesHumanized: query.data,
-      balances: tokensBalanceQueries[index]?.data,
-      marketData: marketDatas[index],
-    }),
-  )
-  return {
-    walletBalances,
-    isLoading,
-  }
+
+  useEffect(() => {
+    console.log("tokensBalanceQueries", tokensBalanceQueries)
+  }, [tokensBalanceQueries])
+
+  /* useEffect(() => {
+    console.log("poolsBalancesQueries", poolsBalancesQueries)
+  }, [poolsBalancesQueries]) */
+
+  return useMemo(() => {
+    const isLoading =
+      tokensBalanceQueries.find((elem) => elem.isLoading) ||
+      poolsBalancesQueries.find((elem) => elem.isLoading)
+    const walletBalances = poolsBalancesQueries.map((query, index) =>
+      formatAggregatedBalance({
+        reservesHumanized: query.data,
+        balances: tokensBalanceQueries[index]?.data,
+        marketData: marketDatas[index],
+      }),
+    )
+    return {
+      walletBalances,
+      isLoading,
+    }
+  }, [marketDatas, poolsBalancesQueries, tokensBalanceQueries])
 }
 
 export const useWalletBalances = (marketData: MarketDataType) => {
-  const { walletBalances, isLoading } = usePoolsWalletBalances([marketData])
-  return {
-    walletBalances: walletBalances[0].walletBalances,
-    hasEmptyWallet: walletBalances[0].hasEmptyWallet,
-    loading: isLoading,
-  }
+  const { walletBalances, isLoading } = usePoolsWalletBalances(marketData)
+
+  return useMemo(() => {
+    return {
+      walletBalances: walletBalances[0].walletBalances,
+      hasEmptyWallet: walletBalances[0].hasEmptyWallet,
+      loading: isLoading,
+    }
+  }, [isLoading, walletBalances])
 }

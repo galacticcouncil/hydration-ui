@@ -68,7 +68,7 @@
     "@radix-ui/react-tooltip": "^1.0.6",
     "@talismn/connect-wallets": "^1.2.1",
     "@tanstack/react-location": "^3.7.4",
-    "@tanstack/react-query": "^4.14.5",
+    "@tanstack/react-query": "^4.28.0",
     "@tanstack/react-table": "^8.5.17",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",

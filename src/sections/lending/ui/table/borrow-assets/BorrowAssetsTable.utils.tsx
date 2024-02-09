@@ -39,93 +39,96 @@ export const useBorrowAssetsTableColumns = () => {
   const { openBorrow } = useModalContext()
   const { currentMarket } = useProtocolDataContext()
 
-  return [
-    accessor("symbol", {
-      header: "Symbol",
-      cell: ({ row }) => {
-        const { iconSymbol, underlyingAsset, symbol } = row.original
-        return (
-          <Link to={ROUTES.reserveOverview(underlyingAsset, currentMarket)}>
-            <span sx={{ flex: "row", align: "center", gap: 8 }}>
-              <TokenIcon symbol={iconSymbol} sx={{ fontSize: 24 }} />
-              {symbol}
-            </span>
-          </Link>
-        )
-      },
-    }),
-    accessor("availableBorrows", {
-      header: "Available",
-      meta: {
-        sx: {
-          textAlign: "center",
-        },
-      },
-      cell: ({ row }) => {
-        const { availableBorrows, availableBorrowsInUSD } = row.original
-        const value = Number(availableBorrows)
-        const valueUsd = Number(availableBorrowsInUSD)
-        return (
-          <span sx={{ color: value === 0 ? "basic500" : "white" }}>
-            {t("value.token", { value })}
-            {value > 0 && (
-              <span
-                css={{ display: "block" }}
-                sx={{ color: "basic300", fontSize: 12, lineHeight: 16 }}
-              >
-                <DisplayValue value={valueUsd} />
-              </span>
-            )}
-          </span>
-        )
-      },
-    }),
-    accessor("variableBorrowRate", {
-      header: "APY, Variable",
-      meta: {
-        sx: {
-          textAlign: "center",
-        },
-      },
-      cell: ({ row }) => {
-        const { variableBorrowRate, vIncentivesData, symbol } = row.original
-
-        return (
-          <IncentivesCard
-            value={variableBorrowRate}
-            incentives={vIncentivesData}
-            symbol={symbol}
-          />
-        )
-      },
-    }),
-    display({
-      id: "actions",
-      meta: {
-        sx: {
-          textAlign: "end",
-        },
-      },
-      cell: ({ row }) => {
-        const { isFreezed, availableBorrows, underlyingAsset } = row.original
-        const disableBorrow = isFreezed || Number(availableBorrows) <= 0
-        return (
-          <div sx={{ flex: "row", justify: "end" }}>
-            <Button
-              disabled={disableBorrow}
-              onClick={() => openBorrow(underlyingAsset)}
-              size="micro"
-            >
-              Borrow
-            </Button>
+  return useMemo(
+    () => [
+      accessor("symbol", {
+        header: "Symbol",
+        cell: ({ row }) => {
+          const { iconSymbol, underlyingAsset, symbol } = row.original
+          return (
             <Link to={ROUTES.reserveOverview(underlyingAsset, currentMarket)}>
-              <ChevronRight sx={{ color: "iconGray", mr: -8 }} />
+              <span sx={{ flex: "row", align: "center", gap: 8 }}>
+                <TokenIcon symbol={iconSymbol} sx={{ fontSize: 24 }} />
+                {symbol}
+              </span>
             </Link>
-          </div>
-        )
-      },
-    }),
-  ]
+          )
+        },
+      }),
+      accessor("availableBorrows", {
+        header: "Available",
+        meta: {
+          sx: {
+            textAlign: "center",
+          },
+        },
+        cell: ({ row }) => {
+          const { availableBorrows, availableBorrowsInUSD } = row.original
+          const value = Number(availableBorrows)
+          const valueUsd = Number(availableBorrowsInUSD)
+          return (
+            <span sx={{ color: value === 0 ? "basic500" : "white" }}>
+              {t("value.token", { value })}
+              {value > 0 && (
+                <span
+                  css={{ display: "block" }}
+                  sx={{ color: "basic300", fontSize: 12, lineHeight: 16 }}
+                >
+                  <DisplayValue value={valueUsd} isUSD />
+                </span>
+              )}
+            </span>
+          )
+        },
+      }),
+      accessor("variableBorrowRate", {
+        header: "APY, Variable",
+        meta: {
+          sx: {
+            textAlign: "center",
+          },
+        },
+        cell: ({ row }) => {
+          const { variableBorrowRate, vIncentivesData, symbol } = row.original
+
+          return (
+            <IncentivesCard
+              value={variableBorrowRate}
+              incentives={vIncentivesData}
+              symbol={symbol}
+            />
+          )
+        },
+      }),
+      display({
+        id: "actions",
+        meta: {
+          sx: {
+            textAlign: "end",
+          },
+        },
+        cell: ({ row }) => {
+          const { isFreezed, availableBorrows, underlyingAsset } = row.original
+          const disableBorrow = isFreezed || Number(availableBorrows) <= 0
+          return (
+            <div sx={{ flex: "row", justify: "end" }}>
+              <Button
+                disabled={disableBorrow}
+                onClick={() => openBorrow(underlyingAsset)}
+                size="micro"
+              >
+                Borrow
+              </Button>
+              <Link to={ROUTES.reserveOverview(underlyingAsset, currentMarket)}>
+                <ChevronRight sx={{ color: "iconGray", mr: -8 }} />
+              </Link>
+            </div>
+          )
+        },
+      }),
+    ],
+    [currentMarket, openBorrow, t],
+  )
 }
 
 export const useBorrowAssetsTableData = () => {

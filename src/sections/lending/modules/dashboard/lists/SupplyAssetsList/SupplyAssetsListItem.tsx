@@ -118,7 +118,7 @@ export const SupplyAssetsListItem = ({
           disabled={disableSupply}
           variant="contained"
           onClick={() => {
-            openSupply(underlyingAsset, currentMarket, name, "dashboard")
+            openSupply(underlyingAsset)
           }}
         >
           <span>Supply</span>
