@@ -8,6 +8,53 @@ import { OfferingPair } from "./OtcOrdersData.utils"
 import { motion } from "framer-motion"
 import { useRpcProvider } from "providers/rpcProvider"
 
+function abbreviateNumber(price: BN): string {
+  if (price.isNaN()) {
+    return "N / A"
+  }
+
+  let formattedPrice = ""
+  const decimalPlaces = price.decimalPlaces() || 0
+
+  if (decimalPlaces > 0) {
+    if (decimalPlaces <= 2 || price.gt(new BN(10))) {
+      formattedPrice = "$" + price.toFixed(2)
+    } else {
+      formattedPrice = "$" + price.toFixed(Math.min(4, decimalPlaces))
+    }
+  } else {
+    formattedPrice = "$" + price.toFixed(2)
+  }
+
+  if (price.gt(new BN(999999))) {
+    const suffixes = [" M", " B", " T"]
+    let suffixIndex = -1
+    let tempPrice = price
+
+    while (tempPrice.gt(new BN(999999))) {
+      tempPrice = tempPrice.dividedBy(new BN(1000000))
+      suffixIndex++
+    }
+
+    if (suffixIndex >= 0) {
+      if (decimalPlaces > 0) {
+        if (decimalPlaces <= 2 || tempPrice.gt(new BN(10))) {
+          formattedPrice = "$" + tempPrice.toFixed(2) + suffixes[suffixIndex]
+        } else {
+          formattedPrice =
+            "$" +
+            tempPrice.toFixed(Math.min(4, decimalPlaces)) +
+            suffixes[suffixIndex]
+        }
+      } else {
+        formattedPrice = "$" + tempPrice.toFixed(2) + suffixes[suffixIndex]
+      }
+    }
+  }
+
+  return formattedPrice
+}
+
 export const OrderPairColumn = (props: {
   offering: OfferingPair
   accepting: OfferingPair
@@ -81,12 +128,6 @@ export const OrderPairColumn = (props: {
           }
         />
       )}
-      {/* <MultipleIcons
-        icons={[
-          { icon: <AssetLogo id={props.offering.asset} /> },
-          { icon: <AssetLogo id={props.accepting.asset} /> },
-        ]}
-      /> */}
       <div sx={{ display: "box", ml: 8 }}>
         <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="basic400">
           {props.offering.symbol} / {props.accepting.symbol}
@@ -179,39 +220,10 @@ export const OrderAssetColumn = (props: {
       </div>
     </div>
   )
-
-  // return (
-  //   <div sx={{ flex: "row", gap: 4, align: "center" }}>
-  //     <div style={{ width: "22px" }}>
-  //       <AssetLogo id={props.pair.asset} />
-  //     </div>
-  //     <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
-  //       {t("value.token", { value: props.pair.amount })}
-  //     </Text>
-  //     <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
-  //       {props.pair.symbol}
-  //     </Text>
-  //   </div>
-  // )
 }
 
 export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
   const { t } = useTranslation()
-
-  const formatPrice = (price: BN) => {
-    if (price) {
-      const decimalPlaces = price.decimalPlaces()
-      if (decimalPlaces) {
-        if (decimalPlaces <= 2 || price.gt(10)) {
-          return "$" + price.toFixed(2)
-        } else {
-          return "$" + price.toFixed(Math.min(4, decimalPlaces))
-        }
-      } else {
-        return "$" + price.toFixed(2)
-      }
-    }
-  }
 
   return (
     <div
@@ -234,7 +246,7 @@ export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
             {t("value.token", { value: 1 })} {props.pair.symbol}
           </Text>
           <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
-            ({formatPrice(props.price)})
+            ({abbreviateNumber(props.price)})
           </Text>
         </>
       )}
@@ -272,6 +284,12 @@ export const OrderMarketPriceColumn = (props: {
 
   const formatPercentage = (percent: number) => {
     if (percent) {
+      if (percent > 9000) {
+        return "> +9000%"
+      } else if (percent < -9000) {
+        return "< -9000%"
+      }
+
       return percent > 0 ? `+${percent.toFixed(2)}%` : `${percent.toFixed(2)}%`
     }
   }

@@ -230,6 +230,8 @@ export const useAssetPrices = (
   const ids = assets.map((asset) => asset.id)
   const spotPrices = useSpotPrices(ids, displayAsset.id, noRefresh)
 
+  console.log(spotPrices)
+
   const coingeckoAssetNames = spotPrices
     .filter((asset) => asset?.data?.spotPrice.isNaN())
     .map((asset) => {
@@ -302,12 +304,14 @@ export const useCoingeckoPrice = (assets: simplifiedAsset[]) => {
 
 //TODO: This unique asset editting is not scalable, we should have a better way to handle this.
 export const getCoingeckoAssetPrice = async (assetName: string) => {
+  console.log(assetName)
+
   let formattedAssetName = assetName
   if (assetName.includes(" ")) {
     formattedAssetName = assetName.replace(/\s+/g, "-")
-  } else if (assetName === "Phala") {
+  } else if (assetName.toLowerCase() === "Phala") {
     formattedAssetName = "pha"
-  } else if (assetName === "Glimmer") {
+  } else if (assetName.toLowerCase() === "glimmer") {
     formattedAssetName = "moonbeam"
   }
 

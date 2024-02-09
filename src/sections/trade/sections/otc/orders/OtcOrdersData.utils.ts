@@ -72,10 +72,9 @@ export const useOrdersTableData = () => {
       )
       const marketPrice = marketPriceInUSD?.data?.spotPrice || null
 
-      // Calculate order price / market price comparison percentage
       let marketPricePercentage = null
       if (orderPrice && marketPrice) {
-        if (marketPrice > orderPrice) {
+        if (marketPrice.isGreaterThan(orderPrice)) {
           marketPricePercentage = marketPrice
             .minus(orderPrice)
             .div(orderPrice)
