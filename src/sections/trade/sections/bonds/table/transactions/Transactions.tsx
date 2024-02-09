@@ -51,7 +51,7 @@ export const Transactions = ({
         <TableBodyContent>
           {table.getRowModel().rows.map((row, i) => (
             <Fragment key={row.id}>
-              <TableRow isOdd={!(i % 2)}>
+              <TableRow>
                 {row.getVisibleCells().map((cell) => (
                   <STableData key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

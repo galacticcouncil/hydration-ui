@@ -49,7 +49,7 @@ export const PoolDetails = ({
 
   return (
     <>
-      <div sx={{ flex: "column", gap: 20, p: ["30px 12px", 30] }}>
+      <div sx={{ flex: "column", gap: 20, p: ["30px 12px", "30px 30px 20px"] }}>
         <GradientText
           gradient="pinkLightBlue"
           fs={19}
@@ -121,7 +121,7 @@ export const PoolDetails = ({
             </div>
           </Button>
         </div>
-        <div sx={{ flex: ["column-reverse", "column"], gap: 12 }}>
+        <div sx={{ flex: ["column-reverse", "column"], gap: 16 }}>
           {!ixXYKPool && (
             <>
               <Separator
@@ -137,7 +137,7 @@ export const PoolDetails = ({
             </>
           )}
 
-          <div sx={{ flex: "column", gap: 12 }}>
+          <div sx={{ flex: "column", gap: 20 }}>
             <Separator
               color="white"
               opacity={0.06}
@@ -146,10 +146,10 @@ export const PoolDetails = ({
 
             <SValuesContainer>
               <SValue sx={{ align: "start" }}>
-                <Text color="basic400" fs={[12, 16]}>
+                <Text color="basic400" fs={[12, 13]}>
                   {t("tvl")}
                 </Text>
-                <Text color="white" fs={[14, 16]}>
+                <Text color="white" fs={[14, 16]} fw={600}>
                   <DisplayValue value={pool.tvlDisplay} />
                 </Text>
               </SValue>
@@ -157,10 +157,10 @@ export const PoolDetails = ({
               <Separator orientation="vertical" color="white" opacity={0.06} />
 
               <SValue>
-                <Text color="basic400" fs={[12, 16]}>
+                <Text color="basic400" fs={[12, 13]}>
                   {t("24Volume")}
                 </Text>
-                <Text color="white" fs={[14, 16]}>
+                <Text color="white" fs={[14, 16]} fw={600}>
                   <DisplayValue value={pool.volume} type="token" />
                 </Text>
               </SValue>
@@ -173,10 +173,10 @@ export const PoolDetails = ({
               />
 
               <SValue sx={{ align: "start" }}>
-                <Text color="basic400" fs={[12, 16]}>
+                <Text color="basic400" fs={[12, 13]}>
                   {t("price")}
                 </Text>
-                <Text color="white" fs={[14, 16]}>
+                <Text color="white" fs={[14, 16]} fw={600}>
                   <DisplayValue value={pool.spotPrice} type="token" />
                 </Text>
               </SValue>
@@ -184,10 +184,10 @@ export const PoolDetails = ({
               <Separator orientation="vertical" color="white" opacity={0.06} />
 
               <SValue>
-                <Text color="basic400" fs={[12, 16]}>
+                <Text color="basic400" fs={[12, 13]}>
                   {t("liquidity.pool.details.fee")}
                 </Text>
-                <Text color="white" fs={[14, 16]}>
+                <Text color="white" fs={[14, 16]} fw={600}>
                   {omnipoolFee.isLoading ? (
                     <Skeleton height={16} width={50} />
                   ) : (

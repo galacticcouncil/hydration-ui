@@ -91,7 +91,6 @@ export const BondsTable = ({
             {table.getRowModel().rows.map((row, i) => (
               <Fragment key={row.id}>
                 <TableRow
-                  isOdd={!(i % 2)}
                   onClick={() => {
                     isDesktop && row.toggleSelected()
                     !isDesktop && setRow(row.original)
@@ -109,7 +108,7 @@ export const BondsTable = ({
                 {row.getIsSelected() &&
                   showTransactions &&
                   row.original.events.length && (
-                    <TableRow isSub>
+                    <TableRow>
                       <td colSpan={table.getAllColumns().length}>
                         <Transactions
                           data={row.original.events}
