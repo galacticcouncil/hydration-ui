@@ -229,9 +229,6 @@ export const useAssetPrices = (
   const displayAsset = useDisplayAssetStore()
   const ids = assets.map((asset) => asset.id)
   const spotPrices = useSpotPrices(ids, displayAsset.id, noRefresh)
-
-  console.log(spotPrices)
-
   const coingeckoAssetNames = spotPrices
     .filter((asset) => asset?.data?.spotPrice.isNaN())
     .map((asset) => {
