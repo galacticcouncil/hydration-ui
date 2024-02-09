@@ -94,22 +94,34 @@ const AssetTableName = ({ id }: { id: string }) => {
       )}
 
       <div sx={{ flex: "column", width: "100%", gap: [0, 4] }}>
-        <div sx={{ flex: "row", gap: 4 }}>
-          <Text fs={14} lh={16} fw={700} color="white">
+        <div sx={{ flex: "row", gap: 4, width: "fit-content" }}>
+          <Text
+            fs={14}
+            lh={16}
+            fw={700}
+            color="white"
+            css={{ whiteSpace: "nowrap" }}
+          >
             {asset.symbol}
           </Text>
           {asset.isStableSwap && (
-            <SStablepoolBadge
-              whileHover={{ width: "unset" }}
-              css={{ width: 14, overflow: "hidden" }}
-              transition={{
-                type: "spring",
-                mass: 1,
-                stiffness: 300,
-                damping: 20,
-                duration: 0.2,
-              }}
-            />
+            <div css={{ position: "relative" }}>
+              <SStablepoolBadge
+                whileHover={{ width: "unset" }}
+                css={{
+                  width: 14,
+                  overflow: "hidden",
+                  position: "absolute",
+                }}
+                transition={{
+                  type: "spring",
+                  mass: 1,
+                  stiffness: 300,
+                  damping: 20,
+                  duration: 0.2,
+                }}
+              />
+            </div>
           )}
         </div>
 
@@ -158,7 +170,7 @@ const AddLiqduidityButton = ({
   )
 
   const isPosition =
-    userStablePoolBalance.data?.freeBalance.gte(0) ||
+    userStablePoolBalance.data?.freeBalance.gt(0) ||
     (isXykPool ? pool.shareTokenIssuance?.myPoolShare?.gt(0) : pool.isPositions)
   const stablepool = useStableswapPool(isStablePool ? assetMeta.id : undefined)
 
