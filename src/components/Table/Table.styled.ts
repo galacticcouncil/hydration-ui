@@ -109,8 +109,6 @@ export const TablePlaceholderContent = styled.div`
 `
 
 export const TableRow = styled.tr<{
-  isOdd?: boolean
-  isSub?: boolean
   header?: boolean
 }>`
   transition: ${theme.transitions.slow};
@@ -121,8 +119,6 @@ export const TableRow = styled.tr<{
     ${({ header }) =>
       !header && `background: rgba(${theme.rgbColors.white}, 0.06);`}
   }
-  ${({ isOdd }) => isOdd && `background: rgba(${theme.rgbColors.white}, 0.03);`}
-  ${({ isSub }) => isSub && `background: rgba(${theme.rgbColors.white}, 0.06);`}
 `
 
 export const TableRowStats = styled.tr<{
@@ -178,7 +174,9 @@ export const TableData = styled.td<{
   isExpanded?: boolean
   isSkeleton?: boolean
 }>`
-  padding: 16px;
+  height: 56px;
+
+  padding: 0 16px;
   ${({ isSkeleton }) => !isSkeleton && "padding-right: 0px;"}
   text-align: start;
 
@@ -190,7 +188,9 @@ export const TableData = styled.td<{
   }
 
   @media ${theme.viewport.gte.sm} {
-    padding: 24px 32px;
+    height: 68px;
+
+    padding: 0 32px;
 
     &:last-of-type {
       padding-right: 10px;

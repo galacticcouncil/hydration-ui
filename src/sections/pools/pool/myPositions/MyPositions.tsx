@@ -71,19 +71,21 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
         }}
       >
         <div sx={{ flex: "column", gap: 6 }}>
-          <Text fs={12} color="basic400">
+          <Text color="basic400" fs={[12, 13]}>
             {t("liquidity.pool.positions.omnipool")}
           </Text>
-          <Text color="white">{t("value.usd", { amount: totalOmnipool })}</Text>
+          <Text color="white" fs={[14, 16]} fw={600}>
+            {t("value.usd", { amount: totalOmnipool })}
+          </Text>
         </div>
         {!totalFarms.isZero() && (
           <>
             <SSeparator color="white" opacity={0.06} orientation="vertical" />
             <div sx={{ flex: "column", gap: 6 }}>
-              <Text fs={12} color="basic400">
+              <Text color="basic400" fs={[12, 13]}>
                 {t("liquidity.pool.positions.farming")}
               </Text>
-              <Text color="white">
+              <Text color="white" fs={[14, 16]} fw={600}>
                 {t("value.usd", { amount: totalFarms })}
               </Text>
             </div>

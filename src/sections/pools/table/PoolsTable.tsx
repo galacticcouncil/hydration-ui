@@ -28,7 +28,7 @@ export const PoolsTable = ({
       search: { ...search, id },
     })
 
-  const table = usePoolTable(data, isXyk)
+  const table = usePoolTable(data, isXyk, onRowSelect)
 
   return (
     <>
@@ -60,7 +60,6 @@ export const PoolsTable = ({
           <TableBodyContent>
             {table.getRowModel().rows.map((row, i) => (
               <TableRow
-                isOdd={!(i % 2)}
                 onClick={() => onRowSelect(row.original.id)}
                 key={row.id}
                 css={{ cursor: "pointer" }}
