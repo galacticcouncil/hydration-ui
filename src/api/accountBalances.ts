@@ -14,12 +14,11 @@ export const useAccountBalances = (id: Maybe<AccountId32 | string>) => {
   const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.accountBalances(id),
-    !!id ? getAccountBalancesNew(api, id) : undefinedNoop,
+    !!id ? getAccountBalances(api, id) : undefinedNoop,
     { enabled: id != null },
   )
 }
 
-//TODO: remove this after merging liquidity refactoring
 export const useAccountsBalances = (ids: string[]) => {
   const { api } = useRpcProvider()
 
@@ -28,22 +27,7 @@ export const useAccountsBalances = (ids: string[]) => {
   )
 }
 
-//TODO: the same
 export const getAccountBalances =
-  (api: ApiPromise, accountId: AccountId32 | string) => async () => {
-    const [tokens, native] = await Promise.all([
-      api.query.tokens.accounts.entries(accountId),
-      api.query.system.account(accountId),
-    ])
-    const balances = tokens.map(([key, data]) => {
-      const [, id] = key.args
-      return { id, data }
-    })
-
-    return { accountId, native, balances }
-  }
-
-export const getAccountBalancesNew =
   (api: ApiPromise, accountId: AccountId32 | string) => async () => {
     const [tokens, nativeData] = await Promise.all([
       api.query.tokens.accounts.entries(accountId),
@@ -95,7 +79,7 @@ export const getAccountBalancesNew =
       freeBalance,
     }
 
-    return { native, balances }
+    return { native, balances, accountId }
   }
 
 export const useAccountAssetBalances = (

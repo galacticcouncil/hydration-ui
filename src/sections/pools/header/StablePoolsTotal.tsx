@@ -24,7 +24,7 @@ export const StablePoolsTotal = () => {
       (memo, stablePoolBalance) => {
         stablePoolBalance.balances.forEach((balance) => {
           const id = balance.id.toString()
-          const free = balance.data.free.toBigNumber()
+          const free = balance.freeBalance
 
           if (memo[id]) {
             memo[id] = memo[id].plus(free)
