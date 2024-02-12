@@ -1,48 +1,33 @@
-import { Box, BoxProps, Typography } from "@mui/material"
+import { Text } from "components/Typography/Text/Text"
 import { ReactNode } from "react"
+import { theme } from "theme"
 
-interface RowProps extends BoxProps {
+type RowProps = {
+  captionColor?: keyof typeof theme.colors
+  align?: "center" | "start" | "end"
+  className?: string
   caption?: ReactNode
-  captionVariant?:
-    | "secondary16"
-    | "description"
-    | "subheader1"
-    | "caption"
-    | "h3"
-  captionColor?: string
-  align?: "center" | "flex-start"
+  children: ReactNode
 }
 
 export const Row = ({
   caption,
   children,
-  captionVariant = "secondary16",
   captionColor,
   align = "center",
-  ...rest
+  className,
 }: RowProps) => {
   return (
-    <Box
-      {...rest}
+    <div
+      className={className}
       sx={{
-        display: "flex",
-        alignItems: align,
-        justifyContent: "space-between",
-        ...rest.sx,
+        flex: "row",
+        align,
+        justify: "space-between",
       }}
     >
-      {caption && (
-        <Typography
-          component="div"
-          variant={captionVariant}
-          color={captionColor}
-          sx={{ mr: 8 }}
-        >
-          {caption}
-        </Typography>
-      )}
-
+      {caption && <span sx={{ mr: 8, color: captionColor }}>{caption}</span>}
       {children}
-    </Box>
+    </div>
   )
 }

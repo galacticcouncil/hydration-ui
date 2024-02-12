@@ -22,7 +22,7 @@ export const SupplyAssetsTable = () => {
     skeletonRowCount: 6,
   })
 
-  const hasDeposited =
+  const hasAvailableDeposits =
     data.filter((reserve) => reserve.availableToDepositUSD !== "0")?.length >= 1
 
   return (
@@ -31,7 +31,7 @@ export const SupplyAssetsTable = () => {
       spacing="large"
       title="Assets to supply"
       action={
-        hasDeposited && (
+        hasAvailableDeposits && (
           <Switch
             value={showAll}
             onCheckedChange={(value) => {

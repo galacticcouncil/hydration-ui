@@ -26,7 +26,7 @@ export const ListItemCanBeCollateral = ({
       // NOTE: handled in ListItemIsolationBadge
       return null
     } else {
-      return <NoData variant="main14" color="text.secondary" />
+      return <NoData />
     }
   }
 

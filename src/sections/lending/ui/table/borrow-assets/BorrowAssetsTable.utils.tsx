@@ -9,7 +9,6 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { ROUTES } from "sections/lending/components/primitives/Link"
-import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import {
   ComputedReserveData,
   useAppDataContext,
@@ -18,6 +17,7 @@ import { useModalContext } from "sections/lending/hooks/useModal"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { useRootStore } from "sections/lending/store/root"
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
+import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import {
   DashboardReserve,
   handleSortDashboardReserves,
@@ -43,17 +43,13 @@ export const useBorrowAssetsTableColumns = () => {
     () => [
       accessor("symbol", {
         header: "Asset",
-        cell: ({ row }) => {
-          const { iconSymbol, underlyingAsset, symbol } = row.original
-          return (
-            <Link to={ROUTES.reserveOverview(underlyingAsset, currentMarket)}>
-              <span sx={{ flex: "row", align: "center", gap: 8 }}>
-                <TokenIcon symbol={iconSymbol} sx={{ fontSize: 24 }} />
-                {symbol}
-              </span>
-            </Link>
-          )
-        },
+        cell: ({ row }) => (
+          <AssetNameColumn
+            underlyingAsset={row.original.underlyingAsset}
+            symbol={row.original.symbol}
+            iconSymbol={row.original.symbol}
+          />
+        ),
       }),
       accessor("availableBorrows", {
         header: "Available",

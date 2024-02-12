@@ -1,17 +1,16 @@
+import { useNavigate } from "@tanstack/react-location"
 import { createColumnHelper } from "@tanstack/react-table"
+import { Button } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { Link } from "components/Link/Link"
+import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import { NoData } from "sections/lending/components/primitives/NoData"
-import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { Text } from "components/Typography/Text/Text"
-import { Button } from "components/Button/Button"
-import { useNavigate } from "@tanstack/react-location"
+import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
+import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
 
 export type TSupplyAssetsTableData = ReturnType<typeof useAppDataContext>
 export type TSupplyAssetsRow = TSupplyAssetsTableData["reserves"][number]
@@ -27,17 +26,13 @@ export const useMarketAssetsTableColumns = () => {
     () => [
       accessor("symbol", {
         header: "Asset",
-        cell: ({ row }) => {
-          const { iconSymbol, underlyingAsset, symbol } = row.original
-          return (
-            <Link to={ROUTES.reserveOverview(underlyingAsset, currentMarket)}>
-              <span sx={{ flex: "row", align: "center", gap: 8 }}>
-                <TokenIcon symbol={iconSymbol} sx={{ fontSize: 24 }} />
-                {symbol}
-              </span>
-            </Link>
-          )
-        },
+        cell: ({ row }) => (
+          <AssetNameColumn
+            underlyingAsset={row.original.underlyingAsset}
+            symbol={row.original.symbol}
+            iconSymbol={row.original.symbol}
+          />
+        ),
       }),
       accessor("totalLiquidityUSD", {
         header: "Total supplied",
@@ -154,7 +149,7 @@ export const useMarketAssetsTableColumns = () => {
                 Number(totalVariableDebt) > 0 &&
                 !isFrozen && (
                   <Text as="span" fs={12} color="basic500">
-                    (<span>Disabled</span>)
+                    (Disabled)
                   </Text>
                 )}
             </>

@@ -7,7 +7,7 @@ import {
 import { Button } from "components/Button/Button"
 import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useState } from "react"
+import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { HealthFactorNumber } from "sections/lending/components/HealthFactorNumber"
 import { NoData } from "sections/lending/components/primitives/NoData"
@@ -17,7 +17,9 @@ import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataCo
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { LiquidationRiskParametresInfoModal } from "sections/lending/modules/dashboard/LiquidationRiskParametresModal/LiquidationRiskParametresModal"
 
-export const HeaderValues = () => {
+export const DashboardHeaderValues: FC<{
+  className?: string
+}> = ({ className }) => {
   const { t } = useTranslation()
   const { currentNetworkConfig, currentMarketData } = useProtocolDataContext()
   const { user, reserves, loading } = useAppDataContext()
@@ -82,7 +84,7 @@ export const HeaderValues = () => {
 
   return (
     <>
-      <div sx={{ maxWidth: ["100%", 1000], mb: 40 }}>
+      <div sx={{ maxWidth: ["100%", 1000] }} className={className}>
         <DataValueList separated>
           <DataValue
             labelColor="brightBlue300"

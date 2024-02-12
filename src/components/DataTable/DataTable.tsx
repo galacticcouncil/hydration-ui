@@ -104,6 +104,7 @@ export function DataTable<T extends Record<string, any>>({
               key={row.id}
               data-selected={row.getIsSelected()}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
+              css={!!onRowClick && { cursor: "pointer" }}
             >
               {row.getVisibleCells().map((cell) => {
                 const { meta } = cell.getContext().cell.column.columnDef
@@ -115,7 +116,11 @@ export function DataTable<T extends Record<string, any>>({
                   >
                     {onRowClick && !isLoading ? (
                       <div
-                        css={{ display: "inline-flex", width: "fit-content" }}
+                        css={{
+                          display: "inline-flex",
+                          width: "fit-content",
+                          cursor: "auto",
+                        }}
                         onClick={(e) => e.stopPropagation()}
                       >
                         {flexRender(
