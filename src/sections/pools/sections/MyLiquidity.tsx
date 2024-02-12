@@ -14,11 +14,11 @@ import { PoolsTable } from "sections/pools/table/PoolsTable"
 import { PoolWrapper } from "sections/pools/pool/Pool"
 import { useSearch } from "@tanstack/react-location"
 import { MyOmnipoolTotal } from "sections/pools/header/MyOmnipoolTotal"
-import { MyFarmsTotal } from "sections/pools/header/MyFarmsTotal"
 import { MyStablePoolsTotal } from "sections/pools/header/StablePoolsTotal"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
+import { MyLiquidityTotal } from "sections/pools/header/MyLiquidityTotal"
 
 const poolsWithMyPositions = true
 
@@ -38,24 +38,26 @@ export const MyLiquidity = () => {
     ) : (
       <>
         <HeaderValues
+          fontSizeLabel={14}
+          skeletonHeight={19}
           values={[
             {
-              label: t("liquidity.header.omnipool"),
-              content: <HeaderTotalData isLoading />,
+              label: t("liquidity.header.myTotal"),
+              content: <HeaderTotalData isLoading fontSize={19} />,
             },
             {
-              label: t("liquidity.header.stablepool"),
-              content: <HeaderTotalData isLoading />,
+              label: t("liquidity.header.omnipool"),
+              content: <HeaderTotalData isLoading fontSize={19} />,
             },
 
             {
-              label: t("liquidity.header.isolated"),
-              content: <HeaderTotalData isLoading />,
+              label: t("liquidity.header.stablepool"),
+              content: <HeaderTotalData isLoading fontSize={19} />,
             },
             {
               withoutSeparator: true,
-              label: t("liquidity.header.totalInFarms"),
-              content: <HeaderTotalData isLoading />,
+              label: t("liquidity.header.isolated"),
+              content: <HeaderTotalData isLoading fontSize={19} />,
             },
           ]}
         />
@@ -131,28 +133,31 @@ const MyLiquidityData = () => {
   return (
     <>
       <HeaderValues
+        fontSizeLabel={14}
+        skeletonHeight={19}
         values={[
+          {
+            label: t("liquidity.header.myTotal"),
+            content: <MyLiquidityTotal />,
+          },
           {
             label: t("liquidity.header.omnipool"),
             content: <MyOmnipoolTotal />,
           },
           {
             label: t("liquidity.header.stablepool"),
-            content: <MyStablePoolsTotal />,
-          },
-          {
-            label: t("liquidity.header.isolated"),
             content: (
               <HeaderTotalData
                 isLoading={xylPools.isInitialLoading}
                 value={xykTotal}
+                fontSize={19}
               />
             ),
           },
           {
-            label: t("liquidity.header.totalInFarms"),
+            label: t("liquidity.header.isolated"),
             withoutSeparator: true,
-            content: <MyFarmsTotal />,
+            content: <MyStablePoolsTotal />,
           },
           {
             initiallyHidden: true,
