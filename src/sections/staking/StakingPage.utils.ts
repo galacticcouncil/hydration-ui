@@ -524,23 +524,19 @@ export const useClaimReward = () => {
       ),
     )
 
-    const claimableRewards = userRewards.minus(
+    const availabeRewards = BN.max(
       stakePosition.accumulatedLockedRewards,
+      userRewards,
     )
-
-    const accumulatedUnpaidRewards = totalRewards
-      .minus(stakePosition.accumulatedLockedRewards)
-      .minus(claimableRewards)
 
     return {
       positionId,
-      rewards: claimableRewards.div(BN_BILL),
-      unlockedRewards: accumulatedUnpaidRewards.div(BN_BILL),
+      rewards: availabeRewards.div(BN_BILL),
+      maxRewards: totalRewards.div(BN_BILL),
       actionPoints,
-      allocatedRewardsPercentage: claimableRewards
+      allocatedRewardsPercentage: availabeRewards
         .div(totalRewards)
         .multipliedBy(100),
-      maxRewards: totalRewards.div(BN_BILL),
     }
   }, [bestNumber.data, potBalance.data, stake, stakingConsts])
 
