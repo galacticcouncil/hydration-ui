@@ -111,7 +111,7 @@
     "preview": "vite preview",
     "postinstall": "patch-package",
     "storybook": "storybook dev -p 6006 ./src",
-    "build-storybook": "storybook build ./src",
+    "build-storybook": "export NODE_OPTIONS=\"--max-old-space-size=8192\" && storybook build ./src",
     "test": "vitest",
     "lint": "run-p -lsc 'lint:*'",
     "lint:ts": "tsc --noEmit -p tsconfig.json",
