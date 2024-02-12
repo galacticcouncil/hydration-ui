@@ -18,7 +18,6 @@ import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { useRootStore } from "sections/lending/store/root"
 import { selectIsMigrationAvailable } from "sections/lending/store/v3MigrationSelectors"
 
-import HALLink from "sections/lending/components/HALLink"
 import { HealthFactorNumber } from "sections/lending/components/HealthFactorNumber"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { NoData } from "sections/lending/components/primitives/NoData"
@@ -161,7 +160,7 @@ export const DashboardTopPanel = () => {
               symbolsVariant={noDataTypographyVariant}
             />
           ) : (
-            <NoData variant={noDataTypographyVariant} sx={{ opacity: "0.7" }} />
+            <NoData sx={{ opacity: "0.7" }} />
           )}
         </TopInfoPanelItem>
 
@@ -185,7 +184,7 @@ export const DashboardTopPanel = () => {
               symbolsVariant={noDataTypographyVariant}
             />
           ) : (
-            <NoData variant={noDataTypographyVariant} sx={{ opacity: "0.7" }} />
+            <NoData sx={{ opacity: "0.7" }} />
           )}
         </TopInfoPanelItem>
 
@@ -201,19 +200,9 @@ export const DashboardTopPanel = () => {
           >
             <HealthFactorNumber
               value={user?.healthFactor || "-1"}
-              variant={valueTypographyVariant}
               onInfoClick={() => {
                 setOpen(true)
               }}
-              HALIntegrationComponent={
-                currentMarketData.halIntegration && (
-                  <HALLink
-                    healthFactor={user?.healthFactor || "-1"}
-                    marketName={currentMarketData.halIntegration.marketName}
-                    integrationURL={currentMarketData.halIntegration.URL}
-                  />
-                )
-              }
             />
           </TopInfoPanelItem>
         )}

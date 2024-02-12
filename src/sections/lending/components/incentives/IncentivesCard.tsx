@@ -50,7 +50,7 @@ export const IncentivesCard = ({
           {tooltip}
         </Box>
       ) : (
-        <NoData variant={variant} color={color || "text.secondary"} />
+        <NoData />
       )}
 
       <IncentivesButton incentives={incentives} symbol={symbol} />

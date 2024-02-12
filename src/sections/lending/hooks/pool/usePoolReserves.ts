@@ -8,16 +8,12 @@ import {
 import { useSharedDependencies } from "sections/lending/ui-config/SharedDependenciesProvider"
 
 import { HookOpts } from "sections/lending/hooks/commonTypes"
-import { useEffect } from "react"
 
 export const usePoolsReservesHumanized = <T = ReservesDataHumanized>(
   marketsData: MarketDataType[],
   opts?: HookOpts<ReservesDataHumanized, T>,
 ) => {
   const { uiPoolService } = useSharedDependencies()
-  useEffect(() => {
-    console.log("marketsData", marketsData)
-  }, [marketsData])
   return useQueries({
     queries: marketsData.map(
       (marketData) =>
@@ -25,6 +21,7 @@ export const usePoolsReservesHumanized = <T = ReservesDataHumanized>(
           queryKey: queryKeysFactory.poolReservesDataHumanized(marketData),
           queryFn: () => uiPoolService.getReservesHumanized(marketData),
           refetchInterval: POLLING_INTERVAL,
+          meta: {},
           ...opts,
         }) as UseQueryOptions<ReservesDataHumanized, Error, T>,
     ),

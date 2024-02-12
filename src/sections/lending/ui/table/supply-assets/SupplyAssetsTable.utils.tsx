@@ -6,7 +6,7 @@ import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Link } from "components/Link/Link"
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { ROUTES } from "sections/lending/components/primitives/Link"
@@ -42,7 +42,7 @@ export const useSupplyAssetsTableColumns = () => {
   return useMemo(
     () => [
       accessor("symbol", {
-        header: "Symbol",
+        header: "Asset",
         cell: ({ row }) => {
           const { iconSymbol, underlyingAsset, symbol } = row.original
           return (
@@ -62,6 +62,9 @@ export const useSupplyAssetsTableColumns = () => {
             textAlign: "center",
           },
         },
+        sortingFn: (a, b) =>
+          Number(a.original.walletBalanceUSD) -
+          Number(b.original.walletBalanceUSD),
         cell: ({ row }) => {
           const { walletBalance, walletBalanceUSD } = row.original
           const value = Number(walletBalance)
@@ -86,30 +89,6 @@ export const useSupplyAssetsTableColumns = () => {
           )
         },
       }),
-      accessor("usageAsCollateralEnabledOnUser", {
-        header: "Can be collateral",
-        meta: {
-          sx: {
-            textAlign: "center",
-          },
-        },
-        cell: ({ row }) => {
-          const { isIsolated, usageAsCollateralEnabledOnUser } = row.original
-          const { debtCeiling } = getAssetCapData(row.original.reserve)
-          return (
-            <>
-              {debtCeiling.isMaxed ? (
-                <NoData variant="main14" color="text.secondary" />
-              ) : (
-                <ListItemCanBeCollateral
-                  isIsolated={isIsolated}
-                  usageAsCollateralEnabled={usageAsCollateralEnabledOnUser}
-                />
-              )}
-            </>
-          )
-        },
-      }),
       accessor("supplyAPY", {
         header: "APY",
         meta: {
@@ -126,6 +105,30 @@ export const useSupplyAssetsTableColumns = () => {
               incentives={aIncentivesData}
               symbol={symbol}
             />
+          )
+        },
+      }),
+      accessor("usageAsCollateralEnabledOnUser", {
+        header: "Can be collateral",
+        meta: {
+          sx: {
+            textAlign: "center",
+          },
+        },
+        cell: ({ row }) => {
+          const { isIsolated, usageAsCollateralEnabledOnUser } = row.original
+          const { debtCeiling } = getAssetCapData(row.original.reserve)
+          return (
+            <>
+              {debtCeiling.isMaxed ? (
+                <NoData />
+              ) : (
+                <ListItemCanBeCollateral
+                  isIsolated={isIsolated}
+                  usageAsCollateralEnabled={usageAsCollateralEnabledOnUser}
+                />
+              )}
+            </>
           )
         },
       }),
@@ -175,7 +178,7 @@ export const useSupplyAssetsTableColumns = () => {
   )
 }
 
-export const useSupplyAssetsTableData = () => {
+export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
   const currentNetworkConfig = useRootStore(
     (store) => store.currentNetworkConfig,
   )
@@ -193,13 +196,14 @@ export const useSupplyAssetsTableData = () => {
   const { baseAssetSymbol } = currentNetworkConfig
 
   // @TODO: Remove this when the feature is implemented
-  const isShowZeroAssets = true
+  const isShowZeroAssets = showAll
 
   /* const localStorageName = "showSupplyZeroAssets"
   const [isShowZeroAssets, setIsShowZeroAssets] = useState(
     localStorage.getItem(localStorageName) === "true",
   ) */
-  const sortedReserves = useMemo(() => {
+
+  const data = useMemo(() => {
     const tokensToSupply = reserves
       .filter(
         (reserve: ComputedReserveData) =>
@@ -344,14 +348,10 @@ export const useSupplyAssetsTableData = () => {
     walletBalances,
   ])
 
-  const isLoading = !!(loadingReserves || loading)
-
-  /* useEffect(() => {
-    console.log("currentMarketData", currentMarketData)
-  }, [currentMarketData]) */
+  const isLoading = loadingReserves || loading
 
   return {
-    data: sortedReserves,
+    data,
     isLoading,
   }
 }

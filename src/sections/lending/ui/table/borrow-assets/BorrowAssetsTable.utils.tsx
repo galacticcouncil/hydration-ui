@@ -42,7 +42,7 @@ export const useBorrowAssetsTableColumns = () => {
   return useMemo(
     () => [
       accessor("symbol", {
-        header: "Symbol",
+        header: "Asset",
         cell: ({ row }) => {
           const { iconSymbol, underlyingAsset, symbol } = row.original
           return (

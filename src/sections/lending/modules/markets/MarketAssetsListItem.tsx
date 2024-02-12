@@ -97,7 +97,7 @@ export const MarketAssetsListItem = ({ ...reserve }: ComputedReserveData) => {
             <ReserveSubheader value={reserve.totalDebtUSD} />
           </>
         ) : (
-          <NoData variant={"secondary14"} color="text.secondary" />
+          <NoData />
         )}
       </ListColumn>
 

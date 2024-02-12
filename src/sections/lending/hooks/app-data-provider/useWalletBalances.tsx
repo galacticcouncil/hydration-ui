@@ -2,7 +2,7 @@ import {
   API_ETH_MOCK_ADDRESS,
   ReservesDataHumanized,
 } from "@aave/contract-helpers"
-import { nativeToUSD, normalize, USD_DECIMALS } from "@aave/math-utils"
+import { USD_DECIMALS, nativeToUSD, normalize } from "@aave/math-utils"
 import { BigNumber } from "bignumber.js"
 import { UserPoolTokensBalances } from "sections/lending/services/WalletBalanceService"
 import { useRootStore } from "sections/lending/store/root"
@@ -11,9 +11,10 @@ import {
   networkConfigs,
 } from "sections/lending/utils/marketsAndNetworksConfig"
 
+import { useMemo, useState } from "react"
+import { useDeepCompareEffect } from "react-use"
 import { usePoolsReservesHumanized } from "sections/lending/hooks/pool/usePoolReserves"
 import { usePoolsTokensBalance } from "sections/lending/hooks/pool/usePoolTokensBalance"
-import { useEffect, useMemo } from "react"
 
 export interface WalletBalance {
   address: string
@@ -83,25 +84,17 @@ const formatAggregatedBalance = ({
   }
 }
 
-export const usePoolsWalletBalances = (marketData: MarketDataType) => {
-  const marketDatas = useMemo(() => [marketData], [marketData])
-
+export const usePoolsWalletBalances = (marketDatas: MarketDataType[]) => {
   const user = useRootStore((store) => store.account)
   const tokensBalanceQueries = usePoolsTokensBalance(marketDatas, user)
   const poolsBalancesQueries = usePoolsReservesHumanized(marketDatas)
 
-  useEffect(() => {
-    console.log("tokensBalanceQueries", tokensBalanceQueries)
-  }, [tokensBalanceQueries])
+  const isLoading =
+    tokensBalanceQueries.find((elem) => elem.isLoading) ||
+    poolsBalancesQueries.find((elem) => elem.isLoading)
 
-  /* useEffect(() => {
-    console.log("poolsBalancesQueries", poolsBalancesQueries)
-  }, [poolsBalancesQueries]) */
-
-  return useMemo(() => {
-    const isLoading =
-      tokensBalanceQueries.find((elem) => elem.isLoading) ||
-      poolsBalancesQueries.find((elem) => elem.isLoading)
+  const walletBalances = useMemo(() => {
+    if (isLoading) return []
     const walletBalances = poolsBalancesQueries.map((query, index) =>
       formatAggregatedBalance({
         reservesHumanized: query.data,
@@ -109,21 +102,38 @@ export const usePoolsWalletBalances = (marketData: MarketDataType) => {
         marketData: marketDatas[index],
       }),
     )
-    return {
-      walletBalances,
-      isLoading,
-    }
-  }, [marketDatas, poolsBalancesQueries, tokensBalanceQueries])
+    return walletBalances
+  }, [isLoading, marketDatas, poolsBalancesQueries, tokensBalanceQueries])
+
+  return {
+    isLoading,
+    walletBalances,
+  }
 }
 
 export const useWalletBalances = (marketData: MarketDataType) => {
-  const { walletBalances, isLoading } = usePoolsWalletBalances(marketData)
+  const { walletBalances, isLoading } = usePoolsWalletBalances([marketData])
+  const [balances, setBalances] = useState<
+    Record<
+      string,
+      {
+        amount: string
+        amountUSD: string
+      }
+    >
+  >({})
+  const [loading, setLoading] = useState(true)
+  const [hasEmptyWallet, setHasEmptyWallet] = useState(true)
 
-  return useMemo(() => {
-    return {
-      walletBalances: walletBalances[0].walletBalances,
-      hasEmptyWallet: walletBalances[0].hasEmptyWallet,
-      loading: isLoading,
-    }
-  }, [isLoading, walletBalances])
+  useDeepCompareEffect(() => {
+    setBalances(walletBalances[0]?.walletBalances ?? {})
+    setLoading(!!isLoading)
+    setHasEmptyWallet(walletBalances[0]?.hasEmptyWallet)
+  }, [walletBalances[0]?.walletBalances, { isLoading }])
+
+  return {
+    walletBalances: balances,
+    hasEmptyWallet,
+    loading,
+  }
 }

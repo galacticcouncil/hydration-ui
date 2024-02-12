@@ -1,77 +1,56 @@
 import { valueToBigNumber } from "@aave/math-utils"
-
-import { Box, Button, Typography, useTheme } from "@mui/material"
-import { TypographyProps } from "@mui/material/Typography"
 import BigNumber from "bignumber.js"
+import { theme } from "theme"
 
-import { FormattedNumber } from "./primitives/FormattedNumber"
+import { Button } from "components/Button/Button"
 
-interface HealthFactorNumberProps extends TypographyProps {
+type HealthFactorNumberProps = {
   value: string
   onInfoClick?: () => void
-  HALIntegrationComponent?: React.ReactNode
 }
 
 export const HealthFactorNumber = ({
   value,
   onInfoClick,
-  HALIntegrationComponent,
-  ...rest
 }: HealthFactorNumberProps) => {
-  const { palette } = useTheme()
-
   const formattedHealthFactor = Number(
     valueToBigNumber(value).toFixed(2, BigNumber.ROUND_DOWN),
   )
   let healthFactorColor = ""
   if (formattedHealthFactor >= 3) {
-    healthFactorColor = palette.success.main
+    healthFactorColor = theme.colors.green400
   } else if (formattedHealthFactor < 1.1) {
-    healthFactorColor = palette.error.main
+    healthFactorColor = theme.colors.red400
   } else {
-    healthFactorColor = palette.warning.main
+    healthFactorColor = theme.colors.warning300
   }
 
   return (
-    <Box
+    <div
       sx={{
-        display: "inline-flex",
-        alignItems: { xs: "flex-start", xsm: "center" },
-        flexDirection: { xs: "column", xsm: "row" },
+        flex: "row",
+        gap: 10,
       }}
-      data-cy={"HealthFactorTopPannel"}
     >
       {value === "-1" ? (
-        <Typography variant="secondary14" color={palette.success.main}>
-          ∞
-        </Typography>
+        <span sx={{ color: theme.colors.green400 }}>∞</span>
       ) : (
-        <FormattedNumber
-          value={formattedHealthFactor}
-          sx={rest.sx}
-          css={{ color: healthFactorColor }}
-          visibleDecimals={2}
-          compact
-          {...rest}
-        />
+        <span css={{ color: healthFactorColor }}>{formattedHealthFactor}</span>
       )}
 
       {onInfoClick && (
         <Button
+          css={{
+            color: healthFactorColor,
+            borderColor: "currentColor",
+            background: "transparent",
+          }}
+          size="micro"
           onClick={onInfoClick}
-          variant="surface"
-          size="small"
-          sx={{ minWidth: "unset", ml: { xs: 0, xsm: 2 } }}
         >
-          <span>Risk details</span>
+          Risk Details
         </Button>
       )}
-
-      {HALIntegrationComponent && (
-        <Box ml={{ xs: 0, xsm: 2 }} mt={{ xs: 1, xsm: 0 }}>
-          {HALIntegrationComponent}
-        </Box>
-      )}
-    </Box>
+    </div>
   )
 }

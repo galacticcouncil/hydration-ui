@@ -1,8 +1,10 @@
-import Typography, { TypographyProps } from "@mui/material/Typography"
-import React from "react"
+import { Text, TextProps } from "components/Typography/Text/Text"
+import { FC } from "react"
 
-export const NoData = <C extends React.ElementType>(
-  props: TypographyProps<C, { component?: C }>,
-) => {
-  return <Typography {...props}>—</Typography>
+export const NoData: FC<TextProps> = (props) => {
+  return (
+    <Text as="span" color="basic300" {...props}>
+      —
+    </Text>
+  )
 }
