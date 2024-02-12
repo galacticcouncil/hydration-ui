@@ -7,6 +7,7 @@ type Props = {
   value: BigNumber | number | null | ReactNode
   isUSD?: boolean
   withGap?: boolean
+  compact?: boolean
   type?: "dollar" | "token"
 }
 
@@ -14,6 +15,7 @@ export const DisplayValue = ({
   value,
   isUSD,
   type = "dollar",
+  compact = false,
   withGap,
 }: Props) => {
   const { t } = useTranslation()
@@ -25,7 +27,9 @@ export const DisplayValue = ({
   return (
     <>
       {isDollar && <span sx={{ mr: withGap ? [2, 4] : undefined }}>$</span>}
-      {isNumber ? t("value", { value, type }) : value}
+      {isNumber
+        ? t(compact ? "value.compact" : "value", { value, type })
+        : value}
       {!isDollar && <>&nbsp;{store.symbol}</>}
     </>
   )

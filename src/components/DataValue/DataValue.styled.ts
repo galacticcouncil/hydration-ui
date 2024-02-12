@@ -35,7 +35,7 @@ export const DataValueList = styled.div<{ separated?: boolean }>`
     & > div {
       display: flex;
       align-items: center;
-      flex: ${({ separated }) => (separated ? "1 1 0" : "0")};
+      flex: ${({ separated }) => (separated ? "1 1 auto" : "0")};
       position: relative;
 
       border-bottom: none;

@@ -51,6 +51,8 @@ export function DataTable<T extends Record<string, any>>({
     fixedLayout,
   }
 
+  const isLoading = table.options.meta?.isLoading ?? false
+
   return (
     <TableContainer className={className} background={background}>
       {(title || action) && (
@@ -62,10 +64,7 @@ export function DataTable<T extends Record<string, any>>({
 
       {addons && <TableAddons spacing={spacing}>{addons}</TableAddons>}
 
-      <Table
-        {...tableProps}
-        data-loading={table.options.meta?.isLoading ? "true" : "false"}
-      >
+      <Table {...tableProps} data-loading={`${isLoading}`}>
         <TableHeader>
           {table
             .getHeaderGroups()
@@ -114,9 +113,9 @@ export function DataTable<T extends Record<string, any>>({
                     className={meta?.className}
                     sx={meta?.sx}
                   >
-                    {onRowClick ? (
+                    {onRowClick && !isLoading ? (
                       <div
-                        css={{ display: "inline-block", width: "fit-content" }}
+                        css={{ display: "inline-flex", width: "fit-content" }}
                         onClick={(e) => e.stopPropagation()}
                       >
                         {flexRender(
