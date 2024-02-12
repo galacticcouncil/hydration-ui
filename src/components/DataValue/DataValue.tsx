@@ -4,15 +4,16 @@ import { ReactNode } from "react"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { SText } from "./DataValue.styled"
+import Skeleton from "react-loading-skeleton"
 
 const LABEL_SIZES: Record<string, TextProps> = {
   small: {
     fs: 12,
-    lh: 12,
+    lh: 16,
   },
   medium: {
     fs: 14,
-    lh: 14,
+    lh: 16,
   },
   large: {
     fs: [14, 16],
@@ -43,6 +44,7 @@ export type DataValueProps = {
   size?: keyof typeof VALUE_SIZES
   font?: TextProps["font"]
   labelColor?: TextProps["color"]
+  isLoading?: boolean
 }
 
 export const DataValue: React.FC<DataValueProps> = ({
@@ -53,6 +55,7 @@ export const DataValue: React.FC<DataValueProps> = ({
   size = "medium",
   font = "FontOver",
   labelColor = "white",
+  isLoading = false,
 }) => {
   return (
     <div className={className}>
@@ -71,7 +74,7 @@ export const DataValue: React.FC<DataValueProps> = ({
           )}
         </SText>
         <SText as="div" font={font} {...VALUE_SIZES[size]}>
-          {children}
+          {isLoading ? <Skeleton width={80} height="1em" /> : children}
         </SText>
       </div>
     </div>
