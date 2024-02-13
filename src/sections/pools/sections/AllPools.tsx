@@ -33,23 +33,25 @@ export const AllPools = () => {
     ) : (
       <>
         <HeaderValues
+          fontSizeLabel={14}
+          skeletonHeight={[19, 24]}
           values={[
             {
               label: t("liquidity.header.omnipool"),
-              content: <HeaderTotalData isLoading />,
+              content: <HeaderTotalData isLoading fontSize={[19, 24]} />,
             },
             {
               label: t("liquidity.header.stablepool"),
-              content: <HeaderTotalData isLoading />,
+              content: <HeaderTotalData isLoading fontSize={[19, 24]} />,
             },
             {
               label: t("liquidity.header.isolated"),
-              content: <HeaderTotalData isLoading />,
+              content: <HeaderTotalData isLoading fontSize={[19, 24]} />,
             },
             {
               withoutSeparator: true,
               label: t("liquidity.header.24hours"),
-              content: <HeaderTotalData isLoading />,
+              content: <HeaderTotalData isLoading fontSize={[19, 24]} />,
             },
           ]}
         />
@@ -132,6 +134,8 @@ const AllPoolsData = () => {
   return (
     <>
       <HeaderValues
+        fontSizeLabel={14}
+        skeletonHeight={[19, 24]}
         values={[
           {
             label: t("liquidity.header.omnipool"),
@@ -139,6 +143,7 @@ const AllPoolsData = () => {
               <HeaderTotalData
                 isLoading={pools.isLoading}
                 value={omnipoolTotal}
+                fontSize={[19, 24]}
               />
             ),
           },
@@ -153,6 +158,7 @@ const AllPoolsData = () => {
               <HeaderTotalData
                 isLoading={xylPools.isInitialLoading}
                 value={xykTotal}
+                fontSize={[19, 24]}
               />
             ),
           },

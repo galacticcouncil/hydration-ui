@@ -16,6 +16,7 @@ export const MyOmnipoolTotal = () => {
     <HeaderTotalData
       isLoading={omnipoolPositions.isInitialLoading}
       value={totalOmnipool}
+      fontSize={19}
     />
   )
 }
