@@ -239,9 +239,6 @@ export const useAssetPrices = (
 
   const coingeckoPrices = useCoingeckoPrice(coingeckoAssetNames)
 
-  console.log("spot prices: ", spotPrices)
-  console.log("assets: ", coingeckoAssetNames)
-
   const updatedSpotPrices = useMemo(() => {
     return spotPrices.map((spotPrices, index) => {
       if (spotPrices.data && spotPrices.data.spotPrice.isNaN()) {
@@ -304,13 +301,14 @@ export const getCoingeckoAssetPrices = async (
   const res = await fetch(url)
   const json = await res.json()
 
-  const pricesById: { [key: string]: number } = assets.reduce((acc, asset) => {
-    const formattedName = asset.name.toLowerCase().replace(/\s+/g, "-")
-    acc[asset.id.toString()] = json[formattedName]?.usd || undefined
-    return acc
-  }, {})
-
-  console.log("gecko prices: ", pricesById)
+  const pricesById: { [key: string]: number } = assets.reduce(
+    (acc, asset) => {
+      const formattedName = asset.name.toLowerCase().replace(/\s+/g, "-")
+      acc[asset.id.toString()] = json[formattedName]?.usd || undefined
+      return acc
+    },
+    {} as { [key: string]: number },
+  )
 
   return pricesById
 }
