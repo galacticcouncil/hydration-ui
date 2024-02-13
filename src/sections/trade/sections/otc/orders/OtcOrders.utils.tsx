@@ -197,31 +197,31 @@ export const useOrdersTableSkeleton = () => {
         header: isDesktop
           ? t("otc.offers.table.header.offer")
           : t("selectAssets.asset"),
-        cell: () => <Skeleton width="100%" height="100%" />,
+        cell: () => <Skeleton width="100%" height="10" />,
       }),
       display({
         id: "accepting",
         enableSorting: false,
         header: t("otc.offers.table.header.accepting"),
-        cell: () => <Skeleton width="100%" height="100%" />,
+        cell: () => <Skeleton width="100%" height="10" />,
       }),
       display({
         id: "orderPrice",
         enableSorting: false,
         header: t("otc.offers.table.header.orderPrice"),
-        cell: () => <Skeleton width="100%" height="100%" />,
+        cell: () => <Skeleton width="100%" height="10" />,
       }),
       display({
         id: "marketPrice",
         enableSorting: true,
         header: t("otc.offers.table.header.marketPrice"),
-        cell: () => <Skeleton width="100%" height="100%" />,
+        cell: () => <Skeleton width="100%" height="10" />,
       }),
       display({
         id: "filled",
         enableSorting: false,
         header: t("otc.offers.table.header.status"),
-        cell: () => <Skeleton width="100%" height="100%" />,
+        cell: () => <Skeleton width="100%" height="10" />,
       }),
       display({
         id: "actions",
