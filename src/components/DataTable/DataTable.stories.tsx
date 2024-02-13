@@ -133,7 +133,7 @@ const MockTable = ({
   })
 
   return (
-    <div sx={{ p: 15, bg: "bg" }}>
+    <div sx={{ p: 15 }}>
       <DataTable {...props} table={table} />
     </div>
   )
