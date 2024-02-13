@@ -239,6 +239,9 @@ export const useAssetPrices = (
 
   const coingeckoPrices = useCoingeckoPrice(coingeckoAssetNames)
 
+  console.log("spot prices: ", spotPrices)
+  console.log("assets: ", coingeckoAssetNames)
+
   const updatedSpotPrices = useMemo(() => {
     return spotPrices.map((spotPrices, index) => {
       if (spotPrices.data && spotPrices.data.spotPrice.isNaN()) {
@@ -264,34 +267,15 @@ export const useAssetPrices = (
 
 export const useCoingeckoPrice = (assets: simplifiedAsset[]) => {
   return useQuery(
-    [QUERY_KEYS.coingeckoUsd, assets],
+    [QUERY_KEYS.coingeckoUsd, assets.map((asset) => asset.name)],
     async () => {
-      const prices = await Promise.all(
-        assets.map(async (asset: simplifiedAsset) => {
-          try {
-            const price = await getCoingeckoAssetPrice(asset.name)
-            return { id: asset.id, symbol: asset.symbol, price }
-          } catch (error) {
-            console.error(
-              `Failed to fetch price for asset ${asset.name}`,
-              error,
-            )
-            return { id: asset.id, symbol: asset.symbol, price: undefined } // Return undefined for failed fetches
-          }
-        }),
-      )
-      const pricesMap = prices.reduce<{
-        [key: string]: { price: number | undefined }
-      }>((acc, { id, price }) => {
-        acc[id.toString()] = price
-        return acc
-      }, {})
-      return pricesMap
+      const prices = await getCoingeckoAssetPrices(assets)
+      return prices
     },
     {
       enabled: assets.length > 0,
       refetchOnWindowFocus: false,
-      refetchOnMount: false,
+      refetchOnMount: true,
       refetchOnReconnect: false,
       retry: false,
       staleTime: 1000 * 60 * 60, // 1h
@@ -299,23 +283,34 @@ export const useCoingeckoPrice = (assets: simplifiedAsset[]) => {
   )
 }
 
-//TODO: This unique asset editting is not scalable, we should have a better way to handle this.
-export const getCoingeckoAssetPrice = async (assetName: string) => {
-  console.log(assetName)
+export const getCoingeckoAssetPrices = async (
+  assets: simplifiedAsset[],
+): Promise<{ [key: string]: number }> => {
+  const formattedAssetNames = assets
+    .map((asset) => {
+      let formattedName = asset.name.toLowerCase()
+      if (asset.name.includes(" ")) {
+        formattedName = asset.name.replace(/\s+/g, "-").toLowerCase()
+      } else if (asset.name.toLowerCase() === "phala") {
+        formattedName = "pha"
+      } else if (asset.name.toLowerCase() === "glimmer") {
+        formattedName = "moonbeam"
+      }
+      return formattedName
+    })
+    .join(",")
 
-  let formattedAssetName = assetName
-  if (assetName.includes(" ")) {
-    formattedAssetName = assetName.replace(/\s+/g, "-")
-  } else if (assetName.toLowerCase() === "Phala") {
-    formattedAssetName = "pha"
-  } else if (assetName.toLowerCase() === "glimmer") {
-    formattedAssetName = "moonbeam"
-  }
-
-  const res = await fetch(
-    `https://api.coingecko.com/api/v3/simple/price?ids=${formattedAssetName.toLowerCase()}&vs_currencies=usd`,
-  )
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${formattedAssetNames}&vs_currencies=usd`
+  const res = await fetch(url)
   const json = await res.json()
 
-  return json[formattedAssetName.toLowerCase()]?.usd
+  const pricesById: { [key: string]: number } = assets.reduce((acc, asset) => {
+    const formattedName = asset.name.toLowerCase().replace(/\s+/g, "-")
+    acc[asset.id.toString()] = json[formattedName]?.usd || undefined
+    return acc
+  }, {})
+
+  console.log("gecko prices: ", pricesById)
+
+  return pricesById
 }
