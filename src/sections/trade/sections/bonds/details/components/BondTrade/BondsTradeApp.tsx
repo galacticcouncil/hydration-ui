@@ -14,7 +14,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
 
 export const BondsApp = createComponent({
-  tagName: "gc-bonds-app",
+  tagName: "gc-bonds",
   elementClass: Apps.BondsApp,
   react: React,
   events: {
