@@ -9,6 +9,16 @@ module.exports = {
     options: {}
   },
   async viteFinal(config) {
+    if (!config.build) {
+      config.build = {}
+    }
+    config.build.target = [
+      "es2022",
+      "edge89",
+      "firefox89",
+      "chrome89",
+      "safari15",
+    ]
     return mergeConfig(config, {
       plugins: [tsconfigPaths()]
     });

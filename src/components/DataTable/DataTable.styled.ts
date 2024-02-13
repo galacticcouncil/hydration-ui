@@ -13,6 +13,16 @@ const SPACING = {
     @media ${theme.viewport.gte.sm} {
       padding: 0 20px;
     }
+
+    @container ${theme.viewport.lt.sm} {
+      padding: 0 10px;
+      &:first-of-type {
+        padding-left: 20px;
+      }
+      &:last-of-type {
+        padding-right: 20px;
+      }
+    }
   `,
   large: `
     height: 58px;
@@ -24,7 +34,13 @@ const SPACING = {
     }
 
     @container ${theme.viewport.lt.sm} {
-      padding: 0 20px;
+      padding: 0 10px;
+      &:first-of-type {
+        padding-left: 20px;
+      }
+      &:last-of-type {
+        padding-right: 20px;
+      }
     }
   `,
 }
