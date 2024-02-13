@@ -87,6 +87,7 @@ export const TransactionsTableActionsMob = ({
             isCrossChain={row.isCrossChain}
             chain={row.sourceChain}
             address={row.source}
+            addressDisplay={row.sourceDisplay}
             color="white"
           />
         </SActionRow>
@@ -98,6 +99,7 @@ export const TransactionsTableActionsMob = ({
             isCrossChain={row.isCrossChain}
             chain={row.destChain}
             address={row.dest}
+            addressDisplay={row.destDisplay}
             color="white"
           />
         </SActionRow>

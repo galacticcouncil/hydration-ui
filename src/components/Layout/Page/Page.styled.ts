@@ -116,6 +116,6 @@ export const SSubHeader = styled.div`
   }
 
   @media (${theme.viewport.gte.sm}) {
-    margin: 0 -20px;
+    margin: 0 -26px;
   }
 `

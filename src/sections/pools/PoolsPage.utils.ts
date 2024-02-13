@@ -142,6 +142,9 @@ export const usePools = () => {
 
   const assetsTradability = useAssetsTradability()
 
+  const omnipoolPositions = useOmnipoolPositionsData()
+  const miningPositions = useAllUserDepositShare()
+
   const assetsId = useMemo(
     () => omnipoolAssets.data?.map((a) => a.id.toString()) ?? [],
     [omnipoolAssets.data],
@@ -224,6 +227,11 @@ export const usePools = () => {
                 ?.projected_apr_perc ?? BN_NAN,
             )
 
+      const isPositions =
+        omnipoolPositions.data.some(
+          (omnipoolPosition) => omnipoolPosition.assetId === assetId,
+        ) || !!miningPositions.data?.[assetId]?.length
+
       return {
         id: assetId,
         name: meta.name,
@@ -236,6 +244,7 @@ export const usePools = () => {
         isVolumeLoading: volumes.isLoading,
         fee,
         isFeeLoading: fees.isLoading,
+        isPositions,
       }
     })
 
@@ -261,6 +270,8 @@ export const usePools = () => {
     fees,
     tvls,
     stableCoinId,
+    omnipoolPositions.data,
+    miningPositions.data,
   ])
 
   return { data, isLoading: isInitialLoading }
@@ -445,6 +456,8 @@ export const useXYKPools = (withPositions?: boolean) => {
         if (!shareTokenId) return undefined
 
         const shareTokenMeta = assets.getAsset(shareTokenId) as TShareToken
+
+        if (!shareTokenMeta.isShareToken) return undefined
 
         const shareTokenIssuance = totalIssuances.data?.find(
           (issuance) => issuance.asset === shareTokenId,

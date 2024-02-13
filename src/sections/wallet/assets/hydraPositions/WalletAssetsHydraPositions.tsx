@@ -77,7 +77,6 @@ export const WalletAssetsHydraPositions = ({ data }: Props) => {
               table.getRowModel().rows.map((row, i) => (
                 <Fragment key={row.id}>
                   <TableRow
-                    isOdd={!(i % 2)}
                     onClick={() => {
                       !isDesktop && setRow(row.original)
                     }}

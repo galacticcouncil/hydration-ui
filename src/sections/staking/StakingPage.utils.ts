@@ -513,42 +513,30 @@ export const useClaimReward = () => {
 
     const payablePercentage = wasm.sigmoid(points, a, b)
 
-    let rewards = BN(
-      wasm.calculate_percentage_amount(maxRewards, payablePercentage),
-    )
-
-    rewards = rewards.plus(
-      wasm.calculate_percentage_amount(
-        stakePosition.accumulatedUnpaidRewards.toString(),
-        payablePercentage,
-      ),
-    )
-
-    const unlockedRewards = BN(
-      wasm.calculate_percentage_amount(
-        stakePosition.accumulatedLockedRewards.toString(),
-        payablePercentage,
-      ),
-    )
-
-    const availabledRewards = rewards
-      .plus(stakePosition.accumulatedLockedRewards)
-      .div(BN_BILL)
-
-    const allocatedRewards = BN(maxRewards)
+    const totalRewards = BN(maxRewards)
       .plus(stakePosition.accumulatedUnpaidRewards)
       .plus(stakePosition.accumulatedLockedRewards)
-      .div(BN_BILL)
+
+    const userRewards = BN(
+      wasm.calculate_percentage_amount(
+        totalRewards.toString(),
+        payablePercentage,
+      ),
+    )
+
+    const availabeRewards = BN.max(
+      stakePosition.accumulatedLockedRewards,
+      userRewards,
+    )
 
     return {
       positionId,
-      rewards: availabledRewards,
-      unlockedRewards: unlockedRewards.div(BN_BILL),
+      rewards: availabeRewards.div(BN_BILL),
+      maxRewards: totalRewards.div(BN_BILL),
       actionPoints,
-      allocatedRewardsPercentage: availabledRewards
-        .div(allocatedRewards)
+      allocatedRewardsPercentage: availabeRewards
+        .div(totalRewards)
         .multipliedBy(100),
-      maxRewards: allocatedRewards,
     }
   }, [bestNumber.data, potBalance.data, stake, stakingConsts])
 

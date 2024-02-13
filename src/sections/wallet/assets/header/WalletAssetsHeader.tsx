@@ -8,9 +8,11 @@ type Props = { disconnected?: boolean }
 
 export const WalletAssetsHeader = ({ disconnected }: Props) => {
   const { t } = useTranslation()
+
   return (
     <HeaderValues
       skeletonHeight={[19, 38]}
+      sx={{ align: ["normal", "end"] }}
       values={[
         {
           label: t("wallet.assets.header.balance"),

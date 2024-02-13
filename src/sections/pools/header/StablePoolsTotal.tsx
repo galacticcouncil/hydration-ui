@@ -61,10 +61,12 @@ export const StablePoolsTotal = () => {
       }, BN_0)
     : BN_0
 
-  return <HeaderTotalData isLoading={isLoading} value={total} />
+  return (
+    <HeaderTotalData isLoading={isLoading} value={total} fontSize={[19, 24]} />
+  )
 }
 
-export const MyStablePoolsTotal = () => {
+export const useMyStablePoolaTotal = () => {
   const { account } = useAccount()
   const { assets } = useRpcProvider()
   const stablepools = useStableswapPools()
@@ -81,7 +83,7 @@ export const MyStablePoolsTotal = () => {
 
   const isLoading = stablepools.isInitialLoading || spotPrices.isInitialLoading
 
-  const total = !spotPrices.isInitialLoading
+  const value = !spotPrices.isInitialLoading
     ? stablepoolUserPositions?.reduce((memo, position) => {
         if (!position.data) return memo
         const { assetId, freeBalance } = position.data
@@ -103,5 +105,10 @@ export const MyStablePoolsTotal = () => {
       }, BN_0)
     : BN_0
 
-  return <HeaderTotalData isLoading={isLoading} value={total} />
+  return { value, isLoading }
+}
+
+export const MyStablePoolsTotal = () => {
+  const { value, isLoading } = useMyStablePoolaTotal()
+  return <HeaderTotalData isLoading={isLoading} value={value} fontSize={19} />
 }

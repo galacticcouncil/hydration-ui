@@ -37,9 +37,16 @@ const getShareTokens = (api: ApiPromise) => async () => {
 }
 
 export const useShareTokens = () => {
-  const { api } = useRpcProvider()
+  const { api, assets } = useRpcProvider()
 
-  return useQuery(QUERY_KEYS.shareTokens, getShareTokens(api))
+  return useQuery(QUERY_KEYS.shareTokens, getShareTokens(api), {
+    select: (data) => {
+      return data.filter((shareToken) => {
+        const meta = assets.getAsset(shareToken.shareTokenId)
+        return meta.isShareToken
+      })
+    },
+  })
 }
 
 export const useShareTokensByIds = (ids: string[]) => {

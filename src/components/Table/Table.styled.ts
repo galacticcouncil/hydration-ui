@@ -1,6 +1,6 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
-import { theme } from "theme";
+import { css } from "@emotion/react"
+import styled from "@emotion/styled"
+import { theme } from "theme"
 
 export const TableContainer = styled.div`
   background: ${theme.colors.darkBlue700};
@@ -42,7 +42,7 @@ export const TableContainer = styled.div`
       mask-composite: exclude;
     }
   }
-`;
+`
 
 export const StatsTableContainer = styled.div`
   overflow: hidden;
@@ -50,13 +50,13 @@ export const StatsTableContainer = styled.div`
 
   border-radius: ${theme.borderRadius.medium}px;
   border: 1px solid rgba(152, 176, 214, 0.27);
-`;
+`
 
 export const Table = styled.table`
   width: 100%;
   border-spacing: 0;
   border-collapse: collapse;
-`;
+`
 
 export const TableTitle = styled.div`
   display: flex;
@@ -69,7 +69,7 @@ export const TableTitle = styled.div`
   @media ${theme.viewport.gte.sm} {
     padding: 24px 30px;
   }
-`;
+`
 
 export const StatsTableTitle = styled.div`
   display: flex;
@@ -85,13 +85,13 @@ export const StatsTableTitle = styled.div`
 
     border-bottom: none;
   }
-`;
+`
 
-export const TableHeaderContent = styled.thead``;
+export const TableHeaderContent = styled.thead``
 
 export const TableBodyContent = styled.tbody`
   position: relative;
-`;
+`
 
 export const TablePlaceholderContent = styled.div`
   position: absolute;
@@ -106,12 +106,10 @@ export const TablePlaceholderContent = styled.div`
 
   background: rgba(11, 13, 25, 0.6);
   backdrop-filter: blur(8px);
-`;
+`
 
 export const TableRow = styled.tr<{
-  isOdd?: boolean;
-  isSub?: boolean;
-  header?: boolean;
+  header?: boolean
 }>`
   transition: ${theme.transitions.slow};
 
@@ -121,12 +119,12 @@ export const TableRow = styled.tr<{
     ${({ header }) =>
       !header && `background: rgba(${theme.rgbColors.white}, 0.06);`}
   }
-`;
+`
 
 export const TableRowStats = styled.tr<{
-  isOdd?: boolean;
-  isSub?: boolean;
-  header?: boolean;
+  isOdd?: boolean
+  isSub?: boolean
+  header?: boolean
 }>`
   transition: ${theme.transitions.slow};
 
@@ -143,7 +141,7 @@ export const TableRowStats = styled.tr<{
         border-bottom: none;
       }
     `}
-`;
+`
 
 export const TableHeader = styled.th<{ canSort?: boolean }>`
   padding: 10px 0 10px 16px;
@@ -170,13 +168,15 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
     line-height: 16px;
     font-weight: 600;
   }
-`;
+`
 
 export const TableData = styled.td<{
-  isExpanded?: boolean;
-  isSkeleton?: boolean;
+  isExpanded?: boolean
+  isSkeleton?: boolean
 }>`
-  padding: 16px;
+  height: 56px;
+
+  padding: 0 16px;
   ${({ isSkeleton }) => !isSkeleton && "padding-right: 0px;"}
   text-align: start;
 
@@ -188,10 +188,12 @@ export const TableData = styled.td<{
   }
 
   @media ${theme.viewport.gte.sm} {
-    padding: 24px 32px;
+    height: 68px;
+
+    padding: 0 32px;
 
     &:last-of-type {
       padding-right: 10px;
     }
   }
-`;
+`
