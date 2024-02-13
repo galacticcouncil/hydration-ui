@@ -31,15 +31,17 @@ export const IsolatedPools = () => {
     ) : (
       <>
         <HeaderValues
+          fontSizeLabel={14}
+          skeletonHeight={[19, 24]}
           values={[
             {
               label: t("liquidity.header.isolated"),
-              content: <HeaderTotalData isLoading />,
+              content: <HeaderTotalData isLoading fontSize={[19, 24]} />,
             },
             {
               withoutSeparator: true,
               label: t("liquidity.header.24hours"),
-              content: <HeaderTotalData isLoading />,
+              content: <HeaderTotalData isLoading fontSize={[19, 24]} />,
             },
           ]}
         />
@@ -90,6 +92,8 @@ const IsolatedPoolsData = () => {
   return (
     <>
       <HeaderValues
+        fontSizeLabel={14}
+        skeletonHeight={[19, 24]}
         values={[
           {
             label: t("liquidity.header.isolated"),
@@ -97,6 +101,7 @@ const IsolatedPoolsData = () => {
               <HeaderTotalData
                 isLoading={xylPools.isInitialLoading}
                 value={totalLocked}
+                fontSize={[19, 24]}
               />
             ),
           },
