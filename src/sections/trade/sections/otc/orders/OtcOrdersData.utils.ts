@@ -73,7 +73,12 @@ export const useOrdersTableData = () => {
       const marketPrice = marketPriceInUSD?.data?.spotPrice || null
 
       let marketPricePercentage = null
-      if (orderPrice && marketPrice) {
+      if (
+        orderPrice &&
+        marketPrice &&
+        !orderPrice.isZero() &&
+        !marketPrice.isZero()
+      ) {
         if (marketPrice.isGreaterThan(orderPrice)) {
           marketPricePercentage = marketPrice
             .minus(orderPrice)
