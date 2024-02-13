@@ -7,7 +7,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Link } from "components/Link/Link"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
+import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import {
   ComputedReserveData,
@@ -18,15 +18,11 @@ import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataCo
 import { useRootStore } from "sections/lending/store/root"
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
-import {
-  DashboardReserve,
-  handleSortDashboardReserves,
-} from "sections/lending/utils/dashboardSortUtils"
+import { DashboardReserve } from "sections/lending/utils/dashboardSortUtils"
 import {
   assetCanBeBorrowedByUser,
   getMaxAmountAvailableToBorrow,
 } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
-import { findAndFilterGhoReserve } from "sections/lending/utils/ghoUtilities"
 
 export type TBorrowAssetsTable = typeof useBorrowAssetsTableData
 export type TBorrowAssetsTableData = ReturnType<TBorrowAssetsTable>
@@ -47,17 +43,15 @@ export const useBorrowAssetsTableColumns = () => {
           <AssetNameColumn
             underlyingAsset={row.original.underlyingAsset}
             symbol={row.original.symbol}
-            iconSymbol={row.original.symbol}
+            iconSymbol={row.original.iconSymbol}
           />
         ),
       }),
-      accessor("availableBorrows", {
+      accessor("availableBorrowsInUSD", {
         header: "Available",
-        meta: {
-          sx: {
-            textAlign: "center",
-          },
-        },
+        sortingFn: (a, b) =>
+          Number(a.original.availableBorrowsInUSD) -
+          Number(b.original.availableBorrowsInUSD),
         cell: ({ row }) => {
           const { availableBorrows, availableBorrowsInUSD } = row.original
           const value = Number(availableBorrows)
@@ -202,17 +196,7 @@ export const useBorrowAssetsTableData = () => {
             },
           )
 
-    const { filtered: filteredReserves } =
-      findAndFilterGhoReserve(borrowReserves)
-
-    const sortedReserves = handleSortDashboardReserves(
-      false,
-      "",
-      "asset",
-      filteredReserves as unknown as DashboardReserve[],
-    )
-
-    return sortedReserves
+    return borrowReserves as unknown as DashboardReserve[]
   }, [
     baseAssetSymbol,
     currentMarket,

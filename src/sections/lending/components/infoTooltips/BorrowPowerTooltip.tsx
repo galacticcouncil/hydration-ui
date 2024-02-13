@@ -1,5 +1,3 @@
-
-
 import {
   TextWithTooltip,
   TextWithTooltipProps,

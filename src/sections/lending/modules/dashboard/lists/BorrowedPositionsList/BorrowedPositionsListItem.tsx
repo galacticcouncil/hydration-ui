@@ -25,7 +25,7 @@ export const BorrowedPositionsListItem = ({
   item: DashboardReserve
 }) => {
   const { borrowCap } = useAssetCaps()
-  const { currentMarket, currentMarketData } = useProtocolDataContext()
+  const { currentMarketData } = useProtocolDataContext()
   const theme = useTheme()
   const downToXSM = useMediaQuery(theme.breakpoints.down("xsm"))
   const { openBorrow, openRepay, openRateSwitch, openDebtSwitch } =
@@ -73,22 +73,10 @@ export const BorrowedPositionsListItem = ({
       openDebtSwitch(reserve.underlyingAsset, item.borrowRateMode)
     },
     onOpenBorrow: () => {
-      openBorrow(
-        reserve.underlyingAsset,
-        currentMarket,
-        reserve.name,
-        "dashboard",
-      )
+      openBorrow(reserve.underlyingAsset)
     },
     onOpenRepay: () => {
-      openRepay(
-        reserve.underlyingAsset,
-        item.borrowRateMode,
-        reserve.isFrozen,
-        currentMarket,
-        reserve.name,
-        "dashboard",
-      )
+      openRepay(reserve.underlyingAsset, item.borrowRateMode, reserve.isFrozen)
     },
     onOpenRateSwitch: () => {
       openRateSwitch(reserve.underlyingAsset, item.borrowRateMode)
@@ -256,12 +244,7 @@ const BorrowedPositionsListItemMobile = ({
         disabled={Number(totalBorrows) === 0}
       />
 
-      <Row
-        caption={<span>APY</span>}
-        align="flex-start"
-        captionVariant="description"
-        mb={2}
-      >
+      <Row caption={<span>APY</span>}>
         <IncentivesCard
           value={borrowAPY}
           incentives={incentives}
@@ -278,8 +261,6 @@ const BorrowedPositionsListItemMobile = ({
             variant="description"
           />
         }
-        captionVariant="description"
-        mb={2}
       >
         <ListItemAPYButton
           stableBorrowRateEnabled={stableBorrowRateEnabled}

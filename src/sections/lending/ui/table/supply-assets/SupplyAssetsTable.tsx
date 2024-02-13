@@ -34,10 +34,7 @@ export const SupplyAssetsTable = () => {
         hasAvailableDeposits && (
           <Switch
             value={showAll}
-            onCheckedChange={(value) => {
-              console.log("FRONM SWITCH", value)
-              setShowAll(value)
-            }}
+            onCheckedChange={setShowAll}
             size="small"
             name="showAll"
             label={t("wallet.assets.table.toggle")}

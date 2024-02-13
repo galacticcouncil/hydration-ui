@@ -52,28 +52,14 @@ export type TxStateType = {
 
 export interface ModalContextType<T extends ModalArgsType> {
   openSupply: (underlyingAsset: string) => void
-  openWithdraw: (
-    underlyingAsset: string,
-    currentMarket: string,
-    name: string,
-    funnel: string,
-  ) => void
+  openWithdraw: (underlyingAsset: string) => void
   openBorrow: (underlyingAsset: string) => void
   openRepay: (
     underlyingAsset: string,
     currentRateMode: InterestRate,
     isFrozen: boolean,
-    currentMarket: string,
-    name: string,
-    funnel: string,
   ) => void
-  openCollateralChange: (
-    underlyingAsset: string,
-    currentMarket: string,
-    name: string,
-    funnel: string,
-    usageAsCollateralEnabledOnUser: boolean,
-  ) => void
+  openCollateralChange: (underlyingAsset: string) => void
   openRateSwitch: (
     underlyingAsset: string,
     currentRateMode: InterestRate,
@@ -143,7 +129,7 @@ export const ModalContextProvider: React.FC<{ children?: React.ReactNode }> = ({
           setType(ModalType.Supply)
           setArgs({ underlyingAsset })
         },
-        openWithdraw: (underlyingAsset, currentMarket, name, funnel) => {
+        openWithdraw: (underlyingAsset) => {
           setType(ModalType.Withdraw)
           setArgs({ underlyingAsset })
         },
@@ -151,24 +137,11 @@ export const ModalContextProvider: React.FC<{ children?: React.ReactNode }> = ({
           setType(ModalType.Borrow)
           setArgs({ underlyingAsset })
         },
-        openRepay: (
-          underlyingAsset,
-          currentRateMode,
-          isFrozen,
-          currentMarket,
-          name,
-          funnel,
-        ) => {
+        openRepay: (underlyingAsset, currentRateMode, isFrozen) => {
           setType(ModalType.Repay)
           setArgs({ underlyingAsset, currentRateMode, isFrozen })
         },
-        openCollateralChange: (
-          underlyingAsset,
-          currentMarket,
-          name,
-          funnel,
-          usageAsCollateralEnabledOnUser,
-        ) => {
+        openCollateralChange: (underlyingAsset) => {
           setType(ModalType.CollateralChange)
           setArgs({ underlyingAsset })
         },

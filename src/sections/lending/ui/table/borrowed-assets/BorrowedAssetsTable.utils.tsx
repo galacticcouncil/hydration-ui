@@ -1,0 +1,231 @@
+import { API_ETH_MOCK_ADDRESS, InterestRate } from "@aave/contract-helpers"
+import { createColumnHelper } from "@tanstack/react-table"
+import { Button } from "components/Button/Button"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import {
+  ComputedUserReserveData,
+  useAppDataContext,
+} from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { useModalContext } from "sections/lending/hooks/useModal"
+import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
+import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
+import { APYTypeButtonColumn } from "sections/lending/ui/columns/APYTypeButtonColumn"
+import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
+import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
+import { GHO_SYMBOL } from "sections/lending/utils/ghoUtilities"
+
+export type TBorrowedAssetsTable = typeof useBorrowedAssetsTableData
+export type TBorrowedAssetsTableData = ReturnType<TBorrowedAssetsTable>
+export type TBorrowedAssetsRow = TBorrowedAssetsTableData["data"][number]
+
+const { accessor, display } = createColumnHelper<TBorrowedAssetsRow>()
+
+export const useBorrowedAssetsTableColumns = () => {
+  const { t } = useTranslation()
+  const { openRepay, openRateSwitch } = useModalContext()
+
+  const { currentMarket } = useProtocolDataContext()
+
+  return useMemo(
+    () => [
+      accessor(({ reserve }) => reserve.symbol, {
+        header: "Asset",
+        cell: ({ row }) => (
+          <AssetNameColumn
+            underlyingAsset={row.original.underlyingAsset}
+            symbol={row.original.reserve.symbol}
+            iconSymbol={row.original.reserve.iconSymbol}
+          />
+        ),
+      }),
+      accessor("totalBorrowsUSD", {
+        header: "Debt",
+        sortingFn: (a, b) =>
+          Number(a.original.totalBorrowsUSD) -
+          Number(b.original.totalBorrowsUSD),
+        cell: ({ row }) => {
+          const { totalBorrows, totalBorrowsUSD } = row.original
+          const value = Number(totalBorrows)
+          const valueUsd = Number(totalBorrowsUSD)
+
+          return (
+            <span sx={{ color: value === 0 ? "basic500" : "white" }}>
+              {t("value.token", { value })}
+              {value > 0 && (
+                <span
+                  css={{ display: "block" }}
+                  sx={{ color: "basic300", fontSize: 12, lineHeight: 16 }}
+                >
+                  <DisplayValue value={valueUsd} isUSD />
+                </span>
+              )}
+            </span>
+          )
+        },
+      }),
+      accessor("borrowAPY", {
+        header: "APY",
+        meta: {
+          sx: {
+            textAlign: "center",
+          },
+        },
+        cell: ({ row }) => {
+          const { borrowAPY, incentives, reserve } = row.original
+
+          return (
+            <IncentivesCard
+              value={borrowAPY}
+              incentives={incentives}
+              symbol={reserve.symbol}
+            />
+          )
+        },
+      }),
+      accessor("borrowAPY", {
+        header: "APY Type",
+        meta: {
+          sx: {
+            textAlign: "center",
+          },
+        },
+        cell: ({ row }) => {
+          const { reserve, borrowRateMode } = row.original
+          const {
+            isActive,
+            isFrozen,
+            isPaused,
+            stableBorrowRateEnabled,
+            stableBorrowAPY,
+            variableBorrowAPY,
+            underlyingAsset,
+          } = reserve
+          const disabled =
+            !stableBorrowRateEnabled || isFrozen || !isActive || isPaused
+          return (
+            <APYTypeButtonColumn
+              stableBorrowRateEnabled={stableBorrowRateEnabled}
+              borrowRateMode={borrowRateMode}
+              disabled={disabled}
+              onClick={() => openRateSwitch(underlyingAsset, borrowRateMode)}
+              stableBorrowAPY={stableBorrowAPY}
+              variableBorrowAPY={variableBorrowAPY}
+              underlyingAsset={underlyingAsset}
+              currentMarket={currentMarket}
+            />
+          )
+        },
+      }),
+      display({
+        id: "actions",
+        meta: {
+          sx: {
+            textAlign: "end",
+          },
+        },
+        cell: ({ row }) => {
+          const { reserve, underlyingAsset, borrowRateMode } = row.original
+
+          const disableRepay = !reserve.isActive || reserve.isPaused
+          return (
+            <Button
+              disabled={disableRepay}
+              onClick={() =>
+                openRepay(underlyingAsset, borrowRateMode, reserve.isFrozen)
+              }
+              size="micro"
+              sx={{ height: 27 }}
+            >
+              Repay
+            </Button>
+          )
+        },
+      }),
+    ],
+    [currentMarket, openRateSwitch, openRepay, t],
+  )
+}
+
+export const useBorrowedAssetsTableData = () => {
+  const { user, loading } = useAppDataContext()
+  const { currentNetworkConfig } = useProtocolDataContext()
+  const data = useMemo(() => {
+    let borrowPositions =
+      user?.userReservesData.reduce(
+        (acc, userReserve) => {
+          if (userReserve.variableBorrows !== "0") {
+            acc.push({
+              ...userReserve,
+              borrowRateMode: InterestRate.Variable,
+              reserve: {
+                ...userReserve.reserve,
+                ...(userReserve.reserve.isWrappedBaseAsset
+                  ? fetchIconSymbolAndName({
+                      symbol: currentNetworkConfig.baseAssetSymbol,
+                      underlyingAsset: API_ETH_MOCK_ADDRESS.toLowerCase(),
+                    })
+                  : {}),
+              },
+            })
+          }
+          if (userReserve.stableBorrows !== "0") {
+            acc.push({
+              ...userReserve,
+              borrowRateMode: InterestRate.Stable,
+              reserve: {
+                ...userReserve.reserve,
+                ...(userReserve.reserve.isWrappedBaseAsset
+                  ? fetchIconSymbolAndName({
+                      symbol: currentNetworkConfig.baseAssetSymbol,
+                      underlyingAsset: API_ETH_MOCK_ADDRESS.toLowerCase(),
+                    })
+                  : {}),
+              },
+            })
+          }
+          return acc
+        },
+        [] as (ComputedUserReserveData & { borrowRateMode: InterestRate })[],
+      ) || []
+
+    // Move GHO to top of borrowed positions list
+    const ghoReserve = borrowPositions.filter(
+      (pos) => pos.reserve.symbol === GHO_SYMBOL,
+    )
+    if (ghoReserve.length > 0) {
+      borrowPositions = borrowPositions.filter(
+        (pos) => pos.reserve.symbol !== GHO_SYMBOL,
+      )
+      borrowPositions.unshift(ghoReserve[0])
+    }
+
+    return borrowPositions.map((item) => {
+      return {
+        ...item,
+        totalBorrows:
+          item.borrowRateMode === InterestRate.Variable
+            ? item.variableBorrows
+            : item.stableBorrows,
+        totalBorrowsUSD:
+          item.borrowRateMode === InterestRate.Variable
+            ? item.variableBorrowsUSD
+            : item.stableBorrowsUSD,
+        borrowAPY:
+          item.borrowRateMode === InterestRate.Variable
+            ? Number(item.reserve.variableBorrowAPY)
+            : Number(item.stableBorrowAPY),
+        incentives:
+          item.borrowRateMode === InterestRate.Variable
+            ? item.reserve.vIncentivesData
+            : item.reserve.sIncentivesData,
+      }
+    })
+  }, [currentNetworkConfig.baseAssetSymbol, user?.userReservesData])
+
+  return {
+    data,
+    isLoading: loading,
+  }
+}

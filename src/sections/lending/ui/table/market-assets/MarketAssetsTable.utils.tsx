@@ -30,17 +30,12 @@ export const useMarketAssetsTableColumns = () => {
           <AssetNameColumn
             underlyingAsset={row.original.underlyingAsset}
             symbol={row.original.symbol}
-            iconSymbol={row.original.symbol}
+            iconSymbol={row.original.iconSymbol}
           />
         ),
       }),
       accessor("totalLiquidityUSD", {
         header: "Total supplied",
-        meta: {
-          sx: {
-            textAlign: "center",
-          },
-        },
         sortingFn: (a, b) =>
           Number(a.original.totalLiquidityUSD) -
           Number(b.original.totalLiquidityUSD),

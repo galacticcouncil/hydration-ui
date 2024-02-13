@@ -77,13 +77,7 @@ export const SuppliedPositionsListItem = ({
           usageAsCollateralEnabledOnUser={usageAsCollateralEnabledOnUser}
           canBeEnabledAsCollateral={canBeEnabledAsCollateral}
           onToggleSwitch={() => {
-            openCollateralChange(
-              underlyingAsset,
-              currentMarket,
-              reserve.name,
-              "dashboard",
-              usageAsCollateralEnabledOnUser,
-            )
+            openCollateralChange(underlyingAsset)
           }}
           data-cy={`collateralStatus`}
         />
@@ -105,14 +99,7 @@ export const SuppliedPositionsListItem = ({
           <Button
             disabled={disableSupply}
             variant="contained"
-            onClick={() =>
-              openSupply(
-                underlyingAsset,
-                currentMarket,
-                reserve.name,
-                "dashboard",
-              )
-            }
+            onClick={() => openSupply(underlyingAsset)}
           >
             <span>Supply</span>
           </Button>
@@ -121,12 +108,7 @@ export const SuppliedPositionsListItem = ({
           disabled={disableWithdraw}
           variant="outlined"
           onClick={() => {
-            openWithdraw(
-              underlyingAsset,
-              currentMarket,
-              reserve.name,
-              "dashboard",
-            )
+            openWithdraw(underlyingAsset)
           }}
         >
           <span>Withdraw</span>

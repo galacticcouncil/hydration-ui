@@ -23,10 +23,7 @@ import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatche
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { CollateralColumn } from "sections/lending/ui/columns/CollateralColumn"
 import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
-import {
-  DashboardReserve,
-  handleSortDashboardReserves,
-} from "sections/lending/utils/dashboardSortUtils"
+import { DashboardReserve } from "sections/lending/utils/dashboardSortUtils"
 
 export type TSupplyAssetsTable = typeof useSupplyAssetsTableData
 export type TSupplyAssetsTableData = ReturnType<TSupplyAssetsTable>
@@ -47,17 +44,12 @@ export const useSupplyAssetsTableColumns = () => {
           <AssetNameColumn
             underlyingAsset={row.original.underlyingAsset}
             symbol={row.original.symbol}
-            iconSymbol={row.original.symbol}
+            iconSymbol={row.original.iconSymbol}
           />
         ),
       }),
       accessor("walletBalanceUSD", {
         header: "Wallet balance",
-        meta: {
-          sx: {
-            textAlign: "center",
-          },
-        },
         sortingFn: (a, b) =>
           Number(a.original.walletBalanceUSD) -
           Number(b.original.walletBalanceUSD),
@@ -179,7 +171,6 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
     (store) => store.currentNetworkConfig,
   )
   const currentMarketData = useRootStore((store) => store.currentMarketData)
-  const currentMarket = useRootStore((store) => store.currentMarket)
   const {
     user,
     reserves,
@@ -187,7 +178,6 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
     loading: loadingReserves,
   } = useAppDataContext()
   const { walletBalances, loading } = useWalletBalances(currentMarketData)
-  const [displayGho] = useRootStore((store) => [store.displayGho])
 
   const { baseAssetSymbol } = currentNetworkConfig
 
@@ -203,8 +193,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
     const tokensToSupply = reserves
       .filter(
         (reserve: ComputedReserveData) =>
-          !(reserve.isFrozen || reserve.isPaused) &&
-          !displayGho({ symbol: reserve.symbol, currentMarket }),
+          !(reserve.isFrozen || reserve.isPaused),
       )
       .map((reserve: ComputedReserveData) => {
         const walletBalance = walletBalances[reserve.underlyingAsset]?.amount
@@ -329,13 +318,9 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
       ? filteredSupplyReserves
       : sortedSupplyReserves
 
-    // Transform to the DashboardReserve schema so the sort utils can work with it
-    const preSortedReserves = supplyReserves as DashboardReserve[]
-    return handleSortDashboardReserves(false, "", "assets", preSortedReserves)
+    return supplyReserves as DashboardReserve[]
   }, [
     baseAssetSymbol,
-    currentMarket,
-    displayGho,
     isShowZeroAssets,
     marketReferencePriceInUsd,
     reserves,

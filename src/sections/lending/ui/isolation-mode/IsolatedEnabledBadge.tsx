@@ -136,6 +136,7 @@ const IsolationModeTooltipTemplate = ({ content }: { content: ReactNode }) => {
             target="_blank"
             href="https://docs.aave.com/faq/aave-v3-features#isolation-mode"
             rel="noreferrer"
+            css={{ textDecoration: "underline" }}
           >
             FAQ guide
           </a>
