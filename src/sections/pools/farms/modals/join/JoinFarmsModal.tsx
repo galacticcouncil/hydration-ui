@@ -16,6 +16,9 @@ import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetail
 import { SJoinFarmContainer } from "./JoinFarmsModal.styled"
 import { useBestNumber } from "api/chain"
 import { useRpcProvider } from "providers/rpcProvider"
+import { Alert } from "components/Alert/Alert"
+import { Spacer } from "components/Spacer/Spacer"
+import { BN_0 } from "utils/constants"
 
 type JoinFarmModalProps = {
   isOpen: boolean
@@ -51,6 +54,19 @@ export const JoinFarmModal = ({
     (farm) =>
       farm.globalFarm.id.eq(selectedFarmId?.globalFarmId) &&
       farm.yieldFarm.id.eq(selectedFarmId?.yieldFarmId),
+  )
+
+  const { isValid, minDeposit } = farms.reduce<{
+    isValid: boolean
+    minDeposit: BigNumber
+  }>(
+    (acc, farm) => {
+      const minDeposit = farm.globalFarm.minDeposit.toBigNumber()
+      const isValid = !!shares?.gte(minDeposit)
+
+      return { isValid, minDeposit: !isValid ? minDeposit : acc.minDeposit }
+    },
+    { isValid: false, minDeposit: BN_0 },
   )
 
   const { page, direction, back, next } = useModalPagination()
@@ -112,10 +128,10 @@ export const JoinFarmModal = ({
                   <SJoinFarmContainer>
                     <div
                       sx={{
-                        flex: "row",
+                        flex: ["column", "row"],
                         justify: "space-between",
                         p: 30,
-                        gap: 120,
+                        gap: [4, 120],
                       }}
                     >
                       <div sx={{ flex: "column", gap: 13 }}>
@@ -132,11 +148,22 @@ export const JoinFarmModal = ({
                         })}
                       </Text>
                     </div>
+                    {!isValid && (
+                      <>
+                        <Alert variant="error">
+                          {t("farms.modal.join.minDeposit", {
+                            value: minDeposit.shiftedBy(-meta.decimals),
+                          })}
+                        </Alert>
+                        <Spacer size={20} />
+                      </>
+                    )}
                     <Button
                       fullWidth
                       variant="primary"
                       onClick={() => mutation.mutate()}
                       isLoading={mutation.isLoading}
+                      disabled={!isValid}
                     >
                       {t("farms.modal.join.button.label", {
                         count: farms.length,
