@@ -89,3 +89,12 @@ export const withoutHexPrefix = (value: string) => {
 export const withHexPrefix = (value: string) => {
   return value.startsWith("0x") ? value : "0x" + value
 }
+
+export const getFunctionDefsFromAbi = (abi: any[], method: string) => {
+  try {
+    const defs = abi.filter(
+      (item) => item.type === "function" && item.name === method,
+    )
+    return JSON.stringify(defs)
+  } catch (err) {}
+}

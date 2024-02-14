@@ -139,70 +139,85 @@ const EvmTxData: FC<{ method?: string; abi?: string; data?: string }> = ({
   const allowDecodedFullExpand =
     !decodedFullyExpanded && height > MAX_DECODED_HEIGHT
 
+  const parsedAbi = useMemo(() => (abi ? JSON.parse(abi) : []) as any[], [abi])
+  const methodName = method ?? parsedAbi[0]?.name
+
   const decodedData = useMemo(() => {
-    if (abi && data) {
+    if (parsedAbi && data) {
       try {
-        const parsedAbi = JSON.parse(abi) as any[]
-        const types = parsedAbi.find((f) => f.name === method)?.inputs ?? []
+        const types = parsedAbi.find((f) => f.name === methodName)?.inputs ?? []
         const decoded = utils.defaultAbiCoder.decode(
           types,
           hexDataSlice(data, 10),
         )
 
-        console.log({ parsedAbi, types, decoded })
-
         return decodedResultToJson(decoded)
-      } catch (error) {}
+      } catch (error) {
+        console.log(error)
+      }
     }
-  }, [abi, data, method])
+  }, [data, methodName, parsedAbi])
+
+  console.log({ decodedData, data, methodName, parsedAbi, abi })
 
   if (!decodedData) return null
   if (!data) return null
 
+  const hasAbiInputs = parsedAbi?.length > 0
+
   return (
     <SContainer>
-      <div>
-        <SExpandButton
-          onClick={() => setDecodedExpanded((prev) => !prev)}
-          expanded={decodedExpanded}
-        >
-          <ChevronDownSmallIcon />
-          {t("liquidity.reviewTransaction.calldata.decoded")}
-        </SExpandButton>
-        {decodedExpanded && (
-          <div
-            sx={{
-              mt: 10,
-              pl: 16,
-            }}
-            css={{
-              position: "relative",
-              height: allowDecodedFullExpand ? MAX_DECODED_HEIGHT : "auto",
-              overflow: "hidden",
-            }}
-          >
-            <TransactionCode ref={ref} name={method} src={decodedData} />
-            {allowDecodedFullExpand && (
-              <SShowMoreButton
-                onClick={() => setDecodedFullyExpanded(true)}
+      {hasAbiInputs && (
+        <>
+          <div>
+            <SExpandButton
+              onClick={() => setDecodedExpanded((prev) => !prev)}
+              expanded={decodedExpanded}
+            >
+              <ChevronDownSmallIcon />
+              {t("liquidity.reviewTransaction.calldata.decoded")}
+            </SExpandButton>
+            {decodedExpanded && (
+              <div
+                sx={{
+                  mt: 10,
+                  pl: 16,
+                }}
                 css={{
-                  position: "absolute",
-                  bottom: 0,
+                  position: "relative",
+                  height: allowDecodedFullExpand ? MAX_DECODED_HEIGHT : "auto",
+                  overflow: "hidden",
                 }}
               >
-                Show more <ChevronDown width={16} height={16} />
-              </SShowMoreButton>
+                <TransactionCode
+                  ref={ref}
+                  name={methodName}
+                  src={decodedData}
+                />
+                {allowDecodedFullExpand && (
+                  <SShowMoreButton
+                    onClick={() => setDecodedFullyExpanded(true)}
+                    css={{
+                      position: "absolute",
+                      bottom: 0,
+                    }}
+                  >
+                    Show more <ChevronDown width={16} height={16} />
+                  </SShowMoreButton>
+                )}
+              </div>
             )}
           </div>
-        )}
-      </div>
-      <Separator sx={{ my: 12 }} />
+          <Separator sx={{ my: 12 }} />
+        </>
+      )}
       <div>
         <SExpandButton
           onClick={() => setEncodedExpanded((prev) => !prev)}
           expanded={encodedExpanded}
+          css={{ pointerEvents: hasAbiInputs ? "auto" : "none" }}
         >
-          <ChevronDownSmallIcon />
+          {hasAbiInputs && <ChevronDownSmallIcon />}
           {t("liquidity.reviewTransaction.calldata.encoded")}
         </SExpandButton>
         {encodedExpanded && (
@@ -233,12 +248,6 @@ export const ReviewTransactionData: FC<Props> = ({
   if (isEVM && xcall)
     return <EvmTxData method="transfer" data={xcall?.data} abi={xcall?.abi} />
   if (evmTx)
-    return (
-      <EvmTxData
-        method="borrow"
-        data={evmTx?.data?.data?.toString()}
-        abi={evmTx?.abi}
-      />
-    )
+    return <EvmTxData data={evmTx?.data?.data?.toString()} abi={evmTx?.abi} />
   return null
 }

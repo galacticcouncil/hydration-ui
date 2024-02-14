@@ -33,6 +33,7 @@ interface UseTransactionHandlerProps {
   protocolAction?: ProtocolAction
   deps?: DependencyList
   eventTxInfo?: TransactionDetails
+  abi?: string
 }
 
 export type Approval = {
@@ -50,6 +51,7 @@ export const useTransactionHandler = ({
   protocolAction,
   deps = [],
   eventTxInfo,
+  abi,
 }: UseTransactionHandlerProps) => {
   const queryClient = useQueryClient()
   const {
@@ -61,6 +63,7 @@ export const useTransactionHandler = ({
     loadingTxns,
     setLoadingTxns,
     setTxError,
+    close,
   } = useModalContext()
   const { signTxData, sendTx, getTxError } = useWeb3Context()
   const { refetchPoolData, refetchIncentiveData, refetchGhoData } =
@@ -159,6 +162,8 @@ export const useTransactionHandler = ({
             ...eventTxInfo,
           })
         }
+      } finally {
+        close()
       }
 
       return
@@ -176,7 +181,7 @@ export const useTransactionHandler = ({
           const deadline = Math.floor(Date.now() / 1000 + 3600).toString()
           const unsignedPromisePayloads: Promise<string>[] = []
           for (const approval of approvals) {
-            if (!approval.permitType || approval.permitType == "POOL") {
+            if (!approval.permitType || approval.permitType === "POOL") {
               unsignedPromisePayloads.push(
                 signPoolERC20Approval({
                   reserve: approval.underlyingAsset,
@@ -227,7 +232,7 @@ export const useTransactionHandler = ({
           } catch (error) {
             if (!mounted.current) return
             const parsedError = getErrorTextFromError(
-              error,
+              error as Error,
               TxAction.APPROVAL,
               false,
             )
@@ -241,7 +246,7 @@ export const useTransactionHandler = ({
           if (!mounted.current) return
 
           const parsedError = getErrorTextFromError(
-            error,
+            error as Error,
             TxAction.GAS_ESTIMATION,
             false,
           )
@@ -294,7 +299,7 @@ export const useTransactionHandler = ({
         } catch (error) {
           if (!mounted.current) return
           const parsedError = getErrorTextFromError(
-            error,
+            error as Error,
             TxAction.GAS_ESTIMATION,
             false,
           )
@@ -340,9 +345,8 @@ export const useTransactionHandler = ({
           },
         })
       } catch (error) {
-        console.log(error, "error")
         const parsedError = getErrorTextFromError(
-          error,
+          error as Error,
           TxAction.GAS_ESTIMATION,
           false,
         )
@@ -359,7 +363,7 @@ export const useTransactionHandler = ({
         const params = await actionTx.tx()
         delete params.gasPrice
         return processTx({
-          tx: () => sendTx(params),
+          tx: () => sendTx(params, abi),
           successCallback: (txnResponse: TransactionResponse) => {
             setMainTxState({
               txHash: txnResponse.hash,
@@ -382,7 +386,7 @@ export const useTransactionHandler = ({
         })
       } catch (error) {
         const parsedError = getErrorTextFromError(
-          error,
+          error as Error,
           TxAction.GAS_ESTIMATION,
           false,
         )
@@ -407,7 +411,7 @@ export const useTransactionHandler = ({
           .then(async (txs) => {
             if (!mounted.current) return
             const approvalTransactions = txs.filter(
-              (tx) => tx.txType == "ERC20_APPROVAL",
+              (tx) => tx.txType === "ERC20_APPROVAL",
             )
             if (approvalTransactions.length > 0) {
               setApprovalTxes(approvalTransactions)
@@ -463,7 +467,7 @@ export const useTransactionHandler = ({
               } catch (error) {
                 if (!mounted.current) return
                 const parsedError = getErrorTextFromError(
-                  error,
+                  error as Error,
                   TxAction.GAS_ESTIMATION,
                   false,
                 )
@@ -492,6 +496,7 @@ export const useTransactionHandler = ({
       setApprovalTxes(undefined)
       setActionTx(undefined)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skip, ...deps, tryPermit, walletApprovalMethodPreference])
 
   return {

@@ -6,6 +6,8 @@ import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/us
 import { useRootStore } from "sections/lending/store/root"
 
 import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
+import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
+import { getFunctionDefsFromAbi } from "sections/lending/utils/utils"
 
 export interface WithdrawActionsProps extends BoxProps {
   poolReserve: ComputedReserveData
@@ -50,6 +52,7 @@ export const WithdrawActions = ({
       asset: poolReserve.underlyingAsset,
     },
     protocolAction: ProtocolAction.withdraw,
+    abi: getFunctionDefsFromAbi(IPool__factory.abi, "withdraw"),
   })
 
   return (

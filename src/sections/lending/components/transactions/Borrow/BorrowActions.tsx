@@ -26,6 +26,7 @@ import {
   checkRequiresApproval,
 } from "sections/lending/components/transactions/utils"
 import { useQueryClient } from "@tanstack/react-query"
+import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
 
 export interface BorrowActionsProps extends BoxProps {
   poolReserve: ComputedReserveData
@@ -134,7 +135,14 @@ export const BorrowActions = React.memo(
               : poolReserve.stableDebtTokenAddress,
         })
         borrowTxData = await estimateGasLimit(borrowTxData)
-        const response = await sendTx(borrowTxData)
+        const response = await sendTx(
+          borrowTxData,
+          JSON.stringify(
+            IPool__factory.abi.filter(
+              (f) => f.type === "function" && f.name === "borrow",
+            ),
+          ),
+        )
         await response.wait(1)
         setMainTxState({
           txHash: response.hash,

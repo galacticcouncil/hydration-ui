@@ -14,7 +14,6 @@ import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatche
 import { APYTypeButtonColumn } from "sections/lending/ui/columns/APYTypeButtonColumn"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
-import { GHO_SYMBOL } from "sections/lending/utils/ghoUtilities"
 
 export type TBorrowedAssetsTable = typeof useBorrowedAssetsTableData
 export type TBorrowedAssetsTableData = ReturnType<TBorrowedAssetsTable>
@@ -84,7 +83,7 @@ export const useBorrowedAssetsTableColumns = () => {
           )
         },
       }),
-      accessor("borrowAPY", {
+      accessor("borrowRateMode", {
         header: "APY Type",
         meta: {
           sx: {
@@ -152,7 +151,7 @@ export const useBorrowedAssetsTableData = () => {
   const { user, loading } = useAppDataContext()
   const { currentNetworkConfig } = useProtocolDataContext()
   const data = useMemo(() => {
-    let borrowPositions =
+    const borrowPositions =
       user?.userReservesData.reduce(
         (acc, userReserve) => {
           if (userReserve.variableBorrows !== "0") {
@@ -189,17 +188,6 @@ export const useBorrowedAssetsTableData = () => {
         },
         [] as (ComputedUserReserveData & { borrowRateMode: InterestRate })[],
       ) || []
-
-    // Move GHO to top of borrowed positions list
-    const ghoReserve = borrowPositions.filter(
-      (pos) => pos.reserve.symbol === GHO_SYMBOL,
-    )
-    if (ghoReserve.length > 0) {
-      borrowPositions = borrowPositions.filter(
-        (pos) => pos.reserve.symbol !== GHO_SYMBOL,
-      )
-      borrowPositions.unshift(ghoReserve[0])
-    }
 
     return borrowPositions.map((item) => {
       return {

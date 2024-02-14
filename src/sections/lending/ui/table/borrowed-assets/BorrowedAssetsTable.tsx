@@ -1,4 +1,5 @@
 import { DataTable } from "components/DataTable"
+import { Text } from "components/Typography/Text/Text"
 import { useReactTable } from "hooks/useReactTable"
 import { BorrowedAssetsStats } from "sections/lending/ui/table/borrowed-assets/BorrowedAssetsStats"
 import {
@@ -23,6 +24,11 @@ export const BorrowedAssetsTable = () => {
       spacing="large"
       title="Your borrows"
       addons={<BorrowedAssetsStats />}
+      emptyFallback={
+        <Text color="basic700" fs={14}>
+          Nothing borrowed yet
+        </Text>
+      }
     />
   )
 }

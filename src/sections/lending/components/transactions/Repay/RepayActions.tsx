@@ -31,6 +31,8 @@ import {
   checkRequiresApproval,
 } from "sections/lending/components/transactions/utils"
 import { useQueryClient } from "@tanstack/react-query"
+import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
+import { getFunctionDefsFromAbi } from "sections/lending/utils/utils"
 
 export interface RepayActionProps extends BoxProps {
   amountToRepay: string
@@ -97,6 +99,7 @@ export const RepayActions = ({
     setGasLimit,
     setLoadingTxns,
     setApprovalTxState,
+    close,
   } = useModalContext()
 
   const {
@@ -181,7 +184,10 @@ export const RepayActions = ({
         signedRepayWithPermitTxData = await estimateGasLimit(
           signedRepayWithPermitTxData,
         )
-        response = await sendTx(signedRepayWithPermitTxData)
+        response = await sendTx(
+          signedRepayWithPermitTxData,
+          getFunctionDefsFromAbi(IPool__factory.abi, "repayWithPermit"),
+        )
         await response.wait(1)
       } else {
         const repayParams = {
@@ -205,7 +211,12 @@ export const RepayActions = ({
           encodedTxData: encodedParams,
         })
         repayTxData = await estimateGasLimit(repayTxData)
-        response = await sendTx(repayTxData)
+        response = await sendTx(
+          repayTxData,
+          getFunctionDefsFromAbi(IPool__factory.abi, "repay"),
+        )
+
+        console.log({ abi: IPool__factory.abi })
         await response.wait(1)
       }
       setMainTxState({
@@ -236,6 +247,8 @@ export const RepayActions = ({
         txHash: undefined,
         loading: false,
       })
+    } finally {
+      close()
     }
   }
 

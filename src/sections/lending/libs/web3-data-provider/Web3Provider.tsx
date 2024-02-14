@@ -28,8 +28,6 @@ import {
 import { isMetaMask } from "utils/metamask"
 import { useStore } from "state/store"
 
-import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
-
 export type ERC20TokenType = {
   address: string
   symbol: string
@@ -47,7 +45,10 @@ export type Web3Data = {
   chainId: number
   switchNetwork: (chainId: number) => Promise<void>
   getTxError: (txHash: string) => Promise<string>
-  sendTx: (txData: PopulatedTransaction) => Promise<TransactionResponse>
+  sendTx: (
+    txData: PopulatedTransaction,
+    abi?: string,
+  ) => Promise<TransactionResponse>
   addERC20Token: (args: ERC20TokenType) => Promise<boolean>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signTxData: (unsignedData: string) => Promise<SignatureLike>
@@ -107,12 +108,12 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   }, [deactivate, setWalletType])
 
   const sendTx = useCallback(
-    async (txData: PopulatedTransaction) => {
+    async (txData: PopulatedTransaction, abi?: string) => {
       if (provider) {
         createTransaction({
           evmTx: {
             data: txData,
-            abi: JSON.stringify(IPool__factory.abi),
+            abi,
           },
         })
 
@@ -129,16 +130,16 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
 
   // TODO: recheck that it works on all wallets
   const signTxData = async (unsignedData: string): Promise<SignatureLike> => {
-    alert("[signTxData]")
-    /* if (provider && account) {
-      console.log("SIGNING")
+    if (provider && account) {
       const signature: SignatureLike = await provider.send(
         "eth_signTypedData_v4",
         [account, unsignedData],
       )
 
       return signature
-    } */
+    }
+
+    throw new Error("Error signing transaction. Provider not found")
   }
 
   const switchNetwork = async (newChainId: number) => {
