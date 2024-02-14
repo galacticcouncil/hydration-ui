@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next"
 import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
 import { ClaimAllDropdown } from "sections/pools/farms/components/claimAllDropdown/ClaimAllDropdown"
-import { Text } from "components/Typography/Text/Text"
 import { SearchFilter } from "sections/pools/filter/SearchFilter"
 import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
@@ -19,6 +18,7 @@ import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { MyLiquidityTotal } from "sections/pools/header/MyLiquidityTotal"
+import { TableLabel } from "sections/pools/components/TableLabel"
 
 const poolsWithMyPositions = true
 
@@ -63,17 +63,13 @@ export const MyLiquidity = () => {
         />
         <SearchFilter />
 
-        <div sx={{ flex: "column", gap: 20 }}>
-          <div sx={{ flex: "column", gap: 20 }}>
-            <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
-              {t("liquidity.section.omnipoolAndStablepool")}
-            </Text>
+        <div sx={{ flex: "column" }}>
+          <div sx={{ flex: "column" }}>
+            <TableLabel label={t("liquidity.section.omnipoolAndStablepool")} />
             <PoolsTableSkeleton />
           </div>
-          <div sx={{ flex: "column", gap: 20 }}>
-            <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
-              {t("liquidity.section.xyk")}
-            </Text>
+          <div sx={{ flex: "column" }}>
+            <TableLabel label={t("liquidity.section.xyk")} />
             <PoolsTableSkeleton isXyk />
           </div>
         </div>
@@ -172,13 +168,10 @@ const MyLiquidityData = () => {
         !filteredPools.length &&
         !filteredXYKPools.length && <EmptySearchState />}
 
-      <div sx={{ flex: "column", gap: 20 }}>
+      <div sx={{ flex: "column" }}>
         {pools.isLoading || !!filteredPools.length ? (
-          <div sx={{ flex: "column", gap: 20 }}>
-            <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
-              {t("liquidity.section.omnipoolAndStablepool")}
-            </Text>
-
+          <div sx={{ flex: "column" }}>
+            <TableLabel label={t("liquidity.section.omnipoolAndStablepool")} />
             {pools.isLoading ? (
               <PoolsTableSkeleton />
             ) : (
@@ -188,11 +181,8 @@ const MyLiquidityData = () => {
         ) : null}
 
         {xylPools.isInitialLoading || !!filteredXYKPools.length ? (
-          <div sx={{ flex: "column", gap: 20 }}>
-            <Text fs={19} lh={24} font="FontOver" tTransform="uppercase">
-              {t("liquidity.section.xyk")}
-            </Text>
-
+          <div sx={{ flex: "column" }}>
+            <TableLabel label={t("liquidity.section.xyk")} />
             {xylPools.isInitialLoading ? (
               <PoolsTableSkeleton isXyk />
             ) : (

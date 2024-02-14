@@ -16,6 +16,7 @@ import { PoolWrapper } from "sections/pools/pool/Pool"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
+import { Spacer } from "components/Spacer/Spacer"
 
 export const OmnipoolAndStablepool = () => {
   const { t } = useTranslation()
@@ -51,7 +52,7 @@ export const OmnipoolAndStablepool = () => {
           ]}
         />
         <SearchFilter />
-
+        <Spacer size={[24, 40]} />
         <PoolsTableSkeleton />
       </>
     )
@@ -125,7 +126,7 @@ const OmnipoolAndStablepoolData = () => {
         ]}
       />
       <SearchFilter />
-
+      <Spacer size={[24, 40]} />
       {pools.isLoading ? (
         <PoolsTableSkeleton />
       ) : filteredPools.length ? (
