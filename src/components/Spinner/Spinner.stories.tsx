@@ -5,7 +5,6 @@ import { Spinner as SpinnerComponent } from "./Spinner.styled"
 type Story = StoryObj<typeof SpinnerComponent>
 
 export default {
-  title: "components/Spinner",
   component: SpinnerComponent,
 } as Meta<typeof SpinnerComponent>
 
