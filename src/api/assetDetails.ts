@@ -178,7 +178,7 @@ export const getAssets = async (api: ApiPromise) => {
   const bonds: TBond[] = []
   const stableswap: TStableSwap[] = []
   const shareTokensRaw = []
-  const external = []
+  const external: TToken[] = []
 
   for (const [key, dataRaw] of rawAssetsData) {
     if (!dataRaw.isNone) {
@@ -434,14 +434,16 @@ export const getAssets = async (api: ApiPromise) => {
     (acc, shareToken) => {
       const [assetAId, assetBId] = shareToken.assets
 
-      const assetA = [...tokens, ...bonds].find(
+      const assetA = [...tokens, ...bonds, ...external].find(
         (token) => token.id === assetAId,
       ) as TToken
-      const assetB = [...tokens, ...bonds].find(
+      const assetB = [...tokens, ...bonds, ...external].find(
         (token) => token.id === assetBId,
       ) as TToken
 
-      if (assetA && assetB) {
+      const isValdiTokens = assetA?.name && assetB?.name
+
+      if (isValdiTokens) {
         const assetDecimal =
           Number(assetA.id) > Number(assetB.id) ? assetB : assetA
 
