@@ -1,9 +1,13 @@
-const { mergeConfig } = require("vite");
-const { default: tsconfigPaths } = require("vite-tsconfig-paths");
+const { default: tsconfigPaths } = require("vite-tsconfig-paths")
 
 module.exports = {
-  stories: ["../src/**/*.stories.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
-  addons: ["@storybook/addon-links", "@storybook/addon-essentials", "@storybook/addon-interactions", "@storybook/addon-mdx-gfm", '@storybook/addon-styling'],
+  stories: ["../src/**/*.stories.@(js|jsx|ts|tsx)"],
+  addons: [
+    "@storybook/addon-links",
+    "@storybook/addon-essentials",
+    "@storybook/addon-interactions",
+    '@storybook/addon-styling'
+  ],
   framework: {
     name: "@storybook/react-vite",
     options: {}
@@ -19,9 +23,12 @@ module.exports = {
       "chrome89",
       "safari15",
     ]
-    return mergeConfig(config, {
-      plugins: [tsconfigPaths()]
-    });
+    config.plugins = [
+      tsconfigPaths(),
+      ...(config.plugins.filter(({ name }) => name !== 'transform-index-html'))
+    ]
+
+    return config
   },
   docs: {
     autodocs: true
