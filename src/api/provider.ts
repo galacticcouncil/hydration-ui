@@ -61,6 +61,7 @@ export const useProviderRpcUrlStore = create(
     }),
     {
       name: "rpcUrl",
+      version: 1,
       getStorage: () => ({
         async getItem(name: string) {
           return window.localStorage.getItem(name)

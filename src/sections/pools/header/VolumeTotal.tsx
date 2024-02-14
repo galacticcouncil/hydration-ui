@@ -30,7 +30,13 @@ export const AllPoolsVolumeTotal = () => {
 
   const volumeTotal = totalVolumes?.div(2).plus(totalXYKVolume)
 
-  return <HeaderTotalData isLoading={isLoading} value={volumeTotal} />
+  return (
+    <HeaderTotalData
+      isLoading={isLoading}
+      value={volumeTotal}
+      fontSize={[19, 24]}
+    />
+  )
 }
 
 export const XYKVolumeTotal = () => {
@@ -46,7 +52,13 @@ export const XYKVolumeTotal = () => {
       BN_0,
     ) ?? BN_0
 
-  return <HeaderTotalData isLoading={isLoading} value={totalXYKVolume} />
+  return (
+    <HeaderTotalData
+      isLoading={isLoading}
+      value={totalXYKVolume}
+      fontSize={[19, 24]}
+    />
+  )
 }
 
 export const VolumeTotal = () => {
@@ -60,5 +72,11 @@ export const VolumeTotal = () => {
     BN_0,
   )
 
-  return <HeaderTotalData isLoading={isLoading} value={totalVolumes?.div(2)} />
+  return (
+    <HeaderTotalData
+      isLoading={isLoading}
+      value={totalVolumes?.div(2)}
+      fontSize={[19, 24]}
+    />
+  )
 }
