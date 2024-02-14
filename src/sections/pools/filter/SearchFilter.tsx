@@ -22,7 +22,7 @@ export const SearchFilter = () => {
   )
 
   return (
-    <div sx={{ flex: "column", gap: [16, 30], mb: [16, 20] }}>
+    <div sx={{ flex: "column", gap: [16, 30] }}>
       <SSearchContainer>
         <IconSearch />
         <Input

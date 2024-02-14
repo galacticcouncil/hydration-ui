@@ -46,7 +46,10 @@ export const MyLiquidityTotal = () => {
     return calculatedShares
   }, [miningPositions.data])
 
-  const total = xykTotal.plus(totalOmnipool).plus(stablePoolTotal.value)
+  const total = xykTotal
+    .plus(totalOmnipool)
+    .plus(stablePoolTotal.value)
+    .plus(totalFarms)
 
   return (
     <HeaderTotalData
