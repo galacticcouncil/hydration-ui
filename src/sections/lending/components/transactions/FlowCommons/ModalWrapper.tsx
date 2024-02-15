@@ -21,6 +21,7 @@ import {
 import { TxModalTitle } from "sections/lending/components/transactions/FlowCommons/TxModalTitle"
 import { ChangeNetworkWarning } from "sections/lending/components/transactions/Warnings/ChangeNetworkWarning"
 import { TxErrorView } from "./Error"
+import { ModalContents } from "components/Modal/contents/ModalContents"
 
 export interface ModalWrapperProps {
   underlyingAsset: string
@@ -79,21 +80,23 @@ export const ModalWrapper: React.FC<{
   }
 
   const poolReserve = reserves.find((reserve) => {
-    if (underlyingAsset.toLowerCase() === API_ETH_MOCK_ADDRESS.toLowerCase())
-      return reserve.isWrappedBaseAsset
+    if (underlyingAsset?.toLowerCase() === API_ETH_MOCK_ADDRESS.toLowerCase())
+      return reserve?.isWrappedBaseAsset
     return underlyingAsset === reserve.underlyingAsset
   }) as ComputedReserveData
 
   const userReserve = user?.userReservesData.find((userReserve) => {
-    if (underlyingAsset.toLowerCase() === API_ETH_MOCK_ADDRESS.toLowerCase())
-      return userReserve.reserve.isWrappedBaseAsset
-    return underlyingAsset === userReserve.underlyingAsset
+    if (underlyingAsset?.toLowerCase() === API_ETH_MOCK_ADDRESS.toLowerCase())
+      return userReserve?.reserve?.isWrappedBaseAsset
+    return underlyingAsset === userReserve?.underlyingAsset
   }) as ComputedUserReserveData
 
   const symbol =
-    poolReserve.isWrappedBaseAsset && !keepWrappedSymbol
-      ? currentNetworkConfig.baseAssetSymbol
-      : poolReserve.symbol
+    poolReserve?.isWrappedBaseAsset && !keepWrappedSymbol
+      ? currentNetworkConfig?.baseAssetSymbol
+      : poolReserve?.symbol
+
+  const modalTitle = !mainTxState.success ? title : ""
 
   return (
     <AssetCapsProvider asset={poolReserve}>
@@ -109,18 +112,26 @@ export const ModalWrapper: React.FC<{
           chainId={requiredChainId}
         />
       )}
-      {children({
-        isWrongNetwork,
-        nativeBalance:
-          walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]?.amount || "0",
-        tokenBalance:
-          walletBalances[poolReserve.underlyingAsset.toLowerCase()]?.amount ||
-          "0",
-        poolReserve,
-        symbol,
-        underlyingAsset,
-        userReserve,
-      })}
+      <ModalContents
+        contents={[
+          {
+            title: modalTitle,
+            content: children({
+              isWrongNetwork,
+              nativeBalance:
+                walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]?.amount ||
+                "0",
+              tokenBalance:
+                walletBalances[poolReserve?.underlyingAsset?.toLowerCase()]
+                  ?.amount || "0",
+              poolReserve,
+              symbol,
+              underlyingAsset,
+              userReserve,
+            }),
+          },
+        ]}
+      />
     </AssetCapsProvider>
   )
 }
