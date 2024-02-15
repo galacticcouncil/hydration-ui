@@ -39,7 +39,7 @@
     "@galacticcouncil/math-xyk": "^0.2.0",
     "@galacticcouncil/sdk": "^1.1.8",
     "@galacticcouncil/ui": "^3.0.0",
-    "@galacticcouncil/xcm-cfg": "^1.5.0",
+    "@galacticcouncil/xcm-cfg": "^1.6.0",
     "@galacticcouncil/xcm-sdk": "^2.2.0",
     "@lit-labs/react": "^1.1.0",
     "@polkadot/api": "10.9.1",
