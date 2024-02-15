@@ -126,7 +126,7 @@ const MockTable = ({
   ComponentPropsWithoutRef<typeof DataTable> & { isLoading?: boolean }
 >) => {
   const table = useReactTable({
-    data: _mockTableData_,
+    data: props.emptyFallback ? [] : _mockTableData_,
     columns: _mockColumns_,
     isLoading,
     skeletonRowCount: _mockTableData_.length,
@@ -200,6 +200,16 @@ export const Skeleton: Story = {
   args: {
     size: "large",
     spacing: "large",
+  },
+}
+
+export const EmptyFallback: Story = {
+  render: (props) => <MockTable {...props} />,
+  args: {
+    title: "Cryptocurrencies",
+    spacing: "large",
+    size: "large",
+    emptyFallback: <p sx={{ color: "basic300" }}>No cryptocurrencies found.</p>,
   },
 }
 
