@@ -24,6 +24,7 @@ type DataTableProps<T> = {
   title?: ReactNode
   action?: ReactNode
   addons?: ReactNode
+  emptyFallback?: ReactNode
   onRowClick?: (row?: Row<T> | Record<string, any>) => void
 } & TableProps
 
@@ -41,6 +42,7 @@ export function DataTable<T extends Record<string, any>>({
   striped,
   hoverable,
   onRowClick,
+  emptyFallback,
 }: DataTableProps<T>) {
   const tableProps = {
     spacing,
@@ -51,7 +53,12 @@ export function DataTable<T extends Record<string, any>>({
     fixedLayout,
   }
 
+  const rows = table.getRowModel().rows
+  const hasRows = rows.length > 0
   const isLoading = table.options.meta?.isLoading ?? false
+
+  const shouldRenderFallback = emptyFallback && !isLoading && !hasRows
+  const shouldRenderAddons = !shouldRenderFallback && addons
 
   return (
     <TableContainer className={className} background={background}>
@@ -62,9 +69,15 @@ export function DataTable<T extends Record<string, any>>({
         </TableTitleContainer>
       )}
 
-      {addons && <TableAddons spacing={spacing}>{addons}</TableAddons>}
+      {shouldRenderAddons && (
+        <TableAddons spacing={spacing}>{addons}</TableAddons>
+      )}
 
-      <Table {...tableProps} data-loading={`${isLoading}`}>
+      <Table
+        {...tableProps}
+        data-loading={`${isLoading}`}
+        css={{ display: shouldRenderFallback ? "none" : "table" }}
+      >
         <TableHeader>
           {table
             .getHeaderGroups()
@@ -99,7 +112,7 @@ export function DataTable<T extends Record<string, any>>({
             ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows.map((row) => (
+          {rows.map((row) => (
             <TableRow
               key={row.id}
               data-selected={row.getIsSelected()}
@@ -138,6 +151,10 @@ export function DataTable<T extends Record<string, any>>({
           ))}
         </TableBody>
       </Table>
+
+      {shouldRenderFallback && (
+        <TableAddons spacing={spacing}>{emptyFallback}</TableAddons>
+      )}
     </TableContainer>
   )
 }

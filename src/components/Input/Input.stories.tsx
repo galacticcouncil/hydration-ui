@@ -1,13 +1,12 @@
 import styled from "@emotion/styled"
-import { ComponentMeta } from "@storybook/react"
+import { Meta } from "@storybook/react"
 import { useState } from "react"
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import { Input } from "./Input"
 
 export default {
-  title: "components/Input/Input",
   component: Input,
-} as ComponentMeta<typeof Input>
+} as Meta<typeof Input>
 
 const SwitchContainer = styled.div`
   background: #00041d;

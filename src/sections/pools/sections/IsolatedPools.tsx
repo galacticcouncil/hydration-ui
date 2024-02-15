@@ -15,6 +15,7 @@ import { useSearch } from "@tanstack/react-location"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
+import { Spacer } from "components/Spacer/Spacer"
 
 export const IsolatedPools = () => {
   const { t } = useTranslation()
@@ -46,7 +47,7 @@ export const IsolatedPools = () => {
           ]}
         />
         <SearchFilter />
-
+        <Spacer size={[24, 40]} />
         <PoolsTableSkeleton isXyk />
       </>
     )
@@ -113,7 +114,7 @@ const IsolatedPoolsData = () => {
         ]}
       />
       <SearchFilter />
-
+      <Spacer size={[24, 40]} />
       {xylPools.isInitialLoading ? (
         <PoolsTableSkeleton isXyk />
       ) : filteredPools.length ? (
