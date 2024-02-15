@@ -55,7 +55,7 @@ export const SupplyAssetsListMobileItem = ({
       showDebtCeilingTooltips
     >
       <ListValueRow
-        title={<span>Supply balance</span>}
+        title="Supply balance"
         value={Number(walletBalance)}
         subValue={walletBalanceUSD}
         disabled={Number(walletBalance) === 0 || isMaxCapReached}

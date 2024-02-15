@@ -138,7 +138,7 @@ export const MarketAssetsListContainer = () => {
             />
           </Typography>
           {showFrozenMarketsToggle && (
-            <Warning severity="info">
+            <Warning variant="info">
               <span>
                 These assets are temporarily frozen or paused by Aave community
                 decisions, meaning that further supply / borrow, or rate swap of

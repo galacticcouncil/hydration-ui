@@ -1,9 +1,10 @@
 import { CheckIcon } from "@heroicons/react/solid"
 
+import { Button } from "components/Button/Button"
+
 import {
   Box,
   BoxProps,
-  Button,
   CircularProgress,
   SvgIcon,
   Typography,
@@ -126,10 +127,9 @@ export const TxActionsWrapper = ({
     return {
       content: (
         <ApprovalTooltip
-          variant="buttonL"
           iconSize={20}
           iconMargin={2}
-          color="white"
+          iconColor="white"
           text={<span>Approve {symbol} to continue</span>}
         />
       ),
@@ -157,14 +157,12 @@ export const TxActionsWrapper = ({
 
       {approvalParams && !readOnlyModeAddress && (
         <Button
-          variant="contained"
+          variant="primary"
           disabled={approvalParams.disabled || blocked}
           onClick={() =>
             approvalParams.handleClick && approvalParams.handleClick()
           }
-          size="large"
-          sx={{ minHeight: "44px" }}
-          data-cy="approvalButton"
+          size="medium"
         >
           {approvalParams.loading && (
             <CircularProgress color="inherit" size="16px" sx={{ mr: 8 }} />
@@ -174,12 +172,11 @@ export const TxActionsWrapper = ({
       )}
 
       <Button
-        variant="contained"
+        variant="primary"
         disabled={disabled || blocked || readOnlyModeAddress !== undefined}
         onClick={handleClick}
-        size="large"
-        sx={{ minHeight: "44px", ...(approvalParams ? { mt: 2 } : {}) }}
-        data-cy="actionButton"
+        size="medium"
+        sx={approvalParams ? { mt: 8 } : undefined}
       >
         {loading && (
           <CircularProgress color="inherit" size="16px" sx={{ mr: 8 }} />

@@ -42,11 +42,7 @@ export const ReserveTopDetails = ({
 
   return (
     <>
-      <TopInfoPanelItem
-        title={<span>Reserve Size</span>}
-        loading={loading}
-        hideIcon
-      >
+      <TopInfoPanelItem title="Reserve Size" loading={loading} hideIcon>
         <FormattedNumber
           value={Math.max(Number(poolReserve?.totalLiquidityUSD), 0)}
           symbol="USD"
@@ -56,11 +52,7 @@ export const ReserveTopDetails = ({
         />
       </TopInfoPanelItem>
 
-      <TopInfoPanelItem
-        title={<span>Available liquidity</span>}
-        loading={loading}
-        hideIcon
-      >
+      <TopInfoPanelItem title="Available liquidity" loading={loading} hideIcon>
         <FormattedNumber
           value={Math.max(Number(poolReserve?.availableLiquidityUSD), 0)}
           symbol="USD"
@@ -70,11 +62,7 @@ export const ReserveTopDetails = ({
         />
       </TopInfoPanelItem>
 
-      <TopInfoPanelItem
-        title={<span>Utilization Rate</span>}
-        loading={loading}
-        hideIcon
-      >
+      <TopInfoPanelItem title="Utilization Rate" loading={loading} hideIcon>
         <FormattedNumber
           value={poolReserve?.borrowUsageRatio}
           percent
@@ -84,11 +72,7 @@ export const ReserveTopDetails = ({
         />
       </TopInfoPanelItem>
 
-      <TopInfoPanelItem
-        title={<span>Oracle price</span>}
-        loading={loading}
-        hideIcon
-      >
+      <TopInfoPanelItem title="Oracle price" loading={loading} hideIcon>
         <Box sx={{ display: "inline-flex", alignItems: "center" }}>
           <FormattedNumber
             value={poolReserve?.priceInUSD}

@@ -1,4 +1,3 @@
-
 import React from "react"
 import {
   ModalContextType,
@@ -17,10 +16,7 @@ export const FaucetModal = () => {
 
   return (
     <BasicModal open={type === ModalType.Faucet} setOpen={close}>
-      <ModalWrapper
-        title={<span>Faucet</span>}
-        underlyingAsset={args.underlyingAsset}
-      >
+      <ModalWrapper title="Faucet" underlyingAsset={args.underlyingAsset}>
         {(params) => <FaucetModalContent {...params} />}
       </ModalWrapper>
     </BasicModal>

@@ -32,7 +32,7 @@ export const Alert: FC<AlertProps> = ({
         <SInfoIcon sx={{ width: iconSize, height: iconSize }} />
       )}
 
-      <div sx={{ flex: "column" }}>
+      <div sx={{ flex: "column", fontSize: getFontSize(size), lineHeight: 16 }}>
         {typeof children === "string" ? (
           <Text fs={getFontSize(size)} lh={16} fw={500}>
             {children}

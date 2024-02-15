@@ -120,10 +120,10 @@ export const AssetInput = <T extends Asset = Asset>({
 
   return (
     <Box {...sx}>
-      <Box
+      <div
         sx={{
-          display: "flex",
-          alignItems: "center",
+          flex: "row",
+          align: "center",
           mb: 4,
         }}
       >
@@ -131,7 +131,7 @@ export const AssetInput = <T extends Asset = Asset>({
           {inputTitle ? inputTitle : <span>Amount</span>}
         </Typography>
         {capType && <AvailableTooltip capType={capType} />}
-      </Box>
+      </div>
 
       <Box
         sx={(theme) => ({

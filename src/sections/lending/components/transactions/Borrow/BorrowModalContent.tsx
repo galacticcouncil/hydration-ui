@@ -9,7 +9,6 @@ import { Typography } from "@mui/material"
 import { useState } from "react"
 import { APYTypeTooltip } from "sections/lending/components/infoTooltips/APYTypeTooltip"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
-import { Row } from "sections/lending/components/primitives/Row"
 import { StyledTxModalToggleButton } from "sections/lending/components/StyledToggleButton"
 import { StyledTxModalToggleGroup } from "sections/lending/components/StyledToggleButtonGroup"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
@@ -56,20 +55,13 @@ const BorrowModeSwitch = ({
   stableRate,
 }: BorrowModeSwitchProps) => {
   return (
-    <Row
-      caption={
+    <div sx={{ mb: 16 }}>
+      <div sx={{ fontSize: 14, mb: 4 }}>
         <APYTypeTooltip
           text={<span>Borrow APY rate</span>}
           key="APY type_modal"
-          variant="description"
         />
-      }
-      captionVariant="description"
-      mb={5}
-      flexDirection="column"
-      align="flex-start"
-      captionColor="text.secondary"
-    >
+      </div>
       <StyledTxModalToggleGroup
         color="primary"
         value={interestRateMode}
@@ -96,7 +88,7 @@ const BorrowModeSwitch = ({
           <FormattedNumber value={stableRate} percent variant="secondary14" />
         </StyledTxModalToggleButton>
       </StyledTxModalToggleGroup>
-    </Row>
+    </div>
   )
 }
 

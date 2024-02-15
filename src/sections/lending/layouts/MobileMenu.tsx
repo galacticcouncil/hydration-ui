@@ -77,16 +77,16 @@ export const MobileMenu = ({
 
       <DrawerWrapper open={open} setOpen={setOpen} headerHeight={headerHeight}>
         <>
-          <MenuItemsWrapper title={<span>Menu</span>}>
+          <MenuItemsWrapper title="Menu">
             <NavItems setOpen={setOpen} />
           </MenuItemsWrapper>
-          <MenuItemsWrapper title={<span>Global settings</span>}>
+          <MenuItemsWrapper title="Global settings">
             <List>
               <DarkModeSwitcher />
               {PROD_ENV && <TestNetModeSwitcher />}
             </List>
           </MenuItemsWrapper>
-          <MenuItemsWrapper title={<span>Links</span>}>
+          <MenuItemsWrapper title="Links">
             <List>
               {moreNavigation.map((item, index) => (
                 <ListItem

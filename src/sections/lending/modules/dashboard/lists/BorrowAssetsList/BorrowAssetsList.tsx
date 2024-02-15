@@ -192,7 +192,7 @@ export const BorrowAssetsList = () => {
   if (loading)
     return (
       <ListLoader
-        title={<span>Assets to borrow</span>}
+        title="Assets to borrow"
         head={head.map((col) => col.title)}
         withTopMargin
       />
@@ -225,7 +225,7 @@ export const BorrowAssetsList = () => {
 
             {user?.healthFactor !== "-1" &&
               Number(user?.healthFactor) <= 1.1 && (
-                <Warning severity="error">
+                <Warning variant="error">
                   <span>
                     Be careful - You are very close to liquidation. Consider
                     depositing more collateral or paying down some of your
@@ -237,7 +237,7 @@ export const BorrowAssetsList = () => {
             {!borrowDisabled && (
               <>
                 {user?.isInIsolationMode && (
-                  <Warning severity="warning">
+                  <Warning variant="warning">
                     <span>
                       Borrowing power and assets are limited due to Isolation
                       mode.{" "}
@@ -252,7 +252,7 @@ export const BorrowAssetsList = () => {
                   </Warning>
                 )}
                 {user?.isInEmode && (
-                  <Warning severity="warning">
+                  <Warning variant="warning">
                     <span>
                       In E-Mode some assets are not borrowable. Exit E-Mode to
                       get access to all assets
@@ -260,7 +260,7 @@ export const BorrowAssetsList = () => {
                   </Warning>
                 )}
                 {user?.totalCollateralMarketReferenceCurrency === "0" && (
-                  <Warning severity="info">
+                  <Warning variant="info">
                     <span>
                       To borrow you need to supply any asset to be used as
                       collateral.

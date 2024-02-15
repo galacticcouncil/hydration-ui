@@ -1,23 +1,18 @@
-import { AlertProps } from "@mui/material"
 import { AssetCapData } from "sections/lending/hooks/useAssetCaps"
-
+import { AlertProps } from "components/Alert"
 import { Link } from "sections/lending/components/primitives/Link"
 import { Warning } from "sections/lending/components/primitives/Warning"
 
-type BorrowCapWarningProps = AlertProps & {
+type BorrowCapWarningProps = Omit<AlertProps, "variant"> & {
   borrowCap: AssetCapData
-  icon?: boolean
 }
 
 export const BorrowCapWarning = ({
   borrowCap,
-  icon = true,
   ...rest
 }: BorrowCapWarningProps) => {
   // Don't show a warning when less than 98% utilized
   if (!borrowCap.percentUsed || borrowCap.percentUsed < 98) return null
-
-  const severity = "warning"
 
   const renderText = () => {
     return borrowCap.isMaxed ? (
@@ -34,7 +29,7 @@ export const BorrowCapWarning = ({
   }
 
   return (
-    <Warning severity={severity} icon={icon} {...rest}>
+    <Warning {...rest} variant="warning">
       {renderText()}{" "}
       <Link
         href="https://docs.aave.com/developers/whats-new/supply-borrow-caps"

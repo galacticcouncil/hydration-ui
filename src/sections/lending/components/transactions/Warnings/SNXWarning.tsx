@@ -4,7 +4,7 @@ import { Warning } from "sections/lending/components/primitives/Warning"
 
 export const SNXWarning = () => {
   return (
-    <Warning severity="warning">
+    <Warning variant="warning">
       <Typography>
         <span>Before supplying</span> SNX{" "}
         <span>

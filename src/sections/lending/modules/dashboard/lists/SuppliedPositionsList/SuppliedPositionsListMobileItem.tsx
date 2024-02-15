@@ -61,7 +61,7 @@ export const SuppliedPositionsListMobileItem = ({
       showDebtCeilingTooltips
     >
       <ListValueRow
-        title={<span>Supply balance</span>}
+        title="Supply balance"
         value={Number(underlyingBalance)}
         subValue={Number(underlyingBalanceUSD)}
         disabled={Number(underlyingBalance) === 0}

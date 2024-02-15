@@ -98,7 +98,9 @@ export const GasStation: React.FC<GasStationProps> = ({
           />
 
           {loadingTxns && !skipLoad ? (
-            <CircularProgress color="inherit" size="16px" sx={{ mr: 8 }} />
+            <div sx={{ flex: "row", align: "center", height: 20 }}>
+              <CircularProgress color="inherit" size="14px" sx={{ mr: 8 }} />
+            </div>
           ) : totalGasCostsUsd && !disabled ? (
             <>
               <FormattedNumber
@@ -116,7 +118,7 @@ export const GasStation: React.FC<GasStationProps> = ({
       </Box>
       {!disabled && Number(nativeBalanceUSD) < Number(totalGasCostsUsd) && (
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Warning severity="warning" sx={{ mb: 0, mx: "auto" }}>
+          <Warning variant="warning" sx={{ mb: 0, mx: "auto" }}>
             You do not have enough {baseAssetSymbol} in your account to pay for
             transaction fees on {name} network. Please deposit {baseAssetSymbol}{" "}
             from another account.

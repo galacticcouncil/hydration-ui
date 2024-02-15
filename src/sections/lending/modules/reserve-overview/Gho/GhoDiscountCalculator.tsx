@@ -242,7 +242,7 @@ export const GhoDiscountCalculator = () => {
         icon={
           <InfoIcon sx={{ color: (theme) => theme.palette.primary.main }} />
         }
-        severity="info"
+        variant="info"
         sx={{
           background: palette.background.surface2,
           visibility: alertText ? "visible" : "hidden",
@@ -384,7 +384,7 @@ const GhoDiscountParametersComponent: React.FC<{
         }}
       >
         <DiscountModelParameter
-          title={<span>Discountable amount</span>}
+          title="Discountable amount"
           fullWidth={downToXsm}
           loading={loading}
         >
@@ -403,7 +403,7 @@ const GhoDiscountParametersComponent: React.FC<{
           </Typography>
         </DiscountModelParameter>
         <DiscountModelParameter
-          title={<span>Discount</span>}
+          title="Discount"
           fullWidth={downToXsm}
           loading={loading}
         >
@@ -417,7 +417,7 @@ const GhoDiscountParametersComponent: React.FC<{
           />
         </DiscountModelParameter>
         <DiscountModelParameter
-          title={<span>APY with discount applied</span>}
+          title="APY with discount applied"
           fullWidth={downToXsm}
           loading={loading}
         >
@@ -429,7 +429,7 @@ const GhoDiscountParametersComponent: React.FC<{
           />
         </DiscountModelParameter>
         <DiscountModelParameter
-          title={<span>Minimum staked Aave amount</span>}
+          title="Minimum staked Aave amount"
           fullWidth={downToXsm}
           loading={loading}
         >
@@ -444,7 +444,7 @@ const GhoDiscountParametersComponent: React.FC<{
           </Stack>
         </DiscountModelParameter>
         <DiscountModelParameter
-          title={<span>Minimum GHO borrow amount</span>}
+          title="Minimum GHO borrow amount"
           fullWidth={downToXsm}
           loading={loading}
         >

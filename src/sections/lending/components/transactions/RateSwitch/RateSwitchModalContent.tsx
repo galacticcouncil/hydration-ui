@@ -96,7 +96,7 @@ export const RateSwitchModalContent = ({
   return (
     <>
       {blockingError !== undefined && (
-        <Warning severity="error" sx={{ mb: 0 }}>
+        <Warning variant="error" sx={{ mb: 0 }}>
           {handleBlocked()}
         </Warning>
       )}

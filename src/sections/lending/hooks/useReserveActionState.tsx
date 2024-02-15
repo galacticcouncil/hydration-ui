@@ -62,7 +62,7 @@ export const useReserveActionState = ({
         {balance === "0" && !isGho && (
           <>
             {currentNetworkConfig.isTestnet ? (
-              <Warning sx={{ mb: 0 }} severity="info" icon={false}>
+              <Warning sx={{ mb: 0 }} variant="info">
                 <span>
                   Your {networkName} wallet is empty. Get free test{" "}
                   {reserve.name} at
@@ -83,7 +83,6 @@ export const useReserveActionState = ({
                 sx={{ mb: 0 }}
                 name={networkName}
                 bridge={bridge}
-                icon={false}
                 chainId={currentChainId}
               />
             )}
@@ -92,7 +91,7 @@ export const useReserveActionState = ({
 
         {(balance !== "0" || isGho) &&
           user?.totalCollateralMarketReferenceCurrency === "0" && (
-            <Warning sx={{ mb: 0 }} severity="info" icon={false}>
+            <Warning sx={{ mb: 0 }} variant="info">
               <span>
                 To borrow you need to supply any asset to be used as collateral.
               </span>
@@ -100,13 +99,13 @@ export const useReserveActionState = ({
           )}
 
         {isolationModeBorrowDisabled && (
-          <Warning sx={{ mb: 0 }} severity="warning" icon={false}>
+          <Warning sx={{ mb: 0 }} variant="warning">
             <span>Collateral usage is limited because of Isolation mode.</span>
           </Warning>
         )}
 
         {eModeBorrowDisabled && isolationModeBorrowDisabled && (
-          <Warning sx={{ mb: 0 }} severity="info" icon={false}>
+          <Warning sx={{ mb: 0 }} variant="info">
             <span>
               Borrowing is unavailable because you’ve enabled Efficiency Mode
               (E-Mode) and Isolation mode. To manage E-Mode and Isolation mode
@@ -116,7 +115,7 @@ export const useReserveActionState = ({
         )}
 
         {eModeBorrowDisabled && !isolationModeBorrowDisabled && (
-          <Warning sx={{ mb: 0 }} severity="info" icon={false}>
+          <Warning sx={{ mb: 0 }} variant="info">
             <span>
               Borrowing is unavailable because you’ve enabled Efficiency Mode
               (E-Mode) for{" "}
@@ -128,7 +127,7 @@ export const useReserveActionState = ({
         )}
 
         {!eModeBorrowDisabled && isolationModeBorrowDisabled && (
-          <Warning sx={{ mb: 0 }} severity="info" icon={false}>
+          <Warning sx={{ mb: 0 }} variant="info">
             <span>
               Borrowing is unavailable because you’re using Isolation mode. To
               manage Isolation mode visit your{" "}

@@ -217,7 +217,7 @@ export const WalletSelector = () => {
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
       <TxModalTitle title="Connect a wallet" />
-      {error && <Warning severity="error">{handleBlocking()}</Warning>}
+      {error && <Warning variant="error">{handleBlocking()}</Warning>}
       <WalletRow
         key="browser_wallet"
         walletName="Browser wallet"

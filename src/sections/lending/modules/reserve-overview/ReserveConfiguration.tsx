@@ -50,7 +50,7 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
     <>
       <Box>
         {reserve.isFrozen && !offboardingDiscussion ? (
-          <Warning sx={{ mt: "16px", mb: "40px" }} severity="error">
+          <Warning sx={{ mt: "16px", mb: "40px" }} variant="error">
             <span>
               This asset is frozen due to an Aave community decision.{" "}
               <Link
@@ -62,12 +62,12 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
             </span>
           </Warning>
         ) : offboardingDiscussion ? (
-          <Warning sx={{ mt: "16px", mb: "40px" }} severity="error">
+          <Warning sx={{ mt: "16px", mb: "40px" }} variant="error">
             <OffboardingWarning discussionLink={offboardingDiscussion} />
           </Warning>
         ) : (
           reserve.symbol === "AMPL" && (
-            <Warning sx={{ mt: "16px", mb: "40px" }} severity="warning">
+            <Warning sx={{ mt: "16px", mb: "40px" }} variant="warning">
               <AMPLWarning />
             </Warning>
           )
@@ -75,7 +75,7 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
 
         {reserve.isPaused ? (
           reserve.symbol === "MAI" ? (
-            <Warning sx={{ mt: "16px", mb: "40px" }} severity="error">
+            <Warning sx={{ mt: "16px", mb: "40px" }} variant="error">
               <span>
                 MAI has been paused due to a community decision. Supply, borrows
                 and repays are impacted.{" "}
@@ -90,7 +90,7 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
               </span>
             </Warning>
           ) : (
-            <Warning sx={{ mt: "16px", mb: "40px" }} severity="error">
+            <Warning sx={{ mt: "16px", mb: "40px" }} variant="error">
               <PausedTooltipText />
             </Warning>
           )
@@ -118,7 +118,7 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
               sx={{ flexGrow: 1, minWidth: 0, maxWidth: "100%", width: "100%" }}
             >
               {!reserve.borrowingEnabled && (
-                <Warning sx={{ mb: "40px" }} severity="error">
+                <Warning sx={{ mb: "40px" }} variant="error">
                   <BorrowDisabledWarning
                     symbol={reserve.symbol}
                     currentMarket={currentMarket}
@@ -162,10 +162,7 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
                   justifyContent: "space-between",
                 }}
               >
-                <PanelItem
-                  title={<span>Utilization Rate</span>}
-                  className="borderless"
-                >
+                <PanelItem title="Utilization Rate" className="borderless">
                   <FormattedNumber
                     value={reserve.borrowUsageRatio}
                     percent

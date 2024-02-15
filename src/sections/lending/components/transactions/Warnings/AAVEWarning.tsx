@@ -5,7 +5,7 @@ import { Warning } from "sections/lending/components/primitives/Warning"
 
 export const AAVEWarning = () => {
   return (
-    <Warning severity="info">
+    <Warning variant="info">
       <Typography>
         <span>Supplying your </span> AAVE{" "}
         <span>

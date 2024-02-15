@@ -1,4 +1,4 @@
-import { Text } from "components/Typography/Text/Text"
+import styled from "@emotion/styled"
 import { ReactNode } from "react"
 import { theme } from "theme"
 
@@ -10,24 +10,35 @@ type RowProps = {
   children: ReactNode
 }
 
+const SRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+
+  font-size: 14px;
+
+  margin-bottom: 8px;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+`
+
 export const Row = ({
   caption,
   children,
   captionColor,
-  align = "center",
+  align = "start",
   className,
 }: RowProps) => {
   return (
-    <div
+    <SRow
       className={className}
       sx={{
-        flex: "row",
         align,
-        justify: "space-between",
       }}
     >
       {caption && <span sx={{ mr: 8, color: captionColor }}>{caption}</span>}
       {children}
-    </div>
+    </SRow>
   )
 }

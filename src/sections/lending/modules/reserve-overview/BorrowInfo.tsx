@@ -191,7 +191,7 @@ export const BorrowInfo = ({
           </PanelItem>
         )} */}
         {reserve.borrowCapUSD && reserve.borrowCapUSD !== "0" && (
-          <PanelItem title={<span>Borrow cap</span>}>
+          <PanelItem title="Borrow cap">
             <FormattedNumber value={reserve.borrowCap} variant="main16" />
             <ReserveSubheader value={reserve.borrowCapUSD} />
           </PanelItem>

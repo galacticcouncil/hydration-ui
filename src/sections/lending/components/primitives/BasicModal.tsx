@@ -1,5 +1,4 @@
 import { Modal } from "components/Modal/Modal"
-import { ModalContents } from "components/Modal/contents/ModalContents"
 import React from "react"
 
 export interface BasicModalProps {

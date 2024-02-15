@@ -1,59 +1,31 @@
-import { Box, Typography } from "@mui/material"
-import { useState } from "react"
-import { ConnectWalletPaper } from "sections/lending/components/ConnectWalletPaper"
-import { ContentContainer } from "sections/lending/components/ContentContainer"
-import StyledToggleButton from "sections/lending/components/StyledToggleButton"
-import StyledToggleButtonGroup from "sections/lending/components/StyledToggleButtonGroup"
-import { usePermissions } from "sections/lending/hooks/usePermissions"
-import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
-import { DashboardContentWrapper } from "sections/lending/modules/dashboard/DashboardContentWrapper"
-import { DashboardTopPanel } from "sections/lending/modules/dashboard/DashboardTopPanel"
+import styled from "@emotion/styled"
+import { DashboardHeaderValues } from "sections/lending/ui/header/DashboardHeaderValues"
+import { BorrowAssetsTable } from "sections/lending/ui/table/borrow-assets/BorrowAssetsTable"
+import { BorrowedAssetsTable } from "sections/lending/ui/table/borrowed-assets/BorrowedAssetsTable"
+import { SuppliedAssetsTable } from "sections/lending/ui/table/supplied-assets/SuppliedAssetsTable"
+import { SupplyAssetsTable } from "sections/lending/ui/table/supply-assets/SupplyAssetsTable"
+import { theme } from "theme"
+
+const TableContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+
+  @media ${theme.viewport.gte.xl} {
+    grid-template-columns: 1fr 1fr;
+  }
+`
 
 export const LendingDashboardPage = () => {
-  const { currentAccount, loading: web3Loading } = useWeb3Context()
-
-  const { isPermissionsLoading } = usePermissions()
-
-  const [mode, setMode] = useState<"supply" | "borrow" | "">("supply")
   return (
     <>
-      <DashboardTopPanel />
-      <ContentContainer>
-        {currentAccount && !isPermissionsLoading && (
-          <Box
-            sx={{
-              display: { xs: "flex", lg: "none" },
-              justifyContent: { xs: "center", xsm: "flex-start" },
-              mb: { xs: 3, xsm: 4 },
-            }}
-          >
-            <StyledToggleButtonGroup
-              color="primary"
-              value={mode}
-              exclusive
-              onChange={(_, value) => setMode(value)}
-              sx={{ width: { xs: "100%", xsm: "359px" }, height: "44px" }}
-            >
-              <StyledToggleButton value="supply" disabled={mode === "supply"}>
-                <Typography variant="subheader1">
-                  <span>Supply</span>
-                </Typography>
-              </StyledToggleButton>
-              <StyledToggleButton value="borrow" disabled={mode === "borrow"}>
-                <Typography variant="subheader1">
-                  <span>Borrow</span>
-                </Typography>
-              </StyledToggleButton>
-            </StyledToggleButtonGroup>
-          </Box>
-        )}
-
-        {currentAccount && !isPermissionsLoading ? (
-          <DashboardContentWrapper isBorrow={mode === "borrow"} />
-        ) : (
-          <ConnectWalletPaper loading={web3Loading} />
-        )}
-      </ContentContainer>
+      <DashboardHeaderValues sx={{ mb: [10, 40] }} />
+      <TableContainer>
+        <SuppliedAssetsTable />
+        <BorrowedAssetsTable />
+        <SupplyAssetsTable />
+        <BorrowAssetsTable />
+      </TableContainer>
     </>
   )
 }

@@ -4,6 +4,8 @@ import {
   USD_DECIMALS,
   valueToBigNumber,
 } from "@aave/math-utils"
+import BigNumber from "bignumber.js"
+import { theme } from "theme"
 
 export function hexToAscii(_hex: string): string {
   const hex = _hex.toString()
@@ -97,4 +99,41 @@ export const getFunctionDefsFromAbi = (abi: any[], method: string) => {
     )
     return JSON.stringify(defs)
   } catch (err) {}
+}
+
+export const getHealthFactorColor = (hf: number | string) => {
+  const formattedHealthFactor = Number(
+    valueToBigNumber(hf).toFixed(2, BigNumber.ROUND_DOWN),
+  )
+  let healthFactorColor = ""
+  if (formattedHealthFactor >= 3) {
+    healthFactorColor = theme.colors.green400
+  } else if (formattedHealthFactor < 1.1) {
+    healthFactorColor = theme.colors.red400
+  } else {
+    healthFactorColor = theme.colors.warning300
+  }
+
+  return healthFactorColor
+}
+
+export const getLtvColor = (
+  loanToValue: number | string,
+  currentLoanToValue: number | string,
+  currentLiquidationThreshold: number | string,
+) => {
+  let ltvColor: string = theme.colors.green400
+  const ltvPercent = Number(loanToValue) * 100
+  const currentLtvPercent = Number(currentLoanToValue) * 100
+  const liquidationThresholdPercent = Number(currentLiquidationThreshold) * 100
+  if (ltvPercent >= Math.min(currentLtvPercent, liquidationThresholdPercent)) {
+    ltvColor = theme.colors.red400
+  } else if (
+    ltvPercent > currentLtvPercent / 2 &&
+    ltvPercent < currentLtvPercent
+  ) {
+    ltvColor = theme.colors.warning300
+  }
+
+  return ltvColor
 }

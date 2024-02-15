@@ -60,7 +60,7 @@ export const ProposalOverview = ({
       </Typography>
       {error ? (
         <Box sx={{ px: { md: 18 }, pt: 8 }}>
-          <Warning severity="error">
+          <Warning variant="error">
             <span>An error has occurred fetching the proposal.</span>
           </Warning>
         </Box>

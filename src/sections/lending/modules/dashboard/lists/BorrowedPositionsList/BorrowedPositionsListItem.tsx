@@ -238,7 +238,7 @@ const BorrowedPositionsListItemMobile = ({
       showBorrowCapTooltips
     >
       <ListValueRow
-        title={<span>Debt</span>}
+        title="Debt"
         value={totalBorrows}
         subValue={totalBorrowsUSD}
         disabled={Number(totalBorrows) === 0}

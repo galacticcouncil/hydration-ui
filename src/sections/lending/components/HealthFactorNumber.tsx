@@ -3,6 +3,7 @@ import BigNumber from "bignumber.js"
 import { theme } from "theme"
 
 import { Button } from "components/Button/Button"
+import { getHealthFactorColor } from "sections/lending/utils/utils"
 
 type HealthFactorNumberProps = {
   value: string
@@ -16,14 +17,7 @@ export const HealthFactorNumber = ({
   const formattedHealthFactor = Number(
     valueToBigNumber(value).toFixed(2, BigNumber.ROUND_DOWN),
   )
-  let healthFactorColor = ""
-  if (formattedHealthFactor >= 3) {
-    healthFactorColor = theme.colors.green400
-  } else if (formattedHealthFactor < 1.1) {
-    healthFactorColor = theme.colors.red400
-  } else {
-    healthFactorColor = theme.colors.warning300
-  }
+  const healthFactorColor = getHealthFactorColor(value)
 
   return (
     <div

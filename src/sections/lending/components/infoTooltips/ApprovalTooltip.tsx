@@ -1,5 +1,3 @@
-
-
 import { Link } from "sections/lending/components/primitives/Link"
 import {
   TextWithTooltip,

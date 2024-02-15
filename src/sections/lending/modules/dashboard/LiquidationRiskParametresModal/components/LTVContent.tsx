@@ -1,15 +1,15 @@
 import { valueToBigNumber } from "@aave/math-utils"
-import { AlertColor, Box, Typography, useTheme } from "@mui/material"
+import { Box, Typography } from "@mui/material"
 import BigNumber from "bignumber.js"
-import React from "react"
 
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
+import { theme } from "theme"
 
 interface LTVContentProps {
   loanToValue: string
   currentLoanToValue: string
   currentLiquidationThreshold: string
-  color: AlertColor
+  color: string
 }
 
 export const LTVContent = ({
@@ -18,8 +18,6 @@ export const LTVContent = ({
   currentLiquidationThreshold,
   color,
 }: LTVContentProps) => {
-  const { palette } = useTheme()
-
   const LTVLineWidth = valueToBigNumber(loanToValue)
     .multipliedBy(100)
     .precision(20, BigNumber.ROUND_UP)
@@ -69,7 +67,7 @@ export const LTVContent = ({
               bottom: "100%",
               height: "10px",
               width: "2px",
-              bgcolor: "error.main",
+              bgcolor: theme.colors.red400,
             },
           }}
         >
@@ -92,16 +90,16 @@ export const LTVContent = ({
             <FormattedNumber
               value={currentLiquidationThreshold}
               visibleDecimals={2}
-              color="error.main"
+              color={theme.colors.red400}
               variant="subheader2"
               percent
-              symbolsColor="error.main"
+              symbolsColor={theme.colors.red400}
             />
             <Typography
               sx={{ display: "flex" }}
               variant="helperText"
               lineHeight="12px"
-              color="error.main"
+              color={theme.colors.red400}
             >
               <span>
                 Liquidation <br /> threshold
@@ -194,7 +192,7 @@ export const LTVContent = ({
           width: "100%",
           borderRadius: "1px",
           position: "relative",
-          bgcolor: "divider",
+          bgcolor: theme.colors.basic800,
         }}
       >
         <Box
@@ -205,7 +203,7 @@ export const LTVContent = ({
             borderRadius: "1px",
             width: `${LTVLineWidth > 100 ? 100 : LTVLineWidth}%`,
             maxWidth: "100%",
-            bgcolor: `${color}.main`,
+            bgcolor: color,
             zIndex: 2,
           }}
         />
@@ -221,7 +219,7 @@ export const LTVContent = ({
                 CurrentLTVLineWidth > 100 ? 100 : CurrentLTVLineWidth
               }%`,
               maxWidth: "100%",
-              background: `repeating-linear-gradient(-45deg, ${palette.divider}, ${palette.divider} 4px, ${palette[color].main} 4px, ${palette[color].main} 7px)`,
+              background: `repeating-linear-gradient(-45deg, ${theme.colors.basic800}, ${theme.colors.basic800} 4px, ${color} 4px, ${color} 7px)`,
             }}
           />
         )}

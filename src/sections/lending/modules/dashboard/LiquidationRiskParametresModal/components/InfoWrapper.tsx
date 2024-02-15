@@ -1,5 +1,6 @@
-import { AlertColor, Box, Typography } from "@mui/material"
+import { Box } from "@mui/material"
 import { ReactNode } from "react"
+import { Text } from "components/Typography/Text/Text"
 
 interface InfoWrapperProps {
   topValue: ReactNode
@@ -7,7 +8,7 @@ interface InfoWrapperProps {
   topDescription: ReactNode
   children: ReactNode
   bottomText: ReactNode
-  color: AlertColor
+  color: string
 }
 
 export const InfoWrapper = ({
@@ -34,12 +35,12 @@ export const InfoWrapper = ({
     >
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
         <Box sx={{ width: "calc(100% - 72px)" }}>
-          <Typography variant="subheader1" mb={1}>
+          <Text fs={16} color="white" sx={{ mb: 4 }}>
             {topTitle}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
+          </Text>
+          <Text fs={14} color="basic300">
             {topDescription}
-          </Typography>
+          </Text>
         </Box>
 
         <Box
@@ -50,18 +51,20 @@ export const InfoWrapper = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            bgcolor: `${color}.main`,
+            bgcolor: color,
           }}
         >
-          {topValue}
+          <Text fs={14} font="ChakraPetchBold">
+            {topValue}
+          </Text>
         </Box>
       </Box>
 
       <Box>{children}</Box>
 
-      <Typography variant="secondary12" color="text.secondary" textAlign="left">
+      <Text fs={14} color="basic300">
         {bottomText}
-      </Typography>
+      </Text>
     </Box>
   )
 }

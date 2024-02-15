@@ -67,7 +67,7 @@ export const ProposalListHeaderMobile: React.FC<
   return (
     <>
       <TitleWithSearchBar
-        title={<span>Proposals</span>}
+        title="Proposals"
         titleProps={{ variant: "h3" }}
         onSearchTermChange={handleSearchQueryChange}
         searchPlaceholder="Search proposals"

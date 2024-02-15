@@ -146,7 +146,7 @@ export const SupplyInfo = ({
             <ReserveSubheader value={reserve.totalLiquidityUSD} />
           </PanelItem>
         )}
-        <PanelItem title={<span>APY</span>}>
+        <PanelItem title="APY">
           <FormattedNumber value={reserve.supplyAPY} percent variant="main16" />
           <IncentivesButton
             symbol={reserve.symbol}
@@ -155,7 +155,7 @@ export const SupplyInfo = ({
           />
         </PanelItem>
         {reserve.unbacked && reserve.unbacked !== "0" && (
-          <PanelItem title={<span>Unbacked</span>}>
+          <PanelItem title="Unbacked">
             <FormattedNumber
               value={reserve.unbacked}
               variant="main16"
@@ -183,7 +183,7 @@ export const SupplyInfo = ({
             >
               <span>Collateral usage</span>
             </Typography>
-            <Warning severity="warning">
+            <Warning variant="warning">
               <Typography variant="subheader1">
                 <span>
                   Asset can only be used as collateral in isolation mode only.
@@ -222,7 +222,7 @@ export const SupplyInfo = ({
             <Typography variant="subheader1" color="text.main">
               <span>Collateral usage</span>
             </Typography>
-            <Warning sx={{ my: "12px" }} severity="warning">
+            <Warning sx={{ my: "12px" }} variant="warning">
               <span>Asset cannot be used as collateral.</span>
             </Warning>
           </Box>
@@ -297,7 +297,7 @@ export const SupplyInfo = ({
       )}
       {reserve.symbol === "stETH" && (
         <Box>
-          <Warning severity="info">
+          <Warning variant="info">
             <AlertTitle>
               <span>Staking Rewards</span>
             </AlertTitle>

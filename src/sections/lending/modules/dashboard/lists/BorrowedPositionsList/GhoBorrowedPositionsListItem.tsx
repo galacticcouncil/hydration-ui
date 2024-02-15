@@ -258,7 +258,7 @@ const GhoBorrowedPositionsListItemMobile = ({
       showBorrowCapTooltips
     >
       <ListValueRow
-        title={<span>Debt</span>}
+        title="Debt"
         value={userGhoBorrowBalance}
         subValue={userGhoBorrowBalance}
         disabled={userGhoBorrowBalance === 0}

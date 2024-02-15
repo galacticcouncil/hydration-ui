@@ -20,7 +20,7 @@ export const SupplyModal = () => {
     <BasicModal open={type === ModalType.Supply} setOpen={close}>
       <ModalWrapper
         action="supply"
-        title={<span>Supply</span>}
+        title="Supply"
         underlyingAsset={args.underlyingAsset}
         requiredPermission={PERMISSION.DEPOSITOR}
       >

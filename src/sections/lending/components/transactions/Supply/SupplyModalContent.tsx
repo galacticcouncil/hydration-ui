@@ -235,7 +235,7 @@ export const SupplyModalContent = React.memo(
           debtCeiling: debtCeilingUsage,
         })}
         {poolReserve.symbol === "AMPL" && (
-          <Warning sx={{ mt: "16px", mb: "40px" }} severity="warning">
+          <Warning sx={{ mt: "16px", mb: "40px" }} variant="warning">
             <AMPLWarning />
           </Warning>
         )}

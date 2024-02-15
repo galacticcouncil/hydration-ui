@@ -51,7 +51,7 @@ export const RepayModal = () => {
   return (
     <BasicModal open={type === ModalType.Repay} setOpen={handleClose}>
       <ModalWrapper
-        title={<span>Repay</span>}
+        title="Repay"
         underlyingAsset={args.underlyingAsset}
         requiredPermission={PERMISSION.BORROWER}
       >

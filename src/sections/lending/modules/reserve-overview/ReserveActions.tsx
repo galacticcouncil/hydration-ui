@@ -226,7 +226,7 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
 
 const PauseWarning = () => {
   return (
-    <Warning sx={{ mb: 0 }} severity="error" icon={true}>
+    <Warning sx={{ mb: 0 }} variant="error" icon={true}>
       <span>
         Because this asset is paused, no actions can be taken until further
         notice
@@ -237,7 +237,7 @@ const PauseWarning = () => {
 
 const FrozenWarning = () => {
   return (
-    <Warning sx={{ mb: 0 }} severity="error" icon={true}>
+    <Warning sx={{ mb: 0 }} variant="error" icon={true}>
       <span>
         Since this asset is frozen, the only available actions are withdraw and
         repay which can be accessed from the{" "}

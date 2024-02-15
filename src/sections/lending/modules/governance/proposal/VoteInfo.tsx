@@ -122,7 +122,7 @@ export function VoteInfo({ proposal }: VoteInfoProps) {
           )}
           {showAlreadyVotedMsg && (
             <Warning
-              severity={voteOnProposal.support ? "success" : "error"}
+              variant={voteOnProposal.support ? "success" : "error"}
               sx={{ my: 8 }}
             >
               <Typography variant="subheader1">
@@ -146,7 +146,7 @@ export function VoteInfo({ proposal }: VoteInfoProps) {
             </Warning>
           )}
           {showCannotVoteMsg && (
-            <Warning severity="warning" sx={{ my: 8 }}>
+            <Warning variant="warning" sx={{ my: 8 }}>
               <span>
                 Not enough voting power to participate in this proposal
               </span>

@@ -6,7 +6,7 @@ export const ParameterChangewarning = ({
   underlyingAsset: string
 }) => {
   return (
-    <Warning severity="info" sx={{ my: 24 }}>
+    <Warning variant="info" sx={{ my: 24 }}>
       <span>
         <b>Attention:</b> Parameter changes via governance can alter your
         account health factor and risk of liquidation. Follow the{" "}

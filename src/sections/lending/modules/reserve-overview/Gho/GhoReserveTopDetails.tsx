@@ -31,11 +31,7 @@ export const GhoReserveTopDetails = ({
 
   return (
     <>
-      <TopInfoPanelItem
-        title={<span>Total borrowed</span>}
-        loading={loading}
-        hideIcon
-      >
+      <TopInfoPanelItem title="Total borrowed" loading={loading} hideIcon>
         <FormattedNumber
           value={totalBorrowed}
           symbol="USD"
@@ -45,11 +41,7 @@ export const GhoReserveTopDetails = ({
         />
       </TopInfoPanelItem>
 
-      <TopInfoPanelItem
-        title={<span>Available to borrow</span>}
-        loading={loading}
-        hideIcon
-      >
+      <TopInfoPanelItem title="Available to borrow" loading={loading} hideIcon>
         <FormattedNumber
           value={reserve.borrowCap}
           symbol="USD"

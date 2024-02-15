@@ -3,6 +3,7 @@ import { Box, Typography } from "@mui/material"
 import BigNumber from "bignumber.js"
 
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
+import { theme } from "theme"
 
 interface HFContentProps {
   healthFactor: string
@@ -16,12 +17,11 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
   const dotPosition = +healthFactor > 10 ? 100 : +healthFactor * 10
 
   return (
-    <Box sx={{ position: "relative", mt: "33px", mb: 16 }}>
+    <Box sx={{ position: "relative", mt: "33px", mb: 4 }}>
       <Box
         sx={{
           height: "4px",
-          background:
-            "linear-gradient(90deg, #46BC4B 0%, #F89F1A 52.08%, #BC0000 100%)",
+          background: `linear-gradient(90deg, ${theme.colors.green400} 0%, ${theme.colors.warning300} 52.08%, ${theme.colors.red500} 100%)`,
           borderRadius: "1px",
           transform: "matrix(-1, 0, 0, 1, 0, 0)",
         }}
@@ -36,7 +36,7 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
         }}
       >
         <Box
-          sx={(theme) => ({
+          sx={{
             position: "relative",
             whiteSpace: "nowrap",
             "&:after": {
@@ -44,7 +44,7 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
               height: 0,
               borderStyle: "solid",
               borderWidth: "6px 4px 0 4px",
-              borderColor: `${theme.palette.primary.main} transparent transparent transparent`,
+              borderColor: `white transparent transparent transparent`,
               content: "''",
               position: "absolute",
               left: dotPosition > 75 ? "auto" : "50%",
@@ -52,7 +52,7 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
               transform:
                 dotPosition > 75 ? "translateX(0)" : "translateX(-50%)",
             },
-          })}
+          }}
         >
           <Box
             sx={{
@@ -102,21 +102,21 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
             transform: "translateX(-50%)",
             height: "10px",
             width: "2px",
-            bgcolor: "error.main",
+            bgcolor: theme.colors.red400,
           },
         }}
       >
         <FormattedNumber
           value={1}
           visibleDecimals={2}
-          color="error.main"
+          color={theme.colors.red400}
           variant="subheader2"
         />
         <Typography
           sx={{ display: "flex" }}
           variant="helperText"
           lineHeight="12px"
-          color="error.main"
+          color={theme.colors.red400}
         >
           <span>Liquidation value</span>
         </Typography>

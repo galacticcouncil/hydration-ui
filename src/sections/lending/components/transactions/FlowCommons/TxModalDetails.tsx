@@ -51,7 +51,7 @@ export const TxModalDetails: React.FC<TxModalDetailsProps> = ({
   chainId,
 }) => {
   return (
-    <Box sx={{ pt: 5 }}>
+    <Box sx={{ pt: 20 }}>
       <Typography sx={{ mb: 4 }} color="text.secondary">
         <span>Transaction overview</span>
       </Typography>
@@ -100,7 +100,7 @@ export const DetailsNumberLine = ({
   ...rest
 }: DetailsNumberLineProps) => {
   return (
-    <Row caption={description} captionVariant="description" mb={4}>
+    <Row caption={description}>
       <Box sx={{ display: "flex", alignItems: "center" }}>
         {loading ? (
           <Skeleton
@@ -115,7 +115,7 @@ export const DetailsNumberLine = ({
               <TokenIcon symbol={iconSymbol} sx={{ mr: 4, fontSize: "16px" }} />
             )}
             {numberPrefix && (
-              <Typography sx={{ mr: 1 }}>{numberPrefix}</Typography>
+              <Typography sx={{ mr: 4 }}>{numberPrefix}</Typography>
             )}
             <FormattedNumber value={value} variant="secondary14" {...rest} />
             {futureValue && (
@@ -161,12 +161,7 @@ export const DetailsNumberLineWithSub = ({
   loading = false,
 }: DetailsNumberLineWithSubProps) => {
   return (
-    <Row
-      caption={description}
-      captionVariant="description"
-      mb={4}
-      align="flex-start"
-    >
+    <Row caption={description}>
       <Box
         sx={{
           display: "flex",
@@ -258,11 +253,7 @@ export const DetailsCollateralLine = ({
   collateralType,
 }: DetailsCollateralLineProps) => {
   return (
-    <Row
-      caption={<span>Collateralization</span>}
-      captionVariant="description"
-      mb={4}
-    >
+    <Row caption={<span>Collateralization</span>}>
       <CollateralState collateralType={collateralType} />
     </Row>
   )
@@ -332,12 +323,7 @@ export const DetailsIncentivesLine = ({
   )
     return null
   return (
-    <Row
-      caption={<span>Rewards APR</span>}
-      captionVariant="description"
-      mb={4}
-      minHeight={24}
-    >
+    <Row caption={<span>Rewards APR</span>}>
       <Box sx={{ display: "flex", alignItems: "center" }}>
         {loading ? (
           <Skeleton
@@ -385,12 +371,7 @@ export const DetailsHFLine = ({
 }: DetailsHFLineProps) => {
   if (healthFactor === "-1" && futureHealthFactor === "-1") return null
   return (
-    <Row
-      caption={<span>Health factor</span>}
-      captionVariant="description"
-      mb={4}
-      align="flex-start"
-    >
+    <Row caption={<span>Health factor</span>}>
       <Box sx={{ textAlign: "right" }}>
         <Box
           sx={{
@@ -408,7 +389,7 @@ export const DetailsHFLine = ({
             />
           ) : (
             <>
-              <HealthFactorNumber value={healthFactor} variant="secondary14" />
+              <HealthFactorNumber value={healthFactor} />
 
               {visibleHfChange && (
                 <>
@@ -420,7 +401,6 @@ export const DetailsHFLine = ({
                         ? healthFactor
                         : futureHealthFactor
                     }
-                    variant="secondary14"
                   />
                 </>
               )}
@@ -449,7 +429,7 @@ export const DetailsUnwrapSwitch = ({
   label,
 }: DetailsUnwrapSwitchProps) => {
   return (
-    <Row captionVariant="description" sx={{ mt: 5 }}>
+    <Row>
       <FormControlLabel
         sx={{ mx: 0 }}
         control={

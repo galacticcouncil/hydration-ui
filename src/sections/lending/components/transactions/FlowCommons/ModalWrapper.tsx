@@ -1,6 +1,5 @@
 import { API_ETH_MOCK_ADDRESS, PERMISSION } from "@aave/contract-helpers"
 import React from "react"
-import { ReactElement } from "react-markdown/lib/react-markdown"
 import {
   ComputedReserveData,
   ComputedUserReserveData,
@@ -18,10 +17,9 @@ import {
   isFeatureEnabled,
 } from "sections/lending/utils/marketsAndNetworksConfig"
 
-import { TxModalTitle } from "sections/lending/components/transactions/FlowCommons/TxModalTitle"
+import { ModalContents } from "components/Modal/contents/ModalContents"
 import { ChangeNetworkWarning } from "sections/lending/components/transactions/Warnings/ChangeNetworkWarning"
 import { TxErrorView } from "./Error"
-import { ModalContents } from "components/Modal/contents/ModalContents"
 
 export interface ModalWrapperProps {
   underlyingAsset: string
@@ -36,7 +34,7 @@ export interface ModalWrapperProps {
 
 export const ModalWrapper: React.FC<{
   underlyingAsset: string
-  title: ReactElement
+  title: string
   requiredChainId?: number
   // if true wETH will stay wETH otherwise wETH will be returned as ETH
   keepWrappedSymbol?: boolean
@@ -60,7 +58,7 @@ export const ModalWrapper: React.FC<{
   )
   const { walletBalances } = useWalletBalances(currentMarketData)
   const { user, reserves } = useAppDataContext()
-  const { txError, mainTxState } = useModalContext()
+  const { txError, mainTxState, close } = useModalContext()
   const { permissions } = usePermissions()
 
   const { isWrongNetwork, requiredChainId } =
@@ -97,38 +95,39 @@ export const ModalWrapper: React.FC<{
       : poolReserve?.symbol
 
   const modalTitle = !mainTxState.success ? title : ""
+  const fullModalTitle = `${modalTitle}${hideTitleSymbol ? "" : ` ${symbol}`}`
 
   return (
     <AssetCapsProvider asset={poolReserve}>
-      {!mainTxState.success && (
-        <TxModalTitle
-          title={title}
-          symbol={hideTitleSymbol ? undefined : symbol}
-        />
-      )}
-      {isWrongNetwork && !readOnlyModeAddress && (
-        <ChangeNetworkWarning
-          networkName={getNetworkConfig(requiredChainId).name}
-          chainId={requiredChainId}
-        />
-      )}
       <ModalContents
+        onClose={close}
+        sx={{ color: "white" }}
         contents={[
           {
-            title: modalTitle,
-            content: children({
-              isWrongNetwork,
-              nativeBalance:
-                walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]?.amount ||
-                "0",
-              tokenBalance:
-                walletBalances[poolReserve?.underlyingAsset?.toLowerCase()]
-                  ?.amount || "0",
-              poolReserve,
-              symbol,
-              underlyingAsset,
-              userReserve,
-            }),
+            title: fullModalTitle,
+            content: (
+              <>
+                {isWrongNetwork && !readOnlyModeAddress && (
+                  <ChangeNetworkWarning
+                    networkName={getNetworkConfig(requiredChainId).name}
+                    chainId={requiredChainId}
+                  />
+                )}
+                {children({
+                  isWrongNetwork,
+                  nativeBalance:
+                    walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]
+                      ?.amount || "0",
+                  tokenBalance:
+                    walletBalances[poolReserve?.underlyingAsset?.toLowerCase()]
+                      ?.amount || "0",
+                  poolReserve,
+                  symbol,
+                  underlyingAsset,
+                  userReserve,
+                })}
+              </>
+            ),
           },
         ]}
       />

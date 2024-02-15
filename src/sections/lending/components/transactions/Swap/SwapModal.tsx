@@ -1,4 +1,3 @@
-
 import React from "react"
 import { BasicModal } from "sections/lending/components/primitives/BasicModal"
 import {
@@ -16,10 +15,7 @@ export const SwapModal = () => {
   }>
   return (
     <BasicModal open={type === ModalType.Swap} setOpen={close}>
-      <ModalWrapper
-        title={<span>Switch</span>}
-        underlyingAsset={args.underlyingAsset}
-      >
+      <ModalWrapper title="Switch" underlyingAsset={args.underlyingAsset}>
         {(params) => <SwapModalContent {...params} />}
       </ModalWrapper>
     </BasicModal>

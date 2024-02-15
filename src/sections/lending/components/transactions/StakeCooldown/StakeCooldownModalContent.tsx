@@ -282,7 +282,7 @@ export const StakeCooldownModalContent = ({
         </Typography>
       )}
 
-      <Warning severity="error">
+      <Warning variant="error">
         <Typography variant="caption">
           <span>
             If you DO NOT unstake within {timeMessage(stakeUnstakeWindow)} of

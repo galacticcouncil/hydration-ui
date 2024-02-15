@@ -118,10 +118,7 @@ export const SuppliedPositionsList = () => {
 
   if (loading)
     return (
-      <ListLoader
-        title={<span>Your supplies</span>}
-        head={head.map((col) => col.title)}
-      />
+      <ListLoader title="Your supplies" head={head.map((col) => col.title)} />
     )
 
   return (
@@ -139,17 +136,17 @@ export const SuppliedPositionsList = () => {
           {!!sortedReserves.length && (
             <>
               <ListTopInfoItem
-                title={<span>Balance</span>}
+                title="Balance"
                 value={user?.totalLiquidityUSD || 0}
               />
               <ListTopInfoItem
-                title={<span>APY</span>}
+                title="APY"
                 value={user?.earnedAPY || 0}
                 percent
                 tooltip={<TotalSupplyAPYTooltip setOpen={setTooltipOpen} />}
               />
               <ListTopInfoItem
-                title={<span>Collateral</span>}
+                title="Collateral"
                 value={user?.totalCollateralUSD || 0}
                 tooltip={<CollateralTooltip setOpen={setTooltipOpen} />}
               />

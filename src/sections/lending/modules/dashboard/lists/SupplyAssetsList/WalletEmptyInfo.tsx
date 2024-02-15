@@ -25,7 +25,7 @@ export function WalletEmptyInfo({
     : "Ethereum"
 
   return (
-    <Warning severity="info" icon={icon} sx={sx}>
+    <Warning variant="info" icon={icon} sx={sx}>
       {bridge ? (
         <span>
           Your {name} wallet is empty. Purchase or transfer assets or use{" "}

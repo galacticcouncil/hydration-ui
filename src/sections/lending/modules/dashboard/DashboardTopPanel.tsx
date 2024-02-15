@@ -144,11 +144,7 @@ export const DashboardTopPanel = () => {
           </Box>
         }
       >
-        <TopInfoPanelItem
-          title={<span>Net worth</span>}
-          loading={loading}
-          hideIcon
-        >
+        <TopInfoPanelItem title="Net worth" loading={loading} hideIcon>
           {currentAccount ? (
             <FormattedNumber
               value={Number(user?.netWorthUSD || 0)}
@@ -209,7 +205,7 @@ export const DashboardTopPanel = () => {
 
         {currentAccount && claimableRewardsUsd > 0 && (
           <TopInfoPanelItem
-            title={<span>Available rewards</span>}
+            title="Available rewards"
             loading={loading}
             hideIcon
           >

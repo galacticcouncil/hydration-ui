@@ -1,11 +1,10 @@
-
 import { Button, Typography } from "@mui/material"
 import { Warning } from "sections/lending/components/primitives/Warning"
 import { TxErrorType } from "sections/lending/ui-config/errorMapping"
 
 export const GasEstimationError = ({ txError }: { txError: TxErrorType }) => {
   return (
-    <Warning severity="error" sx={{ mt: 4, mb: 0 }}>
+    <Warning variant="error" sx={{ mt: 16, mb: 0 }}>
       <Typography variant="description">
         {txError.error ? (
           <>

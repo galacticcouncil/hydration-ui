@@ -21,7 +21,7 @@ export const RateSwitchModal = () => {
     <BasicModal open={type === ModalType.RateSwitch} setOpen={close}>
       <ModalWrapper
         hideTitleSymbol
-        title={<span>Switch APY type</span>}
+        title="Switch APY type"
         underlyingAsset={args.underlyingAsset}
       >
         {(params) => (

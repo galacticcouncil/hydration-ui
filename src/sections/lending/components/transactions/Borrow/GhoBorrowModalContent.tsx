@@ -68,14 +68,8 @@ const BorrowModeSwitch = ({
         <APYTypeTooltip
           text={<span>Borrow APY rate</span>}
           key="APY type_modal"
-          variant="description"
         />
       }
-      captionVariant="description"
-      mb={5}
-      flexDirection="column"
-      align="flex-start"
-      captionColor="text.secondary"
     >
       <StyledTxModalToggleGroup
         color="primary"
@@ -309,16 +303,9 @@ export const GhoBorrowModalContent = ({
         <Row
           caption={
             <Box>
-              <FixedAPYTooltip
-                text={<span>APY, borrow rate</span>}
-                variant="subheader2"
-                color="text.secondary"
-              />
+              <FixedAPYTooltip text={<span>APY, borrow rate</span>} />
             </Box>
           }
-          captionVariant="description"
-          mb={4}
-          align="flex-start"
         >
           <Box sx={{ textAlign: "right" }}>
             <Box
@@ -417,7 +404,7 @@ const BorrowAPY = ({
     ghoLoadingData ||
     (!hasGhoBorrowPositions && borrowAmount === "" && discountAvailable)
   ) {
-    return <NoData variant="secondary14" color="text.secondary" />
+    return <NoData />
   }
 
   type SharedIncentiveProps = Omit<
@@ -492,5 +479,5 @@ const BorrowAPY = ({
     )
   }
 
-  return <NoData variant="secondary14" color="text.secondary" />
+  return <NoData />
 }

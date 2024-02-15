@@ -64,9 +64,7 @@ export const getAssetCapData = (
       // percentUsed: 98.5,
       // isMaxed: false,
       determineWarningDisplay: ({ borrowCap, icon, ...rest }) =>
-        borrowCap ? (
-          <BorrowCapWarning borrowCap={borrowCap} icon={icon} {...rest} />
-        ) : null,
+        borrowCap ? <BorrowCapWarning borrowCap={borrowCap} {...rest} /> : null,
       displayMaxedTooltip: ({ borrowCap }) =>
         borrowCap ? <BorrowCapMaxedTooltip borrowCap={borrowCap} /> : null,
     },

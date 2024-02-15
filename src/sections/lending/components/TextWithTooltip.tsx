@@ -1,11 +1,10 @@
 import { InformationCircleIcon } from "@heroicons/react/outline"
-import { Box, BoxProps, IconButton, SvgIcon, Typography } from "@mui/material"
-import { TypographyProps } from "@mui/material/Typography"
+import { Box, BoxProps, IconButton, SvgIcon } from "@mui/material"
 import { JSXElementConstructor, ReactElement, ReactNode, useState } from "react"
 
 import { ContentWithTooltip } from "./ContentWithTooltip"
 
-export interface TextWithTooltipProps extends TypographyProps {
+export interface TextWithTooltipProps {
   text?: ReactNode
   icon?: ReactNode
   iconSize?: number
@@ -30,7 +29,6 @@ export const TextWithTooltip = ({
   wrapperProps: { sx: boxSx, ...boxRest } = {},
   open: openProp = false,
   setOpen: setOpenProp,
-  ...rest
 }: TextWithTooltipProps) => {
   const [open, setOpen] = useState(openProp)
 
@@ -41,11 +39,7 @@ export const TextWithTooltip = ({
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", ...boxSx }} {...boxRest}>
-      {text && (
-        <Typography {...rest} color={textColor}>
-          {text}
-        </Typography>
-      )}
+      {text && <span sx={{ color: textColor }}>{text}</span>}
 
       <ContentWithTooltip
         tooltipContent={<>{children}</>}

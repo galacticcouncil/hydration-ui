@@ -19,7 +19,7 @@ export const ParaswapErrorDisplay: React.FC<ErrorProps> = ({ txError }) => {
       {txError.rawError.message !== USER_DENIED_SIGNATURE &&
         txError.rawError.message !== USER_DENIED_TRANSACTION && (
           <Box sx={{ pt: 4 }}>
-            <Warning severity="info">
+            <Warning variant="info">
               <Typography variant="description">
                 {" "}
                 <span>

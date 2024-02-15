@@ -41,7 +41,7 @@ export const WithdrawModal = () => {
   return (
     <BasicModal open={type === ModalType.Withdraw} setOpen={handleClose}>
       <ModalWrapper
-        title={<span>Withdraw</span>}
+        title="Withdraw"
         underlyingAsset={args.underlyingAsset}
         keepWrappedSymbol={!withdrawUnWrapped}
         requiredPermission={PERMISSION.DEPOSITOR}

@@ -21,7 +21,7 @@ export const ChangeNetworkWarning = ({
     switchNetwork(chainId)
   }
   return (
-    <Warning severity="error" icon={false}>
+    <Warning variant="error">
       {switchNetworkError ? (
         <Typography>
           <span>

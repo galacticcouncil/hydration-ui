@@ -1,10 +1,9 @@
-import { Alert, AlertProps } from "@mui/material"
+import { FC } from "react"
+import { Alert, AlertProps } from "components/Alert"
 
-export const Warning = ({ children, sx, ...rest }: AlertProps) => {
-  const styles = { mb: 6, alignItems: "center", width: "100%", ...sx }
-
+export const Warning: FC<AlertProps> = ({ children, className, variant }) => {
   return (
-    <Alert sx={styles} {...rest}>
+    <Alert className={className} variant={variant}>
       {children}
     </Alert>
   )

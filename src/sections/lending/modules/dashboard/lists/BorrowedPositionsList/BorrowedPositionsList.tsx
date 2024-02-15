@@ -163,12 +163,7 @@ export const BorrowedPositionsList = () => {
   }
 
   if (loading)
-    return (
-      <ListLoader
-        title={<span>Your borrows</span>}
-        head={head.map((c) => c.title)}
-      />
-    )
+    return <ListLoader title="Your borrows" head={head.map((c) => c.title)} />
 
   return (
     <ListWrapper
@@ -192,17 +187,17 @@ export const BorrowedPositionsList = () => {
           {!!sortedReserves.length && (
             <>
               <ListTopInfoItem
-                title={<span>Balance</span>}
+                title="Balance"
                 value={user?.totalBorrowsUSD || 0}
               />
               <ListTopInfoItem
-                title={<span>APY</span>}
+                title="APY"
                 value={user?.debtAPY || 0}
                 percent
                 tooltip={<TotalBorrowAPYTooltip setOpen={setTooltipOpen} />}
               />
               <ListTopInfoItem
-                title={<span>Borrow power used</span>}
+                title="Borrow power used"
                 value={collateralUsagePercent || 0}
                 percent
                 tooltip={<BorrowPowerTooltip setOpen={setTooltipOpen} />}

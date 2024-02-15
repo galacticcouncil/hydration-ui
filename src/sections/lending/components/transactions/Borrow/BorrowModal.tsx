@@ -30,7 +30,7 @@ export const BorrowModal = () => {
     <BasicModal open={type === ModalType.Borrow} setOpen={close}>
       <ModalWrapper
         action="borrow"
-        title={<span>Borrow</span>}
+        title="Borrow"
         underlyingAsset={args.underlyingAsset}
         keepWrappedSymbol={!borrowUnWrapped}
         requiredPermission={PERMISSION.BORROWER}

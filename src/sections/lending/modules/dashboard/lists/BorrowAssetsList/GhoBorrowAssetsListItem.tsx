@@ -90,8 +90,7 @@ export const GhoBorrowAssetsListItem = ({
     ghoUserDataFetched,
     userBorrowApyAfterNewBorrow,
     ghoLoadingData,
-    onBorrowClick: () =>
-      openBorrow(underlyingAsset, currentMarket, name, "dashboard"),
+    onBorrowClick: () => openBorrow(underlyingAsset),
   }
   if (downToXSM) {
     return <GhoBorrowAssetsListItemMobile {...props} />
@@ -164,9 +163,6 @@ const GhoBorrowAssetsListItemDesktop = ({
           <AvailableTooltip
             capType={CapType.borrowCap}
             text={<span>Available</span>}
-            variant="subheader2"
-            color="text.secondary"
-            ml={-1}
           />
           <ListValueColumn
             listColumnProps={{
@@ -181,11 +177,7 @@ const GhoBorrowAssetsListItemDesktop = ({
         </Box>
       </ListColumn>
       <ListColumn>
-        <FixedAPYTooltip
-          text={<span>APY, borrow rate</span>}
-          variant="subheader2"
-          color="text.secondary"
-        />
+        <FixedAPYTooltip text={<span>APY, borrow rate</span>} />
         <GhoIncentivesCard
           withTokenIcon={true}
           useApyRange
@@ -244,7 +236,7 @@ const GhoBorrowAssetsListItemMobile = ({
       currentMarket={currentMarket}
     >
       <ListValueRow
-        title={<span>Available to borrow</span>}
+        title="Available to borrow"
         value={availableBorrows}
         subValue={availableBorrows}
         disabled={availableBorrows === 0}
@@ -255,12 +247,8 @@ const GhoBorrowAssetsListItemMobile = ({
           <FixedAPYTooltip
             text={<span>APY, borrow rate</span>}
             key="APY_dash_mob_variable_ type"
-            variant="description"
           />
         }
-        align="flex-start"
-        captionVariant="description"
-        mb={2}
       >
         <GhoIncentivesCard
           withTokenIcon={true}

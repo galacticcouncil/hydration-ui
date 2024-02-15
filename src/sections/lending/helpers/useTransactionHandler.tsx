@@ -125,6 +125,8 @@ export const useTransactionHandler = ({
     try {
       const txnResult = await tx()
 
+      if (!txnResult) return
+
       try {
         await txnResult.wait(1)
 

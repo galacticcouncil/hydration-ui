@@ -19,7 +19,7 @@ export const DebtSwitchModal = () => {
   return (
     <BasicModal open={type === ModalType.DebtSwitch} setOpen={close}>
       <ModalWrapper
-        title={<span>Switch borrow position</span>}
+        title="Switch borrow position"
         underlyingAsset={args.underlyingAsset}
         hideTitleSymbol
       >

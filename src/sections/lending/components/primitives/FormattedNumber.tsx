@@ -140,7 +140,7 @@ export function FormattedNumber({
       {isSmallerThanMin && (
         <Typography
           component="span"
-          sx={{ mr: 0.5, color: symbolsColor || "basic300" }}
+          sx={{ mr: 2, color: symbolsColor || "basic300" }}
           variant={symbolsVariant || rest.variant}
         >
           {"<"}
@@ -149,7 +149,7 @@ export function FormattedNumber({
       {symbol?.toLowerCase() === "usd" && !percent && (
         <Typography
           component="span"
-          sx={{ mr: 0.5, color: symbolsColor || "basic300" }}
+          sx={{ mr: 2, color: symbolsColor || "basic300" }}
           variant={symbolsVariant || rest.variant}
         >
           $
@@ -173,7 +173,7 @@ export function FormattedNumber({
       {percent && (
         <Typography
           component="span"
-          sx={{ ml: 0.5, color: symbolsColor || "basic300" }}
+          sx={{ ml: 2, color: symbolsColor || "basic300" }}
           variant={symbolsVariant || rest.variant}
         >
           %
@@ -182,7 +182,7 @@ export function FormattedNumber({
       {symbol?.toLowerCase() !== "usd" && typeof symbol !== "undefined" && (
         <Typography
           component="span"
-          sx={{ ml: 0.5, color: symbolsColor || "basic300" }}
+          sx={{ ml: 2, color: symbolsColor || "basic300" }}
           variant={symbolsVariant || rest.variant}
         >
           {symbol}

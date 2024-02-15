@@ -34,7 +34,7 @@ export const SupplyCapWarning = ({
   }
 
   return (
-    <Warning severity={severity} icon={icon} {...rest}>
+    <Warning variant={severity} icon={icon} {...rest}>
       {renderText()}{" "}
       <Link
         href="https://docs.aave.com/developers/whats-new/supply-borrow-caps"

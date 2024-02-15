@@ -178,7 +178,7 @@ export const WithdrawModalContent = ({
 
       {displayRiskCheckbox && (
         <>
-          <Warning severity="error" sx={{ my: 24 }}>
+          <Warning variant="error" sx={{ my: 24 }}>
             <span>
               Withdrawing this amount will reduce your health factor and
               increase risk of liquidation.

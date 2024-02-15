@@ -250,7 +250,7 @@ export const SupplyAssetsList = () => {
     return (
       <ListLoader
         head={head.map((col) => col.title)}
-        title={<span>Assets to supply</span>}
+        title="Assets to supply"
         withTopMargin
       />
     )
@@ -278,7 +278,7 @@ export const SupplyAssetsList = () => {
               currentMarketData.marketTitle === "Ethereum AMM" ? (
               <MarketWarning marketName="Ethereum AMM" />
             ) : user?.isInIsolationMode ? (
-              <Warning severity="warning">
+              <Warning variant="warning">
                 <span>
                   Collateral usage is limited because of isolation mode.{" "}
                   <Link
@@ -293,7 +293,7 @@ export const SupplyAssetsList = () => {
             ) : (
               filteredSupplyReserves.length === 0 &&
               (isTestnet ? (
-                <Warning severity="info">
+                <Warning variant="info">
                   <span>
                     Your {networkName} wallet is empty. Get free test assets at{" "}
                   </span>{" "}

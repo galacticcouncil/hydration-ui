@@ -405,7 +405,7 @@ export const DebtSwitchModalContent = ({
       {txError && <ParaswapErrorDisplay txError={txError} />}
 
       {insufficientCollateral && (
-        <Warning severity="error" sx={{ mt: 4 }}>
+        <Warning variant="error" sx={{ mt: 4 }}>
           <Typography variant="caption">
             <span>
               Insufficient collateral to cover new borrow position. Wallet must

@@ -39,7 +39,7 @@ export const BorrowAssetsListMobileItem = ({
       currentMarket={currentMarket}
     >
       <ListValueRow
-        title={<span>Available to borrow</span>}
+        title="Available to borrow"
         value={Number(availableBorrows)}
         subValue={Number(availableBorrowsInUSD)}
         disabled={Number(availableBorrows) === 0}

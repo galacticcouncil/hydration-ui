@@ -9,6 +9,7 @@ import {
   useAppDataContext,
 } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { AssetCapsProvider } from "sections/lending/hooks/useAssetCaps"
+import { MainLayout } from "sections/lending/layouts/MainLayout"
 import { ReserveActions } from "sections/lending/modules/reserve-overview/ReserveActions"
 import { ReserveConfigurationWrapper } from "sections/lending/modules/reserve-overview/ReserveConfigurationWrapper"
 import { ReserveTopDetailsWrapper } from "sections/lending/modules/reserve-overview/ReserveTopDetailsWrapper"
@@ -34,60 +35,65 @@ export const LendingReserveOverviewPage = () => {
   const isOverview = mode === "overview"
 
   return (
-    <AssetCapsProvider asset={reserve}>
-      <ReserveTopDetailsWrapper underlyingAsset={underlyingAsset} />
+    <MainLayout>
+      <AssetCapsProvider asset={reserve}>
+        <ReserveTopDetailsWrapper underlyingAsset={underlyingAsset} />
 
-      <ContentContainer>
-        <Box
-          sx={{
-            display: { xs: "flex", lg: "none" },
-            justifyContent: { xs: "center", xsm: "flex-start" },
-            mb: { xs: 3, xsm: 4 },
-          }}
-        >
-          <StyledToggleButtonGroup
-            color="primary"
-            value={mode}
-            exclusive
-            onChange={(_, value) => setMode(value)}
-            sx={{ width: { xs: "100%", xsm: "359px" }, height: "44px" }}
-          >
-            <StyledToggleButton value="overview" disabled={mode === "overview"}>
-              <Typography variant="subheader1">
-                <span>Overview</span>
-              </Typography>
-            </StyledToggleButton>
-            <StyledToggleButton value="actions" disabled={mode === "actions"}>
-              <Typography variant="subheader1">
-                <span>Your info</span>
-              </Typography>
-            </StyledToggleButton>
-          </StyledToggleButtonGroup>
-        </Box>
-
-        <Box sx={{ display: "flex" }}>
-          {/** Main status and configuration panel*/}
+        <ContentContainer>
           <Box
             sx={{
-              display: { xs: !isOverview ? "none" : "block", lg: "block" },
-              width: { xs: "100%", lg: "calc(100% - 432px)" },
-              mr: { xs: 0, lg: 4 },
+              display: { xs: "flex", lg: "none" },
+              justifyContent: { xs: "center", xsm: "flex-start" },
+              mb: { xs: 3, xsm: 4 },
             }}
           >
-            <ReserveConfigurationWrapper reserve={reserve} />
+            <StyledToggleButtonGroup
+              color="primary"
+              value={mode}
+              exclusive
+              onChange={(_, value) => setMode(value)}
+              sx={{ width: { xs: "100%", xsm: "359px" }, height: "44px" }}
+            >
+              <StyledToggleButton
+                value="overview"
+                disabled={mode === "overview"}
+              >
+                <Typography variant="subheader1">
+                  <span>Overview</span>
+                </Typography>
+              </StyledToggleButton>
+              <StyledToggleButton value="actions" disabled={mode === "actions"}>
+                <Typography variant="subheader1">
+                  <span>Your info</span>
+                </Typography>
+              </StyledToggleButton>
+            </StyledToggleButtonGroup>
           </Box>
 
-          {/** Right panel with actions*/}
-          <Box
-            sx={{
-              display: { xs: isOverview ? "none" : "block", lg: "block" },
-              width: { xs: "100%", lg: "416px" },
-            }}
-          >
-            <ReserveActions reserve={reserve} />
+          <Box sx={{ display: "flex" }}>
+            {/** Main status and configuration panel*/}
+            <Box
+              sx={{
+                display: { xs: !isOverview ? "none" : "block", lg: "block" },
+                width: { xs: "100%", lg: "calc(100% - 432px)" },
+                mr: { xs: 0, lg: 4 },
+              }}
+            >
+              <ReserveConfigurationWrapper reserve={reserve} />
+            </Box>
+
+            {/** Right panel with actions*/}
+            <Box
+              sx={{
+                display: { xs: isOverview ? "none" : "block", lg: "block" },
+                width: { xs: "100%", lg: "416px" },
+              }}
+            >
+              <ReserveActions reserve={reserve} />
+            </Box>
           </Box>
-        </Box>
-      </ContentContainer>
-    </AssetCapsProvider>
+        </ContentContainer>
+      </AssetCapsProvider>
+    </MainLayout>
   )
 }

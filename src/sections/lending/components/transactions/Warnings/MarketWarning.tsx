@@ -49,7 +49,7 @@ interface MarketWarningProps {
 
 export const PolygonWarning = () => {
   return (
-    <Warning severity="error">
+    <Warning variant="error">
       <Typography variant="caption">
         <span>
           Update: Disruptions reported for WETH, WBTC, WMATIC, and USDT. AIP 230
@@ -66,7 +66,7 @@ export const PolygonWarning = () => {
 
 export const MarketWarning = ({ marketName, forum }: MarketWarningProps) => {
   return (
-    <Warning severity="error">
+    <Warning variant="error">
       <Typography variant="caption">
         <WarningMessage market={marketName} />{" "}
         <Link href={getLink(marketName, forum)} target="_blank">
