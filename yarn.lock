@@ -2990,10 +2990,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@2.4.5":
-  version "2.4.5"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-2.4.5.tgz#02e12ef2dba01fe1056818d4bb67d1f49b4784ca"
-  integrity sha512-o0Oafn3MOHgE8GTMx/CMlhYWkx0wgK/+fIfWFzJVMAbbELC1Frj7bxeej04bgQEMh9UIhGf6ibqQT5p6smdn3g==
+"@galacticcouncil/apps@3.1.2":
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.1.2.tgz#26466c4219713cdce75f0ad452f4c32c39972884"
+  integrity sha512-+PZfYJHSII4NcIvrIgjhwt0Q1CVuX51NTci1O+0u8PzxVo3tdzDL1wDk8XPCzbEoN4+2HjyQ7F9c9Yc/hetSPg==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@talismn/connect-wallets" "^1.2.1"
@@ -3006,7 +3006,6 @@
     i18next "^22.4.8"
     lightweight-charts "^4.0.1"
     short-uuid "^4.2.0"
-    ts-debounce "^4.0.0"
     viem "^1.19.1"
 
 "@galacticcouncil/math-lbp@^0.2.1":
@@ -3052,10 +3051,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^2.0.3":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-2.0.3.tgz#a8fefea05821d1b92b8017b90ee427a0a3e8f8dd"
-  integrity sha512-v4o7rVNpxUx+dXSKSpqdqa+CUBqI/i2VAN7YaWs2JXji25CleWU/Njw+4euwjOwn/ng0lOhcB/dETBNaOiDwGA==
+"@galacticcouncil/ui@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.0.0.tgz#356bda46cb3d37b3c3f4393233d193a218aa050c"
+  integrity sha512-5obg0JaRrjkxWPoYp4IoAIYsF2UxRdx/27+QGTLu/MWJFtFEtjbQ5yiv2Jxj+RF5rPITmVMcvPqyoNGYvyKlOg==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
@@ -14236,9 +14235,9 @@ victory-vendor@^36.6.8:
     d3-timer "^3.0.1"
 
 viem@^1.19.1:
-  version "1.19.13"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-1.19.13.tgz#3a018720bd2abf54a039c751fc2bcd473838c523"
-  integrity sha512-DizIwJAecLedI+nq6c5LIqCLAnYXUhQX5BnH6o1H2ln6isPyJVf+v4H1IfMlRHgR5KRlC+wGI/mCjarr3tW6eg==
+  version "1.21.4"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-1.21.4.tgz#883760e9222540a5a7e0339809202b45fe6a842d"
+  integrity sha512-BNVYdSaUjeS2zKQgPs+49e5JKocfo60Ib2yiXOWBT6LuVxY1I/6fFX3waEtpXvL1Xn4qu+BVitVtMh9lyThyhQ==
   dependencies:
     "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"

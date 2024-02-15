@@ -11,7 +11,7 @@ import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
 import { PoolsTable } from "sections/pools/table/PoolsTable"
 import { PoolWrapper } from "sections/pools/pool/Pool"
-import { useSearch } from "@tanstack/react-location"
+import { Navigate, useSearch } from "@tanstack/react-location"
 import { MyOmnipoolTotal } from "sections/pools/header/MyOmnipoolTotal"
 import { MyStablePoolsTotal } from "sections/pools/header/StablePoolsTotal"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
@@ -19,6 +19,7 @@ import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { MyLiquidityTotal } from "sections/pools/header/MyLiquidityTotal"
 import { TableLabel } from "sections/pools/components/TableLabel"
+import { LINKS } from "utils/navigation"
 
 const poolsWithMyPositions = true
 
@@ -125,6 +126,9 @@ const MyLiquidityData = () => {
 
     if (pool) return <PoolWrapper pool={pool} />
   }
+
+  if (pools.data?.length === 0 && xylPools.data?.length === 0)
+    return <Navigate to={LINKS.allPools} />
 
   return (
     <>
