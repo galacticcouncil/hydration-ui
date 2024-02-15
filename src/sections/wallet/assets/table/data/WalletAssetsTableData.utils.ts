@@ -164,6 +164,9 @@ export const useAssetsData = ({
       if (a.transferableDisplay.isNaN()) return 1
       if (b.transferableDisplay.isNaN()) return -1
 
+      if (a.isExternal) return -1
+      if (b.isExternal) return 1
+
       if (!b.transferableDisplay.eq(a.transferableDisplay))
         return b.transferableDisplay.minus(a.transferableDisplay).toNumber()
 

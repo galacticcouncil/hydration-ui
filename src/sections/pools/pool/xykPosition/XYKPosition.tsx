@@ -74,8 +74,6 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
     spotPrices.data,
   ])
 
-  if (!myBalance?.totalDisplay.gt(0)) return null
-
   return (
     <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
       <Text fs={15} font="FontOver">

@@ -1,9 +1,11 @@
 import { useMutation } from "@tanstack/react-query"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useStore } from "state/store"
+import { ToastMessage, useStore } from "state/store"
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { TOAST_MESSAGES } from "state/toasts"
+import { Trans, useTranslation } from "react-i18next"
 
 export const SELECTABLE_PARACHAINS_IDS = ["1000"]
 
@@ -46,15 +48,42 @@ export type TExternalAssetInput = {
   }
 }
 
-export const useRegisterToken = ({ onSuccess }: { onSuccess: () => void }) => {
+export const useRegisterToken = ({
+  onSuccess,
+  assetName,
+}: {
+  onSuccess: () => void
+  assetName: string
+}) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+  const { t } = useTranslation()
 
   return useMutation(
     async (assetInput: TExternalAssetInput) => {
-      return await createTransaction({
-        tx: api.tx.assetRegistry.registerExternal(assetInput),
-      })
+      const toast = TOAST_MESSAGES.reduce((memo, type) => {
+        const msType = type === "onError" ? "onLoading" : type
+        memo[type] = (
+          <Trans
+            t={t}
+            i18nKey={`wallet.addToken.toast.register.${msType}`}
+            tOptions={{
+              name: assetName,
+            }}
+          >
+            <span />
+            <span className="highlight" />
+          </Trans>
+        )
+        return memo
+      }, {} as ToastMessage)
+
+      return await createTransaction(
+        {
+          tx: api.tx.assetRegistry.registerExternal(assetInput),
+        },
+        { toast },
+      )
     },
     {
       onSuccess,

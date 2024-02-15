@@ -24,6 +24,7 @@ type Props = {
   hideInactiveAssets?: boolean
   allAssets?: boolean
   withBonds?: boolean
+  withExternal?: boolean
   withShareTokens?: boolean
 }
 
@@ -36,6 +37,7 @@ export const AssetsModalContent = ({
   allAssets,
   withBonds,
   withShareTokens,
+  withExternal,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -73,7 +75,7 @@ export const AssetsModalContent = ({
         (accountAsset): accountAsset is { balance: TBalance; asset: TToken } =>
           accountAsset.asset.isToken ||
           accountAsset.asset.isStableSwap ||
-          accountAsset.asset.isExternal ||
+          (withExternal ? accountAsset.asset.isExternal : false) ||
           (withShareTokens ? accountAsset.asset.isShareToken : false),
       )
 

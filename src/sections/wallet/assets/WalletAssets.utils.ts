@@ -128,7 +128,7 @@ export const useWalletAssetsTotals = ({
           .shiftedBy(-meta.decimals)
           .multipliedBy(spotPrice?.spotPrice ?? 1)
 
-        return acc.plus(value)
+        return acc.plus(!value.isNaN() ? value : BN_0)
       }
       return acc
     }, BN_0)

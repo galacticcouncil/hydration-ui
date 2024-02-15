@@ -42,8 +42,8 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
     onSuccess: () => {
       addToken(asset)
       refetchProvider()
-      onClose()
     },
+    assetName: asset.name,
   })
 
   const isChainStored = assets.external.some(
@@ -83,6 +83,8 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
         ],
       },
     })
+
+    onClose()
   }
 
   const hasAsset = !!asset
@@ -90,7 +92,13 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const onAddTokenToUser = async (asset: TExternalAsset) => {
     addToken(asset)
     refetchProvider()
-    add("success", { title: <Text>You added a token</Text> })
+    add("success", {
+      title: (
+        <Text>
+          {t("wallet.addToken.toast.add.onSuccess", { name: asset.name })}
+        </Text>
+      ),
+    })
     onClose()
   }
 

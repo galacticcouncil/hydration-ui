@@ -251,7 +251,15 @@ export const AddTokenAction = ({
     ? () => {
         addToken(externalAsset)
         refetchProvider()
-        add("success", { title: <Text>You added a token</Text> })
+        add("success", {
+          title: (
+            <Text>
+              {t("wallet.addToken.toast.add.onSuccess", {
+                name: externalAsset.name,
+              })}
+            </Text>
+          ),
+        })
       }
     : undefined
 
