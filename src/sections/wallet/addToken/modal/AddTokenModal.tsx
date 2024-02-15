@@ -46,7 +46,7 @@ export const AddTokenModal = ({ onClose }: { onClose: () => void }) => {
           {
             title: t("wallet.addToken.header.addCustom"),
             headerVariant: "FontOver",
-            content: (
+            content: selectedAsset && (
               <AddTokenFormModal asset={selectedAsset} onClose={onClose} />
             ),
           },
