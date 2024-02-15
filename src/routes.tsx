@@ -21,6 +21,8 @@ import { StatsOmnipoolAsset } from "sections/stats/sections/omnipoolAsset/StatsO
 import { BridgePage } from "sections/xcm/BridgePage"
 import { YieldDcaPage } from "sections/trade/sections/yieldDca/YieldDcaPage"
 
+const isDevelopment = import.meta.env.VITE_ENV === "development"
+
 export const routes: Route[] = [
   {
     path: "/",
@@ -75,10 +77,14 @@ export const routes: Route[] = [
         path: "vesting",
         element: <WalletPage />,
       },
-      {
-        path: "transactions",
-        element: <WalletPage />,
-      },
+      ...(isDevelopment
+        ? [
+            {
+              path: "transactions",
+              element: <WalletPage />,
+            },
+          ]
+        : []),
     ],
   },
   {

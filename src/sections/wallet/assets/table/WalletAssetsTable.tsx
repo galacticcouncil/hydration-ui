@@ -114,7 +114,10 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
                 </TableRow>
                 {row.getIsSelected() && (
                   <TableRow>
-                    <TableData colSpan={table.getAllColumns().length}>
+                    <TableData
+                      colSpan={table.getAllColumns().length}
+                      isExpanded
+                    >
                       <WalletAssetsTableDetails {...row.original} />
                     </TableData>
                   </TableRow>
