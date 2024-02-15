@@ -1,58 +1,47 @@
 import styled from "@emotion/styled"
-import { ComponentMeta } from "@storybook/react"
-import { useState } from "react"
+import { Meta, StoryObj } from "@storybook/react"
+import { ComponentPropsWithoutRef, useState } from "react"
 import { Switch } from "./Switch"
 
+type Story = StoryObj<typeof Switch>
+
 export default {
-  title: "components/Switch/Switch",
   component: Switch,
-} as ComponentMeta<typeof Switch>
+} as Meta<typeof Switch>
 
 const SwitchContainer = styled.div`
-  background: #00041d;
+  padding: 20px;
 `
 
-export const SwitchRegular = () => {
+const Template = (props: ComponentPropsWithoutRef<typeof Switch>) => {
   const [value, setValue] = useState(false)
   return (
     <SwitchContainer>
       <Switch
+        {...props}
         value={value}
         onCheckedChange={() => setValue((value) => !value)}
-        name="regular"
+        name="switch"
         label="Regular Switch"
       />
     </SwitchContainer>
   )
 }
 
-export const SwitchSmall = () => {
-  const [value, setValue] = useState(false)
-  return (
-    <SwitchContainer>
-      <Switch
-        value={value}
-        onCheckedChange={() => setValue((value) => !value)}
-        size="small"
-        name="small"
-        label="Small Switch"
-      />
-    </SwitchContainer>
-  )
+export const Regular: Story = {
+  render: Template,
 }
 
-export const SwitchDisabled = () => {
-  const [value, setValue] = useState(true)
-  return (
-    <SwitchContainer>
-      <Switch
-        value={value}
-        onCheckedChange={() => setValue((value) => !value)}
-        size="small"
-        disabled
-        name="disabled"
-        label="Disabled Switcher"
-      />
-    </SwitchContainer>
-  )
+export const Small: Story = {
+  render: Template,
+  args: {
+    size: "small",
+  },
+}
+
+export const Disabled: Story = {
+  render: Template,
+  args: {
+    disabled: true,
+  },
 }

@@ -142,6 +142,11 @@ const MyLiquidityData = () => {
           },
           {
             label: t("liquidity.header.stablepool"),
+            content: <MyStablePoolsTotal />,
+          },
+          {
+            label: t("liquidity.header.isolated"),
+            withoutSeparator: true,
             content: (
               <HeaderTotalData
                 isLoading={xylPools.isInitialLoading}
@@ -149,11 +154,6 @@ const MyLiquidityData = () => {
                 fontSize={19}
               />
             ),
-          },
-          {
-            label: t("liquidity.header.isolated"),
-            withoutSeparator: true,
-            content: <MyStablePoolsTotal />,
           },
           {
             initiallyHidden: true,

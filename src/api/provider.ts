@@ -23,6 +23,13 @@ export const PROVIDERS = [
     env: "production",
   },
   {
+    name: "Mainnet via Helikon",
+    url: "wss://rpc.helikon.io/hydradx",
+    indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
+    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    env: "production",
+  },
+  {
     name: "Rococo via GC",
     url: "wss://hydradx-rococo-rpc.play.hydration.cloud",
     indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",

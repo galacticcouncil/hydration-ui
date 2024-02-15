@@ -1,4 +1,4 @@
 /*
     X-XSS-Protection: 1; mode=block
-    X-Frame-Options: DENY
+    X-Frame-Options: SAMEORIGIN
    
