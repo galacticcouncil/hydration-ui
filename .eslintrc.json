@@ -23,7 +23,7 @@
       "error",
       {
         "semi": false,
-        // "trailingComma": "all",
+        "trailingComma": "all",
         "arrowParens": "always"
       }
     ]

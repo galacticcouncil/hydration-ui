@@ -9,34 +9,22 @@ export const useOrdersTableData = () => {
   const orderIds = orders.data?.map((order) => order.id)
   const ordersState = useOrdersState(orderIds || [])
 
-  const assets = orders.data
-    ?.flatMap((order) => [
-      {
-        id: order.assetIn?.id,
-        name: order.assetIn?.name,
-        symbol: order.assetIn?.symbol,
-      },
-      {
-        id: order.assetOut?.id,
-        name: order.assetOut?.name,
-        symbol: order.assetOut?.symbol,
-      },
-    ])
-    .filter(
-      (asset): asset is { id: string; symbol: string; name: string } =>
-        !!asset.id && !!asset.name,
-    )
-    .reduce(
-      (acc, current) => {
-        const x = acc.find((item) => item.id === current.id)
-        if (!x) {
-          return acc.concat([current])
-        } else {
-          return acc
+  const assets = orders.data?.reduce(
+    (acc, order) => {
+      [order.assetIn, order.assetOut].forEach((asset) => {
+        if (
+          asset &&
+          asset.id &&
+          asset.name &&
+          !acc.find((a) => a.id === asset.id)
+        ) {
+          acc.push({ id: asset.id, name: asset.name, symbol: asset.symbol })
         }
-      },
-      [] as { id: string; symbol: string; name: string }[],
-    )
+      })
+      return acc
+    },
+    [] as { id: string; symbol: string; name: string }[],
+  )
 
   const assetPrices = useAssetPrices(assets ?? [])
 

@@ -51,8 +51,6 @@ export const PlaceOrder = ({
     mode: "onChange",
   })
 
-  const { setError, clearErrors } = form
-
   const { api, assets } = useRpcProvider()
   const assetOutMeta = aOut ? assets.getAsset(aOut.toString()) : undefined
   const assetOutBalance = useTokenBalance(aOut, account?.address)
@@ -61,18 +59,7 @@ export const PlaceOrder = ({
 
   useEffect(() => {
     form.trigger()
-  }, [form])
-
-  useEffect(() => {
-    if (aIn === aOut) {
-      setError("amountIn", {
-        type: "manual",
-        message: t("otc.order.place.validation.sameAssets"),
-      })
-    } else {
-      clearErrors("amountIn")
-    }
-  }, [aIn, aOut, setError, clearErrors])
+  }, [aIn, aOut, form])
 
   const { createTransaction } = useStore()
 
@@ -269,6 +256,11 @@ export const PlaceOrder = ({
                     control={form.control}
                     rules={{
                       required: true,
+                      validate: {
+                        differentFromAmountOut: (value) =>
+                          aIn !== aOut ||
+                          t("otc.order.place.validation.sameAssets"),
+                      },
                     }}
                     render={({
                       field: { name, value, onChange },

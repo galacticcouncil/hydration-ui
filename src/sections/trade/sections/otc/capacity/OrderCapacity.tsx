@@ -32,18 +32,15 @@ export const OrderCapacity = (props: {
         <SBarContainer modal={modal}>
           <SBar filled={filledPct.toFixed()} />
         </SBarContainer>
-
-        {modal && (
-          <Text
-            fs={modal ? 13 : 11}
-            fw={500}
-            color="brightBlue100"
-            as="span"
-            sx={{ ml: 10 }}
-          >
-            {filledPct.toFixed(0)}%
-          </Text>
-        )}
+        <Text
+          fs={modal ? 13 : 12}
+          fw={500}
+          color="brightBlue100"
+          as="span"
+          sx={{ ml: 10 }}
+        >
+          {filledPct.toFixed(0)}%
+        </Text>
       </div>
       {!modal && (
         <motion.div
@@ -52,28 +49,18 @@ export const OrderCapacity = (props: {
           animate={orderHovered ? { opacity: 1, y: 6 } : { opacity: 0, y: 0 }}
         >
           <div
-            style={{
+            css={{
               position: "absolute",
               width: "100%",
               whiteSpace: "nowrap",
             }}
           >
-            <Text
-              fs={12}
-              fw={500}
-              color="basic400"
-              as="span"
-              sx={{ textAlign: "center" }}
-            >
+            <Text fs={12} fw={500} color="basic400" as="span" tAlign={"center"}>
               {t("otc.order.remaining", {
                 filled: props.total.minus(props.free),
                 initial: props.total,
                 symbol: props.symbol,
               })}
-              &nbsp;
-              <Text fs={12} fw={500} color="brightBlue100" as="span">
-                {t("otc.order.capacity", { filled: filledPct })}
-              </Text>
             </Text>
           </div>
         </motion.div>

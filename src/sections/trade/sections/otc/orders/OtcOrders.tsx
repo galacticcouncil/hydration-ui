@@ -10,7 +10,6 @@ import {
 } from "components/Table/Table.styled"
 import { Fragment, useMemo, useState } from "react"
 import { useMedia } from "react-use"
-
 import { theme } from "theme"
 import { FillOrder } from "sections/trade/sections/otc/modals/FillOrder"
 import { PartialFillOrder } from "sections/trade/sections/otc/modals/PartialFillOrder"
