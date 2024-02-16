@@ -46,7 +46,9 @@ export const OrderCapacity = (props: {
         <motion.div
           initial={{ opacity: 0, y: 0 }}
           transition={{ delay: 0.4, duration: 0.2 }}
-          animate={orderHovered ? { opacity: 1, y: 6 } : { opacity: 0, y: 0 }}
+          animate={
+            orderHovered ? { opacity: 1, y: 1 } : { opacity: 0, y: "-2px" }
+          }
         >
           <div
             css={{
@@ -55,7 +57,7 @@ export const OrderCapacity = (props: {
               whiteSpace: "nowrap",
             }}
           >
-            <Text fs={12} fw={500} color="basic400" as="span" tAlign={"center"}>
+            <Text fs={12} fw={500} color="white" as="span" tAlign={"center"}>
               {t("otc.order.remaining", {
                 filled: props.total.minus(props.free),
                 initial: props.total,

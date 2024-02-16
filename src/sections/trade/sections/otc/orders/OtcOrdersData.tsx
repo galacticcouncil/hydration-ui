@@ -67,7 +67,7 @@ export const OrderPairColumn = (props: {
   const acceptIsBond = assets.isBond(acceptAssetDetails)
 
   return (
-    <div sx={{ flex: "row", gap: 4, align: "center" }}>
+    <div sx={{ flex: "row", gap: 8, align: "center" }}>
       {assets.isStableSwap(offerAssetDetails) ||
       assets.isShareToken(offerAssetDetails) ? (
         <MultipleIcons
@@ -129,7 +129,7 @@ export const OrderPairColumn = (props: {
         />
       )}
       <div sx={{ display: "box", ml: 8 }}>
-        <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="basic400">
+        <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
           {props.offering.symbol} / {props.accepting.symbol}
         </Text>
         {props.pol && (
@@ -165,7 +165,7 @@ export const OrderAssetColumn = (props: {
   const isBond = assets.isBond(assetDetails)
 
   return (
-    <div sx={{ flex: "row", align: "center", gap: 4 }}>
+    <div sx={{ flex: "row", align: "center", gap: 8 }}>
       {assets.isStableSwap(assetDetails) ||
       assets.isShareToken(assetDetails) ? (
         <MultipleIcons
@@ -194,27 +194,15 @@ export const OrderAssetColumn = (props: {
       <div
         sx={{
           display: "flex",
-          flexDirection: "column",
-          gap: 2,
+          gap: 8,
         }}
       >
-        <div
-          sx={{
-            display: "flex",
-            gap: 2,
-          }}
-        >
-          <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
-            {t("value.token", { value: props.pair.amount })}
-          </Text>
-          <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
-            {props.pair.symbol}
-          </Text>
-        </div>
-
+        <Text fs={[14, 13]} lh={13} fw={500} color="white">
+          {t("value.token", { value: props.pair.amount })} {props.pair.symbol}
+        </Text>
         {isBond && (
-          <Text fs={11} lh={[16, 16]} fw={500} color="whiteish500">
-            {assetDetails.name.replace("HDX Bond ", "")}
+          <Text fs={13} lh={13} fw={500} color="white">
+            {assetDetails.name.replace("HDX Bond ", "").slice(3)}
           </Text>
         )}
       </div>
@@ -233,7 +221,7 @@ export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
         alignItems: "center",
         height: "100%",
         width: "100%",
-        gap: 8,
+        gap: 3,
       }}
     >
       {props?.price?.isNaN() ? (
@@ -242,10 +230,10 @@ export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
         </Text>
       ) : (
         <>
-          <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
+          <Text fs={[14, 13]} lh={13} fw={500} color="white">
             {t("value.token", { value: 1 })} {props.pair.symbol}
           </Text>
-          <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="whiteish500">
+          <Text fs={[14, 13]} lh={13} fw={500} color="whiteish500">
             ({abbreviateNumber(props.price)})
           </Text>
         </>
@@ -315,10 +303,10 @@ export const OrderMarketPriceColumn = (props: {
         align: ["flex-end", "center"],
         width: "100%",
       }}
-      style={{ position: "relative" }}
+      css={{ position: "relative" }}
     >
       {props.percentage ? (
-        <Text fs={[14, 16]} lh={[16, 16]} fw={500} color={color as any}>
+        <Text fs={[14, 13]} lh={13} fw={500} color={color as any}>
           {formatPercentage(props.percentage)}
         </Text>
       ) : (
@@ -337,7 +325,7 @@ export const OrderMarketPriceColumn = (props: {
             flexDirection: "row",
             align: "center",
             justify: "center",
-            gap: 8,
+            gap: 3,
           }}
           style={{
             position: "absolute",
