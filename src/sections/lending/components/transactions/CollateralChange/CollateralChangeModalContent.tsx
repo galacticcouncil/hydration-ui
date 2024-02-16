@@ -186,9 +186,9 @@ export const CollateralChangeModalContent = ({
       </TxModalDetails>
 
       {blockingError !== undefined && (
-        <Typography variant="helperText" color="error.main">
+        <Warning variant="error" sx={{ mt: 16 }}>
           <BlockingError />
-        </Typography>
+        </Warning>
       )}
 
       {txError && <GasEstimationError txError={txError} />}

@@ -1,19 +1,19 @@
 import { ChainId } from "@aave/contract-helpers"
-import { Button, Typography } from "@mui/material"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 
 import { Warning } from "sections/lending/components/primitives/Warning"
+import { Button } from "components/Button/Button"
 
 export type ChangeNetworkWarningProps = {
-  funnel?: string
   networkName: string
   chainId: ChainId
+  className?: string
 }
 
 export const ChangeNetworkWarning = ({
   networkName,
   chainId,
-  funnel,
+  className,
 }: ChangeNetworkWarningProps) => {
   const { switchNetwork, switchNetworkError } = useWeb3Context()
 
@@ -21,28 +21,26 @@ export const ChangeNetworkWarning = ({
     switchNetwork(chainId)
   }
   return (
-    <Warning variant="error">
+    <Warning variant="error" className={className}>
       {switchNetworkError ? (
-        <Typography>
-          <span>
-            Seems like we can&apos;t switch the network automatically. Please
-            check if you can change it from the wallet.
-          </span>
-        </Typography>
+        <span>
+          Seems like we can&apos;t switch the network automatically. Please
+          check if you can change it from the wallet.
+        </span>
       ) : (
-        <Typography variant="description">
+        <span
+          sx={{
+            flex: "row",
+            justify: "space-between",
+            align: "center",
+            gap: 4,
+          }}
+        >
           <span>Please switch to {networkName}.</span>{" "}
-          <Button
-            variant="text"
-            sx={{ ml: "2px", verticalAlign: "top" }}
-            onClick={handleSwitchNetwork}
-            disableRipple
-          >
-            <Typography variant="description">
-              <span>Switch Network</span>
-            </Typography>
+          <Button size="micro" variant="outline" onClick={handleSwitchNetwork}>
+            Switch Network
           </Button>
-        </Typography>
+        </span>
       )}
     </Warning>
   )

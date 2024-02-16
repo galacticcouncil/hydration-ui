@@ -7,6 +7,7 @@ import { Navigation } from "sections/lending/ui/navigation/Navigation"
 
 export const LendingPage = () => {
   const matchRoute = useMatchRoute()
+  // @TODO: for testing only, remove when not needed
   if (matchRoute({ to: "/lending/aave" })) {
     return (
       <Page>

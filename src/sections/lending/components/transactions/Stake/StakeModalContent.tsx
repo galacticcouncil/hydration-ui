@@ -127,7 +127,6 @@ export const StakeModalContent = ({ stakeAssetName, icon }: StakeProps) => {
         <ChangeNetworkWarning
           networkName={networkConfig.name}
           chainId={stakingChain}
-          funnel={"Stake Modal"}
         />
       )}
 

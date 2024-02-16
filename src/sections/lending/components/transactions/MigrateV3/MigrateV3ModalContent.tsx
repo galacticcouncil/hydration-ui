@@ -8,8 +8,8 @@ import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataCo
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { useRootStore } from "sections/lending/store/root"
 import {
-  selectedUserSupplyReservesForMigration,
   selectSelectedBorrowReservesForMigrationV3,
+  selectedUserSupplyReservesForMigration,
 } from "sections/lending/store/v3MigrationSelectors"
 import { getNetworkConfig } from "sections/lending/utils/marketsAndNetworksConfig"
 
@@ -62,11 +62,11 @@ export const MigrateV3ModalContent = () => {
       iconSymbol: asset.reserve.iconSymbol,
       symbol: asset.reserve.symbol,
       amount:
-        asset.interestRate == InterestRate.Stable
+        asset.interestRate === InterestRate.Stable
           ? asset.stableBorrows
           : asset.variableBorrows,
       amountInUSD:
-        asset.interestRate == InterestRate.Stable
+        asset.interestRate === InterestRate.Stable
           ? asset.stableBorrowsUSD
           : asset.variableBorrowsUSD,
     }

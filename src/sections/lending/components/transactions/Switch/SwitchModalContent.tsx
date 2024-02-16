@@ -275,12 +275,7 @@ export const SwitchModalContent = ({
           )}
           {sellRates && user && (
             <TxModalDetails gasLimit={gasLimit} chainId={selectedChainId}>
-              <Row
-                caption={
-                  <span>{`Minimum ${selectedOutputReserve.symbol} received`}</span>
-                }
-                captionVariant="caption"
-              >
+              <Row caption={`Minimum ${selectedOutputReserve.symbol} received`}>
                 <FormattedNumber
                   compact={false}
                   roundDown={true}
@@ -296,7 +291,6 @@ export const SwitchModalContent = ({
               <Row
                 sx={{ mt: 4 }}
                 caption={<span>Minimum USD value received</span>}
-                captionVariant="caption"
               >
                 <FormattedNumber
                   symbol="usd"

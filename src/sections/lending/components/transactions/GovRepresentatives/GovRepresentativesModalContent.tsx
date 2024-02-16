@@ -1,5 +1,4 @@
 import { ChainId } from "@aave/contract-helpers"
-import { t, Trans } from "@lingui/macro"
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded"
 import {
   Box,
@@ -172,7 +171,7 @@ export const GovRepresentativesContent = ({
               </Stack>
               <OutlinedInput
                 sx={{ height: "44px" }}
-                placeholder={t`Enter ETH address`}
+                placeholder="Enter ETH address"
                 value={r.representative}
                 error={r.invalid && !r.remove}
                 disabled={r.remove}

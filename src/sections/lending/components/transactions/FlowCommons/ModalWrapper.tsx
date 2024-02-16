@@ -111,6 +111,7 @@ export const ModalWrapper: React.FC<{
                   <ChangeNetworkWarning
                     networkName={getNetworkConfig(requiredChainId).name}
                     chainId={requiredChainId}
+                    sx={{ mb: 20 }}
                   />
                 )}
                 {children({
