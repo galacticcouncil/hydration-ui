@@ -81,7 +81,5 @@ export const SValuesContainer = styled.div`
 export const SHollarImage = styled.img`
   position: absolute;
   bottom: -15px;
-  left: 6px;
-
-  mix-blend-mode: lighten;
+  left: 8px;
 `

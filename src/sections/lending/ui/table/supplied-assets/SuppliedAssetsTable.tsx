@@ -23,6 +23,7 @@ export const SuppliedAssetsTable = () => {
       table={table}
       spacing="large"
       title="Your supplies"
+      background="transparent"
       addons={<SuppliedAssetsStats />}
       emptyFallback={
         <Text color="basic700" fs={14}>

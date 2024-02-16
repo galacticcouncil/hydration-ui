@@ -18,7 +18,7 @@ import {
   SValuesContainer,
 } from "./HollarBanner.styled"
 import { HollarBorrowApyRange } from "./HollarBorrowApyRange"
-import hollarRenderImg from "./assets/hollar-render.png"
+import hollarImage from "./assets/hollar-image.png"
 
 type HollarBannerProps = {
   className?: string
@@ -109,7 +109,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
           </SValuesContainer>
         </SContent>
       </SInnerContainer>
-      <SHollarImage src={hollarRenderImg} width={120} height={120} />
+      <SHollarImage src={hollarImage} width={120} height={120} />
     </SContainer>
   )
 }

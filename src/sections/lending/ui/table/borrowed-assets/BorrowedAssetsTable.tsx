@@ -23,6 +23,7 @@ export const BorrowedAssetsTable = () => {
       table={table}
       spacing="large"
       title="Your borrows"
+      background="transparent"
       addons={<BorrowedAssetsStats />}
       emptyFallback={
         <Text color="basic700" fs={14}>
