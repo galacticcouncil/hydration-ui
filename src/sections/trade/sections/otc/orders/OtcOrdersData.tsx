@@ -67,7 +67,7 @@ export const OrderPairColumn = (props: {
   const acceptIsBond = assets.isBond(acceptAssetDetails)
 
   return (
-    <div sx={{ flex: "row", gap: 8, align: "center" }}>
+    <div sx={{ flex: "row", gap: 6, align: "center" }}>
       {assets.isStableSwap(offerAssetDetails) ||
       assets.isShareToken(offerAssetDetails) ? (
         <MultipleIcons
@@ -97,6 +97,14 @@ export const OrderPairColumn = (props: {
           }
         />
       )}
+      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
+        {props.offering.symbol}
+      </Text>
+
+      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white" sx={{ mx: 4 }}>
+        /
+      </Text>
+
       {assets.isStableSwap(acceptAssetDetails) ||
       assets.isShareToken(acceptAssetDetails) ? (
         <MultipleIcons
@@ -128,28 +136,9 @@ export const OrderPairColumn = (props: {
           }
         />
       )}
-      <div sx={{ display: "box", ml: 8 }}>
-        <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
-          {props.offering.symbol} / {props.accepting.symbol}
-        </Text>
-        {props.pol && (
-          <span
-            css={{
-              fontSize: 10,
-              fontWeight: 600,
-              border: "1px solid #FC408C",
-              borderRadius: "4px",
-              width: "31px",
-              height: "16px",
-              padding: "1px 6px",
-              color: "#fff",
-              background: "rgba(255, 2, 103, 0.6)",
-            }}
-          >
-            POL
-          </span>
-        )}
-      </div>
+      <Text fs={[14, 16]} lh={[16, 16]} fw={500} color="white">
+        {props.accepting.symbol}
+      </Text>
     </div>
   )
 }

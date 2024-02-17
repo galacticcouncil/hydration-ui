@@ -21,6 +21,23 @@ import { OrderTableData } from "./OtcOrdersData.utils"
 import Skeleton from "react-loading-skeleton"
 import { useMemo } from "react"
 
+const sortMarketPrice = (
+  rowA: { original: OrderTableData },
+  rowB: { original: OrderTableData },
+) => {
+  const valA = rowA.original.marketPricePercentage
+  const valB = rowB.original.marketPricePercentage
+
+  const numA =
+    valA === undefined || isNaN(valA) ? Number.NEGATIVE_INFINITY : valA
+  const numB =
+    valB === undefined || isNaN(valB) ? Number.NEGATIVE_INFINITY : valB
+
+  if (numA < numB) return -1
+  if (numA > numB) return 1
+  return 0
+}
+
 export const useOrdersTable = (
   data: OrderTableData[],
   actions: {
@@ -47,7 +64,6 @@ export const useOrdersTable = (
       accessor("id", {
         id: "pair",
         header: t("otc.offers.table.header.assets"),
-        enableSorting: false,
         cell: ({ row }) => (
           <OrderPairColumn
             offering={row.original.offer}
@@ -59,13 +75,11 @@ export const useOrdersTable = (
       accessor("offer", {
         id: "offer",
         header: t("otc.offers.table.header.offer"),
-        enableSorting: false,
         cell: ({ row }) => <OrderAssetColumn pair={row.original.offer} />,
       }),
       accessor("accepting", {
         id: "accepting",
         header: t("otc.offers.table.header.accepting"),
-        enableSorting: false,
         cell: ({ row }) => <OrderAssetColumn pair={row.original.accepting} />,
       }),
       accessor("orderPrice", {
@@ -80,7 +94,6 @@ export const useOrdersTable = (
             {t("otc.offers.table.header.orderPrice")}
           </div>
         ),
-        enableSorting: false,
         cell: ({ row }) => (
           <OrderPriceColumn
             pair={row.original.offer}
@@ -91,7 +104,6 @@ export const useOrdersTable = (
       accessor("marketPrice", {
         id: "marketPrice",
         header: t("otc.offers.table.header.marketPrice"),
-        enableSorting: true,
         cell: ({ row }) => (
           <OrderMarketPriceColumn
             pair={row.original.offer}
@@ -99,26 +111,10 @@ export const useOrdersTable = (
             percentage={row.original.marketPricePercentage}
           />
         ),
-        sortingFn: (
-          rowA: { original: OrderTableData },
-          rowB: { original: OrderTableData },
-        ) => {
-          const valA = rowA.original.marketPricePercentage
-          const valB = rowB.original.marketPricePercentage
-
-          const numA =
-            valA === undefined || isNaN(valA) ? Number.NEGATIVE_INFINITY : valA
-          const numB =
-            valB === undefined || isNaN(valB) ? Number.NEGATIVE_INFINITY : valB
-
-          if (numA < numB) return -1
-          if (numA > numB) return 1
-          return 0
-        },
+        sortingFn: sortMarketPrice,
       }),
       accessor("filled", {
         id: "filled",
-        enableSorting: false,
         header: () => (
           <div
             style={{
