@@ -64,6 +64,7 @@ export const useOrdersTable = (
       accessor("id", {
         id: "pair",
         header: t("otc.offers.table.header.assets"),
+        enableSorting: false,
         cell: ({ row }) => (
           <OrderPairColumn
             offering={row.original.offer}
@@ -74,16 +75,19 @@ export const useOrdersTable = (
       }),
       accessor("offer", {
         id: "offer",
+        enableSorting: false,
         header: t("otc.offers.table.header.offer"),
         cell: ({ row }) => <OrderAssetColumn pair={row.original.offer} />,
       }),
       accessor("accepting", {
         id: "accepting",
+        enableSorting: false,
         header: t("otc.offers.table.header.accepting"),
         cell: ({ row }) => <OrderAssetColumn pair={row.original.accepting} />,
       }),
       accessor("orderPrice", {
         id: "orderPrice",
+        enableSorting: false,
         header: () => (
           <div
             style={{
@@ -115,6 +119,7 @@ export const useOrdersTable = (
       }),
       accessor("filled", {
         id: "filled",
+        enableSorting: false,
         header: () => (
           <div
             style={{
@@ -141,6 +146,7 @@ export const useOrdersTable = (
       }),
       display({
         id: "actions",
+        enableSorting: false,
         cell: ({ row }) => (
           <OtcOrderActions
             data={row.original}
