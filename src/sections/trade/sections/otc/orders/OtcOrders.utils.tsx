@@ -157,7 +157,7 @@ export const useOrdersTable = (
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [actions, isDesktop],
+    [isDesktop],
   )
 
   return useReactTable({

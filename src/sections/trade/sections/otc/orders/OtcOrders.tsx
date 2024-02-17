@@ -8,7 +8,7 @@ import {
   TableHeaderContent,
   TableRow,
 } from "components/Table/Table.styled"
-import { Fragment, useMemo, useState } from "react"
+import { Fragment, useCallback, useMemo, useState } from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { FillOrder } from "sections/trade/sections/otc/modals/FillOrder"
@@ -74,9 +74,17 @@ export const OtcOrderTable = ({
     return res.sort((a, b) => Number(b.pol) - Number(a.pol))
   }, [data, userAddress, showMyOrders, showPartial, searchVal])
 
+  const handleFillOrder = useCallback((order: OrderTableData) => {
+    setFillOrder(order)
+  }, [])
+
+  const handleCloseOrder = useCallback((order: OrderTableData) => {
+    setCloseOrder(order)
+  }, [])
+
   const table = useOrdersTable(filteredData, {
-    onFill: setFillOrder,
-    onClose: setCloseOrder,
+    onFill: handleFillOrder,
+    onClose: handleCloseOrder,
   })
 
   return (
