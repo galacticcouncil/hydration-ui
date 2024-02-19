@@ -21,7 +21,7 @@ export const SSpinnerContainer = styled.div<{
     getResponsiveStyles(p.size, (size) => ({ height: size })),
   ]}
 
-  # animation: ${spin} 0.6s linear infinite;
+  animation: ${spin} 0.6s linear infinite;
 `
 
 export const Gradient = styled.div`
