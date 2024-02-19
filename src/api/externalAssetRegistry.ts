@@ -1,8 +1,9 @@
 // @ts-nocheck
-import { ApiPromise, WsProvider } from "@polkadot/api"
+import { WsProvider } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
 
 export const getAssetHubAssets = async () => {
   const parachain = chainsMap.get("assethub")
@@ -10,7 +11,9 @@ export const getAssetHubAssets = async () => {
   try {
     if (parachain) {
       const provider = new WsProvider(parachain.ws)
-      const api = await ApiPromise.create({ provider })
+
+      const apiPool = SubstrateApis.getInstance()
+      const api = await apiPool.api(provider.endpoint)
 
       const dataRaw = await api.query.assets.metadata.entries()
 
