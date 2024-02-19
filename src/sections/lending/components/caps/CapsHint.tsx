@@ -1,7 +1,6 @@
 import { valueToBigNumber } from "@aave/math-utils"
-
-import { Box, Typography } from "@mui/material"
-
+import { Box } from "@mui/material"
+import { Text } from "components/Typography/Text/Text"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { CapsTooltip } from "./CapsTooltip"
 import { CapType } from "./helper"
@@ -49,9 +48,7 @@ export const CapsHint = ({
 
       {!withoutText && (
         <>
-          <Typography variant="tooltip" color="text.secondary">
-            {title}
-          </Typography>
+          <Text fs={14}>{title}</Text>
           <FormattedNumber
             value={value >= 0 ? value : 0}
             compact

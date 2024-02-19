@@ -296,10 +296,15 @@ export const SupplyAssetsList = () => {
                 <Warning variant="info">
                   <span>
                     Your {networkName} wallet is empty. Get free test assets at{" "}
-                  </span>{" "}
-                  <Link href={ROUTES.faucet} style={{ fontWeight: 400 }}>
-                    <span>{networkName} Faucet</span>
-                  </Link>
+                    <a
+                      target="_blank"
+                      href={ROUTES.faucet}
+                      css={{ textDecoration: "underline" }}
+                      rel="noreferrer"
+                    >
+                      <span>{networkName} Faucet</span>
+                    </a>
+                  </span>
                 </Warning>
               ) : (
                 <WalletEmptyInfo

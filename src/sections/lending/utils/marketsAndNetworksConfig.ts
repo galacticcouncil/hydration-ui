@@ -35,7 +35,7 @@ window.global ||= window
 export const DEV_ENV = import.meta.env.VITE_ENV === "development"
 export const STAGING_ENV = import.meta.env.VITE_ENV === "rococo"
 export const PROD_ENV = import.meta.env.VITE_ENV === "production"
-export const ENABLE_TESTNET = DEV_ENV || STAGING_ENV
+export const ENABLE_TESTNET = false //DEV_ENV || STAGING_ENV
 
 // determines if forks should be shown
 export const FORK_ENABLED =

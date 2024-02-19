@@ -1,4 +1,4 @@
-import { Button, Stack, Typography } from "@mui/material"
+import { Stack } from "@mui/material"
 import { Link, ROUTES } from "sections/lending/components/primitives/Link"
 import { Warning } from "sections/lending/components/primitives/Warning"
 import { getEmodeMessage } from "sections/lending/components/transactions/Emode/EmodeNaming"
@@ -10,8 +10,6 @@ import { useAssetCaps } from "sections/lending/hooks/useAssetCaps"
 import { WalletEmptyInfo } from "sections/lending/modules/dashboard/lists/SupplyAssetsList/WalletEmptyInfo"
 import { useRootStore } from "sections/lending/store/root"
 import { assetCanBeBorrowedByUser } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
-
-import { useModalContext } from "./useModal"
 
 interface ReserveActionStateProps {
   balance: string
@@ -35,7 +33,6 @@ export const useReserveActionState = ({
       store.currentChainId,
       store.displayGho,
     ])
-  const { openFaucet } = useModalContext()
 
   const { bridge, name: networkName } = currentNetworkConfig
 
@@ -65,18 +62,16 @@ export const useReserveActionState = ({
               <Warning sx={{ mb: 0 }} variant="info">
                 <span>
                   Your {networkName} wallet is empty. Get free test{" "}
-                  {reserve.name} at
-                </span>{" "}
-                <Button
-                  variant="text"
-                  sx={{ verticalAlign: "top" }}
-                  onClick={() => openFaucet(reserve.underlyingAsset)}
-                  disableRipple
-                >
-                  <Typography variant="caption">
+                  {reserve.name} at{" "}
+                  <a
+                    target="_blank"
+                    href={ROUTES.faucet}
+                    css={{ textDecoration: "underline" }}
+                    rel="noreferrer"
+                  >
                     <span>{networkName} Faucet</span>
-                  </Typography>
-                </Button>
+                  </a>
+                </span>
               </Warning>
             ) : (
               <WalletEmptyInfo

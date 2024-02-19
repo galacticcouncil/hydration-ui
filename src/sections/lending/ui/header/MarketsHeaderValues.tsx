@@ -26,7 +26,7 @@ export const MarketsHeaderValues: FC<{
     <DataValueList
       separated
       className={className}
-      sx={{ maxWidth: ["100%", 800] }}
+      sx={{ maxWidth: ["100%", 700] }}
     >
       <DataValue
         size="large"

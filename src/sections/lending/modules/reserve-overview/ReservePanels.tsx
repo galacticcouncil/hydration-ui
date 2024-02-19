@@ -2,11 +2,12 @@ import {
   Box,
   BoxProps,
   Typography,
-  TypographyProps,
   useMediaQuery,
   useTheme,
 } from "@mui/material"
-import type { ReactNode } from "react"
+import { Text } from "components/Typography/Text/Text"
+import type { Component, ComponentPropsWithoutRef, ReactNode } from "react"
+import React from "react"
 
 export const PanelRow: React.FC<BoxProps> = (props) => (
   <Box
@@ -19,12 +20,20 @@ export const PanelRow: React.FC<BoxProps> = (props) => (
     }}
   />
 )
-export const PanelTitle: React.FC<TypographyProps> = (props) => (
-  <Typography
-    {...props}
-    variant="subheader1"
-    sx={{ minWidth: { xs: "170px" }, mr: 16, mb: { xs: 6, md: 0 }, ...props.sx }}
-  />
+export const PanelTitle: React.FC<{
+  children: ReactNode
+  color?: ComponentPropsWithoutRef<typeof Text>["color"]
+}> = ({ children, color }) => (
+  <Text
+    color={color}
+    fs={14}
+    sx={{
+      mr: 16,
+      mb: [12, 30],
+    }}
+  >
+    {children}
+  </Text>
 )
 
 interface PanelItemProps {

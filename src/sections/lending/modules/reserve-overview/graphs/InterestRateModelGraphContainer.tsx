@@ -39,7 +39,7 @@ export const InterestRateModelGraphContainer = ({
   ]
 
   return (
-    <Box sx={{ mt: 8, mb: 160 }}>
+    <Box sx={{ mt: 8 }}>
       <Box
         sx={{
           display: "flex",

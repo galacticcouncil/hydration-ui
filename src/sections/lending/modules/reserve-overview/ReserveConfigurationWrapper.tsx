@@ -1,9 +1,9 @@
-import { Box, Paper, Typography, useMediaQuery, useTheme } from "@mui/material"
+import { Box, Paper, useMediaQuery, useTheme } from "@mui/material"
+import { Text } from "components/Typography/Text/Text"
 import React from "react"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { useRootStore } from "sections/lending/store/root"
-
 import { GhoReserveConfiguration } from "./Gho/GhoReserveConfiguration"
 import { ReserveConfiguration } from "./ReserveConfiguration"
 
@@ -36,9 +36,9 @@ export const ReserveConfigurationWrapper: React.FC<
               : "36px",
         }}
       >
-        <Typography variant="h3">
-          <span>Reserve status &#38; configuration</span>
-        </Typography>
+        <Text fs={15} font="FontOver">
+          Reserve status and configuration
+        </Text>
       </Box>
       {isGho ? (
         <GhoReserveConfiguration reserve={reserve} />

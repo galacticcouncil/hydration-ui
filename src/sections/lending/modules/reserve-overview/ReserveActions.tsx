@@ -7,7 +7,6 @@ import {
 
 import {
   Box,
-  Button,
   CircularProgress,
   Divider,
   Paper,
@@ -46,6 +45,7 @@ import { CapType } from "sections/lending/components/caps/helper"
 import { AvailableTooltip } from "sections/lending/components/infoTooltips/AvailableTooltip"
 import { Link, ROUTES } from "sections/lending/components/primitives/Link"
 import { useReserveActionState } from "sections/lending/hooks/useReserveActionState"
+import { Button } from "components/Button/Button"
 
 const amountToUSD = (
   amount: BigNumberValue,
@@ -149,21 +149,9 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
 
   const onSupplyClicked = () => {
     if (reserve.isWrappedBaseAsset && selectedAsset === baseAssetSymbol) {
-      openSupply(
-        API_ETH_MOCK_ADDRESS.toLowerCase(),
-        currentMarket,
-        reserve.name,
-        "reserve",
-        true,
-      )
+      openSupply(API_ETH_MOCK_ADDRESS.toLowerCase())
     } else {
-      openSupply(
-        reserve.underlyingAsset,
-        currentMarket,
-        reserve.name,
-        "reserve",
-        true,
-      )
+      openSupply(reserve.underlyingAsset)
     }
   }
 
@@ -226,7 +214,7 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
 
 const PauseWarning = () => {
   return (
-    <Warning sx={{ mb: 0 }} variant="error" icon={true}>
+    <Warning sx={{ mb: 0 }} variant="error">
       <span>
         Because this asset is paused, no actions can be taken until further
         notice
@@ -237,7 +225,7 @@ const PauseWarning = () => {
 
 const FrozenWarning = () => {
   return (
-    <Warning sx={{ mb: 0 }} variant="error" icon={true}>
+    <Warning sx={{ mb: 0 }} variant="error">
       <span>
         Since this asset is frozen, the only available actions are withdraw and
         repay which can be accessed from the{" "}
@@ -288,7 +276,7 @@ const ActionsSkeleton = () => {
 
 const PaperWrapper = ({ children }: { children: ReactNode }) => {
   return (
-    <Paper sx={{ pt: 4, pb: { xs: 4, xsm: 6 }, px: { xs: 4, xsm: 6 } }}>
+    <Paper>
       <Typography variant="h3" sx={{ mb: 24 }}>
         <span>Your info</span>
       </Typography>
@@ -340,8 +328,7 @@ const SupplyAction = ({
   return (
     <Stack>
       <AvailableTooltip
-        variant="description"
-        text={<span>Available to supply</span>}
+        text="Available to supply"
         capType={CapType.supplyCap}
       />
       <Stack
@@ -360,15 +347,8 @@ const SupplyAction = ({
             symbol="USD"
           />
         </Box>
-        <Button
-          sx={{ height: "36px", width: "96px" }}
-          onClick={onActionClicked}
-          disabled={disable}
-          fullWidth={false}
-          variant="contained"
-          data-cy="supplyButton"
-        >
-          <span>Supply</span>
+        <Button size="small" onClick={onActionClicked} disabled={disable}>
+          Supply
         </Button>
       </Stack>
     </Stack>
@@ -386,8 +366,7 @@ const BorrowAction = ({
   return (
     <Stack>
       <AvailableTooltip
-        variant="description"
-        text={<span>Available to borrow</span>}
+        text="Available to borrow"
         capType={CapType.borrowCap}
       />
       <Stack
@@ -406,15 +385,8 @@ const BorrowAction = ({
             symbol="USD"
           />
         </Box>
-        <Button
-          sx={{ height: "36px", width: "96px" }}
-          onClick={onActionClicked}
-          disabled={disable}
-          fullWidth={false}
-          variant="contained"
-          data-cy="borrowButton"
-        >
-          <span>Borrow </span>
+        <Button size="small" onClick={onActionClicked} disabled={disable}>
+          Borrow
         </Button>
       </Stack>
     </Stack>

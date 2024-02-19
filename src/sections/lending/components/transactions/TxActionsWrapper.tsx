@@ -144,7 +144,7 @@ export const TxActionsWrapper = ({
       sx={{ display: "flex", flexDirection: "column", mt: 16, ...sx }}
       {...rest}
     >
-      {approvalParams && !readOnlyModeAddress && (
+      {/* {approvalParams && !readOnlyModeAddress && (
         <Box
           sx={{ display: "flex", justifyContent: "end", alignItems: "center" }}
         >
@@ -153,7 +153,7 @@ export const TxActionsWrapper = ({
             tryPermit={tryPermit}
           />
         </Box>
-      )}
+      )} */}
 
       {approvalParams && !readOnlyModeAddress && (
         <Button
