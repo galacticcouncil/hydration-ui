@@ -188,7 +188,9 @@ export const PoolDetails = ({
                   {t("liquidity.pool.details.fee")}
                 </Text>
                 <Text color="white" fs={[14, 16]} fw={600}>
-                  {omnipoolFee.isLoading ? (
+                  {ixXYKPool ? (
+                    t("value.percentage", { value: pool.fee })
+                  ) : omnipoolFee.isLoading ? (
                     <Skeleton height={16} width={50} />
                   ) : (
                     t("value.percentage.range", {
