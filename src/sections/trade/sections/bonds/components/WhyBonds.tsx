@@ -9,21 +9,47 @@ import { SBondSteps, SWhyBonds } from "./WhyBonds.styled"
 import WhyBondsIcon from "assets/icons/WhyBonds.svg?react"
 import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
-import { SetStateAction, Dispatch } from "react"
+import { useState, useEffect } from "react"
 import { AnimatePresence, motion } from "framer-motion"
+import { useRpcProvider } from "providers/rpcProvider"
+import { useTokensBalances } from "api/balances"
+import { pluck } from "utils/rx"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
-export const WhyBonds = ({
-  expanded,
-  setExpanded,
-}: {
-  expanded: boolean
-  setExpanded: Dispatch<SetStateAction<boolean>>
-}) => {
+export const WhyBonds = () => {
   const { t } = useTranslation()
+  const {
+    assets: { bonds },
+    isLoaded,
+  } = useRpcProvider()
+
+  const [expanded, setExpanded] = useState<boolean | undefined>(undefined)
+
+  const { account } = useAccount()
+
+  const balances = useTokensBalances(
+    isLoaded ? pluck("id", bonds) : [],
+    account?.address,
+  )
+
+  const hasBonds =
+    balances.length && balances.every((balance) => !balance.isInitialLoading)
+      ? balances.some((balance) => balance.data?.total.gt(0))
+      : undefined
+
+  useEffect(() => {
+    if (hasBonds !== undefined && expanded === undefined) {
+      if (!hasBonds) {
+        setExpanded(true)
+      } else {
+        setExpanded(false)
+      }
+    }
+  }, [hasBonds, account?.address, expanded])
 
   return (
     <SWhyBonds
-      expanded={expanded}
+      expanded={!!expanded}
       onClick={() => setExpanded((state) => !state)}
     >
       <div sx={{ flex: "row", justify: "space-between", height: 24 }}>

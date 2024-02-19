@@ -1,3 +1,4 @@
+import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { WalletAssetsHydraPositions } from "./WalletAssetsHydraPositions"
 import {
   useOmnipoolPositionsData,
@@ -19,5 +20,9 @@ export const WalletAssetsPositionsWrapper = () => {
   if (positionsTable.isLoading || xykPositions.isLoading)
     return <WalletAssetsHydraPositionsSkeleton />
 
-  return <WalletAssetsHydraPositions data={allPositions} />
+  return allPositions.length || search.length === 0 ? (
+    <WalletAssetsHydraPositions data={allPositions} />
+  ) : (
+    <EmptySearchState />
+  )
 }

@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
-import { theme } from "theme"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { useRpcProvider } from "providers/rpcProvider"
 import { Icon } from "components/Icon/Icon"
@@ -39,7 +38,7 @@ export const AssetTableName = ({
       >
         {typeof iconIds === "string" ? (
           <Icon
-            size={[large ? 28 : 26, 27]}
+            size={[large ? 28 : 26, 26]}
             icon={<AssetLogo id={iconIds} />}
           />
         ) : (
@@ -50,7 +49,7 @@ export const AssetTableName = ({
               return {
                 icon: (
                   <Icon
-                    size={[large ? 28 : 26, 27]}
+                    size={[large ? 28 : 26, 26]}
                     icon={<AssetLogo id={isBond ? meta.assetId : asset} />}
                   />
                 ),
@@ -61,19 +60,18 @@ export const AssetTableName = ({
 
         <div sx={{ flex: "column", width: "100%", gap: [0, 4] }}>
           <Text
-            fs={[large ? 18 : 14, 16]}
-            lh={[large ? 16 : 23, 16]}
-            fw={700}
+            fs={large ? 18 : 14}
+            lh={large ? 16 : 14}
+            font="ChakraPetchSemiBold"
             color="white"
           >
             {symbol}
           </Text>
           <Text
-            fs={[large ? 13 : 12, 13]}
-            lh={[large ? 17 : 14, 13]}
-            fw={500}
+            fs={large ? 14 : 13}
+            lh={large ? 17 : 13}
             sx={{ display: !large ? ["none", "block"] : undefined }}
-            css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.61)` }}
+            color="whiteish500"
           >
             {name}
           </Text>
@@ -81,12 +79,12 @@ export const AssetTableName = ({
       </div>
       {isPaymentFee && (
         <Text
-          fs={9}
-          fw={700}
+          fs={10}
           sx={{
             mt: 4,
             ml: large ? 30 : [32, 36],
           }}
+          font="ChakraPetchSemiBold"
           color="brightBlue300"
           tTransform="uppercase"
         >

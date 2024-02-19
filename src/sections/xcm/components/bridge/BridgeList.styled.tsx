@@ -16,9 +16,9 @@ export const SContainer = styled.div`
     max-width: 570px;
 
     ${theme.gradientBorder};
-    border-radius: ${theme.borderRadius.stakingCard}px;
+    border-radius: ${theme.borderRadius.medium}px;
     :before {
-      border-radius: ${theme.borderRadius.stakingCard}px;
+      border-radius: ${theme.borderRadius.medium}px;
     }
   }
 `

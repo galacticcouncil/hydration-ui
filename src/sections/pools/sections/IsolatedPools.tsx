@@ -1,7 +1,5 @@
 import { useRpcProvider } from "providers/rpcProvider"
 import { useXYKPools } from "sections/pools/PoolsPage.utils"
-import { PoolSkeleton } from "sections/pools/skeleton/PoolSkeleton"
-import { XYKPool } from "sections/pools/pool/xyk/XYKPool"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { useTranslation } from "react-i18next"
@@ -10,32 +8,47 @@ import { BN_0 } from "utils/constants"
 import { SearchFilter } from "sections/pools/filter/SearchFilter"
 import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
+import { PoolsTable } from "sections/pools/table/PoolsTable"
+import { XYKVolumeTotal } from "sections/pools/header/VolumeTotal"
+import { PoolWrapper } from "sections/pools/pool/Pool"
+import { useSearch } from "@tanstack/react-location"
+import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
+import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
+import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
+import { Spacer } from "components/Spacer/Spacer"
 
 export const IsolatedPools = () => {
   const { t } = useTranslation()
   const { isLoaded } = useRpcProvider()
+  const { id } = useSearch<{
+    Search: {
+      id?: number
+    }
+  }>()
 
   if (!isLoaded)
-    return (
+    return id != null ? (
+      <PoolSkeleton />
+    ) : (
       <>
         <HeaderValues
+          fontSizeLabel={14}
+          skeletonHeight={[19, 24]}
           values={[
             {
               label: t("liquidity.header.isolated"),
-              content: <HeaderTotalData isLoading />,
+              content: <HeaderTotalData isLoading fontSize={[19, 24]} />,
             },
             {
               withoutSeparator: true,
               label: t("liquidity.header.24hours"),
-              content: <HeaderTotalData isLoading />,
+              content: <HeaderTotalData isLoading fontSize={[19, 24]} />,
             },
           ]}
         />
-        <div sx={{ flex: "column", gap: 20 }}>
-          {[...Array(3)].map((_, index) => (
-            <PoolSkeleton key={index} length={3} index={index} />
-          ))}
-        </div>
+        <SearchFilter />
+        <Spacer size={[24, 40]} />
+        <PoolsTableSkeleton isXyk />
       </>
     )
 
@@ -45,64 +58,70 @@ export const IsolatedPools = () => {
 const IsolatedPoolsData = () => {
   const { t } = useTranslation()
   const { search } = useSearchFilter()
+  const { id } = useSearch<{
+    Search: {
+      id?: number
+    }
+  }>()
+
   const xylPools = useXYKPools()
 
   const totalLocked = useMemo(() => {
     if (xylPools.data) {
       return xylPools.data.reduce((acc, xykPool) => {
-        return acc.plus(xykPool.totalDisplay ?? BN_0)
-      }, BN_0)
-    }
-    return BN_0
-  }, [xylPools.data])
-
-  const totalVolume = useMemo(() => {
-    if (xylPools.data) {
-      return xylPools.data.reduce((acc, xykPool) => {
-        return acc.plus(xykPool.volumeDisplay ?? BN_0)
+        return acc.plus(xykPool.tvlDisplay ?? BN_0)
       }, BN_0)
     }
     return BN_0
   }, [xylPools.data])
 
   const filteredPools =
-    search && xylPools.data
+    (search && xylPools.data
       ? arraySearch(xylPools.data, search, ["symbol", "name"])
-      : xylPools.data
+      : xylPools.data) ?? []
+
+  if (id != null) {
+    const pool = xylPools.data?.find((pool) => pool.id === id.toString())
+
+    const isLoading = xylPools.isInitialLoading
+
+    if (!pool && isLoading) return <PoolSkeleton />
+
+    if (pool) return <PoolWrapper pool={pool} />
+  }
 
   return (
     <>
       <HeaderValues
+        fontSizeLabel={14}
+        skeletonHeight={[19, 24]}
         values={[
           {
             label: t("liquidity.header.isolated"),
             content: (
               <HeaderTotalData
-                isLoading={xylPools.isLoading}
+                isLoading={xylPools.isInitialLoading}
                 value={totalLocked}
+                fontSize={[19, 24]}
               />
             ),
           },
           {
             withoutSeparator: true,
             label: t("liquidity.header.24hours"),
-            content: (
-              <HeaderTotalData
-                isLoading={xylPools.isLoading}
-                value={totalVolume}
-              />
-            ),
+            content: <XYKVolumeTotal />,
           },
         ]}
       />
       <SearchFilter />
-      <div sx={{ flex: "column", gap: 20 }}>
-        {xylPools.isLoading
-          ? [...Array(3)].map((_, index) => (
-              <PoolSkeleton key={index} length={3} index={index} />
-            ))
-          : filteredPools?.map((pool) => <XYKPool key={pool.id} pool={pool} />)}
-      </div>
+      <Spacer size={[24, 40]} />
+      {xylPools.isInitialLoading ? (
+        <PoolsTableSkeleton isXyk />
+      ) : filteredPools.length ? (
+        <PoolsTable data={filteredPools} isXyk />
+      ) : (
+        <EmptySearchState />
+      )}
     </>
   )
 }

@@ -7,12 +7,12 @@ export const TableContainer = styled.div`
   overflow: hidden;
   position: relative;
 
-  margin: 0 -13px;
+  margin: 0 -15px;
 
   border-top: 1px solid rgba(152, 176, 214, 0.27);
 
   @media ${theme.viewport.gte.sm} {
-    border-radius: 8px;
+    border-radius: ${theme.borderRadius.medium}px;
 
     margin: unset;
 
@@ -48,7 +48,7 @@ export const StatsTableContainer = styled.div`
   overflow: hidden;
   position: relative;
 
-  border-radius: ${theme.borderRadius.stakingCard}px;
+  border-radius: ${theme.borderRadius.medium}px;
   border: 1px solid rgba(152, 176, 214, 0.27);
 `
 
@@ -109,8 +109,6 @@ export const TablePlaceholderContent = styled.div`
 `
 
 export const TableRow = styled.tr<{
-  isOdd?: boolean
-  isSub?: boolean
   header?: boolean
 }>`
   transition: ${theme.transitions.slow};
@@ -121,8 +119,6 @@ export const TableRow = styled.tr<{
     ${({ header }) =>
       !header && `background: rgba(${theme.rgbColors.white}, 0.06);`}
   }
-  ${({ isOdd }) => isOdd && `background: rgba(${theme.rgbColors.white}, 0.03);`}
-  ${({ isSub }) => isSub && `background: rgba(${theme.rgbColors.white}, 0.06);`}
 `
 
 export const TableRowStats = styled.tr<{
@@ -152,7 +148,7 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
 
   font-size: 11px;
   line-height: 14px;
-  font-weight: 500;
+  font-family: "ChakraPetchSemiBold";
 
   text-transform: uppercase;
   text-align: start;
@@ -178,7 +174,10 @@ export const TableData = styled.td<{
   isExpanded?: boolean
   isSkeleton?: boolean
 }>`
-  padding: 16px;
+  height: 56px;
+
+  ${({ isExpanded }) => (isExpanded ? `padding: 16px` : "padding: 0 16px")};
+
   ${({ isSkeleton }) => !isSkeleton && "padding-right: 0px;"}
   text-align: start;
 
@@ -190,7 +189,10 @@ export const TableData = styled.td<{
   }
 
   @media ${theme.viewport.gte.sm} {
-    padding: 24px 32px;
+    height: 68px;
+
+    ${({ isExpanded }) =>
+      isExpanded ? `padding: 24px 32px` : "padding: 0 32px"};
 
     &:last-of-type {
       padding-right: 10px;

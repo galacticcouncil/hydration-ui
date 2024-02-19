@@ -1,5 +1,5 @@
 import { TransactionResponse } from "@ethersproject/providers"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { useMutation } from "@tanstack/react-query"
 import { Button } from "components/Button/Button"
@@ -18,6 +18,8 @@ import {
 import { ReviewTransactionSummary } from "sections/transaction/ReviewTransactionSummary"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
+import BN from "bignumber.js"
+import { isEvmAccount } from "utils/evm"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -37,6 +39,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { setReferralCode } = useReferralCodesStore()
+
+  const [tipAmount, setTipAmount] = useState<BN | undefined>(undefined)
 
   const transactionValues = useTransactionValues({
     xcallMeta: props.xcallMeta,
@@ -78,6 +82,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
       }
 
       const signature = await tx.signAsync(address, {
+        tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
         signer: wallet.signer,
         // defer to polkadot/api to handle nonce w/ regard to mempool
         nonce: -1,
@@ -117,6 +122,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     btnText = t("liquidity.reviewTransaction.modal.confirmButton.loading")
   }
 
+  const isTippingEnabled = props.xcallMeta
+    ? props.xcallMeta?.srcChain === "hydradx" && !isEvmAccount(account?.address)
+    : !isEvmAccount(account?.address)
+
   return (
     <>
       {props.title && (
@@ -140,6 +149,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
               hasMultipleFeeAssets={hasMultipleFeeAssets}
               xcallMeta={props.xcallMeta}
               openEditFeePaymentAssetModal={openEditFeePaymentAssetModal}
+              onTipChange={isTippingEnabled ? setTipAmount : undefined}
               referralCode={isLinking ? storedReferralCode : undefined}
             />
             <div

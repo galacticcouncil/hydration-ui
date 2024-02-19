@@ -61,7 +61,7 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
         sortingFn: (a, b) =>
           isAfter(a.original.date, b.original.date) ? 1 : -1,
         cell: ({ row }) => (
-          <Text fs={16} fw={500} color="white">
+          <Text fs={14} fw={500} color="white">
             {t("wallet.assets.farmingPositions.data.date", {
               date: row.original.date,
             })}
@@ -74,7 +74,7 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
         sortingFn: (a, b) => (a.original.shares.gt(b.original.shares) ? 1 : -1),
         cell: ({ row }) => (
           <>
-            <Text fs={16} fw={500} color="white">
+            <Text fs={14} fw={500} color="white">
               {t("value.token", {
                 value: row.original.position.providedAmount,
               })}
@@ -82,7 +82,7 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
             <DollarAssetValue
               value={row.original.position.providedAmountDisplay}
               wrapper={(children) => (
-                <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                <Text fs={[12, 13]} lh={[14, 16]} color="whiteish500">
                   {children}
                 </Text>
               )}

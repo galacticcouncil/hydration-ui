@@ -12,9 +12,9 @@ export const SContainer = styled.div<{ expanded: boolean }>`
   }
 
   ${gradientBorder};
-  border-radius: ${theme.borderRadius.stakingCard}px;
+  border-radius: ${theme.borderRadius.medium}px;
   &::before {
-    border-radius: ${theme.borderRadius.stakingCard}px;
+    border-radius: ${theme.borderRadius.medium}px;
   }
 `
 

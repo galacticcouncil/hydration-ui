@@ -13,7 +13,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
 
 export const DcaYieldApp = createComponent({
-  tagName: "gc-dca-y-app",
+  tagName: "gc-yield",
   elementClass: Apps.DcaApp,
   react: React,
   events: {

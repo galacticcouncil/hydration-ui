@@ -5,16 +5,12 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { AddLiquidityForm } from "./AddLiquidityForm"
-import {
-  TOmnipoolAsset,
-  TXYKPool,
-  isXYKPool,
-} from "sections/pools/PoolsPage.utils"
+import { TPool, TXYKPool, isXYKPoolType } from "sections/pools/PoolsPage.utils"
 
 import { AddLiquidityFormXYK } from "./AddLiquidityFormXYK"
 
 type Props = {
-  pool: TOmnipoolAsset | TXYKPool
+  pool: TPool | TXYKPool
   isOpen: boolean
   onClose: () => void
 }
@@ -24,7 +20,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose }: Props) => {
   const { t } = useTranslation()
   const { page, direction, back, next } = useModalPagination()
 
-  const isXYK = isXYKPool(pool)
+  const isXYK = isXYKPoolType(pool)
 
   return (
     <Modal open={isOpen} disableCloseOutside onClose={onClose}>
