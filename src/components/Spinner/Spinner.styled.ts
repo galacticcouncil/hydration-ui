@@ -13,6 +13,31 @@ const spin = keyframes`
   }
 `
 
+export const SSpinnerContainer = styled.div<{
+  size: ResponsiveValue<number>
+}>`
+  ${(p) => [
+    getResponsiveStyles(p.size, (size) => ({ width: size })),
+    getResponsiveStyles(p.size, (size) => ({ height: size })),
+  ]}
+
+  # animation: ${spin} 0.6s linear infinite;
+`
+
+export const Gradient = styled.div`
+  width: 100%;
+  height: 100%;
+  background: conic-gradient(
+    from 1deg at 50% 50%,
+    rgba(10, 13, 26, 0) 90deg,
+    rgba(255, 255, 255, 0.2) 99deg,
+    #00c2ff 160deg,
+    #b6cfff 249deg,
+    #ffffff 353deg,
+    rgba(10, 13, 26, 0) 358deg
+  );
+`
+
 export const Spinner = styled.span<{
   width?: ResponsiveValue<number>
   height?: ResponsiveValue<number>
@@ -29,7 +54,7 @@ export const Spinner = styled.span<{
     rgba(255, 255, 255, 1) calc(100% - var(--spinner-width) + 1px)
   );
 
-  animation: ${spin} 0.6s linear infinite;
+  #animation: ${spin} 0.6s linear infinite;
 
   overflow: hidden;
 
@@ -53,16 +78,4 @@ export const Spinner = styled.span<{
     getResponsiveStyles(p.width, (width) => ({ width })),
     getResponsiveStyles(p.height, (height) => ({ height })),
   ]}
-`
-
-export const ToastSpinner = styled(Spinner)`
-  background: conic-gradient(
-    from 0deg,
-    rgba(10, 13, 26, 0) 28.46deg,
-    rgba(43, 166, 255, 0.14) 44.98deg,
-    rgba(146, 183, 255, 0.38) 57.63deg,
-    #ffffff 88deg,
-    #ffffff 100deg,
-    #ffffff 200deg
-  );
 `
