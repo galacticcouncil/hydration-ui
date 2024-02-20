@@ -10,7 +10,7 @@ export const SContainer = styled.div`
 
     margin-bottom: -20px;
 
-    gc-bonds-app {
+    gc-bonds {
       max-width: 100%;
     }
   }
@@ -20,7 +20,7 @@ export const SContainer = styled.div`
     flex: 1;
     background: #111320;
 
-    gc-bonds-app {
+    gc-bonds {
       flex: 1;
     }
   }

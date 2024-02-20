@@ -8,7 +8,7 @@ export const SContainer = styled.div`
   @media ${theme.viewport.gte.md} {
     margin: 0 -20px;
 
-    gc-trade-app {
+    gc-trade {
       max-width: 100%;
     }
   }
@@ -18,7 +18,7 @@ export const SContainer = styled.div`
     flex: 1;
     background: #111320;
 
-    gc-trade-app {
+    gc-trade {
       flex: 1;
     }
   }
