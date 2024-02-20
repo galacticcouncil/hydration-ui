@@ -2,14 +2,21 @@ import { API_ETH_MOCK_ADDRESS } from "@aave/contract-helpers"
 import { normalize } from "@aave/math-utils"
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation"
 import { Box, CircularProgress, Stack } from "@mui/material"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { Text } from "components/Typography/Text/Text"
 import { BigNumber } from "ethers/lib/ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
 import React, { ReactNode } from "react"
-import { GasTooltip } from "sections/lending/components/infoTooltips/GasTooltip"
 import { Warning } from "sections/lending/components/primitives/Warning"
 import { useWalletBalances } from "sections/lending/hooks/app-data-provider/useWalletBalances"
 import { usePoolReservesHumanized } from "sections/lending/hooks/pool/usePoolReserves"
 import { useGasStation } from "sections/lending/hooks/useGasStation"
+import {
+  GasPriceData,
+  useGasPrice,
+} from "sections/lending/hooks/useGetGasPrices"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { useRootStore } from "sections/lending/store/root"
 import {
@@ -17,12 +24,6 @@ import {
   marketsData,
 } from "sections/lending/utils/marketsAndNetworksConfig"
 import invariant from "tiny-invariant"
-
-import {
-  GasPriceData,
-  useGasPrice,
-} from "sections/lending/hooks/useGetGasPrices"
-import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { GasOption } from "./GasStationProvider"
 
 export interface GasStationProps {
@@ -98,17 +99,17 @@ export const GasStation: React.FC<GasStationProps> = ({
           />
 
           {loadingTxns && !skipLoad ? (
-            <div sx={{ flex: "row", align: "center", height: 20 }}>
+            <div sx={{ flex: "row", align: "center", height: 16 }}>
               <CircularProgress color="inherit" size="14px" sx={{ mr: 8 }} />
             </div>
           ) : totalGasCostsUsd && !disabled ? (
             <>
-              <FormattedNumber
-                value={totalGasCostsUsd}
-                symbol="USD"
-                color="text.secondary"
-              />
-              <GasTooltip />
+              <Text fs={14} color="basic400" sx={{ mr: 4 }}>
+                <DisplayValue value={totalGasCostsUsd} isUSD />
+              </Text>
+              <InfoTooltip text="This gas calculation is only an estimation. Your wallet will set the price of the transaction. You can modify the gas settings directly from your wallet provider.">
+                <SInfoIcon />
+              </InfoTooltip>
             </>
           ) : (
             "-"

@@ -207,7 +207,7 @@ export const SupplyInfo = ({
             </Text>
           </div>
         ) : (
-          <div sx={{ flex: "row", justify: "space-between" }}>
+          <div>
             <Text fs={14} sx={{ mb: 10 }}>
               Collateral usage
             </Text>
