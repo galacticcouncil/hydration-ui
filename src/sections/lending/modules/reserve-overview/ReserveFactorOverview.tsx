@@ -75,15 +75,6 @@ export const ReserveFactorOverview = ({
           </Box>
         </Link>
       </ReserveOverviewBox>
-      {/* TO-DO: Refactor grid layout, currently uses flex: space-around which breaks with 2 elements */}
-      <Box
-        sx={{
-          flex: "0 32%",
-          marginBottom: "2%",
-          height: { md: "70px", lg: "60px" },
-          maxWidth: "32%",
-        }}
-      />
     </Box>
   )
 }

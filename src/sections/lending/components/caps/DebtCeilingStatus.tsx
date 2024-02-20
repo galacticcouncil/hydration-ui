@@ -1,33 +1,34 @@
-import type { Theme } from "@mui/material"
-import { Box, Typography } from "@mui/material"
 import LinearProgress, {
   linearProgressClasses,
   LinearProgressProps,
 } from "@mui/material/LinearProgress"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { Text } from "components/Typography/Text/Text"
 import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
-
-import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
-import { Link } from "sections/lending/components/primitives/Link"
-import { TextWithTooltip } from "sections/lending/components/TextWithTooltip"
+import { theme } from "theme"
 
 type DebtCeilingTooltipProps = {
   debt: string
   ceiling: string
   usageData: AssetCapHookData
+  className?: string
 }
 
 export const DebtCeilingStatus = ({
   debt,
   ceiling,
   usageData,
+  className,
 }: LinearProgressProps & DebtCeilingTooltipProps) => {
-  const determineColor = (theme: Theme): string => {
+  const determineColor = () => {
     if (usageData.isMaxed || usageData.percentUsed >= 99.99) {
-      return theme.palette.error.main
+      return theme.colors.red400
     } else if (usageData.percentUsed >= 98) {
-      return theme.palette.warning.main
+      return theme.colors.warning300
     } else {
-      return theme.palette.success.main
+      return theme.colors.green400
     }
   }
 
@@ -35,70 +36,53 @@ export const DebtCeilingStatus = ({
     borderRadius: 5,
     my: 2,
     height: 5,
-    [`&.${linearProgressClasses.colorPrimary}`]: {
-      backgroundColor: (theme: Theme) =>
-        theme.palette.grey[theme.palette.mode === "light" ? 200 : 800],
-    },
     [`& .${linearProgressClasses.bar}`]: {
       borderRadius: 5,
-      backgroundColor: (theme: Theme) => determineColor(theme),
+      backgroundColor: determineColor(),
     },
   }
 
   return (
-    <>
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Box display="flex" alignItems="center">
-          <Typography color="text.secondary" component="span">
+    <div className={className}>
+      <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
+        <div sx={{ flex: "row", align: "center" }}>
+          <Text fs={13} color="basic400">
             <span>Isolated Debt Ceiling</span>
-          </Typography>
-          <TextWithTooltip>
-            <>
-              <span>
-                Debt ceiling limits the amount possible to borrow against this
-                asset by protocol users. Debt ceiling is specific to assets in
-                isolation mode and is denoted in USD.
-              </span>{" "}
-              <Link
-                href="https://docs.aave.com/faq/aave-v3-features#how-does-isolation-mode-affect-my-borrowing-power"
-                underline="always"
-              >
-                <span>Learn more</span>
-              </Link>
-            </>
-          </TextWithTooltip>
-        </Box>
-        <Box>
-          <FormattedNumber
-            value={debt}
-            variant="main14"
-            symbol="USD"
-            symbolsVariant="secondary14"
-            visibleDecimals={2}
-          />
-          <Typography
-            component="span"
-            color="text.secondary"
-            variant="secondary14"
-            sx={{ display: "inline-block", mx: 4 }}
+          </Text>
+          <InfoTooltip
+            text={
+              <span sx={{ color: "white" }}>
+                <span>
+                  Debt ceiling limits the amount possible to borrow against this
+                  asset by protocol users. Debt ceiling is specific to assets in
+                  isolation mode and is denoted in USD.
+                </span>{" "}
+                <a
+                  target="_blank"
+                  href="https://docs.aave.com/faq/aave-v3-features#how-does-isolation-mode-affect-my-borrowing-power"
+                  rel="noreferrer"
+                  css={{ textDecoration: "underline" }}
+                >
+                  <span>Learn more</span>
+                </a>
+              </span>
+            }
           >
-            <span>of</span>
-          </Typography>
-          <FormattedNumber
-            value={ceiling}
-            variant="main14"
-            symbol="USD"
-            symbolsVariant="secondary14"
-            visibleDecimals={2}
-          />
-        </Box>
-      </Box>
+            <SInfoIcon sx={{ ml: 4 }} />
+          </InfoTooltip>
+        </div>
+        <Text fs={14}>
+          <DisplayValue value={Number(debt)} isUSD compact />
+          <span sx={{ display: "inline-block", mx: 4 }}>of</span>
+          <DisplayValue value={Number(ceiling)} isUSD compact />
+        </Text>
+      </div>
       <LinearProgress
         sx={progressBarStyles}
         variant="determinate"
         // We show at minimum, 1% color to represent small values
         value={usageData.percentUsed <= 1 ? 1 : usageData.percentUsed}
       />
-    </>
+    </div>
   )
 }

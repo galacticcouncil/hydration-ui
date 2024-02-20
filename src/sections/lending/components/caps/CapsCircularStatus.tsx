@@ -1,11 +1,9 @@
-import Box from "@mui/material/Box"
 import CircularProgress, {
   circularProgressClasses,
 } from "@mui/material/CircularProgress"
-import Typography from "@mui/material/Typography"
-import { ReactNode, useState } from "react"
-
-import { ContentWithTooltip } from "sections/lending/components/ContentWithTooltip"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { Text } from "components/Typography/Text/Text"
+import { ReactNode } from "react"
 
 type CapsCircularStatusProps = {
   value: number
@@ -16,10 +14,7 @@ type CapsCircularStatusProps = {
 export const CapsCircularStatus = ({
   value,
   tooltipContent,
-  onClick,
 }: CapsCircularStatusProps) => {
-  const [open, setOpen] = useState<boolean>(false)
-
   // If value is zero, don't show anything
   if (value === 0) return null
 
@@ -46,15 +41,15 @@ export const CapsCircularStatus = ({
   }
 
   return (
-    <ContentWithTooltip
-      tooltipContent={<>{tooltipContent}</>}
-      open={open}
-      setOpen={(value) => {
-        setOpen(value)
-        if (onClick) onClick(value)
-      }}
-    >
-      <Box sx={{ position: "relative", mr: 16 }}>
+    <InfoTooltip text={<>{tooltipContent}</>} asChild>
+      <div
+        css={{
+          display: "inline-flex",
+          position: "relative",
+          marginRight: 16,
+          height: "fit-content",
+        }}
+      >
         <CircularProgress
           variant="determinate"
           sx={{
@@ -81,9 +76,8 @@ export const CapsCircularStatus = ({
           // We show at minimum, 2% color to represent small values
           value={value <= 2 ? 2 : value > 100 ? 100 : value}
         />
-        <Typography
-          variant="secondary14"
-          sx={{
+        <Text
+          css={{
             position: "absolute",
             top: 0,
             bottom: 0,
@@ -95,8 +89,8 @@ export const CapsCircularStatus = ({
           }}
         >
           {determineValueDisplay()}
-        </Typography>
-      </Box>
-    </ContentWithTooltip>
+        </Text>
+      </div>
+    </InfoTooltip>
   )
 }

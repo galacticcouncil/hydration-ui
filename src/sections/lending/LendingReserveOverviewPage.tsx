@@ -1,29 +1,21 @@
-import { Box } from "@mui/material"
 import { useSearch } from "@tanstack/react-location"
-import { FC, ReactNode } from "react"
+import { useState } from "react"
+import StyledToggleButton from "sections/lending/components/StyledToggleButton"
+import StyledToggleButtonGroup from "sections/lending/components/StyledToggleButtonGroup"
 import {
   ComputedReserveData,
   useAppDataContext,
 } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { AssetCapsProvider } from "sections/lending/hooks/useAssetCaps"
 import { ReserveActions } from "sections/lending/modules/reserve-overview/ReserveActions"
-import { ReserveConfigurationWrapper } from "sections/lending/modules/reserve-overview/ReserveConfigurationWrapper"
 import { ReserveOverviewHeaderValues } from "sections/lending/ui/header/ReserveOverviewHeaderValues"
+import { ReserveConfiguration } from "sections/lending/ui/reserve-overview/ReserveConfiguration"
 import { withHexPrefix } from "sections/lending/utils/utils"
-import { theme } from "theme"
-
-const Container: FC<{ children: ReactNode }> = ({ children }) => (
-  <div
-    css={{
-      background: theme.colors.darkBlue700,
-      border: "1px solid rgba(152, 176, 214, 0.27)",
-      borderRadius: theme.borderRadius.medium,
-    }}
-    sx={{ p: [20, 30] }}
-  >
-    {children}
-  </div>
-)
+import {
+  SContainer,
+  SContent,
+  SToggleContainer,
+} from "./LendingReserveOverviewPage.styled"
 
 export const LendingReserveOverviewPage = () => {
   const search = useSearch<{
@@ -40,6 +32,8 @@ export const LendingReserveOverviewPage = () => {
     (reserve) => reserve.underlyingAsset === underlyingAsset,
   ) as ComputedReserveData
 
+  const [mode, setMode] = useState<"overview" | "actions">("overview")
+
   return (
     <AssetCapsProvider asset={reserve}>
       <ReserveOverviewHeaderValues
@@ -47,56 +41,31 @@ export const LendingReserveOverviewPage = () => {
         underlyingAsset={underlyingAsset}
       />
 
-      {/* <Container>
-        <Box
-          sx={{
-            display: { xs: "flex", lg: "none" },
-            justifyContent: { xs: "center", xsm: "flex-start" },
-            mb: { xs: 3, xsm: 4 },
-          }}
+      <SToggleContainer>
+        <StyledToggleButtonGroup
+          color="primary"
+          value={mode}
+          exclusive
+          onChange={(_, value) => setMode(value)}
+          sx={{ width: { xs: "100%", xsm: "359px" }, height: "44px" }}
         >
-          <StyledToggleButtonGroup
-            color="primary"
-            value={mode}
-            exclusive
-            onChange={(_, value) => setMode(value)}
-            sx={{ width: { xs: "100%", xsm: "359px" }, height: "44px" }}
-          >
-            <StyledToggleButton value="overview" disabled={mode === "overview"}>
-              <Typography variant="subheader1">
-                <span>Overview</span>
-              </Typography>
-            </StyledToggleButton>
-            <StyledToggleButton value="actions" disabled={mode === "actions"}>
-              <Typography variant="subheader1">
-                <span>Your info</span>
-              </Typography>
-            </StyledToggleButton>
-          </StyledToggleButtonGroup>
-        </Box>
-      </Container> */}
+          <StyledToggleButton value="overview" disabled={mode === "overview"}>
+            Overview
+          </StyledToggleButton>
+          <StyledToggleButton value="actions" disabled={mode === "actions"}>
+            Your info
+          </StyledToggleButton>
+        </StyledToggleButtonGroup>
+      </SToggleContainer>
 
-      <Box sx={{ display: "flex" }}>
-        <Box
-          sx={{
-            width: { xs: "100%", lg: "calc(100% - 432px)" },
-            mr: { xs: 0, lg: 4 },
-          }}
-        >
-          <Container>
-            <ReserveConfigurationWrapper reserve={reserve} />
-          </Container>
-        </Box>
-        <Box
-          sx={{
-            width: { xs: "100%", lg: "416px" },
-          }}
-        >
-          <Container>
-            <ReserveActions reserve={reserve} />
-          </Container>
-        </Box>
-      </Box>
+      <SContent>
+        <SContainer active={mode === "overview"}>
+          <ReserveConfiguration reserve={reserve} />
+        </SContainer>
+        <SContainer active={mode === "actions"}>
+          <ReserveActions reserve={reserve} />
+        </SContainer>
+      </SContent>
     </AssetCapsProvider>
   )
 }

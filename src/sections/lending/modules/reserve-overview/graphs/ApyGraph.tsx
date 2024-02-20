@@ -12,6 +12,7 @@ import { WithTooltipProvidedProps } from "@visx/tooltip/lib/enhancers/withToolti
 import { bisector, extent, max } from "d3-array"
 import { timeFormat } from "d3-time-format"
 import React, { Fragment, ReactNode, useCallback, useMemo } from "react"
+import { Text } from "components/Typography/Text/Text"
 import {
   FormattedReserveHistoryItem,
   ReserveRateTimeRange,
@@ -199,13 +200,14 @@ export const ApyGraph = withTooltip<AreaProps, TooltipData>(
                     mx: 2,
                     my: 0.5,
                     fontSize: 12,
+                    p: 1,
                     background: theme.palette.divider,
                     borderRadius: "99px",
                   }}
                 >
-                  <Typography sx={{ m: 1 }} noWrap variant="secondary12">
+                  <Text fs={12} sx={{ m: 1 }} css={{ whiteSpace: "nowrap" }}>
                     Avg {avgFormatted}%
-                  </Typography>
+                  </Text>
                 </Stack>
               </HtmlLabel>
             </Annotation>

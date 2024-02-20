@@ -41,7 +41,6 @@ export const ApyGraphContainer = ({
     useState<ReserveRateTimeRange>(ESupportedTimeRanges.OneMonth)
 
   const CHART_HEIGHT = 155
-  const CHART_HEIGHT_LOADING_FIX = 3.5
   let reserveAddress = ""
   if (reserve) {
     if (currentMarketData.v3) {
@@ -81,9 +80,9 @@ export const ApyGraphContainer = ({
   const fields = graphKey === "supply" ? supplyFields : borrowFields
 
   const graphLoading = (
-    <Box
-      sx={{
-        height: CHART_HEIGHT + CHART_HEIGHT_LOADING_FIX,
+    <div
+      css={{
+        height: CHART_HEIGHT,
         width: "auto",
         display: "flex",
         flexDirection: "column",
@@ -95,13 +94,13 @@ export const ApyGraphContainer = ({
       <Typography variant="subheader1" color="text.muted">
         <span>Loading data...</span>
       </Typography>
-    </Box>
+    </div>
   )
 
   const graphError = (
     <Box
       sx={{
-        height: CHART_HEIGHT + CHART_HEIGHT_LOADING_FIX,
+        height: CHART_HEIGHT,
         width: "auto",
         display: "flex",
         flexDirection: "column",
@@ -138,24 +137,26 @@ export const ApyGraphContainer = ({
           onTimeRangeChanged={setSelectedTimeRange}
         />
       </Box>
-      {loading && graphLoading}
-      {error && graphError}
-      {!loading && !error && data.length > 0 && (
-        <ParentSize>
-          {({ width }) => (
-            <ApyGraph
-              width={width}
-              height={CHART_HEIGHT}
-              data={data}
-              fields={fields}
-              selectedTimeRange={selectedTimeRange}
-              avgFieldName={
-                graphKey === "supply" ? "liquidityRate" : "variableBorrowRate"
-              }
-            />
-          )}
-        </ParentSize>
-      )}
+      <div css={{ height: CHART_HEIGHT }}>
+        {loading && graphLoading}
+        {error && graphError}
+        {!loading && !error && data.length > 0 && (
+          <ParentSize>
+            {({ width }) => (
+              <ApyGraph
+                width={width}
+                height={CHART_HEIGHT}
+                data={data}
+                fields={fields}
+                selectedTimeRange={selectedTimeRange}
+                avgFieldName={
+                  graphKey === "supply" ? "liquidityRate" : "variableBorrowRate"
+                }
+              />
+            )}
+          </ParentSize>
+        )}
+      </div>
     </Box>
   )
 }

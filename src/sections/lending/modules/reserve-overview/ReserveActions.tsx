@@ -4,26 +4,16 @@ import {
   USD_DECIMALS,
   valueToBigNumber,
 } from "@aave/math-utils"
-
-import {
-  Box,
-  CircularProgress,
-  Divider,
-  Paper,
-  Skeleton,
-  Stack,
-  Typography,
-  useTheme,
-} from "@mui/material"
+import { CircularProgress } from "@mui/material"
+import WalletIcon from "assets/icons/WalletIcon.svg?react"
 import BigNumber from "bignumber.js"
 import { ReactNode, useState } from "react"
-import { WalletIcon } from "sections/lending/components/icons/WalletIcon"
+import Skeleton from "react-loading-skeleton"
 import { getMarketInfoById } from "sections/lending/components/MarketSwitcher"
-import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
-import { Warning } from "sections/lending/components/primitives/Warning"
 import { StyledTxModalToggleButton } from "sections/lending/components/StyledToggleButton"
 import { StyledTxModalToggleGroup } from "sections/lending/components/StyledToggleButtonGroup"
 import { ConnectWalletButton } from "sections/lending/components/WalletConnection/ConnectWalletButton"
+import { Warning } from "sections/lending/components/primitives/Warning"
 import {
   ComputedReserveData,
   useAppDataContext,
@@ -41,11 +31,15 @@ import {
 import { getMaxAmountAvailableToSupply } from "sections/lending/utils/getMaxAmountAvailableToSupply"
 import { amountToUsd } from "sections/lending/utils/utils"
 
-import { CapType } from "sections/lending/components/caps/helper"
-import { AvailableTooltip } from "sections/lending/components/infoTooltips/AvailableTooltip"
+import { Button } from "components/Button/Button"
+import { DataValue } from "components/DataValue"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { Spacer } from "components/Spacer/Spacer"
+import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
 import { Link, ROUTES } from "sections/lending/components/primitives/Link"
 import { useReserveActionState } from "sections/lending/hooks/useReserveActionState"
-import { Button } from "components/Button/Button"
+import { theme } from "theme"
 
 const amountToUSD = (
   amount: BigNumberValue,
@@ -160,14 +154,14 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
   return (
     <PaperWrapper>
       {reserve.isWrappedBaseAsset && (
-        <Box>
+        <div>
           <WrappedBaseAssetSelector
             assetSymbol={reserve.symbol}
             baseAssetSymbol={baseAssetSymbol}
             selectedAsset={selectedAsset}
             setSelectedAsset={setSelectedAsset}
           />
-        </Box>
+        </div>
       )}
       <WalletBalance
         balance={balance.amount}
@@ -175,13 +169,12 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
         marketTitle={market.marketTitle}
       />
       {reserve.isFrozen || reserve.isPaused ? (
-        <Box sx={{ mt: 12 }}>
+        <div sx={{ mt: 12 }}>
           {reserve.isPaused ? <PauseWarning /> : <FrozenWarning />}
-        </Box>
+        </div>
       ) : (
         <>
-          <Divider sx={{ my: 24 }} />
-          <Stack gap={3}>
+          <div sx={{ flex: "column", gap: 20 }}>
             {!isGho && (
               <SupplyAction
                 reserve={reserve}
@@ -193,19 +186,26 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
               />
             )}
             {reserve.borrowingEnabled && (
-              <BorrowAction
-                reserve={reserve}
-                value={maxAmountToBorrow.toString()}
-                usdValue={maxAmountToBorrowUsd}
-                symbol={selectedAsset}
-                disable={disableBorrowButton}
-                onActionClicked={() => {
-                  openBorrow(reserve.underlyingAsset)
-                }}
-              />
+              <>
+                <Spacer
+                  size={1}
+                  sx={{ bg: "darkBlue401", width: "100%" }}
+                  axis="horizontal"
+                />
+                <BorrowAction
+                  reserve={reserve}
+                  value={maxAmountToBorrow.toString()}
+                  usdValue={maxAmountToBorrowUsd}
+                  symbol={selectedAsset}
+                  disable={disableBorrowButton}
+                  onActionClicked={() => {
+                    openBorrow(reserve.underlyingAsset)
+                  }}
+                />
+              </>
             )}
-            {alerts}
-          </Stack>
+          </div>
+          {alerts}
         </>
       )}
     </PaperWrapper>
@@ -237,74 +237,67 @@ const FrozenWarning = () => {
 
 const ActionsSkeleton = () => {
   const RowSkeleton = (
-    <Stack>
-      <Skeleton width={150} height={14} />
-      <Stack
-        sx={{ height: "44px" }}
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-      >
-        <Box>
+    <div>
+      <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
+        <div>
           <Skeleton width={100} height={14} sx={{ mt: 4, mb: 8 }} />
           <Skeleton width={75} height={12} />
-        </Box>
+        </div>
         <Skeleton height={36} width={96} />
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   )
 
   return (
     <PaperWrapper>
-      <Stack direction="row" gap={3}>
-        <Skeleton width={42} height={42} sx={{ borderRadius: "12px" }} />
-        <Box>
+      <div sx={{ flex: "row", gap: 12, mb: 30 }}>
+        <Skeleton width={42} height={42} />
+        <div>
           <Skeleton width={100} height={12} sx={{ mt: 4, mb: 8 }} />
           <Skeleton width={100} height={14} />
-        </Box>
-      </Stack>
-      <Divider sx={{ my: 24 }} />
-      <Box>
-        <Stack gap={3}>
+        </div>
+      </div>
+
+      <div>
+        <div sx={{ flex: "column", gap: 12 }}>
           {RowSkeleton}
+          <Spacer
+            size={1}
+            sx={{ bg: "darkBlue401", width: "100%", my: 12 }}
+            axis="horizontal"
+          />
           {RowSkeleton}
-        </Stack>
-      </Box>
+        </div>
+      </div>
     </PaperWrapper>
   )
 }
 
 const PaperWrapper = ({ children }: { children: ReactNode }) => {
   return (
-    <Paper>
-      <Typography variant="h3" sx={{ mb: 24 }}>
-        <span>Your info</span>
-      </Typography>
-
+    <div sx={{ color: "white" }}>
+      <Text fs={15} sx={{ mb: 24 }} font="FontOver">
+        Your info
+      </Text>
       {children}
-    </Paper>
+    </div>
   )
 }
 
 const ConnectWallet = ({ loading }: { loading: boolean }) => {
   return (
-    <Paper sx={{ pt: 4, pb: { xs: 4, xsm: 6 }, px: { xs: 4, xsm: 6 } }}>
+    <PaperWrapper>
       {loading ? (
         <CircularProgress />
       ) : (
         <>
-          <Typography variant="h3" sx={{ mb: { xs: 6, xsm: 10 } }}>
-            <span>Your info</span>
-          </Typography>
-          <Typography sx={{ mb: 24 }} color="text.secondary">
-            <span>
-              Please connect a wallet to view your personal information here.
-            </span>
-          </Typography>
+          <Text fs={14} lh={18} sx={{ mb: 24 }} color="basic300">
+            Please connect a wallet to view your personal information here.
+          </Text>
           <ConnectWalletButton />
         </>
       )}
-    </Paper>
+    </PaperWrapper>
   )
 }
 
@@ -318,40 +311,37 @@ interface ActionProps {
 }
 
 const SupplyAction = ({
-  reserve,
   value,
   usdValue,
   symbol,
   disable,
   onActionClicked,
 }: ActionProps) => {
+  const { t } = useTranslation()
   return (
-    <Stack>
-      <AvailableTooltip
-        text="Available to supply"
-        capType={CapType.supplyCap}
-      />
-      <Stack
-        sx={{ height: "44px" }}
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
+    <div sx={{ flex: "row", justify: "space-between" }}>
+      <DataValue
+        label="Available to supply"
+        font="ChakraPetchSemiBold"
+        size="small"
+        tooltip="This is the total amount that you are able to supply to in this reserve. You are able to supply your wallet balance up until the supply cap is reached."
       >
-        <Box>
-          <ValueWithSymbol value={value} symbol={symbol} />
-          <FormattedNumber
-            value={usdValue}
-            variant="subheader2"
-            color="text.muted"
-            symbolsColor="text.muted"
-            symbol="USD"
-          />
-        </Box>
-        <Button size="small" onClick={onActionClicked} disabled={disable}>
+        {t("value.token", { value: Number(value) })} {symbol}
+        <Text fs={12} lh={20} color="basic500">
+          <DisplayValue value={+usdValue} isUSD compact />
+        </Text>
+      </DataValue>
+      <div css={{ minWidth: 90 }}>
+        <Button
+          fullWidth
+          size="small"
+          onClick={onActionClicked}
+          disabled={disable}
+        >
           Supply
         </Button>
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   )
 }
 
@@ -363,33 +353,31 @@ const BorrowAction = ({
   disable,
   onActionClicked,
 }: ActionProps) => {
+  const { t } = useTranslation()
   return (
-    <Stack>
-      <AvailableTooltip
-        text="Available to borrow"
-        capType={CapType.borrowCap}
-      />
-      <Stack
-        sx={{ height: "44px" }}
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
+    <div sx={{ flex: "row", justify: "space-between" }}>
+      <DataValue
+        label="Available to borrow"
+        font="ChakraPetchSemiBold"
+        size="small"
+        tooltip="This is the total amount available for you to borrow. You can borrow based on your collateral and until the borrow cap is reached."
       >
-        <Box>
-          <ValueWithSymbol value={value} symbol={symbol} />
-          <FormattedNumber
-            value={usdValue}
-            variant="subheader2"
-            color="text.muted"
-            symbolsColor="text.muted"
-            symbol="USD"
-          />
-        </Box>
-        <Button size="small" onClick={onActionClicked} disabled={disable}>
+        {t("value.token", { value: Number(value) })} {symbol}
+        <Text fs={12} lh={20} color="basic500">
+          <DisplayValue value={+usdValue} isUSD compact />
+        </Text>
+      </DataValue>
+      <div css={{ minWidth: 90 }}>
+        <Button
+          fullWidth
+          size="small"
+          onClick={onActionClicked}
+          disabled={disable}
+        >
           Borrow
         </Button>
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   )
 }
 
@@ -413,31 +401,13 @@ const WrappedBaseAssetSelector = ({
       sx={{ mb: 4 }}
     >
       <StyledTxModalToggleButton value={assetSymbol}>
-        <Typography variant="buttonM">{assetSymbol}</Typography>
+        <Text>{assetSymbol}</Text>
       </StyledTxModalToggleButton>
 
       <StyledTxModalToggleButton value={baseAssetSymbol}>
-        <Typography variant="buttonM">{baseAssetSymbol}</Typography>
+        <Text>{baseAssetSymbol}</Text>
       </StyledTxModalToggleButton>
     </StyledTxModalToggleGroup>
-  )
-}
-
-interface ValueWithSymbolProps {
-  value: string
-  symbol: string
-  children?: ReactNode
-}
-
-const ValueWithSymbol = ({ value, symbol, children }: ValueWithSymbolProps) => {
-  return (
-    <Stack direction="row" alignItems="center" gap={1}>
-      <FormattedNumber value={value} variant="h4" color="text.primary" />
-      <Typography variant="buttonL" color="text.secondary">
-        {symbol}
-      </Typography>
-      {children}
-    </Stack>
   )
 }
 
@@ -446,42 +416,29 @@ interface WalletBalanceProps {
   symbol: string
   marketTitle: string
 }
-const WalletBalance = ({
-  balance,
-  symbol,
-  marketTitle,
-}: WalletBalanceProps) => {
-  const theme = useTheme()
+const WalletBalance = ({ balance, symbol }: WalletBalanceProps) => {
+  const { t } = useTranslation()
 
   return (
-    <Stack direction="row" gap={3}>
-      <Box
-        sx={(theme) => ({
-          width: "42px",
-          height: "42px",
-          background: theme.palette.background.surface,
-          border: `0.5px solid ${theme.palette.background.disabled}`,
-          borderRadius: "12px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        })}
-      >
-        <WalletIcon sx={{ stroke: `${theme.palette.text.secondary}` }} />
-      </Box>
-      <Box>
-        <Typography variant="description" color="text.secondary">
-          Wallet balance
-        </Typography>
-        <ValueWithSymbol value={balance} symbol={symbol}>
-          {/* <Box sx={{ ml: 8 }}>
-            <BuyWithFiat
-              cryptoSymbol={symbol}
-              networkMarketName={marketTitle}
-            />
-          </Box> */}
-        </ValueWithSymbol>
-      </Box>
-    </Stack>
+    <div
+      sx={{ flex: "row", gap: 12, align: "center", p: 16, mb: 20 }}
+      css={{
+        background: `rgba(${theme.rgbColors.alpha0}, 0.06)`,
+        borderRadius: theme.borderRadius.medium,
+        border: `1px solid rgba(${theme.rgbColors.primaryA0}, 0.35)`,
+      }}
+    >
+      <WalletIcon width={24} height={24} />
+      <div>
+        <DataValue
+          label="Wallet Balance"
+          font="ChakraPetchSemiBold"
+          size="small"
+          labelColor="basic400"
+        >
+          {t("value.token", { value: Number(balance) })} {symbol}
+        </DataValue>
+      </div>
+    </div>
   )
 }

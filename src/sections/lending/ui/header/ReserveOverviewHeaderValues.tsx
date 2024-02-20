@@ -54,7 +54,14 @@ export const ReserveOverviewHeaderValues: FC<
   ) as ComputedReserveData
 
   return (
-    <div sx={{ flex: "row", align: "center", gap: 40 }} className={className}>
+    <div
+      sx={{
+        flex: ["column", "row"],
+        align: ["start", "center"],
+        gap: [20, 40],
+      }}
+      className={className}
+    >
       <div sx={{ flex: "row", gap: 8, align: "center" }}>
         <div>
           <img
@@ -72,7 +79,7 @@ export const ReserveOverviewHeaderValues: FC<
           </Text>
         </div>
       </div>
-      <DataValueList>
+      <DataValueList sx={{ width: ["100%", "auto"] }}>
         <DataValue
           size="medium"
           isLoading={loading}

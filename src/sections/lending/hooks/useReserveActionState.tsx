@@ -1,4 +1,3 @@
-import { Stack } from "@mui/material"
 import { Link, ROUTES } from "sections/lending/components/primitives/Link"
 import { Warning } from "sections/lending/components/primitives/Warning"
 import { getEmodeMessage } from "sections/lending/components/transactions/Emode/EmodeNaming"
@@ -55,11 +54,11 @@ export const useReserveActionState = ({
       eModeBorrowDisabled ||
       maxAmountToBorrow === "0",
     alerts: (
-      <Stack gap={3}>
+      <div sx={{ flex: "column", gap: 12 }}>
         {balance === "0" && !isGho && (
           <>
             {currentNetworkConfig.isTestnet ? (
-              <Warning sx={{ mb: 0 }} variant="info">
+              <Warning sx={{ mt: 12 }} variant="info">
                 <span>
                   Your {networkName} wallet is empty. Get free test{" "}
                   {reserve.name} at{" "}
@@ -75,7 +74,7 @@ export const useReserveActionState = ({
               </Warning>
             ) : (
               <WalletEmptyInfo
-                sx={{ mb: 0 }}
+                sx={{ mt: 12 }}
                 name={networkName}
                 bridge={bridge}
                 chainId={currentChainId}
@@ -86,7 +85,7 @@ export const useReserveActionState = ({
 
         {(balance !== "0" || isGho) &&
           user?.totalCollateralMarketReferenceCurrency === "0" && (
-            <Warning sx={{ mb: 0 }} variant="info">
+            <Warning sx={{ mt: 12 }} variant="info">
               <span>
                 To borrow you need to supply any asset to be used as collateral.
               </span>
@@ -94,13 +93,13 @@ export const useReserveActionState = ({
           )}
 
         {isolationModeBorrowDisabled && (
-          <Warning sx={{ mb: 0 }} variant="warning">
+          <Warning sx={{ mt: 12 }} variant="warning">
             <span>Collateral usage is limited because of Isolation mode.</span>
           </Warning>
         )}
 
         {eModeBorrowDisabled && isolationModeBorrowDisabled && (
-          <Warning sx={{ mb: 0 }} variant="info">
+          <Warning sx={{ mt: 12 }} variant="info">
             <span>
               Borrowing is unavailable because you’ve enabled Efficiency Mode
               (E-Mode) and Isolation mode. To manage E-Mode and Isolation mode
@@ -110,7 +109,7 @@ export const useReserveActionState = ({
         )}
 
         {eModeBorrowDisabled && !isolationModeBorrowDisabled && (
-          <Warning sx={{ mb: 0 }} variant="info">
+          <Warning sx={{ mt: 12 }} variant="info">
             <span>
               Borrowing is unavailable because you’ve enabled Efficiency Mode
               (E-Mode) for{" "}
@@ -122,7 +121,7 @@ export const useReserveActionState = ({
         )}
 
         {!eModeBorrowDisabled && isolationModeBorrowDisabled && (
-          <Warning sx={{ mb: 0 }} variant="info">
+          <Warning sx={{ mt: 12 }} variant="info">
             <span>
               Borrowing is unavailable because you’re using Isolation mode. To
               manage Isolation mode visit your{" "}
@@ -135,13 +134,13 @@ export const useReserveActionState = ({
           supplyCap?.determineWarningDisplay({
             supplyCap,
             icon: false,
-            sx: { mb: 0 },
+            sx: { mt: 12 },
           })}
         {maxAmountToBorrow === "0" &&
           borrowCap?.determineWarningDisplay({
             borrowCap,
             icon: false,
-            sx: { mb: 0 },
+            sx: { mt: 12 },
           })}
         {reserve.isIsolated &&
           balance !== "0" &&
@@ -149,9 +148,9 @@ export const useReserveActionState = ({
           debtCeiling?.determineWarningDisplay({
             debtCeiling,
             icon: false,
-            sx: { mb: 0 },
+            sx: { mt: 12 },
           })}
-      </Stack>
+      </div>
     ),
   }
 }
