@@ -5,7 +5,7 @@ export const WalletVesting = () => {
   return (
     <div
       sx={{
-        mt: 45,
+        mt: [12, 0],
         flex: "column",
         flexGrow: 1,
       }}

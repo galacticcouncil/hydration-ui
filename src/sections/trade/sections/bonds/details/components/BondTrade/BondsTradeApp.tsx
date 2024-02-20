@@ -5,14 +5,16 @@ import type { TxInfo } from "@galacticcouncil/apps"
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
-import { useProviderRpcUrlStore } from "api/provider"
+import { useProviderRpcUrlStore, useSquidUrl } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useDisplayAssetStore } from "utils/displayAsset"
 
 export const BondsApp = createComponent({
-  tagName: "gc-bonds-app",
+  tagName: "gc-bonds",
   elementClass: Apps.BondsApp,
   react: React,
   events: {
@@ -36,8 +38,6 @@ type SearchGenerics = MakeGenerics<{
   Search: z.infer<typeof BondsAppSearch>
 }>
 
-const pools = import.meta.env.VITE_FF_POOLS
-const squidUrl = import.meta.env.VITE_SQUID_URL
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export const BondsTrade = ({
@@ -48,10 +48,13 @@ export const BondsTrade = ({
   setBondId: (bondId: string) => void
 }) => {
   const { api, assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { createTransaction } = useStore()
+  const { stableCoinId } = useDisplayAssetStore()
 
   const preference = useProviderRpcUrlStore()
+  const squidUrl = useSquidUrl()
+
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
   const rawSearch = useSearch<SearchGenerics>()
@@ -115,8 +118,7 @@ export const BondsTrade = ({
         assetIn={search.success ? search.data.assetIn : undefined}
         assetOut={search.success ? search.data.assetOut : undefined}
         apiAddress={rpcUrl}
-        pools={pools}
-        stableCoinAssetId={stableCoinAssetId}
+        stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
         accountAddress={account?.address}

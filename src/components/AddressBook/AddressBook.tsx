@@ -8,6 +8,7 @@ import { useWalletAddresses } from "./AddressBook.utils"
 import { AddressBookEmpty } from "./empty/AddressBookEmpty"
 import { AddressBookInput } from "./input/AddressBookInput"
 import { AddressBookItem } from "./item/AddressBookItem"
+import { safeConvertAddressH160 } from "utils/evm"
 
 type Props = { onSelect: (address: string) => void }
 
@@ -25,8 +26,11 @@ export const AddressBook = ({ onSelect }: Props) => {
     })
   }, [addresses.data, search])
 
-  const canAdd =
-    !!search && !items.length && safeConvertAddressSS58(search, 0) !== null
+  const isValidAddress =
+    safeConvertAddressSS58(search, 0) !== null ||
+    safeConvertAddressH160(search) !== null
+
+  const canAdd = !!search && !items.length && isValidAddress
 
   return (
     <SContainer>

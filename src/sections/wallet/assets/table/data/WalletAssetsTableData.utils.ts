@@ -18,37 +18,28 @@ import {
 } from "@galacticcouncil/math-omnipool"
 import { useApiIds } from "api/consts"
 import { useHubAssetTradability, useOmnipoolAssets } from "api/omnipool"
-import { useDisplayPrices, useDisplayShareTokenPrice } from "utils/displayAsset"
-import { isNotNil } from "utils/helpers"
+import { arraySearch, isNotNil } from "utils/helpers"
+import { useDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TToken } from "api/assetDetails"
 import { TStableSwap } from "api/assetDetails"
-import { TShareToken } from "api/assetDetails"
 
-export const useAssetsTableData = (isAllAssets: boolean) => {
+export const useAssetsTableData = ({
+  isAllAssets,
+  search,
+  address,
+}: {
+  isAllAssets?: boolean
+  search?: string
+  address?: string
+} = {}) => {
   const { assets } = useRpcProvider()
-  const myTableData = useAssetTable()
-  const { assetsId, shareTokensId } = myTableData.data?.acceptedTokens.reduce<{
-    assetsId: string[]
-    shareTokensId: string[]
-  }>(
-    (acc, token) => {
-      if (assets.getAsset(token.id).isShareToken) {
-        acc["shareTokensId"].push(token.id)
-      } else {
-        acc["assetsId"].push(token.id)
-      }
-      return acc
-    },
-    {
-      assetsId: [],
-      shareTokensId: [],
-    },
-  ) ?? { assetsId: [], shareTokensId: [] }
+  const myTableData = useAssetTable(address)
+  const spotPrices = useDisplayPrices(
+    myTableData.data?.acceptedTokens.map((t) => t.id) ?? [],
+  )
 
-  const spotPrices = useDisplayPrices(assetsId)
-
-  const shareTokenSpotPrices = useDisplayShareTokenPrice(shareTokensId)
+  const isLoading = myTableData.isLoading || spotPrices.isLoading
 
   const data = useMemo(() => {
     if (!myTableData.data || !spotPrices.data) return []
@@ -64,15 +55,11 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
       hubAssetTradability,
     } = myTableData.data
 
-    const allAssets = [
-      ...assets.tokens,
-      ...assets.stableswap,
-      ...assets.shareTokens,
-    ]
+    const allAssets = [...assets.tokens, ...assets.stableswap]
 
     const assetsBalances = getAssetsBalances(
       balances.balances,
-      [...spotPrices.data, ...shareTokenSpotPrices.data].filter(isNotNil),
+      spotPrices.data.filter(isNotNil),
       allAssets,
       tokenLocks,
       balances.native,
@@ -128,15 +115,15 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
         (b) => b.id.toString() === assetValue.id.toString(),
       )
 
-      const { id, symbol, name } = assetValue
+      const { id, symbol, name, decimals } = assetValue
 
       const tradabilityData = assetsTradability.find(
         (t) => t.id === assetValue.id.toString(),
       )
 
       const tradability = {
-        canBuy: !!tradabilityData?.canBuy,
-        canSell: !!tradabilityData?.canSell,
+        canBuy: tradabilityData?.canBuy ?? true,
+        canSell: (inTradeRouter || tradabilityData?.canSell) ?? true,
         canAddLiquidity: !!tradabilityData?.canAddLiquidity,
         canRemoveLiquidity: !!tradabilityData?.canRemoveLiquidity,
         inTradeRouter,
@@ -146,6 +133,7 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
         id,
         symbol,
         name,
+        decimals,
         isPaymentFee,
         couldBeSetAsPaymentFee,
         transferable: balance?.transferable ?? BN_0,
@@ -158,34 +146,44 @@ export const useAssetsTableData = (isAllAssets: boolean) => {
         lockedVestingDisplay: balance?.lockedVestingDisplay ?? BN_0,
         lockedDemocracy: balance?.lockedDemocracy ?? BN_0,
         lockedDemocracyDisplay: balance?.lockedDemocracyDisplay ?? BN_0,
+        lockedStaking: balance?.lockedStaking ?? BN_0,
+        lockedStakingDisplay: balance?.lockedStakingDisplay ?? BN_0,
         reserved: balance?.reserved ?? BN_0,
         reservedDisplay: balance?.reservedDisplay ?? BN_0,
         tradability,
       }
     })
 
-    return assetsTableData
-      .filter((x): x is AssetsTableData => x !== null)
+    const rows = assetsTableData
+      .filter(
+        (x): x is AssetsTableData =>
+          x !== null && x.total.gt(isAllAssets ? -1 : 0),
+      )
       .sort((a, b) => {
         // native asset first
         if (a.id === NATIVE_ASSET_ID) return -1
+        if (b.id === NATIVE_ASSET_ID) return 1
+
+        if (a.transferableDisplay.isNaN()) return 1
+        if (b.transferableDisplay.isNaN()) return -1
 
         if (!b.transferableDisplay.eq(a.transferableDisplay))
           return b.transferableDisplay.minus(a.transferableDisplay).toNumber()
 
         return a.symbol.localeCompare(b.symbol)
       })
+
+    return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
   }, [
+    search,
     myTableData.data,
     spotPrices.data,
     assets.tokens,
     assets.stableswap,
-    assets.shareTokens,
-    shareTokenSpotPrices.data,
     isAllAssets,
   ])
 
-  return { data, isLoading: myTableData.isLoading }
+  return { data, isLoading }
 }
 
 export const getAssetsBalances = (
@@ -193,7 +191,7 @@ export const getAssetsBalances = (
     ReturnType<ReturnType<typeof getAccountBalances>>
   >["balances"],
   spotPrices: SpotPrice[],
-  assetMetas: (TToken | TStableSwap | TShareToken)[],
+  assetMetas: (TToken | TStableSwap)[],
   locksQueries: Array<Awaited<ReturnType<ReturnType<typeof getTokenLock>>>>,
   nativeData: Awaited<
     ReturnType<ReturnType<typeof getAccountBalances>>
@@ -249,6 +247,12 @@ export const getAssetsBalances = (
       const lockedDemocracy = lockDemocracy?.amount.div(dp) ?? BN_0
       const lockedDemocracyDisplay = lockedDemocracy.times(spotPrice.spotPrice)
 
+      const lockStaking = locks.find(
+        (lock) => lock.id === id.toString() && lock.type === "stk_stks",
+      )
+      const lockedStaking = lockStaking?.amount.div(dp) ?? BN_0
+      const lockedStakingDisplay = lockedStaking.times(spotPrice.spotPrice)
+
       return {
         id,
         total,
@@ -261,6 +265,8 @@ export const getAssetsBalances = (
         lockedVestingDisplay,
         lockedDemocracy,
         lockedDemocracyDisplay,
+        lockedStaking,
+        lockedStakingDisplay,
         reserved,
         reservedDisplay,
       }
@@ -288,6 +294,9 @@ export const getAssetsBalances = (
   const nativeLockDemocracy = locks.find(
     (lock) => lock.id === NATIVE_ASSET_ID && lock.type === "democrac",
   )?.amount
+  const nativeLockStaking = locks.find(
+    (lock) => lock.id === NATIVE_ASSET_ID && lock.type === "stk_stks",
+  )?.amount
 
   const native = getNativeBalances(
     nativeBalance,
@@ -296,6 +305,7 @@ export const getAssetsBalances = (
     nativeLockMax,
     nativeLockVesting,
     nativeLockDemocracy,
+    nativeLockStaking,
   )
 
   return [native, ...tokens].filter(
@@ -310,14 +320,20 @@ const getNativeBalances = (
   lockMax?: BN,
   lockVesting?: BN,
   lockDemocracy?: BN,
+  lockStaking?: BN,
 ): AssetsTableDataBalances | null => {
   if (!decimals || !spotPrice) return null
 
   const dp = BN_10.pow(decimals)
   const free = balance.free.toBigNumber()
   const reservedBN = balance.reserved.toBigNumber()
-  const feeFrozen = balance.feeFrozen.toBigNumber()
-  const miscFrozen = balance.miscFrozen.toBigNumber()
+  const feeFrozen = balance.feeFrozen
+    ? balance.feeFrozen.toBigNumber()
+    : //@ts-ignore
+      balance.frozen.toBigNumber()
+  const miscFrozen = balance.miscFrozen
+    ? balance.miscFrozen.toBigNumber()
+    : BN_0
 
   const total = free.plus(reservedBN).div(dp)
   const totalDisplay = total.times(spotPrice)
@@ -337,6 +353,9 @@ const getNativeBalances = (
   const lockedDemocracy = lockDemocracy?.div(dp) ?? BN_0
   const lockedDemocracyDisplay = lockedDemocracy.times(spotPrice)
 
+  const lockedStaking = lockStaking?.div(dp) ?? BN_0
+  const lockedStakingDisplay = lockedStaking.times(spotPrice)
+
   return {
     id: NATIVE_ASSET_ID,
     total,
@@ -349,6 +368,8 @@ const getNativeBalances = (
     lockedVestingDisplay,
     lockedDemocracy,
     lockedDemocracyDisplay,
+    lockedStaking,
+    lockedStakingDisplay,
     reserved,
     reservedDisplay,
   }
@@ -366,6 +387,8 @@ type AssetsTableDataBalances = {
   lockedVestingDisplay: BN
   lockedDemocracy: BN
   lockedDemocracyDisplay: BN
+  lockedStaking: BN
+  lockedStakingDisplay: BN
   reserved: BN
   reservedDisplay: BN
 }

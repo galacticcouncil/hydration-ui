@@ -2,12 +2,11 @@ import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { ToastMessage, useAccountStore, useStore } from "state/store"
+import { ToastMessage, useStore } from "state/store"
 import { FormValues } from "utils/helpers"
 import BigNumber from "bignumber.js"
 import { BN_10 } from "utils/constants"
 import { Button } from "components/Button/Button"
-import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
 import { getFixedPointAmount } from "utils/balance"
 import { useQueryClient } from "@tanstack/react-query"
@@ -15,6 +14,8 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { Spacer } from "components/Spacer/Spacer"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 
 export const Stake = ({
   loading,
@@ -32,7 +33,7 @@ export const Stake = ({
 
   const { api, assets } = useRpcProvider()
   const { createTransaction } = useStore()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const form = useForm<{ amount: string }>()
 
   const onSubmit = async (values: FormValues<typeof form>) => {
@@ -177,7 +178,7 @@ export const Stake = ({
               : t("staking.dashboard.form.restake.button")}
           </Button>
         ) : (
-          <WalletConnectButton />
+          <Web3ConnectModalButton />
         )}
       </form>
     </div>

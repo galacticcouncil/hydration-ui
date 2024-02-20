@@ -9,6 +9,10 @@ export const SContainer = styled.div`
     margin: 0 -20px;
 
     margin-bottom: -20px;
+
+    gc-bonds {
+      max-width: 100%;
+    }
   }
 
   @media ${theme.viewport.lt.xs} {
@@ -16,7 +20,7 @@ export const SContainer = styled.div`
     flex: 1;
     background: #111320;
 
-    gc-bonds-app {
+    gc-bonds {
       flex: 1;
     }
   }

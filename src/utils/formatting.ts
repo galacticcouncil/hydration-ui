@@ -7,6 +7,8 @@ import { BN_10 } from "./constants"
 import { Maybe } from "utils/helpers"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { intervalToDuration, formatDuration } from "date-fns"
+import { HYDRA_ADDRESS_PREFIX } from "utils/api"
+import { H160, isEvmAccount } from "utils/evm"
 
 export const formatNum = (
   number?: number | string,
@@ -67,20 +69,8 @@ export const formatRelativeTime = (
 
 export const BigNumberFormatOptionsSchema = z
   .object({
-    fixedPointScale: z
-      .union([
-        z.number(),
-        z.string(),
-        z.object({ toString: z.unknown() }).passthrough(),
-      ])
-      .optional(),
-    decimalPlaces: z
-      .union([
-        z.number(),
-        z.string(),
-        z.object({ toString: z.unknown() }).passthrough(),
-      ])
-      .optional(),
+    fixedPointScale: z.union([z.number(), z.string()]).optional(),
+    decimalPlaces: z.union([z.number(), z.string()]).optional(),
     zeroIntDecimalPlacesCap: z
       .union([
         z.number(),
@@ -170,7 +160,7 @@ export function formatBigNumber(
   }
 
   if (options?.fixedPointScale != null) {
-    num = num.div(BN_10.pow(options.fixedPointScale?.toString()))
+    num = num.div(BN_10.pow(Number(options.fixedPointScale)))
   }
 
   /*
@@ -201,7 +191,9 @@ export function formatBigNumber(
 
   /* Display only 2 decimals, by cutting them not rounding */
   if (options?.type !== "token") {
-    return num.decimalPlaces(2).toFormat(fmtConfig)
+    return num
+      .decimalPlaces(Number(options?.decimalPlaces ?? 2))
+      .toFormat(fmtConfig)
   }
 
   /*If token balance is higher than 99 999.99 don’t show decimals */
@@ -251,6 +243,12 @@ export function safeConvertAddressSS58(
   }
 }
 
+export function getChainSpecificAddress(address: string) {
+  return isEvmAccount(address)
+    ? H160.fromAccount(address)
+    : getAddressVariants(address).hydraAddress
+}
+
 /**
  * Format asset value by 3 digits
  */
@@ -262,6 +260,19 @@ export const formatAssetValue = (value: string) => {
 }
 
 export const isHydraAddress = (address: string) => address[0] === "7"
+
+export const getAddressVariants = (address: string) => {
+  const isHydraVariant = isHydraAddress(address)
+  const hydraAddress = isHydraVariant
+    ? address
+    : encodeAddress(decodeAddress(address), HYDRA_ADDRESS_PREFIX)
+
+  const polkadotAddress = isHydraVariant
+    ? encodeAddress(decodeAddress(address))
+    : address
+
+  return { hydraAddress, polkadotAddress }
+}
 
 const formatDistanceLocale = {
   xSeconds: "{{count}}sec",
@@ -295,4 +306,53 @@ export const customFormatDuration = ({
     }),
     isPositive,
   }
+}
+
+export const qs = (
+  query: Record<string, any>,
+  { preppendPrefix = true, prefix = "?" } = {},
+): string => {
+  if (!query) {
+    return ""
+  }
+  const keys = Object.keys(query)
+
+  if (!keys.length) {
+    return ""
+  }
+
+  const params = new URLSearchParams()
+
+  keys.forEach((key) => {
+    const value = query[key]
+
+    if (typeof value === "undefined") {
+      return
+    }
+
+    if (Array.isArray(value)) {
+      value.map((item) => params.append(key, item))
+    } else {
+      params.append(key, value)
+    }
+  })
+
+  const querystring = params.toString()
+
+  return preppendPrefix ? `${prefix}${querystring}` : querystring
+}
+
+export const getSubscanLinkByType = (
+  type: "account" | "extrinsic",
+  params: {
+    blockNumber?: string
+    txIndex?: string | number
+  } = {},
+) => {
+  const extrinsicPath =
+    type === "extrinsic" && params?.blockNumber && params?.txIndex
+      ? `/${[params?.blockNumber, params?.txIndex].join("-")}`
+      : ""
+
+  return `https://hydradx.subscan.io/${type}${extrinsicPath}`
 }

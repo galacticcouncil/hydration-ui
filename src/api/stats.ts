@@ -69,29 +69,61 @@ const getStatsTvl = (assetId?: string) => async () => {
   return data
 }
 
-export const useTVLs = (assetIds: string[]) => {
-  return useQueries({
-    queries: assetIds.map((assetId) => ({
-      queryKey: QUERY_KEYS.tvl(assetId),
-      queryFn:
-        assetId != null
-          ? async () => {
-              const data = await getTVL(assetId)
-              return { tvl_usd: data?.[0].tvl_usd, assetId }
-            }
-          : undefinedNoop,
-      enabled: !!assetId,
-    })),
-  })
+export const useTVL = (assetId?: string) => {
+  return useQuery(
+    QUERY_KEYS.tvl(assetId),
+    assetId
+      ? async () => {
+          const data = await getTVL(assetId === "all" ? undefined : assetId)
+          return data
+        }
+      : undefinedNoop,
+    { enabled: !!assetId },
+  )
 }
 
 const getTVL = async (assetId?: string) => {
   const res = await fetch(
-    `https://api.hydradx.io/hydradx-ui/v1/stats/tvl${
+    `https://api.hydradx.io/hydradx-ui/v2/stats/tvl${
       assetId != null ? `/${assetId}` : ""
     }`,
   )
-  const data: Promise<{ tvl_usd: number }[]> = res.json()
+  const data: Promise<{ tvl_usd: number; asset_id: number }[]> = res.json()
+
+  return data
+}
+
+export const useFee = (assetId?: string | "all") => {
+  return useQuery(
+    QUERY_KEYS.fee(assetId),
+    assetId
+      ? async () => {
+          const asset_id = assetId === "all" ? undefined : assetId
+          const data = await geFee(asset_id)
+
+          return data
+        }
+      : undefinedNoop,
+    {
+      enabled: !!assetId,
+    },
+  )
+}
+
+const geFee = async (assetId?: string) => {
+  const res = await fetch(
+    `https://api.hydradx.io/hydradx-ui/v2/stats/fees${
+      assetId !== undefined ? `/${assetId}` : ""
+    }`,
+  )
+  const data: Promise<
+    {
+      asset_id: number
+      accrued_fees_usd: number
+      projected_apy_perc: number
+      projected_apr_perc: number
+    }[]
+  > = res.json()
 
   return data
 }
@@ -109,17 +141,23 @@ export const useAccountsIdentity = (addresses: string[]) => {
   })
 }
 
-export const useAccountIdentity = (address: string) => {
+export const useAccountIdentity = (address?: string) => {
   const { api } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.identity(address),
-    getAccountIdentity(api, address),
+    address ? getAccountIdentity(api, address) : undefinedNoop,
+    { enabled: !!address },
   )
 }
 
 const getAccountIdentity = (api: ApiPromise, address: string) => async () => {
   const res = await api.query.identity.identityOf(address)
 
-  return { address, identity: res.isSome ? res.unwrapOr(null) : null }
+  return {
+    address,
+    identity: res.isSome
+      ? res.unwrapOr(null)?.info.display.asRaw.toUtf8()
+      : null,
+  }
 }

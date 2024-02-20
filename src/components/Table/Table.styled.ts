@@ -5,67 +5,42 @@ import { theme } from "theme"
 export const TableContainer = styled.div`
   background: #111320;
   overflow: hidden;
-  box-shadow: ${theme.shadows.boxShadowTable};
+  position: relative;
 
-  margin: 0 -13px;
+  margin: 0 -15px;
 
-  background-image: radial-gradient(
-      circle at 100% 100%,
-      transparent 3px,
-      rgba(144, 165, 198, 0.3) 3px,
-      rgba(144, 165, 198, 0.3) 4px,
-      transparent 4px
-    ),
-    linear-gradient(
-      to right,
-      rgba(144, 165, 198, 0.3),
-      rgba(144, 165, 198, 0.3)
-    ),
-    radial-gradient(
-      circle at 0% 100%,
-      transparent 3px,
-      rgba(144, 165, 198, 0.3) 3px,
-      rgba(144, 165, 198, 0.3) 4px,
-      transparent 4px
-    ),
-    linear-gradient(to bottom, rgba(144, 165, 198, 0.3), rgba(158, 167, 180, 0)),
-    radial-gradient(
-      circle at 0% 0%,
-      transparent 3px,
-      rgba(158, 167, 180, 0) 3px,
-      rgba(158, 167, 180, 0) 4px,
-      transparent 4px
-    ),
-    linear-gradient(to left, rgba(158, 167, 180, 0), rgba(158, 167, 180, 0)),
-    radial-gradient(
-      circle at 100% 0%,
-      transparent 3px,
-      rgba(158, 167, 180, 0) 3px,
-      rgba(158, 167, 180, 0) 4px,
-      transparent 4px
-    ),
-    linear-gradient(to top, rgba(158, 167, 180, 0), rgba(144, 165, 198, 0.3));
-  background-size:
-    4px 4px,
-    calc(100% - 8px) 1px,
-    4px 4px,
-    1px calc(100% - 8px);
-  background-position:
-    top left,
-    top center,
-    top right,
-    center right,
-    bottom right,
-    bottom center,
-    bottom left,
-    center left;
-
-  background-repeat: no-repeat;
+  border-top: 1px solid rgba(152, 176, 214, 0.27);
 
   @media ${theme.viewport.gte.sm} {
-    border-radius: 4px;
+    border-radius: ${theme.borderRadius.medium}px;
 
     margin: unset;
+
+    border-top: 0;
+
+    :before {
+      content: "";
+      position: absolute;
+      inset: 0;
+
+      pointer-events: none;
+
+      border-radius: 8px;
+      padding: 1px; // a width of the border
+
+      background: linear-gradient(
+        180deg,
+        rgba(152, 176, 214, 0.27) 0%,
+        rgba(163, 177, 199, 0.15) 66.67%,
+        rgba(158, 167, 180, 0.2) 100%
+      );
+
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
   }
 `
 
@@ -73,7 +48,7 @@ export const StatsTableContainer = styled.div`
   overflow: hidden;
   position: relative;
 
-  border-radius: ${theme.borderRadius.stakingCard}px;
+  border-radius: ${theme.borderRadius.medium}px;
   border: 1px solid rgba(152, 176, 214, 0.27);
 `
 
@@ -134,18 +109,16 @@ export const TablePlaceholderContent = styled.div`
 `
 
 export const TableRow = styled.tr<{
-  isOdd?: boolean
-  isSub?: boolean
   header?: boolean
 }>`
   transition: ${theme.transitions.slow};
+
+  border-top: 1px solid rgba(32, 33, 53, 1);
 
   :hover {
     ${({ header }) =>
       !header && `background: rgba(${theme.rgbColors.white}, 0.06);`}
   }
-  ${({ isOdd }) => isOdd && `background: rgba(${theme.rgbColors.white}, 0.03);`}
-  ${({ isSub }) => isSub && `background: rgba(${theme.rgbColors.white}, 0.06);`}
 `
 
 export const TableRowStats = styled.tr<{
@@ -175,7 +148,7 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
 
   font-size: 11px;
   line-height: 14px;
-  font-weight: 500;
+  font-family: "ChakraPetchSemiBold";
 
   text-transform: uppercase;
   text-align: start;
@@ -201,7 +174,10 @@ export const TableData = styled.td<{
   isExpanded?: boolean
   isSkeleton?: boolean
 }>`
-  padding: 16px;
+  height: 56px;
+
+  ${({ isExpanded }) => (isExpanded ? `padding: 16px` : "padding: 0 16px")};
+
   ${({ isSkeleton }) => !isSkeleton && "padding-right: 0px;"}
   text-align: start;
 
@@ -213,7 +189,10 @@ export const TableData = styled.td<{
   }
 
   @media ${theme.viewport.gte.sm} {
-    padding: 24px 32px;
+    height: 68px;
+
+    ${({ isExpanded }) =>
+      isExpanded ? `padding: 24px 32px` : "padding: 0 32px"};
 
     &:last-of-type {
       padding-right: 10px;

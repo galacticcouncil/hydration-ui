@@ -1,37 +1,61 @@
+import { FC } from "react"
 import { isHex, isU8a, u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { TalismanAvatar } from "components/AccountAvatar/TalismanAvatar"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { JdenticonAvatar } from "./JdenticonAvatar"
 import { PolkadotAvatar } from "./PolkadotAvatar"
+import { MetaMaskAvatar } from "./MetaMaskAvatar"
+import { isEvmAccount, isEvmAddress } from "utils/evm"
+import { WalletProviderType } from "sections/web3-connect/wallets"
+import { genesisHashToChain } from "utils/helpers"
+import type { Icon } from "@polkadot/networks/types"
 
-export function AccountAvatar(props: {
+type Props = {
   address: string
   size: number
-  theme?: string
+  genesisHash?: `0x${string}`
   className?: string
-  prefix?: number
-}) {
-  if (safeConvertAddressSS58(props.address, 0) === null) return null
+  provider?: WalletProviderType
+}
 
-  const address =
-    isU8a(props.address) || isHex(props.address)
-      ? encodeAddress(props.address, props.prefix)
-      : props.address || ""
+export const AccountAvatar: FC<Props> = (props) => {
+  const chain = genesisHashToChain(props.genesisHash)
+  const chainIcon: Icon =
+    props.genesisHash && chain?.icon ? chain.icon : "polkadot"
 
-  const publicKey = u8aToHex(decodeAddress(address, false, props.prefix))
+  const isEvm = isEvmAccount(props.address) || isEvmAddress(props.address)
+  const theme =
+    props.provider === "talisman" ? "talisman" : isEvm ? "evm" : chainIcon
 
-  if (props.theme === "talisman") {
+  if (theme === "evm") {
     return (
-      <TalismanAvatar
-        seed={address}
+      <MetaMaskAvatar
+        address={props.address}
         size={props.size}
         className={props.className}
       />
     )
   }
 
-  if (props.theme === "polkadot-js") {
+  if (theme === "talisman") {
+    return (
+      <TalismanAvatar
+        seed={props.address}
+        size={props.size}
+        className={props.className}
+      />
+    )
+  }
+
+  if (safeConvertAddressSS58(props.address, 0) === null) return null
+
+  const address =
+    isU8a(props.address) || isHex(props.address)
+      ? encodeAddress(props.address, chain.prefix)
+      : props.address || ""
+
+  if (theme === "polkadot") {
     return (
       <PolkadotAvatar
         address={address}
@@ -40,6 +64,8 @@ export function AccountAvatar(props: {
       />
     )
   }
+
+  const publicKey = u8aToHex(decodeAddress(address, false))
 
   return (
     <JdenticonAvatar

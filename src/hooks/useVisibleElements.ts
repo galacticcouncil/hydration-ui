@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 type VisibilityMap = Record<string, boolean>
 
@@ -6,12 +6,10 @@ type VisibilityMap = Record<string, boolean>
  * This hook is used to determine which elements inside a container are visible using IntersectionObserver
  * Add `data-intersect` attribute with string value as a key, to track elements inside an observed container
  */
-export function useVisibleElements<
-  TRoot extends HTMLElement,
-  TItem extends HTMLElement,
->() {
+export function useVisibleElements<T extends HTMLElement>() {
   const [visible, setVisible] = useState<VisibilityMap>({})
-  const ref = useRef<TRoot>(null)
+  const [forceRender, setForceRender] = useState(false)
+  const ref = useRef<T>(null)
 
   useEffect(() => {
     const rootElement = ref.current
@@ -19,7 +17,7 @@ export function useVisibleElements<
       (entries) => {
         const updatedEntries: VisibilityMap = {}
         entries.forEach((entry) => {
-          const target = entry.target as TItem
+          const target = entry.target as T
           const intersectKey = target.dataset.intersect
           if (intersectKey) {
             updatedEntries[intersectKey] = entry.isIntersecting
@@ -45,10 +43,42 @@ export function useVisibleElements<
         observer.disconnect()
       }
     }
-  }, [ref])
+  }, [ref, forceRender])
+
+  useEffect(() => {
+    const mutations = new MutationObserver((mutations) => {
+      let shouldRerender = false
+      mutations.forEach((mutation) => {
+        if (mutation.type === "childList") {
+          shouldRerender = true
+        }
+      })
+      setForceRender(shouldRerender)
+    })
+    if (ref.current) {
+      mutations.observe(ref.current, {
+        childList: true,
+      })
+    }
+    return () => {
+      mutations.disconnect()
+    }
+  }, [])
+
+  const hiddenElementsKeys = useMemo(() => {
+    return Object.entries(visible).reduce<string[]>(
+      (memo, [item, isVisible]) => {
+        if (!isVisible) memo.push(item)
+
+        return memo
+      },
+      [],
+    )
+  }, [visible])
 
   return {
     visible,
+    hiddenElementsKeys,
     observe: ref,
   }
 }

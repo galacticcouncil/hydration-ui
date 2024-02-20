@@ -9,12 +9,13 @@ import { Trans, useTranslation } from "react-i18next"
 import { getFixedPointAmount } from "utils/balance"
 import { BN_0, BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { OrderCapacity } from "sections/trade/sections/otc/capacity/OrderCapacity"
 import { OfferingPair } from "sections/trade/sections/otc/orders/OtcOrdersData.utils"
 import { OrderAssetPrice } from "./cmp/AssetPrice"
 import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 const FULL_ORDER_PCT_LBOUND = 99
 
@@ -34,7 +35,7 @@ export const PartialFillOrder = ({
   onSuccess,
 }: FillOrderProps) => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
 
   const form = useForm<{
     amountIn: string

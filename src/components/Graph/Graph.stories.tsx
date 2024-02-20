@@ -1,11 +1,13 @@
-import { ComponentMeta, ComponentStory } from "@storybook/react"
-import { Graph as GraphComponent } from "./Graph"
 import styled from "@emotion/styled"
+import { Meta, StoryObj } from "@storybook/react"
+import { ComponentPropsWithoutRef } from "react"
+import { Graph as GraphComponent } from "./Graph"
+
+type Story = StoryObj<typeof GraphComponent>
 
 export default {
-  title: "components/Graph",
   component: GraphComponent,
-} as ComponentMeta<typeof GraphComponent>
+} as Meta<typeof GraphComponent>
 
 const data = Array.from({ length: 80 }).map((_, i) => ({
   x: i,
@@ -18,15 +20,17 @@ const SContainer = styled.div`
   height: 300px;
 `
 
-const Template: ComponentStory<typeof GraphComponent> = (args) => (
+const Template = (props: ComponentPropsWithoutRef<typeof GraphComponent>) => (
   <SContainer>
-    <GraphComponent {...args} />
+    <GraphComponent {...props} />
   </SContainer>
 )
 
-export const Graph = Template.bind({})
-Graph.args = {
-  labelX: "Days",
-  labelY: "Rewards APR %",
-  data,
+export const Graph: Story = {
+  render: Template,
+  args: {
+    labelX: "Days",
+    labelY: "Rewards APR %",
+    data,
+  },
 }

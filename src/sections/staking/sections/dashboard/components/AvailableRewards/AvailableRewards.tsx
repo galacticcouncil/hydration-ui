@@ -12,7 +12,7 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import Skeleton from "react-loading-skeleton"
 import { useClaimReward } from "sections/staking/StakingPage.utils"
-import { ToastMessage, useAccountStore, useStore } from "state/store"
+import { ToastMessage, useStore } from "state/store"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { TOAST_MESSAGES } from "state/toasts"
@@ -20,11 +20,12 @@ import { Separator } from "components/Separator/Separator"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const AvailableRewards = () => {
   const { api, assets } = useRpcProvider()
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const reward = useClaimReward()
   const spotPrice = useDisplayPrice(assets.native.id)
 
@@ -83,26 +84,39 @@ export const AvailableRewards = () => {
       </SRewartCardHeader>
       <div sx={{ p: "28px 25px", flex: "column", gap: 20 }}>
         <div sx={{ flex: "column" }}>
-          <div sx={{ flex: "row", justify: "space-between" }}>
+          <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
             <Text color="white">
               {t("staking.dashboard.rewards.allocated")}
             </Text>
             {isLoading || !reward.data ? (
               <Skeleton width={90} height={25} />
             ) : (
-              <Text
-                fs={19}
-                color="white"
-                font="FontOver"
-                tTransform="uppercase"
-                css={{ whiteSpace: "nowrap" }}
-              >
-                {t("value.tokenWithSymbol", {
-                  value: reward.data.maxRewards,
-                  symbol: "HDX",
-                  decimalPlaces: 2,
-                })}
-              </Text>
+              <div sx={{ flex: "column", justify: "space-around" }}>
+                <Text
+                  fs={19}
+                  color="white"
+                  font="FontOver"
+                  tTransform="uppercase"
+                  css={{ whiteSpace: "nowrap" }}
+                >
+                  {t("value.tokenWithSymbol", {
+                    value: reward.data.maxRewards,
+                    symbol: "HDX",
+                    decimalPlaces: 2,
+                  })}
+                </Text>
+                <Text
+                  fs={14}
+                  css={{ color: "rgba(255, 255, 255, 0.6)" }}
+                  tAlign="right"
+                >
+                  <DisplayValue
+                    value={reward.data.maxRewards?.multipliedBy(
+                      spotPrice.data?.spotPrice ?? 1,
+                    )}
+                  />
+                </Text>
+              </div>
             )}
           </div>
         </div>

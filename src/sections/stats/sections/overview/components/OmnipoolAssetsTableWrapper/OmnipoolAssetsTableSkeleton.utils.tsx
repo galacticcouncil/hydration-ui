@@ -22,7 +22,8 @@ export const useOmnipoolAssetsTableSkeleton = (enableAnimation = true) => {
     symbol: true,
     tvl: true,
     volume: isDesktop,
-    pol: isDesktop,
+    apy: isDesktop,
+    price: isDesktop,
     actions: isDesktop,
   }
 
@@ -44,8 +45,13 @@ export const useOmnipoolAssetsTableSkeleton = (enableAnimation = true) => {
         cell: () => <CellSkeleton enableAnimation={enableAnimation} />,
       }),
       display({
-        id: "pol",
-        header: t("stats.overview.table.assets.header.pol"),
+        id: "apy",
+        header: t("stats.overview.table.assets.header.apy"),
+        cell: () => <CellSkeleton enableAnimation={enableAnimation} />,
+      }),
+      display({
+        id: "price",
+        header: t("stats.overview.table.assets.header.price"),
         cell: () => <CellSkeleton enableAnimation={enableAnimation} />,
       }),
       display({

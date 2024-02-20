@@ -16,10 +16,20 @@ import { theme } from "theme"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
+import { Text } from "components/Typography/Text/Text"
+import {
+  isXYKPosition,
+  TXYKPosition,
+} from "./data/WalletAssetsHydraPositionsData.utils"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 
-export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
+export const useHydraPositionsTable = (
+  data: (HydraPositionsTableData | TXYKPosition)[],
+) => {
   const { t } = useTranslation()
-  const { accessor } = createColumnHelper<HydraPositionsTableData>()
+  const { accessor } = createColumnHelper<
+    HydraPositionsTableData | TXYKPosition
+  >()
   const [sorting, setSorting] = useState<SortingState>([])
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -43,13 +53,15 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
         id: "providedAmount",
         header: t("wallet.assets.hydraPositions.header.providedAmount"),
         sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
-        cell: ({ row }) => (
-          <WalletAssetsHydraPositionsDetails
-            assetId={row.original.assetId}
-            amount={row.original.providedAmountShifted}
-            amountDisplay={row.original.providedAmountDisplay}
-          />
-        ),
+        cell: ({ row }) =>
+          isXYKPosition(row.original) ? (
+            <Text>-</Text>
+          ) : (
+            <WalletAssetsHydraPositionsDetails
+              assetId={row.original.assetId}
+              amount={row.original.providedAmountShifted}
+            />
+          ),
       }),
       accessor("valueDisplay", {
         id: "valueDisplay",
@@ -70,12 +82,37 @@ export const useHydraPositionsTable = (data: HydraPositionsTableData[]) => {
               textAlign: "center",
             }}
           >
-            <WalletAssetsHydraPositionsDetails
-              assetId={row.original.assetId}
-              lrna={row.original.lrna}
-              amount={row.original.value}
-              amountDisplay={row.original.valueDisplay}
-            />
+            {isXYKPosition(row.original) ? (
+              <div sx={{ flex: "column", align: ["end", "start"] }}>
+                <div sx={{ flex: "row", gap: 4 }}>
+                  <Text fs={14} lh={14} fw={500} color="white">
+                    {row.original.balances
+                      ?.map((balance) =>
+                        t("value.tokenWithSymbol", {
+                          value: balance.balanceHuman,
+                          symbol: balance.symbol,
+                        }),
+                      )
+                      .join(" | ")}
+                  </Text>
+                </div>
+                <Text
+                  fs={13}
+                  lh={20}
+                  fw={500}
+                  css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.6)` }}
+                >
+                  <DisplayValue value={row.original.valueDisplay} />
+                </Text>
+              </div>
+            ) : (
+              <WalletAssetsHydraPositionsDetails
+                assetId={row.original.assetId}
+                lrna={row.original.lrna}
+                amount={row.original.value}
+                amountDisplay={row.original.valueDisplay}
+              />
+            )}
             {!isDesktop && (
               <ButtonTransparent>
                 <Icon
@@ -110,6 +147,7 @@ export type HydraPositionsTableData = {
   lrna: BN
   value: BN
   valueDisplay: BN
+  valueDisplayWithoutLrna: BN
   price: BN
   providedAmount: BN
   providedAmountDisplay: BN

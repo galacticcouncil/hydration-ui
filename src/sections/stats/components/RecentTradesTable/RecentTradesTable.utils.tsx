@@ -14,7 +14,10 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { shortenAccountAddress } from "utils/formatting"
+import {
+  getChainSpecificAddress,
+  shortenAccountAddress,
+} from "utils/formatting"
 import { TRecentTradesTableData } from "./data/RecentTradesTableData.utils"
 import TradeIcon from "assets/icons/TradeTypeIcon.svg?react"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -50,10 +53,13 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
       header: t("stats.overview.table.trades.header.account"),
       sortingFn: (a, b) => a.original.account.localeCompare(b.original.account),
       cell: ({ row }) => (
-        <Text color="white">
+        <Text fs={14} color="white">
           {row.original.isIdentity
             ? row.original.account
-            : shortenAccountAddress(row.original.account, 6)}
+            : shortenAccountAddress(
+                getChainSpecificAddress(row.original.account),
+                6,
+              )}
         </Text>
       ),
     }),
@@ -67,7 +73,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
         a.original.tradeValue.gt(b.original.tradeValue) ? 1 : -1,
       cell: ({ row, getValue }) => {
         return isDesktop ? (
-          <Text color="white">
+          <Text color="white" fs={14}>
             <DisplayValue value={getValue()} isUSD />
           </Text>
         ) : (
@@ -105,12 +111,14 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
 
         return (
           <div sx={{ flex: "row", align: "center", gap: 6 }}>
-            <Text fs={[14, 16]}>
-              {t("value.tokenWithSymbol", {
-                value: isDesktop ? row.original.amountIn : undefined,
-                symbol: row.original.assetInSymbol,
-              })}
-            </Text>
+            {isDesktop && (
+              <Text fs={14}>
+                {t("value.tokenWithSymbol", {
+                  value: row.original.amountIn,
+                  symbol: row.original.assetInSymbol,
+                })}
+              </Text>
+            )}
             {typeof iconInIds === "string" ? (
               <Icon size={18} icon={<AssetLogo id={iconInIds} />} />
             ) : (
@@ -124,12 +132,14 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
 
             <Icon sx={{ color: "brightBlue600" }} icon={<TradeIcon />} />
 
-            <Text fs={[14, 16]}>
-              {t("value.tokenWithSymbol", {
-                value: isDesktop ? row.original.amountOut : undefined,
-                symbol: row.original.assetOutSymbol,
-              })}
-            </Text>
+            {isDesktop && (
+              <Text fs={14}>
+                {t("value.tokenWithSymbol", {
+                  value: row.original.amountOut,
+                  symbol: row.original.assetOutSymbol,
+                })}
+              </Text>
+            )}
 
             {typeof iconOutIds === "string" ? (
               <Icon size={18} icon={<AssetLogo id={iconOutIds} />} />
@@ -150,7 +160,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
       header: t("stats.overview.table.trades.header.timeStamp"),
       sortingFn: (a, b) => (isAfter(a.original.date, b.original.date) ? 1 : -1),
       cell: ({ row }) => (
-        <Text color="white" css={{ whiteSpace: "nowrap" }}>
+        <Text fs={14} color="white" css={{ whiteSpace: "nowrap" }}>
           {t("stats.overview.table.trades.value.totalValueTime", {
             date: new Date(row.original.date),
           })}

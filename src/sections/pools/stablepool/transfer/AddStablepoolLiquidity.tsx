@@ -7,7 +7,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { FormValues } from "utils/helpers"
 import { PoolAddLiquidityInformationCard } from "sections/pools/modals/AddLiquidity/AddLiquidityInfoCard"
 import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
@@ -19,7 +19,7 @@ import { ISubmittableResult } from "@polkadot/types/types"
 import { TAsset } from "api/assetDetails"
 import { useRpcProvider } from "providers/rpcProvider"
 import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
-import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = {
   poolId: string
@@ -31,7 +31,6 @@ type Props = {
   onAssetOpen: () => void
   onSubmitted: (shares?: string) => void
   reserves: { asset_id: number; amount: string }[]
-  balanceByAsset?: TOmnipoolAsset["stablepoolBalanceByAsset"]
 }
 
 export const AddStablepoolLiquidity = ({
@@ -43,12 +42,10 @@ export const AddStablepoolLiquidity = ({
   onClose,
   onCancel,
   reserves,
-  balanceByAsset,
   fee,
 }: Props) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
-  const rpcProvider = useRpcProvider()
 
   const { t } = useTranslation()
   const form = useForm<{ amount: string }>({ mode: "onChange" })
@@ -62,7 +59,7 @@ export const AddStablepoolLiquidity = ({
     reserves,
   })
 
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const walletBalance = useTokenBalance(asset.id, account?.address)
 
   const onSubmit = async (values: FormValues<typeof form>) => {
@@ -186,18 +183,7 @@ export const AddStablepoolLiquidity = ({
           description={t("liquidity.add.modal.tradeFee.description")}
         />
         <Spacer size={10} />
-        <CurrencyReserves
-          assets={Array.from(balanceByAsset?.entries() ?? []).map(
-            ([id, balance]) => ({
-              id,
-              symbol: rpcProvider.assets.getAsset(id).symbol,
-              balance: balance.free?.shiftedBy(
-                -rpcProvider.assets.getAsset(id).decimals,
-              ),
-              value: balance.value,
-            }),
-          )}
-        />
+        <CurrencyReserves reserves={reserves} />
         <Spacer size={20} />
         <Text color="pink500" fs={15} font="FontOver" tTransform="uppercase">
           {t("liquidity.add.modal.positionDetails")}

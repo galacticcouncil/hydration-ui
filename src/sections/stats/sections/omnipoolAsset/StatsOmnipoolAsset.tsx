@@ -1,5 +1,10 @@
 import { SOmnipoolAssetContainer } from "./StatsOmnipoolAsset.styled"
-import { MakeGenerics, Navigate, useSearch } from "@tanstack/react-location"
+import {
+  MakeGenerics,
+  Navigate,
+  useLocation,
+  useSearch,
+} from "@tanstack/react-location"
 import { Text } from "components/Typography/Text/Text"
 import { Icon } from "components/Icon/Icon"
 import { useTranslation } from "react-i18next"
@@ -20,9 +25,10 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { LiquidityProvidersTableSkeleton } from "sections/stats/sections/omnipoolAsset/LiquidityProvidersTable/skeleton/LiquidityProvidersTableSkeleton"
 import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
+import { LINKS } from "utils/navigation"
 
 type SearchGenerics = MakeGenerics<{
-  Search: { asset: number }
+  Search: { id: number }
 }>
 
 const OmnipoolAssetHeader = ({
@@ -113,9 +119,10 @@ const OmnipoolAssetHeader = ({
 
 export const StatsOmnipoolAsset = () => {
   const search = useSearch<SearchGenerics>()
-  const assetId = search.asset?.toString()
+  const assetId = search.id?.toString() as string
+  const location = useLocation()
 
-  if (!assetId) {
+  if (!assetId && location.current.pathname === LINKS.statsOmnipool) {
     return <Navigate to="/stats" />
   }
 
@@ -124,7 +131,7 @@ export const StatsOmnipoolAsset = () => {
 
 const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
   const { isLoaded } = useRpcProvider()
-  const overviewData = useOmnipoolAssetDetails()
+  const overviewData = useOmnipoolAssetDetails("tvl")
 
   const omnipoolAsset = overviewData.data.find(
     (overview) => overview.id === assetId,
@@ -153,7 +160,10 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
             cap: omnipoolAsset.cap.multipliedBy(100),
             pol: omnipoolAsset.pol,
             share: omnipoolAsset.tvl.div(omnipollTvl).multipliedBy(100),
+            assetId,
+            fee: omnipoolAsset.fee,
           }}
+          isLoadingFee={omnipoolAsset.isLoadingFee}
         />
         <SStatsCardContainer
           sx={{ width: "100%", height: [500, 570], pt: [60, 20] }}

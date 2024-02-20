@@ -186,7 +186,7 @@ const transitions = {
 } as const
 
 const borderRadius = {
-  stakingCard: 8,
+  medium: 8,
   default: 4,
 } as const
 
@@ -218,6 +218,15 @@ export const gradientBorder = css`
   }
 `
 
+export const scrollbarHidden = css`
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+  &::-webkit-scrollbar,
+  &::-webkit-scrollbar-thumb {
+    display: none;
+  }
+`
+
 export const theme = {
   colors,
   gradients,
@@ -228,4 +237,5 @@ export const theme = {
   shadows,
   borderRadius,
   gradientBorder,
+  scrollbarHidden,
 }

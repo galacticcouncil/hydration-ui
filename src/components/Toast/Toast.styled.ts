@@ -69,6 +69,13 @@ export const STitle = styled(Title)`
   & .highlight {
     color: ${theme.colors.white};
   }
+  & .referralTitle {
+    color: ${theme.colors.white};
+    font-family: "FontOver";
+  }
+  & .referralDesc {
+    color: ${theme.colors.white};
+  }
 `
 
 export const SClose = styled(Close)`
@@ -142,6 +149,14 @@ const variantBg: Record<ToastVariant, SerializedStyles> = {
   unknown: css`
     background: rgba(${theme.rgbColors.primaryA15Blue}, 0.35);
   `,
+  temporary: css`
+    background: linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0) 100%
+      ),
+      rgba(246, 41, 124, 0.4);
+  `,
 }
 
 export const Shadow = styled.div<{ variant: ToastVariant }>`
@@ -166,6 +181,7 @@ const variantProgressBarBg: Record<ToastVariant, string> = {
   error: theme.colors.red700,
   progress: theme.colors.brightBlue700,
   unknown: theme.colors.brightBlue700,
+  temporary: theme.colors.pink600,
 }
 
 export const ToastContentWrapper = styled.div`

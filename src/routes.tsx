@@ -14,11 +14,14 @@ import { AllPools } from "sections/pools/sections/AllPools"
 import { MyLiquidity } from "sections/pools/sections/MyLiquidity"
 import { OmnipoolAndStablepool } from "sections/pools/sections/OmnipoolAndStablepool"
 import { IsolatedPools } from "sections/pools/sections/IsolatedPools"
+import { ReferralsWrapper } from "sections/referrals/ReferralsPage"
+import { StatsPOL } from "sections/stats/sections/POL/StatsPOL"
+import { StatsOverview } from "sections/stats/sections/overview/StatsOverview"
+import { StatsOmnipoolAsset } from "sections/stats/sections/omnipoolAsset/StatsOmnipoolAsset"
+import { BridgePage } from "sections/xcm/BridgePage"
+import { YieldDcaPage } from "sections/trade/sections/yieldDca/YieldDcaPage"
 
-const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
-const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
-const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
-const isXYKPageEnabled = import.meta.env.VITE_FF_XYK_ENABLED === "true"
+const isDevelopment = import.meta.env.VITE_ENV === "development"
 
 export const routes = [
   {
@@ -38,33 +41,25 @@ export const routes = [
         element: <SwapPage />,
       },
       {
-        ...(isOtcPageEnabled && {
-          path: "otc",
-          element: <OtcPageWrapper />,
-        }),
+        path: "otc",
+        element: <OtcPageWrapper />,
       },
       {
-        ...(isDcaPageEnabled && {
-          path: "dca",
-          element: <DcaPage />,
-        }),
+        path: "yield-dca",
+        element: <YieldDcaPage />,
       },
-      ...(isBondsPageEnabled
-        ? [
-            {
-              path: "bond",
-              element: <BondDetailsPage />,
-            },
-          ]
-        : []),
-      ...(isBondsPageEnabled
-        ? [
-            {
-              path: "bonds",
-              element: <BondsPageWrapper />,
-            },
-          ]
-        : []),
+      {
+        path: "dca",
+        element: <DcaPage />,
+      },
+      {
+        path: "bond",
+        element: <BondDetailsPage />,
+      },
+      {
+        path: "bonds",
+        element: <BondsPageWrapper />,
+      },
     ],
   },
   {
@@ -72,7 +67,7 @@ export const routes = [
     children: [
       {
         path: "/",
-        element: <Navigate to="assets" />,
+        element: <Navigate to="assets" fromCurrent />,
       },
       {
         path: "assets",
@@ -82,6 +77,14 @@ export const routes = [
         path: "vesting",
         element: <WalletPage />,
       },
+      ...(isDevelopment
+        ? [
+            {
+              path: "transactions",
+              element: <WalletPage />,
+            },
+          ]
+        : []),
     ],
   },
   {
@@ -104,14 +107,10 @@ export const routes = [
         path: "omnipool-stablepools",
         element: <OmnipoolAndStablepool />,
       },
-      ...(isXYKPageEnabled
-        ? [
-            {
-              path: "isolated",
-              element: <IsolatedPools />,
-            },
-          ]
-        : []),
+      {
+        path: "isolated",
+        element: <IsolatedPools />,
+      },
     ],
   },
   {
@@ -119,7 +118,12 @@ export const routes = [
     element: <XcmPage />,
   },
   {
+    path: "bridge",
+    element: <BridgePage />,
+  },
+  {
     path: "stats",
+    element: <StatsPage />,
     children: [
       {
         path: "/",
@@ -127,12 +131,17 @@ export const routes = [
       },
       {
         path: "overview",
-        element: <StatsPage />,
+        element: <StatsOverview />,
       },
       {
-        path: "POL",
-        element: <StatsPage />,
+        path: "treasury",
+        element: <StatsPOL />,
       },
+      {
+        path: "asset",
+        element: <StatsOmnipoolAsset />,
+      },
+
       // TODO: Not ready. Requested in #861n9ffe4
       // {
       //   path: "LRNA",
@@ -143,6 +152,10 @@ export const routes = [
   {
     path: "staking",
     element: <StakingPage />,
+  },
+  {
+    path: "referrals",
+    element: <ReferralsWrapper />,
   },
   {
     path: "*",

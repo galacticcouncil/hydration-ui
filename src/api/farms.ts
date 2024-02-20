@@ -8,13 +8,22 @@ import {
 import { useQueries, useQuery } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import { secondsInYear } from "date-fns"
-import { BLOCK_TIME, BN_0, BN_QUINTILL } from "utils/constants"
+import {
+  BLOCK_TIME,
+  BN_0,
+  BN_QUINTILL,
+  PARACHAIN_BLOCK_TIME,
+} from "utils/constants"
 import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useBestNumber } from "./chain"
 import { fixed_from_rational } from "@galacticcouncil/math-liquidity-mining"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useIndexerUrl } from "./provider"
+import request, { gql } from "graphql-request"
+
+const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / PARACHAIN_BLOCK_TIME.toNumber() // 48 hours
 
 export function useActiveYieldFarms(poolIds: Array<Maybe<u32 | string>>) {
   const { api } = useRpcProvider()
@@ -150,6 +159,7 @@ const getGlobalFarms =
 export interface Farm {
   globalFarm: PalletLiquidityMiningGlobalFarmData
   yieldFarm: PalletLiquidityMiningYieldFarmData
+  poolId: string
 }
 
 export type FarmAprs = ReturnType<typeof useFarmAprs>
@@ -184,7 +194,7 @@ export const useFarms = (poolIds: Array<u32 | string>) => {
           )
           const yieldFarm = yieldFarms?.find((yf) => af.yieldFarmId.eq(yf.id))
           if (!globalFarm || !yieldFarm) return undefined
-          return { globalFarm, yieldFarm }
+          return { globalFarm, yieldFarm, poolId: af.poolId.toString() }
         }) ?? []
 
       return farms.filter((x): x is Farm => x != null)
@@ -302,12 +312,14 @@ function getFarmApr(
     loyaltyCurve,
     rewardCurrency,
     incentivizedAsset,
+    yieldFarmId: yieldFarm.id.toString(),
   }
 }
 
 export const useFarmApr = (farm: {
   globalFarm: PalletLiquidityMiningGlobalFarmData
   yieldFarm: PalletLiquidityMiningYieldFarmData
+  poolId: string
 }) => {
   const bestNumber = useBestNumber()
 
@@ -320,6 +332,7 @@ export const useFarmAprs = (
   farms: {
     globalFarm: PalletLiquidityMiningGlobalFarmData
     yieldFarm: PalletLiquidityMiningYieldFarmData
+    poolId: string
   }[],
 ) => {
   const bestNumber = useBestNumber()
@@ -399,7 +412,7 @@ export const getMinAndMaxAPR = (farms: FarmAprs) => {
     : [BN_0]
 
   const minApr = BigNumber.minimum(...minAprs)
-  const maxApr = BigNumber.maximum(...aprs)
+  const maxApr = aprs.reduce((acc, apr) => acc.plus(apr), BN_0)
 
   return {
     minApr,
@@ -411,4 +424,54 @@ export interface FarmIds {
   poolId: u32
   globalFarmId: u32
   yieldFarmId: u32
+}
+
+export const useFarmsPoolAssets = () => {
+  const indexerUrl = useIndexerUrl()
+  const { api } = useRpcProvider()
+
+  return useQuery(QUERY_KEYS.yieldFarmCreated, async () => {
+    const { events } = await getYieldFarmCreated(indexerUrl)()
+    const currentBlockNumber = await api.derive.chain.bestNumber()
+    const blockNumberDiff = currentBlockNumber
+      .toBigNumber()
+      .minus(NEW_YIELD_FARMS_BLOCKS)
+
+    const newFarmsByPoolAsset = events.reduce<Array<number>>((acc, event) => {
+      if (
+        blockNumberDiff.lt(event.block.height) &&
+        !acc.includes(event.args.assetId)
+      )
+        acc.push(event.args.assetId)
+
+      return acc
+    }, [])
+
+    return newFarmsByPoolAsset
+  })
+}
+
+export const getYieldFarmCreated = (indexerUrl: string) => async () => {
+  return {
+    ...(await request<{
+      events: Array<{
+        args: { assetId: number; globalFarmId: number; yieldFamId: number }
+        block: { height: number }
+      }>
+    }>(
+      indexerUrl,
+      gql`
+        query YieldFarmCreated {
+          events(
+            where: { name_eq: "OmnipoolLiquidityMining.YieldFarmCreated" }
+          ) {
+            args
+            block {
+              height
+            }
+          }
+        }
+      `,
+    )),
+  }
 }

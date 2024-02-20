@@ -2,16 +2,16 @@ import { ApiPromise } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import { useRpcProvider } from "providers/rpcProvider"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { default as BigNumber } from "bignumber.js"
+import BigNumber from "bignumber.js"
 import { undefinedNoop } from "utils/helpers"
 
 const getXYKPools = (api: ApiPromise) => async () => {
   const res = await api.query.xyk.poolAssets.entries()
 
-  const data = res.map(([key, codec]) => {
+  const data = res.map(([key, data]) => {
     const poolAddress = key.args[0].toString()
     //@ts-ignore
-    const assets: string[] = codec.unwrap()?.map((el) => el.toString())
+    const assets = data.unwrap()?.map((el) => el.toString())
     return { poolAddress, assets }
   })
 
@@ -37,9 +37,16 @@ const getShareTokens = (api: ApiPromise) => async () => {
 }
 
 export const useShareTokens = () => {
-  const { api } = useRpcProvider()
+  const { api, assets } = useRpcProvider()
 
-  return useQuery(QUERY_KEYS.shareTokens, getShareTokens(api))
+  return useQuery(QUERY_KEYS.shareTokens, getShareTokens(api), {
+    select: (data) => {
+      return data.filter((shareToken) => {
+        const meta = assets.getAsset(shareToken.shareTokenId)
+        return meta.isShareToken
+      })
+    },
+  })
 }
 
 export const useShareTokensByIds = (ids: string[]) => {

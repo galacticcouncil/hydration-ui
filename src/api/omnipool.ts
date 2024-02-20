@@ -84,17 +84,11 @@ export const useOmnipoolFee = () => {
 }
 
 export const getOmnipoolFee = (api: ApiPromise) => async () => {
-  let assetFee
-  try {
-    assetFee = await api.consts.dynamicFees.assetFeeParameters.minFee
-  } catch {
-    // TODO: Fallback to mainnet (remove when merged)
-    assetFee = await api.consts.omnipool.assetFee
-  }
+  const { minFee, maxFee } = await api.consts.dynamicFees.assetFeeParameters
 
   return {
-    // @ts-ignore
-    fee: assetFee.toBigNumber().div(1000000),
+    minFee: minFee.toBigNumber().div(1000000),
+    maxFee: maxFee.toBigNumber().div(1000000),
   }
 }
 

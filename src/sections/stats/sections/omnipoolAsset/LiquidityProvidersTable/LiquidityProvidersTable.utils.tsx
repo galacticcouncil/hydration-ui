@@ -13,7 +13,10 @@ import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { shortenAccountAddress } from "utils/formatting"
+import {
+  getChainSpecificAddress,
+  shortenAccountAddress,
+} from "utils/formatting"
 import AccountIcon from "assets/icons/StakingAccountIcon.svg?react"
 import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
@@ -23,10 +26,9 @@ import { useAccountIdentity } from "api/stats"
 const AccountName = ({ address }: { address: string }) => {
   const identity = useAccountIdentity(address)
 
-  if (identity.data?.identity)
-    return <>{identity.data.identity.info.display.asRaw.toUtf8()}</>
+  if (identity.data?.identity) return <>{identity.data.identity}</>
 
-  return <>{shortenAccountAddress(address)}</>
+  return <>{shortenAccountAddress(getChainSpecificAddress(address))}</>
 }
 
 export const useLiquidityProvidersTable = (
@@ -63,7 +65,7 @@ export const useLiquidityProvidersTable = (
             }}
           >
             <Icon size={26} icon={<AccountIcon />} />
-            <Text fs={[14]} color="basic300">
+            <Text fs={14} color="basic300">
               <AccountName address={row.original.account} />
             </Text>
           </div>
@@ -79,7 +81,7 @@ export const useLiquidityProvidersTable = (
               assetId={row.original.assetId}
               value={row.original.value}
               lrna={row.original.lrna}
-              fontSize={[13, 16]}
+              fontSize={14}
             />
           </div>
         ),
@@ -90,7 +92,7 @@ export const useLiquidityProvidersTable = (
         sortingFn: (a, b) =>
           a.original.valueDisplay.gt(b.original.valueDisplay) ? 1 : -1,
         cell: ({ row }) => (
-          <Text color="white">
+          <Text fs={14} color="white">
             <DisplayValue value={row.original.valueDisplay} isUSD />
           </Text>
         ),
@@ -101,7 +103,7 @@ export const useLiquidityProvidersTable = (
         sortingFn: (a, b) =>
           a.original.sharePercent.gt(b.original.sharePercent) ? 1 : -1,
         cell: ({ row }) => (
-          <Text color="white">
+          <Text fs={14} color="white">
             {t("value.percentage", {
               value: row.original.sharePercent,
             })}

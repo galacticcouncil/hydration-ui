@@ -22,8 +22,8 @@ export const UigcAssetTransfer = createComponent({
   elementClass: UI.AssetTransfer,
   react: React,
   events: {
-    onAssetInputChanged: "asset-input-changed" as EventName<CustomEvent>,
-    onAssetSelectorClicked: "asset-selector-clicked" as EventName<CustomEvent>,
+    onAssetInputChange: "asset-input-change" as EventName<CustomEvent>,
+    onAssetSelectorClick: "asset-selector-click" as EventName<CustomEvent>,
   },
 })
 
@@ -75,8 +75,8 @@ export function OrderAssetSelect(props: {
           el.removeAttribute("error")
         }
       }}
-      onAssetInputChanged={(e) => props.onChange(e.detail.value)}
-      onAssetSelectorClicked={props.onOpen}
+      onAssetInputChange={(e) => props.onChange(e.detail.value)}
+      onAssetSelectorClick={props.onOpen}
       id={props.name}
       title={props.title}
       asset={asset?.symbol}
@@ -129,7 +129,7 @@ export function OrderAssetPay(props: {
           el.removeAttribute("error")
         }
       }}
-      onAssetInputChanged={(e) =>
+      onAssetInputChange={(e) =>
         props.onChange && props.onChange(e.detail.value)
       }
       id={props.name}
@@ -195,7 +195,7 @@ export function OrderAssetGet(props: {
           el.removeAttribute("error")
         }
       }}
-      onAssetInputChanged={(e) =>
+      onAssetInputChange={(e) =>
         props.onChange && props.onChange(e.detail.value)
       }
       id={props.name}

@@ -26,6 +26,7 @@ export const AssetSelect = (props: {
 
   id: string
   balance: Maybe<BigNumber>
+  balanceMax?: BigNumber
   balanceLabel: string
   withoutMaxValue?: boolean
   withoutMaxBtn?: boolean
@@ -42,7 +43,7 @@ export const AssetSelect = (props: {
   const isTablet = useMedia(theme.viewport.gte.sm)
 
   const spotPriceId =
-    assets.isBond(asset) && asset.isPast ? asset.assetId : asset.id
+    assets.isBond(asset) && !asset.isTradable ? asset.assetId : asset.id
   const isShareToken = asset.isShareToken
 
   const spotPriceAsset = useDisplayPrice(isShareToken ? undefined : spotPriceId)
@@ -106,7 +107,7 @@ export const AssetSelect = (props: {
                     e.preventDefault()
                     if (props.balance != null) {
                       const value = getFloatingPointAmount(
-                        props.balance,
+                        props.balanceMax ?? props.balance,
                         decimals,
                       ).toString()
                       props.onChange(value)

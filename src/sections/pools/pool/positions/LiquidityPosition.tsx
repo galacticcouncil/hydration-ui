@@ -20,20 +20,19 @@ import { useFarms } from "api/farms"
 import { useFarmDepositMutation } from "utils/farms/deposit"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useDisplayPrice } from "utils/displayAsset"
-import { BN_0 } from "utils/constants"
-import Skeleton from "react-loading-skeleton"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { useRpcProvider } from "providers/rpcProvider"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { TOmnipoolAsset, TXYKPool } from "sections/pools/PoolsPage.utils"
+import { TPoolFullData, TXYKPool } from "sections/pools/PoolsPage.utils"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 type Props = {
   position: HydraPositionsTableData
   index: number
-  pool: TOmnipoolAsset
+  pool: TPoolFullData
   onSuccess: () => void
 }
 
@@ -44,7 +43,7 @@ function LiquidityPositionJoinFarmButton(props: {
 }) {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const [joinFarm, setJoinFarm] = useState(false)
   const farms = useFarms([props.poolId])
   const meta = assets.getAsset(props.poolId.toString())
@@ -72,6 +71,7 @@ function LiquidityPositionJoinFarmButton(props: {
     props.position.id,
     toast,
     () => setJoinFarm(false),
+    props.onSuccess,
   )
 
   return (
@@ -80,7 +80,7 @@ function LiquidityPositionJoinFarmButton(props: {
         variant="primary"
         size="small"
         disabled={!farms.data?.length || account?.isExternalWalletConnected}
-        sx={{ width: ["100%", 220] }}
+        sx={{ width: "100%" }}
         onClick={() => setJoinFarm(true)}
       >
         <Icon size={16} icon={<FPIcon />} />
@@ -104,7 +104,7 @@ function LiquidityPositionJoinFarmButton(props: {
 export function LiquidityPositionRemoveLiquidity(
   props:
     | {
-        pool: TOmnipoolAsset
+        pool: TPoolFullData
         position: HydraPositionsTableData
         onSuccess: () => void
       }
@@ -115,17 +115,17 @@ export function LiquidityPositionRemoveLiquidity(
       },
 ) {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const [openRemove, setOpenRemove] = useState(false)
   return (
     <>
       <SButton
         variant="secondary"
         size="small"
+        fullWidth
         onClick={() => setOpenRemove(true)}
         disabled={
-          account?.isExternalWalletConnected ||
-          !props.pool.tradability.canRemoveLiquidity
+          account?.isExternalWalletConnected || !props.pool.canRemoveLiquidity
         }
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
@@ -155,15 +155,7 @@ export const LiquidityPosition = ({
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const meta = assets.getAsset(position.assetId)
-  const price = useDisplayPrice(meta.id)
-
-  const shiftBy = meta.decimals
-  const spotPrice = price.data?.spotPrice
-  const providedAmountPrice = spotPrice
-    ? position.providedAmount.multipliedBy(spotPrice).shiftedBy(-shiftBy)
-    : BN_0
-
-  const providedAmountPriceLoading = price.isLoading
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
     <SContainer>
@@ -182,39 +174,43 @@ export const LiquidityPosition = ({
             {t("liquidity.asset.positions.position.title", { index })}
           </Text>
         </div>
-        <div css={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
-          <div sx={{ flex: "column", gap: 6 }}>
-            <Text fs={14} color="whiteish500">
+        <div
+          sx={{
+            flex: ["column", "row"],
+            justify: "space-between",
+            gap: [10, 0],
+          }}
+        >
+          <div
+            sx={{
+              flex: ["row", "column"],
+              gap: 6,
+              justify: ["space-between", "start"],
+            }}
+          >
+            <Text fs={[13, 14]} color="whiteish500">
               {t("liquidity.asset.positions.position.initialValue")}
             </Text>
-            <div>
-              <Text>
+            <div sx={{ flex: "column", align: ["end", "start"] }}>
+              <Text fs={[13, 16]}>
                 {t("value.token", {
                   value: position.providedAmount,
                   fixedPointScale: meta.decimals,
                   numberSuffix: ` ${meta.symbol}`,
                 })}
               </Text>
-              {providedAmountPriceLoading ? (
-                <Skeleton width={50} height={7} />
-              ) : (
-                <DollarAssetValue
-                  value={providedAmountPrice}
-                  wrapper={(children) => (
-                    <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
-                      {children}
-                    </Text>
-                  )}
-                >
-                  <DisplayValue value={providedAmountPrice} />
-                </DollarAssetValue>
-              )}
             </div>
           </div>
-          <Separator orientation="vertical" />
-          <div sx={{ flex: "column", gap: 6 }}>
+          <Separator orientation={isDesktop ? "vertical" : "horizontal"} />
+          <div
+            sx={{
+              flex: ["row", "column"],
+              gap: 6,
+              justify: "space-between",
+            }}
+          >
             <div sx={{ display: "flex", gap: 6 }}>
-              <Text fs={14} color="whiteish500">
+              <Text fs={[13, 14]} color="whiteish500">
                 {t("liquidity.asset.positions.position.currentValue")}
               </Text>
               <LrnaPositionTooltip
@@ -223,11 +219,12 @@ export const LiquidityPosition = ({
                 lrnaPosition={position.lrna}
               />
             </div>
-            <div sx={{ flex: "column", align: "start" }}>
+            <div sx={{ flex: "column", align: ["end", "start"] }}>
               <WalletAssetsHydraPositionsData
                 assetId={position.assetId}
                 value={position.value}
                 lrna={position.lrna}
+                fontSize={[13, 16]}
               />
               <DollarAssetValue
                 value={position.valueDisplay}
@@ -245,9 +242,8 @@ export const LiquidityPosition = ({
       </div>
       <div
         sx={{
-          flex: "column",
-          align: "end",
-          gap: 8,
+          flex: ["column", "row"],
+          gap: 12,
         }}
       >
         {!meta.isStableSwap && (

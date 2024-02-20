@@ -4,7 +4,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0 } from "utils/constants"
 import { STradingPairContainer } from "./RemoveLiquidity.styled"
@@ -13,6 +13,9 @@ import { RemoveLiquidityInput } from "./components/RemoveLiquidityInput"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { useXYKTotalLiquidity } from "api/xyk"
+import { TShareToken } from "api/assetDetails"
+import { useAccountBalances } from "api/accountBalances"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type RemoveLiquidityProps = {
   onClose: () => void
@@ -29,15 +32,14 @@ export const RemoveXYKLiquidityForm = ({
   const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
 
   const { api, assets } = useRpcProvider()
+  const shareTokenMeta = assets.getAsset(pool.id) as TShareToken
   const { createTransaction } = useStore()
-  const { account } = useAccountStore()
-  const [assetAMeta, assetBMeta] = assets.getAssets(pool.assets)
+  const { account } = useAccount()
+  const [assetAMeta, assetBMeta] = assets.getAssets(shareTokenMeta.assets)
 
   const totalLiquidity = useXYKTotalLiquidity(pool.poolAddress)
-  const shareTokenBalance = useTokenBalance(
-    pool.shareTokenMeta.id,
-    account?.address,
-  )
+  const shareTokenBalance = useTokenBalance(shareTokenMeta.id, account?.address)
+  const poolBalance = useAccountBalances(pool.poolAddress)
 
   const value = form.watch("value")
 
@@ -46,14 +48,17 @@ export const RemoveXYKLiquidityForm = ({
       ?.multipliedBy(value)
       .dividedToIntegerBy(100) ?? BN_0
 
-  const removeAmount = pool.poolBalance.map((balance) => {
-    return removeShareToken &&
-      totalLiquidity.data &&
-      balance &&
-      !totalLiquidity.data?.isZero()
-      ? removeShareToken.multipliedBy(balance).dividedBy(totalLiquidity.data)
-      : BN_0
-  })
+  const removeAmount =
+    poolBalance.data?.balances.map((balance) => {
+      return removeShareToken &&
+        totalLiquidity.data &&
+        balance &&
+        !totalLiquidity.data?.isZero()
+        ? removeShareToken
+            .multipliedBy(balance.freeBalance)
+            .dividedBy(totalLiquidity.data)
+        : BN_0
+    }) ?? []
 
   const handleSubmit = async () => {
     await createTransaction(
@@ -78,7 +83,7 @@ export const RemoveXYKLiquidityForm = ({
               i18nKey="liquidity.remove.modal.xyk.toast.onLoading"
               tOptions={{
                 value: removeShareToken,
-                fixedPointScale: pool.shareTokenMeta.decimals,
+                fixedPointScale: shareTokenMeta.decimals,
               }}
             >
               <span />
@@ -91,7 +96,7 @@ export const RemoveXYKLiquidityForm = ({
               i18nKey="liquidity.remove.modal.xyk.toast.onSuccess"
               tOptions={{
                 value: removeShareToken,
-                fixedPointScale: pool.shareTokenMeta.decimals,
+                fixedPointScale: shareTokenMeta.decimals,
               }}
             >
               <span />
@@ -119,7 +124,7 @@ export const RemoveXYKLiquidityForm = ({
             {t("liquidity.remove.modal.value", {
               value: getFloatingPointAmount(
                 removeShareToken,
-                pool.shareTokenMeta.decimals,
+                shareTokenMeta.decimals,
               ),
             })}
           </Text>
@@ -136,7 +141,7 @@ export const RemoveXYKLiquidityForm = ({
                 balance={t("liquidity.remove.modal.shares", {
                   shares: getFloatingPointAmount(
                     shareTokenBalance.data?.balance ?? 0,
-                    pool.shareTokenMeta.decimals,
+                    shareTokenMeta.decimals,
                   ),
                 })}
               />

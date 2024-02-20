@@ -20,7 +20,7 @@ import { useOrdersTable } from "./OtcOrders.utils"
 import { OrderTableData } from "./OtcOrdersData.utils"
 import { OtcOrderActionsMob } from "./actions/OtcOrderActionsMob"
 import { safeConvertAddressSS58 } from "utils/formatting"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 
 type Props = {
@@ -39,7 +39,7 @@ export const OtcOrderTable = ({ data, showMyOrders, showPartial }: Props) => {
     undefined,
   )
 
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const userAddress = safeConvertAddressSS58(
     account?.address,
     HYDRA_ADDRESS_PREFIX,
@@ -83,7 +83,6 @@ export const OtcOrderTable = ({ data, showMyOrders, showPartial }: Props) => {
           {table.getRowModel().rows.map((row, i) => (
             <Fragment key={row.id}>
               <TableRow
-                isOdd={!(i % 2)}
                 onClick={() => {
                   isDesktop && row.toggleSelected()
                   !isDesktop && setRow(row.original)

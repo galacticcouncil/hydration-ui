@@ -99,10 +99,14 @@ export const SModalSection = styled.div`
   display: flex;
   flex-flow: column;
   overflow: hidden;
+  height: 100%;
+  padding-bottom: env(safe-area-inset-bottom);
   background: ${theme.colors.darkBlue700};
   box-shadow: ${theme.shadows.modal};
 
   @media ${theme.viewport.gte.sm} {
+    height: auto;
+    padding-bottom: 0;
     margin: 4px;
     border-radius: 8px;
     border: 1px solid rgba(158, 167, 180, 0.2);
@@ -129,12 +133,21 @@ export const SContent = styled.div<{
     hasTopContent && "top: var(--modal-top-content-height);"}
   z-index: ${theme.zIndices.modal};
 
-  ${({ isDrawer }) =>
-    isDrawer &&
-    css`
-      top: initial;
-      max-height: 90%;
-    `}
+  ${({ isDrawer, hasTopContent }) =>
+    isDrawer
+      ? css`
+          top: initial;
+          max-height: 90%;
+        `
+      : hasTopContent
+      ? css`
+          height: calc(100vh - var(--modal-top-content-height));
+          height: calc(100dvh - var(--modal-top-content-height));
+        `
+      : css`
+          height: 100vh;
+          height: 100dvh;
+        `}
 
   animation: 150ms cubic-bezier(0.16, 1, 0.3, 1)
     ${({ isDrawer }) => (isDrawer ? drawerKeyFrames : mobFadeInKeyframes)};
@@ -152,6 +165,7 @@ export const SContent = styled.div<{
 
     width: 100%;
     max-width: min(600px, 95vw);
+    height: auto;
 
     border-radius: 4px;
     animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) ${fadeInKeyframes};

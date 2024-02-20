@@ -216,7 +216,7 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
     background: rgba(${theme.rgbColors.white}, 0.03);
     color: ${theme.colors.white};
 
-    border: 1px solid rgba(${theme.rgbColors.white}, 0.1);
+    border: 1px solid rgba(${theme.rgbColors.white}, 0.03);
 
     :hover,
     :active {
@@ -287,6 +287,22 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
 
     :active:before {
       transform: translate3d(3px, 3px, -1px);
+    }
+  `,
+  green: css`
+    border-radius: 4px;
+    background: ${theme.colors.green500};
+    color: ${theme.colors.darkBlue800};
+    box-shadow: 3px -2px 13.4px 4px rgba(146, 250, 231, 0.27);
+
+    :hover {
+      background: #71f8c5;
+      color: ${theme.colors.darkBlue800};
+    }
+
+    :active {
+      background: #c0fbe5;
+      color: ${theme.colors.darkBlue800};
     }
   `,
 }

@@ -4,11 +4,13 @@ import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Maybe, undefinedNoop, normalizeId } from "utils/helpers"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { ToastMessage, useAccountStore, useStore } from "state/store"
+import { ToastMessage, useStore } from "state/store"
 import { u32 } from "@polkadot/types-codec"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { usePaymentInfo } from "./transaction"
 import { useRpcProvider } from "providers/rpcProvider"
+import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const getAcceptedCurrency =
   (api: ApiPromise, id: u32 | string) => async () => {
@@ -19,6 +21,7 @@ export const getAcceptedCurrency =
     return {
       id: normalizedId,
       accepted: normalizedId === NATIVE_ASSET_ID || !result.isEmpty,
+      data: result.unwrapOr(null)?.toBigNumber(),
     }
   }
 
@@ -36,7 +39,7 @@ export const useAcceptedCurrencies = (ids: Maybe<string | u32>[]) => {
 
 export const useSetAsFeePayment = () => {
   const { api } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
   const { data: paymentInfoData } = usePaymentInfo(
@@ -63,8 +66,23 @@ export const useSetAsFeePayment = () => {
   }
 }
 
+export const getNativeEvmAssetId = async (api: ApiPromise) => {
+  const assets = await api.query.assetRegistry.assetMetadataMap.entries()
+  const weth = assets.find(([_, dataRaw]) => {
+    return dataRaw.unwrap().symbol.toUtf8() === NATIVE_EVM_ASSET_SYMBOL
+  })
+
+  const assetId = weth?.[0].args[0].toString()
+
+  return assetId
+}
+
 export const getAccountCurrency =
   (api: ApiPromise, address: string | AccountId32) => async () => {
+    if (typeof address === "string" && isEvmAccount(address)) {
+      return await getNativeEvmAssetId(api)
+    }
+
     const result =
       await api.query.multiTransactionPayment.accountCurrencyMap(address)
 

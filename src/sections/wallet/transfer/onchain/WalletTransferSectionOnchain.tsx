@@ -1,6 +1,5 @@
 import { useAccountCurrency } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
-import { usePaymentInfo } from "api/transaction"
 import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import BigNumber from "bignumber.js"
 import { Alert } from "components/Alert/Alert"
@@ -12,10 +11,14 @@ import { Trans, useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { useAccountStore, useStore } from "state/store"
+import { useStore } from "state/store"
 import { theme } from "theme"
-import { BN_1, BN_10 } from "utils/constants"
-import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
+import { BN_0, BN_1, BN_10 } from "utils/constants"
+import {
+  getChainSpecificAddress,
+  safeConvertAddressSS58,
+  shortenAccountAddress,
+} from "utils/formatting"
 import { FormValues } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
@@ -23,6 +26,13 @@ import {
   PasteAddressIcon,
 } from "./WalletTransferSectionOnchain.styled"
 import { useTokenBalance } from "api/balances"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { H160, safeConvertAddressH160 } from "utils/evm"
+import { useDebouncedValue } from "hooks/useDebouncedValue"
+import {
+  TransferMethod,
+  usePaymentFees,
+} from "./WalletTransferSectionOnchain.utils"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -38,13 +48,13 @@ export function WalletTransferSectionOnchain({
   openAddressBook: () => void
 }) {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { api, assets } = useRpcProvider()
   const { createTransaction } = useStore()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const balance = useTokenBalance(asset, account?.address)
+  const tokenBalance = useTokenBalance(asset, account?.address)
   const assetMeta = assets.getAsset(asset.toString())
 
   const accountCurrency = useAccountCurrency(account?.address)
@@ -54,29 +64,61 @@ export function WalletTransferSectionOnchain({
 
   const spotPrice = useSpotPrice(assets.native.id, accountCurrencyMeta?.id)
 
-  const { data: paymentInfoData } = usePaymentInfo(
-    asset.toString() === assets.native.id
-      ? api.tx.balances.transferKeepAlive("", "0")
-      : api.tx.tokens.transferKeepAlive("", asset, "0"),
+  const isTransferingPaymentAsset = accountCurrency.data === asset.toString()
+
+  const balance = tokenBalance.data?.balance ?? BN_0
+
+  const [debouncedAmount] = useDebouncedValue(form.watch("amount"), 500)
+
+  const amount = new BigNumber(debouncedAmount)
+    .multipliedBy(BN_10.pow(assetMeta.decimals))
+    .decimalPlaces(0)
+
+  const { currentFee, maxFee } = usePaymentFees({
+    asset,
+    currentAmount: amount,
+    maxAmount: balance,
+  })
+
+  const nativeDecimals = assets.native.decimals
+  const nativeDecimalsDiff =
+    nativeDecimals - (accountCurrencyMeta?.decimals ?? nativeDecimals)
+
+  const convertedFee = currentFee.multipliedBy(
+    spotPrice.data?.spotPrice ?? BN_1,
   )
+
+  const convertedMaxFee = maxFee.multipliedBy(spotPrice.data?.spotPrice ?? BN_1)
+
+  const balanceMaxAdjusted = balance
+    .minus(convertedMaxFee.div(BN_10.pow(nativeDecimalsDiff)))
+    .decimalPlaces(0)
+
+  const balanceMax = isTransferingPaymentAsset
+    ? BigNumber.max(BN_0, balanceMaxAdjusted)
+    : balance
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (assetMeta.decimals == null) throw new Error("Missing asset meta")
 
-    const amount = new BigNumber(values.amount).multipliedBy(
-      BN_10.pow(assetMeta.decimals),
-    )
+    const amount = new BigNumber(values.amount)
+      .multipliedBy(BN_10.pow(assetMeta.decimals))
+      .decimalPlaces(0)
+
+    const isMax = amount.gte(balanceMax)
+    const method: TransferMethod = isMax ? "transfer" : "transferKeepAlive"
+
+    const normalizedDest =
+      safeConvertAddressH160(values.dest) !== null
+        ? new H160(values.dest).toAccount()
+        : values.dest
 
     return await createTransaction(
       {
         tx:
           asset.toString() === assets.native.id
-            ? api.tx.balances.transferKeepAlive(values.dest, amount.toFixed())
-            : api.tx.tokens.transferKeepAlive(
-                values.dest,
-                asset,
-                amount.toFixed(),
-              ),
+            ? api.tx.balances[method](normalizedDest, amount.toFixed())
+            : api.tx.tokens[method](normalizedDest, asset, amount.toFixed()),
       },
       {
         onClose,
@@ -89,7 +131,10 @@ export function WalletTransferSectionOnchain({
               tOptions={{
                 value: values.amount,
                 symbol: assetMeta.symbol,
-                address: shortenAccountAddress(values.dest, 12),
+                address: shortenAccountAddress(
+                  getChainSpecificAddress(normalizedDest),
+                  12,
+                ),
               }}
             >
               <span />
@@ -103,7 +148,10 @@ export function WalletTransferSectionOnchain({
               tOptions={{
                 value: values.amount,
                 symbol: assetMeta.symbol,
-                address: shortenAccountAddress(values.dest, 12),
+                address: shortenAccountAddress(
+                  getChainSpecificAddress(normalizedDest),
+                  12,
+                ),
               }}
             >
               <span />
@@ -117,7 +165,10 @@ export function WalletTransferSectionOnchain({
               tOptions={{
                 value: values.amount,
                 symbol: assetMeta.symbol,
-                address: shortenAccountAddress(values.dest, 12),
+                address: shortenAccountAddress(
+                  getChainSpecificAddress(normalizedDest),
+                  12,
+                ),
               }}
             >
               <span />
@@ -148,6 +199,7 @@ export function WalletTransferSectionOnchain({
             validate: {
               validAddress: (value) =>
                 safeConvertAddressSS58(value, 0) != null ||
+                safeConvertAddressH160(value) !== null ||
                 t("wallet.assets.transfer.error.validAddress"),
               notSame: (value) => {
                 if (!account?.address) return true
@@ -215,7 +267,7 @@ export function WalletTransferSectionOnchain({
                   if (assetMeta.decimals == null)
                     throw new Error("Missing asset meta")
                   if (
-                    balance.data?.balance.gte(
+                    balance?.gte(
                       BigNumber(value).multipliedBy(
                         BN_10.pow(assetMeta.decimals),
                       ),
@@ -240,6 +292,8 @@ export function WalletTransferSectionOnchain({
                   : t("wallet.assets.transfer.asset.label_mob")
               }
               name={name}
+              balance={balance}
+              balanceMax={balanceMax}
               value={value}
               onChange={onChange}
               asset={asset}
@@ -256,11 +310,9 @@ export function WalletTransferSectionOnchain({
         <SummaryRow
           label={t("wallet.assets.transfer.transaction_cost")}
           content={
-            paymentInfoData?.partialFee != null
-              ? t("liquidity.add.modal.row.transactionCostValue", {
-                  amount: new BigNumber(
-                    paymentInfoData.partialFee.toHex(),
-                  ).multipliedBy(spotPrice.data?.spotPrice ?? BN_1),
+            convertedFee.gt(0)
+              ? t("value.tokenWithSymbol", {
+                  value: convertedFee,
                   symbol: accountCurrencyMeta?.symbol,
                   fixedPointScale: 12,
                 })

@@ -1,11 +1,11 @@
-import { ApiPromise, WsProvider } from "@polkadot/api"
+import { WsProvider } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
-import * as definitions from "interfaces/voting/definitions"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getAssets } from "./assetDetails"
+import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
 
 export const PROVIDERS = [
   {
@@ -23,6 +23,13 @@ export const PROVIDERS = [
     env: "production",
   },
   {
+    name: "Mainnet via Helikon",
+    url: "wss://rpc.helikon.io/hydradx",
+    indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
+    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    env: "production",
+  },
+  {
     name: "Rococo via GC",
     url: "wss://hydradx-rococo-rpc.play.hydration.cloud",
     indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",
@@ -33,9 +40,8 @@ export const PROVIDERS = [
   {
     name: "Testnet",
     url: "wss://rpc.nice.hydration.cloud",
-    indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",
-    squidUrl:
-      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
+    indexerUrl: "https://archive.nice.hydration.cloud/graphql",
+    squidUrl: "https://data-squid.nice.hydration.cloud/graphql",
     env: ["development"],
   },
   /*{
@@ -62,6 +68,7 @@ export const useProviderRpcUrlStore = create(
     }),
     {
       name: "rpcUrl",
+      version: 1,
       getStorage: () => ({
         async getItem(name: string) {
           return window.localStorage.getItem(name)
@@ -87,14 +94,15 @@ export const useProviderData = (rpcUrl?: string) => {
     QUERY_KEYS.provider(rpcUrl ?? import.meta.env.VITE_PROVIDER_URL),
     async ({ queryKey: [_, url] }) => {
       const provider = new WsProvider(url)
-      const types = Object.values(definitions).reduce(
-        (res, { types }): object => ({ ...res, ...types }),
-        {},
-      )
 
-      const api = await ApiPromise.create({ provider, types })
+      const apiPool = SubstrateApis.getInstance()
+      const api = await apiPool.api(provider.endpoint)
 
-      const { id, isStableCoin, update } = displayAsset
+      const {
+        isStableCoin,
+        stableCoinId: chainStableCoinId,
+        update,
+      } = displayAsset
 
       const assets = await getAssets(api)
 
@@ -112,7 +120,7 @@ export const useProviderData = (rpcUrl?: string) => {
         )?.id
       }
 
-      if (stableCoinId && isStableCoin && id !== stableCoinId) {
+      if (stableCoinId && isStableCoin && chainStableCoinId !== stableCoinId) {
         // setting stable coin id from asset registry
         update({
           id: stableCoinId,
@@ -127,6 +135,7 @@ export const useProviderData = (rpcUrl?: string) => {
         api,
         assets: assets.assets,
         tradeRouter: assets.tradeRouter,
+        featureFlags: assets.featureFlags,
         provider,
       }
     },

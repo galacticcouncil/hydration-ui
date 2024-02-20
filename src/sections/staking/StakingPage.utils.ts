@@ -1,7 +1,7 @@
 import { useBestNumber } from "api/chain"
 import BN, { BigNumber } from "bignumber.js"
 import * as wasm from "@galacticcouncil/math-staking"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import {
   TAccumulatedRpsUpdated,
   TStakingPosition,
@@ -17,8 +17,6 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { BN_0, BN_100, BN_BILL, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
 import { useReferendums } from "api/democracy"
-//import { usePaymentInfo } from "api/transaction"
-//import { useAccountCurrency } from "api/payments"
 import { useRpcProvider } from "providers/rpcProvider"
 
 const CONVICTIONS: { [key: string]: number } = {
@@ -73,7 +71,7 @@ export const useStakeData = () => {
     assets: { native },
   } = useRpcProvider()
 
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const stake = useStake(account?.address)
   const circulatingSupply = useCirculatingSupply()
   const balance = useTokenBalance(native.id, account?.address)
@@ -83,8 +81,6 @@ export const useStakeData = () => {
     stake.data?.positionId?.toString(),
   )
   const referendas = useReferendums("finished")
-
-  //const accountCurrency = useAccountCurrency(account?.address)
 
   const vestLocks = locks.data?.reduce(
     (acc, lock) => (lock.type === "ormlvest" ? acc.plus(lock.amount) : acc),
@@ -102,22 +98,6 @@ export const useStakeData = () => {
     .minus(accumulatedLockedRewards)
 
   const availableBalance = BigNumber.max(0, rawAvailableBalance ?? BN_0)
-
-  /*const { data: paymentInfoData } = usePaymentInfo(
-    api.tx.staking.increaseStake("0", availableBalance?.toString()),
-  )
-
-  console.log(
-    paymentInfoData?.partialFee.toString(),
-    accountCurrency,
-    "paymentInfoData",
-  )*/
-
-  //const transactionCost =
-
-  //const tx = api.tx.staking.increaseStake(positionId, amount)
-
-  //const paymentInfo = await tx.paymentInfo(account)
 
   const queries = [
     stake,
@@ -251,7 +231,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
   const {
     assets: { native },
   } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const bestNumber = useBestNumber()
   const stake = useStake(account?.address)
   const stakingEvents = useStakingEvents()
@@ -445,7 +425,7 @@ export const useClaimReward = () => {
   const {
     assets: { native },
   } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const bestNumber = useBestNumber()
   const stake = useStake(account?.address)
   const stakingConsts = useStakingConsts()
@@ -533,42 +513,30 @@ export const useClaimReward = () => {
 
     const payablePercentage = wasm.sigmoid(points, a, b)
 
-    let rewards = BN(
-      wasm.calculate_percentage_amount(maxRewards, payablePercentage),
-    )
-
-    rewards.plus(
-      wasm.calculate_percentage_amount(
-        stakePosition.accumulatedUnpaidRewards.toString(),
-        payablePercentage,
-      ),
-    )
-
-    const unlockedRewards = BN(
-      wasm.calculate_percentage_amount(
-        stakePosition.accumulatedLockedRewards.toString(),
-        payablePercentage,
-      ),
-    )
-
-    const availabledRewards = rewards
-      .plus(stakePosition.accumulatedLockedRewards)
-      .div(BN_BILL)
-
-    const allocatedRewards = BN(maxRewards)
+    const totalRewards = BN(maxRewards)
       .plus(stakePosition.accumulatedUnpaidRewards)
       .plus(stakePosition.accumulatedLockedRewards)
-      .div(BN_BILL)
+
+    const userRewards = BN(
+      wasm.calculate_percentage_amount(
+        totalRewards.toString(),
+        payablePercentage,
+      ),
+    )
+
+    const availabeRewards = BN.max(
+      stakePosition.accumulatedLockedRewards,
+      userRewards,
+    )
 
     return {
       positionId,
-      rewards: availabledRewards,
-      unlockedRewards: unlockedRewards.div(BN_BILL),
+      rewards: availabeRewards.div(BN_BILL),
+      maxRewards: totalRewards.div(BN_BILL),
       actionPoints,
-      allocatedRewardsPercentage: availabledRewards
-        .div(allocatedRewards)
+      allocatedRewardsPercentage: availabeRewards
+        .div(totalRewards)
         .multipliedBy(100),
-      maxRewards: allocatedRewards,
     }
   }, [bestNumber.data, potBalance.data, stake, stakingConsts])
 

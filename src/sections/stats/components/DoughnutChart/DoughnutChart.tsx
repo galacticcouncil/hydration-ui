@@ -5,7 +5,7 @@ import {
   getPieConfig,
 } from "sections/stats/components/PieChart/PieChart.utils"
 import { useTranslation } from "react-i18next"
-import { Fragment, ReactNode, useMemo, useState } from "react"
+import { Fragment, ReactNode, useCallback, useMemo, useState } from "react"
 import { DefaultSliceLabel } from "./components/DefaultSliceLabel"
 import { Text } from "components/Typography/Text/Text"
 import {
@@ -16,6 +16,7 @@ import {
 import { AnimatePresence } from "framer-motion"
 import { ScrollablePicker } from "sections/stats/components/ScrollablePicker/ScrollablePicker"
 import { EmotionJSX } from "@emotion/react/types/jsx-namespace"
+import { useDebouncedValue } from "hooks/useDebouncedValue"
 
 export type TSlice = {
   percentage: number
@@ -28,6 +29,7 @@ export type TSlice = {
 
 type DoughnutChartProps = {
   slices: TSlice[]
+  property?: string
   label?: ({ slices }: { slices: TSlice[] }) => ReactNode
 }
 
@@ -39,16 +41,20 @@ export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
 
   const [activeSlice, setActiveSlice] = useState<number | undefined>(undefined)
 
+  const [debouncedAtiveSlice] = useDebouncedValue(activeSlice, 150)
+
+  const handleSetActiveSlice = useCallback(
+    (index: number | undefined) =>
+      isDesktop && index !== activeSlice && setActiveSlice(index),
+    [activeSlice, isDesktop],
+  )
+
   const restCmp = slices.find((slice) => slice?.symbol === "rest")
   const restIsSelected = restCmp && slices.length - 1 === activeSlice
 
-  let label = props.label ? (
-    props.label({ slices })
-  ) : (
-    <DefaultSliceLabel slices={slices} />
-  )
+  let label
 
-  if (activeSlice != null) {
+  if (debouncedAtiveSlice != null) {
     if (!isDesktop && restIsSelected) {
       label = (
         <Text color="basic100" fs={[20, 34]}>
@@ -56,8 +62,14 @@ export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
         </Text>
       )
     } else {
-      label = slices[activeSlice].label
+      label = slices[debouncedAtiveSlice].label
     }
+  } else {
+    label = props.label ? (
+      props.label({ slices })
+    ) : (
+      <DefaultSliceLabel slices={slices} property={props.property} />
+    )
   }
 
   const sliceComponents = useMemo(() => {
@@ -78,6 +90,8 @@ export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
             color={slice.color}
             size={config.shadowSize}
             radial
+            onMouseMove={() => handleSetActiveSlice(index)}
+            onMouseLeave={() => handleSetActiveSlice(undefined)}
             clipPath={getCircleCoordinates(
               config.shadowInnerRadius,
               config.innerRadius,
@@ -117,15 +131,15 @@ export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
               config.pieSize,
               slice.percentage,
             )}
-            onMouseMove={() => setActiveSlice(index)}
-            onMouseLeave={() => setActiveSlice(undefined)}
+            onMouseMove={() => handleSetActiveSlice(index)}
+            onMouseLeave={() => handleSetActiveSlice(undefined)}
           />
         </Fragment>
       )
     })
 
     return <SSliceContainer size={config.pieSize}>{components}</SSliceContainer>
-  }, [config, slices, activeSlice])
+  }, [config, slices, activeSlice, handleSetActiveSlice])
 
   return (
     <div sx={{ flex: "column", gap: 24 }}>

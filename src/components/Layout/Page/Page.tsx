@@ -11,6 +11,9 @@ import {
 import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
 import { useLocation } from "react-use"
 import { Interpolation, Theme } from "@emotion/react"
+import { Web3Connect } from "sections/web3-connect/Web3Connect"
+import { ReferralsConnect } from "sections/referrals/ReferralsConnect"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   className?: string
@@ -25,6 +28,7 @@ export const Page = ({
   subHeader,
   subHeaderStyle,
 }: Props) => {
+  const { featureFlags } = useRpcProvider()
   const ref = useRef<HTMLDivElement>(null)
   const location = useLocation()
 
@@ -36,19 +40,26 @@ export const Page = ({
   }, [location.pathname])
 
   return (
-    <SPage ref={ref}>
-      <div css={{ position: "relative" }}>
-        <SGradientBg />
-        <Header />
-        <SPageContent>
-          {subHeader && (
-            <SSubHeader css={subHeaderStyle}>{subHeader}</SSubHeader>
-          )}
-          <SPageInner className={className}>{children}</SPageInner>
-          <ProviderSelectButton />
-        </SPageContent>
-        <MobileNavBar />
-      </div>
-    </SPage>
+    <>
+      <SPage ref={ref}>
+        <div
+          sx={{ flex: "column", height: "100%" }}
+          css={{ position: "relative" }}
+        >
+          <SGradientBg />
+          <Header />
+          <SPageContent>
+            {subHeader && (
+              <SSubHeader css={subHeaderStyle}>{subHeader}</SSubHeader>
+            )}
+            <SPageInner className={className}>{children}</SPageInner>
+            <ProviderSelectButton />
+          </SPageContent>
+          <MobileNavBar />
+        </div>
+      </SPage>
+      <Web3Connect />
+      {featureFlags.referrals && <ReferralsConnect />}
+    </>
   )
 }

@@ -90,9 +90,9 @@ export const useRecentTradesTableData = (assetId?: string) => {
             ? trade.args.who
             : encodeAddress(decodeAddress(trade.args.who), HYDRA_ADDRESS_PREFIX)
 
-          const identity = identities
-            .find((identity) => identity.data?.address === trade.args.who)
-            ?.data?.identity?.info.display.asRaw.toUtf8()
+          const identity = identities.find(
+            (identity) => identity.data?.address === trade.args.who,
+          )?.data?.identity
 
           const account = identity ?? hydraAddress
 

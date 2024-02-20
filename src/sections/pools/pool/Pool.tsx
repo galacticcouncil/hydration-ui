@@ -1,107 +1,48 @@
-import { TOmnipoolAsset } from "sections/pools/PoolsPage.utils"
-import { SContainer, SGridContainer } from "./Pool.styled"
-import { PoolDetails } from "./details/PoolDetails"
-import { PoolValue } from "./details/PoolValue"
-import { useEffect, useState } from "react"
-import { PoolActions } from "./actions/PoolActions"
-import { useMedia } from "react-use"
-import { theme } from "theme"
-import { AnimatePresence, motion } from "framer-motion"
-import { PoolFooter } from "./footer/PoolFooter"
-import { PoolIncentives } from "./details/PoolIncentives"
-import { PoolCapacity } from "sections/pools/pool/capacity/PoolCapacity"
-import { LiquidityPositionWrapper } from "./positions/LiquidityPositionWrapper"
-import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
-import { NATIVE_ASSET_ID } from "utils/api"
-import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
-import { StablepoolPosition } from "sections/pools/stablepool/positions/StablepoolPosition"
-import { useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
-import { useAccountStore } from "state/store"
+import {
+  TPool,
+  TXYKPool,
+  usePoolDetails,
+  useXYKPoolDetails,
+} from "sections/pools/PoolsPage.utils"
+import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
+import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
+import {
+  MyPositions,
+  MyXYKPositions,
+} from "sections/pools/pool/myPositions/MyPositions"
+import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
+import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
+import { SPoolContainer } from "./Pool.styled"
 
-type Props = { pool: TOmnipoolAsset }
+export const PoolWrapper = ({ pool }: { pool: TPool | TXYKPool }) => {
+  const isXYK = isXYKPoolType(pool)
 
-export const Pool = ({ pool }: Props) => {
-  const { account } = useAccountStore()
-  const [isExpanded, setIsExpanded] = useState(false)
-  const { warnings, setWarnings } = useWarningsStore()
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+  return isXYK ? <XYKPool pool={pool} /> : <Pool pool={pool} />
+}
 
-  const queryClient = useQueryClient()
+const Pool = ({ pool }: { pool: TPool }) => {
+  const poolDetails = usePoolDetails(pool.id)
 
-  const hasExpandContent =
-    !!pool.omnipoolNftPositions.length ||
-    !!pool.miningNftPositions.length ||
-    !!pool.stablepoolUserPosition?.gt(0)
-
-  const handleExpand = () => {
-    setIsExpanded((prev) => !prev)
-  }
-
-  useEffect(() => {
-    if (pool.id === NATIVE_ASSET_ID) {
-      if (
-        pool.omnipoolNftPositions.length &&
-        warnings.hdxLiquidity.visible == null
-      ) {
-        setWarnings("hdxLiquidity", true)
-      }
-    }
-  }, [
-    pool.id,
-    warnings.hdxLiquidity.visible,
-    setWarnings,
-    pool.omnipoolNftPositions.length,
-  ])
-
-  const refetchPositions = () => {
-    queryClient.refetchQueries(
-      QUERY_KEYS.accountOmnipoolPositions(account?.address),
-    )
-  }
+  if (poolDetails.isInitialLoading) return <PoolSkeleton />
 
   return (
-    <SContainer id={pool.id.toString()}>
-      <SGridContainer>
-        <PoolDetails pool={pool} css={{ gridArea: "details" }} />
-        <PoolIncentives poolId={pool.id} css={{ gridArea: "incentives" }} />
-        <PoolValue pool={pool} css={{ gridArea: "values" }} />
-        <PoolActions
-          pool={pool}
-          canExpand={hasExpandContent}
-          isExpanded={isExpanded}
-          onExpandClick={handleExpand}
-          refetchPositions={refetchPositions}
-          css={{ gridArea: "actions" }}
-        />
-        <PoolCapacity id={pool.id.toString()} css={{ gridArea: "capacity" }} />
-      </SGridContainer>
-      {isDesktop && hasExpandContent && (
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ height: 0 }}
-              animate={{ height: "auto" }}
-              exit={{ height: 0 }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              css={{ overflow: "hidden" }}
-            >
-              {pool.isStablepool && (
-                <StablepoolPosition
-                  pool={pool}
-                  refetchPositions={refetchPositions}
-                />
-              )}
-              <LiquidityPositionWrapper
-                pool={pool}
-                refetchPositions={refetchPositions}
-              />
-              <FarmingPositionWrapper pool={pool} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      )}
-      {isDesktop && <PoolFooter pool={pool} />}
-    </SContainer>
+    <SPoolContainer>
+      <PoolDetails pool={{ ...pool, ...poolDetails.data }} />
+      <MyPositions pool={{ ...pool, ...poolDetails.data }} />
+      <AvailableFarms pool={pool} />
+    </SPoolContainer>
+  )
+}
+
+const XYKPool = ({ pool }: { pool: TXYKPool }) => {
+  const poolDetails = useXYKPoolDetails(pool)
+
+  if (poolDetails.isInitialLoading) return <PoolSkeleton />
+
+  return (
+    <SPoolContainer>
+      <PoolDetails pool={{ ...pool, ...poolDetails.data }} />
+      <MyXYKPositions pool={{ ...pool }} />
+    </SPoolContainer>
   )
 }

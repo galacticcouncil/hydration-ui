@@ -5,6 +5,10 @@ import { u32 } from "@polkadot/types-codec"
 import { u8aConcat } from "@polkadot/util"
 import { U8aLike } from "@polkadot/util/types"
 import { ApiPromise } from "@polkadot/api"
+import { KeyOfType } from "utils/types"
+import { knownGenesis } from "@polkadot/networks/defaults/genesis"
+import { availableNetworks } from "@polkadot/networks"
+import type { Network } from "@polkadot/networks/types"
 
 export const noop = () => {}
 export const undefinedNoop = () => undefined
@@ -21,11 +25,6 @@ export type Maybe<T> = T | null | undefined
 export type FormValues<T> = T extends UseFormReturn<infer Values>
   ? Values
   : never
-
-export type KeyOfType<T, V> = keyof {
-  [P in keyof T as T[P] extends V ? P : never]: P
-} &
-  keyof T
 
 export function isRecord<Key extends string, Value>(
   x: unknown,
@@ -200,30 +199,69 @@ function normalize(str: string) {
 
 /**
  * Searches an array of objects for a given search string in specified keys.
+ * Keys order is an important. Result will be ordered by keys order in the array.
  */
 export function arraySearch<T extends Record<string, any>>(
   array: Array<T>,
   search = "",
   keys?: Array<Extract<KeyOfType<T, string>, string>>,
 ) {
-  return array.filter((item) => {
-    let found = false
+  return array
+    .reduce<Array<Array<T>>>((memo, item) => {
+      const searchableKeys =
+        keys || Object.keys(item).filter((key) => typeof item[key] === "string")
 
-    // search only in keys with string values
-    const searchableKeys =
-      keys || Object.keys(item).filter((key) => typeof item[key] === "string")
+      searchableKeys.some((key, index) => {
+        const normalizedSearch = normalize(search)
+        const tokens = tokenize(normalizedSearch)
+        const values = tokenize(normalize(item[key].toString()))
 
-    searchableKeys.forEach((key) => {
-      const normalizedSearch = normalize(search)
-      const tokens = tokenize(normalizedSearch)
-      const values = tokenize(normalize(item[key].toString()))
+        return values.some((value) => {
+          if (tokens.some((token) => value.includes(token))) {
+            memo[index] ? memo[index].push(item) : (memo[index] = [item])
 
-      values.forEach((value) => {
-        if (tokens.some((token) => value.includes(token))) {
-          found = true
-        }
+            return true
+          }
+
+          return false
+        })
       })
-    })
-    return found
-  })
+
+      return memo
+    }, [])
+    .flat()
+}
+
+export function randomAlphanumericString(length: number) {
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+  let result = ""
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length)
+    result += characters.charAt(randomIndex)
+  }
+  return result
+}
+
+export const genesisHashToChain = (genesisHash?: `0x${string}`) => {
+  let chainInfo = availableNetworks.find(
+    (c) => c.network === "substrate",
+  ) as Network
+
+  if (!genesisHash) return chainInfo
+
+  for (let chain in knownGenesis) {
+    if (knownGenesis[chain].includes(genesisHash)) {
+      const chainIndex = availableNetworks.findIndex((entry) =>
+        chain.startsWith(entry.network),
+      )
+
+      if (chainIndex >= 0) {
+        chainInfo = availableNetworks[chainIndex]
+        break
+      }
+    }
+  }
+
+  return chainInfo
 }

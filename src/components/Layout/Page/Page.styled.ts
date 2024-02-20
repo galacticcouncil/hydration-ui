@@ -4,7 +4,7 @@ import { theme } from "theme"
 export const SPage = styled.div`
   --mobile-nav-height: calc(60px + env(safe-area-inset-bottom));
   --nav-height: 65px;
-  --content-width: 1109px;
+  --content-width: 1300px;
 
   position: relative;
 
@@ -35,8 +35,6 @@ export const SGradientBg = styled.div`
 
 export const SPageContent = styled.main`
   position: relative;
-
-  overflow-x: hidden;
 
   display: flex;
   flex-direction: column;
@@ -118,6 +116,6 @@ export const SSubHeader = styled.div`
   }
 
   @media (${theme.viewport.gte.sm}) {
-    margin: 0 -20px;
+    margin: 0 -26px;
   }
 `

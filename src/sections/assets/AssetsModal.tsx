@@ -1,7 +1,7 @@
 import { u32 } from "@polkadot/types"
 import { TAsset, useAcountAssets } from "api/assetDetails"
 import { useTranslation } from "react-i18next"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Maybe } from "utils/helpers"
 import { Text } from "components/Typography/Text/Text"
 import {
@@ -29,8 +29,6 @@ type Props = {
 
 type TBalance = ReturnType<typeof useAcountAssets>[number]["balance"]
 
-const enabledBonds = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
-
 export const AssetsModalContent = ({
   allowedAssets,
   onSelect,
@@ -41,7 +39,7 @@ export const AssetsModalContent = ({
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const [search, setSearch] = useState("")
 
   const accountAssets = useAcountAssets(account?.address)
@@ -159,7 +157,7 @@ export const AssetsModalContent = ({
           ))}
         </>
       )}
-      {enabledBonds && withBonds && searchedBonds.length ? (
+      {withBonds && searchedBonds.length ? (
         <>
           <SAssetsModalHeader>
             <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
@@ -174,7 +172,7 @@ export const AssetsModalContent = ({
               key={asset.id}
               asset={asset}
               balance={balance.balance}
-              spotPriceId={asset.isPast ? asset.assetId : asset.id}
+              spotPriceId={!asset.isTradable ? asset.assetId : asset.id}
               onClick={(assetData) => onSelect?.(assetData)}
             />
           ))}

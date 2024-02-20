@@ -5,10 +5,12 @@ import {
   ChainLogo as ChainLogoUi,
   PlaceholderLogo,
 } from "@galacticcouncil/ui"
-import { chains } from "@galacticcouncil/xcm"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
+
+const chains = Array.from(chainsMap.values())
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",

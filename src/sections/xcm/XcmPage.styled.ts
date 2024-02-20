@@ -14,7 +14,7 @@ export const SContainer = styled.div`
     flex: 1;
     background: #111320;
 
-    gc-xcm-app {
+    gc-xcm {
       flex: 1;
     }
   }

@@ -139,6 +139,7 @@ export const BondDetailsHeader = ({
 export const BondDetailsData = () => {
   const { assets } = useRpcProvider()
   const search = useSearch<SearchGenerics>()
+  const bestNumber = useBestNumber()
 
   const [bondId, setBondId] = useState(() => {
     const assetOutId = search.assetOut?.toString()
@@ -154,9 +155,17 @@ export const BondDetailsData = () => {
 
   const bond = bondId ? assets.getBond(bondId) : undefined
 
-  const isPast = !!bond?.isPast
-  const lbpPoolEvents = useLBPPoolEvents(isPast ? bond?.id : undefined)
   const lbpPool = useLbpPool({ id: bond?.id })
+  const poolData = lbpPool.data?.[0]
+
+  let isPast: boolean | undefined = lbpPool.isLoading ? undefined : !poolData
+
+  if (poolData && bestNumber.data) {
+    isPast =
+      bestNumber.data?.relaychainBlockNumber.toNumber() > (poolData.end ?? 0)
+  }
+
+  const lbpPoolEvents = useLBPPoolEvents(isPast === true ? bond?.id : undefined)
 
   const lbpPoolData = useMemo(() => {
     if (lbpPool.data)
@@ -185,7 +194,7 @@ export const BondDetailsData = () => {
     return undefined
   }, [lbpPool.data, lbpPoolEvents.data?.events])
 
-  if (!bond) return <BondDetailsSkeleton />
+  if (!bond || lbpPool.isLoading) return <BondDetailsSkeleton />
 
   return (
     <div sx={{ flex: "column", gap: [20, 40] }}>
@@ -206,6 +215,7 @@ export const BondDetailsData = () => {
         lbpPool={lbpPoolData?.data}
         poolId={lbpPoolData?.poolId}
         removeBlock={lbpPoolData?.removeBlock}
+        isPast={isPast}
       />
 
       <MyActiveBonds id={bond.id} showTransactions />

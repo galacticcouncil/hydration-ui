@@ -1,16 +1,16 @@
-import { SBox, SMobBackground } from "./WalletVestingBox.styled"
+import { SBox } from "./WalletVestingBox.styled"
 import { Heading } from "components/Typography/Heading/Heading"
 import { useTranslation } from "react-i18next"
 import { WalletVestingSchedule } from "./WalletVestingSchedule"
 import { WalletVestingEmpty } from "./WalletVestingEmpty"
 import { useVestingSchedules } from "api/vesting"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Spinner } from "components/Spinner/Spinner.styled"
 import { isApiLoaded } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 
 const VestingBoxContent = () => {
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { data, isInitialLoading } = useVestingSchedules(account?.address)
 
   if (isInitialLoading) {
@@ -48,7 +48,6 @@ export const WalletVestingBox = () => {
         </Heading>
         {isApiLoaded(api) ? <VestingBoxContent /> : <WalletVestingEmpty />}
       </SBox>
-      <SMobBackground />
     </div>
   )
 }

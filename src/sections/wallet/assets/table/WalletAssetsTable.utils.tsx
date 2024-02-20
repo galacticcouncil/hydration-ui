@@ -14,7 +14,6 @@ import { WalletAssetsTableActions } from "sections/wallet/assets/table/actions/W
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
-import { useNavigate } from "@tanstack/react-location"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
@@ -24,7 +23,6 @@ export const useAssetsTable = (
   data: AssetsTableData[],
   actions: { onTransfer: (assetId: string) => void },
 ) => {
-  const navigate = useNavigate()
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<AssetsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
@@ -41,6 +39,8 @@ export const useAssetsTable = (
     () => [
       accessor("symbol", {
         id: "name",
+        //width percentage of column
+        size: 26,
         header: isDesktop
           ? t("wallet.assets.table.header.name")
           : t("selectAssets.asset"),
@@ -92,34 +92,14 @@ export const useAssetsTable = (
       }),
       display({
         id: "actions",
+        //width percentage of column
+        size: 38,
         cell: ({ row }) => (
           <WalletAssetsTableActions
-            couldBeSetAsPaymentFee={row.original.couldBeSetAsPaymentFee}
-            onBuyClick={
-              row.original.tradability.inTradeRouter &&
-              row.original.tradability.canBuy
-                ? () =>
-                    navigate({
-                      to: "/trade/swap",
-                      search: { assetOut: row.original.id },
-                    })
-                : undefined
-            }
-            onSellClick={
-              row.original.tradability.inTradeRouter &&
-              row.original.tradability.canSell
-                ? () =>
-                    navigate({
-                      to: "/trade/swap",
-                      search: { assetIn: row.original.id },
-                    })
-                : undefined
-            }
             toggleExpanded={row.toggleSelected}
             isExpanded={row.getIsSelected()}
             onTransferClick={() => actions.onTransfer(row.original.id)}
-            symbol={row.original.symbol}
-            id={row.original.id}
+            asset={row.original}
           />
         ),
       }),
@@ -142,6 +122,7 @@ export type AssetsTableData = {
   id: string
   symbol: string
   name: string
+  decimals: number
   transferable: BN
   transferableDisplay: BN
   total: BN
@@ -152,6 +133,8 @@ export type AssetsTableData = {
   lockedVestingDisplay: BN
   lockedDemocracy: BN
   lockedDemocracyDisplay: BN
+  lockedStaking: BN
+  lockedStakingDisplay: BN
   reserved: BN
   reservedDisplay: BN
   assetType: PalletAssetRegistryAssetType["type"]

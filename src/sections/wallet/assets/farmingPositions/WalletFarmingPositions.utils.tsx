@@ -16,7 +16,7 @@ import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { getFloatingPointAmount } from "utils/balance"
 import { getEnteredDate } from "utils/block"
@@ -24,6 +24,7 @@ import { BN_0, BN_NAN } from "utils/constants"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { useRpcProvider } from "providers/rpcProvider"
+import { arraySearch } from "utils/helpers"
 import { WalletAssetsHydraPositionsDetails } from "sections/wallet/assets/hydraPositions/details/WalletAssetsHydraPositionsDetails"
 import { ButtonTransparent } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
@@ -60,7 +61,7 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
         sortingFn: (a, b) =>
           isAfter(a.original.date, b.original.date) ? 1 : -1,
         cell: ({ row }) => (
-          <Text fs={16} fw={500} color="white">
+          <Text fs={14} fw={500} color="white">
             {t("wallet.assets.farmingPositions.data.date", {
               date: row.original.date,
             })}
@@ -73,7 +74,7 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
         sortingFn: (a, b) => (a.original.shares.gt(b.original.shares) ? 1 : -1),
         cell: ({ row }) => (
           <>
-            <Text fs={16} fw={500} color="white">
+            <Text fs={14} fw={500} color="white">
               {t("value.token", {
                 value: row.original.position.providedAmount,
               })}
@@ -81,7 +82,7 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
             <DollarAssetValue
               value={row.original.position.providedAmountDisplay}
               wrapper={(children) => (
-                <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                <Text fs={[12, 13]} lh={[14, 16]} color="whiteish500">
                   {children}
                 </Text>
               )}
@@ -143,9 +144,13 @@ export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
   })
 }
 
-export const useFarmingPositionsData = () => {
+export const useFarmingPositionsData = ({
+  search,
+}: {
+  search?: string
+} = {}) => {
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const allDeposits = useAllDeposits()
   const accountDepositIds = useAccountDepositIds(account?.address)
   const accountDepositsShare = useAllUserDepositShare()
@@ -224,8 +229,14 @@ export const useFarmingPositionsData = () => {
         b.position.valueDisplay.minus(a.position.valueDisplay).toNumber(),
       )
 
-    return rows
-  }, [accountDeposits, accountDepositsShare.data, assets, bestNumber.data])
+    return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
+  }, [
+    search,
+    accountDeposits,
+    accountDepositsShare.data,
+    assets,
+    bestNumber.data,
+  ])
 
   return { data, isLoading }
 }

@@ -36,6 +36,8 @@ export type BondTableItem = {
   assetIn?: string
   averagePrice: BN | undefined
   events: Transaction[]
+  name: string
+  symbol: string
 }
 
 export type Config = {
@@ -56,7 +58,7 @@ export const BondCell = ({ bondId }: { bondId: string }) => {
       sx={{
         flex: "row",
         align: "center",
-        gap: 16,
+        gap: 8,
       }}
     >
       <Icon
@@ -66,10 +68,10 @@ export const BondCell = ({ bondId }: { bondId: string }) => {
         css={{ width: "min-content" }}
       />
       <div sx={{ flex: "column" }}>
-        <Text fs={16} sx={{ mt: 3 }} font="ChakraPetchSemiBold">
+        <Text fs={14} sx={{ mt: 3 }} font="ChakraPetchSemiBold">
           {bond.symbol}
         </Text>
-        <Text fs={13} sx={{ mt: 3 }} color={"whiteish500"}>
+        <Text fs={13} sx={{ mt: 3 }} color="whiteish500">
           {bond.name}
         </Text>
       </div>
@@ -112,7 +114,7 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
           const value = getValue()
 
           return value !== undefined ? (
-            <Text color="white" tAlign="right">
+            <Text fs={14} color="white" tAlign="right">
               {formatDate(new Date(value), "dd/MM/yyyy")}
             </Text>
           ) : null
@@ -132,7 +134,7 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
               textAlign: "center",
             }}
           >
-            <Text color="white" tAlign="center">
+            <Text fs={14} color="white" tAlign="center">
               {t("value.token", { value: getValue() })}
             </Text>
             {!isDesktop && (
@@ -159,7 +161,7 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
             : undefined
 
           return (
-            <Text color="white" tAlign="center">
+            <Text fs={14} color="white" tAlign="center">
               {t("value.tokenWithSymbol", {
                 value: getValue(),
                 symbol: meta?.symbol,

@@ -17,17 +17,21 @@ import {
 } from "api/omnipool"
 import BN from "bignumber.js"
 import { useMemo } from "react"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { BN_10, BN_NAN } from "utils/constants"
 import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { normalizeBigNumber } from "utils/balance"
 import { useRpcProvider } from "providers/rpcProvider"
 
-export const useAllUserDepositShare = () => {
+export const useAllUserDepositShare = ({
+  address,
+}: {
+  address?: string
+} = {}) => {
   const { assets } = useRpcProvider()
-  const { account } = useAccountStore()
-  const accountDepositIds = useAccountDepositIds(account?.address)
+  const { account } = useAccount()
+  const accountDepositIds = useAccountDepositIds(address ?? account?.address)
   const deposits = useAllDeposits()
 
   const ids = new Set<string>(

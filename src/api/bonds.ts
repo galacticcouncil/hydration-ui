@@ -6,8 +6,8 @@ import request, { gql } from "graphql-request"
 import { useRpcProvider } from "providers/rpcProvider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
-import { useAccountStore } from "state/store"
-import { isHydraAddress } from "utils/formatting"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import BN from "bignumber.js"
 
 export type Bond = {
   assetId: string
@@ -27,7 +27,6 @@ export const useLbpPool = (params?: { id?: string }) => {
       const raw = await api.query.lbp.poolData.entries()
 
       const data = raw.map(([key, rawData]) => {
-        // @ts-ignore
         const data = rawData.unwrap()
 
         return {
@@ -36,11 +35,11 @@ export const useLbpPool = (params?: { id?: string }) => {
           owner: data.owner.toString(),
           start: Number(data.start.toString()),
           end: Number(data.end.toString()),
-          assets: data.assets.map((asset: any) => asset.toNumber()),
+          assets: data.assets.map((asset) => asset.toNumber()),
           initialWeight: data.initialWeight.toNumber(),
           finalWeight: data.finalWeight.toNumber(),
           weightCurve: data.weightCurve.toString(),
-          fee: data.fee.map((el: any) => el.toNumber()),
+          fee: data.fee.map((el) => el.toNumber()),
           feeCollector: data.feeCollector.toString(),
           repayTarget: data.repayTarget.toString(),
         }
@@ -70,15 +69,9 @@ export const useBondsEvents = (
   isMyEvents?: boolean,
 ) => {
   const indexerUrl = useIndexerUrl()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const accountHash = account?.address
-    ? u8aToHex(
-        decodeAddress(
-          account.address,
-          false,
-          isHydraAddress(account.address) ? 63 : 42,
-        ),
-      )
+    ? u8aToHex(decodeAddress(account.address))
     : undefined
 
   return useQueries({
@@ -96,6 +89,82 @@ export const useBondsEvents = (
     })),
   })
 }
+
+export const useBondsEventsSquid = (
+  bondIds: (string | undefined)[],
+  isMyEvents?: boolean,
+) => {
+  const { account } = useAccount()
+  const accountHash = account?.address
+    ? u8aToHex(decodeAddress(account.address))
+    : undefined
+
+  return useQueries({
+    queries: bondIds.map((bondId) => ({
+      queryKey: QUERY_KEYS.bondEventsSquid(bondId, isMyEvents),
+      queryFn: async () => {
+        const { swaps } = await getBondEventsSquid(
+          bondId,
+          isMyEvents ? accountHash : undefined,
+        )()
+        return { events: swaps, bondId }
+      },
+      enabled: !!bondId,
+    })),
+  })
+}
+
+const getBondEventsSquid =
+  (bondId: Maybe<string>, who?: string) => async () => {
+    //TODO: remove block filter argument, when it is tested on rococo rpc
+
+    return {
+      ...(await request<{
+        swaps: Array<{
+          swapPrice: number
+          id: string
+          type: string
+          assetInAmount: string
+          assetOutAmount: string
+          paraChainBlockHeight: number
+          assetInId: number
+          assetOutId: number
+          account: {
+            id: string
+          }
+        }>
+      }>(
+        "https://squid.subsquid.io/hydradx-lbp-squid/graphql",
+        gql`
+          query BondTradesSquid($bondId: Int!, $who: String) {
+            swaps(
+              where: {
+                account: { id_eq: $who }
+                AND: { assetInId_eq: $bondId, OR: { assetOutId_eq: $bondId } }
+              }
+              orderBy: paraChainBlockHeight_DESC
+            ) {
+              swapPrice
+              id
+              type
+              assetInAmount
+              assetOutAmount
+              paraChainBlockHeight
+              assetInId
+              assetOutId
+              account {
+                id
+              }
+            }
+          }
+        `,
+        {
+          bondId: Number(bondId),
+          who,
+        },
+      )),
+    }
+  }
 
 export const useBondEvents = (bondId?: string) => {
   const indexerUrl = useIndexerUrl()
@@ -317,3 +386,60 @@ const getHistoricalPoolBalance =
       )),
     }
   }
+
+export const useLBPAveragePrice = (poolAddress?: string) => {
+  const { assets } = useRpcProvider()
+  return useQuery(
+    QUERY_KEYS.lbpAveragePrice(poolAddress),
+    poolAddress
+      ? async () => {
+          const { historicalVolumes } = await getLBPAveragePrice(poolAddress)()
+          const { assetAId, assetBId, averagePrice, id } =
+            historicalVolumes?.[0] ?? []
+          const [assetAMeta, assetBMeta] = assets.getAssets([
+            assetAId?.toString(),
+            assetBId?.toString(),
+          ])
+
+          const price = BN(averagePrice).shiftedBy(
+            assetBMeta.decimals - assetAMeta.decimals,
+          )
+
+          return { price, id }
+        }
+      : undefinedNoop,
+    { enabled: !!poolAddress },
+  )
+}
+
+const getLBPAveragePrice = (poolAddress: string) => async () => {
+  return {
+    ...(await request<{
+      historicalVolumes: Array<{
+        averagePrice: number
+        assetAId: number
+        assetBId: number
+        id: string
+      }>
+    }>(
+      "https://squid.subsquid.io/hydradx-lbp-squid/graphql",
+      gql`
+        query LBPAveragePrice($poolAddress: String) {
+          historicalVolumes(
+            orderBy: id_DESC
+            limit: 1
+            where: { id_contains: $poolAddress }
+          ) {
+            averagePrice
+            assetAId
+            assetBId
+            id
+          }
+        }
+      `,
+      {
+        poolAddress,
+      },
+    )),
+  }
+}

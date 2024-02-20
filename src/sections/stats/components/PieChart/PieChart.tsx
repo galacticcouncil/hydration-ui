@@ -11,6 +11,7 @@ import { BN_0 } from "utils/constants"
 import { DoughnutChart } from "sections/stats/components/DoughnutChart/DoughnutChart"
 import { EmotionJSX } from "@emotion/react/types/jsx-namespace"
 import BN from "bignumber.js"
+import { KeyOfType } from "utils/types"
 
 type TSlice = {
   percentage: number
@@ -22,16 +23,11 @@ type TSlice = {
   id: string
 }
 
-type KeyOfType<T, V> = keyof {
-  [P in keyof T as T[P] extends V ? P : never]: P
-} &
-  keyof T
-
 type DataEntry = {
   id: string
   name: string
   symbol: string
-  [key: string]: BN | string | string[]
+  [key: string]: boolean | BN | string | string[]
 }
 
 type PieChartProps<T extends DataEntry> = {
@@ -47,7 +43,7 @@ export const PieChart = <T extends DataEntry>({
 }: PieChartProps<T>) => {
   const getValue = (dataEntry: T): BN => {
     const propValue = dataEntry[property]
-    return BN.isBigNumber(propValue) ? propValue : BN_0
+    return BN.isBigNumber(propValue) && !propValue.isNaN() ? propValue : BN_0
   }
 
   const total = data?.reduce(
@@ -149,5 +145,5 @@ export const PieChart = <T extends DataEntry>({
     }, [])
     .sort((a) => (a.symbol !== "rest" ? -1 : 0))
 
-  return <DoughnutChart slices={slices} label={label} />
+  return <DoughnutChart slices={slices} label={label} property={property} />
 }

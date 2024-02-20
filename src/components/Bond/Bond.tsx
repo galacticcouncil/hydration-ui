@@ -8,7 +8,6 @@ import { useBestNumber } from "api/chain"
 import { BLOCK_TIME, BN_1 } from "utils/constants"
 import { addSeconds, format } from "date-fns"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { SInfoIcon } from "sections/pools/pool/Pool.styled"
 import { customFormatDuration, formatDate } from "utils/formatting"
 import { SSeparator } from "components/Separator/Separator.styled"
 import { theme } from "theme"
@@ -20,6 +19,7 @@ import { useNavigate } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { TBond } from "api/assetDetails"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
 export type BondView = "card" | "list"
 
@@ -56,15 +56,11 @@ const Discount = ({
 
   const isDiscount = currentSpotPrice.gt(currentBondPrice)
 
-  const discount = isDiscount
-    ? currentSpotPrice
-        .minus(currentBondPrice)
-        .div(currentSpotPrice)
-        .multipliedBy(100)
-    : currentBondPrice
-        .minus(currentSpotPrice)
-        .div(currentBondPrice)
-        .multipliedBy(100)
+  const discount = currentSpotPrice
+    .minus(currentBondPrice)
+    .div(currentSpotPrice)
+    .multipliedBy(100)
+    .absoluteValue()
 
   return (
     <SItem>
@@ -75,10 +71,17 @@ const Discount = ({
         </>
       ) : (
         <>
-          <Text color="basic400" fs={14}>
-            {isDiscount ? t("bonds.discount") : t("bonds.premium")}
-          </Text>
-          <Text color="white">
+          <div sx={{ flex: "row", gap: 6 }}>
+            <Text color="basic400" fs={14}>
+              {isDiscount ? t("bonds.discount") : t("bonds.premium")}
+            </Text>
+            {!isDiscount && (
+              <InfoTooltip text={t("bonds.premium.desc")}>
+                <SInfoIcon />
+              </InfoTooltip>
+            )}
+          </div>
+          <Text color={isDiscount ? "white" : "red300"}>
             {t("value.percentage", { value: discount })}
           </Text>
         </>

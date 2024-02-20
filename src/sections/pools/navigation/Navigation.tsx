@@ -1,100 +1,59 @@
-import { Link, useSearch } from "@tanstack/react-location"
-import { SNavigationContainer, STabContainer } from "./Navigation.styled"
-import { ReactNode } from "react"
 import { theme } from "theme"
-import { Icon } from "components/Icon/Icon"
-import { Text } from "components/Typography/Text/Text"
 import { LINKS } from "utils/navigation"
-
 import UserIcon from "assets/icons/UserIcon.svg?react"
-import AllPools from "assets/icons/DropletIcon.svg?react"
-import OmniStablepools from "assets/icons/WaterRippleIcon.svg?react"
-import IsolatedPools from "assets/icons/PoolsAndFarms.svg?react"
+import AllPools from "assets/icons/AllPools.svg?react"
+import OmniStablepools from "assets/icons/Omnipool&Stablepool.svg?react"
+import IsolatedPools from "assets/icons/IsolatedPools.svg?react"
 import { SSeparator } from "components/Separator/Separator.styled"
 import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { useTokensBalances } from "api/balances"
-import { useAccountStore } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import {
+  SubNavigation,
+  SubNavigationTabLink,
+} from "components/Layout/SubNavigation/SubNavigation"
+import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
+import { useLocation } from "@tanstack/react-location"
+import { t } from "i18next"
 
-const Tab = ({
-  to,
-  icon,
-  label,
-}: {
-  to: string
-  icon: ReactNode
-  label: string
-}) => {
-  const search = useSearch()
-
-  return (
-    <Link
-      to={to}
-      search={search}
-      css={{
-        "&:hover > div > p": { color: theme.colors.white },
-        height: "100%",
-      }}
-      sx={{ px: 4 }}
-    >
-      {({ isActive }) => (
-        <>
-          <STabContainer>
-            <Icon
-              sx={{ color: isActive ? "brightBlue300" : "white" }}
-              icon={icon}
-              size={20}
-            />
-            <Text
-              fs={13}
-              color={isActive ? "white" : "iconGray"}
-              css={{ whiteSpace: "nowrap" }}
-            >
-              {label}
-            </Text>
-          </STabContainer>
-          {isActive && (
-            <div
-              sx={{ height: 1, bg: "brightBlue300", width: "100%" }}
-              css={{ position: "relative", bottom: 1 }}
-            />
-          )}
-        </>
-      )}
-    </Link>
-  )
-}
+const routeMap = new Map([
+  [LINKS.allPools, t("liquidity.navigation.allPools")],
+  [LINKS.myLiquidity, t("liquidity.navigation.myLiquidity")],
+  [LINKS.omnipool, t("liquidity.navigation.omnipoolAndStablepool")],
+  [LINKS.isolated, t("liquidity.navigation.isolated")],
+])
 
 export const Navigation = () => {
   const { t } = useTranslation()
   const { isLoaded } = useRpcProvider()
 
   return (
-    <SNavigationContainer>
+    <SubNavigation>
       {isLoaded && <MyLiquidity />}
-      <Tab
+      <SubNavigationTabLink
         to={LINKS.allPools}
         label={t("liquidity.navigation.allPools")}
-        icon={<AllPools />}
+        icon={<AllPools width={16} height={16} />}
       />
-      <Tab
+      <SubNavigationTabLink
         to={LINKS.omnipool}
         label={t("liquidity.navigation.omnipoolAndStablepool")}
-        icon={<OmniStablepools />}
+        icon={<OmniStablepools width={18} height={18} />}
       />
-      <Tab
+      <SubNavigationTabLink
         to={LINKS.isolated}
         label={t("liquidity.navigation.isolated")}
-        icon={<IsolatedPools />}
+        icon={<IsolatedPools width={15} height={15} />}
       />
-    </SNavigationContainer>
+    </SubNavigation>
   )
 }
 
 const MyLiquidity = () => {
   const { t } = useTranslation()
-  const { account } = useAccountStore()
+  const { account } = useAccount()
   const { assets } = useRpcProvider()
   const accountPositions = useAccountOmnipoolPositions()
 
@@ -115,7 +74,7 @@ const MyLiquidity = () => {
 
   return (
     <>
-      <Tab
+      <SubNavigationTabLink
         to={LINKS.myLiquidity}
         icon={
           <UserIcon style={{ width: 14, height: 14, alignSelf: "center" }} />
@@ -131,4 +90,11 @@ const MyLiquidity = () => {
       />
     </>
   )
+}
+
+export const PoolNavigation = () => {
+  const location = useLocation()
+  const { pathname } = location.history.location
+
+  return <BackSubHeader label={`Back to ${routeMap.get(pathname)}`} />
 }

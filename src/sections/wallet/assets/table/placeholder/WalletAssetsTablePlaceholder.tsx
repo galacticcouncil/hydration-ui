@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { useAssetsTableSkeleton } from "sections/wallet/assets/table/skeleton/WalletAssetsTableSkeleton.utils"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
-import { WalletConnectButton } from "sections/wallet/connect/modal/WalletConnectButton"
+import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { theme } from "theme"
 
 export const WalletAssetsTablePlaceholder = () => {
@@ -40,7 +40,7 @@ export const WalletAssetsTablePlaceholder = () => {
           >
             {t("wallet.assets.table.placeholder")}
           </Text>
-          <WalletConnectButton
+          <Web3ConnectModalButton
             css={css`
               @media ${theme.viewport.lt.sm} {
                 padding: 12px 15px;
