@@ -1,6 +1,6 @@
 import { InterestRate } from "@aave/contract-helpers"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
-import CheckIcon from "assets/icons/StepperDoneIcon.svg?react"
+import CheckIcon from "assets/icons/CheckIcon.svg?react"
 import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
 import { Dropdown } from "components/Dropdown/Dropdown"

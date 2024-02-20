@@ -1,13 +1,6 @@
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 import { ArrowNarrowRightIcon } from "@heroicons/react/solid"
-import {
-  Box,
-  FormControlLabel,
-  Skeleton,
-  SvgIcon,
-  Switch,
-  Typography,
-} from "@mui/material"
+import { Box, Skeleton, SvgIcon, Typography } from "@mui/material"
 import { parseUnits } from "ethers/lib/utils"
 import React, { ReactNode } from "react"
 import {
@@ -18,6 +11,8 @@ import {
 import { Row } from "sections/lending/components/primitives/Row"
 import { CollateralType } from "sections/lending/helpers/types"
 
+import { Switch } from "components/Switch/Switch"
+import { Text } from "components/Typography/Text/Text"
 import { HealthFactorNumber } from "sections/lending/components/HealthFactorNumber"
 import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
 import {
@@ -51,24 +46,27 @@ export const TxModalDetails: React.FC<TxModalDetailsProps> = ({
   chainId,
 }) => {
   return (
-    <Box sx={{ pt: 20 }}>
-      <Typography sx={{ mb: 4 }} color="text.secondary">
+    <div sx={{ pt: 30 }}>
+      <Text font="FontOver" color="pink500" fs={15} sx={{ mb: 16 }}>
         <span>Transaction overview</span>
-      </Typography>
-
-      <Box
-        sx={(theme) => ({
-          p: 3,
-          border: `1px solid ${theme.palette.divider}`,
-          borderRadius: "4px",
-          ".MuiBox-root:last-of-type": {
-            mb: 0,
+      </Text>
+      <div
+        css={{
+          "& > div": {
+            borderTop: "1px solid rgba(51, 55, 80, 0.3)",
+            paddingTop: 10,
           },
-        })}
+          "& > div:first-of-type": { border: 0, paddingTop: 0 },
+        }}
       >
         {children}
-      </Box>
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+      </div>
+      <div
+        sx={{
+          flex: "row",
+          justify: "space-between",
+        }}
+      >
         <GasStation
           chainId={chainId}
           gasLimit={parseUnits(gasLimit || "0", "wei")}
@@ -76,8 +74,8 @@ export const TxModalDetails: React.FC<TxModalDetailsProps> = ({
           disabled={disabled}
           rightComponent={slippageSelector}
         />
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }
 
@@ -269,27 +267,20 @@ export const CollateralState = ({ collateralType }: CollateralStateProps) => {
       {
         {
           [CollateralType.ENABLED]: (
-            <Typography variant="description" color="success.main">
+            <Text fs={14} color="green400">
               <span>Enabled</span>
-            </Typography>
+            </Text>
           ),
-          [CollateralType.ISOLATED_ENABLED]: (
-            <IsolatedEnabledBadge
-              typographyProps={{
-                variant: "description",
-                color: "warning.main",
-              }}
-            />
-          ),
+          [CollateralType.ISOLATED_ENABLED]: <IsolatedEnabledBadge />,
           [CollateralType.DISABLED]: (
-            <Typography variant="description" color="error.main">
+            <Text color="red400">
               <span>Disabled</span>
-            </Typography>
+            </Text>
           ),
           [CollateralType.UNAVAILABLE]: (
-            <Typography variant="description" color="error.main">
+            <Text color="red400">
               <span>Unavailable</span>
-            </Typography>
+            </Text>
           ),
           [CollateralType.ISOLATED_DISABLED]: <IsolatedDisabledBadge />,
           [CollateralType.UNAVAILABLE_DUE_TO_ISOLATION]: (
@@ -420,7 +411,7 @@ export const DetailsHFLine = ({
 export interface DetailsUnwrapSwitchProps {
   unwrapped: boolean
   setUnWrapped: (value: boolean) => void
-  label: ReactNode
+  label: string
 }
 
 export const DetailsUnwrapSwitch = ({
@@ -429,20 +420,17 @@ export const DetailsUnwrapSwitch = ({
   label,
 }: DetailsUnwrapSwitchProps) => {
   return (
-    <Row>
-      <FormControlLabel
-        sx={{ mx: 0 }}
-        control={
-          <Switch
-            disableRipple
-            checked={unwrapped}
-            onClick={() => setUnWrapped(!unwrapped)}
-            data-cy={"wrappedSwitcher"}
-          />
-        }
-        labelPlacement="end"
-        label={label}
-      />
+    <Row sx={{ mt: 10 }}>
+      <div sx={{ flex: "row", gap: 10, align: "center" }}>
+        <Switch
+          name="unwrap-switch"
+          label=""
+          size="small"
+          value={unwrapped}
+          onCheckedChange={() => setUnWrapped(!unwrapped)}
+        />
+        <label htmlFor="unwrap-switch">{label}</label>
+      </div>
     </Row>
   )
 }

@@ -5,24 +5,20 @@ import {
 } from "@aave/contract-helpers"
 import {
   BigNumberValue,
-  calculateHealthFactorFromBalancesBigUnits,
   USD_DECIMALS,
+  calculateHealthFactorFromBalancesBigUnits,
   valueToBigNumber,
 } from "@aave/math-utils"
 
-import Typography from "@mui/material/Typography"
 import BigNumber from "bignumber.js"
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { useRootStore } from "sections/lending/store/root"
 import { getNetworkConfig } from "sections/lending/utils/marketsAndNetworksConfig"
 
-import {
-  Asset,
-  AssetInput,
-} from "sections/lending/components/transactions/AssetInput"
+import { Alert } from "components/Alert"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
 import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
@@ -31,6 +27,7 @@ import {
   DetailsNumberLineWithSub,
   TxModalDetails,
 } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
+import { Asset, AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { RepayActions } from "./RepayActions"
 
 interface RepayAsset extends Asset {
@@ -269,6 +266,7 @@ export const RepayModalContent = ({
   return (
     <>
       <AssetInput
+        name="repay-amount"
         value={amount}
         onChange={handleChange}
         usdValue={usdValue.toString(10)}
@@ -281,13 +279,11 @@ export const RepayModalContent = ({
       />
 
       {maxRepayWithDustRemaining && (
-        <Typography color="warning.main" variant="helperText">
-          <span>
-            You don’t have enough funds in your wallet to repay the full amount.
-            If you proceed to repay with your current amount of funds, you will
-            still have a small borrowing position in your dashboard.
-          </span>
-        </Typography>
+        <Alert variant="warning" sx={{ mt: 12 }} size="small">
+          You don&apos;t have enough funds in your wallet to repay the full
+          amount. If you proceed to repay with your current amount of funds, you
+          will still have a small borrowing position in your dashboard.
+        </Alert>
       )}
 
       <TxModalDetails gasLimit={gasLimit}>

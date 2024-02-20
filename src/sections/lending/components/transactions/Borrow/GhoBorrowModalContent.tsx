@@ -30,7 +30,7 @@ import { weightedAverageAPY } from "sections/lending/utils/ghoUtilities"
 import { roundToTokenDecimals } from "sections/lending/utils/utils"
 
 import { CapType } from "sections/lending/components/caps/helper"
-import { AssetInput } from "sections/lending/components/transactions/AssetInput"
+import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
 import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import {
@@ -271,6 +271,7 @@ export const GhoBorrowModalContent = ({
       )}
 
       <AssetInput
+        name="gho-borrow-amount"
         value={amount}
         onChange={handleChange}
         usdValue={usdValue.toString(10)}

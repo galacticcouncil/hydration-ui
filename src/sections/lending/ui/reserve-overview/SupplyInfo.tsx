@@ -1,5 +1,5 @@
 import { valueToBigNumber } from "@aave/math-utils"
-import CheckIcon from "assets/icons/StepperDoneIcon.svg?react"
+import CheckIcon from "assets/icons/CheckIcon.svg?react"
 import { Alert } from "components/Alert"
 import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -62,7 +62,7 @@ export const SupplyInfo = ({
             }
           />
         )}
-        <div sx={{ width: ["100%", hasUnbacked ? "60%" : "40%"] }}>
+        <div sx={{ width: ["100%", hasUnbacked ? "60%" : "40%"], mb: 10 }}>
           <DataValueList separated>
             {showSupplyCapStatus ? (
               <DataValue

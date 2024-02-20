@@ -1,15 +1,7 @@
 import { InformationCircleIcon } from "@heroicons/react/outline"
-
-import {
-  Box,
-  Link,
-  SvgIcon,
-  Typography,
-  TypographyProps,
-  useTheme,
-} from "@mui/material"
+import { Box, Link, SvgIcon, useTheme } from "@mui/material"
+import { Text } from "components/Typography/Text/Text"
 import { ReactNode } from "react"
-
 import { ContentWithTooltip } from "sections/lending/components/ContentWithTooltip"
 
 const contentSx = {
@@ -36,11 +28,7 @@ const InfoIcon = ({ color }: InfoIconProps) => (
     <InformationCircleIcon />
   </SvgIcon>
 )
-export const IsolatedEnabledBadge = ({
-  typographyProps,
-}: {
-  typographyProps?: TypographyProps
-}) => {
+export const IsolatedEnabledBadge = () => {
   const theme = useTheme()
 
   const sx = {
@@ -63,17 +51,10 @@ export const IsolatedEnabledBadge = ({
       }
     >
       <Box sx={sx}>
-        <Typography
-          variant="secondary12"
-          sx={{
-            lineHeight: "0.75rem",
-          }}
-          color={theme.palette.warning.main}
-          {...typographyProps}
-        >
-          <span>Isolated</span>
-        </Typography>
-        <InfoIcon color={theme.palette.warning.main} />
+        <Text fs={14} color="warning300">
+          Isolated
+        </Text>
+        <InfoIcon sx={{ color: "warning300" }} />
       </Box>
     </ContentWithTooltip>
   )
@@ -95,9 +76,9 @@ export const IsolatedDisabledBadge = () => {
       }
     >
       <Box sx={contentSx}>
-        <Typography variant="description" color="error.main">
+        <Text fs={14} color="red400">
           <span>Unavailable</span>
-        </Typography>
+        </Text>
         <InfoIcon />
       </Box>
     </ContentWithTooltip>
@@ -116,9 +97,7 @@ export const UnavailableDueToIsolationBadge = () => {
       }
     >
       <Box sx={contentSx}>
-        <Typography variant="description" color="error.main">
-          <span>Unavailable</span>
-        </Typography>
+        <Text color="red400">Unavailable</Text>
         <InfoIcon />
       </Box>
     </ContentWithTooltip>
@@ -129,7 +108,7 @@ const IsolationModeTooltipTemplate = ({ content }: { content: ReactNode }) => {
   return (
     <Box>
       <Box sx={{ mb: 4 }}>{content}</Box>
-      <Typography variant="subheader2" color="text.secondary">
+      <Text fs={12}>
         <span>
           Learn more in our{" "}
           <Link
@@ -139,7 +118,7 @@ const IsolationModeTooltipTemplate = ({ content }: { content: ReactNode }) => {
             FAQ guide
           </Link>
         </span>
-      </Typography>
+      </Text>
     </Box>
   )
 }

@@ -18,10 +18,7 @@ import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { ListSlippageButton } from "sections/lending/modules/dashboard/lists/SlippageList"
 import { calculateHFAfterRepay } from "sections/lending/utils/hfUtils"
 
-import {
-  Asset,
-  AssetInput,
-} from "sections/lending/components/transactions/AssetInput"
+import { Asset, AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
 import {
@@ -241,6 +238,7 @@ export function CollateralRepayModalContent({
   return (
     <>
       <AssetInput
+        name="collateral-repay-1"
         value={exactOutputAmount}
         onChange={handleRepayAmountChange}
         usdValue={exactOutputUsd}
@@ -277,6 +275,7 @@ export function CollateralRepayModalContent({
         />
       </Box>
       <AssetInput
+        name="collateral-repay-2"
         value={
           swapVariant === "exactOut" ? inputAmount : tokenToRepayWithBalance
         }

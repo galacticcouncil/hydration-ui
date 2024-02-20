@@ -90,7 +90,7 @@ export const GasStation: React.FC<GasStationProps> = ({
 
   return (
     <Stack gap={6} sx={{ width: "100%" }}>
-      <Box sx={{ display: "flex", mt: 6, justifyContent: "space-between" }}>
+      <Box sx={{ display: "flex", mt: 3, justifyContent: "space-between" }}>
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <LocalGasStationIcon
             color="primary"

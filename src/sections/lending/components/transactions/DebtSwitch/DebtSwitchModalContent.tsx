@@ -20,10 +20,7 @@ import { FormattedNumber } from "sections/lending/components/primitives/Formatte
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { Warning } from "sections/lending/components/primitives/Warning"
-import {
-  Asset,
-  AssetInput,
-} from "sections/lending/components/transactions/AssetInput"
+import { Asset, AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { TxModalDetails } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
 import { useDebtSwitch } from "sections/lending/hooks/paraswap/useDebtSwitch"
 import { useModalContext } from "sections/lending/hooks/useModal"
@@ -288,6 +285,7 @@ export const DebtSwitchModalContent = ({
   return (
     <>
       <AssetInput
+        name="debt-switch-1"
         value={amount}
         onChange={handleChange}
         usdValue={poolReserveAmountUSD.toString()}
@@ -329,6 +327,7 @@ export const DebtSwitchModalContent = ({
         />
       </Box>
       <AssetInput<SwitchTargetAsset>
+        name="debt-switch-2"
         value={inputAmount}
         onSelect={setTargetReserve}
         usdValue={targetReserveAmountUSD.toString()}

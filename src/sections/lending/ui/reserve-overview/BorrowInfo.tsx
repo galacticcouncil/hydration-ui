@@ -68,7 +68,7 @@ export const BorrowInfo = ({
             }
           />
         )}
-        <div sx={{ width: ["100%", hasBorrowCap ? "60%" : "40%"] }}>
+        <div sx={{ width: ["100%", hasBorrowCap ? "60%" : "40%"], mb: 10 }}>
           <DataValueList separated>
             {showBorrowCapStatus ? (
               <>

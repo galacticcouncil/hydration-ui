@@ -23,7 +23,7 @@ import {
   NetworkConfig,
 } from "sections/lending/utils/marketsAndNetworksConfig"
 
-import { AssetInput } from "sections/lending/components/transactions/AssetInput"
+import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { TxModalDetails } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
 import { TxModalTitle } from "sections/lending/components/transactions/FlowCommons/TxModalTitle"
 import { ChangeNetworkWarning } from "sections/lending/components/transactions/Warnings/ChangeNetworkWarning"
@@ -211,6 +211,7 @@ export const SwitchModalContent = ({
             }}
           >
             <AssetInput
+              name="switch-amount-1"
               assets={reserves.filter(
                 (elem) =>
                   elem.underlyingAsset !==
@@ -238,6 +239,7 @@ export const SwitchModalContent = ({
               </SvgIcon>
             </IconButton>
             <AssetInput
+              name="switch-amount-2"
               assets={reserves.filter(
                 (elem) =>
                   elem.underlyingAsset !== selectedInputReserve.underlyingAsset,

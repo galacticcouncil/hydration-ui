@@ -17,9 +17,7 @@ import { useRootStore } from "sections/lending/store/root"
 import { getMaxAmountAvailableToSupply } from "sections/lending/utils/getMaxAmountAvailableToSupply"
 import { isFeatureEnabled } from "sections/lending/utils/marketsAndNetworksConfig"
 import { roundToTokenDecimals } from "sections/lending/utils/utils"
-
-import { CapType } from "sections/lending/components/caps/helper"
-import { AssetInput } from "sections/lending/components/transactions/AssetInput"
+import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
 import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
@@ -247,6 +245,7 @@ export const SupplyModalContent = React.memo(
         )}
 
         <AssetInput
+          name="supply-amount"
           value={amount}
           onChange={handleChange}
           usdValue={amountInUsd.toString(10)}
@@ -266,11 +265,9 @@ export const SupplyModalContent = React.memo(
                 : poolReserve.iconSymbol,
             },
           ]}
-          capType={CapType.supplyCap}
           isMaxSelected={isMaxSelected}
           disabled={supplyTxState.loading}
           maxValue={maxAmountToSupply}
-          balanceText={<span>Wallet balance</span>}
         />
 
         <TxModalDetails

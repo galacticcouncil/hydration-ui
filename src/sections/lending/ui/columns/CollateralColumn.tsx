@@ -1,4 +1,4 @@
-import CheckIcon from "assets/icons/StepperDoneIcon.svg?react"
+import CheckIcon from "assets/icons/CheckIcon.svg?react"
 
 import { NoData } from "sections/lending/components/primitives/NoData"
 import { IsolatedEnabledBadge } from "sections/lending/ui/isolation-mode/IsolatedEnabledBadge"

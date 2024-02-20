@@ -15,10 +15,6 @@ import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { ListSlippageButton } from "sections/lending/modules/dashboard/lists/SlippageList"
 import { calculateHFAfterWithdraw } from "sections/lending/utils/hfUtils"
 
-import {
-  Asset,
-  AssetInput,
-} from "sections/lending/components/transactions/AssetInput"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
 import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import {
@@ -27,6 +23,7 @@ import {
   TxModalDetails,
 } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
 import { zeroLTVBlockingWithdraw } from "sections/lending/components/transactions/utils"
+import { Asset, AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { WithdrawAndSwitchActions } from "./WithdrawAndSwitchActions"
 import { WithdrawAndSwitchTxSuccessView } from "./WithdrawAndSwitchSuccess"
 import { useWithdrawError } from "./WithdrawError"
@@ -159,6 +156,7 @@ export const WithdrawAndSwitchModalContent = ({
   return (
     <>
       <AssetInput
+        name="withdraw-switch-amount-1"
         inputTitle={<span>Withdraw</span>}
         value={withdrawAmount}
         onChange={handleChange}
@@ -205,6 +203,7 @@ export const WithdrawAndSwitchModalContent = ({
       </Box>
 
       <AssetInput
+        name="withdraw-switch-amount-2"
         value={outputAmount}
         onSelect={setTargetReserve}
         usdValue={outputAmountUSD}
@@ -263,28 +262,17 @@ export const WithdrawAndSwitchModalContent = ({
               increase risk of liquidation.
             </span>
           </Warning>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-              mx: "24px",
-              mb: "12px",
-            }}
-          >
+          <div sx={{ flex: "row", align: "center" }}>
             <Checkbox
               checked={riskCheckboxAccepted}
               onChange={() => {
                 setRiskCheckboxAccepted(!riskCheckboxAccepted)
               }}
-              size="small"
-              data-cy={`risk-checkbox`}
             />
             <Typography variant="description">
               <span>I acknowledge the risks involved.</span>
             </Typography>
-          </Box>
+          </div>
         </>
       )}
 

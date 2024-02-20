@@ -12,7 +12,7 @@ import { useRootStore } from "sections/lending/store/root"
 import { stakeConfig } from "sections/lending/ui-config/stakeConfig"
 import { getNetworkConfig } from "sections/lending/utils/marketsAndNetworksConfig"
 
-import { AssetInput } from "sections/lending/components/transactions/AssetInput"
+import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { TxErrorView } from "sections/lending/components/transactions/FlowCommons/Error"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
@@ -140,6 +140,7 @@ export const StakeRewardClaimModalContent = ({
         </Typography>
       )}
       <AssetInput
+        name="reward-claim-amount"
         value={amount}
         onChange={handleChange}
         usdValue={amountInUsd.toString()}

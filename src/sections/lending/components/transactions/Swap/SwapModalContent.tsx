@@ -5,10 +5,7 @@ import BigNumber from "bignumber.js"
 import React, { useRef, useState } from "react"
 import { PriceImpactTooltip } from "sections/lending/components/infoTooltips/PriceImpactTooltip"
 import { Warning } from "sections/lending/components/primitives/Warning"
-import {
-  Asset,
-  AssetInput,
-} from "sections/lending/components/transactions/AssetInput"
+import { Asset, AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { TxModalDetails } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
 import { StETHCollateralWarning } from "sections/lending/components/Warnings/StETHCollateralWarning"
 import { CollateralType } from "sections/lending/helpers/types"
@@ -258,6 +255,7 @@ export const SwapModalContent = ({
             <Typography>You are about to enter into isolation. FAQ link</Typography>
           )} */}
       <AssetInput
+        name="swap-amount-1"
         value={amount}
         onChange={handleChange}
         usdValue={inputAmountUSD}
@@ -294,6 +292,7 @@ export const SwapModalContent = ({
         />
       </Box>
       <AssetInput
+        name="swap-amount-2"
         value={outputAmount}
         onSelect={setTargetReserve}
         usdValue={outputAmountUSD}

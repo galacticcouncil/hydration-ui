@@ -1,6 +1,6 @@
 import { API_ETH_MOCK_ADDRESS } from "@aave/contract-helpers"
 import { valueToBigNumber } from "@aave/math-utils"
-import { Box, Checkbox, Typography } from "@mui/material"
+import { Checkbox, Typography } from "@mui/material"
 import { useRef, useState } from "react"
 import { Warning } from "sections/lending/components/primitives/Warning"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
@@ -8,7 +8,6 @@ import { useModalContext } from "sections/lending/hooks/useModal"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { calculateHFAfterWithdraw } from "sections/lending/utils/hfUtils"
 
-import { AssetInput } from "sections/lending/components/transactions/AssetInput"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
 import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
@@ -19,6 +18,7 @@ import {
   TxModalDetails,
 } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
 import { zeroLTVBlockingWithdraw } from "sections/lending/components/transactions/utils"
+import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { WithdrawActions } from "./WithdrawActions"
 import { useWithdrawError } from "./WithdrawError"
 import { calculateMaxWithdrawAmount } from "./utils"
@@ -115,6 +115,7 @@ export const WithdrawModalContent = ({
   return (
     <>
       <AssetInput
+        name="withdraw-amount"
         value={withdrawAmount}
         onChange={handleChange}
         symbol={symbol}
@@ -151,9 +152,7 @@ export const WithdrawModalContent = ({
         <DetailsUnwrapSwitch
           unwrapped={withdrawUnWrapped}
           setUnWrapped={setWithdrawUnWrapped}
-          label={
-            <Typography>{`Unwrap ${poolReserve.symbol} (to withdraw ${currentNetworkConfig.baseAssetSymbol})`}</Typography>
-          }
+          label={`Unwrap ${poolReserve.symbol} (to withdraw ${currentNetworkConfig.baseAssetSymbol})`}
         />
       )}
 
@@ -184,28 +183,17 @@ export const WithdrawModalContent = ({
               increase risk of liquidation.
             </span>
           </Warning>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-              mx: "24px",
-              mb: "12px",
-            }}
-          >
+          <div sx={{ flex: "row", align: "center" }}>
             <Checkbox
               checked={riskCheckboxAccepted}
               onChange={() => {
                 setRiskCheckboxAccepted(!riskCheckboxAccepted)
               }}
-              size="small"
-              data-cy={`risk-checkbox`}
             />
             <Typography variant="description">
               <span>I acknowledge the risks involved.</span>
             </Typography>
-          </Box>
+          </div>
         </>
       )}
 
