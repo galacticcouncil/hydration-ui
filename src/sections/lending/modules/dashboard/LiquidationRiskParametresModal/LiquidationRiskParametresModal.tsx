@@ -1,13 +1,13 @@
 import { ModalContents } from "components/Modal/contents/ModalContents"
+import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import { PercentageValue } from "sections/lending/components/PercentageValue"
 import { BasicModal } from "sections/lending/components/primitives/BasicModal"
-import { Link } from "sections/lending/components/primitives/Link"
 import { getHealthFactorColor, getLtvColor } from "sections/lending/utils/utils"
 import { HFContent } from "./components/HFContent"
 import { InfoWrapper } from "./components/InfoWrapper"
 import { LTVContent } from "./components/LTVContent"
-import { PercentageValue } from "sections/lending/components/PercentageValue"
 
 interface LiquidationRiskParametresInfoModalProps {
   open: boolean
@@ -45,21 +45,18 @@ export const LiquidationRiskParametresInfoModal = ({
             title: "Liquidation risk parameters",
             content: (
               <>
-                <Text fs={14} sx={{ mb: 32 }}>
-                  <span>
-                    Your health factor and loan to value determine the assurance
-                    of your collateral. To avoid liquidations you can supply
-                    more collateral or repay borrow positions.
-                  </span>
+                <Text color="basic400" fs={14} lh={20} sx={{ mb: 32 }}>
+                  Your health factor and loan to value determine the assurance
+                  of your collateral. To avoid liquidations you can supply more
+                  collateral or repay borrow positions.
                   <br />
-                  <Link
+                  <a
                     href="https://docs.aave.com/faq/"
-                    sx={{ textDecoration: "underline" }}
-                    color="text.primary"
-                    variant="description"
+                    css={{ textDecoration: "underline" }}
+                    sx={{ color: "brightBlue100" }}
                   >
                     <span>Learn more</span>
-                  </Link>
+                  </a>
                 </Text>
                 <InfoWrapper
                   topTitle="Health factor"
@@ -70,6 +67,7 @@ export const LiquidationRiskParametresInfoModal = ({
                 >
                   <HFContent healthFactor={healthFactor} />
                 </InfoWrapper>
+                <Spacer size={20} />
                 <InfoWrapper
                   topTitle="Current LTV"
                   topDescription="Your current loan to value based on your collateral supplied."

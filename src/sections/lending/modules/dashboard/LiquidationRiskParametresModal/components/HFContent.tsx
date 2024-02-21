@@ -1,8 +1,6 @@
 import { valueToBigNumber } from "@aave/math-utils"
-import { Box, Typography } from "@mui/material"
 import BigNumber from "bignumber.js"
-
-import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
+import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 
 interface HFContentProps {
@@ -17,26 +15,26 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
   const dotPosition = +healthFactor > 10 ? 100 : +healthFactor * 10
 
   return (
-    <Box sx={{ position: "relative", mt: "33px", mb: 4 }}>
-      <Box
-        sx={{
-          height: "4px",
+    <div css={{ position: "relative" }} sx={{ mt: 40, mb: 16 }}>
+      <div
+        css={{
+          height: 4,
           background: `linear-gradient(90deg, ${theme.colors.green400} 0%, ${theme.colors.warning300} 52.08%, ${theme.colors.red500} 100%)`,
-          borderRadius: "1px",
+          borderRadius: 4,
           transform: "matrix(-1, 0, 0, 1, 0, 0)",
         }}
       />
 
-      <Box
-        sx={{
+      <div
+        css={{
           position: "absolute",
           bottom: "calc(100% + 6px)",
           left: `${dotPosition > 100 ? 100 : dotPosition}%`,
           zIndex: 3,
         }}
       >
-        <Box
-          sx={{
+        <div
+          css={{
             position: "relative",
             whiteSpace: "nowrap",
             "&:after": {
@@ -54,8 +52,8 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
             },
           }}
         >
-          <Box
-            sx={{
+          <div
+            css={{
               display: "flex",
               position: "absolute",
               left: dotPosition > 75 ? "auto" : dotPosition < 15 ? "0" : "50%",
@@ -80,20 +78,17 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
               bottom: "calc(100% + 2px)",
             }}
           >
-            <FormattedNumber
-              value={formattedHealthFactor}
-              variant="main12"
-              visibleDecimals={2}
-            />
-          </Box>
-        </Box>
-      </Box>
-
-      <Box
-        sx={{
+            <Text fs={13} font="ChakraPetchSemiBold">
+              {formattedHealthFactor}
+            </Text>
+          </div>
+        </div>
+      </div>
+      <div
+        sx={{ pt: 6 }}
+        css={{
           maxWidth: "20%",
           textAlign: "center",
-          pt: 1.5,
           "&:after": {
             content: "''",
             position: "absolute",
@@ -102,25 +97,17 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
             transform: "translateX(-50%)",
             height: "10px",
             width: "2px",
-            bgcolor: theme.colors.red400,
+            backgroundColor: theme.colors.red400,
           },
         }}
       >
-        <FormattedNumber
-          value={1}
-          visibleDecimals={2}
-          color={theme.colors.red400}
-          variant="subheader2"
-        />
-        <Typography
-          sx={{ display: "flex" }}
-          variant="helperText"
-          lineHeight="12px"
-          color={theme.colors.red400}
-        >
-          <span>Liquidation value</span>
-        </Typography>
-      </Box>
-    </Box>
+        <Text fs={13} font="ChakraPetchSemiBold" color="red400" tAlign="center">
+          1.00
+        </Text>
+        <Text fs={13} color="red400" tAlign="center">
+          Liquidation value
+        </Text>
+      </div>
+    </div>
   )
 }

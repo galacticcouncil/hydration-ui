@@ -1,8 +1,6 @@
 import { valueToBigNumber } from "@aave/math-utils"
-import { Box, Typography } from "@mui/material"
 import BigNumber from "bignumber.js"
-
-import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
+import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 
 interface LTVContentProps {
@@ -38,9 +36,9 @@ export const LTVContent = ({
   const liquidationThresholdPercent = Number(currentLiquidationThreshold) * 100
 
   return (
-    <Box sx={{ position: "relative", margin: "45px 0 55px" }}>
-      <Box
-        sx={{
+    <div css={{ position: "relative" }} sx={{ mt: 50, mb: 70 }}>
+      <div
+        css={{
           position: "absolute",
           top: "calc(100% + 6px)",
           left: `${
@@ -51,8 +49,8 @@ export const LTVContent = ({
           zIndex: 2,
         }}
       >
-        <Box
-          sx={{
+        <div
+          css={{
             position: "relative",
             whiteSpace: "nowrap",
             "&:after": {
@@ -67,12 +65,12 @@ export const LTVContent = ({
               bottom: "100%",
               height: "10px",
               width: "2px",
-              bgcolor: theme.colors.red400,
+              backgroundColor: theme.colors.red400,
             },
           }}
         >
-          <Box
-            sx={{
+          <div
+            css={{
               display: "flex",
               position: "absolute",
               left: liquidationThresholdPercent > 75 ? "auto" : "50%",
@@ -87,38 +85,31 @@ export const LTVContent = ({
               textAlign: liquidationThresholdPercent > 75 ? "right" : "center",
             }}
           >
-            <FormattedNumber
-              value={currentLiquidationThreshold}
-              visibleDecimals={2}
-              color={theme.colors.red400}
-              variant="subheader2"
-              percent
-              symbolsColor={theme.colors.red400}
-            />
-            <Typography
-              sx={{ display: "flex" }}
-              variant="helperText"
-              lineHeight="12px"
-              color={theme.colors.red400}
+            <Text
+              fs={13}
+              font="ChakraPetchSemiBold"
+              color="red400"
+              tAlign="right"
             >
-              <span>
-                Liquidation <br /> threshold
-              </span>
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
+              {(Number(currentLiquidationThreshold) * 100).toFixed(2)}%
+            </Text>
+            <Text fs={13} color="red400" tAlign="right">
+              Liquidation <br /> threshold
+            </Text>
+          </div>
+        </div>
+      </div>
 
-      <Box
-        sx={{
+      <div
+        css={{
           position: "absolute",
           bottom: "calc(100% + 6px)",
           left: `${LTVLineWidth > 100 ? 100 : LTVLineWidth}%`,
           zIndex: 3,
         }}
       >
-        <Box
-          sx={(theme) => ({
+        <div
+          css={{
             position: "relative",
             whiteSpace: "nowrap",
             "&:after": {
@@ -126,7 +117,7 @@ export const LTVContent = ({
               height: 0,
               borderStyle: "solid",
               borderWidth: "6px 4px 0 4px",
-              borderColor: `${theme.palette.primary.main} transparent transparent transparent`,
+              borderColor: "white transparent transparent transparent",
               content: "''",
               position: "absolute",
               left: LTVLineWidth > 75 ? "auto" : "50%",
@@ -134,10 +125,10 @@ export const LTVContent = ({
               transform:
                 LTVLineWidth > 75 ? "translateX(0)" : "translateX(-50%)",
             },
-          })}
+          }}
         >
-          <Box
-            sx={{
+          <div
+            css={{
               display: "flex",
               position: "absolute",
               left:
@@ -163,54 +154,46 @@ export const LTVContent = ({
               bottom: "calc(100% + 2px)",
             }}
           >
-            <FormattedNumber
-              value={loanToValue}
-              percent
-              visibleDecimals={2}
-              variant="main12"
-            />
-            <Box sx={{ display: "inline-flex", alignItems: "center" }}>
-              <Typography variant="helperText" color="text.muted" mr={0.5}>
+            <Text fs={13} font="ChakraPetchSemiBold">
+              {(Number(loanToValue) * 100).toFixed(2)}%
+            </Text>
+            <div css={{ display: "inline-flex", alignItems: "center" }}>
+              <Text fs={11} color="basic500" sx={{ mr: 2 }}>
                 <span>MAX</span>
-              </Typography>
-              <FormattedNumber
-                value={currentLoanToValue}
-                percent
-                visibleDecimals={2}
-                variant="helperText"
-                color="text.muted"
-                symbolsColor="text.muted"
-              />
-            </Box>
-          </Box>
-        </Box>
-      </Box>
+              </Text>
+              <Text fs={11} color="basic500">
+                {(Number(currentLoanToValue) * 100).toFixed(2)}%
+              </Text>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <Box
-        sx={{
+      <div
+        css={{
           height: "4px",
           width: "100%",
           borderRadius: "1px",
           position: "relative",
-          bgcolor: theme.colors.basic800,
+          backgroundColor: theme.colors.basic800,
         }}
       >
-        <Box
-          sx={{
+        <div
+          css={{
             position: "absolute",
             left: 0,
             height: "4px",
             borderRadius: "1px",
             width: `${LTVLineWidth > 100 ? 100 : LTVLineWidth}%`,
             maxWidth: "100%",
-            bgcolor: color,
+            backgroundColor: color,
             zIndex: 2,
           }}
         />
 
         {LTVLineWidth < CurrentLTVLineWidth && (
-          <Box
-            sx={{
+          <div
+            css={{
               position: "absolute",
               left: 0,
               height: "4px",
@@ -223,7 +206,7 @@ export const LTVContent = ({
             }}
           />
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }

@@ -1,6 +1,6 @@
-import { Box } from "@mui/material"
-import { ReactNode } from "react"
 import { Text } from "components/Typography/Text/Text"
+import { ReactNode } from "react"
+import { theme } from "theme"
 
 interface InfoWrapperProps {
   topValue: ReactNode
@@ -20,51 +20,46 @@ export const InfoWrapper = ({
   color,
 }: InfoWrapperProps) => {
   return (
-    <Box
-      sx={(theme) => ({
-        border: `1px solid ${theme.palette.divider}`,
-        mb: 6,
-        borderRadius: "6px",
-        px: 4,
-        pt: 4,
-        pb: 6,
-        "&:last-of-type": {
-          mb: 0,
-        },
-      })}
+    <div
+      sx={{ px: 16, py: 20 }}
+      css={{
+        background: `rgba(${theme.rgbColors.alpha0}, 0.06)`,
+        borderRadius: theme.borderRadius.medium,
+        border: `1px solid rgba(${theme.rgbColors.primaryA0}, 0.35)`,
+      }}
     >
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Box sx={{ width: "calc(100% - 72px)" }}>
-          <Text fs={16} color="white" sx={{ mb: 4 }}>
+      <div sx={{ flex: "row", justify: "space-between" }}>
+        <div sx={{ width: "calc(100% - 90px)" }}>
+          <Text fs={14} color="white" sx={{ mb: 16 }}>
             {topTitle}
           </Text>
-          <Text fs={14} color="basic300">
+          <Text fs={13} lh={17} color="basic300">
             {topDescription}
           </Text>
-        </Box>
+        </div>
 
-        <Box
-          sx={{
-            width: "56px",
-            height: "56px",
+        <div
+          css={{
+            width: 75,
+            height: 75,
             borderRadius: "50%",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            bgcolor: color,
+            background: `radial-gradient(147.94% 147.94% at 50.5% -6.6%, ${color} 0%, rgba(255, 85, 89, 0.00) 100%)`,
           }}
         >
           <Text fs={14} font="ChakraPetchBold">
             {topValue}
           </Text>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Box>{children}</Box>
+      <div>{children}</div>
 
-      <Text fs={14} color="basic300">
+      <Text fs={13} lh={17} color="basic300">
         {bottomText}
       </Text>
-    </Box>
+    </div>
   )
 }

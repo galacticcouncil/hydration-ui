@@ -105,6 +105,7 @@ export const getHealthFactorColor = (hf: number | string) => {
   const formattedHealthFactor = Number(
     valueToBigNumber(hf).toFixed(2, BigNumber.ROUND_DOWN),
   )
+
   let healthFactorColor = ""
   if (formattedHealthFactor >= 3) {
     healthFactorColor = theme.colors.green400
