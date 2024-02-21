@@ -62,7 +62,6 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
         <Switch
           value={showAll}
           onCheckedChange={(value) => setShowAll(value)}
-          size="small"
           name="showAll"
           label={t("wallet.assets.table.toggle")}
         />

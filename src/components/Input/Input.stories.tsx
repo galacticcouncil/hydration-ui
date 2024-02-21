@@ -1,6 +1,5 @@
-import styled from "@emotion/styled"
-import { Meta } from "@storybook/react"
-import { useState } from "react"
+import { Meta, StoryObj } from "@storybook/react"
+import { ComponentPropsWithoutRef, useState } from "react"
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import { Input } from "./Input"
 
@@ -8,93 +7,53 @@ export default {
   component: Input,
 } as Meta<typeof Input>
 
-const SwitchContainer = styled.div`
-  background: #00041d;
-  height: 200px;
-  padding: 20px;
-`
+type Story = StoryObj<typeof Input>
 
-export const InputRegular = () => {
-  const [value, setValue] = useState("")
-  return (
-    <SwitchContainer>
-      <Input
-        value={value}
-        onChange={setValue}
-        name="input"
-        label="Input"
-        withLabel
-      />
-    </SwitchContainer>
-  )
-}
-
-export const InputWithUnit = () => {
-  const [value, setValue] = useState("")
-  return (
-    <SwitchContainer>
-      <Input
-        value={value}
-        onChange={setValue}
-        name="input"
-        label="Input"
-        unit="BSX"
-        withLabel
-      />
-    </SwitchContainer>
-  )
-}
-
-export const InputError = () => {
-  const [value, setValue] = useState("")
-  return (
-    <SwitchContainer>
-      <Input
-        value={value}
-        onChange={setValue}
-        name="input"
-        label="Input"
-        unit="BSX"
-        error="generic error"
-        withLabel
-      />
-    </SwitchContainer>
-  )
-}
-
-export const InputPlaceholder = () => {
-  const [value, setValue] = useState("")
-  return (
-    <SwitchContainer>
-      <Input
-        value={value}
-        onChange={setValue}
-        name="input"
-        label="Input"
-        unit="BSX"
-        placeholder="00.00"
-        withLabel
-      />
-    </SwitchContainer>
-  )
-}
-
-export const InputTooltip = () => {
-  const [value, setValue] = useState("")
+const Template = (props: ComponentPropsWithoutRef<typeof Input>) => {
+  const [value, setValue] = useState("12.34")
   return (
     <TooltipProvider>
-      <SwitchContainer>
-        <Input
-          value={value}
-          onChange={setValue}
-          name="input"
-          label="Input"
-          unit="BSX"
-          placeholder="00.00"
-          withLabel
-          tooltip="The hidden information"
-        />
-      </SwitchContainer>
+      <Input
+        {...props}
+        value={value}
+        onChange={setValue}
+        name="amount"
+        label="Amount"
+        withLabel
+      />
     </TooltipProvider>
   )
+}
+
+export const Default: Story = {
+  render: Template,
+}
+
+export const WithUnit: Story = {
+  render: Template,
+  args: {
+    unit: "HDX",
+  },
+}
+
+export const WithError: Story = {
+  render: Template,
+  args: {
+    unit: "HDX",
+    error: "Insufficient funds",
+  },
+}
+
+export const WithPlaceholder: Story = {
+  render: Template,
+  args: {
+    placeholder: "00.00",
+  },
+}
+
+export const WithTooltip: Story = {
+  render: Template,
+  args: {
+    tooltip: "Enter amount to swap",
+  },
 }

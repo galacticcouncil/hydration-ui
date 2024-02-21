@@ -66,7 +66,6 @@ export const BondsTable = ({
             <Switch
               value={allAssets}
               onCheckedChange={(value) => setAllAssets(value)}
-              size="small"
               name="showAll"
               label={t("bonds.table.switcher")}
             />
