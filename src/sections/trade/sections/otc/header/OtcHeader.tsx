@@ -47,7 +47,6 @@ export const OtcHeader: FC<Props> = ({
           <Switch
             value={showMyOrders}
             onCheckedChange={onShowMyOrdersChange}
-            size="small"
             name="my-offers"
             label={t("otc.header.switch")}
             disabled={!!skeleton}
