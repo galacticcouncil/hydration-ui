@@ -1,8 +1,9 @@
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 import { ArrowNarrowRightIcon } from "@heroicons/react/solid"
-import { Box, Skeleton, SvgIcon, Typography } from "@mui/material"
+import { Box, SvgIcon, Typography } from "@mui/material"
 import { parseUnits } from "ethers/lib/utils"
 import React, { ReactNode } from "react"
+import Skeleton from "react-loading-skeleton"
 import {
   IsolatedDisabledBadge,
   IsolatedEnabledBadge,
@@ -21,6 +22,9 @@ import {
 } from "sections/lending/components/primitives/FormattedNumber"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { GasStation } from "sections/lending/components/transactions/GasStation/GasStation"
+import { theme } from "theme"
+import { useTranslation } from "react-i18next"
+import { PercentageValue } from "sections/lending/components/PercentageValue"
 
 export interface TxModalDetailsProps {
   gasLimit?: string
@@ -53,7 +57,7 @@ export const TxModalDetails: React.FC<TxModalDetailsProps> = ({
       <div
         css={{
           "& > div": {
-            borderTop: "1px solid rgba(51, 55, 80, 0.3)",
+            borderTop: `1px solid ${theme.colors.darkBlue401}`,
             paddingTop: 10,
           },
           "& > div:first-of-type": { border: 0, paddingTop: 0 },
@@ -79,13 +83,15 @@ export const TxModalDetails: React.FC<TxModalDetailsProps> = ({
   )
 }
 
-interface DetailsNumberLineProps extends FormattedNumberProps {
+type DetailsNumberLineProps = {
   description: ReactNode
   value: FormattedNumberProps["value"]
   futureValue?: FormattedNumberProps["value"]
   numberPrefix?: ReactNode
+  symbol?: string
   iconSymbol?: string
   loading?: boolean
+  percent?: boolean
 }
 
 export const DetailsNumberLine = ({
@@ -93,37 +99,48 @@ export const DetailsNumberLine = ({
   value,
   futureValue,
   numberPrefix,
+  symbol,
   iconSymbol,
   loading = false,
-  ...rest
+  percent,
 }: DetailsNumberLineProps) => {
+  const { t } = useTranslation()
+
+  const num = Number(value)
+  const futureNum = Number(futureValue)
   return (
-    <Row caption={description}>
+    <Row captionColor="basic400" caption={description}>
       <Box sx={{ display: "flex", alignItems: "center" }}>
         {loading ? (
-          <Skeleton
-            variant="rectangular"
-            height={20}
-            width={100}
-            sx={{ borderRadius: "4px" }}
-          />
+          <Skeleton height={20} width={100} />
         ) : (
           <>
             {iconSymbol && (
-              <TokenIcon symbol={iconSymbol} sx={{ mr: 4, fontSize: "16px" }} />
+              <TokenIcon symbol={iconSymbol} sx={{ mr: 6, fontSize: 16 }} />
             )}
             {numberPrefix && (
-              <Typography sx={{ mr: 4 }}>{numberPrefix}</Typography>
+              <Text fs={14} sx={{ mr: 6 }}>
+                {numberPrefix}
+              </Text>
             )}
-            <FormattedNumber value={value} variant="secondary14" {...rest} />
+            {percent ? (
+              <PercentageValue value={num * 100} />
+            ) : symbol ? (
+              t("value.displaySymbol", { value: num, symbol })
+            ) : (
+              t("value.displaySymbol", { value: num })
+            )}
+
             {futureValue && (
               <>
                 {ArrowRightIcon}
-                <FormattedNumber
-                  value={futureValue}
-                  variant="secondary14"
-                  {...rest}
-                />
+                {percent ? (
+                  <PercentageValue value={futureNum * 100} />
+                ) : symbol ? (
+                  t("value.displaySymbol", { value: futureNum, symbol })
+                ) : (
+                  t("value.displaySymbol", { value: futureNum })
+                )}
               </>
             )}
           </>
@@ -159,7 +176,7 @@ export const DetailsNumberLineWithSub = ({
   loading = false,
 }: DetailsNumberLineWithSubProps) => {
   return (
-    <Row caption={description}>
+    <Row captionColor="basic400" caption={description}>
       <Box
         sx={{
           display: "flex",
@@ -169,18 +186,8 @@ export const DetailsNumberLineWithSub = ({
       >
         {loading ? (
           <>
-            <Skeleton
-              variant="rectangular"
-              height={20}
-              width={100}
-              sx={{ borderRadius: "4px" }}
-            />
-            <Skeleton
-              variant="rectangular"
-              height={15}
-              width={80}
-              sx={{ borderRadius: "4px", marginTop: "4px" }}
-            />
+            <Skeleton height={20} width={100} />
+            <Skeleton height={15} width={80} sx={{ mt: 12 }} />
           </>
         ) : (
           <>
@@ -201,10 +208,7 @@ export const DetailsNumberLineWithSub = ({
                 </>
               )}
               {tokenIcon && (
-                <TokenIcon
-                  symbol={tokenIcon}
-                  sx={{ mr: 4, fontSize: "14px" }}
-                />
+                <TokenIcon symbol={tokenIcon} sx={{ mr: 4, fontSize: 14 }} />
               )}
               <FormattedNumber
                 value={futureValue}
@@ -251,7 +255,7 @@ export const DetailsCollateralLine = ({
   collateralType,
 }: DetailsCollateralLineProps) => {
   return (
-    <Row caption={<span>Collateralization</span>}>
+    <Row captionColor="basic400" caption={<span>Collateralization</span>}>
       <CollateralState collateralType={collateralType} />
     </Row>
   )
@@ -273,12 +277,12 @@ export const CollateralState = ({ collateralType }: CollateralStateProps) => {
           ),
           [CollateralType.ISOLATED_ENABLED]: <IsolatedEnabledBadge />,
           [CollateralType.DISABLED]: (
-            <Text color="red400">
+            <Text fs={14} color="red400">
               <span>Disabled</span>
             </Text>
           ),
           [CollateralType.UNAVAILABLE]: (
-            <Text color="red400">
+            <Text fs={14} color="red400">
               <span>Unavailable</span>
             </Text>
           ),
@@ -314,15 +318,10 @@ export const DetailsIncentivesLine = ({
   )
     return null
   return (
-    <Row caption={<span>Rewards APR</span>}>
+    <Row captionColor="basic400" caption={<span>Rewards APR</span>}>
       <Box sx={{ display: "flex", alignItems: "center" }}>
         {loading ? (
-          <Skeleton
-            variant="rectangular"
-            height={20}
-            width={100}
-            sx={{ borderRadius: "4px" }}
-          />
+          <Skeleton height={20} width={100} />
         ) : (
           <>
             <IncentivesButton incentives={incentives} symbol={symbol} />
@@ -362,7 +361,7 @@ export const DetailsHFLine = ({
 }: DetailsHFLineProps) => {
   if (healthFactor === "-1" && futureHealthFactor === "-1") return null
   return (
-    <Row caption={<span>Health factor</span>}>
+    <Row captionColor="basic400" caption={<span>Health factor</span>}>
       <Box sx={{ textAlign: "right" }}>
         <Box
           sx={{
@@ -372,12 +371,7 @@ export const DetailsHFLine = ({
           }}
         >
           {loading ? (
-            <Skeleton
-              variant="rectangular"
-              height={20}
-              width={80}
-              sx={{ borderRadius: "4px" }}
-            />
+            <Skeleton height={20} width={80} />
           ) : (
             <>
               <HealthFactorNumber value={healthFactor} />

@@ -322,6 +322,7 @@ const SupplyAction = ({
     <div sx={{ flex: "row", justify: "space-between" }}>
       <DataValue
         label="Available to supply"
+        labelColor="basic400"
         font="ChakraPetchSemiBold"
         size="small"
         tooltip="This is the total amount that you are able to supply to in this reserve. You are able to supply your wallet balance up until the supply cap is reached."
@@ -358,6 +359,7 @@ const BorrowAction = ({
     <div sx={{ flex: "row", justify: "space-between" }}>
       <DataValue
         label="Available to borrow"
+        labelColor="basic400"
         font="ChakraPetchSemiBold"
         size="small"
         tooltip="This is the total amount available for you to borrow. You can borrow based on your collateral and until the borrow cap is reached."

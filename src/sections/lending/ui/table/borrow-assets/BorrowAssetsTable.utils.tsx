@@ -56,6 +56,7 @@ export const useBorrowAssetsTableColumns = () => {
           const { availableBorrows, availableBorrowsInUSD } = row.original
           const value = Number(availableBorrows ?? 0)
           const valueUsd = Number(availableBorrowsInUSD ?? 0)
+
           return (
             <span sx={{ color: value === 0 ? "basic500" : "white" }}>
               {t("value.token", { value })}
@@ -126,6 +127,7 @@ export const useBorrowAssetsTableData = () => {
   const { user, reserves, marketReferencePriceInUsd, loading } =
     useAppDataContext()
   const [displayGho] = useRootStore((store) => [store.displayGho])
+  const [account] = useRootStore((store) => [store.account])
 
   const { baseAssetSymbol } = currentNetworkConfig
 
@@ -133,15 +135,16 @@ export const useBorrowAssetsTableData = () => {
     const tokensToBorrow = reserves
       .filter((reserve) => assetCanBeBorrowedByUser(reserve, user))
       .map((reserve: ComputedReserveData) => {
-        const availableBorrows = user
-          ? Number(
-              getMaxAmountAvailableToBorrow(
-                reserve,
-                user,
-                InterestRate.Variable,
-              ),
-            )
-          : 0
+        const availableBorrows =
+          user && account
+            ? Number(
+                getMaxAmountAvailableToBorrow(
+                  reserve,
+                  user,
+                  InterestRate.Variable,
+                ),
+              )
+            : 0
 
         const availableBorrowsInUSD = valueToBigNumber(availableBorrows)
           .multipliedBy(reserve.formattedPriceInMarketReferenceCurrency)
@@ -181,6 +184,7 @@ export const useBorrowAssetsTableData = () => {
           .toFixed()
 
     const borrowReserves =
+      !account ||
       user?.totalCollateralMarketReferenceCurrency === "0" ||
       +collateralUsagePercent >= 0.98
         ? tokensToBorrow
@@ -198,6 +202,7 @@ export const useBorrowAssetsTableData = () => {
 
     return borrowReserves as unknown as DashboardReserve[]
   }, [
+    account,
     baseAssetSymbol,
     currentMarket,
     displayGho,

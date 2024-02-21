@@ -1,9 +1,9 @@
+import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { DataValue } from "components/DataValue"
-import { useTranslation } from "react-i18next"
+import { PercentageValue } from "sections/lending/components/PercentageValue"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { InterestRateModelGraphContainer } from "sections/lending/modules/reserve-overview/graphs/InterestRateModelGraphContainer"
 import { NetworkConfig } from "sections/lending/ui-config/networksConfig"
-import LinkIcon from "assets/icons/LinkIcon.svg?react"
 
 export type InterestRateModelInfoProps = {
   reserve: ComputedReserveData
@@ -14,7 +14,6 @@ export const InterestRateModelInfo: React.FC<InterestRateModelInfoProps> = ({
   reserve,
   currentNetworkConfig,
 }) => {
-  const { t } = useTranslation()
   return (
     <div>
       <div
@@ -31,9 +30,7 @@ export const InterestRateModelInfo: React.FC<InterestRateModelInfoProps> = ({
           labelColor="basic400"
           font="ChakraPetchBold"
         >
-          {t("value.percentage", {
-            value: +reserve.borrowUsageRatio * 100,
-          })}
+          <PercentageValue value={Number(reserve.borrowUsageRatio) * 100} />
         </DataValue>
         <a
           target="_blank"

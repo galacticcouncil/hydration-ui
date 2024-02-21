@@ -23,8 +23,6 @@ export const BorrowAssetsTable = () => {
 
   const { user } = useAppDataContext()
 
-  console.log({ user })
-
   return (
     <DataTable
       table={table}

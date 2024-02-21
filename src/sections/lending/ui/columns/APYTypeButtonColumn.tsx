@@ -1,12 +1,12 @@
 import { InterestRate } from "@aave/contract-helpers"
-import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import CheckIcon from "assets/icons/CheckIcon.svg?react"
+import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
 import { Dropdown } from "components/Dropdown/Dropdown"
 import { Text } from "components/Typography/Text/Text"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
+import { useMemo } from "react"
+import { PercentageValue } from "sections/lending/components/PercentageValue"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import { CustomMarket } from "sections/lending/ui-config/marketsConfig"
 
@@ -19,20 +19,6 @@ interface ListItemAPYButtonProps {
   variableBorrowAPY: string
   underlyingAsset: string
   currentMarket: CustomMarket
-}
-
-const PERCENTAGE_THRESHOLD = 0.01
-const PercentageValue: FC<{ value: number }> = ({ value }) => {
-  const { t } = useTranslation()
-  const belowThreshold = value < PERCENTAGE_THRESHOLD
-  return (
-    <>
-      {belowThreshold && <span sx={{ color: "basic300" }}>{"<"}</span>}
-      {t("value.percentage", {
-        value: belowThreshold ? PERCENTAGE_THRESHOLD : value,
-      })}
-    </>
-  )
 }
 
 export const APYTypeButtonColumn = ({

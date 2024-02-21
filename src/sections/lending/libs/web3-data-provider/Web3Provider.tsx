@@ -89,16 +89,6 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   ])
   const setAccountLoading = useRootStore((store) => store.setAccountLoading)
   const setWalletType = useRootStore((store) => store.setWalletType)
-  // for now we use network changed as it returns the chain string instead of hex
-  // const handleChainChanged = (chainId: number) => {
-  //   console.log('chainChanged', chainId);
-  //   if (selectedWallet) {
-  //     connectWallet(selectedWallet);
-  //   }
-  // };
-
-  // Wallet connection and disconnection
-  // clean local storage
 
   const disconnectWallet = useCallback(async () => {
     deactivate()
@@ -232,11 +222,11 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   // inject account into zustand as long as aave itnerface is using old web3 providers
   useEffect(() => {
     setAccount(account?.toLowerCase())
-  }, [account])
+  }, [account, setAccount])
 
   useEffect(() => {
     setAccountLoading(loading)
-  }, [loading])
+  }, [loading, setAccountLoading])
 
   return (
     <Web3Context.Provider

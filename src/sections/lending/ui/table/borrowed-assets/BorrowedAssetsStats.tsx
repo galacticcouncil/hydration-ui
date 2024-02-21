@@ -1,12 +1,11 @@
+import BN from "bignumber.js"
 import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useTranslation } from "react-i18next"
+import { PercentageValue } from "sections/lending/components/PercentageValue"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
 
 export const BorrowedAssetsStats = () => {
-  const { t } = useTranslation()
   const { user, loading } = useAppDataContext()
 
   const maxBorrowAmount = BN(
@@ -35,9 +34,7 @@ export const BorrowedAssetsStats = () => {
         tooltip="The weighted average of APY for all supplied assets, including incentives."
         isLoading={loading}
       >
-        {t("value.percentage", {
-          value: (user?.debtAPY || 0) * 100,
-        })}
+        <PercentageValue value={(user?.debtAPY || 0) * 100} />
       </DataValue>
       <DataValue
         size="small"
@@ -47,9 +44,7 @@ export const BorrowedAssetsStats = () => {
         tooltip="The % of your total borrowing power used. This is based on the amount of your collateral supplied and the total amount that you can borrow."
         isLoading={loading}
       >
-        {t("value.percentage", {
-          value: collateralUsagePercent.toNumber() * 100,
-        })}
+        <PercentageValue value={Number(collateralUsagePercent) * 100} />
       </DataValue>
     </DataValueList>
   )

@@ -11,7 +11,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const SupplyAssetsTable = () => {
   const { t } = useTranslation()
-  const [showAll, setShowAll] = useLocalStorageBool("showSupplyAssets")
+  const [showAll, setShowAll] = useLocalStorageBool("showAllSupplyAssets")
 
   const { account } = useAccount()
 

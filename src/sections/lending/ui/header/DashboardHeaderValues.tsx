@@ -8,8 +8,8 @@ import { Button } from "components/Button/Button"
 import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { FC, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { HealthFactorNumber } from "sections/lending/components/HealthFactorNumber"
+import { PercentageValue } from "sections/lending/components/PercentageValue"
 import { NoData } from "sections/lending/components/primitives/NoData"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useModalContext } from "sections/lending/hooks/useModal"
@@ -20,7 +20,6 @@ import { LiquidationRiskParametresInfoModal } from "sections/lending/modules/das
 export const DashboardHeaderValues: FC<{
   className?: string
 }> = ({ className }) => {
-  const { t } = useTranslation()
   const { currentNetworkConfig, currentMarketData } = useProtocolDataContext()
   const { user, reserves, loading } = useAppDataContext()
   const { currentAccount } = useWeb3Context()
@@ -106,7 +105,7 @@ export const DashboardHeaderValues: FC<{
             isLoading={loading}
           >
             {currentAccount && Number(user?.netWorthUSD) > 0 ? (
-              t("value.percentage", { value: user.netAPY * 100 })
+              <PercentageValue value={Number(user.netAPY) * 100} />
             ) : (
               <NoData />
             )}

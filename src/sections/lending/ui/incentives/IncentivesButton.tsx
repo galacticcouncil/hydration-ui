@@ -2,8 +2,8 @@ import { valueToBigNumber } from "@aave/math-utils"
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 import MoreDotsIcon from "assets/icons/MoreDotsIcon.svg?react"
 import { useState } from "react"
-import { useTranslation } from "react-i18next"
 import { ContentWithTooltip } from "sections/lending/components/ContentWithTooltip"
+import { PercentageValue } from "sections/lending/components/PercentageValue"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { SContainer } from "./IncentivesButton.styled"
 import { IncentivesTooltipContent } from "./IncentivesTooltipContent"
@@ -17,9 +17,7 @@ interface IncentivesButtonProps {
 export const IncentivesButton = ({
   incentives,
   symbol,
-  displayBlank,
 }: IncentivesButtonProps) => {
-  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
 
   if (!(incentives && incentives.length > 0)) {
@@ -51,7 +49,7 @@ export const IncentivesButton = ({
     } else {
       return (
         <span sx={{ color: "basic300" }}>
-          {t("value.percentage", { value: incentivesNetAPR * 100 })}
+          <PercentageValue value={Number(incentivesNetAPR) * 100} />
         </span>
       )
     }

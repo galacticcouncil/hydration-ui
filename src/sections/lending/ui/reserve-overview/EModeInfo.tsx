@@ -1,7 +1,7 @@
 import { DataValue, DataValueList } from "components/DataValue"
 import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
 import LightningBoltGradient from "sections/lending/assets/lightningBoltGradient.svg?react"
+import { PercentageValue } from "sections/lending/components/PercentageValue"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import { getEmodeMessage } from "sections/lending/components/transactions/Emode/EmodeNaming"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
@@ -11,7 +11,6 @@ type EModeInfoProps = {
 }
 
 export const EModeInfo: React.FC<EModeInfoProps> = ({ reserve }) => {
-  const { t } = useTranslation()
   return (
     <div>
       <div sx={{ flex: "row", mb: 20, gap: 10, align: "center" }}>
@@ -31,9 +30,7 @@ export const EModeInfo: React.FC<EModeInfoProps> = ({ reserve }) => {
           label="Max LTV"
           tooltip="The Maximum LTV ratio represents the maximum borrowing power of a specific collateral. For example, if a collateral has an LTV of 75%, the user can borrow up to 0.75 worth of ETH in the principal currency for every 1 ETH worth of collateral."
         >
-          {t("value.percentage", {
-            value: +reserve.formattedEModeLtv * 100,
-          })}
+          <PercentageValue value={Number(reserve.formattedEModeLtv) * 100} />
         </DataValue>
         <DataValue
           labelColor="basic400"
@@ -42,9 +39,9 @@ export const EModeInfo: React.FC<EModeInfoProps> = ({ reserve }) => {
           label="Liquidation threshold"
           tooltip="This represents the threshold at which a borrow position will be considered undercollateralized and subject to liquidation for each collateral. For example, if a collateral has a liquidation threshold of 80%, it means that the position will be liquidated when the debt value is worth 80% of the collateral value."
         >
-          {t("value.percentage", {
-            value: +reserve.formattedEModeLiquidationThreshold * 100,
-          })}
+          <PercentageValue
+            value={Number(reserve.formattedEModeLiquidationThreshold) * 100}
+          />
         </DataValue>
         <DataValue
           labelColor="basic400"
@@ -53,9 +50,9 @@ export const EModeInfo: React.FC<EModeInfoProps> = ({ reserve }) => {
           label="Liquidation penalty"
           tooltip="When a liquidation occurs, liquidators repay up to 50% of the outstanding borrowed amount on behalf of the borrower. In return, they can buy the collateral at a discount and keep the difference (liquidation penalty) as a bonus."
         >
-          {t("value.percentage", {
-            value: +reserve.formattedEModeLiquidationBonus * 100,
-          })}
+          <PercentageValue
+            value={Number(reserve.formattedEModeLiquidationBonus) * 100}
+          />
         </DataValue>
       </DataValueList>
       <Text color="basic400" fs={14} sx={{ mt: 20 }}>

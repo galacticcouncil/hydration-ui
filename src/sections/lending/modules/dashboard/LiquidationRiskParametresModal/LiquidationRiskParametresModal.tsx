@@ -7,6 +7,7 @@ import { getHealthFactorColor, getLtvColor } from "sections/lending/utils/utils"
 import { HFContent } from "./components/HFContent"
 import { InfoWrapper } from "./components/InfoWrapper"
 import { LTVContent } from "./components/LTVContent"
+import { PercentageValue } from "sections/lending/components/PercentageValue"
 
 interface LiquidationRiskParametresInfoModalProps {
   open: boolean
@@ -72,9 +73,9 @@ export const LiquidationRiskParametresInfoModal = ({
                 <InfoWrapper
                   topTitle="Current LTV"
                   topDescription="Your current loan to value based on your collateral supplied."
-                  topValue={t("value.percentage", {
-                    value: +loanToValue * 100,
-                  })}
+                  topValue={
+                    <PercentageValue value={Number(loanToValue) * 100} />
+                  }
                   bottomText="If your loan to value goes above the liquidation threshold your collateral supplied may be liquidated."
                   color={ltvColor}
                 >

@@ -5,6 +5,7 @@ import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import { PercentageValue } from "sections/lending/components/PercentageValue"
 import { CapsCircularStatus } from "sections/lending/components/caps/CapsCircularStatus"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
@@ -142,9 +143,9 @@ export const BorrowInfo = ({
               labelColor="basic400"
               font="ChakraPetchBold"
             >
-              {t("value.percentage", {
-                value: +reserve.variableBorrowAPY * 100,
-              })}
+              <PercentageValue
+                value={Number(reserve.variableBorrowAPY) * 100}
+              />
               <div sx={{ mt: 2 }} css={{ position: "absolute", top: "100%" }}>
                 <IncentivesButton
                   symbol={reserve.symbol}
@@ -212,7 +213,7 @@ export const BorrowInfo = ({
                 </Text>
               }
             >
-              {t("value.percentage", { value: +reserve.reserveFactor * 100 })}
+              <PercentageValue value={Number(reserve.reserveFactor) * 100} />
             </DataValue>
             <DataValue
               label="Collector Contract"

@@ -1,6 +1,6 @@
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
+import { PercentageValue } from "sections/lending/components/PercentageValue"
 import { Row } from "sections/lending/components/primitives/Row"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 
@@ -15,7 +15,6 @@ export const IncentivesTooltipContent = ({
   incentivesNetAPR,
   symbol,
 }: IncentivesTooltipContentProps) => {
-  const { t } = useTranslation()
   const Number = ({
     incentiveAPR,
   }: {
@@ -25,7 +24,9 @@ export const IncentivesTooltipContent = ({
       <div sx={{ display: "inline-flex", alignItems: "center" }}>
         {incentiveAPR !== "Infinity" ? (
           <>
-            <span>{t("value.percentage", { value: +incentiveAPR * 100 })}</span>
+            <span>
+              <PercentageValue value={+incentiveAPR * 100} />
+            </span>
             <span sx={{ ml: 4 }}>APR</span>
           </>
         ) : (

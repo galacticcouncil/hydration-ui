@@ -3,7 +3,6 @@ import {
   valueToBigNumber,
 } from "@aave/math-utils"
 
-import { Typography } from "@mui/material"
 import { Warning } from "sections/lending/components/primitives/Warning"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useAssetCaps } from "sections/lending/hooks/useAssetCaps"

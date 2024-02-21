@@ -5,6 +5,7 @@ import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import { PercentageValue } from "sections/lending/components/PercentageValue"
 import { CapsCircularStatus } from "sections/lending/components/caps/CapsCircularStatus"
 import { DebtCeilingStatus } from "sections/lending/components/caps/DebtCeilingStatus"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
@@ -125,7 +126,7 @@ export const SupplyInfo = ({
               </DataValue>
             )}
             <DataValue label="APY" labelColor="basic400" font="ChakraPetchBold">
-              {t("value.percentage", { value: +reserve.supplyAPY * 100 })}
+              <PercentageValue value={Number(reserve.supplyAPY) * 100} />
               <div sx={{ mt: 2 }} css={{ position: "absolute", top: "100%" }}>
                 <IncentivesButton
                   symbol={reserve.symbol}
@@ -227,9 +228,9 @@ export const SupplyInfo = ({
               size="small"
               tooltip="The Maximum LTV ratio represents the maximum borrowing power of a specific collateral. For example, if a collateral has an LTV of 75%, the user can borrow up to 0.75 worth of ETH in the principal currency for every 1 ETH worth of collateral."
             >
-              {t("value.percentage", {
-                value: +reserve.formattedBaseLTVasCollateral * 100,
-              })}
+              <PercentageValue
+                value={Number(reserve.formattedBaseLTVasCollateral) * 100}
+              />
             </DataValue>
             <DataValue
               label="Liquidation threshold"
@@ -238,9 +239,11 @@ export const SupplyInfo = ({
               size="small"
               tooltip="This represents the threshold at which a borrow position will be considered undercollateralized and subject to liquidation for each collateral. For example, if a collateral has a liquidation threshold of 80%, it means that the position will be liquidated when the debt value is worth 80% of the collateral value."
             >
-              {t("value.percentage", {
-                value: +reserve.formattedReserveLiquidationThreshold * 100,
-              })}
+              <PercentageValue
+                value={
+                  Number(reserve.formattedReserveLiquidationThreshold) * 100
+                }
+              />
             </DataValue>
             <DataValue
               label="Liquidation penalty"
@@ -249,9 +252,9 @@ export const SupplyInfo = ({
               size="small"
               tooltip="When a liquidation occurs, liquidators repay up to 50% of the outstanding borrowed amount on behalf of the borrower. In return, they can buy the collateral at a discount and keep the difference (liquidation penalty) as a bonus."
             >
-              {t("value.percentage", {
-                value: +reserve.formattedReserveLiquidationBonus * 100,
-              })}
+              <PercentageValue
+                value={Number(reserve.formattedReserveLiquidationBonus) * 100}
+              />
             </DataValue>
           </div>
           {reserve.isIsolated && (

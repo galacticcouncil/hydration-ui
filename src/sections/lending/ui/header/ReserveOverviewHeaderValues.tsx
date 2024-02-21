@@ -1,52 +1,21 @@
 import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
-import { useTranslation } from "react-i18next"
+import { PercentageValue } from "sections/lending/components/PercentageValue"
 import {
   ComputedReserveData,
   useAppDataContext,
 } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { Text } from "components/Typography/Text/Text"
 
 export type ReserveOverviewHeaderValuesProps = {
   className?: string
   underlyingAsset: string
 }
 
-const ReserveIcon = () => {
-  return (
-    <div
-      mr={3}
-      sx={{
-        mr: 3,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      {loading ? (
-        <Skeleton
-          variant="circular"
-          width={40}
-          height={40}
-          sx={{ background: "#383D51" }}
-        />
-      ) : (
-        <img
-          src={`https://app.aave.com/icons/tokens/${poolReserve.iconSymbol.toLowerCase()}.svg`}
-          width="40px"
-          height="40px"
-          alt=""
-        />
-      )}
-    </div>
-  )
-}
-
 export const ReserveOverviewHeaderValues: FC<
   ReserveOverviewHeaderValuesProps
 > = ({ underlyingAsset, className }) => {
-  const { t } = useTranslation()
   const { reserves, loading } = useAppDataContext()
 
   const poolReserve = reserves.find(
@@ -110,9 +79,9 @@ export const ReserveOverviewHeaderValues: FC<
           labelColor="brightBlue300"
           label="Utilization rate"
         >
-          {t("value.percentage", {
-            value: Number(poolReserve?.borrowUsageRatio ?? 0) * 100,
-          })}
+          <PercentageValue
+            value={Number(poolReserve?.borrowUsageRatio ?? 0) * 100}
+          />
         </DataValue>
         <DataValue
           size="medium"

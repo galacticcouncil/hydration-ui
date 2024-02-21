@@ -1,10 +1,9 @@
 import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useTranslation } from "react-i18next"
+import { PercentageValue } from "sections/lending/components/PercentageValue"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 
 export const SuppliedAssetsStats = () => {
-  const { t } = useTranslation()
   const { user, loading } = useAppDataContext()
 
   return (
@@ -26,7 +25,7 @@ export const SuppliedAssetsStats = () => {
         tooltip="The weighted average of APY for all supplied assets, including incentives."
         isLoading={loading}
       >
-        {t("value.percentage", { value: (user?.earnedAPY || 0) * 100 })}
+        <PercentageValue value={(user?.earnedAPY || 0) * 100} />
       </DataValue>
       <DataValue
         size="small"
