@@ -1,5 +1,6 @@
 {
   "and": "and",
+  "apr": "APR",
   "back": "Back",
   "complete": "Complete",
   "total": "Total",
@@ -123,8 +124,8 @@
   "value.percentage": "{{ value, bignumber(numberSuffix: '%'; type: 'percentage') }}",
   "value.percentage.range": "{{ from, bignumber(type: 'percentage') }}-{{ to, bignumber(type: 'percentage') }}%",
   "value.APR": "{{ apr, bignumber(numberSuffix: '% APR'; type: 'percentage'; decimalPlaces: 0) }}",
-  "value.APR.range": "{{ from, bignumber(type: 'percentage'; decimalPlaces: 0) }}-{{ to, bignumber(type: 'percentage'; decimalPlaces: 0) }}% APR",
-  "value.multiAPR": "{{minApr, bignumber(type: 'percentage'; decimalPlaces: 0) }}-{{maxApr, bignumber(type: 'percentage'; decimalPlaces: 0) }}% APR",
+  "value.APR.range": "{{ from, bignumber(type: 'percentage'; decimalPlaces: 1) }}-{{ to, bignumber(type: 'percentage'; decimalPlaces: 1) }}% APR",
+  "value.multiAPR": "{{minApr, bignumber(type: 'percentage'; decimalPlaces: 1) }}-{{maxApr, bignumber(type: 'percentage'; decimalPlaces: 1) }}% APR",
   "value.token": "{{ value, bignumber(type: 'token') }}",
   "value.tokenWithSymbol": "{{ value, bignumber(type: 'token') }} {{symbol}}",
   "liquidity.navigation.myLiquidity": "My Liquidity",
