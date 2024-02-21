@@ -11,7 +11,7 @@ export const PercentageValue: FC<PercentageValueProps> = ({
   minThreshold = 0.01,
 }) => {
   const { t } = useTranslation()
-  const belowThreshold = value < minThreshold
+  const belowThreshold = Math.abs(value) < minThreshold
   return (
     <>
       {belowThreshold && <span sx={{ color: "basic300" }}>{"<"}</span>}

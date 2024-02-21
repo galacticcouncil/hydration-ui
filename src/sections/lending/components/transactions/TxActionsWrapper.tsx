@@ -15,7 +15,6 @@ import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { TxAction } from "sections/lending/ui-config/errorMapping"
 
 import { ApprovalTooltip } from "sections/lending/components/infoTooltips/ApprovalTooltip"
-import { RightHelperText } from "./FlowCommons/RightHelperText"
 
 interface TxActionsWrapperProps extends BoxProps {
   actionInProgressText: ReactNode
@@ -140,10 +139,7 @@ export const TxActionsWrapper = ({
   const { content, disabled, loading, handleClick } = getMainParams()
   const approvalParams = getApprovalParams()
   return (
-    <Box
-      sx={{ display: "flex", flexDirection: "column", mt: 16, ...sx }}
-      {...rest}
-    >
+    <Box sx={{ flex: "column", mt: ["auto", 16] }} {...rest}>
       {/* {approvalParams && !readOnlyModeAddress && (
         <Box
           sx={{ display: "flex", justifyContent: "end", alignItems: "center" }}
