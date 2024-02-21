@@ -90,8 +90,8 @@ export const usePoolsWalletBalances = (marketDatas: MarketDataType[]) => {
   const poolsBalancesQueries = usePoolsReservesHumanized(marketDatas)
 
   const isLoading =
-    tokensBalanceQueries.find((elem) => elem.isLoading) ||
-    poolsBalancesQueries.find((elem) => elem.isLoading)
+    tokensBalanceQueries.find((elem) => elem.isInitialLoading) ||
+    poolsBalancesQueries.find((elem) => elem.isInitialLoading)
 
   const walletBalances = useMemo(() => {
     if (isLoading) return []

@@ -54,8 +54,8 @@ export const useBorrowAssetsTableColumns = () => {
           Number(b.original.availableBorrowsInUSD),
         cell: ({ row }) => {
           const { availableBorrows, availableBorrowsInUSD } = row.original
-          const value = Number(availableBorrows)
-          const valueUsd = Number(availableBorrowsInUSD)
+          const value = Number(availableBorrows ?? 0)
+          const valueUsd = Number(availableBorrowsInUSD ?? 0)
           return (
             <span sx={{ color: value === 0 ? "basic500" : "white" }}>
               {t("value.token", { value })}

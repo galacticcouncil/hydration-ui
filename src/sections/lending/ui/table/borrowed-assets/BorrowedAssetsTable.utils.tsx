@@ -14,6 +14,7 @@ import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatche
 import { APYTypeButtonColumn } from "sections/lending/ui/columns/APYTypeButtonColumn"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export type TBorrowedAssetsTable = typeof useBorrowedAssetsTableData
 export type TBorrowedAssetsTableData = ReturnType<TBorrowedAssetsTable>
@@ -150,7 +151,11 @@ export const useBorrowedAssetsTableColumns = () => {
 export const useBorrowedAssetsTableData = () => {
   const { user, loading } = useAppDataContext()
   const { currentNetworkConfig } = useProtocolDataContext()
+
+  const { account } = useAccount()
+
   const data = useMemo(() => {
+    if (!account) return []
     const borrowPositions =
       user?.userReservesData.reduce(
         (acc, userReserve) => {
@@ -210,7 +215,7 @@ export const useBorrowedAssetsTableData = () => {
             : item.reserve.sIncentivesData,
       }
     })
-  }, [currentNetworkConfig.baseAssetSymbol, user?.userReservesData])
+  }, [account, currentNetworkConfig.baseAssetSymbol, user?.userReservesData])
 
   return {
     data,

@@ -55,8 +55,8 @@ export const useSupplyAssetsTableColumns = () => {
           Number(b.original.walletBalanceUSD),
         cell: ({ row }) => {
           const { walletBalance, walletBalanceUSD } = row.original
-          const value = Number(walletBalance)
-          const valueUsd = Number(walletBalanceUSD)
+          const value = Number(walletBalance ?? 0)
+          const valueUsd = Number(walletBalanceUSD ?? 0)
 
           const { supplyCap } = getAssetCapData(row.original.reserve)
           const isMaxCapReached = supplyCap.isMaxed
@@ -143,7 +143,7 @@ export const useSupplyAssetsTableColumns = () => {
             !isActive ||
             isPaused ||
             isFreezed ||
-            Number(walletBalance) <= 0 ||
+            Number(walletBalance ?? 0) <= 0 ||
             isMaxCapReached
           return (
             <div sx={{ flex: "row", justify: "end" }}>
@@ -180,14 +180,6 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
   const { walletBalances, loading } = useWalletBalances(currentMarketData)
 
   const { baseAssetSymbol } = currentNetworkConfig
-
-  // @TODO: Remove this when the feature is implemented
-  const isShowZeroAssets = showAll
-
-  /* const localStorageName = "showSupplyZeroAssets"
-  const [isShowZeroAssets, setIsShowZeroAssets] = useState(
-    localStorage.getItem(localStorageName) === "true",
-  ) */
 
   const data = useMemo(() => {
     const tokensToSupply = reserves
@@ -312,7 +304,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
     )
 
     // Filter out reserves
-    const supplyReserves: unknown = isShowZeroAssets
+    const supplyReserves: unknown = showAll
       ? sortedSupplyReserves
       : filteredSupplyReserves.length >= 1
       ? filteredSupplyReserves
@@ -321,7 +313,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
     return supplyReserves as DashboardReserve[]
   }, [
     baseAssetSymbol,
-    isShowZeroAssets,
+    showAll,
     marketReferencePriceInUsd,
     reserves,
     user?.isInIsolationMode,

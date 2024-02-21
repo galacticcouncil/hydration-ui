@@ -7,10 +7,13 @@ import {
   useSupplyAssetsTableColumns,
   useSupplyAssetsTableData,
 } from "sections/lending/ui/table/supply-assets/SupplyAssetsTable.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const SupplyAssetsTable = () => {
   const { t } = useTranslation()
   const [showAll, setShowAll] = useLocalStorageBool("showSupplyAssets")
+
+  const { account } = useAccount()
 
   const { data, isLoading } = useSupplyAssetsTableData({ showAll })
   const columns = useSupplyAssetsTableColumns()
@@ -23,6 +26,7 @@ export const SupplyAssetsTable = () => {
   })
 
   const hasAvailableDeposits =
+    !!account &&
     data.filter((reserve) => reserve.availableToDepositUSD !== "0")?.length >= 1
 
   return (
