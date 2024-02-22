@@ -42,7 +42,7 @@ export const useSupplyAssetsTableColumns = () => {
         header: "Asset",
         cell: ({ row }) => (
           <AssetNameColumn
-            underlyingAsset={row.original.underlyingAsset}
+            detailsAddress={row.original.detailsAddress}
             symbol={row.original.symbol}
             iconSymbol={row.original.iconSymbol}
           />
@@ -134,6 +134,7 @@ export const useSupplyAssetsTableColumns = () => {
             walletBalance,
             isFreezed,
             underlyingAsset,
+            detailsAddress,
           } = row.original
 
           const { supplyCap } = getAssetCapData(row.original.reserve)
@@ -154,7 +155,12 @@ export const useSupplyAssetsTableColumns = () => {
               >
                 Supply
               </Button>
-              <Link to={ROUTES.reserveOverview(underlyingAsset, currentMarket)}>
+              <Link
+                to={ROUTES.reserveOverview(
+                  detailsAddress || underlyingAsset,
+                  currentMarket,
+                )}
+              >
                 <ChevronRight sx={{ color: "iconGray", mr: -8 }} />
               </Link>
             </div>

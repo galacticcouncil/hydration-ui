@@ -52,7 +52,7 @@ export const BorrowInfo = ({
 
   return (
     <>
-      <div sx={{ flex: "row", gap: 20, mb: 20 }}>
+      <div sx={{ flex: ["column", "row"], gap: 20, mb: 20 }}>
         {showBorrowCapStatus && (
           <CapsCircularStatus
             value={borrowCap.percentUsed}
@@ -99,7 +99,7 @@ export const BorrowInfo = ({
                     fs={12}
                     font="ChakraPetch"
                     color="basic500"
-                    css={{ position: "absolute", top: "100%" }}
+                    tAlign={["right", "left"]}
                   >
                     <DisplayValue
                       value={Number(reserve.totalDebtUSD)}
@@ -128,7 +128,7 @@ export const BorrowInfo = ({
                   fs={12}
                   font="ChakraPetch"
                   color="basic500"
-                  css={{ position: "absolute", top: "100%" }}
+                  tAlign={["right", "left"]}
                 >
                   <DisplayValue
                     value={Number(reserve.totalDebtUSD)}
@@ -146,7 +146,7 @@ export const BorrowInfo = ({
               <PercentageValue
                 value={Number(reserve.variableBorrowAPY) * 100}
               />
-              <div sx={{ mt: 2 }} css={{ position: "absolute", top: "100%" }}>
+              <div sx={{ mt: 2 }}>
                 <IncentivesButton
                   symbol={reserve.symbol}
                   incentives={reserve.vIncentivesData}
@@ -164,7 +164,7 @@ export const BorrowInfo = ({
                   fs={12}
                   font="ChakraPetch"
                   color="basic500"
-                  css={{ position: "absolute", top: "100%" }}
+                  tAlign={["right", "left"]}
                 >
                   <DisplayValue
                     value={Number(reserve.borrowCapUSD)}
@@ -191,7 +191,7 @@ export const BorrowInfo = ({
               Collector info
             </Text>
           </div>
-          <div sx={{ flex: "row", gap: [20, 40] }}>
+          <DataValueList>
             <DataValue
               label="Reserve factor"
               labelColor="basic400"
@@ -229,11 +229,15 @@ export const BorrowInfo = ({
                 rel="noreferrer"
                 css={{ textDecoration: "underline" }}
               >
-                View contract{" "}
-                <LinkIcon width={10} height={10} sx={{ color: "basic500" }} />
+                View contract
+                <LinkIcon
+                  width={10}
+                  height={10}
+                  sx={{ color: "basic500", ml: 4 }}
+                />
               </a>
             </DataValue>
-          </div>
+          </DataValueList>
         </>
       )}
     </>

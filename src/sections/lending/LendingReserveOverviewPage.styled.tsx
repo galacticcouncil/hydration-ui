@@ -20,9 +20,14 @@ export const SContainer = styled.div<{ active?: boolean }>`
   }
 `
 
-export const SToggleContainer = styled.div`
+export const SFilterContainer = styled.div`
   display: flex;
+  gap: 10px;
   margin-bottom: 20px;
+
+  @media ${theme.viewport.gte.sm} {
+    max-width: 400px;
+  }
 
   @media ${theme.viewport.gte.xl} {
     display: none;

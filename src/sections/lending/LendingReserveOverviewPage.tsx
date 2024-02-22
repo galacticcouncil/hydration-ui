@@ -1,7 +1,6 @@
 import { useSearch } from "@tanstack/react-location"
+import { Button } from "components/Button/Button"
 import { useState } from "react"
-import StyledToggleButton from "sections/lending/components/StyledToggleButton"
-import StyledToggleButtonGroup from "sections/lending/components/StyledToggleButtonGroup"
 import {
   ComputedReserveData,
   useAppDataContext,
@@ -14,7 +13,7 @@ import { withHexPrefix } from "sections/lending/utils/utils"
 import {
   SContainer,
   SContent,
-  SToggleContainer,
+  SFilterContainer,
 } from "./LendingReserveOverviewPage.styled"
 
 export const LendingReserveOverviewPage = () => {
@@ -41,22 +40,26 @@ export const LendingReserveOverviewPage = () => {
         underlyingAsset={underlyingAsset}
       />
 
-      <SToggleContainer>
-        <StyledToggleButtonGroup
-          color="primary"
-          value={mode}
-          exclusive
-          onChange={(_, value) => setMode(value)}
-          sx={{ width: { xs: "100%", xsm: "359px" }, height: "44px" }}
+      <SFilterContainer>
+        <Button
+          active={mode === "overview"}
+          fullWidth
+          variant="outline"
+          size="small"
+          onClick={() => setMode("overview")}
         >
-          <StyledToggleButton value="overview" disabled={mode === "overview"}>
-            Overview
-          </StyledToggleButton>
-          <StyledToggleButton value="actions" disabled={mode === "actions"}>
-            Your info
-          </StyledToggleButton>
-        </StyledToggleButtonGroup>
-      </SToggleContainer>
+          Overview
+        </Button>
+        <Button
+          active={mode === "actions"}
+          fullWidth
+          variant="outline"
+          size="small"
+          onClick={() => setMode("actions")}
+        >
+          Your info
+        </Button>
+      </SFilterContainer>
 
       <SContent>
         <SContainer active={mode === "overview"}>

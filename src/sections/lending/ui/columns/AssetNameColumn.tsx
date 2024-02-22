@@ -5,19 +5,20 @@ import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 
 type AssetNameColumnProps = {
-  underlyingAsset: string
+  detailsAddress: string
   symbol: string
   iconSymbol?: string
 }
 
 export const AssetNameColumn: FC<AssetNameColumnProps> = ({
-  underlyingAsset,
+  detailsAddress,
   symbol,
   iconSymbol,
 }) => {
   const { currentMarket } = useProtocolDataContext()
+
   return (
-    <Link to={ROUTES.reserveOverview(underlyingAsset, currentMarket)}>
+    <Link to={ROUTES.reserveOverview(detailsAddress, currentMarket)}>
       <span sx={{ flex: "row", align: "center", gap: 8 }}>
         {iconSymbol && <TokenIcon symbol={iconSymbol} sx={{ fontSize: 24 }} />}
         {symbol}

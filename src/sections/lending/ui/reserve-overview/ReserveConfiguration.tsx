@@ -19,8 +19,7 @@ const Divider = () => (
 export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
   reserve,
 }) => {
-  const { currentNetworkConfig, currentMarketData /* currentMarket */ } =
-    useProtocolDataContext()
+  const { currentNetworkConfig, currentMarketData } = useProtocolDataContext()
 
   const renderCharts =
     !!currentNetworkConfig.ratesHistoryApiUrl &&

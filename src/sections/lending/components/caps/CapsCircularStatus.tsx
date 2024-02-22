@@ -48,6 +48,7 @@ export const CapsCircularStatus = ({
           position: "relative",
           marginRight: 16,
           height: "fit-content",
+          width: "fit-content",
         }}
       >
         <CircularProgress

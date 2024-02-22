@@ -1,4 +1,4 @@
-import { DataValue, DataValueList } from "components/DataValue"
+import { DataValue } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { PercentageValue } from "sections/lending/components/PercentageValue"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
@@ -7,7 +7,7 @@ export const SuppliedAssetsStats = () => {
   const { user, loading } = useAppDataContext()
 
   return (
-    <DataValueList>
+    <div sx={{ flex: "row", gap: [30, 40] }}>
       <DataValue
         size="small"
         font="ChakraPetch"
@@ -37,6 +37,6 @@ export const SuppliedAssetsStats = () => {
       >
         <DisplayValue value={Number(user?.totalCollateralUSD || 0)} isUSD />
       </DataValue>
-    </DataValueList>
+    </div>
   )
 }

@@ -15,6 +15,12 @@ export const MarketAssetsTable = () => {
     data: reserves,
     columns,
     isLoading: loading,
+    columnsHiddenOnMobile: [
+      "supplyAPY",
+      "totalDebtUSD",
+      "variableBorrowAPY",
+      "actions",
+    ],
   })
 
   const navigate = useNavigate()

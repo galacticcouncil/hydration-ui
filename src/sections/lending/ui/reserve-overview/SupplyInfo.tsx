@@ -36,7 +36,7 @@ export const SupplyInfo = ({
   const hasUnbacked = reserve.unbacked && reserve.unbacked !== "0"
   return (
     <>
-      <div sx={{ flex: "row", gap: 20, mb: 20 }}>
+      <div sx={{ flex: ["column", "row"], gap: 20, mb: 20 }}>
         {showSupplyCapStatus && (
           <CapsCircularStatus
             value={supplyCap.percentUsed}
@@ -87,7 +87,7 @@ export const SupplyInfo = ({
                   fs={12}
                   font="ChakraPetch"
                   color="basic500"
-                  css={{ position: "absolute", top: "100%" }}
+                  tAlign={["right", "left"]}
                 >
                   <DisplayValue
                     value={Number(reserve.totalLiquidityUSD)}
@@ -115,7 +115,7 @@ export const SupplyInfo = ({
                   fs={12}
                   font="ChakraPetch"
                   color="basic500"
-                  css={{ position: "absolute", top: "100%" }}
+                  tAlign={["right", "left"]}
                 >
                   <DisplayValue
                     value={Number(reserve.totalLiquidityUSD)}
@@ -127,7 +127,7 @@ export const SupplyInfo = ({
             )}
             <DataValue label="APY" labelColor="basic400" font="ChakraPetchBold">
               <PercentageValue value={Number(reserve.supplyAPY) * 100} />
-              <div sx={{ mt: 2 }} css={{ position: "absolute", top: "100%" }}>
+              <div sx={{ mt: 2 }}>
                 <IncentivesButton
                   symbol={reserve.symbol}
                   incentives={reserve.aIncentivesData}
@@ -144,12 +144,7 @@ export const SupplyInfo = ({
                   value: Number(reserve.unbacked),
                   symbol: reserve.symbol,
                 })}
-                <Text
-                  fs={12}
-                  font="ChakraPetch"
-                  color="basic500"
-                  css={{ position: "absolute", top: "100%" }}
-                >
+                <Text fs={12} font="ChakraPetch" color="basic500">
                   <DisplayValue
                     value={Number(reserve.unbackedUSD)}
                     isUSD
@@ -220,7 +215,7 @@ export const SupplyInfo = ({
       </div>
       {reserve.reserveLiquidationThreshold !== "0" && (
         <>
-          <div sx={{ flex: "row", justify: "space-between", gap: [20, 40] }}>
+          <DataValueList>
             <DataValue
               label="Max LTV"
               labelColor="basic400"
@@ -256,7 +251,7 @@ export const SupplyInfo = ({
                 value={Number(reserve.formattedReserveLiquidationBonus) * 100}
               />
             </DataValue>
-          </div>
+          </DataValueList>
           {reserve.isIsolated && (
             <DebtCeilingStatus
               sx={{ mt: 16 }}

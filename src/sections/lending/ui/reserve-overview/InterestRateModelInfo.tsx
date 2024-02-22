@@ -41,7 +41,7 @@ export const InterestRateModelInfo: React.FC<InterestRateModelInfoProps> = ({
           css={{ textDecoration: "underline" }}
           sx={{ color: "basic500", fontSize: 14 }}
         >
-          Interest rate strategy{" "}
+          Interest rate strategy
           <LinkIcon width={10} height={10} sx={{ ml: 4 }} />
         </a>
       </div>

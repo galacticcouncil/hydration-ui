@@ -2,11 +2,13 @@ import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
+import { useMedia } from "react-use"
 import { PercentageValue } from "sections/lending/components/PercentageValue"
 import {
   ComputedReserveData,
   useAppDataContext,
 } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { theme } from "theme"
 
 export type ReserveOverviewHeaderValuesProps = {
   className?: string
@@ -17,6 +19,8 @@ export const ReserveOverviewHeaderValues: FC<
   ReserveOverviewHeaderValuesProps
 > = ({ underlyingAsset, className }) => {
   const { reserves, loading } = useAppDataContext()
+
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const poolReserve = reserves.find(
     (reserve) => reserve.underlyingAsset === underlyingAsset,
@@ -48,7 +52,7 @@ export const ReserveOverviewHeaderValues: FC<
           </Text>
         </div>
       </div>
-      <DataValueList sx={{ width: ["100%", "auto"] }}>
+      <DataValueList separated={!isDesktop} sx={{ width: ["100%", "auto"] }}>
         <DataValue
           size="medium"
           isLoading={loading}

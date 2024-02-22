@@ -28,7 +28,7 @@ export const useMarketAssetsTableColumns = () => {
         header: "Asset",
         cell: ({ row }) => (
           <AssetNameColumn
-            underlyingAsset={row.original.underlyingAsset}
+            detailsAddress={row.original.underlyingAsset}
             symbol={row.original.symbol}
             iconSymbol={row.original.iconSymbol}
           />
@@ -36,6 +36,11 @@ export const useMarketAssetsTableColumns = () => {
       }),
       accessor("totalLiquidityUSD", {
         header: "Total supplied",
+        meta: {
+          sx: {
+            textAlign: ["end", "start"],
+          },
+        },
         sortingFn: (a, b) =>
           Number(a.original.totalLiquidityUSD) -
           Number(b.original.totalLiquidityUSD),
@@ -163,6 +168,7 @@ export const useMarketAssetsTableColumns = () => {
           return (
             <Button
               size="micro"
+              css={{ minHeight: 27 }}
               onClick={() =>
                 navigate({
                   to: ROUTES.reserveOverview(underlyingAsset, currentMarket),

@@ -254,13 +254,7 @@ const BorrowedPositionsListItemMobile = ({
       </Row>
 
       <Row
-        caption={
-          <APYTypeTooltip
-            text={<span>APY type</span>}
-            key="APY type"
-            variant="description"
-          />
-        }
+        caption={<APYTypeTooltip text={<span>APY type</span>} key="APY type" />}
       >
         <ListItemAPYButton
           stableBorrowRateEnabled={stableBorrowRateEnabled}

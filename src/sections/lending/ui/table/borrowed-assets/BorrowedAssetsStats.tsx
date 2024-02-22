@@ -1,5 +1,5 @@
 import BN from "bignumber.js"
-import { DataValue, DataValueList } from "components/DataValue"
+import { DataValue } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { PercentageValue } from "sections/lending/components/PercentageValue"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
@@ -16,7 +16,7 @@ export const BorrowedAssetsStats = () => {
     : BN(user?.totalBorrowsMarketReferenceCurrency || "0").div(maxBorrowAmount)
 
   return (
-    <DataValueList>
+    <div sx={{ flex: "row", gap: [30, 40] }}>
       <DataValue
         size="small"
         font="ChakraPetch"
@@ -46,6 +46,6 @@ export const BorrowedAssetsStats = () => {
       >
         <PercentageValue value={Number(collateralUsagePercent) * 100} />
       </DataValue>
-    </DataValueList>
+    </div>
   )
 }

@@ -41,7 +41,7 @@ export const useBorrowAssetsTableColumns = () => {
         header: "Asset",
         cell: ({ row }) => (
           <AssetNameColumn
-            underlyingAsset={row.original.underlyingAsset}
+            detailsAddress={row.original.underlyingAsset}
             symbol={row.original.symbol}
             iconSymbol={row.original.iconSymbol}
           />

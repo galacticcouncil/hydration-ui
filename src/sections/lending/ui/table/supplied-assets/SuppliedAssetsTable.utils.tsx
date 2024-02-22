@@ -5,6 +5,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Switch } from "components/Switch/Switch"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { useMedia } from "react-use"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { getAssetCapData } from "sections/lending/hooks/useAssetCaps"
 import { useModalContext } from "sections/lending/hooks/useModal"
@@ -14,6 +15,7 @@ import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
 import { IsolatedEnabledBadge } from "sections/lending/ui/isolation-mode/IsolatedEnabledBadge"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { theme } from "theme"
 
 export type TSuppliedAssetsTable = typeof useSuppliedAssetsTableData
 export type TSuppliedAssetsTableData = ReturnType<TSuppliedAssetsTable>
@@ -27,13 +29,15 @@ export const useSuppliedAssetsTableColumns = () => {
 
   const { openWithdraw, openCollateralChange } = useModalContext()
 
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
   return useMemo(
     () => [
       accessor(({ reserve }) => reserve.symbol, {
         header: "Asset",
         cell: ({ row }) => (
           <AssetNameColumn
-            underlyingAsset={row.original.underlyingAsset}
+            detailsAddress={row.original.underlyingAsset}
             symbol={row.original.reserve.symbol}
             iconSymbol={row.original.reserve.iconSymbol}
           />
@@ -110,12 +114,14 @@ export const useSuppliedAssetsTableColumns = () => {
           const isEnabled =
             usageAsCollateralEnabledOnUser && canBeEnabledAsCollateral
           return (
-            <span sx={{ flex: "column", align: "center", gap: 4 }}>
+            <span
+              sx={{ flex: "column", align: ["end", "center"], gap: [10, 4] }}
+            >
               <Switch
                 value={isEnabled}
                 disabled={isPaused || !canBeEnabledAsCollateral}
                 onCheckedChange={() => openCollateralChange(underlyingAsset)}
-                size="small"
+                size={isDesktop ? "small" : "medium"}
                 label=""
                 name={`collateral-switch-${underlyingAsset}`}
               />
@@ -151,6 +157,7 @@ export const useSuppliedAssetsTableColumns = () => {
       }),
     ],
     [
+      isDesktop,
       openCollateralChange,
       openWithdraw,
       t,

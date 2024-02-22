@@ -80,6 +80,7 @@ export function Base64Token({
         overflow: "hidden",
       }}
     >
+      {/* eslint-disable-next-line jsx-a11y/alt-text */}
       <object
         style={{ opacity: 1 }}
         ref={ref}

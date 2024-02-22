@@ -7,6 +7,9 @@ import {
 } from "sections/lending/ui/table/borrow-assets/BorrowAssetsTable.utils"
 import { Alert } from "components/Alert/Alert"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { BorrowAssetsMobileRow } from "sections/lending/ui/table/borrow-assets/BorrowAssetsMobileRow"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export const BorrowAssetsTable = () => {
   const { data, isLoading } = useBorrowAssetsTableData()
@@ -23,11 +26,14 @@ export const BorrowAssetsTable = () => {
 
   const { user } = useAppDataContext()
 
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
   return (
     <DataTable
       table={table}
       spacing="large"
       title="Assets to borrow"
+      renderRow={isDesktop ? undefined : BorrowAssetsMobileRow}
       addons={
         account &&
         user?.totalCollateralMarketReferenceCurrency === "0" && (
