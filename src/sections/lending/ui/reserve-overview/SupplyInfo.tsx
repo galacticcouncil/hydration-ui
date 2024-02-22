@@ -189,10 +189,8 @@ export const SupplyInfo = ({
             </Alert>
           </div>
         ) : reserve.reserveLiquidationThreshold !== "0" ? (
-          <div sx={{ flex: "row", justify: "space-between" }}>
-            <Text fs={14} sx={{ mb: 10 }}>
-              Collateral usage
-            </Text>
+          <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
+            <Text fs={14}>Collateral usage</Text>
             <Text
               fs={14}
               color="green400"
@@ -215,7 +213,7 @@ export const SupplyInfo = ({
       </div>
       {reserve.reserveLiquidationThreshold !== "0" && (
         <>
-          <DataValueList>
+          <DataValueList sx={{ mt: 20 }}>
             <DataValue
               label="Max LTV"
               labelColor="basic400"
