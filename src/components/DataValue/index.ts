@@ -1,2 +1,2 @@
-export * from "./DataValue"
-export { DataValueList } from "./DataValue.styled"
+export { DataValue } from "./DataValue"
+export { DataValueList } from "./DataValueList"
