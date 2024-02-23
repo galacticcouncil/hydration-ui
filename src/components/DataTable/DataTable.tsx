@@ -25,7 +25,7 @@ type DataTableProps<T> = {
   action?: ReactNode
   addons?: ReactNode
   emptyFallback?: ReactNode
-  renderRow?: (row: Row<T>) => ReactNode
+  renderRow?: (row: Row<T> | Record<string, any>) => ReactNode
   onRowClick?: (row?: Row<T> | Record<string, any>) => void
 } & TableProps
 

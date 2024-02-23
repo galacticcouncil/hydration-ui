@@ -4,7 +4,6 @@ import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useFarmAprs, useFarms } from "api/farms"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
-import BigNumber from "bignumber.js"
 import { isNotNil } from "utils/helpers"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
@@ -56,9 +55,6 @@ export const JoinedFarms = ({ depositNft, poolId }: JoinedFarmsProps) => {
     (joinedFarmsApr) => joinedFarmsApr.currentApr,
   )
 
-  const minApr = BigNumber.minimum(...aprs)
-  const maxApr = BigNumber.maximum(...aprs)
-
   return (
     <div sx={{ flex: "column", gap: 6 }}>
       <Text fs={14} color="basic500">
@@ -72,7 +68,12 @@ export const JoinedFarms = ({ depositNft, poolId }: JoinedFarmsProps) => {
           }))}
         />
         <Text fs={16} color="white">
-          {t(`value.multiAPR`, { minApr, maxApr })}
+          {aprs
+            .map((apr) =>
+              t("value.percentage", { value: apr, decimalPlaces: 1 }),
+            )
+            .join(" + ")}{" "}
+          {t("apr")}
         </Text>
       </div>
     </div>

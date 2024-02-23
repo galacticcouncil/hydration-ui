@@ -29,32 +29,39 @@ const _mockTableData_: TMockData[] = [
     changeIn24h: "-2.34%",
   },
   {
-    id: "2",
+    id: "1027",
     token: "ETH",
     price: "$ 3012.77",
     marketCap: "$ 361.9B",
     changeIn24h: "3.21%",
   },
   {
-    id: "3",
+    id: "1839",
     token: "BNB",
     price: "$ 412.30",
     marketCap: "$ 64.5B",
     changeIn24h: "1.12%",
   },
   {
-    id: "4",
+    id: "52",
     token: "XRP",
     price: "$ 0.75",
     marketCap: "$ 35.2B",
     changeIn24h: "-0.56%",
   },
   {
-    id: "5",
+    id: "5426",
     token: "SOL",
     price: "$ 102.56",
     marketCap: "$ 34.1B",
     changeIn24h: "5.01%",
+  },
+  {
+    id: "6753",
+    token: "HDX",
+    price: "$ 0.0259",
+    marketCap: "$ 118.58M",
+    changeIn24h: "13.41%",
   },
 ]
 
@@ -62,6 +69,20 @@ const _mockColumns_: ColumnDef<TMockData>[] = [
   {
     accessorKey: "token",
     header: "Token",
+    cell: ({ row }) => {
+      return (
+        <span sx={{ flex: "row", align: "center", gap: 8 }}>
+          <img
+            width={24}
+            height={24}
+            alt=""
+            src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${row.original.id}.png`}
+            css={{ borderRadius: "50%" }}
+          />
+          <span>{row.original.token}</span>
+        </span>
+      )
+    },
   },
   {
     accessorKey: "price",
@@ -210,6 +231,29 @@ export const EmptyFallback: Story = {
     spacing: "large",
     size: "large",
     emptyFallback: <p sx={{ color: "basic300" }}>No cryptocurrencies found.</p>,
+  },
+}
+
+export const CustomRow: Story = {
+  render: (props) => <MockTable {...props} />,
+  args: {
+    title: "Cryptocurrencies",
+    renderRow: (row) => (
+      <div
+        sx={{ color: "white", mx: 20, mb: 20, pt: 20 }}
+        css={{ borderTop: "1px solid rgba(255,255,255,0.2)" }}
+      >
+        <div sx={{ mb: 10, fontSize: 20 }}>{row.original.token}</div>
+        <div sx={{ flex: "row", gap: 40 }}>
+          <DataValue labelColor="basic400" label="Price">
+            <p sx={{ color: "basic300" }}>{row.original.price}</p>
+          </DataValue>
+          <DataValue labelColor="basic400" label="Market Cap">
+            <p sx={{ color: "basic300" }}>{row.original.marketCap}</p>
+          </DataValue>
+        </div>
+      </div>
+    ),
   },
 }
 
