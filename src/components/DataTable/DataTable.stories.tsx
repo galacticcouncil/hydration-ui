@@ -144,7 +144,12 @@ const MockTable = ({
   isLoading,
   ...props
 }: Partial<
-  ComponentPropsWithoutRef<typeof DataTable> & { isLoading?: boolean }
+  Omit<
+    ComponentPropsWithoutRef<typeof DataTable>,
+    "onRowClick" | "renderRow"
+  > & {
+    isLoading?: boolean
+  }
 >) => {
   const table = useReactTable({
     data: props.emptyFallback ? [] : _mockTableData_,
