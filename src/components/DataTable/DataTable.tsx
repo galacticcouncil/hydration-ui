@@ -3,7 +3,7 @@ import {
   Row,
   Table as TableDefinition,
 } from "@tanstack/react-table"
-import { ReactNode } from "react"
+import { Fragment, ReactNode } from "react"
 import { TableSortHead } from "./components/TableSortHead"
 import {
   Table,
@@ -24,7 +24,9 @@ type DataTableProps<T> = {
   title?: ReactNode
   action?: ReactNode
   addons?: ReactNode
-  onRowClick?: (row?: Row<T> | Record<string, any>) => void
+  emptyFallback?: ReactNode
+  renderRow?: (row: Row<T>) => ReactNode
+  onRowClick?: (row: Row<T>) => void
 } & TableProps
 
 export function DataTable<T extends Record<string, any>>({
@@ -41,6 +43,8 @@ export function DataTable<T extends Record<string, any>>({
   striped,
   hoverable,
   onRowClick,
+  emptyFallback,
+  renderRow,
 }: DataTableProps<T>) {
   const tableProps = {
     spacing,
@@ -51,7 +55,20 @@ export function DataTable<T extends Record<string, any>>({
     fixedLayout,
   }
 
+  const headerGroups = table
+    .getHeaderGroups()
+    .filter((headerGroup) =>
+      headerGroup.headers.some((header) => !!header.column.columnDef.header),
+    )
+  const rows = table.getRowModel().rows
+  const hasRows = rows.length > 0
   const isLoading = table.options.meta?.isLoading ?? false
+
+  const shouldRenderFallback = emptyFallback && !isLoading && !hasRows
+  const shouldRenderAddons = !shouldRenderFallback && addons
+
+  const shouldRenderRows = !!renderRow && !isLoading
+  const shouldRenderTable = !shouldRenderRows
 
   return (
     <TableContainer className={className} background={background}>
@@ -62,18 +79,21 @@ export function DataTable<T extends Record<string, any>>({
         </TableTitleContainer>
       )}
 
-      {addons && <TableAddons spacing={spacing}>{addons}</TableAddons>}
+      {shouldRenderAddons && (
+        <TableAddons spacing={spacing}>{addons}</TableAddons>
+      )}
 
-      <Table {...tableProps} data-loading={`${isLoading}`}>
-        <TableHeader>
-          {table
-            .getHeaderGroups()
-            .filter((headerGroup) =>
-              headerGroup.headers.some(
-                (header) => !!header.column.columnDef.header,
-              ),
-            )
-            .map((headerGroup) => (
+      {shouldRenderRows &&
+        rows.map((row) => <Fragment key={row.id}>{renderRow(row)}</Fragment>)}
+
+      {shouldRenderTable && (
+        <Table
+          {...tableProps}
+          data-loading={`${isLoading}`}
+          css={{ display: shouldRenderFallback ? "none" : "table" }}
+        >
+          <TableHeader>
+            {headerGroups.map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const { meta } = header.getContext().column.columnDef
@@ -97,42 +117,55 @@ export function DataTable<T extends Record<string, any>>({
                 })}
               </TableRow>
             ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map((row) => (
-            <TableRow
-              key={row.id}
-              data-selected={row.getIsSelected()}
-              onClick={onRowClick ? () => onRowClick(row) : undefined}
-            >
-              {row.getVisibleCells().map((cell) => {
-                const { meta } = cell.getContext().cell.column.columnDef
-                return (
-                  <TableCell
-                    key={cell.id}
-                    className={meta?.className}
-                    sx={meta?.sx}
-                  >
-                    {onRowClick && !isLoading ? (
-                      <div
-                        css={{ display: "inline-flex", width: "fit-content" }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {flexRender(
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-selected={row.getIsSelected()}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                css={!!onRowClick && { cursor: "pointer" }}
+              >
+                {row.getVisibleCells().map((cell) => {
+                  const { meta } = cell.getContext().cell.column.columnDef
+                  return (
+                    <TableCell
+                      key={cell.id}
+                      className={meta?.className}
+                      sx={meta?.sx}
+                    >
+                      {onRowClick && !isLoading ? (
+                        <div
+                          css={{
+                            display: "inline-flex",
+                            width: "fit-content",
+                            cursor: "auto",
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </div>
+                      ) : (
+                        flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),
-                        )}
-                      </div>
-                    ) : (
-                      flexRender(cell.column.columnDef.cell, cell.getContext())
-                    )}
-                  </TableCell>
-                )
-              })}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                        )
+                      )}
+                    </TableCell>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+
+      {shouldRenderFallback && (
+        <TableAddons spacing={spacing}>{emptyFallback}</TableAddons>
+      )}
     </TableContainer>
   )
 }

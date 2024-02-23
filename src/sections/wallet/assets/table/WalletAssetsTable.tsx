@@ -62,7 +62,6 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
         <Switch
           value={showAll}
           onCheckedChange={(value) => setShowAll(value)}
-          size="small"
           name="showAll"
           label={t("wallet.assets.table.toggle")}
         />
@@ -114,7 +113,10 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
                 </TableRow>
                 {row.getIsSelected() && (
                   <TableRow>
-                    <TableData colSpan={table.getAllColumns().length}>
+                    <TableData
+                      colSpan={table.getAllColumns().length}
+                      isExpanded
+                    >
                       <WalletAssetsTableDetails {...row.original} />
                     </TableData>
                   </TableRow>

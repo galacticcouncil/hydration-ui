@@ -176,7 +176,8 @@ export const TableData = styled.td<{
 }>`
   height: 56px;
 
-  padding: 0 16px;
+  ${({ isExpanded }) => (isExpanded ? `padding: 16px` : "padding: 0 16px")};
+
   ${({ isSkeleton }) => !isSkeleton && "padding-right: 0px;"}
   text-align: start;
 
@@ -190,7 +191,8 @@ export const TableData = styled.td<{
   @media ${theme.viewport.gte.sm} {
     height: 68px;
 
-    padding: 0 32px;
+    ${({ isExpanded }) =>
+      isExpanded ? `padding: 24px 32px` : "padding: 0 32px"};
 
     &:last-of-type {
       padding-right: 10px;

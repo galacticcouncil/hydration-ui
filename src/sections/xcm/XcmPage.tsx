@@ -31,7 +31,7 @@ type WalletChangeDetail = {
 }
 
 export const XcmApp = createComponent({
-  tagName: "gc-xcm-app",
+  tagName: "gc-xcm",
   elementClass: Apps.XcmApp,
   react: React,
   events: {

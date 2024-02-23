@@ -17,7 +17,7 @@ import { NATIVE_ASSET_ID } from "utils/api"
 import { useDisplayAssetStore } from "utils/displayAsset"
 
 export const SwapApp = createComponent({
-  tagName: "gc-trade-app",
+  tagName: "gc-trade",
   elementClass: Apps.TradeApp,
   react: React,
   events: {

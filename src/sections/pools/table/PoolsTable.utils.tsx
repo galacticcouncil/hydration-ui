@@ -427,6 +427,7 @@ export const usePoolTable = (
       accessor("id", {
         id: "volumeDisplay",
         header: t("liquidity.table.header.volume"),
+        sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
         cell: ({ row }) => {
           const pool = row.original
 

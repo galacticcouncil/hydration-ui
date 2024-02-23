@@ -32,7 +32,7 @@ const Icons = () => {
             css={{
               width: 140,
               height: 140,
-              border: "1px solid white",
+              border: "1px solid rgba(255,255,255,0.1)",
               position: "relative",
             }}
           >

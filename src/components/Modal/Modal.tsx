@@ -72,6 +72,7 @@ export const Modal = ({
           css={{ overflow: isAnimating ? "hidden" : undefined }}
         >
           <SContainer
+            onOpenAutoFocus={(e) => e.preventDefault()}
             onEscapeKeyDown={!disableClose ? onClose : undefined}
             onInteractOutside={
               disableClose || disableCloseOutside || hasTopContent

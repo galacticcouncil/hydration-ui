@@ -38,6 +38,7 @@ export const SStablepoolBadge = styled(motion.div)`
   color: ${theme.colors.basic900};
   text-transform: uppercase;
   font-weight: 700;
+  font-family: ChakraPetchBold;
   line-height: normal;
 
   cursor: pointer;

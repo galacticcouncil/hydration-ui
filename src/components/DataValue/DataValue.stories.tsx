@@ -1,7 +1,8 @@
 import { TooltipProvider } from "@radix-ui/react-tooltip"
 import type { Meta, StoryObj } from "@storybook/react"
-import { DataValueList } from "components/DataValue/DataValue.styled"
 import { DataValue } from "./DataValue"
+import { DataValueList } from "./DataValueList"
+import { ComponentPropsWithoutRef } from "react"
 
 type Story = StoryObj<typeof DataValue>
 
@@ -9,62 +10,68 @@ export default {
   component: DataValue,
 } as Meta<typeof DataValue>
 
+const Template = (props: ComponentPropsWithoutRef<typeof DataValue>) => (
+  <DataValue {...props} label="Total Balance">
+    $129 851
+  </DataValue>
+)
+
 export const Default: Story = {
-  render: () => <DataValue label="Total Balance">$129 851</DataValue>,
+  render: Template,
 }
 
 export const Small: Story = {
-  render: () => (
-    <DataValue size="small" label="Total Balance">
-      $129 851
-    </DataValue>
-  ),
+  render: Template,
+  args: {
+    size: "small",
+  },
 }
 
 export const Medium: Story = {
-  render: () => (
-    <DataValue size="medium" label="Total Balance">
-      $129 851
-    </DataValue>
-  ),
+  render: Template,
+  args: {
+    size: "medium",
+  },
 }
 
 export const Large: Story = {
-  render: () => (
-    <DataValue size="large" label="Total Balance">
-      $129 851
-    </DataValue>
-  ),
+  render: Template,
+  args: {
+    size: "large",
+  },
+}
+
+export const ExtraLarge: Story = {
+  render: Template,
+  args: {
+    size: "extra-large",
+  },
 }
 
 export const RegularFont: Story = {
-  render: () => (
-    <DataValue font="ChakraPetch" label="Total Balance">
-      $129 851
-    </DataValue>
-  ),
+  render: Template,
+  args: {
+    font: "ChakraPetch",
+  },
 }
 
 export const LabelColor: Story = {
-  render: () => (
-    <DataValue labelColor="brightBlue300" label="Total Balance">
-      $129 851
-    </DataValue>
-  ),
+  render: Template,
+  args: {
+    labelColor: "brightBlue300",
+  },
 }
 
 export const WithTooltip: Story = {
-  render: () => (
+  render: (args) => (
     <TooltipProvider>
-      <DataValue
-        labelColor="brightBlue300"
-        label="Total Balance"
-        tooltip="Your total account balance."
-      >
-        $129 851
-      </DataValue>
+      <Template {...args} />
     </TooltipProvider>
   ),
+  args: {
+    labelColor: "brightBlue300",
+    tooltip: "Your total account balance.",
+  },
 }
 
 export const List = {
