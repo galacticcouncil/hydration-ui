@@ -38,6 +38,7 @@ export const SDataValueList = styled.div<{
     & > div {
       display: flex;
       align-items: center;
+
       flex: ${({ separated }) => (separated ? "1 1 auto" : "0")};
       position: relative;
 
@@ -58,6 +59,7 @@ export const SDataValueList = styled.div<{
       & > div {
         flex-direction: column;
         align-items: flex-start;
+        align-self: start;
       }
     }
   }
