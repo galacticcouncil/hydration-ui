@@ -50,6 +50,11 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
     }
   }, [reserves])
 
+  const navToDetail = () =>
+    navigate({
+      to: ROUTES.reserveOverview(reserve?.underlyingAsset || "", currentMarket),
+    })
+
   return (
     <SContainer className={className}>
       <SInnerContainer
@@ -59,7 +64,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
         )}
       >
         <SContent>
-          <div>
+          <div sx={{ pr: [120, 0] }}>
             <Text font="ChakraPetchBold" sx={{ mb: 4 }}>
               Meet Hollar
             </Text>
@@ -93,20 +98,22 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
             </DataValue>
             <Button
               size="micro"
-              sx={{ py: 6 }}
+              sx={{ py: 6, display: ["none", "block"] }}
               css={{ zIndex: 1, position: "relative" }}
-              onClick={() =>
-                navigate({
-                  to: ROUTES.reserveOverview(
-                    reserve?.underlyingAsset || "",
-                    currentMarket,
-                  ),
-                })
-              }
+              onClick={navToDetail}
             >
               Details
             </Button>
           </SValuesContainer>
+          <Button
+            size="small"
+            sx={{ display: ["block", "none"], mt: 20 }}
+            fullWidth
+            css={{ zIndex: 1, position: "relative" }}
+            onClick={navToDetail}
+          >
+            Details
+          </Button>
         </SContent>
       </SInnerContainer>
       <SHollarImage src={hollarImage} width={120} height={120} />
