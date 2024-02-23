@@ -3,7 +3,7 @@ import {
   Row,
   Table as TableDefinition,
 } from "@tanstack/react-table"
-import { ReactNode } from "react"
+import { Fragment, ReactNode } from "react"
 import { TableSortHead } from "./components/TableSortHead"
 import {
   Table,
@@ -83,7 +83,8 @@ export function DataTable<T extends Record<string, any>>({
         <TableAddons spacing={spacing}>{addons}</TableAddons>
       )}
 
-      {shouldRenderRows && rows.map((row) => renderRow(row))}
+      {shouldRenderRows &&
+        rows.map((row) => <Fragment key={row.id}>{renderRow(row)}</Fragment>)}
 
       {shouldRenderTable && (
         <Table
