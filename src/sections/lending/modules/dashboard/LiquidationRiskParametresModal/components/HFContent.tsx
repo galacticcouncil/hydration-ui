@@ -19,7 +19,7 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
       <div
         css={{
           height: 4,
-          background: `linear-gradient(90deg, ${theme.colors.green400} 0%, ${theme.colors.warning300} 52.08%, ${theme.colors.red500} 100%)`,
+          background: `linear-gradient(90deg, ${theme.colors.green400} 60%, ${theme.colors.warning300} 80%, ${theme.colors.red500} 100%)`,
           borderRadius: 4,
           transform: "matrix(-1, 0, 0, 1, 0, 0)",
         }}
