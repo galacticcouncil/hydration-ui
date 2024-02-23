@@ -25,8 +25,8 @@ type DataTableProps<T> = {
   action?: ReactNode
   addons?: ReactNode
   emptyFallback?: ReactNode
-  renderRow?: (row: Row<T> | Record<string, any>) => ReactNode
-  onRowClick?: (row?: Row<T> | Record<string, any>) => void
+  renderRow?: (row: Row<T>) => ReactNode
+  onRowClick?: (row: Row<T>) => void
 } & TableProps
 
 export function DataTable<T extends Record<string, any>>({
