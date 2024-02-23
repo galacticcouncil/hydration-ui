@@ -1,10 +1,9 @@
-import { TextProps } from "components/Typography/Text/Text"
-import { ReactNode } from "react"
-
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
-import { SText } from "./DataValue.styled"
+import { TextProps } from "components/Typography/Text/Text"
+import { ReactNode } from "react"
 import Skeleton from "react-loading-skeleton"
+import { SText } from "./DataValue.styled"
 
 type DataValueSize = "small" | "medium" | "large" | "extra-large"
 
@@ -47,7 +46,7 @@ const VALUE_SIZES: Record<DataValueSize, TextProps> = {
 }
 
 export type DataValueProps = {
-  label: string
+  label: ReactNode
   children: ReactNode
   className?: string
   tooltip?: string
