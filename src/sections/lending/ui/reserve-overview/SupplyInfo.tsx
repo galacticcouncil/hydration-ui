@@ -3,6 +3,8 @@ import CheckIcon from "assets/icons/CheckIcon.svg?react"
 import { Alert } from "components/Alert"
 import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { PercentageValue } from "sections/lending/components/PercentageValue"
@@ -34,43 +36,72 @@ export const SupplyInfo = ({
   const { t } = useTranslation()
 
   const hasUnbacked = reserve.unbacked && reserve.unbacked !== "0"
-  return (
-    <>
-      <div sx={{ flex: ["column", "row"], gap: 20, mb: 20 }}>
-        {showSupplyCapStatus && (
-          <CapsCircularStatus
-            value={supplyCap.percentUsed}
-            tooltipContent={
-              <Text fs={12}>
-                Maximum amount available to supply is{" "}
-                {t("value.compact", {
-                  value:
-                    valueToBigNumber(reserve.supplyCap).toNumber() -
-                    valueToBigNumber(reserve.totalLiquidity).toNumber(),
-                })}
-                &nbsp;
-                {reserve.symbol} (
-                <DisplayValue
-                  isUSD
-                  compact
-                  value={
-                    valueToBigNumber(reserve.supplyCapUSD).toNumber() -
-                    valueToBigNumber(reserve.totalLiquidityUSD).toNumber()
-                  }
-                />
-                ).
-              </Text>
+
+  const CapProgress = () => (
+    <CapsCircularStatus
+      value={supplyCap.percentUsed}
+      tooltipContent={
+        <Text fs={12}>
+          Maximum amount available to supply is{" "}
+          {t("value.compact", {
+            value:
+              valueToBigNumber(reserve.supplyCap).toNumber() -
+              valueToBigNumber(reserve.totalLiquidity).toNumber(),
+          })}
+          &nbsp;
+          {reserve.symbol} (
+          <DisplayValue
+            isUSD
+            compact
+            value={
+              valueToBigNumber(reserve.supplyCapUSD).toNumber() -
+              valueToBigNumber(reserve.totalLiquidityUSD).toNumber()
             }
           />
+          ).
+        </Text>
+      }
+    />
+  )
+
+  return (
+    <>
+      <div
+        sx={{
+          flex: ["column", "row"],
+          align: ["start", "center"],
+          gap: [20, 40],
+          mb: 20,
+        }}
+      >
+        {showSupplyCapStatus && (
+          <div sx={{ display: ["none", "block"] }}>
+            <CapProgress />
+          </div>
         )}
         <div sx={{ width: ["100%", hasUnbacked ? "60%" : "40%"], mb: 10 }}>
           <DataValueList separated>
             {showSupplyCapStatus ? (
               <DataValue
-                label="Total supplied"
+                label={
+                  <div sx={{ flex: "column", gap: 10 }}>
+                    <Text
+                      color="basic400"
+                      fs={14}
+                      sx={{ flex: "row", gap: 4, align: "center" }}
+                    >
+                      Total supplied{" "}
+                      <InfoTooltip text="Asset supply is limited to a certain amount to reduce protocol exposure to the asset and to help manage risks involved.">
+                        <SInfoIcon />
+                      </InfoTooltip>
+                    </Text>
+                    <div sx={{ display: ["block", "none"] }}>
+                      <CapProgress />
+                    </div>
+                  </div>
+                }
                 labelColor="basic400"
                 font="ChakraPetchBold"
-                tooltip="Asset supply is limited to a certain amount to reduce protocol exposure to the asset and to help manage risks involved."
               >
                 {t("value.compact", { value: Number(reserve.totalLiquidity) })}
                 <span

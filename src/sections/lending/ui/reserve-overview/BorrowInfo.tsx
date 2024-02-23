@@ -3,6 +3,8 @@ import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { BigNumber } from "bignumber.js"
 import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { PercentageValue } from "sections/lending/components/PercentageValue"
@@ -50,47 +52,79 @@ export const BorrowInfo = ({
 
   const hasBorrowCap = reserve.borrowCapUSD && reserve.borrowCapUSD !== "0"
 
+  const CapProgress = () => (
+    <CapsCircularStatus
+      value={borrowCap.percentUsed}
+      color="pink500"
+      tooltipContent={
+        <Text fs={12}>
+          <span>
+            Maximum amount available to borrow is{" "}
+            {t("value.compact", { value: maxAvailableToBorrow })}&nbsp;
+            {reserve.symbol} (
+            <DisplayValue isUSD compact value={maxAvailableToBorrowUSD} />
+            ).
+          </span>
+        </Text>
+      }
+    />
+  )
+
   return (
     <>
-      <div sx={{ flex: ["column", "row"], gap: 20, mb: 20 }}>
+      <div
+        sx={{
+          flex: ["column", "row"],
+          align: ["start", "center"],
+          gap: [20, 40],
+          mb: 20,
+        }}
+      >
         {showBorrowCapStatus && (
-          <CapsCircularStatus
-            value={borrowCap.percentUsed}
-            tooltipContent={
-              <Text fs={12}>
-                <span>
-                  Maximum amount available to borrow is{" "}
-                  {t("value.compact", { value: maxAvailableToBorrow })}&nbsp;
-                  {reserve.symbol} (
-                  <DisplayValue isUSD compact value={maxAvailableToBorrowUSD} />
-                  ).
-                </span>
-              </Text>
-            }
-          />
+          <div sx={{ display: ["none", "block"] }}>
+            <CapProgress />
+          </div>
         )}
         <div sx={{ width: ["100%", hasBorrowCap ? "60%" : "40%"], mb: 10 }}>
           <DataValueList separated>
             {showBorrowCapStatus ? (
               <>
                 <DataValue
-                  label="Total borrowed"
+                  //label="Total borrowed"
+                  label={
+                    <div sx={{ flex: "column", gap: 10 }}>
+                      <Text
+                        color="basic400"
+                        fs={14}
+                        sx={{ flex: "row", gap: 4, align: "center" }}
+                      >
+                        Total borrowed{" "}
+                        <InfoTooltip
+                          text={
+                            <Text fs={12}>
+                              Borrowing of this asset is limited to a certain
+                              amount to minimize liquidity pool insolvency.{" "}
+                              <a
+                                css={{ textDecoration: "underline" }}
+                                target="_blank"
+                                href="https://docs.aave.com/developers/whats-new/supply-borrow-caps"
+                                rel="noreferrer"
+                              >
+                                Learn more
+                              </a>
+                            </Text>
+                          }
+                        >
+                          <SInfoIcon />
+                        </InfoTooltip>
+                      </Text>
+                      <div sx={{ display: ["block", "none"] }}>
+                        <CapProgress />
+                      </div>
+                    </div>
+                  }
                   labelColor="basic400"
                   font="ChakraPetchBold"
-                  tooltip={
-                    <Text fs={12}>
-                      Borrowing of this asset is limited to a certain amount to
-                      minimize liquidity pool insolvency.{" "}
-                      <a
-                        css={{ textDecoration: "underline" }}
-                        target="_blank"
-                        href="https://docs.aave.com/developers/whats-new/supply-borrow-caps"
-                        rel="noreferrer"
-                      >
-                        Learn more
-                      </a>
-                    </Text>
-                  }
                 >
                   {t("value.compact", { value: Number(reserve.totalDebt) })}
                   <span sx={{ display: "inline-block", mx: 4 }}>of</span>
