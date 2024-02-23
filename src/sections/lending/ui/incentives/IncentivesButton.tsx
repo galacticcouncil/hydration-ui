@@ -1,8 +1,8 @@
 import { valueToBigNumber } from "@aave/math-utils"
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 import MoreDotsIcon from "assets/icons/MoreDotsIcon.svg?react"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { useState } from "react"
-import { ContentWithTooltip } from "sections/lending/components/ContentWithTooltip"
 import { PercentageValue } from "sections/lending/components/PercentageValue"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { SContainer } from "./IncentivesButton.styled"
@@ -58,17 +58,15 @@ export const IncentivesButton = ({
   const iconSize = 12
 
   return (
-    <ContentWithTooltip
-      tooltipContent={
+    <InfoTooltip
+      asChild
+      text={
         <IncentivesTooltipContent
           incentives={incentives}
           incentivesNetAPR={incentivesNetAPR}
           symbol={symbol}
         />
       }
-      withoutHover
-      setOpen={setOpen}
-      open={open}
     >
       <SContainer
         onClick={() => {
@@ -115,6 +113,6 @@ export const IncentivesButton = ({
           </>
         </div>
       </SContainer>
-    </ContentWithTooltip>
+    </InfoTooltip>
   )
 }

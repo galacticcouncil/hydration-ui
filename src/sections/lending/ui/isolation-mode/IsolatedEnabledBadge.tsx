@@ -2,6 +2,7 @@ import { theme } from "theme"
 import { Text } from "components/Typography/Text/Text"
 import { ReactNode } from "react"
 import { ContentWithTooltip } from "sections/lending/components/ContentWithTooltip"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 
 const contentCss = {
   borderRadius: 4,
@@ -34,9 +35,9 @@ const InfoIcon = () => (
 )
 export const IsolatedEnabledBadge = () => {
   return (
-    <ContentWithTooltip
-      withoutHover
-      tooltipContent={
+    <InfoTooltip
+      asChild
+      text={
         <IsolationModeTooltipTemplate
           content={
             <span>
@@ -59,7 +60,7 @@ export const IsolatedEnabledBadge = () => {
         </Text>
         <InfoIcon />
       </div>
-    </ContentWithTooltip>
+    </InfoTooltip>
   )
 }
 
@@ -126,10 +127,10 @@ export const UnavailableDueToIsolationBadge = () => {
 const IsolationModeTooltipTemplate = ({ content }: { content: ReactNode }) => {
   return (
     <div>
-      <Text fs={14} lh={18} sx={{ mb: 12 }}>
+      <Text fs={12} lh={18} sx={{ mb: 6 }}>
         {content}
       </Text>
-      <Text fs={14} lh={18}>
+      <Text fs={12} lh={18}>
         <span>
           Learn more in our{" "}
           <a
