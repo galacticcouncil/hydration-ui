@@ -54,7 +54,7 @@ const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   if (isLoading) return <CellSkeleton />
 
   return (
-    <Text color="white">
+    <Text color="white" fs={14}>
       {t("value.percentage.range", {
         from: percentage.minApr.lt(apy) ? percentage.minApr : BigNumber(apy),
         to: percentage.maxApr.plus(apy),
@@ -84,7 +84,7 @@ const APY = ({
     return <APYFarming farms={farms.data} apy={fee.toNumber()} />
 
   return (
-    <Text color="white">
+    <Text color="white" fs={14}>
       {assetId === native.id ? "--" : t("value.percentage", { value: fee })}
     </Text>
   )
@@ -124,7 +124,7 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
             />
           )}
           <div sx={{ flex: "column" }}>
-            <Text fs={14} color="white" font="ChakraPetchSemiBold">
+            <Text fs={14} color="white" fw={600}>
               {row.original.symbol}
             </Text>
             {isDesktop && (
