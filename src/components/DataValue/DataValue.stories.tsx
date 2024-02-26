@@ -1,7 +1,7 @@
 import { TooltipProvider } from "@radix-ui/react-tooltip"
 import type { Meta, StoryObj } from "@storybook/react"
-import { DataValueList } from "components/DataValue/DataValue.styled"
 import { DataValue } from "./DataValue"
+import { DataValueList } from "./DataValueList"
 import { ComponentPropsWithoutRef } from "react"
 
 type Story = StoryObj<typeof DataValue>
