@@ -7,7 +7,9 @@ import { persist } from "zustand/middleware"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
 
-export const SELECTABLE_PARACHAINS_IDS = ["1000"]
+export const ASSET_HUB_ID = "1000"
+
+export const SELECTABLE_PARACHAINS_IDS = [ASSET_HUB_ID]
 
 export const PARACHAIN_CONFIG: {
   [x: string]: {
@@ -17,7 +19,7 @@ export const PARACHAIN_CONFIG: {
     interior: HydradxRuntimeXcmAssetLocation["interior"]["type"]
   }
 } = {
-  "1000": {
+  ASSET_HUB_ID: {
     palletInstance: "50",
     network: "polkadot",
     parents: "1",

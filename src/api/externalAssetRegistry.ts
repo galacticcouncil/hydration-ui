@@ -34,6 +34,9 @@ export const getAssetHubAssets = async () => {
   } catch (e) {}
 }
 
+/**
+ * Used for fetching tokens from supported parachains
+ */
 export const useExternalAssetRegistry = () => {
   return useQuery(
     QUERY_KEYS.externalAssetRegistry,
@@ -42,6 +45,28 @@ export const useExternalAssetRegistry = () => {
 
       if (assetHub) {
         return { [assetHub.id]: assetHub.data }
+      }
+    },
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
+      cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
+      staleTime: 1000 * 60 * 60 * 1, // 1 hour
+    },
+  )
+}
+
+/**
+ * Used for fetching tokens only from Asset Hub parachain
+ */
+export const useAssetHubAssetRegistry = () => {
+  return useQuery(
+    QUERY_KEYS.assetHubAssetRegistry,
+    async () => {
+      const assetHub = await getAssetHubAssets()
+
+      if (assetHub) {
+        return assetHub.data
       }
     },
     {

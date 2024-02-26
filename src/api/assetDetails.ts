@@ -117,7 +117,7 @@ export type TShareToken = TAssetCommon & {
 
 export type TAsset = TToken | TBond | TStableSwap | TShareToken
 
-const fallbackAsset: TToken = {
+export const fallbackAsset: TToken = {
   id: "",
   name: "N/A",
   symbol: "N/a",
@@ -468,37 +468,8 @@ export const getAssets = async (api: ApiPromise) => {
     [],
   )
 
-  const all = [...tokens, ...bonds, ...stableswap, ...shareTokens, ...external]
-
-  const allTokensObject = all.reduce<Record<string, TAsset>>(
-    (acc, asset) => ({ ...acc, [asset.id]: asset }),
-    {},
-  )
-  const isStableSwap = (asset: TAsset): asset is TStableSwap =>
-    asset.isStableSwap
-
-  const isBond = (asset: TAsset): asset is TBond => asset.isBond
-
-  const isShareToken = (asset: TAsset): asset is TShareToken =>
-    asset.isShareToken
-
-  const getAsset = (id: string) => allTokensObject[id] ?? fallbackAsset
-
-  const getBond = (id: string) => {
-    const asset = allTokensObject[id] ?? fallbackAsset
-
-    if (isBond(asset)) return asset
-  }
-
-  const getAssets = (ids: string[]) => ids.map((id) => getAsset(id))
-
-  const tradeAssets = rawTradeAssets.map((tradeAsset) =>
-    getAsset(tradeAsset.id),
-  )
-
   return {
     assets: {
-      all,
       tokens,
       bonds,
       stableswap,
@@ -506,13 +477,7 @@ export const getAssets = async (api: ApiPromise) => {
       external,
       native,
       hub,
-      tradeAssets,
-      getAsset,
-      getBond,
-      getAssets,
-      isStableSwap,
-      isBond,
-      isShareToken,
+      rawTradeAssets,
     },
     tradeRouter,
     featureFlags: {

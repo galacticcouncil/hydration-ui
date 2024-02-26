@@ -90,9 +90,6 @@ export const useAssetsData = ({
         inTradeRouter,
       }
 
-      if (id === assets.native.id) {
-      }
-
       return {
         id,
         symbol,

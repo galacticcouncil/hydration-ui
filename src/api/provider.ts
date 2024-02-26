@@ -109,13 +109,13 @@ export const useProviderData = (rpcUrl: string) => {
       let stableCoinId: string | undefined
 
       // set USDT as a stable token
-      stableCoinId = assets.assets.tradeAssets.find(
+      stableCoinId = assets.assets.rawTradeAssets.find(
         (asset) => asset.symbol === "USDT",
       )?.id
 
       // set DAI as a stable token if there is no USDT
       if (!stableCoinId) {
-        stableCoinId = assets.assets.tradeAssets.find(
+        stableCoinId = assets.assets.rawTradeAssets.find(
           (asset) => asset.symbol === "DAI",
         )?.id
       }

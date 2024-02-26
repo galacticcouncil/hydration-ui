@@ -392,4 +392,5 @@ export const QUERY_KEYS = {
   ],
   yieldFarmCreated: ["yieldFarmCreated"],
   externalAssetRegistry: ["externalAssetRegistry"],
+  assetHubAssetRegistry: ["assetHubAssetRegistry"],
 } as const
