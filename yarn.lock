@@ -2990,10 +2990,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@3.1.7":
-  version "3.1.7"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.1.7.tgz#425331af3c34d3b7512f63a7175a103c2151c4fb"
-  integrity sha512-WraZ//qOiAP8XeXiyCp8G79Br5fxfEK5me8Fz8jrlRh0lNvPfuUY+TmV1AtWTXkzsploOa8UplEqdHeHq9IAVg==
+"@galacticcouncil/apps@3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.2.0.tgz#3364fceb95727bdeb9688d2f0172770a22a339e8"
+  integrity sha512-sWHFNKNFnVE54Wn4QCjv0v9gdIQLknt3HmEfytlHx/rWLHL6tLxIjcxoe5H0oDbhNoiu0T5hFUe1XUqs6udWQQ==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@talismn/connect-wallets" "^1.2.1"
@@ -3038,10 +3038,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.2.0.tgz#74feacdf94d4846f1a148835f25936b2ddc7bdfd"
   integrity sha512-mznedOeA8d9BQ8kUQ/4O/P6trqTC4FGwvTDGCHJ0O/bgA9iFb+suctbFtyFT3qfNnngR7FSF2Pls1O/SvtNn8g==
 
-"@galacticcouncil/sdk@^1.1.8":
-  version "1.1.8"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.1.8.tgz#0364c80d9ea3beb7c6c2f3be949d49a10ae46a36"
-  integrity sha512-4xRZWim6L7vdAweBwXqTsfg3VVPfBKv8sWZwNItprF3ekv7O4S9zKYCA7uNuO43M3KsvFZTswxmHu72aUThM/Q==
+"@galacticcouncil/sdk@^1.1.9":
+  version "1.1.9"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.1.9.tgz#21697d2a85cf001e3fa643cd064fbd1fd3b9a7e5"
+  integrity sha512-pQDjmOxn8mm8rRevyf6SLEADzJHz+jD0cTEZtC6a3HSjxojpOa44GGufMcRC7+17OiZ+DNPj/F9xB80jI+Kazg==
   dependencies:
     "@galacticcouncil/math-lbp" "^0.2.1"
     "@galacticcouncil/math-omnipool" "^0.2.0"
@@ -3051,10 +3051,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^3.0.2":
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.0.2.tgz#da377f79a3a1ec723003ae4b2cfd9c0d07116df8"
-  integrity sha512-dIzDpPO1EzTfss8a6jfRC2r4H05WdnjlddJGEv5wt9tz1cHz7ZIz1/F/G8A1o0eTuxch1Jf+C5BAW7JmeUK67Q==
+"@galacticcouncil/ui@^3.0.3":
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.0.3.tgz#38f994c577ae552da53cd539b6e8c1816c232f21"
+  integrity sha512-MsCrp1Njcw3pO6m8rhsjuilWefPCbjIrkgfQj1+gzi44U3GPRZH7vbefTC9A/s2RoDFgHoxk8WR++r32qVeZ1g==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
