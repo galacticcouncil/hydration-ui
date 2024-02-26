@@ -4,6 +4,7 @@ import BN from "bignumber.js"
 import { Farm, useFarmAprs, useFarms } from "api/farms"
 import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const APYFarmStatsCard = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   const { t } = useTranslation()
@@ -56,6 +57,9 @@ const APYStatsCard = ({
   fee: BN
 }) => {
   const { t } = useTranslation()
+  const {
+    assets: { native },
+  } = useRpcProvider()
   const farms = useFarms([assetId])
 
   if (farms.data?.length)
@@ -64,7 +68,9 @@ const APYStatsCard = ({
   return (
     <AssetStatsCard
       title={t("stats.omnipool.stats.card.apy")}
-      value={t("value.percentage", { value: fee })}
+      value={
+        assetId === native.id ? "--" : t("value.percentage", { value: fee })
+      }
       loading={loading || farms.isInitialLoading}
       tooltip={t("stats.overview.table.assets.header.apy.desc")}
     />
