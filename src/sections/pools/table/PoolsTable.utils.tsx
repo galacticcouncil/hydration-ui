@@ -303,6 +303,9 @@ const APY = ({
   isLoading: boolean
 }) => {
   const { t } = useTranslation()
+  const {
+    assets: { native },
+  } = useRpcProvider()
   const farms = useFarms([assetId])
 
   if (isLoading || farms.isInitialLoading) return <CellSkeleton />
@@ -313,7 +316,7 @@ const APY = ({
   return (
     <NonClickableContainer>
       <Text color="white" fs={14}>
-        {t("value.percentage", { value: fee })}
+        {assetId === native.id ? "--" : t("value.percentage", { value: fee })}
       </Text>
     </NonClickableContainer>
   )
