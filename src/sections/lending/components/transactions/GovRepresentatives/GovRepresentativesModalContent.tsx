@@ -12,7 +12,6 @@ import { isAddress, parseUnits } from "ethers/lib/utils"
 import { useState } from "react"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
-import { ZERO_ADDRESS } from "sections/lending/modules/governance/utils/formatProposal"
 import { useRootStore } from "sections/lending/store/root"
 import { governanceV3Config } from "sections/lending/ui-config/governanceConfig"
 import {
@@ -25,6 +24,7 @@ import { GasEstimationError } from "sections/lending/components/transactions/Flo
 import { TxModalTitle } from "sections/lending/components/transactions/FlowCommons/TxModalTitle"
 import { GasStation } from "sections/lending/components/transactions/GasStation/GasStation"
 import { ChangeNetworkWarning } from "sections/lending/components/transactions/Warnings/ChangeNetworkWarning"
+import { ZERO_ADDRESS } from "sections/lending/utils/utils"
 import { GovRepresentativesActions } from "./GovRepresentativesActions"
 
 export interface UIRepresentative {

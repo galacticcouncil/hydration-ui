@@ -3,9 +3,9 @@ import {
   VotingMachineDataHelperService,
   VotingMachineProposal,
 } from "@aave/contract-helpers"
-import { ZERO_ADDRESS } from "sections/lending/modules/governance/utils/formatProposal"
 import { governanceV3Config } from "sections/lending/ui-config/governanceConfig"
 import { getProvider } from "sections/lending/utils/marketsAndNetworksConfig"
+import { ZERO_ADDRESS } from "sections/lending/utils/utils"
 
 type VotingChainProposal = {
   [chainId: number]: {
@@ -19,7 +19,6 @@ type VotingChainProposal = {
 export class VotingMachineService {
   private getDataHelperService(chainId: ChainId) {
     const provider = getProvider(chainId)
-    governanceV3Config.votingChainConfig
     return new VotingMachineDataHelperService(
       governanceV3Config.votingChainConfig[
         chainId

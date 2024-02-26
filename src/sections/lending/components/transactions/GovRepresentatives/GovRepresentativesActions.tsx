@@ -1,6 +1,7 @@
+import { useQueryClient } from "@tanstack/react-query"
+import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
-import { ZERO_ADDRESS } from "sections/lending/modules/governance/utils/formatProposal"
 import { useRootStore } from "sections/lending/store/root"
 import {
   getErrorTextFromError,
@@ -8,10 +9,8 @@ import {
 } from "sections/lending/ui-config/errorMapping"
 import { queryKeysFactory } from "sections/lending/ui-config/queries"
 import { useSharedDependencies } from "sections/lending/ui-config/SharedDependenciesProvider"
-
-import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
+import { ZERO_ADDRESS } from "sections/lending/utils/utils"
 import { UIRepresentative } from "./GovRepresentativesModalContent"
-import { useQueryClient } from "@tanstack/react-query"
 
 export const GovRepresentativesActions = ({
   blocked,
@@ -68,7 +67,7 @@ export const GovRepresentativesActions = ({
       })
     } catch (error) {
       const parsedError = getErrorTextFromError(
-        error,
+        error as Error,
         TxAction.GAS_ESTIMATION,
         false,
       )

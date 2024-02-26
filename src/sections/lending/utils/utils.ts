@@ -7,6 +7,8 @@ import {
 import BigNumber from "bignumber.js"
 import { theme } from "theme"
 
+export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+
 export function hexToAscii(_hex: string): string {
   const hex = _hex.toString()
   let str = ""
