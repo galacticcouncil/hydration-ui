@@ -56,7 +56,7 @@ export const OtcOrderActionsMob = ({
           >
             <OrderPairColumn
               accepting={row.accepting}
-              offering={row.offering}
+              offering={row.offer}
               pol={row.pol}
             />
             <OrderPriceColumn symbol={row.accepting.symbol} price={row.price} />
@@ -68,9 +68,9 @@ export const OtcOrderActionsMob = ({
         <div sx={{ flex: "row", justify: "space-between", py: 30 }}>
           <div sx={{ flex: "column", gap: 4 }}>
             <Text fs={14} lh={16} color="whiteish500">
-              {t("otc.offers.table.header.offering")}
+              {t("otc.offers.table.header.offer")}
             </Text>
-            <OrderAssetColumn pair={row.offering} />
+            <OrderAssetColumn pair={row.offer} />
           </div>
           <div sx={{ flex: "column", gap: 4 }}>
             <Text fs={14} lh={16} color="whiteish500">

@@ -13,12 +13,30 @@ import { OrderCapacity } from "sections/trade/sections/otc/capacity/OrderCapacit
 import { OtcOrderActions } from "./actions/OtcOrderActions"
 import {
   OrderAssetColumn,
+  OrderMarketPriceColumn,
   OrderPairColumn,
   OrderPriceColumn,
 } from "./OtcOrdersData"
 import { OrderTableData } from "./OtcOrdersData.utils"
 import Skeleton from "react-loading-skeleton"
 import { useMemo } from "react"
+
+const sortMarketPrice = (
+  rowA: { original: OrderTableData },
+  rowB: { original: OrderTableData },
+) => {
+  const valA = rowA.original.marketPricePercentage
+  const valB = rowB.original.marketPricePercentage
+
+  const numA =
+    valA === undefined || isNaN(valA) ? Number.NEGATIVE_INFINITY : valA
+  const numB =
+    valB === undefined || isNaN(valB) ? Number.NEGATIVE_INFINITY : valB
+
+  if (numA < numB) return -1
+  if (numA > numB) return 1
+  return 0
+}
 
 export const useOrdersTable = (
   data: OrderTableData[],
@@ -30,12 +48,13 @@ export const useOrdersTable = (
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<OrderTableData>()
 
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isDesktop = useMedia(theme.viewport.gte.md)
   const columnVisibility: VisibilityState = {
-    pair: true,
-    price: true,
-    offering: isDesktop,
+    pair: !isDesktop,
+    offer: isDesktop,
     accepting: isDesktop,
+    orderPrice: isDesktop,
+    marketPrice: true,
     filled: isDesktop,
     actions: true,
   }
@@ -45,38 +64,62 @@ export const useOrdersTable = (
       accessor("id", {
         id: "pair",
         header: t("otc.offers.table.header.assets"),
+        enableSorting: false,
         cell: ({ row }) => (
           <OrderPairColumn
-            offering={row.original.offering}
+            offering={row.original.offer}
             accepting={row.original.accepting}
             pol={row.original.pol}
           />
         ),
       }),
-      accessor("price", {
-        id: "price",
-        header: t("otc.offers.table.header.price"),
-        cell: ({ row }) => (
-          <OrderPriceColumn
-            symbol={row.original.accepting.symbol}
-            price={row.original.price}
-          />
-        ),
-      }),
-      accessor("offering", {
-        id: "offering",
-        header: isDesktop
-          ? t("otc.offers.table.header.offering")
-          : t("selectAssets.asset"),
-        cell: ({ row }) => <OrderAssetColumn pair={row.original.offering} />,
+      accessor("offer", {
+        id: "offer",
+        enableSorting: false,
+        header: t("otc.offers.table.header.offer"),
+        cell: ({ row }) => <OrderAssetColumn pair={row.original.offer} />,
       }),
       accessor("accepting", {
         id: "accepting",
+        enableSorting: false,
         header: t("otc.offers.table.header.accepting"),
         cell: ({ row }) => <OrderAssetColumn pair={row.original.accepting} />,
       }),
+      accessor("orderPrice", {
+        id: "orderPrice",
+        enableSorting: false,
+        header: () => (
+          <div
+            style={{
+              textAlign: "center",
+              width: "100%",
+            }}
+          >
+            {t("otc.offers.table.header.orderPrice")}
+          </div>
+        ),
+        cell: ({ row }) => (
+          <OrderPriceColumn
+            pair={row.original.offer}
+            price={row.original.orderPrice}
+          />
+        ),
+      }),
+      accessor("marketPrice", {
+        id: "marketPrice",
+        header: t("otc.offers.table.header.marketPrice"),
+        cell: ({ row }) => (
+          <OrderMarketPriceColumn
+            pair={row.original.offer}
+            price={row.original.marketPrice}
+            percentage={row.original.marketPricePercentage}
+          />
+        ),
+        sortingFn: sortMarketPrice,
+      }),
       accessor("filled", {
         id: "filled",
+        enableSorting: false,
         header: () => (
           <div
             style={{
@@ -87,20 +130,14 @@ export const useOrdersTable = (
             {t("otc.offers.table.header.status")}
           </div>
         ),
+
         cell: ({ row }) =>
           row.original.accepting.initial && row.original.partiallyFillable ? (
-            <div
-              style={{
-                textAlign: "center",
-                margin: "0 -20px",
-              }}
-            >
-              <OrderCapacity
-                total={row.original.accepting.initial}
-                free={row.original.accepting.amount}
-                symbol={row.original.accepting.symbol}
-              />
-            </div>
+            <OrderCapacity
+              total={row.original.accepting.initial}
+              free={row.original.accepting.amount}
+              symbol={row.original.accepting.symbol}
+            />
           ) : (
             <Text fs={12} fw={400} color="basic400" tAlign={"center"} as="div">
               N / A
@@ -109,6 +146,7 @@ export const useOrdersTable = (
       }),
       display({
         id: "actions",
+        enableSorting: false,
         cell: ({ row }) => (
           <OtcOrderActions
             data={row.original}
@@ -119,7 +157,7 @@ export const useOrdersTable = (
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [actions, isDesktop],
+    [isDesktop],
   )
 
   return useReactTable({
@@ -128,6 +166,14 @@ export const useOrdersTable = (
     state: { columnVisibility },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    initialState: {
+      sorting: [
+        {
+          id: "marketPrice",
+          desc: true,
+        },
+      ],
+    },
   })
 }
 
@@ -135,12 +181,13 @@ export const useOrdersTableSkeleton = () => {
   const { t } = useTranslation()
   const { display } = createColumnHelper()
 
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isDesktop = useMedia(theme.viewport.gte.md)
   const columnVisibility: VisibilityState = {
-    pair: true,
-    price: true,
-    offering: isDesktop,
+    pair: !isDesktop,
+    offer: isDesktop,
     accepting: isDesktop,
+    orderPrice: isDesktop,
+    marketPrice: true,
     filled: isDesktop,
     actions: true,
   }
@@ -149,39 +196,45 @@ export const useOrdersTableSkeleton = () => {
     () => [
       display({
         id: "pair",
-        header: "Assets",
-        cell: () => <Skeleton width="100%" height="100%" />,
+        enableSorting: false,
+        header: t("otc.offers.table.header.assets"),
+        cell: () => <Skeleton width="100%" height="10" />,
       }),
       display({
-        id: "price",
-        header: t("otc.offers.table.header.price"),
-        cell: () => <Skeleton width="100%" height="100%" />,
-      }),
-      display({
-        id: "offering",
+        id: "offer",
+        enableSorting: false,
         header: isDesktop
-          ? t("otc.offers.table.header.offering")
+          ? t("otc.offers.table.header.offer")
           : t("selectAssets.asset"),
-        cell: () => <Skeleton width="100%" height="100%" />,
+        cell: () => <Skeleton width="100%" height="10" />,
       }),
       display({
         id: "accepting",
+        enableSorting: false,
         header: t("otc.offers.table.header.accepting"),
-        cell: () => <Skeleton width="100%" height="100%" />,
+        cell: () => <Skeleton width="100%" height="10" />,
+      }),
+      display({
+        id: "orderPrice",
+        enableSorting: false,
+        header: t("otc.offers.table.header.orderPrice"),
+        cell: () => <Skeleton width="100%" height="10" />,
+      }),
+      display({
+        id: "marketPrice",
+        enableSorting: true,
+        header: t("otc.offers.table.header.marketPrice"),
+        cell: () => <Skeleton width="100%" height="10" />,
       }),
       display({
         id: "filled",
-        header: () => (
-          <div
-            style={{
-              textAlign: "center",
-              width: "100%",
-            }}
-          >
-            {t("otc.offers.table.header.status")}
-          </div>
-        ),
-        cell: () => <Skeleton width="100%" height="100%" />,
+        enableSorting: false,
+        header: t("otc.offers.table.header.status"),
+        cell: () => <Skeleton width="100%" height="10" />,
+      }),
+      display({
+        id: "actions",
+        cell: "",
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
