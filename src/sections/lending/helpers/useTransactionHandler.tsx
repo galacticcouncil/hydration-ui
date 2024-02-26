@@ -6,6 +6,7 @@ import {
 import { SignatureLike } from "@ethersproject/bytes"
 import { TransactionResponse } from "@ethersproject/providers"
 import { useQueryClient } from "@tanstack/react-query"
+import { PopulatedTransaction } from "ethers"
 import { DependencyList, useEffect, useRef, useState } from "react"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
 import { useModalContext } from "sections/lending/hooks/useModal"
@@ -39,7 +40,7 @@ interface UseTransactionHandlerProps {
 export type Approval = {
   amount: string
   underlyingAsset: string
-  permitType?: "POOL" | "SUPPLY_MIGRATOR_V3" | "BORROW_MIGRATOR_V3" | "STAKE"
+  permitType?: "POOL" | "SUPPLY_MIGRATOR_V3" | "BORROW_MIGRATOR_V3"
 }
 
 export const useTransactionHandler = ({
@@ -77,7 +78,6 @@ export const useTransactionHandler = ({
     generateCreditDelegationSignatureRequest,
     generatePermitPayloadForMigrationSupplyAsset,
     addTransaction,
-    signStakingApproval,
     currentMarketData,
   ] = useRootStore((state) => [
     state.signERC20Approval,
@@ -85,7 +85,6 @@ export const useTransactionHandler = ({
     state.generateCreditDelegationSignatureRequest,
     state.generatePermitPayloadForMigrationSupplyAsset,
     state.addTransaction,
-    state.signStakingApproval,
     state.currentMarketData,
   ])
 
@@ -206,14 +205,6 @@ export const useTransactionHandler = ({
                   spender: currentMarketData.addresses.V3_MIGRATOR || "",
                 }),
               )
-            } else if (approval.permitType === "STAKE") {
-              unsignedPromisePayloads.push(
-                signStakingApproval({
-                  token: approval.underlyingAsset,
-                  amount: approval.amount,
-                  deadline,
-                }),
-              )
             }
           }
           try {
@@ -270,7 +261,7 @@ export const useTransactionHandler = ({
                 new Promise<TransactionResponse>(async (resolve, reject) => {
                   delete param.gasPrice
                   processTx({
-                    tx: () => sendTx(param),
+                    tx: () => sendTx(param as PopulatedTransaction),
                     successCallback: (txnResponse: TransactionResponse) => {
                       resolve(txnResponse)
                     },
@@ -325,7 +316,7 @@ export const useTransactionHandler = ({
         const params = await txns[0].tx()
         delete params.gasPrice
         return processTx({
-          tx: () => sendTx(params),
+          tx: () => sendTx(params as PopulatedTransaction),
           successCallback: (txnResponse: TransactionResponse) => {
             setMainTxState({
               txHash: txnResponse.hash,
@@ -365,7 +356,7 @@ export const useTransactionHandler = ({
         const params = await actionTx.tx()
         delete params.gasPrice
         return processTx({
-          tx: () => sendTx(params, abi),
+          tx: () => sendTx(params as PopulatedTransaction, abi),
           successCallback: (txnResponse: TransactionResponse) => {
             setMainTxState({
               txHash: txnResponse.hash,

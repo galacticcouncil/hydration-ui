@@ -29,7 +29,7 @@ import { SignatureLike } from "@ethersproject/bytes"
 import BigNumber from "bignumber.js"
 import { BigNumberish } from "ethers"
 import { Approval } from "sections/lending/helpers/useTransactionHandler"
-import { ComputedUserReserveData } from "sections/lendinghooks/app-data-provider/useAppDataProvider"
+import { ComputedUserReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 
 import {
   selectCurrentChainIdV2PoolReserve,
@@ -57,7 +57,7 @@ export const selectMigrationSelectedSupplyIndex = (
   underlyingAsset: string,
 ) => {
   return store.selectedMigrationSupplyAssets.findIndex(
-    (supplyAsset) => supplyAsset.underlyingAsset == underlyingAsset,
+    (supplyAsset) => supplyAsset.underlyingAsset === underlyingAsset,
   )
 }
 
@@ -66,7 +66,7 @@ export const selectMigrationSelectedBorrowIndex = (
   borrowAsset: MigrationSelectedBorrowAsset,
 ) => {
   return selectedBorrowAssets.findIndex(
-    (asset) => asset.debtKey == borrowAsset.debtKey,
+    (asset) => asset.debtKey === borrowAsset.debtKey,
   )
 }
 
@@ -154,7 +154,7 @@ export const selectDefinitiveSupplyAssetForMigration = (
         selectMigrationAssetBalanceWithExceptions(store, v3UserReserve)
       if (v3UserReserve) {
         return (
-          v3ReserveBalanceWithExceptions == "0" &&
+          v3ReserveBalanceWithExceptions === "0" &&
           !v3UserReserve.reserve.isIsolated
         )
       } else {
@@ -175,7 +175,7 @@ export const selectDefinitiveSupplyAssetForMigration = (
       const v3ReserveBalanceWithExceptions =
         selectMigrationAssetBalanceWithExceptions(store, v3UserReserve)
       return (
-        v3ReserveBalanceWithExceptions == "0" &&
+        v3ReserveBalanceWithExceptions === "0" &&
         v3UserReserve.reserve.isIsolated
       )
     },
@@ -242,7 +242,7 @@ export const selectMigrationUnderluingAssetWithExceptionsByV3Key = (
   },
 ) => {
   const exceptionItem = Object.values(store.migrationExceptions).find(
-    (exception) => exception.v3UnderlyingAsset == reserveV3.underlyingAsset,
+    (exception) => exception.v3UnderlyingAsset === reserveV3.underlyingAsset,
   )
   return exceptionItem?.v2UnderlyingAsset || reserveV3.underlyingAsset
 }
@@ -279,7 +279,7 @@ export const seletMigrationUnderlyingBalanceExceptionByV3Key = (
     return reserveV3.scaledATokenBalance
   }
   const exceptionAsset = Object.values(store.migrationExceptions).find(
-    (exception) => exception.v3UnderlyingAsset == reserveV3.underlyingAsset,
+    (exception) => exception.v3UnderlyingAsset === reserveV3.underlyingAsset,
   )
   if (exceptionAsset) {
     return exceptionAsset.amount
@@ -308,7 +308,7 @@ export const selectUserReservesForMigration = (
 
   const v3ReservesMap = selectUserReservesMapFromUserReserves(userReserveV3Data)
 
-  if (v3ReservesUserSummary.totalCollateralMarketReferenceCurrency == "0") {
+  if (v3ReservesUserSummary.totalCollateralMarketReferenceCurrency === "0") {
     const definitiveAssets = selectDefinitiveSupplyAssetForMigration(
       store,
       v3ReservesMap,
@@ -346,7 +346,7 @@ export const selectUserReservesForMigration = (
     const isolatedOnV3 =
       v3ReservesMap[underlyingAssetAddress]?.reserve.isIsolated
     const canBeEnforced =
-      v3ReservesMap[underlyingAssetAddress]?.underlyingBalance == "0"
+      v3ReservesMap[underlyingAssetAddress]?.underlyingBalance === "0"
     let v3Rates: V3Rates | undefined
     const v3SupplyAsset = v3ReservesMap[underlyingAssetAddress]
     if (v3SupplyAsset) {
@@ -384,7 +384,7 @@ export const selectUserReservesForMigration = (
     }
     if (isolatedReserveV3) {
       usageAsCollateralEnabledOnUserV3 =
-        userReserve.underlyingAsset == isolatedReserveV3.underlyingAsset
+        userReserve.underlyingAsset === isolatedReserveV3.underlyingAsset
     } else {
       if (v3SupplyAsset?.underlyingBalance !== "0") {
         usageAsCollateralEnabledOnUserV3 =
@@ -500,7 +500,7 @@ export const selectedUserSupplyReservesForMigration = (
       }
       return -1
     } else {
-      if (isolatedReserveV3.underlyingAsset == userReserve.underlyingAsset) {
+      if (isolatedReserveV3.underlyingAsset === userReserve.underlyingAsset) {
         return -1
       } else {
         return 1
@@ -556,7 +556,7 @@ export const selectMigrationRepayAssets = (
       underlyingAsset: userReserve.underlyingAsset,
       amount:
         // TODO: verify which digits
-        userReserve.interestRate == InterestRate.Stable
+        userReserve.interestRate === InterestRate.Stable
           ? userReserve.increasedStableBorrows
           : userReserve.increasedVariableBorrows,
       deadline,
@@ -645,11 +645,11 @@ export const selectSelectedBorrowReservesForMigrationV3 = (
       let debtKey = borrowReserve.debtKey
       const borrowReserveV3 = userReservesDataV3.find(
         (userReserve) =>
-          userReserve.underlyingAsset == borrowReserve.underlyingAsset,
+          userReserve.underlyingAsset === borrowReserve.underlyingAsset,
       )
 
       if (borrowReserveV3) {
-        if (borrowReserve.interestRate == InterestRate.Variable) {
+        if (borrowReserve.interestRate === InterestRate.Variable) {
           debtKey = borrowReserveV3.reserve.variableDebtTokenAddress
         } else {
           debtKey = borrowReserveV3.reserve.stableDebtTokenAddress
@@ -723,12 +723,12 @@ export const selectV2UserSummaryAfterMigration = (
       const borrowAssets = store.selectedMigrationBorrowAssets
         .filter(
           (borrowAsset) =>
-            borrowAsset.underlyingAsset == userReserve.underlyingAsset,
+            borrowAsset.underlyingAsset === userReserve.underlyingAsset,
         )
         .filter((borrowReserveV2) => {
           const filteredReserve = borrowReservesV3.find(
             (borrowReserveV3) =>
-              borrowReserveV3.underlyingAsset ==
+              borrowReserveV3.underlyingAsset ===
               borrowReserveV2.underlyingAsset,
           )
           if (filteredReserve) {
@@ -738,7 +738,7 @@ export const selectV2UserSummaryAfterMigration = (
         })
 
       borrowAssets.forEach((borrowAsset) => {
-        if (borrowAsset.interestRate == InterestRate.Stable) {
+        if (borrowAsset.interestRate === InterestRate.Stable) {
           principalStableDebt = "0"
         } else {
           scaledVariableDebt = "0"

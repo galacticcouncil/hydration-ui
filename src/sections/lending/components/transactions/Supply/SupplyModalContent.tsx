@@ -7,17 +7,6 @@ import {
 
 import BigNumber from "bignumber.js"
 import React, { useMemo, useState } from "react"
-import { Warning } from "sections/lending/components/primitives/Warning"
-import { AMPLWarning } from "sections/lending/components/Warnings/AMPLWarning"
-import { useAssetCaps } from "sections/lending/hooks/useAssetCaps"
-import { useModalContext } from "sections/lending/hooks/useModal"
-import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { ERC20TokenType } from "sections/lending/libs/web3-data-provider/Web3Provider"
-import { useRootStore } from "sections/lending/store/root"
-import { getMaxAmountAvailableToSupply } from "sections/lending/utils/getMaxAmountAvailableToSupply"
-import { isFeatureEnabled } from "sections/lending/utils/marketsAndNetworksConfig"
-import { roundToTokenDecimals } from "sections/lending/utils/utils"
-import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
 import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
@@ -29,12 +18,17 @@ import {
   TxModalDetails,
 } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
 import { getAssetCollateralType } from "sections/lending/components/transactions/utils"
-import { AAVEWarning } from "sections/lending/components/transactions/Warnings/AAVEWarning"
 import { IsolationModeWarning } from "sections/lending/components/transactions/Warnings/IsolationModeWarning"
-import { SNXWarning } from "sections/lending/components/transactions/Warnings/SNXWarning"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { useAssetCaps } from "sections/lending/hooks/useAssetCaps"
+import { useModalContext } from "sections/lending/hooks/useModal"
+import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
+import { ERC20TokenType } from "sections/lending/libs/web3-data-provider/Web3Provider"
+import { useRootStore } from "sections/lending/store/root"
+import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
+import { getMaxAmountAvailableToSupply } from "sections/lending/utils/getMaxAmountAvailableToSupply"
+import { roundToTokenDecimals } from "sections/lending/utils/utils"
 import { SupplyActions } from "./SupplyActions"
-import { PROCESS_MOCK } from "sections/lending/utils/marketsAndNetworksConfig"
 
 export enum ErrorType {
   CAP_REACHED,
@@ -50,7 +44,7 @@ export const SupplyModalContent = React.memo(
     tokenBalance,
   }: ModalWrapperProps) => {
     const { marketReferencePriceInUsd, user } = useAppDataContext()
-    const { currentMarketData, currentNetworkConfig } = useProtocolDataContext()
+    const { currentNetworkConfig } = useProtocolDataContext()
     const { mainTxState: supplyTxState, gasLimit, txError } = useModalContext()
     const { supplyCap: supplyCapUsage, debtCeiling: debtCeilingUsage } =
       useAssetCaps()
@@ -232,17 +226,6 @@ export const SupplyModalContent = React.memo(
         {debtCeilingUsage.determineWarningDisplay({
           debtCeiling: debtCeilingUsage,
         })}
-        {poolReserve.symbol === "AMPL" && (
-          <Warning sx={{ mt: "16px", mb: "40px" }} variant="warning">
-            <AMPLWarning />
-          </Warning>
-        )}
-        {PROCESS_MOCK.env.NEXT_PUBLIC_ENABLE_STAKING === "true" &&
-          poolReserve.symbol === "AAVE" &&
-          isFeatureEnabled.staking(currentMarketData) && <AAVEWarning />}
-        {poolReserve.symbol === "SNX" && maxAmountToSupply !== "0" && (
-          <SNXWarning />
-        )}
 
         <AssetInput
           name="supply-amount"

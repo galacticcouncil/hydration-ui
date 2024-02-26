@@ -26,7 +26,6 @@ export const PROCESS_MOCK = {
     NEXT_PUBLIC_FORK_BASE_CHAIN_ID: "",
     NEXT_PUBLIC_FORK_CHAIN_ID: "",
     NEXT_PUBLIC_FORK_URL_WS_RPC: "",
-    NEXT_PUBLIC_ENABLE_STAKING: "false",
   },
 }
 
@@ -177,8 +176,6 @@ export function getNetworkConfig(chainId: ChainId): NetworkConfig {
 
 export const isFeatureEnabled = {
   faucet: (data: MarketDataType) => data.enabledFeatures?.faucet,
-  governance: (data: MarketDataType) => data.enabledFeatures?.governance,
-  staking: (data: MarketDataType) => data.enabledFeatures?.staking,
   liquiditySwap: (data: MarketDataType) => data.enabledFeatures?.liquiditySwap,
   collateralRepay: (data: MarketDataType) =>
     data.enabledFeatures?.collateralRepay,

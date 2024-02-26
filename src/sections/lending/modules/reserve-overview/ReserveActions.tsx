@@ -22,7 +22,6 @@ import { useWalletBalances } from "sections/lending/hooks/app-data-provider/useW
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { usePermissions } from "sections/lending/hooks/usePermissions"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
-//import { BuyWithFiat } from "sections/lending/modules/staking/BuyWithFiat"
 import { useRootStore } from "sections/lending/store/root"
 import {
   getMaxAmountAvailableToBorrow,

@@ -64,8 +64,6 @@ export const Link = forwardRef<HTMLAnchorElement, MuiLinkProps>(
 export const ROUTES = {
   dashboard: "/lending",
   markets: "/lending/markets",
-  staking: "/lending/staking",
-  governance: "/lending/governance",
   faucet: "/lending/faucet",
   migrationTool: "/lending/v3-migration",
   dynamicRenderedProposal: (proposalId: number) =>
