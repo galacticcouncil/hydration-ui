@@ -18,6 +18,7 @@ import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   const { t } = useTranslation()
@@ -72,6 +73,9 @@ const APY = ({
   isLoading: boolean
 }) => {
   const { t } = useTranslation()
+  const {
+    assets: { native },
+  } = useRpcProvider()
   const farms = useFarms([assetId])
 
   if (isLoading || farms.isInitialLoading) return <CellSkeleton />
@@ -81,7 +85,7 @@ const APY = ({
 
   return (
     <Text color="white" fs={14}>
-      {t("value.percentage", { value: fee })}
+      {assetId === native.id ? "--" : t("value.percentage", { value: fee })}
     </Text>
   )
 }
