@@ -200,8 +200,6 @@ export const OrderMarketPriceColumn = (props: {
     if (percent) {
       if (percent > 9000) {
         return "> +9000%"
-      } else if (percent < -9000) {
-        return "< -9000%"
       }
 
       return percent > 0 ? `+${percent.toFixed(2)}%` : `${percent.toFixed(2)}%`

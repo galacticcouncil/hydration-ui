@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import { useOrdersData, useOrdersState, getOrderStateValue } from "api/otc"
 import BN from "bignumber.js"
 import { useAssetPrices } from "utils/displayAsset"
+import { calculateDiffToAvg, calculateDiffToRef } from "@galacticcouncil/sdk"
 
 export const useOrdersTableData = () => {
   const treasuryAddr = import.meta.env.VITE_TRSRY_ADDR
@@ -11,7 +12,7 @@ export const useOrdersTableData = () => {
 
   const assets = orders.data?.reduce(
     (acc, order) => {
-      [order.assetIn, order.assetOut].forEach((asset) => {
+      ;[order.assetIn, order.assetOut].forEach((asset) => {
         if (
           asset &&
           asset.id &&
@@ -60,26 +61,12 @@ export const useOrdersTableData = () => {
       )
       const marketPrice = marketPriceInUSD?.data?.spotPrice || null
 
-      let marketPricePercentage = null
-      if (
-        orderPrice &&
-        marketPrice &&
-        !orderPrice.isZero() &&
-        !marketPrice.isZero()
-      ) {
-        if (marketPrice.isGreaterThan(orderPrice)) {
-          marketPricePercentage = marketPrice
-            .minus(orderPrice)
-            .div(orderPrice)
-            .multipliedBy(100)
-            .toNumber()
-        } else {
-          marketPricePercentage = orderPrice
-            .minus(marketPrice)
-            .div(marketPrice)
-            .multipliedBy(-100)
-            .toNumber()
-        }
+      let marketPricePercentage = 0
+      if (marketPrice) {
+        marketPricePercentage = calculateDiffToRef(
+          marketPrice,
+          orderPrice,
+        ).toNumber()
       }
 
       return {
