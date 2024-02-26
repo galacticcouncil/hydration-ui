@@ -26,7 +26,6 @@ import {
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
-import { BN_0 } from "utils/constants"
 
 export const PoolDetails = ({
   pool,
@@ -192,7 +191,7 @@ export const PoolDetails = ({
                   {ixXYKPool ? (
                     t("value.percentage", { value: pool.fee })
                   ) : pool.id === assets.native.id ? (
-                    t("value.percentage", { value: BN_0 })
+                    "--"
                   ) : pool.stablepoolFee ? (
                     t("value.percentage", {
                       value: pool.stablepoolFee.times(100),
