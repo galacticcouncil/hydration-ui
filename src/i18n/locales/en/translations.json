@@ -339,6 +339,7 @@
   "otc.order.cancel.toast.onSuccess": "<0>OTC order cancelled for </0><1>{{ amount, bignumber }} {{ symbol }}</1>.",
   "otc.order.capacity": "{{ filled, compact }}%",
   "otc.order.remaining": "{{ filled, bignumber }} / {{ initial, bignumber }} {{ symbol }}",
+  "otc.orders.noOrders": "You don't have any active orders.",
   "otc.offers.table.header.offer": "Offer",
   "otc.offers.table.header.accepting": "Accepting",
   "otc.offers.table.header.assets": "Assets",

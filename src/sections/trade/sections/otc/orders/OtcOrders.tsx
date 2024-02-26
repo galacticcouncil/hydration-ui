@@ -8,6 +8,7 @@ import {
   TableHeaderContent,
   TableRow,
 } from "components/Table/Table.styled"
+import { Text } from "components/Typography/Text/Text"
 import { Fragment, useCallback, useMemo, useState } from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -21,6 +22,8 @@ import { OtcOrderActionsMob } from "./actions/OtcOrderActionsMob"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
+import { useTranslation } from "react-i18next"
+import { EmptyState } from "components/Table/EmptyState"
 
 type Props = {
   data: OrderTableData[]
@@ -35,6 +38,7 @@ export const OtcOrderTable = ({
   showPartial,
   searchVal,
 }: Props) => {
+  const { t } = useTranslation()
   const [row, setRow] = useState<OrderTableData | undefined>(undefined)
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [fillOrder, setFillOrder] = useState<OrderTableData | undefined>(
@@ -110,22 +114,41 @@ export const OtcOrderTable = ({
           ))}
         </TableHeaderContent>
         <TableBodyContent>
-          {table.getRowModel().rows.map((row, i) => (
-            <Fragment key={row.id}>
-              <TableRow
-                onClick={() => {
-                  isDesktop && row.toggleSelected()
-                  !isDesktop && setRow(row.original)
-                }}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableData key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableData>
-                ))}
-              </TableRow>
-            </Fragment>
-          ))}
+          {table.getRowModel().rows.length > 0 ? (
+            table.getRowModel().rows.map((row, i) => (
+              <Fragment key={row.id}>
+                <TableRow
+                  onClick={() => {
+                    isDesktop && row.toggleSelected()
+                    !isDesktop && setRow(row.original)
+                  }}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableData key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableData>
+                  ))}
+                </TableRow>
+              </Fragment>
+            ))
+          ) : showMyOrders ? (
+            <EmptyState
+              colSpan={10}
+              desc={
+                <Text
+                  fs={14}
+                  color="basic700"
+                  tAlign="center"
+                  sx={{ maxWidth: 290, mb: 10 }}
+                >
+                  {t("otc.orders.noOrders")}
+                </Text>
+              }
+            />
+          ) : null}
         </TableBodyContent>
       </Table>
       {fillOrder && fillOrder.partiallyFillable && (

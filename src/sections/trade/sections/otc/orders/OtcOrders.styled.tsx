@@ -21,10 +21,9 @@ export const ordersTableStyles = css`
     }
 
     @media ${theme.viewport.gte.sm} {
-      &:nth-last-of-type(2) {
-        > div {
-          justify-content: flex-start;
-        }
+      &:nth-last-of-type(1) {
+        padding-right: 32px;
+        padding-left: 32px;
       }
     }
   }

@@ -48,7 +48,7 @@ export const useOrdersTable = (
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<OrderTableData>()
 
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isDesktop = useMedia(theme.viewport.gte.md)
   const columnVisibility: VisibilityState = {
     pair: !isDesktop,
     offer: isDesktop,
@@ -181,18 +181,25 @@ export const useOrdersTableSkeleton = () => {
   const { t } = useTranslation()
   const { display } = createColumnHelper()
 
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isDesktop = useMedia(theme.viewport.gte.md)
   const columnVisibility: VisibilityState = {
-    pair: true,
-    price: true,
-    offering: isDesktop,
+    pair: !isDesktop,
+    offer: isDesktop,
     accepting: isDesktop,
+    orderPrice: isDesktop,
+    marketPrice: true,
     filled: isDesktop,
     actions: true,
   }
 
   const columns = useMemo(
     () => [
+      display({
+        id: "pair",
+        enableSorting: false,
+        header: t("otc.offers.table.header.assets"),
+        cell: () => <Skeleton width="100%" height="10" />,
+      }),
       display({
         id: "offer",
         enableSorting: false,

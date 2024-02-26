@@ -7,7 +7,6 @@ import WalletIcon from "assets/icons/WalletIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
 import { PlaceOrder } from "sections/trade/sections/otc/modals/PlaceOrder"
-import { Separator } from "components/Separator/Separator"
 import { SButton, SHeader, SSearchContainer } from "./OtcHeader.styled"
 import { useMedia } from "react-use"
 import { Input } from "components/Input/Input"
@@ -27,6 +26,7 @@ type Props = {
 enum OrderType {
   All = "all",
   Partial = "partial",
+  Mine = "mine",
 }
 
 export const OtcHeader: FC<Props> = ({
@@ -45,7 +45,12 @@ export const OtcHeader: FC<Props> = ({
   const [inputValue, setInputValue] = useState(searchVal)
 
   const onOptionChange = (value: OrderType) => {
-    onShowPartialChange(value === OrderType.All ? false : true)
+    if (value === OrderType.Mine) {
+      onShowMyOrdersChange(true)
+    } else {
+      onShowMyOrdersChange(false)
+      onShowPartialChange(value === OrderType.All ? false : true)
+    }
   }
 
   useEffect(() => {
@@ -95,25 +100,18 @@ export const OtcHeader: FC<Props> = ({
         }}
       >
         {!!account && (
-          <>
-            <SButton
-              size="small"
-              variant="outline"
-              disabled={!!skeleton}
-              active={showMyOrders}
-              onClick={() => onShowMyOrdersChange(!showMyOrders)}
-            >
-              <Icon icon={<WalletIcon />} size={14} />
-              {t("otc.header.myOrders")}
-            </SButton>
-
-            <Separator
-              orientation="vertical"
-              color="white"
-              opacity={0.12}
-              sx={{ display: ["none", "inherit"], height: 24, mx: 8 }}
-            />
-          </>
+          <SButton
+            size="small"
+            variant="outline"
+            disabled={!!skeleton}
+            active={showMyOrders}
+            onClick={(e) => {
+              onOptionChange(OrderType.Mine)
+            }}
+          >
+            <Icon icon={<WalletIcon />} size={14} />
+            {t("otc.header.myOrders")}
+          </SButton>
         )}
 
         {isDesktop && (
@@ -122,7 +120,7 @@ export const OtcHeader: FC<Props> = ({
               size="small"
               variant="outline"
               disabled={!!skeleton}
-              active={!showPartial}
+              active={!showPartial && !showMyOrders}
               onClick={() => onOptionChange(OrderType.All)}
             >
               {t("otc.header.all")}
@@ -131,7 +129,7 @@ export const OtcHeader: FC<Props> = ({
               size="small"
               variant="outline"
               disabled={!!skeleton}
-              active={showPartial}
+              active={showPartial && !showMyOrders}
               onClick={() => onOptionChange(OrderType.Partial)}
             >
               {t("otc.header.partiallyFillable")}

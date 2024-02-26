@@ -5,55 +5,8 @@ import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { OfferingPair } from "./OtcOrdersData.utils"
-import { motion } from "framer-motion"
 import { useRpcProvider } from "providers/rpcProvider"
-
-function abbreviateNumber(price: BN): string {
-  if (price.isNaN()) {
-    return "N / A"
-  }
-
-  let formattedPrice = ""
-  const decimalPlaces = price.decimalPlaces() || 0
-
-  if (decimalPlaces > 0) {
-    if (decimalPlaces <= 2 || price.gt(new BN(10))) {
-      formattedPrice = "$" + price.toFixed(2)
-    } else {
-      formattedPrice = "$" + price.toFixed(Math.min(4, decimalPlaces))
-    }
-  } else {
-    formattedPrice = "$" + price.toFixed(2)
-  }
-
-  if (price.gt(new BN(999999))) {
-    const suffixes = [" M", " B", " T"]
-    let suffixIndex = -1
-    let tempPrice = price
-
-    while (tempPrice.gt(new BN(999999))) {
-      tempPrice = tempPrice.dividedBy(new BN(1000000))
-      suffixIndex++
-    }
-
-    if (suffixIndex >= 0) {
-      if (decimalPlaces > 0) {
-        if (decimalPlaces <= 2 || tempPrice.gt(new BN(10))) {
-          formattedPrice = "$" + tempPrice.toFixed(2) + suffixes[suffixIndex]
-        } else {
-          formattedPrice =
-            "$" +
-            tempPrice.toFixed(Math.min(4, decimalPlaces)) +
-            suffixes[suffixIndex]
-        }
-      } else {
-        formattedPrice = "$" + tempPrice.toFixed(2) + suffixes[suffixIndex]
-      }
-    }
-  }
-
-  return formattedPrice
-}
+import { abbreviateNumber } from "utils/helpers"
 
 export const OrderPairColumn = (props: {
   offering: OfferingPair
@@ -236,28 +189,12 @@ export const OrderMarketPriceColumn = (props: {
   price: BN
   percentage: number
 }) => {
-  const { t } = useTranslation()
   const color =
     props.percentage > 0
       ? "green600"
       : props.percentage < 0
       ? "red400"
       : "whiteish500"
-
-  const formatPrice = (price: BN) => {
-    if (price) {
-      const decimalPlaces = price.decimalPlaces()
-      if (decimalPlaces) {
-        if (decimalPlaces <= 2 || price.gt(10)) {
-          return "$" + price.toFixed(2)
-        } else {
-          return "$" + price.toFixed(Math.min(4, decimalPlaces))
-        }
-      } else {
-        return "$" + price.toFixed(2)
-      }
-    }
-  }
 
   const formatPercentage = (percent: number) => {
     if (percent) {
@@ -271,25 +208,12 @@ export const OrderMarketPriceColumn = (props: {
     }
   }
 
-  const parentVariants = {
-    initial: {},
-    hover: {},
-  }
-
-  const childVariants = {
-    initial: { opacity: 0, y: 0 },
-    hover: { opacity: 1, y: 6 },
-  }
-
   return (
-    <motion.div
-      variants={parentVariants}
-      initial="initial"
-      whileHover="hover"
+    <div
       sx={{
         flex: "column",
         justify: "center",
-        align: ["flex-end", "center"],
+        align: ["flex-end", "flex-end", "center"],
         width: "100%",
       }}
       css={{ position: "relative" }}
@@ -303,38 +227,6 @@ export const OrderMarketPriceColumn = (props: {
           N / A
         </Text>
       )}
-
-      <motion.div
-        variants={childVariants}
-        transition={{ delay: 0.4, duration: 0.2 }}
-      >
-        <div
-          sx={{
-            flex: "row",
-            flexDirection: "row",
-            align: "center",
-            justify: "center",
-            gap: 3,
-          }}
-          style={{
-            position: "absolute",
-            width: "100%",
-            whiteSpace: "nowrap",
-          }}
-        >
-          <Text fs={12} fw={500} color="white" sx={{ textAlign: "center" }}>
-            {t("value.token", { value: 1 })} {props.pair.symbol}
-          </Text>
-          <Text
-            fs={12}
-            fw={500}
-            color="whiteish500"
-            sx={{ textAlign: "center" }}
-          >
-            ({formatPrice(props.price)})
-          </Text>
-        </div>
-      </motion.div>
-    </motion.div>
+    </div>
   )
 }
