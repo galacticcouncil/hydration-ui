@@ -5,9 +5,15 @@ import {
   valueToBigNumber,
 } from "@aave/math-utils"
 import BigNumber from "bignumber.js"
+import { Provider } from "@ethersproject/providers"
 import { theme } from "theme"
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+
+export interface ProviderWithSend extends Provider {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  send<P = any, R = any>(method: string, params: Array<P>): Promise<R>
+}
 
 export function hexToAscii(_hex: string): string {
   const hex = _hex.toString()

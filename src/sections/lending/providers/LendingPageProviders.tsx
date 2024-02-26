@@ -1,7 +1,6 @@
 import { Web3ReactProvider } from "@web3-react/core"
 import { providers } from "ethers"
 import { Suspense, lazy } from "react"
-import { AddressBlocked } from "sections/lending/components/AddressBlocked"
 import { GasStationProvider } from "sections/lending/components/transactions/GasStation/GasStationProvider"
 import { BackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
 import { AppDataProvider } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
@@ -106,37 +105,35 @@ export const LendingPageProviders = ({
     <Web3ReactProvider getLibrary={getWeb3Library}>
       <Web3ContextProvider>
         <AppGlobalStyles>
-          <AddressBlocked>
-            <PermissionProvider>
-              <ModalContextProvider>
-                <BackgroundDataProvider>
-                  <AppDataProvider>
-                    <GasStationProvider>
-                      <SharedDependenciesProvider>
-                        {children}
-                        <Suspense>
-                          <SupplyModal />
-                          <WithdrawModal />
-                          <BorrowModal />
-                          <RepayModal />
-                          <CollateralChangeModal />
-                          <RateSwitchModal />
-                          <DebtSwitchModal />
-                          <ClaimRewardsModal />
-                          <EmodeModal />
-                          <SwapModal />
-                          <FaucetModal />
-                          <MigrateV3Modal />
-                          <TransactionEventHandler />
-                          <SwitchModal />
-                        </Suspense>
-                      </SharedDependenciesProvider>
-                    </GasStationProvider>
-                  </AppDataProvider>
-                </BackgroundDataProvider>
-              </ModalContextProvider>
-            </PermissionProvider>
-          </AddressBlocked>
+          <PermissionProvider>
+            <ModalContextProvider>
+              <BackgroundDataProvider>
+                <AppDataProvider>
+                  <GasStationProvider>
+                    <SharedDependenciesProvider>
+                      {children}
+                      <Suspense>
+                        <SupplyModal />
+                        <WithdrawModal />
+                        <BorrowModal />
+                        <RepayModal />
+                        <CollateralChangeModal />
+                        <RateSwitchModal />
+                        <DebtSwitchModal />
+                        <ClaimRewardsModal />
+                        <EmodeModal />
+                        <SwapModal />
+                        <FaucetModal />
+                        <MigrateV3Modal />
+                        <TransactionEventHandler />
+                        <SwitchModal />
+                      </Suspense>
+                    </SharedDependenciesProvider>
+                  </GasStationProvider>
+                </AppDataProvider>
+              </BackgroundDataProvider>
+            </ModalContextProvider>
+          </PermissionProvider>
         </AppGlobalStyles>
       </Web3ContextProvider>
     </Web3ReactProvider>

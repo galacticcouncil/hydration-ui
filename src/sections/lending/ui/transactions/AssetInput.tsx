@@ -1,4 +1,3 @@
-import { CircularProgress } from "@mui/material"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import { Button, ButtonTransparent } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -11,6 +10,7 @@ import { CapType } from "sections/lending/components/caps/helper"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { theme } from "theme"
 import { SContainer } from "./AssetInput.styled"
+import { Spinner } from "components/Spinner/Spinner.styled"
 
 interface CustomProps {
   onChange: (event: { target: { name: string; value: string } }) => void
@@ -215,8 +215,8 @@ export const AssetInput = <T extends Asset = Asset>({
         )}
 
         {loading ? (
-          <div css={{ flex: 1 }}>
-            <CircularProgress color="inherit" size="16px" />
+          <div sx={{ py: 2 }}>
+            <Spinner width={25} height={25} />
           </div>
         ) : (
           <div sx={{ flex: "column", justify: "end" }}>

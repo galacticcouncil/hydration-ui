@@ -4,12 +4,10 @@ import create from "zustand"
 import { devtools, subscribeWithSelector } from "zustand/middleware"
 
 import { createGhoSlice, GhoSlice } from "./ghoSlice"
-import { createGovernanceSlice, GovernanceSlice } from "./governanceSlice"
 import { createIncentiveSlice, IncentiveSlice } from "./incentiveSlice"
 import { createLayoutSlice, LayoutSlice } from "./layoutSlice"
 import { createPoolSlice, PoolSlice } from "./poolSlice"
 import { createProtocolDataSlice, ProtocolDataSlice } from "./protocolDataSlice"
-import { createStakeSlice, StakeSlice } from "./stakeSlice"
 import { createTransactionsSlice, TransactionsSlice } from "./transactionsSlice"
 import { createSingletonSubscriber } from "./utils/createSingletonSubscriber"
 import { getQueryParameter } from "./utils/queryParams"
@@ -19,12 +17,10 @@ import { createWalletSlice, WalletSlice } from "./walletSlice"
 
 enableMapSet()
 
-export type RootStore = StakeSlice &
-  ProtocolDataSlice &
+export type RootStore = ProtocolDataSlice &
   WalletSlice &
   PoolSlice &
   IncentiveSlice &
-  GovernanceSlice &
   V3MigrationSlice &
   GhoSlice &
   WalletDomainsSlice &
@@ -35,12 +31,10 @@ export const useRootStore = create<RootStore>()(
   subscribeWithSelector(
     devtools((...args) => {
       return {
-        ...createStakeSlice(...args),
         ...createProtocolDataSlice(...args),
         ...createWalletSlice(...args),
         ...createPoolSlice(...args),
         ...createIncentiveSlice(...args),
-        ...createGovernanceSlice(...args),
         ...createV3MigrationSlice(...args),
         ...createGhoSlice(...args),
         ...createWalletDomainsSlice(...args),

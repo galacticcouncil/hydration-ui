@@ -1,6 +1,5 @@
 import { ChainId, ChainIdToNetwork } from "@aave/contract-helpers"
 import { StaticJsonRpcProvider } from "@ethersproject/providers"
-import { ProviderWithSend } from "sections/lending/components/transactions/GovVote/temporary/VotingMachineService"
 
 import {
   CustomMarket,
@@ -15,6 +14,7 @@ import {
   networkConfigs as _networkConfigs,
 } from "sections/lending/ui-config/networksConfig"
 import { RotationProvider } from "./rotationProvider"
+import { ProviderWithSend } from "sections/lending/utils/utils"
 
 export type Pool = {
   address: string

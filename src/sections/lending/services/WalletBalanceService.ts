@@ -1,7 +1,5 @@
 import { ChainId, WalletBalanceProvider } from "@aave/contract-helpers"
-import { normalize } from "@aave/math-utils"
 import { Provider } from "@ethersproject/providers"
-import { governanceV3Config } from "sections/lending/ui-config/governanceConfig"
 import { MarketDataType } from "sections/lending/ui-config/marketsConfig"
 
 export interface GovernanceTokensBalance {
@@ -27,30 +25,6 @@ export class WalletBalanceService {
       walletBalanceProviderAddress,
       provider,
     })
-  }
-
-  async getGovernanceTokensBalance(
-    chainId: ChainId,
-    walletBalanceProviderAddress: string,
-    user: string,
-  ): Promise<GovernanceTokensBalance> {
-    const walletBalanceService = this.getWalletBalanceService(
-      chainId,
-      walletBalanceProviderAddress,
-    )
-    const balances = await walletBalanceService.batchBalanceOf(
-      [user],
-      [
-        governanceV3Config.votingAssets.aaveTokenAddress,
-        governanceV3Config.votingAssets.aAaveTokenAddress,
-        governanceV3Config.votingAssets.stkAaveTokenAddress,
-      ],
-    )
-    return {
-      aave: normalize(balances[0].toString(), 18),
-      aAave: normalize(balances[1].toString(), 18),
-      stkAave: normalize(balances[2].toString(), 18),
-    }
   }
 
   async getPoolTokensBalances(
