@@ -517,7 +517,7 @@ export const useXYKPoolDetails = (pool: TXYKPool) => {
   const isInitialLoading = volume.isLoading
 
   return {
-    data: { volumeDisplay: volume.data?.[0].volume ?? BN_0 },
+    data: { volumeDisplay: volume.data?.[0]?.volume ?? BN_0 },
     isInitialLoading,
   }
 }

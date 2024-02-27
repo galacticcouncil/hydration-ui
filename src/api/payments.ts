@@ -1,5 +1,6 @@
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
+import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Maybe, undefinedNoop, normalizeId } from "utils/helpers"
@@ -11,6 +12,7 @@ import { usePaymentInfo } from "./transaction"
 import { useRpcProvider } from "providers/rpcProvider"
 import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useSpotPrice } from "./spotPrice"
 
 export const getAcceptedCurrency =
   (api: ApiPromise, id: u32 | string) => async () => {
@@ -102,4 +104,34 @@ export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
       enabled: !!address,
     },
   )
+}
+
+export const useTransactionFeeInfo = (extrinsic: SubmittableExtrinsic) => {
+  const { assets } = useRpcProvider()
+  const { account } = useAccount()
+
+  const accountCurrency = useAccountCurrency(account?.address)
+  const paymentInfo = usePaymentInfo(extrinsic)
+
+  const currencyMeta = accountCurrency.data
+    ? assets.getAsset(accountCurrency.data)
+    : undefined
+
+  const spotPrice = useSpotPrice(assets.native.id, currencyMeta?.id)
+
+  const fee = paymentInfo.data
+    ? paymentInfo.data.partialFee
+        .toBigNumber()
+        .shiftedBy(-assets.native.decimals)
+        .times(spotPrice.data?.spotPrice ?? 1)
+    : undefined
+
+  return {
+    isLoading:
+      accountCurrency.isInitialLoading ||
+      paymentInfo.isInitialLoading ||
+      spotPrice.isInitialLoading,
+    fee,
+    feeSymbol: currencyMeta?.symbol,
+  }
 }
