@@ -54,6 +54,7 @@ export const PermissionProvider: React.FC<{ children?: React.ReactNode }> = ({
     } else {
       setIsPermissionsLoading(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [walletAddress, currentMarketData.addresses.PERMISSION_MANAGER])
 
   return (

@@ -11,12 +11,6 @@ import { Web3ContextProvider } from "sections/lending/libs/web3-data-provider/We
 import { SharedDependenciesProvider } from "sections/lending/ui-config/SharedDependenciesProvider"
 import { TransactionEventHandler } from "sections/lending/components/TransactionEventHandler"
 
-const SwitchModal = lazy(async () => ({
-  default: (
-    await import("sections/lending/components/transactions/Switch/SwitchModal")
-  ).SwitchModal,
-}))
-
 const BorrowModal = lazy(async () => ({
   default: (
     await import("sections/lending/components/transactions/Borrow/BorrowModal")
@@ -35,13 +29,6 @@ const CollateralChangeModal = lazy(async () => ({
       "sections/lending/components/transactions/CollateralChange/CollateralChangeModal"
     )
   ).CollateralChangeModal,
-}))
-const DebtSwitchModal = lazy(async () => ({
-  default: (
-    await import(
-      "sections/lending/components/transactions/DebtSwitch/DebtSwitchModal"
-    )
-  ).DebtSwitchModal,
 }))
 const EmodeModal = lazy(async () => ({
   default: (
@@ -102,11 +89,9 @@ export const LendingPageProviders = ({
                         <RepayModal />
                         <CollateralChangeModal />
                         <RateSwitchModal />
-                        <DebtSwitchModal />
                         <ClaimRewardsModal />
                         <EmodeModal />
                         <TransactionEventHandler />
-                        <SwitchModal />
                       </Suspense>
                     </SharedDependenciesProvider>
                   </GasStationProvider>

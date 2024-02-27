@@ -1,3 +1,4 @@
+import { ChainId } from "@aave/contract-helpers"
 import { Link, ROUTES } from "sections/lending/components/primitives/Link"
 import { Warning } from "sections/lending/components/primitives/Warning"
 import { getEmodeMessage } from "sections/lending/components/transactions/Emode/EmodeNaming"
@@ -6,7 +7,6 @@ import {
   useAppDataContext,
 } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useAssetCaps } from "sections/lending/hooks/useAssetCaps"
-import { WalletEmptyInfo } from "sections/lending/modules/dashboard/lists/SupplyAssetsList/WalletEmptyInfo"
 import { useRootStore } from "sections/lending/store/root"
 import { assetCanBeBorrowedByUser } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
 
@@ -73,12 +73,24 @@ export const useReserveActionState = ({
                 </span>
               </Warning>
             ) : (
-              <WalletEmptyInfo
-                sx={{ mt: 12 }}
-                name={networkName}
-                bridge={bridge}
-                chainId={currentChainId}
-              />
+              <Warning sx={{ mt: 12 }} variant="info">
+                {bridge ? (
+                  <span>
+                    Your {networkName} wallet is empty. Purchase or transfer
+                    assets or use {<Link href={bridge.url}>{bridge.name}</Link>}{" "}
+                    to transfer your{" "}
+                    {[ChainId.avalanche].includes(currentChainId)
+                      ? "Ethereum & Bitcoin"
+                      : "Ethereum"}{" "}
+                    assets.
+                  </span>
+                ) : (
+                  <span>
+                    Your {networkName} wallet is empty. Purchase or transfer
+                    assets.
+                  </span>
+                )}
+              </Warning>
             )}
           </>
         )}

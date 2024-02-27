@@ -114,7 +114,7 @@ export const useApprovalTx = ({
       }
     } catch (error) {
       const parsedError = getErrorTextFromError(
-        error,
+        error as Error,
         TxAction.GAS_ESTIMATION,
         false,
       )
