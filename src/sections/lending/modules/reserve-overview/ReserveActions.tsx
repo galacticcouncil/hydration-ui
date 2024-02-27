@@ -9,9 +9,6 @@ import WalletIcon from "assets/icons/WalletIcon.svg?react"
 import BigNumber from "bignumber.js"
 import { ReactNode, useState } from "react"
 import Skeleton from "react-loading-skeleton"
-import { getMarketInfoById } from "sections/lending/components/MarketSwitcher"
-import { StyledTxModalToggleButton } from "sections/lending/components/StyledToggleButton"
-import { StyledTxModalToggleGroup } from "sections/lending/components/StyledToggleButtonGroup"
 import { ConnectWalletButton } from "sections/lending/components/WalletConnection/ConnectWalletButton"
 import { Warning } from "sections/lending/components/primitives/Warning"
 import {
@@ -39,6 +36,23 @@ import { useTranslation } from "react-i18next"
 import { Link, ROUTES } from "sections/lending/components/primitives/Link"
 import { useReserveActionState } from "sections/lending/hooks/useReserveActionState"
 import { theme } from "theme"
+import { ToggleGroup, ToggleGroupItem } from "components/ToggleGroup"
+import {
+  CustomMarket,
+  MarketDataType,
+  marketsData,
+} from "sections/lending/ui-config/marketsConfig"
+import {
+  BaseNetworkConfig,
+  networkConfigs,
+} from "sections/lending/ui-config/networksConfig"
+
+export const getMarketInfoById = (marketId: CustomMarket) => {
+  const market: MarketDataType = marketsData[marketId as CustomMarket]
+  const network: BaseNetworkConfig = networkConfigs[market.chainId]
+
+  return { market, network }
+}
 
 const amountToUSD = (
   amount: BigNumberValue,
@@ -275,7 +289,7 @@ const ActionsSkeleton = () => {
 const PaperWrapper = ({ children }: { children: ReactNode }) => {
   return (
     <div sx={{ color: "white" }}>
-      <Text fs={15} sx={{ mb: 24 }} font="FontOver">
+      <Text fs={15} sx={{ mb: 20 }} font="FontOver">
         Your info
       </Text>
       {children}
@@ -394,21 +408,19 @@ const WrappedBaseAssetSelector = ({
   setSelectedAsset: (value: string) => void
 }) => {
   return (
-    <StyledTxModalToggleGroup
-      color="primary"
+    <ToggleGroup
+      type="single"
+      variant="secondary"
+      size="small"
       value={selectedAsset}
-      exclusive
-      onChange={(_, value) => setSelectedAsset(value)}
-      sx={{ mb: 4 }}
+      onValueChange={setSelectedAsset}
+      sx={{ mb: 20 }}
     >
-      <StyledTxModalToggleButton value={assetSymbol}>
-        <Text>{assetSymbol}</Text>
-      </StyledTxModalToggleButton>
-
-      <StyledTxModalToggleButton value={baseAssetSymbol}>
-        <Text>{baseAssetSymbol}</Text>
-      </StyledTxModalToggleButton>
-    </StyledTxModalToggleGroup>
+      <ToggleGroupItem value={assetSymbol}>{assetSymbol}</ToggleGroupItem>
+      <ToggleGroupItem value={baseAssetSymbol}>
+        {baseAssetSymbol}
+      </ToggleGroupItem>
+    </ToggleGroup>
   )
 }
 

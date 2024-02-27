@@ -4,39 +4,36 @@ import {
   USD_DECIMALS,
   valueToBigNumber,
 } from "@aave/math-utils"
-import { ArrowNarrowRightIcon } from "@heroicons/react/solid"
-import { Box, SvgIcon, Typography } from "@mui/material"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { PercentageValue } from "components/PercentageValue"
+import { ToggleGroup, ToggleGroupItem } from "components/ToggleGroup"
+import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
+import { CapType } from "sections/lending/components/caps/helper"
 import {
   GhoIncentivesCard,
   GhoIncentivesCardProps,
 } from "sections/lending/components/incentives/GhoIncentivesCard"
-import { APYTypeTooltip } from "sections/lending/components/infoTooltips/APYTypeTooltip"
-import { FixedAPYTooltip } from "sections/lending/components/infoTooltips/FixedAPYTooltip"
-import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import { NoData } from "sections/lending/components/primitives/NoData"
 import { Row } from "sections/lending/components/primitives/Row"
-import { StyledTxModalToggleButton } from "sections/lending/components/StyledToggleButton"
-import { StyledTxModalToggleGroup } from "sections/lending/components/StyledToggleButtonGroup"
-import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { useAssetCaps } from "sections/lending/hooks/useAssetCaps"
-import { useModalContext } from "sections/lending/hooks/useModal"
-import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { useRootStore } from "sections/lending/store/root"
-import { CustomMarket } from "sections/lending/ui-config/marketsConfig"
-import { getMaxGhoMintAmount } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
-import { weightedAverageAPY } from "sections/lending/utils/ghoUtilities"
-import { roundToTokenDecimals } from "sections/lending/utils/utils"
-
-import { CapType } from "sections/lending/components/caps/helper"
-import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
 import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import {
   DetailsHFLine,
   TxModalDetails,
 } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
+import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { useAssetCaps } from "sections/lending/hooks/useAssetCaps"
+import { useModalContext } from "sections/lending/hooks/useModal"
+import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
+import { useRootStore } from "sections/lending/store/root"
+import { CustomMarket } from "sections/lending/ui-config/marketsConfig"
+import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
+import { getMaxGhoMintAmount } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
+import { weightedAverageAPY } from "sections/lending/utils/ghoUtilities"
+import { roundToTokenDecimals } from "sections/lending/utils/utils"
 import { BorrowActions } from "./BorrowActions"
 import { BorrowAmountWarning } from "./BorrowAmountWarning"
 import { GhoBorrowSuccessView } from "./GhoBorrowSuccessView"
@@ -63,41 +60,33 @@ const BorrowModeSwitch = ({
   stableRate,
 }: BorrowModeSwitchProps) => {
   return (
-    <Row
-      caption={
-        <APYTypeTooltip
-          text={<span>Borrow APY rate</span>}
-          key="APY type_modal"
-        />
-      }
-    >
-      <StyledTxModalToggleGroup
-        color="primary"
-        value={interestRateMode}
-        exclusive
-        onChange={(_, value) => setInterestRateMode(value)}
-        sx={{ mt: 0.5 }}
+    <div sx={{ mb: 16 }}>
+      <Text
+        fs={14}
+        color="basic400"
+        sx={{ mb: 4, flex: "row", align: "center", gap: 4 }}
       >
-        <StyledTxModalToggleButton
-          value={InterestRate.Variable}
-          disabled={interestRateMode === InterestRate.Variable}
-        >
-          <Typography variant="buttonM" sx={{ mr: 4 }}>
-            <span>Variable</span>
-          </Typography>
-          <FormattedNumber value={variableRate} percent variant="secondary14" />
-        </StyledTxModalToggleButton>
-        <StyledTxModalToggleButton
-          value={InterestRate.Stable}
-          disabled={interestRateMode === InterestRate.Stable}
-        >
-          <Typography variant="buttonM" sx={{ mr: 4 }}>
-            <span>Stable</span>
-          </Typography>
-          <FormattedNumber value={stableRate} percent variant="secondary14" />
-        </StyledTxModalToggleButton>
-      </StyledTxModalToggleGroup>
-    </Row>
+        Borrow APY Rate{" "}
+        <InfoTooltip text="Allows you to switch between variable and stable interest rates, where variable rate can increase and decrease depending on the amount of liquidity in the reserve, and stable rate will stay the same for the duration of your loan.">
+          <SInfoIcon />
+        </InfoTooltip>
+      </Text>
+      <ToggleGroup
+        type="single"
+        value={interestRateMode}
+        onValueChange={setInterestRateMode}
+        sx={{ mt: 4 }}
+      >
+        <ToggleGroupItem value={InterestRate.Variable}>
+          <span sx={{ mr: 4 }}>Variable</span>
+          <PercentageValue value={Number(variableRate) * 100} />
+        </ToggleGroupItem>
+        <ToggleGroupItem value={InterestRate.Stable}>
+          <span sx={{ mr: 4 }}>Stable</span>
+          <PercentageValue value={Number(stableRate) * 100} />
+        </ToggleGroupItem>
+      </ToggleGroup>
+    </div>
   )
 }
 
@@ -137,7 +126,6 @@ export const GhoBorrowModalContent = ({
   // Check if user has any open borrow positions on GHO
   // Check if user can borrow at a discount
   const hasGhoBorrowPositions = ghoUserData.userGhoBorrowBalance > 0
-  const userStakedAaveBalance: number = ghoUserData.userDiscountTokenBalance
   const discountAvailable = ghoUserQualifiesForDiscount(amount)
 
   // amount calculations
@@ -290,9 +278,9 @@ export const GhoBorrowModalContent = ({
       />
 
       {blockingError !== undefined && (
-        <Typography variant="helperText" color="error.main">
+        <Text fs={12} color="red400">
           <BlockingError />
-        </Typography>
+        </Text>
       )}
 
       <TxModalDetails gasLimit={gasLimit}>
@@ -301,19 +289,40 @@ export const GhoBorrowModalContent = ({
           healthFactor={user.healthFactor}
           futureHealthFactor={newHealthFactor.toString(10)}
         />
+
         <Row
+          captionColor="basic400"
           caption={
-            <Box>
-              <FixedAPYTooltip text={<span>APY, borrow rate</span>} />
-            </Box>
+            <span sx={{ flex: "row", align: "center", gap: 4 }}>
+              APY, Borrow rate{" "}
+              <InfoTooltip
+                text={
+                  <Text fs={12}>
+                    Interest rate that is determined by Aave Governance. This
+                    rate may be changed over time depending on the need for the
+                    GHO supply to contract/expand.{" "}
+                    <a
+                      href="https://docs.gho.xyz/concepts/how-gho-works/interest-rate-discount-model#interest-rate-model"
+                      target="_blank"
+                      css={{ textDecoration: "underline" }}
+                      rel="noreferrer"
+                    >
+                      <span>Learn more</span>
+                    </a>
+                  </Text>
+                }
+              >
+                <SInfoIcon />
+              </InfoTooltip>
+            </span>
           }
         >
-          <Box sx={{ textAlign: "right" }}>
-            <Box
+          <div sx={{ textAlign: "right" }}>
+            <div
               sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-end",
+                flex: "row",
+                align: "center",
+                justify: "flex-end",
               }}
             >
               <BorrowAPY
@@ -328,23 +337,9 @@ export const GhoBorrowModalContent = ({
                 futureBorrowAPY={futureBorrowAPY}
                 onDetailsClick={() => closeModal()}
               />
-            </Box>
-          </Box>
+            </div>
+          </div>
         </Row>
-        {discountAvailable && (
-          <Typography variant="helperText" color="text.secondary">
-            <span>
-              Discount applied for{" "}
-              <FormattedNumber
-                variant="helperText"
-                color="text.secondary"
-                visibleDecimals={2}
-                value={userStakedAaveBalance}
-              />{" "}
-              staking AAVE
-            </span>
-          </Typography>
-        )}
       </TxModalDetails>
 
       {txError && <GasEstimationError txError={txError} />}
@@ -451,32 +446,6 @@ const BorrowAPY = ({
         onMoreDetailsClick={onDetailsClick}
         {...sharedIncentiveProps}
       />
-    )
-  }
-
-  if (discountAvailable) {
-    return (
-      <>
-        <GhoIncentivesCard
-          withTokenIcon
-          value={currentBorrowAPY}
-          onMoreDetailsClick={onDetailsClick}
-          {...sharedIncentiveProps}
-        />
-        {!!borrowAmount && (
-          <>
-            {hasGhoBorrowPositions && (
-              <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 4 }}>
-                <ArrowNarrowRightIcon />
-              </SvgIcon>
-            )}
-            <GhoIncentivesCard
-              value={ghoLoadingData ? -1 : futureBorrowAPY}
-              {...sharedIncentiveProps}
-            />
-          </>
-        )}
-      </>
     )
   }
 

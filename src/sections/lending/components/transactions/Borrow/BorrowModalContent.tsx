@@ -1,26 +1,16 @@
 import { API_ETH_MOCK_ADDRESS, InterestRate } from "@aave/contract-helpers"
 import {
-  calculateHealthFactorFromBalancesBigUnits,
   USD_DECIMALS,
+  calculateHealthFactorFromBalancesBigUnits,
   valueToBigNumber,
 } from "@aave/math-utils"
-
-import { Typography } from "@mui/material"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { PercentageValue } from "components/PercentageValue"
+import { ToggleGroup, ToggleGroupItem } from "components/ToggleGroup"
+import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
-import { APYTypeTooltip } from "sections/lending/components/infoTooltips/APYTypeTooltip"
-import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
-import { StyledTxModalToggleButton } from "sections/lending/components/StyledToggleButton"
-import { StyledTxModalToggleGroup } from "sections/lending/components/StyledToggleButtonGroup"
-import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { useAssetCaps } from "sections/lending/hooks/useAssetCaps"
-import { useModalContext } from "sections/lending/hooks/useModal"
-import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { ERC20TokenType } from "sections/lending/libs/web3-data-provider/Web3Provider"
-import { getMaxAmountAvailableToBorrow } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
-import { roundToTokenDecimals } from "sections/lending/utils/utils"
-
 import { CapType } from "sections/lending/components/caps/helper"
-import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
 import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
@@ -30,6 +20,14 @@ import {
   DetailsUnwrapSwitch,
   TxModalDetails,
 } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
+import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { useAssetCaps } from "sections/lending/hooks/useAssetCaps"
+import { useModalContext } from "sections/lending/hooks/useModal"
+import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
+import { ERC20TokenType } from "sections/lending/libs/web3-data-provider/Web3Provider"
+import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
+import { getMaxAmountAvailableToBorrow } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
+import { roundToTokenDecimals } from "sections/lending/utils/utils"
 import { BorrowActions } from "./BorrowActions"
 import { BorrowAmountWarning } from "./BorrowAmountWarning"
 import { ParameterChangewarning } from "./ParameterChangewarning"
@@ -56,38 +54,30 @@ const BorrowModeSwitch = ({
 }: BorrowModeSwitchProps) => {
   return (
     <div sx={{ mb: 16 }}>
-      <div sx={{ fontSize: 14, mb: 4 }}>
-        <APYTypeTooltip
-          text={<span>Borrow APY rate</span>}
-          key="APY type_modal"
-        />
-      </div>
-      <StyledTxModalToggleGroup
-        color="primary"
-        value={interestRateMode}
-        exclusive
-        onChange={(_, value) => setInterestRateMode(value)}
-        sx={{ mt: 0.5 }}
+      <Text
+        fs={14}
+        color="basic400"
+        sx={{ mb: 4, flex: "row", align: "center", gap: 4 }}
       >
-        <StyledTxModalToggleButton
-          value={InterestRate.Variable}
-          disabled={interestRateMode === InterestRate.Variable}
-        >
-          <Typography variant="buttonM" sx={{ mr: 4 }}>
-            <span>Variable</span>
-          </Typography>
-          <FormattedNumber value={variableRate} percent variant="secondary14" />
-        </StyledTxModalToggleButton>
-        <StyledTxModalToggleButton
-          value={InterestRate.Stable}
-          disabled={interestRateMode === InterestRate.Stable}
-        >
-          <Typography variant="buttonM" sx={{ mr: 4 }}>
-            <span>Stable</span>
-          </Typography>
-          <FormattedNumber value={stableRate} percent variant="secondary14" />
-        </StyledTxModalToggleButton>
-      </StyledTxModalToggleGroup>
+        Borrow APY Rate{" "}
+        <InfoTooltip text="Allows you to switch between variable and stable interest rates, where variable rate can increase and decrease depending on the amount of liquidity in the reserve, and stable rate will stay the same for the duration of your loan.">
+          <SInfoIcon />
+        </InfoTooltip>
+      </Text>
+      <ToggleGroup
+        type="single"
+        value={interestRateMode}
+        onValueChange={setInterestRateMode}
+      >
+        <ToggleGroupItem value={InterestRate.Variable}>
+          <span sx={{ mr: 4 }}>Variable</span>
+          <PercentageValue value={Number(variableRate) * 100} />
+        </ToggleGroupItem>
+        <ToggleGroupItem value={InterestRate.Stable}>
+          <span sx={{ mr: 4 }}>Stable</span>
+          <PercentageValue value={Number(stableRate) * 100} />
+        </ToggleGroupItem>
+      </ToggleGroup>
     </div>
   )
 }
@@ -274,9 +264,9 @@ export const BorrowModalContent = ({
       />
 
       {blockingError !== undefined && (
-        <Typography variant="helperText" color="error.main">
-          {handleBlocked()}
-        </Typography>
+        <Text fs={12} color="red400">
+          {handleBlocked()} asddas d
+        </Text>
       )}
 
       {poolReserve.isWrappedBaseAsset && (
