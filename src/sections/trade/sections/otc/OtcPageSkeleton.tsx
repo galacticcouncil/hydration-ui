@@ -13,6 +13,8 @@ export const OtcPageSkeleton = () => {
         showPartial={false}
         onShowMyOrdersChange={() => null}
         onShowPartialChange={() => null}
+        searchVal={""}
+        onSearchChange={() => null}
       />
       <TableSkeleton table={table} />
     </>
