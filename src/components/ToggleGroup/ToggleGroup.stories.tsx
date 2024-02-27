@@ -12,38 +12,16 @@ const Template = ({
   size,
   variant,
   disabled,
+  type,
   deselectable,
 }: ComponentPropsWithoutRef<typeof ToggleGroup>) => {
-  const [value, setValue] = useState("assets")
-  return (
-    <ToggleGroup
-      value={value}
-      type="single"
-      onValueChange={setValue}
-      size={size}
-      variant={variant}
-      disabled={disabled}
-      deselectable={deselectable}
-      sx={{ display: "inline-flex" }}
-    >
-      <ToggleGroupItem value="assets">Assets</ToggleGroupItem>
-      <ToggleGroupItem value="liquidity">Liquidity</ToggleGroupItem>
-      <ToggleGroupItem value="farming">Farming</ToggleGroupItem>
-    </ToggleGroup>
+  const [value, setValue] = useState(
+    type === "multiple" ? ["assets", "farming"] : "assets",
   )
-}
-
-const TemplateMultiple = ({
-  size,
-  variant,
-  disabled,
-  deselectable,
-}: ComponentPropsWithoutRef<typeof ToggleGroup>) => {
-  const [value, setValue] = useState(["assets", "farming"])
   return (
     <ToggleGroup
-      type="multiple"
-      value={value}
+      value={value as string}
+      type={(type || "single") as "single"}
       onValueChange={setValue}
       size={size}
       variant={variant}
@@ -104,8 +82,9 @@ export const Disabled: Story = {
 }
 
 export const Multiple: Story = {
-  render: TemplateMultiple,
+  render: Template,
   args: {
+    type: "multiple",
     deselectable: true,
   },
 }
