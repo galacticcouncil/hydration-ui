@@ -16,7 +16,7 @@ type UseReactTableOptions<TData extends RowData> = Omit<
 > & {
   isLoading?: boolean
   skeletonRowCount?: number
-  columnsHiddenOnMobile?: (keyof TData)[]
+  columnsHiddenOnMobile?: (keyof TData)[] | string[]
   getCoreRowModel?: TableOptions<TData>["getCoreRowModel"]
   getSortedRowModel?: TableOptions<TData>["getSortedRowModel"]
 }

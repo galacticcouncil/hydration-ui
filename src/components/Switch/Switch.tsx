@@ -1,28 +1,46 @@
 import { Label } from "components/Label/Label"
 import { SSwitch, SThumb } from "./Switch.styled"
+import { ResponsiveValue } from "utils/responsive"
+
+export type SwitchSize = "small" | "medium" | "large"
+export type LabelPosition = "start" | "end"
 
 export type SwitchProps = {
-  size?: "small" | "regular"
+  size?: SwitchSize
   value: boolean
   onCheckedChange: (v: boolean) => void
-  label: string
+  fs?: ResponsiveValue<number>
+  label?: string
+  labelPosition?: LabelPosition
   name: string
   disabled?: boolean
+}
+
+const getLabelPositionCss = (labelPosition: LabelPosition) => {
+  if (labelPosition === "end") {
+    return {
+      "&>div:first-of-type": { order: 1 },
+      button: { order: 0, marginRight: 10, marginLeft: 0 },
+    }
+  }
 }
 
 export const Switch = ({
   value,
   onCheckedChange,
   disabled,
-  size = "regular",
+  size = "medium",
   name,
+  fs = 12,
   label,
+  labelPosition = "start",
 }: SwitchProps) => (
   <Label
     id={name}
-    label={label}
+    label={label ?? ""}
     withLabel={!!label}
-    sx={{ fontSize: 12, flex: "row", align: "center" }}
+    sx={{ fontSize: fs, flex: "row", align: "center" }}
+    css={getLabelPositionCss(labelPosition)}
   >
     <SSwitch
       checked={value}
@@ -33,7 +51,7 @@ export const Switch = ({
       id={name}
       withLabel={!!label}
     >
-      <SThumb checked={value} disabled={disabled} size={size} />
+      <SThumb checked={value} disabled={disabled} />
     </SSwitch>
   </Label>
 )

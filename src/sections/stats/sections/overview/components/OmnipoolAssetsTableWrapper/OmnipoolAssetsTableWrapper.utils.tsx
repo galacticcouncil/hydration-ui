@@ -18,6 +18,7 @@ import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   const { t } = useTranslation()
@@ -53,7 +54,7 @@ const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   if (isLoading) return <CellSkeleton />
 
   return (
-    <Text color="white">
+    <Text color="white" fs={14}>
       {t("value.percentage.range", {
         from: percentage.minApr.lt(apy) ? percentage.minApr : BigNumber(apy),
         to: percentage.maxApr.plus(apy),
@@ -72,6 +73,9 @@ const APY = ({
   isLoading: boolean
 }) => {
   const { t } = useTranslation()
+  const {
+    assets: { native },
+  } = useRpcProvider()
   const farms = useFarms([assetId])
 
   if (isLoading || farms.isInitialLoading) return <CellSkeleton />
@@ -79,7 +83,11 @@ const APY = ({
   if (farms.data?.length)
     return <APYFarming farms={farms.data} apy={fee.toNumber()} />
 
-  return <Text color="white">{t("value.percentage", { value: fee })}</Text>
+  return (
+    <Text color="white" fs={14}>
+      {assetId === native.id ? "--" : t("value.percentage", { value: fee })}
+    </Text>
+  )
 }
 
 export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
@@ -116,7 +124,7 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
             />
           )}
           <div sx={{ flex: "column" }}>
-            <Text fs={14} color="white" font="ChakraPetchSemiBold">
+            <Text fs={14} color="white" fw={600}>
               {row.original.symbol}
             </Text>
             {isDesktop && (

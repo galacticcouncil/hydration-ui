@@ -10,10 +10,9 @@ import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Farm, useFarmApr } from "api/farms"
 import { useBestNumber } from "api/chain"
-import { BLOCK_TIME, BN_0, BN_QUINTILL } from "utils/constants"
+import { BLOCK_TIME, BN_0 } from "utils/constants"
 import { useMemo } from "react"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
-import { useOraclePrice } from "api/farms"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
@@ -39,13 +38,6 @@ export const FarmDetailsCard = ({
   const asset = assets.getAsset(farm.globalFarm.rewardCurrency.toString())
   const apr = useFarmApr(farm)
   const assetMeta = assets.getAsset(poolId.toString())
-
-  const oraclePriceRaw = useOraclePrice(
-    apr.data?.rewardCurrency.toString(),
-    apr.data?.incentivizedAsset.toString(),
-  )
-
-  const oraclePrice = oraclePriceRaw.data?.oraclePrice.div(BN_QUINTILL)
 
   const variant = onSelect ? "button" : "div"
 
@@ -81,7 +73,7 @@ export const FarmDetailsCard = ({
 
   if (apr.data == null) return null
 
-  const fullness = apr.data.fullness.times(100).multipliedBy(oraclePrice ?? 1)
+  const fullness = apr.data.fullness
 
   return (
     <SContainer

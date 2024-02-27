@@ -118,7 +118,7 @@ export function SwapPage() {
         ref={(r) => {
           if (r) {
             r.setAttribute("chart", "")
-            r.setAttribute("twap", "")
+            r.setAttribute("twapOn", "")
           }
         }}
         assetIn={assetsReady ? assetInDefault : ""}

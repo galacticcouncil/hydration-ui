@@ -22,14 +22,21 @@ const Template = (props: ComponentPropsWithoutRef<typeof Switch>) => {
         value={value}
         onCheckedChange={() => setValue((value) => !value)}
         name="switch"
-        label="Regular Switch"
+        label="Advanced settings"
       />
     </SwitchContainer>
   )
 }
 
-export const Regular: Story = {
+export const Default: Story = {
   render: Template,
+}
+
+export const Disabled: Story = {
+  render: Template,
+  args: {
+    disabled: true,
+  },
 }
 
 export const Small: Story = {
@@ -39,9 +46,23 @@ export const Small: Story = {
   },
 }
 
-export const Disabled: Story = {
+export const Medium: Story = {
   render: Template,
   args: {
-    disabled: true,
+    size: "medium",
+  },
+}
+
+export const Large: Story = {
+  render: Template,
+  args: {
+    size: "large",
+  },
+}
+
+export const LabelPosition: Story = {
+  render: Template,
+  args: {
+    labelPosition: "end",
   },
 }
