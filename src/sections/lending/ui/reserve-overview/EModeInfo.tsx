@@ -1,6 +1,5 @@
 import { DataValue, DataValueList } from "components/DataValue"
 import { Text } from "components/Typography/Text/Text"
-import LightningBoltGradient from "sections/lending/assets/lightningBoltGradient.svg?react"
 import { PercentageValue } from "components/PercentageValue"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import { getEmodeMessage } from "sections/lending/components/transactions/Emode/EmodeNaming"
@@ -18,7 +17,6 @@ export const EModeInfo: React.FC<EModeInfoProps> = ({ reserve }) => {
           E-Mode Category
         </Text>
         <Text fs={14} sx={{ flex: "row", align: "center" }}>
-          <LightningBoltGradient width={14} height={14} sx={{ mr: 4 }} />
           <span>{getEmodeMessage(reserve.eModeLabel)}</span>
         </Text>
       </div>

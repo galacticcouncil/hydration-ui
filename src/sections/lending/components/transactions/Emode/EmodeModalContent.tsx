@@ -16,8 +16,6 @@ import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataCo
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { getNetworkConfig } from "sections/lending/utils/marketsAndNetworksConfig"
 
-import LightningBoltGradient from "sections/lending/assets/lightningBoltGradient.svg?react"
-
 import { TxErrorView } from "sections/lending/components/transactions/FlowCommons/Error"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
@@ -177,7 +175,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
   // Shown only if the user has a collateral asset which is changing in LTV
   const showMaxLTVRow =
     user.currentLoanToValue !== "0" &&
-    Number(newSummary.currentLoanToValue).toFixed(3) !=
+    Number(newSummary.currentLoanToValue).toFixed(3) !==
       Number(user.currentLoanToValue).toFixed(3) // Comparing without rounding causes stuttering, LTVs update asyncronously
 
   if (txError && txError.blocking) {
@@ -239,11 +237,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
 
       <TxModalDetails gasLimit={gasLimit}>
         {!showModal && (
-          <Row
-            caption={<span>E-Mode category</span>}
-            captionVariant="description"
-            mb={4}
-          >
+          <Row caption={<span>E-Mode category</span>} sx={{ mb: 12 }}>
             <Box
               sx={{
                 display: "flex",
@@ -254,9 +248,6 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
               <Box sx={{ display: "inline-flex", alignItems: "center", mx: 4 }}>
                 {user.userEmodeCategoryId !== 0 ? (
                   <>
-                    <SvgIcon sx={{ fontSize: "12px" }}>
-                      <LightningBoltGradient />
-                    </SvgIcon>
                     <Typography variant="subheader1">
                       {getEmodeMessage(eModes[user.userEmodeCategoryId].label)}
                     </Typography>
@@ -273,9 +264,6 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
                   <Box sx={{ display: "inline-flex", alignItems: "center" }}>
                     {selectedEmode.id !== 0 ? (
                       <>
-                        <SvgIcon sx={{ fontSize: "12px", mr: 0.5 }}>
-                          <LightningBoltGradient />
-                        </SvgIcon>
                         <Typography variant="subheader1">
                           {getEmodeMessage(eModes[selectedEmode.id].label)}
                         </Typography>
@@ -294,9 +282,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
 
         <Row
           caption={<span>Available assets</span>}
-          captionVariant="description"
-          mb={4}
-          sx={{ alignContent: "flex-end" }}
+          sx={{ alignContent: "flex-end", mb: 12 }}
         >
           <Box
             sx={{
@@ -355,12 +341,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
         />
 
         {showMaxLTVRow && (
-          <Row
-            caption={<span>Maximum loan to value</span>}
-            captionVariant="description"
-            mb={4}
-            align="flex-start"
-          >
+          <Row caption={<span>Maximum loan to value</span>} sx={{ mb: 12 }}>
             <Box sx={{ textAlign: "right" }}>
               <Box
                 sx={{

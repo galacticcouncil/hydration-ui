@@ -1,4 +1,4 @@
-import { Box, SvgIcon, Typography } from "@mui/material"
+import { Box, Typography } from "@mui/material"
 import { LiquidationPenaltyTooltip } from "sections/lending/components/infoTooltips/LiquidationPenaltyTooltip"
 import { LiquidationThresholdTooltip } from "sections/lending/components/infoTooltips/LiquidationThresholdTooltip"
 import { MaxLTVTooltip } from "sections/lending/components/infoTooltips/MaxLTVTooltip"
@@ -7,8 +7,6 @@ import { Link, ROUTES } from "sections/lending/components/primitives/Link"
 import { ReserveOverviewBox } from "sections/lending/components/ReserveOverviewBox"
 import { getEmodeMessage } from "sections/lending/components/transactions/Emode/EmodeNaming"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-
-import LightningBoltGradient from "sections/lending/assets/lightningBoltGradient.svg?react"
 
 import { PanelRow, PanelTitle } from "./ReservePanels"
 
@@ -27,9 +25,7 @@ export const ReserveEModePanel: React.FC<ReserverEModePanelProps> = ({
           <Typography variant="secondary14" color="text.secondary">
             <span>E-Mode Category</span>
           </Typography>
-          <SvgIcon sx={{ fontSize: "14px", mr: 0.5, ml: 8 }}>
-            <LightningBoltGradient />
-          </SvgIcon>
+
           <Typography variant="subheader1">
             {getEmodeMessage(reserve.eModeLabel)}
           </Typography>
@@ -43,12 +39,7 @@ export const ReserveEModePanel: React.FC<ReserverEModePanelProps> = ({
           }}
         >
           <ReserveOverviewBox
-            title={
-              <MaxLTVTooltip
-                variant="description"
-                text={<span>Max LTV</span>}
-              />
-            }
+            title={<MaxLTVTooltip text={<span>Max LTV</span>} />}
           >
             <FormattedNumber
               value={reserve.formattedEModeLtv}
@@ -60,7 +51,6 @@ export const ReserveEModePanel: React.FC<ReserverEModePanelProps> = ({
           <ReserveOverviewBox
             title={
               <LiquidationThresholdTooltip
-                variant="description"
                 text={<span>Liquidation threshold</span>}
               />
             }
@@ -75,7 +65,6 @@ export const ReserveEModePanel: React.FC<ReserverEModePanelProps> = ({
           <ReserveOverviewBox
             title={
               <LiquidationPenaltyTooltip
-                variant="description"
                 text={<span>Liquidation penalty</span>}
               />
             }
