@@ -1,10 +1,9 @@
 import { API_ETH_MOCK_ADDRESS } from "@aave/contract-helpers"
 import { normalize } from "@aave/math-utils"
-import LocalGasStationIcon from "@mui/icons-material/LocalGasStation"
-import { Box, CircularProgress, Stack } from "@mui/material"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { Spinner } from "components/Spinner/Spinner.styled"
 import { Text } from "components/Typography/Text/Text"
 import { BigNumber } from "ethers/lib/ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
@@ -25,6 +24,7 @@ import {
 } from "sections/lending/utils/marketsAndNetworksConfig"
 import invariant from "tiny-invariant"
 import { GasOption } from "./GasStationProvider"
+import GasPumpIcon from "assets/icons/GasPumpIcon.svg?react"
 
 export interface GasStationProps {
   gasLimit: BigNumber
@@ -90,17 +90,13 @@ export const GasStation: React.FC<GasStationProps> = ({
       : undefined
 
   return (
-    <Stack gap={6} sx={{ width: "100%" }}>
-      <Box sx={{ display: "flex", mt: 3, justifyContent: "space-between" }}>
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <LocalGasStationIcon
-            color="primary"
-            sx={{ fontSize: "16px", mr: 6 }}
-          />
-
+    <div sx={{ flex: "column", gap: 24, width: "100%" }}>
+      <div sx={{ flex: "row", mt: 12, justify: "space-between" }}>
+        <div sx={{ flex: "row", align: "center" }}>
+          <GasPumpIcon width={20} height={20} sx={{ mr: 6 }} />
           {loadingTxns && !skipLoad ? (
             <div sx={{ flex: "row", align: "center", height: 16 }}>
-              <CircularProgress color="inherit" size="14px" sx={{ mr: 8 }} />
+              <Spinner width={16} height={16} />
             </div>
           ) : totalGasCostsUsd && !disabled ? (
             <>
@@ -114,18 +110,18 @@ export const GasStation: React.FC<GasStationProps> = ({
           ) : (
             "-"
           )}
-        </Box>
+        </div>
         {rightComponent}
-      </Box>
+      </div>
       {!disabled && Number(nativeBalanceUSD) < Number(totalGasCostsUsd) && (
-        <Box sx={{ display: "flex", alignItems: "center" }}>
+        <div sx={{ flex: "row", align: "center" }}>
           <Warning variant="warning" sx={{ mb: 0, mx: "auto" }}>
             You do not have enough {baseAssetSymbol} in your account to pay for
             transaction fees on {name} network. Please deposit {baseAssetSymbol}{" "}
             from another account.
           </Warning>
-        </Box>
+        </div>
       )}
-    </Stack>
+    </div>
   )
 }

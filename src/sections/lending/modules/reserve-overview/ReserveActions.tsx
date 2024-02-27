@@ -332,7 +332,7 @@ const SupplyAction = ({
 }: ActionProps) => {
   const { t } = useTranslation()
   return (
-    <div sx={{ flex: "row", justify: "space-between" }}>
+    <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
       <DataValue
         label="Available to supply"
         labelColor="basic400"
@@ -360,7 +360,6 @@ const SupplyAction = ({
 }
 
 const BorrowAction = ({
-  reserve,
   value,
   usdValue,
   symbol,
@@ -369,7 +368,7 @@ const BorrowAction = ({
 }: ActionProps) => {
   const { t } = useTranslation()
   return (
-    <div sx={{ flex: "row", justify: "space-between" }}>
+    <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
       <DataValue
         label="Available to borrow"
         labelColor="basic400"
