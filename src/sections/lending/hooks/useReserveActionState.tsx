@@ -56,43 +56,23 @@ export const useReserveActionState = ({
     alerts: (
       <div sx={{ flex: "column", gap: 12 }}>
         {balance === "0" && !isGho && (
-          <>
-            {currentNetworkConfig.isTestnet ? (
-              <Warning sx={{ mt: 12 }} variant="info">
-                <span>
-                  Your {networkName} wallet is empty. Get free test{" "}
-                  {reserve.name} at{" "}
-                  <a
-                    target="_blank"
-                    href={ROUTES.faucet}
-                    css={{ textDecoration: "underline" }}
-                    rel="noreferrer"
-                  >
-                    <span>{networkName} Faucet</span>
-                  </a>
-                </span>
-              </Warning>
+          <Warning sx={{ mt: 12 }} variant="info">
+            {bridge ? (
+              <span>
+                Your {networkName} wallet is empty. Purchase or transfer assets
+                or use {<Link href={bridge.url}>{bridge.name}</Link>} to
+                transfer your{" "}
+                {[ChainId.avalanche].includes(currentChainId)
+                  ? "Ethereum & Bitcoin"
+                  : "Ethereum"}{" "}
+                assets.
+              </span>
             ) : (
-              <Warning sx={{ mt: 12 }} variant="info">
-                {bridge ? (
-                  <span>
-                    Your {networkName} wallet is empty. Purchase or transfer
-                    assets or use {<Link href={bridge.url}>{bridge.name}</Link>}{" "}
-                    to transfer your{" "}
-                    {[ChainId.avalanche].includes(currentChainId)
-                      ? "Ethereum & Bitcoin"
-                      : "Ethereum"}{" "}
-                    assets.
-                  </span>
-                ) : (
-                  <span>
-                    Your {networkName} wallet is empty. Purchase or transfer
-                    assets.
-                  </span>
-                )}
-              </Warning>
+              <span>
+                Your {networkName} wallet is empty. Purchase or transfer assets.
+              </span>
             )}
-          </>
+          </Warning>
         )}
 
         {(balance !== "0" || isGho) &&

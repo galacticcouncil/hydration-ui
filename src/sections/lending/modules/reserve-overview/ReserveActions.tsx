@@ -9,7 +9,7 @@ import WalletIcon from "assets/icons/WalletIcon.svg?react"
 import BigNumber from "bignumber.js"
 import { ReactNode, useState } from "react"
 import Skeleton from "react-loading-skeleton"
-import { ConnectWalletButton } from "sections/lending/components/WalletConnection/ConnectWalletButton"
+import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { Warning } from "sections/lending/components/primitives/Warning"
 import {
   ComputedReserveData,
@@ -307,7 +307,7 @@ const ConnectWallet = ({ loading }: { loading: boolean }) => {
           <Text fs={14} lh={18} sx={{ mb: 24 }} color="basic300">
             Please connect a wallet to view your personal information here.
           </Text>
-          <ConnectWalletButton />
+          <Web3ConnectModalButton />
         </>
       )}
     </PaperWrapper>
