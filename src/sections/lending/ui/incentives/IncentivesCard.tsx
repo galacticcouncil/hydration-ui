@@ -1,6 +1,6 @@
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 import { ReactNode } from "react"
-import { PercentageValue } from "sections/lending/components/PercentageValue"
+import { PercentageValue } from "components/PercentageValue"
 import { NoData } from "sections/lending/components/primitives/NoData"
 import { IncentivesButton } from "./IncentivesButton"
 

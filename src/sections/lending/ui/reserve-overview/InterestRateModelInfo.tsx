@@ -1,6 +1,6 @@
 import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { DataValue } from "components/DataValue"
-import { PercentageValue } from "sections/lending/components/PercentageValue"
+import { PercentageValue } from "components/PercentageValue"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { InterestRateModelGraphContainer } from "sections/lending/modules/reserve-overview/graphs/InterestRateModelGraphContainer"
 import { NetworkConfig } from "sections/lending/ui-config/networksConfig"

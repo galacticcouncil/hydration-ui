@@ -1,8 +1,6 @@
 import { MarketDataType } from "./marketsConfig"
 
 export const queryKeysFactory = {
-  governance: ["governance"] as const,
-  staking: ["staking"] as const,
   pool: ["pool"] as const,
   incentives: ["incentives"] as const,
   gho: ["gho"] as const,
@@ -12,41 +10,6 @@ export const queryKeysFactory = {
     marketData.market,
   ],
   user: (user: string) => [user],
-  powers: (user: string, chainId: number) => [
-    ...queryKeysFactory.governance,
-    ...queryKeysFactory.user(user),
-    chainId,
-    "powers",
-  ],
-  voteOnProposal: (
-    user: string,
-    proposalId: number,
-    marketData: MarketDataType,
-  ) => [
-    ...queryKeysFactory.governance,
-    ...queryKeysFactory.user(user),
-    ...queryKeysFactory.market(marketData),
-    proposalId,
-    "voteOnProposal",
-  ],
-  votingPowerAt: (user: string, blockHash: string, votingAssets: string[]) => [
-    ...queryKeysFactory.governance,
-    ...queryKeysFactory.user(user),
-    ...votingAssets,
-    blockHash,
-    "votingPowerAt",
-  ],
-  governanceRepresentatives: (user: string) => [
-    ...queryKeysFactory.governance,
-    ...queryKeysFactory.user(user),
-    "representatives",
-  ],
-  governanceTokens: (user: string, marketData: MarketDataType) => [
-    ...queryKeysFactory.governance,
-    ...queryKeysFactory.user(user),
-    ...queryKeysFactory.market(marketData),
-    "governanceTokens",
-  ],
   transactionHistory: (user: string, marketData: MarketDataType) => [
     ...queryKeysFactory.user(user),
     ...queryKeysFactory.market(marketData),
@@ -62,30 +25,6 @@ export const queryKeysFactory = {
     ...queryKeysFactory.pool,
     ...queryKeysFactory.market(marketData),
     "poolReservesDataHumanized",
-  ],
-  generalStakeUiData: (
-    marketData: MarketDataType,
-    stakedTokens: string[],
-    oracles: string[],
-  ) => [
-    ...queryKeysFactory.staking,
-    ...queryKeysFactory.market(marketData),
-    stakedTokens,
-    oracles,
-    "generalStakeUiData",
-  ],
-  userStakeUiData: (
-    user: string,
-    marketData: MarketDataType,
-    stakedAssets: string[],
-    oracles: string[],
-  ) => [
-    ...queryKeysFactory.staking,
-    ...queryKeysFactory.user(user),
-    ...queryKeysFactory.market(marketData),
-    stakedAssets,
-    oracles,
-    "userStakeUiData",
   ],
   paraswapRates: (
     chainId: number,

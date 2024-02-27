@@ -140,7 +140,6 @@ export const useTransactionHandler = ({
         })
 
         queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
-        queryClient.invalidateQueries({ queryKey: queryKeysFactory.staking })
         refetchPoolData && refetchPoolData()
         refetchGhoData && refetchGhoData()
         refetchIncentiveData && refetchIncentiveData()

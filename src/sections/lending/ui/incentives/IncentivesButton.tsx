@@ -3,7 +3,7 @@ import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/i
 import MoreDotsIcon from "assets/icons/MoreDotsIcon.svg?react"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { useState } from "react"
-import { PercentageValue } from "sections/lending/components/PercentageValue"
+import { PercentageValue } from "components/PercentageValue"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { SContainer } from "./IncentivesButton.styled"
 import { IncentivesTooltipContent } from "./IncentivesTooltipContent"

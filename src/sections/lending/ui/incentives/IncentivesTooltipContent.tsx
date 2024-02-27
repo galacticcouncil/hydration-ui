@@ -1,6 +1,6 @@
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 import { Text } from "components/Typography/Text/Text"
-import { PercentageValue } from "sections/lending/components/PercentageValue"
+import { PercentageValue } from "components/PercentageValue"
 import { Row } from "sections/lending/components/primitives/Row"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 

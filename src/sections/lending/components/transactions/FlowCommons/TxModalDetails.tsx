@@ -24,7 +24,7 @@ import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { GasStation } from "sections/lending/components/transactions/GasStation/GasStation"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
-import { PercentageValue } from "sections/lending/components/PercentageValue"
+import { PercentageValue } from "components/PercentageValue"
 
 export interface TxModalDetailsProps {
   gasLimit?: string

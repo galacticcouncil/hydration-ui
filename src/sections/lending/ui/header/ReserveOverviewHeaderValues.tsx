@@ -3,7 +3,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { useMedia } from "react-use"
-import { PercentageValue } from "sections/lending/components/PercentageValue"
+import { PercentageValue } from "components/PercentageValue"
 import {
   ComputedReserveData,
   useAppDataContext,

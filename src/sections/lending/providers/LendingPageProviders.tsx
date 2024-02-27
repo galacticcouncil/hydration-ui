@@ -48,18 +48,6 @@ const EmodeModal = lazy(async () => ({
     await import("sections/lending/components/transactions/Emode/EmodeModal")
   ).EmodeModal,
 }))
-const FaucetModal = lazy(async () => ({
-  default: (
-    await import("sections/lending/components/transactions/Faucet/FaucetModal")
-  ).FaucetModal,
-}))
-const MigrateV3Modal = lazy(async () => ({
-  default: (
-    await import(
-      "sections/lending/components/transactions/MigrateV3/MigrateV3Modal"
-    )
-  ).MigrateV3Modal,
-}))
 const RateSwitchModal = lazy(async () => ({
   default: (
     await import(
@@ -76,11 +64,6 @@ const SupplyModal = lazy(async () => ({
   default: (
     await import("sections/lending/components/transactions/Supply/SupplyModal")
   ).SupplyModal,
-}))
-const SwapModal = lazy(async () => ({
-  default: (
-    await import("sections/lending/components/transactions/Swap/SwapModal")
-  ).SwapModal,
 }))
 const WithdrawModal = lazy(async () => ({
   default: (
@@ -122,9 +105,6 @@ export const LendingPageProviders = ({
                         <DebtSwitchModal />
                         <ClaimRewardsModal />
                         <EmodeModal />
-                        <SwapModal />
-                        <FaucetModal />
-                        <MigrateV3Modal />
                         <TransactionEventHandler />
                         <SwitchModal />
                       </Suspense>

@@ -6,7 +6,7 @@ import { ButtonTransparent } from "components/Button/Button"
 import { Dropdown } from "components/Dropdown/Dropdown"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
-import { PercentageValue } from "sections/lending/components/PercentageValue"
+import { PercentageValue } from "components/PercentageValue"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import { CustomMarket } from "sections/lending/ui-config/marketsConfig"
 
