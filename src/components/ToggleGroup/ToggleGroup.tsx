@@ -10,18 +10,23 @@ type ContextProps = {
   size?: ItemSize
 }
 
+type ToggleGroupRef = React.ElementRef<typeof ToggleGroupPrimitive.Root>
+type RootProps = React.ComponentPropsWithoutRef<
+  typeof ToggleGroupPrimitive.Root
+>
+type CustomRootProps = ContextProps & {
+  deselectable?: boolean
+  onValueChange?: (value: string | string[]) => void
+}
+
+type ToggleGroupProps = RootProps & CustomRootProps
+
 const ToggleGroupContext = React.createContext<ContextProps>({
   variant: "primary",
   size: "medium",
 })
 
-const ToggleGroup = React.forwardRef<
-  React.ElementRef<typeof ToggleGroupPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
-    ContextProps & {
-      deselectable?: boolean
-    }
->(
+const ToggleGroup = React.forwardRef<ToggleGroupRef, ToggleGroupProps>(
   (
     {
       className,
@@ -34,17 +39,19 @@ const ToggleGroup = React.forwardRef<
     },
     ref,
   ) => {
+    const handleValueChange = (value: string | string[]) => {
+      if (deselectable) return onValueChange?.(value)
+      if (Array.isArray(value) && value.length === 0) return
+      if (typeof value === "string" && value === "") return
+      onValueChange?.(value)
+    }
+
     return (
       <ToggleGroupPrimitive.Root
         ref={ref}
         className={className}
         asChild
-        onValueChange={(value: any) => {
-          if (deselectable) onValueChange?.(value)
-          if (Array.isArray(value) && value.length === 0) return
-          if (typeof value === "string" && value === "") return
-          onValueChange?.(value)
-        }}
+        onValueChange={handleValueChange}
         {...props}
       >
         <SContainer>
