@@ -2,8 +2,8 @@ import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { DataValue } from "components/DataValue"
 import { PercentageValue } from "components/PercentageValue"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { InterestRateModelGraphContainer } from "sections/lending/modules/reserve-overview/graphs/InterestRateModelGraphContainer"
 import { NetworkConfig } from "sections/lending/ui-config/networksConfig"
+import { InterestRateModelChartContainer } from "sections/lending/ui/reserve-overview/chart/InterestRateModelChartContainer"
 
 export type InterestRateModelInfoProps = {
   reserve: ComputedReserveData
@@ -45,7 +45,7 @@ export const InterestRateModelInfo: React.FC<InterestRateModelInfoProps> = ({
           <LinkIcon width={10} height={10} sx={{ ml: 4 }} />
         </a>
       </div>
-      <InterestRateModelGraphContainer reserve={reserve} />
+      <InterestRateModelChartContainer reserve={reserve} />
     </div>
   )
 }

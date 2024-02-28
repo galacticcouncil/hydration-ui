@@ -5,15 +5,15 @@ import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { PercentageValue } from "components/PercentageValue"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { PercentageValue } from "components/PercentageValue"
 import { CapsCircularStatus } from "sections/lending/components/caps/CapsCircularStatus"
 import { DebtCeilingStatus } from "sections/lending/components/caps/DebtCeilingStatus"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
-import { ApyGraphContainer } from "sections/lending/modules/reserve-overview/graphs/ApyGraphContainer"
 import { IncentivesButton } from "sections/lending/ui/incentives/IncentivesButton"
+import { ApyChartContainer } from "sections/lending/ui/reserve-overview/chart/ApyChartContainer"
 import { MarketDataType } from "sections/lending/utils/marketsAndNetworksConfig"
 
 type SupplyInfoProps = {
@@ -189,8 +189,8 @@ export const SupplyInfo = ({
       </div>
       {renderCharts &&
         (reserve.borrowingEnabled || Number(reserve.totalDebt) > 0) && (
-          <ApyGraphContainer
-            graphKey="supply"
+          <ApyChartContainer
+            type="supply"
             reserve={reserve}
             currentMarketData={currentMarketData}
           />

@@ -11,12 +11,12 @@ import { PercentageValue } from "components/PercentageValue"
 import { CapsCircularStatus } from "sections/lending/components/caps/CapsCircularStatus"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
-import { ApyGraphContainer } from "sections/lending/modules/reserve-overview/graphs/ApyGraphContainer"
 import { IncentivesButton } from "sections/lending/ui/incentives/IncentivesButton"
 import {
   MarketDataType,
   NetworkConfig,
 } from "sections/lending/utils/marketsAndNetworksConfig"
+import { ApyChartContainer } from "sections/lending/ui/reserve-overview/chart/ApyChartContainer"
 
 interface BorrowInfoProps {
   reserve: ComputedReserveData
@@ -212,8 +212,8 @@ export const BorrowInfo = ({
         </div>
       </div>
       {renderCharts && (
-        <ApyGraphContainer
-          graphKey="borrow"
+        <ApyChartContainer
+          type="borrow"
           reserve={reserve}
           currentMarketData={currentMarketData}
         />
