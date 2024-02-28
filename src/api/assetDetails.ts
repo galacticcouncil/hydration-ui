@@ -38,7 +38,7 @@ export const useAssetTable = (givenAddress?: string) => {
 
       const acceptedTokens = await Promise.all(allAcceptedTokens)
 
-      const accountTokenId = await getAccountCurrency(api, address)()
+      const accountTokenId = await getAccountCurrency(api, address, assets)()
 
       const apiIds = await getApiIds(api)()
 
