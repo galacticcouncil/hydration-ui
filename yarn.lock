@@ -3051,10 +3051,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^3.0.3":
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.0.3.tgz#38f994c577ae552da53cd539b6e8c1816c232f21"
-  integrity sha512-MsCrp1Njcw3pO6m8rhsjuilWefPCbjIrkgfQj1+gzi44U3GPRZH7vbefTC9A/s2RoDFgHoxk8WR++r32qVeZ1g==
+"@galacticcouncil/ui@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.0.4.tgz#80f9d78b9a5d6064c43e934a15ca8832b610bdcd"
+  integrity sha512-dB4YFD5cxR4sKbLu1/xEIRf+1ux2uleBqqmtHSqP1h88ONTzgdD0PtzWKfoVMWufFsDd6SrzadCkdyqJBqi1VA==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
@@ -3062,10 +3062,10 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.5.0.tgz#200d7973a39adc48e69041f6066f31635c950d01"
-  integrity sha512-W5TZNc3cBuvpEP9b3d3Cyf7mK6pu3lRKbZX8HsgsFCG/Y+a2vrGwwvrKjvON66iJlsxl2KxtHbEgu/JW6bLXSw==
+"@galacticcouncil/xcm-cfg@^1.8.0":
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.8.0.tgz#9368a0f58e9573636cbc0911fad081315b20a7d5"
+  integrity sha512-qptfmiEN2tX+pTouhWwzr7FqUE3jSHNZ/omCUyfh1jC3SdSkkg6ouKHabQ4GlV1O+JHBqvlFRNwfXxxdxkZ20g==
 
 "@galacticcouncil/xcm-sdk@^2.2.0":
   version "2.2.0"
