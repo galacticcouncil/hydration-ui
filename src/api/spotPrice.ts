@@ -59,7 +59,6 @@ export const getSpotPrice =
         spotPrice = res.amount.div(BN_10.pow(res.decimals))
       }
     } catch (e) {}
-
     return { tokenIn, tokenOut, spotPrice }
   }
 
