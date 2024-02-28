@@ -2,12 +2,9 @@ import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
-import MinusIcon from "assets/icons/MinusIcon.svg?react"
+import TrashIcon from "assets/icons/IconRemove.svg?react"
 import { Trans, useTranslation } from "react-i18next"
-import {
-  SButton,
-  SContainer,
-} from "sections/pools/pool/positions/LiquidityPosition.styled"
+import { SContainer } from "sections/pools/pool/positions/LiquidityPosition.styled"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
@@ -78,12 +75,12 @@ function LiquidityPositionJoinFarmButton(props: {
     <>
       <Button
         variant="primary"
-        size="small"
+        size="compact"
+        fullWidth
         disabled={!farms.data?.length || account?.isExternalWalletConnected}
-        sx={{ width: "100%" }}
         onClick={() => setJoinFarm(true)}
       >
-        <Icon size={16} icon={<FPIcon />} />
+        <Icon size={12} icon={<FPIcon />} />
         {t("liquidity.asset.actions.joinFarms")}
       </Button>
 
@@ -119,9 +116,9 @@ export function LiquidityPositionRemoveLiquidity(
   const [openRemove, setOpenRemove] = useState(false)
   return (
     <>
-      <SButton
-        variant="secondary"
-        size="small"
+      <Button
+        variant="error"
+        size="compact"
         fullWidth
         onClick={() => setOpenRemove(true)}
         disabled={
@@ -129,10 +126,10 @@ export function LiquidityPositionRemoveLiquidity(
         }
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
-          <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
-          {t("liquidity.asset.actions.removeLiquidity")}
+          <Icon size={12} icon={<TrashIcon />} sx={{ mr: 4 }} />
+          {t("remove")}
         </div>
-      </SButton>
+      </Button>
       {openRemove && (
         <RemoveLiquidity
           pool={props.pool}
@@ -159,21 +156,45 @@ export const LiquidityPosition = ({
 
   return (
     <SContainer>
-      <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
-        <div sx={{ flex: "row", gap: 7, align: "center" }}>
-          {assets.isStableSwap(meta) ? (
-            <MultipleIcons
-              icons={meta.assets.map((asset: string) => ({
-                icon: <AssetLogo id={asset} />,
-              }))}
+      <div sx={{ flex: "column", gap: 16 }} css={{ flex: 1 }}>
+        <div sx={{ flex: "row", justify: "space-between" }}>
+          <div sx={{ flex: "row", gap: 7, align: "center" }}>
+            {assets.isStableSwap(meta) ? (
+              <MultipleIcons
+                icons={meta.assets.map((asset: string) => ({
+                  icon: <AssetLogo id={asset} />,
+                }))}
+              />
+            ) : (
+              <Icon size={18} icon={<AssetLogo id={position.assetId} />} />
+            )}
+            <Text fs={[14, 18]} color={["white", "basic100"]}>
+              {t("liquidity.asset.positions.position.title", { index })}
+            </Text>
+          </div>
+          <div
+            sx={{
+              flex: "row",
+              gap: 12,
+            }}
+          >
+            {!meta.isStableSwap && (
+              <LiquidityPositionJoinFarmButton
+                poolId={pool.id}
+                position={position}
+                onSuccess={onSuccess}
+              />
+            )}
+            <LiquidityPositionRemoveLiquidity
+              position={position}
+              onSuccess={onSuccess}
+              pool={pool}
             />
-          ) : (
-            <Icon size={18} icon={<AssetLogo id={position.assetId} />} />
-          )}
-          <Text fs={[14, 18]} color={["white", "basic100"]}>
-            {t("liquidity.asset.positions.position.title", { index })}
-          </Text>
+          </div>
         </div>
+
+        <Separator color="white" opacity={0.06} />
+
         <div
           sx={{
             flex: ["column", "row"],
@@ -201,7 +222,11 @@ export const LiquidityPosition = ({
               </Text>
             </div>
           </div>
-          <Separator orientation={isDesktop ? "vertical" : "horizontal"} />
+          <Separator
+            orientation={isDesktop ? "vertical" : "horizontal"}
+            color="white"
+            opacity={0.06}
+          />
           <div
             sx={{
               flex: ["row", "column"],
@@ -239,25 +264,6 @@ export const LiquidityPosition = ({
             </div>
           </div>
         </div>
-      </div>
-      <div
-        sx={{
-          flex: ["column", "row"],
-          gap: 12,
-        }}
-      >
-        {!meta.isStableSwap && (
-          <LiquidityPositionJoinFarmButton
-            poolId={pool.id}
-            position={position}
-            onSuccess={onSuccess}
-          />
-        )}
-        <LiquidityPositionRemoveLiquidity
-          position={position}
-          onSuccess={onSuccess}
-          pool={pool}
-        />
       </div>
     </SContainer>
   )

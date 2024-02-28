@@ -6,6 +6,9 @@ import FPIcon from "assets/icons/PoolsAndFarms.svg?react"
 import { ClaimRewardsCard } from "./components/claimableCard/ClaimRewardsCard"
 import { Spacer } from "components/Spacer/Spacer"
 import { TPool, TPoolDetails } from "sections/pools/PoolsPage.utils"
+import { Button } from "components/Button/Button"
+import ExitIcon from "assets/icons/Exit.svg?react"
+import { useFarmExitAllMutation } from "utils/farms/exit"
 
 interface Props {
   pool: TPool
@@ -15,15 +18,27 @@ interface Props {
 export const FarmingPositionWrapper = ({ pool, positions }: Props) => {
   const { t } = useTranslation()
 
+  const exit = useFarmExitAllMutation(
+    positions,
+    {},
+    // toast,
+  )
+
   if (!positions.length) return null
 
   return (
     <div>
-      <div sx={{ flex: "row", align: "center", gap: 8, mb: 20 }}>
-        <Icon size={13} sx={{ color: "brightBlue300" }} icon={<FPIcon />} />
-        <Text fs={[16, 16]} color="brightBlue300">
-          {t("farms.positions.header.title")}
-        </Text>
+      <div sx={{ flex: "row", mb: 20, justify: "space-between" }}>
+        <div sx={{ flex: "row", align: "center", gap: 8 }}>
+          <Icon size={13} sx={{ color: "brightBlue300" }} icon={<FPIcon />} />
+          <Text fs={[16, 16]} color="brightBlue300">
+            {t("farms.positions.header.title")}
+          </Text>
+        </div>
+        <Button variant="error" size="compact" onClick={() => exit.mutate()}>
+          <Icon size={12} icon={<ExitIcon />} />
+          Exit All Farms
+        </Button>
       </div>
 
       <ClaimRewardsCard poolId={pool.id} />

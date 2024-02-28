@@ -83,7 +83,7 @@ export const ClaimRewardsCard = (props: {
         sx={{ flex: "column", gap: 3, mb: [16, 0] }}
         css={{ alignSelf: "start" }}
       >
-        <Text color="brightBlue200" sx={{ mb: 7 }}>
+        <Text color="white" sx={{ mb: 7 }}>
           {t("farms.claimCard.title")}
         </Text>
         {claimableAssets.map((claimableAsset) => (
@@ -106,7 +106,7 @@ export const ClaimRewardsCard = (props: {
                 />
               </Trans>
             </Text>
-            <Separator />
+            <Separator color="white" opacity={0.06} />
           </Fragment>
         ))}
         <Text

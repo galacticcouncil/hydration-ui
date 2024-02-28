@@ -33,7 +33,7 @@ export const SJoinButton = styled.button`
 
   background: ${theme.colors.brightBlue300};
 
-  padding: 9px 0;
+  padding: 8px 0;
 
   width: 118px;
   &:disabled {

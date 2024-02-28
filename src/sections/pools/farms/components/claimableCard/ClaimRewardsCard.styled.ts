@@ -8,10 +8,12 @@ export const SContainer = styled.div`
   align-items: center;
 
   background: linear-gradient(
-    90.07deg,
-    rgba(0, 86, 158, 0.2) 3.96%,
-    rgba(206, 102, 255, 0.11) 97.23%
-  );
+      0deg,
+      rgba(255, 97, 144, 0.22) -0.13%,
+      rgba(73, 105, 132, 0.02) 101.13%,
+      rgba(132, 73, 91, 0.02) 101.13%
+    ),
+    rgba(67, 22, 43, 0.7);
 
   padding: 16px;
 
@@ -29,8 +31,9 @@ export const SContainer = styled.div`
 
     background: linear-gradient(
       180deg,
-      rgba(144, 165, 198, 0.3) 0%,
-      rgba(144, 165, 198, 0.3) 50%,
+      rgba(214, 152, 185, 0.41) 0%,
+      rgba(199, 163, 176, 0.15) 66.67%,
+      rgba(91, 151, 245, 0) 99.99%,
       rgba(158, 167, 180, 0) 100%
     );
 
