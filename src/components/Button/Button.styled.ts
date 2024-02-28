@@ -166,6 +166,26 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
       border: 1px solid ${theme.colors.brightBlue100};
     }
   `,
+  mutedSecondary: css`
+    font-weight: 500;
+    border-radius: 4px;
+    background: rgba(${theme.rgbColors.primaryA15}, 0.12);
+    color: ${theme.colors.brightBlue300};
+    border: 1px solid rgba(${theme.rgbColors.brightBlue300}, 0.4);
+    box-shadow: unset;
+
+    :hover {
+      color: ${theme.colors.white};
+      background: rgba(${theme.rgbColors.primaryA15}, 0.24);
+      border: 1px solid rgba(${theme.rgbColors.brightBlue300}, 0.8);
+    }
+
+    :active {
+      background: ${theme.colors.brightBlue400};
+      color: ${theme.colors.white};
+      border: 1px solid ${theme.colors.brightBlue100};
+    }
+  `,
   error: css`
     border-radius: 4px;
     background: rgba(${theme.rgbColors.red100}, 0.25);
@@ -182,6 +202,26 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
     :active {
       background: ${theme.colors.red100};
       color: ${theme.colors.red400};
+      border: 1px solid ${theme.colors.red400};
+    }
+  `,
+  mutedError: css`
+    font-weight: 500;
+    border-radius: 4px;
+    background: rgba(${theme.rgbColors.red100}, 0.2);
+    color: ${theme.colors.red400};
+    border: 1px solid rgba(${theme.rgbColors.red400}, 0.5);
+    box-shadow: unset;
+
+    :hover {
+      color: ${theme.colors.white};
+      background: rgba(${theme.rgbColors.red100}, 0.4);
+      border: 1px solid rgba(${theme.rgbColors.red400}, 0.8);
+    }
+
+    :active {
+      background: ${theme.colors.red100};
+      color: ${theme.colors.white};
       border: 1px solid ${theme.colors.red400};
     }
   `,
@@ -316,6 +356,11 @@ const sizeStyles: Record<ButtonSize, SerializedStyles> = {
     padding: 12px 15px;
     font-size: 12px;
     line-height: 12px;
+  `,
+  compact: css`
+    padding: 6px 12px;
+    font-size: 12px;
+    line-height: 16px;
   `,
   micro: css`
     padding: 2px 10px;

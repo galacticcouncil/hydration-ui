@@ -3,7 +3,7 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const TableContainer = styled.div`
-  background: #111320;
+  background: ${theme.colors.darkBlue700};
   overflow: hidden;
   position: relative;
 

@@ -9,8 +9,10 @@ export const OtcPageSkeleton = () => {
     <>
       <OtcHeader
         skeleton
+        searchVal={""}
         showMyOrders={false}
         showPartial={false}
+        onSearchChange={() => null}
         onShowMyOrdersChange={() => null}
         onShowPartialChange={() => null}
       />
