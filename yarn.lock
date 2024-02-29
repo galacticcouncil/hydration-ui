@@ -3140,10 +3140,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@3.2.2":
-  version "3.2.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.2.2.tgz#8e38213f498b703f34b960b8751bb68235376424"
-  integrity sha512-yGmLE/rvXQfOkKin+7IXsYtr0fGWgw5Vv+cM5wpNGP0Hg2k0SYaXEbu7Cra/PjJMgBPLS/EmDkbg7NiHZAN9EQ==
+"@galacticcouncil/apps@3.2.3":
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.2.3.tgz#e4728605e158db14cb9256668c7cdc702b3c176d"
+  integrity sha512-4HKkzgvQBKtWzAW1YY3aBx6JLOjQ8RVYQBvP2f77WqdlHRBCDEYUY6rb8Bnhusx/KlL4nd0dIt5ptDhp84hYEw==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@talismn/connect-wallets" "^1.2.1"
@@ -3201,10 +3201,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^3.0.3":
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.0.3.tgz#38f994c577ae552da53cd539b6e8c1816c232f21"
-  integrity sha512-MsCrp1Njcw3pO6m8rhsjuilWefPCbjIrkgfQj1+gzi44U3GPRZH7vbefTC9A/s2RoDFgHoxk8WR++r32qVeZ1g==
+"@galacticcouncil/ui@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.0.4.tgz#80f9d78b9a5d6064c43e934a15ca8832b610bdcd"
+  integrity sha512-dB4YFD5cxR4sKbLu1/xEIRf+1ux2uleBqqmtHSqP1h88ONTzgdD0PtzWKfoVMWufFsDd6SrzadCkdyqJBqi1VA==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
@@ -3212,10 +3212,10 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.5.0.tgz#200d7973a39adc48e69041f6066f31635c950d01"
-  integrity sha512-W5TZNc3cBuvpEP9b3d3Cyf7mK6pu3lRKbZX8HsgsFCG/Y+a2vrGwwvrKjvON66iJlsxl2KxtHbEgu/JW6bLXSw==
+"@galacticcouncil/xcm-cfg@^1.8.2":
+  version "1.8.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.8.2.tgz#5ebf820a0f8b8cf4ccb15722c320a731ed6fd45d"
+  integrity sha512-JoA+s44807UBVEIg1rTqaSAxLDsgehVV1os5UvYLIrpbpNfJmvsdcId6g1HLdDjmBshXH2FP4fD/K/RtmPpAxA==
 
 "@galacticcouncil/xcm-sdk@^2.2.0":
   version "2.2.0"
