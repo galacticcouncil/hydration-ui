@@ -26,6 +26,7 @@ export const TableAction = (props: TableActionProps) => {
         props.onClick?.()
       }}
       css={{
+        padding: "10px 12px",
         whiteSpace: "nowrap",
       }}
     >
