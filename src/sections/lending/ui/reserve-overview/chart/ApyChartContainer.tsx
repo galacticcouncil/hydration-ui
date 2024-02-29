@@ -2,10 +2,10 @@ import { ToggleGroup, ToggleGroupItem } from "components/ToggleGroup"
 import { useState } from "react"
 import type { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import {
+  ESupportedTimeRanges,
   ReserveRateTimeRange,
   useReserveRatesHistory,
 } from "sections/lending/hooks/useReservesHistory"
-import { ESupportedTimeRanges } from "sections/lending/modules/reserve-overview/TimeRangeSelector"
 import { ApyChart } from "sections/lending/ui/reserve-overview/chart/ApyChart"
 import {
   ChartField,
@@ -21,6 +21,8 @@ type ApyChartContainerProps = {
   currentMarketData: MarketDataType
 }
 
+const CHART_HEIGHT = 200
+
 export const ApyChartContainer = ({
   type,
   reserve,
@@ -29,7 +31,6 @@ export const ApyChartContainer = ({
   const [selectedTimeRange, setSelectedTimeRange] =
     useState<ReserveRateTimeRange>(ESupportedTimeRanges.OneMonth)
 
-  const CHART_HEIGHT = 200
   let reserveAddress = ""
   if (reserve) {
     if (currentMarketData.v3) {

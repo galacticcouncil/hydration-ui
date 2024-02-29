@@ -5,8 +5,16 @@
 import dayjs from "dayjs"
 import { useCallback, useEffect, useState } from "react"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { ESupportedTimeRanges } from "sections/lending/modules/reserve-overview/TimeRangeSelector"
 import { makeCancelable } from "sections/lending/utils/utils"
+
+export enum ESupportedTimeRanges {
+  OneMonth = "1m",
+  ThreeMonths = "3m",
+  SixMonths = "6m",
+  OneYear = "1y",
+  TwoYears = "2y",
+  FiveYears = "5y",
+}
 
 export const reserveRateTimeRangeOptions = [
   ESupportedTimeRanges.OneMonth,

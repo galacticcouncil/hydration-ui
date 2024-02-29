@@ -11,7 +11,6 @@ type InteresetRateModelGraphContainerProps = {
 
 const CHART_HEIGHT = 200
 
-// This graph takes in its data via props, thus having no loading/error states
 export const InterestRateModelChartContainer = ({
   reserve,
 }: InteresetRateModelGraphContainerProps) => {
