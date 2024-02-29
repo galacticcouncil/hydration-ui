@@ -160,7 +160,7 @@ export const createV3MigrationSlice: StateCreator<
         produce(state, (draft) => {
           const activeAssetIndex =
             draft.selectedMigrationSupplyAssets.findIndex(
-              (asset) => asset.underlyingAsset == underlyingAsset,
+              (asset) => asset.underlyingAsset === underlyingAsset,
             )
 
           if (activeAssetIndex >= 0) {
@@ -181,7 +181,7 @@ export const createV3MigrationSlice: StateCreator<
         produce(state, (draft) => {
           const activeAssetIndex =
             draft.selectedMigrationBorrowAssets.findIndex(
-              (selectedAsset) => asset.debtKey == selectedAsset.debtKey,
+              (selectedAsset) => asset.debtKey === selectedAsset.debtKey,
             )
 
           if (activeAssetIndex >= 0) {
@@ -223,8 +223,8 @@ export const createV3MigrationSlice: StateCreator<
         currentTimestamp,
       )
       if (
-        get().selectedMigrationSupplyAssets.length == supplyReserves.length ||
-        get().selectedMigrationSupplyAssets.length != 0
+        get().selectedMigrationSupplyAssets.length === supplyReserves.length ||
+        get().selectedMigrationSupplyAssets.length !== 0
       ) {
         set({ selectedMigrationSupplyAssets: [] })
       } else {
@@ -250,8 +250,8 @@ export const createV3MigrationSlice: StateCreator<
         currentTimestamp,
       )
       if (
-        get().selectedMigrationBorrowAssets.length == borrowReserves.length ||
-        get().selectedMigrationBorrowAssets.length != 0
+        get().selectedMigrationBorrowAssets.length === borrowReserves.length ||
+        get().selectedMigrationBorrowAssets.length !== 0
       ) {
         set({ selectedMigrationBorrowAssets: [] })
       } else {
@@ -411,7 +411,7 @@ export const createV3MigrationSlice: StateCreator<
         currentChainIdExceptions &&
         currentChainIdExceptions.length > 0 &&
         !get().exceptionsBalancesLoading &&
-        Object.keys(get().migrationExceptions).length == 0
+        Object.keys(get().migrationExceptions).length === 0
       ) {
         set({ exceptionsBalancesLoading: true })
         const filteredSuppliesForExceptions = supplies.filter(

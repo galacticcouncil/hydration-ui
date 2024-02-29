@@ -74,16 +74,17 @@ export const ApyChartContainer = ({
     <div sx={{ mt: 10, mb: 16 }} css={{ position: "relative" }}>
       <div
         sx={{
-          px: 8,
-          flex: "row",
-          align: "center",
+          px: [0, 8],
+          flex: ["column-reverse", "row"],
+          align: ["start", "center"],
           justify: "space-between",
+          flexWrap: "wrap",
           mb: 12,
+          gap: 12,
         }}
       >
         <ChartLegend fields={fields} />
         <ToggleGroup
-          sx={{ display: "inline-flex" }}
           size="extra-small"
           variant="tertiary"
           type="single"

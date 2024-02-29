@@ -345,12 +345,13 @@ const SupplyAction = ({
           <DisplayValue value={+usdValue} isUSD compact />
         </Text>
       </DataValue>
-      <div css={{ minWidth: 90 }}>
+      <div css={{ minWidth: 80 }}>
         <Button
           fullWidth
-          size="small"
+          size="micro"
           onClick={onActionClicked}
           disabled={disable}
+          sx={{ py: 6 }}
         >
           Supply
         </Button>
@@ -381,12 +382,13 @@ const BorrowAction = ({
           <DisplayValue value={+usdValue} isUSD compact />
         </Text>
       </DataValue>
-      <div css={{ minWidth: 90 }}>
+      <div css={{ minWidth: 80 }}>
         <Button
           fullWidth
-          size="small"
+          size="micro"
           onClick={onActionClicked}
           disabled={disable}
+          sx={{ py: 6 }}
         >
           Borrow
         </Button>

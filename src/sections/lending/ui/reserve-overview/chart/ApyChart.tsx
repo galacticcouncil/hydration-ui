@@ -43,9 +43,12 @@ export const ApyChart = ({
     return data.reduce((acc, cur) => acc + cur[avgFieldName], 0) / data.length
   }, [avgFieldName, data])
 
-  if (loading) return <AreaChartSkeleton state="loading" />
-  if (error) return <AreaChartSkeleton state="error" />
-  if (!data?.length) return <AreaChartSkeleton state="noData" />
+  const mainColor = fields?.[0]?.lineColor
+
+  if (loading) return <AreaChartSkeleton color={mainColor} state="loading" />
+  if (error) return <AreaChartSkeleton color={mainColor} state="error" />
+  if (!data?.length)
+    return <AreaChartSkeleton color={mainColor} state="noData" />
 
   return (
     <div
@@ -132,9 +135,12 @@ export const ApyChart = ({
               tick={{ fontSize: 11, fill: theme.colors.basic400 }}
               orientation="left"
               shapeRendering="crispEdges"
-              width={30}
+              width={40}
               stroke={theme.colors.darkBlue400}
-              tickFormatter={(data) => `${Number(data * 100).toFixed(0)}%`}
+              tickFormatter={(data) => {
+                const value = Number(data * 100)
+                return `${value.toFixed(2).replace(".00", "")}%`
+              }}
               tickLine={false}
               axisLine={false}
             />
@@ -165,7 +171,7 @@ const AvgLine = (props: {
   return (
     <foreignObject
       sx={{ height: 24, width: 100 }}
-      x={35}
+      x={45}
       y={props.viewBox.y - 24}
     >
       <Text

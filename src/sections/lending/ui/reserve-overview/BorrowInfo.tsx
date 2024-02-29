@@ -90,7 +90,6 @@ export const BorrowInfo = ({
             {showBorrowCapStatus ? (
               <>
                 <DataValue
-                  //label="Total borrowed"
                   label={
                     <div sx={{ flex: "column", gap: 10 }}>
                       <Text
@@ -221,7 +220,12 @@ export const BorrowInfo = ({
       {currentMarketData.addresses.COLLECTOR && (
         <>
           <div sx={{ mt: 20 }}>
-            <Text fs={14} sx={{ mb: 10 }}>
+            <Text
+              fs={14}
+              sx={{ mb: 10 }}
+              css={{ textTransform: "uppercase" }}
+              font="ChakraPetchSemiBold"
+            >
               Collector info
             </Text>
           </div>

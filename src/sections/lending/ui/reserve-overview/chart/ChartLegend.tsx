@@ -19,7 +19,8 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ fields }) => {
       sx={{
         flex: "row",
         align: "center",
-        gap: 12,
+        flexWrap: "wrap",
+        gap: [12, 34],
       }}
     >
       {fields.map(({ dataKey, lineColor, text }) => (
@@ -28,7 +29,12 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ fields }) => {
             css={{ borderRadius: "100%" }}
             sx={{ display: "block", width: 6, height: 6, bg: lineColor }}
           />
-          <Text fs={14} color="basic400">
+          <Text
+            fs={14}
+            color="basic400"
+            css={{ textTransform: "uppercase" }}
+            font="ChakraPetchSemiBold"
+          >
             {text}
           </Text>
         </div>

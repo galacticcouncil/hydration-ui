@@ -140,14 +140,13 @@ export const InterestRateModelChart = ({
               tick={{ fontSize: 11, fill: theme.colors.basic400 }}
               orientation="left"
               shapeRendering="crispEdges"
-              width={30}
+              width={40}
               stroke={theme.colors.darkBlue400}
               tickFormatter={(data) => `${Number(data * 100).toFixed(0)}%`}
               tickLine={false}
               axisLine={false}
             />
           ))}
-
           <ReferenceLine
             x={Math.round(optimalValue * 2) / 2}
             stroke={theme.colors[tickField.lineColor ?? "brightBlue300"]}

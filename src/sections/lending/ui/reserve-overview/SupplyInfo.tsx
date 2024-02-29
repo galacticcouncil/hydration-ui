@@ -198,7 +198,12 @@ export const SupplyInfo = ({
       <div sx={{ mb: 10, mt: 20 }}>
         {reserve.isIsolated ? (
           <div>
-            <Text fs={14} sx={{ mb: 10 }}>
+            <Text
+              fs={14}
+              sx={{ mb: 10 }}
+              css={{ textTransform: "uppercase" }}
+              font="ChakraPetchSemiBold"
+            >
               Collateral usage
             </Text>
             <Alert variant="warning" sx={{ color: "white" }}>
@@ -221,7 +226,13 @@ export const SupplyInfo = ({
           </div>
         ) : reserve.reserveLiquidationThreshold !== "0" ? (
           <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
-            <Text fs={14}>Collateral usage</Text>
+            <Text
+              fs={14}
+              css={{ textTransform: "uppercase" }}
+              font="ChakraPetchSemiBold"
+            >
+              Collateral usage
+            </Text>
             <Text
               fs={14}
               color="green400"
@@ -233,7 +244,12 @@ export const SupplyInfo = ({
           </div>
         ) : (
           <div>
-            <Text fs={14} sx={{ mb: 10 }}>
+            <Text
+              fs={14}
+              sx={{ mb: 10 }}
+              css={{ textTransform: "uppercase" }}
+              font="ChakraPetchSemiBold"
+            >
               Collateral usage
             </Text>
             <Alert size="small" variant="warning">
