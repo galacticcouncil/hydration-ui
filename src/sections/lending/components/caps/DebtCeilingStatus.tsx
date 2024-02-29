@@ -1,13 +1,9 @@
-import LinearProgress, {
-  linearProgressClasses,
-  LinearProgressProps,
-} from "@mui/material/LinearProgress"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { LinearProgress } from "components/LinearProgress"
 import { Text } from "components/Typography/Text/Text"
 import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
-import { theme } from "theme"
 
 type DebtCeilingTooltipProps = {
   debt: string
@@ -21,25 +17,15 @@ export const DebtCeilingStatus = ({
   ceiling,
   usageData,
   className,
-}: LinearProgressProps & DebtCeilingTooltipProps) => {
+}: DebtCeilingTooltipProps) => {
   const determineColor = () => {
     if (usageData.isMaxed || usageData.percentUsed >= 99.99) {
-      return theme.colors.red400
+      return "red400"
     } else if (usageData.percentUsed >= 98) {
-      return theme.colors.warning300
+      return "warning300"
     } else {
-      return theme.colors.green400
+      return "green400"
     }
-  }
-
-  const progressBarStyles = {
-    borderRadius: 5,
-    my: 2,
-    height: 5,
-    [`& .${linearProgressClasses.bar}`]: {
-      borderRadius: 5,
-      backgroundColor: determineColor(),
-    },
   }
 
   return (
@@ -78,10 +64,12 @@ export const DebtCeilingStatus = ({
         </Text>
       </div>
       <LinearProgress
-        sx={progressBarStyles}
-        variant="determinate"
+        sx={{ mt: 4 }}
+        size="small"
+        labelPosition="none"
+        color={determineColor()}
         // We show at minimum, 1% color to represent small values
-        value={usageData.percentUsed <= 1 ? 1 : usageData.percentUsed}
+        percent={usageData.percentUsed <= 1 ? 1 : usageData.percentUsed}
       />
     </div>
   )
