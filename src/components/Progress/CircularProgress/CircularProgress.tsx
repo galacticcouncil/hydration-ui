@@ -44,6 +44,7 @@ export const CircularProgress = forwardRef<
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           <circle
             sx={{ color: "primaryA0" }}
+            css={{ opacity: 0.35 }}
             strokeWidth={Math.max(thickness - 2, 1)}
             stroke="currentColor"
             fill="transparent"
