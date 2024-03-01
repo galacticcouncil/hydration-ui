@@ -1,4 +1,4 @@
-import { CircularProgress } from "components/CircularProgress"
+import { CircularProgress } from "components/Progress"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Text } from "components/Typography/Text/Text"
 import { ComponentPropsWithoutRef, ReactNode } from "react"
@@ -47,7 +47,7 @@ export const CapsCircularStatus = ({
   }
 
   return (
-    <InfoTooltip text={<>{tooltipContent}</>} asChild>
+    <InfoTooltip text={tooltipContent} asChild>
       <CircularProgress
         color={determineColor()}
         radius={isDesktop ? 45 : 14}

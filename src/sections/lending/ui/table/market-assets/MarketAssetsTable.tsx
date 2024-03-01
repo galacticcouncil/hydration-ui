@@ -1,20 +1,30 @@
 import { useNavigate } from "@tanstack/react-location"
 import { DataTable } from "components/DataTable"
+import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { useReactTable } from "hooks/useReactTable"
+import React from "react"
 import { ROUTES } from "sections/lending/components/primitives/Link"
-import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { useMarketAssetsTableColumns } from "sections/lending/ui/table/market-assets/MarketAssetsTable.utils"
+import {
+  useMarketAssetsTableColumns,
+  useMarketAssetsTableData,
+} from "sections/lending/ui/table/market-assets/MarketAssetsTable.utils"
 
-export const MarketAssetsTable = () => {
-  const { reserves, loading } = useAppDataContext()
+type MarketAssetsTableProps = {
+  search?: string
+}
+
+export const MarketAssetsTable: React.FC<MarketAssetsTableProps> = ({
+  search,
+}) => {
+  const { data, isLoading } = useMarketAssetsTableData({ search })
   const columns = useMarketAssetsTableColumns()
   const { currentMarket } = useProtocolDataContext()
 
   const table = useReactTable({
-    data: reserves,
+    data,
     columns,
-    isLoading: loading,
+    isLoading,
     columnsHiddenOnMobile: [
       "supplyAPY",
       "totalDebtUSD",
@@ -31,6 +41,7 @@ export const MarketAssetsTable = () => {
       spacing="large"
       title="Available Assets"
       hoverable
+      emptyFallback={<EmptySearchState />}
       onRowClick={(row) =>
         navigate({
           to: ROUTES.reserveOverview(
