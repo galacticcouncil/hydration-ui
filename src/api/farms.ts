@@ -430,7 +430,7 @@ const getOraclePrice =
     if (res.isNone)
       return {
         id: { rewardCurrency, incentivizedAsset },
-        oraclePrice: undefined,
+        oraclePrice: BN_0,
         isNone: true,
       }
 
