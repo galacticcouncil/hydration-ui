@@ -13,6 +13,8 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useSpotPrice } from "./spotPrice"
+import { useOraclePrice } from "./farms"
+import { BN_1, BN_NAN } from "utils/constants"
 
 export const getAcceptedCurrency =
   (api: ApiPromise, id: u32 | string) => async () => {
@@ -103,32 +105,64 @@ export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
   )
 }
 
-export const useTransactionFeeInfo = (extrinsic: SubmittableExtrinsic) => {
+export const useTransactionFeeInfo = (
+  extrinsic: SubmittableExtrinsic,
+  customNativeFee?: BigNumber,
+) => {
   const { assets } = useRpcProvider()
   const { account } = useAccount()
 
   const accountCurrency = useAccountCurrency(account?.address)
   const paymentInfo = usePaymentInfo(extrinsic)
 
+  //TODO: change currencyMeta if changing payment asset. Need additional param of assets which is ID, to fing out how I should I shift value
   const currencyMeta = accountCurrency.data
     ? assets.getAsset(accountCurrency.data)
     : undefined
 
-  const spotPrice = useSpotPrice(assets.native.id, currencyMeta?.id)
+  const oraclePrice = useOraclePrice("1", currencyMeta?.id)
+  const isOraclePriceNone = oraclePrice.data?.isNone
 
-  const fee = paymentInfo.data
-    ? paymentInfo.data.partialFee
-        .toBigNumber()
+  const currency = useAcceptedCurrencies([
+    isOraclePriceNone ? currencyMeta?.id : undefined,
+  ])
+
+  const assetCurrency = currency?.[0].data?.data
+
+  const spotPriceQuery = useSpotPrice(assets.native.id, currencyMeta?.id)
+
+  let spotPrice: BigNumber
+
+  if (assetCurrency) {
+    spotPrice = BN_1.shiftedBy(assets.native.decimals)
+      .times(assetCurrency.toString())
+      .shiftedBy(-18)
+      .shiftedBy(-(currencyMeta?.decimals ?? 0))
+  } else {
+    spotPrice = spotPriceQuery.data?.spotPrice ?? BN_1
+  }
+
+  const nativeFee =
+    customNativeFee ?? paymentInfo.data?.partialFee.toBigNumber()
+  console.log(
+    nativeFee?.toString(),
+    customNativeFee?.toString(),
+    paymentInfo.data?.partialFee.toBigNumber().toString(),
+    spotPrice.toString(),
+  )
+  const fee = nativeFee
+    ? nativeFee
         .shiftedBy(-assets.native.decimals)
-        .times(spotPrice.data?.spotPrice ?? 1)
+        .times(customNativeFee ? 1 : spotPrice)
     : undefined
 
   return {
     isLoading:
       accountCurrency.isInitialLoading ||
       paymentInfo.isInitialLoading ||
-      spotPrice.isInitialLoading,
+      spotPriceQuery.isInitialLoading,
     fee,
     feeSymbol: currencyMeta?.symbol,
+    nativeFee: nativeFee ?? BN_NAN,
   }
 }

@@ -9,11 +9,12 @@ import { AccountId32 } from "@polkadot/types/interfaces"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAccountCurrency } from "./payments"
+import { useAcceptedCurrencies, useAccountCurrency } from "./payments"
 import { useSpotPrice } from "./spotPrice"
 import { usePaymentInfo } from "./transaction"
-import { BN_0 } from "utils/constants"
+import { BN_0, BN_1 } from "utils/constants"
 import BN from "bignumber.js"
+import { useOraclePrice } from "./farms"
 
 const EDFactor = 0.5 //50%
 
@@ -182,6 +183,13 @@ export const useMaxBalance = (
   const accountCurrency = useAccountCurrency(account?.address)
   const paymentInfo = usePaymentInfo(extrinsic)
   const balanceQuery = useTokenBalance(assetId, account?.address)
+  const oraclePrice = useOraclePrice("1", assetId)
+  const isOraclePriceNone = oraclePrice.data?.isNone
+
+  const currency = useAcceptedCurrencies([
+    isOraclePriceNone ? assetId : undefined,
+  ])
+  const assetCurrency = currency?.[0].data?.data
 
   const balance = balanceQuery.data?.balance ?? BN_0
 
@@ -193,7 +201,19 @@ export const useMaxBalance = (
 
   const isPaymentAsset = accountCurrency.data === assetId
 
-  const spotPrice = useSpotPrice(assets.native.id, currencyMeta?.id)
+  const spotPriceQuery = useSpotPrice(assets.native.id, currencyMeta?.id)
+
+  let spotPrice: BN
+
+  if (assetCurrency) {
+    spotPrice = BN_1.shiftedBy(assets.native.decimals)
+      .times(assetCurrency.toString())
+      .shiftedBy(-18)
+      .shiftedBy(-assetMeta.decimals)
+  } else {
+    spotPrice = spotPriceQuery.data?.spotPrice ?? BN_1
+  }
+
   const nativeFee = paymentInfo.data?.partialFee.toBigNumber()
 
   const fee = nativeFee
@@ -201,7 +221,7 @@ export const useMaxBalance = (
       ? nativeFee
       : nativeFee
           .shiftedBy(-assets.native.decimals)
-          .times(spotPrice.data?.spotPrice ?? 1)
+          .times(spotPrice)
           .shiftedBy(currencyMeta?.decimals ?? 0)
           .toFixed()
     : undefined

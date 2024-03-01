@@ -7,14 +7,13 @@ import {
   useAcceptedCurrencies,
   useAccountCurrency,
   useSetAsFeePayment,
+  useTransactionFeeInfo,
 } from "api/payments"
-import { useSpotPrice } from "api/spotPrice"
-import { useNextNonce, usePaymentInfo } from "api/transaction"
+import { useNextNonce } from "api/transaction"
 import BigNumber from "bignumber.js"
 import { Trans, useTranslation } from "react-i18next"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { BN_1 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 import { isEvmAccount } from "utils/evm"
 import { BN_NAN } from "utils/constants"
@@ -69,11 +68,6 @@ export const useTransactionValues = ({
 
   const isNewReferralLink = tx.method.method === "registerCode"
 
-  /* */
-
-  const { data: paymentInfo, isLoading: isPaymentInfoLoading } =
-    usePaymentInfo(boundedTx)
-
   // fee payment asset which should be displayed on the screen
   const accountFeePaymentId = feePaymentId ?? accountFeePaymentAsset.data
 
@@ -81,10 +75,9 @@ export const useTransactionValues = ({
     ? assets.getAsset(accountFeePaymentId)
     : undefined
 
-  const spotPrice = useSpotPrice(assets.native.id, accountFeePaymentId)
-  const feeAssetBalance = useTokenBalance(accountFeePaymentId, account?.address)
+  const transactioFee = useTransactionFeeInfo(boundedTx, fee)
 
-  const isSpotPriceNan = spotPrice.data?.spotPrice.isNaN()
+  const feeAssetBalance = useTokenBalance(accountFeePaymentId, account?.address)
 
   const nonce = useNextNonce(account?.address)
 
@@ -108,29 +101,16 @@ export const useTransactionValues = ({
     ...alllowedFeePaymentAssetsIds,
   ])
 
-  const feePaymentValue = paymentInfo?.partialFee.toBigNumber() ?? BN_NAN
-  const paymentFeeHDX = paymentInfo
-    ? BigNumber(fee ?? paymentInfo.partialFee.toHex()).shiftedBy(
-        -assets.native.decimals,
-      )
-    : null
-
   const isLoading =
     accountFeePaymentAsset.isInitialLoading ||
-    isPaymentInfoLoading ||
-    spotPrice.isInitialLoading ||
+    transactioFee.isLoading ||
     nonce.isLoading ||
     acceptedFeePaymentAssets.some(
       (acceptedFeePaymentAsset) => acceptedFeePaymentAsset.isInitialLoading,
     ) ||
     referrer.isInitialLoading
 
-  if (
-    !feePaymentMeta ||
-    !paymentFeeHDX ||
-    !feeAssetBalance.data ||
-    !accountFeePaymentId
-  )
+  if (!feePaymentMeta || !feeAssetBalance.data || !accountFeePaymentId)
     return {
       isLoading,
       data: {
@@ -147,26 +127,7 @@ export const useTransactionValues = ({
       },
     }
 
-  let displayFeePaymentValue
-
-  if (!isSpotPriceNan) {
-    displayFeePaymentValue = paymentFeeHDX.multipliedBy(
-      spotPrice.data?.spotPrice ?? 1,
-    )
-  } else {
-    const accountFeePaymentCurrency = acceptedFeePaymentAssets.find(
-      (acceptedFeePaymentAsset) =>
-        acceptedFeePaymentAsset.data?.id === accountFeePaymentId,
-    )
-
-    const transactionPaymentValue =
-      accountFeePaymentCurrency?.data?.data?.shiftedBy(-feePaymentMeta.decimals)
-
-    if (transactionPaymentValue)
-      displayFeePaymentValue = BN_1.div(transactionPaymentValue).multipliedBy(
-        paymentFeeHDX,
-      )
-  }
+  const displayFeePaymentValue = transactioFee.fee
 
   let isEnoughPaymentBalance
   if (xcallMeta && xcallMeta?.srcChain === "bifrost") {
@@ -189,7 +150,7 @@ export const useTransactionValues = ({
     data: {
       isEnoughPaymentBalance,
       displayFeePaymentValue,
-      feePaymentValue,
+      feePaymentValue: transactioFee.nativeFee,
       feePaymentMeta,
       acceptedFeePaymentAssets,
       era,
