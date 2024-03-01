@@ -107,7 +107,10 @@ export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
 
 export const useTransactionFeeInfo = (
   extrinsic: SubmittableExtrinsic,
-  customNativeFee?: BigNumber,
+  customNativeFee?: {
+    nativeFee: BigNumber
+    feeAssetId: string
+  },
 ) => {
   const { assets } = useRpcProvider()
   const { account } = useAccount()
@@ -115,8 +118,9 @@ export const useTransactionFeeInfo = (
   const accountCurrency = useAccountCurrency(account?.address)
   const paymentInfo = usePaymentInfo(extrinsic)
 
-  //TODO: change currencyMeta if changing payment asset. Need additional param of assets which is ID, to fing out how I should I shift value
-  const currencyMeta = accountCurrency.data
+  const currencyMeta = customNativeFee?.feeAssetId
+    ? assets.getAsset(customNativeFee.feeAssetId)
+    : accountCurrency.data
     ? assets.getAsset(accountCurrency.data)
     : undefined
 
@@ -143,17 +147,10 @@ export const useTransactionFeeInfo = (
   }
 
   const nativeFee =
-    customNativeFee ?? paymentInfo.data?.partialFee.toBigNumber()
-  console.log(
-    nativeFee?.toString(),
-    customNativeFee?.toString(),
-    paymentInfo.data?.partialFee.toBigNumber().toString(),
-    spotPrice.toString(),
-  )
+    customNativeFee?.nativeFee ?? paymentInfo.data?.partialFee.toBigNumber()
+
   const fee = nativeFee
-    ? nativeFee
-        .shiftedBy(-assets.native.decimals)
-        .times(customNativeFee ? 1 : spotPrice)
+    ? nativeFee.shiftedBy(-assets.native.decimals).times(spotPrice)
     : undefined
 
   return {

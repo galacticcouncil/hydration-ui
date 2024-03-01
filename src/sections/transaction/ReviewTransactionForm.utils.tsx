@@ -75,7 +75,15 @@ export const useTransactionValues = ({
     ? assets.getAsset(accountFeePaymentId)
     : undefined
 
-  const transactioFee = useTransactionFeeInfo(boundedTx, fee)
+  const transactioFee = useTransactionFeeInfo(
+    boundedTx,
+    feePaymentId && fee
+      ? {
+          nativeFee: fee,
+          feeAssetId: feePaymentId,
+        }
+      : undefined,
+  )
 
   const feeAssetBalance = useTokenBalance(accountFeePaymentId, account?.address)
 
