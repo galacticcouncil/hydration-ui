@@ -1,7 +1,7 @@
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
-import { LinearProgress } from "components/LinearProgress"
+import { LinearProgress } from "components/Progress"
 import { Text } from "components/Typography/Text/Text"
 import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
 
