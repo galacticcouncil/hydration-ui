@@ -13,7 +13,7 @@ import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataCo
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
-import { IsolatedEnabledBadge } from "sections/lending/ui/isolation-mode/IsolatedEnabledBadge"
+import { IsolatedEnabledBadge } from "sections/lending/ui/isolation-mode/IsolationBadge"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 

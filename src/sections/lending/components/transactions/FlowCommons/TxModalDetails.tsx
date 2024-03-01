@@ -8,7 +8,7 @@ import {
   IsolatedDisabledBadge,
   IsolatedEnabledBadge,
   UnavailableDueToIsolationBadge,
-} from "sections/lending/components/isolationMode/IsolatedBadge"
+} from "sections/lending/ui/isolation-mode/IsolationBadge"
 import { Row } from "sections/lending/components/primitives/Row"
 import { CollateralType } from "sections/lending/helpers/types"
 
@@ -255,7 +255,7 @@ export const DetailsCollateralLine = ({
   collateralType,
 }: DetailsCollateralLineProps) => {
   return (
-    <Row captionColor="basic400" caption={<span>Collateralization</span>}>
+    <Row captionColor="basic400" caption="Collateralization">
       <CollateralState collateralType={collateralType} />
     </Row>
   )
@@ -267,7 +267,7 @@ interface CollateralStateProps {
 
 export const CollateralState = ({ collateralType }: CollateralStateProps) => {
   return (
-    <Box sx={{ display: "inline-flex", alignItems: "center" }}>
+    <div sx={{ display: "inline-flex", alignItems: "center" }}>
       {
         {
           [CollateralType.ENABLED]: (
@@ -292,7 +292,7 @@ export const CollateralState = ({ collateralType }: CollateralStateProps) => {
           ),
         }[collateralType]
       }
-    </Box>
+    </div>
   )
 }
 

@@ -1,7 +1,7 @@
 import CheckIcon from "assets/icons/CheckIcon.svg?react"
 
 import { NoData } from "sections/lending/components/primitives/NoData"
-import { IsolatedEnabledBadge } from "sections/lending/ui/isolation-mode/IsolatedEnabledBadge"
+import { IsolatedEnabledBadge } from "sections/lending/ui/isolation-mode/IsolationBadge"
 
 type CollateralColumnProps = {
   isIsolated: boolean
