@@ -1,44 +1,43 @@
-import { Button, Typography } from "@mui/material"
+import { ButtonTransparent } from "components/Button/Button"
 import { Warning } from "sections/lending/components/primitives/Warning"
 import { TxErrorType } from "sections/lending/ui-config/errorMapping"
 
 export const GasEstimationError = ({ txError }: { txError: TxErrorType }) => {
   return (
     <Warning variant="error" sx={{ mt: 16, mb: 0 }}>
-      <Typography variant="description">
+      <span>
         {txError.error ? (
-          <>
+          <span>
             {txError.error}{" "}
-            <Button
-              sx={{ verticalAlign: "top" }}
-              variant="text"
+            <ButtonTransparent
+              css={{ color: "white", textDecoration: "underline" }}
               onClick={() =>
                 navigator.clipboard.writeText(
                   txError.rawError.message.toString(),
                 )
               }
             >
-              <Typography variant="description">
+              <span>
                 <span>copy the error</span>
-              </Typography>
-            </Button>
-          </>
+              </span>
+            </ButtonTransparent>
+          </span>
         ) : (
           <span>
             There was some error. Please try changing the parameters or{" "}
-            <Button
-              sx={{ verticalAlign: "top" }}
+            <ButtonTransparent
+              css={{ color: "white", textDecoration: "underline" }}
               onClick={() =>
                 navigator.clipboard.writeText(
                   txError.rawError.message.toString(),
                 )
               }
             >
-              <Typography variant="description">copy the error</Typography>
-            </Button>
+              <span>copy the error</span>
+            </ButtonTransparent>
           </span>
         )}
-      </Typography>
+      </span>
     </Warning>
   )
 }
