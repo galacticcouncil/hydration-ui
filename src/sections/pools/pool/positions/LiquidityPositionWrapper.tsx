@@ -6,6 +6,7 @@ import { Icon } from "components/Icon/Icon"
 import { TPoolDetails, TPoolFullData } from "sections/pools/PoolsPage.utils"
 import { Button } from "components/Button/Button"
 import TrashIcon from "assets/icons/IconRemove.svg?react"
+import { useRemoveAllPositions } from "./LiquidityPosition.utils"
 
 type Props = {
   positions: TPoolDetails["omnipoolNftPositions"]
@@ -20,6 +21,8 @@ export const LiquidityPositionWrapper = ({
 }: Props) => {
   const { t } = useTranslation()
 
+  const remove = useRemoveAllPositions(positions)
+
   if (!positions.length) return null
 
   return (
@@ -31,9 +34,10 @@ export const LiquidityPositionWrapper = ({
             {t("liquidity.asset.omnipoolPositions.title")}
           </Text>
         </div>
-        <Button variant="error" size="compact">
+
+        <Button variant="error" size="compact" onClick={() => remove.mutate()}>
           <Icon size={12} icon={<TrashIcon />} />
-          Remove All Liquidity
+          {t("liquidity.pool.positions.removeAll.btn")}
         </Button>
       </div>
       <div sx={{ flex: "column", gap: 16 }}>
