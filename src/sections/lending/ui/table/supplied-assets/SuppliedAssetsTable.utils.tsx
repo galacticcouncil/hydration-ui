@@ -34,7 +34,7 @@ export const useSuppliedAssetsTableColumns = () => {
   return useMemo(
     () => [
       accessor(({ reserve }) => reserve.symbol, {
-        header: "Asset",
+        header: t("lending.asset"),
         cell: ({ row }) => (
           <AssetNameColumn
             detailsAddress={row.original.underlyingAsset}
@@ -44,7 +44,7 @@ export const useSuppliedAssetsTableColumns = () => {
         ),
       }),
       accessor("underlyingBalanceUSD", {
-        header: "Balance",
+        header: t("lending.balance"),
         sortingFn: (a, b) =>
           Number(a.original.underlyingBalanceUSD) -
           Number(b.original.underlyingBalanceUSD),
@@ -69,7 +69,7 @@ export const useSuppliedAssetsTableColumns = () => {
         },
       }),
       accessor("supplyAPY", {
-        header: "APY",
+        header: t("lending.apy"),
         meta: {
           sx: {
             textAlign: "center",
@@ -88,7 +88,7 @@ export const useSuppliedAssetsTableColumns = () => {
         },
       }),
       accessor("usageAsCollateralEnabledOnUser", {
-        header: "Collateral",
+        header: t("lending.collateral"),
         meta: {
           sx: {
             textAlign: "center",
@@ -150,7 +150,7 @@ export const useSuppliedAssetsTableColumns = () => {
               size="micro"
               sx={{ height: 27 }}
             >
-              Withdraw
+              {t("lending.withdraw")}
             </Button>
           )
         },

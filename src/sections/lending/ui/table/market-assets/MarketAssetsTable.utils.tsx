@@ -28,7 +28,7 @@ export const useMarketAssetsTableColumns = () => {
   return useMemo(
     () => [
       accessor("symbol", {
-        header: "Asset",
+        header: t("lending.asset"),
         cell: ({ row }) => (
           <AssetNameColumn
             detailsAddress={row.original.underlyingAsset}
@@ -38,7 +38,7 @@ export const useMarketAssetsTableColumns = () => {
         ),
       }),
       accessor("totalLiquidityUSD", {
-        header: "Total supplied",
+        header: t("lending.market.table.totalSupplied"),
         meta: {
           sx: {
             textAlign: ["end", "start"],
@@ -67,7 +67,7 @@ export const useMarketAssetsTableColumns = () => {
         },
       }),
       accessor("supplyAPY", {
-        header: "APY",
+        header: t("lending.apy"),
         meta: {
           sx: {
             textAlign: "center",
@@ -86,7 +86,7 @@ export const useMarketAssetsTableColumns = () => {
         },
       }),
       accessor("totalDebtUSD", {
-        header: "Total borrowed",
+        header: t("lending.market.table.totalBorrowed"),
         meta: {
           sx: {
             textAlign: "center",
@@ -122,7 +122,7 @@ export const useMarketAssetsTableColumns = () => {
         },
       }),
       accessor("variableBorrowAPY", {
-        header: "Borrow APY, variable",
+        header: t("lending.market.table.borrowApyVariable"),
         meta: {
           sx: {
             textAlign: "center",
@@ -178,7 +178,7 @@ export const useMarketAssetsTableColumns = () => {
                 })
               }
             >
-              Details
+              {t("lending.details")}
             </Button>
           )
         },

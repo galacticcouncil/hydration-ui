@@ -3,6 +3,7 @@ import { DataTable } from "components/DataTable"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { useReactTable } from "hooks/useReactTable"
 import React from "react"
+import { useTranslation } from "react-i18next"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import {
@@ -17,6 +18,7 @@ type MarketAssetsTableProps = {
 export const MarketAssetsTable: React.FC<MarketAssetsTableProps> = ({
   search,
 }) => {
+  const { t } = useTranslation()
   const { data, isLoading } = useMarketAssetsTableData({ search })
   const columns = useMarketAssetsTableColumns()
   const { currentMarket } = useProtocolDataContext()
@@ -39,7 +41,7 @@ export const MarketAssetsTable: React.FC<MarketAssetsTableProps> = ({
     <DataTable
       table={table}
       spacing="large"
-      title="Available Assets"
+      title={t("lending.market.table.title")}
       hoverable
       emptyFallback={<EmptySearchState />}
       onRowClick={(row) =>

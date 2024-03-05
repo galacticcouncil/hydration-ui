@@ -9,6 +9,7 @@ import { useMemo } from "react"
 import { PercentageValue } from "components/PercentageValue"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import { CustomMarket } from "sections/lending/ui-config/marketsConfig"
+import { useTranslation } from "react-i18next"
 
 interface ListItemAPYButtonProps {
   stableBorrowRateEnabled: boolean
@@ -31,6 +32,7 @@ export const APYTypeButtonColumn = ({
   underlyingAsset,
   currentMarket,
 }: ListItemAPYButtonProps) => {
+  const { t } = useTranslation()
   const items = useMemo(() => {
     const items = disabled
       ? []
@@ -40,7 +42,7 @@ export const APYTypeButtonColumn = ({
             key: InterestRate.Variable,
             label: (
               <span>
-                <span>APY, variable</span> -{" "}
+                <span>{t("lending.apyVariable")}</span> -{" "}
                 <PercentageValue value={Number(variableBorrowAPY) * 100} />
               </span>
             ),
@@ -50,7 +52,7 @@ export const APYTypeButtonColumn = ({
             key: InterestRate.Stable,
             label: (
               <span>
-                <span>APY, stable</span> -{" "}
+                <span>{t("lending.apyStable")}</span> -{" "}
                 <PercentageValue value={Number(stableBorrowAPY) * 100} />
               </span>
             ),
@@ -66,7 +68,7 @@ export const APYTypeButtonColumn = ({
           <span sx={{ width: 12, height: 12, display: "block" }} />
         ),
     }))
-  }, [borrowRateMode, disabled, stableBorrowAPY, variableBorrowAPY])
+  }, [t, borrowRateMode, disabled, stableBorrowAPY, variableBorrowAPY])
 
   return (
     <div css={{ display: "inline-flex" }}>
@@ -85,7 +87,7 @@ export const APYTypeButtonColumn = ({
             sx={{ p: 10 }}
             css={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
           >
-            Select APY type to switch
+            {t("lending.apyType.switch.title")}
           </Text>
         }
         footer={
@@ -96,7 +98,8 @@ export const APYTypeButtonColumn = ({
               rel="noreferrer"
               sx={{ p: 10, flex: "row", align: "center", gap: 4 }}
             >
-              See charts <LinkIcon width={12} height={12} />
+              {t("lending.apyType.switch.charts")}{" "}
+              <LinkIcon width={12} height={12} />
             </a>
           </Text>
         }

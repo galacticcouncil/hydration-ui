@@ -38,7 +38,7 @@ export const useBorrowAssetsTableColumns = () => {
   return useMemo(
     () => [
       accessor("symbol", {
-        header: "Asset",
+        header: t("lending.asset"),
         cell: ({ row }) => (
           <AssetNameColumn
             detailsAddress={row.original.underlyingAsset}
@@ -48,7 +48,7 @@ export const useBorrowAssetsTableColumns = () => {
         ),
       }),
       accessor("availableBorrowsInUSD", {
-        header: "Available",
+        header: t("lending.available"),
         sortingFn: (a, b) =>
           Number(a.original.availableBorrowsInUSD) -
           Number(b.original.availableBorrowsInUSD),
@@ -73,7 +73,7 @@ export const useBorrowAssetsTableColumns = () => {
         },
       }),
       accessor("variableBorrowRate", {
-        header: "APY, Variable",
+        header: t("lending.apyVariable"),
         meta: {
           sx: {
             textAlign: "center",
@@ -108,7 +108,7 @@ export const useBorrowAssetsTableColumns = () => {
                 onClick={() => openBorrow(underlyingAsset)}
                 size="micro"
               >
-                Borrow
+                {t("lending.borrow")}
               </Button>
               <Link to={ROUTES.reserveOverview(underlyingAsset, currentMarket)}>
                 <ChevronRight sx={{ color: "iconGray", mr: -8 }} />

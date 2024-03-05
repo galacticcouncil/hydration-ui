@@ -19,12 +19,14 @@ import {
 } from "./HollarBanner.styled"
 import { HollarBorrowApyRange } from "./HollarBorrowApyRange"
 import hollarImage from "./assets/hollar-image.png"
+import { useTranslation } from "react-i18next"
 
 type HollarBannerProps = {
   className?: string
 }
 
 export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const currentMarket = useRootStore((store) => store.currentMarket)
 
@@ -66,20 +68,20 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
         <SContent>
           <div sx={{ pr: [120, 0] }}>
             <Text font="ChakraPetchBold" sx={{ mb: 4 }}>
-              Meet Hollar
+              {t("lending.hollar.banner.title")}
             </Text>
             <Text
               fs={12}
               lh={16}
               sx={{ maxWidth: ["100%", 245], opacity: 0.7 }}
             >
-              HOL is a native decentralized, collateral-backed digital asset
+              {t("lending.hollar.banner.description")}
             </Text>
           </div>
           <SValuesContainer>
             <DataValue
               size="small"
-              label="Total borrowed"
+              label={t("lending.hollar.banner.total")}
               labelColor="alpha0"
               isLoading={isLoading}
             >
@@ -87,7 +89,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
             </DataValue>
             <DataValue
               size="small"
-              label="Borrow rate APY"
+              label={t("lending.hollar.banner.apy")}
               labelColor="alpha0"
               isLoading={isLoading}
             >
@@ -102,7 +104,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
               css={{ zIndex: 1, position: "relative" }}
               onClick={navToDetail}
             >
-              Details
+              {t("lending.details")}
             </Button>
           </SValuesContainer>
           <Button
@@ -112,7 +114,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
             css={{ zIndex: 1, position: "relative" }}
             onClick={navToDetail}
           >
-            Details
+            {t("lending.details")}
           </Button>
         </SContent>
       </SInnerContainer>

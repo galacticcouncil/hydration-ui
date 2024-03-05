@@ -15,8 +15,10 @@ import {
   SContent,
   SFilterContainer,
 } from "./LendingReserveOverviewPage.styled"
+import { useTranslation } from "react-i18next"
 
 export const LendingReserveOverviewPage = () => {
+  const { t } = useTranslation()
   const search = useSearch<{
     Search: {
       underlyingAsset: string
@@ -48,7 +50,7 @@ export const LendingReserveOverviewPage = () => {
           size="small"
           onClick={() => setMode("overview")}
         >
-          Overview
+          {t("lending.reserve.overview")}
         </Button>
         <Button
           active={mode === "actions"}
@@ -57,7 +59,7 @@ export const LendingReserveOverviewPage = () => {
           size="small"
           onClick={() => setMode("actions")}
         >
-          Your info
+          {t("lending.reserve.yourInfo")}
         </Button>
       </SFilterContainer>
 

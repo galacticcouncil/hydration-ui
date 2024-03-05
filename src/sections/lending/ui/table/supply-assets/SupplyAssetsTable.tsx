@@ -38,7 +38,7 @@ export const SupplyAssetsTable = () => {
     <DataTable
       table={table}
       spacing="large"
-      title="Assets to supply"
+      title={t("lending.supply.table.title")}
       renderRow={isDesktop ? undefined : SupplyAssetsMobileRow}
       action={
         hasAvailableDeposits && (

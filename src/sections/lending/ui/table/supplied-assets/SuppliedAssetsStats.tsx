@@ -1,9 +1,11 @@
 import { DataValue } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { PercentageValue } from "components/PercentageValue"
+import { useTranslation } from "react-i18next"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 
 export const SuppliedAssetsStats = () => {
+  const { t } = useTranslation()
   const { user, loading } = useAppDataContext()
 
   return (
@@ -12,7 +14,7 @@ export const SuppliedAssetsStats = () => {
         size="small"
         font="ChakraPetch"
         labelColor="basic600"
-        label="Balance"
+        label={t("lending.balance")}
         isLoading={loading}
       >
         <DisplayValue value={Number(user?.totalLiquidityUSD || 0)} isUSD />
@@ -21,8 +23,8 @@ export const SuppliedAssetsStats = () => {
         size="small"
         font="ChakraPetch"
         labelColor="basic600"
-        label="APY"
-        tooltip="The weighted average of APY for all supplied assets, including incentives."
+        label={t("lending.apy")}
+        tooltip={t("lending.tooltip.apy")}
         isLoading={loading}
       >
         <PercentageValue value={(user?.earnedAPY || 0) * 100} />
@@ -31,8 +33,8 @@ export const SuppliedAssetsStats = () => {
         size="small"
         font="ChakraPetch"
         labelColor="basic600"
-        label="Collateral"
-        tooltip="The total amount of your assets denominated in USD that can be used as collateral for borrowing assets."
+        label={t("lending.collateral")}
+        tooltip={t("lending.tooltip.collateral")}
         isLoading={loading}
       >
         <DisplayValue value={Number(user?.totalCollateralUSD || 0)} isUSD />

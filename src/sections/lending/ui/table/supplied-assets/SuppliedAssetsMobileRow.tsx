@@ -1,5 +1,6 @@
 import { Row } from "@tanstack/react-table"
 import { Button } from "components/Button/Button"
+import { useTranslation } from "react-i18next"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { MobileRow } from "sections/lending/ui/table/components/MobileRow"
 import { TSuppliedAssetsRow } from "sections/lending/ui/table/supplied-assets/SuppliedAssetsTable.utils"
@@ -8,6 +9,7 @@ export const SuppliedAssetsMobileRow: React.FC<Row<TSuppliedAssetsRow>> = ({
   getVisibleCells,
   original,
 }) => {
+  const { t } = useTranslation()
   const { reserve, underlyingAsset } = original
   const { name, symbol, iconSymbol, isActive, isPaused, isFrozen } = reserve
   const cells = getVisibleCells()
@@ -37,7 +39,7 @@ export const SuppliedAssetsMobileRow: React.FC<Row<TSuppliedAssetsRow>> = ({
             fullWidth
             size="small"
           >
-            Supply
+            {t("lending.supply")}
           </Button>
           <Button
             disabled={disableWithdraw}
@@ -45,7 +47,7 @@ export const SuppliedAssetsMobileRow: React.FC<Row<TSuppliedAssetsRow>> = ({
             fullWidth
             size="small"
           >
-            Withdraw
+            {t("lending.withdraw")}
           </Button>
         </div>
       }

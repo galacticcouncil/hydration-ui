@@ -1,6 +1,7 @@
 import { DataTable } from "components/DataTable"
 import { Text } from "components/Typography/Text/Text"
 import { useReactTable } from "hooks/useReactTable"
+import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { SuppliedAssetsMobileRow } from "sections/lending/ui/table/supplied-assets/SuppliedAssetsMobileRow"
 import { SuppliedAssetsStats } from "sections/lending/ui/table/supplied-assets/SuppliedAssetsStats"
@@ -11,6 +12,7 @@ import {
 import { theme } from "theme"
 
 export const SuppliedAssetsTable = () => {
+  const { t } = useTranslation()
   const { data, isLoading } = useSuppliedAssetsTableData()
   const columns = useSuppliedAssetsTableColumns()
 
@@ -27,13 +29,13 @@ export const SuppliedAssetsTable = () => {
     <DataTable
       table={table}
       spacing="large"
-      title="Your supplies"
+      title={t("lending.supplied.table.title")}
       background="transparent"
       addons={<SuppliedAssetsStats />}
       renderRow={isDesktop ? undefined : SuppliedAssetsMobileRow}
       emptyFallback={
         <Text color="basic700" fs={14}>
-          Nothing supplied yet
+          {t("lending.supplied.table.empty")}
         </Text>
       }
     />

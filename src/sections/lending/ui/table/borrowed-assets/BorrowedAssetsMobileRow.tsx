@@ -1,5 +1,6 @@
 import { Row } from "@tanstack/react-table"
 import { Button } from "components/Button/Button"
+import { useTranslation } from "react-i18next"
 import { getAssetCapData } from "sections/lending/hooks/useAssetCaps"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { TBorrowedAssetsRow } from "sections/lending/ui/table/borrowed-assets/BorrowedAssetsTable.utils"
@@ -9,6 +10,7 @@ export const BorrowedAssetsMobileRow: React.FC<Row<TBorrowedAssetsRow>> = ({
   getVisibleCells,
   original,
 }) => {
+  const { t } = useTranslation()
   const { reserve, underlyingAsset, borrowRateMode } = original
   const {
     name,
@@ -46,7 +48,7 @@ export const BorrowedAssetsMobileRow: React.FC<Row<TBorrowedAssetsRow>> = ({
             fullWidth
             size="small"
           >
-            Borrow
+            {t("lending.borrow")}
           </Button>
           <Button
             disabled={disableRepay}
@@ -54,7 +56,7 @@ export const BorrowedAssetsMobileRow: React.FC<Row<TBorrowedAssetsRow>> = ({
             fullWidth
             size="small"
           >
-            Repay
+            {t("lending.repay")}
           </Button>
         </div>
       }

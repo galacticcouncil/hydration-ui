@@ -31,7 +31,7 @@ export const useBorrowedAssetsTableColumns = () => {
   return useMemo(
     () => [
       accessor(({ reserve }) => reserve.symbol, {
-        header: "Asset",
+        header: t("lending.asset"),
         cell: ({ row }) => (
           <AssetNameColumn
             detailsAddress={row.original.underlyingAsset}
@@ -41,7 +41,7 @@ export const useBorrowedAssetsTableColumns = () => {
         ),
       }),
       accessor("totalBorrowsUSD", {
-        header: "Debt",
+        header: t("lending.debt"),
         sortingFn: (a, b) =>
           Number(a.original.totalBorrowsUSD) -
           Number(b.original.totalBorrowsUSD),
@@ -66,7 +66,7 @@ export const useBorrowedAssetsTableColumns = () => {
         },
       }),
       accessor("borrowAPY", {
-        header: "APY",
+        header: t("lending.apy"),
         meta: {
           sx: {
             textAlign: "center",
@@ -85,7 +85,7 @@ export const useBorrowedAssetsTableColumns = () => {
         },
       }),
       accessor("borrowRateMode", {
-        header: "APY Type",
+        header: t("lending.apyType"),
         meta: {
           sx: {
             textAlign: "center",
@@ -138,7 +138,7 @@ export const useBorrowedAssetsTableColumns = () => {
               size="micro"
               sx={{ height: 27 }}
             >
-              Repay
+              {t("lending.repay")}
             </Button>
           )
         },

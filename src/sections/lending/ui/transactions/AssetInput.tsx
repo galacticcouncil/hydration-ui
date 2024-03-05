@@ -73,8 +73,6 @@ export interface AssetInputProps<T extends Asset = Asset> {
   inputTitle?: ReactNode
   balanceText?: ReactNode
   loading?: boolean
-  selectOptionHeader?: ReactNode
-  selectOption?: (asset: T) => ReactNode
   className?: string
 }
 
@@ -92,8 +90,6 @@ export const AssetInput = <T extends Asset = Asset>({
   isMaxSelected,
   inputTitle,
   loading = false,
-  selectOptionHeader,
-  selectOption,
   className,
   balanceText,
 }: AssetInputProps<T>) => {

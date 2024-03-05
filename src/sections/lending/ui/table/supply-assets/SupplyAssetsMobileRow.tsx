@@ -1,5 +1,6 @@
 import { Row } from "@tanstack/react-table"
 import { Button } from "components/Button/Button"
+import { useTranslation } from "react-i18next"
 import { getAssetCapData } from "sections/lending/hooks/useAssetCaps"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { MobileRow } from "sections/lending/ui/table/components/MobileRow"
@@ -9,6 +10,7 @@ export const SupplyAssetsMobileRow: React.FC<Row<DashboardReserve>> = ({
   getVisibleCells,
   original,
 }) => {
+  const { t } = useTranslation()
   const {
     name,
     symbol,
@@ -54,7 +56,7 @@ export const SupplyAssetsMobileRow: React.FC<Row<DashboardReserve>> = ({
           fullWidth
           size="small"
         >
-          Supply
+          {t("lending.supply")}
         </Button>
       }
     />

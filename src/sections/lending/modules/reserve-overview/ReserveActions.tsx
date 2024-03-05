@@ -287,10 +287,11 @@ const ActionsSkeleton = () => {
 }
 
 const PaperWrapper = ({ children }: { children: ReactNode }) => {
+  const { t } = useTranslation()
   return (
     <div sx={{ color: "white" }}>
       <Text fs={15} sx={{ mb: 20 }} font="FontOver">
-        Your info
+        {t("lending.reserve.yourInfo")}
       </Text>
       {children}
     </div>

@@ -39,7 +39,7 @@ export const useSupplyAssetsTableColumns = () => {
   return useMemo(
     () => [
       accessor("symbol", {
-        header: "Asset",
+        header: t("lending.asset"),
         cell: ({ row }) => (
           <AssetNameColumn
             detailsAddress={row.original.detailsAddress}
@@ -49,7 +49,7 @@ export const useSupplyAssetsTableColumns = () => {
         ),
       }),
       accessor("walletBalanceUSD", {
-        header: "Wallet balance",
+        header: t("lending.walletBalance"),
         sortingFn: (a, b) =>
           Number(a.original.walletBalanceUSD) -
           Number(b.original.walletBalanceUSD),
@@ -78,7 +78,7 @@ export const useSupplyAssetsTableColumns = () => {
         },
       }),
       accessor("supplyAPY", {
-        header: "APY",
+        header: t("lending.apy"),
         meta: {
           sx: {
             textAlign: "center",
@@ -97,7 +97,7 @@ export const useSupplyAssetsTableColumns = () => {
         },
       }),
       accessor("usageAsCollateralEnabledOnUser", {
-        header: "Can be collateral",
+        header: t("lending.supply.table.canBeCollateral"),
         meta: {
           sx: {
             textAlign: "center",
@@ -153,7 +153,7 @@ export const useSupplyAssetsTableColumns = () => {
                 onClick={() => openSupply(underlyingAsset)}
                 size="micro"
               >
-                Supply
+                {t("lending.supply")}
               </Button>
               <Link
                 to={ROUTES.reserveOverview(
