@@ -142,7 +142,7 @@ const AddLiqduidityButton = ({
     isStablePool ? pool.id : undefined,
     account?.address,
   )
-  console.log(pool)
+
   const isPosition =
     userStablePoolBalance.data?.freeBalance.gt(0) ||
     (isXykPool ? pool.shareTokenIssuance?.myPoolShare?.gt(0) : pool.isPositions)
