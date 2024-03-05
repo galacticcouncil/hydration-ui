@@ -119,7 +119,6 @@ export function LiquidityPositionRemoveLiquidity(
       <Button
         variant="error"
         size="compact"
-        fullWidth
         onClick={() => setOpenRemove(true)}
         disabled={
           account?.isExternalWalletConnected || !props.pool.canRemoveLiquidity

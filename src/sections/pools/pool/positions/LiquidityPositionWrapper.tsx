@@ -21,7 +21,7 @@ export const LiquidityPositionWrapper = ({
 }: Props) => {
   const { t } = useTranslation()
 
-  const remove = useRemoveAllPositions(positions)
+  const remove = useRemoveAllPositions(positions, pool.id)
 
   if (!positions.length) return null
 
