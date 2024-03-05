@@ -1,6 +1,8 @@
 import { Button } from "components/Button/Button"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
+import { useIsEvmAccountBound } from "sections/lending/hooks/useIsEvmAccountBound"
 import { DashboardHeaderValues } from "sections/lending/ui/header/DashboardHeaderValues"
 import { HollarBanner } from "sections/lending/ui/hollar/hollar-banner/HollarBanner"
 import { MoneyMarketBanner } from "sections/lending/ui/money-market/MoneyMarketBanner"
@@ -8,11 +10,8 @@ import { BorrowAssetsTable } from "sections/lending/ui/table/borrow-assets/Borro
 import { BorrowedAssetsTable } from "sections/lending/ui/table/borrowed-assets/BorrowedAssetsTable"
 import { SuppliedAssetsTable } from "sections/lending/ui/table/supplied-assets/SuppliedAssetsTable"
 import { SupplyAssetsTable } from "sections/lending/ui/table/supply-assets/SupplyAssetsTable"
-import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { SContainer, SFilterContainer } from "./LendingDashboardPage.styled"
-import { useIsEvmAccountBound } from "sections/lending/hooks/useIsEvmAccountBound"
-import { useTranslation } from "react-i18next"
 
 export const LendingDashboardPage = () => {
   const { t } = useTranslation()
@@ -22,9 +21,7 @@ export const LendingDashboardPage = () => {
   const shouldRenderSupply = mode === "supply" || isDesktop
   const shouldRenderBorrow = mode === "borrow" || isDesktop
 
-  const { account: evmAccount } = useEvmAccount()
-
-  const { data: isBound, isLoading } = useIsEvmAccountBound(evmAccount?.address)
+  const { isLoading, data: isBound } = useIsEvmAccountBound()
 
   return (
     <>
