@@ -2,12 +2,16 @@ import { Text } from "components/Typography/Text/Text"
 import EmptyStateIcon from "assets/icons/EmptySearchIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { useTranslation } from "react-i18next"
+import { FC } from "react"
 
-export const EmptySearchState = () => {
+export const EmptySearchState: FC<{
+  className?: string
+}> = ({ className }) => {
   const { t } = useTranslation()
 
   return (
     <div
+      className={className}
       sx={{
         flex: "column",
         align: "center",

@@ -185,18 +185,21 @@ export type FiatCurrency = {
 
 export const FIAT_CURRENCIES = [
   {
+    id: "usd",
+    name: "$ USD",
+    symbol: "$",
+  },
+  {
     id: "czk",
-    name: "CZECH Koruna",
+    name: "CZK",
     symbol: "CZK ",
   },
   {
     id: "eur",
-    name: "EURO",
+    name: "€ Euro",
     symbol: "€",
   },
 ] satisfies FiatCurrency[]
-
-const currencyIds = FIAT_CURRENCIES.map((currency) => currency.id)
 
 type Asset = {
   id: string | undefined
@@ -206,6 +209,7 @@ type Asset = {
   isDollar?: boolean
   stableCoinId: string | undefined
 }
+
 export type DisplayAssetStore = Asset & {
   update: (asset: Asset) => void
 }
@@ -244,21 +248,23 @@ export const useCoingeckoFiatPrice = () => {
 }
 
 export const getCoingeckoSpotPrice = async () => {
-  const vsCurrenciesParam = ["usd", ...currencyIds].join(",")
+  const vsCurrencies = FIAT_CURRENCIES.map((currency) => currency.id)
+  const vsCurrenciesParam = vsCurrencies.join(",")
+
   const res = await fetch(
     `https://api.coingecko.com/api/v3/simple/price?ids=${STABLECOIN_SYMBOL.toLowerCase()}&vs_currencies=${vsCurrenciesParam}`,
   )
   return await res.json()
 }
 
-type simplifiedAsset = {
+type SimplifiedAsset = {
   id: string | u32
   name: string
   symbol: string
 }
 
 export const useAssetPrices = (
-  assets: simplifiedAsset[],
+  assets: SimplifiedAsset[],
   noRefresh?: boolean,
 ) => {
   const displayAsset = useDisplayAssetStore()
@@ -270,7 +276,7 @@ export const useAssetPrices = (
       const matchingAsset = assets.find((a) => a.id === asset?.data?.tokenIn)
       return { id: matchingAsset?.id, name: matchingAsset?.name }
     })
-    .filter((asset): asset is simplifiedAsset => asset !== undefined)
+    .filter((asset): asset is SimplifiedAsset => asset !== undefined)
 
   const coingeckoPrices = useCoingeckoPrice(coingeckoAssetNames)
 
@@ -297,7 +303,7 @@ export const useAssetPrices = (
   return updatedSpotPrices
 }
 
-export const useCoingeckoPrice = (assets: simplifiedAsset[]) => {
+export const useCoingeckoPrice = (assets: SimplifiedAsset[]) => {
   return useQuery(
     [QUERY_KEYS.coingeckoUsd, assets.map((asset) => asset.name)],
     async () => {
@@ -316,7 +322,7 @@ export const useCoingeckoPrice = (assets: simplifiedAsset[]) => {
 }
 
 export const getCoingeckoAssetPrices = async (
-  assets: simplifiedAsset[],
+  assets: SimplifiedAsset[],
 ): Promise<{ [key: string]: number }> => {
   const formattedAssetNames = assets
     .map((asset) => {
