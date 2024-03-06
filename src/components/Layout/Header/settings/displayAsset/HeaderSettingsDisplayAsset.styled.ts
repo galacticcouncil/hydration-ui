@@ -10,10 +10,7 @@ export const SItems = styled.div`
   }
 `
 
-export const SItem = styled(ButtonTransparent)<{
-  isActive?: boolean
-  isAsset?: boolean
-}>`
+export const SItem = styled(ButtonTransparent)<{ isActive?: boolean }>`
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-column-gap: 8px;
@@ -69,9 +66,7 @@ export const SCircle = styled.div<{ isActive: boolean }>`
   }
 `
 
-export const SItemsHeader = styled.div<{
-  isAssetHeader?: boolean
-}>`
+export const SItemsHeader = styled.div`
   display: flex;
   justify-content: space-between;
 
