@@ -421,7 +421,7 @@ export const usePoolTable = (
             cell: ({ row }) => (
               <NonClickableContainer>
                 <Text color="white" fs={14}>
-                  <DisplayValue value={row.original.spotPrice} type="token" />
+                  <DisplayValue value={row.original.spotPrice} />
                 </Text>
               </NonClickableContainer>
             ),
