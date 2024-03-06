@@ -54,9 +54,16 @@ export const TableSkeleton = ({
           {!hideHeader && (
             <TableHeaderContent>
               {table.getHeaderGroups().map((hg) => (
-                <TableRow key={hg.id}>
+                <TableRow key={hg.id} header>
                   {hg.headers.map((header) => (
-                    <TableSortHeader key={header.id} canSort={false}>
+                    <TableSortHeader
+                      key={header.id}
+                      canSort={false}
+                      css={{
+                        width:
+                          header.getSize() !== 150 ? header.getSize() : "auto",
+                      }}
+                    >
                       {flexRender(
                         header.column.columnDef.header,
                         header.getContext(),
@@ -70,7 +77,7 @@ export const TableSkeleton = ({
           <TableBodyContent>
             {table.getRowModel().rows.map((row, i) => (
               <Fragment key={row.id}>
-                <TableRow isOdd={!(i % 2)}>
+                <TableRow>
                   {row.getVisibleCells().map((cell) => (
                     <TableData key={cell.id} isSkeleton>
                       {flexRender(

@@ -42,7 +42,10 @@ export const Page = ({
   return (
     <>
       <SPage ref={ref}>
-        <div css={{ position: "relative" }}>
+        <div
+          sx={{ flex: "column", height: "100%" }}
+          css={{ position: "relative" }}
+        >
           <SGradientBg />
           <Header />
           <SPageContent>

@@ -4,11 +4,11 @@ import { theme } from "theme"
 export const SContainer = styled.div<{ modal: boolean }>`
   font-family: "ChakraPetch";
   background: rgba(10, 12, 22, 0.69);
-
   position: relative;
   text-align: center;
-  margin: ${(p) => (p.modal ? "0 0 20px" : "0")};
   width: 100%;
+
+  padding: ${(p) => (p.modal ? "20px 0" : "20px 10px")};
 
   @media ${theme.viewport.gte.sm} {
     background: inherit;
@@ -19,13 +19,13 @@ export const SBarContainer = styled.div<{ modal: boolean }>`
   position: relative;
   width: 100%;
   height: ${(p) => (p.modal ? "11px" : "7px")};
-  border-radius: 2px;
+  border-radius: 5px;
   background-color: rgba(84, 99, 128, 0.35);
 `
 
 export const SBar = styled.div<{ filled: string }>`
   height: 100%;
-  border-radius: 2px;
+  border-radius: 5px;
   width: ${(p) => p.filled}%;
   -webkit-mask: linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0);

@@ -15,10 +15,6 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { LINKS } from "utils/navigation"
 
-const isOtcPageEnabled = import.meta.env.VITE_FF_OTC_ENABLED === "true"
-const isDcaPageEnabled = import.meta.env.VITE_FF_DCA_ENABLED === "true"
-const isBondsPageEnabled = import.meta.env.VITE_FF_BONDS_ENABLED === "true"
-
 export const BondsTabLink = () => {
   const { t } = useTranslation()
   const {
@@ -69,36 +65,30 @@ export const Navigation = () => {
         icon={<IconSwap />}
         label={t("header.trade.swap.title")}
       />
-      {isOtcPageEnabled && (
-        <SubNavigationTabLink
-          to={LINKS.otc}
-          icon={<IconOTC />}
-          label={t("header.trade.otc.title")}
-        />
-      )}
+      <SubNavigationTabLink
+        to={LINKS.otc}
+        icon={<IconOTC />}
+        label={t("header.trade.otc.title")}
+      />
       <SubNavigationTabLink
         to={LINKS.yieldDca}
         icon={<Icon size={24} icon={<IconYieldDCA />} />}
         label={t("header.trade.yieldDca.title")}
       />
-      {isDcaPageEnabled && (
+      <SubNavigationTabLink
+        to={LINKS.dca}
+        icon={<IconDCA />}
+        label={t("header.trade.dca.title")}
+      />
+      {isLoaded ? (
+        <BondsTabLink />
+      ) : (
         <SubNavigationTabLink
-          to={LINKS.dca}
-          icon={<IconDCA />}
-          label={t("header.trade.dca.title")}
+          to={LINKS.bonds}
+          icon={<IconBonds />}
+          label={t("header.trade.bonds.title")}
         />
       )}
-      {isBondsPageEnabled ? (
-        isLoaded ? (
-          <BondsTabLink />
-        ) : (
-          <SubNavigationTabLink
-            to={LINKS.bonds}
-            icon={<IconBonds />}
-            label={t("header.trade.bonds.title")}
-          />
-        )
-      ) : null}
     </SubNavigation>
   )
 }

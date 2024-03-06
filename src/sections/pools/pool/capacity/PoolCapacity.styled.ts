@@ -2,9 +2,7 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SContainer = styled.div`
-  margin: -20px;
-  padding: 20px 15px;
-  background: rgba(10, 12, 22, 0.69);
+  padding-bottom: 4px;
 
   position: relative;
   text-align: center;

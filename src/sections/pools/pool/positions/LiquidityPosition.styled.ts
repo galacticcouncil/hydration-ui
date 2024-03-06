@@ -12,15 +12,10 @@ export const SContainer = styled.div`
   border: 1px solid rgba(114, 131, 165, 0.6);
 
   border-radius: 4px;
-  padding: 20px;
+  padding: 16px;
 
-  @media ${theme.viewport.gte.sm} {
-    display: grid;
-    align-items: end;
-    grid-template-columns: 5fr 2fr;
-    grid-column-gap: 16px;
-    border: 1px solid rgba(114, 131, 165, 0.6);
-    background: rgba(${theme.rgbColors.primaryA15Blue}, 0.35);
+  @media (${theme.viewport.gte.sm}) {
+    padding: 20px;
   }
 `
 
@@ -43,9 +38,5 @@ export const SButton = styled(Button)`
       color: ${theme.colors.white};
       border: 1px solid ${theme.colors.red300};
     }
-  }
-
-  @media ${theme.viewport.gte.sm} {
-    max-width: 220px;
   }
 `

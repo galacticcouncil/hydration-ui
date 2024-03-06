@@ -54,12 +54,15 @@ export const AddLiquidityForm = ({
     return () => {
       cancel()
     }
-  }, [])
+  }, [cancel])
 
   const { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance } =
     useAddLiquidity(assetId, assetValue)
 
-  const { api } = useRpcProvider()
+  const {
+    api,
+    assets: { native },
+  } = useRpcProvider()
   const { createTransaction } = useStore()
 
   const { data: limits } = useVerifyLimits({
@@ -138,12 +141,6 @@ export const AddLiquidityForm = ({
     )
   }
 
-  useEffect(() => {
-    return () => {
-      form.reset()
-    }
-  }, [])
-
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
@@ -220,9 +217,14 @@ export const AddLiquidityForm = ({
         />
         <SummaryRow
           label={t("liquidity.add.modal.lpFee")}
-          content={t("value.percentage", {
-            value: omnipoolFee?.fee.multipliedBy(100),
-          })}
+          content={
+            assetId === native.id
+              ? "--"
+              : t("value.percentage.range", {
+                  from: omnipoolFee?.minFee.multipliedBy(100),
+                  to: omnipoolFee?.maxFee.multipliedBy(100),
+                })
+          }
         />
         <Spacer size={24} />
         <Text color="pink500" fs={15} font="FontOver" tTransform="uppercase">

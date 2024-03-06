@@ -5,6 +5,7 @@ import { theme } from "theme"
 import { Fragment, ReactElement } from "react"
 import Skeleton from "react-loading-skeleton"
 import { useRpcProvider } from "providers/rpcProvider"
+import { ResponsiveValue } from "utils/responsive"
 
 export const HeaderSeparator = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -23,8 +24,12 @@ export const HeaderSeparator = () => {
 export const HeaderValues = ({
   values,
   skeletonHeight,
+  fontSizeLabel,
+  className,
 }: {
-  skeletonHeight?: [number, number]
+  skeletonHeight?: ResponsiveValue<number>
+  fontSizeLabel?: ResponsiveValue<number>
+  className?: string
   values: Array<{
     label?: string
     content: ReactElement
@@ -46,7 +51,7 @@ export const HeaderValues = ({
         item.content
       ) : (
         <Skeleton
-          sx={{ height: skeletonHeight ?? [19, 28], width: [180, 200] }}
+          sx={{ height: skeletonHeight ?? [19, 28], width: [100, 200] }}
           enableAnimation={!item.disconnected}
         />
       )
@@ -60,9 +65,13 @@ export const HeaderValues = ({
               flex: ["row", "column"],
               align: ["center", "start"],
               justify: "space-between",
+              flexWrap: "wrap",
+              gap: 8,
             }}
           >
-            <Text color="brightBlue300">{item.label}</Text>
+            <Text color="brightBlue300" fs={fontSizeLabel}>
+              {item.label}
+            </Text>
             {content}
           </div>
         ) : (
@@ -83,9 +92,10 @@ export const HeaderValues = ({
         flex: ["column", "row"],
         mb: [24, 40],
         flexWrap: "wrap",
-        align: ["normal", "center"],
+        align: ["normal", "start"],
         justify: "space-between",
       }}
+      className={className}
     >
       {headerValues}
     </div>

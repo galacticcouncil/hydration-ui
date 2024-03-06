@@ -1,7 +1,9 @@
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { ToastMessage, useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 export const useFarmExitAllMutation = (
   depositNfts: TMiningNftPosition[],
@@ -10,30 +12,41 @@ export const useFarmExitAllMutation = (
 ) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+  const { account } = useAccount()
+  const queryClient = useQueryClient()
 
-  return useMutation(async () => {
-    const txs =
-      depositNfts
-        ?.map((record) => {
-          return record.data.yieldFarmEntries.map((entry) => {
-            return api.tx.omnipoolLiquidityMining.withdrawShares(
-              record.id,
-              entry.yieldFarmId,
-            )
+  return useMutation(
+    async () => {
+      const txs =
+        depositNfts
+          ?.map((record) => {
+            return record.data.yieldFarmEntries.map((entry) => {
+              return api.tx.omnipoolLiquidityMining.withdrawShares(
+                record.id,
+                entry.yieldFarmId,
+              )
+            })
           })
-        })
-        .flat(2) ?? []
+          .flat(2) ?? []
 
-    if (txs.length > 1) {
-      return await createTransaction(
-        { tx: api.tx.utility.batchAll(txs) },
-        { toast, onClose, onBack: () => {} },
-      )
-    } else {
-      return await createTransaction(
-        { tx: txs[0] },
-        { toast, onClose, onBack: () => {} },
-      )
-    }
-  })
+      if (txs.length > 1) {
+        return await createTransaction(
+          { tx: api.tx.utility.batchAll(txs) },
+          { toast, onClose, onBack: () => {} },
+        )
+      } else {
+        return await createTransaction(
+          { tx: txs[0] },
+          { toast, onClose, onBack: () => {} },
+        )
+      }
+    },
+    {
+      onSuccess: () => {
+        queryClient.refetchQueries(
+          QUERY_KEYS.accountOmnipoolPositions(account?.address),
+        )
+      },
+    },
+  )
 }

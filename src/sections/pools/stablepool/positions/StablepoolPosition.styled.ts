@@ -25,8 +25,4 @@ export const SOmnipoolButton = styled(Button)`
       border: none;
     }
   }
-
-  @media ${theme.viewport.gte.sm} {
-    max-width: 220px;
-  }
 `

@@ -66,21 +66,18 @@ export const useSetAsFeePayment = () => {
   }
 }
 
-export const getNativeEvmAssetId = async (api: ApiPromise) => {
-  const assets = await api.query.assetRegistry.assetMetadataMap.entries()
-  const weth = assets.find(([_, dataRaw]) => {
-    return dataRaw.unwrap().symbol.toUtf8() === NATIVE_EVM_ASSET_SYMBOL
-  })
-
-  const assetId = weth?.[0].args[0].toString()
-
-  return assetId
-}
-
 export const getAccountCurrency =
-  (api: ApiPromise, address: string | AccountId32) => async () => {
+  (
+    api: ApiPromise,
+    address: string | AccountId32,
+    assets: Awaited<ReturnType<typeof useRpcProvider>>["assets"],
+  ) =>
+  async () => {
     if (typeof address === "string" && isEvmAccount(address)) {
-      return await getNativeEvmAssetId(api)
+      const asset = assets.all.find(
+        ({ symbol }) => symbol === NATIVE_EVM_ASSET_SYMBOL,
+      )
+      return asset?.id
     }
 
     const result =
@@ -94,12 +91,12 @@ export const getAccountCurrency =
   }
 
 export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
-  const { api } = useRpcProvider()
+  const { api, assets, isLoaded } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.accountCurrency(address),
-    !!address ? getAccountCurrency(api, address) : undefinedNoop,
+    !!address ? getAccountCurrency(api, address, assets) : undefinedNoop,
     {
-      enabled: !!address,
+      enabled: !!address && isLoaded,
     },
   )
 }

@@ -3,7 +3,6 @@ import { usePoolCapacity } from "sections/pools/pool/capacity/PoolCapacity.utils
 import { useMeasure } from "react-use"
 import { Trans } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
-import { Separator } from "components/Separator/Separator"
 
 type Props = { id: string; className?: string }
 
@@ -19,7 +18,6 @@ export const PoolCapacity = ({ id, className }: Props) => {
 
   return (
     <SContainer ref={ref} className={className}>
-      <Separator sx={{ mb: 15, display: ["none", "inherit"] }} />
       <div sx={{ flex: ["column-reverse", "column"] }}>
         {!isError && (
           <div>

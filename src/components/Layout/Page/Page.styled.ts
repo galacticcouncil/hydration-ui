@@ -36,8 +36,6 @@ export const SGradientBg = styled.div`
 export const SPageContent = styled.main`
   position: relative;
 
-  overflow-x: hidden;
-
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -118,6 +116,6 @@ export const SSubHeader = styled.div`
   }
 
   @media (${theme.viewport.gte.sm}) {
-    margin: 0 -20px;
+    margin: 0 -26px;
   }
 `

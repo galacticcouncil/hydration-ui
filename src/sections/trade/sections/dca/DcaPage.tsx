@@ -15,7 +15,7 @@ import { useAccountCurrency } from "api/payments"
 import { useDisplayAssetStore } from "utils/displayAsset"
 
 export const DcaApp = createComponent({
-  tagName: "gc-dca-app",
+  tagName: "gc-dca",
   elementClass: Apps.DcaApp,
   react: React,
   events: {

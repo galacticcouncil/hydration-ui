@@ -5,13 +5,15 @@ import { SButton, SButtonTransparent, SContent } from "./Button.styled"
 export type ButtonVariant =
   | "primary"
   | "secondary"
+  | "mutedSecondary"
   | "error"
+  | "mutedError"
   | "gradient"
   | "outline"
   | "transparent"
   | "blue"
   | "green"
-export type ButtonSize = "small" | "medium" | "micro"
+export type ButtonSize = "small" | "medium" | "compact" | "micro"
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant

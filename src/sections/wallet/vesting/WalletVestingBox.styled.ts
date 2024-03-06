@@ -17,9 +17,9 @@ export const SBox = styled.div`
 
   @media ${theme.viewport.gte.sm} {
     margin: 0;
-    border-radius: ${theme.borderRadius.stakingCard}px;
+    border-radius: ${theme.borderRadius.medium}px;
     &::before {
-      border-radius: ${theme.borderRadius.stakingCard}px;
+      border-radius: ${theme.borderRadius.medium}px;
     }
   }
 `
