@@ -9,6 +9,7 @@ const SContainer = styled.div<{ variant: "warning" | "error" }>`
   padding: 16px;
   display: grid;
   grid-template-columns: auto 1fr;
+  align-items: center;
 
   border-radius: 2px;
   gap: 12px;

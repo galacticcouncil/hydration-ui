@@ -22,7 +22,12 @@ export const SubNavigationTabLink = ({
   const search = useSearch()
 
   return (
-    <Link to={to} search={search} css={{ height: "100%" }}>
+    <Link
+      to={to}
+      search={search}
+      css={{ height: "100%" }}
+      activeOptions={{ exact: true }}
+    >
       {({ isActive }) => (
         <>
           <STabContainer active={isActive}>

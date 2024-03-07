@@ -10,12 +10,27 @@ export const ordersTableStyles = css`
       }
     }
 
+    &:nth-of-type(5) {
+      padding: 0;
+      min-width: 100px;
+    }
+
+    &:nth-of-type(6) {
+      padding-right: 32px;
+      padding-left: 64px;
+    }
+
     @media ${theme.viewport.gte.sm} {
-      &:nth-last-of-type(2) {
-        > div {
-          justify-content: flex-start;
-        }
+      &:nth-last-of-type(1) {
+        padding-right: 32px;
+        padding-left: 32px;
       }
+    }
+  }
+  th {
+    &:nth-of-type(4) {
+      display: flex;
+      justify-content: center;
     }
   }
 `

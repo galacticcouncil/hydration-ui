@@ -39,3 +39,18 @@ export const groupBy = <T>(
     {} as Record<string, T[]>,
   )
 }
+
+export function uniqBy<T, K>(keyFn: (item: T) => K, list: T[]): T[] {
+  const seen = new Set<K>()
+  const result: T[] = []
+
+  for (const item of list) {
+    const key = keyFn(item)
+    if (!seen.has(key)) {
+      seen.add(key)
+      result.push(item)
+    }
+  }
+
+  return result
+}

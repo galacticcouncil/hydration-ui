@@ -6,8 +6,8 @@ import { theme } from "theme"
 export const SStakeTab = styled.div<{ active: boolean }>`
   padding: 16px 16px 13px;
 
-  border-radius: ${theme.borderRadius.stakingCard}px
-    ${theme.borderRadius.stakingCard}px 0 0;
+  border-radius: ${theme.borderRadius.medium}px ${theme.borderRadius.medium}px 0
+    0;
 
   font-family: FontOver;
   font-size: 15px;
@@ -40,8 +40,8 @@ export const SStakeTab = styled.div<{ active: boolean }>`
             position: absolute;
             inset: 0;
 
-            border-radius: ${theme.borderRadius.stakingCard}px
-              ${theme.borderRadius.stakingCard}px 0 0;
+            border-radius: ${theme.borderRadius.medium}px
+              ${theme.borderRadius.medium}px 0 0;
             padding: 1px; // a width of the border
             padding-bottom: 0;
 

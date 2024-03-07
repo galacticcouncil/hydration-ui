@@ -1,9 +1,9 @@
 import { theme } from "theme"
 import { LINKS } from "utils/navigation"
 import UserIcon from "assets/icons/UserIcon.svg?react"
-import AllPools from "assets/icons/DropletIcon.svg?react"
-import OmniStablepools from "assets/icons/WaterRippleIcon.svg?react"
-import IsolatedPools from "assets/icons/PoolsAndFarms.svg?react"
+import AllPools from "assets/icons/AllPools.svg?react"
+import OmniStablepools from "assets/icons/Omnipool&Stablepool.svg?react"
+import IsolatedPools from "assets/icons/IsolatedPools.svg?react"
 import { SSeparator } from "components/Separator/Separator.styled"
 import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -14,6 +14,16 @@ import {
   SubNavigation,
   SubNavigationTabLink,
 } from "components/Layout/SubNavigation/SubNavigation"
+import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
+import { useLocation } from "@tanstack/react-location"
+import { t } from "i18next"
+
+const routeMap = new Map([
+  [LINKS.allPools, t("liquidity.navigation.allPools")],
+  [LINKS.myLiquidity, t("liquidity.navigation.myLiquidity")],
+  [LINKS.omnipool, t("liquidity.navigation.omnipoolAndStablepool")],
+  [LINKS.isolated, t("liquidity.navigation.isolated")],
+])
 
 export const Navigation = () => {
   const { t } = useTranslation()
@@ -80,4 +90,11 @@ const MyLiquidity = () => {
       />
     </>
   )
+}
+
+export const PoolNavigation = () => {
+  const location = useLocation()
+  const { pathname } = location.history.location
+
+  return <BackSubHeader label={`Back to ${routeMap.get(pathname)}`} />
 }

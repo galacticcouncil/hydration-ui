@@ -1,8 +1,8 @@
 import { ReactNode } from "react"
 import { DetailCardContainer } from "./DetailCard.styled"
 import { Text } from "components/Typography/Text/Text"
-import { SInfoIcon } from "sections/pools/pool/Pool.styled"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
 export const DetailCard = ({
   label,

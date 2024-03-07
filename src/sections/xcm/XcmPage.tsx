@@ -31,7 +31,7 @@ type WalletChangeDetail = {
 }
 
 export const XcmApp = createComponent({
-  tagName: "gc-xcm-app",
+  tagName: "gc-xcm",
   elementClass: Apps.XcmApp,
   react: React,
   events: {
@@ -104,7 +104,13 @@ export function XcmPage() {
 
     const chain = chainsMap.get(srcChain)
     const isEvm = chain?.isEvmParachain()
-    const walletMode = isEvm ? WalletMode.EVM : WalletMode.Substrate
+    const isHydra = chain?.key === "hydradx"
+
+    const walletMode = isHydra
+      ? WalletMode.Default
+      : isEvm
+      ? WalletMode.EVM
+      : WalletMode.Substrate
 
     setIncomingSrcChain(srcChain)
     toggleWeb3Modal(walletMode, {

@@ -5,14 +5,12 @@ import { MyActiveBonds } from "./MyActiveBonds"
 import { BondList } from "./list/BondList"
 import { Spacer } from "components/Spacer/Spacer"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useState } from "react"
 
 export const BondsPage = () => {
   const { t } = useTranslation()
   const {
     assets: { bonds },
   } = useRpcProvider()
-  const [expanded, setExpanded] = useState(false)
 
   return (
     <>
@@ -20,13 +18,9 @@ export const BondsPage = () => {
       <Spacer axis="vertical" size={33} />
       <BondList bonds={bonds} />
       <Spacer axis="vertical" size={33} />
-      <WhyBonds expanded={expanded} setExpanded={setExpanded} />
+      <WhyBonds />
       <Spacer axis="vertical" size={40} />
-      <MyActiveBonds
-        showTransactions
-        expanded={expanded}
-        setExpanded={setExpanded}
-      />
+      <MyActiveBonds showTransactions />
     </>
   )
 }

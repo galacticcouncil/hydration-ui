@@ -13,9 +13,9 @@ export const SContainer = styled.div<{ variant: string }>`
   background-color: rgba(6, 9, 23, 0.4);
 
   ${gradientBorder};
-  border-radius: ${theme.borderRadius.stakingCard}px;
+  border-radius: ${theme.borderRadius.medium}px;
   :before {
-    border-radius: ${theme.borderRadius.stakingCard}px;
+    border-radius: ${theme.borderRadius.medium}px;
   }
 
   ${({ variant }) => {
