@@ -29,13 +29,16 @@ export const GlobalFarmRowMulti = ({
 
   if (!farmAprs.data) return null
 
+  const { minApr, maxApr } = getMinAndMaxAPR(farmAprs)
+
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }} className={className}>
-      {!!farmAprs.data && (
-        <Text fs={fontSize} color="brightBlue200">
-          {t(`value.multiAPR`, getMinAndMaxAPR(farmAprs))}
-        </Text>
-      )}
+      <Text fs={fontSize} color="brightBlue200">
+        {maxApr.gt(0)
+          ? t(`value.multiAPR`, { minApr, maxApr })
+          : t(`value.percentage`, { value: maxApr })}
+      </Text>
+
       <MultipleIcons
         size={iconSize}
         icons={farmAprs.data.map((farm) => ({

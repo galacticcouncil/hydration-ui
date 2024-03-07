@@ -215,3 +215,100 @@ export const getCoingeckoSpotPrice = async () => {
   const json = await res.json()
   return json[STABLECOIN_SYMBOL.toLowerCase()].usd
 }
+
+type simplifiedAsset = {
+  id: string | u32
+  name: string
+  symbol: string
+}
+
+export const useAssetPrices = (
+  assets: simplifiedAsset[],
+  noRefresh?: boolean,
+) => {
+  const displayAsset = useDisplayAssetStore()
+  const ids = assets.map((asset) => asset.id)
+  const spotPrices = useSpotPrices(ids, displayAsset.id, noRefresh)
+  const coingeckoAssetNames = spotPrices
+    .filter((asset) => asset?.data?.spotPrice.isNaN())
+    .map((asset) => {
+      const matchingAsset = assets.find((a) => a.id === asset?.data?.tokenIn)
+      return { id: matchingAsset?.id, name: matchingAsset?.name }
+    })
+    .filter((asset): asset is simplifiedAsset => asset !== undefined)
+
+  const coingeckoPrices = useCoingeckoPrice(coingeckoAssetNames)
+
+  const updatedSpotPrices = useMemo(() => {
+    return spotPrices.map((spotPrices, index) => {
+      if (spotPrices.data && spotPrices.data.spotPrice.isNaN()) {
+        const coingeckoPrice = coingeckoPrices.data?.[spotPrices.data.tokenIn]
+
+        if (coingeckoPrice) {
+          return {
+            ...spotPrices,
+            data: {
+              ...spotPrices.data,
+              // @ts-ignore
+              spotPrice: new BigNumber(coingeckoPrice),
+            },
+          }
+        }
+      }
+      return spotPrices
+    })
+  }, [spotPrices, coingeckoPrices.data])
+
+  return updatedSpotPrices
+}
+
+export const useCoingeckoPrice = (assets: simplifiedAsset[]) => {
+  return useQuery(
+    [QUERY_KEYS.coingeckoUsd, assets.map((asset) => asset.name)],
+    async () => {
+      const prices = await getCoingeckoAssetPrices(assets)
+      return prices
+    },
+    {
+      enabled: assets.length > 0,
+      refetchOnWindowFocus: false,
+      refetchOnMount: true,
+      refetchOnReconnect: false,
+      retry: false,
+      staleTime: 1000 * 60 * 60, // 1h
+    },
+  )
+}
+
+export const getCoingeckoAssetPrices = async (
+  assets: simplifiedAsset[],
+): Promise<{ [key: string]: number }> => {
+  const formattedAssetNames = assets
+    .map((asset) => {
+      let formattedName = asset.name.toLowerCase()
+      if (asset.name.includes(" ")) {
+        formattedName = asset.name.replace(/\s+/g, "-").toLowerCase()
+      } else if (asset.name.toLowerCase() === "phala") {
+        formattedName = "pha"
+      } else if (asset.name.toLowerCase() === "glimmer") {
+        formattedName = "moonbeam"
+      }
+      return formattedName
+    })
+    .join(",")
+
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${formattedAssetNames}&vs_currencies=usd`
+  const res = await fetch(url)
+  const json = await res.json()
+
+  const pricesById: { [key: string]: number } = assets.reduce(
+    (acc, asset) => {
+      const formattedName = asset.name.toLowerCase().replace(/\s+/g, "-")
+      acc[asset.id.toString()] = json[formattedName]?.usd || undefined
+      return acc
+    },
+    {} as { [key: string]: number },
+  )
+
+  return pricesById
+}

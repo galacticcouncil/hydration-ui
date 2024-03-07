@@ -2990,10 +2990,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@3.1.4":
-  version "3.1.4"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.1.4.tgz#d2ff675b77f4f618a3cf689e5b2c238b24e6b7aa"
-  integrity sha512-t4csrQQ93nveRIlvHdVLJ7RcjVb5AsGTdUsz6s4R5D4NSsfpomtggidu8vrUMr93xdBtofwoC93tLRfGN9TlpQ==
+"@galacticcouncil/apps@3.2.4":
+  version "3.2.4"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.2.4.tgz#8a672eca85f0ca88d527cc9c92150f668bbc6b2d"
+  integrity sha512-CzmmYSb1lPnzry3qS9IhjkAUJs7qN7MKJv0IQrSjGoMb/DG/od7oa3KLz1RtOGz8LZyoOqRIkBDJ7DtaG6vaPg==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@talismn/connect-wallets" "^1.2.1"
@@ -3038,10 +3038,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.2.0.tgz#74feacdf94d4846f1a148835f25936b2ddc7bdfd"
   integrity sha512-mznedOeA8d9BQ8kUQ/4O/P6trqTC4FGwvTDGCHJ0O/bgA9iFb+suctbFtyFT3qfNnngR7FSF2Pls1O/SvtNn8g==
 
-"@galacticcouncil/sdk@^1.1.8":
-  version "1.1.8"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.1.8.tgz#0364c80d9ea3beb7c6c2f3be949d49a10ae46a36"
-  integrity sha512-4xRZWim6L7vdAweBwXqTsfg3VVPfBKv8sWZwNItprF3ekv7O4S9zKYCA7uNuO43M3KsvFZTswxmHu72aUThM/Q==
+"@galacticcouncil/sdk@^1.1.11":
+  version "1.1.11"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.1.11.tgz#b9241c0562e9655e09471e88bc1b6608804cdc05"
+  integrity sha512-Y+PjcRUUH5Ca699vZi+0FyqJMxSUNuo99Wl+lkTUasu/p3dGkpGHvR34Xhp+/kErboUKbETG+ZwDtV8BEGLdmg==
   dependencies:
     "@galacticcouncil/math-lbp" "^0.2.1"
     "@galacticcouncil/math-omnipool" "^0.2.0"
@@ -3051,10 +3051,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^3.0.2":
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.0.2.tgz#da377f79a3a1ec723003ae4b2cfd9c0d07116df8"
-  integrity sha512-dIzDpPO1EzTfss8a6jfRC2r4H05WdnjlddJGEv5wt9tz1cHz7ZIz1/F/G8A1o0eTuxch1Jf+C5BAW7JmeUK67Q==
+"@galacticcouncil/ui@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.0.4.tgz#80f9d78b9a5d6064c43e934a15ca8832b610bdcd"
+  integrity sha512-dB4YFD5cxR4sKbLu1/xEIRf+1ux2uleBqqmtHSqP1h88ONTzgdD0PtzWKfoVMWufFsDd6SrzadCkdyqJBqi1VA==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
@@ -3062,10 +3062,10 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.5.0.tgz#200d7973a39adc48e69041f6066f31635c950d01"
-  integrity sha512-W5TZNc3cBuvpEP9b3d3Cyf7mK6pu3lRKbZX8HsgsFCG/Y+a2vrGwwvrKjvON66iJlsxl2KxtHbEgu/JW6bLXSw==
+"@galacticcouncil/xcm-cfg@^1.8.2":
+  version "1.8.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.8.2.tgz#5ebf820a0f8b8cf4ccb15722c320a731ed6fd45d"
+  integrity sha512-JoA+s44807UBVEIg1rTqaSAxLDsgehVV1os5UvYLIrpbpNfJmvsdcId6g1HLdDjmBshXH2FP4fD/K/RtmPpAxA==
 
 "@galacticcouncil/xcm-sdk@^2.2.0":
   version "2.2.0"
@@ -4489,6 +4489,30 @@
     "@radix-ui/react-use-controllable-state" "1.0.1"
     "@radix-ui/react-use-layout-effect" "1.0.1"
     "@radix-ui/react-visually-hidden" "1.0.3"
+
+"@radix-ui/react-toggle-group@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-toggle-group/-/react-toggle-group-1.0.4.tgz#f5b5c8c477831b013bec3580c55e20a68179d6ec"
+  integrity sha512-Uaj/M/cMyiyT9Bx6fOZO0SAG4Cls0GptBWiBmBxofmDbNVnYYoyRWj/2M/6VCi/7qcXFWnHhRUfdfZFvvkuu8A==
+  dependencies:
+    "@babel/runtime" "^7.13.10"
+    "@radix-ui/primitive" "1.0.1"
+    "@radix-ui/react-context" "1.0.1"
+    "@radix-ui/react-direction" "1.0.1"
+    "@radix-ui/react-primitive" "1.0.3"
+    "@radix-ui/react-roving-focus" "1.0.4"
+    "@radix-ui/react-toggle" "1.0.3"
+    "@radix-ui/react-use-controllable-state" "1.0.1"
+
+"@radix-ui/react-toggle@1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-toggle/-/react-toggle-1.0.3.tgz#aecb2945630d1dc5c512997556c57aba894e539e"
+  integrity sha512-Pkqg3+Bc98ftZGsl60CLANXQBBQ4W3mTFS9EJvNxKMZ7magklKV69/id1mlAlOFDDfHvlCms0fx8fA4CMKDJHg==
+  dependencies:
+    "@babel/runtime" "^7.13.10"
+    "@radix-ui/primitive" "1.0.1"
+    "@radix-ui/react-primitive" "1.0.3"
+    "@radix-ui/react-use-controllable-state" "1.0.1"
 
 "@radix-ui/react-tooltip@^1.0.6":
   version "1.0.6"

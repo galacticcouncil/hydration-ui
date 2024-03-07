@@ -12,12 +12,13 @@ import { OmnipoolAssetsTableColumn } from "sections/stats/components/OmnipoolAss
 import { useMedia } from "react-use"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { CellSkeleton } from "components/Skeleton/CellSkeleton"
-import { Farm, useFarmAprs, useFarms } from "api/farms"
+import { Farm, getMinAndMaxAPR, useFarmAprs, useFarms } from "api/farms"
 import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   const { t } = useTranslation()
@@ -26,38 +27,29 @@ const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
 
   const percentage = useMemo(() => {
     if (farmAprs.data?.length) {
-      const aprs = farmAprs.data
-        ? farmAprs.data.reduce((memo, { apr }) => memo.plus(apr), BN_0)
-        : BN_0
-      const minAprs = farmAprs.data
-        ? farmAprs.data.map(({ minApr, apr }) => (minApr ? minApr : apr))
-        : [BN_0]
-
-      const minApr = BigNumber.minimum(...minAprs)
-      const maxApr = aprs
-
-      return {
-        minApr,
-        maxApr,
-      }
+      return getMinAndMaxAPR(farmAprs)
     }
 
     return {
       minApr: BN_0,
       maxApr: BN_0,
     }
-  }, [farmAprs.data])
+  }, [farmAprs])
 
   const isLoading = farmAprs.isInitialLoading
 
   if (isLoading) return <CellSkeleton />
 
   return (
-    <Text color="white">
-      {t("value.percentage.range", {
-        from: percentage.minApr.lt(apy) ? percentage.minApr : BigNumber(apy),
-        to: percentage.maxApr.plus(apy),
-      })}
+    <Text color="white" fs={14}>
+      {percentage.maxApr.gt(0)
+        ? t("value.percentage.range", {
+            from: percentage.minApr.lt(apy)
+              ? percentage.minApr
+              : BigNumber(apy),
+            to: percentage.maxApr.plus(apy),
+          })
+        : t("value.percentage", { value: BigNumber(apy) })}
     </Text>
   )
 }
@@ -72,6 +64,9 @@ const APY = ({
   isLoading: boolean
 }) => {
   const { t } = useTranslation()
+  const {
+    assets: { native },
+  } = useRpcProvider()
   const farms = useFarms([assetId])
 
   if (isLoading || farms.isInitialLoading) return <CellSkeleton />
@@ -79,7 +74,11 @@ const APY = ({
   if (farms.data?.length)
     return <APYFarming farms={farms.data} apy={fee.toNumber()} />
 
-  return <Text color="white">{t("value.percentage", { value: fee })}</Text>
+  return (
+    <Text color="white" fs={14}>
+      {assetId === native.id ? "--" : t("value.percentage", { value: fee })}
+    </Text>
+  )
 }
 
 export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
@@ -116,7 +115,7 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
             />
           )}
           <div sx={{ flex: "column" }}>
-            <Text fs={14} color="white" font="ChakraPetchSemiBold">
+            <Text fs={14} color="white" fw={600}>
               {row.original.symbol}
             </Text>
             {isDesktop && (

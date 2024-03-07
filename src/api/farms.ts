@@ -8,12 +8,7 @@ import {
 import { useQueries, useQuery } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import { secondsInYear } from "date-fns"
-import {
-  BLOCK_TIME,
-  BN_0,
-  BN_QUINTILL,
-  PARACHAIN_BLOCK_TIME,
-} from "utils/constants"
+import { BLOCK_TIME, BN_0, PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useBestNumber } from "./chain"
@@ -206,8 +201,16 @@ function getGlobalRewardPerPeriod(
   totalSharesZ: BigNumber,
   yieldPerPeriod: BigNumber,
   maxRewardPerPeriod: BigNumber,
+  priceAdjustemnt: BigNumber,
 ) {
-  const globalRewardPerPeriod = totalSharesZ.times(yieldPerPeriod)
+  const globalRewardPerPeriod_ = totalSharesZ
+    .times(yieldPerPeriod)
+    .shiftedBy(-18)
+
+  const globalRewardPerPeriod = globalRewardPerPeriod_
+    .times(priceAdjustemnt)
+    .shiftedBy(-18)
+
   const isFarmFull = globalRewardPerPeriod.gte(maxRewardPerPeriod)
 
   return isFarmFull ? maxRewardPerPeriod : globalRewardPerPeriod
@@ -217,8 +220,11 @@ function getPoolYieldPerPeriod(
   globalRewardPerPeriod: BigNumber,
   multiplier: BigNumber,
   totalSharesZ: BigNumber,
+  priceAdjustemnt: BigNumber,
 ) {
-  return globalRewardPerPeriod.times(multiplier).div(totalSharesZ)
+  return globalRewardPerPeriod
+    .times(multiplier)
+    .div(totalSharesZ.times(priceAdjustemnt).shiftedBy(-18))
 }
 
 function getFarmApr(
@@ -227,6 +233,7 @@ function getFarmApr(
     relaychainBlockNumber: u32
   },
   farm: Farm,
+  priceAdjustment: BigNumber,
 ) {
   const { globalFarm, yieldFarm } = farm
   const { rewardCurrency, incentivizedAsset } = globalFarm
@@ -236,21 +243,20 @@ function getFarmApr(
     : yieldFarm.loyaltyCurve
         .unwrap()
         .initialRewardPercentage.toBigNumber()
-        .div(BN_QUINTILL)
+        .shiftedBy(-18)
 
   const loyaltyCurve = yieldFarm.loyaltyCurve.unwrapOr(null)
   const totalSharesZ = globalFarm.totalSharesZ.toBigNumber()
   const plannedYieldingPeriods = globalFarm.plannedYieldingPeriods.toBigNumber()
-  const yieldPerPeriod = globalFarm.yieldPerPeriod
-    .toBigNumber()
-    .div(BN_QUINTILL) // 18dp
+  const yieldPerPeriod = globalFarm.yieldPerPeriod.toBigNumber()
+
   const maxRewardPerPeriod = globalFarm.maxRewardPerPeriod.toBigNumber()
   const blocksPerPeriod = globalFarm.blocksPerPeriod.toBigNumber()
   const currentPeriod = bestNumber.relaychainBlockNumber
     .toBigNumber()
     .dividedToIntegerBy(blocksPerPeriod)
   const blockTime = BLOCK_TIME
-  const multiplier = yieldFarm.multiplier.toBigNumber().div(BN_QUINTILL)
+  const multiplier = yieldFarm.multiplier.toBigNumber().shiftedBy(-18)
   const secondsPerYear = new BigNumber(secondsInYear)
   const periodsPerYear = secondsPerYear.div(blockTime.times(blocksPerPeriod))
 
@@ -262,19 +268,18 @@ function getFarmApr(
       totalSharesZ,
       yieldPerPeriod,
       maxRewardPerPeriod,
+      priceAdjustment,
     )
     const poolYieldPerPeriod = getPoolYieldPerPeriod(
       globalRewardPerPeriod,
       multiplier,
       totalSharesZ,
+      priceAdjustment,
     )
+
     apr = poolYieldPerPeriod.times(periodsPerYear)
   }
 
-  // multiply by 100 since APR should be a percentage
-  apr = apr.times(100)
-
-  const minApr = loyaltyFactor ? apr.times(loyaltyFactor) : null
   // max distribution of rewards
   // https://www.notion.so/Screen-elements-mapping-Farms-baee6acc456542ca8d2cccd1cc1548ae?p=4a2f16a9f2454095945dbd9ce0eb1b6b&pm=s
   const distributedRewards = globalFarm.pendingRewards
@@ -298,7 +303,19 @@ function getFarmApr(
   // fullness of the farm
   // interpreted as how close are we to the cap of yield per period
   // https://www.notion.so/FAQ-59697ce6fd2e46e1b8f9093ba4606e88#446ee616be484c5e86e5eb82d3a29455
-  const fullness = totalSharesZ.times(yieldPerPeriod).div(maxRewardPerPeriod)
+
+  const fullness = totalSharesZ
+    .div(maxRewardPerPeriod.div(yieldPerPeriod))
+    .shiftedBy(-18)
+    .times(100)
+    .times(priceAdjustment.shiftedBy(-18))
+
+  const isDistributed = distributedRewards.gte(maxRewards)
+
+  // multiply by 100 since APR should be a percentage
+  apr = isDistributed ? BN_0 : apr.times(100)
+
+  const minApr = loyaltyFactor ? apr.times(loyaltyFactor) : null
 
   return {
     apr,
@@ -313,6 +330,7 @@ function getFarmApr(
     rewardCurrency,
     incentivizedAsset,
     yieldFarmId: yieldFarm.id.toString(),
+    isDistributed,
   }
 }
 
@@ -322,10 +340,17 @@ export const useFarmApr = (farm: {
   poolId: string
 }) => {
   const bestNumber = useBestNumber()
+  const rewardCurrency = farm.globalFarm.rewardCurrency.toString()
+  const incentivizedAsset = farm.globalFarm.incentivizedAsset.toString()
 
-  return useQueryReduce([bestNumber] as const, (bestNumber) => {
-    return getFarmApr(bestNumber, farm)
-  })
+  const oraclePrice = useOraclePrice(rewardCurrency, incentivizedAsset)
+
+  return useQueryReduce(
+    [bestNumber, oraclePrice] as const,
+    (bestNumber, oraclePrice) => {
+      return getFarmApr(bestNumber, farm, oraclePrice?.oraclePrice ?? BN_0)
+    },
+  )
 }
 
 export const useFarmAprs = (
@@ -336,9 +361,27 @@ export const useFarmAprs = (
   }[],
 ) => {
   const bestNumber = useBestNumber()
+  const ids = farms.map((farm) => ({
+    rewardCurrency: farm.globalFarm.rewardCurrency.toString(),
+    incentivizedAsset: farm.globalFarm.incentivizedAsset.toString(),
+  }))
+  const oraclePrices = useOraclePrices(ids)
 
   return useQueryReduce([bestNumber] as const, (bestNumber) => {
-    return farms.map((farm) => getFarmApr(bestNumber, farm))
+    return farms.map((farm) => {
+      const rewardCurrency = farm.globalFarm.rewardCurrency.toString()
+      const incentivizedAsset = farm.globalFarm.incentivizedAsset.toString()
+      const oraclePrice = oraclePrices.find(
+        (oraclePrice) =>
+          oraclePrice.data?.id.incentivizedAsset === incentivizedAsset &&
+          oraclePrice.data?.id.rewardCurrency === rewardCurrency,
+      )
+      return getFarmApr(
+        bestNumber,
+        farm,
+        oraclePrice?.data?.oraclePrice ?? BN_0,
+      )
+    })
   })
 }
 

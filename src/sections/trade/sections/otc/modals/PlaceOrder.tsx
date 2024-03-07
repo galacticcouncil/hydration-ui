@@ -51,15 +51,15 @@ export const PlaceOrder = ({
     mode: "onChange",
   })
 
-  useEffect(() => {
-    form.trigger()
-  }, [form])
-
   const { api, assets } = useRpcProvider()
   const assetOutMeta = aOut ? assets.getAsset(aOut.toString()) : undefined
   const assetOutBalance = useTokenBalance(aOut, account?.address)
   const assetInMeta = aIn ? assets.getAsset(aIn.toString()) : undefined
   const assetInBalance = useTokenBalance(aIn, account?.address)
+
+  useEffect(() => {
+    form.trigger()
+  }, [aIn, aOut, form])
 
   const { createTransaction } = useStore()
 
@@ -256,6 +256,11 @@ export const PlaceOrder = ({
                     control={form.control}
                     rules={{
                       required: true,
+                      validate: {
+                        differentFromAmountOut: (value) =>
+                          aIn !== aOut ||
+                          t("otc.order.place.validation.sameAssets"),
+                      },
                     }}
                     render={({
                       field: { name, value, onChange },
@@ -309,7 +314,7 @@ export const PlaceOrder = ({
                   <Button
                     sx={{ mt: 20 }}
                     variant="primary"
-                    disabled={!form.formState.isValid}
+                    disabled={!form.formState.isValid || aIn === aOut}
                   >
                     {t("otc.order.place.confirm")}
                   </Button>
