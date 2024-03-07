@@ -227,10 +227,14 @@ export const usePools = () => {
                 ?.projected_apr_perc ?? BN_NAN,
             )
 
+      const filteredOmnipoolPositions = omnipoolPositions.data.filter(
+        (omnipoolPosition) => omnipoolPosition.assetId === assetId,
+      )
+
+      const filteredMiningPositions = miningPositions.data?.[assetId] ?? []
+
       const isPositions =
-        omnipoolPositions.data.some(
-          (omnipoolPosition) => omnipoolPosition.assetId === assetId,
-        ) || !!miningPositions.data?.[assetId]?.length
+        !!filteredOmnipoolPositions.length || !!filteredMiningPositions?.length
 
       return {
         id: assetId,
@@ -244,6 +248,8 @@ export const usePools = () => {
         isVolumeLoading: volumes.isLoading,
         fee,
         isFeeLoading: fees.isLoading,
+        omnipoolPositions: filteredOmnipoolPositions,
+        miningPositions: filteredMiningPositions,
         isPositions,
       }
     })

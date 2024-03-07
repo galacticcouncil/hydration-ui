@@ -12,6 +12,17 @@ import { usePoolTable } from "./PoolsTable.utils"
 import { TPool, TXYKPool } from "sections/pools/PoolsPage.utils"
 import { useNavigate, useSearch } from "@tanstack/react-location"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
+import { theme } from "theme"
+import { css } from "@emotion/react"
+
+const styles = css`
+  @media ${theme.viewport.gte.sm} {
+    &:last-of-type {
+      padding-right: 30px;
+      padding-left: 0px;
+    }
+  }
+`
 
 export const PoolsTable = ({
   data,
@@ -65,15 +76,7 @@ export const PoolsTable = ({
                 css={{ cursor: "pointer" }}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableData
-                    key={cell.id}
-                    css={{
-                      "&:last-of-type": {
-                        paddingLeft: 0,
-                      },
-                    }}
-                    sx={{ px: [10, 26] }}
-                  >
+                  <TableData key={cell.id} css={styles} sx={{ px: [10, 26] }}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableData>
                 ))}
