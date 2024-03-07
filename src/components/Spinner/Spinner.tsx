@@ -1,9 +1,15 @@
 import { ResponsiveValue } from "utils/responsive"
 import { Gradient, SSpinnerContainer } from "./Spinner.styled"
 
-export const Spinner = ({ size = 34 }: { size?: ResponsiveValue<number> }) => {
+export const Spinner = ({
+  size = 34,
+  className,
+}: {
+  size?: ResponsiveValue<number>
+  className?: string
+}) => {
   return (
-    <SSpinnerContainer size={size}>
+    <SSpinnerContainer size={size} className={className}>
       <svg viewBox="0 0 100 100">
         <g filter="url(#filter0_f_36709_245024)">
           <circle
