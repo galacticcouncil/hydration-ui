@@ -12,7 +12,7 @@ import { OmnipoolAssetsTableColumn } from "sections/stats/components/OmnipoolAss
 import { useMedia } from "react-use"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { CellSkeleton } from "components/Skeleton/CellSkeleton"
-import { Farm, useFarmAprs, useFarms } from "api/farms"
+import { Farm, getMinAndMaxAPR, useFarmAprs, useFarms } from "api/farms"
 import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
@@ -27,27 +27,14 @@ const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
 
   const percentage = useMemo(() => {
     if (farmAprs.data?.length) {
-      const aprs = farmAprs.data
-        ? farmAprs.data.reduce((memo, { apr }) => memo.plus(apr), BN_0)
-        : BN_0
-      const minAprs = farmAprs.data
-        ? farmAprs.data.map(({ minApr, apr }) => (minApr ? minApr : apr))
-        : [BN_0]
-
-      const minApr = BigNumber.minimum(...minAprs)
-      const maxApr = aprs
-
-      return {
-        minApr,
-        maxApr,
-      }
+      return getMinAndMaxAPR(farmAprs)
     }
 
     return {
       minApr: BN_0,
       maxApr: BN_0,
     }
-  }, [farmAprs.data])
+  }, [farmAprs])
 
   const isLoading = farmAprs.isInitialLoading
 
@@ -55,10 +42,14 @@ const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
 
   return (
     <Text color="white" fs={14}>
-      {t("value.percentage.range", {
-        from: percentage.minApr.lt(apy) ? percentage.minApr : BigNumber(apy),
-        to: percentage.maxApr.plus(apy),
-      })}
+      {percentage.maxApr.gt(0)
+        ? t("value.percentage.range", {
+            from: percentage.minApr.lt(apy)
+              ? percentage.minApr
+              : BigNumber(apy),
+            to: percentage.maxApr.plus(apy),
+          })
+        : t("value.percentage", { value: BigNumber(apy) })}
     </Text>
   )
 }
