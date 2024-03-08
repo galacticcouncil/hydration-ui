@@ -17,7 +17,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { TPool, TXYKPool, isXYKPoolType } from "sections/pools/PoolsPage.utils"
-import { Farm, useFarmAprs, useFarms } from "api/farms"
+import { Farm, getMinAndMaxAPR, useFarmAprs, useFarms } from "api/farms"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
@@ -212,27 +212,14 @@ const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
 
   const percentage = useMemo(() => {
     if (farmAprs.data?.length) {
-      const aprs = farmAprs.data
-        ? farmAprs.data.reduce((memo, { apr }) => memo.plus(apr), BN_0)
-        : BN_0
-      const minAprs = farmAprs.data
-        ? farmAprs.data.map(({ minApr, apr }) => (minApr ? minApr : apr))
-        : [BN_0]
-
-      const minApr = BN.minimum(...minAprs)
-      const maxApr = aprs
-
-      return {
-        minApr,
-        maxApr,
-      }
+      return getMinAndMaxAPR(farmAprs)
     }
 
     return {
       minApr: BN_0,
       maxApr: BN_0,
     }
-  }, [farmAprs.data])
+  }, [farmAprs])
 
   const isLoading = farmAprs.isInitialLoading
 
@@ -241,10 +228,12 @@ const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   return (
     <NonClickableContainer>
       <Text color="white" fs={14}>
-        {t("value.percentage.range", {
-          from: percentage.minApr.lt(apy) ? percentage.minApr : BN(apy),
-          to: percentage.maxApr.plus(apy),
-        })}
+        {percentage.maxApr.gt(0)
+          ? t("value.percentage.range", {
+              from: percentage.minApr.lt(apy) ? percentage.minApr : BN(apy),
+              to: percentage.maxApr.plus(apy),
+            })
+          : t("value.percentage", { value: BN(apy) })}
       </Text>
     </NonClickableContainer>
   )
