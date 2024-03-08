@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useTokenBalance } from "api/balances"
 import { SSeparator } from "components/Separator/Separator.styled"
 import { Text } from "components/Typography/Text/Text"
+import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { TPoolFullData, TXYKPool } from "sections/pools/PoolsPage.utils"
@@ -15,8 +16,12 @@ import { BN_0 } from "utils/constants"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
+  const { assets } = useRpcProvider()
   const { account } = useAccount()
   const { t } = useTranslation()
+  const meta = assets.getAsset(pool.id)
+  const queryClient = useQueryClient()
+
   const miningPositions = useAllUserDepositShare()
 
   const stablepoolBalance = useTokenBalance(
@@ -24,7 +29,11 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
     account?.address,
   )
 
-  const queryClient = useQueryClient()
+  const spotPrice = pool.spotPrice
+  const stablepoolAmount = stablepoolBalance.data?.freeBalance ?? BN_0
+  const stablepoolAmountPrice = spotPrice
+    ? stablepoolAmount.multipliedBy(spotPrice).shiftedBy(-meta.decimals)
+    : BN_0
 
   const totalOmnipool = useMemo(() => {
     if (pool.omnipoolNftPositions) {
@@ -56,6 +65,8 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
     )
   }
 
+  const totalStableAndOmni = totalOmnipool.plus(stablepoolAmountPrice)
+
   return (
     <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
       <Text fs={15} font="FontOver">
@@ -75,7 +86,7 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
             {t("liquidity.pool.positions.omnipool")}
           </Text>
           <Text color="white" fs={[14, 16]} fw={600}>
-            {t("value.usd", { amount: totalOmnipool })}
+            {t("value.usd", { amount: totalStableAndOmni })}
           </Text>
         </div>
         {!totalFarms.isZero() && (
@@ -96,7 +107,12 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
       <SSeparator color="darkBlue401" />
 
       {pool.isStablePool && (
-        <StablepoolPosition pool={pool} refetchPositions={refetchPositions} />
+        <StablepoolPosition
+          pool={pool}
+          amount={stablepoolAmount}
+          amountPrice={stablepoolAmountPrice}
+          refetchPositions={refetchPositions}
+        />
       )}
 
       <LiquidityPositionWrapper
