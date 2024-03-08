@@ -2,6 +2,8 @@ import { Meta, StoryObj } from "@storybook/react"
 import { ComponentPropsWithoutRef, useState } from "react"
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import { Input } from "./Input"
+import Percentage from "assets/icons/Percentage.svg?react"
+import IconSearch from "assets/icons/IconSearch.svg?react"
 
 export default {
   component: Input,
@@ -55,5 +57,19 @@ export const WithTooltip: Story = {
   render: Template,
   args: {
     tooltip: "Enter amount to swap",
+  },
+}
+
+export const WithIconStart: Story = {
+  render: Template,
+  args: {
+    iconStart: <IconSearch />,
+  },
+}
+
+export const WithIconEnd: Story = {
+  render: Template,
+  args: {
+    iconEnd: <Percentage />,
   },
 }
