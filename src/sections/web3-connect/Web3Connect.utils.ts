@@ -26,6 +26,7 @@ import { isMetaMask, requestNetworkSwitch } from "utils/metamask"
 import { genesisHashToChain } from "utils/helpers"
 import { WalletAccount } from "sections/web3-connect/types"
 import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
+import { useIsEvmAccountBound } from "api/evm"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -48,11 +49,16 @@ export const useEvmAccount = () => {
 
   const address = account?.address ?? ""
 
+  const isEvm = isEvmAccount(address)
+
   const evmAddress = useMemo(() => {
     if (!address) return ""
-    if (isEvmAccount(address)) return H160.fromAccount(address)
+    if (isEvm) return H160.fromAccount(address)
     return H160.fromSS58(address)
-  }, [address])
+  }, [isEvm, address])
+
+  const accountBinding = useIsEvmAccountBound(isEvm ? "" : evmAddress)
+  const isBound = isEvm ? true : !!accountBinding.data
 
   const evm = useQuery(
     QUERY_KEYS.evmChainInfo(address),
@@ -72,15 +78,19 @@ export const useEvmAccount = () => {
 
   if (!address) {
     return {
+      isBound: false,
+      isLoading: false,
       account: null,
     }
   }
 
   return {
+    isBound,
+    isLoading: accountBinding.isLoading || evm.isLoading,
     account: {
-      ...evm.data,
+      chainId: evm.data?.chainId ?? null,
       name: account?.name ?? "",
-      address: evmAddress,
+      address: isBound ? evmAddress : "",
     },
   }
 }

@@ -367,7 +367,11 @@ export const QUERY_KEYS = {
   fee: (assetId?: string) => ["fee", assetId],
   evmTxCost: (data: string) => ["evmTxCost", data],
   evmChainInfo: (address: string) => ["evmChainInfo", address],
-  evmBoundAccountId: (address: string) => ["evmBoundAccountId", address],
+  evmBoundAccountId: (address: string) => [
+    QUERY_KEY_PREFIX,
+    "evmBoundAccountId",
+    address,
+  ],
   referralCodes: (accountAddress?: string) => [
     "referralsCodes",
     accountAddress,
