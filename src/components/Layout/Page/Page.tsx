@@ -1,5 +1,5 @@
 import { Header } from "components/Layout/Header/Header"
-import { ReactNode, useEffect, useRef } from "react"
+import { ReactNode, lazy, useEffect, useRef } from "react"
 import { MobileNavBar } from "components/Layout/Header/MobileNavBar/MobileNavBar"
 import {
   SGradientBg,
@@ -21,6 +21,10 @@ type Props = {
   subHeader?: ReactNode
   subHeaderStyle?: Interpolation<Theme>
 }
+
+const Transactions = lazy(async () => ({
+  default: (await import("sections/transaction/Transactions")).Transactions,
+}))
 
 export const Page = ({
   className,
@@ -59,6 +63,7 @@ export const Page = ({
         </div>
       </SPage>
       <Web3Connect />
+      <Transactions />
       {featureFlags.referrals && <ReferralsConnect />}
     </>
   )
