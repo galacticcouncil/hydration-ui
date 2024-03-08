@@ -1,6 +1,6 @@
-import { Spinner } from "components/Spinner/Spinner.styled"
 import { ComponentProps, forwardRef } from "react"
 import { SButton, SButtonTransparent, SContent } from "./Button.styled"
+import { Spinner } from "components/Spinner/Spinner"
 
 export type ButtonVariant =
   | "primary"
@@ -34,7 +34,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <SButton variant={variant} size={size} {...props}>
       <SContent size={size}>
-        {props.isLoading && <Spinner width={16} height={16} />}
+        {props.isLoading && <Spinner size={16} />}
         {props.text || props.children}
       </SContent>
     </SButton>

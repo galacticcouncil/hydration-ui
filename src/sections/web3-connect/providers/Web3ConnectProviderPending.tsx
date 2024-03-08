@@ -1,12 +1,12 @@
 import { css } from "@emotion/react"
 import { Text } from "components/Typography/Text/Text"
-import { Spinner } from "components/Spinner/Spinner.styled"
 import { useTranslation } from "react-i18next"
 import {
   WalletProviderType,
   getWalletProviderByType,
 } from "sections/web3-connect/Web3Connect.utils"
 import { FC } from "react"
+import { Spinner } from "components/Spinner/Spinner"
 
 type Props = { provider: WalletProviderType }
 
@@ -33,7 +33,7 @@ export const Web3ConnectProviderPending: FC<Props> = ({ provider }) => {
           }
         `}
       >
-        <Spinner css={{ width: 80, height: 80 }} />
+        <Spinner size={80} />
         <img
           src={wallet?.logo.src}
           alt={wallet?.logo.alt}
