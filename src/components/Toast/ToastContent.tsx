@@ -6,12 +6,12 @@ import InfoIcon from "assets/icons/InfoIcon.svg?react"
 import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import UnknownIcon from "assets/icons/Unknown.svg?react"
 import { Text } from "components/Typography/Text/Text"
-import { Spinner } from "components/Spinner/Spinner.styled"
 import { Maybe, useNow } from "utils/helpers"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { ToastVariant } from "state/toasts"
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
+import { Spinner } from "components/Spinner/Spinner"
 
 export function ToastContent(props: {
   variant: Maybe<ToastVariant>
@@ -34,7 +34,7 @@ export function ToastContent(props: {
         ) : props.variant === "error" ? (
           <FailIcon />
         ) : props.variant === "progress" ? (
-          <Spinner width={28} height={28} />
+          <Spinner size={28} />
         ) : props.variant === "unknown" ? (
           <UnknownIcon color={theme.colors.darkBlue200} />
         ) : props.variant === "temporary" ? (

@@ -8,7 +8,6 @@ import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { Stepper } from "components/Stepper/Stepper"
 import { AddLiquidityForm } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
-import { Spinner } from "components/Spinner/Spinner.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useModalPagination } from "components/Modal/Modal.utils"
@@ -18,6 +17,7 @@ import { TStableSwap } from "api/assetDetails"
 import { useQueryClient } from "@tanstack/react-query"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { Spinner } from "components/Spinner/Spinner"
 
 export enum Page {
   OPTIONS,
@@ -197,7 +197,7 @@ export const TransferModal = ({
                   height: 240,
                 }}
               >
-                <Spinner width={50} height={50} />
+                <Spinner size={50} />
                 <Text color="whiteish500">
                   {t("liquidity.stablepool.transfer.adding")}
                 </Text>
