@@ -272,6 +272,7 @@
   "liquidity.reviewTransaction.modal.detail.lifetime": "Transaction lifetime:",
   "liquidity.reviewTransaction.modal.detail.nonce": "Nonce:",
   "liquidity.reviewTransaction.modal.detail.tip":"Tip the block author:",
+  "liquidity.reviewTransaction.modal.detail.tip.name":"Display user tip",
   "liquidity.reviewTransaction.modal.detail.srcChainFee":"Source chain fee:",
   "liquidity.reviewTransaction.modal.detail.dstChainFee":"Destination chain fee:",
   "liquidity.reviewTransaction.modal.confirmButton": "Sign transaction",
