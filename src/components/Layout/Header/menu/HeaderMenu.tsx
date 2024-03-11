@@ -46,7 +46,7 @@ export const HeaderMenu = forwardRef<HTMLElement>((_, ref) => {
           (LINKS.allPools === item.href || LINKS.myLiquidity === item.href) &&
           isLoaded
         )
-          return <LiquidityMenuItem item={item} search={search} i={i} />
+          return <LiquidityMenuItem item={item} search={search} />
 
         return (
           <Link
@@ -68,11 +68,9 @@ export const HeaderMenu = forwardRef<HTMLElement>((_, ref) => {
 const LiquidityMenuItem = ({
   item,
   search,
-  i,
 }: {
   item: (typeof MENU_ITEMS)[number]
   search: Partial<Search<unknown>>
-  i: number
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
