@@ -280,10 +280,6 @@ function getFarmApr(
     apr = poolYieldPerPeriod.times(periodsPerYear)
   }
 
-  // multiply by 100 since APR should be a percentage
-  apr = apr.times(100)
-
-  const minApr = loyaltyFactor ? apr.times(loyaltyFactor) : null
   // max distribution of rewards
   // https://www.notion.so/Screen-elements-mapping-Farms-baee6acc456542ca8d2cccd1cc1548ae?p=4a2f16a9f2454095945dbd9ce0eb1b6b&pm=s
   const distributedRewards = globalFarm.pendingRewards
@@ -314,6 +310,13 @@ function getFarmApr(
     .times(100)
     .times(priceAdjustment.shiftedBy(-18))
 
+  const isDistributed = distributedRewards.gte(maxRewards)
+
+  // multiply by 100 since APR should be a percentage
+  apr = isDistributed ? BN_0 : apr.times(100)
+
+  const minApr = loyaltyFactor ? apr.times(loyaltyFactor) : null
+
   return {
     apr,
     minApr,
@@ -327,6 +330,7 @@ function getFarmApr(
     rewardCurrency,
     incentivizedAsset,
     yieldFarmId: yieldFarm.id.toString(),
+    isDistributed,
   }
 }
 

@@ -14,6 +14,7 @@ export type SwitchProps = {
   labelPosition?: LabelPosition
   name: string
   disabled?: boolean
+  className?: string
 }
 
 const getLabelPositionCss = (labelPosition: LabelPosition) => {
@@ -34,6 +35,7 @@ export const Switch = ({
   fs = 12,
   label,
   labelPosition = "start",
+  className,
 }: SwitchProps) => (
   <Label
     id={name}
@@ -41,6 +43,7 @@ export const Switch = ({
     withLabel={!!label}
     sx={{ fontSize: fs, flex: "row", align: "center" }}
     css={getLabelPositionCss(labelPosition)}
+    className={className}
   >
     <SSwitch
       checked={value}

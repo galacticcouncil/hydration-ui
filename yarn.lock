@@ -3212,15 +3212,15 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^1.8.2":
-  version "1.8.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.8.2.tgz#5ebf820a0f8b8cf4ccb15722c320a731ed6fd45d"
-  integrity sha512-JoA+s44807UBVEIg1rTqaSAxLDsgehVV1os5UvYLIrpbpNfJmvsdcId6g1HLdDjmBshXH2FP4fD/K/RtmPpAxA==
+"@galacticcouncil/xcm-cfg@^1.9.0":
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.9.0.tgz#0da201ad5485f5adc017f77bcf7053c755205b30"
+  integrity sha512-oF/Z1TF6jrKiIlrk8YFraJT9sQR8UB9SxyzDiaps+X+l0WHz/6LnuXKc4uiB7lxvAlN/XP0bU79ekIQ2sbtPMg==
 
-"@galacticcouncil/xcm-sdk@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-2.2.0.tgz#3f849e14371a2cd6c6e68a7250dc5429875164ff"
-  integrity sha512-YktX242JUH1kSNG3bpXdgS9t4TR2yiiUQCVWYKR84DND9YWbtfdh48lgM8Dww3QcmM7wByc8s0Vk6R80OXzTHw==
+"@galacticcouncil/xcm-sdk@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-2.3.0.tgz#b3758fd4995ef88eb5581495dd0ac43a206babaf"
+  integrity sha512-fyOD5Gl9UwU4bd2mHUGR7uiONvZNobo8cv1Dk2aLnioJ182h3IDNSWCvOrdyPJr1GwKzKVkyA6H8KX3bio3vfA==
   dependencies:
     "@moonbeam-network/xcm-builder" "1.0.13"
     "@moonbeam-network/xcm-config" "1.3.27"
