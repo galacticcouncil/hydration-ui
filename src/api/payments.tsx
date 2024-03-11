@@ -50,16 +50,6 @@ export const useSetAsFeePayment = (tx?: SubmittableExtrinsic) => {
   const { createTransaction, cancelTransaction, transactions } = useStore()
   const queryClient = useQueryClient()
 
-  const onSubmitted = () => {
-    if (!tx) return null
-
-    const prevTransaction = transactions?.[1]
-
-    if (prevTransaction) {
-      cancelTransaction(prevTransaction.id)
-    }
-  }
-
   return async (tokenId: string) => {
     if (!tokenId) return
 
@@ -92,13 +82,6 @@ export const useSetAsFeePayment = (tx?: SubmittableExtrinsic) => {
       return memo
     }, {} as ToastMessage)
 
-    // tx && !isSetCurrency
-    //         ? api.tx.utility.batchAll([
-    //             api.tx.multiTransactionPayment.setCurrency(tokenId),
-    //             tx,
-    //           ])
-    //         : api.tx.multiTransactionPayment.setCurrency(tokenId),
-
     const transaction = await createTransaction(
       {
         tx: api.tx.multiTransactionPayment.setCurrency(tokenId),
@@ -106,7 +89,7 @@ export const useSetAsFeePayment = (tx?: SubmittableExtrinsic) => {
           currencyId: tokenId,
         },
       },
-      { toast, onBack: () => {}, onSubmitted },
+      { toast, onBack: () => {} },
     )
 
     if (transaction.isError) return
