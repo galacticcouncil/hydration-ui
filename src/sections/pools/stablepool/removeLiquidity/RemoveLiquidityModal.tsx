@@ -13,12 +13,12 @@ import { RemoveOption, RemoveOptions } from "./RemoveOptions"
 import { Button } from "components/Button/Button"
 import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
-import { Spinner } from "components/Spinner/Spinner.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useTokenBalance } from "api/balances"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TStableSwap } from "api/assetDetails"
+import { Spinner } from "components/Spinner/Spinner"
 
 enum RemoveStablepoolLiquidityPage {
   OPTIONS,
@@ -191,7 +191,7 @@ export const RemoveLiquidityModal = ({
                   height: 240,
                 }}
               >
-                <Spinner width={50} height={50} />
+                <Spinner size={50} />
                 <Text color="whiteish500">
                   {t("liquidity.stablepool.remove.removing")}
                 </Text>
