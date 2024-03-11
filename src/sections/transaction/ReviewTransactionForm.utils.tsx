@@ -10,8 +10,7 @@ import {
   useTransactionFeeInfo,
 } from "api/payments"
 import { useNextNonce } from "api/transaction"
-import BigNumber from "bignumber.js"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -24,12 +23,10 @@ import { useReferralCodesStore } from "sections/referrals/store/useReferralCodes
 export const useTransactionValues = ({
   xcallMeta,
   feePaymentId,
-  fee,
   tx,
 }: {
   xcallMeta?: Record<string, string>
   feePaymentId?: string
-  fee?: BigNumber
   tx: SubmittableExtrinsic<"promise">
 }) => {
   const { assets, api, featureFlags } = useRpcProvider()
@@ -75,15 +72,7 @@ export const useTransactionValues = ({
     ? assets.getAsset(accountFeePaymentId)
     : undefined
 
-  const transactioFee = useTransactionFeeInfo(
-    boundedTx,
-    feePaymentId && fee
-      ? {
-          nativeFee: fee,
-          feeAssetId: feePaymentId,
-        }
-      : undefined,
-  )
+  const transactioFee = useTransactionFeeInfo(boundedTx, feePaymentId)
 
   const feeAssetBalance = useTokenBalance(accountFeePaymentId, account?.address)
 
@@ -175,10 +164,11 @@ export const useEditFeePaymentAsset = (
   acceptedFeePaymentAssets: ReturnType<
     typeof useTransactionValues
   >["data"]["acceptedFeePaymentAssets"],
+  tx: SubmittableExtrinsic<"promise">,
   feePaymentAssetId?: string,
 ) => {
   const { t } = useTranslation()
-  const setFeeAsPayment = useSetAsFeePayment()
+  const setFeeAsPayment = useSetAsFeePayment(tx)
 
   const allowedAssets =
     acceptedFeePaymentAssets
@@ -197,45 +187,7 @@ export const useEditFeePaymentAsset = (
     title: t("liquidity.reviewTransaction.modal.selectAsset"),
     hideInactiveAssets: true,
     allowedAssets,
-    onSelect: (asset) =>
-      setFeeAsPayment(asset.id.toString(), {
-        onLoading: (
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
-            tOptions={{
-              asset: asset.symbol,
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
-        ),
-        onSuccess: (
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.table.actions.payment.toast.onSuccess"
-            tOptions={{
-              asset: asset.symbol,
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
-        ),
-        onError: (
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
-            tOptions={{
-              asset: asset.symbol,
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
-        ),
-      }),
+    onSelect: (asset) => setFeeAsPayment(asset.id),
   })
 
   return {

@@ -15,6 +15,8 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useSpotPrice } from "./spotPrice"
 import { useOraclePrice } from "./farms"
 import { BN_1, BN_NAN } from "utils/constants"
+import { TOAST_MESSAGES } from "state/toasts"
+import { Trans, useTranslation } from "react-i18next"
 
 export const getAcceptedCurrency =
   (api: ApiPromise, id: u32 | string) => async () => {
@@ -41,28 +43,72 @@ export const useAcceptedCurrencies = (ids: Maybe<string | u32>[]) => {
   })
 }
 
-export const useSetAsFeePayment = () => {
-  const { api } = useRpcProvider()
+export const useSetAsFeePayment = (tx?: SubmittableExtrinsic) => {
+  const { t } = useTranslation()
+  const { api, assets } = useRpcProvider()
   const { account } = useAccount()
-  const { createTransaction } = useStore()
+  const { createTransaction, cancelTransaction, transactions } = useStore()
   const queryClient = useQueryClient()
-  const { data: paymentInfoData } = usePaymentInfo(
-    api.tx.balances.transferKeepAlive("", "0"),
-  )
 
-  return async (tokenId?: string, toast?: ToastMessage) => {
-    if (!(tokenId && paymentInfoData)) return
+  const onSubmitted = () => {
+    if (!tx) return null
+
+    const prevTransaction = transactions?.[1]
+
+    if (prevTransaction) {
+      cancelTransaction(prevTransaction.id)
+    }
+  }
+
+  return async (tokenId: string) => {
+    if (!tokenId) return
+
+    const isSetCurrency = tx?.method.method === "setCurrency"
+
+    if (isSetCurrency) {
+      const currenctTransaction = transactions?.[0]
+
+      if (currenctTransaction) {
+        cancelTransaction(currenctTransaction.id)
+      }
+    }
+
+    const { symbol } = assets.getAsset(tokenId)
+
+    const toast = TOAST_MESSAGES.reduce((memo, type) => {
+      const msType = type === "onError" ? "onLoading" : type
+      memo[type] = (
+        <Trans
+          t={t}
+          i18nKey={`wallet.assets.table.actions.payment.toast.${msType}`}
+          tOptions={{
+            asset: symbol,
+          }}
+        >
+          <span />
+          <span className="highlight" />
+        </Trans>
+      )
+      return memo
+    }, {} as ToastMessage)
+
+    // tx && !isSetCurrency
+    //         ? api.tx.utility.batchAll([
+    //             api.tx.multiTransactionPayment.setCurrency(tokenId),
+    //             tx,
+    //           ])
+    //         : api.tx.multiTransactionPayment.setCurrency(tokenId),
 
     const transaction = await createTransaction(
       {
         tx: api.tx.multiTransactionPayment.setCurrency(tokenId),
         overrides: {
-          fee: new BigNumber(paymentInfoData.partialFee.toHex()),
           currencyId: tokenId,
         },
       },
-      { toast },
+      { toast, onBack: () => {}, onSubmitted },
     )
+
     if (transaction.isError) return
     await queryClient.refetchQueries({
       queryKey: QUERY_KEYS.accountCurrency(account?.address),
@@ -107,10 +153,7 @@ export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
 
 export const useTransactionFeeInfo = (
   extrinsic: SubmittableExtrinsic,
-  customNativeFee?: {
-    nativeFee: BigNumber
-    feeAssetId: string
-  },
+  customFeeId?: string,
 ) => {
   const { assets } = useRpcProvider()
   const { account } = useAccount()
@@ -118,8 +161,8 @@ export const useTransactionFeeInfo = (
   const accountCurrency = useAccountCurrency(account?.address)
   const paymentInfo = usePaymentInfo(extrinsic)
 
-  const currencyMeta = customNativeFee?.feeAssetId
-    ? assets.getAsset(customNativeFee.feeAssetId)
+  const currencyMeta = customFeeId
+    ? assets.getAsset(customFeeId)
     : accountCurrency.data
     ? assets.getAsset(accountCurrency.data)
     : undefined
@@ -146,8 +189,7 @@ export const useTransactionFeeInfo = (
     spotPrice = spotPriceQuery.data?.spotPrice ?? BN_1
   }
 
-  const nativeFee =
-    customNativeFee?.nativeFee ?? paymentInfo.data?.partialFee.toBigNumber()
+  const nativeFee = paymentInfo.data?.partialFee.toBigNumber()
 
   const fee = nativeFee
     ? nativeFee.shiftedBy(-assets.native.decimals).times(spotPrice)
