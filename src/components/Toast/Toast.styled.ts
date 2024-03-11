@@ -36,7 +36,7 @@ export const SIcon = styled.div`
   align-items: center;
   justify-content: center;
 
-  svg {
+  & > svg {
     width: 16px;
     height: 16px;
   }
