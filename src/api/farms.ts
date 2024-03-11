@@ -310,7 +310,7 @@ function getFarmApr(
     .times(100)
     .times(priceAdjustment.shiftedBy(-18))
 
-  const isDistributed = distributedRewards.gte(maxRewards)
+  const isDistributed = distributedRewards.div(maxRewards).gte(0.99)
 
   // multiply by 100 since APR should be a percentage
   apr = isDistributed ? BN_0 : apr.times(100)
