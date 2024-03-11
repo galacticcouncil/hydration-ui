@@ -19,7 +19,7 @@ export const PARACHAIN_CONFIG: {
     interior: HydradxRuntimeXcmAssetLocation["interior"]["type"]
   }
 } = {
-  ASSET_HUB_ID: {
+  [ASSET_HUB_ID]: {
     palletInstance: "50",
     network: "polkadot",
     parents: "1",
@@ -61,36 +61,31 @@ export const useRegisterToken = ({
   const { createTransaction } = useStore()
   const { t } = useTranslation()
 
-  return useMutation(
-    async (assetInput: TExternalAssetInput) => {
-      const toast = TOAST_MESSAGES.reduce((memo, type) => {
-        const msType = type === "onError" ? "onLoading" : type
-        memo[type] = (
-          <Trans
-            t={t}
-            i18nKey={`wallet.addToken.toast.register.${msType}`}
-            tOptions={{
-              name: assetName,
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
-        )
-        return memo
-      }, {} as ToastMessage)
-
-      return await createTransaction(
-        {
-          tx: api.tx.assetRegistry.registerExternal(assetInput),
-        },
-        { toast },
+  return useMutation(async (assetInput: TExternalAssetInput) => {
+    const toast = TOAST_MESSAGES.reduce((memo, type) => {
+      const msType = type === "onError" ? "onLoading" : type
+      memo[type] = (
+        <Trans
+          t={t}
+          i18nKey={`wallet.addToken.toast.register.${msType}`}
+          tOptions={{
+            name: assetName,
+          }}
+        >
+          <span />
+          <span className="highlight" />
+        </Trans>
       )
-    },
-    {
-      onSuccess,
-    },
-  )
+      return memo
+    }, {} as ToastMessage)
+
+    return await createTransaction(
+      {
+        tx: api.tx.assetRegistry.registerExternal(assetInput),
+      },
+      { toast, onSuccess },
+    )
+  })
 }
 
 export const useUserExternalTokenStore = create<{
