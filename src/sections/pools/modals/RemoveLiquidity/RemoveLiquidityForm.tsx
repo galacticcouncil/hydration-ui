@@ -68,20 +68,21 @@ export const RemoveLiquidityForm = ({
         <Text fs={18} font="FontOver" color="pink500" sx={{ mb: 20 }}>
           {t("value.percentage", { value })}
         </Text>
-        <Controller
-          name="value"
-          control={form.control}
-          render={({ field }) => (
-            <RemoveLiquidityInput
-              value={field.value}
-              onChange={field.onChange}
-              balance={t("liquidity.remove.modal.shares", {
-                shares: scaleHuman(totalShares, decimals),
-              })}
-              disabled={isPositionMultiple}
-            />
-          )}
-        />
+        {!isPositionMultiple && (
+          <Controller
+            name="value"
+            control={form.control}
+            render={({ field }) => (
+              <RemoveLiquidityInput
+                value={field.value}
+                onChange={field.onChange}
+                balance={t("liquidity.remove.modal.shares", {
+                  shares: scaleHuman(totalShares, decimals),
+                })}
+              />
+            )}
+          />
+        )}
 
         <STradingPairContainer>
           <Text color="brightBlue300">
