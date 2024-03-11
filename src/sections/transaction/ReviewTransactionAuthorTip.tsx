@@ -15,6 +15,7 @@ import BN from "bignumber.js"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useTokenBalance } from "api/balances"
 import { useTranslation } from "react-i18next"
+import { Switch } from "components/Switch/Switch"
 
 type Props = {
   onChange?: (amount: BN) => void
@@ -32,6 +33,7 @@ export const ReviewTransactionAuthorTip: FC<Props> = ({
   const { assets } = useRpcProvider()
   const [amount, setAmount] = useState("")
   const [error, setError] = useState("")
+  const [visible, setVisible] = useState(false)
   const { data: displayPrice } = useDisplayPrice(NATIVE_ASSET_ID)
 
   const asset = assets.getAsset(NATIVE_ASSET_ID)
@@ -67,23 +69,39 @@ export const ReviewTransactionAuthorTip: FC<Props> = ({
   )
 
   return (
-    <SContainer>
-      <SInputContainer>
-        <SInput
-          placeholder={t("liquidity.reviewTransaction.modal.amount")}
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-        <Text color="darkBlue200">{asset.symbol}</Text>
-      </SInputContainer>
-      <Text
-        tAlign="right"
-        fs={12}
-        lh={16}
-        color={error ? "red400" : "darkBlue300"}
-      >
-        {error ? error : <DisplayValue value={displayValue} />}
-      </Text>
-    </SContainer>
+    <div sx={{ flex: "column", gap: 8 }}>
+      <Switch
+        size="small"
+        value={visible}
+        onCheckedChange={(value) => {
+          setVisible(value)
+
+          if (!value) setAmount("")
+        }}
+        name={"liquidity.reviewTransaction.modal.detail.tip.name"}
+        css={{ justifyContent: "end" }}
+      />
+
+      {visible && (
+        <SContainer>
+          <SInputContainer>
+            <SInput
+              placeholder={t("liquidity.reviewTransaction.modal.amount")}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+            <Text color="darkBlue200">{asset.symbol}</Text>
+          </SInputContainer>
+          <Text
+            tAlign="right"
+            fs={12}
+            lh={16}
+            color={error ? "red400" : "darkBlue300"}
+          >
+            {error ? error : <DisplayValue value={displayValue} />}
+          </Text>
+        </SContainer>
+      )}
+    </div>
   )
 }
