@@ -10,7 +10,7 @@ import { CapType } from "sections/lending/components/caps/helper"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { theme } from "theme"
 import { SContainer } from "./AssetInput.styled"
-import { Spinner } from "components/Spinner/Spinner.styled"
+import { Spinner } from "components/Spinner/Spinner"
 
 interface CustomProps {
   onChange: (event: { target: { name: string; value: string } }) => void
@@ -212,7 +212,7 @@ export const AssetInput = <T extends Asset = Asset>({
 
         {loading ? (
           <div sx={{ py: 2 }}>
-            <Spinner width={25} height={25} />
+            <Spinner size={25} />
           </div>
         ) : (
           <div sx={{ flex: "column", justify: "end" }}>
