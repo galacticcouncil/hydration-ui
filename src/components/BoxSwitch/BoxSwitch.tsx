@@ -9,9 +9,10 @@ type Props = {
   options: { label: string; value: number }[]
   selected?: number
   onSelect: (value: number) => void
+  disabled?: boolean
 }
 
-export const BoxSwitch = ({ options, selected, onSelect }: Props) => {
+export const BoxSwitch = ({ options, selected, onSelect, disabled }: Props) => {
   const getActiveIndex = () => {
     if (selected === undefined) return -1
     return options.reduce(
@@ -27,9 +28,10 @@ export const BoxSwitch = ({ options, selected, onSelect }: Props) => {
       {options.map((option, i) => (
         <SButton
           key={i}
-          onClick={() => onSelect(option.value)}
+          onClick={() => (disabled ? null : onSelect(option.value))}
           isActive={activeIndex === i}
           type="button"
+          disabled={disabled}
         >
           <SText
             fs={[14, 15]}
