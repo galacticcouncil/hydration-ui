@@ -17,7 +17,7 @@ export const Spinner = ({
             cy="50"
             r="43"
             stroke="white"
-            stroke-width="2"
+            strokeWidth="2"
             fill="none"
             strokeDasharray="50 300"
             strokeDashoffset="218"
@@ -36,7 +36,7 @@ export const Spinner = ({
               cy="50"
               r="43"
               stroke="white"
-              stroke-width="2"
+              strokeWidth="2"
               fill="none"
               strokeLinecap="round"
               strokeDasharray="180.49555921538757 251.32741228718345"
@@ -50,9 +50,9 @@ export const Spinner = ({
             width="100"
             height="100"
             filterUnits="userSpaceOnUse"
-            color-interpolation-filters="sRGB"
+            colorInterpolationFilters="sRGB"
           >
-            <feFlood flood-opacity="0" result="BackgroundImageFix" />
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
             <feBlend
               mode="normal"
               in="SourceGraphic"
