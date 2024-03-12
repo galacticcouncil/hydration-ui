@@ -9,23 +9,30 @@ import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
 
 export const PROVIDERS = [
   {
-    name: "Mainnet via GC",
+    name: "GalacticCouncil",
     url: "wss://rpc.hydradx.cloud",
-    indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
+    indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",
   },
   {
-    name: "Mainnet via Dwellir",
+    name: "Dwellir",
     url: "wss://hydradx-rpc.dwellir.com",
-    indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
+    indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",
   },
   {
-    name: "Mainnet via Helikon",
+    name: "Helikon",
     url: "wss://rpc.helikon.io/hydradx",
-    indexerUrl: "https://hydradx-explorer.play.hydration.cloud/graphql",
+    indexerUrl: "https://explorer.hydradx.cloud/graphql",
+    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    env: "production",
+  },
+  {
+    name: "IBP",
+    url: "wss://hydradx.paras.dotters.network",
+    indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",
   },
