@@ -1,13 +1,8 @@
 import { SubmittableExtrinsic } from "@polkadot/api/types"
-import { useAcountAssets } from "api/assetDetails"
 import { useTokenBalance } from "api/balances"
 import { useBestNumber } from "api/chain"
 import { useEra } from "api/era"
-import {
-  useAcceptedCurrencies,
-  useAccountCurrency,
-  useSetAsFeePayment,
-} from "api/payments"
+import { useAccountFeePaymentAssets, useSetAsFeePayment } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
 import { useNextNonce, usePaymentInfo } from "api/transaction"
 import BigNumber from "bignumber.js"
@@ -16,7 +11,6 @@ import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_1 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
-import { isEvmAccount } from "utils/evm"
 import { BN_NAN } from "utils/constants"
 import { useUserReferrer } from "api/referrals"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
@@ -24,22 +18,18 @@ import { useReferralCodesStore } from "sections/referrals/store/useReferralCodes
 
 export const useTransactionValues = ({
   xcallMeta,
-  feePaymentId,
+  feePaymentAssetIdOverride,
   fee,
   tx,
 }: {
   xcallMeta?: Record<string, string>
-  feePaymentId?: string
+  feePaymentAssetIdOverride?: string
   fee?: BigNumber
   tx: SubmittableExtrinsic<"promise">
 }) => {
   const { assets, api, featureFlags } = useRpcProvider()
   const { account } = useAccount()
   const bestNumber = useBestNumber()
-
-  const accountFeePaymentAsset = useAccountCurrency(
-    feePaymentId ? undefined : account?.address,
-  )
 
   /* REFERRALS */
 
@@ -69,13 +59,14 @@ export const useTransactionValues = ({
 
   const isNewReferralLink = tx.method.method === "registerCode"
 
-  /* */
-
   const { data: paymentInfo, isLoading: isPaymentInfoLoading } =
     usePaymentInfo(boundedTx)
 
+  const { acceptedFeePaymentAssets, feePaymentAssetId, ...feePaymentAssets } =
+    useAccountFeePaymentAssets()
+
   // fee payment asset which should be displayed on the screen
-  const accountFeePaymentId = feePaymentId ?? accountFeePaymentAsset.data
+  const accountFeePaymentId = feePaymentAssetIdOverride ?? feePaymentAssetId
 
   const feePaymentMeta = accountFeePaymentId
     ? assets.getAsset(accountFeePaymentId)
@@ -94,20 +85,6 @@ export const useTransactionValues = ({
     boundedTx.era.isMortalEra,
   )
 
-  // assets with positive balance on the wallet
-  const accountAssets = useAcountAssets(account?.address)
-
-  const alllowedFeePaymentAssetsIds = isEvmAccount(account?.address)
-    ? [accountFeePaymentId]
-    : [
-        ...(accountAssets.map((accountAsset) => accountAsset.asset.id) ?? []),
-        accountFeePaymentId,
-      ]
-
-  const acceptedFeePaymentAssets = useAcceptedCurrencies([
-    ...alllowedFeePaymentAssetsIds,
-  ])
-
   const feePaymentValue = paymentInfo?.partialFee.toBigNumber() ?? BN_NAN
   const paymentFeeHDX = paymentInfo
     ? BigNumber(fee ?? paymentInfo.partialFee.toHex()).shiftedBy(
@@ -116,13 +93,10 @@ export const useTransactionValues = ({
     : null
 
   const isLoading =
-    accountFeePaymentAsset.isInitialLoading ||
+    feePaymentAssets.isInitialLoading ||
     isPaymentInfoLoading ||
     spotPrice.isInitialLoading ||
     nonce.isLoading ||
-    acceptedFeePaymentAssets.some(
-      (acceptedFeePaymentAsset) => acceptedFeePaymentAsset.isInitialLoading,
-    ) ||
     referrer.isInitialLoading
 
   if (
@@ -213,11 +187,7 @@ export const useEditFeePaymentAsset = (
 
   const allowedAssets =
     acceptedFeePaymentAssets
-      .filter(
-        (acceptedFeeAsset) =>
-          acceptedFeeAsset.data?.accepted &&
-          acceptedFeeAsset.data?.id !== feePaymentAssetId,
-      )
+      .filter((acceptedFeeAsset) => acceptedFeeAsset.data?.accepted)
       .map((acceptedFeeAsset) => acceptedFeeAsset.data?.id) ?? []
 
   const {
@@ -227,6 +197,8 @@ export const useEditFeePaymentAsset = (
   } = useAssetsModal({
     title: t("liquidity.reviewTransaction.modal.selectAsset"),
     hideInactiveAssets: true,
+    confirmRequired: true,
+    defaultSelectedAsssetId: feePaymentAssetId,
     allowedAssets,
     onSelect: (asset) =>
       setFeeAsPayment(asset.id.toString(), {

@@ -11,6 +11,9 @@ import { usePaymentInfo } from "./transaction"
 import { useRpcProvider } from "providers/rpcProvider"
 import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useAcountAssets } from "api/assetDetails"
+import { useMemo } from "react"
+import { uniqBy } from "utils/rx"
 
 export const getAcceptedCurrency =
   (api: ApiPromise, id: u32 | string) => async () => {
@@ -99,4 +102,41 @@ export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
       enabled: !!address && isLoaded,
     },
   )
+}
+
+export const useAccountFeePaymentAssets = () => {
+  const { account } = useAccount()
+  const accountAssets = useAcountAssets(account?.address)
+  const accountFeePaymentAsset = useAccountCurrency(account?.address)
+  const feePaymentAssetId = accountFeePaymentAsset.data
+
+  const alllowedFeePaymentAssetsIds = useMemo(() => {
+    if (isEvmAccount(account?.address)) return [feePaymentAssetId]
+    return uniqBy(
+      (id) => id,
+      [
+        ...(accountAssets.map((accountAsset) => accountAsset.asset.id) ?? []),
+        feePaymentAssetId,
+      ],
+    )
+  }, [account?.address, accountAssets, feePaymentAssetId])
+
+  const acceptedFeePaymentAssets = useAcceptedCurrencies(
+    alllowedFeePaymentAssetsIds,
+  )
+
+  const isLoading = acceptedFeePaymentAssets.some((asset) => asset.isLoading)
+  const isInitialLoading = acceptedFeePaymentAssets.some(
+    (asset) => asset.isInitialLoading,
+  )
+  const isSuccess = acceptedFeePaymentAssets.every((asset) => asset.isSuccess)
+
+  return {
+    acceptedFeePaymentAssets,
+    feePaymentAssetId,
+    isLoading: isLoading || accountFeePaymentAsset.isLoading,
+    isInitialLoading:
+      isInitialLoading || accountFeePaymentAsset.isInitialLoading,
+    isSuccess: isSuccess && accountFeePaymentAsset.isSuccess,
+  }
 }

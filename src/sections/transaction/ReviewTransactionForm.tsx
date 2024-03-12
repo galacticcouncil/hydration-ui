@@ -45,7 +45,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const transactionValues = useTransactionValues({
     xcallMeta: props.xcallMeta,
     tx: props.tx,
-    feePaymentId: props.overrides?.currencyId,
+    feePaymentAssetIdOverride: props.overrides?.currencyId,
     fee: props.overrides?.fee,
   })
 
@@ -146,7 +146,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
             <ReviewTransactionSummary
               tx={props.tx}
               transactionValues={transactionValues}
-              hasMultipleFeeAssets={hasMultipleFeeAssets}
+              hasMultipleFeeAssets={
+                // disable edit button when changing payment fee asset
+                props.overrides?.currencyId ? false : hasMultipleFeeAssets
+              }
               xcallMeta={props.xcallMeta}
               openEditFeePaymentAssetModal={openEditFeePaymentAssetModal}
               onTipChange={isTippingEnabled ? setTipAmount : undefined}

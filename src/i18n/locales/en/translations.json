@@ -395,6 +395,7 @@
   "wallet.header.copyAddress.click": "Copied!",
   "wallet.header.noAccountSelected": "No account selected",
   "wallet.header.search": "Search by token name or symbol",
+  "wallet.header.feePaymentAsset": "Fee payment asset",
   "wallet.vesting.vesting_schedule_end": "Vesting schedule end",
   "wallet.vesting.vesting_schedule_end_value": "{{ date, dd/MM/yyyy }}",
   "wallet.vesting.vesting_days_left": "Days left:",
