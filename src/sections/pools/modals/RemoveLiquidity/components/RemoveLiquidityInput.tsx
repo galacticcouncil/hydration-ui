@@ -10,6 +10,7 @@ type RemoveLiquidityInputProps = {
   value: number
   onChange: (value: number) => void
   balance: string
+  disabled?: boolean
 }
 
 const options = [
@@ -23,6 +24,7 @@ export const RemoveLiquidityInput = ({
   value,
   onChange,
   balance,
+  disabled,
 }: RemoveLiquidityInputProps) => {
   const { t } = useTranslation()
   const [input, setInput] = useState("")
@@ -49,11 +51,18 @@ export const RemoveLiquidityInput = ({
         min={0}
         max={100}
         step={1}
+        disabled={disabled}
       />
 
       <SSlippage>
-        <BoxSwitch options={options} selected={value} onSelect={onSelect} />
+        <BoxSwitch
+          options={options}
+          selected={value}
+          onSelect={onSelect}
+          disabled={disabled}
+        />
         <Input
+          disabled={!!disabled}
           value={input}
           onChange={handleOnChange}
           name="custom"
