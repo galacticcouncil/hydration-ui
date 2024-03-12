@@ -28,9 +28,6 @@ export const TOAST_CLOSE_TIME = 5000
 // Vesting ID
 export const ORMLVEST = "ormlvest"
 
-// asset type
-export const ASSET_TYPE_TOKEN = "Token"
-
 BN.config({ EXPONENTIAL_AT: 666 })
 
 export const MIN_WITHDRAWAL_FEE = new BN(100).div(1000000)
@@ -44,3 +41,7 @@ export const REFETCH_INTERVAL = 60000
 export const STABLEPOOL_TOKEN_DECIMALS = 18
 
 export const SLIPPAGE_LIMIT = new BN(3)
+
+//decimals
+export const TRILL = 12
+export const QUINTILL = 18
