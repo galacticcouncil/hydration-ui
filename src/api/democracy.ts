@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
+import { undefinedNoop } from "utils/helpers"
 
 const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
 
@@ -11,7 +12,7 @@ export const useReferendums = (type?: "ongoing" | "finished") => {
   const { account } = useAccount()
 
   return useQuery(
-    QUERY_KEYS.referendums(account?.address),
+    QUERY_KEYS.referendums(account?.address, type),
     getReferendums(api, account?.address),
     {
       enabled: isLoaded,
@@ -94,3 +95,41 @@ export type Referendum = {
 
 export const getReferendumInfoOf = async (api: ApiPromise, id: string) =>
   await api.query.democracy.referendumInfoOf(id)
+
+export const useAccountVotes = () => {
+  const { api, isLoaded } = useRpcProvider()
+  const { account } = useAccount()
+
+  return useQuery(
+    QUERY_KEYS.referendumVotes(account?.address),
+    account ? getAccountVotes(api, account.address) : undefinedNoop,
+    {
+      enabled: isLoaded && !!account,
+    },
+  )
+}
+
+export const getAccountVotes =
+  (api: ApiPromise, accountId: string) => async () => {
+    const votesRaw = await api.query.democracy.votingOf(accountId)
+
+    if (!votesRaw || votesRaw.isDelegating) return undefined
+
+    const votes = votesRaw.asDirect.votes.map(([id, dataRaw]) => {
+      const test = dataRaw.asStandard
+
+      return {
+        id: id.toString(),
+        balance: test.balance.toBigNumber(),
+        conviction: test.vote.conviction.toString(),
+      }
+    })
+
+    const data = await Promise.all(
+      votes.map((vote) => api.query.democracy.referendumInfoOf(vote.id)),
+    )
+
+    console.log(data, "data")
+
+    return votes
+  }

@@ -23,6 +23,7 @@ import { useDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TToken } from "api/assetDetails"
 import { TStableSwap } from "api/assetDetails"
+import { useAccountVotes } from "api/democracy"
 
 export const useAssetsTableData = ({
   isAllAssets,
@@ -433,4 +434,10 @@ export const useAssetsTradability = () => {
   }, [assets, hubTradability, apiIds])
 
   return { data, isLoading, isInitialLoading }
+}
+
+export const useLockedTokens = () => {
+  const votes = useAccountVotes()
+
+  console.log(votes, "votes")
 }

@@ -9,6 +9,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { SContainer } from "./WalletAssetsTableDetails.styled"
 import { NATIVE_ASSET_ID } from "utils/api"
+import { useLockedTokens } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 
 const chains = Array.from(chainsMap.values())
 
@@ -25,7 +26,7 @@ export const WalletAssetsTableDetails = ({
 }: AssetsTableData) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-
+  useLockedTokens()
   const asset = useMemo(() => {
     const assetDetails = assets.getAsset(id)
 
