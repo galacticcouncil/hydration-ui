@@ -1,8 +1,11 @@
 import { AssetSkeleton } from "components/Skeleton/AssetSkeleton"
+import React from "react"
 import Skeleton from "react-loading-skeleton"
 
-const AssetInputSkeleton = () => (
-  <div>
+const AssetInputSkeleton: React.FC<{ className?: string }> = ({
+  className,
+}) => (
+  <div className={className}>
     <div sx={{ flex: "row", justify: "space-between", mb: 15 }}>
       <Skeleton width={120} />
       <Skeleton width={200} />
@@ -14,9 +17,12 @@ const AssetInputSkeleton = () => (
   </div>
 )
 
-export const SwapAppSkeleton = () => {
+export const SwapAppSkeleton: React.FC<{ className?: string }> = ({
+  className,
+}) => {
   return (
     <div
+      className={className}
       sx={{ p: [20, 30] }}
       css={{
         border: "1px solid rgba(152, 176, 214, 0.15)",

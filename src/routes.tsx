@@ -1,14 +1,14 @@
-import { Navigate } from "@tanstack/react-location"
-import { Page } from "components/Layout/Page/Page"
+import { Navigate, Route } from "@tanstack/react-location"
+import { HeaderValuesSkeleton } from "components/Skeleton/HeaderValuesSkeleton"
+import { InputSkeleton } from "components/Skeleton/InputSkeleton"
+import { TableSkeleton } from "components/Skeleton/TableSkeleton"
 
 import { Suspense, lazy } from "react"
+import { ReferralsSkeleton } from "sections/referrals/ReferralsSkeleton"
+import { SwapAppSkeleton } from "sections/trade/skeleton/SwapAppSkeleton"
 import { SwapPageSkeleton } from "sections/trade/skeleton/SwapPageSkeleton"
 
 const isDevelopment = import.meta.env.VITE_ENV === "development"
-
-const TradePage = lazy(async () => ({
-  default: (await import("sections/trade/TradePage")).TradePage,
-}))
 
 const SwapPage = lazy(async () => ({
   default: (await import("sections/trade/sections/swap/SwapPage")).SwapPage,
@@ -39,10 +39,6 @@ const BondDetailsPage = lazy(async () => ({
   ).BondDetailsPage,
 }))
 
-const WalletPage = lazy(async () => ({
-  default: (await import("sections/wallet/WalletPage")).WalletPage,
-}))
-
 const WalletTransactions = lazy(async () => ({
   default: (await import("sections/wallet/transactions/WalletTransactions"))
     .WalletTransactions,
@@ -55,10 +51,6 @@ const WalletAssets = lazy(async () => ({
 const WalletVesting = lazy(async () => ({
   default: (await import("sections/wallet/vesting/WalletVesting"))
     .WalletVesting,
-}))
-
-const PoolsPage = lazy(async () => ({
-  default: (await import("sections/pools/PoolsPage")).PoolsPage,
 }))
 
 const AllPools = lazy(async () => ({
@@ -87,10 +79,6 @@ const BridgePage = lazy(async () => ({
   default: (await import("sections/xcm/BridgePage")).BridgePage,
 }))
 
-const StatsPage = lazy(async () => ({
-  default: (await import("sections/stats/StatsPage")).StatsPage,
-}))
-
 const StatsOverview = lazy(async () => ({
   default: (await import("sections/stats/sections/overview/StatsOverview"))
     .StatsOverview,
@@ -114,18 +102,13 @@ const ReferralsWrapper = lazy(async () => ({
   default: (await import("sections/referrals/ReferralsPage")).ReferralsWrapper,
 }))
 
-export const routes = [
+export const routes: Route[] = [
   {
     path: "/",
     element: <Navigate to="/trade/swap" />,
   },
   {
     path: "trade",
-    element: (
-      <Suspense>
-        <TradePage />
-      </Suspense>
-    ),
     children: [
       {
         path: "/",
@@ -142,7 +125,14 @@ export const routes = [
       {
         path: "otc",
         element: (
-          <Suspense>
+          <Suspense
+            fallback={
+              <>
+                <InputSkeleton sx={{ mb: 20 }} />
+                <TableSkeleton />
+              </>
+            }
+          >
             <OtcPageWrapper />
           </Suspense>
         ),
@@ -174,7 +164,14 @@ export const routes = [
       {
         path: "bonds",
         element: (
-          <Suspense>
+          <Suspense
+            fallback={
+              <div sx={{ flex: "column", gap: 40 }}>
+                <TableSkeleton rowCount={3} />
+                <TableSkeleton />
+              </div>
+            }
+          >
             <BondsPageWrapper />
           </Suspense>
         ),
@@ -183,11 +180,6 @@ export const routes = [
   },
   {
     path: "wallet",
-    element: (
-      <Suspense>
-        <WalletPage />
-      </Suspense>
-    ),
     children: [
       {
         path: "/",
@@ -196,7 +188,15 @@ export const routes = [
       {
         path: "assets",
         element: (
-          <Suspense>
+          <Suspense
+            fallback={
+              <>
+                <HeaderValuesSkeleton size="large" sx={{ mb: [20, 40] }} />
+                <InputSkeleton sx={{ mb: 20 }} />
+                <TableSkeleton />
+              </>
+            }
+          >
             <WalletAssets />
           </Suspense>
         ),
@@ -204,7 +204,18 @@ export const routes = [
       {
         path: "vesting",
         element: (
-          <Suspense>
+          <Suspense
+            fallback={
+              <>
+                <HeaderValuesSkeleton
+                  count={1}
+                  size="extra-large"
+                  sx={{ mb: [20, 40] }}
+                />
+                <TableSkeleton />
+              </>
+            }
+          >
             <WalletVesting />
           </Suspense>
         ),
@@ -214,7 +225,14 @@ export const routes = [
             {
               path: "transactions",
               element: (
-                <Suspense>
+                <Suspense
+                  fallback={
+                    <>
+                      <InputSkeleton sx={{ mb: 20 }} />
+                      <TableSkeleton />
+                    </>
+                  }
+                >
                   <WalletTransactions />
                 </Suspense>
               ),
@@ -225,11 +243,6 @@ export const routes = [
   },
   {
     path: "liquidity",
-    element: (
-      <Suspense>
-        <PoolsPage />
-      </Suspense>
-    ),
     children: [
       {
         path: "/",
@@ -238,7 +251,15 @@ export const routes = [
       {
         path: "my-liquidity",
         element: (
-          <Suspense>
+          <Suspense
+            fallback={
+              <>
+                <HeaderValuesSkeleton sx={{ mb: [20, 40] }} />
+                <InputSkeleton sx={{ mb: 20 }} />
+                <TableSkeleton />
+              </>
+            }
+          >
             <MyLiquidity />
           </Suspense>
         ),
@@ -246,7 +267,15 @@ export const routes = [
       {
         path: "all-pools",
         element: (
-          <Suspense>
+          <Suspense
+            fallback={
+              <>
+                <HeaderValuesSkeleton sx={{ mb: [20, 40] }} />
+                <InputSkeleton sx={{ mb: 20 }} />
+                <TableSkeleton />
+              </>
+            }
+          >
             <AllPools />
           </Suspense>
         ),
@@ -254,7 +283,15 @@ export const routes = [
       {
         path: "omnipool-stablepools",
         element: (
-          <Suspense>
+          <Suspense
+            fallback={
+              <>
+                <HeaderValuesSkeleton sx={{ mb: [20, 40] }} />
+                <InputSkeleton sx={{ mb: 20 }} />
+                <TableSkeleton />
+              </>
+            }
+          >
             <OmnipoolAndStablepool />
           </Suspense>
         ),
@@ -262,7 +299,15 @@ export const routes = [
       {
         path: "isolated",
         element: (
-          <Suspense>
+          <Suspense
+            fallback={
+              <>
+                <HeaderValuesSkeleton sx={{ mb: [20, 40] }} />
+                <InputSkeleton sx={{ mb: 20 }} />
+                <TableSkeleton />
+              </>
+            }
+          >
             <IsolatedPools />
           </Suspense>
         ),
@@ -272,28 +317,29 @@ export const routes = [
   {
     path: "cross-chain",
     element: (
-      <Page>
-        <Suspense>
-          <XcmPage />
-        </Suspense>
-      </Page>
+      <Suspense
+        fallback={
+          <SwapAppSkeleton sx={{ maxWidth: 570, mx: "auto", mt: 50 }} />
+        }
+      >
+        <XcmPage />
+      </Suspense>
     ),
   },
   {
     path: "bridge",
     element: (
-      <Suspense>
+      <Suspense
+        fallback={
+          <SwapAppSkeleton sx={{ maxWidth: 570, mx: "auto", mt: 50 }} />
+        }
+      >
         <BridgePage />
       </Suspense>
     ),
   },
   {
     path: "stats",
-    element: (
-      <Suspense>
-        <StatsPage />
-      </Suspense>
-    ),
     children: [
       {
         path: "/",
@@ -334,7 +380,7 @@ export const routes = [
   {
     path: "staking",
     element: (
-      <Suspense>
+      <Suspense fallback={<SwapPageSkeleton />}>
         <StakingPage />
       </Suspense>
     ),
@@ -342,7 +388,7 @@ export const routes = [
   {
     path: "referrals",
     element: (
-      <Suspense>
+      <Suspense fallback={<ReferralsSkeleton />}>
         <ReferralsWrapper />
       </Suspense>
     ),
