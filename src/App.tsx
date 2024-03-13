@@ -60,12 +60,12 @@ export const App = () => {
   }, [])
 
   return (
-    <Suspense fallback={<HydraSplash />}>
-      <AppProviders>
-        <Router location={location} routes={routes}>
+    <Router location={location} routes={routes}>
+      <Suspense fallback={<HydraSplash />}>
+        <AppProviders>
           <Page />
-        </Router>
-      </AppProviders>
-    </Suspense>
+        </AppProviders>
+      </Suspense>
+    </Router>
   )
 }

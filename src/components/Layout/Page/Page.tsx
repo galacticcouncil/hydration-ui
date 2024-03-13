@@ -9,7 +9,6 @@ import {
   SSubHeader,
 } from "./Page.styled"
 import { useLocation, useMedia } from "react-use"
-import { useRpcProvider } from "providers/rpcProvider"
 import { Outlet, useMatchRoute, useSearch } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
 import { theme } from "theme"
@@ -26,9 +25,9 @@ type Props = {
   className?: string
 }
 
-const ReferralsConnect = lazy(async () => ({
-  default: (await import("sections/referrals/ReferralsConnect"))
-    .ReferralsConnect,
+const ReferralsConnectWrapper = lazy(async () => ({
+  default: (await import("sections/referrals/ReferralsConnectWrapper"))
+    .ReferralsConnectWrapper,
 }))
 
 const Transactions = lazy(async () => ({
@@ -79,7 +78,6 @@ const useSubheaderComponent = () => {
 }
 
 export const Page = ({ className }: Props) => {
-  const { featureFlags } = useRpcProvider()
   const ref = useRef<HTMLDivElement>(null)
   const location = useLocation()
 
@@ -116,7 +114,7 @@ export const Page = ({ className }: Props) => {
         <ProviderSelectButton />
         <Web3Connect />
         <Transactions />
-        {featureFlags.referrals && <ReferralsConnect />}
+        <ReferralsConnectWrapper />
       </Suspense>
     </>
   )
