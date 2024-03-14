@@ -3038,10 +3038,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.2.0.tgz#74feacdf94d4846f1a148835f25936b2ddc7bdfd"
   integrity sha512-mznedOeA8d9BQ8kUQ/4O/P6trqTC4FGwvTDGCHJ0O/bgA9iFb+suctbFtyFT3qfNnngR7FSF2Pls1O/SvtNn8g==
 
-"@galacticcouncil/sdk@^1.1.11":
-  version "1.1.11"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.1.11.tgz#b9241c0562e9655e09471e88bc1b6608804cdc05"
-  integrity sha512-Y+PjcRUUH5Ca699vZi+0FyqJMxSUNuo99Wl+lkTUasu/p3dGkpGHvR34Xhp+/kErboUKbETG+ZwDtV8BEGLdmg==
+"@galacticcouncil/sdk@^1.1.12":
+  version "1.1.12"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.1.12.tgz#d6de5d4d6366edb6abe4d9f6fe157d340be41c64"
+  integrity sha512-AdRASWjHjoGG3eDERu03KXwM8uM8G8bFGgA/8Uwnbv2I3WWM/nAOhJdHiFcPIT+4IdZC8oBmxy4iyM7ICpa1/w==
   dependencies:
     "@galacticcouncil/math-lbp" "^0.2.1"
     "@galacticcouncil/math-omnipool" "^0.2.0"
