@@ -1,5 +1,5 @@
 import { BN } from "@polkadot/util"
-import { BN_10 } from "./constants"
+import { BN_10, QUINTILL, TRILL } from "./constants"
 import BigNumber from "bignumber.js"
 import {
   BigNumberFormatOptionsSchema,
@@ -41,6 +41,40 @@ export const getFixedPointAmount = (
   decimals: string | number,
 ) => {
   return normalizeBigNumber(amount)?.times(BN_10.pow(decimals))
+}
+
+/**
+ *
+ * @param amount value to scale
+ * @param decimals number of shifted places
+ * @returns The shift is of the decimal point, i.e. of powers of ten, and is to the right.
+ * eg.: 1.23456789 => 123456789
+ */
+export const scale = (
+  amount: BigNumberLikeType,
+  decimals: number | "t" | "q",
+) => {
+  const _decimals =
+    decimals === "t" ? TRILL : decimals === "q" ? QUINTILL : decimals
+
+  return normalizeBigNumber(amount).shiftedBy(_decimals)
+}
+
+/**
+ *
+ * @param amount value to scale
+ * @param decimals number of shifted places
+ * @returns The shift is of the decimal point, i.e. of powers of ten, and is to the left.
+ * eg.: 123456789 => 1.23456789
+ */
+export const scaleHuman = (
+  amount: BigNumberLikeType,
+  decimals: number | "t" | "q",
+) => {
+  const _decimals =
+    decimals === "t" ? TRILL : decimals === "q" ? QUINTILL : decimals
+
+  return normalizeBigNumber(amount).shiftedBy(-_decimals)
 }
 
 export const separateBalance = (
