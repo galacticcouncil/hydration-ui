@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { Graph } from "components/Graph/Graph"
-import { Spinner } from "components/Spinner/Spinner.styled"
+import { Spinner } from "components/Spinner/Spinner"
 import { useLoyaltyRates } from "./LoyaltyGraph.utils"
 import { PalletLiquidityMiningLoyaltyCurve } from "@polkadot/types/lookup"
 import BigNumber from "bignumber.js"
@@ -41,7 +41,7 @@ export const LoyaltyGraph = ({
             data={rates.data}
           />
         ) : (
-          <Spinner width={64} height={64} />
+          <Spinner size={64} />
         )}
       </div>
     </div>

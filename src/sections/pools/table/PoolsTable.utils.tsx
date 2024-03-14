@@ -16,28 +16,14 @@ import { theme } from "theme"
 import { useRpcProvider } from "providers/rpcProvider"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import {
-  TPool,
-  TXYKPool,
-  derivePoolAccount,
-  isXYKPoolType,
-} from "sections/pools/PoolsPage.utils"
-import { Farm, useFarmAprs, useFarms } from "api/farms"
+import { TPool, TXYKPool, isXYKPoolType } from "sections/pools/PoolsPage.utils"
+import { Farm, getMinAndMaxAPR, useFarmAprs, useFarms } from "api/farms"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
-import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import ManageIcon from "assets/icons/IconEdit.svg?react"
-import { BN_0, BN_1, BN_MILL } from "utils/constants"
+import { BN_0, BN_1 } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
-import {
-  Page,
-  TransferModal,
-} from "sections/pools/stablepool/transfer/TransferModal"
-import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
-import { useAccountBalances } from "api/accountBalances"
-import { useStableswapPool } from "api/stableswap"
-import { normalizeBigNumber } from "utils/balance"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
 import { CellSkeleton } from "components/Skeleton/CellSkeleton"
@@ -147,22 +133,10 @@ const AddLiqduidityButton = ({
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
 
-  const [addLiquidityPool, setAddLiquidityPool] = useState<
-    TPool | TXYKPool | undefined
-  >(undefined)
-
-  const [addLiquidityStablepool, setLiquidityStablepool] = useState<Page>()
-
   const isXykPool = isXYKPoolType(pool)
 
   const assetMeta = assets.getAsset(pool.id)
   const isStablePool = assets.isStableSwap(assetMeta)
-
-  const poolAccountAddress = derivePoolAccount(assetMeta.id)
-
-  const stablePoolBalance = useAccountBalances(
-    isStablePool ? poolAccountAddress : undefined,
-  )
 
   const userStablePoolBalance = useTokenBalance(
     isStablePool ? pool.id : undefined,
@@ -172,40 +146,28 @@ const AddLiqduidityButton = ({
   const isPosition =
     userStablePoolBalance.data?.freeBalance.gt(0) ||
     (isXykPool ? pool.shareTokenIssuance?.myPoolShare?.gt(0) : pool.isPositions)
-  const stablepool = useStableswapPool(isStablePool ? assetMeta.id : undefined)
 
-  const reserves = isStablePool
-    ? (stablePoolBalance.data?.balances ?? []).map((balance) => {
-        const id = balance.id.toString()
-        const meta = assets.getAsset(id)
+  const positionsAmount = isPosition
+    ? !isXykPool
+      ? BN(pool.omnipoolPositions.length)
+          .plus(pool.miningPositions.length)
+          .plus(userStablePoolBalance.data?.freeBalance.gt(0) ? 1 : 0)
+      : pool.shareTokenIssuance?.myPoolShare?.gt(0)
+      ? BN_1
+      : undefined
+    : undefined
 
-        return {
-          asset_id: Number(id),
-          decimals: meta.decimals,
-          amount: balance.freeBalance.toString(),
-        }
-      })
-    : []
-
-  const onClick = () => {
-    if (isPosition) {
-      onRowSelect(pool.id)
-    } else {
-      isStablePool
-        ? setLiquidityStablepool(Page.OPTIONS)
-        : setAddLiquidityPool(pool)
-    }
-  }
+  const onClick = () => onRowSelect(pool.id)
 
   return (
     <div
       onClick={(e) => {
         e.stopPropagation()
       }}
+      css={{ position: "relative" }}
     >
       <Button
         size="small"
-        disabled={!pool.canAddLiquidity || account?.isExternalWalletConnected}
         css={{
           borderColor: `rgba(${theme.rgbColors.brightBlue300}, 0.4)`,
           height: 26,
@@ -219,30 +181,25 @@ const AddLiqduidityButton = ({
         }}
         onClick={onClick}
       >
-        <Icon icon={isPosition ? <ManageIcon /> : <PlusIcon />} size={12} />
-        {isPosition ? "Manage" : t("add")}
+        {isPosition ? <Icon icon={<ManageIcon />} size={12} /> : null}
+        {isPosition ? t("manage") : t("details")}
       </Button>
-      {addLiquidityPool && (
-        <AddLiquidity
-          isOpen
-          onClose={() => setAddLiquidityPool(undefined)}
-          pool={addLiquidityPool}
-        />
-      )}
-      {addLiquidityStablepool !== undefined && !isXykPool && (
-        <TransferModal
-          pool={{
-            ...pool,
-            isStablePool,
-            reserves,
-            stablepoolFee: stablepool.data?.fee
-              ? normalizeBigNumber(stablepool.data.fee).div(BN_MILL)
-              : undefined,
+      {positionsAmount?.gt(0) && (
+        <Text
+          fs={9}
+          css={{
+            position: "absolute",
+            bottom: "-14px",
+            whiteSpace: "nowrap",
+            width: "100%",
+            textAlign: "center",
           }}
-          isOpen
-          defaultPage={addLiquidityStablepool}
-          onClose={() => setLiquidityStablepool(undefined)}
-        />
+          color="whiteish500"
+        >
+          {t("liquidity.asset.actions.myPositions.amount", {
+            count: positionsAmount.toNumber(),
+          })}
+        </Text>
       )}
     </div>
   )
@@ -255,27 +212,14 @@ const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
 
   const percentage = useMemo(() => {
     if (farmAprs.data?.length) {
-      const aprs = farmAprs.data
-        ? farmAprs.data.reduce((memo, { apr }) => memo.plus(apr), BN_0)
-        : BN_0
-      const minAprs = farmAprs.data
-        ? farmAprs.data.map(({ minApr, apr }) => (minApr ? minApr : apr))
-        : [BN_0]
-
-      const minApr = BN.minimum(...minAprs)
-      const maxApr = aprs
-
-      return {
-        minApr,
-        maxApr,
-      }
+      return getMinAndMaxAPR(farmAprs)
     }
 
     return {
       minApr: BN_0,
       maxApr: BN_0,
     }
-  }, [farmAprs.data])
+  }, [farmAprs])
 
   const isLoading = farmAprs.isInitialLoading
 
@@ -284,10 +228,12 @@ const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   return (
     <NonClickableContainer>
       <Text color="white" fs={14}>
-        {t("value.percentage.range", {
-          from: percentage.minApr.lt(apy) ? percentage.minApr : BN(apy),
-          to: percentage.maxApr.plus(apy),
-        })}
+        {percentage.maxApr.gt(0)
+          ? t("value.percentage.range", {
+              from: percentage.minApr.lt(apy) ? percentage.minApr : BN(apy),
+              to: percentage.maxApr.plus(apy),
+            })
+          : t("value.percentage", { value: BN(apy) })}
       </Text>
     </NonClickableContainer>
   )
@@ -474,9 +420,6 @@ export const usePoolTable = (
               pool={row.original}
               onRowSelect={onRowSelect}
             />
-            <ButtonTransparent>
-              <Icon sx={{ color: "darkBlue300" }} icon={<ChevronRightIcon />} />
-            </ButtonTransparent>
           </div>
         ),
       }),

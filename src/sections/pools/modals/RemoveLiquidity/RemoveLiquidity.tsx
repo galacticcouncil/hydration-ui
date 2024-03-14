@@ -11,7 +11,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 type RemoveLiquidityProps = {
   isOpen: boolean
   onClose: () => void
-  position?: HydraPositionsTableData
+  position?: HydraPositionsTableData | HydraPositionsTableData[]
   onSuccess: () => void
   pool: TPoolFullData | TXYKPool
 }
@@ -36,7 +36,7 @@ export const RemoveLiquidity = ({
         pool={pool}
         onClose={onClose}
         onSuccess={onSuccess}
-        position={position}
+        position={Array.isArray(position) ? position[0] : position}
       />
     )
   }
