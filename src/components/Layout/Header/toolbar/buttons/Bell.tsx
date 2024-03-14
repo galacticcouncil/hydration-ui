@@ -38,7 +38,7 @@ export const Bell = () => {
       asChild
     >
       <SToolbarButton onClick={() => setSidebar(true)}>
-        {isLoading && <Spinner size={50} css={{ position: "absolute" }} />}
+        {isLoading && <Spinner size={42} css={{ position: "absolute" }} />}
         <SMaskContainer cropped={hasReferendum}>
           <motion.div
             sx={{ flex: "row", align: "center" }}
