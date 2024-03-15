@@ -1,7 +1,7 @@
 import { ApiPromise } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import { useRpcProvider } from "providers/rpcProvider"
-import { DISPATCH_ADDRESS, H160 } from "utils/evm"
+import { DISPATCH_ADDRESS, H160, isEvmAccount, isEvmAddress } from "utils/evm"
 import BigNumber from "bignumber.js"
 import { undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -26,7 +26,12 @@ const getEvmPaymentFee =
 export const useEvmPaymentFee = (txHex: string, address?: string) => {
   const { api } = useRpcProvider()
 
-  const evmAddress = address ? H160.fromAccount(address) : ""
+  const evmAddress =
+    address && isEvmAccount(address)
+      ? H160.fromAccount(address)
+      : address && isEvmAddress(address)
+      ? address
+      : undefined
 
   const enabled = !!evmAddress && !!txHex
 

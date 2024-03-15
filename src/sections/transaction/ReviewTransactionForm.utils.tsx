@@ -38,7 +38,11 @@ export const useTransactionValues = ({
   const { account } = useAccount()
   const bestNumber = useBestNumber()
 
-  const evmPaymentFee = useEvmPaymentFee(tx.method.toHex(), account?.address)
+  const isEvm = isEvmAccount(account?.address)
+  const evmPaymentFee = useEvmPaymentFee(
+    tx.method.toHex(),
+    isEvm ? account?.address : "",
+  )
 
   const accountFeePaymentAsset = useAccountCurrency(
     feePaymentId ? undefined : account?.address,
@@ -194,7 +198,7 @@ export const useTransactionValues = ({
       .map((acceptedFeeAsset) => acceptedFeeAsset?.data?.id) ?? []
 
   let displayEvmFeePaymentValue
-  let evmAcceptedFeePaymentAssetIds
+  let evmAcceptedFeePaymentAssetIds: string[] = []
 
   if (isEvmAccount(account?.address) && evmPaymentFee?.data) {
     displayEvmFeePaymentValue = evmPaymentFee.data.shiftedBy(
@@ -214,8 +218,9 @@ export const useTransactionValues = ({
       displayEvmFeePaymentValue,
       feePaymentValue,
       feePaymentMeta,
-      acceptedFeePaymentAssets:
-        evmAcceptedFeePaymentAssetIds || acceptedFeePaymentAssetIds,
+      acceptedFeePaymentAssets: displayEvmFeePaymentValue?.gt(0)
+        ? evmAcceptedFeePaymentAssetIds
+        : acceptedFeePaymentAssetIds,
       era,
       nonce: nonce.data,
       isLinkedAccount,
