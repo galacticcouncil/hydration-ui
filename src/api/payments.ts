@@ -76,13 +76,6 @@ export const getAccountCurrency =
     assets: Awaited<ReturnType<typeof useRpcProvider>>["assets"],
   ) =>
   async () => {
-    if (typeof address === "string" && isEvmAccount(address)) {
-      const asset = assets.all.find(
-        ({ symbol }) => symbol === NATIVE_EVM_ASSET_SYMBOL,
-      )
-      return asset?.id
-    }
-
     const result =
       await api.query.multiTransactionPayment.accountCurrencyMap(address)
 
