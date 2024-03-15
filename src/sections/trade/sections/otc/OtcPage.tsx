@@ -1,6 +1,5 @@
 import { OtcHeader } from "sections/trade/sections/otc/header/OtcHeader"
 import { OtcOrderTable } from "sections/trade/sections/otc/orders/OtcOrders"
-
 import { useState } from "react"
 import { useOrdersTableData } from "./orders/OtcOrdersData.utils"
 
@@ -8,6 +7,7 @@ export const OtcPage = () => {
   const [filter, setFilter] = useState({
     showMyOrders: false,
     showPartial: false,
+    searchVal: "",
   })
   const order = useOrdersTableData()
 
@@ -16,6 +16,7 @@ export const OtcPage = () => {
       <OtcHeader
         showMyOrders={filter.showMyOrders}
         showPartial={filter.showPartial}
+        searchVal={filter.searchVal}
         onShowMyOrdersChange={(value) =>
           setFilter((prev) => ({
             ...prev,
@@ -28,11 +29,18 @@ export const OtcPage = () => {
             showPartial: value,
           }))
         }
+        onSearchChange={(value) =>
+          setFilter((prev) => ({
+            ...prev,
+            searchVal: value,
+          }))
+        }
       />
       <OtcOrderTable
         data={order.data}
         showMyOrders={filter.showMyOrders}
         showPartial={filter.showPartial}
+        searchVal={filter.searchVal}
       />
     </>
   )

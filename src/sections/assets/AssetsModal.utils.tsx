@@ -44,6 +44,7 @@ export const useAssetsModal = ({
       title={title || t("selectAsset.title")}
       headerVariant="FontOver"
       noPadding
+      disableCloseOutside
     >
       <AssetsModalContent
         onSelect={handleSelect}

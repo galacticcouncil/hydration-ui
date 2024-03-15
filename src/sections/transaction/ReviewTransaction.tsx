@@ -86,6 +86,7 @@ export const ReviewTransaction = (props: Transaction) => {
           toastMessage={props.toastMessage}
         />
       )}
+
       <Modal
         open={!minimizeModal}
         onBack={onBack}
@@ -94,7 +95,6 @@ export const ReviewTransaction = (props: Transaction) => {
         topContent={props.steps ? <Stepper steps={props.steps} /> : undefined}
         {...modalProps}
       >
-        <WalletUpgradeModal />
         {isLoading ? (
           <ReviewTransactionPending txState={txState} onClose={onClose} />
         ) : isSuccess ? (
@@ -131,6 +131,7 @@ export const ReviewTransaction = (props: Transaction) => {
           />
         ) : null}
       </Modal>
+      <WalletUpgradeModal />
     </>
   )
 }

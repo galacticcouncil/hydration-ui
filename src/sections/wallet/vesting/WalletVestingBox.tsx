@@ -5,9 +5,9 @@ import { WalletVestingSchedule } from "./WalletVestingSchedule"
 import { WalletVestingEmpty } from "./WalletVestingEmpty"
 import { useVestingSchedules } from "api/vesting"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { Spinner } from "components/Spinner/Spinner.styled"
 import { isApiLoaded } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
+import { Spinner } from "components/Spinner/Spinner"
 
 const VestingBoxContent = () => {
   const { account } = useAccount()
@@ -18,7 +18,7 @@ const VestingBoxContent = () => {
       <div
         sx={{ flex: "row", align: "center", justify: "center", height: 240 }}
       >
-        <Spinner width={50} height={50} />
+        <Spinner size={50} />
       </div>
     )
   }

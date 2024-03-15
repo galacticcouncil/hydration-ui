@@ -1,17 +1,19 @@
-import { Spinner } from "components/Spinner/Spinner.styled"
 import { ComponentProps, forwardRef } from "react"
 import { SButton, SButtonTransparent, SContent } from "./Button.styled"
+import { Spinner } from "components/Spinner/Spinner"
 
 export type ButtonVariant =
   | "primary"
   | "secondary"
+  | "mutedSecondary"
   | "error"
+  | "mutedError"
   | "gradient"
   | "outline"
   | "transparent"
   | "blue"
   | "green"
-export type ButtonSize = "small" | "medium" | "micro"
+export type ButtonSize = "small" | "medium" | "compact" | "micro"
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant
@@ -31,8 +33,8 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   return (
     <SButton variant={variant} size={size} {...props}>
-      <SContent>
-        {props.isLoading && <Spinner width={16} height={16} />}
+      <SContent size={size}>
+        {props.isLoading && <Spinner size={16} />}
         {props.text || props.children}
       </SContent>
     </SButton>

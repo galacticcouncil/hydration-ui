@@ -96,21 +96,22 @@ export function SwapPage() {
     )
   }
 
-  const assetsReady = search.success && accountCurrency.isSuccess
-
   const assetInDefault =
-    search.success && search.data.assetIn
-      ? search.data.assetIn
-      : isEvmAccount(account?.address) && accountCurrency.isSuccess
+    isEvmAccount(account?.address) && accountCurrency.isSuccess
       ? accountCurrency.data
-      : undefined
+      : ""
 
   const assetOutDefault =
+    isEvmAccount(account?.address) && accountCurrency.isSuccess
+      ? NATIVE_ASSET_ID
+      : ""
+
+  const assetIn =
+    search.success && search.data.assetIn ? search.data.assetIn : assetInDefault
+  const assetOut =
     search.success && search.data.assetOut
       ? search.data.assetOut
-      : isEvmAccount(account?.address) && accountCurrency.isSuccess
-      ? NATIVE_ASSET_ID
-      : undefined
+      : assetOutDefault
 
   return (
     <SContainer>
@@ -118,11 +119,11 @@ export function SwapPage() {
         ref={(r) => {
           if (r) {
             r.setAttribute("chart", "")
-            r.setAttribute("twap", "")
+            r.setAttribute("twapOn", "")
           }
         }}
-        assetIn={assetsReady ? assetInDefault : ""}
-        assetOut={assetsReady ? assetOutDefault : ""}
+        assetIn={assetIn}
+        assetOut={assetOut}
         apiAddress={rpcUrl}
         stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}

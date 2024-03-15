@@ -19,17 +19,16 @@ export const TableAction = (props: TableActionProps) => {
       {...props}
       isLoading={props.isLoading}
       disabled={props.disabled}
-      size="small"
+      size="compact"
       variant={props.variant}
-      sx={{ p: "9px 12px" }}
-      css={{
-        whiteSpace: "nowrap",
-      }}
-      className={props.className}
       onClick={(e) => {
         e.stopPropagation()
         e.preventDefault()
         props.onClick?.()
+      }}
+      css={{
+        padding: "10px 12px",
+        whiteSpace: "nowrap",
       }}
     >
       {props.icon && <Icon size={16} icon={props.icon} />}

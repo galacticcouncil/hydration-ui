@@ -26,6 +26,32 @@ export const SWrapper = styled.div<{
         color: ${theme.colors.white};
       }
     `};
+
+  & > svg {
+    position: absolute;
+    top: 50%;
+
+    transform: translateY(-50%);
+    color: rgba(${theme.rgbColors.white}, 0.4);
+  }
+
+  &:has(svg + input) {
+    & > svg {
+      left: 12px;
+    }
+    input[type="text"] {
+      padding-left: 48px;
+    }
+  }
+
+  &:has(input + svg) {
+    & > svg {
+      right: 12px;
+    }
+    input[type="text"] {
+      padding-right: 48px;
+    }
+  }
 `
 
 export const SInput = styled.input<{ error?: string; unit?: string }>`

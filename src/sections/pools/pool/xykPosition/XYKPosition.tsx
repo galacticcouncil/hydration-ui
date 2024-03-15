@@ -88,21 +88,31 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
         </div>
         <SContainer>
           <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
-            <div sx={{ flex: "row", gap: 7, align: "center" }}>
-              <MultipleIcons
-                icons={assetsMeta.map((asset: TAsset) => ({
-                  icon: <AssetLogo id={asset.id} />,
-                }))}
-              />
+            <div sx={{ flex: "row", justify: "space-between" }}>
+              <div sx={{ flex: "row", gap: 7, align: "center" }}>
+                <MultipleIcons
+                  icons={assetsMeta.map((asset: TAsset) => ({
+                    icon: <AssetLogo id={asset.id} />,
+                  }))}
+                />
 
-              <Text fs={[14, 18]} color={["white", "basic100"]}>
-                {t("liquidity.xyk.asset.position.title", {
-                  symbol: assetsMeta
-                    .map((assetMeta) => assetMeta.symbol)
-                    .join("/"),
-                })}
-              </Text>
+                <Text fs={[14, 18]} color={["white", "basic100"]}>
+                  {t("liquidity.xyk.asset.position.title", {
+                    symbol: assetsMeta
+                      .map((assetMeta) => assetMeta.symbol)
+                      .join("/"),
+                  })}
+                </Text>
+              </div>
+
+              <LiquidityPositionRemoveLiquidity
+                pool={pool}
+                onSuccess={() => null}
+              />
             </div>
+
+            <Separator color="white" opacity={0.06} />
+
             <div
               sx={{
                 flex: ["column", "row"],
@@ -130,7 +140,11 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
                 </div>
               </div>
 
-              <Separator orientation={isDesktop ? "vertical" : "horizontal"} />
+              <Separator
+                orientation={isDesktop ? "vertical" : "horizontal"}
+                color="white"
+                opacity={0.06}
+              />
 
               {myBalance && (
                 <div
@@ -178,10 +192,6 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
               )}
             </div>
           </div>
-          <LiquidityPositionRemoveLiquidity
-            pool={pool}
-            onSuccess={() => null}
-          />
         </SContainer>
       </div>
     </div>

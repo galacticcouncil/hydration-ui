@@ -18,16 +18,18 @@ export const EmptyState = ({
   navigateTo,
   btnText,
   desc,
+  colSpan,
 }: {
   navigateTo?: string
   btnText?: string
   desc: ReactNode
+  colSpan?: number
 }) => {
   const navigate = useNavigate()
 
   return (
     <tr sx={{ height: 250 }}>
-      <td colSpan={4}>
+      <td colSpan={colSpan || 4}>
         <SEmptyState>
           {desc}
           {navigateTo && btnText && (

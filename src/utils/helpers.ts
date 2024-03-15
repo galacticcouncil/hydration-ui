@@ -9,6 +9,7 @@ import { KeyOfType } from "utils/types"
 import { knownGenesis } from "@polkadot/networks/defaults/genesis"
 import { availableNetworks } from "@polkadot/networks"
 import type { Network } from "@polkadot/networks/types"
+import BN from "bignumber.js"
 
 export const noop = () => {}
 export const undefinedNoop = () => undefined
@@ -267,4 +268,54 @@ export const genesisHashToChain = (genesisHash?: `0x${string}`) => {
   }
 
   return chainInfo
+}
+
+/**
+ * Converts a BN to abbreviated string if number is too large. Handles millions and billions.
+ */
+export function abbreviateNumber(price: BN): string {
+  if (price.isNaN()) {
+    return "N / A"
+  }
+
+  let formattedPrice = ""
+  const decimalPlaces = price.decimalPlaces() || 0
+
+  if (decimalPlaces > 0) {
+    if (decimalPlaces <= 2 || price.gt(new BN(10))) {
+      formattedPrice = "$" + price.toFixed(2)
+    } else {
+      formattedPrice = "$" + price.toFixed(Math.min(4, decimalPlaces))
+    }
+  } else {
+    formattedPrice = "$" + price.toFixed(2)
+  }
+
+  if (price.gt(new BN(999999))) {
+    const suffixes = [" M", " B", " T"]
+    let suffixIndex = -1
+    let tempPrice = price
+
+    while (tempPrice.gt(new BN(999999))) {
+      tempPrice = tempPrice.dividedBy(new BN(1000000))
+      suffixIndex++
+    }
+
+    if (suffixIndex >= 0) {
+      if (decimalPlaces > 0) {
+        if (decimalPlaces <= 2 || tempPrice.gt(new BN(10))) {
+          formattedPrice = "$" + tempPrice.toFixed(2) + suffixes[suffixIndex]
+        } else {
+          formattedPrice =
+            "$" +
+            tempPrice.toFixed(Math.min(4, decimalPlaces)) +
+            suffixes[suffixIndex]
+        }
+      } else {
+        formattedPrice = "$" + tempPrice.toFixed(2) + suffixes[suffixIndex]
+      }
+    }
+  }
+
+  return formattedPrice
 }

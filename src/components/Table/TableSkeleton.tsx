@@ -54,7 +54,7 @@ export const TableSkeleton = ({
           {!hideHeader && (
             <TableHeaderContent>
               {table.getHeaderGroups().map((hg) => (
-                <TableRow key={hg.id}>
+                <TableRow key={hg.id} header>
                   {hg.headers.map((header) => (
                     <TableSortHeader
                       key={header.id}

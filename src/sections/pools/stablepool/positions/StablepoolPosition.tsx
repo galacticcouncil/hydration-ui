@@ -3,7 +3,7 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SContainer, SOmnipoolButton } from "./StablepoolPosition.styled"
-import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
@@ -19,36 +19,32 @@ import {
 } from "sections/pools/stablepool/transfer/TransferModal"
 import { useState } from "react"
 import { TStableSwap } from "api/assetDetails"
-import { useTokenBalance } from "api/balances"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import BN from "bignumber.js"
 
 type Props = {
   pool: TPoolFullData
+  amount: BN
+  amountPrice: BN
   refetchPositions: () => void
 }
 
-export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
+export const StablepoolPosition = ({
+  pool,
+  refetchPositions,
+  amount,
+  amountPrice,
+}: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { account } = useAccount()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const [transferOpen, setTransferOpen] = useState<Page>()
 
   const meta = assets.getAsset(pool.id) as TStableSwap
 
-  const shareTokensBalance = useTokenBalance(pool.id, account?.address)
-
-  const amount = shareTokensBalance.data?.freeBalance ?? BN_0
-
   if (amount.isZero()) return null
-
-  const spotPrice = pool.spotPrice
-  const providedAmountPrice = spotPrice
-    ? amount.multipliedBy(spotPrice).shiftedBy(-meta.decimals)
-    : BN_0
 
   return (
     <>
@@ -105,14 +101,14 @@ export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
                     })}
                   </Text>
                   <DollarAssetValue
-                    value={providedAmountPrice}
+                    value={amountPrice}
                     wrapper={(children) => (
                       <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
                         {children}
                       </Text>
                     )}
                   >
-                    <DisplayValue value={providedAmountPrice} />
+                    <DisplayValue value={amountPrice} />
                   </DollarAssetValue>
                 </div>
               </div>
@@ -138,14 +134,14 @@ export const StablepoolPosition = ({ pool, refetchPositions }: Props) => {
                     })}
                   </Text>
                   <DollarAssetValue
-                    value={providedAmountPrice}
+                    value={amountPrice}
                     wrapper={(children) => (
                       <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
                         {children}
                       </Text>
                     )}
                   >
-                    <DisplayValue value={providedAmountPrice} />
+                    <DisplayValue value={amountPrice} />
                   </DollarAssetValue>
                 </div>
               </div>
