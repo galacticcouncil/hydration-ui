@@ -11,6 +11,7 @@ import ExitIcon from "assets/icons/Exit.svg?react"
 import { useFarmExitAllMutation } from "utils/farms/exit"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 interface Props {
   pool: TPool
@@ -19,6 +20,7 @@ interface Props {
 
 export const FarmingPositionWrapper = ({ pool, positions }: Props) => {
   const { t } = useTranslation()
+  const { account } = useAccount()
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type
@@ -43,10 +45,17 @@ export const FarmingPositionWrapper = ({ pool, positions }: Props) => {
             {t("farms.positions.header.title")}
           </Text>
         </div>
-        <Button variant="error" size="compact" onClick={() => exit.mutate()}>
-          <Icon size={12} icon={<ExitIcon />} />
-          {t("liquidity.pool.farms.exitAll.btn")}
-        </Button>
+        {positions.length > 1 ? (
+          <Button
+            variant="error"
+            size="compact"
+            onClick={() => exit.mutate()}
+            disabled={account?.isExternalWalletConnected}
+          >
+            <Icon size={12} icon={<ExitIcon />} />
+            {t("liquidity.pool.farms.exitAll.btn")}
+          </Button>
+        ) : null}
       </div>
 
       <ClaimRewardsCard poolId={pool.id} />

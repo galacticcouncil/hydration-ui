@@ -394,4 +394,8 @@ export const QUERY_KEYS = {
     address?.toString(),
   ],
   yieldFarmCreated: ["yieldFarmCreated"],
+  inactiveYieldFarms: (poolId: AccountId32 | string) => [
+    "inactiveYieldFarms",
+    poolId.toString(),
+  ],
 } as const
