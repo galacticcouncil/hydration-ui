@@ -1,5 +1,5 @@
 import { Label } from "components/Label/Label"
-import React, { forwardRef } from "react"
+import React, { ReactNode, forwardRef } from "react"
 import { SWrapper, SInput } from "./Input.styled"
 
 // Error handling should be added once we implement forms and validation, for now the input accepts error props
@@ -17,6 +17,8 @@ export type InputProps = {
   className?: string
   tooltip?: string
   disabled?: boolean
+  iconStart?: ReactNode
+  iconEnd?: ReactNode
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -30,6 +32,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       name,
       withLabel,
       tooltip,
+      iconStart,
+      iconEnd,
       ...p
     },
     ref,
@@ -44,6 +48,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           id={name}
         >
           <SWrapper unit={p.unit}>
+            {iconStart}
             <SInput
               ref={ref}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -59,6 +64,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               autoComplete="off"
               {...p}
             />
+            {iconEnd}
           </SWrapper>
         </Label>
       </>
