@@ -57,9 +57,13 @@ export class MetaMaskSigner {
 
     if (from === "hydradx") {
       const [gas, gasPrice] = await this.getGasValues(tx)
+
+      const onePrc = gasPrice.div(100)
+      const gasPricePlus = gasPrice.add(onePrc)
+
       return await this.signer.sendTransaction({
-        maxPriorityFeePerGas: gasPrice,
-        maxFeePerGas: gasPrice,
+        maxPriorityFeePerGas: gasPricePlus,
+        maxFeePerGas: gasPricePlus,
         gasLimit: gas.mul(11).div(10), // add 10%
         ...tx,
       })
