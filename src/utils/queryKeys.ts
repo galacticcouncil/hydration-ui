@@ -367,6 +367,11 @@ export const QUERY_KEYS = {
   fee: (assetId?: string) => ["fee", assetId],
   evmTxCost: (data: string) => ["evmTxCost", data],
   evmChainInfo: (address: string) => ["evmChainInfo", address],
+  evmPaymentFee: (txHex: string, address?: string) => [
+    "evmPaymentFee",
+    txHex,
+    address,
+  ],
   referralCodes: (accountAddress?: string) => [
     "referralsCodes",
     accountAddress,
@@ -394,4 +399,8 @@ export const QUERY_KEYS = {
     address?.toString(),
   ],
   yieldFarmCreated: ["yieldFarmCreated"],
+  inactiveYieldFarms: (poolId: AccountId32 | string) => [
+    "inactiveYieldFarms",
+    poolId.toString(),
+  ],
 } as const
