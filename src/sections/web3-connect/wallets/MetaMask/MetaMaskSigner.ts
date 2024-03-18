@@ -4,9 +4,8 @@ import {
   Web3Provider,
 } from "@ethersproject/providers"
 import { evmChains } from "@galacticcouncil/xcm-sdk"
+import { DISPATCH_ADDRESS } from "utils/evm"
 import { MetaMaskProvider, requestNetworkSwitch } from "utils/metamask"
-
-const DISPATCH_ADDRESS = "0x0000000000000000000000000000000000000401"
 
 export class MetaMaskSigner {
   address: string
