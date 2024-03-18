@@ -205,9 +205,9 @@ export const useTransactionValues = ({
       -NATIVE_EVM_ASSET_DECIMALS,
     )
 
-    evmAcceptedFeePaymentAssetIds = assets.all
-      .filter(({ id }) => id === import.meta.env.VITE_EVM_NATIVE_ASSET_ID)
-      .map(({ id }) => id)
+    evmAcceptedFeePaymentAssetIds = [
+      assets.getAsset(import.meta.env.VITE_EVM_NATIVE_ASSET_ID).id,
+    ]
   }
 
   return {
