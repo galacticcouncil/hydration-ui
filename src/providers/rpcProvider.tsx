@@ -12,8 +12,6 @@ import {
 import { useProviderData, useProviderRpcUrlStore } from "api/provider"
 import { ReactNode, createContext, useContext, useMemo } from "react"
 import { useWindowFocus } from "hooks/useWindowFocus"
-import { useAssetHubAssetRegistry } from "api/externalAssetRegistry"
-import { omit } from "utils/rx"
 
 type IContextAssets = Awaited<ReturnType<typeof getAssets>>["assets"] & {
   all: (TToken | TBond | TStableSwap | TShareToken)[]
@@ -48,7 +46,6 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const providerData = useProviderData(
     preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL,
   )
-  const assetHubAssets = useAssetHubAssetRegistry()
 
   useWindowFocus({
     onFocus: () => {
@@ -71,24 +68,12 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         external: externalRaw,
       } = providerData.data.assets
 
-      const external = externalRaw.map((externalRegistered) => {
-        const tokenMeta = assetHubAssets.data?.find(
-          (assetHubToken) =>
-            assetHubToken.id === externalRegistered.generalIndex,
-        )
-
-        return {
-          ...externalRegistered,
-          ...(tokenMeta ? omit(["id"], tokenMeta) : {}),
-        }
-      })
-
       const all = [
         ...tokens,
         ...bonds,
         ...stableswap,
         ...shareTokens,
-        ...external,
+        ...externalRaw,
       ]
 
       const allTokensObject = all.reduce<Record<string, TAsset>>(
@@ -121,7 +106,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         assets: {
           ...providerData.data.assets,
           all,
-          external,
+          external: externalRaw,
           isStableSwap,
           isBond,
           isShareToken,
@@ -143,7 +128,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       tradeRouter: {} as TradeRouter,
       featureFlags: {} as TProviderContext["featureFlags"],
     }
-  }, [assetHubAssets.data, preference._hasHydrated, providerData.data])
+  }, [preference._hasHydrated, providerData.data])
 
   return (
     <ProviderContext.Provider value={value}>

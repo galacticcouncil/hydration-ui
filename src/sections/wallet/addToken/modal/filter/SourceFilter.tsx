@@ -7,8 +7,10 @@ import { useTranslation } from "react-i18next"
 import { SContainer, SFilterButton } from "./SourceFilter.styled"
 import { SELECTABLE_PARACHAINS_IDS } from "sections/wallet/addToken/AddToken.utils"
 
-const chains = Array.from(chainsMap.values()).filter(({ parachainId }) =>
-  SELECTABLE_PARACHAINS_IDS.includes(parachainId.toString()),
+const chains = Array.from(chainsMap.values()).filter(
+  ({ parachainId, ecosystem }) =>
+    SELECTABLE_PARACHAINS_IDS.includes(parachainId.toString()) &&
+    ecosystem === "polkadot",
 )
 
 type Props = {
@@ -19,6 +21,7 @@ type Props = {
 
 export const SourceFilter: FC<Props> = ({ className, value, onChange }) => {
   const { t } = useTranslation()
+
   return (
     <SContainer className={className}>
       <Text color="basic500" fs={12} tTransform="uppercase">

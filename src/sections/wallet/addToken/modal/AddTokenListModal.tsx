@@ -10,7 +10,6 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { SAssetsModalHeader } from "sections/assets/AssetsModal.styled"
 import {
-  ASSET_HUB_ID,
   SELECTABLE_PARACHAINS_IDS,
   TExternalAsset,
   useUserExternalTokenStore,
@@ -42,7 +41,7 @@ export const AddTokenListModal: React.FC<Props> = ({
   const { isAdded } = useUserExternalTokenStore()
 
   const externalAssets = data?.[parachainId] ?? []
-  const internalAssets = assets.all.filter(
+  const internalAssets = assets.tokens.filter(
     (asset) => asset.parachainId === parachainId.toString(),
   )
 
@@ -53,7 +52,7 @@ export const AddTokenListModal: React.FC<Props> = ({
     const isChainStored = internalAssets.some(
       (internalAsset) => internalAsset.generalIndex === asset.id,
     )
-    if (isChainStored && asset.parachainId === ASSET_HUB_ID) return false
+    if (isChainStored) return false
 
     const isUserStored = isAdded(asset.id)
     if (isUserStored) return false
