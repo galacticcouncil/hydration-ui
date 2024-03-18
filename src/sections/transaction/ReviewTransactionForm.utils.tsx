@@ -194,9 +194,9 @@ export const useTransactionValues = ({
   }
 
   const acceptedFeePaymentAssetIds =
-    acceptedFeePaymentAssets
-      .filter((acceptedFeeAsset) => acceptedFeeAsset?.data?.accepted)
-      .map((acceptedFeeAsset) => acceptedFeeAsset?.data?.id) ?? []
+    acceptedFeePaymentAssets.data
+      ?.filter((acceptedFeeAsset) => acceptedFeeAsset.accepted)
+      .map((acceptedFeeAsset) => acceptedFeeAsset.id) ?? []
 
   let displayEvmFeePaymentValue
   let evmAcceptedFeePaymentAssetIds: string[] = []
