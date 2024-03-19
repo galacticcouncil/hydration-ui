@@ -2012,7 +2012,7 @@
   resolved "https://registry.yarnpkg.com/@babel/regjsgen/-/regjsgen-0.8.0.tgz#f0ba69b075e1f05fb2825b7fad991e7adbb18310"
   integrity sha512-x/rqGMdzj+fWZvCOYForTghzbtqPDZ5gPwaoNGHdgDfF2QA/XZbCBp4Moo5scrkAMPhB7z26XM/AaHuIJdgauA==
 
-"@babel/runtime@^7.1.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.13.10", "@babel/runtime@^7.14.5", "@babel/runtime@^7.16.3", "@babel/runtime@^7.16.7", "@babel/runtime@^7.17.2", "@babel/runtime@^7.17.8", "@babel/runtime@^7.18.3", "@babel/runtime@^7.20.13", "@babel/runtime@^7.20.6", "@babel/runtime@^7.20.7", "@babel/runtime@^7.7.6", "@babel/runtime@^7.8.4", "@babel/runtime@^7.9.2":
+"@babel/runtime@^7.1.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.13.10", "@babel/runtime@^7.14.5", "@babel/runtime@^7.16.3", "@babel/runtime@^7.16.7", "@babel/runtime@^7.17.2", "@babel/runtime@^7.17.8", "@babel/runtime@^7.18.3", "@babel/runtime@^7.20.13", "@babel/runtime@^7.20.7", "@babel/runtime@^7.7.6", "@babel/runtime@^7.8.4", "@babel/runtime@^7.9.2":
   version "7.21.0"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.21.0.tgz#5b55c9d394e5fcf304909a8b00c07dc217b56673"
   integrity sha512-xwII0//EObnq89Ji5AKYQaRYiW/nZ3llSv29d49IuxPhKbtJoLP+9QUUZ4nVragQVtaVGeZrpB+ZtG/Pdy/POw==
@@ -2990,20 +2990,17 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@3.3.3":
-  version "3.3.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.3.3.tgz#68b77b7f78f6868e645b476281d728eaa2cb1597"
-  integrity sha512-GW92c/OjfZnqSn57zJdJXwDhCphVeGJ4XidlDTHu8wAlirXWwZlh7Uqz5YdDxvYEtFhsSLuiu6kLr9PznkTvcg==
+"@galacticcouncil/apps@3.3.4":
+  version "3.3.4"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.3.4.tgz#d977b3226ca8cfc707f398f81dc327220930dd86"
+  integrity sha512-/WMJDU9aoU1tgCQoxdGUpC7pIjgCBAZT9CBrIhjfdYx1q3tA9fjvc8si0z2rMo8TP2mhcYmCXurfCmV0D2vraQ==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
-    "@talismn/connect-wallets" "^1.2.1"
-    "@tanstack/table-core" "^8.5.17"
     "@thi.ng/atom" "^5.1.3"
     "@thi.ng/cache" "^2.1.35"
     buffer "^6.0.3"
     dayjs "^1.11.7"
     humanize-duration-ts "^2.1.1"
-    i18next "^22.4.8"
     lightweight-charts "^4.0.1"
     short-uuid "^4.2.0"
     viem "^1.19.1"
@@ -3051,10 +3048,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^3.1.2":
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.1.2.tgz#9d67c92155d80177af4bfa8a24a5009ae2b7471c"
-  integrity sha512-qa5bd+eO84qp7EzBpI4Vi+9KU1Vzkj8mLP+lptStWDrTMUzn8RJi8va0Vj9YV4C1e9Em2hJRIAwaaGEtLMd5TA==
+"@galacticcouncil/ui@^3.1.3":
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.1.3.tgz#6f6d0eff0bafb24e05decc17e421f1998566ae99"
+  integrity sha512-52/nsXxlM5uTy0VFnwXhCoX3/QqiqbJGWR8X7GEmuZAm8Px1k2w8sLcUT+4zC1Fgn+YLuGMGfm4QXtsCaFNWGQ==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
@@ -5974,11 +5971,6 @@
   version "8.8.5"
   resolved "https://registry.yarnpkg.com/@tanstack/table-core/-/table-core-8.8.5.tgz#4d75b452a9989a273174df1b9249157292a15bd5"
   integrity sha512-Xnwa1qxpgvSW7ozLiexmKp2PIYcLBiY/IizbdGriYCL6OOHuZ9baRhrrH51zjyz+61ly6K59rmt6AI/3RR+97Q==
-
-"@tanstack/table-core@^8.5.17":
-  version "8.9.1"
-  resolved "https://registry.yarnpkg.com/@tanstack/table-core/-/table-core-8.9.1.tgz#869410ca1748c45d4e19ccfd4db7e36452611674"
-  integrity sha512-2+R83n8vMZND0q3W1lSiF7co9nFbeWbjAErFf27xwbeA9E0wtUu5ZDfgj+TZ6JzdAEQAgfxkk/QNFAKiS8E4MA==
 
 "@testing-library/dom@^8.5.0":
   version "8.20.0"
@@ -10183,13 +10175,6 @@ i18next@^21.8.16:
   integrity sha512-YeuIBmFsGjUfO3qBmMOc0rQaun4mIpGKET5WDwvu8lU7gvwpcariZLNtL0Fzj+zazcHUrlXHiptcFhBMFaxzfg==
   dependencies:
     "@babel/runtime" "^7.17.2"
-
-i18next@^22.4.8:
-  version "22.4.15"
-  resolved "https://registry.yarnpkg.com/i18next/-/i18next-22.4.15.tgz#951882b751872994f8502b5a6ef6f796e6a7d7f8"
-  integrity sha512-yYudtbFrrmWKLEhl6jvKUYyYunj4bTBCe2qIUYAxbXoPusY7YmdwPvOE6fx6UIfWvmlbCWDItr7wIs8KEBZ5Zg==
-  dependencies:
-    "@babel/runtime" "^7.20.6"
 
 iconv-lite@0.4.24:
   version "0.4.24"
