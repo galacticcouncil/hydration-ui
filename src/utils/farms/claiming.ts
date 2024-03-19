@@ -7,7 +7,7 @@ import { useMutation } from "@tanstack/react-query"
 import { useAccountAssetBalances } from "api/accountBalances"
 import { useBestNumber } from "api/chain"
 import { useUserDeposits } from "api/deposits"
-import { useFarms, useOraclePrices } from "api/farms"
+import { useFarms, useInactiveFarms, useOraclePrices } from "api/farms"
 import { useOmnipoolAssets } from "api/omnipool"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
@@ -42,15 +42,24 @@ export const useClaimableAmount = (
 
   const omnipoolAssets = useOmnipoolAssets()
 
-  const farms = useFarms(
-    poolId ? [poolId] : omnipoolAssets.data?.map((asset) => asset.id) ?? [],
+  const poolIds = poolId
+    ? [poolId]
+    : omnipoolAssets.data?.map((asset) => asset.id.toString()) ?? []
+
+  const farms = useFarms(poolIds)
+
+  const inactiveFarms = useInactiveFarms(poolIds)
+
+  const allFarms = useMemo(
+    () => [...(farms.data ?? []), ...(inactiveFarms.data ?? [])],
+    [farms.data, inactiveFarms.data],
   )
 
   const { api, assets } = useRpcProvider()
   const accountResolver = getAccountResolver(api.registry)
 
   const assetIds = [
-    ...new Set(farms.data?.map((i) => i.globalFarm.rewardCurrency.toString())),
+    ...new Set(allFarms.map((i) => i.globalFarm.rewardCurrency.toString())),
   ]
 
   const metas = assets.getAssets(assetIds)
@@ -58,7 +67,7 @@ export const useClaimableAmount = (
 
   const accountAddresses = useMemo(
     () =>
-      farms.data
+      allFarms
         ?.map(
           ({ globalFarm }) =>
             [
@@ -67,10 +76,10 @@ export const useClaimableAmount = (
             ] as [AccountId32, u32][],
         )
         .flat(1) ?? [],
-    [accountResolver, farms.data],
+    [accountResolver, allFarms],
   )
 
-  const oracleAssetIds = farms.data?.map((farm) => ({
+  const oracleAssetIds = allFarms.map((farm) => ({
     rewardCurrency: farm.globalFarm.rewardCurrency.toString(),
     incentivizedAsset: farm.globalFarm.incentivizedAsset.toString(),
   }))
@@ -82,6 +91,7 @@ export const useClaimableAmount = (
     bestNumberQuery,
     filteredDeposits,
     farms,
+    inactiveFarms,
     accountBalances,
     spotPrices,
   ]
@@ -91,7 +101,6 @@ export const useClaimableAmount = (
     if (
       !bestNumberQuery.data ||
       !filteredDeposits.data ||
-      !farms.data ||
       !accountBalances.data ||
       !spotPrices.data
     )
@@ -111,14 +120,12 @@ export const useClaimableAmount = (
       metas ?? [],
     )
 
-    const { globalFarms, yieldFarms } = createMutableFarmEntries(
-      farms.data ?? [],
-    )
+    const { globalFarms, yieldFarms } = createMutableFarmEntries(allFarms ?? [])
 
     return deposits
       ?.map((record) =>
         record.data.yieldFarmEntries.map((farmEntry) => {
-          const aprEntry = farms.data?.find(
+          const aprEntry = allFarms.find(
             (i) =>
               i.globalFarm.id.eq(farmEntry.globalFarmId) &&
               i.yieldFarm.id.eq(farmEntry.yieldFarmId),
@@ -199,7 +206,7 @@ export const useClaimableAmount = (
     assets,
     bestNumberQuery,
     depositNft,
-    farms.data,
+    allFarms,
     filteredDeposits.data,
     metas,
     oraclePrices,

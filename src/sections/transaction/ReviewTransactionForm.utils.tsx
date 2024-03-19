@@ -11,10 +11,12 @@ import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_1 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
+import { NATIVE_EVM_ASSET_DECIMALS, isEvmAccount } from "utils/evm"
 import { BN_NAN } from "utils/constants"
 import { useUserReferrer } from "api/referrals"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
+import { useEvmPaymentFee } from "api/evm"
 
 export const useTransactionValues = ({
   xcallMeta,
@@ -30,6 +32,12 @@ export const useTransactionValues = ({
   const { assets, api, featureFlags } = useRpcProvider()
   const { account } = useAccount()
   const bestNumber = useBestNumber()
+
+  const isEvm = isEvmAccount(account?.address)
+  const evmPaymentFee = useEvmPaymentFee(
+    tx.method.toHex(),
+    isEvm ? account?.address : "",
+  )
 
   /* REFERRALS */
 
@@ -94,6 +102,7 @@ export const useTransactionValues = ({
 
   const isLoading =
     feePaymentAssets.isInitialLoading ||
+    evmPaymentFee.isInitialLoading ||
     isPaymentInfoLoading ||
     spotPrice.isInitialLoading ||
     nonce.isLoading ||
@@ -158,14 +167,35 @@ export const useTransactionValues = ({
       .gt(0)
   }
 
+  const acceptedFeePaymentAssetIds =
+    acceptedFeePaymentAssets
+      .filter((acceptedFeeAsset) => acceptedFeeAsset?.data?.accepted)
+      .map((acceptedFeeAsset) => acceptedFeeAsset?.data?.id) ?? []
+
+  let displayEvmFeePaymentValue
+  let evmAcceptedFeePaymentAssetIds: string[] = []
+
+  if (isEvmAccount(account?.address) && evmPaymentFee?.data) {
+    displayEvmFeePaymentValue = evmPaymentFee.data.shiftedBy(
+      -NATIVE_EVM_ASSET_DECIMALS,
+    )
+
+    evmAcceptedFeePaymentAssetIds = [
+      assets.getAsset(import.meta.env.VITE_EVM_NATIVE_ASSET_ID).id,
+    ]
+  }
+
   return {
     isLoading,
     data: {
       isEnoughPaymentBalance,
       displayFeePaymentValue,
+      displayEvmFeePaymentValue,
       feePaymentValue,
       feePaymentMeta,
-      acceptedFeePaymentAssets,
+      acceptedFeePaymentAssets: displayEvmFeePaymentValue?.gt(0)
+        ? evmAcceptedFeePaymentAssetIds
+        : acceptedFeePaymentAssetIds,
       era,
       nonce: nonce.data,
       isLinkedAccount,
@@ -185,11 +215,6 @@ export const useEditFeePaymentAsset = (
   const { t } = useTranslation()
   const setFeeAsPayment = useSetAsFeePayment()
 
-  const allowedAssets =
-    acceptedFeePaymentAssets
-      .filter((acceptedFeeAsset) => acceptedFeeAsset.data?.accepted)
-      .map((acceptedFeeAsset) => acceptedFeeAsset.data?.id) ?? []
-
   const {
     openModal: openEditFeePaymentAssetModal,
     modal: editFeePaymentAssetModal,
@@ -199,7 +224,7 @@ export const useEditFeePaymentAsset = (
     hideInactiveAssets: true,
     confirmRequired: true,
     defaultSelectedAsssetId: feePaymentAssetId,
-    allowedAssets,
+    allowedAssets: acceptedFeePaymentAssets,
     onSelect: (asset) =>
       setFeeAsPayment(asset.id.toString(), {
         onLoading: (
