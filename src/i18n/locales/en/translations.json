@@ -298,6 +298,7 @@
   "liquidity.reviewTransaction.modal.error.close": "Close",
   "liquidity.reviewTransaction.modal.error.review": "Review action log",
   "liquidity.reviewTransaction.modal.error.copy": "Copy error message",
+  "liquidity.reviewTransaction.modal.error.copied": "Message copied!",
   "liquidity.reviewTransaction.modal.error.tip": "Not enough HDX for TIP",
   "liquidity.reviewTransaction.toast.pending": "Submitting transaction...",
   "liquidity.reviewTransaction.toast.success": "Transaction successful.",

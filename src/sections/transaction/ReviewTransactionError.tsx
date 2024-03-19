@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { SButtons } from "./ReviewTransactionError.styled"
 import { Heading } from "components/Typography/Heading/Heading"
 import { useCopyToClipboard } from "react-use"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -25,9 +25,23 @@ export const ReviewTransactionError: FC<ReviewTransactionErrorProps> = ({
   const { api } = useRpcProvider()
   const { t } = useTranslation()
 
+  const [errorCopied, setErrorCopied] = useState(false)
   const { account } = useAccount()
 
   const [, copyToClipboard] = useCopyToClipboard()
+
+  function copyError() {
+    if (error) {
+      copyToClipboard(
+        getErrorTemplate(
+          account,
+          error,
+          api.runtimeVersion.specVersion.toString(),
+        ),
+      )
+      setErrorCopied(true)
+    }
+  }
 
   return (
     <div sx={{ flex: "column", align: "center", my: 40 }}>
@@ -66,18 +80,15 @@ export const ReviewTransactionError: FC<ReviewTransactionErrorProps> = ({
           {!!error && (
             <ButtonTransparent
               type="button"
-              sx={{ color: "brightBlue400", fontSize: 14 }}
-              onClick={() =>
-                copyToClipboard(
-                  getErrorTemplate(
-                    account,
-                    error,
-                    api.runtimeVersion.specVersion.toString(),
-                  ),
-                )
-              }
+              sx={{
+                color: errorCopied ? "green400" : "brightBlue400",
+                fontSize: 14,
+              }}
+              onClick={copyError}
             >
-              {t("liquidity.reviewTransaction.modal.error.copy")}
+              {errorCopied
+                ? t("liquidity.reviewTransaction.modal.error.copied")
+                : t("liquidity.reviewTransaction.modal.error.copy")}
             </ButtonTransparent>
           )}
         </div>
@@ -91,12 +102,15 @@ function getErrorTemplate(
   error: unknown,
   specVersion: string = "",
 ) {
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === "object"
-      ? JSON.stringify(error)
-      : `${error}`
+  let message = ""
+  try {
+    message =
+      error instanceof Error
+        ? error.message || error.toString()
+        : typeof error === "object"
+        ? JSON.stringify(error)
+        : `${error}`
+  } catch (err) {}
 
   return `Address: ${account?.address}\nProvider: ${account?.provider}\nMessage: ${message}\nSpec Version: ${specVersion}`
 }
