@@ -48,6 +48,7 @@ export const ReviewTransaction = (props: Transaction) => {
   const handleTxOnClose = () => {
     if (isLoading) {
       setMinimizeModal(true)
+      setSignError(undefined)
       return
     }
 
@@ -72,7 +73,6 @@ export const ReviewTransaction = (props: Transaction) => {
 
   const onReview = () => {
     reset()
-    setSignError(undefined)
     setMinimizeModal(true)
   }
 

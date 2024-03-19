@@ -29,13 +29,6 @@ export const ReviewTransactionError: FC<ReviewTransactionErrorProps> = ({
 
   const [, copyToClipboard] = useCopyToClipboard()
 
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === "object"
-      ? JSON.stringify(error)
-      : `${error}`
-
   return (
     <div sx={{ flex: "column", align: "center", my: 40 }}>
       <FullFailIcon />
@@ -70,7 +63,7 @@ export const ReviewTransactionError: FC<ReviewTransactionErrorProps> = ({
           >
             {t("liquidity.reviewTransaction.modal.error.review")}
           </ButtonTransparent>
-          {message && (
+          {!!error && (
             <ButtonTransparent
               type="button"
               sx={{ color: "brightBlue400", fontSize: 14 }}
@@ -78,7 +71,7 @@ export const ReviewTransactionError: FC<ReviewTransactionErrorProps> = ({
                 copyToClipboard(
                   getErrorTemplate(
                     account,
-                    message,
+                    error,
                     api.runtimeVersion.specVersion.toString(),
                   ),
                 )
@@ -95,8 +88,15 @@ export const ReviewTransactionError: FC<ReviewTransactionErrorProps> = ({
 
 function getErrorTemplate(
   account: Account | null,
-  message: string = "",
+  error: unknown,
   specVersion: string = "",
 ) {
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === "object"
+      ? JSON.stringify(error)
+      : `${error}`
+
   return `Address: ${account?.address}\nProvider: ${account?.provider}\nMessage: ${message}\nSpec Version: ${specVersion}`
 }
