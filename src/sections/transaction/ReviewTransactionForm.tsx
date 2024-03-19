@@ -19,7 +19,7 @@ import { ReviewTransactionSummary } from "sections/transaction/ReviewTransaction
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import BN from "bignumber.js"
-import { isEvmAccount } from "utils/evm"
+import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -102,10 +102,16 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
       : acceptedFeePaymentAssets.length > 1
   const isEditPaymentBalance = !isEnoughPaymentBalance && hasMultipleFeeAssets
 
+  const isEvmFeePaymentAssetInvalid = isEvmAccount(account?.address)
+    ? feePaymentMeta?.id !== import.meta.env.VITE_EVM_NATIVE_ASSET_ID
+    : false
+
   if (isOpenEditFeePaymentAssetModal) return editFeePaymentAssetModal
 
   const onConfirmClick = () =>
-    isEnoughPaymentBalance
+    isEvmFeePaymentAssetInvalid
+      ? openEditFeePaymentAssetModal()
+      : isEnoughPaymentBalance
       ? signTx.mutate()
       : hasMultipleFeeAssets
       ? openEditFeePaymentAssetModal()
@@ -113,7 +119,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   let btnText = t("liquidity.reviewTransaction.modal.confirmButton")
 
-  if (isEditPaymentBalance) {
+  if (isEditPaymentBalance || isEvmFeePaymentAssetInvalid) {
     btnText = t(
       "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance",
     )
@@ -145,7 +151,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
             <ReviewTransactionSummary
               tx={props.tx}
               transactionValues={transactionValues}
-              hasMultipleFeeAssets={hasMultipleFeeAssets}
+              editFeePaymentAssetEnabled={
+                hasMultipleFeeAssets || isEvmFeePaymentAssetInvalid
+              }
               xcallMeta={props.xcallMeta}
               openEditFeePaymentAssetModal={openEditFeePaymentAssetModal}
               onTipChange={isTippingEnabled ? setTipAmount : undefined}
@@ -175,6 +183,14 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   }
                   onClick={onConfirmClick}
                 />
+                {isEvmFeePaymentAssetInvalid && (
+                  <Text fs={16} color="pink600">
+                    {t(
+                      "liquidity.reviewTransaction.modal.confirmButton.invalidEvmPaymentAsset.msg",
+                      { symbol: NATIVE_EVM_ASSET_SYMBOL },
+                    )}
+                  </Text>
+                )}
                 {!isEnoughPaymentBalance && !transactionValues.isLoading && (
                   <Text fs={16} color="pink600">
                     {t(

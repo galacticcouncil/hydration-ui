@@ -82,7 +82,7 @@ export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
         onClick={() => setJoinFarm(true)}
         disabled={account?.isExternalWalletConnected}
       >
-        <Text fs={13} color="basic900" tTransform="uppercase" tAlign="center">
+        <Text fs={12} color="basic900" tTransform="uppercase" tAlign="center">
           {t("farms.positions.join.button.label")}
         </Text>
       </SJoinButton>

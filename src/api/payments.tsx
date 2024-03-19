@@ -10,7 +10,6 @@ import { u32 } from "@polkadot/types-codec"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { usePaymentInfo } from "./transaction"
 import { useRpcProvider } from "providers/rpcProvider"
-import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useSpotPrice } from "./spotPrice"
 import { useOraclePrice } from "./farms"
@@ -100,19 +99,7 @@ export const useSetAsFeePayment = (tx?: SubmittableExtrinsic) => {
 }
 
 export const getAccountCurrency =
-  (
-    api: ApiPromise,
-    address: string | AccountId32,
-    assets: Awaited<ReturnType<typeof useRpcProvider>>["assets"],
-  ) =>
-  async () => {
-    if (typeof address === "string" && isEvmAccount(address)) {
-      const asset = assets.all.find(
-        ({ symbol }) => symbol === NATIVE_EVM_ASSET_SYMBOL,
-      )
-      return asset?.id
-    }
-
+  (api: ApiPromise, address: string | AccountId32) => async () => {
     const result =
       await api.query.multiTransactionPayment.accountCurrencyMap(address)
 
@@ -124,10 +111,10 @@ export const getAccountCurrency =
   }
 
 export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
-  const { api, assets, isLoaded } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.accountCurrency(address),
-    !!address ? getAccountCurrency(api, address, assets) : undefinedNoop,
+    !!address ? getAccountCurrency(api, address) : undefinedNoop,
     {
       enabled: !!address && isLoaded,
     },

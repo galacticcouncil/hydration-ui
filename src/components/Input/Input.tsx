@@ -18,6 +18,7 @@ export type InputProps = {
   tooltip?: string
   iconStart?: ReactNode
   iconEnd?: ReactNode
+  disabled?: boolean
 }
 
 export const Input: FC<InputProps> = ({
@@ -31,6 +32,7 @@ export const Input: FC<InputProps> = ({
   tooltip,
   iconStart,
   iconEnd,
+  disabled,
   ...p
 }) => {
   return (
@@ -57,6 +59,7 @@ export const Input: FC<InputProps> = ({
             placeholder={placeholder}
             role="presentation"
             autoComplete="off"
+            disabled={disabled}
           />
           {iconEnd}
         </SWrapper>

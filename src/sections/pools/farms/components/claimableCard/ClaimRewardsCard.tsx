@@ -11,9 +11,9 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
 import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
-import { SContainer } from "./ClaimRewardsCard.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { Card } from "components/Card/Card"
 
 export const ClaimRewardsCard = (props: {
   poolId: string
@@ -78,59 +78,69 @@ export const ClaimRewardsCard = (props: {
   if (!claimable.data?.displayValue) return null
 
   return (
-    <SContainer>
+    <Card variant="primary">
       <div
-        sx={{ flex: "column", gap: 3, mb: [16, 0] }}
-        css={{ alignSelf: "start" }}
+        sx={{
+          flex: ["column", "row"],
+          justify: "space-between",
+          align: "center",
+          width: "100%",
+          mt: 12,
+        }}
       >
-        <Text color="brightBlue200" sx={{ mb: 7 }}>
-          {t("farms.claimCard.title")}
-        </Text>
-        {claimableAssets.map((claimableAsset) => (
-          <Fragment key={claimableAsset.symbol}>
-            <Text
-              font="FontOver"
-              sx={{ mb: 4, fontSize: [26, 28] }}
-              css={{ wordBreak: "break-all" }}
-            >
-              <Trans
-                t={t}
-                i18nKey={"farms.claimCard.claim.asset"}
-                tOptions={claimableAsset ?? {}}
-              >
-                <span
-                  css={css`
-                    color: rgba(${theme.rgbColors.white}, 0.4);
-                    font-size: 18px;
-                  `}
-                />
-              </Trans>
-            </Text>
-            <Separator />
-          </Fragment>
-        ))}
-        <Text
-          sx={{ mt: 6 }}
-          css={{ color: `rgba(${theme.rgbColors.white}, 0.4)` }}
+        <div
+          sx={{ flex: "column", gap: 3, mb: [16, 0] }}
+          css={{ alignSelf: "start" }}
         >
-          <Trans t={t} i18nKey="farms.claimCard.claim.usd">
-            <DisplayValue value={claimable.data?.displayValue} />
-          </Trans>
-        </Text>
+          <Text color="white" sx={{ mb: 7 }}>
+            {t("farms.claimCard.title")}
+          </Text>
+          {claimableAssets.map((claimableAsset) => (
+            <Fragment key={claimableAsset.symbol}>
+              <Text
+                font="FontOver"
+                sx={{ mb: 4, fontSize: [26, 19] }}
+                css={{ wordBreak: "break-all" }}
+              >
+                <Trans
+                  t={t}
+                  i18nKey={"farms.claimCard.claim.asset"}
+                  tOptions={claimableAsset ?? {}}
+                >
+                  <span
+                    css={css`
+                      color: rgba(${theme.rgbColors.white}, 0.4);
+                      font-size: 18px;
+                    `}
+                  />
+                </Trans>
+              </Text>
+              <Separator color="white" opacity={0.06} />
+            </Fragment>
+          ))}
+          <Text
+            sx={{ mt: 6 }}
+            css={{ color: `rgba(${theme.rgbColors.white}, 0.4)` }}
+          >
+            <Trans t={t} i18nKey="farms.claimCard.claim.usd">
+              <DisplayValue value={claimable.data?.displayValue} />
+            </Trans>
+          </Text>
+        </div>
+        <Button
+          variant="primary"
+          size="small"
+          sx={{ height: "fit-content", width: ["100%", 275] }}
+          disabled={
+            account?.isExternalWalletConnected ||
+            (claimable.data && claimable.data.displayValue.isZero())
+          }
+          onClick={() => claimAll.mutate()}
+          isLoading={claimAll.isLoading}
+        >
+          {t("farms.claimCard.button.label")}
+        </Button>
       </div>
-      <Button
-        variant="primary"
-        size="small"
-        sx={{ height: "fit-content", width: ["100%", 275] }}
-        disabled={
-          account?.isExternalWalletConnected ||
-          (claimable.data && claimable.data.displayValue.isZero())
-        }
-        onClick={() => claimAll.mutate()}
-        isLoading={claimAll.isLoading}
-      >
-        {t("farms.claimCard.button.label")}
-      </Button>
-    </SContainer>
+    </Card>
   )
 }
