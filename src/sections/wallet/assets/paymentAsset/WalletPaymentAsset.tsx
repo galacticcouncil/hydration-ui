@@ -18,20 +18,20 @@ export const WalletPaymentAsset = () => {
     ? assets.getAsset(accountCurrencyId)
     : null
 
-  const { acceptedFeePaymentAssets } = useAccountFeePaymentAssets()
+  const { acceptedFeePaymentAssetsIds } = useAccountFeePaymentAssets()
 
   const {
     editFeePaymentAssetModal,
     isOpenEditFeePaymentAssetModal,
     openEditFeePaymentAssetModal,
-  } = useEditFeePaymentAsset(acceptedFeePaymentAssets, accountCurrencyId)
+  } = useEditFeePaymentAsset(acceptedFeePaymentAssetsIds, accountCurrencyId)
 
   const iconIds =
     accountCurrencyMeta && assets.isStableSwap(accountCurrencyMeta)
       ? accountCurrencyMeta.assets
       : [accountCurrencyId]
 
-  const isFeePaymentAssetEditable = acceptedFeePaymentAssets.length > 1
+  const isFeePaymentAssetEditable = acceptedFeePaymentAssetsIds.length > 1
 
   return (
     <div sx={{ flex: "row", align: "center", gap: 8 }}>

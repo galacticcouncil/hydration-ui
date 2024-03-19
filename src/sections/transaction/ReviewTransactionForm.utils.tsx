@@ -70,8 +70,12 @@ export const useTransactionValues = ({
   const { data: paymentInfo, isLoading: isPaymentInfoLoading } =
     usePaymentInfo(boundedTx)
 
-  const { acceptedFeePaymentAssets, feePaymentAssetId, ...feePaymentAssets } =
-    useAccountFeePaymentAssets()
+  const {
+    acceptedFeePaymentAssetsIds,
+    acceptedFeePaymentAssets,
+    feePaymentAssetId,
+    ...feePaymentAssets
+  } = useAccountFeePaymentAssets()
 
   // fee payment asset which should be displayed on the screen
   const accountFeePaymentId = feePaymentAssetIdOverride ?? feePaymentAssetId
@@ -167,22 +171,11 @@ export const useTransactionValues = ({
       .gt(0)
   }
 
-  const acceptedFeePaymentAssetIds =
-    acceptedFeePaymentAssets
-      .filter((acceptedFeeAsset) => acceptedFeeAsset?.data?.accepted)
-      .map((acceptedFeeAsset) => acceptedFeeAsset?.data?.id) ?? []
-
   let displayEvmFeePaymentValue
-  let evmAcceptedFeePaymentAssetIds: string[] = []
-
-  if (isEvmAccount(account?.address) && evmPaymentFee?.data) {
+  if (isEvm && evmPaymentFee?.data) {
     displayEvmFeePaymentValue = evmPaymentFee.data.shiftedBy(
       -NATIVE_EVM_ASSET_DECIMALS,
     )
-
-    evmAcceptedFeePaymentAssetIds = [
-      assets.getAsset(import.meta.env.VITE_EVM_NATIVE_ASSET_ID).id,
-    ]
   }
 
   return {
@@ -193,10 +186,7 @@ export const useTransactionValues = ({
       displayEvmFeePaymentValue,
       feePaymentValue,
       feePaymentMeta,
-      acceptedFeePaymentAssets: displayEvmFeePaymentValue?.gt(0)
-        ? evmAcceptedFeePaymentAssetIds
-        : acceptedFeePaymentAssetIds,
-      era,
+      acceptedFeePaymentAssets: acceptedFeePaymentAssetsIds,
       nonce: nonce.data,
       isLinkedAccount,
       storedReferralCode,
@@ -207,9 +197,7 @@ export const useTransactionValues = ({
 }
 
 export const useEditFeePaymentAsset = (
-  acceptedFeePaymentAssets: ReturnType<
-    typeof useTransactionValues
-  >["data"]["acceptedFeePaymentAssets"],
+  acceptedFeePaymentAssets: string[],
   feePaymentAssetId?: string,
 ) => {
   const { t } = useTranslation()
