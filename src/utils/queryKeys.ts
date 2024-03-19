@@ -370,6 +370,10 @@ export const QUERY_KEYS = {
   evmBoundAccountId: (address: string) => [
     QUERY_KEY_PREFIX,
     "evmBoundAccountId",
+  ],
+  evmPaymentFee: (txHex: string, address?: string) => [
+    "evmPaymentFee",
+    txHex,
     address,
   ],
   referralCodes: (accountAddress?: string) => [
@@ -399,4 +403,8 @@ export const QUERY_KEYS = {
     address?.toString(),
   ],
   yieldFarmCreated: ["yieldFarmCreated"],
+  inactiveYieldFarms: (poolId: AccountId32 | string) => [
+    "inactiveYieldFarms",
+    poolId.toString(),
+  ],
 } as const

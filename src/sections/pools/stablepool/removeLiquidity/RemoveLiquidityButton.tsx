@@ -2,10 +2,10 @@ import { useState } from "react"
 import { RemoveLiquidityModal } from "./RemoveLiquidityModal"
 import { useTranslation } from "react-i18next"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { SButton } from "sections/pools/pool/positions/LiquidityPosition.styled"
 import { Icon } from "components/Icon/Icon"
 import MinusIcon from "assets/icons/MinusIcon.svg?react"
 import { TPoolFullData } from "sections/pools/PoolsPage.utils"
+import { Button } from "components/Button/Button"
 
 type Props = {
   pool: TPoolFullData
@@ -19,8 +19,8 @@ export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
 
   return (
     <>
-      <SButton
-        variant="secondary"
+      <Button
+        variant="error"
         size="small"
         fullWidth
         onClick={() => setOpenRemove(true)}
@@ -30,7 +30,7 @@ export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
           <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
           {t("liquidity.asset.actions.removeLiquidity")}
         </div>
-      </SButton>
+      </Button>
       {openRemove && (
         <RemoveLiquidityModal
           pool={pool}

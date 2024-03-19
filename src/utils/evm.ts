@@ -9,8 +9,12 @@ import {
 } from "@ethersproject/address"
 import { evmChains } from "@galacticcouncil/xcm-sdk"
 
-export const NATIVE_EVM_ASSET_SYMBOL = "WETH"
-export const NATIVE_EVM_ASSET_DECIMALS = 18
+export const NATIVE_EVM_ASSET_SYMBOL =
+  evmChains["hydradx"].nativeCurrency.symbol
+export const NATIVE_EVM_ASSET_DECIMALS =
+  evmChains["hydradx"].nativeCurrency.decimals
+
+export const DISPATCH_ADDRESS = "0x0000000000000000000000000000000000000401"
 
 export function isEvmAccount(address?: string) {
   if (!address) return false

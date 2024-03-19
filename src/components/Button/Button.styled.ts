@@ -14,6 +14,8 @@ export const SButton = styled.button<ButtonProps>`
 
   transition: ${theme.transitions.slow};
 
+  height: fit-content;
+
   ${({ variant }) => variant && variantStyles[variant]}
   ${({ size }) => size && sizeStyles[size]}
   ${({ active }) =>
@@ -56,13 +58,12 @@ export const SButton = styled.button<ButtonProps>`
     `}
 `
 
-export const SContent = styled.span`
+export const SContent = styled.span<{ size: ButtonSize }>`
   display: flex;
-  gap: 10px;
+  gap: ${({ size }) => (size === "compact" || size === "micro" ? "4" : "10")}px;
   align-items: center;
   justify-content: center;
-
-  font-size: 13px;
+  white-space: nowrap;
 `
 export const SButtonTransparent = styled.button`
   background: transparent;
@@ -190,9 +191,9 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
   `,
   error: css`
     border-radius: 4px;
-    background: rgba(${theme.rgbColors.red100}, 0.25);
+    background: rgba(${theme.rgbColors.red400}, 0.2);
     color: ${theme.colors.red400};
-    border: 1px solid ${theme.colors.red400};
+    border: 1px solid rgba(${theme.rgbColors.red400}, 0.5);
     box-shadow: unset;
 
     :hover {
