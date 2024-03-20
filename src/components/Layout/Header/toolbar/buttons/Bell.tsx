@@ -1,4 +1,3 @@
-import { Spinner } from "components/Spinner/Spinner.styled"
 import { SMaskContainer, SActiveReferendumIcon } from "./Bell.styled"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { useToast } from "state/toasts"
@@ -10,6 +9,7 @@ import {
   SToolbarIcon,
 } from "components/Layout/Header/toolbar/HeaderToolbar.styled"
 import BellIcon from "assets/icons/BellIcon.svg?react"
+import { Spinner } from "components/Spinner/Spinner"
 
 export const Bell = () => {
   const { setSidebar, toasts } = useToast()
@@ -38,9 +38,7 @@ export const Bell = () => {
       asChild
     >
       <SToolbarButton onClick={() => setSidebar(true)}>
-        {isLoading && (
-          <Spinner width={40} height={40} css={{ position: "absolute" }} />
-        )}
+        {isLoading && <Spinner size={42} css={{ position: "absolute" }} />}
         <SMaskContainer cropped={hasReferendum}>
           <motion.div
             sx={{ flex: "row", align: "center" }}

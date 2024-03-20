@@ -2,7 +2,7 @@ import { Button } from "components/Button/Button"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { useEnteredDate } from "utils/block"
@@ -22,6 +22,12 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { getFloatingPointAmount } from "utils/balance"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useFarmExitAllMutation } from "utils/farms/exit"
+import { TOAST_MESSAGES } from "state/toasts"
+import { ToastMessage } from "state/store"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import ExitIcon from "assets/icons/Exit.svg?react"
+import { Icon } from "components/Icon/Icon"
 
 function FarmingPositionDetailsButton(props: {
   poolId: string
@@ -32,7 +38,7 @@ function FarmingPositionDetailsButton(props: {
 
   return (
     <>
-      <Button size="small" sx={{ ml: 14 }} onClick={() => setFarmDetails(true)}>
+      <Button size="compact" onClick={() => setFarmDetails(true)}>
         {t("farms.positions.joinedFarms.button.label")}
       </Button>
 
@@ -45,6 +51,50 @@ function FarmingPositionDetailsButton(props: {
         />
       )}
     </>
+  )
+}
+
+const ExitFarmsButton = (props: {
+  poolId: string
+  depositNft: TMiningNftPosition
+}) => {
+  const { t } = useTranslation()
+  const { assets } = useRpcProvider()
+  const { account } = useAccount()
+
+  const meta = assets.getAsset(props.poolId.toString())
+
+  const toast = TOAST_MESSAGES.reduce((memo, type) => {
+    const msType = type === "onError" ? "onLoading" : type
+    memo[type] = (
+      <Trans
+        t={t}
+        i18nKey={`farms.modal.exit.toast.${msType}`}
+        tOptions={{
+          amount: props.depositNft.data.shares.toBigNumber(),
+          fixedPointScale: meta.decimals,
+        }}
+      >
+        <span />
+        <span className="highlight" />
+      </Trans>
+    )
+    return memo
+  }, {} as ToastMessage)
+
+  const exit = useFarmExitAllMutation([props.depositNft], toast)
+
+  return (
+    <Button
+      size="compact"
+      variant="error"
+      onClick={() => exit.mutate()}
+      isLoading={exit.isLoading}
+      disabled={exit.isLoading || account?.isExternalWalletConnected}
+    >
+      <Icon icon={<ExitIcon />} />
+      {t("farms.positions.exitFarms.button.label")}
+    </Button>
   )
 }
 
@@ -90,9 +140,19 @@ export const FarmingPosition = ({
 
   return (
     <SContainer>
-      <Text fw={[500, 400]}>
-        {t("farms.positions.position.title", { index })}
-      </Text>
+      <div sx={{ flex: "row", justify: "space-between" }}>
+        <Text fw={[500, 400]}>
+          {t("farms.positions.position.title", { index })}
+        </Text>
+        <div sx={{ flex: "row", gap: 8 }}>
+          <ExitFarmsButton poolId={poolId} depositNft={depositNft} />
+          <FarmingPositionDetailsButton
+            poolId={poolId}
+            depositNft={depositNft}
+          />
+        </div>
+      </div>
+
       <div
         sx={{
           flex: "row",
@@ -102,8 +162,6 @@ export const FarmingPosition = ({
         }}
       >
         <JoinedFarms poolId={poolId} depositNft={depositNft} />
-
-        <FarmingPositionDetailsButton poolId={poolId} depositNft={depositNft} />
       </div>
       <SSeparator sx={{ width: "70%", mx: "auto" }} />
 
