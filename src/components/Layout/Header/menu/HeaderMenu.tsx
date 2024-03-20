@@ -46,7 +46,7 @@ export const HeaderMenu = forwardRef<HTMLElement>((_, ref) => {
           (LINKS.allPools === item.href || LINKS.myLiquidity === item.href) &&
           isLoaded
         )
-          return <LiquidityMenuItem key={i} item={item} search={search} />
+          return <LiquidityMenuItem item={item} search={search} key={i} />
 
         return (
           <Link
