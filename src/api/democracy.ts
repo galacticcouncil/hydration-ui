@@ -7,6 +7,16 @@ import { undefinedNoop } from "utils/helpers"
 
 const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
 
+const CONVICTIONS_BLOCKS: { [key: string]: number } = {
+  none: 0,
+  locked1x: 50400,
+  locked2x: 100800,
+  locked3x: 201600,
+  locked4x: 403200,
+  locked5x: 806400,
+  locked6x: 1612800,
+}
+
 export const useReferendums = (type?: "ongoing" | "finished") => {
   const { api, isLoaded } = useRpcProvider()
   const { account } = useAccount()
@@ -111,7 +121,10 @@ export const useAccountVotes = () => {
 
 export const getAccountVotes =
   (api: ApiPromise, accountId: string) => async () => {
-    const votesRaw = await api.query.democracy.votingOf(accountId)
+    const [votesRaw, currentBlock] = await Promise.all([
+      api.query.democracy.votingOf(accountId),
+      api.derive.chain.bestNumber(),
+    ])
 
     if (!votesRaw || votesRaw.isDelegating) return undefined
 
@@ -125,11 +138,46 @@ export const getAccountVotes =
       }
     })
 
-    const data = await Promise.all(
-      votes.map((vote) => api.query.democracy.referendumInfoOf(vote.id)),
-    )
+    const referendumInfo = await Promise.all(
+      votes.map(async (vote) => {
+        const voteId = vote.id
+        const referendumRaw = await api.query.democracy.referendumInfoOf(voteId)
+        const referendum = referendumRaw.unwrap()
+        const isFinished = referendum.isFinished
 
-    console.log(data, "data")
+        if (isFinished) {
+          const endBlock = referendum.asFinished.end.toBigNumber()
+          const convictionBlock =
+            CONVICTIONS_BLOCKS[vote.conviction.toLocaleLowerCase()]
+          const unlockBlockNumber = endBlock.plus(convictionBlock)
+          console.log(
+            endBlock.toString(),
+            convictionBlock,
+            currentBlock.toNumber(),
+            unlockBlockNumber.toString(),
+          )
+        }
+      }),
+    )
+    console.log(referendumInfo, "referendumInfo")
+    // const referendumInfo = await Promise.all(
+    //   votes.map((vote) => api.query.democracy.referendumInfoOf(vote.id)),
+    // )
+
+    // const data = referendumInfo.map((referendumRaw) => {
+    //   const referendum = referendumRaw.unwrap()
+    //   const isFinished = referendum.isFinished
+
+    //   if (isFinished) {
+    //     console.log(referendumRaw)
+    //     // const vote = votes.find(
+    //     //   (vote) => vote.id === ,
+    //     // )
+    //   }
+    //   // console.log(isFinished)
+    // })
+
+    //console.log(referendumInfo, "referendumInfo")
 
     return votes
   }
