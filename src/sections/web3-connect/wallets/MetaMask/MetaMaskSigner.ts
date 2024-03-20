@@ -4,9 +4,8 @@ import {
   Web3Provider,
 } from "@ethersproject/providers"
 import { evmChains } from "@galacticcouncil/xcm-sdk"
+import { DISPATCH_ADDRESS } from "utils/evm"
 import { MetaMaskProvider, requestNetworkSwitch } from "utils/metamask"
-
-const DISPATCH_ADDRESS = "0x0000000000000000000000000000000000000401"
 
 export class MetaMaskSigner {
   address: string
@@ -57,9 +56,13 @@ export class MetaMaskSigner {
 
     if (from === "hydradx") {
       const [gas, gasPrice] = await this.getGasValues(tx)
+
+      const onePrc = gasPrice.div(100)
+      const gasPricePlus = gasPrice.add(onePrc)
+
       return await this.signer.sendTransaction({
-        maxPriorityFeePerGas: gasPrice,
-        maxFeePerGas: gasPrice,
+        maxPriorityFeePerGas: gasPricePlus,
+        maxFeePerGas: gasPricePlus,
         gasLimit: gas.mul(11).div(10), // add 10%
         ...tx,
       })
