@@ -4,12 +4,21 @@ import {
   USD_DECIMALS,
   valueToBigNumber,
 } from "@aave/math-utils"
-import { CircularProgress } from "@mui/material"
-import WalletIcon from "assets/icons/WalletIcon.svg?react"
 import BigNumber from "bignumber.js"
 import { ReactNode, useState } from "react"
+import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
-import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
+import { theme } from "theme"
+
+import WalletIcon from "assets/icons/WalletIcon.svg?react"
+
+import { Button } from "components/Button/Button"
+import { DataValue } from "components/DataValue"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { Spacer } from "components/Spacer/Spacer"
+import { ToggleGroup, ToggleGroupItem } from "components/ToggleGroup"
+import { Text } from "components/Typography/Text/Text"
+
 import { Warning } from "sections/lending/components/primitives/Warning"
 import {
   ComputedReserveData,
@@ -18,25 +27,9 @@ import {
 import { useWalletBalances } from "sections/lending/hooks/app-data-provider/useWalletBalances"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { usePermissions } from "sections/lending/hooks/usePermissions"
+import { useReserveActionState } from "sections/lending/hooks/useReserveActionState"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { useRootStore } from "sections/lending/store/root"
-import {
-  getMaxAmountAvailableToBorrow,
-  getMaxGhoMintAmount,
-} from "sections/lending/utils/getMaxAmountAvailableToBorrow"
-import { getMaxAmountAvailableToSupply } from "sections/lending/utils/getMaxAmountAvailableToSupply"
-import { amountToUsd } from "sections/lending/utils/utils"
-
-import { Button } from "components/Button/Button"
-import { DataValue } from "components/DataValue"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { Spacer } from "components/Spacer/Spacer"
-import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
-import { Link, ROUTES } from "sections/lending/components/primitives/Link"
-import { useReserveActionState } from "sections/lending/hooks/useReserveActionState"
-import { theme } from "theme"
-import { ToggleGroup, ToggleGroupItem } from "components/ToggleGroup"
 import {
   CustomMarket,
   MarketDataType,
@@ -46,6 +39,13 @@ import {
   BaseNetworkConfig,
   networkConfigs,
 } from "sections/lending/ui-config/networksConfig"
+import {
+  getMaxAmountAvailableToBorrow,
+  getMaxGhoMintAmount,
+} from "sections/lending/utils/getMaxAmountAvailableToBorrow"
+import { getMaxAmountAvailableToSupply } from "sections/lending/utils/getMaxAmountAvailableToSupply"
+import { amountToUsd } from "sections/lending/utils/utils"
+import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 
 export const getMarketInfoById = (marketId: CustomMarket) => {
   const market: MarketDataType = marketsData[marketId as CustomMarket]
@@ -73,7 +73,7 @@ interface ReserveActionsProps {
 export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
   const [selectedAsset, setSelectedAsset] = useState<string>(reserve.symbol)
 
-  const { currentAccount, loading: loadingWeb3Context } = useWeb3Context()
+  const { currentAccount } = useWeb3Context()
   const { isPermissionsLoading } = usePermissions()
   const { openBorrow, openSupply } = useModalContext()
   const currentMarket = useRootStore((store) => store.currentMarket)
@@ -147,7 +147,7 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
     })
 
   if (!currentAccount && !isPermissionsLoading) {
-    return <ConnectWallet loading={loadingWeb3Context} />
+    return <ConnectWallet />
   }
 
   if (loadingReserves || loadingWalletBalance) {
@@ -226,24 +226,19 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
 }
 
 const PauseWarning = () => {
+  const { t } = useTranslation()
   return (
     <Warning sx={{ mb: 0 }} variant="error">
-      <span>
-        Because this asset is paused, no actions can be taken until further
-        notice
-      </span>
+      {t("lending.reserve.paused")}
     </Warning>
   )
 }
 
 const FrozenWarning = () => {
+  const { t } = useTranslation()
   return (
     <Warning sx={{ mb: 0 }} variant="error">
-      <span>
-        Since this asset is frozen, the only available actions are withdraw and
-        repay which can be accessed from the{" "}
-        <Link href={ROUTES.dashboard}>Dashboard</Link>
-      </span>
+      {t("lending.reserve.frozen")}
     </Warning>
   )
 }
@@ -298,19 +293,14 @@ const PaperWrapper = ({ children }: { children: ReactNode }) => {
   )
 }
 
-const ConnectWallet = ({ loading }: { loading: boolean }) => {
+const ConnectWallet = () => {
+  const { t } = useTranslation()
   return (
     <PaperWrapper>
-      {loading ? (
-        <CircularProgress />
-      ) : (
-        <>
-          <Text fs={14} lh={18} sx={{ mb: 24 }} color="basic300">
-            Please connect a wallet to view your personal information here.
-          </Text>
-          <Web3ConnectModalButton />
-        </>
-      )}
+      <Text fs={14} lh={18} sx={{ mb: 24 }} color="basic300">
+        {t("lending.wallet.connect.description")}
+      </Text>
+      <Web3ConnectModalButton />
     </PaperWrapper>
   )
 }
@@ -335,11 +325,11 @@ const SupplyAction = ({
   return (
     <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
       <DataValue
-        label="Available to supply"
+        label={t("lending.supply.available")}
         labelColor="basic400"
         font="ChakraPetchSemiBold"
         size="small"
-        tooltip="This is the total amount that you are able to supply to in this reserve. You are able to supply your wallet balance up until the supply cap is reached."
+        tooltip={t("lending.tooltip.supplyAvailable")}
       >
         {t("value.token", { value: Number(value) })} {symbol}
         <Text fs={12} lh={20} color="basic500">
@@ -354,7 +344,7 @@ const SupplyAction = ({
           disabled={disable}
           sx={{ py: 6 }}
         >
-          Supply
+          {t("lending.supply")}
         </Button>
       </div>
     </div>
@@ -372,11 +362,11 @@ const BorrowAction = ({
   return (
     <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
       <DataValue
-        label="Available to borrow"
+        label={t("lending.borrow.available")}
         labelColor="basic400"
         font="ChakraPetchSemiBold"
         size="small"
-        tooltip="This is the total amount available for you to borrow. You can borrow based on your collateral and until the borrow cap is reached."
+        tooltip={t("lending.tooltip.borrowAvailable")}
       >
         {t("value.token", { value: Number(value) })} {symbol}
         <Text fs={12} lh={20} color="basic500">
@@ -391,7 +381,7 @@ const BorrowAction = ({
           disabled={disable}
           sx={{ py: 6 }}
         >
-          Borrow
+          {t("lending.borrow")}
         </Button>
       </div>
     </div>

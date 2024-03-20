@@ -15,7 +15,7 @@ import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useA
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
-import { LiquidationRiskParametresInfoModal } from "sections/lending/modules/dashboard/LiquidationRiskParametresModal/LiquidationRiskParametresModal"
+import { LiquidationRiskParametresInfoModal } from "sections/lending/ui/risk-parametres/LiquidationRiskParametresModal"
 
 export const DashboardHeaderValues: FC<{
   className?: string

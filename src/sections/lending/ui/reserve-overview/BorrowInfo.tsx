@@ -6,7 +6,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { PercentageValue } from "components/PercentageValue"
 import { CapsCircularStatus } from "sections/lending/components/caps/CapsCircularStatus"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
@@ -56,17 +56,11 @@ export const BorrowInfo = ({
     <CapsCircularStatus
       value={borrowCap.percentUsed}
       color="pink500"
-      tooltipContent={
-        <Text fs={12}>
-          <span>
-            Maximum amount available to borrow is{" "}
-            {t("value.compact", { value: maxAvailableToBorrow })}&nbsp;
-            {reserve.symbol} (
-            <DisplayValue isUSD compact value={maxAvailableToBorrowUSD} />
-            ).
-          </span>
-        </Text>
-      }
+      tooltipContent={t("lending.borrow.cap.tooltip", {
+        value: maxAvailableToBorrow,
+        symbol: reserve.symbol,
+        usdValue: maxAvailableToBorrowUSD,
+      })}
     />
   )
 
@@ -97,19 +91,18 @@ export const BorrowInfo = ({
                         fs={14}
                         sx={{ flex: "row", gap: 4, align: "center" }}
                       >
-                        Total borrowed{" "}
+                        {t("lending.market.table.totalBorrowed")}{" "}
                         <InfoTooltip
                           text={
                             <Text fs={12}>
-                              Borrowing of this asset is limited to a certain
-                              amount to minimize liquidity pool insolvency.{" "}
+                              {t("lending.tooltip.borrowCap")}{" "}
                               <a
                                 css={{ textDecoration: "underline" }}
                                 target="_blank"
                                 href="https://docs.aave.com/developers/whats-new/supply-borrow-caps"
                                 rel="noreferrer"
                               >
-                                Learn more
+                                {t("lending.learnMore")}
                               </a>
                             </Text>
                           }
@@ -125,34 +118,26 @@ export const BorrowInfo = ({
                   labelColor="basic400"
                   font="ChakraPetchBold"
                 >
-                  {t("value.compact", { value: Number(reserve.totalDebt) })}
-                  <span sx={{ display: "inline-block", mx: 4 }}>of</span>
-                  {t("value.compact", { value: Number(reserve.borrowCap) })}
+                  {t("lending.cap.range", {
+                    valueA: reserve.totalDebt,
+                    valueB: reserve.borrowCap,
+                  })}
                   <Text
                     fs={12}
                     font="ChakraPetch"
                     color="basic500"
                     tAlign={["right", "left"]}
                   >
-                    <DisplayValue
-                      value={Number(reserve.totalDebtUSD)}
-                      isUSD
-                      compact
-                    />
-                    <span sx={{ display: "inline-block", mx: 4 }}>
-                      <span>of</span>
-                    </span>
-                    <DisplayValue
-                      value={Number(reserve.borrowCapUSD)}
-                      isUSD
-                      compact
-                    />
+                    {t("lending.cap.range.usd", {
+                      valueA: reserve.totalDebtUSD,
+                      valueB: reserve.borrowCapUSD,
+                    })}
                   </Text>
                 </DataValue>
               </>
             ) : (
               <DataValue
-                label="Total borrowed"
+                label={t("lending.market.table.totalBorrowed")}
                 labelColor="basic400"
                 font="ChakraPetchBold"
               >
@@ -172,7 +157,7 @@ export const BorrowInfo = ({
               </DataValue>
             )}
             <DataValue
-              label="APY, variable"
+              label={t("lending.apyVariable")}
               labelColor="basic400"
               font="ChakraPetchBold"
             >
@@ -188,7 +173,7 @@ export const BorrowInfo = ({
             </DataValue>
             {hasBorrowCap && (
               <DataValue
-                label="Borrow cap"
+                label={t("lending.borrowCap")}
                 labelColor="basic400"
                 font="ChakraPetchBold"
               >
@@ -226,35 +211,34 @@ export const BorrowInfo = ({
               css={{ textTransform: "uppercase" }}
               font="ChakraPetchSemiBold"
             >
-              Collector info
+              {t("lending.reserve.collectorInfo")}
             </Text>
           </div>
           <DataValueList>
             <DataValue
-              label="Reserve factor"
+              label={t("lending.reserveFactor")}
               labelColor="basic400"
               font="ChakraPetch"
               size="small"
               tooltip={
-                <Text fs={12}>
-                  Reserve factor is a percentage of interest which goes to a{" "}
-                  <a
-                    target="_blank"
-                    css={{ textDecoration: "underline" }}
-                    href={currentMarketData.addresses.COLLECTOR}
-                    rel="noreferrer"
-                  >
-                    collector contract
-                  </a>{" "}
-                  that is controlled by Aave governance to promote ecosystem
-                  growth.
+                <Text fs={11}>
+                  <Trans t={t} i18nKey="lending.tooltip.reserveFactor">
+                    <a
+                      target="_blank"
+                      css={{ textDecoration: "underline" }}
+                      href={currentMarketData.addresses.COLLECTOR}
+                      rel="noreferrer"
+                    >
+                      &nbsp;
+                    </a>
+                  </Trans>
                 </Text>
               }
             >
               <PercentageValue value={Number(reserve.reserveFactor) * 100} />
             </DataValue>
             <DataValue
-              label="Collector Contract"
+              label={t("lending.reserve.collectorContract")}
               labelColor="basic400"
               font="ChakraPetch"
               size="small"
@@ -267,7 +251,7 @@ export const BorrowInfo = ({
                 rel="noreferrer"
                 css={{ textDecoration: "underline" }}
               >
-                View contract
+                {t("lending.viewContract")}
                 <LinkIcon
                   width={10}
                   height={10}

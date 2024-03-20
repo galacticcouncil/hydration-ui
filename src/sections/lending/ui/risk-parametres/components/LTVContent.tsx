@@ -1,6 +1,7 @@
 import { valueToBigNumber } from "@aave/math-utils"
 import BigNumber from "bignumber.js"
 import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
 import { theme } from "theme"
 
 interface LTVContentProps {
@@ -16,6 +17,7 @@ export const LTVContent = ({
   currentLiquidationThreshold,
   color,
 }: LTVContentProps) => {
+  const { t } = useTranslation()
   const LTVLineWidth = valueToBigNumber(loanToValue)
     .multipliedBy(100)
     .precision(20, BigNumber.ROUND_UP)
@@ -36,7 +38,7 @@ export const LTVContent = ({
   const liquidationThresholdPercent = Number(currentLiquidationThreshold) * 100
 
   return (
-    <div css={{ position: "relative" }} sx={{ mt: 50, mb: 70 }}>
+    <div css={{ position: "relative" }} sx={{ my: 50 }}>
       <div
         css={{
           position: "absolute",
@@ -94,7 +96,7 @@ export const LTVContent = ({
               {(Number(currentLiquidationThreshold) * 100).toFixed(2)}%
             </Text>
             <Text fs={13} color="red400" tAlign="right">
-              Liquidation <br /> threshold
+              {t("lending.risk.liquidationThreshold")}
             </Text>
           </div>
         </div>

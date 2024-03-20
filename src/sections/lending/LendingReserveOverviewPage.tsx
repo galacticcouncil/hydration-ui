@@ -6,7 +6,7 @@ import {
   useAppDataContext,
 } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { AssetCapsProvider } from "sections/lending/hooks/useAssetCaps"
-import { ReserveActions } from "sections/lending/modules/reserve-overview/ReserveActions"
+import { ReserveActions } from "sections/lending/ui/reserve-overview/ReserveActions"
 import { ReserveOverviewHeaderValues } from "sections/lending/ui/header/ReserveOverviewHeaderValues"
 import { ReserveConfiguration } from "sections/lending/ui/reserve-overview/ReserveConfiguration"
 import { withHexPrefix } from "sections/lending/utils/utils"
@@ -41,7 +41,6 @@ export const LendingReserveOverviewPage = () => {
         sx={{ mb: [10, 40] }}
         underlyingAsset={underlyingAsset}
       />
-
       <SFilterContainer>
         <Button
           active={mode === "overview"}
@@ -62,7 +61,6 @@ export const LendingReserveOverviewPage = () => {
           {t("lending.reserve.yourInfo")}
         </Button>
       </SFilterContainer>
-
       <SContent>
         <SContainer active={mode === "overview"}>
           <ReserveConfiguration reserve={reserve} />

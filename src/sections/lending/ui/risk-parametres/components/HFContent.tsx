@@ -1,6 +1,7 @@
 import { valueToBigNumber } from "@aave/math-utils"
 import BigNumber from "bignumber.js"
 import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
 import { theme } from "theme"
 
 interface HFContentProps {
@@ -8,6 +9,7 @@ interface HFContentProps {
 }
 
 export const HFContent = ({ healthFactor }: HFContentProps) => {
+  const { t } = useTranslation()
   const formattedHealthFactor = Number(
     valueToBigNumber(healthFactor).toFixed(2, BigNumber.ROUND_DOWN),
   )
@@ -105,7 +107,7 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
           1.00
         </Text>
         <Text fs={13} color="red400" tAlign="center">
-          Liquidation value
+          {t("lending.risk.liquidationValue")}
         </Text>
       </div>
     </div>
