@@ -26,10 +26,10 @@ export const getAssetHubAssets = async () => {
           decimals: data.decimals.toNumber() as number,
           symbol: data.symbol.toHuman() as string,
           name: data.name.toHuman() as string,
-          parachainId: parachain.parachainId.toString(),
+          origin: parachain.parachainId,
         }
       })
-      return { data, id: parachain.parachainId.toString() }
+      return { data, id: parachain.parachainId }
     }
   } catch (e) {}
 }

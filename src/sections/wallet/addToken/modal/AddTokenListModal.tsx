@@ -98,7 +98,9 @@ export const AddTokenListModal: React.FC<Props> = ({
                   {filteredExternalAssets.map((asset) => (
                     <AssetRow
                       key={asset.id}
-                      onClick={() => onAssetSelect?.({ ...asset, parachainId })}
+                      onClick={() =>
+                        onAssetSelect?.({ ...asset, origin: parachainId })
+                      }
                     >
                       <Text
                         fs={14}

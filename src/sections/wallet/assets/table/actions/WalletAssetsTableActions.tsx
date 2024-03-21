@@ -238,7 +238,7 @@ export const AddTokenAction = ({
     const meta = assets.getAsset(id)
 
     for (const parachain in data) {
-      const externalAsset = data[parachain].find(
+      const externalAsset = data[Number(parachain)].find(
         (externalAsset) => externalAsset.id === meta.generalIndex,
       )
 

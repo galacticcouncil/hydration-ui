@@ -55,9 +55,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
       name: asset.name,
       symbol: asset.symbol,
       decimals: asset.decimals.toString(),
-      multilocation: asset.parachainId
-        ? PARACHAIN_CONFIG[asset.parachainId.toString()]
-        : {},
+      multilocation: asset.origin ? PARACHAIN_CONFIG[asset.origin] : {},
     },
   })
 
@@ -71,7 +69,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
       interior: {
         X3: [
           {
-            Parachain: asset.parachainId.toString(),
+            Parachain: asset.origin.toString(),
           },
           {
             PalletInstance: palletInstance,

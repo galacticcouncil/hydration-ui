@@ -402,7 +402,8 @@ export const getAssets = async (api: ApiPromise) => {
 
         const externalTokenStored = externalTokensStored.find(
           (token) =>
-            token.parachainId === parachainId && token.id === generalIndex,
+            token.origin.toString() === parachainId &&
+            token.id === generalIndex,
         )
 
         const asset: TToken = {
@@ -468,6 +469,7 @@ export const getAssets = async (api: ApiPromise) => {
     [],
   )
 
+  //TODO: update according new type, take everyting from local storage
   const addedExternalTokens = external.reduce<AssetBase[]>((acc, token) => {
     if (token.name)
       acc.push({

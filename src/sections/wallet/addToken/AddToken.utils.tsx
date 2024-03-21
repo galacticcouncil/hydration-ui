@@ -7,12 +7,12 @@ import { persist } from "zustand/middleware"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
 
-export const ASSET_HUB_ID = "1000"
+export const ASSET_HUB_ID = 1000
 
 export const SELECTABLE_PARACHAINS_IDS = [ASSET_HUB_ID]
 
 export const PARACHAIN_CONFIG: {
-  [x: string]: {
+  [x: number]: {
     palletInstance: string
     network: string
     parents: string
@@ -32,7 +32,7 @@ export type TExternalAsset = {
   decimals: number
   symbol: string
   name: string
-  parachainId: string
+  origin: number
 }
 
 export type TExternalAssetInput = {
@@ -100,14 +100,14 @@ export const useUserExternalTokenStore = create<{
           decimals: 10,
           id: "30",
           name: "DED",
-          parachainId: "1000",
+          origin: 1000,
           symbol: "DED",
         },
         {
           decimals: 10,
           id: "23",
           name: "PINK",
-          parachainId: "1000",
+          origin: 1000,
           symbol: "PINK",
         },
       ],
@@ -118,7 +118,7 @@ export const useUserExternalTokenStore = create<{
     }),
     {
       name: "external-tokens",
-      version: 0.1,
+      version: 0.2,
     },
   ),
 )
