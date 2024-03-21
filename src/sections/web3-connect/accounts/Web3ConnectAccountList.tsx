@@ -72,7 +72,8 @@ export const Web3ConnectAccountList: FC<{
   const { isLoaded } = useRpcProvider()
 
   const [balanceMap, setBalanceMap] = useState<Record<string, BN>>({})
-  const isReady = Object.keys(balanceMap).length === accounts.length
+
+  const isReady = accounts.every(({ address }) => address in balanceMap)
 
   const [searchVal, setSearchVal] = useState("")
   const [filter, setFilter] = useState("")

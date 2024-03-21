@@ -3,6 +3,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
 import { ComponentPropsWithoutRef, FC } from "react"
 import { useTranslation } from "react-i18next"
+import { useWallet } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectAccount } from "sections/web3-connect/accounts/Web3ConnectAccount"
 import { SAccountItem } from "sections/web3-connect/accounts/Web3ConnectAccount.styled"
 import { Web3ConnectAccountSelect } from "sections/web3-connect/accounts/Web3ConnectAccountSelect"
@@ -14,6 +15,7 @@ export const Web3ConnectEvmAccount: FC<
 > = ({ balance, ...account }) => {
   const { t } = useTranslation()
   const { account: currentAccount, setAccount, toggle } = useWeb3ConnectStore()
+  const { wallet } = useWallet()
 
   const isActive = currentAccount?.address === account.address
 
@@ -50,7 +52,7 @@ export const Web3ConnectEvmAccount: FC<
         variant="outline"
         fullWidth
         size="small"
-        onClick={() => requestAccounts(window.ethereum)}
+        onClick={() => requestAccounts(wallet?.extension)}
       >
         {t("walletConnect.accountSelect.change")}
       </Button>
