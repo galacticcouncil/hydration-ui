@@ -69,7 +69,7 @@ const IsolatedPoolsData = () => {
   const totalLocked = useMemo(() => {
     if (xylPools.data) {
       return xylPools.data.reduce((acc, xykPool) => {
-        return acc.plus(xykPool.tvlDisplay ?? BN_0)
+        return acc.plus(!xykPool.tvlDisplay.isNaN() ? xykPool.tvlDisplay : BN_0)
       }, BN_0)
     }
     return BN_0

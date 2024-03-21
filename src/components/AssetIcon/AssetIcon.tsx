@@ -70,24 +70,24 @@ export const AssetLogo = ({ id }: { id?: string }) => {
     }
   }, [assets, id])
 
-  if (!asset || !asset.symbol)
+  if (asset.chain || asset.symbol)
     return (
-      <UigcAssetPlaceholder
-        css={assetPlaceholderCss}
-        ref={(el) => el && el.setAttribute("fit", "")}
-        slot="placeholder"
+      <UigcAssetId
+        css={{ "& uigc-logo-chain": { display: "none" } }}
+        ref={(el) => {
+          el && asset.chain && el.setAttribute("chain", asset.chain)
+          el && el.setAttribute("fit", "")
+        }}
+        symbol={asset.symbol}
+        chain={asset?.chain}
       />
     )
 
   return (
-    <UigcAssetId
-      css={{ "& uigc-logo-chain": { display: "none" } }}
-      ref={(el) => {
-        el && asset.chain && el.setAttribute("chain", asset.chain)
-        el && el.setAttribute("fit", "")
-      }}
-      symbol={asset.symbol}
-      chain={asset?.chain}
+    <UigcAssetPlaceholder
+      css={assetPlaceholderCss}
+      ref={(el) => el && el.setAttribute("fit", "")}
+      slot="placeholder"
     />
   )
 }

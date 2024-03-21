@@ -14,7 +14,7 @@ export const useAccountBalances = (id: Maybe<AccountId32 | string>) => {
   const { api } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.accountBalances(id),
-    !!id ? getAccountBalancesNew(api, id) : undefinedNoop,
+    !!id ? getAccountBalances(api, id) : undefinedNoop,
     { enabled: id != null },
   )
 }
@@ -28,20 +28,6 @@ export const useAccountsBalances = (ids: string[]) => {
 }
 
 export const getAccountBalances =
-  (api: ApiPromise, accountId: AccountId32 | string) => async () => {
-    const [tokens, native] = await Promise.all([
-      api.query.tokens.accounts.entries(accountId),
-      api.query.system.account(accountId),
-    ])
-    const balances = tokens.map(([key, data]) => {
-      const [, id] = key.args
-      return { id, data }
-    })
-
-    return { accountId, native, balances }
-  }
-
-export const getAccountBalancesNew =
   (api: ApiPromise, accountId: AccountId32 | string) => async () => {
     const [tokens, nativeData] = await Promise.all([
       api.query.tokens.accounts.entries(accountId),
@@ -62,6 +48,7 @@ export const getAccountBalancesNew =
         id: id.toString(),
         balance,
         total: freeBalance.plus(reservedBalance),
+        reservedBalance,
         freeBalance,
       }
     })
@@ -88,10 +75,11 @@ export const getAccountBalancesNew =
       id: NATIVE_ASSET_ID,
       balance,
       total: freeBalance.plus(reservedBalance),
+      reservedBalance,
       freeBalance,
     }
 
-    return { native, balances }
+    return { native, balances, accountId }
   }
 
 export const useAccountAssetBalances = (
