@@ -8,7 +8,13 @@ import { useAccountBalances } from "./accountBalances"
 import BN from "bignumber.js"
 import { format } from "date-fns"
 import { useRpcProvider } from "providers/rpcProvider"
-import { Asset, PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
+import {
+  Asset,
+  AssetBase,
+  PoolService,
+  PoolType,
+  TradeRouter,
+} from "@galacticcouncil/sdk"
 import { BN_0 } from "utils/constants"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { omit } from "utils/rx"
@@ -148,10 +154,6 @@ export const getAssets = async (api: ApiPromise) => {
   })
 
   let rawTradeAssets: Asset[] = []
-
-  try {
-    rawTradeAssets = await tradeRouter.getAllAssets()
-  } catch (e) {}
 
   //TODO: remove after migrating to new asset registry
   const rawAssetsMeta = api.query.assetRegistry.assetMetadataMap
@@ -304,9 +306,7 @@ export const getAssets = async (api: ApiPromise) => {
               (location) => location[0].args[0].toString() === assetId,
             )?.[1]
 
-            const isTradable = rawTradeAssets.some(
-              (tradeAsset) => tradeAsset.id === id,
-            )
+            const isTradable = false
 
             const asset: TBond = {
               ...assetCommon,
@@ -468,10 +468,37 @@ export const getAssets = async (api: ApiPromise) => {
     [],
   )
 
+  const addedExternalTokens = external.reduce<AssetBase[]>((acc, token) => {
+    if (token.name)
+      acc.push({
+        name: token.name,
+        symbol: token.symbol,
+        decimals: token.decimals,
+        id: token.id,
+      })
+
+    return acc
+  }, [])
+
+  // pass external tokens to trade router
+  await poolService.syncRegistry(addedExternalTokens)
+
+  try {
+    rawTradeAssets = await tradeRouter.getAllAssets()
+  } catch (e) {}
+
+  const tradableBonds = bonds.map((bond) => {
+    const isTradable = rawTradeAssets.some(
+      (tradeAsset) => tradeAsset.id === bond.id,
+    )
+
+    return { ...bond, isTradable }
+  })
+
   return {
     assets: {
       tokens,
-      bonds,
+      bonds: tradableBonds,
       stableswap,
       shareTokens,
       external,
