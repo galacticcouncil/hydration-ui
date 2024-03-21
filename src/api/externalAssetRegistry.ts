@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { WsProvider } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -23,8 +22,11 @@ export const getAssetHubAssets = async () => {
 
         return {
           id,
+          // @ts-ignore
           decimals: data.decimals.toNumber() as number,
+          // @ts-ignore
           symbol: data.symbol.toHuman() as string,
+          // @ts-ignore
           name: data.name.toHuman() as string,
           origin: parachain.parachainId,
         }
