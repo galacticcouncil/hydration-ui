@@ -95,7 +95,22 @@ export const useUserExternalTokenStore = create<{
 }>()(
   persist(
     (set, get) => ({
-      tokens: [],
+      tokens: [
+        {
+          decimals: 10,
+          id: "30",
+          name: "DED",
+          parachainId: "1000",
+          symbol: "DED",
+        },
+        {
+          decimals: 10,
+          id: "23",
+          name: "PINK",
+          parachainId: "1000",
+          symbol: "PINK",
+        },
+      ],
       addToken: (token) =>
         set((store) => ({ tokens: [...store.tokens, token] })),
       isAdded: (id) =>
@@ -103,6 +118,7 @@ export const useUserExternalTokenStore = create<{
     }),
     {
       name: "external-tokens",
+      version: 0.1,
     },
   ),
 )

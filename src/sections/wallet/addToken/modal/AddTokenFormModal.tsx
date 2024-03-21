@@ -1,7 +1,7 @@
 import { Button } from "components/Button/Button"
 import { FC } from "react"
 import { Controller, useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import {
   PARACHAIN_CONFIG,
   TExternalAsset,
@@ -15,7 +15,6 @@ import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { Spacer } from "components/Spacer/Spacer"
 import { useToast } from "state/toasts"
-import { Text } from "components/Typography/Text/Text"
 import { useRefetchProviderData } from "api/provider"
 import { InputBox } from "components/Input/InputBox"
 
@@ -94,9 +93,16 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
     refetchProvider()
     add("success", {
       title: (
-        <Text>
-          {t("wallet.addToken.toast.add.onSuccess", { name: asset.name })}
-        </Text>
+        <Trans
+          t={t}
+          i18nKey="wallet.addToken.toast.add.onSuccess"
+          tOptions={{
+            name: asset.name,
+          }}
+        >
+          <span />
+          <span className="highlight" />
+        </Trans>
       ),
     })
     onClose()

@@ -23,7 +23,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useRefetchProviderData } from "api/provider"
 import { useToast } from "state/toasts"
-import { Text } from "components/Typography/Text/Text"
 import { useExternalAssetRegistry } from "api/externalAssetRegistry"
 import { useMemo } from "react"
 
@@ -253,11 +252,16 @@ export const AddTokenAction = ({
         refetchProvider()
         add("success", {
           title: (
-            <Text>
-              {t("wallet.addToken.toast.add.onSuccess", {
+            <Trans
+              t={t}
+              i18nKey="wallet.addToken.toast.add.onSuccess"
+              tOptions={{
                 name: externalAsset.name,
-              })}
-            </Text>
+              }}
+            >
+              <span />
+              <span className="highlight" />
+            </Trans>
           ),
         })
       }
