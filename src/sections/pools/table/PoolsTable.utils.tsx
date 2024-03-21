@@ -36,11 +36,15 @@ const NonClickableContainer = ({
   children,
   ...rest
 }: React.HTMLAttributes<HTMLDivElement>) => {
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
   return (
     <div
       onClick={(e) => {
-        e.preventDefault()
-        e.stopPropagation()
+        if (isDesktop) {
+          e.preventDefault()
+          e.stopPropagation()
+        }
       }}
       sx={{ width: "fit-content", px: 8 }}
       css={{ cursor: "text" }}
