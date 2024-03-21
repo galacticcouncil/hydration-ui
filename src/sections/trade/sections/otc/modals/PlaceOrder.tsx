@@ -14,11 +14,11 @@ import { getFixedPointAmount } from "utils/balance"
 import { BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { useStore } from "state/store"
-import { OrderAssetSelect } from "./cmp/AssetSelect"
 import { OrderAssetRate } from "./cmp/AssetXRate"
 import { PartialOrderToggle } from "./cmp/PartialOrderToggle"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 
 type PlaceOrderProps = {
   assetOut?: u32 | string
@@ -216,7 +216,7 @@ export const PlaceOrder = ({
                       field: { name, value, onChange },
                       fieldState: { error },
                     }) => (
-                      <OrderAssetSelect
+                      <WalletTransferAssetSelect
                         title={t("otc.order.place.offerTitle")}
                         name={name}
                         value={value}
@@ -224,8 +224,8 @@ export const PlaceOrder = ({
                           onChange(e)
                           handleAmountChange()
                         }}
-                        onOpen={() => paginateTo(2)}
-                        asset={aOut}
+                        onAssetOpen={() => paginateTo(2)}
+                        asset={aOut ?? ""}
                         balance={assetOutBalance.data?.balance}
                         error={error?.message}
                       />
@@ -266,7 +266,7 @@ export const PlaceOrder = ({
                       field: { name, value, onChange },
                       fieldState: { error },
                     }) => (
-                      <OrderAssetSelect
+                      <WalletTransferAssetSelect
                         title={t("otc.order.place.getTitle")}
                         name={name}
                         value={value}
@@ -274,8 +274,8 @@ export const PlaceOrder = ({
                           onChange(e)
                           handleAmountChange()
                         }}
-                        onOpen={() => paginateTo(1)}
-                        asset={aIn}
+                        onAssetOpen={() => paginateTo(1)}
+                        asset={aIn ?? ""}
                         balance={assetInBalance.data?.balance}
                         error={error?.message}
                       />
@@ -328,6 +328,7 @@ export const PlaceOrder = ({
             headerVariant: "FontOver",
             content: (
               <AssetsModalContent
+                withExternal
                 allAssets
                 withBonds
                 onSelect={(asset) => {
@@ -343,6 +344,7 @@ export const PlaceOrder = ({
             headerVariant: "FontOver",
             content: (
               <AssetsModalContent
+                withExternal
                 withBonds
                 onSelect={(asset) => {
                   form.trigger()
