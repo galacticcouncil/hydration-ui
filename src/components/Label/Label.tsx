@@ -3,7 +3,7 @@ import { FC, ReactNode } from "react"
 import { ErrorMessage, LabelWrapper, SInfoIcon, SLabel } from "./Label.styled"
 
 type LabelProps = {
-  label: string
+  label?: string
   id: string
   children: ReactNode
   error?: string

@@ -6,11 +6,11 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useEffect, useMemo } from "react"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
-import { useAssetsTableData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { BN_0 } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
+import { useAssetsData } from "./table/data/WalletAssetsTableData.utils"
 
 type AssetCategory = "all" | "assets" | "liquidity" | "farming"
 
@@ -53,7 +53,7 @@ export const useWalletAssetsTotals = ({
     assets: { shareTokens, getAsset },
   } = useRpcProvider()
   const { account } = useAccount()
-  const assets = useAssetsTableData({ isAllAssets: false, address })
+  const assets = useAssetsData({ isAllAssets: false, address })
   const lpPositions = useOmnipoolPositionsData({ address })
   const farmsPositions = useAllUserDepositShare({ address })
 
@@ -128,7 +128,7 @@ export const useWalletAssetsTotals = ({
           .shiftedBy(-meta.decimals)
           .multipliedBy(spotPrice?.spotPrice ?? 1)
 
-        return acc.plus(value)
+        return acc.plus(!value.isNaN() ? value : BN_0)
       }
       return acc
     }, BN_0)
