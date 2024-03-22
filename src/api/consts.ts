@@ -4,6 +4,10 @@ import { ApiPromise } from "@polkadot/api"
 import { MIN_WITHDRAWAL_FEE } from "utils/constants"
 import { isApiLoaded } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
+import { scaleHuman } from "utils/balance"
+import { safeConvertAddressSS58 } from "utils/formatting"
+import { safeConvertAddressH160 } from "utils/evm"
+import { useTokenBalance } from "./balances"
 
 export const useApiIds = () => {
   const { api } = useRpcProvider()
@@ -57,4 +61,44 @@ const getMaxAddLiquidityLimit = (api: ApiPromise) => async () => {
   const minWithdrawalFee = n.toBigNumber().div(d.toNumber())
 
   return minWithdrawalFee
+}
+
+export const useInsufficientFee = (assetId: string, address: string) => {
+  const { api, assets } = useRpcProvider()
+  const { isSufficient } = assets.getAsset(assetId)
+
+  const isValidAddress =
+    safeConvertAddressSS58(address, 0) != null ||
+    safeConvertAddressH160(address) !== null
+
+  const balance = useTokenBalance(
+    assetId,
+    isValidAddress && !isSufficient ? address : undefined,
+  ).data?.balance
+
+  const fee = useQuery(
+    QUERY_KEYS.insufficientFee,
+    async () => {
+      const fee = await api.consts.balances.existentialDeposit
+
+      return fee.toBigNumber().times(1.1)
+    },
+    {
+      enabled: !isSufficient,
+      cacheTime: 1000 * 60 * 60 * 24,
+      staleTime: 1000 * 60 * 60 * 1,
+    },
+  ).data
+
+  if (isSufficient) return undefined
+
+  if (!balance || balance.gt(0)) return undefined
+
+  return fee
+    ? {
+        value: fee,
+        displayValue: scaleHuman(fee, assets.native.decimals),
+        symbol: assets.native.symbol,
+      }
+    : undefined
 }

@@ -33,6 +33,8 @@ import {
   TransferMethod,
   usePaymentFees,
 } from "./WalletTransferSectionOnchain.utils"
+import { useInsufficientFee } from "api/consts"
+import { Text } from "components/Typography/Text/Text"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -79,6 +81,8 @@ export function WalletTransferSectionOnchain({
     currentAmount: amount,
     maxAmount: balance,
   })
+
+  const insufficientFee = useInsufficientFee(asset, form.watch("dest"))
 
   const nativeDecimals = assets.native.decimals
   const nativeDecimalsDiff =
@@ -179,6 +183,16 @@ export function WalletTransferSectionOnchain({
       },
     )
   }
+
+  const basicFeeComp = (
+    <Text fs={14} color="white" tAlign="right">
+      {t("value.tokenWithSymbol", {
+        value: convertedFee,
+        symbol: accountCurrencyMeta?.symbol,
+        fixedPointScale: 12,
+      })}
+    </Text>
+  )
 
   return (
     <form
@@ -302,23 +316,42 @@ export function WalletTransferSectionOnchain({
             />
           )}
         />
-        {asset !== "0" && (
-          <Alert variant="warning" css={{ marginTop: 22 }}>
-            {t("wallet.assets.transfer.warning.nonNative")}
-          </Alert>
-        )}
         <SummaryRow
           label={t("wallet.assets.transfer.transaction_cost")}
           content={
-            convertedFee.gt(0)
-              ? t("value.tokenWithSymbol", {
-                  value: convertedFee,
-                  symbol: accountCurrencyMeta?.symbol,
-                  fixedPointScale: 12,
-                })
-              : ""
+            insufficientFee ? (
+              <div sx={{ flex: "row", gap: 1 }}>
+                {basicFeeComp}
+                <Text fs={14} color="brightBlue300" tAlign="right">
+                  {t("value.tokenWithSymbol", {
+                    value: insufficientFee.displayValue.multipliedBy(
+                      spotPrice.data?.spotPrice ?? BN_1,
+                    ),
+                    symbol: accountCurrencyMeta?.symbol,
+                    numberPrefix: "+",
+                  })}
+                </Text>
+              </div>
+            ) : (
+              basicFeeComp
+            )
           }
         />
+        {asset !== "0" && (
+          <Alert variant="warning">
+            {t("wallet.assets.transfer.warning.nonNative")}
+          </Alert>
+        )}
+        {insufficientFee && (
+          <Alert variant="info">
+            {t("wallet.assets.transfer.warning.insufficient", {
+              value: insufficientFee.displayValue.multipliedBy(
+                spotPrice.data?.spotPrice ?? BN_1,
+              ),
+              symbol: accountCurrencyMeta?.symbol,
+            })}
+          </Alert>
+        )}
       </div>
       <div>
         <Separator color="darkBlue401" sx={{ mt: 31 }} />
