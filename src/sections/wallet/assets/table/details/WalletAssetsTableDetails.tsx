@@ -9,7 +9,6 @@ import { useTranslation } from "react-i18next"
 import { useRpcProvider } from "providers/rpcProvider"
 import { SContainer } from "./WalletAssetsTableDetails.styled"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { useLockedTokens } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import {
   AssetsTableData,
   useLockedValues,
@@ -24,7 +23,7 @@ export const WalletAssetsTableDetails = ({
 }: AssetsTableData) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  useLockedTokens()
+
   const lockedValues = useLockedValues(id)
   const asset = useMemo(() => {
     const assetDetails = assets.getAsset(id)
