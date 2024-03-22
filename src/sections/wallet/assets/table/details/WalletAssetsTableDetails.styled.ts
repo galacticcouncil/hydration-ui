@@ -13,7 +13,7 @@ export const SContainer = styled.div<{
   }
 
   ${({ hasChain, isNativeAsset }) => {
-    const cols = isNativeAsset ? 2 : hasChain ? 2 : 1
+    const cols = isNativeAsset ? 3 : hasChain ? 2 : 1
     return `
       grid-template-columns: repeat(${cols}, 1fr);
       justify-items: ${cols === 1 ? "center" : "normal"};

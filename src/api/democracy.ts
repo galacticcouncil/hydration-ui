@@ -4,6 +4,8 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { undefinedNoop } from "utils/helpers"
+import BN from "bignumber.js"
+import { BN_0 } from "utils/constants"
 
 const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
 
@@ -112,14 +114,14 @@ export const useAccountVotes = () => {
 
   return useQuery(
     QUERY_KEYS.referendumVotes(account?.address),
-    account ? getAccountVotes(api, account.address) : undefinedNoop,
+    account ? getAccountUnlockedVotes(api, account.address) : undefinedNoop,
     {
       enabled: isLoaded && !!account,
     },
   )
 }
 
-export const getAccountVotes =
+export const getAccountUnlockedVotes =
   (api: ApiPromise, accountId: string) => async () => {
     const [votesRaw, currentBlock] = await Promise.all([
       api.query.democracy.votingOf(accountId),
@@ -138,7 +140,7 @@ export const getAccountVotes =
       }
     })
 
-    const referendumInfo = await Promise.all(
+    const votedAmounts = await Promise.all(
       votes.map(async (vote) => {
         const voteId = vote.id
         const referendumRaw = await api.query.democracy.referendumInfoOf(voteId)
@@ -150,34 +152,39 @@ export const getAccountVotes =
           const convictionBlock =
             CONVICTIONS_BLOCKS[vote.conviction.toLocaleLowerCase()]
           const unlockBlockNumber = endBlock.plus(convictionBlock)
-          console.log(
-            endBlock.toString(),
-            convictionBlock,
-            currentBlock.toNumber(),
-            unlockBlockNumber.toString(),
-          )
+          const isUnlocked = unlockBlockNumber.lte(currentBlock.toNumber())
+
+          return { isUnlocked, amount: vote.balance, id: voteId }
         }
+
+        return { isUnlocked: false, amount: vote.balance, id: voteId }
       }),
     )
-    console.log(referendumInfo, "referendumInfo")
-    // const referendumInfo = await Promise.all(
-    //   votes.map((vote) => api.query.democracy.referendumInfoOf(vote.id)),
-    // )
 
-    // const data = referendumInfo.map((referendumRaw) => {
-    //   const referendum = referendumRaw.unwrap()
-    //   const isFinished = referendum.isFinished
+    const unlockedVotes = votedAmounts.reduce<{
+      maxUnlockedValue: BN
+      maxLockedValue: BN
+      ids: string[]
+    }>(
+      (acc, votedAmount) => {
+        if (votedAmount.isUnlocked)
+          return {
+            maxUnlockedValue: BN.maximum(
+              acc.maxUnlockedValue,
+              votedAmount.amount,
+            ),
+            maxLockedValue: acc.maxLockedValue,
+            ids: [...acc.ids, votedAmount.id],
+          }
 
-    //   if (isFinished) {
-    //     console.log(referendumRaw)
-    //     // const vote = votes.find(
-    //     //   (vote) => vote.id === ,
-    //     // )
-    //   }
-    //   // console.log(isFinished)
-    // })
+        return {
+          maxLockedValue: BN.maximum(acc.maxLockedValue, votedAmount.amount),
+          maxUnlockedValue: acc.maxUnlockedValue,
+          ids: acc.ids,
+        }
+      },
+      { maxUnlockedValue: BN_0, maxLockedValue: BN_0, ids: [] },
+    )
 
-    //console.log(referendumInfo, "referendumInfo")
-
-    return votes
+    return unlockedVotes
   }

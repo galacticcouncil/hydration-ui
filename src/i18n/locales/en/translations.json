@@ -466,6 +466,7 @@
   "wallet.assets.table.details.locked": "Locked",
   "wallet.assets.table.details.lockedVesting": "Locked in Vesting",
   "wallet.assets.table.details.lockedDemocracy": "Locked in Democracy",
+  "wallet.assets.table.details.unlockable": "Unlockable",
   "wallet.assets.table.details.lockedStaking": "Total Locked in Staking",
   "wallet.assets.table.details.noprice.tooltip": "Spot price currently not available",
   "wallet.assets.table.empty.desc": "Looks like you don’t  have any assets on Hydra yet. Click below to add them through cross-chain transfers.",

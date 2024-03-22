@@ -235,3 +235,41 @@ export const useLockedValues = (id: string) => {
     isLoading: locks.isInitialLoading || spotPrice.isInitialLoading,
   }
 }
+
+export const useLockedNativeTokens = () => {
+  const {
+    assets: {
+      native: { id, decimals },
+    },
+  } = useRpcProvider()
+  const locks = useTokenLocks(id)
+  const spotPrice = useDisplayPrice(id)
+
+  const lockVesting =
+    locks.data
+      ?.find((lock) => lock.type === "ormlvest")
+      ?.amount.shiftedBy(-decimals) ?? BN_0
+  const lockDemocracy =
+    locks.data
+      ?.find((lock) => lock.type === "democrac")
+      ?.amount.shiftedBy(-decimals) ?? BN_0
+  const lockStaking =
+    locks.data
+      ?.find((lock) => lock.type === "stk_stks")
+      ?.amount.shiftedBy(-decimals) ?? BN_0
+
+  const lockVestingDisplay = lockVesting.times(spotPrice.data?.spotPrice ?? 1)
+  const lockDemocracyDisplay = lockDemocracy.times(
+    spotPrice.data?.spotPrice ?? 1,
+  )
+  const lockStakingDisplay = lockStaking.times(spotPrice.data?.spotPrice ?? 1)
+
+  return {
+    lockVesting,
+    lockDemocracy,
+    lockStaking,
+    lockVestingDisplay,
+    lockDemocracyDisplay,
+    lockStakingDisplay,
+  }
+}
