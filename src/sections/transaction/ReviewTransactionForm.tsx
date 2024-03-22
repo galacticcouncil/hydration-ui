@@ -34,6 +34,7 @@ type Props = TxProps & {
     tx: SubmittableExtrinsic<"promise">
   }) => void
   onSigned: (signed: SubmittableExtrinsic<"promise">) => void
+  onSignError?: (error: unknown) => void
 }
 
 export const ReviewTransactionForm: FC<Props> = (props) => {
@@ -77,25 +78,29 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   const signTx = useMutation(
     async () => {
-      const address = props.isProxy ? account?.delegate : account?.address
+      try {
+        const address = props.isProxy ? account?.delegate : account?.address
 
-      if (!address) throw new Error("Missing active account")
-      if (!wallet) throw new Error("Missing wallet")
-      if (!wallet.signer) throw new Error("Missing signer")
+        if (!address) throw new Error("Missing active account")
+        if (!wallet) throw new Error("Missing wallet")
+        if (!wallet.signer) throw new Error("Missing signer")
 
-      if (wallet?.signer instanceof MetaMaskSigner) {
-        const evmTx = await wallet.signer.sendDispatch(tx.method.toHex())
-        return props.onEvmSigned({ evmTx, tx })
+        if (wallet?.signer instanceof MetaMaskSigner) {
+          const evmTx = await wallet.signer.sendDispatch(tx.method.toHex())
+          return props.onEvmSigned({ evmTx, tx })
+        }
+
+        const signature = await tx.signAsync(address, {
+          tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
+          signer: wallet.signer,
+          // defer to polkadot/api to handle nonce w/ regard to mempool
+          nonce: -1,
+        })
+
+        return props.onSigned(signature)
+      } catch (error) {
+        props.onSignError?.(error)
       }
-
-      const signature = await tx.signAsync(address, {
-        tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
-        signer: wallet.signer,
-        // defer to polkadot/api to handle nonce w/ regard to mempool
-        nonce: -1,
-      })
-
-      return props.onSigned(signature)
     },
     {
       onSuccess: () =>
