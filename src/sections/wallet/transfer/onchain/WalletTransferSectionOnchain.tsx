@@ -123,6 +123,12 @@ export function WalletTransferSectionOnchain({
           asset.toString() === assets.native.id
             ? api.tx.balances[method](normalizedDest, amount.toFixed())
             : api.tx.tokens[method](normalizedDest, asset, amount.toFixed()),
+        overrides: insufficientFee
+          ? {
+              fee: currentFee.plus(insufficientFee.value),
+              currencyId: accountCurrencyMeta?.id,
+            }
+          : undefined,
       },
       {
         onClose,
