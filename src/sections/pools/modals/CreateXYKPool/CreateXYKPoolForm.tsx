@@ -34,7 +34,7 @@ export const CreateXYKPoolForm = ({
 }: CreateXYKPoolFormProps) => {
   const { t } = useTranslation()
 
-  const { assets } = useRpcProvider()
+  const { api, assets } = useRpcProvider()
 
   const assetAMeta = assets.getAsset(assetA ?? "")
   const assetBMeta = assets.getAsset(assetB ?? "")
@@ -66,6 +66,21 @@ export const CreateXYKPoolForm = ({
   const { createTransaction } = useStore()
 
   const handleSubmit = async (values: CreateXYKPoolFormData) => {
+    const data = {
+      assetA: {
+        id: assetAMeta.id,
+        amount: new BigNumber(values.assetA)
+          .shiftedBy(assetAMeta.decimals)
+          .toFixed(),
+      },
+      assetB: {
+        id: assetBMeta.id,
+        amount: new BigNumber(values.assetB)
+          .shiftedBy(assetBMeta.decimals)
+          .toFixed(),
+      },
+    }
+
     const toast = TOAST_MESSAGES.reduce((memo, type) => {
       const msType = type === "onError" ? "onLoading" : type
       memo[type] = (
@@ -85,7 +100,14 @@ export const CreateXYKPoolForm = ({
     }, {} as ToastMessage)
 
     await createTransaction(
-      {},
+      {
+        tx: api.tx.xyk.createPool(
+          data.assetA.id,
+          data.assetA.amount,
+          data.assetB.id,
+          data.assetB.amount,
+        ),
+      },
       {
         onClose,
         onBack: () => {},

@@ -118,7 +118,7 @@ const IsolatedPoolsData = () => {
       <Spacer size={24} />
       <div sx={{ flex: "row", mb: 14 }}>
         <CreateXYKPoolModalButton
-          sx={{ ml: "auto" }}
+          sx={{ ml: "auto", width: ["100%", "auto"] }}
           disabled={xylPools.isInitialLoading}
         />
       </div>

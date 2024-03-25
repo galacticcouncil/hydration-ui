@@ -192,12 +192,16 @@ const AllPoolsData = () => {
         {xylPools.isInitialLoading || !!filteredXYKPools.length ? (
           <div sx={{ flex: "column" }}>
             <div
-              sx={{ flex: "row", justify: "space-between", align: "flex-end" }}
+              sx={{
+                flex: ["column", "row"],
+                justify: "space-between",
+                align: ["flex-start", "flex-end"],
+              }}
             >
               <TableLabel label={t("liquidity.section.xyk")} />
               <CreateXYKPoolModalButton
                 disabled={xylPools.isInitialLoading}
-                sx={{ mb: 14 }}
+                sx={{ mb: 14, width: ["100%", "auto"] }}
               />
             </div>
             {xylPools.isInitialLoading ? (
