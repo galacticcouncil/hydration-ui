@@ -2997,10 +2997,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@3.3.7":
-  version "3.3.7"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.3.7.tgz#2e1981c2ac291f261db836b38dc3ca63f055e8b2"
-  integrity sha512-TKlYST6gEAnzs8z3q2zlL+NOMGk3I3D7PePXITXrcZK98FIwPRwtuJEo0SFK5a71MymEoW3s0WXuBxVmPt/1pQ==
+"@galacticcouncil/apps@3.3.8":
+  version "3.3.8"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.3.8.tgz#7bebf90a8a83263ab357727b8b7c41ac5b5377da"
+  integrity sha512-/IVpRhCppNwe7f7SrM5Gi+wcpXv0MgsIguF9VTmxxn1BqiaPeMm5rohnAcRUE71NFO9+Br0Ry/joJ0SW59M2JA==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -3043,10 +3043,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.2.0.tgz#74feacdf94d4846f1a148835f25936b2ddc7bdfd"
   integrity sha512-mznedOeA8d9BQ8kUQ/4O/P6trqTC4FGwvTDGCHJ0O/bgA9iFb+suctbFtyFT3qfNnngR7FSF2Pls1O/SvtNn8g==
 
-"@galacticcouncil/sdk@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.2.0.tgz#c973f1528077de5420b350702f4a1b2865196583"
-  integrity sha512-QiUJh4y9tRsXcBhxeuDaQge4/DKZXBGvn3BfyTESCqjjgr8kmpHM3623CCEPBSnRvBtVr8+2l8++bZ8eh3vNqw==
+"@galacticcouncil/sdk@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.2.1.tgz#63b1fe39a1bc4a8aa664bb832c6f1fd3118da2d6"
+  integrity sha512-TciLhxBRaHkmyxm3Un2dSHbZfLqpb0JvnU6RfGnzQ0xkOzxkRTpliWxfJqbRd2KoAQwusRBGGLq3RetZVlf97w==
   dependencies:
     "@galacticcouncil/math-lbp" "^0.2.1"
     "@galacticcouncil/math-omnipool" "^0.2.0"
@@ -3056,10 +3056,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^3.1.3":
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.1.3.tgz#6f6d0eff0bafb24e05decc17e421f1998566ae99"
-  integrity sha512-52/nsXxlM5uTy0VFnwXhCoX3/QqiqbJGWR8X7GEmuZAm8Px1k2w8sLcUT+4zC1Fgn+YLuGMGfm4QXtsCaFNWGQ==
+"@galacticcouncil/ui@^3.1.4":
+  version "3.1.4"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.1.4.tgz#bd7b833a19bae8fe48f8a83eda81c7d4ebfac7be"
+  integrity sha512-vUq6kDw29sA01IolK/lOV6ytibIdkCQxulMlNgeY2SpiVD2bbBaOpz9iQaXPBjON/ycrXvwO5OxDoFOuE3/6bA==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
@@ -3067,10 +3067,10 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^1.10.5":
-  version "1.10.5"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.10.5.tgz#613792041350f06fa90e960e0ae91f51eaf080fc"
-  integrity sha512-uke8dzdkdLEfEI/gTD/1pyge4CD+4QPsKKixOUbqAJULW+4Xp+V5NzCfjTHRNYDtwxZ/EA4PSDCJBGVR6MRGig==
+"@galacticcouncil/xcm-cfg@^1.10.7":
+  version "1.10.7"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.10.7.tgz#aa287c6935e38328d652fc158f720917419de080"
+  integrity sha512-l7d5b+tUWV+AC3mNpM5bwup4Gsslo1lNrPSUVtBi016nHmX7ce1LUhDD4CcDyw+YcaDTFzdt7Kt+nM2IYduF0A==
 
 "@galacticcouncil/xcm-sdk@^2.3.1":
   version "2.3.1"
