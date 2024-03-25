@@ -13,24 +13,6 @@ export const positive = z
   .pipe(finite)
   .refine((value) => BigNumber(value).gt(0), i18n.t("error.positive"))
 
-export const greaterThan = (val: number) =>
-  z
-    .string()
-    .pipe(finite)
-    .refine(
-      (value) => BigNumber(value).gt(val),
-      i18n.t("error.greaterThan", { value: val }),
-    )
-
-export const lessThan = (val: number) =>
-  z
-    .string()
-    .pipe(finite)
-    .refine(
-      (value) => BigNumber(value).lt(val),
-      i18n.t("error.lessThan", { value: val }),
-    )
-
 export const maxBalance = (balance: BigNumber, decimals: number) => {
   return z
     .string()

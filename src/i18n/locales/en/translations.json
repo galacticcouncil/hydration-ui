@@ -75,8 +75,6 @@
   "error.positive": "Must be positive",
   "error.validNumber": "Must be a number",
   "error.required": "This field is required.",
-  "error.lessThan": "Must be less than {{ value }}.",
-  "error.greaterThan": "Must be greater than {{ value }}.",
   "error.maxBalance": "Insufficient balance on your account.",
   "modal.closeButton.name": "Close modal button",
   "selectAssets.balance": "<0>{{ balance, bignumber }} {{symbol}}</0>",
