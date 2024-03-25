@@ -179,8 +179,7 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
         poolBalance?.balances.map((balance) => {
           const balanceMeta = assets.getAsset(balance.id.toString())
 
-          const balanceHuman = balance.data.free
-            .toBigNumber()
+          const balanceHuman = balance.freeBalance
             .shiftedBy(-balanceMeta.decimals)
             .multipliedBy(totalIssuance?.myPoolShare ?? 1)
             .div(100)
@@ -190,8 +189,7 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
 
       if (meta.assets.includes(assets.native.id)) {
         const balanceHuman =
-          poolBalance?.native.data.free
-            .toBigNumber()
+          poolBalance?.native.freeBalance
             .shiftedBy(-assets.native.decimals)
             .multipliedBy(totalIssuance?.myPoolShare ?? 1)
             .div(100) ?? BN_NAN
