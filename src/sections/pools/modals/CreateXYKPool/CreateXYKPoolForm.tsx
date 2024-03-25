@@ -16,6 +16,8 @@ import {
 } from "./CreateXYKPoolForm.utils"
 import BigNumber from "bignumber.js"
 import { TOAST_MESSAGES } from "state/toasts"
+import { useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 type CreateXYKPoolFormProps = {
   assetA: string
@@ -33,6 +35,7 @@ export const CreateXYKPoolForm = ({
   onAssetBOpen,
 }: CreateXYKPoolFormProps) => {
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
 
   const { api, assets } = useRpcProvider()
 
@@ -112,7 +115,11 @@ export const CreateXYKPoolForm = ({
         onClose,
         onBack: () => {},
         onSubmitted: () => {
+          onClose()
           form.reset()
+        },
+        onSuccess: () => {
+          queryClient.refetchQueries(QUERY_KEYS.xykPools)
         },
         toast,
       },
