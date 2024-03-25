@@ -40,6 +40,7 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
     nonce,
     isNewReferralLink,
     displayEvmFeePaymentValue,
+    displayFeeExtra,
   } = transactionValues.data || {}
 
   return (
@@ -61,24 +62,35 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
             {
               label: t("liquidity.reviewTransaction.modal.detail.cost"),
               content: !transactionValues.isLoading ? (
-                <div sx={{ flex: "row", gap: 6, align: "center" }}>
-                  {displayEvmFeePaymentValue ? (
-                    <Text fs={14}>
-                      {t("liquidity.add.modal.row.transactionCostValue", {
-                        amount: displayEvmFeePaymentValue,
-                        symbol: NATIVE_EVM_ASSET_SYMBOL,
-                        type: "token",
-                      })}
-                    </Text>
-                  ) : (
-                    <Text fs={14}>
-                      {t("liquidity.add.modal.row.transactionCostValue", {
-                        amount: displayFeePaymentValue,
-                        symbol: feePaymentMeta?.symbol,
-                        type: "token",
-                      })}
-                    </Text>
-                  )}
+                <div sx={{ flex: "row", gap: 6, align: "baseline" }}>
+                  <div sx={{ flex: "row", gap: 1 }}>
+                    {displayEvmFeePaymentValue ? (
+                      <Text fs={14}>
+                        {t("liquidity.add.modal.row.transactionCostValue", {
+                          amount: displayEvmFeePaymentValue,
+                          symbol: NATIVE_EVM_ASSET_SYMBOL,
+                          type: "token",
+                        })}
+                      </Text>
+                    ) : (
+                      <Text fs={14}>
+                        {t("liquidity.add.modal.row.transactionCostValue", {
+                          amount: displayFeePaymentValue,
+                          symbol: feePaymentMeta?.symbol,
+                          type: "token",
+                        })}
+                      </Text>
+                    )}
+                    {displayFeeExtra && (
+                      <Text fs={14} color="brightBlue300" tAlign="right">
+                        {t("value.tokenWithSymbol", {
+                          value: displayFeeExtra,
+                          symbol: feePaymentMeta?.symbol,
+                          numberPrefix: "+",
+                        })}
+                      </Text>
+                    )}
+                  </div>
                   {editFeePaymentAssetEnabled && (
                     <div
                       tabIndex={0}

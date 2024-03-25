@@ -125,7 +125,8 @@ export function WalletTransferSectionOnchain({
             : api.tx.tokens[method](normalizedDest, asset, amount.toFixed()),
         overrides: insufficientFee
           ? {
-              fee: currentFee.plus(insufficientFee.value),
+              fee: currentFee,
+              feeExtra: insufficientFee.value,
               currencyId: accountCurrencyMeta?.id,
             }
           : undefined,

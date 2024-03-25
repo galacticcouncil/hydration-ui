@@ -53,8 +53,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const transactionValues = useTransactionValues({
     xcallMeta: props.xcallMeta,
     tx: props.tx,
-    feePaymentId: props.overrides?.currencyId,
-    fee: props.overrides?.fee,
+    overrides: props.overrides,
   })
 
   const {

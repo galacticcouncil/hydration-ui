@@ -25,18 +25,22 @@ import { useEvmPaymentFee } from "api/evm"
 
 export const useTransactionValues = ({
   xcallMeta,
-  feePaymentId,
-  fee,
+  overrides,
   tx,
 }: {
   xcallMeta?: Record<string, string>
-  feePaymentId?: string
-  fee?: BigNumber
+  overrides?: {
+    currencyId?: string
+    feeExtra?: BigNumber
+    fee: BigNumber
+  }
   tx: SubmittableExtrinsic<"promise">
 }) => {
   const { assets, api, featureFlags } = useRpcProvider()
   const { account } = useAccount()
   const bestNumber = useBestNumber()
+
+  const { fee, currencyId: feePaymentId, feeExtra } = overrides ?? {}
 
   const isEvm = isEvmAccount(account?.address)
   const evmPaymentFee = useEvmPaymentFee(
@@ -155,12 +159,18 @@ export const useTransactionValues = ({
       },
     }
 
-  let displayFeePaymentValue
+  let displayFeePaymentValue: BigNumber | undefined
+  let displayFeeExtra: BigNumber | undefined
 
   if (!isSpotPriceNan) {
     displayFeePaymentValue = paymentFeeHDX.multipliedBy(
       spotPrice.data?.spotPrice ?? 1,
     )
+    displayFeeExtra = feeExtra
+      ? feeExtra
+          .shiftedBy(-assets.native.decimals)
+          .multipliedBy(spotPrice.data?.spotPrice ?? 1)
+      : undefined
   } else {
     const accountFeePaymentCurrency = acceptedFeePaymentAssets.data?.find(
       (acceptedFeePaymentAsset) =>
@@ -171,10 +181,16 @@ export const useTransactionValues = ({
       -feePaymentMeta.decimals,
     )
 
-    if (transactionPaymentValue)
+    if (transactionPaymentValue) {
       displayFeePaymentValue = BN_1.div(transactionPaymentValue).multipliedBy(
         paymentFeeHDX,
       )
+      displayFeeExtra = feeExtra
+        ? BN_1.div(transactionPaymentValue).multipliedBy(
+            feeExtra.shiftedBy(-assets.native.decimals),
+          )
+        : undefined
+    }
   }
 
   let isEnoughPaymentBalance
@@ -190,6 +206,7 @@ export const useTransactionValues = ({
     isEnoughPaymentBalance = feeAssetBalance.data.balance
       .shiftedBy(-feePaymentMeta.decimals)
       .minus(displayFeePaymentValue ?? 0)
+      .minus(displayFeeExtra ?? 0)
       .gt(0)
   }
 
@@ -219,6 +236,7 @@ export const useTransactionValues = ({
       displayEvmFeePaymentValue,
       feePaymentValue,
       feePaymentMeta,
+      displayFeeExtra,
       acceptedFeePaymentAssets: displayEvmFeePaymentValue?.gt(0)
         ? evmAcceptedFeePaymentAssetIds
         : acceptedFeePaymentAssetIds,
