@@ -110,6 +110,7 @@ export const useTransactionValues = ({
     isPaymentInfoLoading ||
     spotPrice.isInitialLoading ||
     nonce.isLoading ||
+    acceptedFeePaymentAssets.isInitialLoading ||
     referrer.isInitialLoading
 
   if (
@@ -141,13 +142,14 @@ export const useTransactionValues = ({
       spotPrice.data?.spotPrice ?? 1,
     )
   } else {
-    const accountFeePaymentCurrency = acceptedFeePaymentAssets.find(
+    const accountFeePaymentCurrency = acceptedFeePaymentAssets.data?.find(
       (acceptedFeePaymentAsset) =>
-        acceptedFeePaymentAsset.data?.id === accountFeePaymentId,
+        acceptedFeePaymentAsset.id === accountFeePaymentId,
     )
 
-    const transactionPaymentValue =
-      accountFeePaymentCurrency?.data?.data?.shiftedBy(-feePaymentMeta.decimals)
+    const transactionPaymentValue = accountFeePaymentCurrency?.data?.shiftedBy(
+      -feePaymentMeta.decimals,
+    )
 
     if (transactionPaymentValue)
       displayFeePaymentValue = BN_1.div(transactionPaymentValue).multipliedBy(

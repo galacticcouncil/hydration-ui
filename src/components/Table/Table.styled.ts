@@ -185,7 +185,8 @@ export const TableData = styled.td<{
     isExpanded && `background: rgba(${theme.rgbColors.white}, 0.06);`}
 
   &:last-of-type {
-    width: 0;
+    width: 1px;
+    text-align: end;
   }
 
   @media ${theme.viewport.gte.sm} {
