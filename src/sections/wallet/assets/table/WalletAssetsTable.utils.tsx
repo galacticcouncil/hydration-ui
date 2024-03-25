@@ -1,4 +1,3 @@
-import BN from "bignumber.js"
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -13,11 +12,11 @@ import { WalletAssetsTableBalance } from "sections/wallet/assets/table/data/Wall
 import { WalletAssetsTableActions } from "sections/wallet/assets/table/actions/WalletAssetsTableActions"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { PalletAssetRegistryAssetType } from "@polkadot/types/lookup"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { Icon } from "components/Icon/Icon"
+import { AssetsTableData } from "./data/WalletAssetsTableData.utils"
 
 export const useAssetsTable = (
   data: AssetsTableData[],
@@ -116,35 +115,4 @@ export const useAssetsTable = (
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
-}
-
-export type AssetsTableData = {
-  id: string
-  symbol: string
-  name: string
-  decimals: number
-  transferable: BN
-  transferableDisplay: BN
-  total: BN
-  totalDisplay: BN
-  lockedMax: BN
-  lockedMaxDisplay: BN
-  lockedVesting: BN
-  lockedVestingDisplay: BN
-  lockedDemocracy: BN
-  lockedDemocracyDisplay: BN
-  lockedStaking: BN
-  lockedStakingDisplay: BN
-  reserved: BN
-  reservedDisplay: BN
-  assetType: PalletAssetRegistryAssetType["type"]
-  couldBeSetAsPaymentFee: boolean
-  isPaymentFee: boolean
-  tradability: {
-    inTradeRouter: boolean
-    canBuy: boolean
-    canSell: boolean
-    canAddLiquidity: boolean
-    canRemoveLiquidity: boolean
-  }
 }

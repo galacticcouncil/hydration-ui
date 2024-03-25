@@ -99,7 +99,7 @@ const MyLiquidityData = () => {
           ?.div(100)
           .times(xykPool.shareTokenIssuance?.myPoolShare ?? 1)
 
-        return acc.plus(myTotalDisplay ?? BN_0)
+        return acc.plus(!myTotalDisplay.isNaN() ? myTotalDisplay : BN_0)
       }, BN_0)
     }
     return BN_0
