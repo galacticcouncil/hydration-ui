@@ -6,7 +6,12 @@ import { isApiLoaded } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 import { scaleHuman } from "utils/balance"
 import { safeConvertAddressSS58 } from "utils/formatting"
-import { safeConvertAddressH160 } from "utils/evm"
+import {
+  getEvmAddress,
+  H160,
+  isEvmAddress,
+  safeConvertAddressH160,
+} from "utils/evm"
 import { useTokenBalance } from "./balances"
 
 export const useApiIds = () => {
@@ -71,9 +76,15 @@ export const useInsufficientFee = (assetId: string, address: string) => {
     safeConvertAddressSS58(address, 0) != null ||
     safeConvertAddressH160(address) !== null
 
+  const isEvm = isEvmAddress(address)
+
+  const validAddress = isEvm
+    ? new H160(getEvmAddress(address)).toAccount()
+    : address
+
   const balance = useTokenBalance(
     assetId,
-    isValidAddress && !isSufficient ? address : undefined,
+    isValidAddress && !isSufficient ? validAddress : undefined,
   ).data?.balance
 
   const fee = useQuery(
