@@ -16,7 +16,6 @@ export const SContainer = styled.div<{
     const cols = isNativeAsset ? 3 : hasChain ? 2 : 1
     return `
       grid-template-columns: repeat(${cols}, 1fr);
-      justify-items: ${cols === 1 ? "center" : "normal"};
 
       & > div {
         text-align: center;
