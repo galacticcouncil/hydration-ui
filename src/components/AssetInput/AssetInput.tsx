@@ -22,7 +22,6 @@ export type AssetInputProps = {
   type?: string
   placeholder?: string
   error?: string
-  withLabel?: boolean
   className?: string
   disabled?: boolean
 }

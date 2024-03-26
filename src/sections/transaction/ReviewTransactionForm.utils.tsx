@@ -104,16 +104,18 @@ export const useTransactionValues = ({
   // assets with positive balance on the wallet
   const accountAssets = useAcountAssets(account?.address)
 
-  const alllowedFeePaymentAssetsIds = isEvmAccount(account?.address)
-    ? [accountFeePaymentId]
-    : [
-        ...(accountAssets.map((accountAsset) => accountAsset.asset.id) ?? []),
-        accountFeePaymentId,
-      ]
+  const alllowedFeePaymentAssetsIds = accountFeePaymentId
+    ? isEvmAccount(account?.address)
+      ? [accountFeePaymentId]
+      : [
+          ...(accountAssets.map((accountAsset) => accountAsset.asset.id) ?? []),
+          accountFeePaymentId,
+        ]
+    : []
 
-  const acceptedFeePaymentAssets = useAcceptedCurrencies([
-    ...alllowedFeePaymentAssetsIds,
-  ])
+  const acceptedFeePaymentAssets = useAcceptedCurrencies(
+    alllowedFeePaymentAssetsIds,
+  )
 
   const feePaymentValue = paymentInfo?.partialFee.toBigNumber() ?? BN_NAN
   const paymentFeeHDX = paymentInfo
@@ -128,9 +130,7 @@ export const useTransactionValues = ({
     isPaymentInfoLoading ||
     spotPrice.isInitialLoading ||
     nonce.isLoading ||
-    acceptedFeePaymentAssets.some(
-      (acceptedFeePaymentAsset) => acceptedFeePaymentAsset.isInitialLoading,
-    ) ||
+    acceptedFeePaymentAssets.isInitialLoading ||
     referrer.isInitialLoading
 
   if (
@@ -162,13 +162,14 @@ export const useTransactionValues = ({
       spotPrice.data?.spotPrice ?? 1,
     )
   } else {
-    const accountFeePaymentCurrency = acceptedFeePaymentAssets.find(
+    const accountFeePaymentCurrency = acceptedFeePaymentAssets.data?.find(
       (acceptedFeePaymentAsset) =>
-        acceptedFeePaymentAsset.data?.id === accountFeePaymentId,
+        acceptedFeePaymentAsset.id === accountFeePaymentId,
     )
 
-    const transactionPaymentValue =
-      accountFeePaymentCurrency?.data?.data?.shiftedBy(-feePaymentMeta.decimals)
+    const transactionPaymentValue = accountFeePaymentCurrency?.data?.shiftedBy(
+      -feePaymentMeta.decimals,
+    )
 
     if (transactionPaymentValue)
       displayFeePaymentValue = BN_1.div(transactionPaymentValue).multipliedBy(
@@ -193,9 +194,9 @@ export const useTransactionValues = ({
   }
 
   const acceptedFeePaymentAssetIds =
-    acceptedFeePaymentAssets
-      .filter((acceptedFeeAsset) => acceptedFeeAsset?.data?.accepted)
-      .map((acceptedFeeAsset) => acceptedFeeAsset?.data?.id) ?? []
+    acceptedFeePaymentAssets.data
+      ?.filter((acceptedFeeAsset) => acceptedFeeAsset.accepted)
+      .map((acceptedFeeAsset) => acceptedFeeAsset.id) ?? []
 
   let displayEvmFeePaymentValue
   let evmAcceptedFeePaymentAssetIds: string[] = []

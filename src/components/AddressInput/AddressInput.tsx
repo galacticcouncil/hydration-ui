@@ -18,7 +18,6 @@ type InputProps = {
   label?: string
   error?: string
   placeholder?: string
-  withLabel?: boolean
   className?: string
   rightIcon?: ReactNode
 }
