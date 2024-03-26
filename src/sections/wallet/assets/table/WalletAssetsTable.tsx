@@ -20,8 +20,8 @@ import { useAssetsTable } from "sections/wallet/assets/table/WalletAssetsTable.u
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 import { theme } from "theme"
 import { WalletAssetsTableActionsMob } from "./actions/WalletAssetsTableActionsMob"
-// import { Button } from "components/Button/Button"
-// import PlusIcon from "assets/icons/PlusIcon.svg?react"
+import { Button } from "components/Button/Button"
+import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { AddTokenModal } from "sections/wallet/addToken/modal/AddTokenModal"
 import { AssetsTableData } from "./data/WalletAssetsTableData.utils"
@@ -63,7 +63,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
               : t("wallet.header.assets")}
           </Text>
           <div sx={{ flex: "row", gap: 32 }}>
-            {/* <Button
+            <Button
               type="button"
               size="micro"
               sx={{ gap: 4 }}
@@ -73,7 +73,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
                 <Icon icon={<PlusIcon />} />
                 {t("wallet.assets.table.addToken")}
               </div>
-            </Button> */}
+            </Button>
             <Switch
               value={showAll}
               onCheckedChange={(value) => setShowAll(value)}
