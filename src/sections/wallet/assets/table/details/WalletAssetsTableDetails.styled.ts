@@ -21,8 +21,8 @@ export const SContainer = styled.div<{
       & > div {
         text-align: center;
 
-        &:not(:nth-of-type(${cols}n)) {
-          border-right: 1px solid rgba(255, 255, 255, 0.12);
+        &:not(:nth-of-type(${cols})):not(:nth-of-type(${cols * 2 + 1})) {
+          border-right: 1px solid rgba(158, 167, 186, 0.06);
         }
 
         &:not(:has(p)) {    
@@ -36,4 +36,18 @@ export const SContainer = styled.div<{
       }
     `
   }}
+`
+
+export const SLocksContainer = styled.div`
+  margin-top: 2px;
+  padding: 0 4px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+
+  border-radius: 4px;
+
+  background: rgba(${theme.rgbColors.white}, 0.06);
 `

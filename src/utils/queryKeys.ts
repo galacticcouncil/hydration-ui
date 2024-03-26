@@ -308,6 +308,7 @@ export const QUERY_KEYS = {
     type,
   ],
   referendumVotes: (accountAddress?: string) => [
+    QUERY_KEY_PREFIX,
     "referendumVotes",
     accountAddress,
   ],

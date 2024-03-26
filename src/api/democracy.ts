@@ -147,23 +147,29 @@ export const getAccountUnlockedVotes =
         const referendum = referendumRaw.unwrap()
         const isFinished = referendum.isFinished
 
-        if (isFinished) {
-          const endBlock = referendum.asFinished.end.toBigNumber()
-          const convictionBlock =
-            CONVICTIONS_BLOCKS[vote.conviction.toLocaleLowerCase()]
-          const unlockBlockNumber = endBlock.plus(convictionBlock)
-          const isUnlocked = unlockBlockNumber.lte(currentBlock.toNumber())
+        const endBlock = isFinished
+          ? referendum.asFinished.end.toBigNumber()
+          : referendum.asOngoing.end.toBigNumber()
+        const convictionBlock =
+          CONVICTIONS_BLOCKS[vote.conviction.toLocaleLowerCase()]
+        const unlockBlockNumber = endBlock.plus(convictionBlock)
+        const isUnlocked = isFinished
+          ? unlockBlockNumber.lte(currentBlock.toNumber())
+          : false
 
-          return { isUnlocked, amount: vote.balance, id: voteId }
+        return {
+          isUnlocked,
+          amount: vote.balance,
+          id: voteId,
+          endDiff: unlockBlockNumber.minus(currentBlock.toNumber()),
         }
-
-        return { isUnlocked: false, amount: vote.balance, id: voteId }
       }),
     )
 
     const unlockedVotes = votedAmounts.reduce<{
       maxUnlockedValue: BN
       maxLockedValue: BN
+      maxLockedBlock: BN
       ids: string[]
     }>(
       (acc, votedAmount) => {
@@ -174,16 +180,23 @@ export const getAccountUnlockedVotes =
               votedAmount.amount,
             ),
             maxLockedValue: acc.maxLockedValue,
+            maxLockedBlock: BN.maximum(votedAmount.endDiff, acc.maxLockedBlock),
             ids: [...acc.ids, votedAmount.id],
           }
 
         return {
           maxLockedValue: BN.maximum(acc.maxLockedValue, votedAmount.amount),
           maxUnlockedValue: acc.maxUnlockedValue,
+          maxLockedBlock: BN.maximum(votedAmount.endDiff, acc.maxLockedBlock),
           ids: acc.ids,
         }
       },
-      { maxUnlockedValue: BN_0, maxLockedValue: BN_0, ids: [] },
+      {
+        maxUnlockedValue: BN_0,
+        maxLockedValue: BN_0,
+        ids: [],
+        maxLockedBlock: BN_0,
+      },
     )
 
     return unlockedVotes
