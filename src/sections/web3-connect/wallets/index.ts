@@ -1,4 +1,9 @@
-import { Wallet, getWallets } from "@talismn/connect-wallets"
+import {
+  SubscriptionFn,
+  Wallet,
+  WalletAccount,
+  getWallets,
+} from "@talismn/connect-wallets"
 
 import { ExternalWallet } from "./ExternalWallet"
 import { MetaMask } from "./MetaMask"
@@ -29,10 +34,9 @@ export type WalletProvider = {
   wallet: Wallet
 }
 
-const novaWallet: Wallet = new NovaWallet()
-const talisman: Wallet = new TalismanEvm()
-const metaMask: Wallet = new MetaMask({
-  onAccountsChanged(accounts) {
+const onMetaMaskLikeAccountChange =
+  (type: WalletProviderType): SubscriptionFn =>
+  (accounts) => {
     const state = useWeb3ConnectStore.getState()
     if (!accounts || accounts.length === 0) {
       state.disconnect()
@@ -42,12 +46,21 @@ const metaMask: Wallet = new MetaMask({
       state.setAccount({
         address: isEvm ? new H160(address).toAccount() : address,
         displayAddress: address,
-        provider: WalletProviderType.MetaMask,
+        provider: type,
         name: name ?? "",
         isExternalWalletConnected: false,
       })
     }
-  },
+  }
+
+const novaWallet: Wallet = new NovaWallet()
+const talisman: Wallet = new TalismanEvm({
+  onAccountsChanged: onMetaMaskLikeAccountChange(
+    WalletProviderType.TalismanEvm,
+  ),
+})
+const metaMask: Wallet = new MetaMask({
+  onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.MetaMask),
 })
 
 const walletConnect: Wallet = new WalletConnect()

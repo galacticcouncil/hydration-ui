@@ -25,6 +25,7 @@ const getAccountComponentByType = (type: WalletProviderType | null) => {
     case WalletProviderType.ExternalWallet:
       return Web3ConnectExternalAccount
     case WalletProviderType.MetaMask:
+    case WalletProviderType.TalismanEvm:
       return Web3ConnectEvmAccount
     default:
       return Web3ConnectSubstrateAccount
