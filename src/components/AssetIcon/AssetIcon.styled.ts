@@ -19,6 +19,7 @@ export const SWarningIconContainer = styled.div`
   display: flex;
   bottom: -3px;
   right: -3px;
+  z-index: 1;
 
   & > svg {
     width: 14px;
