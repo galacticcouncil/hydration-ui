@@ -8,13 +8,7 @@ import { useAccountBalances } from "./accountBalances"
 import BN from "bignumber.js"
 import { format } from "date-fns"
 import { useRpcProvider } from "providers/rpcProvider"
-import {
-  Asset,
-  AssetBase,
-  PoolService,
-  PoolType,
-  TradeRouter,
-} from "@galacticcouncil/sdk"
+import { Asset, PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { BN_0 } from "utils/constants"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { omit } from "utils/rx"
@@ -469,21 +463,8 @@ export const getAssets = async (api: ApiPromise) => {
     [],
   )
 
-  //TODO: update according new type, take everyting from local storage
-  const addedExternalTokens = external.reduce<AssetBase[]>((acc, token) => {
-    if (token.name)
-      acc.push({
-        name: token.name,
-        symbol: token.symbol,
-        decimals: token.decimals,
-        id: token.id,
-      })
-
-    return acc
-  }, [])
-
   // pass external tokens to trade router
-  await poolService.syncRegistry(addedExternalTokens)
+  await poolService.syncRegistry(externalTokensStored)
 
   try {
     rawTradeAssets = await tradeRouter.getAllAssets()
