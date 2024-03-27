@@ -21,6 +21,7 @@ import { useReferralCodesStore } from "sections/referrals/store/useReferralCodes
 import BN from "bignumber.js"
 import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
 import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
+import { useCopyToClipboard } from "react-use"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -41,6 +42,11 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { setReferralCode } = useReferralCodesStore()
+  const [copyState, copy] = useCopyToClipboard()
+  const isCopied = !!copyState.value
+
+  const isExternalWithoutDelegate =
+    account?.isExternalWalletConnected && !account?.delegate
 
   const { transactions } = useStore()
 
@@ -123,7 +129,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   if (isOpenEditFeePaymentAssetModal) return editFeePaymentAssetModal
 
   const onConfirmClick = () =>
-    isEvmFeePaymentAssetInvalid
+    isExternalWithoutDelegate
+      ? copy(tx.method.toHex())
+      : isEvmFeePaymentAssetInvalid
       ? openEditFeePaymentAssetModal()
       : isEnoughPaymentBalance
       ? signTx.mutate()
@@ -139,6 +147,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     )
   } else if (signTx.isLoading) {
     btnText = t("liquidity.reviewTransaction.modal.confirmButton.loading")
+  } else if (isExternalWithoutDelegate) {
+    btnText = isCopied
+      ? t("liquidity.reviewTransaction.modal.confirmButton.copied")
+      : t("liquidity.reviewTransaction.modal.confirmButton.copy")
   }
 
   const isTippingEnabled = props.xcallMeta
@@ -191,6 +203,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   variant="primary"
                   isLoading={isLoading}
                   disabled={
+                    isCopied ||
                     !account ||
                     isLoading ||
                     (!isEnoughPaymentBalance && !hasMultipleFeeAssets)
