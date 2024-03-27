@@ -35,6 +35,8 @@ type Props = {
   setShowAll: (value: boolean) => void
 }
 
+const addTokenEnabled = import.meta.env.VITE_FF_ADD_TOKEN === "true"
+
 export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
   const { t } = useTranslation()
   const [row, setRow] = useState<AssetsTableData | undefined>(undefined)
@@ -63,17 +65,19 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
               : t("wallet.header.assets")}
           </Text>
           <div sx={{ flex: "row", gap: 32 }}>
-            <Button
-              type="button"
-              size="micro"
-              sx={{ gap: 4 }}
-              onClick={() => setAddToken(true)}
-            >
-              <div sx={{ flex: "row", align: "center", gap: 4 }}>
-                <Icon icon={<PlusIcon />} />
-                {t("wallet.assets.table.addToken")}
-              </div>
-            </Button>
+            {addTokenEnabled && (
+              <Button
+                type="button"
+                size="micro"
+                sx={{ gap: 4 }}
+                onClick={() => setAddToken(true)}
+              >
+                <div sx={{ flex: "row", align: "center", gap: 4 }}>
+                  <Icon icon={<PlusIcon />} />
+                  {t("wallet.assets.table.addToken")}
+                </div>
+              </Button>
+            )}
             <Switch
               value={showAll}
               onCheckedChange={(value) => setShowAll(value)}
