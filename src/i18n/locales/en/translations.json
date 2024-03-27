@@ -155,7 +155,7 @@
   "liquidity.table.header.volume": "24H volume",
   "liquidity.pool.details.title": "Pool details",
   "liquidity.pool.create": "Create pool",
-  "liquidity.pool.xyk.create": "Create isolated pool",
+  "liquidity.pool.xyk.create": "Create an isolated pool",
   "liquidity.pool.xyk.create.toast.onLoading": "<0>Creating</0> <1> {{ symbolA }}/{{ symbolB }}</1> <0>pool...</0>",
   "liquidity.pool.xyk.create.toast.onSuccess": "<0>Created</0> <1>{{ symbolA }}/{{ symbolB }}</1> <0>pool.</0>",
   "liquidity.pool.xyk.amountA": "Asset A amount",
