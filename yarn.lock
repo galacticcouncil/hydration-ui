@@ -3067,10 +3067,10 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^1.10.10":
-  version "1.10.10"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.10.10.tgz#642c26dd920d359e0ae44653ebd18e49ae5d7668"
-  integrity sha512-JePA8c6DS4yq/xCpCSJSZwahjJBKNNoPos+yJqWA1CxHCyNxciokXaJQvkhCgzWTP/W69JFgEp/+j+UUvxc1AA==
+"@galacticcouncil/xcm-cfg@^1.10.11":
+  version "1.10.11"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.10.11.tgz#1e2af24b04361de694bd06448aee351d74415d51"
+  integrity sha512-7dgCz0lxNNgPQ8s2XsKO+2E0phmmBnj0Dd9KNgRK0aFdeuFJAe0DWYdyIMMiM4tpu79W3654Z3gKDiIUurrf3Q==
 
 "@galacticcouncil/xcm-sdk@^2.3.1":
   version "2.3.1"
