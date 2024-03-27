@@ -158,8 +158,8 @@ export const useRefetchProviderData = () => {
 
   return () => {
     console.log("regetched", preference?.rpcUrl)
-    preference.rpcUrl &&
-      queryClient.invalidateQueries(QUERY_KEYS.provider(preference.rpcUrl))
+    const url = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+    url && queryClient.invalidateQueries(QUERY_KEYS.provider(url))
   }
 }
 
