@@ -156,6 +156,7 @@ export const useRefetchProviderData = () => {
   const preference = useProviderRpcUrlStore()
 
   return () => {
+    console.log("regetched")
     preference.rpcUrl &&
       queryClient.invalidateQueries(QUERY_KEYS.provider(preference.rpcUrl))
   }
