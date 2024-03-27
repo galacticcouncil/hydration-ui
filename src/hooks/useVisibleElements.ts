@@ -8,7 +8,7 @@ type VisibilityMap = Record<string, boolean>
  */
 export function useVisibleElements<T extends HTMLElement>() {
   const [visible, setVisible] = useState<VisibilityMap>({})
-  const [forceRender, setForceRender] = useState(false)
+  const [forceRender, setForceRender] = useState(0)
   const ref = useRef<T>(null)
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export function useVisibleElements<T extends HTMLElement>() {
           shouldRerender = true
         }
       })
-      setForceRender(shouldRerender)
+      if (shouldRerender) setForceRender((prev) => prev + 1)
     })
     if (ref.current) {
       mutations.observe(ref.current, {

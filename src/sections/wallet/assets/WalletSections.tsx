@@ -4,7 +4,6 @@ import { WalletFarmingPositionsSkeleton } from "./farmingPositions/skeleton/Wall
 import { Skeleton } from "sections/trade/sections/bonds/table/skeleton/Skeleton"
 import { useTranslation } from "react-i18next"
 import { useWalletAssetsFilters } from "sections/wallet/assets/WalletAssets.utils"
-import { useAssetsTableData } from "./table/data/WalletAssetsTableData.utils"
 import { useState } from "react"
 import { useBondsTableData } from "sections/trade/sections/bonds/BondsTable.utils"
 import { WalletAssetsTable } from "./table/WalletAssetsTable"
@@ -17,13 +16,14 @@ import { WalletAssetsHydraPositions } from "./hydraPositions/WalletAssetsHydraPo
 import { useFarmingPositionsData } from "./farmingPositions/WalletFarmingPositions.utils"
 import { WalletFarmingPositions } from "./farmingPositions/WalletFarmingPositions"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
+import { useAssetsData } from "./table/data/WalletAssetsTableData.utils"
 
 export const AllAssets = () => {
   const { t } = useTranslation()
   const [showAll, setShowAll] = useState(false)
 
   const { search } = useWalletAssetsFilters()
-  const assetsTable = useAssetsTableData({ isAllAssets: showAll, search })
+  const assetsTable = useAssetsData({ isAllAssets: showAll, search })
 
   const {
     data: bonds,
@@ -107,7 +107,7 @@ export const Assets = () => {
   const [showAll, setShowAll] = useState(false)
 
   const { search } = useWalletAssetsFilters()
-  const assetsTable = useAssetsTableData({ isAllAssets: showAll, search })
+  const assetsTable = useAssetsData({ isAllAssets: showAll, search })
 
   const {
     data: bonds,

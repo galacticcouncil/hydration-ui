@@ -87,9 +87,9 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
 
         if (!assetA) return undefined
 
-        const assetABalance = assetA.data.free
-          .toBigNumber()
-          .shiftedBy(-assets.getAsset(assetA.id.toString()).decimals)
+        const assetABalance = assetA.freeBalance.shiftedBy(
+          -assets.getAsset(assetA.id.toString()).decimals,
+        )
 
         const tvl = assetABalance.multipliedBy(2)
 
