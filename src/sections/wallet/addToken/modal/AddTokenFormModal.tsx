@@ -40,9 +40,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const mutation = useRegisterToken({
     onSuccess: () => {
       addToken(asset)
-      console.log("before refetch")
       refetchProvider()
-      console.log("after refetch")
     },
     assetName: asset.name,
   })

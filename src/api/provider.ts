@@ -100,7 +100,6 @@ export const useProviderData = (rpcUrl: string) => {
   return useQuery(
     QUERY_KEYS.provider(rpcUrl),
     async ({ queryKey: [_, url] }) => {
-      console.log("fetched provider data", rpcUrl)
       const provider = new WsProvider(url)
 
       const apiPool = SubstrateApis.getInstance()
@@ -113,7 +112,6 @@ export const useProviderData = (rpcUrl: string) => {
       } = displayAsset
 
       const assets = await getAssets(api)
-      console.log(assets, "assets")
       let stableCoinId: string | undefined
 
       // set USDT as a stable token
@@ -157,7 +155,6 @@ export const useRefetchProviderData = () => {
   const preference = useProviderRpcUrlStore()
 
   return () => {
-    console.log("regetched", preference?.rpcUrl)
     const url = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
     url && queryClient.invalidateQueries(QUERY_KEYS.provider(url))
   }
