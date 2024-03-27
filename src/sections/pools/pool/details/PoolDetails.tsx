@@ -26,6 +26,7 @@ import {
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
+import { useDisplayPrice } from "utils/displayAsset"
 
 export const PoolDetails = ({
   pool,
@@ -172,18 +173,28 @@ export const PoolDetails = ({
                 sx={{ display: ["none", "inherit"] }}
               />
 
-              <SValue sx={{ align: "start" }}>
-                <Text color="basic400" fs={[12, 13]}>
-                  {t("price")}
-                </Text>
-                <Text color="white" fs={[14, 16]} fw={600}>
-                  <DisplayValue value={pool.spotPrice} type="token" />
-                </Text>
-              </SValue>
+              {!ixXYKPool && (
+                <>
+                  <SValue sx={{ align: "start" }}>
+                    <Text color="basic400" fs={[12, 13]}>
+                      {t("price")}
+                    </Text>
+                    <Text color="white" fs={[14, 16]} fw={600}>
+                      <DisplayValue value={pool.spotPrice} type="token" />
+                    </Text>
+                  </SValue>
 
-              <Separator orientation="vertical" color="white" opacity={0.06} />
-
-              <SValue>
+                  <Separator
+                    orientation="vertical"
+                    color="white"
+                    opacity={0.06}
+                  />
+                </>
+              )}
+              <SValue
+                sx={{ align: ixXYKPool ? "start" : "center" }}
+                css={ixXYKPool ? { gridColumn: "1 / 4" } : undefined}
+              >
                 <Text color="basic400" fs={[12, 13]}>
                   {t("liquidity.pool.details.fee")}
                 </Text>
@@ -206,6 +217,27 @@ export const PoolDetails = ({
                   )}
                 </Text>
               </SValue>
+              {ixXYKPool && (
+                <>
+                  <Separator
+                    orientation="vertical"
+                    color="white"
+                    opacity={0.06}
+                    sx={{ display: ["none", "inherit"] }}
+                  />
+                  <SValue sx={{ align: "start" }}>
+                    <XYKAssetPrice assetId={asset.iconId[0]} />
+                  </SValue>
+                  <Separator
+                    orientation="vertical"
+                    color="white"
+                    opacity={0.06}
+                  />
+                  <SValue>
+                    <XYKAssetPrice assetId={asset.iconId[1]} />
+                  </SValue>
+                </>
+              )}
             </SValuesContainer>
           </div>
         </div>
@@ -237,6 +269,31 @@ export const PoolDetails = ({
           onClose={() => setLiquidityStablepool(undefined)}
         />
       )}
+    </>
+  )
+}
+
+export const XYKAssetPrice = ({ assetId }: { assetId: string }) => {
+  const { t } = useTranslation()
+  const { assets } = useRpcProvider()
+  const meta = assets.getAsset(assetId)
+  const spotPrice = useDisplayPrice(assetId)
+
+  return (
+    <>
+      <div sx={{ flex: "row", gap: 4, align: "center" }}>
+        <Icon size={14} icon={<AssetLogo id={assetId} />} />
+        <Text color="basic400" fs={[12, 13]}>
+          {t("liquidity.pool.details.price", { symbol: meta.symbol })}
+        </Text>
+      </div>
+      <Text color="white" fs={[14, 16]} fw={600}>
+        {spotPrice.isLoading ? (
+          <Skeleton width={60} height={14} />
+        ) : (
+          <DisplayValue value={spotPrice.data?.spotPrice} type="token" />
+        )}
+      </Text>
     </>
   )
 }
