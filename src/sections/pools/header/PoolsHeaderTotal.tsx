@@ -6,6 +6,7 @@ import { Trans, useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
+import { useDisplayAssetStore } from "utils/displayAsset"
 import { ResponsiveValue } from "utils/responsive"
 
 type DataProps = {
@@ -24,6 +25,9 @@ export const HeaderTotalData = ({
   isOnlyDollar,
 }: DataProps) => {
   const { t } = useTranslation()
+  const displayAsset = useDisplayAssetStore()
+
+  const isFiat = displayAsset.isStableCoin || displayAsset.isFiat
 
   if (isLoading)
     return <Skeleton sx={{ height: fontSize ?? [19, 28], width: [180, 200] }} />
@@ -44,7 +48,11 @@ export const HeaderTotalData = ({
               <Trans
                 t={t}
                 i18nKey="wallet.assets.header.value"
-                tOptions={{ ...separateBalance(value, { type: "dollar" }) }}
+                tOptions={{
+                  ...separateBalance(value, {
+                    type: isFiat ? "dollar" : "token",
+                  }),
+                }}
               >
                 <span css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }} />
               </Trans>

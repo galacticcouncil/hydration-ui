@@ -161,7 +161,7 @@ export const PoolDetails = ({
                   {t("24Volume")}
                 </Text>
                 <Text color="white" fs={[14, 16]} fw={600}>
-                  <DisplayValue value={pool.volume} type="token" />
+                  <DisplayValue value={pool.volume} />
                 </Text>
               </SValue>
 
@@ -177,7 +177,7 @@ export const PoolDetails = ({
                   {t("price")}
                 </Text>
                 <Text color="white" fs={[14, 16]} fw={600}>
-                  <DisplayValue value={pool.spotPrice} type="token" />
+                  <DisplayValue value={pool.spotPrice} />
                 </Text>
               </SValue>
 

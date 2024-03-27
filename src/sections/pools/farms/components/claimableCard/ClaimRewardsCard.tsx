@@ -13,6 +13,7 @@ import { separateBalance } from "utils/balance"
 import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useDisplayAssetStore } from "utils/displayAsset"
 import { Card } from "components/Card/Card"
 
 export const ClaimRewardsCard = (props: {
@@ -24,6 +25,9 @@ export const ClaimRewardsCard = (props: {
   const { assets } = useRpcProvider()
   const { account } = useAccount()
 
+  const displayAsset = useDisplayAssetStore()
+  const isFiat = displayAsset.isStableCoin || displayAsset.isFiat
+
   const claimable = useClaimableAmount(props.poolId, props.depositNft)
 
   const { claimableAssets, toastValue } = useMemo(() => {
@@ -33,7 +37,7 @@ export const ClaimRewardsCard = (props: {
       const asset = assets.getAsset(key)
       const balance = separateBalance(claimable.data?.assets[key], {
         fixedPointScale: asset.decimals,
-        type: "token",
+        type: isFiat ? "dollar" : "token",
       })
 
       claimableAssets.push({ ...balance, symbol: asset?.symbol })
@@ -52,7 +56,7 @@ export const ClaimRewardsCard = (props: {
     })
 
     return { claimableAssets, toastValue }
-  }, [assets, claimable.data?.assets, t])
+  }, [isFiat, assets, claimable.data?.assets, t])
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type

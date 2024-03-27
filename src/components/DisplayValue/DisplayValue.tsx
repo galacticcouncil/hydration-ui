@@ -8,29 +8,35 @@ type Props = {
   isUSD?: boolean
   withGap?: boolean
   compact?: boolean
-  type?: "dollar" | "token"
 }
 
 export const DisplayValue = ({
   value,
   isUSD,
-  type = "dollar",
   compact = false,
   withGap,
 }: Props) => {
   const { t } = useTranslation()
   const store = useDisplayAssetStore()
 
-  const isDollar = isUSD || store.isRealUSD || store.isStableCoin
+  const isFiat = isUSD || store.isStableCoin || store.isFiat
   const isNumber = BigNumber.isBigNumber(value) || typeof value === "number"
 
   return (
     <>
-      {isDollar && <span sx={{ mr: withGap ? [2, 4] : undefined }}>$</span>}
+      {isFiat && (
+        <span sx={{ mr: withGap ? [2, 4] : undefined }}>
+          {isUSD ? "$" : store.symbol}
+        </span>
+      )}
+
       {isNumber
-        ? t(compact ? "value.compact" : "value", { value, type })
+        ? t(compact ? "value.compact" : "value", {
+            value,
+            type: isFiat ? "dollar" : "token",
+          })
         : value}
-      {!isDollar && <>&nbsp;{store.symbol}</>}
+      {!isFiat && <>&nbsp;{store.symbol}</>}
     </>
   )
 }

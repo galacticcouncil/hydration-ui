@@ -34,24 +34,29 @@ export const useDisplayValue = (props: Props) => {
 
 export const useDisplayPrice = (id: string | u32 | undefined) => {
   const displayAsset = useDisplayAssetStore()
-  const spotPrice = useSpotPrice(id, displayAsset.id)
-  const usdPrice = useCoingeckoUsdPrice()
 
-  const isLoading = spotPrice.isInitialLoading || usdPrice.isInitialLoading
+  const assetOut = displayAsset.isFiat
+    ? displayAsset.stableCoinId
+    : displayAsset.id
+
+  const spotPrice = useSpotPrice(id, assetOut)
+  const fiatPrice = useCoingeckoFiatPrice()
+
+  const isLoading = spotPrice.isInitialLoading || fiatPrice.isInitialLoading
 
   const data = useMemo(() => {
     if (isLoading) return undefined
 
-    if (displayAsset.isRealUSD && usdPrice.data)
+    if (displayAsset.isFiat && fiatPrice.data)
       return spotPrice.data
         ? {
             ...spotPrice.data,
-            spotPrice: spotPrice.data.spotPrice.times(usdPrice.data),
+            spotPrice: spotPrice.data.spotPrice.times(fiatPrice.data),
           }
         : undefined
 
     return spotPrice.data
-  }, [displayAsset.isRealUSD, isLoading, spotPrice.data, usdPrice.data])
+  }, [displayAsset.isFiat, isLoading, spotPrice.data, fiatPrice.data])
 
   return { data, isLoading, isInitialLoading: isLoading }
 }
@@ -145,36 +150,66 @@ export const useDisplayPrices = (
   noRefresh?: boolean,
 ) => {
   const displayAsset = useDisplayAssetStore()
-  const spotPrices = useSpotPrices(ids, displayAsset.id, noRefresh)
-  const usdPrice = useCoingeckoUsdPrice()
+
+  const assetOut = displayAsset.isFiat
+    ? displayAsset.stableCoinId
+    : displayAsset.id
+
+  const spotPrices = useSpotPrices(ids, assetOut, noRefresh)
+  const fiatPrice = useCoingeckoFiatPrice()
 
   const isLoading =
-    spotPrices.some((q) => q.isInitialLoading) || usdPrice.isInitialLoading
+    spotPrices.some((q) => q.isInitialLoading) || fiatPrice.isInitialLoading
 
   const data = useMemo(() => {
     if (isLoading) return undefined
 
-    if (displayAsset.isRealUSD && usdPrice.data)
+    if (displayAsset.isFiat && fiatPrice.data)
       return spotPrices.map((sp) =>
         sp.data
-          ? { ...sp.data, spotPrice: sp.data.spotPrice.times(usdPrice.data) }
+          ? { ...sp.data, spotPrice: sp.data.spotPrice.times(fiatPrice.data) }
           : undefined,
       )
 
     return spotPrices.map((sp) => sp.data)
-  }, [displayAsset.isRealUSD, isLoading, spotPrices, usdPrice.data])
+  }, [displayAsset.isFiat, isLoading, spotPrices, fiatPrice.data])
 
   return { data, isLoading, isInitialLoading: isLoading }
 }
 
+export type FiatCurrency = {
+  id: string
+  name: string
+  symbol: string
+}
+
+export const FIAT_CURRENCIES = [
+  {
+    id: "usd",
+    name: "$ USD",
+    symbol: "$",
+  },
+  {
+    id: "czk",
+    name: "CZK",
+    symbol: "CZK ",
+  },
+  {
+    id: "eur",
+    name: "€ Euro",
+    symbol: "€",
+  },
+] satisfies FiatCurrency[]
+
 type Asset = {
   id: string | undefined
   symbol: string
-  isRealUSD: boolean
+  isFiat: boolean
   isStableCoin: boolean
   isDollar?: boolean
   stableCoinId: string | undefined
 }
+
 export type DisplayAssetStore = Asset & {
   update: (asset: Asset) => void
 }
@@ -186,44 +221,50 @@ export const useDisplayAssetStore = create<DisplayAssetStore>()(
       stableCoinId: undefined,
       symbol: "$",
       isDollar: true,
-      isRealUSD: false,
+      isFiat: false,
       isStableCoin: true,
       update: (value) =>
-        set({ ...value, isDollar: value.isRealUSD || value.isStableCoin }),
+        set({ ...value, isDollar: value.isFiat || value.isStableCoin }),
     }),
     { name: "hdx-display-asset", version: 1 },
   ),
 )
 
-export const useCoingeckoUsdPrice = () => {
+export const useCoingeckoFiatPrice = () => {
   const displayAsset = useDisplayAssetStore()
+  const currency = displayAsset.id ?? ""
 
   return useQuery(QUERY_KEYS.coingeckoUsd, getCoingeckoSpotPrice, {
-    enabled: displayAsset.isRealUSD,
+    enabled: displayAsset.isFiat && !!currency,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
     retry: false,
     staleTime: 1000 * 60 * 60 * 24, // 24h
+    select: (data) => {
+      return data[STABLECOIN_SYMBOL.toLowerCase()][currency]
+    },
   })
 }
 
 export const getCoingeckoSpotPrice = async () => {
+  const vsCurrencies = FIAT_CURRENCIES.map((currency) => currency.id)
+  const vsCurrenciesParam = vsCurrencies.join(",")
+
   const res = await fetch(
-    `https://api.coingecko.com/api/v3/simple/price?ids=${STABLECOIN_SYMBOL.toLowerCase()}&vs_currencies=usd`,
+    `https://api.coingecko.com/api/v3/simple/price?ids=${STABLECOIN_SYMBOL.toLowerCase()}&vs_currencies=${vsCurrenciesParam}`,
   )
-  const json = await res.json()
-  return json[STABLECOIN_SYMBOL.toLowerCase()].usd
+  return await res.json()
 }
 
-type simplifiedAsset = {
+type SimplifiedAsset = {
   id: string | u32
   name: string
   symbol: string
 }
 
 export const useAssetPrices = (
-  assets: simplifiedAsset[],
+  assets: SimplifiedAsset[],
   noRefresh?: boolean,
 ) => {
   const displayAsset = useDisplayAssetStore()
@@ -235,7 +276,7 @@ export const useAssetPrices = (
       const matchingAsset = assets.find((a) => a.id === asset?.data?.tokenIn)
       return { id: matchingAsset?.id, name: matchingAsset?.name }
     })
-    .filter((asset): asset is simplifiedAsset => asset !== undefined)
+    .filter((asset): asset is SimplifiedAsset => asset !== undefined)
 
   const coingeckoPrices = useCoingeckoPrice(coingeckoAssetNames)
 
@@ -262,7 +303,7 @@ export const useAssetPrices = (
   return updatedSpotPrices
 }
 
-export const useCoingeckoPrice = (assets: simplifiedAsset[]) => {
+export const useCoingeckoPrice = (assets: SimplifiedAsset[]) => {
   return useQuery(
     [QUERY_KEYS.coingeckoUsd, assets.map((asset) => asset.name)],
     async () => {
@@ -281,7 +322,7 @@ export const useCoingeckoPrice = (assets: simplifiedAsset[]) => {
 }
 
 export const getCoingeckoAssetPrices = async (
-  assets: simplifiedAsset[],
+  assets: SimplifiedAsset[],
 ): Promise<{ [key: string]: number }> => {
   const formattedAssetNames = assets
     .map((asset) => {

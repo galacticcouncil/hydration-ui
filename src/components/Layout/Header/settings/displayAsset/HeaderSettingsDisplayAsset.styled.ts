@@ -3,8 +3,11 @@ import { ButtonTransparent } from "components/Button/Button"
 import { theme } from "theme"
 
 export const SItems = styled.div`
-  max-height: 360px;
   overflow: auto;
+
+  @media ${theme.viewport.gte.sm} {
+    max-height: 360px;
+  }
 `
 
 export const SItem = styled(ButtonTransparent)<{ isActive?: boolean }>`
@@ -17,6 +20,8 @@ export const SItem = styled(ButtonTransparent)<{ isActive?: boolean }>`
   padding: 10px 20px;
 
   color: ${theme.colors.whiteish500};
+
+  background-color: rgba(${theme.rgbColors.white}, 0.03);
   ${({ isActive }) =>
     isActive && `background-color: rgba(${theme.rgbColors.primaryA15}, 0.12);`}
 
@@ -24,16 +29,21 @@ export const SItem = styled(ButtonTransparent)<{ isActive?: boolean }>`
 
   &:hover {
     color: ${theme.colors.white};
+    ${({ isActive }) =>
+      !isActive &&
+      `:hover {
+          background-color: rgba(${theme.rgbColors.white}, 0.05)
+        }`}
   }
 
-  &:not(:last-of-type) {
-    border-bottom: 1px solid ${theme.colors.darkBlue401};
-  }
+  border-top: 1px solid ${theme.colors.darkBlue401};
 `
 
-export const SItemUSD = styled(SItem)`
+export const SItemFiat = styled(SItem)`
   grid-template-columns: 1fr auto;
   padding: 13px 20px;
+
+  ${({ isActive }) => !isActive && `background-color: transparent;`}
 `
 
 export const SCircle = styled.div<{ isActive: boolean }>`
@@ -54,4 +64,21 @@ export const SCircle = styled.div<{ isActive: boolean }>`
     background-color: ${theme.colors.brightBlue700};
     border-radius: 50%;
   }
+`
+
+export const SItemsHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+
+  padding: 6px 20px;
+
+  border-left: none;
+  border-right: none;
+  border-top: 1px solid ${theme.colors.darkBlue401};
+
+  background-color: rgba(${theme.rgbColors.white}, 0.03);
+`
+
+export const SItemsFiatHeader = styled(SItemsHeader)`
+  background: transparent;
 `

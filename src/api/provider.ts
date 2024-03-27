@@ -132,7 +132,7 @@ export const useProviderData = (rpcUrl: string) => {
         update({
           id: stableCoinId,
           symbol: "$",
-          isRealUSD: false,
+          isFiat: false,
           isStableCoin: true,
           stableCoinId,
         })
