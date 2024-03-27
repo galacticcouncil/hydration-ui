@@ -154,6 +154,7 @@
   "liquidity.pool.details.title": "Pool details",
   "liquidity.pool.xyk.details.title": "Isolated pool details",
   "liquidity.pool.details.fee": "Pool Fee",
+  "liquidity.pool.details.price": "{{symbol}} Price",
   "liquidity.section.omnipoolAndStablepool": "Omnipool + Stablepool",
   "liquidity.section.xyk": "Isolated pools",
   "liquidity.asset.title": "Asset",
