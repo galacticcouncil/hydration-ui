@@ -146,7 +146,7 @@ export const useProviderData = (rpcUrl: string) => {
         provider,
       }
     },
-    { refetchOnWindowFocus: true },
+    { refetchOnWindowFocus: false },
   )
 }
 
