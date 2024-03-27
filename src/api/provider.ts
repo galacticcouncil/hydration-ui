@@ -100,7 +100,7 @@ export const useProviderData = (rpcUrl: string) => {
   return useQuery(
     QUERY_KEYS.provider(rpcUrl),
     async ({ queryKey: [_, url] }) => {
-      console.log("fetched provider data")
+      console.log("fetched provider data", rpcUrl)
       const provider = new WsProvider(url)
 
       const apiPool = SubstrateApis.getInstance()
@@ -157,7 +157,7 @@ export const useRefetchProviderData = () => {
   const preference = useProviderRpcUrlStore()
 
   return () => {
-    console.log("regetched")
+    console.log("regetched", preference?.rpcUrl)
     preference.rpcUrl &&
       queryClient.invalidateQueries(QUERY_KEYS.provider(preference.rpcUrl))
   }
