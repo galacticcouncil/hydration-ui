@@ -17,13 +17,14 @@ export const SLogoContainer = styled.div`
 export const SWarningIconContainer = styled.div`
   position: absolute;
   display: flex;
-  bottom: -2px;
-  right: -2px;
+  bottom: -3px;
+  right: -3px;
 
   & > svg {
     width: 14px;
     height: 14px;
 
     filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.5));
+    stroke: rgba(0, 0, 0, 0.5);
   }
 `
