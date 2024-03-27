@@ -95,7 +95,7 @@ const LiquidityMenuItem = ({
       to={isOmnipoolPositions ? LINKS.myLiquidity : item.href}
       search={resetSearchParams(search)}
       key={isOmnipoolPositions ? LINKS.myLiquidity : item.href}
-      data-intersect={isOmnipoolPositions ? LINKS.myLiquidity : item.href}
+      data-intersect={item.key}
     >
       {({ isActive }) => (
         <SItem isActive={isActive}>{t(`header.${item.key}`)}</SItem>

@@ -3,17 +3,12 @@ import AssetsIcon from "assets/icons/AssetsIcon.svg?react"
 import PositionsIcon from "assets/icons/PositionsIcon.svg?react"
 import WaterRippleIcon from "assets/icons/WaterRippleIcon.svg?react"
 import PoolsAndFarms from "assets/icons/PoolsAndFarms.svg?react"
-import IconSearch from "assets/icons/IconSearch.svg?react"
-import {
-  SButton,
-  SButtonContainer,
-  SSearchContainer,
-} from "./WalletAssetsFilters.styled"
+import { SButton, SButtonContainer } from "./WalletAssetsFilters.styled"
 import { Icon } from "components/Icon/Icon"
-import { Input } from "components/Input/Input"
 import { useDebounce } from "react-use"
 import { useState } from "react"
 import { useWalletAssetsFilters } from "sections/wallet/assets/WalletAssets.utils"
+import { Search } from "components/Search/Search"
 
 const filters = [
   {
@@ -51,16 +46,11 @@ export const WalletAssetsFilters = () => {
 
   return (
     <div sx={{ flex: "column", gap: [16, 30], mb: [16, 20] }}>
-      <SSearchContainer>
-        <IconSearch />
-        <Input
-          value={searchVal}
-          onChange={setSearchVal}
-          name="search"
-          label="Input"
-          placeholder={t("wallet.header.search")}
-        />
-      </SSearchContainer>
+      <Search
+        value={searchVal}
+        setValue={setSearchVal}
+        placeholder={t("wallet.header.search")}
+      />
       <SButtonContainer>
         {filters.map(({ id, icon }) => (
           <SButton
