@@ -63,7 +63,7 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
               label: t("liquidity.reviewTransaction.modal.detail.cost"),
               content: !transactionValues.isLoading ? (
                 <div sx={{ flex: "row", gap: 6, align: "baseline" }}>
-                  <div sx={{ flex: "row", gap: 1 }}>
+                  <div sx={{ flex: "row", gap: 4 }}>
                     {displayEvmFeePaymentValue ? (
                       <Text fs={14}>
                         {t("liquidity.add.modal.row.transactionCostValue", {
@@ -86,7 +86,7 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
                         {t("value.tokenWithSymbol", {
                           value: displayFeeExtra,
                           symbol: feePaymentMeta?.symbol,
-                          numberPrefix: "+",
+                          numberPrefix: "+  ",
                         })}
                       </Text>
                     )}

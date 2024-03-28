@@ -327,7 +327,7 @@ export function WalletTransferSectionOnchain({
           label={t("wallet.assets.transfer.transaction_cost")}
           content={
             insufficientFee ? (
-              <div sx={{ flex: "row", gap: 1 }}>
+              <div sx={{ flex: "row", gap: 4 }}>
                 {basicFeeComp}
                 <Text fs={14} color="brightBlue300" tAlign="right">
                   {t("value.tokenWithSymbol", {
@@ -335,7 +335,7 @@ export function WalletTransferSectionOnchain({
                       spotPrice.data?.spotPrice ?? BN_1,
                     ),
                     symbol: accountCurrencyMeta?.symbol,
-                    numberPrefix: "+",
+                    numberPrefix: "+  ",
                   })}
                 </Text>
               </div>
