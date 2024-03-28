@@ -6,7 +6,7 @@ import { safeConvertAddressSS58 } from "utils/formatting"
 import { JdenticonAvatar } from "./JdenticonAvatar"
 import { PolkadotAvatar } from "./PolkadotAvatar"
 import { MetaMaskAvatar } from "./MetaMaskAvatar"
-import { isEvmAccount, isEvmAddress } from "utils/evm"
+import { isEvmAccount, isEvmAddress, safeConvertAddressH160 } from "utils/evm"
 import { WalletProviderType } from "sections/web3-connect/wallets"
 import { genesisHashToChain } from "utils/helpers"
 import type { Icon } from "@polkadot/networks/types"
@@ -25,13 +25,16 @@ export const AccountAvatar: FC<Props> = (props) => {
     props.genesisHash && chain?.icon ? chain.icon : "polkadot"
 
   const isEvm = isEvmAccount(props.address) || isEvmAddress(props.address)
-  const theme =
-    props.provider === "talisman" ? "talisman" : isEvm ? "evm" : chainIcon
+  const theme = props.provider?.startsWith("talisman")
+    ? "talisman"
+    : isEvm
+    ? "evm"
+    : chainIcon
 
   if (theme === "evm") {
     return (
       <MetaMaskAvatar
-        address={props.address}
+        address={safeConvertAddressH160(props.address) ?? props.address}
         size={props.size}
         className={props.className}
       />
@@ -41,7 +44,7 @@ export const AccountAvatar: FC<Props> = (props) => {
   if (theme === "talisman") {
     return (
       <TalismanAvatar
-        seed={props.address}
+        seed={safeConvertAddressH160(props.address) ?? props.address}
         size={props.size}
         className={props.className}
       />

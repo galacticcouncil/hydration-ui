@@ -2,13 +2,17 @@ import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { Maybe, undefinedNoop } from "utils/helpers"
+import { Maybe, isNotNil, identity, undefinedNoop } from "utils/helpers"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { ToastMessage, useStore } from "state/store"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { usePaymentInfo } from "./transaction"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useAcountAssets } from "api/assetDetails"
+import { useMemo } from "react"
+import { uniqBy } from "utils/rx"
+import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
 
 export const getAcceptedCurrency = (api: ApiPromise) => async () => {
   const dataRaw =
@@ -96,4 +100,52 @@ export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
       enabled: !!address && isLoaded,
     },
   )
+}
+
+export const useAccountFeePaymentAssets = () => {
+  const { assets } = useRpcProvider()
+  const { account } = useAccount()
+  const accountAssets = useAcountAssets(account?.address)
+  const accountFeePaymentAsset = useAccountCurrency(account?.address)
+  const feePaymentAssetId = accountFeePaymentAsset.data
+
+  const allowedFeePaymentAssetsIds = useMemo(() => {
+    if (isEvmAccount(account?.address)) {
+      const evmNativeAssetId = assets.getAsset(NATIVE_EVM_ASSET_ID).id
+      return uniqBy(
+        identity,
+        [evmNativeAssetId, feePaymentAssetId].filter(isNotNil),
+      )
+    }
+
+    const assetIds = accountAssets.map((accountAsset) => accountAsset.asset.id)
+    return uniqBy(identity, [...assetIds, feePaymentAssetId].filter(isNotNil))
+  }, [assets, account?.address, accountAssets, feePaymentAssetId])
+
+  const acceptedFeePaymentAssets = useAcceptedCurrencies(
+    allowedFeePaymentAssetsIds,
+  )
+
+  const data = acceptedFeePaymentAssets?.data ?? []
+
+  const acceptedFeePaymentAssetsIds = data
+    .filter((acceptedFeeAsset) => acceptedFeeAsset?.accepted)
+    .map((acceptedFeeAsset) => acceptedFeeAsset?.id)
+
+  const isLoading =
+    accountFeePaymentAsset.isLoading || acceptedFeePaymentAssets.isLoading
+  const isInitialLoading =
+    accountFeePaymentAsset.isInitialLoading ||
+    acceptedFeePaymentAssets.isInitialLoading
+  const isSuccess =
+    accountFeePaymentAsset.isSuccess && acceptedFeePaymentAssets.isSuccess
+
+  return {
+    acceptedFeePaymentAssetsIds,
+    acceptedFeePaymentAssets,
+    feePaymentAssetId,
+    isLoading,
+    isInitialLoading,
+    isSuccess,
+  }
 }
