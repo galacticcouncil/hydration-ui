@@ -433,6 +433,7 @@
   "wallet.assets.transfer.error.validAddress": "The address is incorrect. Please review it and try again.",
   "wallet.assets.transfer.error.notSame": "Sending and receiving address cannot be the same.",
   "wallet.assets.transfer.warning.nonNative": "Sending any asset other than HDX to a centralized exchange will lead to a loss of funds. Instead, you should first send the asset to its source chain using cross-chain transfers.",
+  "wallet.assets.transfer.warning.insufficient": "Transferring this asset to specified address will cause extra transaction cost of {{ value, bignumber(type: 'token') }} {{symbol}}",
   "wallet.assets.transfer.toast.onLoading": "<0>Sending </0><1>{{ value, bignumber(type: 'token') }} {{symbol}}</1><0> to </0><1>{{address}}</1>",
   "wallet.assets.transfer.toast.onSuccess": "<0>Sent </0><1>{{ value, bignumber(type: 'token') }} {{symbol}}</1><0> to </0><1>{{address}}</1>",
   "wallet.assets.header.balance": "Total balance",
