@@ -19,7 +19,11 @@ import { ReviewTransactionSummary } from "sections/transaction/ReviewTransaction
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import BN from "bignumber.js"
-import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
+import {
+  NATIVE_EVM_ASSET_ID,
+  NATIVE_EVM_ASSET_SYMBOL,
+  isEvmAccount,
+} from "utils/evm"
 import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
@@ -53,8 +57,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const transactionValues = useTransactionValues({
     xcallMeta: props.xcallMeta,
     tx: props.tx,
-    feePaymentId: props.overrides?.currencyId,
-    fee: props.overrides?.fee,
+    overrides: props.overrides,
   })
 
   const {
@@ -117,7 +120,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const isEditPaymentBalance = !isEnoughPaymentBalance && hasMultipleFeeAssets
 
   const isEvmFeePaymentAssetInvalid = isEvmAccount(account?.address)
-    ? feePaymentMeta?.id !== import.meta.env.VITE_EVM_NATIVE_ASSET_ID
+    ? feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
     : false
 
   if (isOpenEditFeePaymentAssetModal) return editFeePaymentAssetModal
