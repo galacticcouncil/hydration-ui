@@ -17,6 +17,8 @@ import { TToken } from "api/assetDetails"
 import { Input } from "components/Input/Input"
 import { useState } from "react"
 import IconSearch from "assets/icons/IconSearch.svg?react"
+import { Button } from "components/Button/Button"
+import { ModalScrollableContent } from "components/Modal/Modal"
 
 type Props = {
   allowedAssets?: Maybe<u32 | string>[]
@@ -26,6 +28,8 @@ type Props = {
   withBonds?: boolean
   withExternal?: boolean
   withShareTokens?: boolean
+  confirmRequired?: boolean
+  defaultSelectedAsssetId?: string
 }
 
 type TBalance = ReturnType<typeof useAcountAssets>[number]["balance"]
@@ -37,12 +41,17 @@ export const AssetsModalContent = ({
   allAssets,
   withBonds,
   withShareTokens,
+  confirmRequired,
+  defaultSelectedAsssetId,
   withExternal,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const { account } = useAccount()
   const [search, setSearch] = useState("")
+  const [selectedAssetId, setSelectedAssetId] = useState(
+    defaultSelectedAsssetId,
+  )
 
   const accountAssets = useAcountAssets(account?.address)
 
@@ -116,14 +125,47 @@ export const AssetsModalContent = ({
       ? searchedTokens.filter(({ asset }) => !allowedAssets.includes(asset.id))
       : []
 
+  const onSelectHandler = (assetData: TAsset) => {
+    if (confirmRequired) {
+      setSelectedAssetId(assetData.id)
+    } else {
+      onSelect?.(assetData)
+    }
+  }
+
+  const onSelectConfirm = () => {
+    const asset = tokens.find((token) => token.asset.id === selectedAssetId)
+    if (asset) {
+      onSelect?.(asset.asset)
+    }
+  }
+
+  const getIsAssetSelected = (asset: TAsset) => {
+    if (confirmRequired) {
+      return asset.id === selectedAssetId
+    }
+  }
+
   if (!tokens.length)
     return (
       <>
         <SAssetsModalHeader>
-          <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+          <Text
+            color="basic700"
+            fw={500}
+            fs={12}
+            lh={12}
+            tTransform="uppercase"
+          >
             {t("selectAssets.asset")}
           </Text>
-          <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
+          <Text
+            color="basic700"
+            fw={500}
+            fs={12}
+            lh={12}
+            tTransform="uppercase"
+          >
             {t("selectAssets.your_balance")}
           </Text>
         </SAssetsModalHeader>
@@ -146,65 +188,123 @@ export const AssetsModalContent = ({
         />
       </SAssetsModalSearchWrapper>
 
-      {!!allowedTokens?.length && (
-        <>
-          <SAssetsModalHeader>
-            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-              {t("selectAssets.asset")}
-            </Text>
-            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-              {t("selectAssets.your_balance")}
-            </Text>
-          </SAssetsModalHeader>
-          {allowedTokens.map(({ balance, asset }) => (
-            <AssetsModalRow
-              balance={balance.balance}
-              key={asset.id}
-              asset={asset}
-              spotPriceId={asset.id}
-              onClick={(assetData) => onSelect?.(assetData)}
-            />
-          ))}
-        </>
-      )}
-      {withBonds && allowedBonds.length ? (
-        <>
-          <SAssetsModalHeader>
-            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-              {t("bonds")}
-            </Text>
-            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-              {t("selectAssets.your_balance")}
-            </Text>
-          </SAssetsModalHeader>
-          {allowedBonds.map(({ asset, balance }) => (
-            <AssetsModalRow
-              key={asset.id}
-              asset={asset}
-              balance={balance.balance}
-              spotPriceId={!asset.isTradable ? asset.assetId : asset.id}
-              onClick={(assetData) => onSelect?.(assetData)}
-            />
-          ))}
-        </>
-      ) : null}
-      {!hideInactiveAssets && !!notAllowedTokens?.length && (
-        <>
-          <SAssetsModalHeader shadowed>
-            <Text color="basic700" fw={500} fs={12} tTransform="uppercase">
-              {t("selectAssets.asset_without_pair")}
-            </Text>
-          </SAssetsModalHeader>
-          {notAllowedTokens.map(({ balance, asset }) => (
-            <AssetsModalRow
-              balance={balance.balance}
-              key={asset.id}
-              asset={asset}
-              spotPriceId={asset.id}
-            />
-          ))}
-        </>
-      )}
+      <ModalScrollableContent
+        sx={{
+          maxHeight: ["100%", 600],
+          pr: 0,
+          width: "100%",
+        }}
+        content={
+          <>
+            {!!allowedTokens?.length && (
+              <>
+                <SAssetsModalHeader>
+                  <Text
+                    color="basic700"
+                    fw={500}
+                    fs={12}
+                    lh={12}
+                    tTransform="uppercase"
+                  >
+                    {t("selectAssets.asset")}
+                  </Text>
+                  <Text
+                    color="basic700"
+                    fw={500}
+                    fs={12}
+                    lh={12}
+                    tTransform="uppercase"
+                  >
+                    {t("selectAssets.your_balance")}
+                  </Text>
+                </SAssetsModalHeader>
+                {allowedTokens.map(({ balance, asset }) => (
+                  <AssetsModalRow
+                    balance={balance.balance}
+                    key={asset.id}
+                    asset={asset}
+                    spotPriceId={asset.id}
+                    onClick={onSelectHandler}
+                    isActive={getIsAssetSelected(asset)}
+                  />
+                ))}
+              </>
+            )}
+            {withBonds && allowedBonds.length ? (
+              <>
+                <SAssetsModalHeader>
+                  <Text
+                    color="basic700"
+                    fw={500}
+                    fs={12}
+                    lh={12}
+                    tTransform="uppercase"
+                  >
+                    {t("bonds")}
+                  </Text>
+                  <Text
+                    color="basic700"
+                    fw={500}
+                    fs={12}
+                    lh={12}
+                    tTransform="uppercase"
+                  >
+                    {t("selectAssets.your_balance")}
+                  </Text>
+                </SAssetsModalHeader>
+                {allowedBonds.map(({ asset, balance }) => (
+                  <AssetsModalRow
+                    key={asset.id}
+                    asset={asset}
+                    balance={balance.balance}
+                    spotPriceId={!asset.isTradable ? asset.assetId : asset.id}
+                    onClick={onSelectHandler}
+                    isActive={getIsAssetSelected(asset)}
+                  />
+                ))}
+              </>
+            ) : null}
+            {!hideInactiveAssets && !!notAllowedTokens?.length && (
+              <>
+                <SAssetsModalHeader shadowed>
+                  <Text
+                    color="basic700"
+                    fw={500}
+                    fs={12}
+                    lh={12}
+                    tTransform="uppercase"
+                  >
+                    {t("selectAssets.asset_without_pair")}
+                  </Text>
+                </SAssetsModalHeader>
+                {notAllowedTokens.map(({ balance, asset }) => (
+                  <AssetsModalRow
+                    balance={balance.balance}
+                    key={asset.id}
+                    asset={asset}
+                    spotPriceId={asset.id}
+                    isActive={getIsAssetSelected(asset)}
+                  />
+                ))}
+              </>
+            )}
+          </>
+        }
+        footer={
+          confirmRequired && (
+            <div sx={{ p: 12, mt: "auto" }}>
+              <Button
+                fullWidth
+                variant="primary"
+                onClick={onSelectConfirm}
+                disabled={defaultSelectedAsssetId === selectedAssetId}
+              >
+                {t("save")}
+              </Button>
+            </div>
+          )
+        }
+      />
     </>
   )
 }
