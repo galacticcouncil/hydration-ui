@@ -139,9 +139,6 @@ export const CreateXYKPoolForm = ({
       <Controller
         name="assetA"
         control={form.control}
-        rules={{
-          required: t("wallet.assets.transfer.error.required"),
-        }}
         render={({
           field: { name, value, onChange },
           fieldState: { error },
@@ -177,9 +174,6 @@ export const CreateXYKPoolForm = ({
       <Controller
         name="assetB"
         control={form.control}
-        rules={{
-          required: t("wallet.assets.transfer.error.required"),
-        }}
         render={({
           field: { name, value, onChange },
           fieldState: { error },
@@ -202,9 +196,7 @@ export const CreateXYKPoolForm = ({
           width: "auto",
         }}
       />
-      <Button variant="primary" type="submit">
-        {t("liquidity.pool.create")}
-      </Button>
+      <Button variant="primary">{t("liquidity.pool.create")}</Button>
     </form>
   )
 }
