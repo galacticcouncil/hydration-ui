@@ -35,7 +35,9 @@ export const useAssetsData = ({
         )
       })
 
-      return [...filteredTokens, nativeTokenWithBalance]
+      return nativeTokenWithBalance.total.gt(0)
+        ? [...filteredTokens, nativeTokenWithBalance]
+        : filteredTokens
     }
 
     return []
