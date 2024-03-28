@@ -11,7 +11,7 @@ import { Separator } from "components/Separator/Separator"
 import { Button } from "components/Button/Button"
 import { getFixedPointAmount, getFloatingPointAmount } from "utils/balance"
 import { useStore } from "state/store"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -24,6 +24,8 @@ import * as xyk from "@galacticcouncil/math-xyk"
 import { useXYKConsts } from "api/xyk"
 import { TShareToken } from "api/assetDetails"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useXYKZodSchema } from "./AddLiquidity.utils"
+import { zodResolver } from "@hookform/resolvers/zod"
 
 type Props = {
   assetId: string
@@ -51,6 +53,8 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
     assetB,
   })
 
+  const zodSchema = useXYKZodSchema(formAssets.assetA.id, formAssets.assetB.id)
+
   const form = useForm<{
     assetA: string
     assetB: string
@@ -64,6 +68,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
       lastUpdated: "assetA",
       amount: "0",
     },
+    resolver: zodSchema ? zodResolver(zodSchema) : undefined,
   })
 
   const spotPrice = useSpotPrice(formAssets.assetA.id, formAssets.assetB.id)
@@ -252,12 +257,6 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
     },
     [formAssets, reserves, form],
   )
-
-  useEffect(() => {
-    return () => {
-      form.reset()
-    }
-  }, [form, form.reset])
 
   return (
     <form

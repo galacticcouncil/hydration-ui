@@ -6,7 +6,7 @@ import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 
 const SContainer = styled.div<{ variant: "warning" | "error" }>`
-  padding: 16px;
+  padding: 12px 14px;
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
@@ -38,7 +38,7 @@ export function Alert(props: {
 
       <div sx={{ flex: "column" }}>
         {typeof props.children === "string" ? (
-          <Text fs={12} lh={16} fw={500}>
+          <Text fs={13} lh={16} fw={500}>
             {props.children}
           </Text>
         ) : (
