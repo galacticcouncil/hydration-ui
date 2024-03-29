@@ -3043,10 +3043,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-0.2.0.tgz#74feacdf94d4846f1a148835f25936b2ddc7bdfd"
   integrity sha512-mznedOeA8d9BQ8kUQ/4O/P6trqTC4FGwvTDGCHJ0O/bgA9iFb+suctbFtyFT3qfNnngR7FSF2Pls1O/SvtNn8g==
 
-"@galacticcouncil/sdk@^1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.2.2.tgz#8d8144db4a4a7a2fc4a333397e5635c6ee965bd0"
-  integrity sha512-grQ6EXHddR9F2HJxl1552mrtLYn9AJio79FKrmHr/j288SeJLv8BK4cLKqbTwkTlV6xiqJI6RB5/DbbPy0g3NQ==
+"@galacticcouncil/sdk@^1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-1.2.3.tgz#a02d9723ea42358bee8d6f87eeece9ae460b8947"
+  integrity sha512-lOIk81y+mhWTq9dUJwDIWIjn3LSpImTDF3LpWzzB4Y30Yhv4yPSjsRzZUJ/VX7PsLIYTbss0YoW0qslZ2dgl+w==
   dependencies:
     "@galacticcouncil/math-lbp" "^0.2.1"
     "@galacticcouncil/math-omnipool" "^0.2.0"
@@ -3067,10 +3067,10 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^1.10.13":
-  version "1.10.13"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.10.13.tgz#3618620874007be2b6eb58bcbe4926ff6037b257"
-  integrity sha512-/gvsRMLe/jPT6PxYTF8py/sBGZHiw0Td5IkgLf3HiiaGJM9mro3jZoYPKbdA2Gfvt6JZBUd+cGmCWDFv9yYj5A==
+"@galacticcouncil/xcm-cfg@^1.10.14":
+  version "1.10.14"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.10.14.tgz#6d2809a307ce403602b18990c2d889a631dbdb1f"
+  integrity sha512-/GAl/tAdBqnUFSuupL49YPMW/T3tzpcbogqy9T6f4wzZ9W0TiO66gl+H6XDYMsRNTe39PaNb748xzNIAIxvYNQ==
 
 "@galacticcouncil/xcm-sdk@^2.3.1":
   version "2.3.1"
@@ -3088,6 +3088,11 @@
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/@graphql-typed-document-node/core/-/core-3.2.0.tgz#5f3d96ec6b2354ad6d8a28bf216a1d97b5426861"
   integrity sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==
+
+"@hookform/resolvers@^3.3.4":
+  version "3.3.4"
+  resolved "https://registry.yarnpkg.com/@hookform/resolvers/-/resolvers-3.3.4.tgz#de9b668c2835eb06892290192de6e2a5c906229b"
+  integrity sha512-o5cgpGOuJYrd+iMKvkttOclgwRW86EsWJZZRC23prf0uU2i48Htq4PuT73AVb9ionFyZrwYEITuOFGF+BydEtQ==
 
 "@humanwhocodes/config-array@^0.11.11":
   version "0.11.11"
