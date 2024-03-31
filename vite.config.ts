@@ -1,13 +1,14 @@
-import { defineConfig, splitVendorChunkPlugin, Plugin } from "vite"
-import react from "@vitejs/plugin-react"
-import wasm from "vite-plugin-wasm"
-import svgr from "vite-plugin-svgr"
-import tsconfigPaths from "vite-tsconfig-paths"
-import fs from "fs/promises"
-import { resolve } from "node:path"
-import { exec } from "child_process"
+import { defineConfig, splitVendorChunkPlugin, Plugin } from "vite";
+import { viteStaticCopy } from "vite-plugin-static-copy";
+import react from "@vitejs/plugin-react";
+import wasm from "vite-plugin-wasm";
+import svgr from "vite-plugin-svgr";
+import tsconfigPaths from "vite-tsconfig-paths";
+import fs from "fs/promises";
+import { resolve } from "node:path";
+import { exec } from "child_process";
 
-import { SEO_METADATA } from "./src/seo.ts"
+import { SEO_METADATA } from "./src/seo.ts";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -20,6 +21,7 @@ export default defineConfig(({ mode }) => {
       esbuildOptions: {
         target: "esnext",
       },
+      exclude: ["@galacticcouncil/sdk"],
     },
     esbuild: {
       logOverride: { "this-is-undefined-in-esm": "silent" },
@@ -36,14 +38,23 @@ export default defineConfig(({ mode }) => {
       wasm(),
       svgr(),
       transformIndexHtml(),
+      mode === "production" &&
+        viteStaticCopy({
+          targets: [
+            {
+              src: "node_modules/@galacticcouncil/sdk/**/*.wasm",
+              dest: "assets/",
+            },
+          ],
+        }),
     ],
-  }
-})
+  };
+});
 
 function transformIndexHtml(
   options: {
-    templatePath?: string
-    indexFileName?: string
+    templatePath?: string;
+    indexFileName?: string;
   } = {},
 ): Plugin {
   const { templatePath, indexFileName } = Object.assign(
@@ -52,38 +63,38 @@ function transformIndexHtml(
       templatePath: "./index.template.html",
     },
     options,
-  )
+  );
 
   return {
     name: "transform-index-html",
     apply: "build",
     config: async () => {
-      const template = await fs.readFile(resolve(__dirname, templatePath))
-      const { index, ...rest } = SEO_METADATA
+      const template = await fs.readFile(resolve(__dirname, templatePath));
+      const { index, ...rest } = SEO_METADATA;
 
       const processFiles = Object.keys(SEO_METADATA).map(async (path) => {
-        const pageMeta = rest[path]
+        const pageMeta = rest[path];
         const metadata = {
           ...index,
           ...pageMeta,
-        }
+        };
 
         const pagePath = resolve(
           __dirname,
           `pages/${path.replace("index", "")}`,
-        )
-        const filePath = `${pagePath}/${indexFileName}`
-        await fs.mkdir(pagePath, { recursive: true })
+        );
+        const filePath = `${pagePath}/${indexFileName}`;
+        await fs.mkdir(pagePath, { recursive: true });
 
         return fs.writeFile(
           filePath,
           template
             .toString()
             .replace(/<%=\s*(\w+)\s*%>/gi, (_match, p1) => metadata[p1] || ""),
-        )
-      })
+        );
+      });
 
-      await Promise.all(processFiles)
+      await Promise.all(processFiles);
       return {
         build: {
           rollupOptions: {
@@ -97,16 +108,16 @@ function transformIndexHtml(
                       ? `pages/${indexFileName}`
                       : `pages/${path}/${indexFileName}`,
                   ),
-                ]
-                return entries
+                ];
+                return entries;
               }),
             ),
           },
         },
-      }
+      };
     },
     closeBundle: () => {
-      exec(`mv -f ./build/pages/* ./build && rm -rf ./pages`)
+      exec(`mv -f ./build/pages/* ./build && rm -rf ./pages`);
     },
-  }
+  };
 }
