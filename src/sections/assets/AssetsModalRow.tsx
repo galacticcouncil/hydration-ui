@@ -6,7 +6,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 import { BN_0 } from "utils/constants"
 import { useDisplayPrice } from "utils/displayAsset"
-import { SAssetRow } from "./AssetsModalRow.styled"
+import { SAssetRow, SCircle } from "./AssetsModalRow.styled"
 import { TAsset } from "api/assetDetails"
 import BN from "bignumber.js"
 import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
@@ -19,6 +19,7 @@ type AssetsModalRowProps = {
   balance: BN
   spotPriceId: string
   onClick?: (asset: NonNullable<TAsset>) => void
+  isActive?: boolean
 }
 
 export const AssetsModalRow = ({
@@ -26,6 +27,7 @@ export const AssetsModalRow = ({
   spotPriceId,
   onClick,
   balance,
+  isActive,
 }: AssetsModalRowProps) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -83,33 +85,41 @@ export const AssetsModalRow = ({
           </Text>
         </div>
       </div>
-      {balance && (
-        <div sx={{ display: "flex", flexDirection: "column", align: "end" }}>
-          <Trans
-            t={t}
-            i18nKey="selectAssets.balance"
-            tOptions={{
-              balance: balance,
-              symbol: asset.symbol,
-              fixedPointScale: asset.decimals,
-              type: "token",
-            }}
-          >
-            <Text color="white" fs={14} lh={18} tAlign="right" />
-          </Trans>
+      <div sx={{ flex: "row", align: "center", gap: 20 }}>
+        {balance && (
+          <div sx={{ display: "flex", flexDirection: "column", align: "end" }}>
+            <Trans
+              t={t}
+              i18nKey="selectAssets.balance"
+              tOptions={{
+                balance: balance,
+                symbol: asset.symbol,
+                fixedPointScale: asset.decimals,
+                type: "token",
+              }}
+            >
+              <Text
+                color={isActive ? "brightBlue300" : "white"}
+                fs={14}
+                lh={18}
+                tAlign="right"
+              />
+            </Trans>
 
-          <DollarAssetValue
-            value={totalDisplay}
-            wrapper={(children) => (
-              <Text color="whiteish500" fs={12} lh={16}>
-                {children}
-              </Text>
-            )}
-          >
-            <DisplayValue value={totalDisplay} />
-          </DollarAssetValue>
-        </div>
-      )}
+            <DollarAssetValue
+              value={totalDisplay}
+              wrapper={(children) => (
+                <Text color="whiteish500" fs={12} lh={16}>
+                  {children}
+                </Text>
+              )}
+            >
+              <DisplayValue value={totalDisplay} />
+            </DollarAssetValue>
+          </div>
+        )}
+        {typeof isActive === "boolean" && <SCircle isActive={isActive} />}
+      </div>
     </SAssetRow>
   )
 }
