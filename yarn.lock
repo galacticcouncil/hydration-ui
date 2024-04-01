@@ -3072,10 +3072,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-1.11.0.tgz#c4c038ec3ebc88fd135fe1f9f23dc3f78c0aed74"
   integrity sha512-FD9hhgFHIxND6g6iKpLPLLLji688Lv4xE4Dlrvk4CygCa/lrv4miQh/MQlIE6xY7wW0/zTFEswhXtdkdkAHqQA==
 
-"@galacticcouncil/xcm-sdk@^2.3.1":
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-2.3.1.tgz#23c52f04c6b45f22eeda0eaa066225b4c209da85"
-  integrity sha512-xJ1TPUv0E9/pQwHJjmD7Freat9Pa5qvP25ap1BlfZTf50Xd78yrcSV17T1sdeXmoSAnPK9lMCelRBVLezxS7Sg==
+"@galacticcouncil/xcm-sdk@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-2.4.0.tgz#bbae45034b060b38402b5438b76be71acf3e0ffc"
+  integrity sha512-hSJZOqw52OmzgaFaIeQwJEKe/+wwjHDb322gtNG0CIW38glNO8vKdbNMHmbhF8dRhZidg+LIWxN2LB5xCNemUQ==
   dependencies:
     "@moonbeam-network/xcm-builder" "1.0.13"
     "@moonbeam-network/xcm-config" "1.3.27"
