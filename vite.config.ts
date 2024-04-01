@@ -1,5 +1,4 @@
 import { defineConfig, splitVendorChunkPlugin, Plugin } from "vite";
-import { viteStaticCopy } from "vite-plugin-static-copy";
 import react from "@vitejs/plugin-react";
 import wasm from "vite-plugin-wasm";
 import svgr from "vite-plugin-svgr";
@@ -21,7 +20,6 @@ export default defineConfig(({ mode }) => {
       esbuildOptions: {
         target: "esnext",
       },
-      exclude: ["@galacticcouncil/sdk"],
     },
     esbuild: {
       logOverride: { "this-is-undefined-in-esm": "silent" },
@@ -38,15 +36,6 @@ export default defineConfig(({ mode }) => {
       wasm(),
       svgr(),
       transformIndexHtml(),
-      mode === "production" &&
-        viteStaticCopy({
-          targets: [
-            {
-              src: "node_modules/@galacticcouncil/sdk/**/*.wasm",
-              dest: "assets/",
-            },
-          ],
-        }),
     ],
   };
 });
