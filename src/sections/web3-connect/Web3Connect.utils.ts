@@ -96,7 +96,14 @@ export const useWalletAccounts = (
       select: (data) => {
         if (!data) return []
 
-        return data.map(mapWalletAccount)
+        return data
+          .filter(({ address }) => {
+            // filter out evm addresses for Talisman
+            return type === WalletProviderType.Talisman
+              ? !isEvmAddress(address)
+              : true
+          })
+          .map(mapWalletAccount)
       },
       ...options,
     },
