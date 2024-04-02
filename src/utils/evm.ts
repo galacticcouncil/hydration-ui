@@ -13,6 +13,8 @@ export const NATIVE_EVM_ASSET_SYMBOL =
   evmChains["hydradx"].nativeCurrency.symbol
 export const NATIVE_EVM_ASSET_DECIMALS =
   evmChains["hydradx"].nativeCurrency.decimals
+export const NATIVE_EVM_ASSET_ID = import.meta.env
+  .VITE_EVM_NATIVE_ASSET_ID as string
 
 export const DISPATCH_ADDRESS = "0x0000000000000000000000000000000000000401"
 

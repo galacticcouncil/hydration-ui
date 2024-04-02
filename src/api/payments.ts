@@ -1,38 +1,52 @@
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
-import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { Maybe, undefinedNoop, normalizeId } from "utils/helpers"
+import { Maybe, isNotNil, identity, undefinedNoop } from "utils/helpers"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { ToastMessage, useStore } from "state/store"
-import { u32 } from "@polkadot/types-codec"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { usePaymentInfo } from "./transaction"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useAcountAssets } from "api/assetDetails"
+import { useMemo } from "react"
+import { uniqBy } from "utils/rx"
+import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
 
-export const getAcceptedCurrency =
-  (api: ApiPromise, id: u32 | string) => async () => {
-    const normalizedId = normalizeId(id)
-    const result =
-      await api.query.multiTransactionPayment.acceptedCurrencies(normalizedId)
+export const getAcceptedCurrency = (api: ApiPromise) => async () => {
+  const dataRaw =
+    await api.query.multiTransactionPayment.acceptedCurrencies.entries()
 
+  const data = dataRaw.map(([key, data]) => {
     return {
-      id: normalizedId,
-      accepted: normalizedId === NATIVE_ASSET_ID || !result.isEmpty,
-      data: result.unwrapOr(null)?.toBigNumber(),
+      id: key.args[0].toString(),
+      accepted: !data.isEmpty,
+      data: data.unwrapOr(null)?.toBigNumber(),
     }
-  }
+  })
 
-export const useAcceptedCurrencies = (ids: Maybe<string | u32>[]) => {
-  const { api } = useRpcProvider()
+  return data
+}
 
-  return useQueries({
-    queries: ids.map((id) => ({
-      queryKey: QUERY_KEYS.acceptedCurrencies(id),
-      queryFn: !!id ? getAcceptedCurrency(api, id) : undefinedNoop,
-      enabled: !!id,
-    })),
+export const useAcceptedCurrencies = (ids: string[]) => {
+  const {
+    api,
+    assets: { native },
+  } = useRpcProvider()
+
+  return useQuery(QUERY_KEYS.acceptedCurrencies, getAcceptedCurrency(api), {
+    select: (assets) => {
+      return ids.map((id) => {
+        const response = assets.find((asset) => asset.id === id)
+
+        return response
+          ? response
+          : id === native.id
+          ? { id, accepted: true, data: undefined }
+          : { id, accepted: false, data: undefined }
+      })
+    },
   })
 }
 
@@ -86,4 +100,52 @@ export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
       enabled: !!address && isLoaded,
     },
   )
+}
+
+export const useAccountFeePaymentAssets = () => {
+  const { assets } = useRpcProvider()
+  const { account } = useAccount()
+  const accountAssets = useAcountAssets(account?.address)
+  const accountFeePaymentAsset = useAccountCurrency(account?.address)
+  const feePaymentAssetId = accountFeePaymentAsset.data
+
+  const allowedFeePaymentAssetsIds = useMemo(() => {
+    if (isEvmAccount(account?.address)) {
+      const evmNativeAssetId = assets.getAsset(NATIVE_EVM_ASSET_ID).id
+      return uniqBy(
+        identity,
+        [evmNativeAssetId, feePaymentAssetId].filter(isNotNil),
+      )
+    }
+
+    const assetIds = accountAssets.map((accountAsset) => accountAsset.asset.id)
+    return uniqBy(identity, [...assetIds, feePaymentAssetId].filter(isNotNil))
+  }, [assets, account?.address, accountAssets, feePaymentAssetId])
+
+  const acceptedFeePaymentAssets = useAcceptedCurrencies(
+    allowedFeePaymentAssetsIds,
+  )
+
+  const data = acceptedFeePaymentAssets?.data ?? []
+
+  const acceptedFeePaymentAssetsIds = data
+    .filter((acceptedFeeAsset) => acceptedFeeAsset?.accepted)
+    .map((acceptedFeeAsset) => acceptedFeeAsset?.id)
+
+  const isLoading =
+    accountFeePaymentAsset.isLoading || acceptedFeePaymentAssets.isLoading
+  const isInitialLoading =
+    accountFeePaymentAsset.isInitialLoading ||
+    acceptedFeePaymentAssets.isInitialLoading
+  const isSuccess =
+    accountFeePaymentAsset.isSuccess && acceptedFeePaymentAssets.isSuccess
+
+  return {
+    acceptedFeePaymentAssetsIds,
+    acceptedFeePaymentAssets,
+    feePaymentAssetId,
+    isLoading,
+    isInitialLoading,
+    isSuccess,
+  }
 }

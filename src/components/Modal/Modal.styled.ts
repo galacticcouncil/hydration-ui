@@ -156,6 +156,10 @@ export const SContent = styled.div<{
     outline: none;
   }
 
+  &:has([data-motion-pop-id]) {
+    overflow: hidden;
+  }
+
   @media ${theme.viewport.gte.sm} {
     top: 10%;
     right: initial;

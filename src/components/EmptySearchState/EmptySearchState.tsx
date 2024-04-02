@@ -3,7 +3,7 @@ import EmptyStateIcon from "assets/icons/EmptySearchIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { useTranslation } from "react-i18next"
 
-export const EmptySearchState = () => {
+export const EmptySearchState = ({ className }: { className?: string }) => {
   const { t } = useTranslation()
 
   return (
@@ -15,6 +15,7 @@ export const EmptySearchState = () => {
         gap: 10,
         py: 50,
       }}
+      className={className}
     >
       <Icon icon={<EmptyStateIcon />} />
       <Text font="FontOver" color="white" css={{ opacity: 0.6 }}>

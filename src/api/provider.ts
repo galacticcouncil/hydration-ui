@@ -1,5 +1,5 @@
 import { WsProvider } from "@polkadot/api"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
@@ -94,11 +94,11 @@ export const useProviderRpcUrlStore = create(
   ),
 )
 
-export const useProviderData = (rpcUrl?: string) => {
+export const useProviderData = (rpcUrl: string) => {
   const displayAsset = useDisplayAssetStore()
 
   return useQuery(
-    QUERY_KEYS.provider(rpcUrl ?? import.meta.env.VITE_PROVIDER_URL),
+    QUERY_KEYS.provider(rpcUrl),
     async ({ queryKey: [_, url] }) => {
       const provider = new WsProvider(url)
 
@@ -112,17 +112,16 @@ export const useProviderData = (rpcUrl?: string) => {
       } = displayAsset
 
       const assets = await getAssets(api)
-
       let stableCoinId: string | undefined
 
       // set USDT as a stable token
-      stableCoinId = assets.assets.tradeAssets.find(
+      stableCoinId = assets.assets.rawTradeAssets.find(
         (asset) => asset.symbol === "USDT",
       )?.id
 
       // set DAI as a stable token if there is no USDT
       if (!stableCoinId) {
-        stableCoinId = assets.assets.tradeAssets.find(
+        stableCoinId = assets.assets.rawTradeAssets.find(
           (asset) => asset.symbol === "DAI",
         )?.id
       }
@@ -146,8 +145,19 @@ export const useProviderData = (rpcUrl?: string) => {
         provider,
       }
     },
-    { staleTime: Infinity, refetchOnWindowFocus: true },
+    { refetchOnWindowFocus: false },
   )
+}
+
+export const useRefetchProviderData = () => {
+  const queryClient = useQueryClient()
+
+  const preference = useProviderRpcUrlStore()
+
+  return () => {
+    const url = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+    url && queryClient.invalidateQueries(QUERY_KEYS.provider(url))
+  }
 }
 
 export const useIndexerUrl = () => {

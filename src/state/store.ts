@@ -35,6 +35,7 @@ export interface TransactionInput {
   overrides?: {
     fee: BigNumber
     currencyId?: string
+    feeExtra?: BigNumber
   }
 }
 

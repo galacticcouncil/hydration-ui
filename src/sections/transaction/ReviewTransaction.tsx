@@ -17,18 +17,22 @@ import { ReviewTransactionEvmTxForm } from "sections/transaction/ReviewTransacti
 export const ReviewTransaction = (props: Transaction) => {
   const { t } = useTranslation()
   const [minimizeModal, setMinimizeModal] = useState(false)
+  const [signError, setSignError] = useState<unknown>()
 
   const {
     sendTx,
     sendEvmTx,
     isLoading,
     isSuccess,
-    isError,
-    error,
+    isError: isSendError,
+    error: sendError,
     data,
     txState,
     reset,
   } = useSendTx()
+
+  const isError = isSendError || !!signError
+  const error = sendError || signError
 
   const modalProps: Partial<ComponentProps<typeof Modal>> =
     isLoading || isSuccess || isError
@@ -69,7 +73,7 @@ export const ReviewTransaction = (props: Transaction) => {
 
   const onReview = () => {
     reset()
-    setMinimizeModal(false)
+    setMinimizeModal(true)
   }
 
   return (
@@ -101,7 +105,11 @@ export const ReviewTransaction = (props: Transaction) => {
         ) : isSuccess ? (
           <ReviewTransactionSuccess onClose={onClose} />
         ) : isError ? (
-          <ReviewTransactionError onClose={onClose} onReview={onReview} />
+          <ReviewTransactionError
+            onClose={onClose}
+            onReview={onReview}
+            error={error}
+          />
         ) : props.tx ? (
           <ReviewTransactionForm
             tx={props.tx}
@@ -118,6 +126,7 @@ export const ReviewTransaction = (props: Transaction) => {
               props.onSubmitted?.()
               sendTx(signed)
             }}
+            onSignError={setSignError}
           />
         ) : props.evmTx ? (
           <ReviewTransactionEvmTxForm

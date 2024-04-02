@@ -8,7 +8,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
 import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
-import { Transaction } from "state/store"
+import { Transaction, useStore } from "state/store"
 import { theme } from "theme"
 import { ReviewTransactionData } from "./ReviewTransactionData"
 import {
@@ -19,7 +19,12 @@ import { ReviewTransactionSummary } from "sections/transaction/ReviewTransaction
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import BN from "bignumber.js"
-import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
+import {
+  NATIVE_EVM_ASSET_ID,
+  NATIVE_EVM_ASSET_SYMBOL,
+  isEvmAccount,
+} from "utils/evm"
+import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -33,6 +38,7 @@ type Props = TxProps & {
     tx: SubmittableExtrinsic<"promise">
   }) => void
   onSigned: (signed: SubmittableExtrinsic<"promise">) => void
+  onSignError?: (error: unknown) => void
 }
 
 export const ReviewTransactionForm: FC<Props> = (props) => {
@@ -40,13 +46,18 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const { account } = useAccount()
   const { setReferralCode } = useReferralCodesStore()
 
+  const { transactions } = useStore()
+
+  const isChangingFeePaymentAsset =
+    !isSetCurrencyExtrinsic(props.tx?.toHuman()) &&
+    transactions?.some(({ tx }) => isSetCurrencyExtrinsic(tx?.toHuman()))
+
   const [tipAmount, setTipAmount] = useState<BN | undefined>(undefined)
 
   const transactionValues = useTransactionValues({
     xcallMeta: props.xcallMeta,
     tx: props.tx,
-    feePaymentId: props.overrides?.currencyId,
-    fee: props.overrides?.fee,
+    overrides: props.overrides,
   })
 
   const {
@@ -70,25 +81,29 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   const signTx = useMutation(
     async () => {
-      const address = props.isProxy ? account?.delegate : account?.address
+      try {
+        const address = props.isProxy ? account?.delegate : account?.address
 
-      if (!address) throw new Error("Missing active account")
-      if (!wallet) throw new Error("Missing wallet")
-      if (!wallet.signer) throw new Error("Missing signer")
+        if (!address) throw new Error("Missing active account")
+        if (!wallet) throw new Error("Missing wallet")
+        if (!wallet.signer) throw new Error("Missing signer")
 
-      if (wallet?.signer instanceof MetaMaskSigner) {
-        const evmTx = await wallet.signer.sendDispatch(tx.method.toHex())
-        return props.onEvmSigned({ evmTx, tx })
+        if (wallet?.signer instanceof MetaMaskSigner) {
+          const evmTx = await wallet.signer.sendDispatch(tx.method.toHex())
+          return props.onEvmSigned({ evmTx, tx })
+        }
+
+        const signature = await tx.signAsync(address, {
+          tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
+          signer: wallet.signer,
+          // defer to polkadot/api to handle nonce w/ regard to mempool
+          nonce: -1,
+        })
+
+        return props.onSigned(signature)
+      } catch (error) {
+        props.onSignError?.(error)
       }
-
-      const signature = await tx.signAsync(address, {
-        tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
-        signer: wallet.signer,
-        // defer to polkadot/api to handle nonce w/ regard to mempool
-        nonce: -1,
-      })
-
-      return props.onSigned(signature)
     },
     {
       onSuccess: () =>
@@ -96,7 +111,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     },
   )
 
-  const isLoading = transactionValues.isLoading || signTx.isLoading
+  const isLoading =
+    transactionValues.isLoading || signTx.isLoading || isChangingFeePaymentAsset
   const hasMultipleFeeAssets =
     props.xcallMeta && props.xcallMeta?.srcChain !== HYDRADX_CHAIN_KEY
       ? false
@@ -104,7 +120,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const isEditPaymentBalance = !isEnoughPaymentBalance && hasMultipleFeeAssets
 
   const isEvmFeePaymentAssetInvalid = isEvmAccount(account?.address)
-    ? feePaymentMeta?.id !== import.meta.env.VITE_EVM_NATIVE_ASSET_ID
+    ? feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
     : false
 
   if (isOpenEditFeePaymentAssetModal) return editFeePaymentAssetModal

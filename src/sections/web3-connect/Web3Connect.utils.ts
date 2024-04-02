@@ -111,22 +111,29 @@ export const useWalletAccounts = (
       select: (data) => {
         if (!data) return []
 
-        return data.map(({ address, name, wallet, genesisHash }) => {
-          const isEvm = isEvmAddress(address)
+        return data
+          .filter(({ address }) => {
+            // filter out evm addresses for Talisman
+            return type === WalletProviderType.Talisman
+              ? !isEvmAddress(address)
+              : true
+          })
+          .map(({ address, name, wallet, genesisHash }) => {
+            const isEvm = isEvmAddress(address)
 
-          const chainInfo = genesisHashToChain(genesisHash)
+            const chainInfo = genesisHashToChain(genesisHash)
 
-          return {
-            address: isEvm ? new H160(address).toAccount() : address,
-            displayAddress: isEvm
-              ? address
-              : safeConvertAddressSS58(address, chainInfo.prefix) || address,
-            genesisHash,
-            name: name ?? "",
-            provider: wallet?.extensionName as WalletProviderType,
-            isExternalWalletConnected: wallet instanceof ExternalWallet,
-          }
-        })
+            return {
+              address: isEvm ? new H160(address).toAccount() : address,
+              displayAddress: isEvm
+                ? address
+                : safeConvertAddressSS58(address, chainInfo.prefix) || address,
+              genesisHash,
+              name: name ?? "",
+              provider: wallet?.extensionName as WalletProviderType,
+              isExternalWalletConnected: wallet instanceof ExternalWallet,
+            }
+          })
       },
       ...options,
     },
