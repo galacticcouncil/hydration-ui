@@ -92,7 +92,7 @@ const ExitFarmsButton = (props: {
       isLoading={exit.isLoading}
       disabled={exit.isLoading || account?.isExternalWalletConnected}
     >
-      <Icon icon={<ExitIcon />} sx={{ color: "red400" }} />
+      <Icon icon={<ExitIcon />} />
       {t("farms.positions.exitFarms.button.label")}
     </Button>
   )

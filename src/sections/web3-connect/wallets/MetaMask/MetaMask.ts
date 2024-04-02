@@ -3,7 +3,11 @@ import MetaMaskLogo from "assets/icons/MetaMask.svg"
 import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
 import { shortenAccountAddress } from "utils/formatting"
 import { noop } from "utils/helpers"
-import { MetaMaskProvider, isMetaMask } from "utils/metamask"
+import {
+  MetaMaskLikeProvider,
+  isMetaMask,
+  isMetaMaskLike,
+} from "utils/metamask"
 
 type ChainSubscriptionFn = (payload: number | null) => void | Promise<void>
 
@@ -21,7 +25,7 @@ export class MetaMask implements Wallet {
     alt: "MetaMask Logo",
   }
 
-  _extension: Required<MetaMaskProvider> | undefined
+  _extension: Required<MetaMaskLikeProvider> | undefined
   _signer: MetaMaskSigner | undefined
 
   onAccountsChanged: SubscriptionFn | undefined
@@ -46,7 +50,7 @@ export class MetaMask implements Wallet {
   }
 
   get installed() {
-    return isMetaMask(window.ethereum)
+    return isMetaMask(window.ethereum) && !isMetaMaskLike(window.ethereum)
   }
 
   get rawExtension() {
@@ -63,9 +67,9 @@ export class MetaMask implements Wallet {
     }
 
     try {
-      if (!isMetaMask(window.ethereum)) return
+      if (!isMetaMask(this.rawExtension)) return
 
-      const metamask = window.ethereum
+      const metamask = this.rawExtension
 
       const addresses = await metamask.request({
         method: "eth_requestAccounts",

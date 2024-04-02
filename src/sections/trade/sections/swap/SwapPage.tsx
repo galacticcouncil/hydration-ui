@@ -11,9 +11,6 @@ import { MakeGenerics, useSearch } from "@tanstack/react-location"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useAccountCurrency } from "api/payments"
-import { isEvmAccount } from "utils/evm"
-import { NATIVE_ASSET_ID } from "utils/api"
 import { useDisplayAssetStore } from "utils/displayAsset"
 
 export const SwapApp = createComponent({
@@ -48,10 +45,9 @@ const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export function SwapPage() {
-  const { api, isLoaded } = useRpcProvider()
+  const { api } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
-  const accountCurrency = useAccountCurrency(isLoaded ? account?.address : "")
   const { stableCoinId } = useDisplayAssetStore()
 
   const preference = useProviderRpcUrlStore()
@@ -96,22 +92,10 @@ export function SwapPage() {
     )
   }
 
-  const assetInDefault =
-    isEvmAccount(account?.address) && accountCurrency.isSuccess
-      ? accountCurrency.data
-      : ""
-
-  const assetOutDefault =
-    isEvmAccount(account?.address) && accountCurrency.isSuccess
-      ? NATIVE_ASSET_ID
-      : ""
-
   const assetIn =
-    search.success && search.data.assetIn ? search.data.assetIn : assetInDefault
+    search.success && search.data.assetIn ? search.data.assetIn : ""
   const assetOut =
-    search.success && search.data.assetOut
-      ? search.data.assetOut
-      : assetOutDefault
+    search.success && search.data.assetOut ? search.data.assetOut : ""
 
   return (
     <SContainer>

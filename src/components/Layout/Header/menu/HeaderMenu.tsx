@@ -46,7 +46,7 @@ export const HeaderMenu = forwardRef<HTMLElement>((_, ref) => {
           (LINKS.allPools === item.href || LINKS.myLiquidity === item.href) &&
           isLoaded
         )
-          return <LiquidityMenuItem item={item} search={search} />
+          return <LiquidityMenuItem item={item} search={search} key={i} />
 
         return (
           <Link
@@ -95,7 +95,7 @@ const LiquidityMenuItem = ({
       to={isOmnipoolPositions ? LINKS.myLiquidity : item.href}
       search={resetSearchParams(search)}
       key={isOmnipoolPositions ? LINKS.myLiquidity : item.href}
-      data-intersect={isOmnipoolPositions ? LINKS.myLiquidity : item.href}
+      data-intersect={item.key}
     >
       {({ isActive }) => (
         <SItem isActive={isActive}>{t(`header.${item.key}`)}</SItem>

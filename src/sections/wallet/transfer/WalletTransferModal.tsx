@@ -68,6 +68,7 @@ export function WalletTransferModal(props: {
             noPadding: true,
             content: (
               <AssetsModalContent
+                withExternal
                 withBonds
                 onSelect={(a) => {
                   setAsset(a.id)

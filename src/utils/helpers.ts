@@ -102,6 +102,8 @@ export function isNotNil<T>(val: T | null | undefined): val is T {
   return !isNil(val)
 }
 
+export const identity = <T>(value: T): T => value
+
 const validKeys = [
   "data",
   "isError",
@@ -215,6 +217,9 @@ export function arraySearch<T extends Record<string, any>>(
       searchableKeys.some((key, index) => {
         const normalizedSearch = normalize(search)
         const tokens = tokenize(normalizedSearch)
+
+        if (!item[key]) return false
+
         const values = tokenize(normalize(item[key].toString()))
 
         return values.some((value) => {

@@ -4,27 +4,27 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
+import Skeleton from "react-loading-skeleton"
 import { useTranslation } from "react-i18next"
 import { useRpcProvider } from "providers/rpcProvider"
-import { AssetsTableData } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { SContainer } from "./WalletAssetsTableDetails.styled"
 import { NATIVE_ASSET_ID } from "utils/api"
+import {
+  AssetsTableData,
+  useLockedValues,
+} from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 
 const chains = Array.from(chainsMap.values())
 
 export const WalletAssetsTableDetails = ({
-  lockedDemocracy,
-  lockedDemocracyDisplay,
-  lockedVesting,
-  lockedVestingDisplay,
-  lockedStaking,
-  lockedStakingDisplay,
   reserved,
   reservedDisplay,
   id,
 }: AssetsTableData) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
+
+  const lockedValues = useLockedValues(id)
 
   const asset = useMemo(() => {
     const assetDetails = assets.getAsset(id)
@@ -59,53 +59,77 @@ export const WalletAssetsTableDetails = ({
         </div>
       )}
       {isNativeAsset && (
-        <div>
+        <div sx={{ flex: "column", align: "start", gap: 4 }}>
           <Text fs={14} lh={14} fw={500} color="basic300">
             {t("wallet.assets.table.details.lockedStaking")}
           </Text>
-          <Text fs={16} lh={22} fw={400} color="white" sx={{ mt: 8 }}>
-            {t("value.token", { value: lockedStaking })}
-          </Text>
-          <Text fs={11} lh={16} fw={500} color="whiteish500" sx={{ mt: 2 }}>
-            <DisplayValue value={lockedStakingDisplay} />
-          </Text>
+          {lockedValues.isLoading ? (
+            <Skeleton height={20} width={50} />
+          ) : (
+            <Text fs={16} lh={22} fw={400} color="white">
+              {t("value.token", { value: lockedValues.data?.lockedStaking })}
+            </Text>
+          )}
+          {lockedValues.isLoading ? (
+            <Skeleton height={16} width={30} />
+          ) : (
+            <Text fs={11} lh={16} fw={500} color="whiteish500">
+              <DisplayValue value={lockedValues.data?.lockedStakingDisplay} />
+            </Text>
+          )}
         </div>
       )}
       {isNativeAsset && (
-        <div>
+        <div sx={{ flex: "column", align: "start", gap: 4 }}>
           <Text fs={14} lh={14} fw={500} color="basic300">
             {t("wallet.assets.table.details.lockedDemocracy")}
           </Text>
-          <Text fs={16} lh={22} fw={400} color="white" sx={{ mt: 8 }}>
-            {t("value.token", { value: lockedDemocracy })}
-          </Text>
-          <Text fs={11} lh={16} fw={500} color="whiteish500" sx={{ mt: 2 }}>
-            <DisplayValue value={lockedDemocracyDisplay} />
-          </Text>
+          {lockedValues.isLoading ? (
+            <Skeleton height={22} width={50} />
+          ) : (
+            <Text fs={16} lh={22} fw={400} color="white">
+              {t("value.token", { value: lockedValues.data?.lockedDemocracy })}
+            </Text>
+          )}
+          {lockedValues.isLoading ? (
+            <Skeleton height={16} width={30} />
+          ) : (
+            <Text fs={11} lh={16} fw={500} color="whiteish500">
+              <DisplayValue value={lockedValues.data?.lockedDemocracyDisplay} />
+            </Text>
+          )}
         </div>
       )}
-      <div>
+      <div sx={{ flex: "column", align: "start", gap: 4 }}>
         <Text fs={14} lh={14} fw={500} color="basic300">
           {t("wallet.assets.table.details.reserved")}
         </Text>
-        <Text fs={16} lh={22} fw={400} color="white" sx={{ mt: 8 }}>
+        <Text fs={16} lh={22} fw={400} color="white">
           {t("value.token", { value: reserved })}
         </Text>
-        <Text fs={11} lh={16} fw={500} color="whiteish500" sx={{ mt: 2 }}>
+        <Text fs={11} lh={16} fw={500} color="whiteish500">
           <DisplayValue value={reservedDisplay} />
         </Text>
       </div>
       {isNativeAsset && (
-        <div>
+        <div sx={{ flex: "column", align: "start", gap: 4 }}>
           <Text fs={14} lh={14} fw={500} color="basic300">
             {t("wallet.assets.table.details.lockedVesting")}
           </Text>
-          <Text fs={16} lh={22} fw={400} color="white" sx={{ mt: 8 }}>
-            {t("value.token", { value: lockedVesting })}
-          </Text>
-          <Text fs={11} lh={16} fw={500} color="whiteish500" sx={{ mt: 2 }}>
-            <DisplayValue value={lockedVestingDisplay} />
-          </Text>
+          {lockedValues.isLoading ? (
+            <Skeleton height={22} width={50} />
+          ) : (
+            <Text fs={16} lh={22} fw={400} color="white">
+              {t("value.token", { value: lockedValues.data?.lockedVesting })}
+            </Text>
+          )}
+          {lockedValues.isLoading ? (
+            <Skeleton height={16} width={30} />
+          ) : (
+            <Text fs={11} lh={16} fw={500} color="whiteish500">
+              <DisplayValue value={lockedValues.data?.lockedVestingDisplay} />
+            </Text>
+          )}
         </div>
       )}
     </SContainer>

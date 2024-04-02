@@ -286,10 +286,7 @@ export const QUERY_KEYS = {
   math: ["@galacticcouncil/math"],
   existentialDeposit: [QUERY_KEY_PREFIX, "existentialDeposit"],
   metadataVersion: ["metadataVersion"],
-  acceptedCurrencies: (address: Maybe<u32 | string>) => [
-    "acceptedCurrencies",
-    address,
-  ],
+  acceptedCurrencies: ["acceptedCurrencies"],
   accountCurrency: (address: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "accountCurrency",
@@ -302,6 +299,7 @@ export const QUERY_KEYS = {
   ],
   polkadotAccounts: ["polkadotAccounts"],
   maxAddLiquidityLimit: ["maxAddLiquidityLimit"],
+  insufficientFee: ["insufficientFee"],
   coingeckoUsd: ["coingeckoUsd"],
   polStats: ["polStats"],
   referendums: (accountAddress?: string) => [
@@ -367,6 +365,11 @@ export const QUERY_KEYS = {
   fee: (assetId?: string) => ["fee", assetId],
   evmTxCost: (data: string) => ["evmTxCost", data],
   evmChainInfo: (address: string) => ["evmChainInfo", address],
+  evmPaymentFee: (txHex: string, address?: string) => [
+    "evmPaymentFee",
+    txHex,
+    address,
+  ],
   referralCodes: (accountAddress?: string) => [
     "referralsCodes",
     accountAddress,
@@ -394,4 +397,10 @@ export const QUERY_KEYS = {
     address?.toString(),
   ],
   yieldFarmCreated: ["yieldFarmCreated"],
+  inactiveYieldFarms: (poolId: AccountId32 | string) => [
+    "inactiveYieldFarms",
+    poolId.toString(),
+  ],
+  externalAssetRegistry: ["externalAssetRegistry"],
+  assetHubAssetRegistry: ["assetHubAssetRegistry"],
 } as const

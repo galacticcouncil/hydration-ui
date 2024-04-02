@@ -10,11 +10,12 @@ import { ReviewReferralCodeWrapper } from "sections/referrals/components/ReviewR
 import { useRegistrationLinkFee } from "api/referrals"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ReviewTransactionAuthorTip } from "sections/transaction/ReviewTransactionAuthorTip"
+import { NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
 
 type ReviewTransactionSummaryProps = {
   tx: SubmittableExtrinsic<"promise">
   transactionValues: ReturnType<typeof useTransactionValues>
-  hasMultipleFeeAssets: boolean
+  editFeePaymentAssetEnabled: boolean
   xcallMeta?: Record<string, string>
   openEditFeePaymentAssetModal: () => void
   onTipChange?: (amount: BN) => void
@@ -25,7 +26,7 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
   tx,
   transactionValues,
   xcallMeta,
-  hasMultipleFeeAssets,
+  editFeePaymentAssetEnabled,
   openEditFeePaymentAssetModal,
   onTipChange,
   referralCode,
@@ -38,6 +39,8 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
     era,
     nonce,
     isNewReferralLink,
+    displayEvmFeePaymentValue,
+    displayFeeExtra,
   } = transactionValues.data || {}
 
   return (
@@ -55,18 +58,40 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
                   },
                 ]
               : []),
+
             {
               label: t("liquidity.reviewTransaction.modal.detail.cost"),
               content: !transactionValues.isLoading ? (
-                <div sx={{ flex: "row", gap: 6, align: "center" }}>
-                  <Text fs={14}>
-                    {t("liquidity.add.modal.row.transactionCostValue", {
-                      amount: displayFeePaymentValue,
-                      symbol: feePaymentMeta?.symbol,
-                      type: "token",
-                    })}
-                  </Text>
-                  {hasMultipleFeeAssets && (
+                <div sx={{ flex: "row", gap: 6, align: "baseline" }}>
+                  <div sx={{ flex: "row", gap: 4 }}>
+                    {displayEvmFeePaymentValue ? (
+                      <Text fs={14}>
+                        {t("liquidity.add.modal.row.transactionCostValue", {
+                          amount: displayEvmFeePaymentValue,
+                          symbol: NATIVE_EVM_ASSET_SYMBOL,
+                          type: "token",
+                        })}
+                      </Text>
+                    ) : (
+                      <Text fs={14}>
+                        {t("liquidity.add.modal.row.transactionCostValue", {
+                          amount: displayFeePaymentValue,
+                          symbol: feePaymentMeta?.symbol,
+                          type: "token",
+                        })}
+                      </Text>
+                    )}
+                    {displayFeeExtra && (
+                      <Text fs={14} color="brightBlue300" tAlign="right">
+                        {t("value.tokenWithSymbol", {
+                          value: displayFeeExtra,
+                          symbol: feePaymentMeta?.symbol,
+                          numberPrefix: "+  ",
+                        })}
+                      </Text>
+                    )}
+                  </div>
+                  {editFeePaymentAssetEnabled && (
                     <div
                       tabIndex={0}
                       role="button"
