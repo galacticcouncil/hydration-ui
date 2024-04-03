@@ -39,10 +39,15 @@ export const useAcceptedCurrencies = (ids: string[]) => {
     assets: { native },
   } = useRpcProvider()
 
-  return useQuery(QUERY_KEYS.acceptedCurrencies, getAcceptedCurrency(api), {
-    select: (assets) => {
+  const query = useQuery(
+    QUERY_KEYS.acceptedCurrencies,
+    getAcceptedCurrency(api),
+  )
+
+  const assets = useMemo(() => {
+    if (query.data) {
       return ids.map((id) => {
-        const response = assets.find((asset) => asset.id === id)
+        const response = query.data.find((asset) => asset.id === id)
 
         return response
           ? response
@@ -50,8 +55,11 @@ export const useAcceptedCurrencies = (ids: string[]) => {
           ? { id, accepted: true, data: undefined }
           : { id, accepted: false, data: undefined }
       })
-    },
-  })
+    }
+    return undefined
+  }, [ids, native.id, query.data])
+
+  return { ...query, data: assets }
 }
 
 export const useSetAsFeePayment = () => {
@@ -177,7 +185,7 @@ export const useTransactionFeeInfo = (
     isOraclePriceNone && currencyMeta ? [currencyMeta.id] : [],
   )
 
-  const assetCurrency = currency.data?.[0].data
+  const assetCurrency = currency.data?.[0]?.data
 
   const spotPriceQuery = useSpotPrice(assets.native.id, currencyMeta?.id)
 

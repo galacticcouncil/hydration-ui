@@ -183,13 +183,11 @@ export const useMaxBalance = (
   const accountCurrency = useAccountCurrency(account?.address)
   const paymentInfo = usePaymentInfo(extrinsic)
   const balanceQuery = useTokenBalance(assetId, account?.address)
-  const oraclePrice = useOraclePrice("1", assetId)
+  const oraclePrice = useOraclePrice(assets.native.id, assetId)
   const isOraclePriceNone = oraclePrice.data?.isNone
 
-  const currency = useAcceptedCurrencies([
-    isOraclePriceNone ? assetId : undefined,
-  ])
-  const assetCurrency = currency?.[0].data?.data
+  const currency = useAcceptedCurrencies(isOraclePriceNone ? [assetId] : [])
+  const assetCurrency = currency.data?.[0]?.data
 
   const balance = balanceQuery.data?.balance ?? BN_0
 
