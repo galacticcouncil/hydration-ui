@@ -1,21 +1,21 @@
 import { SubmittableExtrinsic } from "@polkadot/api/types"
-import { useAcountAssets } from "api/assetDetails"
 import { useTokenBalance } from "api/balances"
 import { useBestNumber } from "api/chain"
 import { useEra } from "api/era"
 import {
-  useAcceptedCurrencies,
-  useAccountCurrency,
+  //useAccountFeePaymentAssets,
   useSetAsFeePayment,
   useTransactionFeeInfo,
 } from "api/payments"
-import { useNextNonce } from "api/transaction"
-import { useTranslation } from "react-i18next"
+import { useSpotPrice } from "api/spotPrice"
+import { useNextNonce, usePaymentInfo } from "api/transaction"
+import BigNumber from "bignumber.js"
+import { Trans, useTranslation } from "react-i18next"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { NATIVE_EVM_ASSET_DECIMALS, isEvmAccount } from "utils/evm"
-import { BN_NAN } from "utils/constants"
+import { BN_1, BN_NAN } from "utils/constants"
 import { useUserReferrer } from "api/referrals"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
@@ -23,25 +23,27 @@ import { useEvmPaymentFee } from "api/evm"
 
 export const useTransactionValues = ({
   xcallMeta,
-  feePaymentId,
+  overrides,
   tx,
 }: {
   xcallMeta?: Record<string, string>
-  feePaymentId?: string
+  overrides?: {
+    currencyId?: string
+    feeExtra?: BigNumber
+    fee: BigNumber
+  }
   tx: SubmittableExtrinsic<"promise">
 }) => {
   const { assets, api, featureFlags } = useRpcProvider()
   const { account } = useAccount()
   const bestNumber = useBestNumber()
 
+  const { fee, currencyId: feePaymentId, feeExtra } = overrides ?? {}
+
   const isEvm = isEvmAccount(account?.address)
   const evmPaymentFee = useEvmPaymentFee(
     tx.method.toHex(),
     isEvm ? account?.address : "",
-  )
-
-  const accountFeePaymentAsset = useAccountCurrency(
-    feePaymentId ? undefined : account?.address,
   )
 
   /* REFERRALS */
@@ -72,15 +74,28 @@ export const useTransactionValues = ({
 
   const isNewReferralLink = tx.method.method === "registerCode"
 
+  const { data: paymentInfo, isLoading: isPaymentInfoLoading } =
+    usePaymentInfo(boundedTx)
+
+  const {
+    acceptedFeePaymentAssetsIds,
+    acceptedFeePaymentAssets,
+    feePaymentAssetId,
+    ...feePaymentAssets
+  } = useAccountFeePaymentAssets()
+
   // fee payment asset which should be displayed on the screen
-  const accountFeePaymentId = feePaymentId ?? accountFeePaymentAsset.data
+  const accountFeePaymentId = feePaymentId ?? feePaymentAssetId
+
+  const spotPrice = useSpotPrice(assets.native.id, accountFeePaymentId)
 
   const feePaymentMeta = accountFeePaymentId
     ? assets.getAsset(accountFeePaymentId)
     : undefined
 
-  const transactioFee = useTransactionFeeInfo(boundedTx, feePaymentId)
+  //const transactioFee = useTransactionFeeInfo(boundedTx, feePaymentId)
 
+  const isSpotPriceNan = spotPrice.data?.spotPrice.isNaN()
   const feeAssetBalance = useTokenBalance(accountFeePaymentId, account?.address)
 
   const nonce = useNextNonce(account?.address)
@@ -91,31 +106,27 @@ export const useTransactionValues = ({
     boundedTx.era.isMortalEra,
   )
 
-  // assets with positive balance on the wallet
-  const accountAssets = useAcountAssets(account?.address)
-
-  const alllowedFeePaymentAssetsIds = isEvmAccount(account?.address)
-    ? [accountFeePaymentId]
-    : [
-        ...(accountAssets.map((accountAsset) => accountAsset.asset.id) ?? []),
-        accountFeePaymentId,
-      ]
-
-  const acceptedFeePaymentAssets = useAcceptedCurrencies([
-    ...alllowedFeePaymentAssetsIds,
-  ])
+  const feePaymentValue = paymentInfo?.partialFee.toBigNumber() ?? BN_NAN
+  const paymentFeeHDX = paymentInfo
+    ? BigNumber(fee ?? paymentInfo.partialFee.toHex()).shiftedBy(
+        -assets.native.decimals,
+      )
+    : null
 
   const isLoading =
+    feePaymentAssets.isInitialLoading ||
     evmPaymentFee.isInitialLoading ||
-    accountFeePaymentAsset.isInitialLoading ||
-    transactioFee.isLoading ||
+    isPaymentInfoLoading ||
     nonce.isLoading ||
-    acceptedFeePaymentAssets.some(
-      (acceptedFeePaymentAsset) => acceptedFeePaymentAsset.isInitialLoading,
-    ) ||
+    acceptedFeePaymentAssets.isInitialLoading ||
     referrer.isInitialLoading
 
-  if (!feePaymentMeta || !feeAssetBalance.data || !accountFeePaymentId)
+  if (
+    !feePaymentMeta ||
+    !feeAssetBalance.data ||
+    !accountFeePaymentId ||
+    !paymentFeeHDX
+  )
     return {
       isLoading,
       data: {
@@ -132,7 +143,39 @@ export const useTransactionValues = ({
       },
     }
 
-  const displayFeePaymentValue = transactioFee.fee
+  let displayFeePaymentValue: BigNumber | undefined
+  let displayFeeExtra: BigNumber | undefined
+
+  if (!isSpotPriceNan) {
+    displayFeePaymentValue = paymentFeeHDX.multipliedBy(
+      spotPrice.data?.spotPrice ?? 1,
+    )
+    displayFeeExtra = feeExtra
+      ? feeExtra
+          .shiftedBy(-assets.native.decimals)
+          .multipliedBy(spotPrice.data?.spotPrice ?? 1)
+      : undefined
+  } else {
+    const accountFeePaymentCurrency = acceptedFeePaymentAssets.find(
+      (acceptedFeePaymentAsset) =>
+        acceptedFeePaymentAsset.id === accountFeePaymentId,
+    )
+
+    const transactionPaymentValue = accountFeePaymentCurrency?.data?.shiftedBy(
+      -feePaymentMeta.decimals,
+    )
+
+    if (transactionPaymentValue) {
+      displayFeePaymentValue = BN_1.div(transactionPaymentValue).multipliedBy(
+        paymentFeeHDX,
+      )
+      displayFeeExtra = feeExtra
+        ? BN_1.div(transactionPaymentValue).multipliedBy(
+            feeExtra.shiftedBy(-assets.native.decimals),
+          )
+        : undefined
+    }
+  }
 
   let isEnoughPaymentBalance
   if (xcallMeta && xcallMeta?.srcChain === "bifrost") {
@@ -147,25 +190,15 @@ export const useTransactionValues = ({
     isEnoughPaymentBalance = feeAssetBalance.data.balance
       .shiftedBy(-feePaymentMeta.decimals)
       .minus(displayFeePaymentValue ?? 0)
+      .minus(displayFeeExtra ?? 0)
       .gt(0)
   }
 
-  const acceptedFeePaymentAssetIds =
-    acceptedFeePaymentAssets
-      .filter((acceptedFeeAsset) => acceptedFeeAsset?.data?.accepted)
-      .map((acceptedFeeAsset) => acceptedFeeAsset?.data?.id) ?? []
-
   let displayEvmFeePaymentValue
-  let evmAcceptedFeePaymentAssetIds: string[] = []
-
-  if (isEvmAccount(account?.address) && evmPaymentFee?.data) {
+  if (isEvm && evmPaymentFee?.data) {
     displayEvmFeePaymentValue = evmPaymentFee.data.shiftedBy(
       -NATIVE_EVM_ASSET_DECIMALS,
     )
-
-    evmAcceptedFeePaymentAssetIds = [
-      assets.getAsset(import.meta.env.VITE_EVM_NATIVE_ASSET_ID).id,
-    ]
   }
 
   return {
@@ -174,11 +207,10 @@ export const useTransactionValues = ({
       isEnoughPaymentBalance,
       displayFeePaymentValue,
       displayEvmFeePaymentValue,
-      feePaymentValue: transactioFee.nativeFee,
+      feePaymentValue,
       feePaymentMeta,
-      acceptedFeePaymentAssets: displayEvmFeePaymentValue?.gt(0)
-        ? evmAcceptedFeePaymentAssetIds
-        : acceptedFeePaymentAssetIds,
+      displayFeeExtra,
+      acceptedFeePaymentAssets: acceptedFeePaymentAssetsIds,
       era,
       nonce: nonce.data,
       isLinkedAccount,
@@ -190,18 +222,12 @@ export const useTransactionValues = ({
 }
 
 export const useEditFeePaymentAsset = (
-  acceptedFeePaymentAssets: ReturnType<
-    typeof useTransactionValues
-  >["data"]["acceptedFeePaymentAssets"],
+  acceptedFeePaymentAssets: string[],
   tx: SubmittableExtrinsic<"promise">,
   feePaymentAssetId?: string,
 ) => {
   const { t } = useTranslation()
   const setFeeAsPayment = useSetAsFeePayment(tx)
-
-  const allowedAssets = acceptedFeePaymentAssets.filter(
-    (id) => id !== feePaymentAssetId,
-  )
 
   const {
     openModal: openEditFeePaymentAssetModal,
@@ -210,7 +236,9 @@ export const useEditFeePaymentAsset = (
   } = useAssetsModal({
     title: t("liquidity.reviewTransaction.modal.selectAsset"),
     hideInactiveAssets: true,
-    allowedAssets,
+    confirmRequired: true,
+    defaultSelectedAsssetId: feePaymentAssetId,
+    allowedAssets: acceptedFeePaymentAssets,
     onSelect: (asset) => setFeeAsPayment(asset.id),
   })
 

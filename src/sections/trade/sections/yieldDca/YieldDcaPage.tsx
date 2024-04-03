@@ -40,6 +40,7 @@ export function YieldDcaPage() {
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
     const { transaction, meta } = e.detail
     const { amountInFrom, assetIn } = meta ?? {}
+
     await createTransaction(
       {
         tx: api.tx(transaction.hex),

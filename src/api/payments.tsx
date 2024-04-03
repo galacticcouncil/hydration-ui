@@ -1,96 +1,77 @@
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
-import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
-import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { Maybe, undefinedNoop, normalizeId } from "utils/helpers"
+import { Maybe, isNotNil, identity, undefinedNoop } from "utils/helpers"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { ToastMessage, useStore } from "state/store"
-import { u32 } from "@polkadot/types-codec"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { usePaymentInfo } from "./transaction"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useSpotPrice } from "./spotPrice"
-import { useOraclePrice } from "./farms"
-import { BN_1, BN_NAN } from "utils/constants"
-import { TOAST_MESSAGES } from "state/toasts"
-import { Trans, useTranslation } from "react-i18next"
+import { useAcountAssets } from "api/assetDetails"
+import { useMemo } from "react"
+import { uniqBy } from "utils/rx"
+import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
 
-export const getAcceptedCurrency =
-  (api: ApiPromise, id: u32 | string) => async () => {
-    const normalizedId = normalizeId(id)
-    const result =
-      await api.query.multiTransactionPayment.acceptedCurrencies(normalizedId)
+export const getAcceptedCurrency = (api: ApiPromise) => async () => {
+  const dataRaw =
+    await api.query.multiTransactionPayment.acceptedCurrencies.entries()
 
+  const data = dataRaw.map(([key, data]) => {
     return {
-      id: normalizedId,
-      accepted: normalizedId === NATIVE_ASSET_ID || !result.isEmpty,
-      data: result.unwrapOr(null)?.toBigNumber(),
+      id: key.args[0].toString(),
+      accepted: !data.isEmpty,
+      data: data.unwrapOr(null)?.toBigNumber(),
     }
-  }
+  })
 
-export const useAcceptedCurrencies = (ids: Maybe<string | u32>[]) => {
-  const { api } = useRpcProvider()
+  return data
+}
 
-  return useQueries({
-    queries: ids.map((id) => ({
-      queryKey: QUERY_KEYS.acceptedCurrencies(id),
-      queryFn: !!id ? getAcceptedCurrency(api, id) : undefinedNoop,
-      enabled: !!id,
-    })),
+export const useAcceptedCurrencies = (ids: string[]) => {
+  const {
+    api,
+    assets: { native },
+  } = useRpcProvider()
+
+  return useQuery(QUERY_KEYS.acceptedCurrencies, getAcceptedCurrency(api), {
+    select: (assets) => {
+      return ids.map((id) => {
+        const response = assets.find((asset) => asset.id === id)
+
+        return response
+          ? response
+          : id === native.id
+          ? { id, accepted: true, data: undefined }
+          : { id, accepted: false, data: undefined }
+      })
+    },
   })
 }
 
-export const useSetAsFeePayment = (tx?: SubmittableExtrinsic) => {
-  const { t } = useTranslation()
-  const { api, assets } = useRpcProvider()
+export const useSetAsFeePayment = () => {
+  const { api } = useRpcProvider()
   const { account } = useAccount()
-  const { createTransaction, cancelTransaction, transactions } = useStore()
+  const { createTransaction } = useStore()
   const queryClient = useQueryClient()
+  const { data: paymentInfoData } = usePaymentInfo(
+    api.tx.balances.transferKeepAlive("", "0"),
+  )
 
-  return async (tokenId: string) => {
-    if (!tokenId) return
-
-    const isSetCurrency = tx?.method.method === "setCurrency"
-
-    if (isSetCurrency) {
-      const currenctTransaction = transactions?.[0]
-
-      if (currenctTransaction) {
-        cancelTransaction(currenctTransaction.id)
-      }
-    }
-
-    const { symbol } = assets.getAsset(tokenId)
-
-    const toast = TOAST_MESSAGES.reduce((memo, type) => {
-      const msType = type === "onError" ? "onLoading" : type
-      memo[type] = (
-        <Trans
-          t={t}
-          i18nKey={`wallet.assets.table.actions.payment.toast.${msType}`}
-          tOptions={{
-            asset: symbol,
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      )
-      return memo
-    }, {} as ToastMessage)
+  return async (tokenId?: string, toast?: ToastMessage) => {
+    if (!(tokenId && paymentInfoData)) return
 
     const transaction = await createTransaction(
       {
         tx: api.tx.multiTransactionPayment.setCurrency(tokenId),
         overrides: {
+          fee: new BigNumber(paymentInfoData.partialFee.toHex()),
           currencyId: tokenId,
         },
       },
-      { toast, onBack: () => {} },
+      { toast },
     )
-
     if (transaction.isError) return
     await queryClient.refetchQueries({
       queryKey: QUERY_KEYS.accountCurrency(account?.address),
@@ -121,57 +102,50 @@ export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
   )
 }
 
-export const useTransactionFeeInfo = (
-  extrinsic: SubmittableExtrinsic,
-  customFeeId?: string,
-) => {
+export const useAccountFeePaymentAssets = () => {
   const { assets } = useRpcProvider()
   const { account } = useAccount()
+  const accountAssets = useAcountAssets(account?.address)
+  const accountFeePaymentAsset = useAccountCurrency(account?.address)
+  const feePaymentAssetId = accountFeePaymentAsset.data
 
-  const accountCurrency = useAccountCurrency(account?.address)
-  const paymentInfo = usePaymentInfo(extrinsic)
+  const allowedFeePaymentAssetsIds = useMemo(() => {
+    if (isEvmAccount(account?.address)) {
+      const evmNativeAssetId = assets.getAsset(NATIVE_EVM_ASSET_ID).id
+      return uniqBy(
+        identity,
+        [evmNativeAssetId, feePaymentAssetId].filter(isNotNil),
+      )
+    }
 
-  const currencyMeta = customFeeId
-    ? assets.getAsset(customFeeId)
-    : accountCurrency.data
-    ? assets.getAsset(accountCurrency.data)
-    : undefined
+    const assetIds = accountAssets.map((accountAsset) => accountAsset.asset.id)
+    return uniqBy(identity, [...assetIds, feePaymentAssetId].filter(isNotNil))
+  }, [assets, account?.address, accountAssets, feePaymentAssetId])
 
-  const oraclePrice = useOraclePrice("1", currencyMeta?.id)
-  const isOraclePriceNone = oraclePrice.data?.isNone
+  const acceptedFeePaymentAssets = useAcceptedCurrencies(
+    allowedFeePaymentAssetsIds,
+  )
 
-  const currency = useAcceptedCurrencies([
-    isOraclePriceNone ? currencyMeta?.id : undefined,
-  ])
+  const data = acceptedFeePaymentAssets?.data ?? []
 
-  const assetCurrency = currency?.[0].data?.data
+  const acceptedFeePaymentAssetsIds = data
+    .filter((acceptedFeeAsset) => acceptedFeeAsset?.accepted)
+    .map((acceptedFeeAsset) => acceptedFeeAsset?.id)
 
-  const spotPriceQuery = useSpotPrice(assets.native.id, currencyMeta?.id)
-
-  let spotPrice: BigNumber
-
-  if (assetCurrency) {
-    spotPrice = BN_1.shiftedBy(assets.native.decimals)
-      .times(assetCurrency.toString())
-      .shiftedBy(-18)
-      .shiftedBy(-(currencyMeta?.decimals ?? 0))
-  } else {
-    spotPrice = spotPriceQuery.data?.spotPrice ?? BN_1
-  }
-
-  const nativeFee = paymentInfo.data?.partialFee.toBigNumber()
-
-  const fee = nativeFee
-    ? nativeFee.shiftedBy(-assets.native.decimals).times(spotPrice)
-    : undefined
+  const isLoading =
+    accountFeePaymentAsset.isLoading || acceptedFeePaymentAssets.isLoading
+  const isInitialLoading =
+    accountFeePaymentAsset.isInitialLoading ||
+    acceptedFeePaymentAssets.isInitialLoading
+  const isSuccess =
+    accountFeePaymentAsset.isSuccess && acceptedFeePaymentAssets.isSuccess
 
   return {
-    isLoading:
-      accountCurrency.isInitialLoading ||
-      paymentInfo.isInitialLoading ||
-      spotPriceQuery.isInitialLoading,
-    fee,
-    feeSymbol: currencyMeta?.symbol,
-    nativeFee: nativeFee ?? BN_NAN,
+    acceptedFeePaymentAssetsIds,
+    acceptedFeePaymentAssets,
+    feePaymentAssetId,
+    isLoading,
+    isInitialLoading,
+    isSuccess,
   }
 }

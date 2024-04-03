@@ -61,6 +61,10 @@ function isTxExtrinsic(x: AnyJson): x is TxExtrinsic {
   )
 }
 
+export function isSetCurrencyExtrinsic(tx?: AnyJson) {
+  return isTxExtrinsic(tx) && tx.method.method === "setCurrency"
+}
+
 export function getTransactionJSON(tx: SubmittableExtrinsic<"promise">) {
   const txEx = tx.toHuman()
   const res = isTxExtrinsic(txEx) ? getTxHuman(txEx.method) : null

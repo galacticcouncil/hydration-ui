@@ -12,7 +12,7 @@ import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTrans
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useStore } from "state/store"
 import { theme } from "theme"
-import { BN_0, BN_10 } from "utils/constants"
+import { BN_0, BN_1, BN_10 } from "utils/constants"
 import {
   getChainSpecificAddress,
   safeConvertAddressSS58,
@@ -29,6 +29,9 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { H160, safeConvertAddressH160 } from "utils/evm"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { TransferMethod } from "./WalletTransferSectionOnchain.utils"
+import { useInsufficientFee } from "api/consts"
+import { Text } from "components/Typography/Text/Text"
+import { useSpotPrice } from "api/spotPrice"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -82,7 +85,11 @@ export function WalletTransferSectionOnchain({
     tranferExtrinsic(balance, balance, ""),
   )
 
+  const insufficientFee = useInsufficientFee(asset, form.watch("dest"))
+
   const feeInfo = useTransactionFeeInfo(tranferExtrinsic(amount, balance, ""))
+
+  const spotPrice = useSpotPrice(assets.native.id, feeInfo.feeId)
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (assetMeta.decimals == null) throw new Error("Missing asset meta")
@@ -95,6 +102,13 @@ export function WalletTransferSectionOnchain({
     return await createTransaction(
       {
         tx: tranferExtrinsic(amount, balanceInfo.maxBalance, normalizedDest),
+        overrides: insufficientFee
+          ? {
+              fee: feeInfo.nativeFee,
+              feeExtra: insufficientFee.value,
+              currencyId: feeInfo.feeId,
+            }
+          : undefined,
       },
       {
         onClose,
@@ -155,6 +169,15 @@ export function WalletTransferSectionOnchain({
       },
     )
   }
+
+  const basicFeeComp = (
+    <Text fs={14} color="white" tAlign="right">
+      {t("value.tokenWithSymbol", {
+        value: feeInfo.fee,
+        symbol: feeInfo?.feeSymbol,
+      })}
+    </Text>
+  )
 
   return (
     <form
@@ -278,19 +301,43 @@ export function WalletTransferSectionOnchain({
             />
           )}
         />
-        {asset !== "0" && (
-          <Alert variant="warning" css={{ marginTop: 22 }}>
-            {t("wallet.assets.transfer.warning.nonNative")}
-          </Alert>
-        )}
         <SummaryRow
           label={t("wallet.assets.transfer.transaction_cost")}
           isLoading={feeInfo.isLoading}
-          content={t("value.tokenWithSymbol", {
-            value: feeInfo.fee,
-            symbol: feeInfo?.feeSymbol,
-          })}
+          content={
+            insufficientFee ? (
+              <div sx={{ flex: "row", gap: 4 }}>
+                {basicFeeComp}
+                <Text fs={14} color="brightBlue300" tAlign="right">
+                  {t("value.tokenWithSymbol", {
+                    value: insufficientFee.displayValue.multipliedBy(
+                      spotPrice.data?.spotPrice ?? BN_1,
+                    ),
+                    symbol: feeInfo.feeSymbol,
+                    numberPrefix: "+  ",
+                  })}
+                </Text>
+              </div>
+            ) : (
+              basicFeeComp
+            )
+          }
         />
+        {asset !== "0" && (
+          <Alert variant="warning">
+            {t("wallet.assets.transfer.warning.nonNative")}
+          </Alert>
+        )}
+        {insufficientFee && (
+          <Alert variant="info">
+            {t("wallet.assets.transfer.warning.insufficient", {
+              value: insufficientFee.displayValue.multipliedBy(
+                spotPrice.data?.spotPrice ?? BN_1,
+              ),
+              symbol: feeInfo.feeSymbol,
+            })}
+          </Alert>
+        )}
       </div>
       <div>
         <Separator color="darkBlue401" sx={{ mt: 31 }} />

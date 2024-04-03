@@ -336,6 +336,7 @@ export const PlaceOrder = ({
               <AssetsModalContent
                 allAssets
                 withBonds
+                withExternal
                 onSelect={(asset) => {
                   setAIn(asset.id)
                   paginateTo(0)
@@ -350,6 +351,7 @@ export const PlaceOrder = ({
             content: (
               <AssetsModalContent
                 withBonds
+                withExternal
                 onSelect={(asset) => {
                   form.trigger()
                   setAOut(asset.id)
