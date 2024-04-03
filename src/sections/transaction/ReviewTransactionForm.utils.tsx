@@ -89,8 +89,6 @@ export const useTransactionValues = ({
     ? assets.getAsset(accountFeePaymentId)
     : undefined
 
-  //const transactioFee = useTransactionFeeInfo(boundedTx, feePaymentId)
-
   const isSpotPriceNan = spotPrice.data?.spotPrice.isNaN()
   const feeAssetBalance = useTokenBalance(accountFeePaymentId, account?.address)
 
@@ -115,7 +113,8 @@ export const useTransactionValues = ({
     isPaymentInfoLoading ||
     nonce.isLoading ||
     acceptedFeePaymentAssets.isInitialLoading ||
-    referrer.isInitialLoading
+    referrer.isInitialLoading ||
+    spotPrice.isInitialLoading
 
   if (
     !feePaymentMeta ||
