@@ -19,6 +19,7 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
+import { positive, required } from "utils/validators"
 
 export const useZodSchema = (assetId: string) => {
   const { t } = useTranslation()
@@ -63,11 +64,8 @@ export const useZodSchema = (assetId: string) => {
     .shiftedBy(-decimals)
 
   return z.object({
-    amount: z
-      .string({ required_error: t("error.required") })
-      .refine((value) => !BigNumber(value).isNaN(), {
-        message: t("error.validNumber"),
-      })
+    amount: required
+      .pipe(positive)
       .refine(
         (value) =>
           assetBalance.balance.gte(BigNumber(value).shiftedBy(decimals)),
@@ -140,34 +138,24 @@ export const useXYKZodSchema = (assetAId: string, assetBId: string) => {
     return undefined
 
   return z.object({
-    assetA: z
-      .string({ required_error: t("error.required") })
-      .refine((value) => !BigNumber(value).isNaN(), {
-        message: t("error.validNumber"),
-      })
-      .refine(
-        (value) => {
-          const { decimals } = assets.getAsset(assetAId)
-          return assetABalance.balance.gte(BigNumber(value).shiftedBy(decimals))
-        },
-        {
-          message: t("liquidity.add.modal.validation.notEnoughBalance"),
-        },
-      ),
-    assetB: z
-      .string({ required_error: t("error.required") })
-      .refine((value) => !BigNumber(value).isNaN(), {
-        message: t("error.validNumber"),
-      })
-      .refine(
-        (value) => {
-          const { decimals } = assets.getAsset(assetBId)
-          return assetBBalance.balance.gte(BigNumber(value).shiftedBy(decimals))
-        },
-        {
-          message: t("liquidity.add.modal.validation.notEnoughBalance"),
-        },
-      ),
+    assetA: required.pipe(positive).refine(
+      (value) => {
+        const { decimals } = assets.getAsset(assetAId)
+        return assetABalance.balance.gte(BigNumber(value).shiftedBy(decimals))
+      },
+      {
+        message: t("liquidity.add.modal.validation.notEnoughBalance"),
+      },
+    ),
+    assetB: required.pipe(positive).refine(
+      (value) => {
+        const { decimals } = assets.getAsset(assetBId)
+        return assetBBalance.balance.gte(BigNumber(value).shiftedBy(decimals))
+      },
+      {
+        message: t("liquidity.add.modal.validation.notEnoughBalance"),
+      },
+    ),
   })
 }
 
