@@ -5,7 +5,6 @@ export const SAssetRow = styled.div`
   display: flex;
   justify-content: space-between;
 
-  background: rgba(${theme.rgbColors.white}, 0.03);
   border-bottom: 1px solid ${theme.colors.darkBlue401};
 
   padding: 17px 12px;
@@ -23,5 +22,25 @@ export const SAssetRow = styled.div`
 
   &:active {
     background: rgba(${theme.rgbColors.white}, 0.07);
+  }
+`
+
+export const SCircle = styled.div<{ isActive: boolean }>`
+  position: relative;
+
+  width: 14px;
+  height: 14px;
+
+  border-radius: 50%;
+  border: 1px solid ${theme.colors.darkBlue400};
+
+  &::before {
+    display: ${({ isActive }) => (isActive ? "block" : "none")};
+    content: "";
+    position: absolute;
+    inset: 1px;
+
+    background-color: ${theme.colors.brightBlue700};
+    border-radius: 50%;
   }
 `

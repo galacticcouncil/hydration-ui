@@ -5,20 +5,20 @@ import {
 } from "@ethersproject/providers"
 import { evmChains } from "@galacticcouncil/xcm-sdk"
 import { DISPATCH_ADDRESS } from "utils/evm"
-import { MetaMaskProvider, requestNetworkSwitch } from "utils/metamask"
+import { MetaMaskLikeProvider, requestNetworkSwitch } from "utils/metamask"
 
 export class MetaMaskSigner {
   address: string
-  provider: MetaMaskProvider
+  provider: MetaMaskLikeProvider
   signer: JsonRpcSigner
 
-  constructor(address: string, provider: MetaMaskProvider) {
+  constructor(address: string, provider: MetaMaskLikeProvider) {
     this.address = address
     this.provider = provider
     this.signer = this.getSigner(provider)
   }
 
-  getSigner(provider: MetaMaskProvider) {
+  getSigner(provider: MetaMaskLikeProvider) {
     return new Web3Provider(provider).getSigner()
   }
 

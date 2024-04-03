@@ -112,7 +112,6 @@ export const useProviderData = (rpcUrl: string) => {
       } = displayAsset
 
       const assets = await getAssets(api)
-
       let stableCoinId: string | undefined
 
       // set USDT as a stable token
@@ -156,8 +155,8 @@ export const useRefetchProviderData = () => {
   const preference = useProviderRpcUrlStore()
 
   return () => {
-    preference.rpcUrl &&
-      queryClient.invalidateQueries(QUERY_KEYS.provider(preference.rpcUrl))
+    const url = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+    url && queryClient.invalidateQueries(QUERY_KEYS.provider(url))
   }
 }
 
