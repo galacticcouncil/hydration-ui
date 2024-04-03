@@ -144,16 +144,16 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   let btnText = t("liquidity.reviewTransaction.modal.confirmButton")
 
-  if (isEditPaymentBalance || isEvmFeePaymentAssetInvalid) {
+  if (shouldOpenPolkaJSUrl) {
+    btnText = t(
+      "liquidity.reviewTransaction.modal.confirmButton.openPolkadotJS",
+    )
+  } else if (isEditPaymentBalance || isEvmFeePaymentAssetInvalid) {
     btnText = t(
       "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance",
     )
   } else if (signTx.isLoading) {
     btnText = t("liquidity.reviewTransaction.modal.confirmButton.loading")
-  } else if (shouldOpenPolkaJSUrl) {
-    btnText = t(
-      "liquidity.reviewTransaction.modal.confirmButton.openPolkadotJS",
-    )
   }
 
   const isTippingEnabled = props.xcallMeta
@@ -212,7 +212,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   }
                   onClick={onConfirmClick}
                 />
-                {isEvmFeePaymentAssetInvalid && (
+                {!shouldOpenPolkaJSUrl && isEvmFeePaymentAssetInvalid && (
                   <Text fs={16} color="pink600">
                     {t(
                       "liquidity.reviewTransaction.modal.confirmButton.invalidEvmPaymentAsset.msg",
