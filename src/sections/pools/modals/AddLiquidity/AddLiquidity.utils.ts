@@ -19,7 +19,7 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
-import { positive, required } from "utils/validators"
+import { maxBalance, positive, required } from "utils/validators"
 
 export const useZodSchema = (assetId: string) => {
   const { t } = useTranslation()
@@ -66,13 +66,7 @@ export const useZodSchema = (assetId: string) => {
   return z.object({
     amount: required
       .pipe(positive)
-      .refine(
-        (value) =>
-          assetBalance.balance.gte(BigNumber(value).shiftedBy(decimals)),
-        {
-          message: t("liquidity.add.modal.validation.notEnoughBalance"),
-        },
-      )
+      .pipe(maxBalance(assetBalance.balance, decimals))
       .refine(
         (value) => BigNumber(value).shiftedBy(decimals).gte(minPoolLiquidity),
         {
@@ -127,35 +121,25 @@ export const useZodSchema = (assetId: string) => {
 export const useXYKZodSchema = (assetAId: string, assetBId: string) => {
   const { account } = useAccount()
   const { assets } = useRpcProvider()
-  const { t } = useTranslation()
 
   const [{ data: assetABalance }, { data: assetBBalance }] = useTokensBalances(
     [assetAId, assetBId],
     account?.address,
   )
 
+  const [assetAMeta, assetBMeta] = assets.getAssets([assetAId, assetBId])
+
   if (assetABalance === undefined || assetBBalance === undefined)
     return undefined
 
   return z.object({
-    assetA: required.pipe(positive).refine(
-      (value) => {
-        const { decimals } = assets.getAsset(assetAId)
-        return assetABalance.balance.gte(BigNumber(value).shiftedBy(decimals))
-      },
-      {
-        message: t("liquidity.add.modal.validation.notEnoughBalance"),
-      },
-    ),
-    assetB: required.pipe(positive).refine(
-      (value) => {
-        const { decimals } = assets.getAsset(assetBId)
-        return assetBBalance.balance.gte(BigNumber(value).shiftedBy(decimals))
-      },
-      {
-        message: t("liquidity.add.modal.validation.notEnoughBalance"),
-      },
-    ),
+    assetA: required
+      .pipe(positive)
+      .pipe(maxBalance(assetABalance.balance, assetAMeta.decimals)),
+
+    assetB: required
+      .pipe(positive)
+      .pipe(maxBalance(assetBBalance.balance, assetBMeta.decimals)),
   })
 }
 
@@ -191,4 +175,13 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
   }, [omnipoolBalance, assetValue, ommipoolAsset, assetMeta])
 
   return { calculatedShares, spotPrice, omnipoolFee, assetMeta }
+}
+
+export const getXYKPoolShare = (
+  total: BigNumber | undefined,
+  add: BigNumber | undefined,
+) => {
+  if (!total || !add) return undefined
+
+  return add.div(total.plus(add)).multipliedBy(100)
 }

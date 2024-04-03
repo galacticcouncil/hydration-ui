@@ -14,12 +14,10 @@ import { getFixedPointAmount } from "utils/balance"
 import { useAddLiquidity, useZodSchema } from "./AddLiquidity.utils"
 import { useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { Alert } from "components/Alert/Alert"
+import { useRefetchPositions } from "sections/pools/PoolsPage.utils"
 
 type Props = {
   assetId: string
@@ -34,9 +32,14 @@ export const AddLiquidityForm = ({
   onAssetOpen,
   initialAmount,
 }: Props) => {
-  const queryClient = useQueryClient()
-  const { account } = useAccount()
+  const {
+    api,
+    assets: { native },
+  } = useRpcProvider()
+  const { createTransaction } = useStore()
   const { t } = useTranslation()
+
+  const refetch = useRefetchPositions()
 
   const zodSchema = useZodSchema(assetId)
 
@@ -46,18 +49,10 @@ export const AddLiquidityForm = ({
     resolver: zodSchema ? zodResolver(zodSchema) : undefined,
   })
 
-  const amountIn = form.watch("amount")
-
-  const [debouncedAmount] = useDebouncedValue(amountIn, 300)
+  const [debouncedAmount] = useDebouncedValue(form.watch("amount"), 300)
 
   const { calculatedShares, spotPrice, omnipoolFee, assetMeta } =
     useAddLiquidity(assetId, debouncedAmount)
-
-  const {
-    api,
-    assets: { native },
-  } = useRpcProvider()
-  const { createTransaction } = useStore()
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (assetMeta.decimals == null) throw new Error("Missing asset meta")
@@ -70,11 +65,7 @@ export const AddLiquidityForm = ({
     return await createTransaction(
       { tx: api.tx.omnipool.addLiquidity(assetId, amount) },
       {
-        onSuccess: () => {
-          queryClient.refetchQueries(
-            QUERY_KEYS.accountOmnipoolPositions(account?.address),
-          )
-        },
+        onSuccess: () => refetch(),
         onSubmitted: () => {
           onClose()
           form.reset()

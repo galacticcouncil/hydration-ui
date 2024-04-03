@@ -16,7 +16,7 @@ import { encodeAddress, blake2AsHex } from "@polkadot/util-crypto"
 import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 import { useAccountBalances } from "api/accountBalances"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useQueries, useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { isNotNil, undefinedNoop } from "utils/helpers"
 import { ApiPromise } from "@polkadot/api"
@@ -144,6 +144,17 @@ export const useAccountOmnipoolPositions = (givenAddress?: string) => {
       : undefinedNoop,
     { enabled: !!address },
   )
+}
+
+export const useRefetchPositions = () => {
+  const queryClient = useQueryClient()
+  const { account } = useAccount()
+
+  return () => {
+    queryClient.refetchQueries(
+      QUERY_KEYS.accountOmnipoolPositions(account?.address),
+    )
+  }
 }
 
 export const useAccountMiningPositions = () => {
