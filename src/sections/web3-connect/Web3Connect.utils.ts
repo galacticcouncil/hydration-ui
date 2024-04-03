@@ -231,14 +231,19 @@ export const useEnableWallet = (
       onSuccess: (...args) => {
         const [data] = args
         if (data?.length) {
-          const addresses = data.map((account) => {
-            const { displayAddress, name, provider } = mapWalletAccount(account)
-            return {
-              address: displayAddress,
-              name,
-              provider,
-            }
-          })
+          const addresses = data
+            .map((account) => {
+              const { displayAddress, name, provider } =
+                mapWalletAccount(account)
+              return {
+                address: displayAddress,
+                name,
+                provider,
+              }
+            })
+            .filter(
+              ({ provider }) => provider !== WalletProviderType.ExternalWallet,
+            )
           addToAddressBook(addresses)
         }
         options?.onSuccess?.(...args)
