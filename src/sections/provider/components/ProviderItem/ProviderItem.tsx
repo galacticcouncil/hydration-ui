@@ -9,10 +9,10 @@ import IconEdit from "assets/icons/IconEdit.svg?react"
 import { useBestNumber } from "api/chain"
 import { ProviderStatus } from "sections/provider/ProviderStatus"
 import { useEffect, useState } from "react"
-import { WsProvider } from "@polkadot/rpc-provider"
 import { u32, u64 } from "@polkadot/types"
 import { ProviderItemEdit } from "sections/provider/components/ProviderItemEdit/ProviderItemEdit"
 import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
+import { connectWsProvider } from "sections/provider/ProviderSelectModal.utils"
 
 type ProviderItemProps = {
   name: string
@@ -150,38 +150,45 @@ const ProviderSelectItemExternal = ({
 
   useEffect(() => {
     const rpc = url
-    const provider = new WsProvider(rpc)
 
-    let cancel: () => void
+    const getProvider = async () => {
+      try {
+        const provider = await connectWsProvider(rpc)
 
-    async function load() {
-      const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(provider.endpoint)
+        let cancel: () => void
 
-      async function onNewBlock() {
-        const [parachain, timestamp] = await Promise.all([
-          api.derive.chain.bestNumber(),
-          api.query.timestamp.now(),
-        ])
+        async function load() {
+          const apiPool = SubstrateApis.getInstance()
 
-        setBestNumberState({
-          parachainBlockNumber: parachain,
-          timestamp: timestamp,
-        })
-      }
+          const api = await apiPool.api(provider.endpoint)
+          async function onNewBlock() {
+            const [parachain, timestamp] = await Promise.all([
+              api.derive.chain.bestNumber(),
+              api.query.timestamp.now(),
+            ])
 
-      api.on("connected", onNewBlock)
-      api.rpc.chain
-        .subscribeNewHeads(onNewBlock)
-        .then((newCancel) => (cancel = newCancel))
+            setBestNumberState({
+              parachainBlockNumber: parachain,
+              timestamp: timestamp,
+            })
+          }
+
+          api.on("connected", onNewBlock)
+          api.rpc.chain
+            .subscribeNewHeads(onNewBlock)
+            .then((newCancel) => (cancel = newCancel))
+        }
+
+        load()
+
+        return () => {
+          cancel?.()
+          provider.disconnect()
+        }
+      } catch (error) {}
     }
 
-    load()
-
-    return () => {
-      cancel?.()
-      provider.disconnect()
-    }
+    getProvider()
   }, [url])
 
   return (
