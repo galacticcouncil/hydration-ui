@@ -2,11 +2,7 @@ import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { useTokenBalance } from "api/balances"
 import { useBestNumber } from "api/chain"
 import { useEra } from "api/era"
-import {
-  //useAccountFeePaymentAssets,
-  useSetAsFeePayment,
-  useTransactionFeeInfo,
-} from "api/payments"
+import { useAccountFeePaymentAssets, useSetAsFeePayment } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
 import { useNextNonce, usePaymentInfo } from "api/transaction"
 import BigNumber from "bignumber.js"
@@ -156,7 +152,7 @@ export const useTransactionValues = ({
           .multipliedBy(spotPrice.data?.spotPrice ?? 1)
       : undefined
   } else {
-    const accountFeePaymentCurrency = acceptedFeePaymentAssets.find(
+    const accountFeePaymentCurrency = acceptedFeePaymentAssets.data?.find(
       (acceptedFeePaymentAsset) =>
         acceptedFeePaymentAsset.id === accountFeePaymentId,
     )
@@ -223,11 +219,10 @@ export const useTransactionValues = ({
 
 export const useEditFeePaymentAsset = (
   acceptedFeePaymentAssets: string[],
-  tx: SubmittableExtrinsic<"promise">,
   feePaymentAssetId?: string,
 ) => {
   const { t } = useTranslation()
-  const setFeeAsPayment = useSetAsFeePayment(tx)
+  const setFeeAsPayment = useSetAsFeePayment()
 
   const {
     openModal: openEditFeePaymentAssetModal,
@@ -239,7 +234,45 @@ export const useEditFeePaymentAsset = (
     confirmRequired: true,
     defaultSelectedAsssetId: feePaymentAssetId,
     allowedAssets: acceptedFeePaymentAssets,
-    onSelect: (asset) => setFeeAsPayment(asset.id),
+    onSelect: (asset) =>
+      setFeeAsPayment(asset.id.toString(), {
+        onLoading: (
+          <Trans
+            t={t}
+            i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
+            tOptions={{
+              asset: asset.symbol,
+            }}
+          >
+            <span />
+            <span className="highlight" />
+          </Trans>
+        ),
+        onSuccess: (
+          <Trans
+            t={t}
+            i18nKey="wallet.assets.table.actions.payment.toast.onSuccess"
+            tOptions={{
+              asset: asset.symbol,
+            }}
+          >
+            <span />
+            <span className="highlight" />
+          </Trans>
+        ),
+        onError: (
+          <Trans
+            t={t}
+            i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
+            tOptions={{
+              asset: asset.symbol,
+            }}
+          >
+            <span />
+            <span className="highlight" />
+          </Trans>
+        ),
+      }),
   })
 
   return {

@@ -75,7 +75,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     openEditFeePaymentAssetModal,
     editFeePaymentAssetModal,
     isOpenEditFeePaymentAssetModal,
-  } = useEditFeePaymentAsset(acceptedFeePaymentAssets, tx, feePaymentMeta?.id)
+  } = useEditFeePaymentAsset(acceptedFeePaymentAssets, feePaymentMeta?.id)
 
   const { wallet } = useWallet()
 
