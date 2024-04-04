@@ -135,7 +135,15 @@ export const FillOrder = ({
           asset={offering.asset}
           readonly={true}
         />
-        <Button sx={{ mt: 20 }} variant="primary">
+        <Button
+          sx={{ mt: 20 }}
+          variant="primary"
+          disabled={
+            assetInBalance.data?.balance?.lte(
+              accepting.amount.multipliedBy(BN_10.pow(assetInMeta.decimals)),
+            ) ?? false
+          }
+        >
           {t("otc.order.fill.confirm")}
         </Button>
       </form>
