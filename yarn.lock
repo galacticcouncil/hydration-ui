@@ -2997,10 +2997,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@3.4.5":
-  version "3.4.5"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.4.5.tgz#5c8e7d874dcbbb175c1fa937bd6029282435a6a9"
-  integrity sha512-sZnjmtuXLLx9f6nZh702xv2DtO/hc4XSyF0Y7L+6RwbOOlME5Y1OC8KtEkYRP6h+3+OKv0usi3fBxlBFrAqVNw==
+"@galacticcouncil/apps@3.4.7":
+  version "3.4.7"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.4.7.tgz#1966338764bc3934c77d5025f11d8c08ec3c670d"
+  integrity sha512-VVlp9UEm42GeCo+wIGf5omJ1ejJOMtLmeAiWVfh5AJWUJBuCmvz4342ZAqQx5+CYKO4qqF6RSGNHVlnm/DLFWQ==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -3009,7 +3009,7 @@
     dayjs "^1.11.7"
     humanize-duration-ts "^2.1.1"
     i18next "^22.4.8"
-    lightweight-charts "^4.0.1"
+    lightweight-charts "^4.1.3"
     short-uuid "^4.2.0"
     viem "^1.19.1"
 
@@ -10986,10 +10986,10 @@ levn@^0.4.1:
     prelude-ls "^1.2.1"
     type-check "~0.4.0"
 
-lightweight-charts@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/lightweight-charts/-/lightweight-charts-4.0.1.tgz#cb66f98f5e81eaa0a937e3b75928108491fa5622"
-  integrity sha512-p+j6w41PVzf9Vn7IrmpmCJacunpN0kKsl0IZoxMOySSkDcSagZ7Is9pb6pclIfN/usHdta0aYm9FktkYpAQe0g==
+lightweight-charts@^4.1.3:
+  version "4.1.3"
+  resolved "https://registry.yarnpkg.com/lightweight-charts/-/lightweight-charts-4.1.3.tgz#467fb88a5efc3665bea64c193591cfc082d84300"
+  integrity sha512-SJacmEyx3LmT2Qsc7Kq7cEX7nEHtQv0MOlujhRlcDxhW62pG6nkBlcM52/jNqkq8B28KQeVmgOQ7zrdJ4BCPDw==
   dependencies:
     fancy-canvas "2.1.0"
 
