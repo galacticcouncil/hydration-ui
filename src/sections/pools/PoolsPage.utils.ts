@@ -1,10 +1,10 @@
-import { useTokensBalances } from "api/balances"
+import { useTokenBalance, useTokensBalances } from "api/balances"
 import { useHubAssetTradability, useOmnipoolAssets } from "api/omnipool"
 import { useMemo } from "react"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NATIVE_ASSET_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { normalizeBigNumber } from "utils/balance"
-import { BN_0, BN_MILL, BN_NAN } from "utils/constants"
+import { BN_0, BN_1, BN_MILL, BN_NAN } from "utils/constants"
 import {
   useDisplayAssetStore,
   useDisplayPrices,
@@ -13,7 +13,7 @@ import {
 import { useStableswapPool, useStableswapPools } from "api/stableswap"
 import { pool_account_name } from "@galacticcouncil/math-stableswap"
 import { encodeAddress, blake2AsHex } from "@polkadot/util-crypto"
-import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
+import { HYDRADX_SS58_PREFIX, XykMath } from "@galacticcouncil/sdk"
 import { useAccountBalances } from "api/accountBalances"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useQueries, useQuery } from "@tanstack/react-query"
@@ -23,13 +23,19 @@ import { ApiPromise } from "@polkadot/api"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useVolume } from "api/volume"
 import BN from "bignumber.js"
-import { useGetXYKPools, useShareTokens, useXYKConsts } from "api/xyk"
+import {
+  useGetXYKPools,
+  useShareTokens,
+  useShareTokensByIds,
+  useXYKConsts,
+} from "api/xyk"
 import { useShareOfPools } from "api/pools"
 import { TShareToken } from "api/assetDetails"
 import { useXYKPoolTradeVolumes } from "./pool/details/PoolDetails.utils"
 import { useAllUserDepositShare } from "./farms/position/FarmingPosition.utils"
 import { useFee } from "api/stats"
 import { useTVL } from "api/stats"
+import { scaleHuman } from "utils/balance"
 import {
   is_add_liquidity_allowed,
   is_buy_allowed,
@@ -575,4 +581,38 @@ export const useXYKPoolDetails = (pool: TXYKPool) => {
     data: { volumeDisplay: volume.data?.[0]?.volume ?? BN_0 },
     isInitialLoading,
   }
+}
+
+export const useXYKSpotPrice = (shareTokenId: string) => {
+  const { assets } = useRpcProvider()
+  const pool = useShareTokensByIds([shareTokenId])
+
+  const poolAddress = pool.data?.[0]?.poolAddress
+  const metaShareToken = assets.getAsset(shareTokenId) as TShareToken
+  const [metaA, metaB] = assets.getAssets(metaShareToken.assets)
+
+  const assetABalance = useTokenBalance(metaA.id, poolAddress)
+  const assetBBalance = useTokenBalance(metaB.id, poolAddress)
+
+  if (!assetABalance.data || !assetBBalance.data) return undefined
+
+  const priceA = scaleHuman(
+    XykMath.getSpotPrice(
+      assetABalance.data.balance.toString(),
+      assetBBalance.data.balance.toString(),
+      BN_1.shiftedBy(metaA.decimals).toString(),
+    ),
+    metaB.decimals,
+  )
+
+  const priceB = scaleHuman(
+    XykMath.getSpotPrice(
+      assetBBalance.data.balance.toString(),
+      assetABalance.data.balance.toString(),
+      BN_1.shiftedBy(metaB.decimals).toString(),
+    ),
+    metaA.decimals,
+  )
+
+  return { priceA, priceB, idA: metaA.id, idB: metaB.id }
 }
