@@ -26,7 +26,7 @@ import {
 } from "./WalletTransferSectionOnchain.styled"
 import { useMaxBalance, useTokenBalance } from "api/balances"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { H160, safeConvertAddressH160 } from "utils/evm"
+import { H160, isEvmAddress, safeConvertAddressH160 } from "utils/evm"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { TransferMethod } from "./WalletTransferSectionOnchain.utils"
 import { useInsufficientFee } from "api/consts"
@@ -202,6 +202,14 @@ export function WalletTransferSectionOnchain({
                 t("wallet.assets.transfer.error.validAddress"),
               notSame: (value) => {
                 if (!account?.address) return true
+                if (isEvmAddress(safeConvertAddressH160(value) ?? "")) {
+                  return account?.address &&
+                    value &&
+                    H160.fromAccount(account.address).toLowerCase() ===
+                      value.toLowerCase()
+                    ? t("wallet.assets.transfer.error.notSame")
+                    : true
+                }
                 const from = safeConvertAddressSS58(
                   account.address.toString(),
                   0,
