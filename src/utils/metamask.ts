@@ -84,7 +84,8 @@ export async function requestNetworkSwitch(
       .then(options?.onSwitch)
   } catch (error: any) {
     // missing or unsupported network error
-    if (error?.code === 4902) {
+    const errorCode = error.data?.originalError?.code || error?.code
+    if (errorCode === 4902) {
       try {
         await provider
           .request({
