@@ -78,7 +78,7 @@ export const AssetsModalContent = ({
     ? getAssetBalances([
         ...assets.tokens,
         ...assets.stableswap,
-        ...(withExternal ? assets.external : []),
+        ...(withExternal ? assets.external.filter((token) => token.name) : []),
         ...(withShareTokens ? assets.shareTokens : []),
       ])
     : accountAssets.filter(
