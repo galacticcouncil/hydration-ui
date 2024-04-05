@@ -13,7 +13,6 @@ import { useAcountAssets } from "api/assetDetails"
 import { useMemo } from "react"
 import { uniqBy } from "utils/rx"
 import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
-import { useOraclePrice } from "./farms"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { useSpotPrice } from "./spotPrice"
 import { BN_1, BN_NAN } from "utils/constants"
@@ -178,27 +177,9 @@ export const useTransactionFeeInfo = (
     ? assets.getAsset(accountCurrency.data)
     : undefined
 
-  const oraclePrice = useOraclePrice(assets.native.id, currencyMeta?.id)
-  const isOraclePriceNone = oraclePrice.data?.isNone
-
-  const currency = useAcceptedCurrencies(
-    isOraclePriceNone && currencyMeta ? [currencyMeta.id] : [],
-  )
-
-  const assetCurrency = currency.data?.[0]?.data
-
   const spotPriceQuery = useSpotPrice(assets.native.id, currencyMeta?.id)
 
-  let spotPrice: BigNumber
-
-  if (assetCurrency) {
-    spotPrice = BN_1.shiftedBy(assets.native.decimals)
-      .times(assetCurrency.toString())
-      .shiftedBy(-18)
-      .shiftedBy(-(currencyMeta?.decimals ?? 0))
-  } else {
-    spotPrice = spotPriceQuery.data?.spotPrice ?? BN_1
-  }
+  let spotPrice = spotPriceQuery.data?.spotPrice ?? BN_1
 
   const nativeFee = paymentInfo.data?.partialFee.toBigNumber()
 
