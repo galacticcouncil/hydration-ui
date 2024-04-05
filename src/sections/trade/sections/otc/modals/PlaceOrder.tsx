@@ -97,8 +97,8 @@ export const PlaceOrder = ({
     BN_1.shiftedBy(assetOutMeta?.decimals ?? 12).toFixed(),
     true,
   )
-  const balanceInfoIn = useMaxBalance(aIn?.toString() ?? "", extrinsic)
-  const balanceInfoOut = useMaxBalance(aOut?.toString() ?? "", extrinsic)
+  const balanceInfoIn = useMaxBalance(aIn?.toString() ?? "", extrinsic, true)
+  const balanceInfoOut = useMaxBalance(aOut?.toString() ?? "", extrinsic, true)
 
   const handleSubmit = async (values: FormValues<typeof form>) => {
     if (assetOutMeta?.decimals == null) throw new Error("Missing assetOut meta")

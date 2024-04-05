@@ -175,6 +175,7 @@ export const getTokenLock =
 export const useMaxBalance = (
   assetId: string,
   extrinsic: SubmittableExtrinsic,
+  ignoreED?: boolean,
 ) => {
   const { assets } = useRpcProvider()
   const { account } = useAccount()
@@ -206,13 +207,12 @@ export const useMaxBalance = (
           .shiftedBy(-assets.native.decimals)
           .times(spotPrice)
           .shiftedBy(currencyMeta?.decimals ?? 0)
-          .toFixed()
     : undefined
 
   const existentialDeposit = assetMeta.existentialDeposit.times(EDFactor)
 
   const maxBalance = isPaymentAsset
-    ? balance.minus(fee ?? 0).minus(existentialDeposit)
+    ? balance.minus(fee ?? 0).minus(ignoreED ? 0 : existentialDeposit)
     : balance
 
   return {
