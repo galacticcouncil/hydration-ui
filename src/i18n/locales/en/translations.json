@@ -461,7 +461,7 @@
   "wallet.assets.header.value": "{{num}}<0>{{denom}}</0>",
   "wallet.assets.table.title": "Available assets",
   "wallet.assets.table.toggle": "Show all assets",
-  "wallet.assets.table.addToken": "Add Token",
+  "wallet.assets.table.addToken": "Add New Asset",
   "wallet.assets.table.placeholder": "Connect your wallet to continue.",
   "wallet.assets.table.header.name": "Asset",
   "wallet.assets.table.header.transferable": "Transferable balance",
