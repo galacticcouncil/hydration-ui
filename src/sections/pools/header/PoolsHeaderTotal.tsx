@@ -44,11 +44,7 @@ export const HeaderTotalData = ({
               <Trans
                 t={t}
                 i18nKey="wallet.assets.header.value"
-                tOptions={
-                  !value?.isNaN()
-                    ? { ...separateBalance(value, { type: "dollar" }) }
-                    : { num: "-", denom: "-" }
-                }
+                tOptions={{ ...separateBalance(value, { type: "dollar" }) }}
               >
                 <span css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }} />
               </Trans>
