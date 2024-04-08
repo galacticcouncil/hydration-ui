@@ -18,7 +18,7 @@ interface Signature {
   signature: HexString
 }
 
-export class WalletConnectSigner implements Signer {
+export class PolkadotSigner implements Signer {
   registry: TypeRegistry
   client: SignClient
   session: SessionTypes.Struct

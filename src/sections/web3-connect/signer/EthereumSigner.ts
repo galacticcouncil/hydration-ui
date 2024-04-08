@@ -4,21 +4,29 @@ import {
   Web3Provider,
 } from "@ethersproject/providers"
 import { evmChains } from "@galacticcouncil/xcm-sdk"
+import UniversalProvider from "@walletconnect/universal-provider/dist/types/UniversalProvider"
 import { DISPATCH_ADDRESS } from "utils/evm"
-import { MetaMaskLikeProvider, requestNetworkSwitch } from "utils/metamask"
+import {
+  MetaMaskLikeProvider,
+  isMetaMask,
+  isMetaMaskLike,
+  requestNetworkSwitch,
+} from "utils/metamask"
 
-export class MetaMaskSigner {
+type EthereumProvider = MetaMaskLikeProvider | UniversalProvider
+
+export class EthereumSigner {
   address: string
-  provider: MetaMaskLikeProvider
+  provider: EthereumProvider
   signer: JsonRpcSigner
 
-  constructor(address: string, provider: MetaMaskLikeProvider) {
+  constructor(address: string, provider: EthereumProvider) {
     this.address = address
     this.provider = provider
     this.signer = this.getSigner(provider)
   }
 
-  getSigner(provider: MetaMaskLikeProvider) {
+  getSigner(provider: EthereumProvider) {
     return new Web3Provider(provider).getSigner()
   }
 
@@ -46,13 +54,16 @@ export class MetaMaskSigner {
   ) => {
     const { chain, ...tx } = transaction
     const from = chain && evmChains[chain] ? chain : "hydradx"
-    await requestNetworkSwitch(this.provider, {
-      chain: from,
-      onSwitch: () => {
-        // update signer after network switch
-        this.signer = this.getSigner(this.provider)
-      },
-    })
+
+    if (isMetaMask(this.provider) || isMetaMaskLike(this.provider)) {
+      await requestNetworkSwitch(this.provider, {
+        chain: from,
+        onSwitch: () => {
+          // update signer after network switch
+          this.signer = this.getSigner(this.provider)
+        },
+      })
+    }
 
     if (from === "hydradx") {
       const [gas, gasPrice] = await this.getGasValues(tx)

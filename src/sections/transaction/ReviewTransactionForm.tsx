@@ -1,5 +1,5 @@
 import { TransactionResponse } from "@ethersproject/providers"
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { useMutation } from "@tanstack/react-query"
 import { Button } from "components/Button/Button"
@@ -7,7 +7,6 @@ import { ModalScrollableContent } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
-import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
 import { Transaction, useStore } from "state/store"
 import { theme } from "theme"
 import { ReviewTransactionData } from "./ReviewTransactionData"
@@ -26,6 +25,9 @@ import {
   isEvmAccount,
 } from "utils/evm"
 import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
+import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
+import { WalletConnect } from "sections/web3-connect/wallets/WalletConnect"
+import { POLKADOT_APP_NAME } from "utils/api"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -92,9 +94,16 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
         if (!address) throw new Error("Missing active account")
         if (!wallet) throw new Error("Missing wallet")
+
+        if (wallet instanceof WalletConnect && !wallet._session) {
+          const isEvm = isEvmAccount(address)
+          await wallet.setNamespace(isEvm ? "eip155" : "polkadot")
+          await wallet.enable(POLKADOT_APP_NAME)
+        }
+
         if (!wallet.signer) throw new Error("Missing signer")
 
-        if (wallet?.signer instanceof MetaMaskSigner) {
+        if (wallet?.signer instanceof EthereumSigner) {
           const evmTx = await wallet.signer.sendDispatch(tx.method.toHex())
           return props.onEvmSigned({ evmTx, tx })
         }
