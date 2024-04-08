@@ -97,6 +97,11 @@ export const FillOrder = ({
     )
   }
 
+  const isDisabled =
+    assetInBalance.data?.balance?.lte(
+      accepting.amount.multipliedBy(BN_10.pow(assetInMeta.decimals)),
+    ) ?? false
+
   return (
     <Modal
       open={true}
@@ -135,15 +140,7 @@ export const FillOrder = ({
           asset={offering.asset}
           readonly={true}
         />
-        <Button
-          sx={{ mt: 20 }}
-          variant="primary"
-          disabled={
-            assetInBalance.data?.balance?.lte(
-              accepting.amount.multipliedBy(BN_10.pow(assetInMeta.decimals)),
-            ) ?? false
-          }
-        >
+        <Button sx={{ mt: 20 }} variant="primary" disabled={isDisabled}>
           {t("otc.order.fill.confirm")}
         </Button>
       </form>
