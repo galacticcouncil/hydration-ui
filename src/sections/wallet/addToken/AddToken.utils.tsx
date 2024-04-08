@@ -6,6 +6,7 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
+import { mergeArrays } from "utils/rx"
 
 export const ASSET_HUB_ID = 1000
 
@@ -88,11 +89,13 @@ export const useRegisterToken = ({
   })
 }
 
-export const useUserExternalTokenStore = create<{
+type Store = {
   tokens: TExternalAsset[]
   addToken: (TokensConversion: TExternalAsset) => void
   isAdded: (id: string | undefined) => boolean
-}>()(
+}
+
+export const useUserExternalTokenStore = create<Store>()(
   persist(
     (set, get) => ({
       tokens: [
@@ -110,6 +113,13 @@ export const useUserExternalTokenStore = create<{
           origin: 1000,
           symbol: "PINK",
         },
+        {
+          decimals: 4,
+          id: "18",
+          name: "DOTA",
+          origin: 1000,
+          symbol: "DOTA",
+        },
       ],
       addToken: (token) =>
         set((store) => ({ tokens: [...store.tokens, token] })),
@@ -119,6 +129,15 @@ export const useUserExternalTokenStore = create<{
     {
       name: "external-tokens",
       version: 0.2,
+      merge(persistedState, currentState) {
+        if (!persistedState) return currentState
+
+        const defaultTokens = currentState.tokens
+        const { tokens: storedTokens } = persistedState as Store
+        const mergedTokens = mergeArrays(storedTokens, defaultTokens, "id")
+
+        return { ...currentState, tokens: mergedTokens }
+      },
     },
   ),
 )
