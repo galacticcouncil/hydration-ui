@@ -558,6 +558,7 @@ export const useXYKPools = (withPositions?: boolean) => {
       .filter((pool) =>
         withPositions ? pool.shareTokenIssuance?.myPoolShare?.gt(0) : true,
       )
+      .sort((a, b) => b.tvlDisplay.minus(a.tvlDisplay).toNumber())
   }, [
     assets,
     fee,
