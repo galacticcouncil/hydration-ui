@@ -109,9 +109,7 @@ export const OtcHeader: FC<Props> = ({
             variant="outline"
             disabled={!!skeleton}
             active={showMyOrders}
-            onClick={(e) => {
-              onOptionChange(OrderType.Mine)
-            }}
+            onClick={() => onOptionChange(OrderType.Mine)}
           >
             <Icon icon={<WalletIcon />} size={14} />
             {t("otc.header.myOrders")}
