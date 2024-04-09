@@ -7,6 +7,8 @@ import { useTranslation } from "react-i18next"
 import { OfferingPair } from "./OtcOrdersData.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { abbreviateNumber } from "utils/helpers"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export const OrderPairColumn = (props: {
   offering: OfferingPair
@@ -154,12 +156,13 @@ export const OrderAssetColumn = (props: {
 
 export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
   const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
     <div
       style={{
         display: "flex",
-        justifyContent: "center",
+        justifyContent: isDesktop ? "center" : "flex-end",
         alignItems: "center",
         height: "100%",
         width: "100%",

@@ -65,26 +65,26 @@ const IsolatedPoolsData = () => {
     }
   }>()
 
-  const xylPools = useXYKPools()
+  const xykPools = useXYKPools()
 
   const totalLocked = useMemo(() => {
-    if (xylPools.data) {
-      return xylPools.data.reduce((acc, xykPool) => {
+    if (xykPools.data) {
+      return xykPools.data.reduce((acc, xykPool) => {
         return acc.plus(!xykPool.tvlDisplay.isNaN() ? xykPool.tvlDisplay : BN_0)
       }, BN_0)
     }
     return BN_0
-  }, [xylPools.data])
+  }, [xykPools.data])
 
   const filteredPools =
-    (search && xylPools.data
-      ? arraySearch(xylPools.data, search, ["symbol", "name"])
-      : xylPools.data) ?? []
+    (search && xykPools.data
+      ? arraySearch(xykPools.data, search, ["symbol", "name"])
+      : xykPools.data) ?? []
 
   if (id != null) {
-    const pool = xylPools.data?.find((pool) => pool.id === id.toString())
+    const pool = xykPools.data?.find((pool) => pool.id === id.toString())
 
-    const isLoading = xylPools.isInitialLoading
+    const isLoading = xykPools.isInitialLoading
 
     if (!pool && isLoading) return <PoolSkeleton />
 
@@ -101,7 +101,7 @@ const IsolatedPoolsData = () => {
             label: t("liquidity.header.isolated"),
             content: (
               <HeaderTotalData
-                isLoading={xylPools.isInitialLoading}
+                isLoading={xykPools.isInitialLoading}
                 value={totalLocked}
                 fontSize={[19, 24]}
               />
@@ -119,10 +119,10 @@ const IsolatedPoolsData = () => {
       <div sx={{ flex: "row", mb: 14 }}>
         <CreateXYKPoolModalButton
           sx={{ ml: "auto", width: ["100%", "auto"] }}
-          disabled={xylPools.isInitialLoading}
+          disabled={xykPools.isInitialLoading}
         />
       </div>
-      {xylPools.isInitialLoading ? (
+      {xykPools.isInitialLoading ? (
         <PoolsTableSkeleton isXyk />
       ) : filteredPools.length ? (
         <PoolsTable data={filteredPools} isXyk />
