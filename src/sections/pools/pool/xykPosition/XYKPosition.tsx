@@ -18,6 +18,7 @@ import { LiquidityPositionRemoveLiquidity } from "sections/pools/pool/positions/
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { JoinFarmsButton } from "./JoinFarmsButton"
 
 export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { t } = useTranslation()
@@ -107,11 +108,13 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
                   })}
                 </Text>
               </div>
-
-              <LiquidityPositionRemoveLiquidity
-                pool={pool}
-                onSuccess={() => null}
-              />
+              <div sx={{ flex: "row", gap: 8 }}>
+                <JoinFarmsButton poolId={pool.id} onSuccess={() => null} />
+                <LiquidityPositionRemoveLiquidity
+                  pool={pool}
+                  onSuccess={() => null}
+                />
+              </div>
             </div>
 
             <Separator color="white" opacity={0.06} />

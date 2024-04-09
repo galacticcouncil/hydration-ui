@@ -77,7 +77,7 @@ function LiquidityPositionJoinFarmButton(props: {
         variant="primary"
         size="compact"
         fullWidth
-        disabled={!farms.data?.length || account?.isExternalWalletConnected}
+        //disabled={!farms.data?.length || account?.isExternalWalletConnected}
         onClick={() => setJoinFarm(true)}
       >
         <Icon size={12} icon={<FPIcon />} />
@@ -89,7 +89,7 @@ function LiquidityPositionJoinFarmButton(props: {
           farms={farms.data}
           isOpen={joinFarm}
           poolId={props.poolId}
-          shares={props.position.shares}
+          initialShares={props.position.shares}
           onClose={() => setJoinFarm(false)}
           mutation={joinFarmMutation}
         />
