@@ -90,6 +90,7 @@ type TAssetCommon = {
   parachainId: string | undefined
   iconId: string | string[]
   generalIndex?: string
+  isSufficient: boolean
 }
 
 export type TBond = TAssetCommon & {
@@ -132,6 +133,7 @@ export const fallbackAsset: TToken = {
   isExternal: false,
   isNative: false,
   iconId: "",
+  isSufficient: false,
 }
 
 export const getAssets = async (api: ApiPromise) => {
@@ -190,6 +192,8 @@ export const getAssets = async (api: ApiPromise) => {
       const isShareToken = assetType === (!!rawAssetsMeta ? "PoolShare" : "XYK")
       //@ts-ignore
       const isExternal = assetType === "External"
+      //@ts-ignore
+      const isSufficient = data.isSufficient.toPrimitive()
 
       let meta
       if (rawAssetsMeta) {
@@ -221,6 +225,7 @@ export const getAssets = async (api: ApiPromise) => {
         existentialDeposit: data.existentialDeposit.toBigNumber(),
         parachainId: undefined,
         name: data.name.toHuman() as string,
+        isSufficient,
         ...meta,
       }
 

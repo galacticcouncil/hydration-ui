@@ -43,13 +43,14 @@ export const useRpcProvider = () => useContext(ProviderContext)
 
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const preference = useProviderRpcUrlStore()
+
   const providerData = useProviderData(
     preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL,
   )
 
   useWindowFocus({
     onFocus: () => {
-      const provider = providerData.data?.provider
+      const provider = providerData.data?.api
 
       if (provider && !provider.isConnected) {
         provider.connect()

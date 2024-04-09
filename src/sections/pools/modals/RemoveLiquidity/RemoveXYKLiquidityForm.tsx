@@ -48,17 +48,21 @@ export const RemoveXYKLiquidityForm = ({
       ?.multipliedBy(value)
       .dividedToIntegerBy(100) ?? BN_0
 
-  const removeAmount =
-    poolBalance.data?.balances.map((balance) => {
-      return removeShareToken &&
-        totalLiquidity.data &&
-        balance &&
-        !totalLiquidity.data?.isZero()
-        ? removeShareToken
-            .multipliedBy(balance.freeBalance)
-            .dividedBy(totalLiquidity.data)
-        : BN_0
-    }) ?? []
+  const removeAmount = shareTokenMeta.assets.map((assetId) => {
+    const isNative = assetId === assets.native.id
+
+    const balance = isNative
+      ? poolBalance.data?.native.freeBalance
+      : poolBalance.data?.balances.find((balance) => balance.id === assetId)
+          ?.freeBalance
+
+    return removeShareToken &&
+      totalLiquidity.data &&
+      balance &&
+      !totalLiquidity.data?.isZero()
+      ? removeShareToken.multipliedBy(balance).dividedBy(totalLiquidity.data)
+      : BN_0
+  })
 
   const handleSubmit = async () => {
     await createTransaction(

@@ -27,3 +27,14 @@ export const SValue = styled.div`
     align-items: flex-start;
   }
 `
+
+export const SXYKRateContainer = styled.div`
+  display: flex;
+  padding: 8px;
+  align-items: center;
+  gap: 4px;
+
+  background: rgba(${theme.rgbColors.white}, 0.03);
+
+  border-radius: 4px;
+`

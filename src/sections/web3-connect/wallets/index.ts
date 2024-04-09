@@ -1,7 +1,13 @@
-import { Wallet, getWallets } from "@talismn/connect-wallets"
+import {
+  SubscriptionFn,
+  Wallet,
+  WalletAccount,
+  getWallets,
+} from "@talismn/connect-wallets"
 
 import { ExternalWallet } from "./ExternalWallet"
 import { MetaMask } from "./MetaMask"
+import { TalismanEvm } from "./TalismanEvm"
 import { NovaWallet } from "./NovaWallet"
 import { WalletConnect } from "./WalletConnect"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
@@ -14,6 +20,7 @@ const EVM_ENABLED = Boolean(
 export enum WalletProviderType {
   MetaMask = "metamask",
   Talisman = "talisman",
+  TalismanEvm = "talisman-evm",
   SubwalletJS = "subwallet-js",
   Enkrypt = "enkrypt",
   PolkadotJS = "polkadot-js",
@@ -27,10 +34,9 @@ export type WalletProvider = {
   wallet: Wallet
 }
 
-const novaWallet: Wallet = new NovaWallet()
-
-const metaMask: Wallet = new MetaMask({
-  onAccountsChanged(accounts) {
+const onMetaMaskLikeAccountChange =
+  (type: WalletProviderType): SubscriptionFn =>
+  (accounts) => {
     const state = useWeb3ConnectStore.getState()
     if (!accounts || accounts.length === 0) {
       state.disconnect()
@@ -40,12 +46,21 @@ const metaMask: Wallet = new MetaMask({
       state.setAccount({
         address: isEvm ? new H160(address).toAccount() : address,
         displayAddress: address,
-        provider: WalletProviderType.MetaMask,
+        provider: type,
         name: name ?? "",
         isExternalWalletConnected: false,
       })
     }
-  },
+  }
+
+const novaWallet: Wallet = new NovaWallet()
+const talisman: Wallet = new TalismanEvm({
+  onAccountsChanged: onMetaMaskLikeAccountChange(
+    WalletProviderType.TalismanEvm,
+  ),
+})
+const metaMask: Wallet = new MetaMask({
+  onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.MetaMask),
 })
 
 const walletConnect: Wallet = new WalletConnect()
@@ -53,7 +68,7 @@ const walletConnect: Wallet = new WalletConnect()
 const externalWallet: Wallet = new ExternalWallet()
 
 export const SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
-  ...(EVM_ENABLED ? [metaMask] : []),
+  ...(EVM_ENABLED ? [metaMask, talisman] : []),
   ...getWallets(),
   novaWallet,
   walletConnect,
