@@ -1,21 +1,17 @@
 import { useEffect, useState } from "react"
+import { usePrevious } from "react-use"
 
 export const useRemount = (trigger: boolean) => {
-  const [mounted, setMounted] = useState(true)
+  const [version, setVersion] = useState(0)
+  const prevTriggerValue = usePrevious(trigger)
+
+  const isChanged = !!prevTriggerValue !== trigger
 
   useEffect(() => {
-    // Logic to unmount component when trigger changes
-    return () => {
-      setMounted(false)
+    if (isChanged) {
+      setVersion((version) => version + 1)
     }
-  }, [trigger])
+  }, [isChanged])
 
-  useEffect(() => {
-    // Logic to remount component when trigger changes
-    if (!mounted) {
-      setMounted(true)
-    }
-  }, [mounted])
-
-  return mounted
+  return version
 }

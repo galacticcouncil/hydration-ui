@@ -56,7 +56,7 @@ export function SwapPage() {
   const { stableCoinId } = useDisplayAssetStore()
 
   const isEvm = isEvmAccount(account?.address)
-  const mounted = useRemount(isEvm)
+  const version = useRemount(isEvm)
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
@@ -111,13 +111,10 @@ export function SwapPage() {
       ? search.data.assetOut
       : NATIVE_ASSET_ID
 
-  if (!mounted) {
-    return null
-  }
-
   return (
     <SContainer>
       <SwapApp
+        key={version}
         ref={(r) => {
           if (r) {
             r.setAttribute("chart", "")
