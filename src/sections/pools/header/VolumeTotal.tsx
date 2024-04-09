@@ -24,7 +24,8 @@ export const AllPoolsVolumeTotal = () => {
 
   const totalXYKVolume =
     xykVolumes.data?.reduce(
-      (memo, volume) => memo.plus(volume.volume ?? BN_0),
+      (memo, volume) =>
+        memo.plus(!volume.volume.isNaN() ? volume.volume : BN_0),
       BN_0,
     ) ?? BN_0
 
@@ -48,7 +49,8 @@ export const XYKVolumeTotal = () => {
 
   const totalXYKVolume =
     xykVolumes.data?.reduce(
-      (memo, volume) => memo.plus(volume.volume ?? BN_0),
+      (memo, volume) =>
+        memo.plus(!volume.volume.isNaN() ? volume.volume : BN_0),
       BN_0,
     ) ?? BN_0
 
