@@ -1,4 +1,3 @@
-import { WsProvider } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
@@ -9,10 +8,8 @@ export const getAssetHubAssets = async () => {
 
   try {
     if (parachain) {
-      const provider = new WsProvider(parachain.ws)
-
       const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(provider.endpoint)
+      const api = await apiPool.api(parachain.ws)
 
       const dataRaw = await api.query.assets.metadata.entries()
 

@@ -220,8 +220,6 @@ export const PoolDetails = ({
                 <Text color="white" fs={[14, 16]} fw={600}>
                   {ixXYKPool ? (
                     t("value.percentage", { value: pool.fee })
-                  ) : pool.id === assets.native.id ? (
-                    "--"
                   ) : pool.stablepoolFee ? (
                     t("value.percentage", {
                       value: pool.stablepoolFee.times(100),
