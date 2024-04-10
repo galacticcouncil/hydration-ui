@@ -46,7 +46,11 @@ export const OtcHeader: FC<Props> = ({
 
   const onOptionChange = (value: OrderType) => {
     if (value === OrderType.Mine) {
-      onShowMyOrdersChange(true)
+      if (!isDesktop) {
+        onShowMyOrdersChange(!showMyOrders)
+      } else {
+        onShowMyOrdersChange(true)
+      }
     } else {
       onShowMyOrdersChange(false)
       onShowPartialChange(value === OrderType.All ? false : true)
@@ -105,9 +109,7 @@ export const OtcHeader: FC<Props> = ({
             variant="outline"
             disabled={!!skeleton}
             active={showMyOrders}
-            onClick={(e) => {
-              onOptionChange(OrderType.Mine)
-            }}
+            onClick={() => onOptionChange(OrderType.Mine)}
           >
             <Icon icon={<WalletIcon />} size={14} />
             {t("otc.header.myOrders")}

@@ -8,6 +8,9 @@ import { Icon } from "components/Icon/Icon"
 import { useDebounce } from "react-use"
 import { useState } from "react"
 import { useWalletAssetsFilters } from "sections/wallet/assets/WalletAssets.utils"
+import { useRpcProvider } from "providers/rpcProvider"
+import Skeleton from "react-loading-skeleton"
+import { WalletPaymentAsset } from "sections/wallet/assets/paymentAsset/WalletPaymentAsset"
 import { Search } from "components/Search/Search"
 
 const filters = [
@@ -30,6 +33,7 @@ const filters = [
 ] as const
 
 export const WalletAssetsFilters = () => {
+  const { isLoaded } = useRpcProvider()
   const { t } = useTranslation()
 
   const { search, category, setFilter } = useWalletAssetsFilters()
@@ -51,20 +55,33 @@ export const WalletAssetsFilters = () => {
         setValue={setSearchVal}
         placeholder={t("wallet.header.search")}
       />
-      <SButtonContainer>
-        {filters.map(({ id, icon }) => (
-          <SButton
-            key={id}
-            active={category === id}
-            variant="outline"
-            size="small"
-            onClick={() => setFilter({ category: id })}
-          >
-            <Icon size={14} icon={icon} />
-            {t(`wallet.header.${id}`)}
-          </SButton>
-        ))}
-      </SButtonContainer>
+      <div
+        sx={{
+          flex: "row",
+          justify: "space-between",
+          align: "center",
+          flexWrap: "wrap",
+          gap: 20,
+        }}
+      >
+        <SButtonContainer>
+          {filters.map(({ id, icon }) => (
+            <SButton
+              key={id}
+              active={category === id}
+              variant="outline"
+              size="small"
+              onClick={() => setFilter({ category: id })}
+            >
+              <Icon size={14} icon={icon} />
+              {t(`wallet.header.${id}`)}
+            </SButton>
+          ))}
+        </SButtonContainer>
+        <div sx={{ ml: [0, "auto"], width: ["100%", "auto"] }}>
+          {isLoaded ? <WalletPaymentAsset /> : <Skeleton width={220} />}
+        </div>
+      </div>
     </div>
   )
 }

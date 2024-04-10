@@ -13,13 +13,18 @@ import { theme } from "theme"
 import { ReviewTransactionData } from "./ReviewTransactionData"
 import {
   useEditFeePaymentAsset,
+  usePolkadotJSTxUrl,
   useTransactionValues,
 } from "./ReviewTransactionForm.utils"
 import { ReviewTransactionSummary } from "sections/transaction/ReviewTransactionSummary"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import BN from "bignumber.js"
-import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
+import {
+  NATIVE_EVM_ASSET_ID,
+  NATIVE_EVM_ASSET_SYMBOL,
+  isEvmAccount,
+} from "utils/evm"
 import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
@@ -42,6 +47,11 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const { account } = useAccount()
   const { setReferralCode } = useReferralCodesStore()
 
+  const polkadotJSUrl = usePolkadotJSTxUrl(props.tx)
+
+  const shouldOpenPolkaJSUrl =
+    polkadotJSUrl && account?.isExternalWalletConnected && !account?.delegate
+
   const { transactions } = useStore()
 
   const isChangingFeePaymentAsset =
@@ -53,8 +63,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const transactionValues = useTransactionValues({
     xcallMeta: props.xcallMeta,
     tx: props.tx,
-    feePaymentId: props.overrides?.currencyId,
-    fee: props.overrides?.fee,
+    overrides: props.overrides,
   })
 
   const {
@@ -117,13 +126,15 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const isEditPaymentBalance = !isEnoughPaymentBalance && hasMultipleFeeAssets
 
   const isEvmFeePaymentAssetInvalid = isEvmAccount(account?.address)
-    ? feePaymentMeta?.id !== import.meta.env.VITE_EVM_NATIVE_ASSET_ID
+    ? feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
     : false
 
   if (isOpenEditFeePaymentAssetModal) return editFeePaymentAssetModal
 
   const onConfirmClick = () =>
-    isEvmFeePaymentAssetInvalid
+    shouldOpenPolkaJSUrl
+      ? window.open(polkadotJSUrl, "_blank")
+      : isEvmFeePaymentAssetInvalid
       ? openEditFeePaymentAssetModal()
       : isEnoughPaymentBalance
       ? signTx.mutate()
@@ -133,7 +144,11 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   let btnText = t("liquidity.reviewTransaction.modal.confirmButton")
 
-  if (isEditPaymentBalance || isEvmFeePaymentAssetInvalid) {
+  if (shouldOpenPolkaJSUrl) {
+    btnText = t(
+      "liquidity.reviewTransaction.modal.confirmButton.openPolkadotJS",
+    )
+  } else if (isEditPaymentBalance || isEvmFeePaymentAssetInvalid) {
     btnText = t(
       "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance",
     )
@@ -161,18 +176,20 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
         content={<ReviewTransactionData address={account?.address} tx={tx} />}
         footer={
-          <div sx={{ mt: 15 }}>
-            <ReviewTransactionSummary
-              tx={props.tx}
-              transactionValues={transactionValues}
-              editFeePaymentAssetEnabled={
-                hasMultipleFeeAssets || isEvmFeePaymentAssetInvalid
-              }
-              xcallMeta={props.xcallMeta}
-              openEditFeePaymentAssetModal={openEditFeePaymentAssetModal}
-              onTipChange={isTippingEnabled ? setTipAmount : undefined}
-              referralCode={isLinking ? storedReferralCode : undefined}
-            />
+          <>
+            <div sx={{ mt: 15 }}>
+              <ReviewTransactionSummary
+                tx={props.tx}
+                transactionValues={transactionValues}
+                editFeePaymentAssetEnabled={
+                  hasMultipleFeeAssets || isEvmFeePaymentAssetInvalid
+                }
+                xcallMeta={props.xcallMeta}
+                openEditFeePaymentAssetModal={openEditFeePaymentAssetModal}
+                onTipChange={isTippingEnabled ? setTipAmount : undefined}
+                referralCode={isLinking ? storedReferralCode : undefined}
+              />
+            </div>
             <div
               sx={{
                 mt: ["auto", 24],
@@ -197,7 +214,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   }
                   onClick={onConfirmClick}
                 />
-                {isEvmFeePaymentAssetInvalid && (
+                {!shouldOpenPolkaJSUrl && isEvmFeePaymentAssetInvalid && (
                   <Text fs={16} color="pink600">
                     {t(
                       "liquidity.reviewTransaction.modal.confirmButton.invalidEvmPaymentAsset.msg",
@@ -221,7 +238,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                 )}
               </div>
             </div>
-          </div>
+          </>
         }
       />
     </>

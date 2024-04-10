@@ -1,4 +1,3 @@
-import { WsProvider } from "@polkadot/api"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -100,10 +99,8 @@ export const useProviderData = (rpcUrl: string) => {
   return useQuery(
     QUERY_KEYS.provider(rpcUrl),
     async ({ queryKey: [_, url] }) => {
-      const provider = new WsProvider(url)
-
       const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(provider.endpoint)
+      const api = await apiPool.api(url)
 
       const {
         isStableCoin,
@@ -112,7 +109,6 @@ export const useProviderData = (rpcUrl: string) => {
       } = displayAsset
 
       const assets = await getAssets(api)
-
       let stableCoinId: string | undefined
 
       // set USDT as a stable token
@@ -143,7 +139,6 @@ export const useProviderData = (rpcUrl: string) => {
         assets: assets.assets,
         tradeRouter: assets.tradeRouter,
         featureFlags: assets.featureFlags,
-        provider,
       }
     },
     { refetchOnWindowFocus: false },
@@ -156,8 +151,8 @@ export const useRefetchProviderData = () => {
   const preference = useProviderRpcUrlStore()
 
   return () => {
-    preference.rpcUrl &&
-      queryClient.invalidateQueries(QUERY_KEYS.provider(preference.rpcUrl))
+    const url = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+    url && queryClient.invalidateQueries(QUERY_KEYS.provider(url))
   }
 }
 
