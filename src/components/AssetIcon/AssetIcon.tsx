@@ -6,16 +6,17 @@ import {
   PlaceholderLogo,
 } from "@galacticcouncil/ui"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import {
-  SLogoContainer,
-  SWarningIconContainer,
-  assetPlaceholderCss,
-} from "./AssetIcon.styled"
+import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
-import WarningIcon from "assets/icons/WarningIcon.svg?react"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { useTranslation } from "react-i18next"
+
+const EXTERNAL_ASSETS_WHITELIST = [
+  // DED
+  { id: "30", origin: 1000 },
+  // PINK
+  { id: "23", origin: 1000 },
+]
 
 const chains = Array.from(chainsMap.values())
 
@@ -72,33 +73,37 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       (chain) => chain.parachainId === Number(assetDetails?.parachainId),
     )
 
+    const isWhitelisted = EXTERNAL_ASSETS_WHITELIST.some(
+      (item) =>
+        item.id === assetDetails?.generalIndex &&
+        item.origin === chain?.parachainId,
+    )
+
+    const displayWarning = assetDetails?.isExternal && !isWhitelisted
+
     return {
       chain: chain?.key,
       symbol: assetDetails?.symbol,
-      isExternal: assetDetails?.isExternal,
+      displayWarning,
     }
   }, [assets, id])
 
   if (asset.chain || asset.symbol)
     return (
-      <SLogoContainer>
-        <UigcAssetId
-          css={{ "& uigc-logo-chain": { display: "none" } }}
-          ref={(el) => {
-            el && asset.chain && el.setAttribute("chain", asset.chain)
-            el && el.setAttribute("fit", "")
-          }}
-          symbol={asset.symbol}
-          chain={asset?.chain}
-        />
-        {asset?.isExternal && (
-          <InfoTooltip text={t("wallet.addToken.tooltip.warning")} asChild>
-            <SWarningIconContainer>
-              <WarningIcon />
-            </SWarningIconContainer>
-          </InfoTooltip>
-        )}
-      </SLogoContainer>
+      <UigcAssetId
+        css={{ "& uigc-logo-chain": { display: "none" } }}
+        ref={(el) => {
+          el && asset.chain && el.setAttribute("chain", asset.chain)
+          el && el.setAttribute("fit", "")
+        }}
+        symbol={asset.symbol}
+        chain={asset?.chain}
+        warning={
+          asset?.displayWarning
+            ? t("wallet.addToken.tooltip.warning")
+            : undefined
+        }
+      />
     )
 
   return (
