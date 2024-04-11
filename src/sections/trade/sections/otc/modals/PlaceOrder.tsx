@@ -13,12 +13,13 @@ import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { getFixedPointAmount } from "utils/balance"
 import { BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
-import { useStore } from "state/store"
+import { ToastMessage, useStore } from "state/store"
 import { OrderAssetSelect } from "./cmp/AssetSelect"
 import { OrderAssetRate } from "./cmp/AssetXRate"
 import { PartialOrderToggle } from "./cmp/PartialOrderToggle"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { TOAST_MESSAGES } from "state/toasts"
 
 type PlaceOrderProps = {
   assetOut?: u32 | string
@@ -109,6 +110,24 @@ export const PlaceOrder = ({
       assetInMeta.decimals,
     ).decimalPlaces(0, 1)
 
+    const toast = TOAST_MESSAGES.reduce((memo, type) => {
+      const msType = type === "onError" ? "onLoading" : type
+      memo[type] = (
+        <Trans
+          t={t}
+          i18nKey={`otc.order.place.toast.${msType}`}
+          tOptions={{
+            amount: values.amountOut,
+            symbol: assetOutMeta.symbol,
+          }}
+        >
+          <span />
+          <span className="highlight" />
+        </Trans>
+      )
+      return memo
+    }, {} as ToastMessage)
+
     await createTransaction(
       {
         tx: api.tx.otc.placeOrder(
@@ -125,34 +144,7 @@ export const PlaceOrder = ({
           onClose()
           form.reset()
         },
-        toast: {
-          onLoading: (
-            <Trans
-              t={t}
-              i18nKey="otc.order.place.toast.onLoading"
-              tOptions={{
-                amount: values.amountOut,
-                symbol: assetOutMeta.symbol,
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-          onSuccess: (
-            <Trans
-              t={t}
-              i18nKey="otc.order.place.toast.onSuccess"
-              tOptions={{
-                amount: values.amountOut,
-                symbol: assetOutMeta.symbol,
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-        },
+        toast,
       },
     )
   }

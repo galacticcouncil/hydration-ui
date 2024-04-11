@@ -16,6 +16,7 @@ import { Spinner } from "components/Spinner/Spinner"
 export function ToastContent(props: {
   variant: Maybe<ToastVariant>
   title?: string | ReactNode
+  description?: string | ReactNode
   link?: string
   actions?: ReactNode
   meta?: ReactNode
@@ -45,13 +46,24 @@ export function ToastContent(props: {
       </SIcon>
       <div sx={{ flex: "column", gap: 4, justify: "center" }}>
         <div sx={{ flex: "row", justify: "space-between", align: "flex-end" }}>
-          <STitle>
-            {typeof props.title === "string" ? (
-              <p dangerouslySetInnerHTML={{ __html: props.title }} />
-            ) : (
-              props.title
+          <div>
+            <STitle>
+              {typeof props.title === "string" ? (
+                <p dangerouslySetInnerHTML={{ __html: props.title }} />
+              ) : (
+                props.title
+              )}
+            </STitle>
+            {props.description && (
+              <STitle sx={{ mt: 2 }}>
+                {typeof props.description === "string" ? (
+                  <p dangerouslySetInnerHTML={{ __html: props.description }} />
+                ) : (
+                  props.description
+                )}
+              </STitle>
             )}
-          </STitle>
+          </div>
 
           {props.actions}
         </div>

@@ -17,6 +17,7 @@ import { ToastVariant } from "state/toasts"
 type Props = {
   variant?: ToastVariant
   title?: string | ReactNode
+  description?: string | ReactNode
   link?: string
   actions?: ReactNode
   index?: number
@@ -31,6 +32,7 @@ type Props = {
 export const Toast: FC<Props> = ({
   variant = "info",
   title,
+  description,
   link,
   actions,
   index,
@@ -56,6 +58,7 @@ export const Toast: FC<Props> = ({
         <ToastContent
           variant={variant ?? "info"}
           title={title}
+          description={description}
           link={link}
           actions={actions}
           onClick={onClick}

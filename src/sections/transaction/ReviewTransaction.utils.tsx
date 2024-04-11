@@ -18,6 +18,7 @@ import { useMountedState } from "react-use"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useToast } from "state/toasts"
 import { H160, getEvmTxLink, isEvmAccount } from "utils/evm"
+import { defer } from "utils/helpers"
 
 type TxMethod = AnyJson & {
   method: string
@@ -85,6 +86,14 @@ export function getTransactionJSON(tx: SubmittableExtrinsic<"promise">) {
 }
 
 export class UnknownTransactionState extends Error {}
+
+export class TransactionError extends Error {
+  docs: string = ""
+  method: string = ""
+  constructor(public error: string) {
+    super(error)
+  }
+}
 
 function evmTxReceiptToSubmittableResult(txReceipt: TransactionReceipt) {
   const isSuccess = txReceipt.status === 1
@@ -169,7 +178,7 @@ export const useSendEvmTransactionMutation = (
 export const useSendTransactionMutation = (
   options: MutationObserverOptions<
     ISubmittableResult & { transactionLink?: string },
-    unknown,
+    TransactionError,
     SubmittableExtrinsic<"promise">
   > = {},
 ) => {
@@ -197,19 +206,25 @@ export const useSendTransactionMutation = (
 
           if (result.isCompleted) {
             if (result.dispatchError) {
+              let docs = ""
+              let method = ""
               let errorMessage = result.dispatchError.toString()
 
               if (result.dispatchError.isModule) {
                 const decoded = api.registry.findMetaError(
                   result.dispatchError.asModule,
                 )
-                errorMessage = `${decoded.section}.${
-                  decoded.method
-                }: ${decoded.docs.join(" ")}`
+                docs = decoded.docs.join(" ")
+                method = decoded.method
+                errorMessage = `${decoded.section}.${decoded.method}: ${docs}`
               }
 
+              const error = new TransactionError(errorMessage)
+              error.docs = docs
+              error.method = method
+
               clearTimeout(timeout)
-              reject(new Error(errorMessage))
+              reject(error)
             } else {
               const transactionLink = await link.mutateAsync({
                 blockHash: result.status.asInBlock.toString(),
@@ -307,8 +322,10 @@ const useBoundReferralToast = () => {
   }
 }
 
-export const useSendTx = () => {
+export const useSendTx = ({ id }: { id: string }) => {
   const [txType, setTxType] = useState<"default" | "evm" | null>(null)
+
+  const { edit } = useToast()
 
   const boundReferralToast = useBoundReferralToast()
 
@@ -318,6 +335,20 @@ export const useSendTx = () => {
       setTxType("default")
     },
     onSuccess: boundReferralToast.onSuccess,
+    onError: (err) => {
+      if (err?.method) {
+        defer(() => {
+          edit(id, {
+            description: (
+              <p>
+                <strong>{err.method}</strong>
+                {err.docs ? ` - ${err.docs}` : ""}
+              </p>
+            ),
+          })
+        })
+      }
+    },
   })
 
   const sendEvmTx = useSendEvmTransactionMutation({
