@@ -183,8 +183,6 @@ export class WalletConnect implements Wallet {
 
       const session = await provider.connect({
         namespaces: this.namespace,
-        pairingTopic:
-          "c4354cd737e7beaf736fc6692538e887bc1c118e4ae035d5efa2ed1f16819fb9",
       })
 
       if (!session) {
