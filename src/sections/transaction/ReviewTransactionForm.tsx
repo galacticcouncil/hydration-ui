@@ -185,18 +185,20 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
         content={<ReviewTransactionData address={account?.address} tx={tx} />}
         footer={
-          <div sx={{ mt: 15 }}>
-            <ReviewTransactionSummary
-              tx={props.tx}
-              transactionValues={transactionValues}
-              editFeePaymentAssetEnabled={
-                hasMultipleFeeAssets || isEvmFeePaymentAssetInvalid
-              }
-              xcallMeta={props.xcallMeta}
-              openEditFeePaymentAssetModal={openEditFeePaymentAssetModal}
-              onTipChange={isTippingEnabled ? setTipAmount : undefined}
-              referralCode={isLinking ? storedReferralCode : undefined}
-            />
+          <>
+            <div sx={{ mt: 15 }}>
+              <ReviewTransactionSummary
+                tx={props.tx}
+                transactionValues={transactionValues}
+                editFeePaymentAssetEnabled={
+                  hasMultipleFeeAssets || isEvmFeePaymentAssetInvalid
+                }
+                xcallMeta={props.xcallMeta}
+                openEditFeePaymentAssetModal={openEditFeePaymentAssetModal}
+                onTipChange={isTippingEnabled ? setTipAmount : undefined}
+                referralCode={isLinking ? storedReferralCode : undefined}
+              />
+            </div>
             <div
               sx={{
                 mt: ["auto", 24],
@@ -245,7 +247,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                 )}
               </div>
             </div>
-          </div>
+          </>
         }
       />
     </>

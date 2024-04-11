@@ -9,10 +9,9 @@ import IconEdit from "assets/icons/IconEdit.svg?react"
 import { useBestNumber } from "api/chain"
 import { ProviderStatus } from "sections/provider/ProviderStatus"
 import { useEffect, useState } from "react"
-import { WsProvider } from "@polkadot/rpc-provider"
 import { u32, u64 } from "@polkadot/types"
 import { ProviderItemEdit } from "sections/provider/components/ProviderItemEdit/ProviderItemEdit"
-import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
+import { ApiPromise, WsProvider } from "@polkadot/api"
 
 type ProviderItemProps = {
   name: string
@@ -149,14 +148,19 @@ const ProviderSelectItemExternal = ({
   >(undefined)
 
   useEffect(() => {
-    const rpc = url
-    const provider = new WsProvider(rpc)
-
     let cancel: () => void
+    let cancelInactive: () => void
+
+    const provider = new WsProvider(url)
+
+    provider.on("error", () => {
+      cancelInactive = () => provider.disconnect()
+    })
+
+    provider.on("connected", load)
 
     async function load() {
-      const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(provider.endpoint)
+      const api = await ApiPromise.create({ provider })
 
       async function onNewBlock() {
         const [parachain, timestamp] = await Promise.all([
@@ -171,16 +175,18 @@ const ProviderSelectItemExternal = ({
       }
 
       api.on("connected", onNewBlock)
-      api.rpc.chain
-        .subscribeNewHeads(onNewBlock)
-        .then((newCancel) => (cancel = newCancel))
+      api.rpc.chain.subscribeNewHeads(onNewBlock).then(
+        (newCancel) =>
+          (cancel = () => {
+            newCancel()
+            api.disconnect()
+          }),
+      )
     }
-
-    load()
 
     return () => {
       cancel?.()
-      provider.disconnect()
+      cancelInactive?.()
     }
   }, [url])
 

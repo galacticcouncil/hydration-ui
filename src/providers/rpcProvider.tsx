@@ -50,7 +50,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
 
   useWindowFocus({
     onFocus: () => {
-      const provider = providerData.data?.provider
+      const provider = providerData.data?.api
 
       if (provider && !provider.isConnected) {
         provider.connect()

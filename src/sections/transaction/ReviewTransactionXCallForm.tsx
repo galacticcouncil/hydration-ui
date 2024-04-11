@@ -80,8 +80,10 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
           <ReviewTransactionData address={account?.address} xcall={xcall} />
         }
         footer={
-          <div sx={{ mt: 15 }}>
-            <ReviewTransactionXCallSummary xcallMeta={xcallMeta} />
+          <>
+            <div sx={{ mt: 15 }}>
+              <ReviewTransactionXCallSummary xcallMeta={xcallMeta} />
+            </div>
             <div
               sx={{
                 mt: ["auto", 24],
@@ -117,7 +119,7 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
                 )}
               </div>
             </div>
-          </div>
+          </>
         }
       />
     </>

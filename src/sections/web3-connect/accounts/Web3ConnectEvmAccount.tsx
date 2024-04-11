@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-location"
 import { Button } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
@@ -16,6 +17,7 @@ export const Web3ConnectEvmAccount: FC<
   const { t } = useTranslation()
   const { account: currentAccount, setAccount, toggle } = useWeb3ConnectStore()
   const { wallet } = useWallet()
+  const navigate = useNavigate()
 
   const isActive = currentAccount?.address === account.address
 
@@ -31,6 +33,7 @@ export const Web3ConnectEvmAccount: FC<
         onClick={() => {
           setAccount(account)
           toggle()
+          navigate({ search: { account: undefined } })
         }}
       >
         <div
